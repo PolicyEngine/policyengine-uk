@@ -1,0 +1,27 @@
+description: Tendring weekly non-dependant deduction by weekly gross income. Paragraph 58 mirrors the prescribed Default Scheme schedule for 2026/27 (`GBP 5.20` out-of-work or low-income, then `GBP 10.60` / `GBP 13.30` / `GBP 15.95` for higher gross-income brackets).
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Tendring Council Tax Reduction non-dependant deduction
+  reference:
+    - title: Tendring District Council - Council Tax Reduction Scheme 2026/27, paragraph 58
+      href: https://legacy.tendringdc.gov.uk/sites/default/files/documents/Council_Tax/Tendring%20S13A%20202627%20Scheme%20Final.pdf

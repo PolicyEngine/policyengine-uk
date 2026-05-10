@@ -1,0 +1,10 @@
+description: Tendring Council Tax Reduction working-age capital limit. Paragraph 33 sets the prescribed amount at 16,000 pounds and excludes Class D or E applicants with capital savings above that level.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Tendring Council Tax Reduction capital limit
+  reference:
+    - title: Tendring District Council - Council Tax Reduction Scheme 2026/27, paragraph 33 and Class D/E condition (g)
+      href: https://legacy.tendringdc.gov.uk/sites/default/files/documents/Council_Tax/Tendring%20S13A%20202627%20Scheme%20Final.pdf

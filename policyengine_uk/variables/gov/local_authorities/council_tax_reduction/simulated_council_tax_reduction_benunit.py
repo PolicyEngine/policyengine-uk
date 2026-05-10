@@ -20,6 +20,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "bolton_council_tax_reduction",
     "breckland_council_tax_reduction",
     "brent_council_tax_reduction",
+    "brentwood_council_tax_reduction",
     "bromley_council_tax_reduction",
     "bristol_council_tax_reduction",
     "broadland_council_tax_reduction",
@@ -99,6 +100,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "thurrock_council_tax_reduction",
     "wakefield_council_tax_reduction",
     "warrington_council_tax_reduction",
+    "west_berkshire_council_tax_reduction",
     "west_suffolk_council_tax_reduction",
     "west_northamptonshire_council_tax_reduction",
     "westmorland_and_furness_council_tax_reduction",
@@ -146,6 +148,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         bath_and_north_east_somerset_local_scheme = benunit(
             "bath_and_north_east_somerset_council_tax_reduction_is_local_scheme",
             period,
+        )
+        brentwood_local_scheme = benunit(
+            "brentwood_council_tax_reduction_is_local_scheme", period
         )
         buckinghamshire_local_scheme = benunit(
             "buckinghamshire_council_tax_reduction_is_local_scheme", period
@@ -231,6 +236,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         thurrock_local_scheme = benunit(
             "thurrock_council_tax_reduction_is_local_scheme", period
         )
+        west_berkshire_local_scheme = benunit(
+            "west_berkshire_council_tax_reduction_is_local_scheme", period
+        )
         west_northamptonshire_local_scheme = benunit(
             "west_northamptonshire_council_tax_reduction_is_local_scheme",
             period,
@@ -250,6 +258,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~basildon_local_scheme
             & ~bassetlaw_local_scheme
             & ~bath_and_north_east_somerset_local_scheme
+            & ~brentwood_local_scheme
             & ~buckinghamshire_local_scheme
             & ~chelmsford_local_scheme
             & ~cheltenham_local_scheme
@@ -278,6 +287,7 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~south_derbyshire_local_scheme
             & ~southend_on_sea_local_scheme
             & ~thurrock_local_scheme
+            & ~west_berkshire_local_scheme
             & ~west_northamptonshire_local_scheme
             & ~westmorland_and_furness_local_scheme
         )

@@ -1,0 +1,10 @@
+description: Withdrawal rate for Class E1 vulnerable working-age applicants under the West Berkshire Council Tax Reduction Scheme. Paragraph 17A sets amount B at 20 per cent of the difference between income and applicable amount for the protected vulnerable category.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: West Berkshire Class E1 vulnerable withdrawal rate
+  reference:
+    - title: West Berkshire Council Tax Reduction Scheme 1 April 2026 to 31 March 2027, paragraph 17A(f)(ii)
+      href: https://www.westberks.gov.uk/media/66425/Council-Tax-Reduction-Scheme-2026-27/pdf/The_Council_Tax_Reduction_Scheme_as_amended_by_West_Berkshire_Council_2026.pdf

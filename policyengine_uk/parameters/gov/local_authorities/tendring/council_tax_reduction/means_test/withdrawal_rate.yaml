@@ -1,0 +1,10 @@
+description: Tendring Council Tax Reduction Class E weekly taper. Paragraph 59 applies the prescribed 2 6/7 per cent daily rate to the difference between income and applicable amount, equivalent to a 20 per cent weekly taper.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Tendring Council Tax Reduction withdrawal rate
+  reference:
+    - title: Tendring District Council - Council Tax Reduction Scheme 2026/27, paragraph 59
+      href: https://legacy.tendringdc.gov.uk/sites/default/files/documents/Council_Tax/Tendring%20S13A%20202627%20Scheme%20Final.pdf

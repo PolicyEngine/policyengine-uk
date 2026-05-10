@@ -14,11 +14,11 @@ Follow `policyengine_uk/variables/gov/local_authorities/council_tax_reduction/sc
 
 - PR: https://github.com/PolicyEngine/policyengine-uk/pull/1534
 - Branch: `codex/ctr-framework`
-- Pull the latest PR branch before continuing; this checkpoint includes Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, and East Hampshire.
-- Coverage at this checkpoint: `96` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
-- Last focused local verification: Rushmoor `3` tests, Hart/Hartlepool overlap `6` tests, Maldon `2` tests, Hertsmere `3` tests, Hartlepool `3` tests, and East Hampshire `6` tests passed after reconstruction.
-- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `884` tests after Rushmoor, Hart, Maldon, Hartlepool, and Hertsmere reconstruction.
-- Recent completed schemes: South Gloucestershire, Gloucester, Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire.
+- Pull the latest PR branch before continuing; this checkpoint includes Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, and West Berkshire.
+- Coverage at this checkpoint: `98` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n "West Berkshire"` passed with `18` tests in this worktree.
+- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `927` tests after West Berkshire review fixes.
+- Recent completed schemes: South Gloucestershire, Gloucester, Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire.
 
 Before continuing, pull the latest branch and inspect current status:
 
@@ -69,6 +69,9 @@ Check these every time:
 - Tariff income rounding: complete blocks versus complete-or-partial blocks.
 - Minimum award cutoffs.
 - Band caps and protected exceptions.
+- Protected-group "who counts" scope. If the source says applicant, partner, or dependant, add a regression proving a disabled non-dependant does not uplift the claimant.
+- Protected-group acronym mismatches, especially Armed Forces Independence Payment versus Armed Forces Compensation Scheme. Add a named-benefit regression when the variables are easy to confuse.
+- Income-banded countable-income coverage. Add at least one source-countable non-earnings income regression, such as tax credits or contributory benefits, so the implementation is not accidentally earnings-only.
 - Non-dependant deduction ordering, gross versus earned income, remunerative-work hours, and one-deduction couple rules.
 - Do not add a 16-hour/remunerative-work gate to non-dependant earnings tables unless the non-dependant section itself says so. Some schemes define remunerative work for childcare only while applying non-dependant gross-income bands at any hours.
 - Pension-age UC or income-based benefit local-rule carve-outs, including tests that avoid double-counting national pensioner CTR.

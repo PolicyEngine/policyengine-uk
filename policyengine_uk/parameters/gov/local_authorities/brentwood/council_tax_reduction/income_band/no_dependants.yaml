@@ -1,0 +1,27 @@
+description: Council Tax Reduction discount rate by weekly income band for Brentwood single applicants and couples without dependants. From the Schedule 1 banded discount table - Band 1 (75%) for weekly income up to GBP 75, then 75/50/25/0/0 across the higher bands.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 150.01
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 225.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 300.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Brentwood weekly income-band CTR rate, no dependants
+  reference:
+    - title: Brentwood Borough Council - Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.brentwood.gov.uk/sites/default/files/2026-03/Council%20Tax%20reduction%20scheme%20S13A%202026-27%20FINAL.pdf

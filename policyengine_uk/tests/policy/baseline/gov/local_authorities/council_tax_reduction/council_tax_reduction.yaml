@@ -28425,8 +28425,8 @@
         members: [claimant]
         claims_all_entitled_benefits: true
         would_claim_uc: true
-        universal_credit: 5_000
-        universal_credit_pre_benefit_cap: 5_000
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
         uc_assessable_capital: 0
         uc_maximum_amount: 5_000
         uc_earned_income: 0
@@ -28456,8 +28456,8 @@
         members: [claimant]
         claims_all_entitled_benefits: true
         would_claim_uc: true
-        universal_credit: 5_000
-        universal_credit_pre_benefit_cap: 5_000
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
         uc_assessable_capital: 16_001
         uc_maximum_amount: 5_000
     households:
@@ -32189,5 +32189,1482 @@
     council_tax_reduction_household_has_pensioner: true
     east_hampshire_council_tax_reduction_is_local_scheme: true
     east_hampshire_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Brentwood single working-age claimant on no income receives Band 1 75 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    council_tax_reduction_scheme_supported: true
+    brentwood_council_tax_reduction_is_local_scheme: true
+    brentwood_council_tax_reduction: 1_350
+    simulated_council_tax_reduction_benunit: 1_350
+    council_tax_reduction: 1_350
+    council_tax_less_benefit: 450
+
+- name: Brentwood routes income-based-benefit applicants to Band 1 75 percent support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 25_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        jsa_income: 1
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Brentwood applies the 20 pound weekly net earnings disregard
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 8_320
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_weekly_income: 140
+    brentwood_council_tax_reduction: 1_350
+    council_tax_reduction: 1_350
+
+- name: Brentwood counts tax credits as income other than earnings
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        tax_credits: 8_320
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_weekly_income: 160
+    brentwood_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Brentwood applies the protected-group 100 percent uplift to a DLA claimant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        dla_sc: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_protected_group: true
+    brentwood_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Brentwood does not apply the protected-group uplift for a disabled non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        dla_sc: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_protected_group: [false, true]
+    brentwood_council_tax_reduction: [1_350, 0]
+    council_tax_reduction: 1_350
+
+- name: Brentwood applies the protected-group uplift via Armed Forces Independence Payment
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        armed_forces_independence_payment: 1_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_protected_group: true
+    brentwood_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Brentwood applies the protected-group uplift via the ESA Support Component source input
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        brentwood_council_tax_reduction_esa_support_component: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_protected_group: true
+    brentwood_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Brentwood applies the protected-group uplift via the WTC disability element source input
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        brentwood_council_tax_reduction_wtc_disability_element: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_protected_group: true
+    brentwood_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Brentwood applies the protected-group uplift via the UC LCW element source input
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 8_000
+        universal_credit_pre_benefit_cap: 8_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        brentwood_council_tax_reduction_uc_lcw_element: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_protected_group: true
+    brentwood_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Brentwood excludes working-age claimants with capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_001
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Brentwood drops a single applicant to zero discount above 375 pounds weekly income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 25_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Brentwood gives zero support to working-age homeowners in Band F
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: F
+        council_tax: 2_600
+        savings: 0
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    brentwood_council_tax_reduction_band_fgh_owner_excluded: true
+    brentwood_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Brentwood still pays Band F private renters at the discount rate
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: F
+        council_tax: 2_600
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_band_fgh_owner_excluded: false
+    brentwood_council_tax_reduction: 1_950
+    council_tax_reduction: 1_950
+
+- name: Brentwood uses UC-assessed capital and UC-assessed income for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 9_000
+        universal_credit_pre_benefit_cap: 9_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_is_local_scheme: true
+    brentwood_council_tax_reduction: 900
+    council_tax_reduction: 900
+
+- name: Brentwood excludes UC claimants with UC-assessed capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 6_000
+        universal_credit_pre_benefit_cap: 6_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 6_001
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Brentwood treats pension-age UC claimants as local scheme cases
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_is_local_scheme: true
+    brentwood_council_tax_reduction: 1_350
+    simulated_council_tax_reduction_benunit: 1_350
+    council_tax_reduction: 1_350
+
+- name: Brentwood regulation 60A pensioner stays on the national pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        brentwood_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRENTWOOD
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+        tenure_type: RENT_PRIVATELY
+  output:
+    brentwood_council_tax_reduction_is_local_scheme: false
+    brentwood_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: West Berkshire non-vulnerable working-age claimant gets 70 percent of Band C-capped liability
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    west_berkshire_council_tax_reduction_is_local_scheme: true
+    west_berkshire_council_tax_reduction_vulnerable_group: false
+    west_berkshire_council_tax_reduction_maximum_eligible_liability: 1_600
+    west_berkshire_council_tax_reduction: 1_120
+    simulated_council_tax_reduction_benunit: 1_120
+    council_tax_reduction: 1_120
+    council_tax_less_benefit: 680
+
+- name: West Berkshire excludes non-vulnerable working-age claimants with capital above 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_001
+  output:
+    west_berkshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: West Berkshire excludes non-vulnerable working-age claimants with capital exactly 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 6_000
+  output:
+    west_berkshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: West Berkshire vulnerable claimant with War Pension source input gets full prescribed support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+        west_berkshire_council_tax_reduction_war_pension: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 15_000
+  output:
+    west_berkshire_council_tax_reduction_vulnerable_group: true
+    west_berkshire_council_tax_reduction_maximum_eligible_liability: 1_800
+    west_berkshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: West Berkshire UC LCW element source input puts the claimant in the vulnerable category
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+        west_berkshire_council_tax_reduction_uc_lcw_element: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_vulnerable_group: true
+    west_berkshire_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: West Berkshire uses UC-assessed capital for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    west_berkshire_council_tax_reduction: 1_120
+    council_tax_reduction: 1_120
+
+- name: West Berkshire excludes UC claimants with UC-assessed capital exactly 6,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 6_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: West Berkshire uses UC-assessed income for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 5_000
+        uc_assessable_capital: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction: 820
+    council_tax_reduction: 820
+
+- name: West Berkshire disabled non-dependant does not put the claimant in the vulnerable category
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        dla_sc: 6_000
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_vulnerable_group: [false, true]
+    west_berkshire_council_tax_reduction: [849.60, 0]
+    council_tax_reduction: 849.60
+
+- name: West Berkshire counts both members of a UC non-dependant couple
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 5_000
+        hours_worked: 832
+      non_dep_partner:
+        age: 30
+        employment_income: 5_000
+        hours_worked: 832
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+      non_dep_benunit:
+        members: [non_dep, non_dep_partner]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep, non_dep_partner]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_non_dep_deductions: [540.80, 0]
+    west_berkshire_council_tax_reduction: [579.20, 0]
+    council_tax_reduction: 579.20
+
+- name: West Berkshire applies a 30 percent taper to Class E non-vulnerable working-age claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 5_500
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction: 670
+    council_tax_reduction: 670
+
+- name: West Berkshire applies a 20 percent taper to Class E1 vulnerable working-age claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 5_500
+        west_berkshire_council_tax_reduction_war_pension: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_vulnerable_group: true
+    west_berkshire_council_tax_reduction: 1_500
+    council_tax_reduction: 1_500
+
+- name: West Berkshire withholds non-vulnerable awards below the 10 pound weekly minimum
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 7_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: West Berkshire counts non-earnings income for Class E non-vulnerable claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 5_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction: 820
+    council_tax_reduction: 820
+
+- name: West Berkshire pension-age applicant uses the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_is_local_scheme: false
+    west_berkshire_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: West Berkshire pension-age UC claimant is treated as a local working-age case
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_is_local_scheme: true
+    west_berkshire_council_tax_reduction: 1_120
+    simulated_council_tax_reduction_benunit: 1_120
+    council_tax_reduction: 1_120
+
+- name: West Berkshire UC relevant-period pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+        west_berkshire_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_is_local_scheme: false
+    west_berkshire_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: West Berkshire regulation 60A pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+        west_berkshire_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WEST_BERKSHIRE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    west_berkshire_council_tax_reduction_is_local_scheme: false
+    west_berkshire_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Tendring working-age claimant on no income receives 80 percent of council tax
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    tendring_council_tax_reduction_is_local_scheme: true
+    tendring_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+    council_tax_less_benefit: 360
+
+- name: Tendring excludes working-age claimants with capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_001
+  output:
+    tendring_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Tendring applies a 20 percent taper to annual excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 6_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction: 1_040
+    council_tax_reduction: 1_040
+
+- name: Tendring deducts a 5.20 pound weekly non-dependant deduction at zero gross income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 26_000
+        weekly_hours: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 25
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction_non_dep_deductions: [270.40, 0]
+    tendring_council_tax_reduction: [1_169.60, 0]
+    council_tax_reduction: 1_169.60
+
+- name: Tendring uses UC maximum amount and UC assessed income for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 7_000
+        universal_credit_pre_benefit_cap: 7_000
+        uc_maximum_amount: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 4_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction_is_local_scheme: true
+    tendring_council_tax_reduction: 1_040
+    council_tax_reduction: 1_040
+
+- name: Tendring excludes UC claimants with UC-assessed capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 5_000
+        universal_credit_pre_benefit_cap: 5_000
+        uc_maximum_amount: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 16_001
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Tendring treats pension-age UC claimants as local scheme cases
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction_is_local_scheme: true
+    tendring_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+
+- name: Tendring regulation 60A pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+        tendring_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction_is_local_scheme: false
+    tendring_council_tax_reduction: 0
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800

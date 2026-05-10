@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability that a non-vulnerable working-age Class D or E applicant in West Berkshire can receive in Council Tax Reduction. Paragraph 29B reduces the prescribed 100 percent maximum to 70 percent for these claimants.
+values:
+  2026-04-01: 0.7
+metadata:
+  unit: /1
+  period: year
+  label: West Berkshire non-vulnerable working-age maximum support rate
+  reference:
+    - title: West Berkshire Council Tax Reduction Scheme 1 April 2026 to 31 March 2027, paragraph 29B
+      href: https://www.westberks.gov.uk/media/66425/Council-Tax-Reduction-Scheme-2026-27/pdf/The_Council_Tax_Reduction_Scheme_as_amended_by_West_Berkshire_Council_2026.pdf

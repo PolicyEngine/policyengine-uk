@@ -1,0 +1,9 @@
+description: Maximum English council tax band ratio eligible for West Berkshire's non-vulnerable working-age Council Tax Reduction. Paragraph 29A caps the assessed liability at the council tax for a Band C property in the same parish. The Band C ratio in the English council-tax band schedule is 8/9 of Band D.
+values:
+  2026-04-01: 0.888888888888889
+metadata:
+  unit: /1
+  label: West Berkshire non-vulnerable working-age Band C liability cap ratio
+  reference:
+    - title: West Berkshire Council Tax Reduction Scheme 1 April 2026 to 31 March 2027, paragraph 29A
+      href: https://www.westberks.gov.uk/media/66425/Council-Tax-Reduction-Scheme-2026-27/pdf/The_Council_Tax_Reduction_Scheme_as_amended_by_West_Berkshire_Council_2026.pdf
