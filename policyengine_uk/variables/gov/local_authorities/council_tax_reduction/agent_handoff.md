@@ -14,11 +14,11 @@ Follow `policyengine_uk/variables/gov/local_authorities/council_tax_reduction/sc
 
 - PR: https://github.com/PolicyEngine/policyengine-uk/pull/1534
 - Branch: `codex/ctr-framework`
-- Pull the latest PR branch before continuing; this checkpoint includes Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, and St Helens.
-- Coverage at this checkpoint: `100` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
-- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n "St Helens"` passed with `11` tests in this worktree after review fixes for the pension-age UC carve-out and UC capital branch.
-- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `927` tests after West Berkshire review fixes.
-- Recent completed schemes: South Gloucestershire, Gloucester, Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, St Helens.
+- Pull the latest PR branch before continuing; this checkpoint includes Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, St Helens, and Tewkesbury.
+- Coverage at this checkpoint: `101` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n "Tewkesbury"` passed with `11` tests in this worktree.
+- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `960` tests after Tewkesbury review fixes.
+- Recent completed schemes: South Gloucestershire, Gloucester, Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, St Helens, Tewkesbury.
 
 Before continuing, pull the latest branch and inspect current status:
 

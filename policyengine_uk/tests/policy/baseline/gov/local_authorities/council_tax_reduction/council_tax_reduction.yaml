@@ -34128,3 +34128,362 @@
     st_helens_council_tax_reduction: 0
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
+
+- name: Tewkesbury working-age claimant on no income receives full council tax
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    tewkesbury_council_tax_reduction_is_local_scheme: true
+    tewkesbury_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+    council_tax_less_benefit: 0
+
+- name: Tewkesbury excludes working-age claimants with capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_500
+  output:
+    tewkesbury_council_tax_reduction_is_local_scheme: true
+    tewkesbury_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 0
+
+- name: Tewkesbury working-age claimant with exactly 16,000 pounds capital remains eligible
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+  output:
+    tewkesbury_council_tax_reduction_is_local_scheme: true
+    tewkesbury_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+
+- name: Tewkesbury applies the Default Scheme 20 percent taper to excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 200
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tewkesbury_council_tax_reduction_is_local_scheme: true
+    tewkesbury_council_tax_reduction: 1_760
+
+- name: Tewkesbury applies Default Scheme non-dependant deduction to a low-income non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tewkesbury_council_tax_reduction: [1_610.20, 0]
+    council_tax_reduction: 1_610.20
+
+- name: Tewkesbury UC claimant with high household savings but low UC capital is eligible
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_assessable_capital: 0
+        uc_maximum_amount: 5_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        council_tax_reduction_applicable_income: 99_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    tewkesbury_council_tax_reduction: 1_800
+    council_tax_reduction: 1_800
+
+- name: Tewkesbury UC claimant uses UC assessed income plus award for the taper
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_assessable_capital: 0
+        uc_maximum_amount: 5_000
+        uc_earned_income: 6_000
+        uc_unearned_income: 0
+        council_tax_reduction_applicable_income: 99_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tewkesbury_council_tax_reduction: 1_400
+    council_tax_reduction: 1_400
+
+- name: Tewkesbury excludes UC claimants with UC-assessed capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_assessable_capital: 16_001
+        uc_maximum_amount: 5_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tewkesbury_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Tewkesbury pension-age UC claimant without carve-out uses the local Default Scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tewkesbury_council_tax_reduction_is_local_scheme: true
+    tewkesbury_council_tax_reduction: 1_800
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Tewkesbury regulation 60A pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+        tewkesbury_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tewkesbury_council_tax_reduction_is_local_scheme: false
+    tewkesbury_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Tewkesbury relevant-period pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+        tewkesbury_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TEWKESBURY
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tewkesbury_council_tax_reduction_is_local_scheme: false
+    tewkesbury_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
