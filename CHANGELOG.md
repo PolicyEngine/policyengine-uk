@@ -1,3 +1,10 @@
+## [2.88.15] - 2026-05-11
+
+### Fixed
+
+- - Include `council_tax_benefit` in `household_benefits`, `gov_spending`, `hbai_household_net_income`, and `pre_budget_change_household_benefits`. Previously CTR was absent from these aggregates, so abolishing council tax via `gov.contrib.abolish_council_tax` refunded the gross billed amount to households (and removed gross revenue from the government balance) rather than the net out-of-pocket amount, overstating household savings by about £4 billion in aggregate.
+
+
 ## [2.88.14] - 2026-05-09
 
 No significant changes.
