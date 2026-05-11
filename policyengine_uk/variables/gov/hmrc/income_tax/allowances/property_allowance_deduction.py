@@ -10,7 +10,10 @@ class property_allowance_deduction(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        property_allowance = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.property_allowance
         return min_(
             person("property_income", period),
-            person("property_allowance", period),
+            property_allowance,
         )

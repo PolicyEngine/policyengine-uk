@@ -13,9 +13,12 @@ class taxed_dividend_income(Variable):
     )
 
     def formula(person, period, parameters):
+        dividend_allowance = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.dividend_allowance
         return max_(
             0,
             person("taxable_dividend_income", period)
             - person("received_allowances_dividend_income", period)
-            - person("dividend_allowance", period),
+            - dividend_allowance,
         )

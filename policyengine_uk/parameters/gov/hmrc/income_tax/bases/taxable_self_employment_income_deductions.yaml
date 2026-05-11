@@ -3,7 +3,7 @@ values:
   0000-01-01:
     - loss_relief
     - capital_allowances
-    - trading_allowance
+    - trading_allowance_deduction
 metadata:
   unit: list
   label: Deductions from self-employment income
