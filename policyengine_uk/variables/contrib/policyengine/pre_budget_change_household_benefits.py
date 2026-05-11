@@ -10,6 +10,7 @@ class pre_budget_change_household_benefits(Variable):
     unit = GBP
     adds = [
         "child_benefit",
+        "council_tax_benefit",
         "esa_income",
         "housing_benefit",
         "income_support",

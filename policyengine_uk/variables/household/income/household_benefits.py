@@ -10,6 +10,7 @@ class household_benefits(Variable):
     unit = GBP
     adds = [
         "child_benefit",
+        "council_tax_benefit",
         "esa_income",
         "esa_contrib",
         "housing_benefit",
