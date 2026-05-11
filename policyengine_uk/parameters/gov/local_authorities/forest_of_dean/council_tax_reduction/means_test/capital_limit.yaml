@@ -1,0 +1,10 @@
+description: Forest of Dean Local Council Tax Support working-age capital limit. Paragraph 33 and the Class A/B criterion (f) exclude applicants whose capital savings exceed 16,000 pounds.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Forest of Dean Council Tax Support capital limit
+  reference:
+    - title: Forest of Dean District Council - Local Council Tax Support Scheme for Working Age Customers 2026/27, paragraph 33 and Class A/B (f)
+      href: https://www.fdean.gov.uk/media/r4ff2lok/council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf

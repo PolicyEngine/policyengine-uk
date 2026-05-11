@@ -1,0 +1,10 @@
+description: Forest of Dean non-dependant remunerative work threshold. Section 6 uses a 16 hour weekly threshold for remunerative work, mirroring the prescribed Default Scheme.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Forest of Dean non-dependant remunerative work hours
+  reference:
+    - title: Forest of Dean District Council - Local Council Tax Support Scheme for Working Age Customers 2026/27, section 6
+      href: https://www.fdean.gov.uk/media/r4ff2lok/council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf

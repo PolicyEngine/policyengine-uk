@@ -1,0 +1,27 @@
+description: Forest of Dean weekly non-dependant deduction by weekly gross income. Section 58 reproduces the prescribed Default Scheme schedule (footnote 18 directs that the amounts be uprated in line with the Council Tax Reduction Schemes (Prescribed Requirements) Regulations 2012), giving GBP 5.20 out-of-work or low-income, then GBP 10.60 / GBP 13.30 / GBP 15.95 for higher gross-income brackets.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Forest of Dean Council Tax Support non-dependant deduction
+  reference:
+    - title: Forest of Dean District Council - Local Council Tax Support Scheme for Working Age Customers 2026/27, paragraphs 58.1 and 58.2
+      href: https://www.fdean.gov.uk/media/r4ff2lok/council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf

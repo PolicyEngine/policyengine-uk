@@ -1,0 +1,35 @@
+description: Forest of Dean weekly income-band CTS maximum percentage for Class A (non-protected) lone-parent applicants. Paragraph 59.1 sets the six-band lone-parent table (90/70/50/30/10/0 per cent) using net weekly income tiers up to GBP 180.76, GBP 205.76, GBP 255.76, GBP 305.76, GBP 355.76 and above.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.9
+  - threshold:
+      2026-04-01: 180.77
+    amount:
+      2026-04-01: 0.7
+  - threshold:
+      2026-04-01: 205.77
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 255.77
+    amount:
+      2026-04-01: 0.3
+  - threshold:
+      2026-04-01: 305.77
+    amount:
+      2026-04-01: 0.1
+  - threshold:
+      2026-04-01: 355.77
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Forest of Dean Class A weekly income-band CTS rate, lone parent
+  reference:
+    - title: Forest of Dean District Council - Local Council Tax Support Scheme for Working Age Customers 2026/27, paragraph 59.1
+      href: https://www.fdean.gov.uk/media/r4ff2lok/council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf

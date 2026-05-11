@@ -1,0 +1,35 @@
+description: Forest of Dean weekly income-band CTS maximum percentage for Class A (non-protected) couple applicants without children. Paragraph 59.1 sets the six-band couple table (90/70/50/30/10/0 per cent) using net weekly income tiers up to GBP 141.22, GBP 176.22, GBP 226.22, GBP 276.22, GBP 326.22 and above.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.9
+  - threshold:
+      2026-04-01: 141.23
+    amount:
+      2026-04-01: 0.7
+  - threshold:
+      2026-04-01: 176.23
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 226.23
+    amount:
+      2026-04-01: 0.3
+  - threshold:
+      2026-04-01: 276.23
+    amount:
+      2026-04-01: 0.1
+  - threshold:
+      2026-04-01: 326.23
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Forest of Dean Class A weekly income-band CTS rate, couple without children
+  reference:
+    - title: Forest of Dean District Council - Local Council Tax Support Scheme for Working Age Customers 2026/27, paragraph 59.1
+      href: https://www.fdean.gov.uk/media/r4ff2lok/council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf

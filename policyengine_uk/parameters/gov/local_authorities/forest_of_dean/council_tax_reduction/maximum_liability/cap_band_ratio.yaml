@@ -1,0 +1,9 @@
+description: Forest of Dean Council Tax band ratio used to cap working-age maximum eligible liability at the Band E equivalent. Paragraph 57.1(a) and 57.6(a) cap working-age eligible liability at "a Band E equivalent" for both Class A and Class B applicants. The Band E ratio in the English council-tax band schedule is 11/9 (about 1.222) of Band D.
+values:
+  2026-04-01: 1.222222222222222
+metadata:
+  unit: /1
+  label: Forest of Dean Council Tax Support Band E cap ratio
+  reference:
+    - title: Forest of Dean District Council - Local Council Tax Support Scheme for Working Age Customers 2026/27, paragraphs 57.1(a) and 57.6(a)
+      href: https://www.fdean.gov.uk/media/r4ff2lok/council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf

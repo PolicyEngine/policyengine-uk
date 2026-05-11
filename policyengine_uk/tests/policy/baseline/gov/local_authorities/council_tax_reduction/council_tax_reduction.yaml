@@ -34487,3 +34487,469 @@
     tewkesbury_council_tax_reduction: 0
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
+
+- name: Forest of Dean Class A single applicant on no income receives 90 percent of council tax
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    forest_of_dean_council_tax_reduction_is_local_scheme: true
+    forest_of_dean_council_tax_reduction: 1_620
+    simulated_council_tax_reduction_benunit: 1_620
+    council_tax_reduction: 1_620
+    council_tax_less_benefit: 180
+
+- name: Forest of Dean excludes Class A applicant with capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_500
+  output:
+    forest_of_dean_council_tax_reduction_is_local_scheme: true
+    forest_of_dean_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 0
+
+- name: Forest of Dean routes income-based benefit applicants to the top band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        jsa_income: 1
+        council_tax_reduction_applicable_income: 99_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction_weekly_income: 0
+    forest_of_dean_council_tax_reduction: 1_620
+
+- name: Forest of Dean Class A single applicant in Band 2 receives 70 percent of council tax
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 5_200
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction_is_local_scheme: true
+    forest_of_dean_council_tax_reduction: 1_260
+
+- name: Forest of Dean Class A single applicant in Band 6 receives 0 percent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 10_400
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction_is_local_scheme: true
+    forest_of_dean_council_tax_reduction: 0
+
+- name: Forest of Dean Class B protected PIP applicant on no income receives 95 percent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+        pip: 4_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction_is_local_scheme: true
+    forest_of_dean_council_tax_reduction_protected_group: true
+    forest_of_dean_council_tax_reduction: 1_710
+
+- name: Forest of Dean Class B protected war pension recipient via source input
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+        forest_of_dean_council_tax_reduction_war_pension: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction_protected_group: true
+    forest_of_dean_council_tax_reduction: 1_710
+
+- name: Forest of Dean Class B protects applicants through a dependent child DLA award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      child:
+        age: 5
+        dla: 3_000
+    benunits:
+      benunit:
+        members: [claimant, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: false
+        is_lone_parent: true
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant, child]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction_protected_group: true
+    forest_of_dean_council_tax_reduction: 1_710
+
+- name: Forest of Dean caps Band F liability at the Band E equivalent
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: F
+        council_tax: 2_600
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction_is_local_scheme: true
+    forest_of_dean_council_tax_reduction: 1_980
+
+- name: Forest of Dean applies prescribed non-dependant deduction to a low-income non-dependant
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 30
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction: [1_349.60, 0]
+    council_tax_reduction: 1_349.60
+
+- name: Forest of Dean applies one non-dependant deduction to Universal Credit couples
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep_1:
+        age: 30
+        employment_income: 10_000
+        weekly_hours: 20
+      non_dep_2:
+        age: 30
+        employment_income: 10_000
+        weekly_hours: 20
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+      non_dep_couple:
+        members: [non_dep_1, non_dep_2]
+        claims_all_entitled_benefits: false
+        would_claim_uc: true
+        universal_credit: 1
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 30
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction: [1_068.80, 0]
+    council_tax_reduction: 1_068.80
+
+- name: Forest of Dean UC claimant uses UC-assessed income and capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1_000
+        universal_credit_pre_benefit_cap: 1_000
+        uc_assessable_capital: 0
+        uc_earned_income: 4_800
+        uc_unearned_income: 0
+        council_tax_reduction_applicable_income: 99_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    forest_of_dean_council_tax_reduction_weekly_income: 111.54
+    forest_of_dean_council_tax_reduction: 1_260
+    council_tax_reduction: 1_260
+
+- name: Forest of Dean excludes UC claimants with UC-assessed capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_assessable_capital: 16_001
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction: 0
+    council_tax_reduction: 0
+
+- name: Forest of Dean couple with children in Band 2 receives 70 percent of council tax
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      adult_1:
+        age: 35
+      adult_2:
+        age: 35
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [adult_1, adult_2, child]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 13_000
+    households:
+      household:
+        members: [adult_1, adult_2, child]
+        country: ENGLAND
+        local_authority: FOREST_OF_DEAN
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    forest_of_dean_council_tax_reduction: 1_260
