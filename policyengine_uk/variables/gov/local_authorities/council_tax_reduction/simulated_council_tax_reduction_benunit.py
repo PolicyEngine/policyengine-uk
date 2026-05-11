@@ -93,10 +93,12 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "southend_on_sea_council_tax_reduction",
     "southwark_council_tax_reduction",
     "st_albans_council_tax_reduction",
+    "st_helens_council_tax_reduction",
     "stockport_council_tax_reduction",
     "stevenage_council_tax_reduction",
     "stroud_council_tax_reduction",
     "tameside_council_tax_reduction",
+    "tendring_council_tax_reduction",
     "thurrock_council_tax_reduction",
     "wakefield_council_tax_reduction",
     "warrington_council_tax_reduction",
@@ -233,6 +235,12 @@ class simulated_council_tax_reduction_benunit(Variable):
         southend_on_sea_local_scheme = benunit(
             "southend_on_sea_council_tax_reduction_is_local_scheme", period
         )
+        st_helens_local_scheme = benunit(
+            "st_helens_council_tax_reduction_is_local_scheme", period
+        )
+        tendring_local_scheme = benunit(
+            "tendring_council_tax_reduction_is_local_scheme", period
+        )
         thurrock_local_scheme = benunit(
             "thurrock_council_tax_reduction_is_local_scheme", period
         )
@@ -286,6 +294,8 @@ class simulated_council_tax_reduction_benunit(Variable):
             & ~south_gloucestershire_local_scheme
             & ~south_derbyshire_local_scheme
             & ~southend_on_sea_local_scheme
+            & ~st_helens_local_scheme
+            & ~tendring_local_scheme
             & ~thurrock_local_scheme
             & ~west_berkshire_local_scheme
             & ~west_northamptonshire_local_scheme

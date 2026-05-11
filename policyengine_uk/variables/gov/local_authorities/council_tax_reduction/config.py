@@ -360,12 +360,20 @@ def is_st_albans(local_authority):
     return local_authority == LocalAuthority.ST_ALBANS
 
 
+def is_st_helens(local_authority):
+    return local_authority == LocalAuthority.ST_HELENS
+
+
 def is_stockport(local_authority):
     return local_authority == LocalAuthority.STOCKPORT
 
 
 def is_tameside(local_authority):
     return local_authority == LocalAuthority.TAMESIDE
+
+
+def is_tendring(local_authority):
+    return local_authority == LocalAuthority.TENDRING
 
 
 def is_thurrock(local_authority):
@@ -870,12 +878,20 @@ def is_st_albans_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_st_albans(local_authority)
 
 
+def is_st_helens_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_st_helens(local_authority)
+
+
 def is_stockport_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_stockport(local_authority)
 
 
 def is_tameside_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_tameside(local_authority)
+
+
+def is_tendring_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_tendring(local_authority)
 
 
 def is_thurrock_working_age(local_authority, country, has_pensioner):
@@ -1062,8 +1078,10 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         | is_southend_on_sea_working_age(local_authority, country, has_pensioner)
         | is_southwark_working_age(local_authority, country, has_pensioner)
         | is_st_albans_working_age(local_authority, country, has_pensioner)
+        | is_st_helens_working_age(local_authority, country, has_pensioner)
         | is_stockport_working_age(local_authority, country, has_pensioner)
         | is_tameside_working_age(local_authority, country, has_pensioner)
+        | is_tendring_working_age(local_authority, country, has_pensioner)
         | is_thurrock_working_age(local_authority, country, has_pensioner)
         | is_warrington_working_age(local_authority, country, has_pensioner)
         | is_wakefield_working_age(local_authority, country, has_pensioner)

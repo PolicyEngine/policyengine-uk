@@ -1,0 +1,10 @@
+description: St Helens Council Tax Reduction working-age capital limit. Paragraph 10 lists capital not exceeding 16,000 pounds among the overall conditions for an award.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: St Helens Council Tax Reduction capital limit
+  reference:
+    - title: St Helens Borough Council - Council Tax Reduction Scheme 2026-2027, paragraphs 10 and 28
+      href: https://www.sthelens.gov.uk/media/13997/St-Helens-CTR-scheme-2026/pdf/St_Helens_CTR_scheme_2026.pdf

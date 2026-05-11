@@ -1,0 +1,23 @@
+from policyengine_uk.model_api import *
+
+
+class tendring_council_tax_reduction_uc_applicable_income(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Tendring Universal Credit applicable income for Council Tax Reduction"
+    definition_period = YEAR
+    unit = GBP
+    reference = "https://legacy.tendringdc.gov.uk/sites/default/files/documents/Council_Tax/Tendring%20S13A%20202627%20Scheme%20Final.pdf"
+
+    def formula(benunit, period, parameters):
+        has_uc_award = (
+            max_(
+                benunit("universal_credit_pre_benefit_cap", period),
+                benunit("universal_credit", period),
+            )
+            > 0
+        )
+        uc_income = benunit("uc_earned_income", period) + benunit(
+            "uc_unearned_income", period
+        )
+        return has_uc_award * (uc_income + benunit("universal_credit", period))

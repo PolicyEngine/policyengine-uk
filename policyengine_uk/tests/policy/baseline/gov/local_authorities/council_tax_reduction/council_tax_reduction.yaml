@@ -33435,6 +33435,36 @@
     council_tax_reduction: 1_440
     council_tax_less_benefit: 360
 
+- name: Tendring long-duration JSA claimant receives 60 percent maximum support
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        tendring_council_tax_reduction_jsa_three_years: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction: 1_080
+    council_tax_reduction: 1_080
+
 - name: Tendring excludes working-age claimants with capital above 16,000 pounds
   period: 2026
   absolute_error_margin: 0.5
@@ -33463,6 +33493,35 @@
   output:
     tendring_council_tax_reduction: 0
     council_tax_reduction: 0
+
+- name: Tendring allows working-age claimants with capital exactly at 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+  output:
+    tendring_council_tax_reduction: 1_440
+    council_tax_reduction: 1_440
 
 - name: Tendring applies a 20 percent taper to annual excess income
   period: 2026
@@ -33495,7 +33554,7 @@
     tendring_council_tax_reduction: 1_040
     council_tax_reduction: 1_040
 
-- name: Tendring deducts a 5.20 pound weekly non-dependant deduction at zero gross income
+- name: Tendring counts non-dependent income but does not apply non-dependant deductions
   period: 2026
   absolute_error_margin: 0.5
   input:
@@ -33504,8 +33563,6 @@
         age: 35
       non_dep:
         age: 25
-        employment_income: 26_000
-        weekly_hours: 0
     benunits:
       benunit:
         members: [claimant]
@@ -33516,6 +33573,8 @@
         is_lone_parent: false
         eldest_adult_age: 35
         benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
       other_benunit:
         members: [non_dep]
         claims_all_entitled_benefits: false
@@ -33524,6 +33583,7 @@
         is_lone_parent: false
         eldest_adult_age: 25
         benefits_premiums: 0
+        council_tax_reduction_applicable_income: 2_000
     households:
       household:
         members: [claimant, non_dep]
@@ -33533,9 +33593,10 @@
         council_tax: 1_800
         savings: 0
   output:
-    tendring_council_tax_reduction_non_dep_deductions: [270.40, 0]
-    tendring_council_tax_reduction: [1_169.60, 0]
-    council_tax_reduction: 1_169.60
+    tendring_council_tax_reduction_applicable_income: [2_000, 2_000]
+    tendring_council_tax_reduction_non_dep_deductions: [0, 0]
+    tendring_council_tax_reduction: [1_040, 0]
+    council_tax_reduction: 1_040
 
 - name: Tendring uses UC maximum amount and UC assessed income for UC claimants
   period: 2026
@@ -33634,6 +33695,41 @@
     simulated_council_tax_reduction_benunit: 1_440
     council_tax_reduction: 1_440
 
+- name: Tendring relevant-period pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+        tendring_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: TENDRING
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    tendring_council_tax_reduction_is_local_scheme: false
+    tendring_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
 - name: Tendring regulation 60A pensioner stays on the prescribed pensioner scheme
   period: 2026
   absolute_error_margin: 0.5
@@ -33666,5 +33762,369 @@
   output:
     tendring_council_tax_reduction_is_local_scheme: false
     tendring_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: St Helens working-age claimant on no income receives 80 percent of council tax
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+    council_tax_reduction: 1_440
+    council_tax_less_benefit: 360
+
+- name: St Helens excludes working-age claimants with capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_500
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 0
+
+- name: St Helens allows working-age claimants with capital exactly at 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 16_000
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 1_440
+    simulated_council_tax_reduction_benunit: 1_440
+
+- name: St Helens applies a 20 percent taper to annual excess income
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 200
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 1_400
+
+- name: St Helens caps Band F liability at the Band D amount
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: F
+        council_tax: 2_600
+        savings: 0
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 1_440
+
+- name: St Helens cancels awards below the 1 pound weekly minimum
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 7_100
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 0
+
+- name: St Helens makes no working-age non-dependant deduction
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 35
+        employment_income: 30_000
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+      other_benunit:
+        members: [non_dep]
+        claims_all_entitled_benefits: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction: 1_440
+    council_tax_less_benefit: 360
+
+- name: St Helens uses UC maximum amount and UC assessed income for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 200
+        universal_credit_pre_benefit_cap: 200
+        uc_maximum_amount: 10_000
+        uc_earned_income: 10_500
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 1_300
+
+- name: St Helens uses UC-assessed capital instead of household savings for UC claimants
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 200
+        universal_credit_pre_benefit_cap: 200
+        uc_maximum_amount: 200
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 1_440
+
+- name: St Helens excludes UC claimants with UC-assessed capital above 16,000 pounds
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 200
+        universal_credit_pre_benefit_cap: 200
+        uc_maximum_amount: 200
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 16_500
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: true
+    st_helens_council_tax_reduction: 0
+
+- name: St Helens regulation 60A pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_maximum_amount: 10_000
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+        st_helens_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: ST_HELENS
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    st_helens_council_tax_reduction_is_local_scheme: false
+    st_helens_council_tax_reduction: 0
     simulated_council_tax_reduction_benunit: 1_800
     council_tax_reduction: 1_800
