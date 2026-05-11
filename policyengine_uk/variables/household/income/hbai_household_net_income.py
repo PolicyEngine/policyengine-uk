@@ -26,6 +26,7 @@ class hbai_household_net_income(Variable):
         "free_school_milk",
         "free_tv_licence_value",
         "child_benefit",
+        "council_tax_benefit",
         "esa_income",
         "esa_contrib",
         "housing_benefit",
@@ -59,7 +60,7 @@ class hbai_household_net_income(Variable):
         # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
     ]
     subtracts = [
-        "council_tax_less_benefit",
+        "council_tax",
         "domestic_rates",
         "income_tax",
         "national_insurance",
@@ -74,19 +75,13 @@ class hbai_household_net_income(Variable):
     def formula(household, period, parameters):
         abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
         if abolish_council_tax:
-            return add(
-                household,
-                period,
-                hbai_household_net_income.adds,
-            ) - add(
-                household,
-                period,
-                [
-                    s
-                    for s in hbai_household_net_income.subtracts
-                    if s != "council_tax_less_benefit"
-                ],
-            )
+            adds = [
+                a for a in hbai_household_net_income.adds if a != "council_tax_benefit"
+            ]
+            subtracts = [
+                s for s in hbai_household_net_income.subtracts if s != "council_tax"
+            ]
+            return add(household, period, adds) - add(household, period, subtracts)
         return add(household, period, hbai_household_net_income.adds) - add(
             household, period, hbai_household_net_income.subtracts
         )

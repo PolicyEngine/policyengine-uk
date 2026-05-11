@@ -10,6 +10,7 @@ class gov_spending(Variable):
     unit = GBP
     adds = [
         "child_benefit",
+        "council_tax_benefit",
         "esa_income",
         "esa_contrib",
         "housing_benefit",
@@ -57,3 +58,10 @@ class gov_spending(Variable):
         "nhs_spending",
         "carer_support_payment",
     ]
+
+    def formula(household, period, parameters):
+        variables = list(gov_spending.adds)
+        abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
+        if abolish_council_tax:
+            variables = [v for v in variables if v != "council_tax_benefit"]
+        return add(household, period, variables)
