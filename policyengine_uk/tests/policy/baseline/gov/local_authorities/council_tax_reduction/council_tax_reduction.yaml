@@ -34953,3 +34953,396 @@
         savings: 0
   output:
     forest_of_dean_council_tax_reduction: 1_260
+
+- name: Braintree single no children on no income receives the 77 percent Band 1 award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    braintree_council_tax_reduction_is_local_scheme: true
+    braintree_council_tax_reduction: 1_386
+    simulated_council_tax_reduction_benunit: 1_386
+    council_tax_reduction: 1_386
+
+- name: Braintree excludes applicants with capital of 10,000 pounds or above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 10_000
+  output:
+    braintree_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 0
+
+- name: Braintree allows applicants with capital just below the 10,000 pound limit
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 9_999
+  output:
+    braintree_council_tax_reduction: 1_386
+
+- name: Braintree single no children at weekly income 150 receives the 50 percent band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 7_800
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction: 900
+
+- name: Braintree single no children at weekly income 300 receives the zero percent band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 15_600
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction: 0
+
+- name: Braintree couple with two children at weekly income 300 receives the 25 percent band
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      adult_1:
+        age: 35
+      adult_2:
+        age: 35
+      child_1:
+        age: 5
+      child_2:
+        age: 8
+    benunits:
+      benunit:
+        members: [adult_1, adult_2, child_1, child_2]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 15_600
+    households:
+      household:
+        members: [adult_1, adult_2, child_1, child_2]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction: 450
+
+- name: Braintree passported income-based JSA claimant gets the Band 1 77 percent award
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 15_600
+        jsa_income: 4_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction: 1_386
+
+- name: Braintree UC claimant uses DWP-assessed UC income and remains capital eligible via UC capital
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 200
+        universal_credit_pre_benefit_cap: 200
+        uc_earned_income: 7_600
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        uc_maximum_amount: 5_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+        council_tax_reduction_applicable_income: 99_000
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    braintree_council_tax_reduction: 900
+
+- name: Braintree excludes UC claimants with UC-assessed capital of 10,000 pounds or above
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 10_000
+        uc_maximum_amount: 5_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 35
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction: 0
+
+- name: Braintree pension-age UC claimant without carve-out uses the local banded scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        uc_maximum_amount: 10_000
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        eldest_adult_age: 67
+        benefits_premiums: 0
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction_is_local_scheme: true
+    braintree_council_tax_reduction: 1_386
+    simulated_council_tax_reduction_benunit: 1_386
+    council_tax_reduction: 1_386
+
+- name: Braintree regulation 60A pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        uc_maximum_amount: 10_000
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+        braintree_council_tax_reduction_uc_regulation_60a_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction_is_local_scheme: false
+    braintree_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+
+- name: Braintree relevant-period pensioner stays on the prescribed pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.5
+  input:
+    people:
+      claimant:
+        age: 67
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        universal_credit: 1
+        universal_credit_pre_benefit_cap: 1
+        uc_earned_income: 0
+        uc_unearned_income: 0
+        uc_assessable_capital: 0
+        uc_maximum_amount: 10_000
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 0
+        braintree_council_tax_reduction_uc_relevant_period_pensioner: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: BRAINTREE
+        council_tax_band: D
+        council_tax: 1_800
+        savings: 0
+  output:
+    braintree_council_tax_reduction_is_local_scheme: false
+    braintree_council_tax_reduction: 0
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800

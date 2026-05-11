@@ -14,11 +14,11 @@ Follow `policyengine_uk/variables/gov/local_authorities/council_tax_reduction/sc
 
 - PR: https://github.com/PolicyEngine/policyengine-uk/pull/1534
 - Branch: `codex/ctr-framework`
-- Pull the latest PR branch before continuing; this checkpoint includes Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, St Helens, Tewkesbury, and Forest of Dean.
-- Coverage at this checkpoint: `102` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
-- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n "Forest of Dean"` passed with `14` tests in this worktree.
-- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `974` tests after Forest of Dean review fixes.
-- Recent completed schemes: South Gloucestershire, Gloucester, Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, St Helens, Tewkesbury, Forest of Dean.
+- Pull the latest PR branch before continuing; this checkpoint includes Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, St Helens, Tewkesbury, Forest of Dean, and Braintree.
+- Coverage at this checkpoint: `103` current English working-age billing authorities, plus the national Wales and Scotland CTR schemes.
+- Last focused local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml -n "Braintree"` passed with `12` tests in this worktree.
+- Last full local verification: `uv run policyengine-core test policyengine_uk/tests/policy/baseline/gov/local_authorities/council_tax_reduction/council_tax_reduction.yaml` passed with `986` tests after Braintree review fixes.
+- Recent completed schemes: South Gloucestershire, Gloucester, Bath and North East Somerset, Rushmoor, Hart, Maldon, Hartlepool, Hertsmere, East Hampshire, Brentwood, West Berkshire, Tendring, St Helens, Tewkesbury, Forest of Dean, Braintree.
 
 Before continuing, pull the latest branch and inspect current status:
 

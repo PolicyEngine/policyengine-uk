@@ -1,0 +1,31 @@
+description: Braintree weekly income-band CTR rate for single applicants with one child. Schedule 1 paragraph 1 sets the table at 77/50/25/15/0 per cent across the GBP 0.00-125.00, GBP 125.01-200.00, GBP 200.01-275.00, GBP 275.01-350.00 and GBP 350.01-450.00 net weekly income bands, with 0 per cent above GBP 450.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.77
+  - threshold:
+      2026-04-01: 125.01
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 200.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 275.01
+    amount:
+      2026-04-01: 0.15
+  - threshold:
+      2026-04-01: 350.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Braintree weekly income-band CTR rate, single applicant one child
+  reference:
+    - title: Braintree District Council - Council Tax Reduction Scheme 2026/27, Schedule 1 paragraph 1
+      href: https://www.braintree.gov.uk/downloads/file/4374/council-tax-reduction-scheme-2026-27

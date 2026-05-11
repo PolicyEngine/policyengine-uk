@@ -50,6 +50,10 @@ def is_dudley(local_authority):
     return local_authority == LocalAuthority.DUDLEY
 
 
+def is_braintree(local_authority):
+    return local_authority == LocalAuthority.BRAINTREE
+
+
 def is_breckland(local_authority):
     return local_authority == LocalAuthority.BRECKLAND
 
@@ -514,6 +518,10 @@ def is_barnet_working_age(local_authority, country, has_pensioner):
 
 def is_babergh_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_babergh(local_authority)
+
+
+def is_braintree_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_braintree(local_authority)
 
 
 def is_breckland_working_age(local_authority, country, has_pensioner):
@@ -998,6 +1006,7 @@ def is_supported_scheme(local_authority, country, has_pensioner):
         )
         | is_barnet_working_age(local_authority, country, has_pensioner)
         | is_bolton_working_age(local_authority, country, has_pensioner)
+        | is_braintree_working_age(local_authority, country, has_pensioner)
         | is_breckland_working_age(local_authority, country, has_pensioner)
         | is_brent_working_age(local_authority, country, has_pensioner)
         | is_brentwood_working_age(local_authority, country, has_pensioner)
