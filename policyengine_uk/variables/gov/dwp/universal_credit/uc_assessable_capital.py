@@ -11,11 +11,14 @@ class uc_assessable_capital(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
 
     def formula(benunit, period, parameters):
         household = benunit.household
         p = parameters(period).gov.dwp.universal_credit.means_test
-        household_capital = add(household, period, p.capital.sources)
+        household_capital = sum(
+            household(source, period) for source in p.capital.sources
+        )
         benunit_adults = add(benunit, period, ["is_adult"])
         household_reported_capital = household("household_uc_reported_capital", period)
         household_unreported_adults = household(

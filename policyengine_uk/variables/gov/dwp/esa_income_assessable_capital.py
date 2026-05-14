@@ -15,6 +15,7 @@ class esa_income_assessable_capital(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
 
     def formula(benunit, period, parameters):
         ESA = parameters(period).gov.dwp.ESA.income

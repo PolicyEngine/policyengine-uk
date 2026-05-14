@@ -11,4 +11,5 @@ class student_loan_balance(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
     default_value = 0

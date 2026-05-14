@@ -15,6 +15,7 @@ class jsa_income_assessable_capital(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
 
     def formula(benunit, period, parameters):
         JSA = parameters(period).gov.dwp.JSA.income

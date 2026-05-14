@@ -7,6 +7,7 @@ class household_uc_reported_capital(Variable):
     label = "Household Universal Credit capital explicitly reported by benunits"
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
 
     def formula(household, period, parameters):
         person = household.members

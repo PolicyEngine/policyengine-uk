@@ -7,6 +7,7 @@ class total_wealth(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
+    quantity_type = STOCK
 
     adds = [
         "property_wealth",

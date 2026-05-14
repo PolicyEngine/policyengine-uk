@@ -13,12 +13,13 @@ class pension_credit_assessable_capital(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
 
     def formula(benunit, period, parameters):
         household = benunit.household
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
-        household_capital = add(household, period, p.sources)
+        household_capital = sum(household(source, period) for source in p.sources)
         any_pension_age = benunit.any(person("is_SP_age", period))
         benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
         household_pension_age_adults = benunit.max(
