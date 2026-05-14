@@ -14,6 +14,7 @@ class income_support_assessable_capital(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support

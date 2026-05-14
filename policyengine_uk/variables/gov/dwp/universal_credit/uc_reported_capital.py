@@ -12,4 +12,5 @@ class uc_reported_capital(Variable):
     )
     definition_period = YEAR
     unit = GBP
+    quantity_type = STOCK
     default_value = -1
