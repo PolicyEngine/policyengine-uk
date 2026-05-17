@@ -1,3 +1,10 @@
+## [2.88.18] - 2026-05-17
+
+### Changed
+
+- Remove redundant uprating metadata and class-level aggregation metadata from variables that already define their computation explicitly.
+
+
 ## [2.88.17] - 2026-05-17
 
 ### Changed
