@@ -56,6 +56,32 @@
     # Low earner's partner has no unused PA to transfer, so low_earner's MA is 0.
     marriage_allowance: [1260, 0]
 
+- name: Expanded MA — explicit Marriage Allowance take-up input drives the reform
+  period: 2024
+  absolute_error_margin: 10
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.expanded_ma_reform
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.takeup_rate: 0.0
+    people:
+      high_earner:
+        age: 35
+        employment_income: 60_000
+        would_claim_marriage_allowance: true
+      low_earner:
+        age: 33
+        employment_income: 10_000
+        would_claim_marriage_allowance: true
+    benunits:
+      benunit:
+        members: [high_earner, low_earner]
+        is_married: true
+    households:
+      household:
+        members: [high_earner, low_earner]
+  output:
+    marriage_allowance: [1260, 0]
+
 - name: Marriage-neutral IT — single person's adjusted net income is unchanged by the reform
   period: 2024
   absolute_error_margin: 1
@@ -100,3 +126,29 @@
         members: [high_earner, low_earner]
   output:
     adjusted_net_income: [35_000, 35_000]
+
+- name: Expanded MA — explicit no-claim input suppresses the reform even with full take-up rate
+  period: 2024
+  absolute_error_margin: 10
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.expanded_ma_reform
+  input:
+    gov.hmrc.income_tax.allowances.marriage_allowance.takeup_rate: 1.0
+    people:
+      high_earner:
+        age: 35
+        employment_income: 60_000
+        would_claim_marriage_allowance: false
+      low_earner:
+        age: 33
+        employment_income: 10_000
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [high_earner, low_earner]
+        is_married: true
+    households:
+      household:
+        members: [high_earner, low_earner]
+  output:
+    marriage_allowance: [0, 0]

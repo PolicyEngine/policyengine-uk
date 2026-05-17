@@ -63,7 +63,6 @@ def create_expanded_ma_reform(
             )
             transferable_amount = person("partners_unused_personal_allowance", period)
             allowances = parameters(period).gov.hmrc.income_tax.allowances
-            takeup_rate = allowances.marriage_allowance.takeup_rate
             capped_percentage = allowances.marriage_allowance.max
             expanded_ma_cap = parameters(
                 period
@@ -81,7 +80,7 @@ def create_expanded_ma_reform(
                 np.ceil(amount_if_eligible_pre_rounding / rounding_increment)
                 * rounding_increment
             )
-            takes_up = random(person) < takeup_rate
+            takes_up = person("would_claim_marriage_allowance", period)
             return eligible * amount_if_eligible * takes_up
 
     class reform(Reform):
