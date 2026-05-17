@@ -1,3 +1,10 @@
+## [2.88.17] - 2026-05-17
+
+### Changed
+
+- Make the CPS expanded Marriage Allowance reform use the explicit `would_claim_marriage_allowance` input instead of formula-time randomness.
+
+
 ## [2.88.16] - 2026-05-15
 
 No significant changes.
