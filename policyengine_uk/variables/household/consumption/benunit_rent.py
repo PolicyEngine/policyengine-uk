@@ -10,5 +10,4 @@ class benunit_rent(Variable):
     )
     definition_period = YEAR
     unit = GBP
-    uprating = "gov.economic_assumptions.indices.obr.social_rent"
     adds = ["personal_rent"]

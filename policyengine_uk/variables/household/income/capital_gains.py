@@ -9,7 +9,6 @@ class capital_gains(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    uprating = "gov.economic_assumptions.indices.obr.per_capita.gdp"
     adds = [
         "capital_gains_before_response",
         "capital_gains_behavioural_response",

@@ -3,6 +3,20 @@ import datetime
 import numpy as np
 
 
+HOUSEHOLD_MARKET_INCOME_VARIABLES = [
+    "employment_income",
+    "self_employment_income",
+    "savings_interest_income",
+    "dividend_income",
+    "miscellaneous_income",
+    "property_income",
+    "private_pension_income",
+    "private_transfer_income",
+    "maintenance_income",
+    "capital_gains",
+]
+
+
 class household_market_income(Variable):
     value_type = float
     entity = Household
@@ -10,20 +24,8 @@ class household_market_income(Variable):
     documentation = "Market income for the household"
     definition_period = YEAR
     unit = GBP
-    adds = [
-        "employment_income",
-        "self_employment_income",
-        "savings_interest_income",
-        "dividend_income",
-        "miscellaneous_income",
-        "property_income",
-        "private_pension_income",
-        "private_transfer_income",
-        "maintenance_income",
-        "capital_gains",
-    ]
 
     def formula(person, period, parameters):
-        total = add(person, period, household_market_income.adds)
+        total = add(person, period, HOUSEHOLD_MARKET_INCOME_VARIABLES)
         contrib = parameters(period).gov.contrib.policyengine.economy.gdp_per_capita
         return total * (contrib + 1)

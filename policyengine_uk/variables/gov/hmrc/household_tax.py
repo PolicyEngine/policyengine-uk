@@ -1,6 +1,34 @@
 from policyengine_uk.model_api import *
 
 
+HOUSEHOLD_TAX_VARIABLES = [
+    "expected_sdlt",
+    "expected_ltt",
+    "expected_lbtt",
+    "corporate_sdlt",
+    "business_rates",
+    "council_tax",
+    "high_value_council_tax_surcharge",
+    "domestic_rates",
+    "fuel_duty",
+    "tv_licence",
+    "wealth_tax",
+    "non_primary_residence_wealth_tax",
+    "income_tax",
+    "national_insurance",
+    "LVT",
+    "carbon_tax",
+    "vat_change",
+    "capital_gains_tax",
+    "private_school_vat",
+    "corporate_incident_tax_revenue_change",
+    "consumer_incident_tax_revenue_change",
+    "employer_ni_response_capital_incidence",
+    "employer_ni_response_consumer_incidence",
+    "student_loan_repayments",
+]
+
+
 class household_tax(Variable):
     value_type = float
     entity = Household
@@ -8,32 +36,6 @@ class household_tax(Variable):
     documentation = "Total taxes owed by the household"
     definition_period = YEAR
     unit = GBP
-    adds = [
-        "expected_sdlt",
-        "expected_ltt",
-        "expected_lbtt",
-        "corporate_sdlt",
-        "business_rates",
-        "council_tax",
-        "high_value_council_tax_surcharge",
-        "domestic_rates",
-        "fuel_duty",
-        "tv_licence",
-        "wealth_tax",
-        "non_primary_residence_wealth_tax",
-        "income_tax",
-        "national_insurance",
-        "LVT",
-        "carbon_tax",
-        "vat_change",
-        "capital_gains_tax",
-        "private_school_vat",
-        "corporate_incident_tax_revenue_change",
-        "consumer_incident_tax_revenue_change",
-        "employer_ni_response_capital_incidence",
-        "employer_ni_response_consumer_incidence",
-        "student_loan_repayments",
-    ]
 
     def formula(household, period, parameters):
         abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
@@ -41,7 +43,7 @@ class household_tax(Variable):
             return add(
                 household,
                 period,
-                [tax for tax in household_tax.adds if tax not in ["council_tax"]],
+                [tax for tax in HOUSEHOLD_TAX_VARIABLES if tax not in ["council_tax"]],
             )
         else:
-            return add(household, period, household_tax.adds)
+            return add(household, period, HOUSEHOLD_TAX_VARIABLES)
