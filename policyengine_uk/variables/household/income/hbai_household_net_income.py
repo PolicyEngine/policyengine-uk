@@ -3,6 +3,69 @@ import datetime
 import numpy as np
 
 
+HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
+    "employment_income",
+    "self_employment_income",
+    "savings_interest_income",
+    "dividend_income",
+    "miscellaneous_income",
+    "property_income",
+    "private_pension_income",
+    "private_transfer_income",
+    "maintenance_income",
+    "free_school_meals",
+    "free_school_fruit_veg",
+    "free_school_milk",
+    "free_tv_licence_value",
+    "child_benefit",
+    "council_tax_benefit",
+    "esa_income",
+    "esa_contrib",
+    "housing_benefit",
+    "income_support",
+    "jsa_income",
+    "jsa_contrib",
+    "pension_credit",
+    "universal_credit",
+    "working_tax_credit",
+    "child_tax_credit",
+    "attendance_allowance",
+    "afcs",
+    "bsp",
+    "carers_allowance",
+    "dla",
+    "iidb",
+    "incapacity_benefit",
+    "pip",
+    "sda",
+    "state_pension",
+    "maternity_allowance",
+    "statutory_sick_pay",
+    "statutory_maternity_pay",
+    "ssmg",
+    "cost_of_living_support_payment",
+    "winter_fuel_allowance",
+    "tax_free_childcare",
+    "healthy_start_vouchers",
+    "scottish_child_payment",
+    "carer_support_payment",
+    # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
+]
+
+HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS = [
+    "council_tax",
+    "domestic_rates",
+    "income_tax",
+    "national_insurance",
+    "student_loan_repayments",
+    "employee_pension_contributions",
+    "personal_pension_contributions",
+    "maintenance_expenses",
+    "external_child_payments",
+    "LVT",
+]
+
+
 class hbai_household_net_income(Variable):
     value_type = float
     entity = Household
@@ -11,79 +74,18 @@ class hbai_household_net_income(Variable):
     unit = GBP
     definition_period = YEAR
 
-    adds = [
-        "employment_income",
-        "self_employment_income",
-        "savings_interest_income",
-        "dividend_income",
-        "miscellaneous_income",
-        "property_income",
-        "private_pension_income",
-        "private_transfer_income",
-        "maintenance_income",
-        "free_school_meals",
-        "free_school_fruit_veg",
-        "free_school_milk",
-        "free_tv_licence_value",
-        "child_benefit",
-        "council_tax_benefit",
-        "esa_income",
-        "esa_contrib",
-        "housing_benefit",
-        "income_support",
-        "jsa_income",
-        "jsa_contrib",
-        "pension_credit",
-        "universal_credit",
-        "working_tax_credit",
-        "child_tax_credit",
-        "attendance_allowance",
-        "afcs",
-        "bsp",
-        "carers_allowance",
-        "dla",
-        "iidb",
-        "incapacity_benefit",
-        "pip",
-        "sda",
-        "state_pension",
-        "maternity_allowance",
-        "statutory_sick_pay",
-        "statutory_maternity_pay",
-        "ssmg",
-        "cost_of_living_support_payment",
-        "winter_fuel_allowance",
-        "tax_free_childcare",
-        "healthy_start_vouchers",
-        "scottish_child_payment",
-        "carer_support_payment",
-        # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
-    ]
-    subtracts = [
-        "council_tax",
-        "domestic_rates",
-        "income_tax",
-        "national_insurance",
-        "student_loan_repayments",
-        "employee_pension_contributions",
-        "personal_pension_contributions",
-        "maintenance_expenses",
-        "external_child_payments",
-        "LVT",
-    ]
-
     def formula(household, period, parameters):
         abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
         if abolish_council_tax:
             adds = [
-                a for a in hbai_household_net_income.adds if a != "council_tax_benefit"
+                a for a in HBAI_HOUSEHOLD_NET_INCOME_ADDS if a != "council_tax_benefit"
             ]
             subtracts = [
-                s for s in hbai_household_net_income.subtracts if s != "council_tax"
+                s for s in HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS if s != "council_tax"
             ]
             return add(household, period, adds) - add(household, period, subtracts)
-        return add(household, period, hbai_household_net_income.adds) - add(
-            household, period, hbai_household_net_income.subtracts
+        return add(household, period, HBAI_HOUSEHOLD_NET_INCOME_ADDS) - add(
+            household, period, HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS
         )
 
 

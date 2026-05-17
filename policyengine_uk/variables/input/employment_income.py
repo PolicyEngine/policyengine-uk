@@ -17,4 +17,3 @@ class employment_income(Variable):
         "salary_sacrifice_returned_to_income",
         "salary_sacrifice_broad_base_haircut",
     ]
-    uprating = "gov.economic_assumptions.indices.obr.average_earnings"

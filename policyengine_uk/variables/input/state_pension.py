@@ -9,7 +9,6 @@ class state_pension(Variable):
     unit = GBP
     documentation = "Gross State Pension payments"
     quantity_type = FLOW
-    uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
 
     def formula(person, period, parameters):
         contrib = parameters.gov.contrib
