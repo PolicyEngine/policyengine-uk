@@ -10,4 +10,4 @@ class diesel_spending(Variable):
     value_type = float
     unit = GBP
     quantity_type = FLOW
-    uprating = "gov.economic_assumptions.indices.obr.road_fuel_volume"
+    uprating = "gov.economic_assumptions.indices.obr.diesel_spending_litre_proxy"

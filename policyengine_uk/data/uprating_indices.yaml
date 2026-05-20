@@ -48,8 +48,9 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - universal_credit_reported
 - winter_fuel_allowance_reported
 - working_tax_credit_reported
-gov.economic_assumptions.yoy_growth.obr.road_fuel_volume:
+gov.economic_assumptions.yoy_growth.obr.diesel_spending_litre_proxy:
 - diesel_spending
+gov.economic_assumptions.yoy_growth.obr.petrol_spending_litre_proxy:
 - petrol_spending
 gov.economic_assumptions.yoy_growth.obr.mortgage_interest:
 - mortgage_interest_repayment

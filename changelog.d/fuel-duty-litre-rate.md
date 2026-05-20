@@ -1,0 +1,1 @@
+- Compute fuel duty directly as calibrated petrol and diesel litres multiplied by the statutory duty rate, with fuel-spending proxies uprated by road-fuel litres and pump prices.
