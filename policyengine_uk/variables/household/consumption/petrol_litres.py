@@ -7,7 +7,7 @@ class petrol_litres(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = GBP
+    unit = "litre"
 
     def formula(household, period, parameters):
         return household("petrol_spending", period) / household("petrol_price", period)
