@@ -251,6 +251,77 @@ obr:
         - title: Bank of England inflation target (2031+ assumes 2% target)
           href: https://www.bankofengland.co.uk/monetary-policy/inflation
 
+  road_fuel_volume:
+    description: UK road-fuel petrol and diesel clearances year-on-year growth.
+    values:
+      # HMRC Hydrocarbon Oils Bulletin Table 2a: petrol plus diesel clearances.
+      2021-01-01: 0.24418262350052777
+      2022-01-01: 0.06256523245735934
+      2023-01-01: -0.005727524527185501
+      2024-01-01: -0.0012858149728238732
+      # OBR March 2026 fuel-duty receipts forecast, net of non-road fuel
+      # receipts, divided by fiscal-year average petrol/diesel duty rates.
+      2025-01-01: -0.019907019324541197
+      2026-01-01: -0.01438967286340953
+      2027-01-01: -0.02416859220902523
+      2028-01-01: -0.02700230120226388
+      2029-01-01: -0.037280775640417985
+      2030-01-01: -0.052236910509542045
+      # Hold the final OBR forecast volume flat after 2030-31.
+      2031-01-01: 0.0
+      2032-01-01: 0.0
+      2033-01-01: 0.0
+      2034-01-01: 0.0
+      2035-01-01: 0.0
+      2036-01-01: 0.0
+      2037-01-01: 0.0
+      2038-01-01: 0.0
+      2039-01-01: 0.0
+      2040-01-01: 0.0
+      2041-01-01: 0.0
+      2042-01-01: 0.0
+      2043-01-01: 0.0
+      2044-01-01: 0.0
+      2045-01-01: 0.0
+      2046-01-01: 0.0
+      2047-01-01: 0.0
+      2048-01-01: 0.0
+      2049-01-01: 0.0
+      2050-01-01: 0.0
+      2051-01-01: 0.0
+      2052-01-01: 0.0
+      2053-01-01: 0.0
+      2054-01-01: 0.0
+      2055-01-01: 0.0
+      2056-01-01: 0.0
+      2057-01-01: 0.0
+      2058-01-01: 0.0
+      2059-01-01: 0.0
+      2060-01-01: 0.0
+      2061-01-01: 0.0
+      2062-01-01: 0.0
+      2063-01-01: 0.0
+      2064-01-01: 0.0
+      2065-01-01: 0.0
+      2066-01-01: 0.0
+      2067-01-01: 0.0
+      2068-01-01: 0.0
+      2069-01-01: 0.0
+      2070-01-01: 0.0
+      2071-01-01: 0.0
+      2072-01-01: 0.0
+      2073-01-01: 0.0
+    metadata:
+      unit: /1
+      label: Road fuel volume growth
+      reference:
+        - title: HMRC Hydrocarbon Oils Bulletin
+          href: https://www.gov.uk/government/statistics/hydrocarbon-oils-bulletin
+        - title: OBR EFO March 2026 (fuel-duty receipts forecast)
+          href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+        - title: OBR fuel-duty supplementary release, receipts by vehicle type
+          href: https://obr.uk/docs/dlm_uploads/Fuel-duty-supplementary-release_receipts-by-vehicle-type.pdf
+
   consumer_price_index_ahc:
     description: Consumer price index year-on-year growth, modified to remove housing costs.
     values:
