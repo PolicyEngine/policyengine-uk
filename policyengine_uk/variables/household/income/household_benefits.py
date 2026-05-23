@@ -52,6 +52,7 @@ HOUSEHOLD_BENEFIT_VARIABLES = [
     "two_child_limit_payment",
     "scottish_child_payment",
     "carer_support_payment",
+    "disability_basic_income",
 ]
 
 
