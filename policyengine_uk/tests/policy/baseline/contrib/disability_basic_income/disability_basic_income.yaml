@@ -1,0 +1,72 @@
+- name: Disability basic income disabled by default
+  period: 2025
+  input:
+    dla_sc: 1_000
+  output:
+    disability_basic_income: 0
+
+- name: Disability basic income for DLA recipient
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    dla_sc: 1_000
+  output:
+    disability_basic_income: 5_200
+
+- name: Disability basic income for PIP daily living recipient
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    pip_dl_category: STANDARD
+  output:
+    disability_basic_income: 5_200
+
+- name: Disability basic income for PIP mobility recipient
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    pip_m_category: ENHANCED
+  output:
+    disability_basic_income: 5_200
+
+- name: Disability basic income for UC LCWRA recipient
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    age: 30
+    is_disabled_for_benefits: true
+  output:
+    disability_basic_income: 5_200
+
+- name: Disability basic income excludes LCWRA flag without UC receipt
+  period: 2025
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    age: 30
+    is_disabled_for_benefits: true
+    would_claim_uc: false
+  output:
+    disability_basic_income: 0
+
+- name: Disability basic income non-recipient gets nothing
+  period: 2025
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    age: 30
+  output:
+    disability_basic_income: 0
+
+- name: Disability basic income multiple eligibilities do not stack
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.disability_basic_income.amount: 100
+    dla_sc: 1_000
+    pip_dl_category: STANDARD
+    is_disabled_for_benefits: true
+  output:
+    disability_basic_income: 5_200

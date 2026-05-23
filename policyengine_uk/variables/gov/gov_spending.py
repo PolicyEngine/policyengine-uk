@@ -50,6 +50,7 @@ GOV_SPENDING_VARIABLES = [
     "dft_subsidy_spending",
     "nhs_spending",
     "carer_support_payment",
+    "disability_basic_income",
 ]
 
 
