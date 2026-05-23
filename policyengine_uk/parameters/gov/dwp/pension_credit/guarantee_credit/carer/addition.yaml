@@ -7,6 +7,7 @@ values:
   2023-04-01: 42.75
   2024-04-01: 45.6
   2025-04-01: 46.37
+  2026-04-01: 48.15
 metadata:
   unit: currency-GBP
   period: week

@@ -80,3 +80,28 @@
     pension_credit_deemed_income: 4_784
     pension_credit_income: 15_260
     pension_credit: 0
+
+- name: Case 5, 2026 Pension Credit uses tariff income with the published guarantee rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 81
+        savings_interest_income: 7_488
+        dividend_income: 380
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 87_285
+        corporate_wealth: 12_650
+  output:
+    pension_credit_assessable_capital: 99_935
+    pension_credit_deemed_income: 9_360
+    pension_credit_income: 9_360
+    standard_minimum_guarantee: 12_376
+    guarantee_credit: 3_016
+    pension_credit: 3_016

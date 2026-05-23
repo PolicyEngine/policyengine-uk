@@ -1,0 +1,37 @@
+description: Addition to the Minimum Guarantee for the first child born before 6 April 2017.
+metadata:
+  economy: false
+  label: Pension Credit first child addition
+  period: week
+  propagate_metadata_to_children: true
+  reference:
+    - title: Benefit and pension rates 2026 to 2027
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+  unit: currency-GBP
+  uprating:
+    parameter: gov.benefit_uprating_cpi
+    start_instant: 2022-04-01
+values:
+  2019-02-01: 63.84
+  2020-04-01: 64.82
+  2021-04-01: 65.1
+  2022-04-01: 66.85
+  2023-04-01: 72.31
+  2024-04-01:
+    value: 76.79
+    metadata:
+      reference:
+        - title: Benefit and pension rates 2025 to 2026
+          href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+  2025-04-01:
+    value: 78.1
+    metadata:
+      reference:
+        - title: Benefit and pension rates 2025 to 2026
+          href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+  2026-04-01:
+    value: 81.07
+    metadata:
+      reference:
+        - title: Benefit and pension rates 2026 to 2027
+          href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027

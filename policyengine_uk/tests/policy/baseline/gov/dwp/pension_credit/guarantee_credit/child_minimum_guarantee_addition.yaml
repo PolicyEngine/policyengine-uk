@@ -1,0 +1,19 @@
+- name: 2026 Pension Credit uses the higher first-child amount for a child born before April 2017.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      older_child:
+        age: 10
+        birth_year: 2016
+      younger_child:
+        age: 6
+        birth_year: 2020
+    benunits:
+      benunit:
+        members: [claimant, older_child, younger_child]
+  output:
+    child_minimum_guarantee_addition: 7_854.6
+    minimum_guarantee: 20_230.6

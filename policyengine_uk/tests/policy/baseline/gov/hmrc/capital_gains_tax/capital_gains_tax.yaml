@@ -123,3 +123,12 @@
     capital_gains: 30_000
   output:
     capital_gains_tax: 6_018
+
+- name: Case 15, unused Personal Allowance preserves the CGT basic rate band.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: 11_336.06
+    capital_gains: 32_942.86
+  output:
+    capital_gains_tax: 5_389.71

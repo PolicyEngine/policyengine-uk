@@ -12,6 +12,7 @@ SINGLE:
     2023-04-01: 174.49
     2024-04-01: 189.8
     2025-04-01: 193.02
+    2026-04-01: 208.07
   metadata:
     label: Pension Credit Savings Credit income threshold (single)
 COUPLE:
@@ -27,6 +28,7 @@ COUPLE:
     2023-04-01: 277.12
     2024-04-01: 301.22
     2025-04-01: 306.34
+    2026-04-01: 329.75
   metadata:
     label: Pension Credit Savings Credit income threshold (couple)
 metadata:

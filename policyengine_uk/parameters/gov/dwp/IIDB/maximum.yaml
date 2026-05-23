@@ -14,4 +14,9 @@ values:
     reference:
     - title: GOV.UK
       href: https://www.gov.uk/industrial-injuries-disablement-benefit/what-youll-get
+  2026-04-01:
+    value: 233.9
+    reference:
+    - title: Benefit and pension rates 2026 to 2027
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
 

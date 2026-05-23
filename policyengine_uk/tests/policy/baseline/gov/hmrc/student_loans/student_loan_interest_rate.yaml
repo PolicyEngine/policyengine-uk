@@ -137,7 +137,7 @@
     student_loan_repayment_rate: 0.06
 
 # Postgraduate repayment integration test
-# Note: Threshold uprated by RPI so ~21,909 for 2025
+# Note: The postgraduate repayment threshold remains frozen at £21,000.
 
 - name: Postgraduate - Repayment above threshold at 6% rate
   period: 2025
@@ -148,6 +148,5 @@
         employment_income: 30_000
         student_loan_plan: POSTGRADUATE
   output:
-    # Postgraduate threshold ~£21,861 (uprated from £21,000 by RPI)
-    # 6% of (30,000 - 21,861) = 6% of 8,139 = ~488.34
-    student_loan_repayment: 488.339
+    # 6% of (30,000 - 21,000) = 6% of 9,000 = 540
+    student_loan_repayment: 540

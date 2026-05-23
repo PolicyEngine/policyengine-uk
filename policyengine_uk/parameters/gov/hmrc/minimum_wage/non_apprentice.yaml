@@ -25,6 +25,11 @@ brackets:
       reference:
         - title: The National Minimum Wage (Amendment) Regulations 2025
           href: https://www.legislation.gov.uk/uksi/2025/401/made
+    2026-04-01:
+      value: 8
+      reference:
+        - title: National Minimum Wage and National Living Wage rates
+          href: https://www.gov.uk/national-minimum-wage-rates
 - threshold:
     2012-10-01: 18
   amount:
@@ -49,6 +54,11 @@ brackets:
       reference:
         - title: The National Minimum Wage (Amendment) Regulations 2025
           href: https://www.legislation.gov.uk/uksi/2025/401/made
+    2026-04-01:
+      value: 10.85
+      reference:
+        - title: National Minimum Wage and National Living Wage rates
+          href: https://www.gov.uk/national-minimum-wage-rates
 - threshold:
     2012-10-01: 21
   amount:
@@ -74,6 +84,11 @@ brackets:
       reference:
         - title: The National Minimum Wage (Amendment) Regulations 2025
           href: https://www.legislation.gov.uk/uksi/2025/401/made
+    2026-04-01:
+      value: 12.71
+      reference:
+        - title: National Minimum Wage and National Living Wage rates
+          href: https://www.gov.uk/national-minimum-wage-rates
 - threshold:
     2012-10-01: 23
   amount:
@@ -98,6 +113,11 @@ brackets:
       reference:
         - title: The National Minimum Wage (Amendment) Regulations 2025
           href: https://www.legislation.gov.uk/uksi/2025/401/made
+    2026-04-01:
+      value: 12.71
+      reference:
+        - title: National Minimum Wage and National Living Wage rates
+          href: https://www.gov.uk/national-minimum-wage-rates
 - threshold:
     2012-10-01: 25
   amount:
@@ -122,6 +142,11 @@ brackets:
       reference:
         - title: The National Minimum Wage (Amendment) Regulations 2025
           href: https://www.legislation.gov.uk/uksi/2025/401/made
+    2026-04-01:
+      value: 12.71
+      reference:
+        - title: National Minimum Wage and National Living Wage rates
+          href: https://www.gov.uk/national-minimum-wage-rates
 
 metadata:
   amount_unit: currency-GBP

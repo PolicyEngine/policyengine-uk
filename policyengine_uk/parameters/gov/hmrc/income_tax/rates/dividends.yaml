@@ -55,6 +55,12 @@ brackets:
         label: Dividends higher rate threshold
       values:
         2015-04-01: 37_500
+        2026-04-06:
+          value: 37_700
+          metadata:
+            reference:
+              - title: Income Tax rates and allowances for current and previous tax years
+                href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
   - rate:
       metadata:
         label: Dividends additional rate
@@ -73,6 +79,12 @@ brackets:
     threshold:
       values:
         2015-04-01: 150_000
+        2026-04-06:
+          value: 125_140
+          metadata:
+            reference:
+              - title: Income Tax rates and allowances for current and previous tax years
+                href: https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past
       metadata:
         period: year
         label: Dividends additional rate threshold

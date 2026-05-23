@@ -12,10 +12,24 @@ values:
       reference:
         - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(3)(b)
           href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-b
+  2025-04-06:
+    value: 6_845
+    metadata:
+      reference:
+        - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+          href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+  2026-04-06:
+    value: 7_105
+    metadata:
+      reference:
+        - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+          href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
 metadata:
   unit: currency-GBP
   label: NI class 2 small profits threshold
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  uprating:
+    parameter: gov.economic_assumptions.indices.obr.consumer_price_index
+    start_instant: 2022-04-06
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
     - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

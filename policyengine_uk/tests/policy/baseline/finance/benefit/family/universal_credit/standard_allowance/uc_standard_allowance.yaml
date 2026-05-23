@@ -5,3 +5,11 @@
     uc_standard_allowance_claimant_type: COUPLE_OLD
   output:
     uc_standard_allowance: 7527
+
+- name: 2026 single claimant over 25 uses the published standard allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    uc_standard_allowance_claimant_type: SINGLE_OLD
+  output:
+    uc_standard_allowance: 424.90 * 12

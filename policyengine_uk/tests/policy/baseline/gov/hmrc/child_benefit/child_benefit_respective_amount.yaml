@@ -42,3 +42,25 @@
         members: [eldest, younger, youngest]
   output:
     child_benefit_respective_amount: [1133.69, 751.40, 751.40]
+
+- name: Case 4, 2026 rates apply to one eldest child and four additional children.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 12
+      person2:
+        age: 11
+      person3:
+        age: 10
+      person4:
+        age: 9
+      person5:
+        age: 8
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4, person5]
+  output:
+    child_benefit_respective_amount:
+      [1_406.60, 930.80, 930.80, 930.80, 930.80]

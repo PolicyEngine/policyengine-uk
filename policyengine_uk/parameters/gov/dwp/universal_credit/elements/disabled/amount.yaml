@@ -10,6 +10,7 @@ values:
   2023-04-01: 390.06
   2024-04-01: 416.19
   2025-04-01: 423.27
+  2026-04-01: 217.26
 metadata:
   period: month
   label: Universal Credit disability element amount
@@ -18,3 +19,5 @@ metadata:
   reference:
     - title: The Universal Credit Regulations 2013 reg. 27 (LCWRA element), amounts in reg. 36
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36
+    - title: Benefit and pension rates 2026 to 2027
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027

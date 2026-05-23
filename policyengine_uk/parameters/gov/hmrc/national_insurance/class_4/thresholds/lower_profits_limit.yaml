@@ -18,6 +18,12 @@ values:
       reference:
         - title: National Insurance Contributions (Increase of Thresholds) Act 2022
           href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
+  2026-04-06:
+    value: 12_570
+    metadata:
+      reference:
+        - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+          href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
 metadata:
   label: NI lower profits limit
   unit: currency-GBP

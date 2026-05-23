@@ -1,0 +1,19 @@
+- name: 2026 dividend tax uses the frozen basic-rate band threshold.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    earned_taxable_income: 36_500
+    taxable_dividend_income: 1_500
+    received_allowances_dividend_income: 0
+  output:
+    dividend_income_tax: 182.5
+
+- name: 2026 dividend tax uses the frozen additional-rate threshold.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    earned_taxable_income: 124_000
+    taxable_dividend_income: 2_000
+    received_allowances_dividend_income: 0
+  output:
+    dividend_income_tax: 567.21
