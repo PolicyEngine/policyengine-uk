@@ -1,0 +1,10 @@
+description: Weekly non-dependant deduction under South Derbyshire's working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 6.25
+metadata:
+  unit: currency-GBP
+  period: week
+  label: South Derbyshire Council Tax Reduction non-dependant deduction
+  reference:
+    title: South Derbyshire Council Tax Reduction Scheme 2026-2027, paragraph 55
+    href: https://www.southderbyshire.gov.uk/assets/attach/15700/South-Derbyshire-CTR-scheme-2026-2027.pdf

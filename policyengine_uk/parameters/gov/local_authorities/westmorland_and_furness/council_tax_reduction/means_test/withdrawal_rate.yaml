@@ -1,0 +1,10 @@
+description: Withdrawal rate on excess income for Westmorland and Furness working-age Council Tax Reduction.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Westmorland and Furness Council Tax Reduction excess-income withdrawal rate
+  reference:
+    - title: Westmorland and Furness Council Tax Reduction Scheme 2026/27, sections 17.f and 32.3
+      href: https://www.westmorlandandfurness.gov.uk/sites/default/files/2026-03/Westmorland%20%26%20Furness%20Council%20%20CTR%20Scheme%20202627%20%28accessible%20March%202026%29.pdf

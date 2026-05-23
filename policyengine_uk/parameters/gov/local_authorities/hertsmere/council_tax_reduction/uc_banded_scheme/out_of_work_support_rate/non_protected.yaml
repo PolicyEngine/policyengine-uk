@@ -1,0 +1,10 @@
+description: Hertsmere non-protected UC out-of-work support rate
+values:
+  2026-04-01: 0.8
+metadata:
+  unit: /1
+  period: year
+  label: Hertsmere non-protected UC out-of-work support rate
+  reference:
+    - title: Hertsmere Borough Council - Council Tax Reduction Scheme 2026/27, Schedule 6
+      href: https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf

@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the Merton Council Tax Support scheme.
+values:
+  2025-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Merton Council Tax Support maximum support rate
+  reference:
+    - title: The London Borough of Merton Local Council Tax Support Scheme Rules 2025
+      href: https://www.merton.gov.uk/sites/default/files/2025-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202025-26.pdf

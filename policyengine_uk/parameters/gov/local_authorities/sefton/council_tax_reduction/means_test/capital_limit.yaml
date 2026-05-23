@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Sefton Council Tax Reduction scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Sefton Council Tax Reduction capital limit
+  reference:
+    - title: Sefton Council Tax Reduction Scheme 2026/27
+      href: https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf

@@ -1,0 +1,31 @@
+description: Weekly Housing Benefit-aligned non-dependant deduction schedule retained under Derby's Council Tax Support scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 20.40
+  - threshold:
+      2026-04-01: 192
+    amount:
+      2026-04-01: 46.85
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 64.35
+  - threshold:
+      2026-04-01: 365
+    amount:
+      2026-04-01: 105.20
+metadata:
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Derby Council Tax Support non-dependant deduction schedule
+  reference:
+    - title: Derby City Council Tax Support Scheme 2026/2027, section 4
+      href: https://www.derby.gov.uk/media/derbycitycouncil/contentassets/documents/adviceandbenefits/counciltax/council-tax-support-scheme2026-27.pdf
+    - title: Benefit and pension rates 2026 to 2027, Housing Benefit non-dependant deductions
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+documentation: |-
+  Derby aligns Council Tax Support non-dependant rules and deduction rates to the Housing Benefit scheme, but does not use the two highest Housing Benefit deduction rates. The GBP 485 and GBP 605 Housing Benefit rates are therefore capped to the GBP 365-to-GBP 484.99 rate in this table. Derby also substitutes a GBP 4 weekly deduction for working non-dependants with gross weekly income below GBP 100 and for non-working passported or UC non-dependants.

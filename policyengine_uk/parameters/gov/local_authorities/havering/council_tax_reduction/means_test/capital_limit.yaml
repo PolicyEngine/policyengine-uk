@@ -1,0 +1,11 @@
+description: Capital limit for working-age Havering Council Tax Support outside qualifying income-related benefit passporting.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  label: Havering working-age CTS capital limit
+  reference:
+    - title: Havering Summary of the Council Tax Support Scheme 2026/27, Appendix I
+      href: https://democracy.havering.gov.uk/documents/s83106/12%20-%20Appendix%20I%20%20Summary%20of%20the%20Council%20Tax%20Support%20Scheme%202026-27.pdf
+    - title: Havering Council Tax Support Scheme 2025-2026, paragraph 23
+      href: https://www.havering.gov.uk/downloads/file/6930/council-tax-support-scheme-2025-2026

@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Stockport Council Tax Support scheme.
+values:
+  2026-04-01: 8_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Stockport Council Tax Support capital limit
+  reference:
+    - title: Stockport Council Tax Support Scheme 2026 to 2027
+      href: https://www.stockport.gov.uk/council-tax-support-scheme

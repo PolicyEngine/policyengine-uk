@@ -1,0 +1,10 @@
+description: Tewkesbury non-dependant remunerative work threshold. The Default Scheme uses a 16 hour weekly threshold for remunerative work in paragraph 30.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Tewkesbury non-dependant remunerative work hours
+  reference:
+    - title: Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule paragraph 30
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/30

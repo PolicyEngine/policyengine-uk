@@ -1,0 +1,10 @@
+description: Weekly non-dependant deduction under the Wakefield Council Tax Support scheme.
+values:
+  2026-04-01: 7.50
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Wakefield Council Tax Support non-dependant deduction
+  reference:
+    - title: Working Age Council Tax Support Scheme
+      href: https://www.wakefield.gov.uk/council-tax/help-with-your-council-tax/working-age-council-tax-support-scheme

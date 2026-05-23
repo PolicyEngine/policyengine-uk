@@ -1,0 +1,9 @@
+description: Redbridge Council Tax Reduction support rate for working-age passported or Universal Credit applicants without dependants who are not in remunerative work.
+values:
+  2026-04-01: 0.50
+metadata:
+  unit: /1
+  label: Redbridge not-working without dependants CTR support rate
+  reference:
+    - title: Redbridge Council Tax Reduction Scheme 2026-2027, Schedule 3
+      href: https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf

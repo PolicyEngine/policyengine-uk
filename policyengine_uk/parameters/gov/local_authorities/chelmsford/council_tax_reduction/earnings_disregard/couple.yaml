@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for Chelmsford couple working-age Local Council Tax Support applicants without a higher source-listed disregard.
+values:
+  2026-04-01: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Chelmsford couple LCTS earnings disregard
+  reference:
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, Schedule 3 paragraph 7
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933

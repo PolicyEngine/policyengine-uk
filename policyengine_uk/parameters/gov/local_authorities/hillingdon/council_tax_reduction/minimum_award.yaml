@@ -1,0 +1,12 @@
+description: Minimum weekly award for Hillingdon Council Tax Reduction.
+values:
+  2026-04-01: 3
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hillingdon CTR minimum weekly award
+  reference:
+    - title: Hillingdon working age bands from 1 April 2026
+      href: https://pre.hillingdon.gov.uk/benefits/working-age-bands
+    - title: Hillingdon Council Tax Reduction Scheme Working Age 2026, point 40 and point 11
+      href: https://pre.hillingdon.gov.uk/downloads/file/8/working-age-scheme-rules

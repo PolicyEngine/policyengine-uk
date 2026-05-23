@@ -1,0 +1,9 @@
+description: Maximum English council tax band ratio eligible for Enfield working-age Council Tax Reduction.
+values:
+  2026-04-01: 0.8888888889
+metadata:
+  unit: /1
+  label: Enfield CTR Band C liability cap ratio
+  reference:
+    - title: Enfield Council Tax Reduction Scheme 2026-2027, paragraph 9
+      href: https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf

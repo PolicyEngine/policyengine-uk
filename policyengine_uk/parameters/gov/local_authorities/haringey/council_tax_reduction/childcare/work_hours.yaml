@@ -1,0 +1,9 @@
+description: Minimum weekly work hours for Haringey Council Tax Reduction childcare costs to be deducted from earnings.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Haringey CTR childcare deduction weekly work-hours threshold
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraph 58A
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

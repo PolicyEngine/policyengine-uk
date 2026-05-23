@@ -1,0 +1,11 @@
+description: Maximum English council tax band ratio eligible for Cotswold Council Tax Support.
+values:
+  2026-04-01: 1.222222222
+metadata:
+  unit: /1
+  period: year
+  label: Cotswold Council Tax Support Band E liability cap ratio
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, sections 1.7 and 57.1
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf
+

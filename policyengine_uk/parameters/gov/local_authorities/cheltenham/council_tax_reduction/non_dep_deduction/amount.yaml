@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction under the Cheltenham Council Tax Support scheme by gross weekly income where the non-dependant is in remunerative work.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5
+  - threshold:
+      2026-04-01: 266
+    amount:
+      2026-04-01: 10.20
+  - threshold:
+      2026-04-01: 463
+    amount:
+      2026-04-01: 12.80
+  - threshold:
+      2026-04-01: 577
+    amount:
+      2026-04-01: 15.35
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Cheltenham Council Tax Support weekly non-dependant deduction
+  reference:
+    - title: Cheltenham Borough Council Tax Support Scheme 2026/27, sections 55.1 and 55.2
+      href: https://democracy.cheltenham.gov.uk/documents/s53359/Appendix%209%20-%20Council%20270226%20Council%20Tax%20Support%20Scheme%20for%20Working%20Age%20Customers%202026-27%20Final.pdf

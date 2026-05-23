@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Worthing Council Tax Support scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Worthing Council Tax Support withdrawal rate
+  reference:
+    - title: Worthing Council Tax Support 2026-27
+      href: https://www.adur-worthing.gov.uk/media/Media,174008,smxx.pdf

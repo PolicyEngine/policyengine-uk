@@ -1,0 +1,13 @@
+description: Capital limit for Colchester working-age Council Tax Reduction.
+values:
+  2026-04-01: 6000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Colchester CTR capital limit
+  reference:
+    - title: Colchester City Council Council Tax Reduction Scheme 2026/27, sections 1.7 and 26.1, Schedule 1 paragraph 6
+      href: https://cbccrmdata.blob.core.windows.net/noteattachment/CBC-null-Local-council-tax-support-policy-updated-01-04-26-Local%20Council%20Tax%20support%20policy.pdf
+    - title: Colchester City Council Local Council Tax Support working-age page, reviewed 1 April 2026
+      href: https://www.colchester.gov.uk/housing-benefit-local-council-tax-support/lcts-working-age/
+

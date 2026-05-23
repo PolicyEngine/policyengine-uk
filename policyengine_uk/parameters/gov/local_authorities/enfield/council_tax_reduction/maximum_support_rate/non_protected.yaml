@@ -1,0 +1,9 @@
+description: Maximum Council Tax Reduction rate for Enfield working-age applicants who do not receive Universal Credit and are not in a protected group.
+values:
+  2026-04-01: 0.50
+metadata:
+  unit: /1
+  label: Enfield non-protected maximum CTR rate
+  reference:
+    - title: Enfield Council Tax Reduction Scheme 2026-2027, paragraph 39
+      href: https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf

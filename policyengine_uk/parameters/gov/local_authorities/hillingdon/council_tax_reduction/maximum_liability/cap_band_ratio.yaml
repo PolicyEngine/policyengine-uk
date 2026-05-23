@@ -1,0 +1,11 @@
+description: Maximum English council tax band ratio eligible for Hillingdon Band 3 to Band 6 working-age Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  label: Hillingdon CTR Band D liability cap ratio
+  reference:
+    - title: Hillingdon working age bands from 1 April 2026
+      href: https://pre.hillingdon.gov.uk/benefits/working-age-bands
+    - title: Hillingdon Council Tax Reduction Scheme Working Age 2026, Banding Scheme summary
+      href: https://pre.hillingdon.gov.uk/downloads/file/8/working-age-scheme-rules

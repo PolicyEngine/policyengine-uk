@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Bromley working-age Council Tax Support non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Bromley Council Tax Support non-dependant remunerative-work hours
+  reference:
+    - title: Bromley Local Council Tax Reduction Scheme from 1 April 2025, paragraph 7
+      href: https://www.bromley.gov.uk/downloads/file/3849/local-council-tax-reduction-scheme-from-1-april-2025

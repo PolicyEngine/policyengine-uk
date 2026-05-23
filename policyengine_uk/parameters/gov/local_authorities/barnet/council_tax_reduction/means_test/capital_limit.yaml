@@ -1,0 +1,10 @@
+description: Working-age capital limit for Barnet Council Tax Support.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Barnet working-age CTS capital limit
+  reference:
+    - title: Barnet Council Tax Reduction Scheme 2026-2027, paragraphs 12 and 26
+      href: https://barnet.moderngov.co.uk/documents/s94210/Appendix%20O%20-%20202627%20Council%20Tax%20Support%20Scheme.pdf

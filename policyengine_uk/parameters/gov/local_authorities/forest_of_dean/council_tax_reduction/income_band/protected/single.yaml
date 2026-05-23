@@ -1,0 +1,35 @@
+description: Forest of Dean weekly income-band CTS maximum percentage for Class B (protected) single applicants. Paragraph 59.3 sets the six-band single-applicant table (95/75/55/35/15/0 per cent) using net weekly income tiers up to GBP 90.38, GBP 115.38, GBP 140.38, GBP 165.38, GBP 190.38 and above.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.95
+  - threshold:
+      2026-04-01: 90.39
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 115.39
+    amount:
+      2026-04-01: 0.55
+  - threshold:
+      2026-04-01: 140.39
+    amount:
+      2026-04-01: 0.35
+  - threshold:
+      2026-04-01: 165.39
+    amount:
+      2026-04-01: 0.15
+  - threshold:
+      2026-04-01: 190.39
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Forest of Dean Class B weekly income-band CTS rate, single applicant
+  reference:
+    - title: Forest of Dean District Council - Local Council Tax Support Scheme for Working Age Customers 2026/27, paragraph 59.3
+      href: https://www.fdean.gov.uk/media/r4ff2lok/council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf

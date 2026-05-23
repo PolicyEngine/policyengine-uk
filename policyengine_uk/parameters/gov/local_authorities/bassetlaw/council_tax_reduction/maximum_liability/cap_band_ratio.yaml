@@ -1,0 +1,10 @@
+description: Maximum English council tax band ratio eligible for Bassetlaw Council Tax Reduction.
+values:
+  2026-04-01: 0.888888889
+metadata:
+  unit: /1
+  period: year
+  label: Bassetlaw Council Tax Reduction Band C liability cap ratio
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, paragraph 25
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

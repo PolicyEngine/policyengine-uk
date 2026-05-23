@@ -1,0 +1,10 @@
+description: Minimum weekly award for Haringey working-age Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Haringey CTR minimum weekly award
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraph 37
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

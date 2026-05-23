@@ -1,0 +1,10 @@
+description: Minimum weekly hours for remunerative work under the Oxford Council Tax Reduction non-dependant deduction rules.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Oxford Council Tax Reduction remunerative work hours threshold
+  reference:
+    - title: Oxford City Council Council Tax Reduction Scheme 2026 to 2027
+      href: https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27

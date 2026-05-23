@@ -1,0 +1,9 @@
+description: Weekly tariff income added for each Lewisham Council Tax Reduction capital step.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  label: Lewisham Council Tax Reduction weekly tariff income amount
+  reference:
+    - title: Lewisham Council Tax Reduction Scheme 2024-2025
+      href: https://lewisham.gov.uk/-/media/services/council-tax/lewisham-council-tax-reduction-scheme-2024-2025.pdf

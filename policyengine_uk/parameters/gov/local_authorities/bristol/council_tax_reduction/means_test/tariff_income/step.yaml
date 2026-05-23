@@ -1,0 +1,10 @@
+description: Capital step for Bristol working-age Council Tax Reduction tariff income.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bristol Council Tax Reduction tariff income capital step
+  reference:
+    - title: Bristol Council Tax Reduction Scheme 2026-27, paragraph 32
+      href: https://www.bristol.gov.uk/files/documents/10754-bristol-council-tax-reduction-scheme-2026/file

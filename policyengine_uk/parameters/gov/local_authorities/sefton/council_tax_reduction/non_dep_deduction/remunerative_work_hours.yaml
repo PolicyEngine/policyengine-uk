@@ -1,0 +1,10 @@
+description: Minimum weekly hours for remunerative work under the Sefton Council Tax Reduction non-dependant deduction rules.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Sefton Council Tax Reduction remunerative work hours threshold
+  reference:
+    - title: Sefton Council Tax Reduction Scheme 2026/27
+      href: https://www.sefton.gov.uk/media/occbaemk/ctr-scheme-2026-27.pdf

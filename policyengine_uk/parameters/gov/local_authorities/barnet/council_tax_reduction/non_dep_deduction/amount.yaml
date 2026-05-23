@@ -1,0 +1,21 @@
+description: Working-age non-dependant deduction by weekly gross income for Barnet Council Tax Support.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5
+  - threshold:
+      2026-04-01: 200
+    amount:
+      2026-04-01: 11
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Barnet working-age CTS non-dependant deduction
+  reference:
+    - title: Barnet Council Tax Reduction Scheme 2026-2027, paragraphs 47-49
+      href: https://barnet.moderngov.co.uk/documents/s94210/Appendix%20O%20-%20202627%20Council%20Tax%20Support%20Scheme.pdf
+    - title: Barnet Council Tax Support public summary
+      href: https://www.barnet.gov.uk/council-tax/discounts-exemptions-and-refunds/council-tax-support-low-income-benefits

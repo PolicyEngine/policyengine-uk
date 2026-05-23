@@ -1,0 +1,12 @@
+description: Capital limit for Chelmsford working-age Local Council Tax Support.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Chelmsford working-age Local Council Tax Support capital limit
+  reference:
+    - title: Chelmsford Local Council Tax Support Scheme 2026/27 report, Appendix 1
+      href: https://www.chelmsford.gov.uk/media/g2nbyt31/62-local-council-tax-support-lcts-scheme-2026-27.pdf
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, sections 1.7 and 33.1
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933

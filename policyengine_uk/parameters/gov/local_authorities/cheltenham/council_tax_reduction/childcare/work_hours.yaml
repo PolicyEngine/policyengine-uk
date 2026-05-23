@@ -1,0 +1,11 @@
+description: Minimum weekly work hours for Cheltenham Council Tax Support childcare costs to be deducted from earnings.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Cheltenham Council Tax Support childcare deduction weekly work-hours threshold
+  reference:
+    - title: Cheltenham Borough Council Council Tax Support Scheme 2026/27, sections 6 and 15
+      href: https://democracy.cheltenham.gov.uk/documents/s53359/Appendix%209%20-%20Council%20270226%20Council%20Tax%20Support%20Scheme%20for%20Working%20Age%20Customers%202026-27%20Final.pdf
+

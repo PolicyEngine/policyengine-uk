@@ -1,0 +1,12 @@
+description: Capital limit under the Basildon working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Basildon Council Tax Reduction capital limit
+  reference:
+    - title: Basildon Council Tax Reduction Scheme 2026/27, Class D, paragraph 30.1, and Schedule 1 paragraph 6
+      href: https://www.basildon.gov.uk/media/11563/Basildon-Council-Council-Tax-Reduction-Scheme-2026-27/pdf/Basildon_S13A_202627_Final.pdf?m=1771316212763
+    - title: Basildon Working Age Claimant Council Tax Reduction
+      href: https://www.basildon.gov.uk/article/7377/Working-Age-Claimant-Council-Tax-Reduction

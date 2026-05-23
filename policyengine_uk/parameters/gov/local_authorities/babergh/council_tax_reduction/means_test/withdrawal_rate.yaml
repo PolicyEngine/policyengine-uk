@@ -1,0 +1,10 @@
+description: Withdrawal rate applied to excess income under the Babergh working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Babergh Council Tax Reduction excess income withdrawal rate
+  reference:
+    - title: Babergh Council Tax Reduction Scheme 2026/27, paragraph 59.1
+      href: https://www.babergh.gov.uk/documents/d/babergh/bdc-ctr-scheme-2026_27-v4-pdf

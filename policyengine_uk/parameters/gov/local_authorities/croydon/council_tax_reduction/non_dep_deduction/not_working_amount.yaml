@@ -1,0 +1,9 @@
+description: Weekly non-dependant deduction for Croydon Council Tax Support where the non-dependant is not working.
+values:
+  2026-04-01: 5
+metadata:
+  unit: currency-GBP
+  label: Croydon Council Tax Support non-dependant not-working deduction
+  reference:
+    - title: Croydon Council, Other people who live with you
+      href: https://www.croydon.gov.uk/benefits/changes-council-tax-support/other-people-who-live-you

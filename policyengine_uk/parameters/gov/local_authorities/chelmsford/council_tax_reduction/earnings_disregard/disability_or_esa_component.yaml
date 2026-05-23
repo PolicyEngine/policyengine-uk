@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for Chelmsford working-age Local Council Tax Support applicants with a disability premium, severe disability premium, work-related activity component, or support component.
+values:
+  2026-04-01: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Chelmsford disability or ESA component LCTS earnings disregard
+  reference:
+    - title: Chelmsford City Council Tax Reduction Scheme 2025/26, Schedule 3 paragraph 3
+      href: https://www.chelmsford.gov.uk/media/kmml3jha/chelmsford-s13a-scheme-202526.pdf?alId=1227933

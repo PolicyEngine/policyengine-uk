@@ -1,0 +1,10 @@
+description: Capital limit for Bromley working-age Council Tax Support.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bromley working-age Council Tax Support capital limit
+  reference:
+    - title: Bromley Local Council Tax Reduction Scheme from 1 April 2025, paragraph 23
+      href: https://www.bromley.gov.uk/downloads/file/3849/local-council-tax-reduction-scheme-from-1-april-2025

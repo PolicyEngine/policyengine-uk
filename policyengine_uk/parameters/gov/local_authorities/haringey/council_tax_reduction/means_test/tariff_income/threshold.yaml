@@ -1,0 +1,10 @@
+description: Capital threshold above which Haringey assumes tariff income for working-age Council Tax Reduction.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Haringey CTR tariff income threshold
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, Schedule 7
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

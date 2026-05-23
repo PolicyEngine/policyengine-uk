@@ -1,0 +1,11 @@
+description: Weekly hours threshold for remunerative work in Colchester CTR childcare deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Colchester CTR childcare work hours threshold
+  reference:
+    - title: Colchester City Council Council Tax Reduction Scheme 2026/27, Schedule 4 paragraph 20(d)
+      href: https://cbccrmdata.blob.core.windows.net/noteattachment/CBC-null-Local-council-tax-support-policy-updated-01-04-26-Local%20Council%20Tax%20support%20policy.pdf
+

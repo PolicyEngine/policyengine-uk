@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the Southwark Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.85
+metadata:
+  unit: /1
+  period: year
+  label: Southwark Council Tax Reduction maximum support rate
+  reference:
+    - title: Southwark Council Tax Reduction Scheme 2025
+      href: https://www.southwark.gov.uk/sites/default/files/2025-03/Southwark%20Council%20Tax%20Reduction%20Policy%202025-26.pdf

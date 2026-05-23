@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work under the Babergh working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Babergh Council Tax Reduction remunerative work hours threshold
+  reference:
+    - title: Babergh Council Tax Reduction Scheme 2026/27, paragraphs 6.1 and 58.1
+      href: https://www.babergh.gov.uk/documents/d/babergh/bdc-ctr-scheme-2026_27-v4-pdf

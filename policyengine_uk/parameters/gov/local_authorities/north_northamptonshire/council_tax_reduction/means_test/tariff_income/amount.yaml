@@ -1,0 +1,10 @@
+description: Weekly tariff income per capital increment under the North Northamptonshire Council Tax Support scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: North Northamptonshire Council Tax Support tariff income amount
+  reference:
+    - title: North Northamptonshire Council Tax Reduction Scheme 2023/24, paragraph 72
+      href: https://cms.northnorthants.gov.uk/media/4157/download

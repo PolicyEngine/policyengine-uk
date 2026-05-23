@@ -1,0 +1,10 @@
+description: Maximum English council tax band ratio eligible for Cheltenham Council Tax Support.
+values:
+  2026-04-01: 1.222222222
+metadata:
+  unit: /1
+  period: year
+  label: Cheltenham Council Tax Support Band E liability cap ratio
+  reference:
+    - title: Cheltenham Borough Council Tax Support Scheme 2026/27, sections 1.8 and 54.1
+      href: https://democracy.cheltenham.gov.uk/documents/s53359/Appendix%209%20-%20Council%20270226%20Council%20Tax%20Support%20Scheme%20for%20Working%20Age%20Customers%202026-27%20Final.pdf

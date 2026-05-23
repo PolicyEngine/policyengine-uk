@@ -1,0 +1,31 @@
+description: Council Tax Support rate by weekly claimant and partner earnings for ordinary working-age Brent applicants.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.65
+  - threshold:
+      2026-04-01: 81
+    amount:
+      2026-04-01: 0.50
+  - threshold:
+      2026-04-01: 110.01
+    amount:
+      2026-04-01: 0.30
+  - threshold:
+      2026-04-01: 151
+    amount:
+      2026-04-01: 0.20
+  - threshold:
+      2026-04-01: 250.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Brent weekly earnings Council Tax Support rate
+  reference:
+    - title: Brent Council Tax Support
+      href: https://www.brent.gov.uk/council-tax/council-tax-support

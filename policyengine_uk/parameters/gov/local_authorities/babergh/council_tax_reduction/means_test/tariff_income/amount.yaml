@@ -1,0 +1,10 @@
+description: Weekly tariff income amount per capital step under the Babergh working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Babergh Council Tax Reduction tariff income amount
+  reference:
+    - title: Babergh Council Tax Reduction Scheme 2026/27, paragraph 42.1
+      href: https://www.babergh.gov.uk/documents/d/babergh/bdc-ctr-scheme-2026_27-v4-pdf

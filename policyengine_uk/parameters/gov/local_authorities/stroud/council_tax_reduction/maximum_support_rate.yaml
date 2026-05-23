@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the Stroud Council Tax Reduction scheme.
+values:
+  2025-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Stroud Council Tax Reduction maximum support rate
+  reference:
+    - title: Council Tax Support Scheme for Pension Credit Age persons and Working Age persons 2025/26
+      href: https://www.stroud.gov.uk/media/bygb4zeg/summary-of-council-tax-support-scheme-202526.pdf

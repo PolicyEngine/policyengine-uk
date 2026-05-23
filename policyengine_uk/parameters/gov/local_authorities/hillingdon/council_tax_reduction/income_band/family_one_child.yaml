@@ -1,0 +1,33 @@
+description: Hillingdon Council Tax Reduction rate by weekly net income band for working-age families with one child or qualifying young person not in the vulnerable Band 2 group.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 150.01
+    amount:
+      2026-04-01: 0.55
+  - threshold:
+      2026-04-01: 210.01
+    amount:
+      2026-04-01: 0.35
+  - threshold:
+      2026-04-01: 270.01
+    amount:
+      2026-04-01: 0.15
+  - threshold:
+      2026-04-01: 330.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Hillingdon one-child weekly net-income CTR rate
+  reference:
+    - title: Hillingdon working age bands from 1 April 2026
+      href: https://pre.hillingdon.gov.uk/benefits/working-age-bands
+    - title: Hillingdon Council Tax Reduction Scheme Working Age 2026, Banding Scheme
+      href: https://pre.hillingdon.gov.uk/downloads/file/8/working-age-scheme-rules

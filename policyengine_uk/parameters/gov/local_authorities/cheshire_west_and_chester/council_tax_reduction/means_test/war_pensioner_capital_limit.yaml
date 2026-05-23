@@ -1,0 +1,11 @@
+description: Working-age war pensioner capital limit for Cheshire West and Chester Council Tax Reduction.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  label: Cheshire West and Chester working-age war pensioner CTR capital limit
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraphs 5.0 and 7.2
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, paragraph 7.5
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf

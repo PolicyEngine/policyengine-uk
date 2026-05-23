@@ -1,0 +1,35 @@
+description: Harrow Universal Credit Council Tax Support rate for lone parents with three or more children by weekly net earnings.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.50
+  - threshold:
+      2026-04-01: 100.01
+    amount:
+      2026-04-01: 0.40
+  - threshold:
+      2026-04-01: 150.01
+    amount:
+      2026-04-01: 0.35
+  - threshold:
+      2026-04-01: 200.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 275.01
+    amount:
+      2026-04-01: 0.10
+  - threshold:
+      2026-04-01: 325.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Harrow UC lone parent with three or more children CTS rate
+  reference:
+    - title: Harrow Council Tax Support Scheme 2026/27, Section 2 rule 1.5 Table E2
+      href: https://www.harrow.gov.uk/downloads/file/33606/council-tax-support-scheme-2026-27

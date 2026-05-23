@@ -1,0 +1,10 @@
+description: Weekly minimum Council Tax Reduction below which a non-vulnerable working-age applicant receives no award in West Berkshire. Paragraph 29C cancels Class D or E entitlements that would otherwise fall below this floor. The minimum does not apply to Class E1 vulnerable applicants or to pensioners.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: West Berkshire non-vulnerable minimum weekly award
+  reference:
+    - title: West Berkshire Council Tax Reduction Scheme 1 April 2026 to 31 March 2027, paragraph 29C
+      href: https://www.westberks.gov.uk/media/66425/Council-Tax-Reduction-Scheme-2026-27/pdf/The_Council_Tax_Reduction_Scheme_as_amended_by_West_Berkshire_Council_2026.pdf

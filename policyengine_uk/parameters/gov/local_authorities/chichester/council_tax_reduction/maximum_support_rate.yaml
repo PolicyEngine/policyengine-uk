@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered under the Chichester Council Tax Reduction scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Chichester Council Tax Reduction maximum support rate
+  reference:
+    - title: Chichester Local Council Tax Reduction Scheme Rules 2026-2027, working-age classes D and F
+      href: https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf
+    - title: Chichester Council Tax Reduction Scheme for 2026-2027 report
+      href: https://chichester.moderngov.co.uk/documents/s30862/09.0%20Local%20Council%20Tax%20Reduction%20Scheme%202026-27.pdf

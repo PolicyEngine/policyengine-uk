@@ -1,0 +1,12 @@
+description: Monthly Universal Credit assessed earnings threshold at which the Mid Suffolk working-age scheme gives no Council Tax Reduction.
+values:
+  2026-04-01: 3_000
+metadata:
+  unit: currency-GBP
+  period: month
+  label: Mid Suffolk Council Tax Reduction UC no-entitlement earnings threshold
+  reference:
+    - title: Mid Suffolk Council Tax Reduction Scheme 2026/27, Schedule 5
+      href: https://www.midsuffolk.gov.uk/documents/d/asset-library-54706/msdc-ctr-scheme-2026_27-v4-pdf
+    - title: Mid Suffolk Council Tax Reduction live page, income bands and contribution rates for 2026/27
+      href: https://www.midsuffolk.gov.uk/w/council-tax-reduction-low-income

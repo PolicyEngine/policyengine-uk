@@ -1,0 +1,11 @@
+description: Capital step above which one pound of weekly tariff income is added for working-age non-Universal Credit claimants under the Hackney Council Tax Reduction scheme.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hackney Council Tax Reduction tariff income step
+  reference:
+    - title: Housing Benefit and Council Tax Reduction explained
+      href: https://www.hackney.gov.uk/council-tax-and-benefits/benefits/benefits-explained/housing-benefit-and-council-tax-reduction-explained
+

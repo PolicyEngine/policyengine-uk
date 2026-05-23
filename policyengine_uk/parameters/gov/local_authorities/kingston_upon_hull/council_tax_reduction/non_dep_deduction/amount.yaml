@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction by gross weekly income for Kingston upon Hull working-age Council Tax Reduction.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5
+  - threshold:
+      2026-04-01: 266
+    amount:
+      2026-04-01: 10.20
+  - threshold:
+      2026-04-01: 463
+    amount:
+      2026-04-01: 12.80
+  - threshold:
+      2026-04-01: 577.01
+    amount:
+      2026-04-01: 15.35
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Kingston upon Hull Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: Hull Council Tax Reduction Scheme 2025/26, paragraph 29
+      href: https://www.hull.gov.uk/downloads/file/239/council-tax-reduction-scheme-2025-to-2026

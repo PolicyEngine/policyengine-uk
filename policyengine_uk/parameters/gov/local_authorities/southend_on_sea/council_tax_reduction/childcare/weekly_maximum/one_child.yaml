@@ -1,0 +1,11 @@
+description: Maximum weekly childcare costs deducted from earnings for Southend-on-Sea Council Tax Reduction with one eligible child.
+values:
+  2026-04-01: 175
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Southend-on-Sea Council Tax Reduction one-child weekly childcare deduction cap
+  reference:
+    - title: Southend-on-Sea Borough Council Council Tax Reduction S13A Scheme 2026/27, Schedule 4 paragraph 20(c)
+      href: https://www.southend.gov.uk/downloads/file/3527/southend-on-sea-borough-council-ctax-reduction-s13a-scheme
+

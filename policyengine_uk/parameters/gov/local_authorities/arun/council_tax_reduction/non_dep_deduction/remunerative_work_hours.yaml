@@ -1,0 +1,11 @@
+description: Weekly hours threshold for remunerative work under Arun's Council Tax Reduction scheme.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Arun Council Tax Reduction remunerative work hours
+  reference:
+    - title: Arun District Council Tax Reduction Scheme 2026/27, interpretation of remunerative work
+      href: https://www.arun.gov.uk/download.cfm?doc=docm93jijm4n20657.pdf&ver=27819
+

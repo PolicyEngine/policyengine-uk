@@ -1,0 +1,31 @@
+description: Hartlepool weekly net-income support rates for a couple with one dependant
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.9
+  - threshold:
+      2026-04-01: 238.24
+    amount:
+      2026-04-01: 0.7
+  - threshold:
+      2026-04-01: 326.54
+    amount:
+      2026-04-01: 0.4
+  - threshold:
+      2026-04-01: 371.86
+    amount:
+      2026-04-01: 0.2
+  - threshold:
+      2026-04-01: 429.96
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Hartlepool couple with one dependant income bands
+  reference:
+    - title: Hartlepool Borough Council - Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.hartlepool.gov.uk/downloads/file/1484/hbc-council-tax-reduction-scheme-2026-27

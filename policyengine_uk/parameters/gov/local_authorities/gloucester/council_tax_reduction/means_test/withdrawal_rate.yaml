@@ -1,0 +1,11 @@
+description: Withdrawal rate on income above the applicable amount under Gloucester's working-age Local Council Tax Support scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Gloucester Local Council Tax Support withdrawal rate
+  reference:
+    - title: Gloucester City Council Local Council Tax Support Policy 2026
+      href: https://www.gloucester.gov.uk/media/ruwinppa/local-council-tax-support-policy-2026-v2.pdf
+

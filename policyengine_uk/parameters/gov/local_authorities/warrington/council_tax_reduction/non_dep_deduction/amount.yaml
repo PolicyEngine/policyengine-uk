@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction schedule under the Warrington Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2025-04-01: 0
+    amount:
+      2025-04-01: 5
+  - threshold:
+      2025-04-01: 266
+    amount:
+      2025-04-01: 10.2
+  - threshold:
+      2025-04-01: 463
+    amount:
+      2025-04-01: 12.8
+  - threshold:
+      2025-04-01: 577
+    amount:
+      2025-04-01: 15.35
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Warrington Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Warrington Borough Council Council Tax Reduction Scheme 2025/26
+      href: https://www.warrington.gov.uk/sites/default/files/2025-04/CTS%20Scheme%202025-26.pdf

@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work under the Ipswich working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Ipswich Council Tax Reduction remunerative work hours threshold
+  reference:
+    - title: Ipswich Council Tax Reduction Scheme 2026/27, paragraphs 6.1 and 58.1
+      href: https://www.ipswich.gov.uk/sites/ipswich/files/2026-03/Council%20Tax%20Reduction%20scheme%202026_0.pdf

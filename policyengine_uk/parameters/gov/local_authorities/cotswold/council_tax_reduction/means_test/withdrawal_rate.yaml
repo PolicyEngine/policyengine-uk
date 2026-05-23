@@ -1,0 +1,11 @@
+description: Withdrawal rate applied to excess income for Cotswold protected-group Council Tax Support.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Cotswold protected Council Tax Support withdrawal rate
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, sections 1.7 and Schedule 5
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf
+

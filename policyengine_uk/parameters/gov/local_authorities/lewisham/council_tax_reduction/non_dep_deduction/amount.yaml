@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction by gross weekly income for Lewisham Council Tax Reduction.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 4.90
+  - threshold:
+      2026-04-01: 256
+    amount:
+      2026-04-01: 10.05
+  - threshold:
+      2026-04-01: 445
+    amount:
+      2026-04-01: 12.60
+  - threshold:
+      2026-04-01: 554
+    amount:
+      2026-04-01: 15.10
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Lewisham Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: Lewisham Council Tax Reduction Scheme 2024-2025
+      href: https://lewisham.gov.uk/-/media/services/council-tax/lewisham-council-tax-reduction-scheme-2024-2025.pdf

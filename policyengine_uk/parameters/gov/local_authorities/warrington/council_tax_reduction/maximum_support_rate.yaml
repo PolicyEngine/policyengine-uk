@@ -1,0 +1,19 @@
+class_d:
+  band_a:
+    values:
+      2025-04-01: 1
+  other_bands:
+    values:
+      2025-04-01: 0.915
+class_e:
+  values:
+    2025-04-01: 1
+description: Maximum Council Tax Reduction support rates for working-age households under the Warrington Council Tax Reduction scheme.
+metadata:
+  unit: /1
+  period: year
+  label: Warrington Council Tax Reduction maximum support rates
+  propagate_metadata_to_children: true
+  reference:
+    - title: Warrington Borough Council Council Tax Reduction Scheme 2025/26
+      href: https://www.warrington.gov.uk/sites/default/files/2025-04/CTS%20Scheme%202025-26.pdf

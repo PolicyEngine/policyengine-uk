@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Southwark Council Tax Reduction scheme.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Southwark Council Tax Reduction capital limit
+  reference:
+    - title: Southwark Council Tax Reduction Scheme 2025
+      href: https://www.southwark.gov.uk/sites/default/files/2025-03/Southwark%20Council%20Tax%20Reduction%20Policy%202025-26.pdf

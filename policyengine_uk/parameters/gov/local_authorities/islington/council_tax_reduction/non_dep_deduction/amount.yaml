@@ -1,0 +1,9 @@
+description: Weekly non-dependant deduction under the Islington working-age Council Tax Support scheme.
+values:
+  2026-04-01: 7.92
+metadata:
+  unit: currency-GBP
+  label: Islington working-age Council Tax Support non-dependant deduction
+  reference:
+    - title: Islington Council, Council Tax support
+      href: https://www.islington.gov.uk/benefits-and-support/council-tax-support

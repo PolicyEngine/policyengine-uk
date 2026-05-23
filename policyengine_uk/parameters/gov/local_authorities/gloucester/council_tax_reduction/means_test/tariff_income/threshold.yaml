@@ -1,0 +1,11 @@
+description: Capital threshold above which tariff income applies under Gloucester's working-age Local Council Tax Support scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Gloucester Local Council Tax Support tariff income threshold
+  reference:
+    - title: Gloucester City Council Local Council Tax Support Policy 2026
+      href: https://www.gloucester.gov.uk/media/ruwinppa/local-council-tax-support-policy-2026-v2.pdf
+

@@ -1,0 +1,27 @@
+description: Enfield working-age non-dependant deduction by weekly gross earnings.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.52
+  - threshold:
+      2026-04-01: 236
+    amount:
+      2026-04-01: 11.28
+  - threshold:
+      2026-04-01: 410
+    amount:
+      2026-04-01: 14.16
+  - threshold:
+      2026-04-01: 511
+    amount:
+      2026-04-01: 24.60
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Enfield working-age CTR non-dependant deduction
+  reference:
+    - title: Enfield Council Tax Reduction Scheme 2026-2027, paragraphs 47-48
+      href: https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf

@@ -1,0 +1,9 @@
+description: Excess-income withdrawal rate for Harrow non-Universal Credit working-age Council Tax Support.
+values:
+  2026-04-01: 0.30
+metadata:
+  unit: /1
+  label: Harrow non-UC working-age CTS withdrawal rate
+  reference:
+    - title: Harrow Council Tax Support Scheme 2026/27, Section 3 summary and classes E/G
+      href: https://www.harrow.gov.uk/downloads/file/33606/council-tax-support-scheme-2026-27

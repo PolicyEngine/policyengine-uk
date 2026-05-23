@@ -1,0 +1,13 @@
+description: Withdrawal rate for working-age households under the North Norfolk Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.2
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: North Norfolk Council Tax Reduction withdrawal rate
+  reference:
+    - title: North Norfolk District Council Council Tax Reduction Scheme 2025/26
+      href: https://www.north-norfolk.gov.uk/media/10894/north-norfolk-council-tax-reduction-scheme-for-2025-to-2026.pdf
+    - title: North Norfolk District Council Housing Benefit and Council Tax Support rates from April 2026
+      href: https://www.north-norfolk.gov.uk/tasks/benefits/housing-benefit-and-council-tax-support-rates-from-april-2026/

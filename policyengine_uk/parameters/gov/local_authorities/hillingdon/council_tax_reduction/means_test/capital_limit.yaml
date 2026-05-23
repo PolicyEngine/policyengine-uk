@@ -1,0 +1,12 @@
+description: Working-age capital limit for Hillingdon Council Tax Reduction.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Hillingdon working-age CTR capital limit
+  reference:
+    - title: Hillingdon working age bands from 1 April 2026
+      href: https://pre.hillingdon.gov.uk/benefits/working-age-bands
+    - title: Hillingdon Council Tax Reduction Scheme Working Age 2026, Capital limit
+      href: https://pre.hillingdon.gov.uk/downloads/file/8/working-age-scheme-rules

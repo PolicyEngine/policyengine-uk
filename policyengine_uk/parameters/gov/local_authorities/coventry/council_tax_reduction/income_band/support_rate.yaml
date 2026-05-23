@@ -1,0 +1,31 @@
+description: Council Tax Reduction support rate by weekly excess-income band under Coventry's working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.8
+  - threshold:
+      2026-04-01: 15
+    amount:
+      2026-04-01: 0.65
+  - threshold:
+      2026-04-01: 40
+    amount:
+      2026-04-01: 0.4
+  - threshold:
+      2026-04-01: 70
+    amount:
+      2026-04-01: 0.2
+  - threshold:
+      2026-04-01: 80
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Coventry Council Tax Reduction weekly excess-income support rate
+  reference:
+    title: Coventry City Council Tax Reduction Scheme 2026/27, Schedule 2
+    href: https://www.coventry.gov.uk/downloads/file/46761/council-tax-support-scheme-2026-to-2027

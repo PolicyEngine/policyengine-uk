@@ -1,0 +1,9 @@
+description: Savings limit for working-age Lambeth Council Tax Support.
+values:
+  2026-04-01: 10_000
+metadata:
+  unit: currency-GBP
+  label: Lambeth working-age Council Tax Support savings limit
+  reference:
+    - title: Lambeth Council, Council Tax Support
+      href: https://www.lambeth.gov.uk/benefits-financial-support/housing-benefit-council-tax-support/about-housing-benefit-council-tax-support/council-tax-support

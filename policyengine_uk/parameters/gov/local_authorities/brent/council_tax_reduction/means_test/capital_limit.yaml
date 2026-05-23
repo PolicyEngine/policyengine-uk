@@ -1,0 +1,9 @@
+description: Savings limit for working-age Brent Council Tax Support.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  label: Brent working-age Council Tax Support savings limit
+  reference:
+    - title: Brent Council Tax Support
+      href: https://www.brent.gov.uk/council-tax/council-tax-support

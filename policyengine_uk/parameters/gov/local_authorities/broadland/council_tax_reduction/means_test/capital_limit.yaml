@@ -1,0 +1,13 @@
+description: Capital limit for working-age households under the Broadland Council Tax Reduction scheme.
+values:
+  2025-04-01: 16_000
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Broadland Council Tax Reduction capital limit
+  reference:
+    - title: Broadland District Council Council Tax Reduction Scheme 2025/26
+      href: https://www.southnorfolkandbroadland.gov.uk/asset-library/broadland-ctr-scheme-2025-26.pdf
+    - title: Broadland Council Tax Reduction Scheme 2026/27 report
+      href: https://southnorfolkandbroadland.moderngov.co.uk/documents/s12491/CTAX%20Reduction%20Scheme.pdf

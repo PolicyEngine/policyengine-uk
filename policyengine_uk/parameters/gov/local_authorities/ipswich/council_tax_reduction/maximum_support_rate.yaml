@@ -1,0 +1,10 @@
+description: Maximum Council Tax Reduction rate under the Ipswich working-age scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Ipswich Council Tax Reduction maximum support rate
+  reference:
+    - title: Ipswich Council Tax Reduction Scheme 2026/27, paragraph 57.1
+      href: https://www.ipswich.gov.uk/sites/ipswich/files/2026-03/Council%20Tax%20Reduction%20scheme%202026_0.pdf

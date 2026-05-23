@@ -1,0 +1,9 @@
+description: Maximum English council tax band ratio eligible for Slough working-age Council Tax Support.
+values:
+  2026-04-01: 0.8888888889
+metadata:
+  unit: /1
+  label: Slough Council Tax Support Band C liability cap ratio
+  reference:
+    - title: Slough Borough Council Council Tax Support Scheme 2026/27, paragraph 55.1
+      href: https://www.slough.gov.uk/downloads/file/5730/council-tax-support-scheme-2026-27

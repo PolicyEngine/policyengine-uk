@@ -1,0 +1,12 @@
+description: Capital limit under the Slough working-age Council Tax Support scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Slough Council Tax Support capital limit
+  reference:
+    - title: Slough Borough Council Council Tax Support Scheme 2026/27, paragraph 30.1 and Schedule 1 paragraph 7
+      href: https://www.slough.gov.uk/downloads/file/5730/council-tax-support-scheme-2026-27
+    - title: Slough Borough Council, key features of the Council Tax Support Scheme
+      href: https://www.slough.gov.uk/council-tax-support/calculate-council-tax-support-2026-27

@@ -1,0 +1,27 @@
+description: Council Tax Support rate by weekly gross earnings band for working-age Camden households without children.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 118.40
+    amount:
+      2026-04-01: 0.55
+  - threshold:
+      2026-04-01: 236.80
+    amount:
+      2026-04-01: 0.35
+  - threshold:
+      2026-04-01: 532.80
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Camden no-child weekly gross earnings CTR rate
+  reference:
+    - title: Camden Council, Council Tax Support
+      href: https://www.camden.gov.uk/council-tax-support

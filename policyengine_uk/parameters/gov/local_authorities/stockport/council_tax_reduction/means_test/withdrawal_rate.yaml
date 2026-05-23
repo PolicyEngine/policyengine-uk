@@ -1,0 +1,10 @@
+description: Withdrawal rate under the Stockport Council Tax Support means test.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Stockport Council Tax Support withdrawal rate
+  reference:
+    - title: Stockport Council Tax Support Scheme 2026 to 2027
+      href: https://www.stockport.gov.uk/council-tax-support-scheme

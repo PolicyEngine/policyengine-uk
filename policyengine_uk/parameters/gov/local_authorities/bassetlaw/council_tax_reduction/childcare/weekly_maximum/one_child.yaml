@@ -1,0 +1,10 @@
+description: Maximum weekly childcare costs deducted from income for Bassetlaw Council Tax Reduction with one eligible child.
+values:
+  2026-04-01: 175
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Bassetlaw Council Tax Reduction one-child weekly childcare deduction cap
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, paragraph 41
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

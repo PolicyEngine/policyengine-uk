@@ -1,0 +1,12 @@
+description: Tewkesbury Council Tax Reduction working-age capital limit. Tewkesbury follows the prescribed Default Scheme, which excludes applicants whose capital exceeds 16,000 pounds.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Tewkesbury Council Tax Reduction capital limit
+  reference:
+    - title: Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule paragraph 23
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/23
+    - title: Tewkesbury Borough Council - Help to pay your Council Tax page
+      href: https://tewkesbury.gov.uk/services/council-tax-benefits-and-business-rates/council-tax/council-tax-support/

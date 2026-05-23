@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the Chesterfield Council Tax Support scheme.
+values:
+  2025-04-01: 0.915
+metadata:
+  unit: /1
+  period: year
+  label: Chesterfield Council Tax Support maximum support rate
+  reference:
+    - title: Council Tax Support
+      href: https://www.chesterfield.gov.uk/council-tax-and-business-rates/council-tax/council-tax-support
+    - title: Chesterfield Borough Council Council Tax Support Scheme
+      href: https://www.chesterfield.gov.uk/media/zuxllbgk/chesterfield-borough-council-council-tax-support-scheme-2019-20.pdf

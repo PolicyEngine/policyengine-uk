@@ -1,0 +1,11 @@
+description: Weekly working-age non-dependant deduction under the Royal Greenwich Local Council Tax Support scheme.
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Greenwich Local Council Tax Support non-dependant deduction
+  reference:
+    - title: How much you can get
+      href: https://www.royalgreenwich.gov.uk/help-money/get-help-paying-your-housing-costs-and-council-tax/apply-help-pay-your-council-tax/how-much
+

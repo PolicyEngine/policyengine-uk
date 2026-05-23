@@ -1,0 +1,13 @@
+description: Capital limit for working-age households under the South Norfolk Council Tax Reduction scheme.
+values:
+  2025-04-01: 16_000
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: South Norfolk Council Tax Reduction capital limit
+  reference:
+    - title: South Norfolk Council Council Tax Reduction Scheme 2025/26
+      href: https://www.southnorfolkandbroadland.gov.uk/asset-library/south-norfolk-ctr-scheme-2025-26.pdf
+    - title: South Norfolk Cabinet Council Tax Reduction Scheme 2026/27 minutes
+      href: https://southnorfolkandbroadland.moderngov.co.uk/documents/g1058/Printed%20minutes%2024th-Nov-2025%2009.00%20South%20Norfolk%20Cabinet.pdf?T=1

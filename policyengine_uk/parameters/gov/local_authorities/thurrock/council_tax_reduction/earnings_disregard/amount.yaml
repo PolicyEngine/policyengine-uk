@@ -1,0 +1,12 @@
+description: Weekly earnings disregard for Thurrock working-age Council Tax Reduction.
+values:
+  2026-04-01: 25
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Thurrock CTR earnings disregard
+  reference:
+    - title: Thurrock Local Council Tax Support Scheme 2026-27 report, paragraph 4.6
+      href: https://thurrock.moderngov.co.uk/documents/s51233/Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf
+    - title: Thurrock Council Tax Reduction Scheme, Schedule 3 paragraphs 4, 7, 8, and 10
+      href: https://thurrock.moderngov.co.uk/documents/s51034/Enc.%201%20for%20Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf

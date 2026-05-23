@@ -1,0 +1,9 @@
+description: Weekly earnings disregard for Lewisham Council Tax Reduction claimants whose income is assessed from Universal Credit.
+values:
+  2026-04-01: 25
+metadata:
+  unit: currency-GBP
+  label: Lewisham Council Tax Reduction Universal Credit weekly earnings disregard
+  reference:
+    - title: Lewisham Council Tax Reduction Scheme 2024-2025
+      href: https://lewisham.gov.uk/-/media/services/council-tax/lewisham-council-tax-reduction-scheme-2024-2025.pdf

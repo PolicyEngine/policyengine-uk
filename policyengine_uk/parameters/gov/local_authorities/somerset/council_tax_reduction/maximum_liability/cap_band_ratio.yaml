@@ -1,0 +1,13 @@
+description: Maximum English council tax band ratio used to cap Somerset CTR eligible liability.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Somerset CTR Band D liability cap ratio
+  reference:
+    - title: Somerset Council Tax Reduction Scheme 2026/27, paragraph 48.1
+      href: https://somerset.moderngov.co.uk/documents/s59784/05a%20APPENDIX%203%20Somerset%20S13A%20202627%20Scheme%20DRAFT.pdf
+    - title: Somerset Council Tax Reduction live 2026/27 Band D cap
+      href: https://www.somerset.gov.uk/benefits-and-payments/council-tax-reduction/
+

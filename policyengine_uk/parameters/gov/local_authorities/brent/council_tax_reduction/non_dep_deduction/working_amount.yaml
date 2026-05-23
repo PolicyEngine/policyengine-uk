@@ -1,0 +1,10 @@
+description: Weekly non-dependant deduction for Brent Council Tax Support when the non-dependant is working.
+values:
+  2026-04-01: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Brent working non-dependant weekly Council Tax Support deduction
+  reference:
+    - title: Brent Council Tax Support
+      href: https://www.brent.gov.uk/council-tax/council-tax-support

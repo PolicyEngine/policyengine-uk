@@ -1,0 +1,37 @@
+description: Council Tax Reduction rate by weekly income band for Basildon working-age households with two or more dependent children or qualifying young people.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 100.01
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 175.01
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 250.01
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 325.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 400.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Basildon two-or-more-dependant weekly income-band CTR rate
+  reference:
+    - title: Basildon Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://www.basildon.gov.uk/media/11563/Basildon-Council-Council-Tax-Reduction-Scheme-2026-27/pdf/Basildon_S13A_202627_Final.pdf?m=1771316212763
+    - title: Basildon Working Age Claimant Council Tax Reduction
+      href: https://www.basildon.gov.uk/article/7377/Working-Age-Claimant-Council-Tax-Reduction

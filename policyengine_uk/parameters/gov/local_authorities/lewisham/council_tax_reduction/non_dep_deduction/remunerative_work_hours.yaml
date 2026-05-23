@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Lewisham Council Tax Reduction non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Lewisham Council Tax Reduction non-dependant remunerative work threshold
+  reference:
+    - title: Lewisham Council Tax Reduction Scheme 2024-2025
+      href: https://lewisham.gov.uk/-/media/services/council-tax/lewisham-council-tax-reduction-scheme-2024-2025.pdf

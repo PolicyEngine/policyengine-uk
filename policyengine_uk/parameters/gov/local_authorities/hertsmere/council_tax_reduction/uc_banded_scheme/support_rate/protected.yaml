@@ -1,0 +1,31 @@
+description: Hertsmere protected UC support rate by weekly earnings
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.8
+  - threshold:
+      2026-04-01: 80
+    amount:
+      2026-04-01: 0.6
+  - threshold:
+      2026-04-01: 125.01
+    amount:
+      2026-04-01: 0.4
+  - threshold:
+      2026-04-01: 250.01
+    amount:
+      2026-04-01: 0.2
+  - threshold:
+      2026-04-01: 498.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Hertsmere protected UC earnings support rate
+  reference:
+    - title: Hertsmere Borough Council - Council Tax Reduction Scheme 2026/27, Schedule 6
+      href: https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf

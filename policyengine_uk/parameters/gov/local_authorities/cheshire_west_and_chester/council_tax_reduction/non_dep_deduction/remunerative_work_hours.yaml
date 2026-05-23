@@ -1,0 +1,11 @@
+description: Weekly hours threshold for remunerative work in Cheshire West and Chester working-age Council Tax Reduction non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Cheshire West and Chester CTR non-dependant remunerative-work hours
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraph 10.2
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, section 11
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf

@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered under the Crawley Council Tax Reduction scheme.
+values:
+  2025-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Crawley Council Tax Reduction maximum support rate
+  reference:
+    - title: Crawley Council Tax Reduction Scheme 2025/26
+      href: https://crawley.gov.uk/sites/default/files/2025-02/Council%20Tax%20Reduction%20scheme%202025%20to%202026.pdf

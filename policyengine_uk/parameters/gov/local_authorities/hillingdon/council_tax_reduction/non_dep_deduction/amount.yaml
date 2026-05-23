@@ -1,0 +1,12 @@
+description: Flat weekly working-age non-dependant deduction for Hillingdon Council Tax Reduction.
+values:
+  2026-04-01: 12
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hillingdon working-age CTR non-dependant deduction
+  reference:
+    - title: Hillingdon working age bands from 1 April 2026
+      href: https://pre.hillingdon.gov.uk/benefits/working-age-bands
+    - title: Hillingdon Council Tax Reduction Scheme Working Age 2026, point 41
+      href: https://pre.hillingdon.gov.uk/downloads/file/8/working-age-scheme-rules

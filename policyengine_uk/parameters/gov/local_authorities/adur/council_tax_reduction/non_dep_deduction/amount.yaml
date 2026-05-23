@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction schedule under the Adur Council Tax Support scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.2
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.6
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.3
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Adur Council Tax Support non-dependant deduction schedule
+  reference:
+    - title: Adur Council Tax Support 2026-27
+      href: https://www.adur-worthing.gov.uk/media/Media,174007,smxx.pdf

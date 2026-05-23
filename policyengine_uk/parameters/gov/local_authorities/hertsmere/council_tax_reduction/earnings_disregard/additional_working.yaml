@@ -1,0 +1,10 @@
+description: Hertsmere additional weekly working earnings disregard
+values:
+  2026-04-01: 17.10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hertsmere additional working earnings disregard
+  reference:
+    - title: Hertsmere Borough Council - Council Tax Reduction Scheme 2026/27, Schedule 3 paragraph 16
+      href: https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf

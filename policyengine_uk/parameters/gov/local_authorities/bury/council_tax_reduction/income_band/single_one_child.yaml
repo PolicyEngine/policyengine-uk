@@ -1,0 +1,31 @@
+description: Council Tax Reduction rate by monthly net earned income band for single working-age households with one child under the Bury scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.80
+  - threshold:
+      2026-04-01: 0.01
+    amount:
+      2026-04-01: 0.60
+  - threshold:
+      2026-04-01: 200.01
+    amount:
+      2026-04-01: 0.40
+  - threshold:
+      2026-04-01: 700.01
+    amount:
+      2026-04-01: 0.20
+  - threshold:
+      2026-04-01: 1100.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: month
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Bury single with one child monthly net earned-income CTR rate
+  reference:
+    - title: Bury Council Tax Support Scheme Policy 2026/27, paragraph 9
+      href: https://www.bury.gov.uk/asset-library/bury-cts-scheme-policy-2026-27.pdf

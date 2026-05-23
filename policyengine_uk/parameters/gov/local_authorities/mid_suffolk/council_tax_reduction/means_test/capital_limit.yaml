@@ -1,0 +1,10 @@
+description: Capital limit under the Mid Suffolk working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Mid Suffolk Council Tax Reduction capital limit
+  reference:
+    - title: Mid Suffolk Council Tax Reduction Scheme 2026/27, paragraphs 1.9.7, 1.10.7, 1.11.7, and 34.1
+      href: https://www.midsuffolk.gov.uk/documents/d/asset-library-54706/msdc-ctr-scheme-2026_27-v4-pdf

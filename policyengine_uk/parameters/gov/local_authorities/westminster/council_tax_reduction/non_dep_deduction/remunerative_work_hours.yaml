@@ -1,0 +1,11 @@
+description: Weekly hours threshold for remunerative work in the Westminster Council Tax Support non-dependant deduction schedule.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Westminster Council Tax Support remunerative work hours
+  reference:
+    - title: Council Tax Support scheme for 2026/27
+      href: https://www.westminster.gov.uk/sites/default/files/media/documents/council-tax-support-scheme-for-2026-27.pdf
+

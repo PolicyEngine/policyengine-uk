@@ -1,0 +1,21 @@
+description: Council Tax Support rate by weekly income band for Plymouth working-age households in the war pensioner class.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.8
+  - threshold:
+      2026-04-01: 653.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Plymouth war-pensioner weekly income-band CTS rate
+  reference:
+    - title: Plymouth City Council Tax Support Scheme 2026/27, Schedule 1
+      href: https://www.plymouth.gov.uk/sites/default/files/2026-03/Plymouth-CTR-Scheme-2026-2027.pdf
+    - title: Plymouth City Council Tax Support 2026/2027
+      href: https://www.plymouth.gov.uk/council-tax-support-20262027

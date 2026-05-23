@@ -1,0 +1,10 @@
+description: Maximum Council Tax band ratio used to cap eligible liability for Class E claimants under the Warrington Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.666666667
+metadata:
+  unit: /1
+  period: year
+  label: Warrington Council Tax Reduction capped band ratio
+  reference:
+    - title: Warrington Borough Council Council Tax Reduction Scheme 2025/26
+      href: https://www.warrington.gov.uk/sites/default/files/2025-04/CTS%20Scheme%202025-26.pdf

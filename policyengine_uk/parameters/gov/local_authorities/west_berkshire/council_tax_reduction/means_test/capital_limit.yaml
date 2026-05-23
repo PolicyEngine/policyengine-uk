@@ -1,0 +1,10 @@
+description: Strict capital cutoff for non-vulnerable working-age Class D or E applicants in West Berkshire. Paragraph 29(1)A removes entitlement for the entire billing year where capital is equal to or greater than this amount. The default 16,000 pound capital limit (paragraph 23) still applies to Class E1 vulnerable applicants and to pensioners.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: West Berkshire non-vulnerable working-age capital cutoff
+  reference:
+    - title: West Berkshire Council Tax Reduction Scheme 1 April 2026 to 31 March 2027, paragraph 29(1)A
+      href: https://www.westberks.gov.uk/media/66425/Council-Tax-Reduction-Scheme-2026-27/pdf/The_Council_Tax_Reduction_Scheme_as_amended_by_West_Berkshire_Council_2026.pdf

@@ -1,0 +1,11 @@
+description: Withdrawal rate for working-age households under the Fenland Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.2
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Fenland Council Tax Reduction withdrawal rate
+  reference:
+    - title: Fenland District Council Council Tax Reduction Scheme 2025/26
+      href: https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/Fenland-District-Council-Council-Tax-Reduction-Scheme-2025-26.pdf

@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered by Bromley working-age Council Tax Support.
+values:
+  2026-04-01: 0.5
+metadata:
+  unit: /1
+  period: year
+  label: Bromley working-age Council Tax Support maximum support rate
+  reference:
+    - title: Bromley Council Tax Support Scheme 2026-27 report
+      href: https://cds.bromley.gov.uk/documents/s50125675/Council%20Tax%20Support%20Scheme%202026-27.pdf
+    - title: Bromley Local Council Tax Reduction Scheme from 1 April 2025, paragraph 29
+      href: https://www.bromley.gov.uk/downloads/file/3849/local-council-tax-reduction-scheme-from-1-april-2025

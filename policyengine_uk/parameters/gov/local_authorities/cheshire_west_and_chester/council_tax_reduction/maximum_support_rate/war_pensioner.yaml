@@ -1,0 +1,11 @@
+description: Maximum Council Tax Reduction rate for Cheshire West and Chester working-age war pensioners.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  label: Cheshire West and Chester working-age war pensioner CTR maximum support rate
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraphs 3.7 and 5.0
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, paragraphs 6.1-6.3 and 7.5
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf

@@ -1,0 +1,38 @@
+A:
+  values:
+    0001-01-01: 0.666666667
+B:
+  values:
+    0001-01-01: 0.777777778
+C:
+  values:
+    0001-01-01: 0.888888889
+D:
+  values:
+    0001-01-01: 1
+E:
+  values:
+    0001-01-01: 1.222222222
+F:
+  values:
+    0001-01-01: 1.444444444
+G:
+  values:
+    0001-01-01: 1.666666667
+H:
+  values:
+    0001-01-01: 2
+I:
+  values:
+    0001-01-01: 2.333333333
+description: England Council Tax band ratios relative to Band D.
+metadata:
+  unit: /1
+  period: year
+  label: England Council Tax band ratios
+  propagate_metadata_to_children: true
+  reference:
+    - title: Council Tax bands
+      href: https://www.gov.uk/council-tax-bands
+    - title: The Local Government Finance Act 1992 (Consequential Amendments) Regulations 2012 explanatory memorandum
+      href: https://www.legislation.gov.uk/uksi/2012/2914/pdfs/uksiem_20122914_en.pdf

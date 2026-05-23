@@ -1,0 +1,37 @@
+description: Weekly Council Tax Reduction contribution by monthly Universal Credit assessed earnings under the Ipswich working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0
+  - threshold:
+      2026-04-01: 309
+    amount:
+      2026-04-01: 10.85
+  - threshold:
+      2026-04-01: 650
+    amount:
+      2026-04-01: 21.92
+  - threshold:
+      2026-04-01: 1_237
+    amount:
+      2026-04-01: 31.62
+  - threshold:
+      2026-04-01: 1_968
+    amount:
+      2026-04-01: 47.54
+  - threshold:
+      2026-04-01: 2_528
+    amount:
+      2026-04-01: 61.15
+metadata:
+  amount_unit: currency-GBP
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Ipswich Council Tax Reduction UC earnings contribution amount
+  reference:
+    - title: Ipswich Council Tax Reduction Scheme 2026/27, Schedule 5
+      href: https://www.ipswich.gov.uk/sites/ipswich/files/2026-03/Council%20Tax%20Reduction%20scheme%202026_0.pdf
+    - title: Ipswich Council Tax Reduction live page, income bands and contribution rates for 2026/27
+      href: https://www.ipswich.gov.uk/benefits/council-tax-reduction-low-income

@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction schedule under the Oldham Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2025-04-01: 0
+    amount:
+      2025-04-01: 5
+  - threshold:
+      2025-04-01: 266
+    amount:
+      2025-04-01: 10.2
+  - threshold:
+      2025-04-01: 463
+    amount:
+      2025-04-01: 12.8
+  - threshold:
+      2025-04-01: 577
+    amount:
+      2025-04-01: 15.35
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Oldham Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Oldham Council Tax Reduction Scheme 2025/26
+      href: https://www.oldham.gov.uk/download/downloads/id/2632/council_tax_reduction_scheme_2025-26.pdf

@@ -1,0 +1,12 @@
+description: Tewkesbury maximum Council Tax Reduction rate. Tewkesbury Borough Council has remained on the prescribed Default Scheme since April 2013, so the working-age maximum follows paragraph 29(1) of the Default Scheme schedule (100 per cent of council tax liability).
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Tewkesbury Council Tax Reduction maximum support rate
+  reference:
+    - title: Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule paragraph 29(1)
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/29
+    - title: Tewkesbury Borough Council - Council Tax Reduction Scheme Report (Cabinet, January 2026)
+      href: https://minutes.tewkesbury.gov.uk/documents/s71351/Council%20Tax%20Reduction%20Scheme%20Report.pdf

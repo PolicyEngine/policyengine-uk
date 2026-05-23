@@ -1,0 +1,10 @@
+description: Withdrawal rate under the Stevenage Council Tax Reduction means test.
+values:
+  2025-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Stevenage Council Tax Reduction withdrawal rate
+  reference:
+    - title: Stevenage Borough Council Council Tax Reduction Scheme 2025/26
+      href: https://www.stevenage.gov.uk/documents/council-tax/council-tax-support-scheme-2025-26.pdf

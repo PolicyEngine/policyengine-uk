@@ -1,0 +1,11 @@
+description: Withdrawal rate on annual excess income for Cheshire West and Chester Council Tax Reduction.
+values:
+  2026-04-01: 0.20
+metadata:
+  unit: /1
+  label: Cheshire West and Chester CTR excess-income withdrawal rate
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraph 9.2
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, paragraphs 4.2 and 4.4
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf

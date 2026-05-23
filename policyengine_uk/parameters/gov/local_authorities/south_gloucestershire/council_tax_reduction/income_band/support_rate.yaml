@@ -1,0 +1,41 @@
+description: Council Tax Reduction rate by weekly earned income under the South Gloucestershire working-age scheme.
+brackets:
+  - threshold:
+      2025-04-01: 0
+    amount:
+      2025-04-01: 0.77
+  - threshold:
+      2025-04-01: 0.01
+    amount:
+      2025-04-01: 0.60
+  - threshold:
+      2025-04-01: 50.01
+    amount:
+      2025-04-01: 0.40
+  - threshold:
+      2025-04-01: 100.01
+    amount:
+      2025-04-01: 0.20
+  - threshold:
+      2025-04-01: 140.01
+    amount:
+      2025-04-01: 0.15
+  - threshold:
+      2025-04-01: 190.01
+    amount:
+      2025-04-01: 0.10
+  - threshold:
+      2025-04-01: 230.01
+    amount:
+      2025-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: South Gloucestershire Council Tax Reduction weekly earnings band support rate
+  reference:
+    - title: South Gloucestershire Council, Council tax reduction, working-age applicant table
+      href: https://beta.southglos.gov.uk/apply-for-council-tax-reduction/
+    - title: South Gloucestershire Council Tax Reduction Scheme Rules 2025 (working age applicants), paragraph 8
+      href: https://beta.southglos.gov.uk/static/edf5960dd95611c375de976f8fa529cc/Council_tax_reduction_scheme_rules_working_age_applicants.pdf

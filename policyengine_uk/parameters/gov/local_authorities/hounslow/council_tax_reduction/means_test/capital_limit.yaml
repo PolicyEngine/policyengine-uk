@@ -1,0 +1,9 @@
+description: Capital limit for working-age Hounslow Council Tax Support.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  label: Hounslow working-age CTS capital limit
+  reference:
+    - title: Hounslow Council Tax Reduction Scheme 2025 to 2026, paragraph 21
+      href: https://www.hounslow.gov.uk/downloads/file/11485/hounslow-council-tax-reduction-scheme-2025-to-2026

@@ -1,0 +1,9 @@
+description: Weekly hours threshold for remunerative work in Thurrock working-age Council Tax Reduction non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hours
+  label: Thurrock Council Tax Reduction non-dependant remunerative-work hours
+  reference:
+    - title: Thurrock Council Tax Reduction Scheme, section 6.1
+      href: https://thurrock.moderngov.co.uk/documents/s51034/Enc.%201%20for%20Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf

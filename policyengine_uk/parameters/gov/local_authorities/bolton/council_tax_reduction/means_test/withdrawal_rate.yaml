@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Bolton Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Bolton Council Tax Reduction withdrawal rate
+  reference:
+    - title: Bolton Council Tax Reduction Scheme 2026/27
+      href: https://www.bolton.gov.uk/downloads/file/745/bolton-council-tax-reduction-scheme

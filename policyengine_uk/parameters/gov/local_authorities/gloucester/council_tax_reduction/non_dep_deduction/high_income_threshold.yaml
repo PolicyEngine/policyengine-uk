@@ -1,0 +1,11 @@
+description: Weekly gross income threshold for Gloucester's high working-age non-dependant deduction.
+values:
+  2026-04-01: 377
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Gloucester Local Council Tax Support high non-dependant deduction income threshold
+  reference:
+    - title: Gloucester City Council Local Council Tax Support Policy 2026
+      href: https://www.gloucester.gov.uk/media/ruwinppa/local-council-tax-support-policy-2026-v2.pdf
+

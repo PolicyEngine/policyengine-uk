@@ -1,0 +1,43 @@
+description: Ealing non-protected working-age Council Tax Reduction award rate by weekly income band.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.80
+  - threshold:
+      2026-04-01: 154.19
+    amount:
+      2026-04-01: 0.60
+  - threshold:
+      2026-04-01: 179.90
+    amount:
+      2026-04-01: 0.50
+  - threshold:
+      2026-04-01: 205.59
+    amount:
+      2026-04-01: 0.40
+  - threshold:
+      2026-04-01: 231.30
+    amount:
+      2026-04-01: 0.30
+  - threshold:
+      2026-04-01: 257
+    amount:
+      2026-04-01: 0.20
+  - threshold:
+      2026-04-01: 282.68
+    amount:
+      2026-04-01: 0.10
+  - threshold:
+      2026-04-01: 308.40
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Ealing non-protected weekly income CTR award rate
+  reference:
+    - title: Ealing Council Tax Reduction Scheme Effective April 2026, Council Tax Reduction Calculation Table
+      href: https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf

@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work in Cheltenham Council Tax Support non-dependant deductions.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Cheltenham Council Tax Support non-dependant remunerative work hours
+  reference:
+    - title: Cheltenham Borough Council Tax Support Scheme 2026/27, sections 6.1 and 55.1
+      href: https://democracy.cheltenham.gov.uk/documents/s53359/Appendix%209%20-%20Council%20270226%20Council%20Tax%20Support%20Scheme%20for%20Working%20Age%20Customers%202026-27%20Final.pdf

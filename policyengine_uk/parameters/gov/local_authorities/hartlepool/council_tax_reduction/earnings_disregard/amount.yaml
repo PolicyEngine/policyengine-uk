@@ -1,0 +1,10 @@
+description: Hartlepool standard weekly earnings disregard
+values:
+  2026-04-01: 25
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hartlepool Council Tax Reduction earnings disregard
+  reference:
+    - title: Hartlepool Borough Council - Council Tax Reduction Scheme 2026/27, Schedule 4
+      href: https://www.hartlepool.gov.uk/downloads/file/1484/hbc-council-tax-reduction-scheme-2026-27

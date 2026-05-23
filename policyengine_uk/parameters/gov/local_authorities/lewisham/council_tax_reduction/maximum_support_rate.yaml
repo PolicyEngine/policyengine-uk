@@ -1,0 +1,11 @@
+description: Maximum Council Tax Reduction rate for working-age Lewisham claimants.
+values:
+  2026-04-01: 0.75
+metadata:
+  unit: /1
+  label: Lewisham working-age Council Tax Reduction maximum support rate
+  reference:
+    - title: Lewisham Council, Council Tax Reduction Scheme
+      href: https://lewisham.gov.uk/myservices/benefits/council-tax-reduction-scheme
+    - title: Lewisham Council, 2026/27 budget report
+      href: https://lewisham.moderngov.co.uk/documents/s123568/2026-27%20PASC%20Draft%20Budget%20Report.pdf

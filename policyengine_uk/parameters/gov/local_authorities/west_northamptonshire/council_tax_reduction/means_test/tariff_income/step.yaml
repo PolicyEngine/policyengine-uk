@@ -1,0 +1,12 @@
+description: Capital block size for tariff income under the West Northamptonshire Council Tax Reduction scheme.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: West Northamptonshire Council Tax Reduction tariff income block size
+  reference:
+    - title: West Northamptonshire Local Council Tax Reduction Scheme 2026/27 report, recommendations 3.1 and report background 5.3
+      href: https://westnorthants.moderngov.co.uk/documents/s25215/Item%2010%20-%20CTRS%2026-27.pdf
+    - title: West Northamptonshire Council CTR Scheme 2025/26, paragraph 72
+      href: https://cms.westnorthants.gov.uk/media/2065/download

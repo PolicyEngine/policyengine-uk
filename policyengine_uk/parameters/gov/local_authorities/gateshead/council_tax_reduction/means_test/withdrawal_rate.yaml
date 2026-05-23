@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Gateshead Local Council Tax Support scheme.
+values:
+  2025-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Gateshead Local Council Tax Support withdrawal rate
+  reference:
+    - title: Gateshead Council Local Council Tax Support Scheme 2025 to 26
+      href: https://www.gateshead.gov.uk/article/27575/Part-4-Classes-of-person-entitled-to-a-reduction-under-this-scheme

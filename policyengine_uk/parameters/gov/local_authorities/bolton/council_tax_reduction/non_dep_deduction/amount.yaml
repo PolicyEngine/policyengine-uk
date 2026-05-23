@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction schedule under the Bolton Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.2
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.6
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.3
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Bolton Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Bolton Council Tax Reduction Scheme 2026/27
+      href: https://www.bolton.gov.uk/downloads/file/745/bolton-council-tax-reduction-scheme

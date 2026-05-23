@@ -1,0 +1,12 @@
+description: Capital limit under the Dudley Council Tax Reduction means test.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Dudley Council Tax Reduction capital limit
+  reference:
+    - title: Council Tax Reduction Scheme
+      href: https://www.dudley.gov.uk/residents/benefits/council-tax-reduction-scheme/
+    - title: Dudley MBC Council Tax Reduction Scheme 2025-26
+      href: https://www.dudley.gov.uk/media/khllf4zc/dudley-council-tax-reduction-scheme-2025-26.pdf

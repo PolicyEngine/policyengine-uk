@@ -1,0 +1,10 @@
+description: Capital limit for Haringey working-age Council Tax Reduction.
+values:
+  2026-04-01: 10_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Haringey working-age CTR capital limit
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraph 23
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

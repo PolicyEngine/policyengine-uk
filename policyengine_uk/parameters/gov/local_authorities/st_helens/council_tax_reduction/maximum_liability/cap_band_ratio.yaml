@@ -1,0 +1,9 @@
+description: St Helens Council Tax band ratio used to cap working-age maximum eligible liability at the Band D amount. Paragraph 9 restricts working-age support in Bands F, G and H to the Band D liability for the dwelling. The Band D ratio in the English council-tax band schedule is 1.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  label: St Helens Council Tax Reduction Band D cap ratio
+  reference:
+    - title: St Helens Borough Council - Council Tax Reduction Scheme 2026-2027, paragraph 9
+      href: https://www.sthelens.gov.uk/media/13997/St-Helens-CTR-scheme-2026/pdf/St_Helens_CTR_scheme_2026.pdf

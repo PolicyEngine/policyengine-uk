@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Newham Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.25
+metadata:
+  unit: /1
+  period: year
+  label: Newham Council Tax Reduction withdrawal rate
+  reference:
+    - title: Council Tax Reduction Scheme 2026
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026

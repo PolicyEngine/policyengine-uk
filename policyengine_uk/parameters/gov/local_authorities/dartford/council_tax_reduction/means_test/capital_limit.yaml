@@ -1,0 +1,9 @@
+description: Dartford Council Tax Reduction capital limit
+metadata:
+  unit: currency-GBP
+  period: year
+  reference:
+    - title: Dartford Borough Council Local Council Tax Reduction Scheme 2026/27, paragraph 27.1 and Schedule 1 paragraph 5
+      href: https://www.dartford.gov.uk/downloads/file/2814/local-council-tax-reduction-scheme-dbc-2026-2027
+values:
+  2026-04-01: 6_000

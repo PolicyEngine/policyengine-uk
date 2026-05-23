@@ -1,0 +1,9 @@
+description: Capital limit for working-age Bury Council Tax Support.
+values:
+  2026-04-01: 8_000
+metadata:
+  unit: currency-GBP
+  label: Bury working-age CTR capital limit
+  reference:
+    - title: Bury Council Tax Support Scheme Policy 2026/27, paragraphs 13 and 27
+      href: https://www.bury.gov.uk/asset-library/bury-cts-scheme-policy-2026-27.pdf

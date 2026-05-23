@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the East Hertfordshire Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.915
+metadata:
+  unit: /1
+  period: year
+  label: East Hertfordshire Council Tax Reduction maximum support rate
+  reference:
+    - title: Council Tax Support
+      href: https://www.eastherts.gov.uk/benefits-and-financial-support/council-tax-support
+    - title: East Hertfordshire District Council Council Tax Reduction Scheme 2025/26
+      href: https://cdn-eastherts.onwebcurl.com/s3fs-public/2025-03/East%20Herts%20S13a%20202526%20Scheme%20Final.pdf

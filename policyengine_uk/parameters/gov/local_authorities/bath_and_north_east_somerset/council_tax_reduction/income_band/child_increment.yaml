@@ -1,0 +1,10 @@
+description: Weekly UC Class F income-band threshold increase for each child or young person, capped at two children, under Bath and North East Somerset's Council Tax Reduction scheme.
+values:
+  2026-04-01: 50
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Bath and North East Somerset Council Tax Reduction child income-band increment
+  reference:
+    - title: Bath and North East Somerset Council Tax Reduction Scheme 2026/27
+      href: https://www.bathnes.gov.uk/sites/default/files/2026-01/Council_Tax_reduction_scheme_April_1_2026_to_March_31_2027.pdf

@@ -1,0 +1,10 @@
+description: Withdrawal rate under the Warrington Council Tax Reduction means test.
+values:
+  2025-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Warrington Council Tax Reduction withdrawal rate
+  reference:
+    - title: Warrington Borough Council Council Tax Reduction Scheme 2025/26
+      href: https://www.warrington.gov.uk/sites/default/files/2025-04/CTS%20Scheme%202025-26.pdf

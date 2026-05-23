@@ -1,0 +1,9 @@
+description: Savings and investments limit for working-age Islington Council Tax Support.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  label: Islington working-age Council Tax Support savings and investments limit
+  reference:
+    - title: Islington Council, Council Tax support
+      href: https://www.islington.gov.uk/benefits-and-support/council-tax-support

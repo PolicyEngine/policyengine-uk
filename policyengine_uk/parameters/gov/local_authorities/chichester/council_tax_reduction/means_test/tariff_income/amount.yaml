@@ -1,0 +1,10 @@
+description: Weekly assumed income per capital step for Chichester non-UC working-age Council Tax Reduction.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Chichester Council Tax Reduction tariff income per step
+  reference:
+    - title: Chichester Local Council Tax Reduction Scheme Rules 2026-2027, section 5.11
+      href: https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf

@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Gateshead Local Council Tax Support scheme.
+values:
+  2025-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Gateshead Local Council Tax Support capital limit
+  reference:
+    - title: Gateshead Council Local Council Tax Support Scheme 2025 to 26
+      href: https://www.gateshead.gov.uk/article/27578/Part-5-Classes-of-person-excluded-from-this-scheme

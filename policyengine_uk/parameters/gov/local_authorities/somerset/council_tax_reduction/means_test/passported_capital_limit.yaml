@@ -1,0 +1,11 @@
+description: Capital limit for Somerset CTR applicants on Income Support, income-based JSA, or income-related ESA whose capital is disregarded up to this amount.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Somerset CTR income-based benefit capital-disregard limit
+  reference:
+    - title: Somerset Council Tax Reduction Scheme 2026/27, Schedule 3 paragraph 7
+      href: https://somerset.moderngov.co.uk/documents/s59784/05a%20APPENDIX%203%20Somerset%20S13A%20202627%20Scheme%20DRAFT.pdf
+

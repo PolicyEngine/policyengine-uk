@@ -1,0 +1,12 @@
+description: Withdrawal rate for working-age households under Derby's Council Tax Support scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Derby Council Tax Support withdrawal rate
+  reference:
+    - title: Derby City Council Tax Support Scheme 2026/2027, section 3
+      href: https://www.derby.gov.uk/media/derbycitycouncil/contentassets/documents/adviceandbenefits/counciltax/council-tax-support-scheme2026-27.pdf
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule 1 paragraph 39
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/1

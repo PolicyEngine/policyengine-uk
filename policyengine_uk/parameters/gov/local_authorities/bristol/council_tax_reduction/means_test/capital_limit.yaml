@@ -1,0 +1,10 @@
+description: Capital limit for Bristol working-age Council Tax Reduction.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Bristol working-age Council Tax Reduction capital limit
+  reference:
+    - title: Bristol Council Tax Reduction Scheme 2026-27, paragraph 25
+      href: https://www.bristol.gov.uk/files/documents/10754-bristol-council-tax-reduction-scheme-2026/file

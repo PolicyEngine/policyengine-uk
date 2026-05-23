@@ -1,0 +1,10 @@
+description: Weekly earnings disregard for Plymouth working-age Council Tax Support applicants with a disability premium, severe disability premium, work-related activity component, or support component.
+values:
+  2026-04-01: 20
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Plymouth disability or ESA component CTS earnings disregard
+  reference:
+    - title: Plymouth City Council Tax Support Scheme 2026/27, Schedule 2
+      href: https://www.plymouth.gov.uk/sites/default/files/2026-03/Plymouth-CTR-Scheme-2026-2027.pdf

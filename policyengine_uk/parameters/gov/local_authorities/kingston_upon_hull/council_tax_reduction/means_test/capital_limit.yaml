@@ -1,0 +1,12 @@
+description: Capital limit for Kingston upon Hull working-age Council Tax Reduction.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Kingston upon Hull working-age Council Tax Reduction capital limit
+  reference:
+    - title: Hull Council Tax Reduction Scheme 2025/26, paragraph 22
+      href: https://www.hull.gov.uk/downloads/file/239/council-tax-reduction-scheme-2025-to-2026
+    - title: Hull live Council Tax Reduction page
+      href: https://www.hull.gov.uk/council-tax-reduction/help-pay-council-tax

@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction by gross weekly income for Bristol working-age Council Tax Reduction.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Bristol Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: Bristol Council Tax Reduction Scheme 2026-27, paragraph 39
+      href: https://www.bristol.gov.uk/files/documents/10754-bristol-council-tax-reduction-scheme-2026/file

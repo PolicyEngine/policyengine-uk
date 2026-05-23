@@ -1,0 +1,19 @@
+description: Weekly non-dependant deduction by weekly earned income under the Lambeth working-age Council Tax Support scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 10
+  - threshold:
+      2026-04-01: 0.01
+    amount:
+      2026-04-01: 16
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Lambeth working-age Council Tax Support non-dependant deduction
+  reference:
+    - title: Lambeth Council, How much Council Tax Support you can get
+      href: https://www.lambeth.gov.uk/about-housing-benefit-council-tax-support/council-tax-support/how-much-council-tax-support-you-can-get

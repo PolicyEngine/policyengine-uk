@@ -1,0 +1,31 @@
+description: Weekly non-dependant deduction schedule under the West Northamptonshire Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.2
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.6
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.3
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: West Northamptonshire Council Tax Reduction non-dependant deduction amount
+  reference:
+    - title: West Northamptonshire Local Council Tax Reduction Scheme 2026/27 report, recommendations 3.1 and report background 5.3
+      href: https://westnorthants.moderngov.co.uk/documents/s25215/Item%2010%20-%20CTRS%2026-27.pdf
+    - title: West Northamptonshire Council CTR Scheme 2025/26, paragraph 30
+      href: https://cms.westnorthants.gov.uk/media/2065/download
+    - title: Council Tax Reduction Schemes (Prescribed Requirements) (England) (Amendment) Regulations 2026, regulation 5(3)
+      href: https://www.legislation.gov.uk/uksi/2026/27/contents/made

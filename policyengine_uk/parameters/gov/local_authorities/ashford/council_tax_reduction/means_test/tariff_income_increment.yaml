@@ -1,0 +1,10 @@
+description: Capital increment for each pound of weekly tariff income under Ashford's working-age Council Tax Reduction scheme.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Ashford Council Tax Reduction tariff income increment
+  reference:
+    - title: Ashford Borough Council Tax Reduction Scheme 2026/27, section 45
+      href: https://www.ashford.gov.uk/media/0n4nud13/ashford-ctr-scheme-2026-final.pdf

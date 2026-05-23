@@ -1,0 +1,34 @@
+description: Council Tax Reduction rate by weekly income band for Somerset single working-age households with one child or qualifying young person.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 181.01
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 249.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 289.01
+    amount:
+      2026-04-01: 0.1
+  - threshold:
+      2026-04-01: 329.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Somerset single one-child weekly income CTR rate
+  reference:
+    - title: Somerset Council Tax Reduction Scheme 2026/27, Schedule 1
+      href: https://somerset.moderngov.co.uk/documents/s59784/05a%20APPENDIX%203%20Somerset%20S13A%20202627%20Scheme%20DRAFT.pdf
+    - title: Somerset Council Tax Reduction live 2026/27 income bands
+      href: https://www.somerset.gov.uk/benefits-and-payments/council-tax-reduction/
+

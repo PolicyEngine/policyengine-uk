@@ -1,0 +1,11 @@
+description: Maximum share of Council Tax liability covered for working-age households under the Hammersmith and Fulham Council Tax Support scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Hammersmith and Fulham Council Tax Support maximum support rate
+  reference:
+    - title: Council Tax Support Scheme 2026/27
+      href: https://democracy.lbhf.gov.uk/documents/s133438/Council%20Tax%20Support%20Scheme%202026-27.pdf
+

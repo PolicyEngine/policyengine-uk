@@ -1,0 +1,10 @@
+description: Minimum weekly award for Ealing Council Tax Reduction.
+values:
+  2026-04-01: 2
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Ealing CTR minimum weekly award
+  reference:
+    - title: Ealing Council Tax Reduction Scheme Effective April 2026, Minimum Council Tax Reduction
+      href: https://www.ealing.gov.uk/download/downloads/id/19657/council_tax_reduction_scheme_2026_to_2027.pdf

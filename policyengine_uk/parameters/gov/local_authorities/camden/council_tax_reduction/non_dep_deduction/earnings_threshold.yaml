@@ -1,0 +1,9 @@
+description: Weekly earned income threshold above which Camden applies a non-dependant deduction.
+values:
+  2026-04-01: 110.80
+metadata:
+  unit: currency-GBP
+  label: Camden Council Tax Support non-dependant weekly earnings threshold
+  reference:
+    - title: Camden Council, Council Tax Support
+      href: https://www.camden.gov.uk/council-tax-support

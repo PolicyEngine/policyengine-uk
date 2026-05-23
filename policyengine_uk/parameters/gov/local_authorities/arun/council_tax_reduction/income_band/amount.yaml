@@ -1,0 +1,38 @@
+description: Council Tax Reduction support rate by weekly net income band under Arun's working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 1
+  - threshold:
+      2026-04-01: 224
+    amount:
+      2026-04-01: 0.70
+  - threshold:
+      2026-04-01: 291
+    amount:
+      2026-04-01: 0.50
+  - threshold:
+      2026-04-01: 360
+    amount:
+      2026-04-01: 0.30
+  - threshold:
+      2026-04-01: 422
+    amount:
+      2026-04-01: 0.10
+  - threshold:
+      2026-04-01: 490
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Arun Council Tax Reduction weekly income support rate
+  reference:
+    - title: Arun District Council, Council Tax Reduction, working-age table
+      href: https://www.arun.gov.uk/council-tax-reduction/
+    - title: Arun District Council, Changes are coming to the council tax reduction scheme, 16 February 2026
+      href: https://www.arun.gov.uk/news-archive/changes-are-coming-to-the-council-tax-reduction-scheme-10380/
+

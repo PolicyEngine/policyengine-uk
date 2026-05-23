@@ -1,0 +1,35 @@
+description: Council Tax Support rate by weekly net earnings band for working-age Lambeth households with two children.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.735
+  - threshold:
+      2026-04-01: 0.01
+    amount:
+      2026-04-01: 0.55
+  - threshold:
+      2026-04-01: 160.01
+    amount:
+      2026-04-01: 0.45
+  - threshold:
+      2026-04-01: 260.01
+    amount:
+      2026-04-01: 0.30
+  - threshold:
+      2026-04-01: 360.01
+    amount:
+      2026-04-01: 0.15
+  - threshold:
+      2026-04-01: 440.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Lambeth two-child weekly net earnings CTR rate
+  reference:
+    - title: Lambeth Council, How much Council Tax Support you can get
+      href: https://www.lambeth.gov.uk/about-housing-benefit-council-tax-support/council-tax-support/how-much-council-tax-support-you-can-get

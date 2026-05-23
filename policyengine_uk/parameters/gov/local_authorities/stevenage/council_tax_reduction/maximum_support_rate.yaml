@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the Stevenage Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.915
+metadata:
+  unit: /1
+  period: year
+  label: Stevenage Council Tax Reduction maximum support rate
+  reference:
+    - title: Stevenage Borough Council Council Tax Reduction Scheme 2025/26
+      href: https://www.stevenage.gov.uk/documents/council-tax/council-tax-support-scheme-2025-26.pdf

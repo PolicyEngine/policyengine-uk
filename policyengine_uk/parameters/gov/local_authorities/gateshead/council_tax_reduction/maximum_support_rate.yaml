@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the Gateshead Local Council Tax Support scheme.
+values:
+  2025-04-01: 0.915
+metadata:
+  unit: /1
+  period: year
+  label: Gateshead Local Council Tax Support maximum support rate
+  reference:
+    - title: Gateshead Council Local Council Tax Support Scheme 2025 to 26
+      href: https://www.gateshead.gov.uk/article/27582/Part-7-Maximum-council-tax-reduction-for-the-purposes-of-calculating-eligibility-for-a-reduction-under-this-scheme-and-the-amount-of-reduction

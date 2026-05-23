@@ -1,0 +1,10 @@
+description: Weekly Redbridge working-age Council Tax Reduction deduction for a non-dependant not in remunerative work.
+values:
+  2026-04-01: 10.59
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Redbridge non-working non-dependant weekly CTR deduction
+  reference:
+    - title: Redbridge Council Tax Reduction Scheme 2026-2027, paragraph 30A
+      href: https://www.redbridge.gov.uk/media/frbd0rgm/council-tax-reduction-scheme-2026-2027-full-scheme.pdf

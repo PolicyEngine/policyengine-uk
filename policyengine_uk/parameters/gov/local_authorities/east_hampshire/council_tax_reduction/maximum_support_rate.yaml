@@ -1,0 +1,10 @@
+description: East Hampshire Council Tax Support maximum support rate
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: East Hampshire Council Tax Support maximum support rate
+  reference:
+    - title: East Hampshire District Council - Council Tax Support Scheme 2026/27, paragraph 29
+      href: https://www.easthants.gov.uk/sites/default/files/2026-03/Council%20tax%20support%20scheme%202026-27.pdf

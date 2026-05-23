@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work in the Haringey Council Tax Reduction non-dependant deduction schedule.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Haringey CTR non-dependant remunerative-work hours
+  reference:
+    - title: Haringey Council Tax Reduction Scheme 2026-2027, paragraphs 30A and 53
+      href: https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf

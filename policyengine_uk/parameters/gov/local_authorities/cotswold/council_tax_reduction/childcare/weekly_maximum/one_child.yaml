@@ -1,0 +1,10 @@
+description: Maximum weekly childcare costs deducted from earnings for Cotswold Council Tax Support with one eligible child.
+values:
+  2026-04-01: 175
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Cotswold Council Tax Support one-child weekly childcare deduction cap
+  reference:
+    - title: Cotswold District Council Council Tax Support Scheme 2026/27, section 14.3
+      href: https://cotswold.gov.uk/media/k04l1hc2/cdc-cts-scheme-2026-27.pdf

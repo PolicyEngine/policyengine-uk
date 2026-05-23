@@ -1,0 +1,10 @@
+description: Weekly assumed income per capital step for Enfield non-Universal Credit working-age CTR.
+values:
+  2026-04-01: 1
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Enfield non-UC CTR tariff income per step
+  reference:
+    - title: Enfield Council Tax Reduction Scheme 2026-2027, paragraph 37
+      href: https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf

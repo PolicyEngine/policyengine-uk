@@ -1,0 +1,31 @@
+description: Council Tax Reduction support rate by weekly income band under Bassetlaw's working-age scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.88
+  - threshold:
+      2026-04-01: 103.80
+    amount:
+      2026-04-01: 0.65
+  - threshold:
+      2026-04-01: 232.73
+    amount:
+      2026-04-01: 0.45
+  - threshold:
+      2026-04-01: 308.58
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 421.75
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  threshold_unit: currency-GBP
+  period: week
+  type: single_amount
+  label: Bassetlaw Council Tax Reduction weekly income support rate
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, paragraph 27
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

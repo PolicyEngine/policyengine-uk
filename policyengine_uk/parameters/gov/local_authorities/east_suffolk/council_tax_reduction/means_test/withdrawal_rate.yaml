@@ -1,0 +1,11 @@
+description: Withdrawal rate for working-age households under the East Suffolk Council Tax Reduction scheme.
+values:
+  2025-04-01: 0.2
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: East Suffolk Council Tax Reduction withdrawal rate
+  reference:
+    - title: East Suffolk Council Council Tax Reduction Scheme 2025/2026
+      href: https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/East-Suffolk-Council-Council-Tax-Reduction-Scheme-2025-26.pdf

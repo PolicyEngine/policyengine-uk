@@ -1,0 +1,13 @@
+description: Withdrawal rate for working-age households under the Hammersmith and Fulham Council Tax Support scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Hammersmith and Fulham Council Tax Support withdrawal rate
+  reference:
+    - title: Council Tax Support Scheme 2026/27
+      href: https://democracy.lbhf.gov.uk/documents/s133438/Council%20Tax%20Support%20Scheme%202026-27.pdf
+    - title: Appendix 1 Council Tax Support Scheme 2025-26
+      href: https://democracy.lbhf.gov.uk/documents/s133439/Appendix%201%20Council%20Tax%20Support%20Scheme%202025-26.pdf
+

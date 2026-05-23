@@ -1,0 +1,12 @@
+description: Minimum weekly Council Tax Reduction award payable under the Cheshire West and Chester working-age scheme.
+values:
+  2026-04-01: 2
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Cheshire West and Chester Council Tax Reduction minimum weekly award
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraph 3.10
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, paragraph 34.2
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf

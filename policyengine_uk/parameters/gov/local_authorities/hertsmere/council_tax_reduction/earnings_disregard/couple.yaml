@@ -1,0 +1,10 @@
+description: Hertsmere weekly earnings disregard for a couple
+values:
+  2026-04-01: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Hertsmere couple earnings disregard
+  reference:
+    - title: Hertsmere Borough Council - Council Tax Reduction Scheme 2026/27, Schedule 3
+      href: https://www.hertsmere.gov.uk/asset-library/cts-scheme-2026-27.pdf

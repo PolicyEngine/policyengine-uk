@@ -1,0 +1,11 @@
+description: Ordinary and protected working-age capital limit for Cheshire West and Chester Council Tax Reduction.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  label: Cheshire West and Chester ordinary working-age CTR capital limit
+  reference:
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 1, paragraphs 7.2-7.3
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-1.pdf
+    - title: Cheshire West and Chester Council Tax Reduction Summary 2026-2027 Annex A Part 2, paragraphs 3.6 and 4.1-4.4
+      href: https://www.cheshirewestandchester.gov.uk/asset-library/council-tax-reduction-summary-2026-2027-annex-a-part-2.pdf

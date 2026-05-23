@@ -1,0 +1,36 @@
+description: Council Tax Reduction rate by weekly income band for Southend-on-Sea working-age households with two or more dependent children or qualifying young people.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 110.01
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 185.01
+    amount:
+      2026-04-01: 0.75
+  - threshold:
+      2026-04-01: 260.01
+    amount:
+      2026-04-01: 0.5
+  - threshold:
+      2026-04-01: 335.01
+    amount:
+      2026-04-01: 0.25
+  - threshold:
+      2026-04-01: 410.01
+    amount:
+      2026-04-01: 0
+metadata:
+  amount_unit: /1
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Southend-on-Sea two-or-more-child weekly income-band CTR rate
+  reference:
+    - title: Southend-on-Sea Borough Council Council Tax Reduction S13A Scheme 2026/27, Schedule 1
+      href: https://www.southend.gov.uk/downloads/file/3527/southend-on-sea-borough-council-ctax-reduction-s13a-scheme
+

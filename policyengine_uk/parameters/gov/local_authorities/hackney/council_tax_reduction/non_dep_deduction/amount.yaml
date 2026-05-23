@@ -1,0 +1,28 @@
+description: Weekly working-age non-dependant deduction schedule under the Hackney Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Hackney Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Non-dependant deductions explained
+      href: https://www.hackney.gov.uk/council-tax-and-benefits/benefits/how-we-assess-your-benefits-claim/non-dependant-deductions-explained
+

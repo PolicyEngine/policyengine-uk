@@ -1,0 +1,12 @@
+description: Maximum share of eligible Council Tax liability covered by Kingston upon Hull working-age Council Tax Reduction.
+values:
+  2026-04-01: 0.8
+metadata:
+  unit: /1
+  period: year
+  label: Kingston upon Hull working-age Council Tax Reduction maximum support rate
+  reference:
+    - title: Hull 2026/27 Locally Defined Discounts report, section 8.1
+      href: https://cmis.hullcc.gov.uk/CMIS/Document.ashx?FgPlIEJYlotS%2BYGoBi5olA%3D%3D=NHdURQburHA%3D&WGewmoAfeNQ16B2MHuCpMRKZMwaG1PaO=ctNJFf55vVA%3D&WGewmoAfeNR9xqBux0r1Q8Za60lavYmz=ctNJFf55vVA%3D&czJKcaeAi5tUFL1DTL2UE4zNRBcoShgo=3iPoNPAMkX0oMDpDWuq94FvyHESpS8C4W4BwpivUryCOIyTQ6%2B%2BMwQ%3D%3D&d9Qjj0ag1Pd993jsyOJqFvmyB7X0CSQK=ctNJFf55vVA%3D&kCx1AnS9%2FpWZQ40DXFvdEw%3D%3D=hFflUdN3100%3D&mCTIbCubSFfXsDGW9IXnlg%3D%3D=hFflUdN3100%3D&rUzwRPf%2BZ3zd4E7Ikn8Lyw%3D%3D=pwRE6AGJFLDNlh225F5QMaQWCtPHwdhUfCZ%2FLUQzgA2uL5jNRG4jdQ%3D%3D&uJovDxwdjMPoYv%2BAJvYtyA%3D%3D=ctNJFf55vVA%3D
+    - title: Hull Council Tax Reduction Scheme 2025/26
+      href: https://www.hull.gov.uk/downloads/file/239/council-tax-reduction-scheme-2025-to-2026

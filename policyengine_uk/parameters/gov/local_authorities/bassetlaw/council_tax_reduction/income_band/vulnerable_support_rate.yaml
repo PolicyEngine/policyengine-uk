@@ -1,0 +1,10 @@
+description: Council Tax Reduction support rate for Bassetlaw vulnerable Class G claimants.
+values:
+  2026-04-01: 0.95
+metadata:
+  unit: /1
+  period: year
+  label: Bassetlaw Council Tax Reduction vulnerable class support rate
+  reference:
+    - title: Bassetlaw District Council Tax Reduction Scheme 2026/27, paragraphs 15 and 25
+      href: https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf

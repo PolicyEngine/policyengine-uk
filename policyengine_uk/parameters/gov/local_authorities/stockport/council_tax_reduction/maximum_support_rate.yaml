@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered for working-age households under the Stockport Council Tax Support scheme.
+values:
+  2026-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Stockport Council Tax Support maximum support rate
+  reference:
+    - title: Stockport Council Tax Support Scheme 2026 to 2027
+      href: https://www.stockport.gov.uk/council-tax-support-scheme

@@ -1,0 +1,31 @@
+description: Tewkesbury weekly non-dependant deduction by weekly gross income. Tewkesbury follows the Default Scheme. Paragraph 30 of the Default Scheme, as amended before the scheme took effect by SI 2012/3085, sets deductions at GBP 3.65 (out-of-work or low-income), then GBP 7.25, GBP 9.15 and GBP 10.95 for higher gross-income brackets.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 3.65
+  - threshold:
+      2026-04-01: 186
+    amount:
+      2026-04-01: 7.25
+  - threshold:
+      2026-04-01: 322
+    amount:
+      2026-04-01: 9.15
+  - threshold:
+      2026-04-01: 401
+    amount:
+      2026-04-01: 10.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Tewkesbury Council Tax Reduction non-dependant deduction
+  reference:
+    - title: Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule paragraph 30
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/30
+    - title: Council Tax Reduction Schemes (Prescribed Requirements and Default Scheme) (England) (Amendment) Regulations 2012, regulations 7-8
+      href: https://www.legislation.gov.uk/uksi/2012/3085/regulation/8/made
+    - title: Tewkesbury Borough Council - Council Tax Reduction Scheme Report (Cabinet, January 2026)
+      href: https://minutes.tewkesbury.gov.uk/documents/s71351/Council%20Tax%20Reduction%20Scheme%20Report.pdf

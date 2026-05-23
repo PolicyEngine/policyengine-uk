@@ -1,0 +1,49 @@
+description: Monthly Council Tax contribution for Universal Credit claimants under the St Albans Council Tax Reduction scheme, based on claimant and partner monthly earnings.
+brackets:
+  - threshold:
+      2025-04-01: 0
+      2026-04-01: 0
+    amount:
+      2025-04-01: 0
+      2026-04-01: 0
+  - threshold:
+      2025-04-01: 350
+      2026-04-01: 370
+    amount:
+      2025-04-01: 45
+      2026-04-01: 45
+  - threshold:
+      2025-04-01: 715
+      2026-04-01: 750
+    amount:
+      2025-04-01: 95
+      2026-04-01: 100
+  - threshold:
+      2025-04-01: 1_360
+      2026-04-01: 1_440
+    amount:
+      2025-04-01: 145
+      2026-04-01: 150
+  - threshold:
+      2025-04-01: 2_170
+      2026-04-01: 2_285
+    amount:
+      2025-04-01: 220
+      2026-04-01: 230
+  - threshold:
+      2025-04-01: 2_790
+      2026-04-01: 2_940
+    amount:
+      2025-04-01: 280
+      2026-04-01: 295
+metadata:
+  amount_unit: currency-GBP
+  period: month
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: St Albans Council Tax Reduction Universal Credit earnings contribution schedule
+  reference:
+    - title: St Albans Council Tax Reduction Scheme 2025/26
+      href: https://www.stalbans.gov.uk/sites/default/files/attachments/St%20Albans%20S13A%20202526%20Final.pdf
+    - title: St Albans Council Tax Support
+      href: https://www.stalbans.gov.uk/council-tax-support

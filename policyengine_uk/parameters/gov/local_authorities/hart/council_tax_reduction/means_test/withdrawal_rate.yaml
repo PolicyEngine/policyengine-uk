@@ -1,0 +1,10 @@
+description: Hart Council Tax Support excess income withdrawal rate
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Hart Council Tax Support withdrawal rate
+  reference:
+    - title: Hart District Council - Council Tax Support Scheme 2026/27, Class E
+      href: https://www.hart.gov.uk/sites/default/files/2026-04/Council-Tax-Reduction-Scheme-2026-27.pdf

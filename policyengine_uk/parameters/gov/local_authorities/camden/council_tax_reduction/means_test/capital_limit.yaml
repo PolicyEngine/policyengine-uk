@@ -1,0 +1,9 @@
+description: Savings and assets limit for working-age Camden Council Tax Support.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  label: Camden working-age Council Tax Support savings and assets limit
+  reference:
+    - title: Camden Council, Council Tax Support
+      href: https://www.camden.gov.uk/council-tax-support

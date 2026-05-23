@@ -1,0 +1,11 @@
+description: Capital limit under the Hackney Council Tax Reduction scheme.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Hackney Council Tax Reduction capital limit
+  reference:
+    - title: Housing Benefit and Council Tax Reduction explained
+      href: https://www.hackney.gov.uk/council-tax-and-benefits/benefits/benefits-explained/housing-benefit-and-council-tax-reduction-explained
+

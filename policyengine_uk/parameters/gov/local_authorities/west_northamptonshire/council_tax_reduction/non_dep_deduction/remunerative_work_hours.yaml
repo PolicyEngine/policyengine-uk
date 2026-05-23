@@ -1,0 +1,12 @@
+description: Weekly hours threshold for remunerative work under the West Northamptonshire Council Tax Reduction scheme.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: West Northamptonshire Council Tax Reduction remunerative work hours threshold
+  reference:
+    - title: West Northamptonshire Local Council Tax Reduction Scheme 2026/27 report, recommendations 3.1 and report background 5.3
+      href: https://westnorthants.moderngov.co.uk/documents/s25215/Item%2010%20-%20CTRS%2026-27.pdf
+    - title: West Northamptonshire Council CTR Scheme 2025/26, paragraphs 30 and 84
+      href: https://cms.westnorthants.gov.uk/media/2065/download

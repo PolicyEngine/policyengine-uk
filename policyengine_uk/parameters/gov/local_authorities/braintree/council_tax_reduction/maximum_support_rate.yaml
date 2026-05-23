@@ -1,0 +1,10 @@
+description: Braintree maximum Council Tax Reduction rate. Paragraph 48.1 sets the working-age maximum at 77 per cent of council tax liability, without any Band cap or non-dependant deduction.
+values:
+  2026-04-01: 0.77
+metadata:
+  unit: /1
+  period: year
+  label: Braintree Council Tax Reduction maximum support rate
+  reference:
+    - title: Braintree District Council - Council Tax Reduction Scheme 2026/27, paragraph 48.1
+      href: https://www.braintree.gov.uk/downloads/file/4374/council-tax-reduction-scheme-2026-27

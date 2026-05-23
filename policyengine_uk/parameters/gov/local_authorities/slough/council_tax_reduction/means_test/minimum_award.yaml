@@ -1,0 +1,10 @@
+description: Weekly minimum payable Council Tax Support under the Slough working-age scheme.
+values:
+  2026-04-01: 0.01
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Slough Council Tax Support minimum weekly award
+  reference:
+    - title: Slough Borough Council, income bands for Council Tax Support 2026-27
+      href: https://www.slough.gov.uk/council-tax-support/calculate-council-tax-support-2026-27/2

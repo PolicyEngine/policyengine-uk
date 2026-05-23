@@ -1,0 +1,10 @@
+description: Capital threshold above which Chichester assumes tariff income for non-UC working-age Council Tax Reduction.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Chichester Council Tax Reduction tariff income threshold
+  reference:
+    - title: Chichester Local Council Tax Reduction Scheme Rules 2026-2027, section 5.11
+      href: https://chichester.moderngov.co.uk/documents/s30863/09.1%20Appendix%201%20Local%20Council%20Tax%20Reduction%20Scheme%20Rules%202026%20-%202027.pdf
