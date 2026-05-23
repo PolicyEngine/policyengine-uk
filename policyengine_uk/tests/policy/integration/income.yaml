@@ -22,9 +22,9 @@
   output:
     basic_rate_savings_income_pre_starter: 10_000
     savings_starter_rate_income: 0
-    basic_rate_savings_income: 10_000
+    basic_rate_savings_income: 9_500
     savings_allowance: 500
-    higher_rate_savings_income: 4_500
+    higher_rate_savings_income: 5_000
     taxed_savings_income: 14_500
 
 - name: Dividends taxed at the marginal rates
@@ -35,7 +35,73 @@
     # Nullify Personal Allowance for testing purposes
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 0
   output:
-    dividend_income_tax: 6_225
+    dividend_income_tax: 6_725
+
+- name: Savings and dividend allowances occupy tax bands before taxable income.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 50_000
+    savings_interest_income: 1_000
+    dividend_income: 1_000
+  output:
+    earned_taxable_income: 37_430
+    savings_allowance: 500
+    basic_rate_savings_income: 0
+    higher_rate_savings_income: 500
+    savings_income_tax: 210
+    taxed_dividend_income: 500
+    dividend_income_tax: 178.75
+    income_tax: 7_874.75
+
+- name: Personal allowance caps savings starter rate before dividends.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 10_000
+    savings_interest_income: 5_000
+    dividend_income: 5_000
+  output:
+    received_allowances_savings_income: 2_570
+    basic_rate_savings_income_pre_starter: 2_430
+    savings_starter_rate_income: 2_430
+    savings_allowance: 1_000
+    savings_income_tax: 0
+    taxed_dividend_income: 4_500
+    dividend_income_tax: 483.75
+    income_tax: 483.75
+
+- name: Starter-rate savings applies before personal savings allowance.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 12_570
+    savings_interest_income: 5_500
+  output:
+    basic_rate_savings_income_pre_starter: 5_500
+    savings_starter_rate_income: 5_000
+    savings_allowance: 1_000
+    basic_rate_savings_income: 0
+    savings_income_tax: 0
+    income_tax: 0
+
+- name: Property income uses post-allowance rate bands.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        taxable_property_income: 75_900
+        savings_interest_income: 2_900
+      person2:
+        taxable_property_income: 46_451
+        savings_interest_income: 1_525
+    benunit:
+      members: [person1, person2]
+  output:
+    property_income_tax: [17_792, 6_776.20]
+    savings_income_tax: [0, 0]
+    income_tax: [17_792, 6_776.20]
 
 - name: Household net income can be negative
   period: 2020

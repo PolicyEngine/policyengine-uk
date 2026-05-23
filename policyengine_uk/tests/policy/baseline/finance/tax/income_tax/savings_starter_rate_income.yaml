@@ -2,6 +2,8 @@
   period: 2024
   input:
     basic_rate_savings_income_pre_starter: 5_000
+    taxable_savings_interest_income: 6_000
+    received_allowances_savings_income: 0
     earned_taxable_income: 15_000
     taxable_dividend_income: 0
   output:
@@ -11,6 +13,8 @@
   period: 2024
   input:
     basic_rate_savings_income_pre_starter: 4_000
+    taxable_savings_interest_income: 5_000
+    received_allowances_savings_income: 0
     earned_taxable_income: 19_000
     taxable_dividend_income: 0
   output:
@@ -20,7 +24,9 @@
   period: 2024
   input:
     basic_rate_savings_income_pre_starter: 2_000
-    earned_taxable_income: 22_000
+    taxable_savings_interest_income: 3_000
+    received_allowances_savings_income: 0
+    earned_taxable_income: 23_000
     taxable_dividend_income: 1_000
   output:
     savings_starter_rate_income: 0
@@ -29,6 +35,8 @@
   period: 2024
   input:
     basic_rate_savings_income_pre_starter: 10_000
+    taxable_savings_interest_income: 11_000
+    received_allowances_savings_income: 0
     earned_taxable_income: 16_000
     taxable_dividend_income: 0
   output:
@@ -38,7 +46,9 @@
   period: 2024
   input:
     basic_rate_savings_income_pre_starter: 5_000
+    taxable_savings_interest_income: 6_000
+    received_allowances_savings_income: 0
     earned_taxable_income: 16_000
     taxable_dividend_income: 2_000
   output:
-    savings_starter_rate_income: 4_570
+    savings_starter_rate_income: 5_000

@@ -29,13 +29,19 @@ class savings_starter_rate_income(Variable):
 
         starter_rate_taper_start = max_personal_allowance + limit
 
-        savings_income = person("basic_rate_savings_income_pre_starter", period)
+        savings_income = min_(
+            person("basic_rate_savings_income_pre_starter", period),
+            max_(
+                0,
+                person("taxable_savings_interest_income", period)
+                - person("received_allowances_savings_income", period),
+            ),
+        )
         earned_taxable_income = person("earned_taxable_income", period)
-        dividend_income = person("taxable_dividend_income", period)
-        non_savings_income = earned_taxable_income + dividend_income
 
         removed_amount = max_(
-            0, (non_savings_income - starter_rate_taper_start) * phase_out_rate
+            0,
+            (earned_taxable_income - starter_rate_taper_start) * phase_out_rate,
         )
 
         post_taper_max = max_(0, limit - removed_amount)

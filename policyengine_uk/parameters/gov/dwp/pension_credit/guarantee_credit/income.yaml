@@ -14,6 +14,7 @@ values:
   - working_tax_credit
   - state_pension
   - private_pension_income
+  - property_income
   - pension_credit_deemed_income
   - esa_contrib
   - jsa_contrib
