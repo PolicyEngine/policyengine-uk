@@ -1,3 +1,8 @@
+## [2.88.23] - 2026-05-23
+
+No significant changes.
+
+
 ## [2.88.22] - 2026-05-23
 
 No significant changes.
