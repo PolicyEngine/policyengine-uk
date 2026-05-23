@@ -1,22 +1,77 @@
-- name: Not pension-age, ineligible for Pension Credit (single)
-  period: 2022
+- name: Case 1, single adult below State Pension age is ineligible.
+  period: 2026
   input:
     people:
-      person:
-        is_SP_age: false
+      person1:
+        age: 54
+    benunits:
+      benunit:
+        members: [person1]
   output:
     is_pension_credit_eligible: false
 
-- name: One member of a couple is pension age; eligible for Pension Credit
-  period: 2022
+- name: Case 2, single adult above State Pension age is eligible.
+  period: 2026
   input:
     people:
-      person:
-        is_SP_age: false
-      spouse:
-        is_SP_age: true
+      person1:
+        age: 79
     benunits:
       benunit:
-        members: [person, spouse]
+        members: [person1]
   output:
     is_pension_credit_eligible: true
+
+- name: Case 3, couple with both adults above State Pension age is eligible.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 79
+      person2:
+        age: 70
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_pension_credit_eligible: true
+
+- name: Case 4, mixed-age couple without protected exception is ineligible.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 79
+      person2:
+        age: 54
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_pension_credit_eligible: false
+
+- name: Case 5, child in benefit unit does not block pension-age adult eligibility.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 79
+      person2:
+        age: 10
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_pension_credit_eligible: true
+
+- name: Case 6, child-only benefit unit is ineligible.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 10
+    benunits:
+      benunit:
+        members: [person1]
+  output:
+    is_pension_credit_eligible: false

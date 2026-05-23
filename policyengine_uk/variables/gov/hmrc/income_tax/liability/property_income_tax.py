@@ -35,14 +35,23 @@ class property_income_tax(Variable):
         """
         rates = parameters(period).gov.hmrc.income_tax.rates
         taxable_property = person("taxable_property_income", period)
-        earned_taxable = person("earned_taxable_income", period)
-        other_earned_taxable = max_(0, earned_taxable - taxable_property)
+        non_savings_after_allowances = max_(
+            0,
+            person("adjusted_net_income", period)
+            - person("taxable_savings_interest_income", period)
+            - person("taxable_dividend_income", period)
+            - person("allowances", period),
+        )
+        property_after_allowances = min_(taxable_property, non_savings_after_allowances)
+        other_earned_taxable = max_(
+            0, non_savings_after_allowances - property_after_allowances
+        )
         is_scottish = person("pays_scottish_income_tax", period)
 
         # Scottish taxpayers: use Scottish rates via calc method
         # Tax on (other earned + property) minus tax on (other earned)
         scottish_tax = rates.scotland.rates.calc(
-            other_earned_taxable + taxable_property
+            other_earned_taxable + property_after_allowances
         ) - rates.scotland.rates.calc(other_earned_taxable)
 
         # rUK taxpayers: use property-specific rates
@@ -53,17 +62,17 @@ class property_income_tax(Variable):
 
         # Property income in basic rate band
         basic_rate_space = max_(0, basic_upper - other_earned_taxable)
-        property_in_basic = min_(taxable_property, basic_rate_space)
+        property_in_basic = min_(property_after_allowances, basic_rate_space)
 
         # Property income in higher rate band
         higher_start = max_(other_earned_taxable, basic_upper)
         higher_rate_space = max_(0, higher_upper - higher_start)
-        remaining_after_basic = max_(0, taxable_property - property_in_basic)
+        remaining_after_basic = max_(0, property_after_allowances - property_in_basic)
         property_in_higher = min_(remaining_after_basic, higher_rate_space)
 
         # Property income in additional rate band
         property_in_additional = max_(
-            0, taxable_property - property_in_basic - property_in_higher
+            0, property_after_allowances - property_in_basic - property_in_higher
         )
 
         ruk_tax = (

@@ -28,7 +28,7 @@
     adjusted_net_income: 20_000
     capital_gains: 23_000
   output:
-    capital_gains_tax: 2_230
+    capital_gains_tax: 2_000
 
 - name: Higher rate capital gains tax
   period: 2024
@@ -36,7 +36,7 @@
     adjusted_net_income: 50_000
     capital_gains: 50_000
   output:
-    capital_gains_tax: 9_400
+    capital_gains_tax: 9_373
 
 - name: Additional rate capital gains tax
   period: 2024
@@ -52,7 +52,7 @@
     adjusted_net_income: 35_000
     capital_gains: 40_000
   output:
-    capital_gains_tax: 7_130
+    capital_gains_tax: 5_873
 
 - name: High capital gains, low income
   period: 2024
@@ -60,7 +60,7 @@
     adjusted_net_income: 10_000
     capital_gains: 200_000
   output:
-    capital_gains_tax: 36_630
+    capital_gains_tax: 35_630
 
 - name: Very high capital gains and income
   period: 2024
@@ -77,3 +77,49 @@
     capital_gains: 3_000
   output:
     capital_gains_tax: 0
+
+- name: Case 11, two adults each receive the annual exempt amount.
+  period: 2026
+  input:
+    people:
+      person1:
+        capital_gains: 151_800
+      person2:
+        capital_gains: 151_800
+    benunit:
+      members: [person1, person2]
+  output:
+    capital_gains_tax: [33_450, 33_450]
+
+- name: Case 12, ordinary income below allowances leaves the full basic rate band for gains.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        adjusted_net_income: 9_324
+        capital_gains: 228_890
+      person2:
+        capital_gains: -124_972
+    benunit:
+      members: [person1, person2]
+  output:
+    capital_gains_tax: [51_951.60, 0]
+
+- name: Case 13, Gift Aid extends the basic rate band for capital gains.
+  period: 2018
+  input:
+    adjusted_net_income: 41_850
+    gift_aid: 40_000
+    capital_gains: 70_000
+  output:
+    capital_gains_tax: 6_210
+
+- name: Case 14, personal pension contributions extend the basic rate band for capital gains.
+  period: 2026
+  input:
+    employment_income: 52_570
+    personal_pension_contributions: 10_000
+    capital_gains: 30_000
+  output:
+    capital_gains_tax: 6_018

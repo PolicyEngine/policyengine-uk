@@ -27,3 +27,26 @@
     employment_income: 60_000
   output:
     CB_HITC: 1_000
+
+- name: Case 5, high-income family pays one full Child Benefit charge.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        self_employment_income: 113_850
+      person2:
+        age: 38
+        employment_income: 35_000
+      person3:
+        age: 8
+      person4:
+        age: 5
+    benunit:
+      members: [person1, person2, person3, person4]
+  output:
+    child_benefit: 2_328.16
+    CB_HITC: [2_328.16, 0, 0, 0]
+    income_tax_pre_charges: [35_142, 4_486, 0, 0]
+    income_tax: [37_470.16, 4_486, 0, 0]

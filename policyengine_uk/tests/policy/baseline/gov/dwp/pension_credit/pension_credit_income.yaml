@@ -58,3 +58,25 @@
     pension_credit_assessable_capital: 10_001
     pension_credit_deemed_income: 52
     pension_credit_income: 52
+
+- name: Case 4, property income and non-main-home capital count for Pension Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 79
+        property_income: 10_476
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        other_residential_property_value: 55_370
+        savings: 455
+  output:
+    pension_credit_assessable_capital: 55_825
+    pension_credit_deemed_income: 4_784
+    pension_credit_income: 15_260
+    pension_credit: 0

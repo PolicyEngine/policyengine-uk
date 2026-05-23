@@ -15,23 +15,25 @@ class basic_rate_savings_income(Variable):
     def formula(person, period, parameters):
         thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
         other_income = person("earned_taxable_income", period)
-        savings_deductions = add(
-            person,
-            period,
-            [
-                "received_allowances_savings_income",
-                "savings_allowance",
-                "savings_starter_rate_income",
-            ],
-        )
-        savings_income_less_deductions = max_(
+        savings_after_allowances = max_(
             0,
-            person("taxable_savings_interest_income", period) - savings_deductions,
+            person("taxable_savings_interest_income", period)
+            - person("received_allowances_savings_income", period),
         )
+        zero_rate_savings = min_(
+            savings_after_allowances,
+            person("savings_starter_rate_income", period)
+            + person("savings_allowance", period),
+        )
+        taxable_savings_start = other_income + zero_rate_savings
         basic_rate_amount_with = clip(
-            other_income + savings_income_less_deductions,
+            other_income + savings_after_allowances,
             thresholds[0],
             thresholds[1],
         )
-        basic_rate_amount_without = clip(other_income, thresholds[0], thresholds[1])
+        basic_rate_amount_without = clip(
+            taxable_savings_start,
+            thresholds[0],
+            thresholds[1],
+        )
         return max_(0, basic_rate_amount_with - basic_rate_amount_without)
