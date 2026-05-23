@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.geography import Region
 
 
 class household_equivalisation_ahc(Variable):
@@ -9,6 +8,7 @@ class household_equivalisation_ahc(Variable):
     definition_period = YEAR
 
     def formula(household, period, parameters):
+        scale = parameters(period).household.demographic.equiv.ahc
         count_other_adults = max_(
             household.sum(household.members("is_adult", period)) - 1, 0
         )
@@ -19,8 +19,8 @@ class household_equivalisation_ahc(Variable):
             household.members("is_older_child", period)
         )
         return (
-            0.58
-            + 0.42 * count_other_adults
-            + 0.42 * count_older_children
-            + 0.2 * count_young_children
+            scale.first_adult
+            + scale.second_adult * count_other_adults
+            + scale.child_over_14 * count_older_children
+            + scale.child_under_14 * count_young_children
         )

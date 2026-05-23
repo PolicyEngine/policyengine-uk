@@ -1,0 +1,121 @@
+- name: Equivalisation factor — single adult (HBAI modified OECD scale, BHC)
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+  output:
+    household_equivalisation_bhc: 0.67
+    household_equivalisation_ahc: 0.58
+
+- name: Equivalisation factor — couple, no children
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      adult1:
+        age: 40
+      adult2:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult1, adult2]
+    households:
+      household:
+        members: [adult1, adult2]
+  output:
+    household_equivalisation_bhc: 1.00
+    household_equivalisation_ahc: 1.00
+
+- name: Equivalisation factor — couple with one young child (under 14)
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      adult1:
+        age: 40
+      adult2:
+        age: 40
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [adult1, adult2, child]
+    households:
+      household:
+        members: [adult1, adult2, child]
+  output:
+    household_equivalisation_bhc: 1.20
+    household_equivalisation_ahc: 1.20
+
+- name: Equivalisation factor — couple with one older child (14+)
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      adult1:
+        age: 40
+      adult2:
+        age: 40
+      child:
+        age: 15
+    benunits:
+      benunit:
+        members: [adult1, adult2, child]
+    households:
+      household:
+        members: [adult1, adult2, child]
+  output:
+    household_equivalisation_bhc: 1.33
+    household_equivalisation_ahc: 1.42
+
+- name: Equivalisation factor — couple with one young and one older child
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      adult1:
+        age: 40
+      adult2:
+        age: 40
+      young_child:
+        age: 8
+      older_child:
+        age: 16
+    benunits:
+      benunit:
+        members: [adult1, adult2, young_child, older_child]
+    households:
+      household:
+        members: [adult1, adult2, young_child, older_child]
+  output:
+    household_equivalisation_bhc: 1.53
+    household_equivalisation_ahc: 1.62
+
+- name: Equivalisation factor — lone parent with two young children
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      adult:
+        age: 35
+      child1:
+        age: 6
+      child2:
+        age: 9
+    benunits:
+      benunit:
+        members: [adult, child1, child2]
+    households:
+      household:
+        members: [adult, child1, child2]
+  output:
+    household_equivalisation_bhc: 1.07
+    household_equivalisation_ahc: 0.98
