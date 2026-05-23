@@ -1,4 +1,4 @@
-description: Exclusions to earned taxable income
+description: Exclusions to earned taxable income.
 values:
   0000-01-01:
     - taxable_savings_interest_income

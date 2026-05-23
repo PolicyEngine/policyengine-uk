@@ -14,7 +14,7 @@ brackets:
   threshold:
     2015-04-01: 350000
     2019-01-25: 250000
-description: Rates on Scotland's non-residential property purchases
+description: Rates on Scotland's non-residential property purchases.
 metadata:
   economy: false
   label: Lbtt on non-residential property

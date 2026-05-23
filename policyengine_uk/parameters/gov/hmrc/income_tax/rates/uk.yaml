@@ -103,7 +103,7 @@ brackets:
       unit: currency-GBP
     values:
       2015-04-05: 10_000_000
-description: Income Tax scale
+description: Income Tax scale.
 metadata:
   label: Income Tax main rates
   rate_unit: /1

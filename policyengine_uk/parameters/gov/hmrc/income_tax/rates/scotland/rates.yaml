@@ -1,4 +1,4 @@
-description: Rates for Scottish Income Tax
+description: Rates for Scottish Income Tax.
 brackets:
   - threshold:
       values:

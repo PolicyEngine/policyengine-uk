@@ -27,7 +27,7 @@ brackets:
     2018-04-01: 0.12
   threshold:
     2018-04-01: 1500000
-description: Residential property progressive tax scale for primary residences
+description: Residential property progressive tax scale for primary residences.
 metadata:
   economy: false
   label: Ltt on primary residences

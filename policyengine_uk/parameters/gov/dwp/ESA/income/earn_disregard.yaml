@@ -1,5 +1,5 @@
 description: Earnings threshold above which the income-based Employment and Support
-  Allowance amount is reduced
+  Allowance amount is reduced.
 metadata:
   economy: false
   period: week

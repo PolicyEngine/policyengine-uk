@@ -1,4 +1,4 @@
-description: Income threshold at which Savings Credit is eligible
+description: Income threshold at which Savings Credit is eligible.
 SINGLE:
   values:
     2015-04-06: 126.5

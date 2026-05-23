@@ -1,4 +1,4 @@
-description: Pre-tax deductions applied to self-employment income
+description: Pre-tax deductions applied to self-employment income.
 values:
   0000-01-01:
     - loss_relief

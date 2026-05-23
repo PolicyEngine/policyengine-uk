@@ -23,7 +23,7 @@ brackets:
     2015-04-01: 0.12
   threshold:
     2015-04-01: 750000
-description: Rates on Scotland's residential property purchases
+description: Rates on Scotland's residential property purchases.
 metadata:
   economy: false
   label: Lbtt on residential property

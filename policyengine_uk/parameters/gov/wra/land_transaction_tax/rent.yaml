@@ -12,7 +12,7 @@ brackets:
     2018-04-01: 0.02
   threshold:
     2018-04-01: 2000000
-description: Progressive tax scale for cumulative rent
+description: Progressive tax scale for cumulative rent.
 metadata:
   economy: false
   label: Ltt on cumulative rent

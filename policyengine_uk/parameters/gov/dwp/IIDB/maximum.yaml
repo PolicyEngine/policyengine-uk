@@ -1,5 +1,5 @@
 description: Maximum weekly Industrial Injuries Disablement Benefit; amount varies
-  in 10% increments
+  in 10% increments.
 metadata:
   economy: false
   period: week

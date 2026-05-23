@@ -39,7 +39,7 @@ brackets:
   threshold:
     2012-07-17: 2000000
     2015-02-12: null
-description: Stamp Duty Land Tax progressive rates for residential property transfers
+description: Stamp Duty Land Tax progressive rates for residential property transfers.
 metadata:
   economy: false
   label: Stamp Duty on non-first primary homes

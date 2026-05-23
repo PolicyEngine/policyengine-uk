@@ -1,4 +1,4 @@
-description: Age threshold below which single adults without children can only claim shared accommodation rates under LHA
+description: Age threshold below which single adults without children can only claim shared accommodation rates under LHA.
 values:
   2013-04-01: 35
 metadata:

@@ -29,7 +29,7 @@ brackets:
     2020-12-22: 0.16
   threshold:
     2018-04-01: 1500000
-description: Higher residential property progressive tax scale for non-primary residences
+description: Higher residential property progressive tax scale for non-primary residences.
 metadata:
   economy: false
   label: Ltt on secondary residences
