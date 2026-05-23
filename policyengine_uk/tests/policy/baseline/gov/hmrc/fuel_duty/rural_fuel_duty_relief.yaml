@@ -1,0 +1,56 @@
+- name: Household outside the Rural Fuel Duty Relief area pays the full fuel duty rate
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        petrol_litres: 1_000
+        diesel_litres: 0
+        in_rural_fuel_duty_relief_area: false
+  output:
+    fuel_duty: 529.5
+
+- name: Household inside the Rural Fuel Duty Relief area receives the 5p/L reduction
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        petrol_litres: 1_000
+        diesel_litres: 0
+        in_rural_fuel_duty_relief_area: true
+  output:
+    fuel_duty: 479.5
+
+- name: Rural relief applies to both petrol and diesel litres
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        petrol_litres: 600
+        diesel_litres: 400
+        in_rural_fuel_duty_relief_area: true
+  output:
+    fuel_duty: 479.5
