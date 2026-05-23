@@ -23,9 +23,9 @@ values:
         title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments
           and National Insurance Funds Payments) Regulations 2022(6)
     value: 123
-  2027-04-01:
-    value: 123
+  2026-04-06:
+    value: 129
     metadata:
       reference:
-        - title: Spring Statement 2022
-          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1062486/Spring_Statement_2022_Web_Accessible.pdf
+        - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+          href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

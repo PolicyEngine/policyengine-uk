@@ -3,8 +3,11 @@ metadata:
   economy: false
   period: week
   label: Constant Attendance Allowance part day rate
-  uprating: gov.benefit_uprating_cpi
+  uprating:
+    parameter: gov.benefit_uprating_cpi
+    start_instant: 2015-04-01
   reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
   unit: currency-GBP
 values:
   2015-04-01: 36.4
+  2026-04-01: 46.8

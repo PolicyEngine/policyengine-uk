@@ -1,0 +1,27 @@
+- name: Case 1, 2026 single-person standard minimum guarantee uses the published rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 81
+    benunits:
+      benunit:
+        members: [person1]
+  output:
+    standard_minimum_guarantee: 12_376
+
+- name: Case 2, 2026 couple standard minimum guarantee uses the published rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 81
+      person2:
+        age: 79
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    standard_minimum_guarantee: 18_889

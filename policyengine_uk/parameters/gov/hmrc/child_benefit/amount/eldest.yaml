@@ -47,6 +47,11 @@ values:
     reference:
       - title: Benefits Uprating 2025/26 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-10105/CBP-10105.pdf
+  2026-04-01:
+    value: 27.05
+    reference:
+      - title: Child Benefit, Guardian's Allowance and tax credits - rates and allowances
+        href: https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
 metadata:
   label: Child Benefit (eldest)
   unit: currency-GBP

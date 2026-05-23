@@ -47,13 +47,9 @@ def _rebalanced_standard_allowance_monthly(
     sim: Simulation, year: int, claimant_type: str
 ) -> float:
     current = sim.tax_benefit_system.parameters(str(year))
-    standard_allowance = float(
+    return float(
         current.gov.dwp.universal_credit.standard_allowance.amount[claimant_type]
     )
-    uplift = float(
-        current.gov.dwp.universal_credit.rebalancing.standard_allowance_uplift
-    )
-    return standard_allowance * (1 + uplift)
 
 
 def _cpi_protected_uc_award_monthly(

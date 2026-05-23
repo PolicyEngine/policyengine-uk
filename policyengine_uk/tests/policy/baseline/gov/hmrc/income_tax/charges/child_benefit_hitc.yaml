@@ -46,7 +46,7 @@
     benunit:
       members: [person1, person2, person3, person4]
   output:
-    child_benefit: 2_328.16
-    CB_HITC: [2_328.16, 0, 0, 0]
+    child_benefit: 2_337.40
+    CB_HITC: [2_337.40, 0, 0, 0]
     income_tax_pre_charges: [35_142, 4_486, 0, 0]
-    income_tax: [37_470.16, 4_486, 0, 0]
+    income_tax: [37_479.40, 4_486, 0, 0]

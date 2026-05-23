@@ -10,6 +10,7 @@ values:
   2023-04-01: 456.89
   2024-04-01: 487.58
   2025-04-01: 495.87
+  2026-04-01: 514.71
 metadata:
   period: month
   unit: currency-GBP

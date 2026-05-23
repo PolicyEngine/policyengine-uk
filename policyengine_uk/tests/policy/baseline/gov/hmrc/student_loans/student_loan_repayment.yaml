@@ -159,3 +159,39 @@
   output:
     student_loan_repayments: 500
     hbai_household_net_income: 39_500
+
+- name: Plan 1 - 2026 threshold is 2026-27 rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_1
+  output:
+    # 9% of (40,000 - 26,900) = 9% of 13,100 = 1,179.00
+    student_loan_repayment: 1_179
+
+- name: Plan 4 - 2026 threshold is 2026-27 rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        employment_income: 40_000
+        student_loan_plan: PLAN_4
+  output:
+    # 9% of (40,000 - 33,795) = 9% of 6,205 = 558.45
+    student_loan_repayment: 558.45
+
+- name: Postgraduate - 2026 threshold remains frozen
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        employment_income: 30_000
+        student_loan_plan: POSTGRADUATE
+  output:
+    # 6% of (30,000 - 21,000) = 6% of 9,000 = 540
+    student_loan_repayment: 540

@@ -37,3 +37,28 @@
     age: 25
   output:
     minimum_wage: 8.91
+
+- name: Minimum wage for a person aged 18 uses the 2026-27 rate
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 18
+  output:
+    minimum_wage: 10.85
+
+- name: Minimum wage for a person aged 21 uses the 2026-27 rate
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 21
+  output:
+    minimum_wage: 12.71
+
+- name: Minimum wage for an apprentice uses the 2026-27 rate
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 21
+    is_apprentice: true
+  output:
+    minimum_wage: 8

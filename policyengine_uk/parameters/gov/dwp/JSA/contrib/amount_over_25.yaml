@@ -14,3 +14,9 @@ values:
   2020-04-01: 74.35
   2021-04-01: 74.7
   2022-04-01: 77
+  2026-04-01:
+    value: 95.55
+    metadata:
+      reference:
+        - title: Benefit and pension rates 2026 to 2027
+          href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027

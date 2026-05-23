@@ -5,3 +5,11 @@
     self_employment_income: 30_000
   output:
     ni_class_4: 1628
+
+- name: NI Class 4 - 2026 lower profits limit is frozen.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 40_000
+  output:
+    ni_class_4: (40_000 - 12_570) * 0.06

@@ -10,3 +10,16 @@
         members: person
   output:
     uc_LCWRA_element: 0
+
+- name: 2026 LCWRA baseline amount uses the standard new-claimant rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: person
+  output:
+    uc_LCWRA_element: 2_607.12

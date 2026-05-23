@@ -21,6 +21,11 @@ values:
     reference:
       - title: The National Minimum Wage (Amendment) Regulations 2025
         href: https://www.legislation.gov.uk/uksi/2025/401/made
+  2026-04-01:
+    value: 8
+    reference:
+      - title: National Minimum Wage and National Living Wage rates
+        href: https://www.gov.uk/national-minimum-wage-rates
 metadata:
   economy: false
   household: false

@@ -35,3 +35,27 @@
         would_claim_child_benefit: false
   output:
     child_benefit: 0
+
+- name: Case 3, 2026 Child Benefit rates apply to a five-child family.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+      person2:
+        age: 12
+      person3:
+        age: 11
+      person4:
+        age: 10
+      person5:
+        age: 9
+      person6:
+        age: 8
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4, person5, person6]
+        would_claim_child_benefit: true
+  output:
+    child_benefit: 5_129.80

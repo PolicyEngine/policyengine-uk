@@ -1,9 +1,12 @@
 description: Enhanced disability premium for a couple, invalid for Employment and Support Allowance
 values:
   2015-04-01: 24.5
+  2026-04-01: 31.4
 metadata:
   period: week
   unit: currency-GBP
   label: Legacy benefit enhanced disability premium (couple)
-  uprating: gov.benefit_uprating_cpi
+  uprating:
+    parameter: gov.benefit_uprating_cpi
+    start_instant: 2015-04-01
   reference: https://www.gov.uk/disability-premiums/what-youll-get

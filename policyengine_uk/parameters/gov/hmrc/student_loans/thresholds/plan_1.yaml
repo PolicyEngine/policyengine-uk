@@ -15,6 +15,18 @@ values:
       reference:
         - title: Student loan thresholds for April 2024
           href: https://www.gov.uk/government/publications/student-loan-and-postgraduate-loan-thresholds/student-loan-and-postgraduate-loan-thresholds-for-the-2024-to-2025-academic-year
+  2025-04-06:
+    value: 26_065
+    metadata:
+      reference:
+        - title: Previous annual repayment thresholds
+          href: https://www.gov.uk/guidance/previous-annual-repayment-thresholds
+  2026-04-06:
+    value: 26_900
+    metadata:
+      reference:
+        - title: Repaying your student loan
+          href: https://www.gov.uk/repaying-your-student-loan/what-you-pay
 metadata:
   label: Plan 1 threshold
   unit: currency-GBP
