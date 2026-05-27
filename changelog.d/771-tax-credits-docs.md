@@ -1,0 +1,1 @@
+- Add a documentation page covering Working Tax Credit and Child Tax Credit — both elements/hours/two-child-limit mechanics and the shared means test — with an explicit note that the scheme ended on 5 April 2025 and PolicyEngine gates the entire computation behind `gov.dwp.tax_credits.active`; ticks off the WTC and CTC entries in the #771 docs-pages todo list.
