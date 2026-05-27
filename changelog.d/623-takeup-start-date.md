@@ -1,0 +1,1 @@
+- Date the Marriage Allowance take-up rate parameter from 2015-04-06 (when the allowance came into force) rather than 2000-01-01, document that 0.5 is the post-2019 steady-state value, and link the HMRC Marriage Allowance statistics page.
