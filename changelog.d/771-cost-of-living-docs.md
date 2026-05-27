@@ -1,0 +1,1 @@
+- Add a documentation page covering the Cost-of-Living Payments (2022-23 and 2023-24) and the 2022 Energy Bills Rebate; ticks off two more entries in the #771 docs-pages todo list.
