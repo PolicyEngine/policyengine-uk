@@ -1,0 +1,1 @@
+- Add legislative references and tidy labels for the Pension Age Winter Heating Payment (Scotland) parameter suite (amounts and eligibility), citing The Pension Age Winter Heating Payment (Scotland) Regulations 2024 (SSI 2024/250) and the June 2025 Scottish Government announcement reinstating a universal element.

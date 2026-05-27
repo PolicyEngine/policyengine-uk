@@ -1,8 +1,16 @@
-description: Whether receipt of means-tested benefits is required to qualify for the Winter Fuel Payment.
+description: Whether receipt of a qualifying means-tested benefit is required for PAWHP entitlement.
 values:
   2000-01-01: false
-  2024-01-01: 
+  2024-01-01:
     value: true
+    reference:
+      - title: The Pension Age Winter Heating Payment (Scotland) Regulations 2024 (SSI 2024/250), reg. 4
+        href: https://www.legislation.gov.uk/ssi/2024/250/regulation/4/made
 metadata:
   unit: bool
-  label: Pawhp means-tested benefits requirement
+  label: PAWHP means-tested benefits requirement
+  reference:
+    - title: The Pension Age Winter Heating Payment (Scotland) Regulations 2024 (SSI 2024/250)
+      href: https://www.legislation.gov.uk/ssi/2024/250/contents/made
+    - title: Scottish Government — Pension Age Winter Heating Payment to be paid to all pensioners (June 2025)
+      href: https://www.gov.scot/news/winter-fuel-payment-to-be-paid-to-all-pensioners/

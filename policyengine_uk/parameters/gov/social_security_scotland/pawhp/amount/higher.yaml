@@ -1,6 +1,12 @@
+description: Pension Age Winter Heating Payment higher (80-and-over) award paid to Scottish households containing someone aged 80 or over who receives a qualifying benefit.
 values:
   2024-01-01: 300
 metadata:
   unit: currency-GBP
-  label: Pawhp lower amount
+  label: PAWHP higher (80+) amount
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  reference:
+    - title: The Pension Age Winter Heating Payment (Scotland) Regulations 2024 (SSI 2024/250)
+      href: https://www.legislation.gov.uk/ssi/2024/250/contents/made
+    - title: Social Security Scotland — Pension Age Winter Heating Payment
+      href: https://www.mygov.scot/pension-age-winter-heating-payment
