@@ -1,11 +1,14 @@
-description: Payment to households on means-tested benefits.
+description: One-off Cost-of-Living Payment to households on qualifying means-tested benefits. £650 across 2022-23 (Spring £326 + Autumn £324) and £900 across 2023-24 (Spring £301 + Autumn £300 + Spring 2024 £299).
 values:
   2022-01-01: 650
-  2023-01-01: 0
+  2023-01-01: 900
+  2024-01-01: 0
 metadata:
   unit: currency-GBP
   period: year
-  label: Payment to households on means-tested benefits
+  label: Cost-of-Living Payment (means-tested)
   reference:
-    - title: Cost-of-living support announcement | GOV.UK
+    - title: 2022-23 Cost-of-Living Support package announcement (HMT/DWP, May 2022)
       href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
+    - title: 2023-24 Cost-of-Living Payments (Autumn Statement 2022, DWP guidance)
+      href: https://www.gov.uk/guidance/cost-of-living-payments-2023-to-2024
