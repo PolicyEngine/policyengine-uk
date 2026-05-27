@@ -336,17 +336,44 @@ programs:
     verified_start_year: 2022
 
   # --- DfE programs ---
-  - id: childcare_entitlements
-    name: Childcare entitlements
-    full_name: Free Childcare Entitlements
+  - id: universal_childcare_entitlement
+    name: Universal childcare entitlement (15h)
+    full_name: Universal Free Childcare Entitlement (3- and 4-year-olds, England)
     category: Education
     agency: DfE
     status: complete
     coverage: England
-    parameter_prefix: gov.dfe
+    variable: universal_childcare_entitlement
+    parameter_prefix: gov.dfe.universal_childcare_entitlement
     verified_start_year: 2023
     verified_end_year: 2025
-    notes: Universal (15h), extended (30h), and targeted entitlements; parameters need expansion for later years
+    notes: 570 hours/year (15h/week over 38 weeks term-time) for all 3- and 4-year-olds; parameters may need expansion for later years.
+
+  - id: extended_childcare_entitlement
+    name: Extended childcare entitlement (30h)
+    full_name: Extended Free Childcare Entitlement (working parents, England)
+    category: Education
+    agency: DfE
+    status: complete
+    coverage: England
+    variable: extended_childcare_entitlement
+    parameter_prefix: gov.dfe.extended_childcare_entitlement
+    verified_start_year: 2023
+    verified_end_year: 2025
+    notes: Additional 570 hours/year on top of the universal entitlement for working parents meeting the earnings test.
+
+  - id: targeted_childcare_entitlement
+    name: Targeted childcare entitlement
+    full_name: Targeted Free Childcare Entitlement (disadvantaged 2-year-olds and working families, England)
+    category: Education
+    agency: DfE
+    status: complete
+    coverage: England
+    variable: targeted_childcare_entitlement
+    parameter_prefix: gov.dfe.targeted_childcare_entitlement
+    verified_start_year: 2023
+    verified_end_year: 2025
+    notes: Free hours for disadvantaged 2-year-olds and, since April 2024, working families with younger children.
 
   - id: childcare_grant
     name: Childcare Grant

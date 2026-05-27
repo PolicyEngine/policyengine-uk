@@ -1,0 +1,1 @@
+- Split the `childcare_entitlements` umbrella entry in `programs.yaml` into three rows (universal/extended/targeted) each bound to its variable and parameter prefix, removing an orphan registry row flagged in the childcare-coverage audit.
