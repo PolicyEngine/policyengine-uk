@@ -43,7 +43,11 @@ class household_tax(Variable):
             return add(
                 household,
                 period,
-                [tax for tax in HOUSEHOLD_TAX_VARIABLES if tax not in ["council_tax"]],
+                [
+                    tax
+                    for tax in HOUSEHOLD_TAX_VARIABLES
+                    if tax not in ["council_tax", "high_value_council_tax_surcharge"]
+                ],
             )
         else:
             return add(household, period, HOUSEHOLD_TAX_VARIABLES)

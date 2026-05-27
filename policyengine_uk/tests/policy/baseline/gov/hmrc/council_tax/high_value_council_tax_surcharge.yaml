@@ -49,3 +49,17 @@
     high_value_council_tax_surcharge: 0
     household_tax: 0
     gov_tax: 0
+- name: Abolishing council tax also drops the high-value surcharge from aggregates
+  period: 2028
+  input:
+    gov.contrib.abolish_council_tax: true
+    region: LONDON
+    main_residence_value: 2_554_326.811538164
+    main_residential_property_purchased: 0
+    council_tax: 1_500
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 2_500
+    household_tax: 0
+    gov_tax: 0
