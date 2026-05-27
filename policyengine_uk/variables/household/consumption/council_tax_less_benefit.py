@@ -3,7 +3,13 @@ from policyengine_uk.model_api import *
 
 class council_tax_less_benefit(Variable):
     label = "Council Tax (less CTB)"
-    documentation = "Council Tax minus the Council Tax Benefit"
+    documentation = (
+        "Council Tax minus Council Tax Benefit / CTR. Kept as a public "
+        "convenience variable for downstream consumers (e.g. policyengine-app, "
+        "council-tax-ctr-map, policyengine-uk-data calibration targets) that "
+        "need the net council tax bill on a single line; not consumed inside "
+        "the core model itself."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
