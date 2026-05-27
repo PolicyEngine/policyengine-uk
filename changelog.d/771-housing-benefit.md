@@ -1,0 +1,1 @@
+- Add a Housing Benefit documentation page covering eligibility (legacy-only working-age claimants, pension-age and supported-housing tenants), the four-stage entitlement computation, a personal-allowances chart, and statutory references; checks off one of the entries in the #771 docs-pages todo list.
