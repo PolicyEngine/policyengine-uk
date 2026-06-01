@@ -1,3 +1,8 @@
+## [2.88.34] - 2026-06-01
+
+No significant changes.
+
+
 ## [2.88.33] - 2026-06-01
 
 No significant changes.
