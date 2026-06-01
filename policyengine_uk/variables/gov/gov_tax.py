@@ -41,7 +41,9 @@ class gov_tax(Variable):
         abolish_council_tax = parameters.gov.contrib.abolish_council_tax(period)
         if abolish_council_tax:
             variables = [
-                variable for variable in variables if variable != "council_tax"
+                variable
+                for variable in variables
+                if variable not in ["council_tax", "high_value_council_tax_surcharge"]
             ]
 
         return add(household, period, variables)
