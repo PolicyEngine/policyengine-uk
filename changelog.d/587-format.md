@@ -1,0 +1,1 @@
+- Apply ruff formatting to the validation notebook (blank line after the warnings import) so the repo-wide `ruff format --check` lint passes on main.
