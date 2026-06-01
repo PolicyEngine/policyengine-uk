@@ -67,17 +67,20 @@ environments = [
 
 [project.optional-dependencies]
 dev = [
-    "ruff>=0.9.0",
+    # pytest and wheel are brought in transitively by policyengine-core's
+    # runtime dependencies, so they're not repeated here. coverage,
+    # pytest-cov, ruff and towncrier live in core's dev extras, which pip
+    # does NOT install transitively when installing policyengine-uk[dev],
+    # so they must be listed explicitly here.
     "coverage",
+    "pytest-cov",
+    "ruff>=0.9.0",
+    "towncrier>=24.8.0",
     "furo<2023",
     "tqdm",
-    "pytest",
-    "pytest-cov",
     "setuptools",
     "sphinx-argparse>=0.3.2,<1",
     "sphinx-math-dollar>=1.2.1,<2",
-    "wheel",
-    "towncrier>=24.8.0",
     "snowballstemmer>=2,<3",
     "jupyter-book>=2.0.0a0",
     "rich",
