@@ -1,11 +1,13 @@
-description: Share of eligible couples who claim Marriage Allowance. HMRC outturn shows ~2.1m claimants vs ~4.2m eligible couples (~50% take-up). The matching parameter in policyengine-uk-data (`parameters/take_up/marriage_allowance.yaml`) is the load-bearing one for microsimulation, applied stochastically when populating `would_claim_marriage_allowance` per person; this file should be kept in sync.
+description: Share of eligible couples who claim Marriage Allowance. HMRC outturn shows ~2.1m claimants vs ~4.2m eligible couples (~50% take-up) at steady state; take-up was materially lower in the first few years after the allowance was introduced in April 2015 (HMRC outturn costs ran consistently below original forecast for this reason). 0.5 is therefore the post-2019 steady-state rate. The matching parameter in policyengine-uk-data (`parameters/take_up/marriage_allowance.yaml`) is the load-bearing one for microsimulation, applied stochastically when populating `would_claim_marriage_allowance` per person; this file should be kept in sync.
 values:
-  2000-01-01: 0.5
+  2015-04-06: 0.5
 metadata:
   unit: /1
   label: Marriage Allowance take-up rate
   reference:
-    - title: Income Tax Act 2007 s. 55B
+    - title: Income Tax Act 2007 s. 55B (inserted by Finance Act 2014 Sch. 2)
       href: https://www.legislation.gov.uk/ukpga/2007/3/section/55B
     - title: House of Commons Library — Income tax allowances for married couples (SN00870)
       href: https://commonslibrary.parliament.uk/research-briefings/sn00870/
+    - title: HMRC — Marriage Allowance statistics
+      href: https://www.gov.uk/government/statistics/marriage-allowance-statistics
