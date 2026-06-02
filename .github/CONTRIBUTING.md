@@ -5,14 +5,15 @@ See the [shared PolicyEngine contribution guide](https://github.com/PolicyEngine
 ## Commands
 
 ```bash
-make install           # install deps (uv)
+make install           # install development dependencies with pip
 make format            # format (required — CI enforces)
 make test              # full test suite
 uv run policyengine-core test policyengine_uk/tests/path/to/test.yaml -c policyengine_uk
 uv run pytest policyengine_uk/tests/path/to/test_file.py::test_name -v
 ```
 
-Python 3.11–3.14. Default branch: `main`.
+The package supports Python 3.9–3.14. The checked-in `uv.lock` resolves Python
+3.11–3.14. Default branch: `main`.
 
 ## Writing variables and reforms
 
@@ -38,7 +39,13 @@ Conventions:
 
 ## Program registry
 
-`policyengine_uk/programs.yaml` is the single source of truth for program coverage metadata and drives the `/uk/metadata` API. When adding a program, add an entry with `id`, `name`, `full_name`, `category`, `agency`, `status`, `coverage`, `variable`, `parameter_prefix`. When extending year coverage, bump `verified_years` after verifying parameters and tests cover the new year.
+`policyengine_uk/programs.yaml` is the single source of truth for program
+coverage metadata and drives the `/uk/metadata` API. Every entry includes `id`,
+`name`, `full_name`, `category`, `agency`, `status`, `coverage`, and
+`verified_start_year`. Add `variable` and `parameter_prefix` when applicable,
+and add `verified_end_year` when verified coverage has a defined end. Change the
+verified year fields only after confirming that parameters and tests cover the
+stated years.
 
 ## Repo-specific anti-patterns
 
