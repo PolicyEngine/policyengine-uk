@@ -105,7 +105,13 @@ class Simulation(CoreSimulation):
         scenario: Optional[Scenario] = None,
         situation: Optional[Dict] = None,
         dataset: Optional[
-            Union[pd.DataFrame, str, UKSingleYearDataset, UKMultiYearDataset]
+            Union[
+                pd.DataFrame,
+                str,
+                os.PathLike,
+                UKSingleYearDataset,
+                UKMultiYearDataset,
+            ]
         ] = None,
         trace: bool = False,
         reform: Union[Dict, Type[Reform]] = None,
@@ -148,8 +154,8 @@ class Simulation(CoreSimulation):
         # Build simulation from appropriate source
         if situation is not None:
             self.build_from_situation(situation)
-        elif isinstance(dataset, str):
-            self.build_from_url(dataset)
+        elif isinstance(dataset, (str, os.PathLike)):
+            self.build_from_dataset_source(dataset)
         elif isinstance(dataset, pd.DataFrame):
             self.build_from_dataframe(dataset)
         elif isinstance(dataset, Dataset):
@@ -159,7 +165,7 @@ class Simulation(CoreSimulation):
         elif isinstance(dataset, UKMultiYearDataset):
             self.build_from_multi_year_dataset(dataset)
         elif dataset is None:
-            self.build_from_url(get_default_dataset_url())
+            self.build_from_dataset_source(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 
@@ -260,6 +266,52 @@ class Simulation(CoreSimulation):
             self, fiscal_year=self.default_input_period
         )
 
+    def build_from_dataset_source(
+        self, dataset_source: Union[str, os.PathLike]
+    ) -> None:
+        """Build simulation from a supported dataset source string."""
+        dataset_source = os.fspath(dataset_source)
+        if dataset_source.startswith("hf://"):
+            self.build_from_url(dataset_source)
+            return
+        if "://" in dataset_source:
+            raise ValueError(
+                "Only HuggingFace dataset URLs are supported directly by "
+                "policyengine-uk. Download or materialize other dataset "
+                "sources to a local file path before passing them to Simulation."
+            )
+        self.build_from_file(dataset_source)
+
+    def build_from_file(
+        self,
+        dataset_file: Union[str, os.PathLike],
+        *,
+        cache_key: Optional[str] = None,
+    ) -> None:
+        """Build simulation from a local dataset file path."""
+        dataset_file = os.fspath(dataset_file)
+
+        if UKMultiYearDataset.validate_file_path(dataset_file, False):
+            multi_year_dataset = UKMultiYearDataset(dataset_file)
+        elif UKSingleYearDataset.validate_file_path(dataset_file, False):
+            multi_year_dataset = extend_single_year_dataset(
+                UKSingleYearDataset(dataset_file),
+                self.tax_benefit_system.parameters,
+            )
+        else:
+            dataset = Dataset.from_file(dataset_file, self.default_input_period)
+            self.build_from_dataset(dataset)
+            return
+
+        # Pre-encode string enum columns to int16 once before caching so
+        # subsequent loads skip the expensive astype(str) + searchsorted path.
+        _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
+        if cache_key is not None:
+            _url_dataset_cache[cache_key] = multi_year_dataset
+
+        self.build_from_multi_year_dataset(multi_year_dataset)
+        self.dataset = multi_year_dataset
+
     def build_from_url(self, url: str) -> None:
         """Build simulation from a HuggingFace dataset URL.
 
@@ -269,7 +321,7 @@ class Simulation(CoreSimulation):
         Raises:
             ValueError: If URL is not a HuggingFace URL
         """
-        if "hf://" not in url:
+        if not url.startswith("hf://"):
             raise ValueError(f"Non-HuggingFace URLs are currently not supported.")
 
         # Return early from in-memory cache if available: skips HDF5 reading,
@@ -295,26 +347,7 @@ class Simulation(CoreSimulation):
             version=version,
         )
 
-        # Determine dataset type and build accordingly
-        if UKMultiYearDataset.validate_file_path(dataset_file, False):
-            multi_year_dataset = UKMultiYearDataset(dataset_file)
-        elif UKSingleYearDataset.validate_file_path(dataset_file, False):
-            multi_year_dataset = extend_single_year_dataset(
-                UKSingleYearDataset(dataset_file),
-                self.tax_benefit_system.parameters,
-            )
-        else:
-            dataset = Dataset.from_file(dataset_file, self.default_input_period)
-            self.build_from_dataset(dataset)
-            return
-
-        # Pre-encode string enum columns to int16 once before caching so
-        # subsequent loads skip the expensive astype(str) + searchsorted path.
-        _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
-        _url_dataset_cache[url] = multi_year_dataset
-
-        self.build_from_multi_year_dataset(multi_year_dataset)
-        self.dataset = multi_year_dataset
+        self.build_from_file(dataset_file, cache_key=url)
 
     def build_from_dataframe(self, df: pd.DataFrame) -> None:
         """Build simulation from a pandas DataFrame.
