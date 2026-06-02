@@ -1,77 +1,39 @@
-# Development Guidelines for PolicyEngine UK
+# Claude Instructions
 
-## Git workflow
-- **Always branch from `main`**: `git checkout main && git pull origin main && git checkout -b your-branch`
-- Default branch is `main` (not `master`)
+These instructions apply repository-wide.
 
-## Build commands
-- Install: `make install` or `pip install -e ".[dev]" --config-settings editable_mode=compat`
-- Format code: `make format` or `ruff format .`
-- Run all tests: `make test`
-- Run single test: `pytest policyengine_uk/tests/path/to/test_file.py::test_function -v`
-- Generate documentation: `make documentation`
-- Update changelog: `make changelog`
+## Canonical Guidance
 
-## Code Standards
-- **Formatting**: Use Ruff formatter with 88-character line length
-- **Imports**: Group imports by stdlib, third-party, local with each group alphabetized
-- **Naming**: Use snake_case for variables/functions, CamelCase for classes
-- **Type Hints**: Use Python type hints where possible
-- **Error Handling**: Handle exceptions gracefully with appropriate error messages
-- **Testing**: Write tests for all new functionality
-- **Documentation**: Document all public functions with docstrings
-- **Versioning**: Follow SemVer (increment patch for fixes, minor for features, major for breaking changes)
-- **Pull Requests**: Must include a changelog.d/ file describing the changes (GitHub Actions will automatically run `make changelog` to update the changelog)
+Repository-wide AI-facing engineering guidance lives in `AGENTS.md`.
+Canonical skills live under `docs/engineering/skills/`.
 
-## Program registry (programs.yaml)
-- `policyengine_uk/programs.yaml` is the single source of truth for program coverage metadata
-- Served via the `/uk/metadata` API and consumed by the model coverage page
-- **When adding a new program**: add an entry with `id`, `name`, `full_name`, `category`, `agency`, `status`, `coverage`, `variable`, `parameter_prefix`
-- **When extending year coverage**: update `verified_years` after verifying parameters and tests cover the new year
-- **When adding devolved programs**: use the appropriate agency (e.g., `Revenue Scotland`, `Social Security Scotland`)
-- **Status values**: `complete`, `partial`, `in_progress`
+Use those files as the source of truth. This file is a Claude adapter and should
+stay thin; do not duplicate detailed testing, CI, formatting, pull request,
+dataset, or model-structure rules here.
 
-## Repository Structure
-- **parameters/**: YAML files that define tax rates, thresholds, and other policy parameters
-  - Organized by government department (e.g., gov/hmrc/, gov/dwp/, gov/dfe/)
-  - Parameter labels should be lowercase and concise
-  - Each parameter file should include relevant legislative references
-- **variables/**: Python files that define the formulas for calculating tax and benefit amounts
-  - Organized to match the same structure as parameters/
-  - Comments should include relevant regulatory citations and calculation logic
-- **tests/**: Test cases for validating correct implementation of policies
-- For government departments, use the correct department for the policy (e.g., education policies under DfE, not DWP)
+## Required Skill Lookup
 
-## Lessons Learned from Variable Refactoring (2025-05-31)
+Before opening, replacing, or sharing a PR, read
+`docs/engineering/skills/github-prs.md`.
 
-### Issue: Refactoring Script Bug
-A refactoring script was used to split multi-variable Python files into single-variable files. The script had a systematic bug: when a file contained multiple Variable classes and one had the same name as the file, that variable was dropped entirely.
+When adding, moving, or reviewing tests, read
+`docs/engineering/skills/testing.md`.
 
-### Variables Dropped During Refactoring
-21 variables were dropped, including:
-- Wrapper variables: `jsa_income`, `esa_income`, `jsa_contrib`, `esa_contrib`, `afcs`, `bsp`, `iidb`
-- Calculated variables: `benefit_cap`, `carers_allowance`, `income_support`, `maternity_allowance`, `sda`, `tax_credits`
-- Core variables: `child_benefit`, `allowances`, `marriage_allowance`, `stamp_duty_land_tax`, `vat`, `land_transaction_tax`, `attendance_allowance`, `council_tax_benefit`, `business_rates`, `tax`, `total_wealth`, `private_school_vat`, `bi_phaseout`
+When modifying variables, parameters, reforms, enums, program metadata, or UK
+model structure, read `docs/engineering/skills/model-structure.md`.
 
-### Enum Recovery Errors
-During recovery, enums were recreated based on assumptions rather than checking original code, leading to incorrect values:
-- **TenureType**: Missing `OWNED_OUTRIGHT` and `OWNED_WITH_MORTGAGE` (consolidated into `OWNER_OCCUPIED`)
-- **AccommodationType**: Wrong labels (e.g., "House - detached" vs "Detached house")
-- **EducationType**: Wrong capitalization ("Lower secondary" vs "Lower Secondary")
-- **FamilyType**: Shortened labels (missing ", with children" suffix)
-- **EmploymentStatus**: Complete restructure (missing FT_/PT_ prefixes)
-- **MinimumWageCategory**: Wrong format ("18-20" vs "18 to 20", "Over 24" vs "25 or over")
-- **CouncilTaxBand**: Added incorrect "Band " prefix
-- **StatePensionType**: Wrong capitalization ("Basic" vs "basic")
+When modifying simulation dataset loading, default datasets, H5 inputs, or
+upstream materialized dataset paths, read
+`docs/engineering/skills/dataset-sources.md`.
 
-### Best Practices for Refactoring Recovery
-1. **Always check original code** - Never rely on assumptions or context clues
-2. **Use git history systematically** - `git show <commit>:path/to/file` to see original content
-3. **Verify enum values exactly** - Even small differences in labels can break functionality
-4. **Test incrementally** - Run tests after each fix to ensure progress
-5. **Document the recovery process** - Track what was fixed for future reference
+When changing public behavior, metadata, docs, or generated docs, read
+`docs/engineering/skills/documentation-review.md`.
 
-### OpenFisca-Specific Patterns
-- Use `.possible_values` to access enum values, not direct imports
-- Import helper functions like `find_freeze_start` when needed
-- Functions like `ceil` should be `np.ceil` in OpenFisca context
+## Safety Boundaries
+
+Do not fabricate policy sources, validation metrics, or performance claims. If a
+result has not been computed from code or cited from a source, mark it as
+pending.
+
+Do not upload, promote, publish, or overwrite data artifacts unless the user
+explicitly asks for that operation.
