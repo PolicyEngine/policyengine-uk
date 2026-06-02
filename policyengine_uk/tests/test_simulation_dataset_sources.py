@@ -85,9 +85,7 @@ def test_build_from_file_loads_local_multi_year_dataset(monkeypatch, tmp_path):
         built["dataset"] = dataset
 
     simulation_module._url_dataset_cache.pop(cache_key, None)
-    monkeypatch.setattr(
-        simulation_module, "UKMultiYearDataset", FakeMultiYearDataset
-    )
+    monkeypatch.setattr(simulation_module, "UKMultiYearDataset", FakeMultiYearDataset)
     monkeypatch.setattr(
         simulation_module, "_pre_encode_enum_columns", lambda dataset, tbs: None
     )
