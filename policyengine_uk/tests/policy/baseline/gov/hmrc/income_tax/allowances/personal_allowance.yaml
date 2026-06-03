@@ -159,3 +159,11 @@
     # ANI for taper = £110k - £12.5k = £97.5k (below £100k)
     # Full PA restored
     personal_allowance: 12570
+
+- name: PA taper rounds fractional allowance up to nearest pound
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 100001
+  output:
+    personal_allowance: 12570
