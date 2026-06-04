@@ -15,9 +15,13 @@ class savings_credit(Variable):
         relation_type = benunit("relation_type", period)
         threshold = sc.threshold[relation_type] * WEEKS_IN_YEAR
         minimum_guarantee = benunit("minimum_guarantee", period)
+        standard_minimum_guarantee = benunit("standard_minimum_guarantee", period)
+        claimant_income = benunit("pension_credit_income", period)
         income_over_threshold = max_(income - threshold, 0)
-        income_over_mg = max_(income - minimum_guarantee, 0)
-        maximum_savings_credit = sc.rate.phase_in * (minimum_guarantee - threshold)
+        income_over_mg = max_(claimant_income - minimum_guarantee, 0)
+        maximum_savings_credit = sc.rate.phase_in * max_(
+            standard_minimum_guarantee - threshold, 0
+        )
         phased_in_sc = min_(
             maximum_savings_credit, sc.rate.phase_in * income_over_threshold
         )
