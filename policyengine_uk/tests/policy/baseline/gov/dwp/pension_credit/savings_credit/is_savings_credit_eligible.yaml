@@ -29,6 +29,22 @@
   output:
     is_savings_credit_eligible: true
 
+- name: Has pre-cutoff year SPA member but income below annual threshold, ineligible
+  period: 2026
+  input:
+    people:
+      person:
+        age: 81
+        is_male: false
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        savings_credit_income: 10_000
+  output:
+    is_savings_credit_eligible: false
+
 - name: One member reached SPA before cutoff year and income above threshold (couple), eligible
   period: 2023
   input:

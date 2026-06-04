@@ -1,0 +1,25 @@
+- name: Maximum savings credit uses the standard minimum guarantee rather than additions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 20_000
+    pension_credit_income: 20_000
+    standard_minimum_guarantee: 12_376
+    minimum_guarantee: 20_000
+  output:
+    savings_credit: 933.816
+
+- name: Amount B reduction uses Pension Credit income rather than qualifying income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 20_000
+    pension_credit_income: 13_000
+    standard_minimum_guarantee: 12_376
+    minimum_guarantee: 12_376
+  output:
+    savings_credit: 684.216

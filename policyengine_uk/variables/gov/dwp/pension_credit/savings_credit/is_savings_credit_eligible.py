@@ -17,6 +17,6 @@ class is_savings_credit_eligible(Variable):
         income = benunit("savings_credit_income", period)
         sc = parameters(period).gov.dwp.pension_credit.savings_credit
         relation_type = benunit("relation_type", period)
-        threshold = sc.threshold[relation_type]
-        meets_income_threshold = income >= threshold
+        threshold = sc.threshold[relation_type] * WEEKS_IN_YEAR
+        meets_income_threshold = income > threshold
         return has_pre_cutoff_spa_member & meets_income_threshold
