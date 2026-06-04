@@ -34,6 +34,14 @@
     # PA = £12,570 - £2,500 = £10,070
     personal_allowance: 10070
 
+- name: PA taper rounds remaining allowance up
+  period: 2026
+  input:
+    employment_income: 100003
+  output:
+    # £3 over threshold, lose £1.50 PA, rounded up from £12,568.50.
+    personal_allowance: 12569
+
 - name: PA fully tapered at £125,140
   period: 2025
   absolute_error_margin: 1
