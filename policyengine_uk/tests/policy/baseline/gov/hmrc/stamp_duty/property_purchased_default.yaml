@@ -1,0 +1,8 @@
+- name: Household with a home but no purchase pays no stamp duty (property_purchased defaults False)
+  period: 2026
+  input:
+    main_residence_value: 400_000
+  output:
+    property_purchased: false
+    main_residential_property_purchased: 0
+    stamp_duty_land_tax: 0
