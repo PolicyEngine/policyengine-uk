@@ -14,4 +14,5 @@ class uc_childcare_work_condition(Variable):
         in_work = person("in_work", period)
         adults_in_work = adult & in_work
         # Benefit unit must not have any adults not in work.
-        return benunit.any(adults_in_work)
+        all_adults_in_work = benunit.all(in_work | ~adult)
+        return benunit.any(adults_in_work) & all_adults_in_work

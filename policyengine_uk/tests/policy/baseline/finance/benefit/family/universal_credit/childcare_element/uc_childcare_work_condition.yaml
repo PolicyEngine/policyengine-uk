@@ -26,7 +26,7 @@
       person1:
         in_work: false
         is_adult: true
-      person2:  
+      person2:
         in_work: true
         is_adult: false
   output:
@@ -40,10 +40,27 @@
       person1:
         in_work: false
         is_adult: true
-      person2:  
+      person2:
         in_work: true
         is_adult: true
-    benunits: 
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    uc_childcare_work_condition: false
+
+- name: Couple, both adults in work
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      person1:
+        in_work: true
+        is_adult: true
+      person2:
+        in_work: true
+        is_adult: true
+    benunits:
       benunit:
         members: [person1, person2]
   output:
