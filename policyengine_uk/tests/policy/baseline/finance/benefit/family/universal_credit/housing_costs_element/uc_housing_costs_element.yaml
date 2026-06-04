@@ -103,3 +103,22 @@
         members: person
   output:
     uc_housing_costs_element: 5_000 - 10 * 52
+
+- name: Rented privately, non-dependent deductions exceed housing costs
+  period: 2022
+  absolute_error_margin: 0
+  input:
+    people:
+      person: {}
+    benunits:
+      benunit:
+        benunit_rent: 1_000
+        uc_non_dep_deductions: 2_000
+        LHA_cap: 5_000
+        members: person
+    households:
+      household:
+        tenure_type: RENT_PRIVATELY
+        members: person
+  output:
+    uc_housing_costs_element: 0

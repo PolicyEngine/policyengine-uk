@@ -26,4 +26,4 @@ class uc_housing_costs_element(Variable):
             default=0,
         )
         non_dependent_deductions = benunit("uc_non_dep_deductions", period)
-        return max_housing_costs - non_dependent_deductions
+        return max_(max_housing_costs - non_dependent_deductions, 0)
