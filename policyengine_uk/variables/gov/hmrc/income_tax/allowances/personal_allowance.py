@@ -23,4 +23,4 @@ class personal_allowance(Variable):
         ANI_for_taper = ANI - gift_aid_grossed_up
         excess = max_(0, ANI_for_taper - PA.maximum_ANI)
         reduction = excess * PA.reduction_rate
-        return max_(0, personal_allowance - reduction)
+        return max_(0, np.ceil(personal_allowance - reduction))
