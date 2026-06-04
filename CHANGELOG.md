@@ -1,3 +1,10 @@
+## [2.88.41] - 2026-06-04
+
+### Fixed
+
+- Fix property_purchased default from True to False so households are not charged stamp duty on their entire property wealth unless they explicitly purchased this year. The True default charged every household in population datasets full SDLT/LBTT/LTT on its home value, inflating the first income decile's effective tax rate to 251% and breaking the data pipeline.
+
+
 ## [2.88.40] - 2026-06-02
 
 No significant changes.
