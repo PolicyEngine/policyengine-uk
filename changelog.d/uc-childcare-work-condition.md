@@ -1,0 +1,1 @@
+- Fixed Universal Credit childcare work-condition eligibility so couples require all adults to be in work.
