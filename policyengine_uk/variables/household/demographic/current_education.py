@@ -10,7 +10,12 @@ class current_education(Variable):
     possible_values = EducationType
     default_value = EducationType.NOT_IN_EDUCATION
     entity = Person
-    label = "Current education"
+    label = "Current education enrolment"
+    documentation = (
+        "Which stage of education the person is currently enrolled in (or "
+        "NOT_IN_EDUCATION if none). This is enrolment status, not attainment "
+        "— see `highest_education` for the highest completed stage."
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):
