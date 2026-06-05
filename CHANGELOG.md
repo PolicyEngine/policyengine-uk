@@ -1,3 +1,10 @@
+## [2.88.53] - 2026-06-05
+
+### Fixed
+
+- - Fixed Carer Support Payment and Scottish Carer Supplement 2026 parameter dates.
+
+
 ## [2.88.52] - 2026-06-05
 
 No significant changes.
