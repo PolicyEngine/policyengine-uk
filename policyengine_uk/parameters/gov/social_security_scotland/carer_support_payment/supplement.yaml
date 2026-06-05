@@ -1,7 +1,8 @@
 description: Weekly rate of the Scottish Carer Supplement, paid on top of the Carer Support Payment.
 values:
   2024-11-01: 0
-  2026-03-01: 11.70
+  2026-03-15: 11.29
+  2026-04-05: 11.7
 metadata:
   period: week
   unit: currency-GBP
@@ -9,3 +10,7 @@ metadata:
   reference:
     - title: New rates for carer and disability payments in 2026
       href: https://www.socialsecurity.gov.scot/news-events/news/new-payment-rates-from-april-2026
+    - title: The Carer's Assistance (Miscellaneous and Consequential Amendments, Revocation, Transitional and Saving Provisions) (Scotland) Regulations 2025 reg. 3
+      href: https://www.legislation.gov.uk/ssi/2025/340/made
+    - title: The Social Security (Up-rating) (Miscellaneous Amendments) (Scotland) Regulations 2026 reg. 12(3)(b)
+      href: https://www.legislation.gov.uk/ssi/2026/170/regulation/12/made
