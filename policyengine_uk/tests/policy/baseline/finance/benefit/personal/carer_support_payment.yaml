@@ -6,7 +6,7 @@
     care_hours: 40
     country: SCOTLAND
   output:
-    carer_support_payment: 4331.08
+    carer_support_payment: 4331.6
     carers_allowance: 0
 
 - name: Carer in England receives CA not CSP

@@ -1,8 +1,8 @@
 description: Weekly rate of Carer Support Payment.
 values:
   2024-11-01: 81.9
-  2025-04-01: 83.29
-  2026-04-01: 86.45
+  2025-04-01: 83.3
+  2026-04-05: 86.45
 metadata:
   period: week
   unit: currency-GBP
@@ -11,3 +11,5 @@ metadata:
   reference:
     - title: Carer Support Payment - mygov.scot
       href: https://www.mygov.scot/carer-support-payment
+    - title: The Social Security (Up-rating) (Miscellaneous Amendments) (Scotland) Regulations 2026 reg. 12(3)(a)
+      href: https://www.legislation.gov.uk/ssi/2026/170/regulation/12/made
