@@ -1,0 +1,27 @@
+- name: Net wealth subtracts mortgage, consumer and student-loan debt
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    total_wealth: 500_000
+    mortgage_debt: 200_000
+    consumer_debt: 10_000
+    student_loan_balance: 15_000
+  output:
+    net_wealth: 275_000
+
+- name: Net wealth is negative when debts exceed assets
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    total_wealth: 50_000
+    mortgage_debt: 120_000
+  output:
+    net_wealth: -70_000
+
+- name: Net wealth equals total wealth with no debt
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    total_wealth: 300_000
+  output:
+    net_wealth: 300_000
