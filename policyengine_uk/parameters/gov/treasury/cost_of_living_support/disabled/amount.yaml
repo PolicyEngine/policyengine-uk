@@ -1,11 +1,14 @@
-description: Payment to households receiving disability benefits.
+description: One-off Disability Cost-of-Living Payment to households containing someone on a qualifying disability benefit. £150 in both 2022-23 and 2023-24, withdrawn from 2024-25.
 values:
   2022-01-01: 150
-  2023-01-01: 0
+  2023-01-01: 150
+  2024-01-01: 0
 metadata:
   unit: currency-GBP
   period: year
-  label: Payment to households on disability benefits
+  label: Disability Cost-of-Living Payment
   reference:
-    - title: Cost-of-living support announcement | GOV.UK
+    - title: 2022-23 Cost-of-Living Support package announcement (HMT/DWP, May 2022)
       href: https://www.gov.uk/government/news/millions-of-most-vulnerable-households-will-receive-1200-of-help-with-cost-of-living
+    - title: Disability Cost-of-Living Payment 2023-24 (DWP guidance)
+      href: https://www.gov.uk/guidance/cost-of-living-payment-disability

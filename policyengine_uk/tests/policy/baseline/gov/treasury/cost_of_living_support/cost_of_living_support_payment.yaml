@@ -1,0 +1,63 @@
+- name: 2022 Cost-of-Living Payments — means-tested only
+  period: 2022
+  input:
+    people:
+      person:
+        universal_credit_reported: 100
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+  output:
+    cost_of_living_support_payment: 650
+
+- name: 2023 Cost-of-Living Payments — means-tested £900 (Autumn Statement 2022)
+  period: 2023
+  input:
+    people:
+      person:
+        universal_credit_reported: 100
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+  output:
+    cost_of_living_support_payment: 900
+
+- name: 2023 Cost-of-Living Payments — pensioner £300 stacks with means-tested
+  period: 2023
+  input:
+    people:
+      person:
+        age: 70
+        universal_credit_reported: 100
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # £900 means-tested + £300 pensioner (triggered via Winter Fuel Allowance
+    # which paid universally in 2023 before the 2024 means test).
+    cost_of_living_support_payment: 1200
+
+- name: 2024 Cost-of-Living Payments withdrawn
+  period: 2024
+  input:
+    people:
+      person:
+        universal_credit_reported: 100
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+  output:
+    cost_of_living_support_payment: 0
