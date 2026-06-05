@@ -1,15 +1,37 @@
 # OBR Economic Projections
 #
-# Data sources:
-# - 2009-2024: OBR outturn data from detailed forecast tables
-# - 2025-2030: OBR forecast from latest Economic and Fiscal Outlook (EFO, March 2026)
-# - 2031+: OBR long-run equilibrium assumptions:
-#   - CPI: 2.0% (Bank of England target)
-#   - RPI/CPIH: ~2.4% (CPI + 0.4pp wedge, reflecting housing costs growth)
-#   - Average earnings: ~3.8% (productivity growth + inflation)
-#   Note: RPI will align with CPIH methodology from February 2030 per ONS plans
+# Data sources by horizon:
+# - 2009-2024: OBR outturn data from detailed forecast tables.
+# - 2025-2030: OBR forecast from the latest Economic and Fiscal Outlook
+#   (EFO, March 2026). Values come from the EFO economy supplementary
+#   tables — RPI/CPI/CPIH from Table 1.7, average earnings from Table 1.6.
+# - 2031-2073: OBR long-run equilibrium assumptions, taken from the OBR
+#   Fiscal Risks and Sustainability report and the long-run RPI-CPI wedge
+#   methodology. Steady-state values:
+#     * consumer_price_index: 2.00%  (Bank of England target)
+#     * rpi:                  2.39%  (CPI + 0.39pp long-run wedge)
+#     * cpih:                 2.39%  (CPI + 0.39pp housing-costs wedge,
+#                                     converges with RPI once RPI adopts
+#                                     CPIH methodology from Feb 2030 per ONS)
+#     * average_earnings:     3.83%  (productivity growth + CPI)
 #
-# See: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
+# How the 2031+ series are constructed:
+# - CPI hits its 2% target on 2031-01-01 and is held flat.
+# - RPI, CPIH and average earnings ramp linearly from the final EFO value
+#   (2030-01-01) to the steady-state value, converging by 2035-2036. After
+#   convergence the series are held flat through 2073-01-01.
+# - This convergence path is consistent with the OBR's Fiscal Risks and
+#   Sustainability long-run assumptions and is regenerated when a new EFO
+#   is released; the helper module
+#   `policyengine_uk/parameters/gov/economic_assumptions/create_economic_assumption_indices.py`
+#   refreshes downstream indices from these growth rates.
+#
+# References:
+#   https://obr.uk/efo/                                  (latest EFO)
+#   https://obr.uk/frltp/                                (Fiscal risks and
+#                                                          long-term projections)
+#   https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
+#   https://www.bankofengland.co.uk/monetary-policy/inflation
 
 obr:
   rpi:
