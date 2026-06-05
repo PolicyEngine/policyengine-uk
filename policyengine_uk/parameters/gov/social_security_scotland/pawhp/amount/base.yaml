@@ -1,8 +1,15 @@
-description: Amount paid to non-benefit-claiming pensioners for the PAWHP.
+description: Pension Age Winter Heating Payment universal base award paid to Scottish State-Pension-age households that do not qualify for a means-tested PAWHP. £0 in winter 2024-25 (PAWHP was means-tested only); £100 from winter 2025-26 following the Scottish Government's reinstatement of a universal element.
 values:
   2024-01-01: 0
   2025-01-01: 100
 metadata:
   unit: currency-GBP
-  label: Pawhp base payment
+  label: PAWHP universal base amount
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  reference:
+    - title: The Pension Age Winter Heating Payment (Scotland) Regulations 2024 (SSI 2024/250)
+      href: https://www.legislation.gov.uk/ssi/2024/250/contents/made
+    - title: Scottish Government — Pension Age Winter Heating Payment to be paid to all pensioners (June 2025)
+      href: https://www.gov.scot/news/winter-fuel-payment-to-be-paid-to-all-pensioners/
+    - title: Social Security Scotland — Pension Age Winter Heating Payment
+      href: https://www.mygov.scot/pension-age-winter-heating-payment

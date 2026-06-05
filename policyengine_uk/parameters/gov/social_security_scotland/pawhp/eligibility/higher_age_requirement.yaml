@@ -1,6 +1,9 @@
-description: Age requirement to qualify for the higher PAWHP.
+description: Age at which a qualifying household becomes entitled to the higher PAWHP award.
 values:
   2000-01-01: 80
 metadata:
   unit: year
-  label: Winter Fuel Payment higher amount age requirement
+  label: PAWHP higher amount age requirement
+  reference:
+    - title: The Pension Age Winter Heating Payment (Scotland) Regulations 2024 (SSI 2024/250), reg. 5
+      href: https://www.legislation.gov.uk/ssi/2024/250/regulation/5/made
