@@ -1,0 +1,1 @@
+- Apply the Class 4 National Insurance annual maximum's Step Six and Step Nine calculations from Regulation 100.
