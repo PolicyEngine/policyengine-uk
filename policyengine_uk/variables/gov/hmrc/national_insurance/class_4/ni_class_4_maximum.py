@@ -20,22 +20,23 @@ class ni_class_4_maximum(Variable):
         step_3 = step_2 + 53 * ni.class_2.flat_rate
         class_2_contributions = person("ni_class_2", period)
         primary_class_1_contributions = person("ni_class_1_employee_primary", period)
-        step_4 = step_3 - class_2_contributions - primary_class_1_contributions
+        step_4_raw = step_3 - class_2_contributions - primary_class_1_contributions
+        step_4 = max_(step_4_raw, 0)
         class_4_main_contributions = person("ni_class_4_main", period)
         other_aggregate_contributions = (
             primary_class_1_contributions
             + class_2_contributions
             + class_4_main_contributions
         )
-        case_1 = (step_4 >= 0) & (step_4 > other_aggregate_contributions)
-        case_2 = (step_4 >= 0) & (step_4 <= other_aggregate_contributions)
-        case_3 = step_4 < 0
+        case_1 = (step_4_raw >= 0) & (step_4_raw > other_aggregate_contributions)
+        case_2 = (step_4_raw >= 0) & (step_4_raw <= other_aggregate_contributions)
+        case_3 = step_4_raw < 0
         step_5 = step_4 / main_rate
         profits = person("self_employment_income", period)
-        step_6 = lpl - min_(upl, profits)
+        step_6 = min_(upl, profits) - lpl
         step_7 = max_(0, step_6 - step_5)
         step_8 = step_7 * add_rate
-        step_9 = max_(0, profits - upl)
+        step_9 = max_(0, profits - upl) * add_rate
 
         return select(
             [
