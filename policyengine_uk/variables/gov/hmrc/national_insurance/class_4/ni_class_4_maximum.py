@@ -30,7 +30,7 @@ class ni_class_4_maximum(Variable):
         case_1 = (step_4 >= 0) & (step_4 > other_aggregate_contributions)
         case_2 = (step_4 >= 0) & (step_4 <= other_aggregate_contributions)
         case_3 = step_4 < 0
-        step_5 = step_4 * 100 / 9
+        step_5 = step_4 / main_rate
         profits = person("self_employment_income", period)
         step_6 = lpl - min_(upl, profits)
         step_7 = max_(0, step_6 - step_5)
