@@ -1,0 +1,1 @@
+- Add a documentation page covering Disability Living Allowance (mobility + self-care components, both DLA bands taken from dataset categoricals) and Severe Disablement Allowance (binary read from `sda_reported`, maximum age-related addition assumed); ticks off two more #771 docs-pages entries.
