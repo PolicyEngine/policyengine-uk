@@ -10,8 +10,9 @@ the current PIP (covered in [its own page](./PIP.ipynb)):
   April 2001 and replaced by Incapacity Benefit / ESA / Universal Credit;
   legacy recipients continue to receive it.
 
-Both are non-means-tested and flow into `household_benefits` via
-`personal_benefits`.
+Both are non-means-tested and are added directly into the
+`household_benefits` aggregate (via the `dla` and `sda` variables in its
+`adds` list).
 
 ## Disability Living Allowance
 
