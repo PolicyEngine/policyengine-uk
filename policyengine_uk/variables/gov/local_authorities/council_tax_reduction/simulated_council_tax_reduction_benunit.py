@@ -9,6 +9,7 @@ LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
     "merton_council_tax_reduction",
     "kingston_upon_thames_council_tax_reduction",
     "newham_council_tax_reduction",
+    "westminster_council_tax_reduction",
 ]
 
 

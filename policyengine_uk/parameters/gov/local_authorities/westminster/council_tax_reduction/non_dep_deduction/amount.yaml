@@ -1,0 +1,27 @@
+description: Weekly working-age non-dependant deduction schedule under the Westminster Council Tax Support scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Westminster Council Tax Support non-dependant deduction schedule
+  reference:
+    - title: Council Tax Support scheme for 2026/27
+      href: https://www.westminster.gov.uk/sites/default/files/media/documents/council-tax-support-scheme-for-2026-27.pdf

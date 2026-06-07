@@ -565,3 +565,160 @@
   output:
     uc_assessable_capital: 0
     council_tax_reduction: 1_260
+
+- name: Westminster working-age claimant can receive full support
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    simulated_council_tax_reduction_benunit: 1_800
+    council_tax_reduction: 1_800
+    council_tax_less_benefit: 0
+
+- name: Westminster working-age claimant above capital limit gets no local support
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 500
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 16_001
+  output:
+    council_tax_reduction_scheme_supported: true
+    simulated_council_tax_reduction_benunit: 0
+    council_tax_benefit: 0
+    council_tax_reduction: 0
+
+- name: Westminster adds one weekly pound of tariff income for any partial 250 pounds above 6,000
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+        council_tax_reduction_applicable_amount: 0
+        council_tax_reduction_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 6_001
+  output:
+    westminster_council_tax_reduction: 1_789.60
+    council_tax_reduction: 1_789.60
+    council_tax_less_benefit: 10.40
+
+- name: Westminster applies its 2026 local non-dependant deduction schedule
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 5_200
+        private_pension_income: 26_260
+        weekly_hours: 16
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      non_dep_benunit:
+        members: [non_dep]
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 970.60
+
+- name: Westminster UC claimant uses UC maximum amount and DWP income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_maximum_amount: 5_000
+        uc_income_reduction: 2_500
+        uc_earned_income: 6_000
+        uc_unearned_income: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+  output:
+    universal_credit: 2_500
+    council_tax_reduction: 1_100
+
+- name: Westminster UC claimant uses UC-reported capital
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    uc_assessable_capital: 0
+    council_tax_reduction: 1_800

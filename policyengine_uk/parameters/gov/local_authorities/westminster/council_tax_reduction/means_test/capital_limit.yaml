@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Westminster Council Tax Support scheme.
+values:
+  2026-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Westminster Council Tax Support capital limit
+  reference:
+    - title: Income and savings
+      href: https://www.westminster.gov.uk/benefits/guide-housing-benefit-and-council-tax-support/income-and-savings
