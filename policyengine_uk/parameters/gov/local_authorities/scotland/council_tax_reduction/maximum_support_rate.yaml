@@ -1,0 +1,10 @@
+description: Maximum share of eligible Council Tax liability covered under the Scotland Council Tax Reduction scheme.
+values:
+  2013-04-01: 1
+metadata:
+  unit: /1
+  period: year
+  label: Scotland Council Tax Reduction maximum support rate
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2012
+      href: https://www.legislation.gov.uk/ssi/2012/303/contents/made

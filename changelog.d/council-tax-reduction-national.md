@@ -1,0 +1,1 @@
+- Add national Council Tax Reduction support for Scotland, Wales, and English pensioner households, while preserving reported CTB/CTR for unsupported English working-age local schemes.

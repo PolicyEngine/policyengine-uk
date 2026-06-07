@@ -471,6 +471,18 @@ programs:
     variable: council_tax
     verified_start_year: 2022
 
+  - id: council_tax_reduction
+    name: Council Tax Reduction
+    full_name: Council Tax Reduction
+    category: Benefits
+    agency: Local
+    status: partial
+    coverage: UK
+    variable: council_tax_reduction
+    parameter_prefix: gov.local_authorities
+    verified_start_year: 2013
+    notes: First-pass national support for Scotland, Wales, and England pensioner schemes, with reported CTB/CTR retained for unsupported English working-age local schemes.
+
   # --- Treasury programs ---
   - id: cost_of_living_support
     name: Cost of Living Support

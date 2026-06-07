@@ -93,7 +93,9 @@
     universal_credit: 0
     housing_benefit: 0
     pension_credit: 3_607.72
+    council_tax_reduction: 1_800
+    council_tax_less_benefit: 0
     winter_fuel_allowance: 200
     income_tax: 0
     national_insurance: 0
-    household_net_income: 15_833.18
+    household_net_income: 17_633.18

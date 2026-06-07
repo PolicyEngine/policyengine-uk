@@ -2,13 +2,11 @@ from policyengine_uk.model_api import *
 
 
 class council_tax_less_benefit(Variable):
-    label = "Council Tax (less CTB)"
+    label = "Council Tax after Council Tax Reduction"
     documentation = (
-        "Council Tax minus Council Tax Benefit / CTR. Kept as a public "
-        "convenience variable for downstream consumers (e.g. policyengine-app, "
-        "council-tax-ctr-map, policyengine-uk-data calibration targets) that "
-        "need the net council tax bill on a single line; not consumed inside "
-        "the core model itself."
+        "Gross Council Tax liability minus Council Tax Reduction, floored "
+        "at zero. During the CTR transition, the reduction may be modelled "
+        "for supported schemes or reported for unsupported schemes."
     )
     entity = Household
     definition_period = YEAR
@@ -16,9 +14,8 @@ class council_tax_less_benefit(Variable):
     unit = GBP
 
     def formula(household, period, parameters):
-        person = household.members
-        council_tax_benefit = household.sum(
-            person.benunit("council_tax_benefit", period)
-            * person("is_benunit_head", period)
+        return max_(
+            0,
+            household("council_tax", period)
+            - household("council_tax_reduction", period),
         )
-        return household("council_tax", period) - council_tax_benefit
