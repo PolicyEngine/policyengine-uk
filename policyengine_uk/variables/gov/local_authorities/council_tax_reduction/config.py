@@ -23,10 +23,23 @@ def is_merton_working_age(local_authority, country, has_pensioner):
     return (country == Country.ENGLAND) & ~has_pensioner & is_merton(local_authority)
 
 
+def is_kingston_upon_thames(local_authority):
+    return local_authority == LocalAuthority.KINGSTON_UPON_THAMES
+
+
+def is_kingston_upon_thames_working_age(local_authority, country, has_pensioner):
+    return (
+        (country == Country.ENGLAND)
+        & ~has_pensioner
+        & is_kingston_upon_thames(local_authority)
+    )
+
+
 def is_supported_scheme(country, has_pensioner, local_authority):
     return (
         is_england_pensioner_scheme(country, has_pensioner)
         | is_scotland_scheme(country)
         | is_wales_scheme(country)
         | is_merton_working_age(local_authority, country, has_pensioner)
+        | is_kingston_upon_thames_working_age(local_authority, country, has_pensioner)
     )
