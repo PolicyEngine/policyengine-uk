@@ -53,6 +53,14 @@ def is_westminster_working_age(local_authority, country, has_pensioner):
     )
 
 
+def is_oxford(local_authority):
+    return local_authority == LocalAuthority.OXFORD
+
+
+def is_oxford_working_age(local_authority, country, has_pensioner):
+    return (country == Country.ENGLAND) & ~has_pensioner & is_oxford(local_authority)
+
+
 def is_supported_scheme(country, has_pensioner, local_authority):
     return (
         is_england_pensioner_scheme(country, has_pensioner)
@@ -62,4 +70,5 @@ def is_supported_scheme(country, has_pensioner, local_authority):
         | is_kingston_upon_thames_working_age(local_authority, country, has_pensioner)
         | is_newham_working_age(local_authority, country, has_pensioner)
         | is_westminster_working_age(local_authority, country, has_pensioner)
+        | is_oxford_working_age(local_authority, country, has_pensioner)
     )
