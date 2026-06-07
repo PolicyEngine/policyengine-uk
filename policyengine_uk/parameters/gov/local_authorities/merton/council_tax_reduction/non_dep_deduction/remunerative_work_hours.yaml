@@ -1,0 +1,10 @@
+description: Minimum weekly hours for remunerative work under the Merton Council Tax Support non-dependant deduction rules.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Merton Council Tax Support remunerative work hours
+  reference:
+    - title: The London Borough of Merton Local Council Tax Support Scheme Rules 2026
+      href: https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf
