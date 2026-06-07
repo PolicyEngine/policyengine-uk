@@ -1,0 +1,27 @@
+description: Weekly non-dependant deduction schedule under the Merton Council Tax Support scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.20
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 10.60
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 13.30
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 15.95
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Merton Council Tax Support non-dependant deduction schedule
+  reference:
+    - title: The London Borough of Merton Local Council Tax Support Scheme Rules 2026
+      href: https://www.merton.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%20L%20B%20Merton%202026-27.pdf

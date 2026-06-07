@@ -15,4 +15,5 @@ class council_tax_reduction_scheme_supported(Variable):
         has_pensioner = household(
             "council_tax_reduction_household_has_pensioner", period
         )
-        return is_supported_scheme(country, has_pensioner)
+        local_authority = household("local_authority", period)
+        return is_supported_scheme(country, has_pensioner, local_authority)

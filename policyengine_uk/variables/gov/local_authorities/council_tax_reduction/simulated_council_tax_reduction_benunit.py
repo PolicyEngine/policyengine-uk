@@ -5,6 +5,8 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_wales_scheme,
 )
 
+LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = ["merton_council_tax_reduction"]
+
 
 class simulated_council_tax_reduction_benunit(Variable):
     value_type = float
@@ -75,10 +77,12 @@ class simulated_council_tax_reduction_benunit(Variable):
             - non_dep_deductions,
         )
         capital_eligible = benunit.household("savings", period) <= capital_limit
-        return (
+        national_ctr = (
             national_scheme
             * is_household_head_benunit
             * would_claim
             * capital_eligible
             * preliminary_award
         )
+        local_ctr = add(benunit, period, LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES)
+        return national_ctr + local_ctr
