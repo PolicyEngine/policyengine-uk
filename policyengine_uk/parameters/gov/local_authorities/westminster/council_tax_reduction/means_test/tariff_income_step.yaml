@@ -1,0 +1,10 @@
+description: Capital step above which one pound of weekly tariff income is added for working-age non-Universal Credit claimants under the Westminster Council Tax Support scheme.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Westminster Council Tax Support tariff income step
+  reference:
+    - title: Income and savings
+      href: https://www.westminster.gov.uk/benefits/guide-housing-benefit-and-council-tax-support/income-and-savings
