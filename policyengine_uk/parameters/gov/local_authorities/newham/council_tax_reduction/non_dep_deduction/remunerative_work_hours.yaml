@@ -1,0 +1,10 @@
+description: Weekly hours threshold for remunerative work in the Newham Council Tax Reduction non-dependant deduction schedule.
+values:
+  2026-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Newham Council Tax Reduction remunerative work hours
+  reference:
+    - title: Council Tax Reduction Scheme 2026
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026

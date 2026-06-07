@@ -407,3 +407,161 @@
   output:
     uc_assessable_capital: 0
     council_tax_reduction: 1_800
+
+- name: Newham working-age claimant receives 70 percent maximum support
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    simulated_council_tax_reduction_benunit: 1_260
+    council_tax_reduction: 1_260
+    council_tax_less_benefit: 540
+
+- name: Newham working-age claimant above capital limit gets no local support
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        council_tax_benefit_reported: 500
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 6_001
+  output:
+    council_tax_reduction_scheme_supported: true
+    simulated_council_tax_reduction_benunit: 0
+    council_tax_benefit: 0
+    council_tax_reduction: 0
+
+- name: Newham applies a 25 percent excess-income taper
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+        council_tax_reduction_applicable_amount: 10_000
+        council_tax_reduction_applicable_income: 11_000
+        council_tax_reduction_relevant_income_based_benefit: false
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction: 1_010
+    council_tax_less_benefit: 790
+
+- name: Newham applies its 2026 local non-dependant deduction schedule
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 5_200
+        private_pension_income: 11_232
+        weekly_hours: 16
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      non_dep_benunit:
+        members: [non_dep]
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_scheme_supported: true
+    council_tax_reduction: 280.32
+
+- name: Newham uses the not-in-remunerative-work non-dependant deduction below 16 weekly hours
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+      non_dep:
+        age: 25
+        employment_income: 31_460
+        weekly_hours: 15
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      non_dep_benunit:
+        members: [non_dep]
+    households:
+      household:
+        members: [claimant, non_dep]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction: 867.92
+
+- name: Newham UC claimant uses UC-reported capital against the local limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_uc: true
+        claims_all_entitled_benefits: true
+        uc_reported_capital: 0
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 20_000
+  output:
+    uc_assessable_capital: 0
+    council_tax_reduction: 1_260

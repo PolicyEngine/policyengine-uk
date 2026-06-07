@@ -1,0 +1,10 @@
+description: Capital limit for working-age households under the Newham Council Tax Reduction scheme.
+values:
+  2026-04-01: 6_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Newham Council Tax Reduction capital limit
+  reference:
+    - title: Council Tax Reduction Scheme 2026
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026

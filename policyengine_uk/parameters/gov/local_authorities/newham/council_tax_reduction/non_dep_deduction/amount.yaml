@@ -1,0 +1,27 @@
+description: Weekly working-age non-dependant deduction schedule under the Newham Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 7.54
+  - threshold:
+      2026-04-01: 183
+    amount:
+      2026-04-01: 14.96
+  - threshold:
+      2026-04-01: 316
+    amount:
+      2026-04-01: 18.84
+  - threshold:
+      2026-04-01: 394
+    amount:
+      2026-04-01: 22.61
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Newham Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Council Tax Reduction Scheme 2026
+      href: https://www.newham.gov.uk/downloads/file/10753/council-tax-reduction-scheme-2026
