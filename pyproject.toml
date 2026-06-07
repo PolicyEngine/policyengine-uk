@@ -1,6 +1,6 @@
 [project] 
 name = "policyengine-uk"
-version = "2.88.64"
+version = "2.88.65"
 description = "PolicyEngine tax and benefit system for the UK."
 readme = "README.md"
 authors = [
