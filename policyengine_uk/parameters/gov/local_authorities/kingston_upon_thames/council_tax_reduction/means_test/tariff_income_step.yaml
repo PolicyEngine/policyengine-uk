@@ -1,0 +1,10 @@
+description: Capital step above which one pound of weekly tariff income is added for working-age non-Universal Credit claimants under the Kingston upon Thames Council Tax Reduction scheme.
+values:
+  2026-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Kingston upon Thames Council Tax Reduction tariff income step
+  reference:
+    - title: Council Tax Reduction Scheme 2026 - 2027
+      href: https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf

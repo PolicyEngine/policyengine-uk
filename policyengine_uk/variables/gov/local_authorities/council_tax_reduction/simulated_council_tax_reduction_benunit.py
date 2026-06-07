@@ -5,7 +5,10 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.confi
     is_wales_scheme,
 )
 
-LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = ["merton_council_tax_reduction"]
+LOCAL_COUNCIL_TAX_REDUCTION_VARIABLES = [
+    "merton_council_tax_reduction",
+    "kingston_upon_thames_council_tax_reduction",
+]
 
 
 class simulated_council_tax_reduction_benunit(Variable):

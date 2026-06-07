@@ -1,0 +1,10 @@
+description: Withdrawal rate for working-age households under the Kingston upon Thames Council Tax Reduction scheme.
+values:
+  2026-04-01: 0.2
+metadata:
+  unit: /1
+  period: year
+  label: Kingston upon Thames Council Tax Reduction withdrawal rate
+  reference:
+    - title: Council Tax Reduction Scheme 2026 - 2027
+      href: https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf

@@ -1,0 +1,27 @@
+description: Weekly working-age non-dependant deduction schedule under the Kingston upon Thames Council Tax Reduction scheme.
+brackets:
+  - threshold:
+      2026-04-01: 0
+    amount:
+      2026-04-01: 5.64
+  - threshold:
+      2026-04-01: 279
+    amount:
+      2026-04-01: 11.50
+  - threshold:
+      2026-04-01: 485
+    amount:
+      2026-04-01: 14.43
+  - threshold:
+      2026-04-01: 605
+    amount:
+      2026-04-01: 17.31
+metadata:
+  amount_unit: currency-GBP
+  period: week
+  threshold_unit: currency-GBP
+  type: single_amount
+  label: Kingston upon Thames Council Tax Reduction non-dependant deduction schedule
+  reference:
+    - title: Council Tax Reduction Scheme 2026 - 2027
+      href: https://www.kingston.gov.uk/sites/default/files/2026-03/Council%20Tax%20Reduction%20Scheme%202026%20-%202027.pdf

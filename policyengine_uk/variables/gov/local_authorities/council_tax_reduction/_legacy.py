@@ -16,6 +16,7 @@ def legacy_council_tax_reduction(
     ctr,
     working_age,
     non_dep_deductions_variable,
+    additional_applicable_income=0,
 ):
     is_household_head_benunit = benunit("benunit_contains_household_head", period)
     would_claim = benunit("would_claim_council_tax_reduction", period)
@@ -31,6 +32,7 @@ def legacy_council_tax_reduction(
     )
     applicable_amount = where(has_uc_award, uc_applicable_amount, applicable_amount)
     applicable_income = where(has_uc_award, uc_applicable_income, applicable_income)
+    applicable_income += additional_applicable_income
     relevant_income_based_benefit = benunit(
         "council_tax_reduction_relevant_income_based_benefit",
         period,
