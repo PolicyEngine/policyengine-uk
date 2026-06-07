@@ -8,4 +8,8 @@ class council_tax_benefit(Variable):
     definition_period = YEAR
     unit = GBP
 
-    adds = ["council_tax_benefit_reported"]
+    def formula(benunit, period, parameters):
+        supported = benunit.household("council_tax_reduction_scheme_supported", period)
+        simulated = benunit("simulated_council_tax_reduction_benunit", period)
+        reported = benunit("council_tax_benefit_reported", period)
+        return where(supported, simulated, reported)

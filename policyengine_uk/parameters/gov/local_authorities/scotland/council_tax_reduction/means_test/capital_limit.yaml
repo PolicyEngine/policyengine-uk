@@ -1,0 +1,10 @@
+description: Capital limit under the Scotland Council Tax Reduction scheme.
+values:
+  2013-04-01: 16_000
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Scotland Council Tax Reduction capital limit
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2012
+      href: https://www.legislation.gov.uk/ssi/2012/303/contents/made
