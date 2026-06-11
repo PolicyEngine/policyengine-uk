@@ -278,6 +278,19 @@ sim = Simulation(dataset=dataset)
 print(sim.calculate("household_net_income", 2026))
 ```
 
+`Simulation` and `Microsimulation` can also load H5 files from local paths,
+Hugging Face URLs, or Google Cloud Storage URLs:
+
+```python
+sim = Microsimulation(
+    dataset="gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
+)
+```
+
+For `gs://` URLs, a numeric suffix after `@` pins an exact GCS generation. A
+non-numeric suffix pins the PolicyEngine data version stored in the object's
+GCS metadata.
+
 ### From survey datasets
 
 For population-level analysis, use survey data:
