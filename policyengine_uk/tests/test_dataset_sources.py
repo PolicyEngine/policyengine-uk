@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,7 @@ class FakeBlob:
         self.metadata = metadata
         self.contents = contents
         self.download_count = 0
+        self.download_filenames = []
         self.reload_count = 0
 
     def reload(self):
@@ -20,6 +22,7 @@ class FakeBlob:
 
     def download_to_filename(self, filename):
         self.download_count += 1
+        self.download_filenames.append(filename)
         Path(filename).write_bytes(self.contents)
 
 
@@ -187,3 +190,33 @@ def test_materialize_gcs_dataset_url_reuses_cached_file(monkeypatch, tmp_path):
     assert first_path == second_path
     assert Path(second_path).read_bytes() == b"current"
     assert current_blob.download_count == 1
+
+
+def test_download_blob_uses_unique_temp_path_for_each_download(monkeypatch, tmp_path):
+    local_path = tmp_path / "cache" / "file.h5"
+    created_temp_paths = []
+
+    def fake_mkstemp(*, prefix, suffix, dir):
+        temporary_path = Path(dir) / f"{prefix}{len(created_temp_paths)}{suffix}"
+        fd = os.open(temporary_path, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o600)
+        created_temp_paths.append(temporary_path)
+        return fd, str(temporary_path)
+
+    monkeypatch.setattr(dataset_sources.tempfile, "mkstemp", fake_mkstemp)
+    blob = FakeBlob("data/file.h5", 444, contents=b"first")
+
+    dataset_sources._download_blob(blob, local_path)
+    local_path.unlink()
+    blob.contents = b"second"
+    dataset_sources._download_blob(blob, local_path)
+
+    assert [
+        Path(filename) for filename in blob.download_filenames
+    ] == created_temp_paths
+    assert len(set(created_temp_paths)) == 2
+    assert all(
+        temporary_path.parent == local_path.parent
+        for temporary_path in created_temp_paths
+    )
+    assert all(not temporary_path.exists() for temporary_path in created_temp_paths)
+    assert local_path.read_bytes() == b"second"

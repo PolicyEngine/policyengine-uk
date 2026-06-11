@@ -276,6 +276,11 @@ class Simulation(CoreSimulation):
             self.build_from_url(dataset_source)
             return
         if dataset_source.startswith("gs://"):
+            if dataset_source in _url_dataset_cache:
+                multi_year_dataset = _url_dataset_cache[dataset_source]
+                self.build_from_multi_year_dataset(multi_year_dataset)
+                self.dataset = multi_year_dataset
+                return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
             self.build_from_file(dataset_file, cache_key=dataset_source)
             return

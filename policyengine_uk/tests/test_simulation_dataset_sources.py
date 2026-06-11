@@ -85,6 +85,44 @@ def test_dataset_source_routes_gcs_urls_to_materialized_file(monkeypatch):
     }
 
 
+def test_dataset_source_reuses_cached_gcs_dataset_before_materializing(monkeypatch):
+    captured = {}
+    cached_dataset = object()
+    simulation = Simulation.__new__(Simulation)
+    url = "gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
+
+    def fake_materialize_gcs_dataset_url(dataset_url):
+        raise AssertionError("Cached gs:// datasets should not be materialized.")
+
+    def fake_build_from_file(dataset_file, *, cache_key=None):
+        raise AssertionError("Cached gs:// datasets should not be read from disk.")
+
+    def fake_build_from_multi_year_dataset(dataset):
+        captured["dataset"] = dataset
+
+    simulation_module._url_dataset_cache.pop(url, None)
+    simulation_module._url_dataset_cache[url] = cached_dataset
+    monkeypatch.setattr(
+        simulation_module,
+        "materialize_gcs_dataset_url",
+        fake_materialize_gcs_dataset_url,
+    )
+    monkeypatch.setattr(simulation, "build_from_file", fake_build_from_file)
+    monkeypatch.setattr(
+        simulation,
+        "build_from_multi_year_dataset",
+        fake_build_from_multi_year_dataset,
+    )
+
+    try:
+        Simulation.build_from_dataset_source(simulation, url)
+
+        assert captured["dataset"] is cached_dataset
+        assert simulation.dataset is cached_dataset
+    finally:
+        simulation_module._url_dataset_cache.pop(url, None)
+
+
 def test_dataset_source_rejects_unsupported_remote_urls():
     simulation = Simulation.__new__(Simulation)
 

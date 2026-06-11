@@ -126,7 +126,13 @@ def _cached_dataset_path(
 
 def _download_blob(blob, local_path: Path) -> None:
     local_path.parent.mkdir(parents=True, exist_ok=True)
-    temporary_path = local_path.with_name(f"{local_path.name}.tmp")
+    fd, temporary_path_name = tempfile.mkstemp(
+        prefix=f".{local_path.name}.",
+        suffix=".tmp",
+        dir=local_path.parent,
+    )
+    os.close(fd)
+    temporary_path = Path(temporary_path_name)
     try:
         blob.download_to_filename(str(temporary_path))
         os.replace(temporary_path, local_path)
