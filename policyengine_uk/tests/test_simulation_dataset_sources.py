@@ -56,13 +56,42 @@ def test_dataset_source_routes_huggingface_urls_to_url_loader(monkeypatch):
     assert captured == {"url": url}
 
 
+def test_dataset_source_routes_gcs_urls_to_materialized_file(monkeypatch):
+    captured = {}
+    simulation = Simulation.__new__(Simulation)
+    url = "gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5@1.55.10"
+
+    def fake_materialize_gcs_dataset_url(dataset_url):
+        captured["url"] = dataset_url
+        return "/tmp/enhanced_frs_2023_24.h5"
+
+    def fake_build_from_file(dataset_file, *, cache_key=None):
+        captured["dataset_file"] = dataset_file
+        captured["cache_key"] = cache_key
+
+    monkeypatch.setattr(
+        simulation_module,
+        "materialize_gcs_dataset_url",
+        fake_materialize_gcs_dataset_url,
+    )
+    monkeypatch.setattr(simulation, "build_from_file", fake_build_from_file)
+
+    Simulation.build_from_dataset_source(simulation, url)
+
+    assert captured == {
+        "url": url,
+        "dataset_file": "/tmp/enhanced_frs_2023_24.h5",
+        "cache_key": url,
+    }
+
+
 def test_dataset_source_rejects_unsupported_remote_urls():
     simulation = Simulation.__new__(Simulation)
 
-    with pytest.raises(ValueError, match="Only HuggingFace dataset URLs"):
+    with pytest.raises(ValueError, match="Only HuggingFace, Google Cloud Storage"):
         Simulation.build_from_dataset_source(
             simulation,
-            "gs://policyengine-uk-data-private/enhanced_frs_2023_24.h5",
+            "s3://policyengine-uk-data-private/enhanced_frs_2023_24.h5",
         )
 
 
