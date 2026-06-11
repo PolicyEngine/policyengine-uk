@@ -1,3 +1,10 @@
+## [2.89.0] - 2026-06-11
+
+### Added
+
+- - Added direct `gs://` dataset loading for UK simulations, including support for GCS generations and PolicyEngine data-version metadata.
+
+
 ## [2.88.65] - 2026-06-07
 
 No significant changes.
