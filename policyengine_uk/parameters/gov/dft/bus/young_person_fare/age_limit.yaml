@@ -1,0 +1,9 @@
+description: Age below which people are eligible for the young-person bus fare policy (e.g. 22 for the Scotland-style under-22 free bus travel scheme). Defaults to 0 so no one is eligible and the baseline is unaffected; a reform raises it to switch the policy on.
+values:
+  2020-01-01: 0
+metadata:
+  unit: year
+  label: young-person bus fare age limit
+  reference:
+    - title: Free bus travel for under-22s (Transport Scotland)
+      href: https://www.transport.gov.scot/concessionary-travel/young-persons-free-bus-travel-scheme/

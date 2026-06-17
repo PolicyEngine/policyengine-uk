@@ -1,0 +1,6 @@
+description: Fraction of the normal bus & coach fare that eligible young people still pay under the young-person fare policy. 0 means free travel (the Scotland-style scheme); 0.5 a half-price discount; 1 no change. Combined with age_limit, which gates eligibility.
+values:
+  2020-01-01: 0
+metadata:
+  unit: /1
+  label: young-person bus fare rate paid

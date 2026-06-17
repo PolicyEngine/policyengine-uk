@@ -11,4 +11,5 @@ class dft_subsidy_spending(Variable):
     adds = [
         "rail_subsidy_spending",
         "bus_subsidy_spending",
+        "bus_fare_relief",
     ]
