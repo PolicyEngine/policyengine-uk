@@ -107,3 +107,42 @@ def test_petrol_and_diesel_spending_preserve_road_fuel_litres_not_cpi():
         weighted_litres(household_2034, "diesel_spending", diesel_price, 2034)
         * (1 + road_fuel_volume(2035))
     )
+
+
+def test_bus_fare_spending_uses_cpi_uprating():
+    parameters = system.parameters
+    cpi = parameters.gov.economic_assumptions.yoy_growth.obr.consumer_price_index
+
+    dataset = UKSingleYearDataset(
+        person=pd.DataFrame(
+            {
+                "person_id": [1],
+                "person_benunit_id": [1],
+                "person_household_id": [1],
+                "age": [40],
+            }
+        ),
+        benunit=pd.DataFrame({"benunit_id": [1]}),
+        household=pd.DataFrame(
+            {
+                "household_id": [1],
+                "region": ["LONDON"],
+                "tenure_type": ["OWNED_OUTRIGHT"],
+                "council_tax": [1_500.0],
+                "rent": [0.0],
+                "household_weight": [1.0],
+                "bus_fare_spending": [100.0],
+            }
+        ),
+        fiscal_year=2025,
+    )
+
+    extended = extend_single_year_dataset(
+        dataset,
+        tax_benefit_system_parameters=parameters,
+        end_year=2026,
+    )
+
+    assert extended[2026].household["bus_fare_spending"].iloc[0] == pytest.approx(
+        100 * (1 + cpi(2026))
+    )
