@@ -8,6 +8,7 @@ gov.economic_assumptions.yoy_growth.obr.average_earnings:
 gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - afcs_reported
 - alcohol_and_tobacco_consumption
+- bus_fare_spending
 - bsp_reported
 - carers_allowance_reported
 - child_benefit_reported
