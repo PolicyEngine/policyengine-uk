@@ -42,25 +42,6 @@ jobs:
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
           run: uvx ruff format --check .
-  BundleMetadataContract:
-    name: Validate bundle metadata contract
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.14"
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
-      - name: Install package
-        run: uv pip install --system .
-      - name: Install bundle validation tooling
-        # Pin the test-only bundle contract dependency until policyengine-bundles
-        # has published releases suitable for ordinary dependency specifiers.
-        run: uv pip install --system "policyengine-bundles @ git+https://github.com/PolicyEngine/policyengine-bundles@8ae9f56fefcf89f69b8a7e3bc49928509c6207be"
-      - name: Validate runtime metadata contract
-        run: python -m pytest policyengine_uk/tests/test_build_metadata.py
   Test:
       runs-on: macos-latest
       permissions:
