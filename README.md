@@ -3,6 +3,9 @@
 [![PyPI version](https://badge.fury.io/py/policyengine-uk.svg)](https://badge.fury.io/py/policyengine-uk)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
+> **For microsimulation, use [policyengine.py](https://github.com/PolicyEngine/policyengine.py).** Society-wide microsimulation — population aggregates and distributional or budgetary impacts — is moving to the managed `policyengine.py` bundle, which pins certified, calibration-gated datasets. **Direct microsimulation via `policyengine-uk` (`Microsimulation()`) is deprecated** and being migrated to `policyengine.py`. This package remains the home of the UK tax-benefit rules and household-level calculations. Microsimulation results are estimates.
+
+
 PolicyEngine UK is [PolicyEngine](https://policyengine.org)'s microsimulation model of the UK tax-benefit system.
 It uses the PolicyEngine Core microsimulation framework, which is based on [OpenFisca](https://openfisca.org). 
 
