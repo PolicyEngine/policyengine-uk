@@ -1,0 +1,1 @@
+Added `net_wealth` (total wealth net of mortgage, consumer, and student loan debt) and the `mortgage_debt` and `consumer_debt` household inputs. Unlike gross `total_wealth`, net wealth can be negative when a household's debts exceed its assets.
