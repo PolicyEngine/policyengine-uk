@@ -1,0 +1,4 @@
+- bump: minor
+  changes:
+    added:
+      - Cash ISA and stocks and shares ISA holdings as household wealth input variables.
