@@ -21,13 +21,17 @@ from policyengine_uk import Microsimulation
 from policyengine_uk.model_api import Scenario
 
 # Define baseline and reform scenarios
-baseline_scenario = Scenario(parameter_changes={
-    "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.12,
-})
+baseline_scenario = Scenario(
+    parameter_changes={
+        "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.12,
+    }
+)
 
-reform_scenario = Scenario(parameter_changes={
-    "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.10,
-})
+reform_scenario = Scenario(
+    parameter_changes={
+        "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.10,
+    }
+)
 
 # Create microsimulations
 baseline = Microsimulation(scenario=baseline_scenario)
@@ -38,7 +42,9 @@ reformed.baseline.apply_parameter_changes(baseline_scenario.parameter_changes)
 dynamics = reformed.apply_dynamics(2025)
 
 # View FTE impacts
-print(f"Substitution effect FTEs: {dynamics.fte_impacts.substitution_response_ftes:,.0f}")
+print(
+    f"Substitution effect FTEs: {dynamics.fte_impacts.substitution_response_ftes:,.0f}"
+)
 print(f"Income effect FTEs: {dynamics.fte_impacts.income_response_ftes:,.0f}")
 print(f"Participation FTEs: {dynamics.fte_impacts.participation_response_ftes:,.0f}")
 print(f"Total FTE change: {dynamics.fte_impacts.ftes:,.0f}")
@@ -76,19 +82,23 @@ Combine dynamics with standard microsimulation analysis to understand how behavi
 progression = dynamics.progression
 
 # Add demographic information
-progression['decile'] = reformed.calculate("household_income_decile", 2025, map_to="person")
-progression['age_group'] = pd.cut(
-    reformed.calculate("age", 2025), 
+progression["decile"] = reformed.calculate(
+    "household_income_decile", 2025, map_to="person"
+)
+progression["age_group"] = pd.cut(
+    reformed.calculate("age", 2025),
     bins=[0, 30, 50, 65, 100],
-    labels=["Under 30", "30-49", "50-64", "65+"]
+    labels=["Under 30", "30-49", "50-64", "65+"],
 )
 
 # Analyse by income decile
-by_decile = progression.groupby('decile').agg({
-    'total_response_ftes': 'sum',
-    'substitution_response_ftes': 'sum',
-    'income_response_ftes': 'sum'
-})
+by_decile = progression.groupby("decile").agg(
+    {
+        "total_response_ftes": "sum",
+        "substitution_response_ftes": "sum",
+        "income_response_ftes": "sum",
+    }
+)
 
 print("FTE changes by income decile:")
 print(by_decile.round(0))
@@ -100,14 +110,14 @@ The model uses different elasticities for different groups based on empirical ev
 
 ```python
 # Examine elasticities applied
-elasticities = progression[['substitution_elasticity', 'income_elasticity']].describe()
+elasticities = progression[["substitution_elasticity", "income_elasticity"]].describe()
 print("Elasticity distribution:")
 print(elasticities)
 
 # See which groups have different elasticities
-progression['has_children'] = reformed.calculate("is_parent", 2025)
-by_parent = progression.groupby('has_children')[
-    ['substitution_elasticity', 'income_elasticity']
+progression["has_children"] = reformed.calculate("is_parent", 2025)
+by_parent = progression.groupby("has_children")[
+    ["substitution_elasticity", "income_elasticity"]
 ].mean()
 print("\nElasticities by parental status:")
 print(by_parent)
@@ -123,13 +133,17 @@ For policies analysed by the OBR, compare your results with their published esti
 # Example: National Insurance cut from Autumn Statement 2023
 # OBR estimated ~94,000 FTE increase
 
-baseline_scenario = Scenario(parameter_changes={
-    "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.12,
-})
+baseline_scenario = Scenario(
+    parameter_changes={
+        "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.12,
+    }
+)
 
-reform_scenario = Scenario(parameter_changes={
-    "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.10,
-})
+reform_scenario = Scenario(
+    parameter_changes={
+        "gov.hmrc.national_insurance.class_1.rates.employee.main": 0.10,
+    }
+)
 
 baseline = Microsimulation(scenario=baseline_scenario)
 reformed = Microsimulation(scenario=reform_scenario)
