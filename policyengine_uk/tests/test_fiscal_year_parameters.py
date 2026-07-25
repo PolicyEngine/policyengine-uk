@@ -102,6 +102,74 @@ class TestFiscalYearBoundary:
         assert child_limit == 2
 
 
+class TestMidYearRateChanges:
+    """Tests for changes taking effect part-way through a fiscal year.
+
+    Sampling one date per year drops any change taking effect after it.
+    Parameters carrying `fiscal_year_blend: true` are day-weighted across
+    the year instead.
+    """
+
+    # Fiscal year 2024-25 runs 6 April 2024 to 5 April 2025: 207 days at the
+    # rates in force before 30 October 2024, then 158 days at the rates after.
+    DAYS_BEFORE = 207
+    DAYS_AFTER = 158
+    TOTAL_DAYS = DAYS_BEFORE + DAYS_AFTER
+
+    def blended(self, before, after):
+        return (before * self.DAYS_BEFORE + after * self.DAYS_AFTER) / self.TOTAL_DAYS
+
+    @pytest.mark.parametrize(
+        "rate_name, before, after",
+        [("basic_rate", 0.10, 0.18), ("higher_rate", 0.20, 0.24)],
+    )
+    def test_cgt_rates_blend_across_the_split_year(self, rate_name, before, after):
+        """2024-25 carries both statutory rates, so the year takes their average."""
+        system = CountryTaxBenefitSystem()
+        rates = {
+            year: getattr(
+                system.get_parameters_at_instant(str(year)).gov.hmrc.cgt, rate_name
+            )
+            for year in (2023, 2024, 2025)
+        }
+
+        assert rates[2023] == pytest.approx(before)
+        assert rates[2024] == pytest.approx(self.blended(before, after))
+        assert rates[2025] == pytest.approx(after)
+
+    def test_cgt_rate_rise_takes_effect_from_the_statutory_date(self):
+        """Finance Act 2025 s.7 applies to disposals from 30 October 2024.
+
+        Read before fiscal year conversion, which is what the statutory dates
+        feed. Regression test for dating the rise to 6 April 2025, which moved
+        a change the legislation makes in 2024-25 into the following year.
+        """
+        import policyengine_uk
+        from pathlib import Path
+        from policyengine_core.parameters import ParameterNode
+
+        parameters = ParameterNode(
+            directory_path=str(Path(policyengine_uk.__file__).parent / "parameters")
+        )
+        higher_rate = parameters.gov.hmrc.cgt.higher_rate
+
+        assert higher_rate("2024-10-29") == pytest.approx(0.20)
+        assert higher_rate("2024-10-30") == pytest.approx(0.24)
+
+    def test_blending_is_opt_in(self, uk_system):
+        """Parameters without the flag keep one sampled value for the year.
+
+        National Insurance rates fell part-way through 2022-23, and the year
+        still takes the rate in force at its start rather than an average.
+        Whether to blend is a decision per parameter: a transaction is taxed
+        at the rate in force on its date, not at a yearly average.
+        """
+        parameters = uk_system.get_parameters_at_instant("2022")
+        employee_rates = parameters.gov.hmrc.national_insurance.class_1.rates.employee
+
+        assert employee_rates.main == pytest.approx(0.1325)
+
+
 class TestFiscalYearCoverage:
     """Tests to verify fiscal year conversion covers all needed years."""
 
