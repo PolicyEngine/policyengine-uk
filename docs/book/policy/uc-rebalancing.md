@@ -65,9 +65,11 @@ You can use these reforms in your own analysis by creating a `Simulation` with p
 from policyengine_uk import Simulation, Scenario
 
 # Disable the reforms from 2026 onwards
-scenario = Scenario(parameter_changes={
-    "gov.dwp.universal_credit.rebalancing.active": False,
-})
+scenario = Scenario(
+    parameter_changes={
+        "gov.dwp.universal_credit.rebalancing.active": False,
+    }
+)
 
 sim = Simulation(scenario=scenario)
 ```
@@ -78,14 +80,16 @@ sim = Simulation(scenario=scenario)
 from policyengine_uk import Simulation, Scenario
 
 # Set different uplift rates - e.g. 5% in 2026, 7% in 2027
-scenario = Scenario(parameter_changes={
-    "gov.dwp.universal_credit.rebalancing.standard_allowance_uplift": {
-        "2026-01-01": 0.05,
-        "2027-01-01": 0.07,
-        "2028-01-01": 0.07,
-        "2029-01-01": 0.07
+scenario = Scenario(
+    parameter_changes={
+        "gov.dwp.universal_credit.rebalancing.standard_allowance_uplift": {
+            "2026-01-01": 0.05,
+            "2027-01-01": 0.07,
+            "2028-01-01": 0.07,
+            "2029-01-01": 0.07,
+        }
     }
-})
+)
 
 sim = Simulation(scenario=scenario)
 ```
@@ -96,11 +100,13 @@ sim = Simulation(scenario=scenario)
 from policyengine_uk import Simulation, Scenario
 
 # Set the new claimant health element to £250 per month
-scenario = Scenario(parameter_changes={
-    "gov.dwp.universal_credit.rebalancing.new_claimant_health_element": {
-        "2026-01-01": 250.00
+scenario = Scenario(
+    parameter_changes={
+        "gov.dwp.universal_credit.rebalancing.new_claimant_health_element": {
+            "2026-01-01": 250.00
+        }
     }
-})
+)
 
 sim = Simulation(scenario=scenario)
 ```

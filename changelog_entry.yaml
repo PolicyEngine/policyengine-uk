@@ -1,0 +1,8 @@
+- bump: patch
+  changes:
+    fixed:
+    - Northern Ireland regional land intensity lowered from 0.673 (population-weighted
+      English mean) to 0.44, interpolated from the price-similar North East and North
+      West regions, consistent with the Scotland and Wales treatment. The previous
+      value placed NI above every English region except London despite NI having
+      roughly the lowest house prices in the UK.
