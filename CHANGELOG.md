@@ -1,3 +1,10 @@
+## [2.89.4] - 2026-07-27
+
+### Fixed
+
+- Lower Northern Ireland's regional land intensity from 0.673 to 0.44, interpolating from price-similar regions consistently with Scotland and Wales.
+
+
 ## [2.89.3] - 2026-07-23
 
 No significant changes.
