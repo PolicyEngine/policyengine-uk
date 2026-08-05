@@ -95,6 +95,51 @@ class TestReformLevers:
             0.10 * (41 / 100) * sa
         )
 
+    def test_protected_floor_limits_combined_reductions(self):
+        # The JRF-style case: the benefit cap plus deductions would push the
+        # award far below 85% of the standard allowance; the floor stops the
+        # combined reductions there.
+        situation = make_situation(
+            benefit_cap_reduction={YEAR: 2_500},
+            uc_latent_deduction_rate={YEAR: 0.25},
+            uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+        )
+        baseline = Simulation(situation=situation)
+        reform = Simulation(
+            situation=situation,
+            reform={
+                "gov.dwp.universal_credit.deductions.protected_floor": {
+                    "2025-01-01.2025-12-31": 0.85
+                }
+            },
+        )
+        sa = baseline.calculate("uc_standard_allowance", YEAR)[0]
+        deductions = baseline.calculate("uc_deductions", YEAR)[0]
+        assert baseline.calculate("universal_credit", YEAR)[0] == pytest.approx(
+            6_000 - 2_500 - deductions
+        )
+        assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(0.85 * sa)
+
+    def test_protected_floor_inactive_when_reductions_stay_above_it(self):
+        # Deductions alone under the 15% cap leave the award above an 85%
+        # floor here, so the floor changes nothing.
+        situation = make_situation(
+            uc_latent_deduction_rate={YEAR: 0.25},
+            uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+        )
+        baseline = Simulation(situation=situation)
+        reform = Simulation(
+            situation=situation,
+            reform={
+                "gov.dwp.universal_credit.deductions.protected_floor": {
+                    "2025-01-01.2025-12-31": 0.85
+                }
+            },
+        )
+        assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(
+            baseline.calculate("universal_credit", YEAR)[0]
+        )
+
     def test_abolishing_all_types_removes_deductions(self):
         situation = make_situation(
             uc_latent_deduction_rate={YEAR: 0.25},
