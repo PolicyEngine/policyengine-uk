@@ -1,0 +1,6 @@
+description: Remove advance repayment deductions from Universal Credit.
+values:
+  2015-04-01: false
+metadata:
+  label: Abolish UC advance repayment deductions
+  unit: bool

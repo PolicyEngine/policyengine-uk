@@ -1,0 +1,6 @@
+description: Remove third party deductions from Universal Credit.
+values:
+  2015-04-01: false
+metadata:
+  label: Abolish UC third party deductions
+  unit: bool

@@ -1,0 +1,83 @@
+description: Distribution of latent Universal Credit deduction demand, as a share of all UC households in each deduction-rate band (rates as a fraction of the standard allowance). Calibrated to the observed March to May 2025 distribution, the last full months under the 25% cap, so the statutory cap parameter reproduces observed distributions when applied. Bands sum to the share of UC households with any deduction (approximately 0.47).
+UNDER_5:
+  description: Share of UC households with deductions between 0% and 5% of the standard allowance.
+  values:
+    2015-04-01: 0.047
+  metadata:
+    label: UC deduction share, under 5% of standard allowance
+    unit: /1
+AT_5:
+  description: Share of UC households with deductions at exactly 5% of the standard allowance.
+  values:
+    2015-04-01: 0.030
+  metadata:
+    label: UC deduction share, at 5% of standard allowance
+    unit: /1
+FIVE_TO_10:
+  description: Share of UC households with deductions between 5% and 10% of the standard allowance.
+  values:
+    2015-04-01: 0.070
+  metadata:
+    label: UC deduction share, 5% to 10% of standard allowance
+    unit: /1
+AT_10:
+  description: Share of UC households with deductions at exactly 10% of the standard allowance.
+  values:
+    2015-04-01: 0.010
+  metadata:
+    label: UC deduction share, at 10% of standard allowance
+    unit: /1
+TEN_TO_15:
+  description: Share of UC households with deductions between 10% and 15% of the standard allowance.
+  values:
+    2015-04-01: 0.040
+  metadata:
+    label: UC deduction share, 10% to 15% of standard allowance
+    unit: /1
+AT_15:
+  description: Share of UC households with deductions at exactly 15% of the standard allowance.
+  values:
+    2015-04-01: 0.045
+  metadata:
+    label: UC deduction share, at 15% of standard allowance
+    unit: /1
+FIFTEEN_TO_20:
+  description: Share of UC households with deductions between 15% and 20% of the standard allowance.
+  values:
+    2015-04-01: 0.030
+  metadata:
+    label: UC deduction share, 15% to 20% of standard allowance
+    unit: /1
+AT_20:
+  description: Share of UC households with deductions at exactly 20% of the standard allowance.
+  values:
+    2015-04-01: 0.010
+  metadata:
+    label: UC deduction share, at 20% of standard allowance
+    unit: /1
+TWENTY_TO_25:
+  description: Share of UC households with deductions between 20% and 25% of the standard allowance.
+  values:
+    2015-04-01: 0.030
+  metadata:
+    label: UC deduction share, 20% to 25% of standard allowance
+    unit: /1
+AT_25:
+  description: Share of UC households with latent deduction demand at or above 25% of the standard allowance (observed at the 25% cap before the Fair Repayment Rate).
+  values:
+    2015-04-01: 0.135
+  metadata:
+    label: UC deduction share, at or above 25% of standard allowance
+    unit: /1
+OVER_25:
+  description: Share of UC households with deductions above 25% of the standard allowance (last resort deductions, exempt from the cap).
+  values:
+    2015-04-01: 0.020
+  metadata:
+    label: UC deduction share, above 25% of standard allowance (last resort)
+    unit: /1
+metadata:
+  label: UC latent deduction rate distribution
+  reference:
+    - title: DWP, Universal Credit deductions statistics March 2025 to February 2026, supplementary data tables, Table 2
+      href: https://assets.publishing.service.gov.uk/media/69fb3ea22a6137e93226b7ce/universal-credit-deductions-march-2025-to-february-2026.ods

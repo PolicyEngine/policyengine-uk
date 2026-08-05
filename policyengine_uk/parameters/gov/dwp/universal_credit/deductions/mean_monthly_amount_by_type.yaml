@@ -1,0 +1,30 @@
+description: Mean monthly deduction amount by deduction type among Universal Credit households with that type, from the March to May 2025 average. Used to weight each type's share of a household's total deduction when reforms remove specific types.
+ADVANCE:
+  description: Mean monthly advance repayment deduction.
+  values:
+    2015-04-01: 41
+  metadata:
+    label: UC mean advance deduction
+    unit: currency-GBP
+    period: month
+THIRD_PARTY:
+  description: Mean monthly third party deduction.
+  values:
+    2015-04-01: 37
+  metadata:
+    label: UC mean third party deduction
+    unit: currency-GBP
+    period: month
+GOVERNMENT:
+  description: Mean monthly government debt deduction.
+  values:
+    2015-04-01: 59
+  metadata:
+    label: UC mean government deduction
+    unit: currency-GBP
+    period: month
+metadata:
+  label: UC mean deduction amount by type
+  reference:
+    - title: DWP, Universal Credit deductions statistics March 2025 to February 2026, supplementary data tables, Table 4
+      href: https://assets.publishing.service.gov.uk/media/69fb3ea22a6137e93226b7ce/universal-credit-deductions-march-2025-to-february-2026.ods

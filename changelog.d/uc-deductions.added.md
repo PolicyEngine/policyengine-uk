@@ -1,0 +1,1 @@
+Universal Credit deductions: latent deduction demand assigned from DWP deductions statistics (incidence by region, rate distribution, type combinations), the deductions cap including the 2025 Fair Repayment Rate, last resort deductions exempt from the cap, and reform switches to abolish advance, third party or government debt deductions.

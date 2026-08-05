@@ -1,0 +1,84 @@
+description: Regional deduction incidence relative to the national rate, derived from constituency-level DWP deductions statistics (February 2026). Each region's share of UC households with deductions, divided by the national share (0.472). Northern Ireland administers UC separately and is not in the GB statistics; it and unknown regions use the national rate.
+UNKNOWN:
+  values:
+    2015-04-01: 1.0
+  metadata:
+    label: UC deduction incidence factor, unknown region
+    unit: /1
+NORTH_EAST:
+  values:
+    2015-04-01: 1.08
+  metadata:
+    label: UC deduction incidence factor, North East
+    unit: /1
+NORTH_WEST:
+  values:
+    2015-04-01: 0.95
+  metadata:
+    label: UC deduction incidence factor, North West
+    unit: /1
+YORKSHIRE:
+  values:
+    2015-04-01: 1.06
+  metadata:
+    label: UC deduction incidence factor, Yorkshire and the Humber
+    unit: /1
+EAST_MIDLANDS:
+  values:
+    2015-04-01: 0.95
+  metadata:
+    label: UC deduction incidence factor, East Midlands
+    unit: /1
+WEST_MIDLANDS:
+  values:
+    2015-04-01: 0.91
+  metadata:
+    label: UC deduction incidence factor, West Midlands
+    unit: /1
+EAST_OF_ENGLAND:
+  values:
+    2015-04-01: 1.06
+  metadata:
+    label: UC deduction incidence factor, East of England
+    unit: /1
+LONDON:
+  values:
+    2015-04-01: 0.95
+  metadata:
+    label: UC deduction incidence factor, London
+    unit: /1
+SOUTH_EAST:
+  values:
+    2015-04-01: 0.89
+  metadata:
+    label: UC deduction incidence factor, South East
+    unit: /1
+SOUTH_WEST:
+  values:
+    2015-04-01: 0.83
+  metadata:
+    label: UC deduction incidence factor, South West
+    unit: /1
+WALES:
+  values:
+    2015-04-01: 1.10
+  metadata:
+    label: UC deduction incidence factor, Wales
+    unit: /1
+SCOTLAND:
+  values:
+    2015-04-01: 1.04
+  metadata:
+    label: UC deduction incidence factor, Scotland
+    unit: /1
+NORTHERN_IRELAND:
+  values:
+    2015-04-01: 1.0
+  metadata:
+    label: UC deduction incidence factor, Northern Ireland
+    unit: /1
+metadata:
+  label: UC deduction regional incidence factors
+  reference:
+    - title: DWP, Universal Credit deductions statistics March 2025 to February 2026, supplementary data tables, Table 6
+      href: https://assets.publishing.service.gov.uk/media/69fb3ea22a6137e93226b7ce/universal-credit-deductions-march-2025-to-february-2026.ods

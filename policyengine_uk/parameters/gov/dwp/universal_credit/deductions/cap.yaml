@@ -1,0 +1,17 @@
+description: Maximum total deductions from a Universal Credit award, as a fraction of the standard allowance (the Fair Repayment Rate from 30 April 2025). Child maintenance is a last resort deduction and may exceed this cap.
+values:
+  2015-04-01: 0.4
+  2019-10-01: 0.3
+  2021-04-01: 0.25
+  2025-04-30: 0.15
+metadata:
+  label: UC deductions cap
+  unit: /1
+  period: month
+  reference:
+    - title: DWP guidance, Deductions V17.0 (maximum rates of deductions)
+      href: https://data.parliament.uk/DepositedPapers/Files/DEP2024-0673/054_Deductions_V17.0.pdf
+    - title: Universal Credit change brings £420 boost to over a million households (Fair Repayment Rate, 30 April 2025)
+      href: https://www.gov.uk/government/news/universal-credit-change-brings-420-boost-to-over-a-million-households
+    - title: House of Commons Library, Universal Credit deductions (CDP-2023-0166)
+      href: https://researchbriefings.files.parliament.uk/documents/CDP-2023-0166/CDP-2023-0166.pdf
