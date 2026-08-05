@@ -22,14 +22,17 @@ class uc_deduction_rate(Variable):
     value_type = float
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.universal_credit.deductions
+        # Law: the cap and abolition switches. Estimation: the mean amounts
+        # by type (gov.simulation), used only to split a household's total
+        # rate across its deduction types.
+        law = parameters(period).gov.dwp.universal_credit.deductions
+        m = parameters(period).gov.simulation.uc_deductions.mean_monthly_amount_by_type
         latent = benunit("uc_latent_deduction_rate", period)
         combination = benunit("uc_deduction_combination", period)
 
-        m = p.mean_monthly_amount_by_type
-        advance_weight = 0.0 if p.abolish.advance else m.ADVANCE
-        third_party_weight = 0.0 if p.abolish.third_party else m.THIRD_PARTY
-        government_weight = 0.0 if p.abolish.government else m.GOVERNMENT
+        advance_weight = 0.0 if law.abolish.advance else m.ADVANCE
+        third_party_weight = 0.0 if law.abolish.third_party else m.THIRD_PARTY
+        government_weight = 0.0 if law.abolish.government else m.GOVERNMENT
 
         def retained(kept, total):
             return kept / total
@@ -69,4 +72,4 @@ class uc_deduction_rate(Variable):
         )
         rate = latent * retained_share
         is_last_resort = latent > LAST_RESORT_THRESHOLD
-        return where(is_last_resort, rate, min_(rate, p.cap))
+        return where(is_last_resort, rate, min_(rate, law.cap))

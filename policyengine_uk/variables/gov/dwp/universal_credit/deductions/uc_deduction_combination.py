@@ -26,8 +26,10 @@ class uc_deduction_combination(Variable):
     default_value = UCDeductionCombination.NONE
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.universal_credit.deductions
-        c = p.type_combination
+        # Estimation fallback: datasets can impute this directly (or override
+        # the draw); the parameter lives under gov.simulation because it
+        # describes the world, not the law.
+        c = parameters(period).gov.simulation.uc_deductions.type_combination
         shares = np.array(
             [
                 c.ADVANCE_ONLY,

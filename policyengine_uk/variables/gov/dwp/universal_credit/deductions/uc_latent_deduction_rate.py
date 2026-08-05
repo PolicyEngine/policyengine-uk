@@ -26,7 +26,10 @@ class uc_latent_deduction_rate(Variable):
     value_type = float
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.universal_credit.deductions
+        # Estimation fallback: datasets can impute this directly (or override
+        # the draw); the parameters live under gov.simulation because they
+        # describe the world, not the law.
+        p = parameters(period).gov.simulation.uc_deductions
         d = p.latent_rate_distribution
         shares = np.array(
             [
