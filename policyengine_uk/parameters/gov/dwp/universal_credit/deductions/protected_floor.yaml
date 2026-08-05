@@ -1,9 +1,9 @@
-description: Protected minimum floor in Universal Credit, as a fraction of the standard allowance. Deductions and benefit cap reductions combined cannot reduce the award below this floor (where the pre-reduction award reaches it). Zero means no floor. JRF's protected minimum floor proposal corresponds to 0.85.
+description: Protected minimum floor in Universal Credit, as a fraction of the standard allowance. When above zero, combined deductions and benefit cap reductions are limited to (1 - floor) times the standard allowance, following JRF's proposal design (their worked example limits the reduction itself to 15% of the standard allowance). Zero - the value under current law, which has no such floor - leaves reductions unlimited. Setting 0.85 models JRF's proposal; this reform-lever parameter encodes no current-law value other than zero.
 values:
   2015-04-01: 0
 metadata:
   label: UC protected minimum floor
   unit: /1
   reference:
-    - title: JRF, A protected minimum floor in Universal Credit (October 2025 briefing)
+    - title: JRF, A protected minimum floor in Universal Credit (October 2025 briefing; proposal design source, not current law)
       href: https://www.jrf.org.uk/social-security/protected-minimum-floor-in-universal-credit-new-policy-targeting-hardship

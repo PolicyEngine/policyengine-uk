@@ -65,7 +65,7 @@
     uc_deductions: 720.25
     universal_credit: 5_279.75
 
-- name: Last resort deductions above 25% are exempt from the cap
+- name: The last resort excess above 25% sits on top of the cap
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -84,10 +84,11 @@
       household:
         members: person
   output:
-    # 0.28 x 400.14 x 12 = 1,344.47, above the 15% cap.
-    uc_deductions: 1_344.47
+    # Cappable portion min(0.25, cap 0.15) plus last resort excess 0.03:
+    # 0.18 x 400.14 x 12 = 864.30.
+    uc_deductions: 864.30
 
-- name: Deductions cannot exceed the award itself
+- name: Deductions leave at least one penny per assessment period payable
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -106,5 +107,28 @@
       household:
         members: person
   output:
-    uc_deductions: 500
-    universal_credit: 0
+    # Schedule 6 of SI 2013/380: the award cannot be deducted below one
+    # penny per assessment period (12p per year).
+    uc_deductions: 499.88
+    universal_credit: 0.12
+
+- name: High-incidence regions still get no deductions by default in single-household simulations
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: person
+        region: NORTH_EAST
+  output:
+    uc_deductions: 0
+    universal_credit: 6_000

@@ -13,13 +13,14 @@ class uc_deduction_type_random_draw(Variable):
     entity = BenUnit
     definition_period = YEAR
     value_type = float
-    default_value = 0.5
+    default_value = 1.0
 
     def formula(benunit, period, parameters):
         # Representative microdata carries tens of millions of households of
         # weight; single-household situations carry ~1. Only assign hashed
-        # draws in representative simulations.
+        # draws in representative simulations; 1.0 maps to the last type
+        # combination but only matters when a deduction is assigned.
         if benunit("benunit_weight", period).sum() < 1e6:
-            return np.ones(benunit.count) * 0.5
+            return np.ones(benunit.count)
         ids = benunit("benunit_id", period)
         return splitmix64_uniform(ids, salt=1)

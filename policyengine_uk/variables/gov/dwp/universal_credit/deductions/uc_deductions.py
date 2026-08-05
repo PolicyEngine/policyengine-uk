@@ -22,4 +22,6 @@ class uc_deductions(Variable):
             - benunit("benefit_cap_reduction", period),
             0,
         )
-        return min_(rate * standard_allowance, award)
+        # Schedule 6 of SI 2013/380: deductions must not reduce the amount
+        # payable below one penny per assessment period (12p per year).
+        return min_(rate * standard_allowance, max_(award - 0.12, 0))

@@ -1,4 +1,4 @@
-description: Maximum total deductions from a Universal Credit award, as a fraction of the standard allowance (the Fair Repayment Rate from 30 April 2025). Child maintenance is a last resort deduction and may exceed this cap.
+description: Maximum total deductions from a Universal Credit award, as a fraction of the standard allowance (the Fair Repayment Rate from 30 April 2025), set by Schedule 6 of SI 2013/380. Last resort deductions (e.g. child maintenance under the Fair Repayment Rate) may exceed this cap. History announced at fiscal events - 40% to 30% from October 2019 (Budget 2018), to 25% from April 2021 (announced Budget 2020) - and consolidated in the amended Schedule 6.
 values:
   2015-04-01: 0.4
   2019-10-01: 0.3
@@ -7,11 +7,14 @@ values:
 metadata:
   label: UC deductions cap
   unit: /1
-  period: month
   reference:
+    - title: SI 2013/380, Schedule 6 (deductions from benefit and direct payment to third parties)
+      href: https://www.legislation.gov.uk/uksi/2013/380/schedule/6
     - title: DWP guidance, Deductions V17.0 (maximum rates of deductions)
-      href: https://data.parliament.uk/DepositedPapers/Files/DEP2024-0673/054_Deductions_V17.0.pdf
+      href: https://data.parliament.uk/DepositedPapers/Files/DEP2024-0673/054_Deductions_V17.0.pdf#page=3
+    - title: HM Treasury, Budget 2018, para 5.36 (cap to 30% from October 2019)
+      href: https://assets.publishing.service.gov.uk/media/5bd718b8ed915d78a0dc107d/Budget_2018_red_web.pdf
+    - title: HM Treasury, Budget 2020, para 2.9 (cap to 25%)
+      href: https://assets.publishing.service.gov.uk/media/5e68d0dce90e070ac74f08ea/Budget_2020_Web_Accessible_Complete.pdf
     - title: Universal Credit change brings £420 boost to over a million households (Fair Repayment Rate, 30 April 2025)
       href: https://www.gov.uk/government/news/universal-credit-change-brings-420-boost-to-over-a-million-households
-    - title: House of Commons Library, Universal Credit deductions (CDP-2023-0166)
-      href: https://researchbriefings.files.parliament.uk/documents/CDP-2023-0166/CDP-2023-0166.pdf

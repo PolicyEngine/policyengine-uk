@@ -1,4 +1,4 @@
-description: Mean monthly deduction amount by deduction type among Universal Credit households with that type, from the March to May 2025 average. Used to weight each type's share of a household's total deduction when reforms remove specific types.
+description: Mean monthly deduction amount by deduction type among Universal Credit households with that type, from the March to May 2025 average (Table 4), applied to all model years as a constancy assumption. These are marginal means; using them to split a household's total deduction across its types in abolition reforms is a modeling approximation, since DWP publish no type-by-amount joint table.
 ADVANCE:
   description: Mean monthly advance repayment deduction.
   values:

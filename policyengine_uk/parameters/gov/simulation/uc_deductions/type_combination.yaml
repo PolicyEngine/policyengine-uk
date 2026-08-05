@@ -1,4 +1,4 @@
-description: Distribution of deduction type combinations among Universal Credit households with any deduction, from the March to May 2025 average (advances, third party deductions, and government deductions).
+description: Distribution of deduction type combinations among Universal Credit households with any deduction, from the March to May 2025 average of Table 5 (advances, third party deductions, and government deductions), applied to all model years as a constancy assumption. Encoded shares sum to 1.004 because the published whole-point rows can sum above 100%; formulas normalize.
 ADVANCE_ONLY:
   description: Share of UC households with deductions repaying only advances.
   values:

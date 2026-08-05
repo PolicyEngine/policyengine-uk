@@ -20,4 +20,6 @@ def splitmix64_uniform(ids: np.ndarray, salt: int = 0) -> np.ndarray:
         z = (z ^ (z >> np.uint64(30))) * np.uint64(0xBF58476D1CE4E5B9)
         z = (z ^ (z >> np.uint64(27))) * np.uint64(0x94D049BB133111EB)
         z = z ^ (z >> np.uint64(31))
-    return z.astype(np.float64) / 2.0**64
+    # Use the top 53 bits so the result is exactly representable and
+    # strictly below 1 (dividing the full 64 bits by 2^64 can round to 1.0).
+    return (z >> np.uint64(11)).astype(np.float64) / 2.0**53
