@@ -7,7 +7,7 @@ class uc_deduction_type_random_draw(Variable):
     documentation = (
         "Uniform draw on [0, 1) determining the deduction type combination. "
         "Deterministic hash of the benefit unit id in dataset simulations; "
-        "0.5 in single-household simulations. Datasets and situations can "
+        "1.0 in single-household simulations. Datasets and situations can "
         "override it directly."
     )
     entity = BenUnit

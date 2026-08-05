@@ -4,6 +4,7 @@ values:
 metadata:
   label: UC protected minimum floor
   unit: /1
+  period: year
   reference:
     - title: JRF, A protected minimum floor in Universal Credit (October 2025 briefing; proposal design source, not current law)
       href: https://www.jrf.org.uk/social-security/protected-minimum-floor-in-universal-credit-new-policy-targeting-hardship

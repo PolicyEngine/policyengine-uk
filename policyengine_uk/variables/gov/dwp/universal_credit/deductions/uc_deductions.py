@@ -6,8 +6,9 @@ class uc_deductions(Variable):
     documentation = (
         "Money deducted from this benefit unit's Universal Credit award to "
         "repay debts: advance repayments, government debt (benefit and tax "
-        "credit overpayments) and third party deductions. Capped at the "
-        "award itself."
+        "credit overpayments) and third party deductions. Deductions leave "
+        "at least one penny per assessment period payable (Schedule 6 of "
+        "SI 2013/380)."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -15,6 +16,7 @@ class uc_deductions(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
+        p = parameters(period).gov.dwp.universal_credit.deductions
         rate = benunit("uc_deduction_rate", period)
         standard_allowance = benunit("uc_standard_allowance", period)
         award = max_(
@@ -22,6 +24,5 @@ class uc_deductions(Variable):
             - benunit("benefit_cap_reduction", period),
             0,
         )
-        # Schedule 6 of SI 2013/380: deductions must not reduce the amount
-        # payable below one penny per assessment period (12p per year).
-        return min_(rate * standard_allowance, max_(award - 0.12, 0))
+        minimum_payable = p.minimum_payable * MONTHS_IN_YEAR
+        return min_(rate * standard_allowance, max_(award - minimum_payable, 0))

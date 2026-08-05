@@ -1,7 +1,7 @@
 description: Regional deduction incidence relative to the national rate. Derived from all 633 constituency rows of Table 6 of the DWP deductions supplementary tables (February 2026), with region labels forward-filled from the table's first-row-per-region layout; each region's share is the household-weighted mean (deducting households divided by implied UC households, from counts and rounded proportions), divided by the national share computed the same way (0.464). Observed February 2026 and applied to all model years as a constancy assumption. Unknown region and Northern Ireland (administered separately, absent from the GB statistics) use the national rate by assumption.
 UNKNOWN:
   values:
-    2015-04-01: 1.0
+    2015-04-01: 1
   metadata:
     label: UC deduction incidence factor, unknown region
     unit: /1
@@ -31,7 +31,7 @@ EAST_MIDLANDS:
     unit: /1
 WEST_MIDLANDS:
   values:
-    2015-04-01: 1.0
+    2015-04-01: 1
   metadata:
     label: UC deduction incidence factor, West Midlands
     unit: /1
@@ -55,7 +55,7 @@ SOUTH_EAST:
     unit: /1
 SOUTH_WEST:
   values:
-    2015-04-01: 0.90
+    2015-04-01: 0.9
   metadata:
     label: UC deduction incidence factor, South West
     unit: /1
@@ -73,7 +73,7 @@ SCOTLAND:
     unit: /1
 NORTHERN_IRELAND:
   values:
-    2015-04-01: 1.0
+    2015-04-01: 1
   metadata:
     label: UC deduction incidence factor, Northern Ireland
     unit: /1

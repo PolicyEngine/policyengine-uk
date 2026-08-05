@@ -3,13 +3,6 @@ from policyengine_uk.variables.gov.dwp.universal_credit.deductions.uc_deduction_
     UCDeductionCombination,
 )
 
-# The pre-Fair-Repayment-Rate cap. In the calibration source (DWP deductions
-# statistics, March-May 2025), observed rates above this level are last
-# resort deductions, which Schedule 6 of SI 2013/380 allows to exceed the
-# cap. Latent demand splits into a cappable portion (at most this level) and
-# a last resort excess above it.
-PRE_FRR_CAP = 0.25
-
 
 class uc_deduction_rate(Variable):
     label = "UC deduction rate"
@@ -75,8 +68,12 @@ class uc_deduction_rate(Variable):
         )
         # The cappable portion covers the three modeled deduction types
         # (advances, third party, government debt) and responds to the cap
-        # and abolition switches. The last resort excess (e.g. child
-        # maintenance under the Fair Repayment Rate) is exempt from both.
-        cappable = min_(latent, PRE_FRR_CAP) * retained_share
-        last_resort_excess = max_(latent - PRE_FRR_CAP, 0)
+        # and abolition switches. Latent demand above the calibration-window
+        # cap is the last resort excess (e.g. child maintenance under the
+        # Fair Repayment Rate), exempt from both.
+        calibration_cap = parameters(
+            period
+        ).gov.simulation.uc_deductions.calibration_cap
+        cappable = min_(latent, calibration_cap) * retained_share
+        last_resort_excess = max_(latent - calibration_cap, 0)
         return min_(cappable, law.cap) + last_resort_excess

@@ -7,7 +7,7 @@ class uc_deduction_random_draw(Variable):
     documentation = (
         "Uniform draw on [0, 1) determining deduction incidence and size. "
         "Deterministic hash of the benefit unit id in dataset simulations; "
-        "0.5 in single-household simulations (no deduction unless set). "
+        "1.0 in single-household simulations, so no deduction unless set. "
         "Datasets and situations can override it directly."
     )
     entity = BenUnit
