@@ -1,4 +1,4 @@
-description: Maximum total deductions from a Universal Credit award, as a fraction of the standard allowance. Schedule 6 paragraph 4(1) of SI 2013/380 sets a statutory ceiling of 40%; within it, DWP sets the operational cap administratively - 30% from October 2019 (Budget 2018), 25% from April 2021 (announced for October 2021 at Budget 2020, brought forward at Budget 2021), and 15% (the Fair Repayment Rate) from 30 April 2025, which required no legislative change. Last resort deductions such as child maintenance may exceed the cap (Explanatory Memorandum to SI 2025/387, paragraphs 5.10 to 5.15).
+description: Maximum total deductions from a Universal Credit award, as a fraction of the standard allowance. Schedule 6 paragraph 4(1) of SI 2013/380 sets a statutory ceiling of 40%; within it, DWP sets the operational cap administratively - 30% from October 2019 (Budget 2018), 25% from April 2021 (announced for October 2021 at Budget 2020, brought forward at Budget 2021), and 15% (the Fair Repayment Rate) from 30 April 2025, which required no legislative change. Last resort deductions (housing and fuel arrears hardship deductions) and child maintenance deductions - separate categories in DWP guidance - may each exceed the cap (Explanatory Memorandum to SI 2025/387, paragraphs 5.10 to 5.15).
 values:
   2015-04-01: 0.4
   2019-10-01: 0.3
@@ -13,6 +13,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2013/380/schedule/6/paragraph/4/1
     - title: Explanatory Memorandum to SI 2025/387, paragraph 5.2 (operational cap set within the ceiling; no legislative change for the Fair Repayment Rate)
       href: https://www.legislation.gov.uk/uksi/2025/387/pdfs/uksiem_20250387_en_001.pdf#page=2
+    - title: Explanatory Memorandum to SI 2025/387, paragraphs 5.10 to 5.15 (child maintenance deductions may exceed the 15% cap)
+      href: https://www.legislation.gov.uk/uksi/2025/387/pdfs/uksiem_20250387_en_001.pdf#page=3
     - title: DWP guidance, Deductions V17.0 (maximum rates of deductions)
       href: https://data.parliament.uk/DepositedPapers/Files/DEP2024-0673/054_Deductions_V17.0.pdf#page=3
     - title: HM Treasury, Budget 2018, para 5.36 (cap to 30% from October 2019)

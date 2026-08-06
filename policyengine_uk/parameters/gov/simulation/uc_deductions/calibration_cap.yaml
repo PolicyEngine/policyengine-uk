@@ -1,4 +1,4 @@
-description: The deductions cap in force during the calibration window (March to May 2025, under the 25% cap). Latent demand above this boundary is the last resort excess, which sits on top of the statutory cap; demand at exactly this level is the old-cap pileup, treated as cappable. Changes only if the model is recalibrated to a window under a different cap.
+description: The deductions cap in force during the calibration window (March to May 2025, under the 25% cap). Latent demand above this boundary is the above-cap excess (last resort and child maintenance categories), which sits on top of the operational cap; demand at exactly this level is the old-cap pileup, treated as cappable. Changes only if the model is recalibrated to a window under a different cap.
 values:
   2015-04-01: 0.25
 metadata:

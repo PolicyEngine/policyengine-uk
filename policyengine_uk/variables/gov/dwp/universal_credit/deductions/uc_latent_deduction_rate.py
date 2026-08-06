@@ -3,8 +3,9 @@ from policyengine_uk.model_api import *
 # Band edges of the DWP deductions distribution (Table 2 of the deductions
 # supplementary tables), as fractions of the standard allowance. Bands where
 # the lower and upper edges are equal are point masses at institutional rates.
-# The final band holds last resort deductions, which exceed the cap; the DWP
-# tables top-code it, so 30% is a modeling assumption for its upper edge.
+# The final band holds above-cap deductions (last resort and child
+# maintenance categories); the DWP tables top-code it, so 30% is a modeling
+# assumption for its upper edge.
 BAND_LOWER = np.array([0.0, 0.05, 0.05, 0.10, 0.10, 0.15, 0.15, 0.20, 0.20, 0.25, 0.25])
 BAND_UPPER = np.array(
     [0.05, 0.05, 0.10, 0.10, 0.15, 0.15, 0.20, 0.20, 0.25, 0.25, 0.30]

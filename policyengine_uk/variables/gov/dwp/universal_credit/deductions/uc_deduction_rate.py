@@ -9,9 +9,10 @@ class uc_deduction_rate(Variable):
     documentation = (
         "Deductions taken from this benefit unit's Universal Credit award as "
         "a fraction of the standard allowance, after removing any abolished "
-        "deduction types and applying the deductions cap. The last resort "
-        "excess (latent demand above 25% of the standard allowance) sits on "
-        "top of the cap, per Schedule 6 of SI 2013/380."
+        "deduction types and applying the deductions cap. The above-cap "
+        "excess (latent demand above 25% of the standard allowance, covering "
+        "last resort and child maintenance deductions) sits on top of the "
+        "cap."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -69,11 +70,11 @@ class uc_deduction_rate(Variable):
         # The cappable portion covers the three modeled deduction types
         # (advances, third party, government debt) and responds to the cap
         # and abolition switches. Latent demand above the calibration-window
-        # cap is the last resort excess (e.g. child maintenance under the
-        # Fair Repayment Rate), exempt from both.
+        # cap belongs to categories permitted to exceed the cap (last resort
+        # and child maintenance deductions), exempt from both.
         calibration_cap = parameters(
             period
         ).gov.simulation.uc_deductions.calibration_cap
         cappable = min_(latent, calibration_cap) * retained_share
-        last_resort_excess = max_(latent - calibration_cap, 0)
-        return min_(cappable, law.cap) + last_resort_excess
+        above_cap_excess = max_(latent - calibration_cap, 0)
+        return min_(cappable, law.cap) + above_cap_excess
