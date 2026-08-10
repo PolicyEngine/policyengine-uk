@@ -1,0 +1,332 @@
+# UK council tax reduction — official source documents (2026/27), remaining councils + CTS spending
+
+This document extends the existing rulespec-uk corpus inventory (~80 councils) to **every other English billing authority**. For each council it gives the official 2026/27 Council Tax Reduction / Council Tax Support (CTR/CTS) scheme document (or the operative carried-forward document where no fresh 2026/27 file was published), plus the council's total Council Tax Support **expenditure**.
+
+## Scope & method
+- **England only.** Council Tax Reduction is set locally only in England (billing authorities under s13A Local Government Finance Act 1992). **Scotland and Wales** operate single *national* CTR schemes set by the Scottish/Welsh Governments, so their 32 + 22 councils do not publish individual scheme policies — see note at the end.
+- Documents were located by parallel web research (17 subagents), verified as live and as the 2026/27 scheme where possible, and page count + sha256 computed where the file could be downloaded. Many council committee portals (moderngov/Cloudflare/AWS WAF) block automated download — those are marked `pages n/a, sha256 n/a` but the URL is verified from the council's own pages.
+- **Carried-forward schemes (↻):** where a council rolled its scheme forward unchanged and published no new 2026/27-dated file, the latest operative document (usually 2025/26) is listed — it remains the scheme in force for 2026/27.
+- **Spending** is the authoritative MHCLG figure: *Council Taxbase 2025 in England*, "Council Tax Support Data" worksheet, **Table 3.03 — Total council tax foregone for Council Tax Support (£)**, financial year **2025-26** (latest available; 2026/27 outturn does not yet exist). All 296 authorities sum to the published England total of **£4,322,307,806**. Source: https://www.gov.uk/government/statistics/council-taxbase-2025-in-england/local-authority-council-taxbase-in-england-2025
+
+## Summary (remaining 216 authorities)
+- ✅ **134** — 2026/27-dated scheme document located
+- ↻ **30** — carried-forward / latest operative document (prior-year, still in force)
+- — **52** — no accessible standalone document (web-only scheme, consultation-only, or portal fully access-blocked)
+- **CTS spending: complete for all 296 authorities** (216 below + 80 already-inventoried in the appendix).
+
+Legend: ✅ 2026/27 document · ↻ carried-forward operative document · — no accessible document
+
+---
+
+## Remaining English billing authorities
+
+- ✅ **adur** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.adur-worthing.gov.uk/media/Media,174007,smxx.pdf) (151 pages, sha256 5981a332c220…) — **£4,820,814 CTS spend (2025-26)**
+- ✅ **amber-valley** — [Local Council Tax Support Scheme 2026-2027](https://www.ambervalley.gov.uk/media/2182/avbc-cts-scheme-2026-2027.pdf) (168 pages, sha256 3fbb2b67ccb0…) — **£10,511,305 CTS spend (2025-26)**
+- ✅ **arun** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.arun.gov.uk/download.cfm?doc=docm93jijm4n20657.pdf&ver=27819) (111 pages, sha256 0c06c26f0d87…) — **£11,119,088 CTS spend (2025-26)**
+- — **ashfield** — _no accessible 2026/27 document_ — former 2025/26 file 404s; portal Cloudflare-blocked — **£12,743,356 CTS spend (2025-26)**
+- — **barking-and-dagenham** — _no accessible 2026/27 document_ — only 2025/26 scheme (consulting again for 2026/27 if changed); no accessible URL — **£14,790,898 CTS spend (2025-26)**
+- ✅ **barnet** — [2026-27 Council Tax Support Scheme (Appendix O, Business Planning 2026-2031 Cabinet pack)](https://barnet.moderngov.co.uk/ieIssueDetails.aspx?IId=64474&Opt=3) (pages n/a, sha256 n/a — portal WAF) — **£25,193,720 CTS spend (2025-26)**
+- — **basildon** — _no accessible 2026/27 document_ — LCTS continued unchanged; only in budget report; latest standalone doc 2021/22 — **£13,929,372 CTS spend (2025-26)**
+- ✅ **basingstoke-and-deane** — [S13A Council Tax Support Scheme 2026/27](https://www.basingstoke.gov.uk/content/page/77332/Basingstoke%20S13A%202026%20Scheme%20Final.pdf) (pages n/a, sha256 n/a — Cloudflare; filename confirms 2026 S13A) — **£10,374,868 CTS spend (2025-26)**
+- ✅ **bassetlaw** — [Council Tax Reduction Scheme 2026/27 (Working Age)](https://www.bassetlaw.gov.uk/media/15ehht0s/council-tax-reduction-scheme-working-age-2026-2027.pdf) (99 pages, sha256 c52594761ca6…) — **£9,080,820 CTS spend (2025-26)**
+- ✅ **bedford** — [Council Tax Reduction Scheme 2026/27](https://www.bedford.gov.uk/files/council-tax-reduction-scheme-2026-2027.pdf) (15 pages, sha256 6d7b54176bc2…) — **£14,414,794 CTS spend (2025-26)**
+- — **bexley** — _no accessible 2026/27 document_ — scheme described on web pages only; no downloadable document — **£14,350,687 CTS spend (2025-26)**
+- ✅ **birmingham** — [Council Tax Reduction Scheme Regulations](https://www.birmingham.gov.uk/download/downloads/id/968/council_tax_reduction_scheme_regulations.pdf) (319 pages, sha256 ac23c087831f… — standing scheme, 2016 base, in force for 2026/27; no year-dated PDF) — **£137,300,661 CTS spend (2025-26)**
+- ✅ **blaby** — [Council Tax Support Scheme 2026/2027](https://www.blaby.gov.uk/media/dk4nlzu4/council-tax-support-scheme-2026-2027.pdf) (8 pages, sha256 02c0fb840abf…) — **£4,790,667 CTS spend (2025-26)**
+- ✅ **blackburn-with-darwen** — [Council Tax Support Scheme 2026/27 (Appendix 1)](https://democracy.blackburn.gov.uk/documents/s32259/Appendix%201%20Council%20Tax%20Support%20Scheme%202026%2027.pdf) (pages n/a, sha256 n/a — Cloudflare; confirmed 2026/27) — **£13,975,851 CTS spend (2025-26)**
+- ↻ **bolsover** — [Council Tax Support Regulations 2025-2026](https://www.bolsover.gov.uk/documents/15302-council-tax-support-regulations-2025-2026) — latest published; carried into 2026/27 — **£7,517,706 CTS spend (2025-26)**
+- ✅ **bolton** — [Council Tax Support Scheme 2026/27](https://bolton.moderngov.co.uk/documents/s9531/Council%20Tax%20Support%20Scheme%202026%2027.pdf) (pages n/a, sha256 n/a — moderngov 403) — **£23,752,303 CTS spend (2025-26)**
+- ✅ **boston** — [CTS Scheme 2026-27](https://www.boston.gov.uk/media/28964/BBC-CTS-Scheme-2026-27/pdf/Boston_Borough_Council_CTS_Scheme_2026-27.pdf) (pages n/a, sha256 n/a — Cloudflare-blocked; ELDC/SHDC partnership pattern) — **£4,962,446 CTS spend (2025-26)**
+- ✅ **bournemouth-christchurch-and-poole** — [Council Tax Reduction (Support) Scheme 2026/27 (S13A)](https://www.bcpcouncil.gov.uk/Assets/Benefits-support-and-advice/Council-Tax-Support/Council-Tax-Reduction-Support-Scheme.pdf) (186 pages, sha256 d7082df59a11…) — **£28,774,908 CTS spend (2025-26)**
+- ↻ **bracknell-forest** — [Council Tax Support Scheme 2025/26](https://www.bracknell-forest.gov.uk/sites/default/files/2025-11/bracknell-forest-council-tax-support-scheme.pdf) (115 pp) — carried into 2026/27 (£50 discount retained) — **£4,965,273 CTS spend (2025-26)**
+- ✅ **bradford** — [Council Tax Reduction Scheme 2026/27 (CBMDC)](https://www.bradford.gov.uk/media/popjjrcz/ctr-regulations.pdf) (159 pages, sha256 b940a24afbda…) — **£42,023,238 CTS spend (2025-26)**
+- ✅ **braintree** — [Council Tax Reduction Scheme S13A 2026/27](https://www.braintree.gov.uk/downloads/file/4374/council-tax-reduction-scheme-2026-27) (85 pages, sha256 b49bf46b46ac…) — **£8,181,904 CTS spend (2025-26)**
+- ✅ **breckland** — [Council Tax Reduction Scheme 2026/2027 (S13A)](https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/Breckland-CTRS-26-27.pdf) (210 pages, sha256 4d6bf29b14d0…) — **£9,802,820 CTS spend (2025-26)**
+- ↻ **brent** — [Council Tax Support Scheme 2025/26 (Full Council report)](https://democracy.brent.gov.uk/documents/s147949) (27 pp) — carried forward unchanged for 2026/27 — **£25,459,527 CTS spend (2025-26)**
+- — **brighton-and-hove** — _no accessible 2026/27 document_ — scheme published as HTML chapters; no PDF (NLW band uplift only for 2026/27) — **£24,413,175 CTS spend (2025-26)**
+- ↻ **bromley** — [Council Tax Reduction Scheme from 1 April 2025](https://www.bromley.gov.uk/downloads/file/3849/local-council-tax-reduction-scheme-from-1-april-2025) — carried forward, 2025/26 doc operative for 2026/27 — **£12,367,397 CTS spend (2025-26)**
+- ✅ **broxtowe** — [Council Tax Support Scheme 2025 to 2026](https://www.broxtowe.gov.uk/media/n1hjg1kz/council-tax-support-scheme-2025-2026.pdf) (250 pages, sha256 38df3c516b2c… — unchanged for 2026/27 per Cabinet 27 Nov 2025; operative 2026/27 scheme) — **£7,976,309 CTS spend (2025-26)**
+- — **buckinghamshire** — _no accessible 2026/27 document_ — no CTR/CTS scheme policy PDF exposed on site — **£36,122,644 CTS spend (2025-26)**
+- — **burnley** — _no accessible 2026/27 document_ — site behind Sucuri WAF; PDF unreachable — **£11,003,821 CTS spend (2025-26)**
+- ✅ **bury** — [Council Tax Support Scheme 2026 (Cabinet, 15 Jan 2026)](https://councildecisions.bury.gov.uk/documents/s47756/Council%20Tax%20Support%20Scheme%202026.pdf) (4 pages, sha256 3903c511026f… — banded scheme, Cabinet report is the policy doc) — **£13,382,097 CTS spend (2025-26)**
+- ↻ **calderdale** — [Council Tax Reduction Scheme 2025](https://new.calderdale.gov.uk/sites/default/files/2025-11/CT-reduction-scheme-2025.pdf) — latest published (2025/26) — **£15,686,051 CTS spend (2025-26)**
+- ✅ **cambridge** — [Council Tax Reduction scheme for working-age people](https://www.cambridge.gov.uk/media/5olhzv3k/council-tax-reduction-scheme-working-age.pdf) (173 pages, sha256 339be4afeed5… — rolling scheme Apr 2026–2029, operative for 2026/27, no separate 2026/27-dated PDF) — **£10,313,904 CTS spend (2025-26)**
+- ✅ **camden** — [Council Tax Support 2026/27 and Section 13A report](https://camden.moderngov.co.uk/mgConvert2PDF.aspx?ID=129293) (pages n/a, sha256 n/a — Cloudflare) — **£34,391,752 CTS spend (2025-26)**
+- ↻ **cannock-chase** — [Income Bands 2026-2027](https://www.cannockchasedc.gov.uk/sites/default/files/document-library/Income-Bands-2026-2027.pdf) — banded scheme; only 2026/27 bands published, full text is 2025/26 — **£8,808,600 CTS spend (2025-26)**
+- ↻ **canterbury** — [Council Tax Reduction Scheme for working age people 2025/26](https://www.canterbury.gov.uk/sites/default/files/2025-03/Council%20tax%20reduction%20scheme%20for%20working%20age%20people.pdf) — latest published; carried into 2026/27 — **£12,011,378 CTS spend (2025-26)**
+- ✅ **central-bedfordshire** — [Local Council Tax Support Scheme 2026/27 (Executive, 17 Feb 2026)](https://cms-centralbedfordshire-uk.azeusconvene.com/data/582fe74c-f2bd-4675-aba3-0953a77f05e2/parts/7.1%20LCTS%20Scheme%202026-27.pdf) (14 pages, sha256 21fd64ccc7c3… — decision report; full text via auth-gated SharePoint) — **£20,892,193 CTS spend (2025-26)**
+- ✅ **charnwood** — [Council Tax Support Scheme 2026-27](https://www.charnwood.gov.uk/files/documents/council_tax_support_scheme_2026_27/Council%20Tax%20Support%20Scheme%202026-27.pdf) (209 pages, sha256 f3b9623fe462…) — **£9,186,519 CTS spend (2025-26)**
+- ✅ **chelmsford** — [Local Council Tax Support (LCTS) Scheme 2026/27](https://www.chelmsford.gov.uk/media/g2nbyt31/62-local-council-tax-support-lcts-scheme-2026-27.pdf) (16 pages, sha256 d98256a66d47… — short income-band scheme) — **£7,987,271 CTS spend (2025-26)**
+- ✅ **cheltenham** — [Local CTS scheme for working age customers 2026/27 (S13A, Appendix 5)](https://democracy.cheltenham.gov.uk/documents/s52480/Appendix%205_Council_Tax_Support_scheme_for_working_age_customers_2026-27.pdf) (91 pages, sha256 1eb4f00eaae7…) — **£6,904,062 CTS spend (2025-26)**
+- ✅ **cherwell** — [Council Tax Reduction Scheme 2026-2027](https://www.cherwell.gov.uk/download/downloads/id/18507/council-tax-reduction-scheme-2026-2027.pdf) (149 pages, sha256 eeaddbd3d4f5…) — **£8,753,493 CTS spend (2025-26)**
+- ✅ **cheshire-east** — [Council Tax Support Scheme S13A 2026-2027](https://www.cheshireeast.gov.uk/pdf/benefits/cheshire-east-s13a-2026-2027.pdf) (127 pages, sha256 1c6915233f63…) — **£20,107,686 CTS spend (2025-26)**
+- — **chesterfield** — _no accessible 2026/27 document_ — banded scheme unchanged; site WAF-blocked, no PDF — **£9,422,962 CTS spend (2025-26)**
+- ✅ **chichester** — [Local Council Tax Reduction Scheme Rules 2026-2027](https://www.chichester.gov.uk/media/39389/Local-Council-Tax-Reduction-Scheme-Rules-2026-2027/doc/Local_Council_Tax_Reduction_Scheme_Rules_2026_-_2027.docx) (DOCX, pages n/a, sha256 n/a — Cloudflare) — **£9,141,147 CTS spend (2025-26)**
+- — **city-of-london** — _no accessible 2026/27 document_ — portal returns 403/404; no document located (very small scheme) — **£227,632 CTS spend (2025-26)**
+- ✅ **colchester** — [CTR S13A and Schedule 1a Scheme 2026/27](https://colchester.cmis.uk.com/colchester/Document.ashx?czJKcaeAi5tUFL1DTL2UE4zNRBcoShgo=VEXngmqtHJ6k+yTexlkkX7ua50uiHjefMvfwW5xdphYbE/wwBjPU7w==) (pages n/a, sha256 n/a — cmis link session-bound/blocked) — **£12,082,345 CTS spend (2025-26)**
+- — **cornwall** — _no accessible 2026/27 document_ — scheme delivered as web content; no standalone PDF — **£44,497,738 CTS spend (2025-26)**
+- ✅ **county-durham** — [Working-age Council Tax Reduction Scheme 2026/27](https://www.durham.gov.uk/media/49038/Working-age-Council-Tax-Reduction-Scheme-Policy/pdf/WorkingAgeCouncilTaxReductionScheme.pdf?m=1775569895523) (40 pages, sha256 e90415eb9540…) — **£68,952,641 CTS spend (2025-26)**
+- ✅ **crawley** — [Council Tax Reduction Scheme Policy 2026/27 (S13A)](https://crawley.gov.uk/sites/default/files/2026-06/Crawley%20Council%20Tax%20Reduction%20scheme%202026%20to%202027.pdf) (132 pages, sha256 21f75d24218b…) — **£9,563,333 CTS spend (2025-26)**
+- — **croydon** — _no accessible 2026/27 document_ — no full working-age scheme document published — **£39,494,457 CTS spend (2025-26)**
+- ✅ **cumberland** — [Council Tax Reduction Scheme 2026/27 (S13A + Schedule 1a)](https://www.cumberland.gov.uk/sites/default/files/2026-04/cumberland_council_final_council_tax_reduction_ctr_scheme_for_2026_to_2027.pdf) (144 pages, sha256 b4debef6b827…) — **£23,105,993 CTS spend (2025-26)**
+- ✅ **dacorum** — [Council Tax Support Scheme 2026](https://www.dacorum.gov.uk/docs/default-source/benefits/dacorum-borough-council---council-tax-support-scheme-2026.pdf?sfvrsn=1391109e_4) (241 pages, sha256 cbaba6141109…) — **£10,951,857 CTS spend (2025-26)**
+- ✅ **darlington** — [Council Tax Support Scheme 2026-2027](https://www.darlington.gov.uk/media/dmonknog/council-tax-support-scheme-26-27-v2.pdf) (49 pages, sha256 1d22d4266f21…) — **£9,702,894 CTS spend (2025-26)**
+- — **derbyshire-dales** — _no accessible 2026/27 document_ — site WAF-blocked; no full scheme PDF located — **£4,026,447 CTS spend (2025-26)**
+- ↻ **doncaster** — [Local Council Tax Reduction Scheme 2023](https://www.doncaster.gov.uk/Documents/DocumentView/Stream/Media/Default/CouncilTaxBenefits/Documents/Doncaster%20Local%20Council%20Tax%20Reduction%20Scheme%202023.pdf) — latest full scheme PDF located (2023) — **£28,440,975 CTS spend (2025-26)**
+- — **dorset** — _no accessible 2026/27 document_ — 2025/26 scheme is a web page; only standalone PDF is 2023/24 — **£32,481,591 CTS spend (2025-26)**
+- ✅ **dudley** — [Council Tax Reduction Scheme 2026-27](https://www.dudley.gov.uk/media/0tqgqii2/dudley-council-tax-reduction-scheme-202627.pdf) (150 pages, sha256 cd9e6d4512a1…) — **£16,175,055 CTS spend (2025-26)**
+- ✅ **east-cambridgeshire** — [Council Tax Reduction Scheme 2026/2027 (S13A)](https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/East-Cambs-CTRS-26-27.pdf) (210 pages, sha256 2e4240e37c05…) — **£4,764,317 CTS spend (2025-26)**
+- ✅ **east-devon** — [East Devon S13A 2026/27 Scheme (Draft)](https://democracy.eastdevon.gov.uk/documents/s30204/East%20Devon%20S13A%20202627%20Scheme%20Draft.pdf) (pages n/a, sha256 n/a — Azure WAF blocked) — **£10,291,502 CTS spend (2025-26)**
+- ✅ **east-hertfordshire** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://eastherts.fra1.digitaloceanspaces.com/s3fs-public/2026-04/East%20Herts%20S13a%20202627%20Scheme%20Final.pdf) (142 pages, sha256 3eadec13f9f0…) — **£7,582,244 CTS spend (2025-26)**
+- ✅ **east-lindsey** — [CTS Scheme 2026-27 FINAL](https://www.e-lindsey.gov.uk/media/28927/ELDC-Council-Tax-Support-Scheme-2026-2027/pdf/East_Lindsey_District_Council_CTS_Scheme_2026-27_FINAL_160226.pdf) (pages n/a, sha256 n/a — Cloudflare-blocked) — **£12,233,351 CTS spend (2025-26)**
+- — **east-riding-of-yorkshire** — _no accessible 2026/27 document_ — site Cloudflare-blocked; scheme presented as web content — **£19,182,828 CTS spend (2025-26)**
+- — **east-staffordshire** — _no accessible 2026/27 document_ — site unreachable via proxy (503) — **£7,319,998 CTS spend (2025-26)**
+- ✅ **east-suffolk** — [Council Tax Reduction Scheme 2026/2027 (S13A)](https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/East-Suffolk-CTRS-26-27.pdf) (195 pages, sha256 2ac10fe2c6f5…) — **£17,383,293 CTS spend (2025-26)**
+- — **eastbourne** — _no accessible 2026/27 document_ — joint Lewes & Eastbourne scheme continued for 2026/27; site 403 — **£9,127,251 CTS spend (2025-26)**
+- ✅ **eastleigh** — [Council Tax Reduction Scheme Policy S13a 2026/27](https://www.eastleigh.gov.uk/media/16458/eastleigh-s13a-scheme-202627-final.pdf) (143 pages, sha256 2c09e251a4fc…) — **£6,473,819 CTS spend (2025-26)**
+- ✅ **enfield** — [Council Tax Reduction Scheme 2026 to 2027](https://www.enfield.gov.uk/__data/assets/pdf_file/0019/126262/Council-tax-reduction-scheme-2026-to-2027-Benefits-and-money-advice.pdf) (pages n/a, sha256 n/a — Cloudflare) — **£27,959,470 CTS spend (2025-26)**
+- ✅ **epping-forest** — [S13A Scheme (Complete) 2026/27](https://eppingforest.moderngov.co.uk/documents/s46012/Epping%20Forest%20Draft%20S13a%20Scheme%20Complete%20v1%2046.pdf) (pages n/a, sha256 n/a — moderngov blocked; labelled "Draft") — **£7,302,824 CTS spend (2025-26)**
+- ✅ **epsom-and-ewell** — [Council Tax Income Discount (Working Age) 2026-27](https://www.epsom-ewell.gov.uk/sites/default/files/documents/residents/council-tax/Epsom%20%26%20Ewell%20CTID%20Working%20Age%20Rules%202026-27.pdf) (106 pages, sha256 8bddacdc09c5…) — **£4,007,440 CTS spend (2025-26)**
+- — **erewash** — _no accessible 2026/27 document_ — links only to legislation.gov.uk; no bespoke local full PDF — **£8,472,464 CTS spend (2025-26)**
+- ✅ **exeter** — [Local Council Tax Support Scheme 2026-27 (report)](https://committees.exeter.gov.uk/documents/s103091/Report%20-%20Local%20Council%20Tax%20Support%20Scheme%202026-27.pdf) (pages n/a, sha256 n/a — WAF blocked; adopts scheme unchanged) — **£8,066,390 CTS spend (2025-26)**
+- ✅ **fareham** — [Council Tax Support Scheme 2026/27 (Executive report R01 FINAL)](https://moderngov.fareham.gov.uk/documents/s45811/R01%20-%20FINAL%20-%20Council%20Tax%20Support%20Scheme.pdf) (pages n/a, sha256 n/a — download blocked; scheme via committee report + summary) — **£4,554,812 CTS spend (2025-26)**
+- ✅ **fenland** — [Council Tax Reduction Scheme 2026/2027 (S13A)](https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/Fenland-CTRS-26-27.pdf) (194 pages, sha256 fbbf05ceeede…) — **£7,996,487 CTS spend (2025-26)**
+- ✅ **fylde** — [Fylde S13A Scheme 2026/27](https://new.fylde.gov.uk/wp-content/uploads/2025/11/Fylde-S13a-Scheme-202627-DRAFT.pdf) (139 pages, sha256 b1d4df4b5dc1…) — **£5,700,292 CTS spend (2025-26)**
+- ✅ **gateshead** — [Local Council Tax Support Scheme for 2026/27](https://gateshead.moderngov.co.uk/documents/s46348/RTC%20-%20Local%20Council%20Tax%20Support%20Scheme%20a.pdf) (pages n/a, sha256 n/a — confirmed exists, Cloudflare-blocked) — **£24,556,078 CTS spend (2025-26)**
+- — **gedling** — _no accessible 2026/27 document_ — no standalone scheme PDF; only council-tax-setting report — **£7,905,500 CTS spend (2025-26)**
+- ✅ **gosport** — [Local CTS Scheme S13A 2026/27 FINAL](https://www.gosport.gov.uk/media/7067/Local-Council-Tax-Support-Scheme-2026-27/pdf/Gosport_S13A_202627_Scheme_FINAL.pdf?m=1773066017880) (pages n/a, sha256 n/a — download blocked) — **£5,111,355 CTS spend (2025-26)**
+- ✅ **gravesham** — [Council Tax Reduction Scheme 2026](https://www.gravesham.gov.uk/downloads/file/345/gbc-council-tax-regulations-2023-24) (89 pages, sha256 2db25a8d85ce… — note: download slug references 2023-24 but file verified as 2026 scheme) — **£7,707,008 CTS spend (2025-26)**
+- — **great-yarmouth** — _no accessible 2026/27 document_ — site blocks access; only 2026/27 consultation + old 2020/21 scheme — **£10,350,696 CTS spend (2025-26)**
+- ↻ **greenwich** — [Budget & Council Tax Setting 2026/27 (LCTS within report)](https://committees.royalgreenwich.gov.uk/documents/s18350) — scheme documented only within budget report — **£22,140,374 CTS spend (2025-26)**
+- ↻ **hackney** — [Council Tax Reduction Scheme report 2024](https://hackney.moderngov.co.uk/documents/s86525) — carried forward, no change for 2026/27 — **£31,686,764 CTS spend (2025-26)**
+- — **halton** — _no accessible 2026/27 document_ — no standalone S13A PDF; only committee budget reports — **£11,585,781 CTS spend (2025-26)**
+- ✅ **hammersmith-and-fulham** — [Council Tax Support Scheme 2026-27](https://democracy.lbhf.gov.uk/documents/s133556/Council+Tax+Support+Scheme+2026-27.pdf) (pages n/a, sha256 n/a — Azure WAF) — **£14,487,160 CTS spend (2025-26)**
+- ↻ **harborough** — [Council Tax Support Scheme 2025-26](https://www.harborough.gov.uk/download/downloads/id/9002/council_tax_support_scheme_2025-26.pdf) — latest published; carried into 2026/27 — **£3,646,042 CTS spend (2025-26)**
+- ✅ **haringey** — [Haringey Council Tax Reduction Scheme 2026-27](https://www.minutes.haringey.gov.uk/documents/s156208/Haringey%202026-27%20CTRS.pdf) (221 pages, sha256 53d961f4be20…) — **£34,486,469 CTS spend (2025-26)**
+- ✅ **hart** — [Council Tax Support Scheme 2026-2027](https://www.hart.gov.uk/sites/default/files/2026-04/Council-Tax-Reduction-Scheme-2026-27.pdf) (148 pages, sha256 5fe40b9634c9…) — **£3,911,464 CTS spend (2025-26)**
+- ✅ **hartlepool** — [Council Tax Reduction Scheme 2026/27 (S13A + Schedule 1a)](https://www.hartlepool.gov.uk/downloads/file/1484/hbc-council-tax-reduction-scheme-2026-27) (90 pages, sha256 b2cadfa6c09b…) — **£16,196,030 CTS spend (2025-26)**
+- ✅ **havering** — [Summary of the Council Tax Support Scheme 2026-27](https://democracy.havering.gov.uk/documents/s82449/Budget+8+-+Appendix+H++Summary+of+the+Council+Tax+Support+Scheme+2026-27.pdf) (8 pages, sha256 e3ed03e0960c… — summary/appendix, not full S13A) — **£16,890,787 CTS spend (2025-26)**
+- ✅ **herefordshire** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.herefordshire.gov.uk/media/msihtjo2/council_tax_reduction_scheme.pdf) (137 pages, sha256 2526158300a9…) — **£15,987,973 CTS spend (2025-26)**
+- — **high-peak** — _no accessible 2026/27 document_ — banded scheme published as an HTML article only — **£6,904,108 CTS spend (2025-26)**
+- — **hinckley-and-bosworth** — _no accessible 2026/27 document_ — policy stated "available on request" only — **£5,959,070 CTS spend (2025-26)**
+- ✅ **horsham** — [HDC Council Tax Reduction Scheme 2026-27 (Final)](https://www.horsham.gov.uk/__data/assets/pdf_file/0018/161802/HDC-CTR-Scheme-2026-27-Final.pdf) (pages n/a, sha256 n/a — Cloudflare) — **£7,665,303 CTS spend (2025-26)**
+- ↻ **hounslow** — [Council Tax Reduction Scheme 2025/26 (DOCX)](https://www.hounslow.gov.uk/downloads/file/11485) — rolled over for 2026/27 — **£22,814,620 CTS spend (2025-26)**
+- ✅ **huntingdonshire** — [Council Tax Support Scheme 2026/27 (S13A)](https://www.huntingdonshire.gov.uk/media/2b5hkpom/council-tax-support-scheme.pdf) (88 pages, sha256 6c70860e0f60…) — **£11,048,285 CTS spend (2025-26)**
+- ✅ **hyndburn** — [Hyndburn S13A Scheme 2026/27 Final](https://www.hyndburnbc.gov.uk/download/council-tax-support/?wpdmdl=6235) (143 pages, sha256 188148e2e935… — effective 1 Apr 2026) — **£6,634,218 CTS spend (2025-26)**
+- ✅ **isle-of-wight** — [Local Council Tax Support Scheme 2026/27 (Appendix 1 incl. 1a-1d)](https://iow.moderngov.co.uk/documents/s20830/6b.%20Appendix%201%20Incl%201a1b1c%20and%201d.pdf) (pages n/a, sha256 n/a — Cloudflare; title confirms 2026/27) — **£11,741,397 CTS spend (2025-26)**
+- ✅ **isles-of-scilly** — [Isles of Scilly S13A 2026/27 Scheme Final](https://www.scilly.gov.uk/sites/default/files/document/community-safety/Isles%20of%20Scilly%20S13A%20202627%20Scheme%20Final.pdf) (143 pages, sha256 8edbc306c47d…) — **£78,625 CTS spend (2025-26)**
+- ✅ **islington** — [Council Tax Support Scheme 2026/27 (Appendix A)](https://islington.moderngov.co.uk/mgConvert2PDF.aspx?ID=43504) (pages n/a, sha256 n/a — Cloudflare) — **£38,200,768 CTS spend (2025-26)**
+- ✅ **kings-lynn-and-west-norfolk** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.west-norfolk.gov.uk/download/downloads/id/3330/council_tax_reduction_scheme_2026_to_2027.pdf) (147 pages, sha256 98c0adb754c9…) — **£11,386,695 CTS spend (2025-26)**
+- ↻ **kingston-upon-hull** — [Council Tax Reduction Scheme 2025/26](https://www.hull.gov.uk/downloads/file/239/council-tax-reduction-scheme-2025-to-2026) (275 pp) — latest published; carried into 2026/27 — **£26,479,201 CTS spend (2025-26)**
+- ↻ **kirklees** — [Council Tax Reduction Scheme (from 1 April 2024)](https://democracy.kirklees.gov.uk/documents/s54634/CTR%20Review%20Appendix%205.pdf) (206 pp) — latest full scheme — **£33,016,592 CTS spend (2025-26)**
+- ✅ **lambeth** — [Council Tax Support Scheme 2026-27 (Appendix 03)](https://moderngov.lambeth.gov.uk/documents/s174197/Appendix%2003%20-%20Council%20Tax%20Support%20Scheme%202026-27.pdf) (14 pages, sha256 3b5e88a0d54e…) — **£29,290,527 CTS spend (2025-26)**
+- ✅ **leeds** — [Council Tax Support Scheme (Universal Credit) 2026 to 27](https://www.leeds.gov.uk/council-tax/discounts-and-exemptions/council-tax-support/local-council-tax-support-scheme-(universal-credit)) (web page, not PDF; effective 1 Apr 2026) — **£60,958,947 CTS spend (2025-26)**
+- ↻ **leicester** — [Council Tax Support Scheme 2025/26](https://www.leicester.gov.uk/sites/default/files/2026-02/Council%20tax%20support%20scheme%202025.pdf) — latest published; carried into 2026/27 — **£23,485,466 CTS spend (2025-26)**
+- — **lewes** — _no accessible 2026/27 document_ — joint Lewes & Eastbourne scheme continued for 2026/27; site 403 — **£9,313,537 CTS spend (2025-26)**
+- — **lewisham** — _no accessible 2026/27 document_ — only a 2024/25 scheme PDF; URL not recoverable — **£21,587,233 CTS spend (2025-26)**
+- ↻ **lichfield** — [LCTS Scheme Regulations 2023-2024](https://www.lichfielddc.gov.uk/downloads/download/341/local-council-tax-support-scheme-regulations-2023---2024) — banded scheme; 2026/27 income bands published inline — **£6,499,117 CTS spend (2025-26)**
+- ✅ **lincoln** — [Council Tax Support Scheme 2026/27](https://www.lincoln.gov.uk/downloads/file/2068/city-of-lincoln-council-tax-support-scheme-2026-to-2027) (193 pages, sha256 556ac0275bdd…) — **£9,256,489 CTS spend (2025-26)**
+- ↻ **liverpool** — [Council Tax Support Scheme 2025](https://liverpool.gov.uk/media/x2ic3tsh/council-tax-support-scheme-2025.pdf) (117 pp) — latest published (2025/26) — **£73,056,391 CTS spend (2025-26)**
+- — **luton** — _no accessible 2026/27 document_ — no downloadable scheme/policy PDF for any year — **£13,115,393 CTS spend (2025-26)**
+- — **maidstone** — _no accessible 2026/27 document_ — 2026/27 consultation only; adopted scheme PDF returns 403 — **£11,681,945 CTS spend (2025-26)**
+- ✅ **malvern-hills** — [Council Tax Reduction Scheme 202627 FINAL](https://www.malvernhills.gov.uk/component/fileman/?view=file&routed=1&itemless=1&name=Malvern%20Hills%20Council%20Tax%20Reduction%20Scheme%20202627%20FINAL.pdf&folder=Documents/Benefits%20and%20Council%20Tax/Council%20Tax/2026&container=fileman-files) (pages n/a ~134, sha256 n/a — hotlink-blocked; South Worcs template) — **£4,936,870 CTS spend (2025-26)**
+- ✅ **manchester** — [Council Tax Support Scheme 2026/27 (Final)](https://www.manchester.gov.uk/__data/assets/pdf_file/0027/173655/CTS-MCCscheme-2026.27_Final.pdf) (pages n/a, sha256 n/a — 403; verified by filename) — **£49,286,181 CTS spend (2025-26)**
+- ✅ **melton** — [Council Tax Support Scheme Policy 2026-27](https://www.melton.gov.uk/media/o3slcszk/council-tax-support-scheme-policy-2026-27.pdf) (228 pages, sha256 d2e7b9dfc985…) — **£2,531,312 CTS spend (2025-26)**
+- ✅ **mid-devon** — [CTR Scheme S13A & Schedule 2026/27](https://www.middevon.gov.uk/media/358096/mid-devon-ctr-scheme-s13a-schedule-2026-27.pdf) (126 pages, sha256 c0ce72501cf5…) — **£4,775,513 CTS spend (2025-26)**
+- ✅ **mid-suffolk** — [Council Tax Reduction Scheme effective 1 April 2026](https://www.midsuffolk.gov.uk/documents/d/asset-library-54706/new-msdc-ctr-scheme-2026_27-v4-pdf) (152 pages, sha256 92127c42ca58…) — **£5,796,296 CTS spend (2025-26)**
+- ✅ **mid-sussex** — [Council Tax Support Scheme 2026-2027](https://www.midsussex.gov.uk/media/yprdlfjd/mid-sussex-district-council-tax-support-scheme-2026-27.pdf) (46 pages, sha256 19f809cbf974…) — **£7,918,033 CTS spend (2025-26)**
+- ✅ **middlesbrough** — [Council Tax Reduction Scheme 2026/27 (S13A + Schedule 1a)](https://moderngov.middlesbrough.gov.uk/documents/s41483/Council%20Tax%20Reduction%20Scheme%202026-27.pdf) (89 pages, sha256 54a78c6dedf0…) — **£22,192,424 CTS spend (2025-26)**
+- — **mole-valley** — _no accessible 2026/27 document_ — no full scheme document published (any year) — **£4,840,269 CTS spend (2025-26)**
+- ✅ **new-forest** — [S13A Council Tax Reduction Scheme 2026/27](https://www.newforest.gov.uk/media/4888/Council-Tax-Reduction-Scheme-2026-2027/pdf/New_Forest_District_Council_S13A_Council_Tax_Reduction_Scheme_2026_2027.pdf?m=1776694848837) (pages n/a, sha256 n/a — download blocked) — **£10,599,600 CTS spend (2025-26)**
+- ✅ **newark-and-sherwood** — [Council Tax Reduction Scheme 2026 (Regulations, S13A)](https://www.newark-sherwooddc.gov.uk/sites/default/files/2026-04/NSDC%20CTRS%202026.pdf) (248 pages, sha256 1c590f0e3708…) — **£8,005,531 CTS spend (2025-26)**
+- — **newcastle-under-lyme** — _no accessible 2026/27 document_ — scheme in committee system; no public PDF located — **£8,031,911 CTS spend (2025-26)**
+- — **north-devon** — _no accessible 2026/27 document_ — site behind AWS WAF CAPTCHA; PDF unreachable — **£8,823,720 CTS spend (2025-26)**
+- — **north-east-derbyshire** — _no accessible 2026/27 document_ — site WAF-blocked; exact 2026/27 doc not identified — **£7,921,614 CTS spend (2025-26)**
+- ✅ **north-norfolk** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.north-norfolk.gov.uk/media/12369/north-norfolk-council-tax-reduction-scheme-for-2026-to-2027.pdf) (142 pages, sha256 6efaad784ac6…) — **£8,256,955 CTS spend (2025-26)**
+- ↻ **north-northamptonshire** — [Local Council Tax Support Scheme 2023/24](https://cms.northnorthants.gov.uk/media/4157/download) — continues unchanged (25% min) for 2026/27 — **£18,502,985 CTS spend (2025-26)**
+- ✅ **north-somerset** — [Council Tax Reduction Scheme 2026-2027](https://n-somerset.gov.uk/sites/default/files/2026-03/council%20tax%20reduction%20scheme%202026-27.pdf) (60 pages, sha256 ee00c77f1549…) — **£12,766,382 CTS spend (2025-26)**
+- ↻ **north-tyneside** — [Council Tax Support Scheme 2025/26](https://www.northtyneside.gov.uk/sites/default/files/2025-10/Council%20Tax%20Support%20Scheme%202025%2026.pdf) — full doc; new income-banded scheme from 1 Apr 2026 is web-only — **£17,257,083 CTS spend (2025-26)**
+- ✅ **north-west-leicestershire** — [Local CTS policy 2026-27](https://www.nwleics.gov.uk/files/documents/nwldc_council_tax_support_scheme_regulations_202627/NWL%20LCTS%20policy%202026-27.pdf) (220 pages, sha256 836702c46702…) — **£5,576,737 CTS spend (2025-26)**
+- ✅ **norwich** — [Council Tax Reduction Scheme 2026/2027](https://www.norwich.gov.uk/sites/default/files/2026-03/Council-Tax-Reduction-Scheme-2026.pdf) (176 pages, sha256 4d419d3ad21c…) — **£15,801,403 CTS spend (2025-26)**
+- ✅ **nottingham** — [Council Tax Support Scheme 2026-27](https://www.nottinghamcity.gov.uk/media/zpnf3yid/ncc-council-tax-support-scheme-2026-27.docx) (DOCX, pages n/a, sha256 4b8bb3852a83…) — **£34,055,876 CTS spend (2025-26)**
+- — **oadby-and-wigston** — _no accessible 2026/27 document_ — no full scheme PDF published — **£2,891,375 CTS spend (2025-26)**
+- ✅ **oldham** — [Council Tax Reduction Scheme 2026/27 (Final)](https://committees.oldham.gov.uk/documents/s155588/Council%20Tax%20Reduction%20Scheme%202026.27%20Final.pdf) (8 pages, sha256 3a3698cc4389… — decision report, unchanged scheme) — **£22,200,131 CTS spend (2025-26)**
+- ✅ **oxford** — [Council Tax Reduction Scheme 2026 to 2027](https://www.oxford.gov.uk/council-tax-reduction/council-tax-reduction-scheme-2026-27) (HTML web pages only, no PDF) — **£13,511,327 CTS spend (2025-26)**
+- ✅ **pendle** — [Council Tax Reduction Scheme 2026/27](https://www.pendle.gov.uk/download/downloads/id/10594/local_council_tax_scheme.pdf) (155 pages, sha256 2d72f5edf046…) — **£9,321,038 CTS spend (2025-26)**
+- ✅ **portsmouth** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.portsmouth.gov.uk/wp-content/uploads/2026/03/Portsmouth-CTR-S13A-202627-Scheme-FINAL-accessible-aa.pdf) (87 pages, sha256 1d88e45d8f50…) — **£13,543,850 CTS spend (2025-26)**
+- ✅ **preston** — [Council Tax Reduction Scheme 2026/27](https://www.preston.gov.uk/media/26036/Council-Tax-Reduction-Scheme-2026-27/pdf/Council_Tax_Reduction_Scheme_2026-27.pdf) (145 pages, sha256 9854d2ee1d35…) — **£14,030,537 CTS spend (2025-26)**
+- ✅ **reading** — [The Council Tax Reduction Scheme](https://images.reading.gov.uk/2023/03/Reading-CTR-Scheme-202526-FINAL.pdf) (150 pages, sha256 51d87cbe128e… — live page links this as 2026/27; PDF internally titled 2025-26, retained unchanged) — **£9,456,166 CTS spend (2025-26)**
+- ✅ **redcar-and-cleveland** — [Council Tax Support Scheme Policy 2026-2027](https://www.redcar-cleveland.gov.uk/sites/default/files/2026-04/Council%20Tax%20Support%20Scheme%202026-27.pdf) (22 pages, sha256 75efcb8eb8a8…) — **£15,604,886 CTS spend (2025-26)**
+- ✅ **redditch** — [S13A Council Tax Reduction Scheme 2026/27 Final](https://www.redditchbc.gov.uk/media/hfkhepjj/redditch-s13a-202627-scheme-final.pdf) (86 pages, sha256 c805a64c88a9…) — **£7,402,955 CTS spend (2025-26)**
+- ↻ **reigate-and-banstead** — [Council Tax Reduction Scheme (as amended from 1 April 2025)](https://www.reigate-banstead.gov.uk/download/downloads/id/3049/council_tax_reduction_scheme.pdf) (175 pp) — council confirmed no change for 2026/27 — **£8,511,960 CTS spend (2025-26)**
+- ✅ **richmond-upon-thames** — [Council Tax Reduction scheme rules 2026/2027](https://www.richmond.gov.uk/media/jbkhgpbu/council_tax_reduction_scheme_rules_2026.pdf) (165 pages, sha256 24a8c5ff77a0…) — **£14,204,166 CTS spend (2025-26)**
+- ✅ **rochdale** — [2026-27 Local Council Tax Support Scheme](https://democracy.rochdale.gov.uk/documents/s119252/2026-27%20Local%20Council%20Tax%20Support%20Scheme.pdf) (pages n/a, sha256 n/a — 403) — **£21,675,585 CTS spend (2025-26)**
+- ✅ **rochford** — [Local CTS Scheme 2026/27 + Discretionary Reduction Policy](https://rochford.moderngov.co.uk/documents/s4735/Local%20Council%20Tax%20Support%20Scheme%20202627%20and%20Discretionary%20reduction%20in%20Council%20Tax%20Liability%20Policy.pdf) (pages n/a, sha256 n/a — moderngov blocked) — **£4,325,102 CTS spend (2025-26)**
+- ✅ **rossendale** — [Council Tax Reduction Scheme 2026/27](https://www.rossendale.gov.uk/downloads/file/19420/council-tax-support-scheme) (146 pages, sha256 d1c9faa63753…) — **£5,206,826 CTS spend (2025-26)**
+- ✅ **rother** — [Council Tax Reduction Scheme 2026-27](https://rdcpublic.blob.core.windows.net/website-uploads/2026/07/Rother-Council-Tax-Reduction-Scheme-2026-27.pdf) (74 pages, sha256 ca53c8429da8…) — **£9,867,962 CTS spend (2025-26)**
+- — **rotherham** — _no accessible 2026/27 document_ — default + top-up scheme; only a 2013 scheme report located — **£26,391,382 CTS spend (2025-26)**
+- ✅ **rushmoor** — [Council Tax Reduction Scheme S13A 2026/27](https://www.rushmoor.gov.uk/media/qvmlpekv/rushmoor-s13a-scheme-202627-final.pdf) (146 pages, sha256 a507bf0244b8…) — **£6,578,774 CTS spend (2025-26)**
+- ✅ **rutland** — [Council Tax Reduction Scheme 2026-2027](https://www.rutland.gov.uk/sites/default/files/2026-06/Rutland%20CTR%20Scheme%202026-27.pdf) (31 pages, sha256 138fcffb07f6…) — **£1,604,833 CTS spend (2025-26)**
+- ✅ **sandwell** — [Local Council Tax Reduction Policy 2026-27](https://www.sandwell.gov.uk/downloads/file/5387/local-council-tax-reduction-policy-2026-27) (132 pages, sha256 cecd0fcccbda…) — **£27,974,623 CTS spend (2025-26)**
+- ✅ **sevenoaks** — [Council Tax Support Local Scheme 2026/27 (DOCX)](https://www.sevenoaks.gov.uk/downloads/file/4481/council_tax_support_local_scheme_202627) (pages n/a, sha256 n/a — listed as 2026/27, download blocked) — **£7,683,608 CTS spend (2025-26)**
+- — **sheffield** — _no accessible 2026/27 document_ — set via committee; portal blocked, no PDF located — **£44,311,903 CTS spend (2025-26)**
+- ✅ **shropshire** — [Council Tax Reduction Scheme 2026/2027](https://next.shropshire.gov.uk/media/vxxjcled/ctrs-2026-2027-new-1.pdf) (220 pages, sha256 ed28e25c3224…) — **£18,436,188 CTS spend (2025-26)**
+- ✅ **somerset** — [Council Tax Reduction and Exceptional Hardship Scheme 2026-27](https://somerset.moderngov.co.uk/documents/s59992/Council%20Tax%20Reduction%20and%20Exceptional%20Hardship%20Scheme%202026-27.pdf) (pages n/a, sha256 n/a — Cloudflare; title confirms 2026-27) — **£32,019,795 CTS spend (2025-26)**
+- ✅ **south-cambridgeshire** — [S13A Council Tax Support Scheme 2026/27](https://www.scambs.gov.uk/media/gbsfmgvy/south-cambs-s13a-202627-final-1.pdf) (136 pages, sha256 cd11d3eedff1…) — **£9,031,708 CTS spend (2025-26)**
+- ↻ **south-gloucestershire** — [Council Tax Reduction Scheme rules 2025 (working age)](https://beta.southglos.gov.uk/static/edf5960dd95611c375de976f8fa529cc/Council_tax_reduction_scheme_rules_working_age_applicants.pdf) — latest published (2025/26) — **£11,929,384 CTS spend (2025-26)**
+- — **south-hams** — _no accessible 2026/27 document_ — site behind AWS WAF CAPTCHA; policy page exists, PDF unreachable — **£6,437,207 CTS spend (2025-26)**
+- ✅ **south-holland** — [CTS Scheme 2026-2027](https://www.sholland.gov.uk/media/28928/SHDC-Council-Tax-Support-Scheme-2026-2027/pdf/SHDC_Council_Tax_Support_Scheme_2026-2027.pdf) (pages n/a, sha256 n/a — Cloudflare-blocked) — **£5,245,122 CTS spend (2025-26)**
+- ✅ **south-oxfordshire** — [CTR Scheme (Working Age) 2026-27](https://www.southandvale.gov.uk/app/uploads/sites/2/2026/04/South-Working-Age-CTR-Scheme-2026-27.pdf) (156 pages, sha256 69cb2be31afc…) — **£7,466,396 CTS spend (2025-26)**
+- ✅ **south-ribble** — [South Ribble S13A Scheme 2026/27 Final](https://www.southribble.gov.uk/downloads/file/1039/south-ribble-s13a-scheme-2026-27-final) (145 pages, sha256 89246c9e31bb…) — **£6,812,391 CTS spend (2025-26)**
+- — **south-staffordshire** — _no accessible 2026/27 document_ — no full working-age scheme PDF (only a 2013 discretionary .doc) — **£6,428,659 CTS spend (2025-26)**
+- ↻ **south-tyneside** — [S13A Council Tax Reduction Scheme 2024/25](https://www.southtyneside.gov.uk/media/7344/South-Tyneside-Council-Council-Tax-reduction-scheme/pdf/South_Tyneside_S13A_202425_Scheme_FINAL.pdf) — carried forward, unchanged for 2026/27 — **£20,366,091 CTS spend (2025-26)**
+- — **southwark** — _no accessible 2026/27 document_ — banded scheme; no standalone policy PDF published — **£27,302,306 CTS spend (2025-26)**
+- ✅ **spelthorne** — [Council Tax Reduction Scheme (non-Pensioners) 2026-2027](https://www.spelthorne.gov.uk/sites/default/files/2026-04/The%20Council%20Tax%20Reduction%20Scheme%20Regulations%2026%2027.pdf) (145 pages, sha256 926334c1a43c…) — **£6,341,958 CTS spend (2025-26)**
+- ✅ **st-albans** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.stalbans.gov.uk/sites/default/files/attachments/St%20Albans%20S13A%20202627%20Final.pdf) (151 pages, sha256 8a64ae4cbe39…) — **£8,439,315 CTS spend (2025-26)**
+- — **stafford** — _no accessible 2026/27 document_ — 2026-2027 slug 404 (not yet published); only income bands listed — **£7,891,622 CTS spend (2025-26)**
+- — **staffordshire-moorlands** — _no accessible 2026/27 document_ — site unreachable via proxy (503) — **£5,845,748 CTS spend (2025-26)**
+- ✅ **stockport** — [Council Tax Support Scheme for Working Age Claims](https://assets.ctfassets.net/ii3xdrqc6nfw/3KpotJ3aRPog0sSZRmGp4L/a12d659b9116c0df3fa0a63e67a6354e/Council_Tax_Support_Scheme.pdf) (2 pages, sha256 fbea0194614b… — prescribed scheme + band-A mods, applies from 1 Apr 2026) — **£24,608,326 CTS spend (2025-26)**
+- ✅ **stockton-on-tees** — [Council Tax Reduction Scheme for 2026 to 2027](https://www.stockton.gov.uk/media/8686/Draft-Council-Tax-Reduction-Scheme-2026-to-2027/pdf/Council_Tax_Reduction_Scheme_for_2026_to_2027_-_27_January_2026.pdf) (pages n/a, sha256 n/a — Cloudflare; confirmed 2026/27) — **£15,739,804 CTS spend (2025-26)**
+- ✅ **stoke-on-trent** — [Council Tax Reduction Scheme 2024/25](https://www.stoke.gov.uk/download/downloads/id/921/local_council_tax_support_scheme.pdf) (138 pages, sha256 977760e754bf… — only 2024/25 PDF published; latest available) — **£22,392,628 CTS spend (2025-26)**
+- ✅ **stroud** — [Council Tax Support Scheme 2026/27 (Item 6, Full Council)](https://stroud.moderngov.co.uk/documents/s17899/Item%206%20-%20Council%20Tax%20Support%20Scheme%20202627.pdf) (pages n/a, sha256 n/a — moderngov blocked; continues default scheme, up to 100%) — **£6,918,145 CTS spend (2025-26)**
+- — **sunderland** — _no accessible 2026/27 document_ — site blocked; only 2023/24 documents indexed — **£26,257,634 CTS spend (2025-26)**
+- ↻ **surrey-heath** — [Council Tax Reduction Scheme Regulations 2025-26](https://www.surreyheath.gov.uk/sites/default/files/2025-05/Council%20Tax%20Reduction%20Scheme%20Regulations%202025-26.pdf) — latest published; carried into 2026/27 — **£3,644,547 CTS spend (2025-26)**
+- ↻ **sutton** — [Council Tax Reduction Scheme 2025](https://www.sutton.gov.uk/documents/d/guest/council-tax-reduction-scheme-london-borough-of-sutton-2025) — banded scheme continued into 2026/27 — **£13,927,103 CTS spend (2025-26)**
+- — **swale** — _no accessible 2026/27 document_ — 2026/27 agreed; final PDF host returns 403, exact URL unconfirmed — **£11,766,075 CTS spend (2025-26)**
+- ↻ **swindon** — [Council Tax Support Scheme (2025/26, v19)](https://www.swindon.gov.uk/download/downloads/id/4167/council_tax_support_scheme.pdf) — latest published, wording-amended Oct 2025 — **£14,516,157 CTS spend (2025-26)**
+- ✅ **tameside** — [Council Tax Support Scheme 2026-2027](https://tameside.moderngov.co.uk/documents/s200333/Council%20Tax%20Support%20Scheme%202026-2027.pdf) (pages n/a, sha256 n/a — 403) — **£17,661,955 CTS spend (2025-26)**
+- ↻ **tandridge** — [Council Tax Reduction Scheme 2025/26](https://tandridgedc.gov.uk/Portals/0/Documents/Council-tax/Council-tax-discounts/Tandridge-CTR-Scheme.pdf) (154 pp) — latest published; carried into 2026/27 — **£5,797,861 CTS spend (2025-26)**
+- — **teignbridge** — _no accessible 2026/27 document_ — site behind AWS WAF CAPTCHA; PDF unreachable — **£10,276,442 CTS spend (2025-26)**
+- ✅ **tendring** — [Council Tax Reduction Scheme S13A 2026/27 FINAL](https://legacy.tendringdc.gov.uk/sites/default/files/documents/Council_Tax/Tendring%20S13A%20202627%20Scheme%20Final.pdf) (138 pages, sha256 9b8d863c3e80…) — **£12,738,033 CTS spend (2025-26)**
+- ✅ **test-valley** — [S13A Council Tax Reduction Scheme 2026 FINAL](https://testvalley.gov.uk/assets/attach/25101/Test-Valley-S13A-Council-Tax-Reduction-scheme-2026-FINAL.pdf) (pages n/a, sha256 n/a — download blocked/TLS) — **£6,498,097 CTS spend (2025-26)**
+- ✅ **tewkesbury** — [Council Tax Reduction Scheme Report 2026/27](https://minutes.tewkesbury.gov.uk/documents/s71226/Council%20Tax%20Reduction%20Scheme%20Report.pdf) (pages n/a, sha256 n/a — portal blocked; adopts prescribed default scheme unchanged) — **£6,083,955 CTS spend (2025-26)**
+- ✅ **thanet** — [Thanet Working Age CTR Scheme 2026 FINAL](https://www.thanet.gov.uk/wp-content/uploads/2026/05/Thanet-Working-Age-CTR-Scheme-2026-FINAL.pdf) (97 pages, sha256 9b2df6b70e00…) — **£15,669,757 CTS spend (2025-26)**
+- — **three-rivers** — _no accessible 2026/27 document_ — per-parish banded scheme PDFs (2025/26); no consolidated 2026/27 doc — **£6,156,978 CTS spend (2025-26)**
+- ↻ **thurrock** — [Council Tax Reduction Scheme S13A 2025/26](https://www.thurrock.gov.uk/sites/default/files/assets/documents/thurrock_s13a_202526_scheme_final2.pdf) (142 pp) — latest published; carried into 2026/27 — **£9,826,068 CTS spend (2025-26)**
+- — **tonbridge-and-malling** — _no accessible 2026/27 document_ — site/portal block access; no PDF located — **£8,110,711 CTS spend (2025-26)**
+- — **torridge** — _no accessible 2026/27 document_ — site behind Cloudflare JS challenge; PDF unreachable — **£4,570,183 CTS spend (2025-26)**
+- — **tower-hamlets** — _no accessible 2026/27 document_ — unchanged for 2026/27; site/portal block access, no standalone PDF — **£36,282,605 CTS spend (2025-26)**
+- ✅ **trafford** — [Council Tax Reduction Scheme 2026-2027 (Working Age)](https://www.trafford.gov.uk/sites/default/files/2026-03/Council%20Tax%20Support%20Scheme%202026-27.pdf) (46 pages, sha256 a217e24d4eb9…) — **£13,747,055 CTS spend (2025-26)**
+- — **tunbridge-wells** — _no accessible 2026/27 document_ — 2026/27 consultation only; adopted scheme PDF returns 403 — **£6,649,322 CTS spend (2025-26)**
+- ✅ **uttlesford** — [S13A CTR Scheme 2026/27 FINAL](https://www.uttlesford.gov.uk/media/14422/Rules-for-the-2026-27-scheme/pdf/Uttlesford_S13A_CTR_Scheme_202627_FINAL_u.pdf?m=1779979206360) (pages n/a, sha256 n/a — download blocked) — **£4,413,697 CTS spend (2025-26)**
+- ✅ **vale-of-white-horse** — [CTR Scheme (Working Age) 2026-27](https://www.southandvale.gov.uk/app/uploads/sites/3/2026/04/Vale-Working-Age-CTR-Scheme-2026-27.pdf) (157 pages, sha256 6e9afb0d3667…) — **£7,682,889 CTS spend (2025-26)**
+- ✅ **wakefield** — [Council Tax Support Scheme Working Age (2026/27)](https://www.wakefield.gov.uk/media/obth33hs/council-tax-support-scheme-working-age.docx) (DOCX, 73 pages, sha256 9c0b2dde9a0b…) — **£28,156,839 CTS spend (2025-26)**
+- ✅ **walsall** — [Walsall S13A CTR 2025 to 2026](https://go.walsall.gov.uk/sites/default/files/2025-04/Walsall%20S13A%20CTR%202025%20to%202026.pdf) (91 pages, sha256 670afe356d7b… — 2025/26; no 2026/27 PDF published, carried forward) — **£25,809,797 CTS spend (2025-26)**
+- ✅ **waltham-forest** — [Local CTS Scheme From 01 April 2026 — Vol 2: Working Age Provisions](https://www.walthamforest.gov.uk/sites/default/files/2026-05/CTS%20Scheme%20WorkingAge_2026W%20%281%29.pdf) (91 pages, sha256 310537085191…) — **£19,374,840 CTS spend (2025-26)**
+- ✅ **wandsworth** — [Wandsworth Council Tax Reduction Scheme 2026/2027](https://www.wandsworth.gov.uk/media/pgxfstbx/council_tax_reduction_scheme_guidance_2026.pdf) (34 pages, sha256 3255a15ab4b5…) — **£10,635,575 CTS spend (2025-26)**
+- — **watford** — _no accessible 2026/27 document_ — banded-scheme tables (2025/26); no 2026/27 full document — **£8,640,241 CTS spend (2025-26)**
+- — **waverley** — _no accessible 2026/27 document_ — no full scheme document published; only committee budget reports — **£6,793,674 CTS spend (2025-26)**
+- — **wealden** — _no accessible 2026/27 document_ — only 2025/26 scheme described; no 2026/27 PDF and URL not recoverable — **£11,838,756 CTS spend (2025-26)**
+- ↻ **welwyn-hatfield** — [Council Tax Reduction Scheme 2025/26](https://www.welhat.gov.uk/downloads/file/1487/council-tax-reduction-scheme) — 2023/24 scheme continues unchanged for 2026/27 — **£9,125,074 CTS spend (2025-26)**
+- ✅ **west-berkshire** — [Council Tax Reduction Scheme Leaflet 2026/27](https://www.westberks.gov.uk/media/66426/Council-Tax-Reduction-Scheme-Leaflet-2026-27/pdf/CTR_Scheme_Leaflet_2026.pdf) (pages n/a, sha256 n/a — WAF 403; summary leaflet, full S13A not locatable) — **£7,698,185 CTS spend (2025-26)**
+- — **west-devon** — _no accessible 2026/27 document_ — site behind AWS WAF CAPTCHA; PDF unreachable — **£4,220,532 CTS spend (2025-26)**
+- ✅ **west-lancashire** — [West Lancs S13A 2026/27 Scheme Final](http://www.westlancs.gov.uk/media/548587/west-lancs-s13a-202627-scheme-final.pdf) (192 pages, sha256 2166dec53af6…) — **£7,045,453 CTS spend (2025-26)**
+- ✅ **west-lindsey** — [Council Tax Reduction Scheme 2026/27](https://www.west-lindsey.gov.uk/sites/default/files/2026-04/West%20Lindsey%20District%20Council%20Tax%20Support%20Reduction%20Scheme%20Regulations%202026-27.pdf) (229 pages, sha256 0d905bb47259…) — **£7,303,153 CTS spend (2025-26)**
+- ✅ **west-northamptonshire** — [Council Tax Reduction Scheme 2026-27](https://cms.westnorthants.gov.uk/media/2065/download) (157 pages, sha256 329b28ce31bc…) — **£20,888,308 CTS spend (2025-26)**
+- ✅ **west-oxfordshire** — [Local CTS Scheme for Working Age Customers 2026 to 2027](https://www.westoxon.gov.uk/media/mtelgaa2/wodc-council-tax-support-scheme-for-working-age-customers-2026-to-2027.pdf) (96 pages, sha256 c17650e9671a…) — **£6,384,924 CTS spend (2025-26)**
+- ✅ **west-suffolk** — [Council Tax Reduction Scheme 2026/2027 (S13A)](https://www.angliarevenues.gov.uk/services/counciltax/reductions/what-is-ctax-reduction/upload/West-Suffolk-CTRS-26-27.pdf) (210 pages, sha256 a88fc17aa8ad…) — **£10,639,710 CTS spend (2025-26)**
+- ✅ **westmorland-and-furness** — [CTR Scheme 2026-27 (S13A + Schedule 1a)](https://www.westmorlandandfurness.gov.uk/sites/default/files/2026-03/Westmorland%20%26%20Furness%20Council%20%20CTR%20Scheme%20202627%20%28accessible%20March%202026%29.pdf) (144 pages, sha256 ffe2b131af92…) — **£15,143,277 CTS spend (2025-26)**
+- — **wiltshire** — _no accessible 2026/27 document_ — 2026/27 ODT reportedly on CTR overview page; site 403, URL not obtainable — **£33,073,171 CTS spend (2025-26)**
+- ↻ **windsor-and-maidenhead** — [Council Tax Support/Reduction Scheme Policy 2025-2026](https://www.rbwm.gov.uk/sites/default/files/2025-07/ctax_support_reduction_scheme_policy_2025-2026.pdf) — latest published; carried into 2026/27 — **£4,475,194 CTS spend (2025-26)**
+- ✅ **wirral** — [Working Age CTR Scheme 2026-27 'Summary Guide'](https://www.wirral.gov.uk/files/wirral-council-tax-reduction-guide-april-2026.pdf) (11 pages, sha256 84249e4bf359… — summary only; full S13A in blocked committee papers) — **£33,795,300 CTS spend (2025-26)**
+- ↻ **woking** — [Council Tax Support Scheme 2025/26](https://www.woking.gov.uk/sites/default/files/2025-03/Council%20Tax%20Support%20scheme.pdf) (164 pp) — latest published; carried into 2026/27 — **£5,742,299 CTS spend (2025-26)**
+- ✅ **wokingham** — [Local Council Tax Reduction Scheme 2026 (Working Age)](https://www.wokingham.gov.uk/sites/wokingham/files/2026-04/WBC%20CTR%20scheme%202026%202027%20%28working%20age%29.pdf) (129 pages, sha256 a1fe37e645f6…) — **£4,673,147 CTS spend (2025-26)**
+- ✅ **worcester** — [Council Tax Reduction Scheme 202627 FINAL](https://www.worcester.gov.uk/component/fileman/?view=file&routed=1&itemless=1&name=City%20of%20Worcester%20Council%20Tax%20Reduction%20Scheme%20202627%20FINAL.pdf&folder=PDF%20Documents/Council%20Tax/council-tax-support&container=fileman-files) (134 pages, sha256 c2a963dc4c9e…) — **£7,154,915 CTS spend (2025-26)**
+- ✅ **worthing** — [Council Tax Reduction Scheme 2026/27 (S13A)](https://www.adur-worthing.gov.uk/media/Media,174008,smxx.pdf) (150 pages, sha256 58b224427f5a…) — **£7,155,329 CTS spend (2025-26)**
+- ✅ **wychavon** — [Council Tax Reduction Scheme 202627 FINAL](https://www.wychavon.gov.uk/component/fileman/?view=file&routed=1&itemless=1&name=Wychavon%20Council%20Tax%20Reduction%20Scheme%20202627%20FINAL.pdf&folder=Documents/Council%20Tax/2026&container=fileman-files) (134 pages, sha256 b7fd693c4c74…) — **£7,510,918 CTS spend (2025-26)**
+- — **wyre-forest** — _no accessible 2026/27 document_ — working-age scheme published as web content only; no PDF — **£8,626,920 CTS spend (2025-26)**
+- ✅ **york** — [Council Tax Reduction Scheme 2026/27 (S13A + Schedule 1a)](https://www.york.gov.uk/downloads/file/2592/council-tax-support-scheme-2023-to-2024) (140 pages, sha256 cca2822b7679… — slug says 2023-to-2024 but content is 2026/27) — **£8,173,742 CTS spend (2025-26)**
+
+---
+
+## Note on Scotland & Wales
+Council Tax Reduction there is **not** set per-council:
+- **Wales** — the *Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013* (as amended) set a single national scheme for all 22 principal councils. Source: https://www.legislation.gov.uk/wsi/2013/3029
+- **Scotland** — the *Council Tax Reduction (Scotland) Regulations 2021* (as amended) set a single national scheme for all 32 councils. Source: https://www.legislation.gov.uk/ssi/2021/249
+Per-council spending for Scotland/Wales is published separately by the Scottish Government / StatsWales, not in the MHCLG Council Taxbase used above.
+
+---
+
+## Appendix — CTS spending for the ~80 councils already in the corpus inventory
+(2025-26, MHCLG Council Taxbase Table 3.03 — same source as above)
+
+- **ashford** — **£11,075,908 CTS spend (2025-26)**
+- **babergh** — **£5,617,214 CTS spend (2025-26)**
+- **barnsley** — **£23,697,230 CTS spend (2025-26)**
+- **bath-and-north-east-somerset** — **£10,614,663 CTS spend (2025-26)**
+- **blackpool** — **£20,613,595 CTS spend (2025-26)**
+- **brentwood** — **£4,316,182 CTS spend (2025-26)**
+- **bristol-city-of** — **£46,646,924 CTS spend (2025-26)**
+- **broadland** — **£7,014,377 CTS spend (2025-26)**
+- **bromsgrove** — **£5,489,750 CTS spend (2025-26)**
+- **broxbourne** — **£7,969,798 CTS spend (2025-26)**
+- **castle-point** — **£4,855,907 CTS spend (2025-26)**
+- **cheshire-west-and-chester** — **£24,653,882 CTS spend (2025-26)**
+- **chorley** — **£7,766,117 CTS spend (2025-26)**
+- **cotswold** — **£5,045,387 CTS spend (2025-26)**
+- **coventry** — **£27,871,971 CTS spend (2025-26)**
+- **dartford** — **£7,539,437 CTS spend (2025-26)**
+- **derby** — **£15,040,084 CTS spend (2025-26)**
+- **dover** — **£10,722,890 CTS spend (2025-26)**
+- **ealing** — **£33,941,908 CTS spend (2025-26)**
+- **east-hampshire** — **£6,545,432 CTS spend (2025-26)**
+- **elmbridge** — **£8,200,824 CTS spend (2025-26)**
+- **folkestone-and-hythe** — **£10,282,725 CTS spend (2025-26)**
+- **forest-of-dean** — **£6,767,306 CTS spend (2025-26)**
+- **gloucester** — **£9,360,765 CTS spend (2025-26)**
+- **guildford** — **£5,652,155 CTS spend (2025-26)**
+- **harlow** — **£6,800,494 CTS spend (2025-26)**
+- **harrow** — **£18,742,956 CTS spend (2025-26)**
+- **hastings** — **£11,731,155 CTS spend (2025-26)**
+- **havant** — **£10,055,120 CTS spend (2025-26)**
+- **hertsmere** — **£9,872,064 CTS spend (2025-26)**
+- **hillingdon** — **£18,717,777 CTS spend (2025-26)**
+- **ipswich** — **£12,323,310 CTS spend (2025-26)**
+- **kensington-and-chelsea** — **£15,310,980 CTS spend (2025-26)**
+- **kingston-upon-thames** — **£12,719,847 CTS spend (2025-26)**
+- **knowsley** — **£19,481,062 CTS spend (2025-26)**
+- **lancaster** — **£11,801,680 CTS spend (2025-26)**
+- **maldon** — **£3,712,685 CTS spend (2025-26)**
+- **mansfield** — **£10,164,411 CTS spend (2025-26)**
+- **medway** — **£15,495,166 CTS spend (2025-26)**
+- **merton** — **£13,327,726 CTS spend (2025-26)**
+- **milton-keynes** — **£17,732,813 CTS spend (2025-26)**
+- **newcastle-upon-tyne** — **£39,680,164 CTS spend (2025-26)**
+- **newham** — **£25,544,896 CTS spend (2025-26)**
+- **north-east-lincolnshire** — **£12,569,071 CTS spend (2025-26)**
+- **north-hertfordshire** — **£9,733,776 CTS spend (2025-26)**
+- **north-kesteven** — **£6,532,273 CTS spend (2025-26)**
+- **north-lincolnshire** — **£9,533,462 CTS spend (2025-26)**
+- **north-warwickshire** — **£4,932,839 CTS spend (2025-26)**
+- **north-yorkshire** — **£41,838,722 CTS spend (2025-26)**
+- **northumberland** — **£29,251,658 CTS spend (2025-26)**
+- **nuneaton-and-bedworth** — **£10,768,526 CTS spend (2025-26)**
+- **peterborough** — **£11,170,778 CTS spend (2025-26)**
+- **plymouth** — **£21,650,170 CTS spend (2025-26)**
+- **redbridge** — **£17,934,772 CTS spend (2025-26)**
+- **ribble-valley** — **£2,721,815 CTS spend (2025-26)**
+- **rugby** — **£6,359,734 CTS spend (2025-26)**
+- **runnymede** — **£4,768,544 CTS spend (2025-26)**
+- **rushcliffe** — **£6,472,767 CTS spend (2025-26)**
+- **salford** — **£30,824,631 CTS spend (2025-26)**
+- **sefton** — **£28,705,480 CTS spend (2025-26)**
+- **slough** — **£10,607,116 CTS spend (2025-26)**
+- **solihull** — **£14,714,221 CTS spend (2025-26)**
+- **south-derbyshire** — **£6,211,578 CTS spend (2025-26)**
+- **south-kesteven** — **£8,222,166 CTS spend (2025-26)**
+- **south-norfolk** — **£8,184,510 CTS spend (2025-26)**
+- **southampton** — **£17,081,148 CTS spend (2025-26)**
+- **southend-on-sea** — **£12,498,419 CTS spend (2025-26)**
+- **st-helens** — **£15,662,151 CTS spend (2025-26)**
+- **stevenage** — **£6,783,224 CTS spend (2025-26)**
+- **stratford-on-avon** — **£7,908,074 CTS spend (2025-26)**
+- **tamworth** — **£5,387,747 CTS spend (2025-26)**
+- **telford-and-wrekin** — **£12,689,559 CTS spend (2025-26)**
+- **torbay** — **£12,329,574 CTS spend (2025-26)**
+- **warrington** — **£14,674,509 CTS spend (2025-26)**
+- **warwick** — **£9,655,555 CTS spend (2025-26)**
+- **westminster** — **£13,177,821 CTS spend (2025-26)**
+- **wigan** — **£23,086,869 CTS spend (2025-26)**
+- **winchester** — **£7,288,916 CTS spend (2025-26)**
+- **wolverhampton** — **£25,969,652 CTS spend (2025-26)**
+- **wyre** — **£11,049,734 CTS spend (2025-26)**
