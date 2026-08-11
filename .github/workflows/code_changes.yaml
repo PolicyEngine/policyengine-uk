@@ -54,6 +54,13 @@ jobs:
               # Only export token if non-empty (defensive against missing secrets)
               if [ -n "$HF_TOKEN_VALUE" ]; then
                 export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
+                # policyengine-core only passes a token to hf_hub_download when
+                # the repo reports private=True. policyengine-uk-data-private
+                # has been public + gated since 31 July 2026, so core sends the
+                # request anonymously and the gate returns 401. HF_TOKEN is
+                # huggingface_hub's implicit-token variable, used when the
+                # explicit token is None, which restores authentication.
+                export HF_TOKEN="$HF_TOKEN_VALUE"
               fi
               make test
             env:
