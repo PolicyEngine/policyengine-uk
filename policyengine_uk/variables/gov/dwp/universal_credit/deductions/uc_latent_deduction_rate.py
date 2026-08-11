@@ -20,7 +20,11 @@ class uc_latent_deduction_rate(Variable):
         "the DWP-published distribution of deduction rates observed under "
         "the 25% cap (March to May 2025), so the cap parameter reproduces "
         "observed post-cap distributions and reforms to the cap rescale "
-        "coherently."
+        "coherently. Validated for 2024 and 2025; earlier years apply the "
+        "same distribution under the higher caps then in force. Demand is "
+        "held fixed as the cap moves, so cuts below the 15% cap overstate "
+        "the constrained population while cap increases toward 25% stay "
+        "inside the observed window."
     )
     entity = BenUnit
     definition_period = YEAR

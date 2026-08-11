@@ -18,6 +18,12 @@ class universal_credit(Variable):
         # allowance, per JRF's protected minimum floor design (their worked
         # example limits the reduction itself to 15% of the standard
         # allowance). Zero means reductions are unlimited.
+        # The floor binds on the whole of uc_deductions, including the above-
+        # cap excess that current law exempts from the deductions cap (last
+        # resort and child maintenance deductions). JRF's briefing does not
+        # say whether their floor exempts those categories - its worked
+        # example involves only cappable deductions and the benefit cap - so
+        # this is a modeling choice, tracked for follow-up.
         floor_rate = parameters(
             period
         ).gov.dwp.universal_credit.deductions.protected_floor

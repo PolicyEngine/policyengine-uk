@@ -43,7 +43,10 @@ class uc_deduction_combination(Variable):
         )
         total = shares.sum()
         if total <= 0:
-            return np.full(benunit.count, UCDeductionCombination.NONE, dtype=object)
+            # Every share reformed to zero: nobody is assigned a combination.
+            # filled_array keeps this branch on the same encoding path as the
+            # select below, so it yields an EnumArray like the normal branch.
+            return benunit.filled_array(UCDeductionCombination.NONE)
         cumulative = np.cumsum(shares / total)
         draw = benunit("uc_deduction_type_random_draw", period)
         index = np.searchsorted(cumulative, clip(draw, 0, 1 - 1e-9), side="right")

@@ -8,7 +8,10 @@ class uc_deductions(Variable):
         "repay debts: advance repayments, government debt (benefit and tax "
         "credit overpayments) and third party deductions. Deductions leave "
         "at least one penny per assessment period payable (Schedule 6 of "
-        "SI 2013/380)."
+        "SI 2013/380). Per-household statistics are validated against the "
+        "DWP deductions statistics; weighted aggregates are not, because "
+        "they scale with the model's UC caseload, which falls short of the "
+        "administrative count."
     )
     entity = BenUnit
     definition_period = YEAR

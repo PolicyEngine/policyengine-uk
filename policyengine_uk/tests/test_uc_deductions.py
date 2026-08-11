@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from policyengine_core.enums import EnumArray
 
 from policyengine_uk import Simulation
 from policyengine_uk.utils.stochastic import splitmix64_uniform
@@ -158,6 +159,61 @@ class TestReformLevers:
         assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(
             baseline.calculate("universal_credit", YEAR)[0]
         )
+
+    def test_protected_floor_binds_on_the_above_cap_excess(self):
+        # Latent demand of 30% is 15% cappable plus a 15% last resort excess
+        # that current law exempts from the cap, giving a 20% deduction rate
+        # under the 15% cap. The modeled floor limits combined reductions
+        # regardless of category, so it cuts into that excess. JRF's briefing
+        # does not say whether their floor exempts last resort and child
+        # maintenance deductions; this pins the modeling choice.
+        situation = make_situation(
+            uc_latent_deduction_rate={YEAR: 0.30},
+            uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+        )
+        baseline = Simulation(situation=situation)
+        reform = Simulation(
+            situation=situation,
+            reform={
+                "gov.dwp.universal_credit.deductions.protected_floor": {
+                    "2025-01-01.2025-12-31": 0.85
+                }
+            },
+        )
+        sa = baseline.calculate("uc_standard_allowance", YEAR)[0]
+        assert baseline.calculate("uc_deduction_rate", YEAR)[0] == pytest.approx(0.20)
+        assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(
+            6_000 - 0.15 * sa
+        )
+
+    def test_zeroing_every_type_share_leaves_a_valid_enum_array(self):
+        situation = make_situation(
+            uc_deduction_random_draw={YEAR: 0.0},
+            uc_latent_deduction_rate={YEAR: 0.10},
+        )
+        reform = Simulation(
+            situation=situation,
+            reform={
+                f"gov.simulation.uc_deductions.type_combination.{key}": {
+                    "2025-01-01.2025-12-31": 0
+                }
+                for key in [
+                    "ADVANCE_ONLY",
+                    "THIRD_PARTY_ONLY",
+                    "GOVERNMENT_ONLY",
+                    "ADVANCE_AND_GOVERNMENT",
+                    "ADVANCE_AND_THIRD_PARTY",
+                    "THIRD_PARTY_AND_GOVERNMENT",
+                    "ALL_THREE",
+                ]
+            },
+        )
+        assert reform.calculate("uc_deduction_combination", YEAR)[0] == "NONE"
+        # The zero-total branch must encode like the normal branch, so
+        # downstream enum comparisons still work.
+        stored = reform.get_holder("uc_deduction_combination").get_array(str(YEAR))
+        assert isinstance(stored, EnumArray)
+        assert reform.calculate("uc_deductions", YEAR)[0] == 0
 
     def test_abolishing_all_types_removes_deductions(self):
         situation = make_situation(
