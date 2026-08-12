@@ -1,0 +1,9 @@
+description: Remove government debt deductions (benefit and tax credit overpayment recovery) from Universal Credit. Reform switch - false under current law, which recovers government debt by deduction under Schedule 6 of SI 2013/380 and DWP deductions guidance.
+values:
+  2015-04-01: false
+metadata:
+  label: Abolish UC government debt deductions
+  unit: bool
+  reference:
+    - title: DWP guidance, Deductions V17.0 (deduction types and priority order)
+      href: https://data.parliament.uk/DepositedPapers/Files/DEP2024-0673/054_Deductions_V17.0.pdf#page=2
