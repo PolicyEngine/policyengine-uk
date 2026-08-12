@@ -1,2 +1,3 @@
 - Fixed the capital gains realisation response, which measured the baseline marginal rate on a branch of the reform simulation and so reported no rate change for any reform, leaving the elasticity with no effect on any costing.
 - Defined the capital gains elasticity against the retention rate rather than the tax rate, matching how published estimates are reported, and added `relative_capital_gains_retention_rate_change`.
+- Hardened the measurement against a pre-created branch of the same name, which shared the simulation's tax-benefit system and let the neutralised response variable replace the live one for every later recalculation.

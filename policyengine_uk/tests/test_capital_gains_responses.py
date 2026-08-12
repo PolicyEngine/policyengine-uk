@@ -101,9 +101,64 @@ def test_no_reform_produces_no_response():
 
 
 def test_measurement_leaves_the_response_variable_active():
-    """Measuring the rate change does not neutralise the response itself."""
-    sim = simulate(elasticity=1.0)
-    sim.calculate("relative_capital_gains_mtr_change", YEAR)
-    variable = sim.tax_benefit_system.variables["capital_gains_behavioural_response"]
+    """Measuring the rate change does not neutralise the response itself.
 
-    assert variable.formula is not None
+    Object identity, not formula presence: a neutralised wrapper still
+    carries a formula, so the old assertion could not see the damage.
+    """
+    sim = simulate(elasticity=1.0)
+    before = sim.tax_benefit_system.variables["capital_gains_behavioural_response"]
+    sim.calculate("relative_capital_gains_mtr_change", YEAR)
+    after = sim.tax_benefit_system.variables["capital_gains_behavioural_response"]
+
+    assert after is before
+
+
+def test_pre_created_measurement_branch_cannot_poison_the_system():
+    """A branch pre-created under the measurement's name shares the parent
+    system, and get_branch returns it without honouring clone_system — so
+    neutralising there would disable the response for every later
+    recalculation. The measurement must sidestep the name instead."""
+    sim = simulate(elasticity=1.0)
+    sim.get_branch("cgr_measurement")
+    before = sim.tax_benefit_system.variables["capital_gains_behavioural_response"]
+
+    response = sim.calculate("capital_gains_behavioural_response", YEAR).sum()
+    after = sim.tax_benefit_system.variables["capital_gains_behavioural_response"]
+
+    assert response < 0
+    assert after is before
+
+
+def test_two_gainers_in_one_household_respond_symmetrically():
+    """Equal gainers get equal responses; the second adult is not dropped."""
+    situation = {
+        "people": {
+            "first": {
+                "age": {YEAR: 45},
+                "employment_income": {YEAR: 100_000},
+                "capital_gains": {YEAR: 200_000},
+            },
+            "second": {
+                "age": {YEAR: 44},
+                "employment_income": {YEAR: 100_000},
+                "capital_gains": {YEAR: 200_000},
+            },
+        },
+        "benunits": {"benunit": {"members": ["first", "second"]}},
+        "households": {"household": {"members": ["first", "second"]}},
+    }
+    sim = Microsimulation(
+        situation=situation,
+        scenario=Scenario(
+            parameter_changes={
+                **EQUALISED_RATES,
+                "gov.simulation.capital_gains_responses.elasticity": {str(YEAR): 1.0},
+            }
+        ),
+    )
+
+    responses = sim.calculate("capital_gains_behavioural_response", YEAR).values
+
+    assert responses[0] < 0
+    assert responses[0] == pytest.approx(responses[1])

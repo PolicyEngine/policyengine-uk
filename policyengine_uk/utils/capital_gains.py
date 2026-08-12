@@ -18,7 +18,18 @@ def measure_mtr(
     this measurement. Cloning keeps that neutralisation off the simulation
     being measured.
     """
+    # get_branch returns an existing branch of the requested name without
+    # honouring clone_system, and neutralising on a shared system would
+    # permanently disable the response variable for the caller. Take a name
+    # nothing else holds, then require the clone before touching it.
+    while branch_name in simulation.branches:
+        branch_name += "_"
     branch = simulation.get_branch(branch_name, clone_system=True)
+    if branch.tax_benefit_system is simulation.tax_benefit_system:
+        raise RuntimeError(
+            "Capital gains MTR measurement requires a cloned tax-benefit "
+            "system; refusing to neutralise on the simulation's own."
+        )
     branch.tax_benefit_system.neutralize_variable("capital_gains_behavioural_response")
     branch.set_input("capital_gains_before_response", period, gains)
     mtr = branch.populations["person"]("marginal_tax_rate_on_capital_gains", period)
