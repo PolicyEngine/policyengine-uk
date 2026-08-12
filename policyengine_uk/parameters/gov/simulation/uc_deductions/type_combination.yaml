@@ -1,0 +1,55 @@
+description: Distribution of deduction type combinations among Universal Credit households with any deduction, from the March to May 2025 average of Table 5 (advances, third party deductions, and government deductions), applied to all model years as a constancy assumption. Encoded shares sum to 1.004 because the published whole-point rows can sum above 100%; formulas normalize.
+ADVANCE_ONLY:
+  description: Share of UC households with deductions repaying only advances.
+  values:
+    2015-04-01: 0.327
+  metadata:
+    label: UC deduction combination share, advances only
+    unit: /1
+THIRD_PARTY_ONLY:
+  description: Share of UC households with deductions with only third party deductions.
+  values:
+    2015-04-01: 0.060
+  metadata:
+    label: UC deduction combination share, third party only
+    unit: /1
+GOVERNMENT_ONLY:
+  description: Share of UC households with deductions with only government debt deductions.
+  values:
+    2015-04-01: 0.227
+  metadata:
+    label: UC deduction combination share, government only
+    unit: /1
+ADVANCE_AND_GOVERNMENT:
+  description: Share of UC households with deductions repaying advances and government debt.
+  values:
+    2015-04-01: 0.180
+  metadata:
+    label: UC deduction combination share, advances and government
+    unit: /1
+ADVANCE_AND_THIRD_PARTY:
+  description: Share of UC households with deductions repaying advances with third party deductions.
+  values:
+    2015-04-01: 0.100
+  metadata:
+    label: UC deduction combination share, advances and third party
+    unit: /1
+THIRD_PARTY_AND_GOVERNMENT:
+  description: Share of UC households with deductions with third party and government debt deductions.
+  values:
+    2015-04-01: 0.030
+  metadata:
+    label: UC deduction combination share, third party and government
+    unit: /1
+ALL_THREE:
+  description: Share of UC households with deductions with all three deduction types.
+  values:
+    2015-04-01: 0.080
+  metadata:
+    label: UC deduction combination share, all three types
+    unit: /1
+metadata:
+  label: UC deduction type combination distribution
+  reference:
+    - title: DWP, Universal Credit deductions statistics March 2025 to February 2026, supplementary data tables, Table 5
+      href: https://assets.publishing.service.gov.uk/media/69fb3ea22a6137e93226b7ce/universal-credit-deductions-march-2025-to-february-2026.ods

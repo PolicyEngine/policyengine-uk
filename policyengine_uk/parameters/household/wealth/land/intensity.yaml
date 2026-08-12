@@ -11,9 +11,10 @@ property_wealth_by_region:
     intensity = (mhclg_land_per_ha / dwellings_per_ha) / avg_house_price,
     using MHCLG 2023 central-scenario densities and UK HPI Dec 2025 prices.
     England regions use MHCLG local authority data aggregated to region.
-    Scotland and Wales are interpolated from the nearest English region
-    by house price (MHCLG covers England only): Scotland from North East/
-    North West, Wales from North West.
+    Scotland, Wales and Northern Ireland are interpolated from the nearest
+    English regions by house price (MHCLG covers England only): Scotland and
+    Northern Ireland from North East/North West, Wales from North West.
+    UNKNOWN uses the dwelling-weighted mean across regions.
   metadata:
     label: Regional property wealth land intensity
     unit: /1
@@ -57,7 +58,7 @@ property_wealth_by_region:
       2023-01-01: 0.42
   NORTHERN_IRELAND:
     values:
-      2023-01-01: 0.673
+      2023-01-01: 0.44
   UNKNOWN:
     values:
-      2023-01-01: 0.673
+      2023-01-01: 0.57
