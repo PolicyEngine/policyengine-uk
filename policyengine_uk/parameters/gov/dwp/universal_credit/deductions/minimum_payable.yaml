@@ -1,0 +1,10 @@
+description: Minimum Universal Credit payable after deductions, per assessment period. Schedule 6 of SI 2013/380 provides that deductions must not reduce the amount payable to the claimant below one penny.
+values:
+  2015-04-01: 0.01
+metadata:
+  label: UC minimum payable after deductions
+  unit: currency-GBP
+  period: month
+  reference:
+    - title: SI 2013/380, Schedule 6 (deductions from benefit and direct payment to third parties)
+      href: https://www.legislation.gov.uk/uksi/2013/380/schedule/6

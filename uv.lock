@@ -1584,7 +1584,7 @@ wheels = [
 
 [[package]]
 name = "policyengine-uk"
-version = "2.88.22"
+version = "2.89.4"
 source = { editable = "." }
 dependencies = [
     { name = "microdf-python", marker = "python_full_version >= '3.11'" },
@@ -1598,7 +1598,6 @@ dev = [
     { name = "coverage", marker = "python_full_version >= '3.11'" },
     { name = "furo", marker = "python_full_version >= '3.11'" },
     { name = "jupyter-book", marker = "python_full_version >= '3.11'" },
-    { name = "pytest", marker = "python_full_version >= '3.11'" },
     { name = "pytest-cov", marker = "python_full_version >= '3.11'" },
     { name = "rich", marker = "python_full_version >= '3.11'" },
     { name = "ruff", marker = "python_full_version >= '3.11'" },
@@ -1608,7 +1607,6 @@ dev = [
     { name = "sphinx-math-dollar", marker = "python_full_version >= '3.11'" },
     { name = "towncrier", marker = "python_full_version >= '3.11'" },
     { name = "tqdm", marker = "python_full_version >= '3.11'" },
-    { name = "wheel", marker = "python_full_version >= '3.11'" },
 ]
 
 [package.metadata]
@@ -1619,7 +1617,6 @@ requires-dist = [
     { name = "microdf-python", specifier = ">=1.2.1" },
     { name = "policyengine-core", specifier = ">=3.26.0" },
     { name = "pydantic", specifier = ">=2.11.7" },
-    { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "rich", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.9.0" },
@@ -1632,7 +1629,6 @@ requires-dist = [
     { name = "tables", marker = "python_full_version >= '3.11'", specifier = ">=3.10.2" },
     { name = "towncrier", marker = "extra == 'dev'", specifier = ">=24.8.0" },
     { name = "tqdm", marker = "extra == 'dev'" },
-    { name = "wheel", marker = "extra == 'dev'" },
 ]
 provides-extras = ["dev"]
 

@@ -1,3 +1,17 @@
+## [2.90.0] - 2026-08-12
+
+### Added
+
+- Universal Credit deductions: latent deduction demand assigned from DWP deductions statistics (incidence by region, rate distribution, type combinations), the deductions cap including the 2025 Fair Repayment Rate, last resort deductions exempt from the cap, reform switches to abolish advance, third party or government debt deductions, and a protected minimum floor lever limiting combined deductions and benefit cap reductions (JRF-style floor reforms). Per-household statistics are validated against the DWP deductions statistics; weighted aggregates (deducting households, total deducted, the cost of floor reforms) run low in proportion to the model's UC caseload shortfall (policyengine-uk-data#452) and should not be quoted without that caveat - see the deductions validation page in the documentation for the limitations that bound reform estimates.
+
+
+## [2.89.4] - 2026-07-27
+
+### Fixed
+
+- Lower Northern Ireland's regional land intensity from 0.673 to 0.44, interpolating from price-similar regions consistently with Scotland and Wales.
+
+
 ## [2.89.3] - 2026-07-23
 
 No significant changes.

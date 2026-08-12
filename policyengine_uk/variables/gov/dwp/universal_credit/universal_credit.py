@@ -12,4 +12,25 @@ class universal_credit(Variable):
     def formula(benunit, period, parameters):
         uc_max_entitlement = benunit("universal_credit_pre_benefit_cap", period)
         benefit_cap_reduction = benunit("benefit_cap_reduction", period)
-        return max_(uc_max_entitlement - benefit_cap_reduction, 0)
+        deductions = benunit("uc_deductions", period)
+        # A protected minimum floor (zero under current law) caps combined
+        # benefit cap reductions and deductions at (1 - floor) x the standard
+        # allowance, per JRF's protected minimum floor design (their worked
+        # example limits the reduction itself to 15% of the standard
+        # allowance). Zero means reductions are unlimited.
+        # The floor binds on the whole of uc_deductions, including the above-
+        # cap excess that current law exempts from the deductions cap (last
+        # resort and child maintenance deductions). JRF's briefing does not
+        # say whether their floor exempts those categories - its worked
+        # example involves only cappable deductions and the benefit cap - so
+        # this is a modeling choice, tracked for follow-up.
+        floor_rate = parameters(
+            period
+        ).gov.dwp.universal_credit.deductions.protected_floor
+        total_reductions = benefit_cap_reduction + deductions
+        max_reductions = where(
+            floor_rate > 0,
+            (1 - floor_rate) * benunit("uc_standard_allowance", period),
+            np.inf,
+        )
+        return max_(uc_max_entitlement - min_(total_reductions, max_reductions), 0)
