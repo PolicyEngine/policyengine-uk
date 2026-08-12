@@ -16,6 +16,8 @@ from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
+from policyengine_uk.utils.parameters import uk_fiscal_year_period
+
 # PolicyEngine UK imports
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
@@ -236,10 +238,12 @@ class Simulation(CoreSimulation):
                 canonical_parameter
             )
             if isinstance(changes[parameter], dict):
-                # Time-period specific changes
+                # Time-period specific changes. A bare year names the UK
+                # fiscal year, so the override covers 6 April to 5 April and
+                # survives fiscal-year conversion at full strength.
                 for time_period in changes[parameter]:
                     p.update(
-                        period=time_period,
+                        period=uk_fiscal_year_period(time_period),
                         value=changes[parameter][time_period],
                     )
             else:

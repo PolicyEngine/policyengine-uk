@@ -54,6 +54,27 @@ def fiscal_year_average(param, year: int):
     return total / (end - start).days
 
 
+def uk_fiscal_year_period(time_period):
+    """Translate a bare year into the UK fiscal year it names.
+
+    A UK parameter change for "2025" means the fiscal year starting 6 April
+    2025. Writing it as the calendar year leaves January to April of 2026
+    on prior law, which fiscal-year conversion then blends into the value —
+    an annual override of 0.5 came out as 0.42. Non-year periods pass
+    through untouched.
+    """
+    year = None
+    if isinstance(time_period, int):
+        year = time_period
+    elif isinstance(time_period, str) and time_period.strip().isdigit():
+        year = int(time_period.strip())
+    if year is None or not 1900 < year < 2200:
+        return time_period
+    start = periods.Instant((year, 4, 6))
+    days = (datetime.date(year + 1, 4, 6) - datetime.date(year, 4, 6)).days
+    return periods.Period(("day", start, days))
+
+
 def convert_to_fiscal_year_parameters(parameters):
     """
     Convert parameters to use UK fiscal year values.

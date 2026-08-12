@@ -170,6 +170,53 @@ class TestMidYearRateChanges:
         assert employee_rates.main == pytest.approx(0.1325)
 
 
+class TestScenarioOverrides:
+    """Annual Scenario overrides name UK fiscal years.
+
+    Written as calendar years, an override's final five months fell back to
+    prior law and fiscal-year conversion blended the two: an override of 0.5
+    on a blended CGT rate resolved to 0.42. The override now covers 6 April
+    to 5 April.
+    """
+
+    def _reformed(self):
+        from policyengine_uk import Microsimulation
+        from policyengine_uk.model_api import Scenario
+
+        return Microsimulation(
+            situation={
+                "people": {
+                    "person": {
+                        "age": {2025: 45},
+                        "adjusted_net_income": {2025: 20_000},
+                        "capital_gains": {2025: 23_000},
+                    }
+                },
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {"household": {"members": ["person"]}},
+            },
+            scenario=Scenario(
+                parameter_changes={"gov.hmrc.cgt.basic_rate": {"2025": 0.5}}
+            ),
+        )
+
+    def test_override_applies_at_full_strength(self):
+        sim = self._reformed()
+        rate = sim.tax_benefit_system.parameters.gov.hmrc.cgt.basic_rate
+
+        assert rate("2025") == pytest.approx(0.5)
+        cgt = sim.calculate("capital_gains_tax", 2025).values[0]
+        assert cgt == pytest.approx(10_000.0)
+
+    def test_override_leaves_other_years_on_law(self):
+        """The split 2024-25 blend and the 2026 reversion both survive."""
+        sim = self._reformed()
+        rate = sim.tax_benefit_system.parameters.gov.hmrc.cgt.basic_rate
+
+        assert rate("2024") == pytest.approx((0.10 * 207 + 0.18 * 158) / 365)
+        assert rate("2026") == pytest.approx(0.18)
+
+
 class TestFiscalYearCoverage:
     """Tests to verify fiscal year conversion covers all needed years."""
 
