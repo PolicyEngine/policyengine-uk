@@ -1,0 +1,193 @@
+# Benefit cap exceptions, Universal Credit Regulations 2013 regs. 82-83.
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+# https://www.gov.uk/benefit-cap/when-youre-not-affected
+
+# --- Earnings exception: only tax on the earnings is deducted (reg. 55(5)) ---
+
+- name: Unearned income does not reduce net earnings for the earnings exception
+  # Regulation 55(5) deducts the income tax paid "in respect of the
+  # employment", not the claimant's whole income tax liability. Property
+  # income of 40,000 pushes total income tax to over 8,000, but the tax
+  # attributable to the 13,000 of earnings is under 100, so net earnings stay
+  # well above the 846/month threshold and the exception applies.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 13_000
+        property_income: 40_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_earnings: true
+    is_benefit_cap_exempt: true
+
+- name: Earnings below the threshold do not except, even with large unearned income
+  # The same unearned income with earnings of 8,000 leaves net earnings below
+  # 846 x 12 = 10,152, so the exception does not apply.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 8_000
+        property_income: 40_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_earnings: false
+
+- name: A couple's earnings are combined for the earnings exception
+  # Reg. 82(1)(a) applies to "the claimant's and their partner's combined
+  # earned income". Neither partner alone reaches 10,152; together they do.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 35
+        employment_income: 6_000
+      person2:
+        age: 35
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_benefit_cap_exempt_earnings: true
+
+- name: Relievable pension contributions reduce earned income
+  # Reg. 55(5)(a) deducts relievable pension contributions from employed
+  # earnings, so a contribution that takes net earnings below the threshold
+  # removes the exception.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 11_000
+        employee_pension_contributions: 1_500
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_earnings: false
+
+# --- Earnings threshold is a dated parameter, not a hardcoded constant ---
+
+- name: The 2025-26 earnings threshold is 846 a month
+  period: 2025
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 10_300
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # 10,300 clears 846 x 12 = 10,152.
+    is_benefit_cap_exempt_earnings: true
+
+- name: The 2026-27 earnings threshold rises to 881 a month
+  period: 2026
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 10_300
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # The same earnings fall short of 881 x 12 = 10,572.
+    is_benefit_cap_exempt_earnings: false
+
+- name: Earnings above the 2026-27 threshold except from the cap
+  period: 2026
+  input:
+    people:
+      person:
+        age: 35
+        employment_income: 10_600
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_earnings: true
+
+# --- Armed Forces Independence Payment is a statutory exception ---
+
+- name: Armed Forces Independence Payment excepts from the benefit cap
+  period: 2026
+  input:
+    people:
+      person:
+        age: 35
+        armed_forces_independence_payment: 5_740
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_health_disability: true
+    is_benefit_cap_exempt: true
+
+- name: Without Armed Forces Independence Payment the cap applies
+  period: 2026
+  input:
+    people:
+      person:
+        age: 35
+        armed_forces_independence_payment: 0
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_health_disability: false
+    is_benefit_cap_exempt: false
+
+- name: A child's Armed Forces Independence Payment excepts the benefit unit
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 35
+      child:
+        age: 10
+        armed_forces_independence_payment: 5_740
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    is_benefit_cap_exempt_health_disability: true
+
+# --- Other exceptions are unchanged ---
+
+- name: State pension age excepts from the benefit cap
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_other: true
+    is_benefit_cap_exempt: true
+
+- name: Armed Forces Compensation Scheme payments except from the benefit cap
+  period: 2026
+  input:
+    people:
+      person:
+        age: 35
+        afcs_reported: 2_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    is_benefit_cap_exempt_other: true
+    is_benefit_cap_exempt_health_disability: true
