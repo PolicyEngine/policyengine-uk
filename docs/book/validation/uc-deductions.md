@@ -12,12 +12,14 @@ The implementation separates **latent demand** from the **statutory cap**. `uc_l
 
 Enhanced FRS 2023/24 v1.40.3, against [DWP's Universal Credit deductions statistics](https://www.gov.uk/government/statistics/universal-credit-quarterly-statistics-29-april-2013-to-12-february-2026/universal-credit-deductions-statistics-march-2025-to-february-2026).
 
+Shares below are of **all** UC households, not of those with deductions — the denominator both the model and DWP use.
+
 | Statistic | Model | DWP published |
 |---|---|---|
 | Share of UC households with deductions | 47.0–47.1% | 46–47% |
-| At-cap share, 25% regime (2024) | 13.4% | 13–14% (Mar–May 2025) |
-| At-cap share, 15% regime (2025) | 26.4% | 21% (Jun 2025–Feb 2026) |
-| Above-cap share (last resort) | 1.8% | 2% |
+| At-cap share of all UC households, 25% regime (2024) | 13.4% | 13–14% (Mar–May 2025) |
+| At-cap share of all UC households, 15% regime (2025) | 26.4% | 21% (Jun 2025–Feb 2026) |
+| Above-cap share of all UC households (last resort) | 1.8% | 2% |
 | Mean monthly deduction, 25% regime | £66 | £67–68 |
 | Mean monthly deduction, 15% regime | £50 | £51–54 |
 | Mean annual gain, 25%→15% cap | £421 | £420 (gov.uk) |
@@ -47,7 +49,11 @@ The latent distribution is observed in 2025 and applied to all model years as a 
 
 ### The protected floor binds on last resort deductions
 
-The `protected_floor` lever limits combined deductions and benefit cap reductions to (1 − floor) × the standard allowance. It binds on the whole of `uc_deductions`, including the above-cap excess that current law exempts from the deductions cap (last resort and child maintenance deductions). JRF's briefing does not say whether their floor exempts those categories — its worked example involves only cappable deductions and the benefit cap — so this is a modeling choice.
+The `protected_floor` lever limits combined deductions and benefit cap reductions to (1 − floor) × the standard allowance. The benefit cap reduction absorbs the floor first: `uc_deductions` is cut only where deductions alone still exceed the allowance. Under the Fair Repayment Rate the 15% deductions cap equals the allowance an 85% floor leaves, so cappable deductions essentially never breach the floor on their own — only benefit cap reductions push past it. JRF's own worked example (standard allowance £92, deduction £14, benefit cap £59, floor £78) works out the same way: the £14 deduction survives in full and the £59 cap reduction goes.
+
+Where deductions alone do exceed the allowance, the floor binds on the whole of `uc_deductions`, including the above-cap excess that current law exempts from the deductions cap (last resort and child maintenance deductions). JRF's briefing does not say whether their floor exempts those categories — its worked example involves only cappable deductions and the benefit cap — so this is a modeling choice.
+
+Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction` sum to the entitlement forgone. `benefit_cap_reduction` itself stays gross: it also drives Housing Benefit, which the Universal Credit floor does not protect. Read `uc_benefit_cap_reduction` for the cap reduction applied to a UC award under a floor reform.
 
 ### Other assumptions
 
@@ -75,7 +81,7 @@ The `protected_floor` lever limits combined deductions and benefit cap reduction
 {"gov.dwp.universal_credit.deductions.protected_floor": {"2026-01-01.2030-12-31": 0.85}}
 ```
 
-A cap of 1 − *x* is equivalent to a protected minimum floor at *x* of the standard allowance for capped deduction types. The dedicated `protected_floor` lever additionally binds on benefit cap reductions, which is where most of JRF's post-Fair-Repayment-Rate effect comes from.
+A cap of 1 − *x* is equivalent to a protected minimum floor at *x* of the standard allowance for capped deduction types. The dedicated `protected_floor` lever additionally binds on benefit cap reductions, which is where most of JRF's post-Fair-Repayment-Rate effect comes from — and, because the cap reduction absorbs the floor first, where nearly all of the modelled effect lands.
 
 ## Where the assignment lives
 
