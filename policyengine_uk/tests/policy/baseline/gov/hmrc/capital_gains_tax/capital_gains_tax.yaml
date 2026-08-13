@@ -1,5 +1,10 @@
+# Rate mechanics are tested in 2025-26, where one set of rates applies to the
+# whole year. The rates rose part-way through 2024-25, so that year carries a
+# day-weighted average of the rates before and after 30 October 2024, tested
+# separately at the end of this file.
+
 - name: No capital gains
-  period: 2024
+  period: 2025
   input:
     adjusted_net_income: 0
     capital_gains: 0
@@ -7,7 +12,7 @@
     capital_gains_tax: 0
 
 - name: Capital gains below annual exempt amount
-  period: 2024
+  period: 2025
   input:
     adjusted_net_income: 0
     capital_gains: 2_000
@@ -15,63 +20,66 @@
     capital_gains_tax: 0
 
 - name: Capital gains just above annual exempt amount
-  period: 2024
+  period: 2025
   input:
     adjusted_net_income: 0
     capital_gains: 3_500
   output:
-    capital_gains_tax: 50
+    capital_gains_tax: 90
 
 - name: Basic rate capital gains tax
-  period: 2024
+  period: 2025
   input:
     adjusted_net_income: 20_000
     capital_gains: 23_000
   output:
-    capital_gains_tax: 2_000
+    capital_gains_tax: 3_600
 
 - name: Higher rate capital gains tax
-  period: 2024
+  period: 2025
+  absolute_error_margin: 0.01
   input:
     adjusted_net_income: 50_000
     capital_gains: 50_000
   output:
-    capital_gains_tax: 9_373
+    capital_gains_tax: 11_263.80
 
 - name: Additional rate capital gains tax
-  period: 2024
+  period: 2025
   input:
     adjusted_net_income: 150_000
     capital_gains: 100_000
   output:
-    capital_gains_tax: 19_400
+    capital_gains_tax: 23_280
 
 - name: Mixed rates capital gains tax
-  period: 2024
+  period: 2025
+  absolute_error_margin: 0.01
   input:
     adjusted_net_income: 35_000
     capital_gains: 40_000
   output:
-    capital_gains_tax: 5_873
+    capital_gains_tax: 7_963.80
 
 - name: High capital gains, low income
-  period: 2024
+  period: 2025
   input:
     adjusted_net_income: 10_000
     capital_gains: 200_000
   output:
-    capital_gains_tax: 35_630
+    capital_gains_tax: 45_018
 
 - name: Very high capital gains and income
-  period: 2024
+  period: 2025
+  absolute_error_margin: 0.1
   input:
     adjusted_net_income: 500_000
     capital_gains: 1_000_000
   output:
-    capital_gains_tax: 199_400
+    capital_gains_tax: 239_280
 
 - name: Edge case, capital gains exactly equal to annual exempt amount
-  period: 2024
+  period: 2025
   input:
     adjusted_net_income: 0
     capital_gains: 3_000
@@ -132,3 +140,26 @@
     capital_gains: 32_942.86
   output:
     capital_gains_tax: 5_389.71
+
+# Finance Act 2025 s.7 raised the main rates for disposals from 30 October
+# 2024, part-way through 2024-25. An annual model cannot place a disposal
+# before or after that date, so the year takes the day-weighted average of the
+# two schedules: 207 days at 10% and 20%, then 158 days at 18% and 24%.
+
+- name: Case 16, the split 2024-25 year taxes basic rate gains at the blended rate.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: 20_000
+    capital_gains: 23_000
+  output:
+    capital_gains_tax: 2_692.60
+
+- name: Case 17, the split 2024-25 year taxes higher rate gains at the blended rate.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: 150_000
+    capital_gains: 100_000
+  output:
+    capital_gains_tax: 21_079.56
