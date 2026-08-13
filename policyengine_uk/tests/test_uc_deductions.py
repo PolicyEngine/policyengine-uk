@@ -161,9 +161,9 @@ class TestReformLevers:
         )
 
     def test_protected_floor_binds_on_the_above_cap_excess(self):
-        # Latent demand of 30% is 15% cappable plus a 15% last resort excess
-        # that current law exempts from the cap, giving a 20% deduction rate
-        # under the 15% cap. The modeled floor limits combined reductions
+        # Latent demand of 30% is 25% cappable (cut to 15% by the cap) plus a
+        # 5% last resort excess that current law exempts from the cap, giving
+        # a 20% deduction rate. The modeled floor limits combined reductions
         # regardless of category, so it cuts into that excess. JRF's briefing
         # does not say whether their floor exempts last resort and child
         # maintenance deductions; this pins the modeling choice.
@@ -185,6 +185,94 @@ class TestReformLevers:
         assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(
             6_000 - 0.15 * sa
         )
+
+    def test_floor_components_reconcile_with_the_reduction_applied(self):
+        # uc_deductions and uc_benefit_cap_reduction are what the award
+        # actually loses, so they must sum to the entitlement forgone. Before
+        # the floor was pushed into the components, they reported £960 and
+        # £1,000 against a £720 reduction actually applied.
+        situation = make_situation(
+            benefit_cap_reduction={YEAR: 1_000},
+            uc_latent_deduction_rate={YEAR: 0.30},
+            uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+        )
+        reform = Simulation(
+            situation=situation,
+            reform={
+                "gov.dwp.universal_credit.deductions.protected_floor": {
+                    "2025-01-01.2025-12-31": 0.85
+                }
+            },
+        )
+        sa = reform.calculate("uc_standard_allowance", YEAR)[0]
+        deductions = reform.calculate("uc_deductions", YEAR)[0]
+        cap_reduction = reform.calculate("uc_benefit_cap_reduction", YEAR)[0]
+        universal_credit = reform.calculate("universal_credit", YEAR)[0]
+        assert deductions + cap_reduction == pytest.approx(0.15 * sa)
+        assert deductions + cap_reduction == pytest.approx(6_000 - universal_credit)
+        # The gross benefit cap reduction is unchanged: it also drives
+        # Housing Benefit, which the Universal Credit floor does not protect.
+        assert reform.calculate("benefit_cap_reduction", YEAR)[0] == 1_000
+
+    def test_the_benefit_cap_reduction_absorbs_the_floor_first(self):
+        # JRF's worked example (standard allowance £92, deduction £14,
+        # benefit cap £59, floor £78) keeps the £14 deduction whole and
+        # eliminates the £59 cap reduction. Deductions of 10% of the standard
+        # allowance fit inside a 15% floor allowance, so they survive intact
+        # and the cap reduction takes the whole remaining squeeze.
+        situation = make_situation(
+            benefit_cap_reduction={YEAR: 2_500},
+            uc_latent_deduction_rate={YEAR: 0.10},
+            uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+        )
+        reform = Simulation(
+            situation=situation,
+            reform={
+                "gov.dwp.universal_credit.deductions.protected_floor": {
+                    "2025-01-01.2025-12-31": 0.85
+                }
+            },
+        )
+        sa = reform.calculate("uc_standard_allowance", YEAR)[0]
+        assert reform.calculate("uc_deductions", YEAR)[0] == pytest.approx(0.10 * sa)
+        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == pytest.approx(
+            0.05 * sa
+        )
+
+    def test_a_floor_above_the_standard_allowance_adds_nothing(self):
+        # (1 - floor) x standard allowance goes negative above a floor of 1;
+        # subtracting it added £960 to a £6,000 award. The allowance clamps
+        # at zero, where the floor protects the standard allowance entirely.
+        situation = make_situation(
+            benefit_cap_reduction={YEAR: 1_000},
+            uc_latent_deduction_rate={YEAR: 0.25},
+            uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+        )
+        reform = Simulation(
+            situation=situation,
+            reform={
+                "gov.dwp.universal_credit.deductions.protected_floor": {
+                    "2025-01-01.2025-12-31": 1.2
+                }
+            },
+        )
+        assert reform.calculate("uc_deductions", YEAR)[0] == 0
+        assert reform.calculate("uc_benefit_cap_reduction", YEAR)[0] == 0
+        assert reform.calculate("universal_credit", YEAR)[0] == pytest.approx(6_000)
+
+    def test_no_deductions_without_a_universal_credit_claim(self):
+        # Datasets are meant to impute uc_latent_deduction_rate directly, at
+        # which point nothing else gates deductions on the claim.
+        sim = Simulation(
+            situation=make_situation(
+                would_claim_uc={YEAR: False},
+                uc_latent_deduction_rate={YEAR: 0.30},
+                uc_deduction_combination={YEAR: "ADVANCE_ONLY"},
+            )
+        )
+        assert sim.calculate("universal_credit", YEAR)[0] == 0
+        assert sim.calculate("uc_deductions", YEAR)[0] == 0
+        assert sim.calculate("uc_benefit_cap_reduction", YEAR)[0] == 0
 
     def test_zeroing_every_type_share_leaves_a_valid_enum_array(self):
         situation = make_situation(
