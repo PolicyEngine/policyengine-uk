@@ -1557,7 +1557,7 @@ wheels = [
 
 [[package]]
 name = "policyengine-core"
-version = "3.26.0"
+version = "3.30.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "dpath", marker = "python_full_version >= '3.11'" },
@@ -1577,14 +1577,14 @@ dependencies = [
     { name = "standard-imghdr", marker = "python_full_version >= '3.11'" },
     { name = "wheel", marker = "python_full_version >= '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/4e/69/adb6407c97de5260a938344f9eafa9979bf8f97aec8c628538d906ecdec2/policyengine_core-3.26.0.tar.gz", hash = "sha256:a571026ef418653ec18f087463cf37e9be730e90ad4376cb10997f0ddf9f8eda", size = 468190, upload-time = "2026-05-04T19:26:27.707Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/3f/ce/850539b176dfbbb7e8ca4ece80c00cd880600d2fe55cc1718c22600d4df2/policyengine_core-3.30.4.tar.gz", hash = "sha256:6c1573d9486b291f5104bb275bb26c2668f9e604771b36b83e641363c14d3a1a", size = 502330, upload-time = "2026-08-04T13:44:46.299Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/bc/f3/0e98b30d4eb7b309c3f1f1d8c2354595f78319ce2442eda069f02a47f4d1/policyengine_core-3.26.0-py3-none-any.whl", hash = "sha256:d63a4622233b61c4c5fc64d4f65030d65b2564ac63ac87b17d545d63cdf17194", size = 232135, upload-time = "2026-05-04T19:26:25.693Z" },
+    { url = "https://files.pythonhosted.org/packages/61/bd/62801802dfbf7244e9d8e53432d4581ce71d2e308742f9109a7c3d9d21a1/policyengine_core-3.30.4-py3-none-any.whl", hash = "sha256:a3edd4c528a048f8d075fee31231866d536d523cbcdeca78ad45d75bc3d5758a", size = 245473, upload-time = "2026-08-04T13:44:44.987Z" },
 ]
 
 [[package]]
 name = "policyengine-uk"
-version = "2.89.4"
+version = "2.90.1"
 source = { editable = "." }
 dependencies = [
     { name = "microdf-python", marker = "python_full_version >= '3.11'" },
@@ -1615,7 +1615,7 @@ requires-dist = [
     { name = "furo", marker = "extra == 'dev'", specifier = "<2023" },
     { name = "jupyter-book", marker = "extra == 'dev'", specifier = ">=2.0.0a0" },
     { name = "microdf-python", specifier = ">=1.2.1" },
-    { name = "policyengine-core", specifier = ">=3.26.0" },
+    { name = "policyengine-core", specifier = ">=3.30.1" },
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "rich", marker = "extra == 'dev'" },
