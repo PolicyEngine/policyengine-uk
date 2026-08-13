@@ -215,6 +215,30 @@ class TestReformLevers:
         assert isinstance(stored, EnumArray)
         assert reform.calculate("uc_deductions", YEAR)[0] == 0
 
+    def test_zeroing_all_combination_shares_degrades_gracefully(self):
+        # With every combination share reformed to zero, the combination
+        # falls back to NONE and deductions compute to zero without error.
+        situation = make_situation(
+            uc_latent_deduction_rate={YEAR: 0.10},
+        )
+        prefix = "gov.simulation.uc_deductions.type_combination"
+        reform = Simulation(
+            situation=situation,
+            reform={
+                f"{prefix}.{combo}": {"2025-01-01.2025-12-31": 0}
+                for combo in [
+                    "ADVANCE_ONLY",
+                    "THIRD_PARTY_ONLY",
+                    "GOVERNMENT_ONLY",
+                    "ADVANCE_AND_GOVERNMENT",
+                    "ADVANCE_AND_THIRD_PARTY",
+                    "THIRD_PARTY_AND_GOVERNMENT",
+                    "ALL_THREE",
+                ]
+            },
+        )
+        assert reform.calculate("uc_deductions", YEAR)[0] == 0
+
     def test_abolishing_all_types_removes_deductions(self):
         situation = make_situation(
             uc_latent_deduction_rate={YEAR: 0.25},
