@@ -1,3 +1,10 @@
+## [2.90.3] - 2026-08-14
+
+### Changed
+
+- UC deductions documentation: promote the aggregate caveat - reform aggregates (poverty counts, floor-reform costs) run roughly 40% low because the model's UC caseload falls short of administrative counts (policyengine-uk-data#452 tracks the calibration fix; #450 tracks moving deduction imputation to the dataset build); per-household statistics are the validated, quotable layer. Also note the rate distribution is national (regional factors scale incidence only, so regional composition differences are not modeled) and that annual per-household amounts are upper bounds for spell-limited deduction types.
+
+
 ## [2.90.2] - 2026-08-13
 
 No significant changes.
