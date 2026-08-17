@@ -1,1 +1,0 @@
-- Added an auxiliary capital gains realisation elasticity with respect to the marginal tax rate, alongside the existing retention-rate elasticity.

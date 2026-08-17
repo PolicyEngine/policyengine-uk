@@ -1,3 +1,10 @@
+## [2.91.0] - 2026-08-17
+
+### Added
+
+- - Added an auxiliary capital gains realisation elasticity with respect to the marginal tax rate, alongside the existing retention-rate elasticity.
+
+
 ## [2.90.3] - 2026-08-14
 
 ### Changed
