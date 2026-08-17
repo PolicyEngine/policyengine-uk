@@ -1,5 +1,7 @@
 """Tests for the capital gains realisation response to CGT rate changes."""
 
+import math
+
 import pytest
 
 from policyengine_uk import Microsimulation
@@ -26,11 +28,21 @@ EQUALISED_RATES = {
 }
 
 
-def simulate(elasticity: float | None = None, rates: bool = True) -> Microsimulation:
-    changes = dict(EQUALISED_RATES) if rates else {}
+def simulate(
+    elasticity: float | None = None,
+    mtr_elasticity: float | None = None,
+    rates: bool = True,
+    rate_changes: dict | None = None,
+) -> Microsimulation:
+    reform_rates = EQUALISED_RATES if rate_changes is None else rate_changes
+    changes = dict(reform_rates) if rates else {}
     if elasticity is not None:
         changes["gov.simulation.capital_gains_responses.elasticity"] = {
             str(YEAR): elasticity
+        }
+    if mtr_elasticity is not None:
+        changes["gov.simulation.capital_gains_responses.mtr_elasticity"] = {
+            str(YEAR): mtr_elasticity
         }
     if not changes:
         return Microsimulation(situation=SITUATION)
@@ -85,6 +97,53 @@ def test_zero_elasticity_leaves_gains_unchanged():
     assert response == 0
 
 
+def test_default_elasticities_leave_gains_unchanged():
+    """Both elasticity conventions default to zero, keeping costings static."""
+    sim = simulate()
+    response = sim.calculate("capital_gains_behavioural_response", YEAR).sum()
+
+    assert response == 0
+
+
+def test_mtr_response_matches_hand_calculated_factor():
+    """The MTR elasticity applies the exact marginal-rate log change."""
+    mtr_elasticity = -0.5
+    sim = simulate(mtr_elasticity=mtr_elasticity)
+
+    gains = sim.calculate("capital_gains_before_response", YEAR).values[0]
+    response = sim.calculate("capital_gains_behavioural_response", YEAR).values[0]
+    actual_factor = response / gains
+    expected_factor = math.exp(mtr_elasticity * (math.log(0.45) - math.log(0.24))) - 1
+
+    assert actual_factor == pytest.approx(expected_factor, abs=1e-6)
+
+
+def test_mtr_change_clamps_zero_marginal_rate():
+    """A zero MTR uses the 0.001 floor instead of taking log(0)."""
+    zero_rates = {parameter: {str(YEAR): 0.0} for parameter in EQUALISED_RATES}
+    sim = simulate(mtr_elasticity=-0.5, rate_changes=zero_rates)
+
+    mtr_change = sim.calculate("relative_capital_gains_mtr_change", YEAR).values[0]
+    expected_change = math.log(0.001) - math.log(0.24)
+
+    assert math.isfinite(mtr_change)
+    assert mtr_change == pytest.approx(expected_change, abs=1e-6)
+
+
+def test_both_elasticities_raise():
+    """The retention-rate and MTR conventions cannot both be activated."""
+    sim = simulate(elasticity=1.0, mtr_elasticity=-0.5)
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"gov\.simulation\.capital_gains_responses\.elasticity and "
+            r"gov\.simulation\.capital_gains_responses\.mtr_elasticity"
+        ),
+    ):
+        sim.calculate("capital_gains_behavioural_response", YEAR)
+
+
 def test_no_reform_produces_no_response():
     """A simulation with no reform reports no realisation response."""
     sim = Microsimulation(
@@ -112,6 +171,26 @@ def test_measurement_leaves_the_response_variable_active():
     after = sim.tax_benefit_system.variables["capital_gains_behavioural_response"]
 
     assert after is before
+
+
+def test_mtr_response_is_deterministic_across_recalculation():
+    """Repeated MTR measurement is idempotent and leaves the response live."""
+    sim = simulate(mtr_elasticity=-0.5)
+    live_variable = sim.tax_benefit_system.variables[
+        "capital_gains_behavioural_response"
+    ]
+
+    first = sim.calculate("capital_gains_behavioural_response", YEAR).values.copy()
+    sim.delete_arrays("capital_gains_behavioural_response", YEAR)
+    sim.delete_arrays("relative_capital_gains_mtr_change", YEAR)
+    second = sim.calculate("capital_gains_behavioural_response", YEAR).values.copy()
+    response_variable = sim.tax_benefit_system.variables[
+        "capital_gains_behavioural_response"
+    ]
+
+    assert second == pytest.approx(first)
+    assert response_variable is live_variable
+    assert not response_variable.is_neutralized
 
 
 def test_pre_created_measurement_branch_cannot_poison_the_system():
