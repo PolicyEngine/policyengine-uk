@@ -1,0 +1,22 @@
+description: Monthly earned income at or above which a Universal Credit claimant (or couple, jointly) is excepted from the benefit cap. Set by regulation 82 of the Universal Credit Regulations 2013 as 16 hours per week at the National Living Wage rate in regulation 4 of the National Minimum Wage Regulations 2015, converted to a monthly amount by multiplying by 52 and dividing by 12, and rounded down to whole pounds by DWP. Earned income for this test is net of income tax, National Insurance contributions and relievable pension contributions on the earnings, and excludes income treated as earned under the minimum income floor.
+values:
+  2020-04-01: 604
+  2021-04-01: 617
+  2022-04-01: 658
+  2023-04-01: 722
+  2024-04-01: 793
+  2025-04-01: 846
+  2026-04-01: 881
+metadata:
+  label: Benefit cap earnings exemption threshold
+  unit: currency-GBP
+  period: month
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 82 (Exceptions - earnings)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+    - title: The Universal Credit Regulations 2013 reg. 55 (Employed earnings)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/55
+    - title: GOV.UK - Benefit cap - When you're not affected
+      href: https://www.gov.uk/benefit-cap/when-youre-not-affected
+    - title: GOV.UK - National Minimum Wage and National Living Wage rates
+      href: https://www.gov.uk/national-minimum-wage-rates
