@@ -12,5 +12,6 @@ class total_wealth(Variable):
     adds = [
         "property_wealth",
         "corporate_wealth",
+        "private_pension_wealth",
         "savings",
     ]

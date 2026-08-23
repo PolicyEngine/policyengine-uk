@@ -72,6 +72,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - other_residential_property_value
 - owned_land
 - pension_income
+- private_pension_wealth
 - private_transfer_income
 - property_income
 - savings

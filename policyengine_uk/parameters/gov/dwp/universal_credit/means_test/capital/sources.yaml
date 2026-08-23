@@ -7,7 +7,11 @@ description: >
   home, `non_residential_property_value` for other land and premises, and
   `corporate_wealth` for shares and similar investment assets. `main_residence_value`
   is excluded because Schedule 10 paragraph 1 disregards premises occupied as
-  the person's home. Other Schedule 10 disregards within these broad asset
+  the person's home. `private_pension_wealth` is excluded because Schedule 10
+  paragraph 10 disregards the value of any right to receive a pension under an
+  occupational or personal pension scheme (or any other scheme registered under
+  section 153 of the Finance Act 2004); pension income actually drawn counts as
+  unearned income instead. Other Schedule 10 disregards within these broad asset
   classes are not yet split out separately. Where only household-level capital
   is available for a multi-benunit household, the model uses a household-wide
   adult-share proxy for residual capital because the dataset does not identify
@@ -31,6 +35,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/48/1
     - title: The Universal Credit Regulations 2013 Schedule 10 para. 1
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/1
+    - title: The Universal Credit Regulations 2013 Schedule 10 para. 10
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/10
 values:
   2013-04-29:
     - savings
