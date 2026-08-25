@@ -12,7 +12,8 @@ description: >
   excluded because Schedule 6 paragraphs 31 and 32 disregard the value of the
   right to receive an occupational or personal pension and the value of funds
   held under a personal pension scheme (paragraph 24 of Schedule 6 to the
-  pension-age regulations makes the same disregard). Datasets built before
+  pension-age regulations and paragraphs 32 and 33 of Schedule 7 to the
+  Northern Ireland regulations make the same disregard). Datasets built before
   private pension wealth was split out of `corporate_wealth` still carry it
   inside that countable bucket. Other Schedule 6 disregards within these broad
   asset classes are not yet split out separately. Because the
@@ -29,6 +30,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2006/213/schedule/6/paragraph/1
     - title: The Housing Benefit Regulations 2006 Schedule 6 paras. 31-32
       href: https://www.legislation.gov.uk/uksi/2006/213/schedule/6/paragraph/31
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 Schedule 7 paras. 32-33
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/7/paragraph/32
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 44(1)
       href: https://www.legislation.gov.uk/uksi/2006/214/regulation/44
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 6 para. 1

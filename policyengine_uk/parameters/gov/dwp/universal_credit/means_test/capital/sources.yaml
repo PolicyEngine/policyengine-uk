@@ -10,8 +10,9 @@ description: >
   the person's home. `private_pension_wealth` is excluded because Schedule 10
   paragraph 10 disregards the value of any right to receive a pension under an
   occupational or personal pension scheme (or any other scheme registered under
-  section 153 of the Finance Act 2004); pension income actually drawn counts as
-  unearned income instead. Other Schedule 10 disregards within these broad asset
+  section 153 of the Finance Act 2004; paragraph 10 of Schedule 10 to the
+  Northern Ireland regulations makes the same disregard); pension income
+  actually drawn counts as unearned income instead. Other Schedule 10 disregards within these broad asset
   classes are not yet split out separately. Where only household-level capital
   is available for a multi-benunit household, the model uses a household-wide
   adult-share proxy for residual capital because the dataset does not identify
@@ -37,6 +38,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/1
     - title: The Universal Credit Regulations 2013 Schedule 10 para. 10
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/10
+    - title: The Universal Credit Regulations (Northern Ireland) 2016 Schedule 10 para. 10
+      href: https://www.legislation.gov.uk/nisr/2016/216/schedule/10/paragraph/10
 values:
   2013-04-29:
     - savings
