@@ -1,0 +1,1 @@
+- Evaluate `claims_all_entitled_benefits` per benefit unit instead of summing reported benefits across the whole simulation. The old array-wide sum made the flag False for every benefit unit in microdata whenever any benefit unit reported one of its seven benefits, restricting simulated Council Tax Reduction to FRS reporters.
