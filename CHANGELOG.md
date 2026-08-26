@@ -1,3 +1,10 @@
+## [2.92.0] - 2026-08-26
+
+### Added
+
+- Added `private_pension_wealth` (Household, imputed from the Wealth and Assets Survey) as an explicit capital disregard: it is not a capital source in any means test, `corporate_wealth` no longer describes private pensions, `total_wealth` includes it, and a new `corporate_sector_wealth` (corporate plus private pension wealth) is the allocation key for shareholding, corporate land value and the employer NI capital response so those keys do not move when the data splits pension wealth out of corporate wealth (policyengine-uk-data#452).
+
+
 ## [2.91.0] - 2026-08-17
 
 ### Added
