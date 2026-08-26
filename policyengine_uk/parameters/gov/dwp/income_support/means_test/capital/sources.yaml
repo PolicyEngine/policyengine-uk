@@ -1,4 +1,8 @@
-description: Capital sources included in the Income Support capital test.
+description: >
+  Capital sources included in the Income Support capital test.
+  `private_pension_wealth` is excluded because Schedule 10 paragraphs 23 and
+  23A disregard the value of the right to receive an occupational or personal
+  pension and the value of funds held under a personal pension scheme.
 metadata:
   label: Income Support capital sources
   period: year
@@ -10,6 +14,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/1987/1967/data.pdf#page=70
     - title: Income Support (General) Regulations 1987 Sch. 10
       href: https://www.legislation.gov.uk/uksi/1987/1967/data.pdf#page=188
+    - title: Income Support (General) Regulations 1987 Sch. 10 paras. 23-23A
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/10/paragraph/23
   unit: list
 
 values:

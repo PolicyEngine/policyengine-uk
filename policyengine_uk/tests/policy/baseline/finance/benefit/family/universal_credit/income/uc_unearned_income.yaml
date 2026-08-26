@@ -227,3 +227,27 @@
   output:
     uc_tariff_income: 52.2
     uc_unearned_income: 52.2
+
+- name: Dividend income stays unearned when only disregarded pension wealth is held
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        dividend_income: 120
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+        private_pension_wealth: 150_000
+  output:
+    # Pension wealth is disregarded capital (UC Regs 2013 Sch 10 para 10), so
+    # the dividend gate keys on corporate_wealth alone: with no share-like
+    # holdings the dividends are not folded into capital and stay unearned.
+    uc_assessable_capital: 6_001
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 4.35 * 12 + 120

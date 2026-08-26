@@ -191,3 +191,23 @@
     esa_income: 0
     income_support_eligible: true
     income_support: 5_252.0073
+
+- name: Income-related ESA capital test disregards private pension wealth
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 1_000
+    benunits:
+      benunit:
+        members: claimant
+    households:
+      household:
+        members: claimant
+        savings: 1_000
+        corporate_wealth: 2_000
+        private_pension_wealth: 150_000
+  output:
+    esa_income_assessable_capital: 3_000
