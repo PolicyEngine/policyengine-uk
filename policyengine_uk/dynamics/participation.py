@@ -223,10 +223,22 @@ def impute_wages_for_nonworkers(
     year: int = 2025,
     hours_for_new_entrants: float = 18.8,
 ) -> np.ndarray:
-    """Impute wages for non-workers based on their elasticity group.
+    """Impute annual earnings for non-workers entering employment.
 
-    Assumes non-workers would work 18.8 hours per week at the average wage
-    for their specific elasticity group.
+    Assumes a non-worker would work ``hours_for_new_entrants`` hours a week at
+    the median hourly wage of workers of the same sex and age band.
+
+    Donors are grouped by sex and age band rather than by elasticity group.
+    The elasticity group is keyed off :func:`calculate_earnings_quintile`, and
+    quintiles of *potential* earnings cannot be computed until non-workers have
+    an imputed wage — so grouping donors that way is circular. In practice it
+    left the lowest quintiles with no employed donors at all and their
+    non-workers with an imputed wage of zero, and a zero imputed wage silently
+    bars someone from entering employment in
+    :func:`apply_participation_responses`, whatever the reform.
+
+    The median is used rather than the mean because a small share of workers
+    have implausibly low implied hourly wages.
 
     Args:
         sim: PolicyEngine simulation object
@@ -237,30 +249,40 @@ def impute_wages_for_nonworkers(
         Array of imputed annual employment income for non-workers
     """
     employment_income, hourly_wages, working_mask = hourly_wage(sim, year)
-
-    # Get elasticity groups for wage calculation
-    earnings_quintile = calculate_earnings_quintile(
-        sim, year, hours_for_new_entrants, random_seed=42
+    age = np.asarray(sim.calculate("age", year), dtype=float)
+    gender = np.asarray(sim.calculate("gender", year))
+    weights = np.asarray(
+        sim.calculate("household_weight", year, map_to="person"), dtype=float
     )
-    elasticities = calculate_participation_elasticities(sim, earnings_quintile)
 
-    # Create elasticity bins for grouping
-    unique_elasticities = np.unique(elasticities[elasticities > 0])
+    age_band = np.clip(age // 10 * 10, 10, 60)
+    overall_median = weighted_median(hourly_wages[working_mask], weights[working_mask])
 
-    # Calculate average wage by elasticity group
     imputed_wages = np.zeros_like(employment_income, dtype=float)
-
-    for elasticity_val in unique_elasticities:
-        elasticity_mask = (elasticities == elasticity_val) & working_mask
-        if elasticity_mask.any():
-            avg_hourly_wage = np.mean(hourly_wages[elasticity_mask])
-            # Apply to all non-workers in this elasticity group
-            nonworker_mask = (elasticities == elasticity_val) & ~working_mask
-            imputed_wages[nonworker_mask] = (
-                avg_hourly_wage * hours_for_new_entrants * 52
+    nonworker_mask = ~working_mask
+    for sex in np.unique(gender):
+        for band in np.unique(age_band):
+            group = (gender == sex) & (age_band == band)
+            donors = group & working_mask
+            median_wage = (
+                weighted_median(hourly_wages[donors], weights[donors])
+                if donors.any()
+                else overall_median
             )
+            imputed_wages[group & nonworker_mask] = median_wage
 
-    return imputed_wages
+    return imputed_wages * hours_for_new_entrants * WEEKS_IN_YEAR
+
+
+def weighted_median(values: np.ndarray, weights: np.ndarray) -> float:
+    """Weighted median, returning 0.0 for an empty or zero-weight group."""
+    if not len(values):
+        return 0.0
+    order = np.argsort(values)
+    cumulative = np.cumsum(weights[order])
+    if cumulative[-1] <= 0:
+        return 0.0
+    return float(values[order][np.searchsorted(cumulative, cumulative[-1] / 2)])
 
 
 def calculate_gain_to_work(
@@ -358,36 +380,64 @@ def calculate_earnings_quintile(
     hours_for_new_entrants: float = 18.8,
     random_seed: int = 42,
 ) -> np.ndarray:
-    """Calculate earnings quintile for each person based on potential earnings.
+    """Calculate earnings quintile for each adult based on potential earnings.
 
-    For workers, uses actual earnings. For non-workers, uses imputed potential earnings.
+    For workers, uses actual earnings. For non-workers, uses imputed potential
+    earnings from :func:`impute_wages_for_nonworkers`.
+
+    Two properties matter for the OBR Table A1 elasticities this feeds:
+
+    * **Adults only.** Ranking every person in the dataset put roughly a
+      quarter of each lower quintile into children, and left the bottom two
+      quintiles entirely without earners.
+    * **Potential, not actual, earnings.** Ranking on actual earnings placed
+      every non-worker in the bottom quintiles regardless of earning capacity —
+      the end of the table where elasticities are up to ten times those of the
+      top quintile.
+
+    Assignment is by weighted rank rather than value cutoffs. Every non-worker
+    in a donor group shares one imputed value, so potential earnings carry
+    large point masses; cutting on values drops a whole mass into one quintile
+    and can leave others empty. Ranking splits a tied mass across the boundary,
+    giving quintiles of equal weight.
 
     Args:
         sim: PolicyEngine simulation object
         year: Year for calculation
         hours_for_new_entrants: Weekly hours assumed for new entrants
-        random_seed: Seed for random number generation
+        random_seed: Unused; retained for backwards compatibility
 
     Returns:
-        Array of quintiles (1-5) for each person
+        Array of quintiles (1-5) for each person. Non-adults are assigned 1;
+        they are excluded from labour supply responses elsewhere.
     """
-    employment_income = sim.calculate("employment_income", year)
-
-    # Calculate quintiles
-    # Use pandas qcut for equal-sized bins
-    # Add random noise to avoid ties in quintile calculation
-    rng = np.random.RandomState(random_seed)
-    quintiles = pd.qcut(
-        employment_income + rng.random(employment_income.shape),
-        q=5,
-        labels=[1, 2, 3, 4, 5],
-        duplicates="drop",
+    employment_income = np.asarray(
+        sim.calculate("employment_income", year), dtype=float
     )
+    adult_index = np.asarray(sim.calculate("adult_index", year), dtype=float)
+    weights = np.asarray(
+        sim.calculate("household_weight", year, map_to="person"), dtype=float
+    )
+    imputed = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
+    potential = np.where(employment_income > 0, employment_income, imputed)
 
-    if quintiles is not None:
-        return quintiles.astype(int)
-    else:
-        return np.ones(employment_income.shape, dtype=int)
+    quintile = np.ones(len(potential), dtype=int)
+    adults = np.flatnonzero(adult_index > 0)
+    if not len(adults):
+        return quintile
+
+    values, adult_weights = potential[adults], weights[adults]
+    total = adult_weights.sum()
+    if total <= 0:
+        return quintile
+
+    order = np.argsort(values, kind="stable")
+    cumulative = np.cumsum(adult_weights[order])
+    # Midpoint of each person's own weight, so a tied mass straddling a
+    # boundary is divided rather than assigned whole to one side.
+    position = (cumulative - adult_weights[order] / 2) / total
+    quintile[adults[order]] = np.clip((position * 5).astype(int) + 1, 1, 5)
+    return quintile
 
 
 def apply_participation_responses(
