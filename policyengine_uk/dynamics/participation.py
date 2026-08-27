@@ -10,6 +10,7 @@ Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note
 import numpy as np
 import pandas as pd
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import WEEKS_IN_YEAR
 import warnings
 
 
@@ -190,6 +191,33 @@ def calculate_participation_elasticities(
     return elasticities
 
 
+def hourly_wage(sim: Simulation, year: int = 2025):
+    """Hourly wage implied by annual earnings and annual hours.
+
+    ``hours_worked`` is an annual quantity — its label is "Annual hours worked",
+    it has a YEAR definition period, and ``weekly_hours`` derives from it as
+    ``hours_worked / WEEKS_IN_YEAR``. Dividing earnings by it therefore already
+    gives an hourly rate; multiplying the denominator by 52 first would divide
+    by a year a second time and understate the wage roughly a hundredfold.
+
+    Args:
+        sim: PolicyEngine simulation object
+        year: Year for calculation
+
+    Returns:
+        (employment income, hourly wage, mask of people with earnings and hours)
+    """
+    employment_income = sim.calculate("employment_income", year)
+    hours_worked = sim.calculate("hours_worked", year)
+    working_mask = (employment_income > 0) & (hours_worked > 0)
+    hourly_wages = np.where(
+        working_mask,
+        employment_income / np.where(working_mask, hours_worked, 1),
+        0,
+    )
+    return employment_income, hourly_wages, working_mask
+
+
 def impute_wages_for_nonworkers(
     sim: Simulation,
     year: int = 2025,
@@ -208,12 +236,7 @@ def impute_wages_for_nonworkers(
     Returns:
         Array of imputed annual employment income for non-workers
     """
-    employment_income = sim.calculate("employment_income", year)
-    hours_worked = sim.calculate("hours_worked", year)
-
-    # Calculate hourly wages for workers
-    working_mask = (employment_income > 0) & (hours_worked > 0)
-    hourly_wages = np.where(working_mask, employment_income / (hours_worked * 52), 0)
+    employment_income, hourly_wages, working_mask = hourly_wage(sim, year)
 
     # Get elasticity groups for wage calculation
     earnings_quintile = calculate_earnings_quintile(
@@ -534,9 +557,10 @@ def apply_participation_responses(
     hours_worked = sim.calculate("hours_worked", year)
     new_hours_worked = hours_worked.copy()
 
-    # Set hours for new entrants
+    # Set hours for new entrants. hours_worked is annual, so the weekly figure
+    # has to be annualised before it is written back.
     new_workers = currently_not_working & (new_employment_income > 0)
-    new_hours_worked[new_workers] = hours_for_new_entrants
+    new_hours_worked[new_workers] = hours_for_new_entrants * WEEKS_IN_YEAR
 
     # Set hours to 0 for those who left work
     left_work = currently_working & (new_employment_income == 0)
