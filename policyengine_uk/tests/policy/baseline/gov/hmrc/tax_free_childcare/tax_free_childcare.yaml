@@ -111,3 +111,51 @@
     childcare_expenses: 25_000
   output:
     tax_free_childcare: 1_000
+
+# Part-year eligibility below the cap. The two cases above both have the cap
+# binding, so pro-rating the cap alone was enough to make them pass. Below the
+# cap the top-up is driven by spend, which must be pro-rated too — otherwise a
+# family eligible for part of the year receives the full-year amount.
+- name: Two eligible declaration periods halve the top-up below the cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 2
+    is_disabled_for_benefits: false
+    childcare_expenses: 2_000
+  output:
+    tax_free_childcare: 250
+
+- name: One eligible declaration period quarters the top-up below the cap
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 1
+    is_disabled_for_benefits: false
+    childcare_expenses: 4_000
+  output:
+    tax_free_childcare: 250
+
+- name: Full-year eligibility below the cap is unchanged
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 4
+    is_disabled_for_benefits: false
+    childcare_expenses: 2_000
+  output:
+    tax_free_childcare: 500
+
+- name: No eligible declaration periods give no top-up
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 0
+    is_disabled_for_benefits: false
+    childcare_expenses: 8_000
+  output:
+    tax_free_childcare: 0

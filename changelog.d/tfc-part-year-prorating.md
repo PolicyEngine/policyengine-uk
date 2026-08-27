@@ -1,0 +1,1 @@
+- Pro-rate the Tax-Free Childcare top-up by the share of the year a family is eligible, not only its cap. A family eligible for part of the year previously received the full-year top-up whenever it sat below the cap, because `eligible_fraction` was applied to `max_amount` alone while the contribution was computed from the full annual `childcare_expenses`.
