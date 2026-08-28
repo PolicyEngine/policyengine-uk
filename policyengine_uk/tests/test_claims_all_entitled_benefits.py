@@ -1,9 +1,9 @@
 """Regression tests for `claims_all_entitled_benefits`.
 
-The flag is a benefit-unit attribute: a family that reports none of the seven
-means-tested benefits the formula checks is assumed to claim everything it is
-entitled to, and a family that reports any of them is assumed to have reported
-completely. The formula used to sum the seven reported columns over the whole
+The flag is a benefit-unit attribute: a family that reports under £1 in total
+across the seven means-tested benefits the formula checks is assumed to claim
+everything it is entitled to, and a family that reports £1 or more is assumed
+to have reported completely. The formula used to sum the seven reported columns over the whole
 simulation (`add(...).sum() < 1`), so in microdata it was False for every
 benefit unit as soon as any benefit unit reported any of them, and the
 consumers that gate on it (`would_claim_council_tax_reduction` above all)
@@ -33,6 +33,15 @@ def person(reported_uc=0, reported_ctr=0):
         "age": {YEAR: 40},
         "universal_credit_reported": {YEAR: reported_uc},
         "council_tax_benefit_reported": {YEAR: reported_ctr},
+    }
+
+
+def single_household(reported_uc):
+    """One person, one benefit unit, one household — the calculator path."""
+    return {
+        "people": {"a": person(reported_uc)},
+        "benunits": {"bu_a": {"members": ["a"]}},
+        "households": {"hh_a": {"members": ["a"]}},
     }
 
 
@@ -92,6 +101,16 @@ class TestPerBenefitUnit:
             assert flag.tolist() == [False, True], variable
 
     def test_single_benefit_unit_semantics_unchanged(self):
+        none_reported = Simulation(situation=single_household(0))
+        assert none_reported.calculate(
+            "claims_all_entitled_benefits", YEAR
+        ).tolist() == [True]
+        reporter = Simulation(situation=single_household(5_000))
+        assert reporter.calculate("claims_all_entitled_benefits", YEAR).tolist() == [
+            False
+        ]
+
+    def test_homogeneous_benefit_units_agree(self):
         none_reported = Simulation(situation=separate_households(0, 0))
         assert none_reported.calculate("claims_all_entitled_benefits", YEAR).all()
         both_report = Simulation(situation=separate_households(5_000, 5_000))

@@ -8,12 +8,12 @@ class claims_all_entitled_benefits(Variable):
     definition_period = YEAR
     documentation = (
         "Whether this family would claim any benefit it is entitled to. True "
-        "where the benefit unit reports none of the seven means-tested "
-        "benefits the formula checks (Child Tax Credit, Working Tax Credit, "
-        "Universal Credit, Housing Benefit, income-based JSA, Income Support "
-        "and income-related ESA); False where it reports any, in which case "
-        "its reported benefits are taken as the complete set. Datasets and "
-        "situations can override it directly."
+        "where the benefit unit reports under £1 in total across the seven "
+        "means-tested benefits the formula checks (Child Tax Credit, Working "
+        "Tax Credit, Universal Credit, Housing Benefit, income-based JSA, "
+        "Income Support and income-related ESA); False where it reports £1 "
+        "or more, in which case its reported benefits are taken as the "
+        "complete set. Datasets and situations can override it directly."
     )
 
     def formula(benunit, period, parameters):
