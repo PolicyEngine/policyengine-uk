@@ -44,20 +44,30 @@ class tax_free_childcare(Variable):
             eligible_periods / tax_free_childcare.declaration_periods_per_year
         )
 
-        # Calculate contribution using rate from parameters. The eligible share
-        # applies to the spend, not only to the cap: a family eligible for half
+        # Share of the year the account actually pays a provider. Eligibility
+        # does not imply continuous use: HMRC's statistics show a claimant's
+        # account pays a provider in about seven months of twelve, while
+        # childcare_expenses is an annual figure. See
+        # payment_active_fraction.yaml for the derivation and its source.
+        active_fraction = tax_free_childcare.payment_active_fraction
+        claimed_fraction = eligible_fraction * active_fraction
+
+        # Calculate contribution using rate from parameters. The claimed share
+        # applies to the spend, not only to the cap: a family claiming for half
         # the year puts roughly half its annual childcare spend through the
         # account, so it receives roughly half the top-up. Pro-rating the cap
         # alone left a part-year family below the cap with the full-year amount.
-        contribution = (eligible_childcare_expense * eligible_fraction * p.rate) / (
+        contribution = (eligible_childcare_expense * claimed_fraction * p.rate) / (
             1 - p.rate
         )
 
-        # Cap the contribution at the maximum amounts, also pro-rated.
+        # The cap is statutorily per entitlement period, not per year, so a
+        # period without payments forfeits that period's cap rather than
+        # carrying it forward. It is pro-rated on the same basis.
         max_amount = (
             where(qualifies_for_higher_amount, p.disabled_child, p.standard_child)
             * is_qualifying_child
-            * eligible_fraction
+            * claimed_fraction
         )
 
         return min_(contribution, max_amount)

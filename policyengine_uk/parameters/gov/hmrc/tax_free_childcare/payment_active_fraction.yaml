@@ -1,0 +1,52 @@
+description: Share of the year over which a family with a used Tax-Free Childcare account makes payments from it to a provider.
+values:
+  2017-04-01: 0.489
+  2019-04-06: 0.542
+  2020-04-06: 0.471
+  2021-04-06: 0.575
+  2022-04-06: 0.584
+  2023-04-06: 0.589
+  2024-04-06: 0.593
+  2025-04-06: 0.582
+metadata:
+  unit: /1
+  label: Tax-Free Childcare payment-active fraction
+  period: year
+  reference:
+    - title: "HMRC, Tax-Free Childcare statistics: March 2026 — Table 2, numbers of children with open and used Tax-Free Childcare accounts and government top-up"
+      href: https://www.gov.uk/government/statistics/tax-free-childcare-statistics-march-2026
+    - title: "HMRC, Tax-Free Childcare statistics: March 2026 — accompanying tables (ODS)"
+      href: https://assets.publishing.service.gov.uk/media/6a0dcb07faac4bc0b0e906ef/Tables_and_Statistics_March_2026.ods
+    - title: "HMRC, Tax-Free Childcare statistics quality report — definition of a used account"
+      href: https://www.gov.uk/government/statistics/quality-report-tax-free-childcare/tax-free-childcare-quality-report
+# Derived from HMRC Table 2 as
+#
+#     sum of the twelve monthly counts of children with used accounts
+#     ------------------------------------------------------------------
+#            annual count of children with used accounts, / 12
+#
+# HMRC defines a "used account" as one from which a payment was made to a
+# childcare provider in the relevant month or year, and states that the annual
+# count is not the sum of the monthly counts because a child appears in every
+# month containing a payment but only once in the year. The ratio is therefore
+# the mean number of months in which a claimant's account actually pays a
+# provider, expressed as a share of the year.
+#
+# year      sum of monthly    annual unique    months    fraction
+# 2018-19        1,193,065          203,215      5.87       0.489
+# 2019-20        2,579,660          396,365      6.51       0.542
+# 2020-21        2,610,450          461,705      5.65       0.471
+# 2021-22        4,466,690          646,940      6.90       0.575
+# 2022-23        5,863,685          836,220      7.01       0.584
+# 2023-24        6,833,825          966,120      7.07       0.589
+# 2024-25        7,715,605        1,085,020      7.11       0.593
+# 2025-26        8,042,540        1,151,515      6.98       0.582
+#
+# The 2020-21 dip is the pandemic. The series is otherwise stable at 0.58-0.59
+# from 2021-22, and each value takes effect from the start of the financial
+# year it measures.
+#
+# Two caveats. HMRC notes that the date a payment is made from an account need
+# not be the date the childcare was received, so this measures payment activity
+# rather than care received. And it is a mean over a mix of full-year and
+# short-spell claimants, so it reproduces the aggregate rather than the spread.

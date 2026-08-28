@@ -1,13 +1,18 @@
 # Tests for tax_free_childcare
+#
+# Amounts include the payment-active fraction
+# (gov.hmrc.tax_free_childcare.payment_active_fraction), 0.582 for 2025: HMRC's
+# statistics show a claimant's account pays a provider in about seven months of
+# twelve, while childcare_expenses is an annual figure.
 - name: Eligible standard child - below cap
   period: 2025
   input:
     tax_free_childcare_eligible: true
     tax_free_childcare_qualifying_child: true
     is_disabled_for_benefits: false
-    childcare_expenses: 8_000 
+    childcare_expenses: 8_000
   output:
-    tax_free_childcare: 2_000
+    tax_free_childcare: 1_164
 
 - name: Eligible standard child - at cap
   period: 2025
@@ -15,9 +20,9 @@
     tax_free_childcare_eligible: true
     tax_free_childcare_qualifying_child: true
     is_disabled_for_benefits: false
-    childcare_expenses: 10_000 
+    childcare_expenses: 10_000
   output:
-    tax_free_childcare: 2_000
+    tax_free_childcare: 1_164
 
 - name: Eligible disabled child - below cap
   period: 2025
@@ -25,9 +30,9 @@
     tax_free_childcare_eligible: true
     tax_free_childcare_qualifying_child: true
     is_disabled_for_benefits: true
-    childcare_expenses: 16_000  
+    childcare_expenses: 16_000
   output:
-    tax_free_childcare: 4_000
+    tax_free_childcare: 2_328
 
 - name: Eligible disabled child - at cap
   period: 2025
@@ -35,9 +40,9 @@
     tax_free_childcare_eligible: true
     tax_free_childcare_qualifying_child: true
     is_disabled_for_benefits: true
-    childcare_expenses: 25_000 
+    childcare_expenses: 25_000
   output:
-    tax_free_childcare: 4_000
+    tax_free_childcare: 2_328
 
 - name: Not eligible due to being parent
   period: 2025
@@ -65,9 +70,9 @@
     tax_free_childcare_eligible: true
     tax_free_childcare_qualifying_child: true
     is_disabled_for_benefits: false
-    childcare_expenses: 1_000 
+    childcare_expenses: 1_000
   output:
-    tax_free_childcare: 250
+    tax_free_childcare: 145.5
 
 - name: Non-qualifying provider gets no support
   period: 2025
@@ -99,7 +104,7 @@
     is_disabled_for_benefits: false
     childcare_expenses: 10_000
   output:
-    tax_free_childcare: 1_000
+    tax_free_childcare: 582
 
 - name: One eligible declaration period quarters disabled child cap
   period: 2025
@@ -110,7 +115,7 @@
     is_disabled_for_benefits: true
     childcare_expenses: 25_000
   output:
-    tax_free_childcare: 1_000
+    tax_free_childcare: 582
 
 # Part-year eligibility below the cap. The two cases above both have the cap
 # binding, so pro-rating the cap alone was enough to make them pass. Below the
@@ -125,7 +130,7 @@
     is_disabled_for_benefits: false
     childcare_expenses: 2_000
   output:
-    tax_free_childcare: 250
+    tax_free_childcare: 145.5
 
 - name: One eligible declaration period quarters the top-up below the cap
   period: 2025
@@ -136,7 +141,7 @@
     is_disabled_for_benefits: false
     childcare_expenses: 4_000
   output:
-    tax_free_childcare: 250
+    tax_free_childcare: 145.5
 
 - name: Full-year eligibility below the cap is unchanged
   period: 2025
@@ -147,7 +152,7 @@
     is_disabled_for_benefits: false
     childcare_expenses: 2_000
   output:
-    tax_free_childcare: 500
+    tax_free_childcare: 291
 
 - name: No eligible declaration periods give no top-up
   period: 2025
@@ -159,3 +164,25 @@
     childcare_expenses: 8_000
   output:
     tax_free_childcare: 0
+
+- name: Payment-active fraction pro-rates the cap as well as the spend
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    is_disabled_for_benefits: false
+    childcare_expenses: 20_000
+  output:
+    # Contribution 2_910 exceeds the pro-rated cap of 2_000 * 0.582
+    tax_free_childcare: 1_164
+
+- name: Payment-active fraction tracks the year it is measured on
+  period: 2024
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    is_disabled_for_benefits: false
+    childcare_expenses: 2_000
+  output:
+    # 2024 uses 0.593, HMRC's 2024-25 figure: 2_000 * 0.593 * 0.25
+    tax_free_childcare: 296.5
