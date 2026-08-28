@@ -59,7 +59,18 @@ class tax_free_childcare(Variable):
         # through the account, so it receives roughly half the top-up. Pro-rating
         # the cap alone left a part-year family below the cap with the full-year
         # amount.
-        contribution = eligible_childcare_expense * eligible_fraction * p.rate
+        # Share of annual childcare spending actually paid through the account.
+        # Only routed spend attracts a top-up. Clipped to 0-1: data outside that
+        # range would otherwise produce a negative or supra-statutory award.
+        # Defaults to 1 — a neutral all-spend-routed assumption, not a statutory
+        # requirement — so a household calculation returns the statutory amount.
+        routed_share = min_(
+            max_(person("tax_free_childcare_spend_routed_share", period), 0), 1
+        )
+
+        contribution = (
+            eligible_childcare_expense * eligible_fraction * routed_share * p.rate
+        )
 
         # Cap the contribution at the maximum amounts, also pro-rated.
         max_amount = (

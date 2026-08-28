@@ -165,3 +165,124 @@
     childcare_expenses: 8_000
   output:
     tax_free_childcare: 0
+
+# Only childcare spending routed through the account attracts a top-up. The
+# share defaults to 1 — a neutral all-spend-routed assumption — so a household
+# calculation returns the statutory amount. The dataset build sets it from
+# observed account use; see policyengine-uk-data.
+- name: Routing share defaults to the full statutory top-up
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    is_disabled_for_benefits: false
+    childcare_expenses: 2_000
+  output:
+    # 2_000 * 0.2
+    tax_free_childcare: 400
+
+- name: Routing half of childcare spending halves the top-up
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_spend_routed_share: 0.5
+    is_disabled_for_benefits: false
+    childcare_expenses: 2_000
+  output:
+    # 2_000 * 0.5 * 0.2
+    tax_free_childcare: 200
+
+- name: Routing share does not lift a capped award
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_spend_routed_share: 0.5
+    is_disabled_for_benefits: false
+    childcare_expenses: 40_000
+  output:
+    # 40_000 * 0.5 * 0.2 = 4_000, still above the £2,000 cap
+    tax_free_childcare: 2_000
+
+- name: Routing no spending through the account gives no top-up
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_spend_routed_share: 0
+    is_disabled_for_benefits: false
+    childcare_expenses: 8_000
+  output:
+    tax_free_childcare: 0
+
+- name: A routing share above one is clipped to the statutory amount
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_spend_routed_share: 1.5
+    is_disabled_for_benefits: false
+    childcare_expenses: 2_000
+  output:
+    tax_free_childcare: 400
+
+- name: A negative routing share is clipped to zero
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_spend_routed_share: -0.5
+    is_disabled_for_benefits: false
+    childcare_expenses: 2_000
+  output:
+    tax_free_childcare: 0
+
+- name: Siblings can route different shares
+  period: 2025
+  input:
+    people:
+      child_1:
+        tax_free_childcare_qualifying_child: true
+        tax_free_childcare_spend_routed_share: 1
+        childcare_expenses: 2_000
+      child_2:
+        tax_free_childcare_qualifying_child: true
+        tax_free_childcare_spend_routed_share: 0.5
+        childcare_expenses: 2_000
+    benunits:
+      benunit:
+        members: [child_1, child_2]
+        tax_free_childcare_eligible: true
+  output:
+    tax_free_childcare: [400, 200]
+
+# The routed share is measured across the eligible period, not the whole year.
+# tax_free_childcare already prorates annual spend by the eligible fraction, so
+# a whole-year share would discount the same months twice.
+- name: Part-year eligibility and routed share compose without double-discounting
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 2
+    tax_free_childcare_spend_routed_share: 0.5
+    is_disabled_for_benefits: false
+    childcare_expenses: 12_000
+  output:
+    # Eligible half the year, routing half of that period's spend: the top-up
+    # base is 12_000 * 0.5 * 0.5 = 3_000, and 20% of that is 600. Under the
+    # cap, which the two eligible periods halve to 1_000.
+    tax_free_childcare: 600
+
+- name: Full-year eligibility leaves the routed share as the only scaler
+  period: 2025
+  input:
+    tax_free_childcare_eligible: true
+    tax_free_childcare_qualifying_child: true
+    tax_free_childcare_eligible_declaration_periods: 4
+    tax_free_childcare_spend_routed_share: 0.5
+    is_disabled_for_benefits: false
+    childcare_expenses: 12_000
+  output:
+    tax_free_childcare: 1_200
