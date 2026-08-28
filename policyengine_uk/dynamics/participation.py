@@ -10,8 +10,13 @@ Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note
 import numpy as np
 import pandas as pd
 from policyengine_uk import Simulation
-from policyengine_uk.model_api import WEEKS_IN_YEAR
 import warnings
+
+from policyengine_uk.model_api import WEEKS_IN_YEAR
+
+# Weekly hours treated as full time when putting non-workers on a comparable
+# footing with observed earnings for quintile placement.
+FULL_TIME_WEEKLY_HOURS = 37.5
 
 
 def calculate_participation_elasticities(
@@ -264,24 +269,42 @@ def impute_wages_for_nonworkers(
         for band in np.unique(age_band):
             group = (gender == sex) & (age_band == band)
             donors = group & working_mask
-            median_wage = (
-                weighted_median(hourly_wages[donors], weights[donors])
-                if donors.any()
-                else overall_median
-            )
+            median_wage = weighted_median(hourly_wages[donors], weights[donors])
+            if median_wage <= 0:
+                # No donors, or donors carrying no weight. Either way the
+                # group median is unusable and the overall one stands in; a
+                # zero here would silently bar entry into employment.
+                median_wage = overall_median
             imputed_wages[group & nonworker_mask] = median_wage
 
     return imputed_wages * hours_for_new_entrants * WEEKS_IN_YEAR
 
 
 def weighted_median(values: np.ndarray, weights: np.ndarray) -> float:
-    """Weighted median, returning 0.0 for an empty or zero-weight group."""
+    """Weighted median of ``values``.
+
+    Falls back to the unweighted median where the group carries no weight, so
+    that a zero-weight donor group still yields a wage. Returning zero there
+    would silently bar the people it is imputed for from entering employment,
+    since :func:`apply_participation_responses` gates entry on a positive
+    imputed wage. Only a genuinely empty group returns zero.
+    """
+    values = np.asarray(values, dtype=float)
+    weights = np.asarray(weights, dtype=float)
+    if values.shape != weights.shape:
+        raise ValueError(
+            f"weighted_median got {values.shape} values and {weights.shape} weights"
+        )
+    # np.argsort sorts NaN last, so a single NaN would otherwise be returned as
+    # the group maximum rather than flagged. Drop non-finite pairs instead.
+    usable = np.isfinite(values) & np.isfinite(weights)
+    values, weights = values[usable], weights[usable]
     if not len(values):
         return 0.0
     order = np.argsort(values)
     cumulative = np.cumsum(weights[order])
     if cumulative[-1] <= 0:
-        return 0.0
+        return float(np.median(values))
     return float(values[order][np.searchsorted(cumulative, cumulative[-1] / 2)])
 
 
@@ -346,11 +369,16 @@ def calculate_gain_to_work(
                 "household_net_income", year, map_to="person"
             )[is_adult_i]
 
-            # Calculate in-work income (use imputed wages if applicable)
+            # Calculate in-work income (use imputed wages if applicable).
+            # employment_income is stored as float32; imputed wages are float64,
+            # and assigning them raises under pandas 3 rather than down-casting.
+            # set_input down-casts on storage anyway, so float32 is already the
+            # model's precision and casting here just moves the truncation
+            # earlier (max relative error about 5e-08).
             temp_employment_in = employment_income.copy()
             temp_employment_in[is_adult_i] = employment_income_with_imputation[
                 is_adult_i
-            ]
+            ].astype(temp_employment_in.dtype)
 
             sim.reset_calculations()
             sim.set_input("employment_income", year, temp_employment_in)
@@ -374,6 +402,34 @@ def calculate_gain_to_work(
     )
 
 
+def weighted_quantiles(
+    values: np.ndarray, weights: np.ndarray, quantiles: list[float]
+) -> np.ndarray:
+    """Weighted quantiles of ``values``, for use as distribution thresholds."""
+    if not len(values):
+        return np.zeros(len(quantiles))
+    # Aggregate weight by *distinct* value before building the CDF. Sorting
+    # rows and taking each row's own weight midpoint splits a tied value into
+    # as many positions as it has rows, and `np.argsort` orders those rows by
+    # input position — so two equal-earning workers carrying unequal weights
+    # produced different thresholds depending only on which came first in the
+    # file, and could land either side of a boundary. One value must have one
+    # position on the distribution however many rows carry it.
+    sorted_values, inverse = np.unique(values, return_inverse=True)
+    sorted_weights = np.bincount(inverse, weights=weights, minlength=len(sorted_values))
+    cumulative = np.cumsum(sorted_weights)
+    total = cumulative[-1]
+    if not np.isfinite(total) or total <= 0:
+        # No usable weights. Returning zeros would put every positive value in
+        # the top quintile — the lowest-elasticity end of the OBR table — so
+        # fall back to unweighted quantiles of the values themselves.
+        return np.quantile(values, quantiles)
+    # Midpoint of each value's total weight, so a heavy point mass does not
+    # pull a threshold to one of its edges.
+    position = (cumulative - sorted_weights / 2) / total
+    return np.interp(quantiles, position, sorted_values)
+
+
 def calculate_earnings_quintile(
     sim: Simulation,
     year: int = 2025,
@@ -382,30 +438,37 @@ def calculate_earnings_quintile(
 ) -> np.ndarray:
     """Calculate earnings quintile for each adult based on potential earnings.
 
-    For workers, uses actual earnings. For non-workers, uses imputed potential
-    earnings from :func:`impute_wages_for_nonworkers`.
+    Thresholds are the weighted quintile boundaries of the **observed earnings
+    distribution of working adults**. Everyone is then placed against those
+    thresholds: workers on their actual earnings, non-workers on the potential
+    earnings imputed by :func:`impute_wages_for_nonworkers`.
 
-    Two properties matter for the OBR Table A1 elasticities this feeds:
+    Two properties matter for the OBR Table A1 elasticities this feeds.
 
-    * **Adults only.** Ranking every person in the dataset put roughly a
-      quarter of each lower quintile into children, and left the bottom two
-      quintiles entirely without earners.
-    * **Potential, not actual, earnings.** Ranking on actual earnings placed
-      every non-worker in the bottom quintiles regardless of earning capacity —
-      the end of the table where elasticities are up to ten times those of the
-      top quintile.
+    * **The distribution is of adult earnings.** Ranking every person in the
+      dataset put roughly a quarter of each lower quintile into children, and
+      left the bottom two quintiles entirely without earners — so the
+      elasticity table was indexed by a distribution that contained no wages
+      at its lower end.
+    * **Placement is by value against a fixed threshold, not by rank within a
+      pooled ranking.** Every non-worker in a donor group shares one imputed
+      wage, so potential earnings carry large point masses. Ranking a pooled
+      distribution splits such a mass across a quintile boundary, and which
+      member of the mass falls on which side then depends on the order of rows
+      in the dataset — making elasticities and stochastic responses vary with
+      serialisation. Thresholds avoid this: a tied mass lands wholly in the
+      quintile its value belongs to.
 
-    Assignment is by weighted rank rather than value cutoffs. Every non-worker
-    in a donor group shares one imputed value, so potential earnings carry
-    large point masses; cutting on values drops a whole mass into one quintile
-    and can leave others empty. Ranking splits a tied mass across the boundary,
-    giving quintiles of equal weight.
+    Because non-workers are placed rather than ranked, quintiles are not equal
+    shares of the adult population. That is intended — they are quintiles of
+    the earnings distribution, which is what Table A1 is indexed on.
 
     Args:
         sim: PolicyEngine simulation object
         year: Year for calculation
         hours_for_new_entrants: Weekly hours assumed for new entrants
-        random_seed: Unused; retained for backwards compatibility
+        random_seed: Unused. Placement is deterministic; retained so existing
+            callers do not break.
 
     Returns:
         Array of quintiles (1-5) for each person. Non-adults are assigned 1;
@@ -418,26 +481,75 @@ def calculate_earnings_quintile(
     weights = np.asarray(
         sim.calculate("household_weight", year, map_to="person"), dtype=float
     )
+    # Imputed earnings are for an entrant working `hours_for_new_entrants` a
+    # week, but the thresholds come from observed earnings at whatever hours
+    # workers actually do — mostly full time. Placing a part-time figure against
+    # a mostly-full-time distribution is not a like-for-like comparison, and it
+    # pushes every non-worker down by roughly the hours ratio: at 18.8 hours the
+    # imputed values span a single threshold interval. Scaling to full-time
+    # equivalent for placement — the entrant's actual earnings stay at the
+    # assumed hours — moves them off that single interval.
+    #
+    # It does not spread them across the table. Because every non-worker
+    # inherits one of about a dozen sex-and-age-band medians, the placement is
+    # still coarse: on enhanced_frs_2024_25 they occupy quintiles 2 to 4 only, with
+    # no entrant placed at either end, so the Table A1 gradient is only
+    # partially exercised for exactly the
+    # population whose entry this module models. Fixing that needs a finer
+    # imputation, not a different placement rule.
+    #
+    # This scaling is an assumption, not something the sources state. The OBR
+    # note assumes entrants work 18.8 hours a week and labels Table A1 by
+    # position in the earnings distribution, without saying which basis places
+    # a non-worker on it; Adam and Phillips (2013) do not allocate elasticities
+    # to non-workers at all. The choice is material and runs one way: placing
+    # entrants at their unscaled 18.8-hour income moves them down the table to
+    # quintile 1, roughly *doubling* the elasticity each demographic row draws
+    # and so the modelled entry response. Callers wanting that bound can pass
+    # `hours_for_new_entrants=FULL_TIME_WEEKLY_HOURS` to disable the scaling.
+    # Neither end is validated against an observed entry rate — see #1836.
     imputed = impute_wages_for_nonworkers(sim, year, hours_for_new_entrants)
-    potential = np.where(employment_income > 0, employment_income, imputed)
+    full_time_equivalent = imputed * (FULL_TIME_WEEKLY_HOURS / hours_for_new_entrants)
+    potential = np.where(employment_income > 0, employment_income, full_time_equivalent)
+
+    adults = adult_index > 0
+    workers = adults & (employment_income > 0)
+    thresholds = weighted_quantiles(
+        employment_income[workers], weights[workers], [0.2, 0.4, 0.6, 0.8]
+    )
 
     quintile = np.ones(len(potential), dtype=int)
-    adults = np.flatnonzero(adult_index > 0)
-    if not len(adults):
+    if len(np.unique(thresholds)) == 1:
+        # No dispersion to place anyone against — a population with no workers
+        # leaves every threshold at zero, and `searchsorted(side="right")` would
+        # then put every adult in the top quintile, the end of the OBR table
+        # with the *smallest* elasticities. That is the opposite of what a
+        # population of non-workers implies. With no earnings distribution to
+        # read, spread adults evenly rather than assert one.
+        index = np.flatnonzero(adults)
+        if len(index):
+            adult_potential = potential[index]
+            adult_weights = weights[index]
+            total = adult_weights.sum()
+            if total > 0:
+                # Place each *distinct* potential-earnings value at the midpoint
+                # of its own block of weight, not each row at the midpoint of
+                # its own weight. Spreading row by row would sort ties in input
+                # order, so two identical records would land in different
+                # quintiles purely because of serialisation — the invariant this
+                # function documents. Blocking on the value makes placement a
+                # function of the data alone.
+                values, inverse = np.unique(adult_potential, return_inverse=True)
+                block = np.bincount(inverse, weights=adult_weights)
+                below = np.concatenate([[0.0], np.cumsum(block)[:-1]])
+                position = (below + block / 2) / total
+                quintile[index] = np.clip((position[inverse] * 5).astype(int) + 1, 1, 5)
+            else:
+                quintile[index] = 3
         return quintile
 
-    values, adult_weights = potential[adults], weights[adults]
-    total = adult_weights.sum()
-    if total <= 0:
-        return quintile
-
-    order = np.argsort(values, kind="stable")
-    cumulative = np.cumsum(adult_weights[order])
-    # Midpoint of each person's own weight, so a tied mass straddling a
-    # boundary is divided rather than assigned whole to one side.
-    position = (cumulative - adult_weights[order] / 2) / total
-    quintile[adults[order]] = np.clip((position * 5).astype(int) + 1, 1, 5)
-    return quintile
+    quintile[adults] = np.searchsorted(thresholds, potential[adults], side="right") + 1
+    return np.clip(quintile, 1, 5)
 
 
 def apply_participation_responses(
@@ -597,7 +709,10 @@ def apply_participation_responses(
             0, participation_change[i]
         )  # Only consider positive changes
         if np.random.random() < entry_probability and imputed_wages[i] > 0:
-            new_employment_income[i] = imputed_wages[i]
+            # Cast for the same reason as the in-work assignment above.
+            new_employment_income[i] = new_employment_income.dtype.type(
+                imputed_wages[i]
+            )
             participation_response[i] = True  # Entered work
 
     # Update simulation with new employment incomes
