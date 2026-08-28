@@ -1,3 +1,12 @@
+## [2.93.1] - 2026-08-28
+
+### Fixed
+
+- Place earnings quintiles against thresholds taken from the observed earnings distribution of working adults, rather than ranking the whole population on actual earnings. Ranking everyone, children included, left the bottom two quintiles entirely without earners, placed every potential labour-market entrant at the steep end of the OBR Table A1 elasticities, and left those quintiles with no employed donors — so `impute_wages_for_nonworkers` returned a wage of zero for them, which silently bars entry into employment. Wage donors are now grouped by sex and age band, which also breaks the circular dependency between the two functions.
+
+  Non-workers are placed on the quintile table at full-time-equivalent income. This is an assumption beyond the cited sources, and it is material: unscaled 18.8-hour placement moves entrants to quintile 1 and roughly doubles the elasticity they draw. Documented in the module with the bound and how to reproduce it.
+
+
 ## [2.93.0] - 2026-08-28
 
 ### Added
