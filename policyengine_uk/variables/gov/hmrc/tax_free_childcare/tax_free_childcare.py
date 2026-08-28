@@ -30,10 +30,8 @@ class tax_free_childcare(Variable):
         )
         eligible_childcare_expense = childcare_expense * uses_qualifying_provider
 
-        # Calculate contribution using rate from parameters
-        contribution = (eligible_childcare_expense * p.rate) / (1 - p.rate)
-
-        # Cap the contribution at the maximum amounts
+        # Share of the year the family holds an eligible account. childcare_expenses
+        # is an annual figure, so only this share of it is spent while eligible.
         eligible_periods = person.benunit(
             "tax_free_childcare_eligible_declaration_periods",
             period,
@@ -45,6 +43,25 @@ class tax_free_childcare(Variable):
         eligible_fraction = (
             eligible_periods / tax_free_childcare.declaration_periods_per_year
         )
+
+        # The top-up is p.rate of the *total* paid to the provider, household and
+        # government together — that is what the parameter's own description says
+        # and what childcare_expenses records ("Total amount spent on childcare").
+        # Childcare Payments Act 2014 section 1(4) sets the top-up at 25% of the
+        # qualifying payment *into* the account, and section 21 converts that to
+        # R/(100+R) of the topped-up total, i.e. 20% of the gross payment out.
+        # HMRC TFC35300 gives the worked example: £2,000 paid in, £500 top-up,
+        # £2,500 total. Dividing by (1 - rate) applied the deposit-side 25% to a
+        # gross-side figure and overstated every award by a quarter.
+        #
+        # The eligible share applies to the spend, not only to the cap: a family
+        # eligible for half the year puts roughly half its annual childcare spend
+        # through the account, so it receives roughly half the top-up. Pro-rating
+        # the cap alone left a part-year family below the cap with the full-year
+        # amount.
+        contribution = eligible_childcare_expense * eligible_fraction * p.rate
+
+        # Cap the contribution at the maximum amounts, also pro-rated.
         max_amount = (
             where(qualifies_for_higher_amount, p.disabled_child, p.standard_child)
             * is_qualifying_child
