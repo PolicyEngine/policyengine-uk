@@ -19,8 +19,11 @@ reforms:
   expected_impact: -1.2
   parameters:
     gov.hmrc.child_benefit.amount.additional: 25
+# Re-baselined when corporate_wealth left the UC countable capital sources
+# (interim pension-bundle exclusion): the taper reform now operates on the
+# larger eligible caseload.
 - name: Reduce Universal Credit taper rate to 20%
-  expected_impact: -18.1
+  expected_impact: -30.3
   tolerance: 3.0
   parameters:
     gov.dwp.universal_credit.means_test.reduction_rate: 0.2

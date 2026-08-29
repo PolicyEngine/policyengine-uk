@@ -15,6 +15,7 @@ def test_uc_capital_stocks_are_not_prorated_in_monthly_calculations():
                 "members": ["person"],
                 "savings": {"2026": 12_000},
                 "other_residential_property_value": {"2026": 12_000},
+                "non_residential_property_value": {"2026": 12_000},
                 "corporate_wealth": {"2026": 12_000},
             }
         },
@@ -23,6 +24,9 @@ def test_uc_capital_stocks_are_not_prorated_in_monthly_calculations():
 
     assert simulation.calculate("savings", "2026-01")[0] == 12_000
     assert simulation.calculate("corporate_wealth", "2026-01")[0] == 12_000
+    # corporate_wealth is not a countable UC capital source (interim
+    # approximation pending the dataset-side pension split), so assessable
+    # capital is the other three stocks, unprorated.
     assert simulation.calculate("uc_assessable_capital", "2026-01")[0] == 36_000
     assert not simulation.calculate("is_uc_eligible", "2026-01")[0]
 

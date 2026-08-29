@@ -4,12 +4,26 @@ description: >
   treated as income or disregarded under regulation 48 and Schedule 10. The
   current mappings are `savings` for liquid capital,
   `other_residential_property_value` for residential property other than the
-  home, `non_residential_property_value` for other land and premises, and
-  `corporate_wealth` for shares and similar investment assets. `main_residence_value`
-  is excluded because Schedule 10 paragraph 1 disregards premises occupied as
-  the person's home. Other Schedule 10 disregards within these broad asset
-  classes are not yet split out separately. Where only household-level capital
-  is available for a multi-benunit household, the model uses a household-wide
+  home, and `non_residential_property_value` for other land and premises.
+  `main_residence_value` is excluded because Schedule 10 paragraph 1 disregards
+  premises occupied as the person's home. `corporate_wealth` is excluded as an
+  interim approximation pending a dataset-side pension split
+  (policyengine-uk-data#452). In law, shares, investment ISAs and collective
+  investments are countable capital with no general Schedule 10 disregard, but
+  the dataset builds `corporate_wealth` as total private pension wealth less
+  current defined benefit pension wealth plus employee shares and options, UK
+  shares, investment ISAs and collective investments, and Schedule 10
+  paragraph 10 disregards the value of rights under an occupational, personal
+  or other registered pension scheme. Pension wealth is most of that bundle,
+  so counting it fails the capital test for claimants whose only large asset
+  is a pension; excluding it leaves the share-like components uncounted until
+  the dataset separates them from pensions, at which point the share-like
+  remainder should return to this list. Other disregards within these broad
+  asset classes (business assets under Schedule 10 paragraphs 7 and 8, life
+  policies under paragraph 9, owner-managed company holdings under regulation
+  77, and personal-injury and compensation sums under regulations 75 and 76)
+  are not yet split out separately. Where only household-level capital is
+  available for a multi-benunit household, the model uses a household-wide
   adult-share proxy for residual capital because the dataset does not identify
   which adults hold the beneficial interest in each capital asset. The
   denominator is all unreported adults in the household, including adults in
@@ -31,9 +45,10 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/48/1
     - title: The Universal Credit Regulations 2013 Schedule 10 para. 1
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/1
+    - title: The Universal Credit Regulations 2013 Schedule 10 para. 10
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/10/paragraph/10
 values:
   2013-04-29:
     - savings
     - other_residential_property_value
     - non_residential_property_value
-    - corporate_wealth

@@ -4,9 +4,17 @@ description: >
   from capital, for example rental, interest or dividends. In the current
   model, those map to `property_income` when countable property capital is
   present, `savings_interest_income` when savings are present, and
-  `dividend_income` when corporate wealth is present. Those linked income
-  streams are removed from `uc_unearned_income` once `uc_tariff_income`
-  applies to avoid double counting the same capital. The model does not add
+  `dividend_income` when corporate wealth is present. `corporate_wealth` is
+  no longer itself a countable capital source (`capital/sources.yaml`
+  excludes the mixed pension bundle as an interim approximation), but it
+  still gates the dividend fold because it is the only available signal that
+  the benunit holds shares, which remain countable capital in law; once
+  tariff income arises from savings or property, regulation 72(3) treats
+  dividends from those shares as capital rather than income. Those linked
+  income streams are removed from `uc_unearned_income` once `uc_tariff_income`
+  applies, which for savings and property avoids double counting the same
+  capital and for dividends approximates the legal treatment of income from
+  shares the dataset cannot separate from pensions. The model does not add
   annual income flows back into `uc_assessable_capital`, because the dataset
   does not identify whether those receipts are retained as capital within the
   assessment year. When benunit-level `uc_reported_capital` is provided, the
