@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from policyengine_uk import Microsimulation
@@ -179,7 +179,7 @@ class UKMultiYearDataset:
     def __init__(
         self,
         file_path: str = None,
-        datasets: Optional[List[UKSingleYearDataset]] = None,
+        datasets: list[UKSingleYearDataset] | None = None,
     ):
         if datasets is not None:
             self.datasets = {}
