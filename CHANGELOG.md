@@ -1,3 +1,14 @@
+## [2.94.0] - 2026-08-30
+
+### Changed
+
+- - Added shared AI contributor instructions that route tool-specific guidance into common engineering documentation.
+
+### Removed
+
+- - Removed Python 3.9 and 3.10 support; supported versions are now Python 3.11–3.14.
+
+
 ## [2.93.1] - 2026-08-28
 
 ### Fixed
