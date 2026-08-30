@@ -117,7 +117,7 @@ class Simulation(CoreSimulation):
             ]
         ] = None,
         trace: bool = False,
-        reform: Union[Dict, Type[Reform]] = None,
+        reform: Dict | Type[Reform] = None,
     ):
         """Initialize a UK simulation.
 

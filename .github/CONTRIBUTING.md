@@ -12,8 +12,7 @@ uv run policyengine-core test policyengine_uk/tests/path/to/test.yaml -c policye
 uv run pytest policyengine_uk/tests/path/to/test_file.py::test_name -v
 ```
 
-The package supports Python 3.9–3.14. The checked-in `uv.lock` resolves Python
-3.11–3.14. Default branch: `main`.
+The package supports Python 3.11–3.14. Default branch: `main`.
 
 ## Writing variables and reforms
 
