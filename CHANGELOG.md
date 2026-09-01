@@ -1,3 +1,10 @@
+## [2.95.0] - 2026-09-01
+
+### Removed
+
+- - Removed the obsolete UK release action that silently attempted to run deleted downstream dependency-update scripts.
+
+
 ## [2.94.0] - 2026-08-30
 
 ### Changed
