@@ -51,7 +51,7 @@ class UKSingleYearDataset:
         file_path = str(file_path) if file_path else None
         if file_path is not None:
             self.validate_file_path(file_path)
-            with pd.HDFStore(file_path) as f:
+            with pd.HDFStore(file_path, mode="r") as f:
                 self._person = f["person"]
                 self._benunit = f["benunit"]
                 self._household = f["household"]
@@ -193,7 +193,7 @@ class UKMultiYearDataset:
 
         if file_path is not None:
             UKMultiYearDataset.validate_file_path(file_path)
-            with pd.HDFStore(file_path) as f:
+            with pd.HDFStore(file_path, mode="r") as f:
                 self.datasets = {}
                 for year in f.keys():
                     if year.startswith("/person/"):
