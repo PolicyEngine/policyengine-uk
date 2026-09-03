@@ -1,3 +1,6 @@
-description: National maximum Local Housing Allowance by category of dwelling. Introduced in April 2011 and revised periodically; there was no statutory cash cap in 2013-14, when the ceiling was instead a CPI uprating limit.
+description: National maximum Local Housing Allowance by category of dwelling, applied as an upper bound on the Broad Rental Market Area percentile. The series starts in April 2014. A cash table introduced in April 2011 was removed by SI 2012/646, which replaced it with a CPI uprating limit, so 2013-14 has no statutory cash maximum; those years are outside the range this model supports and are not encoded.
 metadata:
   label: Maximum LHA
+  reference:
+    - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2012
+      href: https://www.legislation.gov.uk/uksi/2012/646/made

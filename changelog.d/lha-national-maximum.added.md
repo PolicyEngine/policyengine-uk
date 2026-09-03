@@ -1,2 +1,1 @@
 - Added the national maximum Local Housing Allowance, which caps the Broad Rental Market Area percentile and binds in central London.
-- Fixed frozen LHA rates being re-based to the first year of the freeze rather than held at the last determined level.

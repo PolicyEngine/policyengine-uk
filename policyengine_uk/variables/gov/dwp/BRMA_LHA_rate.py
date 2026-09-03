@@ -34,18 +34,21 @@ class BRMA_LHA_rate(Variable):
 
         frozen = lha.freeze(period)
         if frozen:
-            # Find the first year of the current freeze
+            # Rates are held at the level last determined, so every input to
+            # the determination is read at that year, not the current one.
             freeze_start = find_freeze_start(lha.freeze, period.start)
             lha_period = int(freeze_start[:4])  # Get year
         else:
             lha_period = int(period.start.year)
+
+        determination_period = str(lha_period)
 
         private_rent_index = parameters.gov.indices.private_rent_index
         lha_list_of_rents = time_shift_dataset(
             lha_list_of_rents.copy(), lha_period, private_rent_index
         )
 
-        percentile = lha.percentile(period)
+        percentile = lha.percentile(determination_period)
 
         lha_rates = lha_list_of_rents.groupby(
             ["brma", "lha_category"]
@@ -57,13 +60,21 @@ class BRMA_LHA_rate(Variable):
 
         # Published rates are the lower of the BRMA percentile and the
         # national maximum LHA for the category (Rent Officers Order 1997,
-        # Schedule 3B). The cap binds in central London.
+        # Schedule 3B). The cap binds in central London. It is read at the
+        # determination year so that a later change cannot move a rate that
+        # is being held in cash terms.
         maximum = lha.maximum
-        caps = {cat: maximum.children[cat](period) for cat in maximum.children}
+        caps = {
+            cat: maximum.children[cat](determination_period) for cat in maximum.children
+        }
         lha_rates_df.weekly_rent = np.minimum(
             lha_rates_df.weekly_rent,
             lha_rates_df.lha_category.map(caps),
         )
+
+        # Determined rates are rounded to the nearest penny, half up
+        # (Schedule 3B paragraph 2(10)); np.round is half-even.
+        lha_rates_df.weekly_rent = np.floor(lha_rates_df.weekly_rent * 100 + 0.5) / 100
 
         lha_lookup_table = pd.DataFrame(
             {

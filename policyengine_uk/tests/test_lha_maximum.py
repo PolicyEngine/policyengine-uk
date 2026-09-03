@@ -51,3 +51,36 @@ def test_capped_rates_match_published(brma, category, published, year):
 def test_cap_does_not_bind_below_the_percentile():
     """Category A in central London is set by the percentile, not the cap."""
     assert _weekly_rate(2024, "CENTRAL_LONDON", "A") < 331.39
+
+
+def test_a_later_cap_change_cannot_move_a_frozen_rate():
+    """Frozen rates are held at the level last determined.
+
+    Every input to the determination — including the national maximum — is
+    therefore read at the determination year, so changing a cap in a frozen
+    year must leave the rate alone.
+    """
+    situation = {
+        "people": {"person": {"age": {2025: 35}}},
+        "benunits": {"benunit": {"members": ["person"], "LHA_category": {2025: "B"}}},
+        "households": {
+            "household": {
+                "members": ["person"],
+                "brma": {2025: "CENTRAL_LONDON"},
+                "tenure_type": {2025: "RENT_PRIVATELY"},
+                "rent": {2025: 100_000},
+            }
+        },
+    }
+
+    def weekly(reform):
+        annual = Simulation(situation=situation, reform=reform).calculate(
+            "BRMA_LHA_rate", 2025
+        )[0]
+        return float(annual) / 52
+
+    baseline = weekly(None)
+    slashed = weekly({"gov.dwp.LHA.maximum.B": {"2025": 100}})
+
+    assert baseline == pytest.approx(331.39, abs=0.01)
+    assert slashed == pytest.approx(baseline, abs=0.01)
