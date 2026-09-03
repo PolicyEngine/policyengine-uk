@@ -55,6 +55,16 @@ class BRMA_LHA_rate(Variable):
         lha_rates_df = lha_rates.reset_index()
         lha_rates_df.columns = ["brma", "lha_category", "weekly_rent"]
 
+        # Published rates are the lower of the BRMA percentile and the
+        # national maximum LHA for the category (Rent Officers Order 1997,
+        # Schedule 3B). The cap binds in central London.
+        maximum = lha.maximum
+        caps = {cat: maximum.children[cat](period) for cat in maximum.children}
+        lha_rates_df.weekly_rent = np.minimum(
+            lha_rates_df.weekly_rent,
+            lha_rates_df.lha_category.map(caps),
+        )
+
         lha_lookup_table = pd.DataFrame(
             {
                 "brma": brma,

@@ -1,0 +1,20 @@
+description: Maximum weekly Local Housing Allowance for category C dwellings (two bedrooms). Published LHA rates are the lower of the Broad Rental Market Area percentile and this national cap.
+values:
+  2011-04-01: 290.0
+  2014-04-01: 299.34
+  2015-04-01: 302.33
+  2018-04-01: 311.4
+  2019-04-01: 320.74
+  2020-04-01: 365.92
+  2024-04-01: 412.86
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Maximum LHA (category C)
+  reference:
+    - title: The Rent Officers (Housing Benefit Functions) Order 1997, Schedule 3B
+      href: https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B
+    - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2024
+      href: https://www.legislation.gov.uk/uksi/2024/11/made
+    - title: Valuation Office Agency, Local Housing Allowance rates (Table 3, maximum LHA)
+      href: https://www.gov.uk/government/collections/local-housing-allowance-lha-rates

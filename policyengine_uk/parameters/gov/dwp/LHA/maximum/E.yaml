@@ -1,0 +1,20 @@
+description: Maximum weekly Local Housing Allowance for category E dwellings (four bedrooms). Published LHA rates are the lower of the Broad Rental Market Area percentile and this national cap.
+values:
+  2011-04-01: 400.0
+  2014-04-01: 412.89
+  2015-04-01: 417.02
+  2018-04-01: 429.53
+  2019-04-01: 442.42
+  2020-04-01: 593.75
+  2024-04-01: 704.22
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Maximum LHA (category E)
+  reference:
+    - title: The Rent Officers (Housing Benefit Functions) Order 1997, Schedule 3B
+      href: https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B
+    - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2024
+      href: https://www.legislation.gov.uk/uksi/2024/11/made
+    - title: Valuation Office Agency, Local Housing Allowance rates (Table 3, maximum LHA)
+      href: https://www.gov.uk/government/collections/local-housing-allowance-lha-rates

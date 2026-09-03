@@ -1,0 +1,20 @@
+description: Maximum weekly Local Housing Allowance for category B dwellings (one bedroom, exclusive use). Published LHA rates are the lower of the Broad Rental Market Area percentile and this national cap.
+values:
+  2011-04-01: 250.0
+  2014-04-01: 258.06
+  2015-04-01: 260.64
+  2018-04-01: 268.46
+  2019-04-01: 276.51
+  2020-04-01: 295.49
+  2024-04-01: 331.39
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Maximum LHA (category B)
+  reference:
+    - title: The Rent Officers (Housing Benefit Functions) Order 1997, Schedule 3B
+      href: https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B
+    - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2024
+      href: https://www.legislation.gov.uk/uksi/2024/11/made
+    - title: Valuation Office Agency, Local Housing Allowance rates (Table 3, maximum LHA)
+      href: https://www.gov.uk/government/collections/local-housing-allowance-lha-rates
