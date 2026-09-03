@@ -1,3 +1,4 @@
+import warnings
 import pandas as pd
 import numpy as np
 from typing import TYPE_CHECKING
@@ -40,16 +41,28 @@ class UKSingleYearDataset:
 
         return True
 
+    # Used when a dataset is built from DataFrames without a fiscal year.
+    # Deprecated: pass fiscal_year explicitly, as this will become required.
+    DEFAULT_FISCAL_YEAR = 2025
+
     def __init__(
         self,
         file_path: str = None,
         person: pd.DataFrame = None,
         benunit: pd.DataFrame = None,
         household: pd.DataFrame = None,
-        fiscal_year: int = 2025,
+        fiscal_year: int = None,
     ):
         file_path = str(file_path) if file_path else None
         if file_path is not None:
+            if fiscal_year is not None:
+                warnings.warn(
+                    "fiscal_year is ignored when loading from a file: the "
+                    "time period is read from the file itself. Drop the "
+                    "argument, or use uprate_dataset to change the period.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             self.validate_file_path(file_path)
             with pd.HDFStore(file_path) as f:
                 self._person = f["person"]
@@ -61,6 +74,17 @@ class UKSingleYearDataset:
                 raise ValueError(
                     "Must provide either a file path or all three DataFrames (person, benunit, household)."
                 )
+            if fiscal_year is None:
+                warnings.warn(
+                    "fiscal_year was not given, so this dataset is labelled "
+                    f"{self.DEFAULT_FISCAL_YEAR}. The label is the year the "
+                    "financial year starts, so FRS 2024/25 data is 2024. "
+                    "Pass fiscal_year explicitly; the default will be "
+                    "removed.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
+                fiscal_year = self.DEFAULT_FISCAL_YEAR
             self._person = person
             self._benunit = benunit
             self._household = household
