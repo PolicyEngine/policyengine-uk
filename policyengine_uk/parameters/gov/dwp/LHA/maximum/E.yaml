@@ -4,13 +4,13 @@ values:
     value: 412.89
     metadata:
       reference:
-        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2013
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Local Housing Allowance Amendments) Order 2013
           href: https://www.legislation.gov.uk/uksi/2013/2978/made
   2015-04-01:
     value: 417.02
     metadata:
       reference:
-        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2014
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Local Housing Allowance Amendments) Order 2014
           href: https://www.legislation.gov.uk/uksi/2014/3126/made
   2018-04-01:
     value: 429.53
@@ -28,7 +28,7 @@ values:
     value: 593.75
     metadata:
       reference:
-        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Regulations 2020
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations 2020
           href: https://www.legislation.gov.uk/uksi/2020/371/regulation/4/made
   2024-04-01:
     value: 704.22

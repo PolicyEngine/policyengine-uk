@@ -48,9 +48,41 @@ def test_capped_rates_match_published(brma, category, published, year):
     assert _weekly_rate(year, brma, category) == pytest.approx(published, abs=0.01)
 
 
+def _weekly_rate_under(reform, year, brma, category):
+    situation = {
+        "people": {"person": {"age": {year: 35}}},
+        "benunits": {
+            "benunit": {"members": ["person"], "LHA_category": {year: category}}
+        },
+        "households": {
+            "household": {
+                "members": ["person"],
+                "brma": {year: brma},
+                "tenure_type": {year: "RENT_PRIVATELY"},
+                "rent": {year: 100_000},
+            }
+        },
+    }
+    annual = Simulation(situation=situation, reform=reform).calculate(
+        "BRMA_LHA_rate", year
+    )[0]
+    return float(annual) / 52
+
+
 def test_cap_does_not_bind_below_the_percentile():
-    """Category A in central London is set by the percentile, not the cap."""
-    assert _weekly_rate(2024, "CENTRAL_LONDON", "A") < 331.39
+    """Category A in central London is set by the percentile, not the cap.
+
+    Asserting only that the rate is under the cap would also pass if the cap
+    were wrongly binding at some lower figure, so this compares against the
+    rate with the cap lifted out of the way.
+    """
+    rate = _weekly_rate(2024, "CENTRAL_LONDON", "A")
+    uncapped = _weekly_rate_under(
+        {"gov.dwp.LHA.maximum.A": {"2024": 100_000}}, 2024, "CENTRAL_LONDON", "A"
+    )
+
+    assert rate == pytest.approx(uncapped, abs=0.01)
+    assert rate < 331.39
 
 
 def test_a_later_cap_change_cannot_move_a_frozen_rate():

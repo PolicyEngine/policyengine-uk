@@ -1,0 +1,21 @@
+description: Maximum monthly Local Housing Allowance for category D dwellings (three bedrooms), used for Universal Credit. Set independently of the weekly Housing Benefit maximum rather than derived from it.
+values:
+  2020-04-01:
+    value: 1920.0
+    metadata:
+      reference:
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations 2020, reg. 4(3)(b)
+          href: https://www.legislation.gov.uk/uksi/2020/371/regulation/4/made
+  2024-04-01:
+    value: 2160.02
+    metadata:
+      reference:
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2024, art. 4(2)(b)
+          href: https://www.legislation.gov.uk/uksi/2024/11/made
+metadata:
+  unit: currency-GBP
+  period: month
+  label: Maximum monthly LHA (category D)
+  reference:
+    - title: The Rent Officers (Universal Credit Functions) Order 2013, Schedule 1
+      href: https://www.legislation.gov.uk/uksi/2013/382/schedule/1

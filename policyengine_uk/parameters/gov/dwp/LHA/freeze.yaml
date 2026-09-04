@@ -6,14 +6,18 @@ values:
     value: false
     metadata:
       reference:
-        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Regulations 2020, reg. 4 (April 2020 reset to the 30th percentile)
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations 2020, reg. 4 (April 2020 reset to the 30th percentile)
           href: https://www.legislation.gov.uk/uksi/2020/371/regulation/4/made
   2021-04-06:
     value: true
     metadata:
       reference:
-        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Modification) Order 2020
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Modification) Order 2020 (determinations in 2021)
           href: https://www.legislation.gov.uk/uksi/2020/1519/made
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Modification) Order 2021 (determinations in 2022)
+          href: https://www.legislation.gov.uk/uksi/2021/1380/made
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Modification) Order 2023 (determinations in 2023)
+          href: https://www.legislation.gov.uk/uksi/2023/6/made
   2024-04-06:
     value: false
     metadata:
@@ -29,7 +33,7 @@ values:
         - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Modification) Order 2026
           href: https://www.legislation.gov.uk/uksi/2026/5/made
         - title: Autumn Statement 2023 policy costings (April 2024 uplift maintained in cash terms thereafter)
-          href: https://assets.publishing.service.gov.uk/media/655d0a83544aea000dfb321d/Autumn_Statement_2023_Policy_Costings_-_Final.pdf
+          href: https://assets.publishing.service.gov.uk/media/655d0a83544aea000dfb321d/Autumn_Statement_2023_Policy_Costings_-_Final.pdf#page=16
 metadata:
   unit: bool
   label: LHA freeze

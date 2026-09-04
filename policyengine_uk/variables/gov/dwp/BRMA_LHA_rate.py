@@ -10,11 +10,33 @@ from policyengine_uk.variables.gov.dwp.LHA_category import (
 warnings.filterwarnings("ignore")
 
 
-class BRMA_LHA_rate(Variable):
+MONTHS_IN_YEAR = 12
+
+
+def _category_maximum(benunit, period, node_name: str):
+    """Per-category national maximum, read at the determination year.
+
+    Frozen rates are held at the level last determined, so the maximum in
+    force then is the one that binds, not the current year's.
+    """
+    lha = benunit.simulation.tax_benefit_system.parameters.gov.dwp.LHA
+
+    if lha.freeze(period):
+        determination_period = find_freeze_start(lha.freeze, period.start)[:4]
+    else:
+        determination_period = str(period.start.year)
+
+    node = getattr(lha, node_name)
+    category = benunit("LHA_category", period).decode_to_str()
+    caps = {cat: node.children[cat](determination_period) for cat in node.children}
+    return pd.Series(category).map(caps).to_numpy(dtype=float)
+
+
+class uncapped_BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
-    label = "LHA rate"
-    documentation = "Local Housing Allowance rate"
+    label = "Uncapped LHA rate"
+    documentation = "Local Housing Allowance rate before the national maximum"
     definition_period = YEAR
     unit = GBP
 
@@ -58,23 +80,13 @@ class BRMA_LHA_rate(Variable):
         lha_rates_df = lha_rates.reset_index()
         lha_rates_df.columns = ["brma", "lha_category", "weekly_rent"]
 
-        # Published rates are the lower of the BRMA percentile and the
-        # national maximum LHA for the category (Rent Officers Order 1997,
-        # Schedule 3B). The cap binds in central London. It is read at the
-        # determination year so that a later change cannot move a rate that
-        # is being held in cash terms.
-        maximum = lha.maximum
-        caps = {
-            cat: maximum.children[cat](determination_period) for cat in maximum.children
-        }
-        lha_rates_df.weekly_rent = np.minimum(
-            lha_rates_df.weekly_rent,
-            lha_rates_df.lha_category.map(caps),
-        )
-
         # Determined rates are rounded to the nearest penny, half up
-        # (Schedule 3B paragraph 2(10)); np.round is half-even.
-        lha_rates_df.weekly_rent = np.floor(lha_rates_df.weekly_rent * 100 + 0.5) / 100
+        # (Schedule 3B paragraph 2(10)); np.round is half-even. Pence are
+        # snapped to 6dp first, because an exact half such as 298.835 is
+        # held as 29883.499999999996 once scaled and would round down.
+        lha_rates_df.weekly_rent = (
+            np.floor(np.round(lha_rates_df.weekly_rent * 100, 6) + 0.5) / 100
+        )
 
         lha_lookup_table = pd.DataFrame(
             {
@@ -87,3 +99,46 @@ class BRMA_LHA_rate(Variable):
             lha_rates_df, on=["brma", "lha_category"], how="left"
         )
         return lha_lookup_table.weekly_rent.values * 52
+
+
+class BRMA_LHA_rate(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "LHA rate"
+    documentation = "Local Housing Allowance rate, capped at the national maximum"
+    definition_period = YEAR
+    unit = GBP
+
+    def formula(benunit, period, parameters):
+        """The published Housing Benefit rate.
+
+        Rates are the lower of the Broad Rental Market Area percentile and the
+        weekly national maximum for the category (Rent Officers (Housing
+        Benefit Functions) Order 1997, Schedule 3B). Universal Credit has its
+        own monthly maximum: see ``uc_LHA_cap``.
+        """
+        rate = benunit("uncapped_BRMA_LHA_rate", period)
+        maximum = _category_maximum(benunit, period, "maximum")
+        return min_(rate, maximum * 52)
+
+
+class uc_LHA_cap(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Applicable amount for LHA under Universal Credit"
+    documentation = "Rent covered by the Local Housing Allowance for Universal Credit"
+    definition_period = YEAR
+    unit = GBP
+
+    def formula(benunit, period, parameters):
+        """Universal Credit applies a monthly national maximum.
+
+        The monthly figures in Schedule 1 to the Rent Officers (Universal
+        Credit Functions) Order 2013 are set independently of the weekly
+        Housing Benefit maxima and are slightly higher, so annualising the
+        weekly figure would impose a ceiling below the statutory one.
+        """
+        rent = benunit("benunit_rent", period)
+        rate = benunit("uncapped_BRMA_LHA_rate", period)
+        maximum = _category_maximum(benunit, period, "maximum_monthly")
+        return min_(rent, min_(rate, maximum * MONTHS_IN_YEAR))

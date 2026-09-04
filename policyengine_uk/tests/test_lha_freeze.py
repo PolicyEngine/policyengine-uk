@@ -1,5 +1,7 @@
 """Regression tests for the LHA freeze parameter."""
 
+import pytest
+
 from policyengine_uk import Simulation
 
 
@@ -94,3 +96,51 @@ def test_the_2020_freeze_holds_at_the_2020_reset():
 
 def test_the_2024_reset_raises_rates_above_the_2020_freeze():
     assert _lha_rate(2024) > _lha_rate(2023)
+
+
+def _weekly_rate(year: int, brma: str, category: str, reform=None) -> float:
+    situation = {
+        "people": {"person": {"age": {year: 35}}},
+        "benunits": {
+            "benunit": {"members": ["person"], "LHA_category": {year: category}}
+        },
+        "households": {
+            "household": {
+                "members": ["person"],
+                "brma": {year: brma},
+                "tenure_type": {year: "RENT_PRIVATELY"},
+                "rent": {year: 100_000},
+            }
+        },
+    }
+    annual = Simulation(situation=situation, reform=reform).calculate(
+        "BRMA_LHA_rate", year
+    )[0]
+    return float(annual) / 52
+
+
+def test_a_reset_year_is_not_treated_as_a_hold():
+    """2020 was a reset, so its rate comes from 2020 rents, not earlier ones.
+
+    Asserting only that the frozen years equal 2020 would still pass if 2020
+    were itself wrongly marked frozen, because every compared year would then
+    move together. Comparing against that mutation is what catches it.
+    """
+    reset = _weekly_rate(2020, "MAIDSTONE", "C")
+    held_instead = _weekly_rate(
+        2020, "MAIDSTONE", "C", reform={"gov.dwp.LHA.freeze": {"2020": True}}
+    )
+
+    assert reset == pytest.approx(187.91, abs=0.01)
+    assert held_instead != pytest.approx(reset, abs=0.01)
+
+
+def test_frozen_years_hold_the_reset_level_for_an_uncapped_area():
+    """The national maximum never binds in Maidstone, so this isolates the
+    freeze from the cap."""
+    reset = _weekly_rate(2020, "MAIDSTONE", "C")
+
+    for frozen_year in (2021, 2022, 2023):
+        assert _weekly_rate(frozen_year, "MAIDSTONE", "C") == pytest.approx(
+            reset, abs=0.01
+        )
