@@ -87,49 +87,67 @@ def time_shift_dataset(
 
 
 def find_freeze_start(freeze_parameter: Parameter, period: str) -> str:
-    """Finds the start instant of the current freeze period containing the given period.
+    """Finds the instant whose rents a frozen LHA rate should be based on.
 
-    The function works backwards from the given period to find when the current freeze
-    started. It looks for the most recent transition from false->true (unfreeze->freeze).
+    Frozen rates are held in cash terms at the level set in the most recent
+    year in which LHA was *not* frozen, so this returns the start instant of
+    the latest unfrozen period before the given period.
 
     Args:
         freeze_parameter (Parameter): The LHA freeze parameter.
         period (str): The period to search up to.
 
     Returns:
-        str: The instant when the current freeze period started, or None if not frozen.
+        str: The instant of the latest unfrozen period, or None if not frozen.
     """
-    # Get all parameter values that are <= the requested period
-    values_list = freeze_parameter.values_list
-    relevant_values = [v for v in values_list if v.instant_str <= str(period)]
+    # Values at or before the requested period, newest first.
+    relevant_values = [
+        v for v in freeze_parameter.values_list if v.instant_str <= str(period)
+    ]
 
     if not relevant_values:
         return None
 
-    # Check if the period is currently frozen
-    # relevant_values is in reverse chronological order (newest first)
-    current_state = relevant_values[0].value
-
-    if not current_state:
-        # Not currently frozen
+    if not relevant_values[0].value:
+        # Not currently frozen.
         return None
 
-    # Work from most recent backwards to find when this freeze started
-    # List is in reverse chronological order: [newest...oldest]
-    # Example: [('2026', True), ('2025', True), ('2024', False), ('2023', True)]
-    # Find the earliest True in the current frozen period
-    for i in range(len(relevant_values)):
-        current_value = relevant_values[i]
+    # Walk back to the most recent value that is False; the rates in force
+    # during the freeze are the ones determined in that year.
+    for value in relevant_values:
+        if not value.value:
+            return value.instant_str
 
-        if current_value.value:  # This is a freeze=True value
-            # Check if the chronologically earlier period (i+1) was unfrozen
-            if i == len(relevant_values) - 1:
-                # This is the oldest value and it's frozen - use it
-                return current_value.instant_str
-            elif not relevant_values[i + 1].value:
-                # The chronologically earlier value was False
-                # This is where the freeze period started
-                return current_value.instant_str
-            # Otherwise the earlier value was also True, so continue backwards
+    # Frozen for the whole of the parameter's history; fall back to the
+    # oldest value available.
+    return relevant_values[-1].instant_str
 
-    return None
+
+MONTHS_IN_YEAR = 12
+
+# Universal Credit's monthly national maximum is only modelled from April
+# 2020. No monthly maximum existed in 2016, and the 2017 to 2019 figures were
+# targeted affordability caps applying to listed areas rather than nationally.
+# Parameters are backdated to 2015 on load, so the series has to be gated
+# here: omitting the early YAML entries does not stop the lookup returning
+# the 2020 figure for earlier years.
+MONTHLY_MAXIMUM_FIRST_YEAR = 2020
+
+
+def category_maximum(benunit, period, node_name: str):
+    """Per-category national maximum, read at the determination year.
+
+    Frozen rates are held at the level last determined, so the maximum in
+    force then is the one that binds, not the current year's.
+    """
+    lha = benunit.simulation.tax_benefit_system.parameters.gov.dwp.LHA
+
+    if lha.freeze(period):
+        determination_period = find_freeze_start(lha.freeze, period.start)[:4]
+    else:
+        determination_period = str(period.start.year)
+
+    node = getattr(lha, node_name)
+    category = benunit("LHA_category", period).decode_to_str()
+    caps = {cat: node.children[cat](determination_period) for cat in node.children}
+    return pd.Series(category).map(caps).to_numpy(dtype=float)

@@ -14,7 +14,9 @@ class uc_housing_costs_element(Variable):
         )
         tenure_types = tenure_type.possible_values
         rent = benunit("benunit_rent", period)
-        rent_cap = benunit("LHA_cap", period)
+        # Universal Credit has its own monthly national maximum, which is
+        # set independently of the weekly Housing Benefit one.
+        rent_cap = benunit("uc_LHA_cap", period)
         capped_rent_amount = min_(rent_cap, rent)
         max_housing_costs = select(
             [
