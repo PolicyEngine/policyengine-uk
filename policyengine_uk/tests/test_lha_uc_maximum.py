@@ -23,26 +23,29 @@ BINDING_MONTHLY_MAXIMA = {
 }
 
 
-def _simulation(rent: float, category: str):
-    situation = {
-        "people": {"person": {"age": {YEAR: 40}, "employment_income": {YEAR: 20_000}}},
+def _situation(rent: float, category: str, year: int = YEAR):
+    return {
+        "people": {"person": {"age": {year: 40}, "employment_income": {year: 20_000}}},
         "benunits": {
             "benunit": {
                 "members": ["person"],
-                "LHA_category": {YEAR: category},
-                "would_claim_uc": {YEAR: True},
+                "LHA_category": {year: category},
+                "would_claim_uc": {year: True},
             }
         },
         "households": {
             "household": {
                 "members": ["person"],
-                "brma": {YEAR: "CENTRAL_LONDON"},
-                "tenure_type": {YEAR: "RENT_PRIVATELY"},
-                "rent": {YEAR: rent},
+                "brma": {year: "CENTRAL_LONDON"},
+                "tenure_type": {year: "RENT_PRIVATELY"},
+                "rent": {year: rent},
             }
         },
     }
-    return Simulation(situation=situation)
+
+
+def _simulation(rent: float, category: str, year: int = YEAR, reform=None):
+    return Simulation(situation=_situation(rent, category, year), reform=reform)
 
 
 @pytest.mark.parametrize("category,monthly", BINDING_MONTHLY_MAXIMA.items())
@@ -70,10 +73,21 @@ def test_uc_covers_rent_below_the_ceiling():
 
 
 def test_a_rate_below_the_ceiling_is_not_raised_to_it():
-    """Central London category A is set by the percentile, not the maximum."""
-    housing = _simulation(50_000, "A").calculate("uc_housing_costs_element", YEAR)[0]
+    """Central London category A is set by the percentile, not the maximum.
 
-    assert float(housing) < 1_439.97 * 12
+    Asserting only that the result is under the ceiling would also pass if it
+    were zero or wrongly low, so this compares against the same case with the
+    monthly maximum lifted out of the way.
+    """
+    housing = _simulation(50_000, "A").calculate("uc_housing_costs_element", YEAR)[0]
+    unlimited = _simulation(
+        50_000,
+        "A",
+        reform={"gov.dwp.LHA.maximum_monthly.A": {str(YEAR): 100_000}},
+    ).calculate("uc_housing_costs_element", YEAR)[0]
+
+    assert float(housing) == pytest.approx(float(unlimited), abs=0.01)
+    assert 0 < float(housing) < 1_439.97 * 12
 
 
 def test_housing_benefit_keeps_the_weekly_maximum():
@@ -81,3 +95,28 @@ def test_housing_benefit_keeps_the_weekly_maximum():
     rate = _simulation(50_000, "E").calculate("BRMA_LHA_rate", YEAR)[0]
 
     assert float(rate) / 52 == pytest.approx(704.22, abs=0.01)
+
+
+def test_the_monthly_maximum_does_not_apply_before_it_existed():
+    """The monthly series starts in April 2020.
+
+    Parameters are backdated to 2015 on load, so without an explicit gate the
+    2020 maximum would apply to earlier years, where it is far above the
+    figures actually in force. Before the series starts, Universal Credit
+    falls back to the weekly Housing Benefit rate.
+    """
+    simulation = _simulation(50_000, "E", year=2019)
+    housing = simulation.calculate("uc_housing_costs_element", 2019)[0]
+    weekly_rate = simulation.calculate("BRMA_LHA_rate", 2019)[0]
+
+    assert float(housing) == pytest.approx(float(weekly_rate), abs=0.01)
+    assert float(housing) < 2_579.98 * 12
+
+
+def test_the_monthly_maximum_applies_from_2020():
+    """The 2019/2020 boundary: 2020 uses the monthly maximum, 2019 does not."""
+    housing_2020 = _simulation(50_000, "E", year=2020).calculate(
+        "uc_housing_costs_element", 2020
+    )[0]
+
+    assert float(housing_2020) == pytest.approx(2_579.98 * 12, abs=0.01)

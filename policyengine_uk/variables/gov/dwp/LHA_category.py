@@ -121,3 +121,33 @@ def find_freeze_start(freeze_parameter: Parameter, period: str) -> str:
     # Frozen for the whole of the parameter's history; fall back to the
     # oldest value available.
     return relevant_values[-1].instant_str
+
+
+MONTHS_IN_YEAR = 12
+
+# Universal Credit's monthly national maximum is only modelled from April
+# 2020. No monthly maximum existed in 2016, and the 2017 to 2019 figures were
+# targeted affordability caps applying to listed areas rather than nationally.
+# Parameters are backdated to 2015 on load, so the series has to be gated
+# here: omitting the early YAML entries does not stop the lookup returning
+# the 2020 figure for earlier years.
+MONTHLY_MAXIMUM_FIRST_YEAR = 2020
+
+
+def category_maximum(benunit, period, node_name: str):
+    """Per-category national maximum, read at the determination year.
+
+    Frozen rates are held at the level last determined, so the maximum in
+    force then is the one that binds, not the current year's.
+    """
+    lha = benunit.simulation.tax_benefit_system.parameters.gov.dwp.LHA
+
+    if lha.freeze(period):
+        determination_period = find_freeze_start(lha.freeze, period.start)[:4]
+    else:
+        determination_period = str(period.start.year)
+
+    node = getattr(lha, node_name)
+    category = benunit("LHA_category", period).decode_to_str()
+    caps = {cat: node.children[cat](determination_period) for cat in node.children}
+    return pd.Series(category).map(caps).to_numpy(dtype=float)
