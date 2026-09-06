@@ -1,3 +1,15 @@
+## [2.96.0] - 2026-09-06
+
+### Added
+
+- - Added the national maximum Local Housing Allowance, which caps the Broad Rental Market Area percentile and binds in central London.
+
+### Fixed
+
+- - Fixed frozen LHA rates being re-based to the first year of the freeze rather than held at the level last determined, and read the percentile and national maximum at that determination year so a later change cannot move a frozen rate.
+- - Fixed the Universal Credit housing costs element using the weekly Housing Benefit maximum LHA annualised by 52, rather than the statutory monthly maximum.
+
+
 ## [2.95.0] - 2026-09-01
 
 ### Removed

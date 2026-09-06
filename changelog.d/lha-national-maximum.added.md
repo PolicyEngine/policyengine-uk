@@ -1,1 +1,0 @@
-- Added the national maximum Local Housing Allowance, which caps the Broad Rental Market Area percentile and binds in central London.
