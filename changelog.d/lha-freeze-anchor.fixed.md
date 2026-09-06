@@ -1,0 +1,1 @@
+- Fixed frozen LHA rates being re-based to the first year of the freeze rather than held at the level last determined, and read the percentile and national maximum at that determination year so a later change cannot move a frozen rate.

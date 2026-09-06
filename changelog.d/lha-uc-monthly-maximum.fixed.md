@@ -1,0 +1,1 @@
+- Fixed the Universal Credit housing costs element using the weekly Housing Benefit maximum LHA annualised by 52, rather than the statutory monthly maximum.

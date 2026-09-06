@@ -1,0 +1,47 @@
+description: Maximum weekly Local Housing Allowance for category B dwellings (one bedroom, exclusive use). Published LHA rates are the lower of the Broad Rental Market Area percentile and this national cap.
+values:
+  2014-04-01:
+    value: 258.06
+    metadata:
+      reference:
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Local Housing Allowance Amendments) Order 2013
+          href: https://www.legislation.gov.uk/uksi/2013/2978/made
+  2015-04-01:
+    value: 260.64
+    metadata:
+      reference:
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Local Housing Allowance Amendments) Order 2014
+          href: https://www.legislation.gov.uk/uksi/2014/3126/made
+  2018-04-01:
+    value: 268.46
+    metadata:
+      reference:
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2017
+          href: https://www.legislation.gov.uk/uksi/2017/1323/made
+  2019-04-01:
+    value: 276.51
+    metadata:
+      reference:
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2018
+          href: https://www.legislation.gov.uk/uksi/2018/1332/made
+  2020-04-01:
+    value: 295.49
+    metadata:
+      reference:
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations 2020
+          href: https://www.legislation.gov.uk/uksi/2020/371/regulation/4/made
+  2024-04-01:
+    value: 331.39
+    metadata:
+      reference:
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2024
+          href: https://www.legislation.gov.uk/uksi/2024/11/made
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Maximum LHA (category B)
+  reference:
+    - title: The Rent Officers (Housing Benefit Functions) Order 1997, Schedule 3B
+      href: https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B
+    - title: Valuation Office Agency, Local Housing Allowance rates (Table 3, maximum LHA)
+      href: https://www.gov.uk/government/collections/local-housing-allowance-lha-rates

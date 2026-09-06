@@ -1,0 +1,7 @@
+description: >-
+  National maximum monthly Local Housing Allowance by category of dwelling, applied to the Universal Credit housing costs element. These figures are set independently in Schedule 1 to the Rent Officers (Universal Credit Functions) Order 2013 rather than derived from the weekly Housing Benefit maxima, and the two series do not divide evenly. The series starts in April 2020: no monthly maximum existed in 2016, and the 2017 to 2019 caps applied only to the Broad Rental Market Areas listed for targeted affordability funding rather than nationally, so they are not encoded here.
+metadata:
+  label: Maximum monthly LHA
+  reference:
+    - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Local Housing Allowance Amendments) Order 2015 (omitting the maximum for 2016)
+      href: https://www.legislation.gov.uk/uksi/2015/1753/made
