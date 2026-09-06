@@ -4,7 +4,6 @@ import warnings
 from policyengine_core.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_category import (
     category_maximum,
-    MONTHS_IN_YEAR,
     MONTHLY_MAXIMUM_FIRST_YEAR,
 )
 
@@ -18,6 +17,7 @@ class BRMA_LHA_rate(Variable):
     documentation = "Local Housing Allowance rate, capped at the national maximum"
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B"
 
     def formula(benunit, period, parameters):
         """The published Housing Benefit rate.

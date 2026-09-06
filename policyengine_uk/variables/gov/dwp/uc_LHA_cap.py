@@ -4,7 +4,6 @@ import warnings
 from policyengine_core.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_category import (
     category_maximum,
-    MONTHS_IN_YEAR,
     MONTHLY_MAXIMUM_FIRST_YEAR,
 )
 
@@ -18,6 +17,7 @@ class uc_LHA_cap(Variable):
     documentation = "Rent covered by the Local Housing Allowance for Universal Credit"
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/2013/382/schedule/1"
 
     def formula(benunit, period, parameters):
         """Universal Credit applies a monthly national maximum.

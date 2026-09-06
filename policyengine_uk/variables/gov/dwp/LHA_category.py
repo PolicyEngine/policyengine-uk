@@ -86,7 +86,7 @@ def time_shift_dataset(
     return df
 
 
-def find_freeze_start(freeze_parameter: Parameter, period: str) -> str:
+def find_freeze_anchor(freeze_parameter: Parameter, period: str) -> str:
     """Finds the instant whose rents a frozen LHA rate should be based on.
 
     Frozen rates are held in cash terms at the level set in the most recent
@@ -123,8 +123,6 @@ def find_freeze_start(freeze_parameter: Parameter, period: str) -> str:
     return relevant_values[-1].instant_str
 
 
-MONTHS_IN_YEAR = 12
-
 # Universal Credit's monthly national maximum is only modelled from April
 # 2020. No monthly maximum existed in 2016, and the 2017 to 2019 figures were
 # targeted affordability caps applying to listed areas rather than nationally.
@@ -143,7 +141,7 @@ def category_maximum(benunit, period, node_name: str):
     lha = benunit.simulation.tax_benefit_system.parameters.gov.dwp.LHA
 
     if lha.freeze(period):
-        determination_period = find_freeze_start(lha.freeze, period.start)[:4]
+        determination_period = find_freeze_anchor(lha.freeze, period.start)[:4]
     else:
         determination_period = str(period.start.year)
 

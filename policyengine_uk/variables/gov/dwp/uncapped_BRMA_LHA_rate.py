@@ -3,7 +3,7 @@ import pandas as pd
 import warnings
 from policyengine_core.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_category import (
-    find_freeze_start,
+    find_freeze_anchor,
     time_shift_dataset,
 )
 
@@ -17,6 +17,7 @@ class uncapped_BRMA_LHA_rate(Variable):
     documentation = "Local Housing Allowance rate before the national maximum"
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B"
 
     def formula(benunit, period, parameters):
         brma = benunit.value_from_first_person(
@@ -36,8 +37,8 @@ class uncapped_BRMA_LHA_rate(Variable):
         if frozen:
             # Rates are held at the level last determined, so every input to
             # the determination is read at that year, not the current one.
-            freeze_start = find_freeze_start(lha.freeze, period.start)
-            lha_period = int(freeze_start[:4])  # Get year
+            freeze_anchor = find_freeze_anchor(lha.freeze, period.start)
+            lha_period = int(freeze_anchor[:4])  # Get year
         else:
             lha_period = int(period.start.year)
 
