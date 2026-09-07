@@ -1,0 +1,73 @@
+- name: PIP daily living — zero points yields no award
+  period: 2025
+  input:
+    pip_dl_points: 0
+    pip_m_points: 0
+  output:
+    pip_dl_category: NONE
+    pip_m_category: NONE
+    pip_dl: 0
+    pip_m: 0
+
+- name: PIP daily living — 7 points is below the standard threshold
+  period: 2025
+  input:
+    pip_dl_points: 7
+  output:
+    pip_dl_category: NONE
+    pip_dl: 0
+
+- name: PIP daily living — 8 points hits the standard threshold
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    pip_dl_points: 8
+  output:
+    pip_dl_category: STANDARD
+    pip_dl: 3842.28
+
+- name: PIP daily living — 11 points stays at standard
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    pip_dl_points: 11
+  output:
+    pip_dl_category: STANDARD
+    pip_dl: 3842.28
+
+- name: PIP daily living — 12 points hits the enhanced threshold
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    pip_dl_points: 12
+  output:
+    pip_dl_category: ENHANCED
+    pip_dl: 5740.80
+
+- name: PIP mobility — 8 points hits the standard threshold
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    pip_m_points: 8
+  output:
+    pip_m_category: STANDARD
+    pip_m: 1517.88
+
+- name: PIP mobility — 12 points hits the enhanced threshold
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    pip_m_points: 12
+  output:
+    pip_m_category: ENHANCED
+    pip_m: 4006.08
+
+- name: PIP — input category overrides points-derived category
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    pip_dl_points: 0
+    pip_dl_category: ENHANCED
+  output:
+    pip_dl_category: ENHANCED
+    pip_dl: 5740.80
