@@ -1,3 +1,10 @@
+## [2.96.1] - 2026-09-07
+
+### Changed
+
+- - Updated the private rent index to the ONS Price Index of Private Rents, which runs to July 2026 and raises Local Housing Allowance rates from 2024.
+
+
 ## [2.96.0] - 2026-09-06
 
 ### Added
