@@ -6,12 +6,16 @@ class uc_child_index(Variable):
     entity = Person
     label = "Universal Credit child reference number"
     definition_period = YEAR
-    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/24A"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/24",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/24A",
+        "https://www.gov.uk/universal-credit/what-youll-get",
+    )
 
     def formula(person, period, parameters):
         is_uc_child = person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
-        )
+        ) & ~person("is_uc_claimant", period)
         child_ranking = (
             person.get_rank(
                 person.benunit,
