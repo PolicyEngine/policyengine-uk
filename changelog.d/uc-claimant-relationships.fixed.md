@@ -1,1 +1,0 @@
-- Fixed Universal Credit claimant classification and work allowances for families with qualifying young people, and excluded claimants from their own ordinary and disability child elements and two-child-limit counts.

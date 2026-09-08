@@ -1,3 +1,14 @@
+## [2.97.0] - 2026-09-08
+
+### Added
+
+- - Added the is_uc_claimant input to identify Universal Credit claimants and partners from recorded benefit-unit relationships.
+
+### Fixed
+
+- - Fixed Universal Credit claimant classification and work allowances for families with qualifying young people, and excluded claimants from their own ordinary and disability child elements and two-child-limit counts.
+
+
 ## [2.96.1] - 2026-09-07
 
 ### Changed
