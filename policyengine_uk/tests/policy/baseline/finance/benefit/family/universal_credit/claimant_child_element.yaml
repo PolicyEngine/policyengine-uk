@@ -1,0 +1,132 @@
+# The UC child element is for a claimant's dependent child, not the claimant.
+# In 2025 the under-25 single allowance is 316.98 * 12 = 3,803.76;
+# the amount per child born after April 2017 is 292.81 * 12 = 3,513.72.
+
+- name: Case 1, an explicitly identified young claimant is not their own child.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 18
+        is_in_non_advanced_education: true
+        is_uc_claimant: true
+    benunits:
+      benunit:
+        members: [person1]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1]
+  output:
+    # The age/education predicate remains unchanged; claim roles exclude it
+    # from UC child amounts without redefining qualification for other uses.
+    is_child_or_qualifying_young_person_for_universal_credit: true
+    uc_child_index: -1
+    uc_individual_child_element: 0
+    uc_is_child_limit_affected: false
+    uc_work_allowance: 0
+    universal_credit: 3_803.76
+
+# No is_uc_claimant input: evaluating final UC and child ordering exercises
+# the fallback through the QYP predicate and detects any dependency cycle.
+- name: Case 2, a young parent inferred from source roles receives one child element.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 18
+        is_benunit_head: true
+        is_parent: true
+        is_in_non_advanced_education: true
+      person2:
+        age: 1
+        is_benunit_head: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    is_uc_claimant: [true, false]
+    uc_child_index: [-1, 1]
+    uc_individual_child_element: [0, 3_513.72]
+    uc_is_child_limit_affected: [false, false]
+    uc_work_allowance: 8_208
+    universal_credit: 7_317.48
+
+- name: Case 3, a young claimant does not use a place under the two-child limit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 18
+        is_benunit_head: true
+        is_parent: true
+        is_in_non_advanced_education: true
+      person2:
+        age: 3
+        is_benunit_head: false
+      person3:
+        age: 2
+        is_benunit_head: false
+      person4:
+        age: 1
+        is_benunit_head: false
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2, person3, person4]
+  output:
+    is_uc_claimant: [true, false, false, false]
+    uc_child_index: [-1, 1, 2, 3]
+    uc_individual_child_element: [0, 3_513.72, 3_513.72, 0]
+    uc_is_child_limit_affected: [false, false, false, true]
+    uc_child_element: 7_027.44
+    universal_credit: 10_831.20
+
+- name: Case 4, disabled dependent additions remain payable beyond the ordinary child limit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+      person2:
+        age: 7
+      person3:
+        age: 6
+      person4:
+        age: 4
+        is_disabled_for_benefits: true
+      person5:
+        age: 2
+        is_severely_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4, person5]
+        uc_LCWRA_element: 0
+  output:
+    # Reg. 24(2) disabled-child additions are separate from the ordinary limit.
+    # 2025 monthly additions: 158.76 * 12 = 1,905.12; 495.87 * 12 = 5,950.44.
+    is_uc_claimant: [true, false, false, false, false]
+    uc_child_index: [-1, 1, 2, 3, 4]
+    uc_individual_child_element: [0, 3_513.72, 3_513.72, 0, 0]
+    uc_is_child_limit_affected: [false, false, false, true, true]
+    uc_individual_disabled_child_element: [0, 0, 0, 1_905.12, 0]
+    uc_individual_severely_disabled_child_element: [0, 0, 0, 0, 5_950.44]
+    uc_disability_elements: 7_855.56
