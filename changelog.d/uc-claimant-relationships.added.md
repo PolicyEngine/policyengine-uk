@@ -1,0 +1,1 @@
+- Added the is_uc_claimant input to identify Universal Credit claimants and partners from recorded benefit-unit relationships.

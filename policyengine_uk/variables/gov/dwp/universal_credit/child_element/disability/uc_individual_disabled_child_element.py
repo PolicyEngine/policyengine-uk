@@ -8,10 +8,11 @@ class uc_individual_disabled_child_element(Variable):
     definition_period = YEAR
     unit = GBP
     defined_for = "is_disabled_for_benefits"
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/24/2"
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.elements.child.disabled
         child = person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
-        )
+        ) & ~person("is_uc_claimant", period)
         return (child * p.amount) * MONTHS_IN_YEAR

@@ -181,3 +181,35 @@
     uc_work_allowance: 0
     uc_child_element: 0
     universal_credit: 4_801.68
+
+- name: Case 7, a cohabiting 19-year-old in education is not the partner's child.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 24
+      person2:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # No role or marriage inputs: two claimants under 25, no dependent children.
+    # The 2025 monthly couple allowance is 497.55; 497.55 * 12 = 5,970.60.
+    is_uc_claimant: [true, true]
+    uc_standard_allowance_claimant_type: COUPLE_YOUNG
+    uc_standard_allowance: 5_970.60
+    uc_child_index: [-1, -1]
+    uc_child_element: 0
+    uc_work_allowance: 0
+    universal_credit: 5_970.60

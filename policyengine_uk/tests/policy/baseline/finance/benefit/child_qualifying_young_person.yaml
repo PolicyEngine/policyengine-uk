@@ -175,6 +175,7 @@
     people:
       parent:
         age: 40
+        is_parent: true
       looked_after_child:
         age: 12
         is_looked_after_by_local_authority: true

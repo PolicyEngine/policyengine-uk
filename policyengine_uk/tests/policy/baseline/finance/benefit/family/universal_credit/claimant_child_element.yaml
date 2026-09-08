@@ -97,3 +97,36 @@
     uc_is_child_limit_affected: [false, false, false, true]
     uc_child_element: 7_027.44
     universal_credit: 10_831.20
+
+- name: Case 4, disabled dependent additions remain payable beyond the ordinary child limit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+      person2:
+        age: 7
+      person3:
+        age: 6
+      person4:
+        age: 4
+        is_disabled_for_benefits: true
+      person5:
+        age: 2
+        is_severely_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [person1, person2, person3, person4, person5]
+        uc_LCWRA_element: 0
+  output:
+    # Reg. 24(2) disabled-child additions are separate from the ordinary limit.
+    # 2025 monthly additions: 158.76 * 12 = 1,905.12; 495.87 * 12 = 5,950.44.
+    is_uc_claimant: [true, false, false, false, false]
+    uc_child_index: [-1, 1, 2, 3, 4]
+    uc_individual_child_element: [0, 3_513.72, 3_513.72, 0, 0]
+    uc_is_child_limit_affected: [false, false, false, true, true]
+    uc_individual_disabled_child_element: [0, 0, 0, 1_905.12, 0]
+    uc_individual_severely_disabled_child_element: [0, 0, 0, 0, 5_950.44]
+    uc_disability_elements: 7_855.56
