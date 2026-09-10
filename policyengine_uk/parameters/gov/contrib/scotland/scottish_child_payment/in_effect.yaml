@@ -1,7 +1,6 @@
 description: Whether the Scottish Child Payment baby bonus reform is in effect.
 values:
   0001-01-01: false
-  2027-04-01: true
 metadata:
   unit: bool
   period: year

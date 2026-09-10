@@ -10,6 +10,7 @@
   reforms:
     - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
+    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -35,6 +36,7 @@
   reforms:
     - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
+    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -59,6 +61,7 @@
   reforms:
     - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
+    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -86,6 +89,7 @@
   reforms:
     - policyengine_uk.reforms.scotland.scottish_child_payment_reform.scottish_child_payment_reform
   input:
+    gov.contrib.scotland.scottish_child_payment.in_effect: true
     people:
       parent:
         age: 30
@@ -104,7 +108,7 @@
     # [parent, baby]
     scottish_child_payment: [0, 0]
 
-- name: SCP baby bonus - before effective date (2025)
+- name: SCP baby bonus not switched on - standard rate (2025)
   period: 2025
   absolute_error_margin: 10
   reforms:
