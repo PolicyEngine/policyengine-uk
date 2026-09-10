@@ -1,3 +1,10 @@
+## [2.97.1] - 2026-09-10
+
+### Fixed
+
+- - Fixed the lagged CPI and lagged average earnings series ending at a hardcoded 2029, which froze lagged average earnings at its 2028 growth rate and left the index around 14% low by 2039.
+
+
 ## [2.97.0] - 2026-09-08
 
 ### Added
