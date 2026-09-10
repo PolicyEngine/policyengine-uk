@@ -1,3 +1,10 @@
+## [2.97.2] - 2026-09-10
+
+### Fixed
+
+- - Removed the Scottish Child Payment baby bonus from the baseline. The £40/week rate for under-1s was announced in the Scottish Budget 2026-27 but is not in legislation (SSI 2026/170 reg 8 sets a single flat rate with no under-1 tier), so from 2027 an eligible under-1 in Scotland was scored £2,080.00 against the statutory £1,500.20, overstating household net income by £579.80. It is now off in the baseline and only applies when a reform sets `gov.contrib.scotland.scottish_child_payment.in_effect`.
+
+
 ## [2.97.1] - 2026-09-10
 
 ### Fixed
