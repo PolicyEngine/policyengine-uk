@@ -18,6 +18,12 @@ def _last_year(parameter) -> int:
 
 
 def test_lagged_series_reach_the_end_of_their_source():
+    """The lag runs exactly one year past its source, and holds its last value.
+
+    A parameter carries its terminal value forward, so an off-by-one series
+    that stopped a year early would still answer correctly at every year
+    tested above. Pinning the terminal year and value is what catches it.
+    """
     growth = _obr("yoy_growth")
 
     for source_name, lagged_name in (
@@ -26,9 +32,13 @@ def test_lagged_series_reach_the_end_of_their_source():
     ):
         source = getattr(growth, source_name)
         lagged = getattr(growth, lagged_name)
+        last_source_year = _last_year(source)
 
-        assert _last_year(lagged) >= _last_year(source), (
-            f"{lagged_name} stops before {source_name} does"
+        assert _last_year(lagged) == last_source_year + 1, (
+            f"{lagged_name} should end one year after {source_name}"
+        )
+        assert lagged(str(last_source_year + 1)) == source(str(last_source_year)), (
+            f"{lagged_name} does not end on {source_name}'s final value"
         )
 
 
