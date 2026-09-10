@@ -5,6 +5,11 @@ is not in legislation: SSI 2026/170 reg 8 sets a single flat rate with no
 under-1 tier. It must therefore stay out of the baseline and only apply when a
 reform switches ``gov.contrib.scotland.scottish_child_payment.in_effect`` on.
 
+The comparisons below use the ordinary rate for the year, whatever that is:
+only the 2026-27 figure of GBP 28.20 is set by regulation, while later years
+are uprated forecasts. The tests assert that an under-1 is paid the same rate
+as an older child, so they hold whatever those later figures become.
+
 Same class of defect as issue #1852, which covers the Two Child Limit Payment.
 """
 
@@ -45,7 +50,7 @@ def scp(year: int, scenario: Scenario = None) -> list:
 
 @pytest.mark.parametrize("year", [2026, 2027, 2028])
 def test_baby_bonus_not_in_baseline(year: int):
-    """Under-1s get the same statutory rate as older children in the baseline."""
+    """Under-1s get the same ordinary rate as older children in the baseline."""
     _, baby, child = scp(year)
 
     assert baby == pytest.approx(child, abs=1e-2), (
@@ -62,6 +67,6 @@ def test_baby_bonus_applies_when_switched_on():
     )
     _, baby, child = scp(2027, scenario)
 
-    # £40.00/week * 52 weeks vs the £28.85/week statutory rate * 52 weeks.
+    # £40.00/week * 52 weeks vs the £28.85/week ordinary rate * 52 weeks.
     assert baby == pytest.approx(2_080, abs=10)
     assert child == pytest.approx(1_500, abs=10)
