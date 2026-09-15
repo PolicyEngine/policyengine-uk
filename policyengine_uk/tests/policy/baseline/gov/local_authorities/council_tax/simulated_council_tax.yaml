@@ -1,0 +1,239 @@
+- name: England Band A is 2/3 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: A
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 1668.39
+
+- name: England Band B is 7/9 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: B
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 1946.46
+
+- name: England Band C is 8/9 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: C
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 2224.52
+
+- name: England Band D is 1/1 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: D
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 2502.59
+
+- name: England Band E is 11/9 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: E
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 3058.72
+
+- name: England Band F is 13/9 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: F
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 3614.85
+
+- name: England Band G is 5/3 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: G
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 4170.98
+
+- name: England Band H is 2/1 of the Maidstone Band D amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: H
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 5005.18
+
+- name: Wales Band I (the ninth, Wales-only band) is 21/9 of Band D
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: WALES
+        local_authority: CARDIFF
+        council_tax_band: I
+  output:
+    council_tax_band_d_amount: 2013.18
+    simulated_council_tax: 4697.42
+
+- name: "Band D identity: liability equals the Band D amount in Cardiff"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: WALES
+        local_authority: CARDIFF
+        council_tax_band: D
+  output:
+    council_tax_band_d_amount: 2013.18
+    simulated_council_tax: 2013.18
+
+- name: Scotland Band H uses the 882/360 multiplier from April 2017
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax_band: H
+  output:
+    council_tax_band_d_amount: 1563.51
+    simulated_council_tax: 3830.6
+
+- name: "Band D identity: liability equals the Band D amount in Maidstone"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: D
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 2502.59
