@@ -57,3 +57,16 @@
   output:
     is_carer_for_benefits: false
     num_carers: 0
+
+- name: Carer from 35 hours a week who would claim receives Carer's Allowance and is a carer for benefits
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    carers_allowance_reported: 0
+    country: ENGLAND
+  output:
+    carers_allowance: 83.29 * 52
+    is_carer_for_benefits: true
+    num_carers: 1

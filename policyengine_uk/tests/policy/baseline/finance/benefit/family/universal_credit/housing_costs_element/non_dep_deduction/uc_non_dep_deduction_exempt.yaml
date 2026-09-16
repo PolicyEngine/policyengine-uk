@@ -33,3 +33,19 @@
     receives_carers_allowance: true
   output:
     uc_non_dep_deduction_exempt: true
+
+- name: Exempt - carer by hours with underlying entitlement, no award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 40
+    pension_credit: 0
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    care_hours: 35
+    carers_allowance_reported: 0
+    would_claim_carers_allowance: false
+  output:
+    receives_carers_allowance: false
+    uc_non_dep_deduction_exempt: true
