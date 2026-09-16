@@ -1,0 +1,108 @@
+- name: Carer addition for a claimant with underlying entitlement and no Carer's Allowance award
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        care_hours: 35
+        carers_allowance_reported: 0
+        would_claim_carers_allowance: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carers_allowance: 0
+    is_carer_for_benefits: true
+    carer_minimum_guarantee_addition: 46.37 * 52
+
+- name: Carer addition for a claimant receiving Carer's Allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        carers_allowance_reported: 1
+        care_hours: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    is_carer_for_benefits: true
+    carer_minimum_guarantee_addition: 46.37 * 52
+
+- name: No carer addition for a claimant who neither receives nor is entitled
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 70
+        care_hours: 10
+        carers_allowance_reported: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carer_minimum_guarantee_addition: 0
+
+- name: Severe disability addition is withheld only by a carer benefit in payment, not by underlying entitlement
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        care_hours: 35
+        carers_allowance_reported: 0
+        would_claim_carers_allowance: false
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [false, false]
+    is_carer_for_benefits: [false, true]
+    severe_disability_minimum_guarantee_addition: 67.3 * 52
+
+- name: Severe disability addition is withheld when the partner receives Carer's Allowance
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [false, true]
+    severe_disability_minimum_guarantee_addition: 0

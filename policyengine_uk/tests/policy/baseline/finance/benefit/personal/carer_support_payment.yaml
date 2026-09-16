@@ -30,3 +30,27 @@
   output:
     carer_support_payment: 0
     carers_allowance: 0
+
+- name: Carer in England who would not claim gets no CA but stays a carer for benefits
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 35
+    care_hours: 40
+    would_claim_carers_allowance: false
+    country: ENGLAND
+  output:
+    carers_allowance: 0
+    is_carer_for_benefits: true
+
+- name: Carer in Scotland who would not claim gets no CSP
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 35
+    care_hours: 40
+    would_claim_carers_allowance: false
+    country: SCOTLAND
+  output:
+    carer_support_payment: 0
+    is_carer_for_benefits: true
