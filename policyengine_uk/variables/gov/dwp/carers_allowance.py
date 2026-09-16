@@ -15,7 +15,10 @@ class carers_allowance(Variable):
         ca = parameters(period).gov.dwp.carers_allowance
         weekly_care_hours = person("care_hours", period)
         meets_work_condition = weekly_care_hours >= ca.min_hours
-        eligible = ~(in_scotland & csp_replaces_ca) & (
-            meets_work_condition | receives_ca
+        would_claim = person("would_claim_carers_allowance", period)
+        eligible = (
+            ~(in_scotland & csp_replaces_ca)
+            & (meets_work_condition | receives_ca)
+            & would_claim
         )
         return eligible * ca.rate * WEEKS_IN_YEAR
