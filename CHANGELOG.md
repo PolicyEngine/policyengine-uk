@@ -1,3 +1,10 @@
+## [2.98.0] - 2026-09-16
+
+### Added
+
+- - Add `would_claim_carers_allowance` (person) and `would_claim_uc_childcare` (benefit unit) take-up inputs, both defaulting to true, and recognise 35 or more weekly care hours in `is_carer_for_benefits` so a dataset can qualify carers for the Universal Credit carer element and the legacy carer premiums from reported hours without paying Carer's Allowance to every carer.
+
+
 ## [2.97.2] - 2026-09-10
 
 ### Fixed
