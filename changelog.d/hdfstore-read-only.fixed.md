@@ -1,0 +1,1 @@
+- Open dataset HDF5 files in read-only mode when loading `UKSingleYearDataset` and `UKMultiYearDataset`, so datasets in read-only locations (such as Hugging Face cache snapshots or read-only mounts) load instead of raising a `PermissionError` from pandas' default append mode.
