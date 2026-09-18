@@ -1,0 +1,20 @@
+description: Lifetime limit on gains qualifying for Business Asset Disposal Relief. The model applies it to the year's qualifying gains as if none of the limit had been used in earlier years, and charges gains above it at the main rates. Investors' Relief kept a separate £10 million limit until 30 October 2024 (Finance Act 2025 s. 10); the merged capital_gains_badr input does not distinguish the two reliefs, so the BADR limit applies to both.
+values:
+  2015-01-01:
+    value: 10_000_000
+    reference:
+      - title: Taxation of Chargeable Gains Act 1992 s. 169N(4)
+        href: https://www.legislation.gov.uk/ukpga/1992/12/section/169N
+  2020-03-11:
+    value: 1_000_000
+    reference:
+      - title: Finance Act 2020 s. 23 and Sch. 3 paras 1-2
+        href: https://www.legislation.gov.uk/ukpga/2020/14/schedule/3
+metadata:
+  unit: currency-GBP
+  label: BADR lifetime limit
+  reference:
+    - title: Taxation of Chargeable Gains Act 1992 s. 169N(4)
+      href: https://www.legislation.gov.uk/ukpga/1992/12/section/169N
+    - title: Finance Act 2025 s. 10 (Investors' Relief limit)
+      href: https://www.legislation.gov.uk/ukpga/2025/8/section/10

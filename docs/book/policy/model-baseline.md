@@ -26,11 +26,11 @@ The government announced further National Insurance cuts, reducing the [employee
 
 ### Capital gains tax changes (Autumn Budget 2024)
 
-The government increased capital gains tax rates from 10%/20% to [18% for basic rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/basic_rate.yaml#L4) and [24% for higher rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/higher_rate.yaml#L4) in fiscal year 2025-26.
+The government increased capital gains tax rates from 10%/20% to [18% for basic rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/basic_rate.yaml#L4) and [24% for higher rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/higher_rate.yaml#L4) for disposals from 30 October 2024 (Finance Act 2025 s. 7), part-way through 2024-25; the model day-weights that year between the two schedules and applies the new rates in full from 2025-26. Gains qualifying for Business Asset Disposal Relief or Investors' Relief (`capital_gains_badr`) are charged at a [separate rate](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/badr/rate.yaml) that rises from 10% to 14% in fiscal year 2025-26 and 18% from 2026-27, up to a [£1 million lifetime limit](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/badr/lifetime_limit.yaml). Carried interest (`capital_gains_carried_interest`) is charged at a [flat 32%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/carried_interest/higher_rate.yaml) from fiscal year 2025-26 (Finance Act 2025 s. 12); its move into income tax from 2026-27 is not modelled.
 
 ### Spring Budget 2024
 
-The government increased the [child benefit high income tax charge threshold from £50,000 to £60,000](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/income_tax/charges/CB_HITC/phase_out_start.yaml#L4) in fiscal year 2024-25.
+The government increased the [child benefit high income tax charge threshold from £50,000 to £60,000](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/income_tax/charges/CB_HITC/phase_out_start.yaml#L4) in fiscal year 2024-25. The [higher rate of capital gains tax on residential property](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/residential_property/higher_rate.yaml) fell from 28% to 24% for disposals from 6 April 2024 (Finance (No. 2) Act 2024 s. 6); the basic rate stayed at 18%, and neither changed on 30 October 2024. These rates apply to the `capital_gains_residential_property` component of a person's gains.
 
 ### Autumn Statement 2023 (Employee NI cut)
 
@@ -97,7 +97,7 @@ The model baseline includes all reforms above, incorporating the current UK tax 
 Key features:
 - **Income tax**: 20%/40%/45% rates with personal allowance of £12,570 and higher rate threshold of £50,270
 - **National Insurance**: 8% employee rate, 15% employer rate, 6% self-employed rate
-- **Capital gains tax**: 18%/24% rates with £3,000 annual exempt amount
+- **Capital gains tax**: 18%/24% main rates with £3,000 annual exempt amount; 14% on Business Asset Disposal Relief gains, 18%/24% on residential property gains and a flat 32% on carried interest
 - **Universal Credit**: 55% taper rate with rebalancing reforms active
 - **Benefits**: Standard uprating with targeted cost of living support for 2022
 

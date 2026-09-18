@@ -58,6 +58,9 @@ gov.economic_assumptions.yoy_growth.obr.mortgage_interest:
 gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - capital_gains
 - capital_gains_before_response
+- capital_gains_badr
+- capital_gains_residential_property
+- capital_gains_carried_interest
 - corporate_wealth
 - dividend_income
 - gross_financial_wealth

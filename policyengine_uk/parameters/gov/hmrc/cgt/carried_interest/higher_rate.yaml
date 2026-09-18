@@ -1,0 +1,20 @@
+description: Capital gains tax rate on carried interest gains of higher or additional rate taxpayers, and on gains above the unused basic rate band. Finance Act 2016 s. 83 kept carried interest at 28% when the main higher rate fell to 20%, and the 30 October 2024 rise did not touch it. Finance Act 2025 s. 12 charges all carried interest arising from 6 April 2025 at a flat 32%. Carried interest moves into the income tax framework from 6 April 2026, which the model does not represent; the 32% rate stands in for it.
+values:
+  2015-01-01:
+    value: 0.28
+    reference:
+      - title: Finance Act 2016 s. 83
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/83
+  2025-04-06:
+    value: 0.32
+    reference:
+      - title: Finance Act 2025 s. 12
+        href: https://www.legislation.gov.uk/ukpga/2025/8/section/12
+metadata:
+  unit: /1
+  label: carried interest CGT higher rate
+  reference:
+    - title: Taxation of Chargeable Gains Act 1992 s. 1H(4B)
+      href: https://www.legislation.gov.uk/ukpga/1992/12/section/1H
+    - title: GOV.UK | Capital Gains Tax rates and allowances
+      href: https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances
