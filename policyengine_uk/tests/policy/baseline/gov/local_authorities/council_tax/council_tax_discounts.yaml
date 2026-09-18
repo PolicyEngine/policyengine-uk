@@ -1,0 +1,106 @@
+- name: A single resident adult in England receives the 25% discount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: D
+  output:
+    simulated_council_tax: 2502.59
+    council_tax_discount_rate: 0.25
+    simulated_council_tax_less_discounts: 1876.94
+
+- name: Two resident adults in England receive no discount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_1:
+        age: 40
+      adult_2:
+        age: 38
+    benunits:
+      benunit:
+        members: [adult_1, adult_2]
+    households:
+      household:
+        members: [adult_1, adult_2]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: D
+  output:
+    simulated_council_tax: 2502.59
+    council_tax_discount_rate: 0
+    simulated_council_tax_less_discounts: 2502.59
+
+- name: A dwelling with no resident aged 18 or over receives twice the appropriate percentage
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [child]
+    households:
+      household:
+        members: [child]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: D
+  output:
+    simulated_council_tax: 2502.59
+    council_tax_discount_rate: 0.5
+    simulated_council_tax_less_discounts: 1251.30
+
+- name: Three resident adults in England receive no discount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_1:
+        age: 40
+      adult_2:
+        age: 38
+      adult_3:
+        age: 20
+    benunits:
+      benunit:
+        members: [adult_1, adult_2, adult_3]
+    households:
+      household:
+        members: [adult_1, adult_2, adult_3]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: D
+  output:
+    council_tax_discount_rate: 0
+
+- name: The discount does not apply outside England pending separate provision
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: WALES
+        local_authority: CARDIFF
+        council_tax_band: D
+  output:
+    council_tax_discount_rate: 0
