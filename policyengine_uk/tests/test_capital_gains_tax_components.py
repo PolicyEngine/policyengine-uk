@@ -272,6 +272,59 @@ class TestResponsePlumbing:
         assert tax == pytest.approx((gains - 3_000) * 0.40, rel=1e-4)
 
 
+class TestEqualisationReforms:
+    """What a reform must set to reach every schedule.
+
+    The main rates no longer cover residential property, carried interest or
+    relief gains, so a reform that moves only them leaves the other schedules
+    at current law. Taxing every gain at income tax rates means setting the
+    other two schedules' rates as well and switching the relief off through
+    its lifetime limit, since the relief rate is band-independent.
+    """
+
+    YEAR = 2025
+    MAIN_RATES_ONLY = {
+        "gov.hmrc.cgt.basic_rate": {"2025": 0.20},
+        "gov.hmrc.cgt.higher_rate": {"2025": 0.40},
+        "gov.hmrc.cgt.additional_rate": {"2025": 0.45},
+    }
+    EVERY_SCHEDULE = {
+        **MAIN_RATES_ONLY,
+        "gov.hmrc.cgt.residential_property.basic_rate": {"2025": 0.20},
+        "gov.hmrc.cgt.residential_property.higher_rate": {"2025": 0.40},
+        "gov.hmrc.cgt.residential_property.additional_rate": {"2025": 0.45},
+        "gov.hmrc.cgt.carried_interest.basic_rate": {"2025": 0.20},
+        "gov.hmrc.cgt.carried_interest.higher_rate": {"2025": 0.40},
+        "gov.hmrc.cgt.carried_interest.additional_rate": {"2025": 0.45},
+        "gov.hmrc.cgt.badr.lifetime_limit": {"2025": 0},
+    }
+    SCHEDULES = (None, *SCHEDULE_INPUTS)
+
+    def tax(self, schedule, changes=None):
+        variables = {"employment_income": 100_000, "capital_gains": 100_000}
+        if schedule is not None:
+            variables[schedule] = 100_000
+        kwargs = {"scenario": Scenario(parameter_changes=changes)} if changes else {}
+        sim = Microsimulation(situation=single_person(self.YEAR, **variables), **kwargs)
+        return float(sim.calculate("capital_gains_tax", self.YEAR).values[0])
+
+    def test_main_rate_reform_leaves_the_other_schedules_at_current_law(self):
+        baseline = {s: self.tax(s) for s in self.SCHEDULES}
+        reformed = {s: self.tax(s, self.MAIN_RATES_ONLY) for s in self.SCHEDULES}
+
+        # 97,000 above the AEA, all above the basic rate band: 87,440 at 40%
+        # and 9,560 at 45%.
+        assert reformed[None] == pytest.approx(39_278)
+        for schedule in SCHEDULE_INPUTS:
+            assert reformed[schedule] == baseline[schedule], schedule
+
+    def test_setting_every_schedule_taxes_every_gain_alike(self):
+        reformed = {s: self.tax(s, self.EVERY_SCHEDULE) for s in self.SCHEDULES}
+
+        for schedule in self.SCHEDULES:
+            assert reformed[schedule] == pytest.approx(39_278), schedule
+
+
 class TestScheduleParameters:
     """Dates and values of the new gov.hmrc.cgt parameters by fiscal year."""
 
