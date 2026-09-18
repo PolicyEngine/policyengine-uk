@@ -18,12 +18,14 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - communication_consumption
 - domestic_energy_consumption
 - education_consumption
+- electricity_consumption
 - esa_contrib_reported
 - esa_income_reported
 - food_and_non_alcoholic_beverages_consumption
 - free_school_fruit_veg
 - free_school_meals
 - free_school_milk
+- gas_consumption
 - health_consumption
 - household_furnishings_consumption
 - housing_benefit_reported
