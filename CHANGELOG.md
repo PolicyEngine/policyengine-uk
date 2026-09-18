@@ -1,3 +1,14 @@
+## [2.99.0] - 2026-09-18
+
+### Added
+
+- - Add three person-level inputs, `capital_gains_badr`, `capital_gains_residential_property` and `capital_gains_carried_interest`, as components of `capital_gains`, and charge each at its own schedule in `capital_gains_tax`: new parameters `gov.hmrc.cgt.badr.rate` and `.lifetime_limit`, `gov.hmrc.cgt.residential_property.{basic,higher,additional}_rate` and `gov.hmrc.cgt.carried_interest.{basic,higher,additional}_rate`. The annual exempt amount goes to the highest-rate schedule first, relief gains take the unused basic rate band before other gains (TCGA 1992 s. 1I(4)-(6)), and the remaining band goes where it saves most. With the inputs absent or zero the liability is unchanged. A reform that changes only `gov.hmrc.cgt.{basic,higher,additional}_rate` no longer reaches residential property, carried interest or relief gains; to tax every gain at income tax rates, set the `residential_property` and `carried_interest` rates too and set `gov.hmrc.cgt.badr.lifetime_limit` to zero.
+
+### Fixed
+
+- - Open dataset H5 files read-only when loading. huggingface_hub 1.32.0 stores cached downloads as read-only blobs, and the default append mode refused them, so every dataset-backed simulation failed with a PermissionError.
+
+
 ## [2.98.0] - 2026-09-16
 
 ### Added

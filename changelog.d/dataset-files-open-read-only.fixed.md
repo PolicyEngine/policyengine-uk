@@ -1,1 +1,0 @@
-- Open dataset H5 files read-only when loading. huggingface_hub 1.32.0 stores cached downloads as read-only blobs, and the default append mode refused them, so every dataset-backed simulation failed with a PermissionError.
