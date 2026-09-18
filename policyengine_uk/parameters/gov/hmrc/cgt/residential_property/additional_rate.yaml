@@ -1,0 +1,18 @@
+description: Capital gains tax rate on UK residential property gains that the model places above the income tax higher rate limit. Capital gains tax has no separate additional rate, so this equals residential_property.higher_rate at every date; the parameter exists so that a reform can mirror the income tax additional-rate band on residential property gains in the same way gov.hmrc.cgt.additional_rate allows for other gains.
+values:
+  2015-01-01:
+    value: 0.28
+    reference:
+      - title: Finance Act 2016 s. 83
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/83
+  2024-04-06:
+    value: 0.24
+    reference:
+      - title: Finance (No. 2) Act 2024 s. 6
+        href: https://www.legislation.gov.uk/ukpga/2024/12/section/6
+metadata:
+  unit: /1
+  label: residential property CGT additional rate
+  reference:
+    - title: Taxation of Chargeable Gains Act 1992 s. 1I
+      href: https://www.legislation.gov.uk/ukpga/1992/12/section/1I

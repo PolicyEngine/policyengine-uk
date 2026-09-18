@@ -1,0 +1,15 @@
+description: Capital gains tax rate on UK residential property gains that fall within the taxpayer's unused basic rate band. Finance Act 2016 s. 83 kept residential property at 18% when the main basic rate fell to 10%, and the 30 October 2024 main-rate rise did not touch it, so the fiscal-year value is not blended.
+values:
+  2015-01-01:
+    value: 0.18
+    reference:
+      - title: Finance Act 2016 s. 83
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/83
+metadata:
+  unit: /1
+  label: residential property CGT basic rate
+  reference:
+    - title: Taxation of Chargeable Gains Act 1992 s. 1H
+      href: https://www.legislation.gov.uk/ukpga/1992/12/section/1H
+    - title: GOV.UK | Capital Gains Tax rates and allowances
+      href: https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances

@@ -1,0 +1,20 @@
+description: Capital gains tax rate on UK residential property gains of higher or additional rate taxpayers, and on gains above the unused basic rate band. Finance Act 2016 s. 83 kept residential property at 28% when the main higher rate fell to 20%; Finance (No. 2) Act 2024 s. 6 cut it to 24% for disposals from 6 April 2024. It did not change on 30 October 2024, so the fiscal-year value is not blended.
+values:
+  2015-01-01:
+    value: 0.28
+    reference:
+      - title: Finance Act 2016 s. 83
+        href: https://www.legislation.gov.uk/ukpga/2016/24/section/83
+  2024-04-06:
+    value: 0.24
+    reference:
+      - title: Finance (No. 2) Act 2024 s. 6
+        href: https://www.legislation.gov.uk/ukpga/2024/12/section/6
+metadata:
+  unit: /1
+  label: residential property CGT higher rate
+  reference:
+    - title: Taxation of Chargeable Gains Act 1992 s. 1I
+      href: https://www.legislation.gov.uk/ukpga/1992/12/section/1I
+    - title: GOV.UK | Capital Gains Tax rates and allowances
+      href: https://www.gov.uk/guidance/capital-gains-tax-rates-and-allowances
