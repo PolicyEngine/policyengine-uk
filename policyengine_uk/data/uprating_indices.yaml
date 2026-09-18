@@ -3,6 +3,7 @@ gov.economic_assumptions.yoy_growth.obr.average_earnings:
 - employer_pension_contributions
 - employment_income
 - employment_income_before_lsr
+- pension_contributions_via_salary_sacrifice
 - personal_pension_contributions
 - student_loan_repayments
 gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
@@ -87,5 +88,9 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
+gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
+- housing_service_charges
+gov.economic_assumptions.yoy_growth.ofwat.water_bills:
+- water_and_sewerage_charges
 gov.economic_assumptions.yoy_growth.ons.population:
 - household_weight
