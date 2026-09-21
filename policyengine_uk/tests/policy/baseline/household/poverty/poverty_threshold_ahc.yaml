@@ -1,0 +1,45 @@
+- name: The AHC absolute threshold is the weekly parameter times 52, unequivalised; poverty_line_ahc is the same line scaled by the equivalisation factor
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+  output:
+    # 60% of the 2010/11 AHC median uprated by CPI: 326.76 a week in 2024.
+    poverty_threshold_ahc: 16_991.6
+    # A single adult's AHC equivalisation factor is 0.58.
+    poverty_line_ahc: 9_855.1
+
+- name: A single adult on 5,000 of earnings is below the AHC absolute line
+  period: 2024
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 5_000
+    households:
+      household:
+        members: [person]
+        rent: 0
+        council_tax: 0
+  output:
+    in_poverty_ahc: true
+
+- name: A single adult on 30,000 of earnings is above the AHC absolute line
+  period: 2024
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 30_000
+    households:
+      household:
+        members: [person]
+        rent: 0
+        council_tax: 0
+  output:
+    in_poverty_ahc: false
