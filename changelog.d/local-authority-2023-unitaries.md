@@ -1,0 +1,1 @@
+- Add the six April 2023 unitary authorities (Cumberland, North Northamptonshire, North Yorkshire, Somerset, West Northamptonshire, Westmorland and Furness) to the `LocalAuthority` enum, so a dataset on the April 2023 local authority roster can supply `local_authority` for every household.
