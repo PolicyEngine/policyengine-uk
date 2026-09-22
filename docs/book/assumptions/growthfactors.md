@@ -16,7 +16,10 @@ We use the OBR's CPI projections to drive most benefit and consumption variables
 
 We apply CPI to these variables:
 - All reported benefits– `carers_allowance_reported`, `child_benefit_reported`, `child_tax_credit_reported`, `esa_contrib_reported`, `esa_income_reported`, `housing_benefit_reported`, `iidb_reported`, `incapacity_benefit_reported`, `income_support_reported`, `jsa_contrib_reported`, `jsa_income_reported`, `maternity_allowance_reported`, `pension_credit_reported`, `sda_reported`, `state_pension_reported`, `universal_credit_reported`, `winter_fuel_allowance_reported`, `working_tax_credit_reported`
-- All consumption categories– `alcohol_and_tobacco_consumption`, `clothing_and_footwear_consumption`, `communication_consumption`, `domestic_energy_consumption`, `education_consumption`, `food_and_non_alcoholic_beverages_consumption`, `health_consumption`, `household_furnishings_consumption`, `housing_water_and_electricity_consumption`, `miscellaneous_consumption`, `recreation_consumption`, `restaurants_and_hotels_consumption`, `transport_consumption`
+- All consumption categories EXCEPT energy– `alcohol_and_tobacco_consumption`, `clothing_and_footwear_consumption`, `communication_consumption`, `education_consumption`, `food_and_non_alcoholic_beverages_consumption`, `health_consumption`, `household_furnishings_consumption`, `housing_water_and_electricity_consumption`, `miscellaneous_consumption`, `recreation_consumption`, `restaurants_and_hotels_consumption`, `transport_consumption`
+
+`domestic_energy_consumption`, `electricity_consumption` and `gas_consumption` are deliberately excluded. The data build calibrates them to NEED mean kWh and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values already carry FY26/27 price levels; uprating them from the dataset's data year would re-apply price changes that are already included. See PolicyEngine/policyengine-uk#1867.
+
 - Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`
 
 ## Road fuel volume
