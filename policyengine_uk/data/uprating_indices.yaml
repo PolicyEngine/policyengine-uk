@@ -1,3 +1,26 @@
+# Energy variables are deliberately ABSENT from every index below.
+#
+# SCOPE: this file governs DATASET PROJECTION only — the uprating applied to
+# a dataset's stored values when it is projected to later years. It does not
+# govern the class-level `uprating` attribute on the Variable, which
+# policyengine-core still uses to carry a direct situation input forward from
+# an earlier period. That path is unchanged and out of scope here: a 2024
+# value a user supplies directly may be their own contemporaneous bill rather
+# than this data build's artifact, so it has no claim on the build's price
+# basis (#1868 review A1).
+#
+# policyengine-uk-data calibrates domestic_energy_consumption,
+# electricity_consumption and gas_consumption to NEED mean kWh by income band
+# and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values
+# already carry FY26/27 price levels. Its imputations/consumption.py says so
+# outright: "the stored £/yr values represent FY26/27 price levels. Energy
+# variables are not CPI-uprated, so this avoids the need for price-level
+# adjustment at simulation time."
+#
+# Projecting them from the dataset's DATA year (2024) would therefore
+# re-apply 2024-2026 price changes the build has already priced in (#1867).
+# Other consumption variables come from the LCFS at data-year prices and do
+# need uprating, which is why only these three are excluded.
 gov.economic_assumptions.yoy_growth.obr.average_earnings:
 - employee_pension_contributions
 - employer_pension_contributions
@@ -16,16 +39,13 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - childcare_expenses
 - clothing_and_footwear_consumption
 - communication_consumption
-- domestic_energy_consumption
 - education_consumption
-- electricity_consumption
 - esa_contrib_reported
 - esa_income_reported
 - food_and_non_alcoholic_beverages_consumption
 - free_school_fruit_veg
 - free_school_meals
 - free_school_milk
-- gas_consumption
 - health_consumption
 - household_furnishings_consumption
 - housing_benefit_reported
