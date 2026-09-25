@@ -1,0 +1,27 @@
+description: Tobacco duty cigarette specific amount per cigarette.
+values:
+  '2023-11-22':
+    value: 0.3167
+    metadata:
+      effective_time: '18:00:00'
+  '2024-10-30':
+    value: 0.33458
+    metadata:
+      effective_time: '18:00:00'
+  '2025-11-26':
+    value: 0.3535
+    metadata:
+      effective_time: '18:00:00'
+  '2026-10-01': 0.39409
+metadata:
+  unit: currency-GBP
+  period: year
+  label: tobacco duty cigarette specific amount per cigarette
+  reference:
+  - title: Tobacco Products Duty Act 1979, Schedule 1
+    href: https://www.legislation.gov.uk/ukpga/1979/7/schedule/1
+  - title: HMRC historical Tobacco Duty rates
+    href: https://www.gov.uk/government/statistics/tobacco-bulletin/historical-tobacco-duty-rates
+  - title: HMRC Tobacco Products Duty rates
+    href: https://www.gov.uk/government/publications/rates-and-allowances-excise-duty-tobacco-duty/excise-duty-tobacco-duty-rates
+  preserve_calendar_dates: true

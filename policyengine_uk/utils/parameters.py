@@ -93,6 +93,9 @@ def convert_to_fiscal_year_parameters(parameters):
     flag off where the value at a point in time is what applies, as for a tax
     charged on a transaction at the rate in force on its date.
 
+    Parameters with ``preserve_calendar_dates: true`` retain statutory dates.
+    Their formulas must explicitly annualise the underlying transactions.
+
     Values are computed for every year before any are written, so that
     rewriting one year cannot affect the reading of another.
     """
@@ -100,6 +103,8 @@ def convert_to_fiscal_year_parameters(parameters):
     YEARS = list(range(2015, 2041))
     for param in parameters.get_descendants():
         if isinstance(param, Parameter):
+            if (param.metadata or {}).get("preserve_calendar_dates", False):
+                continue
             blend = (param.metadata or {}).get("fiscal_year_blend", False)
             values = {}
             for year in YEARS:

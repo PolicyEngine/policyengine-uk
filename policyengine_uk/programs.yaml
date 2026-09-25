@@ -84,6 +84,46 @@ programs:
     variable: fuel_duty
     parameter_prefix: gov.hmrc.fuel_duty
     verified_start_year: 2022
+    notes: Petrol and diesel, plus supplied kilograms of LPG and natural road fuel gas. Gas consumption is not imputed.
+
+  - id: alcohol_duty
+    name: Alcohol duty
+    full_name: Alcohol Duty
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: alcohol_duty
+    parameter_prefix: gov.hmrc.alcohol_duty
+    verified_start_year: 2024
+    verified_end_year: 2026
+    notes: Household quantities and strengths, including draught relief. Excludes small producer relief and population imputation.
+
+  - id: tobacco_duty
+    name: Tobacco duty
+    full_name: Tobacco Products Duty
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: tobacco_duty
+    parameter_prefix: gov.hmrc.tobacco_duty
+    verified_start_year: 2024
+    verified_end_year: 2026
+    notes: Household quantities and retail cigarette prices. Population quantities are not imputed.
+
+  - id: vehicle_excise_duty
+    name: Vehicle excise duty
+    full_name: Vehicle Excise Duty
+    category: Taxes
+    agency: DfT
+    status: partial
+    coverage: UK
+    variable: vehicle_excise_duty
+    parameter_prefix: gov.dft.vehicle_excise_duty
+    verified_start_year: 2024
+    verified_end_year: 2026
+    notes: One car per person with supplied vehicle characteristics. Excludes vans, motorcycles, eVED and population imputation.
 
   - id: student_loans
     name: Student loan repayments

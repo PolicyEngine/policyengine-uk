@@ -1,0 +1,206 @@
+# Alcohol duty = litres of drink x ABV x pounds per litre of pure alcohol.
+# FY2024 and FY2025 each have 301 days before February and 64 after.
+- name: No alcohol consumed
+  period: 2026
+  absolute_error_margin: 0.01
+  input: {}
+  output:
+    alcohol_duty: 0
+- name: Beer at five percent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    beer_litres: 100
+    beer_abv: 0.05
+  output:
+    alcohol_duty: 112.9
+- name: Beer draught share
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    beer_litres: 100
+    beer_abv: 0.05
+    beer_draught_share: 0.5
+  output:
+    alcohol_duty: 105.075
+- name: Alcohol statutory strength boundaries
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    beer_litres:
+    - 100
+    - 100
+    - 100
+    - 100
+    - 100
+    - 100
+    - 100
+    - 100
+    beer_abv:
+    - 0.012
+    - 0.013
+    - 0.034
+    - 0.035
+    - 0.084
+    - 0.085
+    - 0.22
+    - 0.221
+  output:
+    alcohol_duty:
+    - 0
+    - 12.948
+    - 33.864
+    - 79.03
+    - 189.672
+    - 260.27
+    - 673.64
+    - 751.179
+- name: Draught relief stops at 8.5 percent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    beer_litres:
+    - 100
+    - 100
+    beer_abv:
+    - 0.084
+    - 0.085
+    beer_draught_share:
+    - 1
+    - 1
+  output:
+    alcohol_duty:
+    - 163.38
+    - 260.27
+- name: Still cider, wine, and spirits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    cider_litres: 100
+    cider_abv: 0.05
+    wine_litres: 10
+    wine_abv: 0.13
+    spirits_litres: 2
+    spirits_abv: 0.4
+  output:
+    alcohol_duty: 118.94800000000001
+- name: Sparkling cider changes band above 5.5 percent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    sparkling_cider_litres:
+    - 100
+    - 100
+    sparkling_cider_abv:
+    - 0.055
+    - 0.056
+  output:
+    alcohol_duty:
+    - 57.145
+    - 149.016
+- name: Other fermented products qualify for draught relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    other_fermented_litres: 100
+    other_fermented_abv: 0.05
+    other_fermented_draught_share: 1
+  output:
+    alcohol_duty: 97.25
+- name: Fiscal 2025 includes February 2026 uprating
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    beer_litres: 100
+    beer_abv: 0.05
+  output:
+    alcohol_duty: 109.6013698630137
+- name: Fiscal 2024 includes February 2025 draught reduction
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    beer_litres: 100
+    beer_abv: 0.05
+    beer_draught_share: 1
+  output:
+    alcohol_duty: 95.11945205479452
+- name: Wine transitional 12.5 percent treatment ends February 2025
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    wine_litres: 100
+    wine_abv: 0.145
+  output:
+    alcohol_duty: 368.8886849315068
+- name: Default strengths remain overrideable assumptions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    beer_litres: 100
+    cider_litres: 100
+    sparkling_cider_litres: 100
+    wine_litres: 100
+    spirits_litres: 100
+    other_fermented_litres: 100
+  output:
+    beer_duty: 90.32
+    cider_duty: 46.755
+    sparkling_cider_duty: 46.755
+    wine_duty: 367.44
+    spirits_duty: 1359.6
+    other_fermented_duty: 133.05
+- name: Alcohol becomes taxable above 1.2 percent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    beer_litres:
+    - 100
+    - 100
+    beer_abv:
+    - 0.012
+    - 0.0121
+  output:
+    alcohol_duty:
+    - 0
+    - 12.0516
+- name: Sparkling cider draught boundary
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    sparkling_cider_litres:
+    - 100
+    - 100
+    - 100
+    sparkling_cider_abv:
+    - 0.055
+    - 0.056
+    - 0.085
+    sparkling_cider_draught_share:
+    - 1
+    - 1
+    - 1
+  output:
+    alcohol_duty:
+    - 49.225
+    - 108.92
+    - 260.27
+- name: Wine easement band edges during fiscal 2024
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    wine_litres:
+    - 100
+    - 100
+    - 100
+    - 100
+    wine_abv:
+    - 0.114
+    - 0.115
+    - 0.145
+    - 0.146
+  output:
+    wine_duty:
+    - 326.97886027397266
+    - 353.3498356164384
+    - 368.8886849315068
+    - 418.76239999999996

@@ -1,0 +1,95 @@
+# Annualise weekly quantities with 52 weeks. The FY2026 split is 178/187 days.
+# FY2024 Budget-day split: 207.75/157.25 days; FY2025: 234.75/130.25 days.
+# Apply the cigarette minimum in each interval before weighting.
+- name: No tobacco consumed
+  period: 2026
+  absolute_error_margin: 0.01
+  input: {}
+  output:
+    tobacco_duty: 0
+- name: Cigarette minimum binds below retail price threshold
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    cigarettes_per_week: 20
+    cigarette_price_per_pack: 10
+  output:
+    tobacco_duty: 515.7539221917808
+- name: Cigarette specific and ad valorem duty above minimum
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    cigarettes_per_week: 20
+    cigarette_price_per_pack: 20
+  output:
+    tobacco_duty: 560.8672416438357
+- name: Minimum changes binding status during fiscal year
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    cigarettes_per_week: 20
+    cigarette_price_per_pack: 14.5
+  output:
+    tobacco_duty: 516.36
+- name: Hand rolling grams and all other tobacco products
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    hand_rolling_tobacco_grams_per_week: 1000
+    cigars_grams_per_week: 1000
+    other_tobacco_grams_per_week: 1000
+    heated_tobacco_grams_per_week: 1000
+  output:
+    tobacco_duty: 84895.3994520548
+- name: Fiscal 2025 includes Budget day increase
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    cigarettes_per_week: 20
+    cigarette_price_per_pack: 10
+  output:
+    tobacco_duty: 473.91137424657535
+- name: Fiscal 2024 includes Budget day increase
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    cigarettes_per_week: 20
+    cigarette_price_per_pack: 10
+  output:
+    tobacco_duty: 450.4070679452055
+- name: Weight duty for hand rolling tobacco
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    hand_rolling_tobacco_grams_per_week: 10
+  output:
+    tobacco_duty: 280.75797260273976
+- name: Weight duty for cigars
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    cigars_grams_per_week: 10
+  output:
+    tobacco_duty: 247.18375232876713
+- name: Weight duty for other tobacco
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    other_tobacco_grams_per_week: 10
+  output:
+    tobacco_duty: 115.25187397260274
+- name: Weight duty for heated tobacco
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    heated_tobacco_grams_per_week: 10
+  output:
+    tobacco_duty: 205.76039561643836
+- name: Default price is the published ONS 2024 average
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    cigarettes_per_week: 20
+  output:
+    cigarette_price_per_pack: 15.85
+    tobacco_duty: 525.2602416438356
