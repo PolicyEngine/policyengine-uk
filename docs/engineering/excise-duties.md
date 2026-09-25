@@ -28,9 +28,9 @@ These two rate nodes use `preserve_calendar_dates: true` to opt out of the
 usual conversion of government parameters to annual values. Their raw parameter
 values retain their actual dates; `utils/excise.py` performs the annual
 calculation. Value-level `effective_time` metadata records the Budget-day time.
-Annual `Scenario.parameter_changes` still apply to a complete UK fiscal year.
-Use that interface for fiscal-year reforms rather than a calendar-year dated
-legacy reform dictionary.
+Annual `Scenario.parameter_changes` and bare-year legacy reform dictionaries
+apply to a complete UK fiscal year. Explicit date ranges retain the dates the
+caller supplies.
 
 The linear gas rates use the existing `fiscal_year_blend: true` machinery.
 Petrol and diesel retain their existing calendar-year averaged rate path.

@@ -130,3 +130,22 @@ def test_annual_tobacco_override_leaves_adjacent_years_on_law():
             for p, weight in fiscal_year_segments(node, year)
         )
         assert result == pytest.approx(expected)
+
+
+def test_legacy_bare_year_reform_uses_the_fiscal_year_for_preserved_rates():
+    """Existing reform dictionaries must cover January-April of the named FY."""
+    sim = Microsimulation(
+        situation={
+            "people": {"person": {"age": {2026: 40}}},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {
+                "household": {
+                    "members": ["person"],
+                    "beer_litres": {2026: 100},
+                    "beer_abv": {2026: 0.05},
+                }
+            },
+        },
+        reform={"gov.hmrc.alcohol_duty.rates.beer": {"2026": 30}},
+    )
+    assert sim.calculate("alcohol_duty", 2026).values[0] == pytest.approx(150)

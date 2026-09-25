@@ -3,6 +3,7 @@ from typing import Optional, Callable, Dict, Type, Union
 from policyengine_core.simulations import Simulation
 from policyengine_core.reforms import Reform
 from policyengine_core.periods import period, instant
+from policyengine_uk.utils.parameters import uk_fiscal_year_period
 
 
 class Scenario(BaseModel):
@@ -116,6 +117,7 @@ class Scenario(BaseModel):
 
             def modifier(sim: Simulation):
                 for parameter in reform:
+                    target = sim.tax_benefit_system.parameters.get_child(parameter)
                     if isinstance(reform[parameter], dict):
                         for period_str, value in reform[parameter].items():
                             if "." in period_str:
@@ -125,10 +127,12 @@ class Scenario(BaseModel):
                             else:
                                 start = None
                                 stop = None
-                                period_ = period(period_str)
-                            sim.tax_benefit_system.parameters.get_child(
-                                parameter
-                            ).update(
+                                period_ = (
+                                    uk_fiscal_year_period(period_str)
+                                    if target.metadata.get("preserve_calendar_dates")
+                                    else period(period_str)
+                                )
+                            target.update(
                                 start=start,
                                 stop=stop,
                                 period=period_,
@@ -139,7 +143,7 @@ class Scenario(BaseModel):
                         stop = None
                         period_ = None
 
-                        sim.tax_benefit_system.parameters.get_child(parameter).update(
+                        target.update(
                             start=start,
                             stop=stop,
                             period=period_,
