@@ -26,6 +26,7 @@ project:
       - file: docs/book/validation/hbai
     - title: Policy
       children:
+      - file: docs/engineering/excise-duties.md
       - file: docs/book/policy/model-baseline
       - file: docs/book/policy/uc-rebalancing
 site:

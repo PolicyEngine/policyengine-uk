@@ -1,0 +1,17 @@
+description: Vehicle excise duty modern registration start.
+values:
+  '2017-04-01':
+  - 2017
+  - 4
+  - 1
+metadata:
+  unit: date
+  period: year
+  label: vehicle excise duty modern registration start
+  reference:
+  - title: Vehicle Excise and Registration Act 1994, Schedule 1
+    href: https://www.legislation.gov.uk/ukpga/1994/22/schedule/1
+  - title: HMRC Budget 2025 rates and allowances, Vehicle Excise Duty
+    href: https://www.gov.uk/government/publications/budget-2025-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances
+  - title: DVLA vehicle tax rate tables
+    href: https://www.gov.uk/vehicle-tax-rate-tables

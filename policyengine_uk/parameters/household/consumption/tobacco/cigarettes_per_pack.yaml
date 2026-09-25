@@ -1,0 +1,14 @@
+description: Number of cigarettes in the pack used to quote the retail price.
+values:
+  '2023-11-22': 20
+metadata:
+  unit: cigarette
+  period: year
+  label: number of cigarettes in the pack used to quote the retail price
+  reference:
+  - title: Tobacco Products Duty Act 1979, Schedule 1
+    href: https://www.legislation.gov.uk/ukpga/1979/7/schedule/1
+  - title: HMRC historical Tobacco Duty rates
+    href: https://www.gov.uk/government/statistics/tobacco-bulletin/historical-tobacco-duty-rates
+  - title: HMRC Tobacco Products Duty rates
+    href: https://www.gov.uk/government/publications/rates-and-allowances-excise-duty-tobacco-duty/excise-duty-tobacco-duty-rates

@@ -1,0 +1,19 @@
+description: Alcohol duty draught other rate per litre of pure alcohol.
+values:
+  '2023-08-01': 19.08
+  '2025-02-01': 18.76
+  '2026-02-01': 19.45
+metadata:
+  unit: currency-GBP
+  period: year
+  label: alcohol duty draught other rate per litre of pure alcohol
+  reference:
+  - title: Finance (No. 2) Act 2023, Schedule 7
+    href: https://www.legislation.gov.uk/ukpga/2023/30/schedule/7
+  - title: Finance (No. 2) Act 2023, Schedule 8
+    href: https://www.legislation.gov.uk/ukpga/2023/30/schedule/8
+  - title: HMRC historic Alcohol Duty rates
+    href: https://www.gov.uk/government/statistics/alcohol-bulletin/alcohol-bulletin-historic-duty-rates
+  - title: HMRC Alcohol Duty rates
+    href: https://www.gov.uk/guidance/alcohol-duty-rates
+  preserve_calendar_dates: true

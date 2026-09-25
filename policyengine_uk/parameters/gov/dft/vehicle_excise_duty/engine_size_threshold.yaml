@@ -1,0 +1,14 @@
+description: Vehicle excise duty engine size threshold.
+values:
+  '2001-03-01': 1549
+metadata:
+  unit: cubic_centimetre
+  period: year
+  label: vehicle excise duty engine size threshold
+  reference:
+  - title: Vehicle Excise and Registration Act 1994, Schedule 1
+    href: https://www.legislation.gov.uk/ukpga/1994/22/schedule/1
+  - title: HMRC Budget 2025 rates and allowances, Vehicle Excise Duty
+    href: https://www.gov.uk/government/publications/budget-2025-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances
+  - title: DVLA vehicle tax rate tables
+    href: https://www.gov.uk/vehicle-tax-rate-tables
