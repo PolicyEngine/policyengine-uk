@@ -3,7 +3,8 @@
 The model calculates alcohol duty, tobacco duty, vehicle excise duty on cars,
 and duty on LPG and natural road fuel gas from supplied household inputs.
 `household_tax` and `gov_tax` include these amounts once, alongside petrol and
-diesel duty. The incidence assumption is full pass-through to consumers.
+diesel duty. These totals combine the different annual bases described below.
+The incidence assumption is full pass-through to consumers.
 
 ## Coverage and periods
 
@@ -36,6 +37,16 @@ The linear gas rates use the existing `fiscal_year_blend: true` machinery.
 Petrol and diesel retain their existing calendar-year averaged rate path.
 Monthly `fuel_duty` allocates one twelfth of each annual volume and uses the
 model's annual rate; it does not represent duty on a dated purchase.
+
+Consequently, `household_tax` and `gov_tax` mix year bases. For model period
+`2026`, alcohol, tobacco and road fuel gas duty use 6 April 2026 to 5 April 2027,
+and VED uses 1 April 2026 to 31 March 2027. They are added to existing annual
+components, including income tax and VAT, and the calendar-year petrol and
+diesel duty calculation. Aggregation does not realign or prorate these components
+to a common reporting year. The totals therefore do not represent a consistent
+January-to-December receipts period. Before comparing `gov_tax` with
+calendar-year receipts, align each component to that calendar year; changing the
+total's year label alone does not perform that conversion.
 
 ## Alcohol inputs
 
@@ -134,6 +145,16 @@ biogas used as road fuel, not domestic heating. The inputs are kilograms,
 matching the legislation. No universal litre-to-kilogram density is assumed.
 The existing `fuel_duty` output includes these charges. Rural fuel duty relief
 continues to apply only to petrol and diesel.
+
+From 1 March 2027 onwards, the gas parameters hold LPG at £0.3161/kg and natural
+gas at £0.2470/kg. This implementation stops at the last numerical rates in the
+HMRC 2026-to-2027 schedule and does not extrapolate gas rates using an inflation
+forecast. This is a modelling limitation: HMRC states that RPI uprating resumes
+from 2027/28. The existing petrol and diesel path includes forecast uprating
+from April 2027, with dated annual values through 2030, so its rates rise while
+the gas rates stay flat. Later-year gas duty is therefore lower than it would be
+under the same uprating assumption. Analyses beyond March 2027 that require
+consistent fuel-duty forecasts must supply an uprated gas-rate path explicitly.
 
 Source: [HMRC fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/fuel-duty-rates-for-2026-to-2027/fuel-duty-rates-2026-to-2027).
 
