@@ -1,3 +1,14 @@
+## [2.102.0] - 2026-09-25
+
+### Added
+
+- - Added household alcohol duty with strength bands, draught relief, and fiscal-year weighting.
+- - Added household tobacco duty with cigarette minimum duty and fiscal-year weighting.
+- - Added car vehicle excise duty using registration dates, emissions, fuel type, engine size and list price.
+- - Added LPG and natural road fuel gas to fuel duty, including the 2026-27 staged increases.
+  - Documented the gas-rate projection limits and different year bases in aggregate tax results.
+
+
 ## [2.101.0] - 2026-09-25
 
 ### Added
