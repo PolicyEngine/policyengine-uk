@@ -86,21 +86,148 @@
   output:
     council_tax_discount_rate: 0
 
-- name: The discount does not apply outside England pending separate provision
+- name: A single resident adult in Wales receives the 25% discount
+  # Regulation 3 of the Council Tax (Discounts, Disregards and Exemptions) (Wales) Regulations 2026, and section 11(1) before 1 April 2026.
   period: 2026
-  absolute_error_margin: 0.01
+  absolute_error_margin: 0.001
   input:
     people:
-      person:
+      person_1:
         age: 40
     benunits:
       benunit:
-        members: [person]
+        members: [person_1]
     households:
       household:
-        members: [person]
+        members: [person_1]
         region: WALES
-        local_authority: CARDIFF
-        council_tax_band: D
+  output:
+    council_tax_discount_rate: 0.25
+
+- name: Two resident adults in Wales receive no discount
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 40
+      person_2:
+        age: 38
+    benunits:
+      benunit:
+        members: [person_1, person_2]
+    households:
+      household:
+        members: [person_1, person_2]
+        region: WALES
+  output:
+    council_tax_discount_rate: 0
+
+- name: A single resident adult in Scotland receives the 25% discount
+  # Local Government Finance Act 1992 section 79(1), the appropriate percentage being 25 per cent under section 79(3).
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person_1]
+    households:
+      household:
+        members: [person_1]
+        region: SCOTLAND
+  output:
+    council_tax_discount_rate: 0.25
+
+- name: Two resident adults in Scotland receive no discount
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 40
+      person_2:
+        age: 38
+    benunits:
+      benunit:
+        members: [person_1, person_2]
+    households:
+      household:
+        members: [person_1, person_2]
+        region: SCOTLAND
+  output:
+    council_tax_discount_rate: 0
+
+- name: A dwelling with no resident in Scotland receives no discount
+  # Section 79(2)(a) was repealed with effect from 1 April 2005 by regulation 2 of the Council Tax (Discount for Unoccupied Dwellings) (Scotland) Regulations 2005, so no discount arises under section 79 merely because a dwelling is unoccupied.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 10
+    benunits:
+      benunit:
+        members: [person_1]
+    households:
+      household:
+        members: [person_1]
+        region: SCOTLAND
+  output:
+    council_tax_discount_rate: 0
+
+- name: A dwelling with no resident in Wales receives twice the appropriate percentage before the 2026 reform
+  # Section 11(2)(a) applied to England and Wales alike until 31 March 2026.
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 10
+    benunits:
+      benunit:
+        members: [person_1]
+    households:
+      household:
+        members: [person_1]
+        region: WALES
+  output:
+    council_tax_discount_rate: 0.5
+
+- name: A dwelling with no resident in Wales receives no discount after the 2026 reform
+  # From 1 April 2026 the Welsh regulations prescribe 50 per cent only where residents are all disregarded (regulation 4) or in the narrow unoccupied cases of regulation 6, so no general no-resident discount arises. Tested in 2027 because these calendar-year parameters resolve at 1 January, before the 1 April 2026 commencement.
+  period: 2027
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 10
+    benunits:
+      benunit:
+        members: [person_1]
+    households:
+      household:
+        members: [person_1]
+        region: WALES
+  output:
+    council_tax_discount_rate: 0
+
+- name: Northern Ireland receives no council tax discount
+  # Northern Ireland levies domestic rates rather than council tax.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 40
+    benunits:
+      benunit:
+        members: [person_1]
+    households:
+      household:
+        members: [person_1]
+        region: NORTHERN_IRELAND
   output:
     council_tax_discount_rate: 0
