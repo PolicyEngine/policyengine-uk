@@ -12,7 +12,7 @@ from policyengine_uk import Simulation
 
 YEAR = 2026
 
-PARAMETER = "gov.local_authorities.council_tax.discounts.appropriate_percentage"
+PARAMETER = "gov.local_authorities.council_tax.discounts.appropriate_percentage.england"
 
 SINGLE_ADULT = {
     "people": {"person": {"age": {YEAR: 40}}},
