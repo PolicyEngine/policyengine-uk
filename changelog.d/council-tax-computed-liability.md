@@ -1,1 +1,1 @@
-Add council_tax_band_d_amount and simulated_council_tax, computing gross council tax from local authority Band D amounts and statutory band ratios.
+Add council_tax_band_d_amount and simulated_council_tax, computing gross council tax from local authority Band D amounts and statutory band ratios. Band D amounts cover all 350 April 2023 local authorities across England, Wales and Scotland for fiscal 2025 and 2026.
