@@ -197,8 +197,8 @@
     council_tax_discount_rate: 0.5
 
 - name: A dwelling with no resident in Wales receives no discount after the 2026 reform
-  # From 1 April 2026 the Welsh regulations prescribe 50 per cent only where residents are all disregarded (regulation 4) or in the narrow unoccupied cases of regulation 6, so no general no-resident discount arises. Tested in 2027 because these calendar-year parameters resolve at 1 January, before the 1 April 2026 commencement.
-  period: 2027
+  # From 1 April 2026 the Welsh regulations prescribe 50 per cent only where residents are all disregarded (regulation 4) or in the narrow unoccupied cases of regulation 6, so no general no-resident discount arises. Model year 2026 already reflects this: these are annual parameters, so a change dated 1 April 2026 takes effect for the whole of model year 2026, which is why the pre-reform case above is pinned at 2025.
+  period: 2026
   absolute_error_margin: 0.001
   input:
     people:
