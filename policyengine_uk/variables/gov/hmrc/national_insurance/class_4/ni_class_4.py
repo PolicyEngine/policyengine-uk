@@ -30,7 +30,14 @@ class ni_class_4(Variable):
             + add_rate_income * class_4.rates.additional
         )
         maximum_amount = person("ni_class_4_maximum", period)
+        # Regulation 100(1): the annual maximum applies only where primary
+        # Class 1 or Class 2 contributions are also payable for the year.
+        maximum_applies = (employee_NI > 0) | (person("ni_class_2", period) > 0)
         return max_(
-            min_(pre_maximum_amount, maximum_amount),
+            where(
+                maximum_applies,
+                min_(pre_maximum_amount, maximum_amount),
+                pre_maximum_amount,
+            ),
             0,
         )

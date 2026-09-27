@@ -59,6 +59,7 @@ dev = [
     # does NOT install transitively when installing policyengine-uk[dev],
     # so they must be listed explicitly here.
     "coverage",
+    "hypothesis",
     "pytest-cov",
     "ruff>=0.9.0",
     "towncrier>=24.8.0",
