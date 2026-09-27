@@ -34,8 +34,8 @@ class ni_class_4(Variable):
         # Class 1 (or, before 6 April 2024, Class 2) contributions are also
         # payable for the year.
         includes_class_2 = class_4.annual_maximum.includes_class_2
-        maximum_applies = (employee_NI > 0) | (
-            includes_class_2 & (person("ni_class_2", period) > 0)
+        maximum_applies = (employee_NI > 0) | np.logical_and(
+            includes_class_2, person("ni_class_2", period) > 0
         )
         return max_(
             where(

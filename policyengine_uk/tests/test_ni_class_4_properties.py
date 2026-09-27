@@ -7,7 +7,10 @@ Invariants, for any thresholds 0 <= LPL < UPL, rates >= 0, and profits >= 0:
    main * clamp(p - LPL, 0, UPL - LPL) + additional * max(p - UPL, 0).
 2. Differential: for everyone, ni_class_4 equals an exact-rational
    implementation of s.15(3) SSCBA 1992 capped by the literal regulation 100
-   steps (with the Case 1 comparison done exactly).
+   steps (with the Case 1 comparison done exactly). The one exception is a
+   Case 1 tie that holds in real numbers but not in binary (before April
+   2024: 53 x weekly Class 2 = 2 x (Class 1 + Class 2), UPL below the small
+   profits threshold); the model then follows the real-valued tie.
 3. The maximum only ever reduces liability: 0 <= ni_class_4 <= the
    pre-maximum amount.
 4. Monotonicity: with employment income held fixed, ni_class_4 is
@@ -31,7 +34,7 @@ from policyengine_uk import Simulation
 
 CLASS_4 = "gov.hmrc.national_insurance.class_4"
 CLASS_2_FLAT_RATE = "gov.hmrc.national_insurance.class_2.flat_rate"
-YEARS = [2022, 2023, 2025, 2026, 2027, 2028, 2029, 2030]
+YEARS = [2022, 2023, 2024, 2025, 2026, 2027, 2028, 2029, 2030]
 PROPERTY_SETTINGS = settings(
     max_examples=25,
     deadline=None,

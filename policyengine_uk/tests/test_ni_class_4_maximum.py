@@ -142,7 +142,7 @@ def test_class_4_with_zero_main_rate_is_not_nan():
 ALL_YEARS = "2000-01-01.2100-12-31"
 
 
-@pytest.mark.parametrize("year, expected", [(2023, 20.0), (2026, 24.0)])
+@pytest.mark.parametrize("year, expected", [(2023, 20.0), (2024, 24.0), (2026, 24.0)])
 def test_class_2_counts_towards_annual_maximum_only_before_april_2024(year, expected):
     # Profits £1,000 with LPL £0 and UPL £100: 6% x 100 + 2% x 900 = £24.
     # Class 2 of £182 and no Class 1. Before 6 April 2024 regulation 100
