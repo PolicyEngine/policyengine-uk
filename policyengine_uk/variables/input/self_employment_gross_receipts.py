@@ -8,9 +8,9 @@ class self_employment_gross_receipts(Variable):
     documentation = (
         "Gross receipts (turnover) of the person's trades before expenses. "
         "Optional: used only to apply the trading allowance, which is measured "
-        "against gross receipts and replaces actual expenses. Leave at zero "
-        "when unknown; self_employment_income remains the profit used "
-        "everywhere else."
+        "against gross receipts and replaces actual expenses. Must be at least "
+        "self_employment_income; leave at zero when unknown. "
+        "self_employment_income remains the profit used everywhere else."
     )
     definition_period = YEAR
     unit = GBP

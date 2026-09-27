@@ -15,7 +15,9 @@ class trading_allowance_deduction(Variable):
         "expenses and capital allowances, capped at profit. Without them, a "
         "profit within the allowance is treated as coming from receipts within "
         "it, and a larger profit as already reflecting the better of actual "
-        "expenses and the allowance."
+        "expenses and the allowance, so taxable profit jumps from nil to the "
+        "full profit just above the allowance. Receipts below profit are "
+        "inconsistent and treated as unknown."
     )
     definition_period = YEAR
     reference = [
@@ -39,8 +41,8 @@ class trading_allowance_deduction(Variable):
         profit = person("self_employment_income", period)
         receipts = person("self_employment_gross_receipts", period)
         capital_allowances = person("capital_allowances", period)
-        # Receipts cannot be below a positive profit, so zero means unknown.
-        receipts_known = receipts > 0
+        # Receipts below profit (including the default zero) mean unknown.
+        receipts_known = (receipts > 0) & (receipts >= profit)
         expenses = max_(receipts - profit, 0)
         # Full relief (receipts within the allowance, s. 783AE-783AF) makes
         # the profit nil; partial relief (s. 783AI) replaces expenses and
