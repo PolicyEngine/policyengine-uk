@@ -1,3 +1,10 @@
+## [2.102.1] - 2026-09-27
+
+### Fixed
+
+- - Fixed Class 4 National Insurance dropping the additional-rate band above the Upper Profits Limit when uprated thresholds are not round numbers. The regulation 100 annual maximum no longer leaves its Case 1 choice to float32 rounding. It applies only when primary Class 1 contributions (or, before 6 April 2024, Class 2 contributions) are also payable, and it ignores Class 2 from 6 April 2024 as SI 2024/377 requires. It also no longer returns NaN when a reform sets the main Class 4 rate to zero.
+
+
 ## [2.102.0] - 2026-09-25
 
 ### Added
