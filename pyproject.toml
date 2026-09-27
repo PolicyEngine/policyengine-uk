@@ -70,6 +70,7 @@ dev = [
     "snowballstemmer>=2,<3",
     "jupyter-book>=2.0.0a0",
     "rich",
+    "hypothesis>=6",
 ]
 
 [tool.pytest.ini_options]
