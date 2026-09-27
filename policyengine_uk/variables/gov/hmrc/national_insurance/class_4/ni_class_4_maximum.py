@@ -17,9 +17,11 @@ class ni_class_4_maximum(Variable):
         main_rate = ni.class_4.rates.main
         add_rate = ni.class_4.rates.additional
         step_2 = step_1 * main_rate
-        class_2_weeks_addition = 53 * ni.class_2.flat_rate
+        # Class 2 contributions drop out of regulation 100 from 6 April 2024.
+        includes_class_2 = ni.class_4.annual_maximum.includes_class_2
+        class_2_weeks_addition = 53 * ni.class_2.flat_rate * includes_class_2
         step_3 = step_2 + class_2_weeks_addition
-        class_2_contributions = person("ni_class_2", period)
+        class_2_contributions = person("ni_class_2", period) * includes_class_2
         primary_class_1_contributions = person("ni_class_1_employee_primary", period)
         step_4_raw = step_3 - class_2_contributions - primary_class_1_contributions
         step_4 = max_(step_4_raw, 0)
@@ -31,7 +33,8 @@ class ni_class_4_maximum(Variable):
         # Comparing the totals directly left the case to float32 rounding
         # when they were equal (profits above the UPL, no Class 1 or 2), and
         # a wrong Case 1 dropped the additional-rate band (#1878). The unused
-        # band is exactly zero at or above the UPL.
+        # band is exactly zero at or above the UPL, so that equality is now
+        # decided exactly.
         class_4_profits = person("self_employment_income", period).astype(
             np.float64
         ) - person("ni_class_1_employee", period).astype(np.float64)

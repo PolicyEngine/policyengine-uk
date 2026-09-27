@@ -137,3 +137,74 @@ def test_class_4_with_zero_main_rate_is_not_nan():
         0.02 * (profits - upl), abs=0.01
     )
     assert not np.isnan(sim.calculate("national_insurance", year)).any()
+
+
+ALL_YEARS = "2000-01-01.2100-12-31"
+
+
+@pytest.mark.parametrize("year, expected", [(2023, 20.0), (2026, 24.0)])
+def test_class_2_counts_towards_annual_maximum_only_before_april_2024(year, expected):
+    # Profits £1,000 with LPL £0 and UPL £100: 6% x 100 + 2% x 900 = £24.
+    # Class 2 of £182 and no Class 1. Before 6 April 2024 regulation 100
+    # applies and Step Four is negative (Case 3), capping Class 4 at
+    # 2% x 100 + 2% x 900 = £20. From then SI 2024/377 removes Class 2
+    # from regulation 100, so without Class 1 the maximum does not apply.
+    sim = Simulation(
+        situation={
+            "people": {
+                "person": {
+                    "age": {year: 40},
+                    "self_employment_income": {year: 1_000},
+                    "ni_class_2": {year: 182},
+                }
+            },
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        },
+        reform={
+            f"{CLASS_4}.thresholds.lower_profits_limit": {ALL_YEARS: 0},
+            f"{CLASS_4}.thresholds.upper_profits_limit": {ALL_YEARS: 100},
+            f"{CLASS_4}.rates.main": {ALL_YEARS: 0.06},
+            f"{CLASS_4}.rates.additional": {ALL_YEARS: 0.02},
+            "gov.hmrc.national_insurance.class_2.flat_rate": {ALL_YEARS: 3.15},
+        },
+    )
+
+    assert sim.calculate("ni_class_4", year)[0] == pytest.approx(expected, abs=0.01)
+
+
+def test_annual_maximum_case_1_requires_step_four_to_exceed_the_aggregate():
+    # All amounts are exact in binary. 53 x £0.50 Class 2 = £26.50 equals
+    # 2 x £13.25 Class 1 exactly, with no unused main band, so Step Four
+    # equals (does not exceed) the Case 1 aggregate: Case 2 applies and
+    # the maximum does not bind. Case 1 would cap Class 4 at Step Four.
+    year = 2023
+    sim = Simulation(
+        situation={
+            "people": {
+                "person": {
+                    "age": {year: 40},
+                    "self_employment_income": {year: 6_000},
+                    "ni_class_1_employee_primary": {f"{year}-01": 13.25},
+                }
+            },
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        },
+        reform={
+            f"{CLASS_4}.thresholds.lower_profits_limit": {ALL_YEARS: 0},
+            f"{CLASS_4}.thresholds.upper_profits_limit": {ALL_YEARS: 1},
+            f"{CLASS_4}.rates.main": {ALL_YEARS: 0.1},
+            f"{CLASS_4}.rates.additional": {ALL_YEARS: 0.2},
+            "gov.hmrc.national_insurance.class_2.flat_rate": {ALL_YEARS: 0.5},
+        },
+    )
+    assert sim.calculate("ni_class_2", year)[0] == 0
+    class_1 = sim.calculate("ni_class_1_employee", year)[0]
+    assert class_1 == 13.25
+
+    class_4_profits = 6_000 - class_1
+    expected = _statutory_class_4(class_4_profits, 0, 1, 0.1, 0.2)
+    assert sim.calculate("ni_class_4", year)[0] == pytest.approx(expected, abs=0.01)
+    step_4 = 0.1 * 1 + 53 * 0.5 - 13.25
+    assert sim.calculate("ni_class_4", year)[0] > step_4 + 1_000
