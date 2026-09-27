@@ -35,10 +35,8 @@ class ni_class_4_maximum(Variable):
         # a wrong Case 1 dropped the additional-rate band (#1878). The unused
         # band is exactly zero at or above the UPL, so that equality is now
         # decided exactly.
-        class_4_profits = person("self_employment_income", period).astype(
-            np.float64
-        ) - person("ni_class_1_employee", period).astype(np.float64)
-        unused_main_band = clip(upl - class_4_profits, 0, step_1)
+        profits = person("self_employment_income", period)
+        unused_main_band = clip(upl - profits.astype(np.float64), 0, step_1)
         case_1 = (step_4_raw >= 0) & (
             main_rate * unused_main_band + class_2_weeks_addition
             > 2
@@ -56,7 +54,6 @@ class ni_class_4_maximum(Variable):
             out=np.full_like(step_4, np.inf),
             where=main_rate > 0,
         )
-        profits = person("self_employment_income", period)
         step_6 = min_(upl, profits) - lpl
         step_7 = max_(0, step_6 - step_5)
         step_8 = step_7 * add_rate

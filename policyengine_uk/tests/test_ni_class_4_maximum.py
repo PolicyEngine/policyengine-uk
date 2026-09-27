@@ -203,8 +203,34 @@ def test_annual_maximum_case_1_requires_step_four_to_exceed_the_aggregate():
     class_1 = sim.calculate("ni_class_1_employee", year)[0]
     assert class_1 == 13.25
 
-    class_4_profits = 6_000 - class_1
-    expected = _statutory_class_4(class_4_profits, 0, 1, 0.1, 0.2)
+    expected = _statutory_class_4(6_000, 0, 1, 0.1, 0.2)
     assert sim.calculate("ni_class_4", year)[0] == pytest.approx(expected, abs=0.01)
     step_4 = 0.1 * 1 + 53 * 0.5 - 13.25
     assert sim.calculate("ni_class_4", year)[0] > step_4 + 1_000
+
+
+def test_class_4_does_not_deduct_class_1_from_profits():
+    # Employment £30,000 and profits £20,000 in 2026-27: the annual maximum
+    # does not bind, so Class 4 is 6% of the full profits above the LPL.
+    year = 2026
+    sim = Simulation(
+        situation={
+            "people": {
+                "person": {
+                    "age": {year: 40},
+                    "employment_income": {year: 30_000},
+                    "self_employment_income": {year: 20_000},
+                }
+            },
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        }
+    )
+
+    assert sim.calculate("ni_class_1_employee", year)[0] > 0
+    assert sim.calculate("ni_class_4_main", year)[0] == pytest.approx(
+        (20_000 - 12_570) * 0.06, abs=0.01
+    )
+    assert sim.calculate("ni_class_4", year)[0] == pytest.approx(
+        (20_000 - 12_570) * 0.06, abs=0.01
+    )
