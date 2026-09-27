@@ -158,7 +158,9 @@ from 2027/28. The petrol and diesel rate includes forecast RPI uprating each
 under the same uprating assumption. Analyses beyond March 2027 that require
 consistent fuel-duty forecasts must supply an uprated gas-rate path explicitly.
 
-Sources: [HMRC amended fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/amended-fuel-duty-rates-for-2026-to-2027/amended-fuel-duty-rates-2026-to-2027)
+Sources: [HMRC fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/fuel-duty-rates-for-2026-to-2027/fuel-duty-rates-2026-to-2027)
+(RPI uprating from 2027/28),
+[HMRC amended fuel duty rates 2026 to 2027](https://www.gov.uk/government/publications/amended-fuel-duty-rates-for-2026-to-2027/amended-fuel-duty-rates-2026-to-2027)
 and [SI 2026/164 as amended by SI 2026/555](https://www.legislation.gov.uk/uksi/2026/164).
 
 ## Petrol and diesel rate
@@ -167,19 +169,24 @@ The main rate on unleaded petrol and diesel is keyed to each statutory change:
 52.95p a litre from 23 March 2022, continued by annual orders to 31 December 2026;
 55.95p from 1 January 2027 (SI 2026/164 as amended by SI 2026/555); and the Hydrocarbon Oil
 Duties Act 1979 rate of 57.95p from 1 March 2027. Budget 2025 states that rates
-will be uprated by RPI from April 2027, with final rates confirmed at Budget
-2026. That uprating is policy, not law, and no official source names the RPI
-measure. The model applies the previous calendar year's RPI growth from the OBR
-forecast in `gov.economic_assumptions.yoy_growth.obr.rpi` on each 1 April,
-rounded to the nearest hundredth of a penny. The steps to 1 April 2031 are
-written out by `calculate_fuel_duty_rates.py`, and a test fails when they fall
-out of date with the RPI forecast. Later steps come from the parameter's
-uprating metadata.
+will be uprated by RPI from April 2027, and HM Treasury's Budget 2025 costing
+dates this from 1 April 2027. That uprating is policy, not law: HMRC's amended
+note of 22 May 2026 says final rates will be confirmed at Budget 2026. No
+official source names the RPI measure. The model applies the previous calendar
+year's RPI growth from the OBR forecast in
+`gov.economic_assumptions.yoy_growth.obr.rpi` on each 1 April, rounded to the
+nearest hundredth of a penny. The steps to 1 April 2031 are written out by
+`calculate_fuel_duty_rates.py`, and a test fails when they fall out of date
+with the RPI forecast. Later steps come from the parameter's uprating metadata.
+The RPI index ends in 2039, so the last step is 1 April 2040.
 
 An annual reform names a model year and replaces the rate for all of it. For
-model years to 2030 it leaves other years unchanged. From model year 2031, where
-the steps come from uprating metadata, uprating restarts after the reformed year
-from the last written rate, so later years lose one 1 April step.
+model years to 2030 it leaves other years unchanged. `Scenario.parameter_changes`
+reapplies uprating after the change, so an override from model year 2031, where
+the steps come from uprating metadata, restarts uprating from the last written
+rate: every later year stays one 1 April step behind. Reform classes and legacy
+reform dictionaries change the annual values after uprating and are not
+affected.
 
 ## Population data follow-ups
 

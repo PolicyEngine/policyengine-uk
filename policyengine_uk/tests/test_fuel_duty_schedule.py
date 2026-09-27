@@ -188,7 +188,8 @@ def test_annual_override_applies_at_full_strength_and_only_to_its_year(year, rat
     assert reformed.calculate("fuel_duty", year).values[0] == pytest.approx(
         1_000 * rate
     )
-    for other in (year - 1, year + 1):
-        assert parameter.petrol_and_diesel(str(other)) == pytest.approx(
-            model_year_rate(other), abs=1e-12
-        )
+    for other in CONVERTED_YEARS:
+        if other != year:
+            assert parameter.petrol_and_diesel(str(other)) == pytest.approx(
+                model_year_rate(other), abs=1e-12
+            )
