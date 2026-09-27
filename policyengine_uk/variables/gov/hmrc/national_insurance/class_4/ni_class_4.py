@@ -4,10 +4,11 @@ from policyengine_uk.model_api import *
 class ni_class_4(Variable):
     value_type = float
     entity = Person
-    label = "NI Class 4 main contributions"
+    label = "NI Class 4 contributions"
     definition_period = YEAR
     unit = GBP
     defined_for = "ni_liable"
+    reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/15"
 
     def formula(person, period, parameters):
         class_4 = parameters(period).gov.hmrc.national_insurance.class_4
