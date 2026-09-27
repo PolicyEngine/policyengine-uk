@@ -1,3 +1,10 @@
+## [2.102.2] - 2026-09-27
+
+### Fixed
+
+- - Fixed Class 4 National Insurance deducting employee Class 1 contributions from trading profits; Class 4 is now charged on the full profits, as SSCBA 1992 Schedule 2 requires, with the regulation 100 annual maximum still limiting combined liability.
+
+
 ## [2.102.1] - 2026-09-27
 
 ### Fixed
