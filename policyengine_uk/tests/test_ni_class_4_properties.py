@@ -1,10 +1,13 @@
-"""Property-based tests for Class 4 National Insurance (#1878).
+"""Property-based tests for Class 4 National Insurance (#1878, #1885).
 
 Invariants, for any thresholds 0 <= LPL < UPL, rates >= 0, and profits >= 0:
 
-1. Statute when the maximum cannot bind: with no primary Class 1 or Class 2
-   contributions payable, regulation 100 does not apply, so ni_class_4 equals
-   main * clamp(p - LPL, 0, UPL - LPL) + additional * max(p - UPL, 0).
+1. Statute when the maximum does not bind: whenever regulation 100 does not
+   apply (no primary Class 1, nor Class 2 before April 2024) or its maximum
+   is at least the s.15(3) amount, ni_class_4 equals
+   main * clamp(p - LPL, 0, UPL - LPL) + additional * max(p - UPL, 0),
+   where p is the full self-employment profit: Class 1 contributions are not
+   deducted (SSCBA 1992 Sch 2 para 2).
 2. Differential: for everyone, ni_class_4 equals an exact-rational
    implementation of s.15(3) SSCBA 1992 capped by the literal regulation 100
    steps (with the Case 1 comparison done exactly). The one exception is a
@@ -167,18 +170,16 @@ def statutory_class_4(profits, lpl, upl, main_rate, additional_rate):
 def reference_class_4(policy, values, i):
     """Class 4 liability: s.15(3) capped by regulation 100, exactly.
 
-    Class 4 profits are self-employment income less employee Class 1 NI, as
-    the model defines them; regulation 100 Steps Six and Nine use
-    self-employment income, as the model does.
+    Returns (liability, pre-maximum amount, maximum or None where regulation
+    100 does not apply).
     """
     lpl, upl = exact(policy["lpl"]), exact(policy["upl"])
     main_rate = exact(policy["main_rate"])
     additional_rate = exact(policy["additional_rate"])
-    self_employment_income = exact(values["self_employment_income"][i])
+    profits = exact(values["self_employment_income"][i])
     employee_ni = exact(values["ni_class_1_employee"][i])
     class_1 = exact(values["ni_class_1_employee_primary"][i])
     class_2 = exact(values["ni_class_2"][i])
-    profits = self_employment_income - employee_ni
 
     main_band = main_rate * min(max(profits - lpl, 0), upl - lpl)
     pre_maximum = main_band + additional_rate * max(profits - upl, 0)
@@ -188,7 +189,7 @@ def reference_class_4(policy, values, i):
         class_2 = 0
     if not (employee_ni > 0 or class_2 > 0):
         # Regulation 100(1): no Class 1 (or counted Class 2), no maximum.
-        return max(pre_maximum, 0)
+        return max(pre_maximum, 0), pre_maximum, None
 
     step_2 = (upl - lpl) * main_rate
     step_3 = step_2 + 53 * exact(values["class_2_flat_rate"]) * class_2_counts
@@ -197,15 +198,15 @@ def reference_class_4(policy, values, i):
         maximum = step_4
     else:
         step_4 = max(step_4, 0)
-        step_6 = min(upl, self_employment_income) - lpl
+        step_6 = min(upl, profits) - lpl
         if main_rate > 0:
             step_7 = max(step_6 - step_4 / main_rate, 0)
         else:
             step_7 = 0
         step_8 = step_7 * additional_rate
-        step_9 = max(self_employment_income - upl, 0) * additional_rate
+        step_9 = max(profits - upl, 0) * additional_rate
         maximum = step_4 + step_8 + step_9
-    return max(min(pre_maximum, maximum), 0)
+    return max(min(pre_maximum, maximum), 0), pre_maximum, maximum
 
 
 @PROPERTY_SETTINGS
@@ -219,22 +220,21 @@ def test_class_4_matches_statute_and_exact_regulation_100(population):
         profits = float(values["self_employment_income"][i])
         tol = tolerance(profits, upl, model)
 
-        reference = float(reference_class_4(policy, values, i))
-        assert abs(model - reference) <= tol, (i, model, reference)
+        reference, reference_pre_maximum, maximum = reference_class_4(policy, values, i)
+        assert abs(model - float(reference)) <= tol, (i, model, float(reference))
 
-        class_4_profits = profits - float(values["ni_class_1_employee"][i])
-        pre_maximum = float(
-            statutory_class_4(
-                exact(class_4_profits),
-                exact(lpl),
-                exact(upl),
-                exact(policy["main_rate"]),
-                exact(policy["additional_rate"]),
-            )
+        pre_maximum = statutory_class_4(
+            exact(profits),
+            exact(lpl),
+            exact(upl),
+            exact(policy["main_rate"]),
+            exact(policy["additional_rate"]),
         )
+        assert pre_maximum == reference_pre_maximum
+        pre_maximum = float(pre_maximum)
         assert -tol <= model <= pre_maximum + tol, (i, model, pre_maximum)
 
-        if values["ni_class_1_employee"][i] == 0 and values["ni_class_2"][i] == 0:
+        if maximum is None or maximum >= reference_pre_maximum:
             assert abs(model - pre_maximum) <= tol, (i, model, pre_maximum)
 
 
