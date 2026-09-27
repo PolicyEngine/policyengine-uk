@@ -115,3 +115,13 @@
   output:
     trading_allowance_deduction: 0
     taxable_self_employment_income: 600
+
+- name: Receipts below profit are inconsistent and treated as unknown
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 500
+    self_employment_income: 1_500
+  output:
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 1_500
