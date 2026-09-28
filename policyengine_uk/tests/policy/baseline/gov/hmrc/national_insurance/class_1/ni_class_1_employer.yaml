@@ -13,3 +13,86 @@
     ni_class_1_income: 30_000  # Annual income above secondary threshold but below upper limit
   output:
     ni_class_1_employer: (30_000 - 175 * 52) * 0.138  # Expected employer contributions
+
+# SSCBA 1992 s.6(3) ends primary Class 1 at pensionable age "without prejudice
+# to any liability to pay secondary Class 1 contributions". Secondary
+# contributions are due on earners over 16 (s.6(1)(b)) with no upper age.
+# The model annualises the weekly secondary threshold as 52 weeks: 2026-27 is
+# £96 x 52 = £4,992 at 15%; 2024-25 is £175 x 52 = £9,100 at 13.8%.
+
+- name: Employer NI is charged on an employee aged 70 (2026)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income: 40_000
+  output:
+    ni_class_1_employee: 0
+    ni_class_1_employer: 5_251.20  # 0.15 x (40,000 - 4,992)
+    ni_employer: 5_251.20
+    national_insurance: 0
+    total_national_insurance: 5_251.20
+    employer_cost: 45_251.20
+
+- name: Employer NI is charged on an employee aged 70 (2024)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income: 40_000
+  output:
+    ni_class_1_employee: 0
+    ni_class_1_employer: 4_264.20  # 0.138 x (40,000 - 9,100)
+
+- name: Employer NI has no upper earnings limit over state pension age
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 75
+    employment_income: 60_000
+  output:
+    ni_class_1_employee: 0
+    ni_class_1_employer: 8_251.20  # 0.15 x (60,000 - 4,992)
+
+- name: Earnings below the secondary threshold over state pension age
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    employment_income: 4_000
+  output:
+    ni_class_1_employer: 0
+
+- name: One year below state pension age, both sides are charged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 66
+    state_pension_age: 67
+    employment_income: 40_000
+  output:
+    is_SP_age: false
+    ni_class_1_employee: 2_194.40  # 0.08 x (40,000 - 12,570)
+    ni_class_1_employer: 5_251.20
+
+- name: At state pension age, only the employer side is charged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 67
+    state_pension_age: 67
+    employment_income: 40_000
+  output:
+    is_SP_age: true
+    ni_class_1_employee: 0
+    ni_class_1_employer: 5_251.20
+
+- name: No employer NI on an earner under 16
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 15
+    employment_income: 40_000
+  output:
+    ni_class_1_employee: 0
+    ni_class_1_employer: 0
