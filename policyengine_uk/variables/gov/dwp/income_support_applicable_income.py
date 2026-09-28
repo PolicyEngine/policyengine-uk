@@ -7,6 +7,7 @@ class income_support_applicable_income(Variable):
     label = "Relevant income for Income Support means test"
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/1987/1967/schedule/8"
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
@@ -29,17 +30,14 @@ class income_support_applicable_income(Variable):
         income += benunit("income_support_tariff_income", period)
         income -= tax
         income -= add(benunit, period, ["pension_contributions"]) * 0.5
-        family_type = benunit("family_type", period)
-        families = family_type.possible_values
-        # Calculate income disregards for each family type.
+        # Schedule 8 paras 5, 6 and 10 use mutually exclusive claimant types.
         mt = IS.means_test
-        single = family_type == families.SINGLE
+        single = benunit("is_single_person", period)
         income_disregard_single = single * mt.income_disregard_single
-        single = family_type == families.SINGLE
         income_disregard_couple = (
             benunit("is_couple", period) * mt.income_disregard_couple
         )
-        lone_parent = family_type == families.LONE_PARENT
+        lone_parent = benunit("is_lone_parent", period)
         income_disregard_lone_parent = lone_parent * mt.income_disregard_lone_parent
         income_disregard = (
             income_disregard_single

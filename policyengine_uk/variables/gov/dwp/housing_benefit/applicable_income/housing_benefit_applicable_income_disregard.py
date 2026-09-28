@@ -7,12 +7,14 @@ class housing_benefit_applicable_income_disregard(Variable):
     label = "Housing Benefit applicable income disregards"
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/2006/213/schedule/4"
 
     def formula(benunit, period, parameters):
         WTC = parameters(period).gov.dwp.tax_credits.working_tax_credit
         p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         hours = add(benunit, period, ["weekly_hours"])
-        # Calculate single, couple, lone parent, and worker disregards.
+        # The claimant categories are mutually exclusive (Sch 4 paras 4, 7, 10).
+        # Worker disregard is additional.
         single = benunit("is_single_person", period)
         single_disregard = single * p.single
         couple = benunit("is_couple", period)
