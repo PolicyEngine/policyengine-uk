@@ -1,0 +1,285 @@
+# UC Regulations 2013, reg 80A(2), and HB Regulations 2006, reg 75CA(2):
+# annual single / family caps are 14,753 / 22,020 outside London and
+# 16,967 / 25,323 in London. These cases isolate rate selection from
+# exemptions and do not assert eligibility to claim UC or HB.
+
+- name: Single claimant aged 30 receives the outside-London single cap.
+  period: 2025
+  input:
+    age: 30
+    region: SOUTH_EAST
+    is_benefit_cap_exempt: false
+  output:
+    is_benefit_cap_single_claimant_rate: true
+    benefit_cap: 14_753
+
+- name: Single claimant aged 30 receives the London single cap.
+  period: 2025
+  input:
+    age: 30
+    region: LONDON
+    is_benefit_cap_exempt: false
+  output:
+    is_benefit_cap_single_claimant_rate: true
+    benefit_cap: 16_967
+
+- name: Single claimant aged 17 does not count as their own child outside London.
+  period: 2025
+  input:
+    age: 17
+    is_benunit_head: true
+    region: SOUTH_EAST
+    is_benefit_cap_exempt: false
+  output:
+    is_claimant_or_partner: true
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_benefit_cap_single_claimant_rate: true
+    # Old age counts selected 22,020; no partner or dependant means 14,753.
+    # Change = 14,753 - 22,020 = -7,267 per year.
+    benefit_cap: 14_753
+
+- name: Single claimant aged 17 does not count as their own child in London.
+  period: 2025
+  input:
+    age: 17
+    is_benunit_head: true
+    region: LONDON
+    is_benefit_cap_exempt: false
+  output:
+    is_benefit_cap_single_claimant_rate: true
+    # London change = 16,967 - 25,323 = -8,356 per year.
+    benefit_cap: 16_967
+
+- name: A 17-year-old apprentice in the claimant's unit does not give the family cap.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_benunit_head: true
+        is_parent: true
+      apprentice:
+        age: 17
+        is_benunit_head: false
+        is_apprentice: true
+        current_education: POST_SECONDARY
+    benunits:
+      family:
+        members: [claimant, apprentice]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, apprentice]
+        region: SOUTH_EAST
+  output:
+    is_claimant_or_partner: [true, false]
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_benefit_cap_single_claimant_rate: true
+    # UC reg 5(3) excludes education under an employment contract.
+    # Single cap: 14,753, down 22,020 - 14,753 = 7,267 from age-only counts.
+    benefit_cap: 14_753
+
+- name: A 17-year-old outside education or approved training does not give the family cap.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_benunit_head: true
+        is_parent: true
+      young_person:
+        age: 17
+        is_benunit_head: false
+        current_education: NOT_IN_EDUCATION
+        is_in_approved_training: false
+    benunits:
+      family:
+        members: [claimant, young_person]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, young_person]
+        region: SOUTH_EAST
+  output:
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_benefit_cap_single_claimant_rate: true
+    # UC reg 5(1)(b): no qualifying education/training after the age-16 route.
+    # Change = 14,753 - 22,020 = -7,267 per year.
+    benefit_cap: 14_753
+
+- name: A 17-year-old receiving benefits in their own right does not give the family cap.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_benunit_head: true
+        is_parent: true
+      young_person:
+        age: 17
+        is_benunit_head: false
+        current_education: POST_SECONDARY
+        receives_benefits_in_own_right: true
+    benunits:
+      family:
+        members: [claimant, young_person]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, young_person]
+        region: SOUTH_EAST
+  output:
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_benefit_cap_single_claimant_rate: true
+    # UC reg 5(5) excludes own-right UC/ESA/JSA recipients from QYP status.
+    # Change = 14,753 - 22,020 = -7,267 per year.
+    benefit_cap: 14_753
+
+- name: A looked-after foster child does not give the claimant the family cap.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_benunit_head: true
+      child:
+        age: 10
+        is_benunit_head: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [claimant, child]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, child]
+        region: SOUTH_EAST
+  output:
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_benefit_cap_single_claimant_rate: true
+    # UC reg 4(6)(a): this foster child is excluded from responsibility.
+    # Assume no respite or adoption placement exception under reg 4A.
+    # Change = 14,753 - 22,020 = -7,267 per year.
+    benefit_cap: 14_753
+
+- name: Parent of a 17-year-old qualifying student keeps the family cap.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_benunit_head: true
+        is_parent: true
+      student:
+        age: 17
+        is_benunit_head: false
+        current_education: POST_SECONDARY
+    benunits:
+      family:
+        members: [parent, student]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [parent, student]
+        region: SOUTH_EAST
+  output:
+    is_couple: false
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
+    is_benefit_cap_single_claimant_rate: false
+    # Responsibility under UC regs 4-5 gives the 22,020 annual family limit.
+    benefit_cap: 22_020
+
+- name: Lone parent of an 18-year-old qualifying student keeps the London family cap.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_benunit_head: true
+        is_parent: true
+      student:
+        age: 18
+        is_benunit_head: false
+        current_education: POST_SECONDARY
+    benunits:
+      family:
+        members: [parent, student]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [parent, student]
+        region: LONDON
+  output:
+    is_claimant_or_partner: [true, false]
+    is_couple: false
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
+    is_benefit_cap_single_claimant_rate: false
+    # Same 25,323 as before, now because of responsibility rather than two 18+ members.
+    benefit_cap: 25_323
+
+- name: Couple aged 30 and 17 receives the family cap without counting the partner as a child.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        current_education: POST_SECONDARY
+    benunits:
+      family:
+        members: [claimant, partner]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, partner]
+        region: SOUTH_EAST
+  output:
+    is_couple: true
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_benefit_cap_single_claimant_rate: false
+    # Couple composition selects 22,020. This is not a UC eligibility test:
+    # UC reg 3(3) permits some couples to claim as singles, not modelled here.
+    benefit_cap: 22_020
+
+- name: Explicitly identified 19-year-old non-dependant does not imply a partner.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      non_dependant:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [claimant, non_dependant]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, non_dependant]
+        region: SOUTH_EAST
+  output:
+    is_couple: false
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    is_benefit_cap_single_claimant_rate: true
+    # Old two-adult count gave 22,020. With explicit roles, no partner or QYP:
+    # change = 14,753 - 22,020 = -7,267 per year.
+    benefit_cap: 14_753
+
+- name: Benefit-cap exemption still overrides the selected single rate.
+  period: 2025
+  input:
+    age: 30
+    region: SOUTH_EAST
+    is_benefit_cap_exempt: true
+    universal_credit_pre_benefit_cap: 100_000
+  output:
+    is_benefit_cap_single_claimant_rate: true
+    # Exemption makes the cap infinite: max(100,000 - infinity, 0) = 0.
+    # Assert the resulting reduction because the YAML runner cannot compare infinities.
+    benefit_cap_reduction: 0

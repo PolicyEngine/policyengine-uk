@@ -1,0 +1,1 @@
+- Replaced age-18 child/adult flags in LHA shared accommodation and benefit-cap rates with claimant/partner status and Universal Credit child responsibility, retaining the conservative LHA non-dependant proxy and documenting the shared Housing Benefit/Universal Credit modelling limits.
