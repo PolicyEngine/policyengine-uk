@@ -7,19 +7,18 @@ values:
   # FYE 2025 reference year: 60% of the FYE 2025 BHC median, 431.6886 a
   # week in HBAI table 2.4ts (the median is 719.48; the report rounds it to
   # 719). HBAI applies it from FYE 2022, the first year with administrative
-  # data linking. FYE 2022 to FYE 2024 carry the FYE 2025 line back by
-  # financial-year averages of HBAI's BHC deflator (ONS experimental CPI
-  # including mortgage interest payments, ground rent and dwelling
-  # insurance, ad hoc 2863): 431.6886 x index(FY) / index(FYE 2025), where the
-  # FY averages are 113.100 (FYE 2022), 124.875 (FYE 2023), 133.208 (FYE
-  # 2024) and 137.133 (FYE 2025). These track the deflator DWP used to within
-  # 0.03 percentage points a year (implied by HBAI table 1.2a); DWP may have
-  # used a later ONS vintage than ad hoc 2863 (June 2025). Later years uprate
-  # by headline OBR CPI, an approximation: HBAI would use its own CPI
-  # variants, which the OBR does not forecast.
-  2021-01-01: 356.03
-  2022-01-01: 393.10
-  2023-01-01: 419.33
+  # data linking. FYE 2022 to FYE 2024 carry the FYE 2025 line back by HBAI's
+  # annual BHC deflator BHCYRDEF: the financial-year average of the ONS
+  # experimental CPI including mortgage interest payments, ground rent and
+  # dwelling insurance (ad hoc 2863), rounded to 1 decimal place (HBAI
+  # variables guide, Deflators sheet): 113.1 (FYE 2022), 124.9 (FYE 2023),
+  # 133.2 (FYE 2024) and 137.1 (FYE 2025), so 431.6886 x BHCYRDEF / 137.1.
+  # These ratios reproduce the deflator implied by HBAI table 1.2a. Later
+  # years uprate by headline OBR CPI, an approximation: HBAI would use its
+  # own CPI variants, which the OBR does not forecast.
+  2021-01-01: 356.12
+  2022-01-01: 393.27
+  2023-01-01: 419.41
   2024-01-01: 431.69
 metadata:
   period: week
@@ -36,6 +35,8 @@ metadata:
       href: https://www.gov.uk/government/collections/households-below-average-income-hbai--2#planned-summer-2026-update-for-201819-to-202021
     - title: DWP statistical notice on adjusting for inflation (CPI variant including mortgage interest payments, ground rent and dwelling insurance for BHC)
       href: https://assets.publishing.service.gov.uk/media/5a8027f7ed915d74e622ccc2/dwp-family-household-income-stats-adjusting-for-inflation-statistical-notice.pdf#page=3
+    - title: HBAI harmonised dataset variables guide FYE 2025, Deflators sheet (annual deflators BHCYRDEF and AHCYRDEF, financial-year averages rounded to 1 decimal place)
+      href: https://doc.ukdataservice.ac.uk/doc/5828/mrdoc/excel/5828_hbai_2425_harmonised_dataset_variables_guide.xlsx
     - title: ONS ad hoc 2863, consumer price indices series for DWP (sheet 1b, BHC deflator)
       href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/2863consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfortheperiodjanuary1996toapril2025
     - title: Households Below Average Income, 2010/11 (FYE 2011 reference year)

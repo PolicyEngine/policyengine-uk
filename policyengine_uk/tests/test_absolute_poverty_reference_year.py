@@ -13,15 +13,16 @@ Invariants:
    60% of the unrounded medians in table 2.1ts (the report rounds them to
    719 and 623).
 2. Back-cast: for FYE 2022 to FYE 2024 each line equals the FYE 2025 line
-   times the ratio of financial-year averages of HBAI's deflator (BHC: ONS
-   experimental CPI including mortgage interest payments, ground rent and
-   dwelling insurance; AHC: CPI excluding rents, maintenance repairs and
-   water charges; ONS ad hoc 2863), to the penny. The monthly indices are
-   transcribed from the ONS workbook. As an independent check on that
-   transcription and on the choice of series, the BHC deflator's year-on-year
-   growth matches the deflator DWP used, backed out of HBAI table 1.2a (mean
-   income growth in cash and in real terms), to within 0.05 percentage
-   points, which headline CPI does not.
+   times the ratio of HBAI's annual deflators (BHCYRDEF / AHCYRDEF), to the
+   penny. Each annual deflator is the financial-year average of the monthly
+   index (BHC: ONS experimental CPI including mortgage interest payments,
+   ground rent and dwelling insurance; AHC: CPI excluding rents, maintenance
+   repairs and water charges; ONS ad hoc 2863), rounded half up to 1 decimal
+   place, as in the HBAI variables guide's Deflators sheet. Rounding the
+   monthly transcription reproduces the guide's published annual values. As
+   an independent check, the BHC deflator ratios reproduce the deflator DWP
+   used, backed out of HBAI table 1.2a (mean income growth in cash and in
+   real terms), to 1e-9. Unrounded averages and headline CPI do not.
 3. Switch year: FYE 2022 (period 2021) is the first year on the FYE 2025
    reference; FYE 2021 (period 2020) and earlier keep the FYE 2011 line.
 4. Forward uprating: for every year from FYE 2025, both lines move with OBR
@@ -31,6 +32,7 @@ Invariants:
    absolute poverty flags hold exactly when equivalised income is below it.
 """
 
+from decimal import ROUND_HALF_UP, Decimal
 from statistics import fmean
 
 import pytest
@@ -76,6 +78,22 @@ DEFLATOR = {
         + (135.9, 136.0, 136.4, 136.2, 136.8, 137.3),
     },
 }
+
+# HBAI's published annual deflators (BHCYRDEF, AHCYRDEF), HBAI harmonised
+# dataset variables guide FYE 2025, Deflators sheet (UK Data Service study
+# 5828).
+HBAI_YRDEF = {
+    "bhc": {2021: 113.1, 2022: 124.9, 2023: 133.2, 2024: 137.1},
+    "ahc": {2021: 113.9, 2022: 126.1, 2023: 133.2, 2024: 135.7},
+}
+
+
+def yrdef(measure, year):
+    """Financial-year average of the monthly index, rounded half up to 1dp."""
+    months = [Decimal(str(m)) for m in DEFLATOR[measure][year]]
+    average = sum(months) / len(months)
+    return float(average.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
+
 
 # The FYE 2011 line as policyengine-uk has carried it (60% of the FYE 2011
 # medians of 419 and 359 a week, and its FYE 2021 value).
@@ -124,15 +142,22 @@ def test_ahc_and_bhc_lines_come_from_the_same_publication():
 
 
 @pytest.mark.parametrize("measure", ["bhc", "ahc"])
+@pytest.mark.parametrize("year", [2021, 2022, 2023, 2024])
+def test_rounded_monthly_average_is_hbais_annual_deflator(measure, year):
+    assert len(DEFLATOR[measure][year]) == 12
+    assert yrdef(measure, year) == HBAI_YRDEF[measure][year]
+
+
+@pytest.mark.parametrize("measure", ["bhc", "ahc"])
 @pytest.mark.parametrize("year", [2021, 2022, 2023])
 def test_back_cast_matches_hbai_deflators(measure, year):
-    deflator = DEFLATOR[measure]
-    for months in deflator.values():
-        assert len(months) == 12
     expected = (
-        LINE_TABLE_2_4TS[measure] * fmean(deflator[year]) / fmean(deflator[FYE_2025])
+        LINE_TABLE_2_4TS[measure] * yrdef(measure, year) / yrdef(measure, FYE_2025)
     )
-    assert line(measure, year) == pytest.approx(round(expected, 2), abs=1e-9)
+    rounded = float(
+        Decimal(str(expected)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    )
+    assert line(measure, year) == pytest.approx(rounded, abs=1e-9)
 
 
 # HBAI table 1.2a, mean net disposable unequivalised income growth (BHC),
@@ -151,11 +176,16 @@ HEADLINE_CPI_FYE_2025 = 2.360610087969106  # table 1.2a, CPI inflation
 def test_bhc_deflator_matches_the_one_dwp_used(year):
     row = HBAI_TABLE_1_2A[year]
     dwp_growth = 100 * ((1 + row["cash"] / 100) / (1 + row["real"] / 100) - 1)
-    ours = 100 * (fmean(DEFLATOR["bhc"][year]) / fmean(DEFLATOR["bhc"][year - 1]) - 1)
-    assert ours == pytest.approx(dwp_growth, abs=0.05)
-    # The parameters carry the same growth between consecutive years.
+    ours = 100 * (yrdef("bhc", year) / yrdef("bhc", year - 1) - 1)
+    assert ours == pytest.approx(dwp_growth, rel=1e-9)
+    # Unrounded financial-year averages miss by about 0.02 points.
+    unrounded = 100 * (
+        fmean(DEFLATOR["bhc"][year]) / fmean(DEFLATOR["bhc"][year - 1]) - 1
+    )
+    assert abs(unrounded - dwp_growth) > 0.01
+    # The parameters carry the same growth, up to penny rounding.
     assert 100 * (line("bhc", year) / line("bhc", year - 1) - 1) == pytest.approx(
-        dwp_growth, abs=0.05
+        dwp_growth, abs=0.005
     )
 
 
@@ -178,12 +208,10 @@ def test_switch_year_is_fye_2022(measure):
     # And it is the back-cast of the FYE 2025 line, not the FYE 2011 one.
     back_cast = (
         LINE_TABLE_2_4TS[measure]
-        * fmean(DEFLATOR[measure][FIRST_REBASED_YEAR])
-        / fmean(DEFLATOR[measure][FYE_2025])
+        * HBAI_YRDEF[measure][FIRST_REBASED_YEAR]
+        / HBAI_YRDEF[measure][FYE_2025]
     )
-    assert line(measure, FIRST_REBASED_YEAR) == pytest.approx(
-        round(back_cast, 2), abs=1e-9
-    )
+    assert line(measure, FIRST_REBASED_YEAR) == pytest.approx(back_cast, abs=0.005)
 
 
 @PROPERTY_SETTINGS

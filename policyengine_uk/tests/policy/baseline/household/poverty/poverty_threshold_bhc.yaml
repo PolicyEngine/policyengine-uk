@@ -27,8 +27,8 @@
       household:
         members: [person]
   output:
-    # 431.6886 x 113.100 / 137.133 = 356.03 a week.
-    poverty_threshold_bhc: 18_513.6
+    # 431.6886 x BHCYRDEF 113.1 / 137.1 = 356.12 a week.
+    poverty_threshold_bhc: 18_518.2
 
 - name: FYE 2021 (2020) keeps the FYE 2011 BHC reference
   period: 2020

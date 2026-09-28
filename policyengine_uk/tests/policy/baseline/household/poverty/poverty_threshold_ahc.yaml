@@ -55,8 +55,8 @@
       household:
         members: [person]
   output:
-    # 373.8864 x 113.850 / 135.675 = 313.74 a week.
-    poverty_threshold_ahc: 16_314.5
+    # 373.8864 x AHCYRDEF 113.9 / 135.7 = 313.82 a week.
+    poverty_threshold_ahc: 16_318.6
 
 - name: FYE 2021 (2020) keeps the FYE 2011 AHC reference
   period: 2020
