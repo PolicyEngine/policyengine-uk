@@ -12,12 +12,16 @@ Invariants:
    penny: HBAI table 2.4ts gives 431.6886 (BHC) and 373.8864 (AHC) a week,
    60% of the unrounded medians in table 2.1ts (the report rounds them to
    719 and 623).
-2. Back-cast (differential against the source data): for FYE 2022 to FYE 2024
-   each line equals the FYE 2025 line times the ratio of financial-year
-   averages of HBAI's deflator (BHC: ONS experimental CPI including mortgage
-   interest payments, ground rent and dwelling insurance; AHC: CPI excluding
-   rents, maintenance repairs and water charges; ONS ad hoc 2863), to the
-   penny.
+2. Back-cast: for FYE 2022 to FYE 2024 each line equals the FYE 2025 line
+   times the ratio of financial-year averages of HBAI's deflator (BHC: ONS
+   experimental CPI including mortgage interest payments, ground rent and
+   dwelling insurance; AHC: CPI excluding rents, maintenance repairs and
+   water charges; ONS ad hoc 2863), to the penny. The monthly indices are
+   transcribed from the ONS workbook. As an independent check on that
+   transcription and on the choice of series, the BHC deflator's year-on-year
+   growth matches the deflator DWP used, backed out of HBAI table 1.2a (mean
+   income growth in cash and in real terms), to within 0.05 percentage
+   points, which headline CPI does not.
 3. Switch year: FYE 2022 (period 2021) is the first year on the FYE 2025
    reference; FYE 2021 (period 2020) and earlier keep the FYE 2011 line.
 4. Forward uprating: for every year from FYE 2025, both lines move with OBR
@@ -97,9 +101,12 @@ def line(measure, year):
 
 @pytest.mark.parametrize("measure", ["bhc", "ahc"])
 def test_fye_2025_line_is_60_percent_of_the_published_median(measure):
+    # Transcription check on the constants above: table 2.4ts is 60% of the
+    # table 2.1ts median.
     assert LINE_TABLE_2_4TS[measure] == pytest.approx(
         0.6 * MEDIAN_FYE_2025[measure], rel=1e-12
     )
+    # The model's line is the table 2.4ts value to the penny.
     assert line(measure, FYE_2025) == pytest.approx(
         round(LINE_TABLE_2_4TS[measure], 2), abs=1e-9
     )
@@ -109,7 +116,8 @@ def test_ahc_and_bhc_lines_come_from_the_same_publication():
     assert line("bhc", FYE_2025) == pytest.approx(431.69, abs=1e-9)
     assert line("ahc", FYE_2025) == pytest.approx(373.89, abs=1e-9)
     # Not the lines implied by the report's rounded medians (719, 623).
-    assert line("bhc", FYE_2025) != pytest.approx(0.6 * 719, abs=0.1)
+    assert line("bhc", FYE_2025) != pytest.approx(0.6 * 719, abs=0.05)
+    assert line("ahc", FYE_2025) != pytest.approx(0.6 * 623, abs=0.05)
     assert line("ahc", FYE_2025) / line("bhc", FYE_2025) == pytest.approx(
         MEDIAN_FYE_2025["ahc"] / MEDIAN_FYE_2025["bhc"], rel=1e-4
     )
@@ -125,6 +133,36 @@ def test_back_cast_matches_hbai_deflators(measure, year):
         LINE_TABLE_2_4TS[measure] * fmean(deflator[year]) / fmean(deflator[FYE_2025])
     )
     assert line(measure, year) == pytest.approx(round(expected, 2), abs=1e-9)
+
+
+# HBAI table 1.2a, mean net disposable unequivalised income growth (BHC),
+# percent, in cash terms and in real terms; the ratio is DWP's BHC deflator.
+# FYE 2022 is omitted: it straddles the series break, and FYE 2021 used an
+# earlier deflator vintage.
+HBAI_TABLE_1_2A = {
+    2022: {"cash": 9.26741118619525, "real": -1.0556909114590507},
+    2023: {"cash": 4.927077630138066, "real": -1.611171201169781},
+    2024: {"cash": 6.289097504035901, "real": 3.265556437181605},
+}
+HEADLINE_CPI_FYE_2025 = 2.360610087969106  # table 1.2a, CPI inflation
+
+
+@pytest.mark.parametrize("year", sorted(HBAI_TABLE_1_2A))
+def test_bhc_deflator_matches_the_one_dwp_used(year):
+    row = HBAI_TABLE_1_2A[year]
+    dwp_growth = 100 * ((1 + row["cash"] / 100) / (1 + row["real"] / 100) - 1)
+    ours = 100 * (fmean(DEFLATOR["bhc"][year]) / fmean(DEFLATOR["bhc"][year - 1]) - 1)
+    assert ours == pytest.approx(dwp_growth, abs=0.05)
+    # The parameters carry the same growth between consecutive years.
+    assert 100 * (line("bhc", year) / line("bhc", year - 1) - 1) == pytest.approx(
+        dwp_growth, abs=0.05
+    )
+
+
+def test_headline_cpi_would_not_match_the_bhc_deflator():
+    row = HBAI_TABLE_1_2A[FYE_2025]
+    dwp_growth = 100 * ((1 + row["cash"] / 100) / (1 + row["real"] / 100) - 1)
+    assert abs(HEADLINE_CPI_FYE_2025 - dwp_growth) > 0.5
 
 
 @pytest.mark.parametrize("measure", ["bhc", "ahc"])
