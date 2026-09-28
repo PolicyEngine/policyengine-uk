@@ -1,0 +1,1 @@
+- Applied Pension Credit age conditions, income assessment and carer and severe disability additions to claimants and partners rather than dependent children and young people, and removed the severe disability addition's child veto. Existing mixed-age transitional-protection and severe-disability couple/residence limitations remain.
