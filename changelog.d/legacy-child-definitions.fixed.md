@@ -1,0 +1,1 @@
+- Updated legacy benefits to use claimant and partner roles and programme-specific child definitions for legacy benefit allowances, income disregards, capital allocation, disability premiums, Housing Benefit childcare charges, and Council Tax Reduction exemptions.

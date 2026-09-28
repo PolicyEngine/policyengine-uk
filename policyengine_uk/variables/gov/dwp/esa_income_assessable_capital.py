@@ -10,12 +10,14 @@ class esa_income_assessable_capital(Variable):
         "ESA capital test. Because the dataset only stores these stocks at "
         "household level, the model allocates full household capital to any "
         "benunit with a reported income-related ESA award and only falls back to "
-        "an adult-share proxy when nobody in the household is on that reported "
-        "claim path."
+        "a claimant-and-partner share when nobody in the household is on that "
+        "reported claim path. This allocation is a PolicyEngine convention; "
+        "the data cannot identify ownership of capital."
     )
     definition_period = YEAR
     unit = GBP
     quantity_type = STOCK
+    reference = "https://www.legislation.gov.uk/uksi/2008/794/regulation/83"
 
     def formula(benunit, period, parameters):
         ESA = parameters(period).gov.dwp.ESA.income
@@ -26,16 +28,20 @@ class esa_income_assessable_capital(Variable):
         household_capital = sum(
             benunit.max(person.household(source, period)) for source in sources
         )
-        benunit_adults = add(benunit, period, ["is_adult"])
+        # Regulation 83(2) excludes children's and young persons' capital.
+        # The claimant/partner weights approximate otherwise unobserved ownership.
+        benunit_claimants_and_partners = add(
+            benunit, period, ["is_claimant_or_partner"]
+        )
         household_reporting_claimants = benunit.max(
-            person.household.sum(
-                person("is_adult", period) & (person("esa_income_reported", period) > 0)
-            )
+            person.household.sum(person("esa_income_reported", period) > 0)
         )
-        household_adults = benunit.max(
-            person.household.sum(person.household.members("is_adult", period))
+        household_claimants_and_partners = benunit.max(
+            person.household.sum(person("is_claimant_or_partner", period))
         )
-        fallback_divisor = max_(1, household_adults)
+        fallback_divisor = max_(1, household_claimants_and_partners)
         claiming_proxy = where(claiming_esa_income, household_capital, 0)
-        fallback_proxy = household_capital * benunit_adults / fallback_divisor
+        fallback_proxy = (
+            household_capital * benunit_claimants_and_partners / fallback_divisor
+        )
         return where(household_reporting_claimants > 0, claiming_proxy, fallback_proxy)

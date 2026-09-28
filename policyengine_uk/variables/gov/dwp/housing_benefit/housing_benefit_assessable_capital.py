@@ -7,11 +7,14 @@ class housing_benefit_assessable_capital(Variable):
     label = "Housing Benefit assessable capital"
     documentation = (
         "Housing Benefit capital counted from the configured capital sources, "
-        "allocated across benunits using a household adult-share proxy."
+        "allocated across benunits in proportion to their claimants and partners. "
+        "This is a PolicyEngine convention because household capital data "
+        "cannot identify ownership; children and young persons add no weight."
     )
     definition_period = YEAR
     unit = GBP
     quantity_type = STOCK
+    reference = "https://www.legislation.gov.uk/uksi/2006/213/regulation/25"
 
     def formula(benunit, period, parameters):
         household = benunit.household
@@ -19,14 +22,18 @@ class housing_benefit_assessable_capital(Variable):
         any_over_SP_age = benunit.any(person("is_SP_age", period))
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = sum(household(source, period) for source in p.sources)
-        benunit_adults = add(benunit, period, ["is_adult"])
-        household_adults = benunit.max(
-            person.household.sum(person.household.members("is_adult", period))
+        benunit_claimants_and_partners = add(
+            benunit, period, ["is_claimant_or_partner"]
         )
-        adult_divisor = max_(1, household_adults)
+        household_claimants_and_partners = benunit.max(
+            person.household.sum(person("is_claimant_or_partner", period))
+        )
+        claimant_partner_divisor = max_(1, household_claimants_and_partners)
         household_capital_proxy = where(
-            household_adults > 0,
-            household_capital * benunit_adults / adult_divisor,
+            household_claimants_and_partners > 0,
+            household_capital
+            * benunit_claimants_and_partners
+            / claimant_partner_divisor,
             0,
         )
         guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)

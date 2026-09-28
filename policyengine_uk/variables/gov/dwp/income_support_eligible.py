@@ -6,10 +6,16 @@ class income_support_eligible(Variable):
     entity = BenUnit
     label = "Whether eligible for Income Support"
     definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B"
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
-        youngest_child_5_or_under = benunit("youngest_child_age", period) <= 5
+        # Schedule 1B para 1 says "under 5". Retain the existing inclusive
+        # comparison pending a separate decision on the annual-age model.
+        youngest_child_5_or_under = (
+            benunit("youngest_child_age_for_legacy_benefits", period)
+            <= IS.eligibility.lone_parent_youngest_child_age_limit
+        )
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_with_young_child = lone_parent & youngest_child_5_or_under
         has_carers = add(benunit, period, ["is_carer_for_benefits"]) > 0

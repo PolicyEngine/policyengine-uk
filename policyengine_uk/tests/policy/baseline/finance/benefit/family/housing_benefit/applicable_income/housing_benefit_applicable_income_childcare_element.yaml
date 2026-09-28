@@ -1,27 +1,242 @@
 - name: One child, capped
   period: 2025
-  absolute_error_margin: 100
+  absolute_error_margin: 0.01
   input:
-    benunit_count_children: 1
-    childcare_expenses: 9_000
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9000
+      child0:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, child0]
   output:
-    housing_benefit_applicable_income_childcare_element: 9_000
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 1
+    housing_benefit_applicable_income_childcare_element: 9000
 
 - name: Two child, capped
   period: 2025
-  absolute_error_margin: 100
+  absolute_error_margin: 0.01
   input:
-    benunit_count_children: 2
-    childcare_expenses: 10_000
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 10000
+      child0:
+        age: 8
+      child1:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, child0, child1]
   output:
-    housing_benefit_applicable_income_childcare_element: 10_000
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 2 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 2
+    housing_benefit_applicable_income_childcare_element: 10000
 
 - name: No children
   period: 2025
-  absolute_error_margin: 100
+  absolute_error_margin: 0.01
   input:
-    benunit_count_children: 0
-    childcare_expenses: 30_000
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 30000
+    benunits:
+      benunit:
+        members: [claimant]
   output:
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 0
     housing_benefit_applicable_income_childcare_element: 0
 
+- name: Non-disabled child aged 15 remains within annual age approximation
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9000
+      child0:
+        age: 15
+    benunits:
+      benunit:
+        members: [claimant, child0]
+  output:
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 1
+    housing_benefit_applicable_income_childcare_element: 9000
+
+- name: Non-disabled young person aged 16 no longer counts
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9000
+      child0:
+        age: 16
+    benunits:
+      benunit:
+        members: [claimant, child0]
+  output:
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 0
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: Non-disabled young person aged 17 no longer counts
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9000
+      child0:
+        age: 17
+    benunits:
+      benunit:
+        members: [claimant, child0]
+  output:
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 0
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: Disabled young person aged 16 counts
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9000
+      child0:
+        age: 16
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant, child0]
+  output:
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 1
+    housing_benefit_applicable_income_childcare_element: 9000
+
+- name: Blind young person aged 16 counts
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9000
+      child0:
+        age: 16
+        is_blind: true
+    benunits:
+      benunit:
+        members: [claimant, child0]
+  output:
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 1
+    housing_benefit_applicable_income_childcare_element: 9000
+
+- name: Disabled young person aged 17 no longer counts
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9000
+      child0:
+        age: 17
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant, child0]
+  output:
+    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
+    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
+    num_relevant_children_for_housing_benefit_childcare: 0
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: One relevant child and an older young person use the one-child cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 30_000
+      child:
+        age: 10
+      young_person:
+        age: 17
+    benunits:
+      benunit:
+        members: [claimant, child, young_person]
+  output:
+    num_relevant_children_for_housing_benefit_childcare: 1
+    # Reg 27(3) selects the one-child cap: min(30,000, 312.0555942 * 52).
+    # The existing uprated WTC cap is retained; its difference from the
+    # statutory HB cap of 175/week is outside this classification change.
+    housing_benefit_applicable_income_childcare_element: 16_226.8908984
+
+- name: Under-18 claimant is not their own relevant child
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        childcare_expenses: 9_000
+    benunits:
+      benunit:
+        members: [claimant]
+  output:
+    # 0 dependants implies 0 childcare cap (HB reg 27(3)).
+    num_relevant_children_for_housing_benefit_childcare: 0
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: Disabled 16-year-old outside education and training is not a relevant young person
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9_000
+      young_person:
+        age: 16
+        is_disabled_for_benefits: true
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # HB reg 28(6) requires a child of the family, including a qualifying
+    # young person; the disability age extension does not create that status.
+    num_relevant_children_for_housing_benefit_childcare: 0
+    housing_benefit_applicable_income_childcare_element: 0
