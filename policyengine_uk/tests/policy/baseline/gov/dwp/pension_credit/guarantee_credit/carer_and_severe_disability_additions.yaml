@@ -82,6 +82,9 @@
   output:
     receives_carer_benefit: [false, false]
     is_carer_for_benefits: [false, true]
+    # Retained model limitation: Sch I para 1(1)(b)/(c) requires both partners
+    # qualifying, or one qualifying and one blind. This fixture's one-addition
+    # expectation preserves the existing simplification; it is not the legal award.
     severe_disability_minimum_guarantee_addition: 67.3 * 52
 
 - name: Severe disability addition is withheld when the partner receives Carer's Allowance

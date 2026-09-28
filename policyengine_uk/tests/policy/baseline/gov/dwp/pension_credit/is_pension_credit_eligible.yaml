@@ -10,6 +10,107 @@
   output:
     is_pension_credit_eligible: false
 
+- name: Pensioner responsible for an 18-year-old student has one pension-age claimant.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 79
+        is_parent: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # SPCA ss.1(2)(b), 4(1A): 1 of 1 claimants is pension age.
+    is_claimant_or_partner: [true, false]
+    is_pension_credit_eligible: true
+
+- name: Pensioner responsible for a 19-year-old trainee has one pension-age claimant.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 79
+        is_parent: true
+      young_person:
+        age: 19
+        is_in_approved_training: true
+        age_started_or_accepted_current_education_or_training: 18
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # SPCA ss.1(2)(b), 4(1A): 1 of 1 claimants is pension age.
+    is_claimant_or_partner: [true, false]
+    is_pension_credit_eligible: true
+
+- name: Pension-age couple with a 19-year-old student is eligible.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 79
+        is_parent: true
+      partner:
+        age: 70
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+    benunits:
+      benunit:
+        members: [claimant, partner, young_person]
+  output:
+    # SPCA ss.1(2)(b), 4(1A): 2 of 2 claimants are pension age.
+    is_claimant_or_partner: [true, true, false]
+    is_pension_credit_eligible: true
+
+- name: A 19-year-old student partner is still a mixed-age couple.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 79
+      partner:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # No identified parent: 1 of 2 claimants is pension age, so s.4(1A) bars PC.
+    is_claimant_or_partner: [true, true]
+    is_pension_credit_eligible: false
+
+- name: An explicitly identified under-18 partner must meet Pension Credit age conditions.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 79
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # SPCA s.4(1A): 1 of 2 claimants is pension age; age-18 counting missed this partner.
+    is_pension_credit_eligible: false
+
+- name: Pension Credit needs a claimant even when every member is pension age.
+  period: 2026
+  input:
+    age: 79
+    is_claimant_or_partner: false
+  output:
+    # SPCA s.1: no claimant means no entitlement, even though 0 of 0 meet SPA.
+    is_pension_credit_eligible: false
+
 - name: Case 2, single adult above State Pension age is eligible.
   period: 2026
   input:
