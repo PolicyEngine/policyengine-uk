@@ -1,9 +1,29 @@
 description: Absolute poverty threshold for equivalised household net income, after housing costs.
 values:
-  # FYE 2011 reference year: 60% of the FYE 2011 AHC median (359 a week).
-  # HBAI keeps this reference for years before FYE 2022.
-  2010-01-01: 215.4
-  2020-01-01: 261.92
+  # FYE 2011 reference year, which HBAI keeps for years before FYE 2022: 60%
+  # of the FYE 2011 AHC median held constant in real terms. Each value is 60%
+  # of DWP's published FYE 2011 absolute median in that year's prices (UK Data
+  # Service SN 5828), to the penny. That series is the FYE 2011 median, 358.16
+  # a week (first published as 359 and revised back to FYE 2011 in the FYE
+  # 2020 edition), times the ratio of HBAI's annual AHC deflator for the year
+  # to its FYE 2011 value. The annual deflator is the April-to-March mean of
+  # the monthly ONS CPI excluding rents, maintenance repairs and water
+  # charges, rounded to one decimal place, and HBAI has not revised it for
+  # these years: 90.6 (FYE 2011), 94.5, 97.0, 99.2, 100.1, 100.1, 101.1,
+  # 104.2, 106.7, 108.6 and 109.2 (FYE 2021). The deflator, and so the line,
+  # is flat from FYE 2015 to FYE 2016. HBAI's March 2027 release is due to
+  # move FYE 2019 to FYE 2021 to the FYE 2025 reference.
+  2010-01-01: 214.9
+  2011-01-01: 224.15
+  2012-01-01: 230.08
+  2013-01-01: 235.29
+  2014-01-01: 237.43
+  2015-01-01: 237.43
+  2016-01-01: 239.8
+  2017-01-01: 247.15
+  2018-01-01: 253.08
+  2019-01-01: 257.59
+  2020-01-01: 259.01
   # FYE 2025 reference year: 60% of the FYE 2025 AHC median, 373.8864 a
   # week in HBAI table 2.4ts (the median is 623.14; the report rounds it to
   # 623). HBAI applies it from FYE 2022, the first year with administrative
@@ -38,6 +58,14 @@ metadata:
       href: https://doc.ukdataservice.ac.uk/doc/5828/mrdoc/excel/5828_hbai_2425_harmonised_dataset_variables_guide.xlsx
     - title: ONS ad hoc 2863, consumer price indices series for DWP (sheet 1a, AHC deflator)
       href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/2863consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfortheperiodjanuary1996toapril2025
-    - title: Households Below Average Income, 2010/11 (FYE 2011 reference year)
+    - title: DWP, HBAI harmonised dataset FYE 1995 to FYE 2025 (UK Data Service SN 5828), net absolute median household income values over time (AHC FYE 2011 median in each year's prices, FYE 2011 to FYE 2021)
+      href: https://doc.ukdataservice.ac.uk/doc/5828/mrdoc/excel/5828_hbai_2425_harmonised_dataset_net_absolute_median_household_income_over_time.xlsx
+    - title: DWP, HBAI harmonised dataset variables guide (UK Data Service SN 5828), Deflators sheet (monthly AHC deflator; the annual deflator is its financial-year mean rounded to one decimal place)
+      href: https://doc.ukdataservice.ac.uk/doc/5828/mrdoc/excel/5828_hbai_2425_harmonised_dataset_variables_guide.xlsx
+    - title: Households Below Average Income FYE 2025, background information and methodology, changes to deflators (deflators for years before FYE 2022 not revised)
+      href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#changes-to-deflators
+    - title: Households Below Average Income FYE 2020, quality and methodology information, revision to the full time series for child maintenance income (applies to the FYE 2011 absolute line)
+      href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2020/household-below-average-income-series-quality-and-methodology-information-report-fye-2020#revision-to-full-time-series-due-to-treatment-of-income-from-child-maintenance
+    - title: Households Below Average Income, 2010/11 (FYE 2011 reference year; AHC median first published as 359 a week)
       href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/200720/full_hbai12.pdf#page=35
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

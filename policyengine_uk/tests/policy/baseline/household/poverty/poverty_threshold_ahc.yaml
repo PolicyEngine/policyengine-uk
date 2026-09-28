@@ -58,6 +58,34 @@
     # 373.8864 x AHCYRDEF 113.9 / 135.7 = 313.82 a week.
     poverty_threshold_ahc: 16_318.6
 
+- name: FYE 2016 (2015) is the FYE 2011 AHC line in FYE 2016 prices, not its FYE 2011 value
+  period: 2015
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+  output:
+    # 60% of HBAI's FYE 2011 AHC median in FYE 2016 prices: 237.43 a week.
+    poverty_threshold_ahc: 12_346.36
+
+- name: FYE 2018 (2017) is the FYE 2011 AHC line in FYE 2018 prices, not its FYE 2011 value
+  period: 2017
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 40
+    households:
+      household:
+        members: [person]
+  output:
+    # 60% of HBAI's FYE 2011 AHC median in FYE 2018 prices: 247.15 a week.
+    poverty_threshold_ahc: 12_851.8
+
 - name: FYE 2021 (2020) keeps the FYE 2011 AHC reference
   period: 2020
   absolute_error_margin: 1
@@ -69,5 +97,5 @@
       household:
         members: [person]
   output:
-    # 261.92 a week.
-    poverty_threshold_ahc: 13_619.8
+    # 60% of HBAI's FYE 2011 AHC median in FYE 2021 prices: 259.01 a week.
+    poverty_threshold_ahc: 13_468.52
