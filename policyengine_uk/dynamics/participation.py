@@ -57,7 +57,7 @@ def calculate_participation_elasticities(
             "benunit_id": benunit_id,
             "is_aged_18_or_over": adult_index > 0,
             "employed": employment_income > 0,
-            "benunit_count_adults": benunit_count_adults,
+            "count_aged_18_or_over": benunit_count_adults,
         }
     )
 

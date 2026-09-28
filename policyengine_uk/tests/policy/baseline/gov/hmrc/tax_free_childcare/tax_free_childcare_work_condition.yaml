@@ -3,11 +3,9 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: true
        incapacity_benefit: 0
      spouse:
-       is_adult: true
        in_work: true
        incapacity_benefit: 0
    benunits:
@@ -21,12 +19,10 @@
   input:
    people:
      person:
-       is_adult: true
        is_parent: true
        in_work: false
        incapacity_benefit: 0
      spouse:
-       is_adult: true
        in_work: false
        is_parent: true
        incapacity_benefit: 0
@@ -41,11 +37,9 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: true
        incapacity_benefit: 0
      spouse:
-       is_adult: true
        in_work: false
        incapacity_benefit: 100
    benunits:
@@ -59,11 +53,9 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: true
        incapacity_benefit: 0
      spouse:
-       is_adult: true
        in_work: false
        incapacity_benefit: 100
    benunits:
@@ -77,12 +69,10 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: true
        is_parent: true
        incapacity_benefit: 0
      spouse:
-       is_adult: true
        in_work: false
        is_parent: true
        incapacity_benefit: 0
@@ -97,7 +87,6 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: true
        incapacity_benefit: 0
    benunits:
@@ -111,7 +100,6 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: false
        incapacity_benefit: 0
    benunits:
@@ -125,11 +113,9 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: true
        incapacity_benefit: 100
      spouse:
-       is_adult: true
        in_work: false
        incapacity_benefit: 100
    benunits:
@@ -143,7 +129,6 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: true
        incapacity_benefit: 100
    benunits:
@@ -157,7 +142,6 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: false
        incapacity_benefit: 100
    benunits:
@@ -171,7 +155,6 @@
   input:
    people:
      person:
-       is_adult: true
        in_work: false
        tax_free_childcare_on_qualifying_leave: true
    benunits:
@@ -185,11 +168,9 @@
   input:
    people:
      person:
-       is_adult: true
        is_parent: true
        in_work: true
      spouse:
-       is_adult: true
        is_parent: true
        in_work: false
        tax_free_childcare_on_qualifying_leave: true
@@ -204,11 +185,9 @@
   input:
    people:
      person:
-       is_adult: true
        is_parent: true
        in_work: true
      spouse:
-       is_adult: true
        is_parent: true
        in_work: false
        statutory_maternity_pay: 100
@@ -223,11 +202,9 @@
   input:
    people:
      person:
-       is_adult: true
        is_parent: true
        in_work: true
      spouse:
-       is_adult: true
        is_parent: true
        in_work: false
        tax_free_childcare_on_adoption_leave: true
@@ -242,11 +219,9 @@
   input:
    people:
      person:
-       is_adult: true
        is_parent: true
        in_work: true
      spouse:
-       is_adult: true
        is_parent: true
        in_work: false
        tax_free_childcare_on_shared_parental_leave: true
@@ -255,3 +230,90 @@
        members: [person, spouse]
   output:
    tax_free_childcare_work_condition: true
+
+# The work condition applies to the person applying and their partner
+# (Childcare Payments Act 2014 s.3(1), s.6, s.9; SI 2015/448 regs 3 and 9):
+# the claimant or partner of the benefit unit, aged 16 or over. A child's own
+# work does not count, and a benefit unit with no one aged 18 or over is not a
+# couple.
+
+- name: A working 17-year-old child does not meet a lone parent's work condition
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        in_work: false
+        incapacity_benefit: 0
+      teenager:
+        age: 17
+        in_work: true
+        incapacity_benefit: 0
+    benunits:
+      benunit:
+        members: [parent, teenager]
+  output:
+    tax_free_childcare_work_condition: [false, false]
+
+- name: A non-working 17-year-old lone parent is a single applicant, not a couple
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 17
+        in_work: false
+        incapacity_benefit: 0
+      baby:
+        age: 0
+        in_work: false
+        incapacity_benefit: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+  output:
+    tax_free_childcare_work_condition: [false, false]
+
+- name: A working 17-year-old lone parent meets the work condition
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 17
+        is_parent: true
+        in_work: true
+        incapacity_benefit: 0
+      baby:
+        age: 0
+        in_work: false
+        incapacity_benefit: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+  output:
+    tax_free_childcare_work_condition: [true, false]
+
+- name: A couple where only one works is not rescued by an 18-year-old dependant
+  period: 2025
+  input:
+    people:
+      parent_1:
+        age: 40
+        is_parent: true
+        in_work: true
+        incapacity_benefit: 0
+      parent_2:
+        age: 40
+        is_parent: true
+        in_work: false
+        incapacity_benefit: 0
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+        in_work: true
+        incapacity_benefit: 0
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+  output:
+    tax_free_childcare_work_condition: [false, false, false]
