@@ -1,1 +1,0 @@
-- Rebase the absolute poverty line to HBAI's FYE 2025 reference year from FYE 2022 onward, as DWP has reported it since March 2026: 431.69 BHC / 373.89 AHC a week at FYE 2025. On the enhanced FRS in 2026-27, absolute poverty rises by about 4 points overall and about 7 points for children after housing costs.
