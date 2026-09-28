@@ -9,10 +9,10 @@
       household:
         members: [person]
   output:
-    # 60% of the FYE 2025 AHC median of 623 a week: 373.80 a week in 2024.
-    poverty_threshold_ahc: 19_437.6
+    # 60% of the FYE 2025 AHC median (HBAI table 2.4ts): 373.89 a week in 2024.
+    poverty_threshold_ahc: 19_442.3
     # A single adult's AHC equivalisation factor is 0.58.
-    poverty_line_ahc: 11_273.8
+    poverty_line_ahc: 11_276.5
 
 - name: A single adult on 5,000 of earnings is below the AHC absolute line
   period: 2024
@@ -55,8 +55,8 @@
       household:
         members: [person]
   output:
-    # 373.80 x 113.850 / 135.675 = 313.67 a week.
-    poverty_threshold_ahc: 16_310.8
+    # 373.8864 x 113.850 / 135.675 = 313.74 a week.
+    poverty_threshold_ahc: 16_314.5
 
 - name: FYE 2021 (2020) keeps the FYE 2011 AHC reference
   period: 2020

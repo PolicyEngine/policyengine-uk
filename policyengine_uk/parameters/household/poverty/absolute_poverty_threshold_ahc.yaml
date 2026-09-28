@@ -4,24 +4,27 @@ values:
   # HBAI keeps this reference for years before FYE 2022.
   2010-01-01: 215.4
   2020-01-01: 261.92
-  # FYE 2025 reference year: 60% of the FYE 2025 AHC median (623 a week),
-  # which HBAI applies from FYE 2022, the first year with administrative
+  # FYE 2025 reference year: 60% of the FYE 2025 AHC median, 373.8864 a
+  # week in HBAI table 2.4ts (the median is 623.14; the report rounds it to
+  # 623). HBAI applies it from FYE 2022, the first year with administrative
   # data linking. FYE 2022 to FYE 2024 carry the FYE 2025 line back by
   # financial-year averages of HBAI's AHC deflator (ONS CPI excluding rents,
-  # maintenance repairs and water charges, ad hoc 2863): 373.80 x index(FY)
+  # maintenance repairs and water charges, ad hoc 2863): 373.8864 x index(FY)
   # / index(FYE 2025), where the FY averages are 113.850 (FYE 2022), 126.050
   # (FYE 2023), 133.217 (FYE 2024) and 135.675 (FYE 2025). Later years uprate
   # by OBR CPI.
-  2021-01-01: 313.67
-  2022-01-01: 347.28
-  2023-01-01: 367.03
-  2024-01-01: 373.80
+  2021-01-01: 313.74
+  2022-01-01: 347.36
+  2023-01-01: 367.11
+  2024-01-01: 373.89
 metadata:
   period: week
   unit: currency-GBP
   label: Absolute poverty threshold, after housing costs
   reference:
-    - title: Households Below Average Income FYE 1995 to FYE 2025, median household income (AHC median 623 a week in FYE 2025)
+    - title: Households Below Average Income FYE 2025 data tables, table 2.4ts (60% of median, couple with no children, 373.8864 a week AHC in 2024/25)
+      href: https://assets.publishing.service.gov.uk/media/69c2902a7e02b81c0d1c7762/hbai-data_tables-2025.zip
+    - title: Households Below Average Income FYE 1995 to FYE 2025, median household income (AHC median 623 a week, rounded, in FYE 2025)
       href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-an-analysis-of-the-uk-income-distribution-fye-1995-to-fye-2025#median-household-income--increase-to-719-bhc-and-623-ahc-in-fye-2025
     - title: Households Below Average Income FYE 2025, background information and methodology, section 2.3 (absolute reference year updated to FYE 2025 from FYE 2022)
       href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#update-to-the-absolute-low-income-reference-year

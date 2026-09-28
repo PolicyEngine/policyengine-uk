@@ -9,11 +9,12 @@
       household:
         members: [person]
   output:
-    # 60% of the FYE 2025 BHC median of 719 a week: 431.40 a week in 2024.
-    poverty_threshold_bhc: 22_432.8
-    # A single adult's BHC equivalisation factor is 0.67.
-    poverty_line_bhc: 15_030.0
-    poverty_line: 15_030.0
+    # 60% of the FYE 2025 BHC median (HBAI table 2.4ts): 431.69 a week in 2024.
+    poverty_threshold_bhc: 22_447.9
+    # A single adult's BHC equivalisation factor is 0.67. HBAI table 2.4ts
+    # gives 289.23 a week for a single person (15,040 a year).
+    poverty_line_bhc: 15_040.1
+    poverty_line: 15_040.1
 
 - name: FYE 2022 (2021) is the first year on the FYE 2025 BHC reference, carried back by HBAI's BHC deflator
   period: 2021
@@ -26,8 +27,8 @@
       household:
         members: [person]
   output:
-    # 431.40 x 113.100 / 137.133 = 355.79 a week.
-    poverty_threshold_bhc: 18_501.1
+    # 431.6886 x 113.100 / 137.133 = 356.03 a week.
+    poverty_threshold_bhc: 18_513.6
 
 - name: FYE 2021 (2020) keeps the FYE 2011 BHC reference
   period: 2020

@@ -8,8 +8,10 @@ line. policyengine-uk labels FYE 2025 (2024-25) as period 2024.
 
 Invariants:
 
-1. Anchor: at FYE 2025 the lines are exactly 60% of the published FYE 2025
-   medians, 719 (BHC) and 623 (AHC) a week.
+1. Anchor: at FYE 2025 the lines are 60% of the FYE 2025 medians to the
+   penny: HBAI table 2.4ts gives 431.6886 (BHC) and 373.8864 (AHC) a week,
+   60% of the unrounded medians in table 2.1ts (the report rounds them to
+   719 and 623).
 2. Back-cast (differential against the source data): for FYE 2022 to FYE 2024
    each line equals the FYE 2025 line times the ratio of financial-year
    averages of HBAI's deflator (BHC: ONS experimental CPI including mortgage
@@ -19,7 +21,7 @@ Invariants:
 3. Switch year: FYE 2022 (period 2021) is the first year on the FYE 2025
    reference; FYE 2021 (period 2020) and earlier keep the FYE 2011 line.
 4. Forward uprating: for every year from FYE 2025, both lines move with OBR
-   CPI, so the AHC/BHC ratio stays at 623/719.
+   CPI, so the AHC/BHC ratio stays at its FYE 2025 value.
 5. The AHC line is below the BHC line in every year, and both are positive.
 6. Variable layer: poverty_threshold_* is the weekly line times 52, and the
    absolute poverty flags hold exactly when equivalised income is below it.
@@ -37,9 +39,11 @@ from policyengine_uk.system import system
 POVERTY = system.parameters.household.poverty
 CPI = system.parameters.gov.economic_assumptions.indices.obr.consumer_price_index
 
-# HBAI FYE 2025 medians, pounds a week (main report, "Median household
-# income - increase to 719 (BHC) and 623 (AHC) in FYE 2025").
-MEDIAN_FYE_2025 = {"bhc": 719, "ahc": 623}
+# HBAI FYE 2025 population medians, pounds a week in 2024/25 prices, from
+# data table 2.1ts; the main report rounds them to 719 (BHC) and 623 (AHC).
+MEDIAN_FYE_2025 = {"bhc": 719.4810615125072, "ahc": 623.1440591131203}
+# 60% of median for the reference couple, table 2.4ts.
+LINE_TABLE_2_4TS = {"bhc": 431.6886369075043, "ahc": 373.88643546787216}
 FYE_2025 = 2024
 FIRST_REBASED_YEAR = 2021  # FYE 2022
 
@@ -93,16 +97,21 @@ def line(measure, year):
 
 @pytest.mark.parametrize("measure", ["bhc", "ahc"])
 def test_fye_2025_line_is_60_percent_of_the_published_median(measure):
+    assert LINE_TABLE_2_4TS[measure] == pytest.approx(
+        0.6 * MEDIAN_FYE_2025[measure], rel=1e-12
+    )
     assert line(measure, FYE_2025) == pytest.approx(
-        0.6 * MEDIAN_FYE_2025[measure], abs=1e-9
+        round(LINE_TABLE_2_4TS[measure], 2), abs=1e-9
     )
 
 
 def test_ahc_and_bhc_lines_come_from_the_same_publication():
-    assert line("bhc", FYE_2025) == pytest.approx(431.40, abs=1e-9)
-    assert line("ahc", FYE_2025) == pytest.approx(373.80, abs=1e-9)
+    assert line("bhc", FYE_2025) == pytest.approx(431.69, abs=1e-9)
+    assert line("ahc", FYE_2025) == pytest.approx(373.89, abs=1e-9)
+    # Not the lines implied by the report's rounded medians (719, 623).
+    assert line("bhc", FYE_2025) != pytest.approx(0.6 * 719, abs=0.1)
     assert line("ahc", FYE_2025) / line("bhc", FYE_2025) == pytest.approx(
-        623 / 719, rel=1e-12
+        MEDIAN_FYE_2025["ahc"] / MEDIAN_FYE_2025["bhc"], rel=1e-4
     )
 
 
@@ -113,10 +122,7 @@ def test_back_cast_matches_hbai_deflators(measure, year):
     for months in deflator.values():
         assert len(months) == 12
     expected = (
-        0.6
-        * MEDIAN_FYE_2025[measure]
-        * fmean(deflator[year])
-        / fmean(deflator[FYE_2025])
+        LINE_TABLE_2_4TS[measure] * fmean(deflator[year]) / fmean(deflator[FYE_2025])
     )
     assert line(measure, year) == pytest.approx(round(expected, 2), abs=1e-9)
 
@@ -133,8 +139,7 @@ def test_switch_year_is_fye_2022(measure):
     assert line(measure, FIRST_REBASED_YEAR) > 1.1 * carried
     # And it is the back-cast of the FYE 2025 line, not the FYE 2011 one.
     back_cast = (
-        0.6
-        * MEDIAN_FYE_2025[measure]
+        LINE_TABLE_2_4TS[measure]
         * fmean(DEFLATOR[measure][FIRST_REBASED_YEAR])
         / fmean(DEFLATOR[measure][FYE_2025])
     )
@@ -149,9 +154,11 @@ def test_lines_uprate_with_cpi_from_fye_2025(year):
     growth = CPI(str(year)) / CPI(str(FYE_2025))
     for measure in ("bhc", "ahc"):
         assert line(measure, year) == pytest.approx(
-            0.6 * MEDIAN_FYE_2025[measure] * growth, rel=1e-9
+            line(measure, FYE_2025) * growth, rel=1e-9
         )
-    assert line("ahc", year) / line("bhc", year) == pytest.approx(623 / 719, rel=1e-9)
+    assert line("ahc", year) / line("bhc", year) == pytest.approx(
+        line("ahc", FYE_2025) / line("bhc", FYE_2025), rel=1e-9
+    )
 
 
 @PROPERTY_SETTINGS
