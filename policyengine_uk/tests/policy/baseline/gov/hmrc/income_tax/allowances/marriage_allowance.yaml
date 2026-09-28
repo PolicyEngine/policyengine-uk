@@ -62,3 +62,55 @@
   output:
     marriage_allowance: [0, 0, 0, 0]
     income_tax: [9_432, 4_486, 0, 0]
+
+# Marriage Allowance is an election between spouses or civil partners (ITA 2007
+# s.55B, s.55C(1)(a)): the claimant and partner of a married benefit unit, never
+# a child in it, whatever the child's age.
+- name: An 18-year-old dependant's unused allowance does not transfer to a parent
+  # p1 is a basic-rate taxpayer with no unused allowance of their own spouse
+  # (p2 earns 60,000), so p1 gets no Marriage Allowance. Previously the
+  # 18-year-old's unused 12,570 counted as a "partner's" allowance and p1 got
+  # 1,260 (a 252 tax cut).
+  period: 2025
+  input:
+    people:
+      p1:
+        age: 45
+        is_parent: true
+        employment_income: 30_000
+      p2:
+        age: 45
+        is_parent: true
+        employment_income: 60_000
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunit:
+      members: [p1, p2, student]
+      is_married: true
+  output:
+    partners_unused_personal_allowance: [0, 0, 0]
+    marriage_allowance: [0, 0, 0]
+    marital_status: [MARRIED, MARRIED, SINGLE]
+
+- name: A lone parent with a 19-year-old at school is not married
+  # With an identified parent, the 19-year-old in non-advanced education is a
+  # dependant, so the benefit unit has no couple and no Marriage Allowance.
+  # Previously two members aged 18+ made the unit "married" by default and the
+  # parent got 1,260 transferred from the 19-year-old.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        employment_income: 40_000
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        employment_income: 1_000
+    benunit:
+      members: [parent, student]
+  output:
+    is_married: false
+    marriage_allowance: [0, 0]
