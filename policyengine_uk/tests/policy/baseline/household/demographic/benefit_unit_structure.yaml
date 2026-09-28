@@ -1,0 +1,239 @@
+# Benefit-unit structure: the claimant and partner, couples, and the HBAI
+# population groups.
+#
+# HBAI FYE 2025 glossary: a dependent child is under 16, or 16-19 and not
+# partnered, living with parents or a responsible adult, and in full-time
+# non-advanced education or unwaged government training. Everyone else is an
+# adult; pensioners are adults at or above State Pension age (66 in 2025).
+# Benefit units are a single adult or a couple plus dependent children, so the
+# claimant and partner are the benefit unit's HBAI adults.
+
+- name: Lone parent with an 18-year-old at school is a lone parent, not a couple
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, student, child]
+    households:
+      household:
+        members: [parent, student, child]
+  output:
+    is_hbai_dependent_child: [false, true, true]
+    is_claimant_or_partner: [true, false, false]
+    hbai_person_type: [WORKING_AGE_ADULT, CHILD, CHILD]
+    relation_type: SINGLE
+    is_couple: false
+    is_lone_parent: true
+    is_single_person: false
+    is_married: false
+    marital_status: [SINGLE, SINGLE, SINGLE]
+    eldest_claimant_or_partner_age: 40
+    youngest_claimant_or_partner_age: 40
+    # The deprecated shims keep their age-18 answers.
+    is_adult: [true, true, false]
+    family_type: COUPLE_WITH_CHILDREN
+
+- name: Without an identified parent an 18-year-old at school stays an adult
+  # "Living with parents" needs an identified parent; otherwise the model
+  # cannot tell a dependant from a partner and keeps the adult treatment.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 24
+      other:
+        age: 19
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [head, other]
+    households:
+      household:
+        members: [head, other]
+  output:
+    is_hbai_dependent_child: [false, false]
+    is_claimant_or_partner: [true, true]
+    relation_type: COUPLE
+
+- name: A 17-year-old living alone is a single adult, not their own child
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      young_person:
+        age: 17
+    benunits:
+      benunit:
+        members: [young_person]
+    households:
+      household:
+        members: [young_person]
+  output:
+    is_hbai_dependent_child: false
+    is_hbai_adult: true
+    is_claimant_or_partner: true
+    hbai_person_type: WORKING_AGE_ADULT
+    relation_type: SINGLE
+    is_couple: false
+    is_single_person: true
+    is_lone_parent: false
+    # Deprecated shims: no one aged 18+, and the claimant counts as a child.
+    num_adults: 0
+    family_type: LONE_PARENT
+
+- name: A 17-year-old lone parent with a baby
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 17
+        is_parent: true
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+    households:
+      household:
+        members: [parent, baby]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_lone_parent: true
+    is_couple: false
+    youngest_claimant_or_partner_age: 17
+
+- name: A couple with an 18-year-old at school stays a couple with a young person
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 40
+        is_parent: true
+      parent_2:
+        age: 40
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+    households:
+      household:
+        members: [parent_1, parent_2, student]
+  output:
+    is_claimant_or_partner: [true, true, false]
+    relation_type: COUPLE
+    is_couple: true
+    is_single_person: false
+    is_lone_parent: false
+    is_married: true
+    marital_status: [MARRIED, MARRIED, SINGLE]
+    # Deprecated shim: three members aged 18+ are not "two adults".
+    family_type: SINGLE
+
+- name: A 16- or 17-year-old non-head, non-parent keeps the dependant treatment
+  # Flagged assumption: the FRS puts non-dependent 16- and 17-year-olds in their
+  # own benefit unit, so a non-head in that age group is treated as a dependant
+  # whatever their education inputs.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+      teenager:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, teenager]
+    households:
+      household:
+        members: [parent, teenager]
+  output:
+    is_hbai_dependent_child: [false, true]
+    is_claimant_or_partner: [true, false]
+
+- name: A 19-year-old in higher education is an adult
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      student:
+        age: 19
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [parent, student]
+    households:
+      household:
+        members: [parent, student]
+  output:
+    is_hbai_dependent_child: [false, false]
+    hbai_person_type: [WORKING_AGE_ADULT, WORKING_AGE_ADULT]
+
+- name: HBAI pensioners are adults at or above State Pension age
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_parent: true
+      young_pensioner:
+        age: 66
+      grandchild:
+        age: 18
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members: [pensioner, young_pensioner, grandchild]
+    households:
+      household:
+        members: [pensioner, young_pensioner, grandchild]
+  output:
+    is_hbai_pensioner: [true, true, false]
+    is_hbai_working_age_adult: [false, false, false]
+    hbai_person_type: [PENSIONER, PENSIONER, CHILD]
+
+- name: HBAI equivalence-scale child bands
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child_13:
+        age: 13
+      child_14:
+        age: 14
+      student_18:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, child_13, child_14, student_18]
+    households:
+      household:
+        members: [parent, child_13, child_14, student_18]
+  output:
+    is_hbai_child_under_14: [false, true, false, false]
+    is_hbai_child_aged_14_or_over: [false, false, true, true]
