@@ -61,3 +61,30 @@
     # (18,000 - 329.75 * 52) * 0.6 = 511.80, below maximum 1,045.20.
     savings_credit: 511.80
     pension_credit_entitlement: 5_616.44
+
+- name: Guarantee Credit is zero for a working-age family
+  # Guarantee credit is part of State Pension Credit (SPCA 2002 ss.1-2), so a
+  # working-age family on a low income has none. Previously it was computed for
+  # everyone below the minimum guarantee, which passported working-age families
+  # into the targeted (two-year-old) childcare entitlement.
+  period: 2026
+  input:
+    people:
+      parent_1:
+        age: 30
+        is_parent: true
+      parent_2:
+        age: 30
+        is_parent: true
+      toddler:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, toddler]
+    households:
+      household:
+        members: [parent_1, parent_2, toddler]
+        country: ENGLAND
+  output:
+    is_pension_credit_eligible: false
+    guarantee_credit: 0
