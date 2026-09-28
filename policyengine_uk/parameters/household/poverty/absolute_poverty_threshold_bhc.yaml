@@ -1,12 +1,36 @@
 description: Absolute poverty threshold for equivalised household net income, before housing costs.
 values:
+  # FYE 2011 reference year: 60% of the FYE 2011 BHC median (419 a week).
+  # HBAI keeps this reference for years before FYE 2022.
   2010-01-01: 251.4
   2020-01-01: 305.7
+  # FYE 2025 reference year: 60% of the FYE 2025 BHC median (719 a week),
+  # which HBAI applies from FYE 2022, the first year with administrative
+  # data linking. FYE 2022 to FYE 2024 carry the FYE 2025 line back by
+  # financial-year averages of HBAI's BHC deflator (ONS experimental CPI
+  # including mortgage interest payments, ground rent and dwelling
+  # insurance, ad hoc 2863): 431.40 x index(FY) / index(FYE 2025), where the
+  # FY averages are 113.100 (FYE 2022), 124.875 (FYE 2023), 133.208 (FYE
+  # 2024) and 137.133 (FYE 2025). Later years uprate by OBR CPI.
+  2021-01-01: 355.79
+  2022-01-01: 392.84
+  2023-01-01: 419.05
+  2024-01-01: 431.40
 metadata:
   period: week
   unit: currency-GBP
   label: Absolute poverty threshold, before housing costs
   reference:
-    - title: Households Below Average income, 2010/11
+    - title: Households Below Average Income FYE 1995 to FYE 2025, median household income (BHC median 719 a week in FYE 2025)
+      href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-an-analysis-of-the-uk-income-distribution-fye-1995-to-fye-2025#median-household-income--increase-to-719-bhc-and-623-ahc-in-fye-2025
+    - title: Households Below Average Income FYE 2025, background information and methodology, section 2.3 (absolute reference year updated to FYE 2025 from FYE 2022)
+      href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#update-to-the-absolute-low-income-reference-year
+    - title: HBAI statistics collection, planned summer 2026 update moved to the March 2027 release (FYE 2025 reference not yet applied to FYE 2019 to FYE 2021)
+      href: https://www.gov.uk/government/collections/households-below-average-income-hbai--2#planned-summer-2026-update-for-201819-to-202021
+    - title: DWP statistical notice on adjusting for inflation (CPI variant including mortgage interest payments, ground rent and dwelling insurance for BHC)
+      href: https://assets.publishing.service.gov.uk/media/5a8027f7ed915d74e622ccc2/dwp-family-household-income-stats-adjusting-for-inflation-statistical-notice.pdf#page=3
+    - title: ONS ad hoc 2863, consumer price indices series for DWP (sheet 1b, BHC deflator)
+      href: https://www.ons.gov.uk/economy/inflationandpriceindices/adhocs/2863consumerpriceindicesseriesexcludingrentsmaintenancerepairsandwaterchargesfortheperiodjanuary1996toapril2025
+    - title: Households Below Average Income, 2010/11 (FYE 2011 reference year)
       href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/200720/full_hbai12.pdf#page=35
   uprating: gov.economic_assumptions.indices.obr.consumer_price_index

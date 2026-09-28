@@ -7,8 +7,10 @@ class in_poverty_ahc(Variable):
     label = "Whether the household is in absolute poverty, after housing costs"
     documentation = (
         "Absolute poverty: equivalised HBAI net income after housing costs "
-        "below the 2010/11 60%-of-median line uprated by CPI "
-        "(poverty_threshold_ahc). This is the HBAI absolute low income "
+        "below 60% of the reference-year median held constant in real terms "
+        "(poverty_threshold_ahc). The reference year is FYE 2025 from FYE "
+        "2022 onward and FYE 2011 before, as in HBAI since March 2026. This "
+        "is the HBAI absolute low income "
         "measure; the relative measure (60% of the contemporary median) is "
         "in_relative_poverty_ahc."
     )
