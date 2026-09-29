@@ -69,6 +69,7 @@
         attendance_allowance: 100
       partner:
         age: 70
+        attendance_allowance: 100
         care_hours: 35
         carers_allowance_reported: 0
         would_claim_carers_allowance: false
@@ -82,14 +83,41 @@
   output:
     receives_carer_benefit: [false, false]
     is_carer_for_benefits: [false, true]
-    # Retained model limitation: Sch I para 1(1)(b)/(c) requires both partners
-    # qualifying, or one qualifying and one blind. This fixture's one-addition
-    # expectation preserves the existing simplification; it is not the legal award.
-    severe_disability_minimum_guarantee_addition: 67.3 * 52
+    # SPC Regs Sch I para 1(1)(b): both partners receive Attendance Allowance
+    # and no one is "entitled to, and in receipt of" Carer's Allowance for
+    # either, so reg 6(5)(b)'s double rate applies: 134.60 * 52 = 6,999.20.
+    severe_disability_minimum_guarantee_addition: 6_999.2
 
-- name: Severe disability addition is withheld when the partner receives Carer's Allowance
+- name: A carer benefit paid for one partner leaves the single severe disability rate
   period: 2021
   absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [false, true]
+    # The partner's Carer's Allowance is taken to be for caring for the
+    # claimant, so one partner only is cared for. Sch I para 1(1)(b) still
+    # holds, but reg 6(5)(b) does not: reg 6(5)(a) 67.30 * 52 = 3,499.60.
+    severe_disability_minimum_guarantee_addition: 3_499.6
+
+- name: No severe disability addition when only one partner receives a qualifying benefit
+  period: 2021
+  absolute_error_margin: 0
   input:
     people:
       claimant:
@@ -108,4 +136,6 @@
         country: ENGLAND
   output:
     receives_carer_benefit: [false, true]
+    # Head (b) needs both partners in receipt and head (c) needs the other
+    # partner certified blind, so neither applies whatever the carer position.
     severe_disability_minimum_guarantee_addition: 0
