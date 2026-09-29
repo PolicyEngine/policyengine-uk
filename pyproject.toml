@@ -24,7 +24,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "policyengine-core>=3.30.1",
+    "policyengine-core>=3.32.9",
     "microdf-python>=1.2.1",
     "pydantic>=2.11.7",
     "tables>=3.10.2",
