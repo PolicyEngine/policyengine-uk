@@ -27,8 +27,9 @@ Invariants:
 Scope: these are tests of the ENCODED statutory limbs, not full entitlement.
 Education status proxies full-time non-advanced study: hours, employment
 contracts, approved providers and interruptions are unobserved. CB/CTC leaver
-extensions are omitted, as is UC/PC's unconditional age-16-to-next-September
-route. UC's terminal date is an input; PC's September terminal date is absent.
+extensions are omitted, as are UC's unconditional age-16-to-next-September
+route and PC's (an input that defaults to false). UC's and PC's September
+terminal dates are one input.
 Own-benefit receipt collapses different programme-specific benefit lists.
 UC/CTC/PC blanket looked-after exclusions omit statutory exceptions. HBAI's
 fallback assumes dependence at 16--17 regardless of study, requires an
@@ -179,7 +180,7 @@ def qualifying_young_person(p, programme):
         and p["age_started_or_accepted_current_education_or_training"] >= 19
     ):
         return False
-    if programme == "universal_credit" and p["age"] >= 19:
+    if programme in ("universal_credit", "pension_credit") and p["age"] >= 19:
         return p["is_before_universal_credit_qualifying_young_person_terminal_date"]
     return True
 
