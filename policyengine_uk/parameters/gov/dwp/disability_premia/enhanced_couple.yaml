@@ -1,12 +1,22 @@
 description: Enhanced disability premium for a couple, invalid for Employment and Support Allowance.
 values:
-  2015-04-01: 24.5
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
+  2015-04-01: 22.6
+  2016-04-01: 22.6
+  2017-04-01: 22.85
+  2018-04-01: 23.55
+  2019-04-01: 24.1
+  2020-04-01: 24.5
+  2021-04-01: 24.6
+  2022-04-01: 25.35
+  2023-04-01: 27.9
+  2024-04-01: 29.75
+  2025-04-01: 30.25
   2026-04-01: 31.4
 metadata:
   period: week
   unit: currency-GBP
   label: Legacy benefit enhanced disability premium (couple)
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2015-04-01
+  uprating: gov.benefit_uprating_cpi
   reference: https://www.gov.uk/disability-premiums/what-youll-get

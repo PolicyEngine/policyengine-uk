@@ -2,10 +2,14 @@ description: Child Tax Credit family element.
 values:
   2016-04-06:
     value: 545
+  # Still £545 in 2023 to 2024 and 2024 to 2025 (HMRC, Rates and allowances:
+  # Child Benefit, Guardian's Allowance and tax credits).
+  2023-04-06: 545
+  2024-04-06: 545
 metadata:
   period: year
   unit: currency-GBP
-  uprating: gov.benefit_uprating_cpi
+  # Not uprated: HMRC lists £545 in every tax year shown.
   reference:
     - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
     - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27

@@ -1,12 +1,18 @@
 description: Addition to the Minimum Guarantee for each claimant who is a carer.
 values:
-  2019-04-01: 36
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
+  2015-04-01: 34.6
+  2016-04-01: 34.6
+  2017-04-01: 34.95
+  2018-04-01: 36
+  2019-04-01: 36.85
   2020-04-01: 37.5
   2021-04-01: 37.7
   2022-04-01: 38.85
   2023-04-01: 42.75
   2024-04-01: 45.6
-  2025-04-01: 46.37
+  2025-04-01: 46.4
   2026-04-01: 48.15
 metadata:
   unit: currency-GBP

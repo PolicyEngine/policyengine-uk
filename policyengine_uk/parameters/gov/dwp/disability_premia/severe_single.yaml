@@ -1,12 +1,22 @@
 description: Severe disability premium for a single person.
 values:
-  2015-04-01: 66.95
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
+  2015-04-01: 61.85
+  2016-04-01: 61.85
+  2017-04-01: 62.45
+  2018-04-01: 64.3
+  2019-04-01: 65.85
+  2020-04-01: 66.95
+  2021-04-01: 67.3
+  2022-04-01: 69.4
+  2023-04-01: 76.4
+  2024-04-01: 81.5
+  2025-04-01: 82.9
   2026-04-01: 86.05
 metadata:
   period: week
   unit: currency-GBP
   label: Legacy benefit severe disability premium (single)
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2015-04-01
+  uprating: gov.benefit_uprating_cpi
   reference: https://www.gov.uk/disability-premiums/what-youll-get

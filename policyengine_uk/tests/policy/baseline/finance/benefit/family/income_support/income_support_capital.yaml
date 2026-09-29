@@ -91,7 +91,9 @@
   output:
     income_support_eligible: true
     income_support_tariff_income: 104
-    income_support: 4209.82
+    # £74.70 a week (2021-22 lone parent 18 or over) x 52. The £104 of tariff
+    # income is not deducted from the award here.
+    income_support: 3884.40
 
 - name: Income Support remains eligible at the upper capital limit
   period: 2021

@@ -1,5 +1,7 @@
 description: Income-based Jobseeker's Allowance for persons aged over 25.
 values:
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
   2015-04-01: 73.1
   2016-04-01: 73.1
   2017-04-01: 73.1
@@ -8,6 +10,10 @@ values:
   2020-04-01: 74.35
   2021-04-01: 74.7
   2022-04-01: 77
+  2023-04-01: 84.8
+  2024-04-01: 90.5
+  2025-04-01: 92.05
+  2026-04-01: 95.55
 metadata:
   period: week
   label: Income-based JSA (over 25)

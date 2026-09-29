@@ -5,7 +5,8 @@ values:
 metadata:
   period: week
   label: Working Tax Credit childcare element two or more children amount
-  uprating: gov.benefit_uprating_cpi
+  # Fixed at £175 and £300 a week by the Working Tax Credit (Entitlement
+  # and Maximum Rate) Regulations 2002 reg 20(3): not uprated.
   unit: currency-GBP
   reference:
     title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002

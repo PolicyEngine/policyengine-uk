@@ -19,6 +19,13 @@ values:
   2020-03-25: 810
   2020-04-06: 825
   2021-04-06: 830
+  # Tax Credits, Child Benefit and Guardian's Allowance Up-rating Regulations
+  # 2022 (SI 2022/231) reg 2(c).
+  2022-04-06: 860
+  # HMRC, Rates and allowances: Child Benefit, Guardian's Allowance and tax
+  # credits (tax years 2023 to 2024 and 2024 to 2025).
+  2023-04-06: 950
+  2024-04-06: 1_015
 metadata:
   period: year
   unit: currency-GBP

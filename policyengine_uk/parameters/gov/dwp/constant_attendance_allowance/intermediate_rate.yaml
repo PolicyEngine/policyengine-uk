@@ -3,11 +3,21 @@ metadata:
   economy: false
   period: week
   label: Constant Attendance Allowance intermediate rate
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2015-04-01
+  uprating: gov.benefit_uprating_cpi
   reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
   unit: currency-GBP
 values:
-  2015-04-01: 109.2
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
+  2015-04-01: 100.8
+  2016-04-01: 100.8
+  2017-04-01: 101.85
+  2018-04-01: 104.85
+  2019-04-01: 107.4
+  2020-04-01: 109.2
+  2021-04-01: 109.8
+  2022-04-01: 113.25
+  2023-04-01: 124.65
+  2024-04-01: 133.05
+  2025-04-01: 135.3
   2026-04-01: 140.4

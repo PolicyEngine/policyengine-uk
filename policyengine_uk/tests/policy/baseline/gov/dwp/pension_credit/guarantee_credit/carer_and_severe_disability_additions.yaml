@@ -18,7 +18,7 @@
   output:
     carers_allowance: 0
     is_carer_for_benefits: true
-    carer_minimum_guarantee_addition: 46.37 * 52
+    carer_minimum_guarantee_addition: 46.40 * 52  # Published 2025-26 rate.
 
 - name: Carer addition for a claimant receiving Carer's Allowance
   period: 2025
@@ -38,7 +38,7 @@
         country: ENGLAND
   output:
     is_carer_for_benefits: true
-    carer_minimum_guarantee_addition: 46.37 * 52
+    carer_minimum_guarantee_addition: 46.40 * 52  # Published 2025-26 rate.
 
 - name: No carer addition for a claimant who neither receives nor is entitled
   period: 2025

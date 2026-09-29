@@ -5,9 +5,19 @@ metadata:
   reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
   unit: currency-GBP
   label: Constant Attendance Allowance exceptional rate
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2015-04-01
+  uprating: gov.benefit_uprating_cpi
 values:
-  2015-04-01: 145.6
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
+  2015-04-01: 134.4
+  2016-04-01: 134.4
+  2017-04-01: 135.8
+  2018-04-01: 139.8
+  2019-04-01: 143.2
+  2020-04-01: 145.6
+  2021-04-01: 146.4
+  2022-04-01: 151
+  2023-04-01: 166.2
+  2024-04-01: 177.4
+  2025-04-01: 180.4
   2026-04-01: 187.2

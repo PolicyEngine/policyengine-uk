@@ -1,12 +1,22 @@
 description: Severe disability premium for a couple where both are eligible.
 values:
-  2015-04-01: 133.9
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
+  2015-04-01: 123.7
+  2016-04-01: 123.7
+  2017-04-01: 124.9
+  2018-04-01: 128.6
+  2019-04-01: 131.7
+  2020-04-01: 133.9
+  2021-04-01: 134.6
+  2022-04-01: 138.8
+  2023-04-01: 152.8
+  2024-04-01: 163
+  2025-04-01: 165.8
   2026-04-01: 172.1
 metadata:
   period: week
   unit: currency-GBP
   label: Legacy benefit severe disability premium (couple)
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2015-04-01
+  uprating: gov.benefit_uprating_cpi
   reference: https://www.gov.uk/disability-premiums/what-youll-get

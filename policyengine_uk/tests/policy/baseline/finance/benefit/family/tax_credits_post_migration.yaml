@@ -8,7 +8,8 @@
     working_tax_credit_reported: 3000
     claims_all_entitled_benefits: true
   output:
-    tax_credits: 2607
+    # 2024-25: basic £2,435 + 30 hour £1,015 - 41% x (£10,000 - £7,955).
+    tax_credits: 2611.55
 
 - name: Tax credits are zero after scheme ended on 5 April 2025
   period: 2026

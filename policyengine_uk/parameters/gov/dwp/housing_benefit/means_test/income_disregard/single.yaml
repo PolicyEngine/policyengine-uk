@@ -5,7 +5,11 @@ metadata:
   period: week
   unit: currency-GBP
   label: Housing benefit single person earnings disregard
-  uprating: gov.benefit_uprating_cpi
+  # Not uprated by September CPI: the Housing Benefit earnings disregards are
+  # unchanged in every Benefit and pension rates document from 2013-14 to
+  # 2026-27. Keeps the lagged calendar-year CPI projection it had through
+  # gov.benefit_uprating_cpi until its own basis is modelled.
+  uprating: gov.economic_assumptions.indices.obr.lagged_cpi
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 9
       href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=242

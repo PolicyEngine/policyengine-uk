@@ -8,12 +8,16 @@ metadata:
   - href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA/paragraph/9/2019-02-01
     title: The State Pension Credit Regulations 2002
   unit: currency-GBP
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2022-04-01
+  uprating: gov.benefit_uprating_cpi
 values:
+  # April 2019 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
   2019-02-01: 53.34
+  2019-04-01: 53.34
   2020-04-01: 54.32
   2021-04-01: 54.6
   2022-04-01: 56.35
+  2023-04-01: 61.88
+  2024-04-01: 66.29
+  2025-04-01: 67.42
   2026-04-01: 69.98

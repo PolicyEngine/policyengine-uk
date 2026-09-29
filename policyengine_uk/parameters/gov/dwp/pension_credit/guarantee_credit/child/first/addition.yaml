@@ -8,11 +8,12 @@ metadata:
     - title: Benefit and pension rates 2026 to 2027
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
   unit: currency-GBP
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2022-04-01
+  uprating: gov.benefit_uprating_cpi
 values:
+  # April 2019 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
   2019-02-01: 63.84
+  2019-04-01: 63.84
   2020-04-01: 64.82
   2021-04-01: 65.1
   2022-04-01: 66.85

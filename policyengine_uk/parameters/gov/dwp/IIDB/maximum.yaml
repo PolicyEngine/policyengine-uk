@@ -6,9 +6,21 @@ metadata:
   label: Industrial Injuries Disablement Benefit maximum
   reference: https://www.gov.uk/industrial-injuries-disablement-benefit/what-youll-get
   unit: currency-GBP
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  # An Up-rating Order amount (Social Security Administration Act 1992 s150).
+  uprating: gov.benefit_uprating_cpi
 values:
-  2015-04-01: 182
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
+  2015-04-01: 168
+  2016-04-01: 168
+  2017-04-01: 169.7
+  2018-04-01: 174.8
+  2019-04-01: 179
+  2020-04-01: 182
+  2021-04-01: 182.9
+  2022-04-01: 188.6
+  2023-04-01: 207.6
+  2024-04-01: 221.5
   2025-04-01: 
     value: 225.3
     reference:

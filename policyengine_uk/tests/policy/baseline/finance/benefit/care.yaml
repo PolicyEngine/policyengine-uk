@@ -67,6 +67,6 @@
     carers_allowance_reported: 0
     country: ENGLAND
   output:
-    carers_allowance: 83.29 * 52
+    carers_allowance: 83.30 * 52  # Published 2025-26 rate.
     is_carer_for_benefits: true
     num_carers: 1

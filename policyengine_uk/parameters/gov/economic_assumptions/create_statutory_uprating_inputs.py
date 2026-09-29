@@ -24,16 +24,32 @@ scenario that sets an input directly replaces the forecast for the years it
 covers.
 """
 
+from decimal import ROUND_HALF_UP, Decimal
+
 from policyengine_core.parameters import Parameter, ParameterNode
 
 CPI_OBSERVATION_MONTH_DAY = "09-01"
 AWE_OBSERVATION_MONTH_DAY = "07-01"
+
+# Published statistics are quoted to one decimal place of a percentage.
+PUBLISHED_PRECISION = Decimal("0.001")
 
 # Statutory input: (calendar-year series in yoy_growth.obr, observation date).
 STATUTORY_INPUTS = {
     "cpi_september": ("consumer_price_index", CPI_OBSERVATION_MONTH_DAY),
     "awe_total_pay_may_july": ("average_earnings", AWE_OBSERVATION_MONTH_DAY),
 }
+
+
+def round_to_published_precision(rate: float) -> float:
+    """Round a growth rate to 0.1 percentage points, halves away from zero.
+
+    Uprating reviews use the figure as published, so forecasts of an input
+    are rounded the same way before they set an uprating.
+    """
+    return float(
+        Decimal(repr(float(rate))).quantize(PUBLISHED_PRECISION, ROUND_HALF_UP)
+    )
 
 
 def _last_year(parameter: Parameter) -> int:

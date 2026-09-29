@@ -1,13 +1,19 @@
 description: Weekly contributory Jobseeker's Allowance for couples.
 values:
+  # April 2015 to April 2026: DWP Benefit and pension rates (gov.uk),
+  # each year's rate as listed in that year's and the next year's document.
   2015-04-01: 114.85
   2016-04-01: 114.85
   2017-04-01: 114.85
   2018-04-01: 114.85
   2019-04-01: 114.85
-  2020-04-01: 116.80
-  2021-04-01: 117.40
+  2020-04-01: 116.8
+  2021-04-01: 117.4
   2022-04-01: 121.05
+  2023-04-01: 133.3
+  2024-04-01: 142.25
+  2025-04-01: 144.65
+  2026-04-01: 150.15
 metadata:
   period: week
   unit: currency-GBP

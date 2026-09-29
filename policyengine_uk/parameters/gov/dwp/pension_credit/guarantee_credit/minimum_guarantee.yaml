@@ -14,7 +14,12 @@ SINGLE:
     2025-04-01: 221.85
     2026-04-01: 238
   metadata:
-    uprating: gov.benefit_uprating_cpi
+    # Not uprated by September CPI: the standard minimum guarantee is reviewed
+    # against earnings under Social Security Administration Act 1992 s150A(1)(d)
+    # (4.8% in April 2026, written statement HCWS1101). Keeps the lagged
+    # calendar-year CPI projection it had through gov.benefit_uprating_cpi until
+    # its own basis is modelled.
+    uprating: gov.economic_assumptions.indices.obr.lagged_cpi
 COUPLE:
   values:
     2015-04-06: 230.85
@@ -30,7 +35,12 @@ COUPLE:
     2025-04-01: 338.61
     2026-04-01: 363.25
   metadata:
-    uprating: gov.benefit_uprating_cpi
+    # Not uprated by September CPI: the standard minimum guarantee is reviewed
+    # against earnings under Social Security Administration Act 1992 s150A(1)(d)
+    # (4.8% in April 2026, written statement HCWS1101). Keeps the lagged
+    # calendar-year CPI projection it had through gov.benefit_uprating_cpi until
+    # its own basis is modelled.
+    uprating: gov.economic_assumptions.indices.obr.lagged_cpi
 metadata:
   period: week
   label: Pension Credit minimum guarantee

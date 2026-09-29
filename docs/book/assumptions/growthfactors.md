@@ -32,6 +32,29 @@ We use HMRC road-fuel clearances and OBR-implied forecast volumes for petrol and
 
 We apply this to: `diesel_spending`, `petrol_spending`
 
+## Benefit uprating (September CPI)
+
+Most benefit rates rise each April by the CPI 12-month rate for the
+September before, as in the annual review under Social Security
+Administration Act 1992 s150 ([written statement HCWS1101](https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101):
+3.8% for April 2026). Published September figures come from ONS series D7G7;
+later years use the OBR's September CPI forecast (receipts Table 3.19) and,
+after the EFO horizon, calendar-year CPI. Each figure is rounded to 0.1
+percentage points, and a fall in prices leaves rates unchanged.
+
+| April | 2023 | 2024 | 2025 | 2026 | 2027 | 2028 | 2029 | 2030 |
+|-------|------|------|------|------|------|------|------|------|
+| Rise  | 10.1% | 6.7% | 1.7% | 3.8% | 2.1% | 2.1% | 2.0% | 2.0% |
+
+Parameters with `uprating: gov.benefit_uprating_cpi` rise by these rates
+after their last published value; the personal allowance and basic rate limit
+follow the same rates once their freeze ends (Income Tax Act 2007 ss21 and
+57). The State Pension follows the triple lock instead (see the State Pension
+page). Under the Universal Credit Act 2025 the Universal Credit standard
+allowance rises by these rates plus the Act's uplift (2.3%, 3.1%, 4.0% and
+4.8% above the September CPI path from 2025-26, in 2026-27 to 2029-30), and
+the LCWRA element is frozen until April 2030.
+
 ## Average earnings
 
 ```{note}
