@@ -1,77 +1,112 @@
-- name: Person born in 1948 reaches SPA before cutoff year
-  period: 2023
+# SPCA 2002 s.3(1)(a). From 6 April 2016: "has attained pensionable age before
+# 6 April 2016 and has attained the age of 65". Pensionable age comes from the
+# Pensions Act 1995 Sch. 4 para. 1: para. 1(1) gives 65 for a man born before
+# 6 December 1953; Table 1 gives 6 March 2016 for a woman born 6 March to
+# 5 April 1953 and 6 July 2016 for one born 6 April to 5 May 1953. So a man
+# must be born before 6 April 1951 and a woman before 6 April 1953.
+# A person aged A in period Y turns A in the year from 6 April Y, so is born
+# between 6 April Y - A and 5 April Y - A + 1 (birth_year = Y - A).
+
+- name: A man turning 76 in 2026-27 attained pensionable age (65) by 5 April 2016.
+  period: 2026
   input:
-    people:
-      person:
-        age: 75  # Born in 1948, reached SPA around 2013-2014
-        state_pension_age: 65
-    benunits:
-      benunit:
-        members: [person]
+    age: 76 # Born 6 April 1950 to 5 April 1951; 65 by 5 April 2016.
+    gender: MALE
   output:
     meets_savings_credit_age_requirement: true
 
-- name: Person born in 1952 reaches SPA before cutoff year
-  period: 2023
+- name: A man turning 75 in 2026-27 attained pensionable age on or after 6 April 2016.
+  period: 2026
   input:
-    people:
-      person:
-        age: 71  # Born in 1952, reached SPA around 2015
-        state_pension_age: 63
-    benunits:
-      benunit:
-        members: [person]
+    age: 75 # Born 6 April 1951 to 5 April 1952; 65 from 6 April 2016.
+    gender: MALE
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: A woman turning 74 in 2026-27 attained pensionable age by 6 March 2016.
+  period: 2026
+  input:
+    age: 74 # Born 6 April 1952 to 5 April 1953; Table 1: 6 May 2014 to 6 March 2016.
+    gender: FEMALE
   output:
     meets_savings_credit_age_requirement: true
 
-- name: Person born in 1954 reaches SPA after cutoff year
-  period: 2023
+- name: A woman turning 73 in 2026-27 attained pensionable age from 6 July 2016.
+  period: 2026
   input:
-    people:
-      person:
-        age: 69  # Born in 1954, reached SPA around 2017-2018
-        state_pension_age: 63.5
-    benunits:
-      benunit:
-        members: [person]
+    age: 73 # Born 6 April 1953 to 5 April 1954; Table 1: 6 July 2016 onwards.
+    gender: FEMALE
   output:
     meets_savings_credit_age_requirement: false
 
-- name: Person born in 1960 reaches SPA after cutoff year
-  period: 2023
+- name: In 2030-31 a man turning 80 meets the condition and one turning 79 does not.
+  period: 2030
   input:
     people:
-      person:
-        age: 63  # Born in 1960, will reach SPA around 2026-2027
-        state_pension_age: 66
-    benunits:
-      benunit:
-        members: [person]
+      older:
+        age: 80 # Born 6 April 1950 to 5 April 1951.
+        gender: MALE
+      younger:
+        age: 79 # Born 6 April 1951 to 5 April 1952.
+        gender: MALE
+  output:
+    meets_savings_credit_age_requirement: [true, false]
+
+- name: In 2030-31 a woman turning 78 meets the condition and one turning 77 does not.
+  period: 2030
+  input:
+    people:
+      older:
+        age: 78 # Born 6 April 1952 to 5 April 1953.
+        gender: FEMALE
+      younger:
+        age: 77 # Born 6 April 1953 to 5 April 1954.
+        gender: FEMALE
+  output:
+    meets_savings_credit_age_requirement: [true, false]
+
+- name: A woman past pensionable age in 2016-17 who is not yet 65 fails the age-65 limb.
+  period: 2016
+  input:
+    age: 64 # Born 6 April 1952 to 5 April 1953; pensionable age by 6 March 2016.
+    gender: FEMALE
   output:
     meets_savings_credit_age_requirement: false
 
-- name: Test in 2015 - Person born in 1950 reaches SPA before cutoff year
+- name: A woman turning 65 in 2016-17 who attained pensionable age by 2014 meets both limbs.
+  period: 2016
+  input:
+    age: 65 # Born 6 April 1951 to 5 April 1952; Table 1: 6 May 2012 to 6 March 2014.
+    gender: FEMALE
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: In 2023-24 a woman turning 71 attained pensionable age by 6 March 2016.
+  period: 2023
+  input:
+    age: 71 # Born 6 April 1952 to 5 April 1953.
+    gender: FEMALE
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: In 2023-24 a man turning 71 attained pensionable age (65) in 2017-18.
+  period: 2023
+  input:
+    age: 71 # Born 6 April 1952 to 5 April 1953.
+    gender: MALE
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: Before 6 April 2016 the condition was attaining 65.
   period: 2015
   input:
     people:
-      person:
-        age: 65  # Born in 1950, reached SPA around 2013
-        state_pension_age: 63
-    benunits:
-      benunit:
-        members: [person]
+      woman_at_pensionable_age:
+        age: 63
+        gender: FEMALE
+      man_at_65:
+        age: 65
+        gender: MALE
   output:
-    meets_savings_credit_age_requirement: true
-
-- name: Test in 2017 - Person who reached SPA in 2015 is eligible
-  period: 2017
-  input:
-    people:
-      person:
-        age: 65  # Born in 1952, reached SPA in 2015
-        state_pension_age: 63
-    benunits:
-      benunit:
-        members: [person]
-  output:
-    meets_savings_credit_age_requirement: true
+    # s.3(1)(a) as enacted; the 2007 "pensionable age" substitution never took effect.
+    meets_savings_credit_age_requirement: [false, true]

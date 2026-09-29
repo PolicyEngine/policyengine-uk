@@ -1,0 +1,12 @@
+description: A woman attained pensionable age before 6 April 2016, as the Savings Credit age condition requires, only if she was born before 6 April of this year.
+values:
+  2016-04-06: 1953
+metadata:
+  unit: year
+  period: year
+  label: Savings Credit birth year limit for women
+  reference:
+    - title: State Pension Credit Act 2002, s. 3(1)(a)
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/3
+    - title: Pensions Act 1995, Sch. 4 para. 1 Table 1 (born 6 March to 5 April 1953, pensionable age 6 March 2016; born 6 April to 5 May 1953, 6 July 2016)
+      href: https://www.legislation.gov.uk/ukpga/1995/26/schedule/4/paragraph/1

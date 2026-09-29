@@ -1,0 +1,12 @@
+description: The claimant or partner must have attained this age to meet the Savings Credit age condition.
+values:
+  2003-10-06: 65
+metadata:
+  unit: year
+  period: year
+  label: Savings Credit minimum age
+  reference:
+    - title: State Pension Credit Act 2002, s. 3(1)(a) as enacted ("has attained the age of 65")
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/3/2003-10-06
+    - title: State Pension Credit Act 2002, s. 3(1)(a) from 6 April 2016 ("and has attained the age of 65")
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/3
