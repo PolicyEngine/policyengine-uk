@@ -9,6 +9,7 @@ models one reading of the plan announced in September 2026 as a
 parameter reform.
 """
 
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -51,8 +52,10 @@ def statutory_inputs(parameters):
 
 
 def test_april_2027_uses_published_may_july_2026_earnings():
-    """May-July 2026 total pay growth was 3.9%, above any CPI forecast, so the
-    new State Pension rises from £241.30 to £250.71 (before rounding to 5p)."""
+    """May-July 2026 total pay growth was 3.9% (first estimate), above the
+    model's September 2026 CPI forecast (the OBR's 2.1%; August 2026 CPI was
+    3.1%). Unless September CPI exceeds 3.9%, the new State Pension rises from
+    £241.30 to £250.71 (before rounding to 5p)."""
     parameters = system.parameters
     assert uprating(parameters, 2027) == pytest.approx(0.039)
     assert new_state_pension_weekly(parameters, 2027) == pytest.approx(
@@ -113,16 +116,18 @@ OBR_SEPTEMBER_CPI = {
 OBR_Q2_EARNINGS = {2027: 0.024266, 2028: 0.020795, 2029: 0.021852, 2030: 0.023890}
 
 
-def test_baseline_forecasts_track_the_obr_statutory_forecasts():
-    """Calendar-year growth is held to 0.1pp in yoy_growth.yaml, so the
-    forecasts match the OBR's to within that rounding."""
+def test_baseline_forecasts_reproduce_the_obr_statutory_forecasts():
+    """The gaps are measured from the calendar-year growth stored in
+    yoy_growth.yaml, so stored growth plus the gap is the OBR's figure, to
+    the 1e-5 the gaps are stored to. This fails if yoy_growth.yaml is
+    refreshed without regenerating the gaps."""
     inputs = statutory_inputs(system.parameters)
     for year, value in OBR_SEPTEMBER_CPI.items():
-        assert inputs.cpi_september(f"{year}-09-01") == pytest.approx(value, abs=0.0005)
+        observed = inputs.cpi_september(f"{year}-09-01")
+        assert observed == pytest.approx(value, abs=1e-5), year
     for year, value in OBR_Q2_EARNINGS.items():
-        assert inputs.awe_total_pay_may_july(f"{year}-07-01") == pytest.approx(
-            value, abs=0.0005
-        )
+        observed = inputs.awe_total_pay_may_july(f"{year}-07-01")
+        assert observed == pytest.approx(value, abs=1e-5), year
 
 
 def test_rule_reproduces_the_obr_triple_lock_forecast_from_its_own_inputs():
@@ -148,7 +153,7 @@ def test_rule_reproduces_the_obr_triple_lock_forecast_from_its_own_inputs():
     parameters = simulation.tax_benefit_system.parameters
     assert statutory_inputs(parameters).awe_total_pay_may_july(
         "2026-07-01"
-    ) == pytest.approx(0.034 + 0.00316)
+    ) == pytest.approx(0.036736, abs=1e-5)
     assert [uprating(parameters, year) for year in range(2027, 2032)] == (
         pytest.approx([0.037, 0.025, 0.025, 0.025, 0.025])
     )
@@ -167,14 +172,18 @@ def test_horizon_runs_to_the_end_of_the_economic_assumptions():
 
 def test_macro_scenario_on_calendar_growth_moves_the_uprating():
     """Raising 2027 earnings growth from 2.4% to 5% moves May-July 2027
-    earnings with it (plus the OBR gap) and so the April 2028 rise."""
+    earnings with it (plus the OBR gap, 0.027pp) and so the April 2028 rise.
+
+    Calendar-year series are keyed to 1 January, so the change is keyed
+    year:2027-01-01:1; a bare "2027" names the fiscal year from 6 April 2027
+    and would change the 2028 calendar-year value instead."""
     parameters = parameters_under(
         {f"{OBR}.average_earnings": {"year:2027-01-01:1": 0.05}}
     )
     assert statutory_inputs(parameters).awe_total_pay_may_july(
         "2027-07-01"
-    ) == pytest.approx(0.05 + 0.00065)
-    assert uprating(parameters, 2028) == pytest.approx(0.051)
+    ) == pytest.approx(0.05 + 0.00027)
+    assert uprating(parameters, 2028) == pytest.approx(0.05)
     assert uprating(system.parameters, 2028) == pytest.approx(0.025)
     assert new_state_pension_weekly(parameters, 2028) > new_state_pension_weekly(
         system.parameters, 2028
@@ -224,7 +233,7 @@ def test_macro_scenario_moves_the_state_pension_in_a_microsimulation():
         full_rate_2027 * 1.025 * WEEKS_IN_YEAR, rel=1e-5
     )
     assert reformed_pension == pytest.approx(
-        full_rate_2027 * 1.051 * WEEKS_IN_YEAR, rel=1e-5
+        full_rate_2027 * 1.05 * WEEKS_IN_YEAR, rel=1e-5
     )
 
 
@@ -337,3 +346,17 @@ def test_no_economic_assumptions_leaves_only_the_floor():
     cutoff_year = int(simulation.default_input_period)
     for year in range(cutoff_year + 2, 2075):
         assert uprating(parameters, year) == pytest.approx(0.025), year
+
+
+def test_numpy_inputs_are_accepted():
+    """Draws from a time-series model often arrive as numpy scalars."""
+    simulation = Simulation(situation=PENSIONER)
+    simulation.apply_parameter_changes(
+        {
+            f"{INPUTS}.cpi_september": {"2027": np.float64(0.045)},
+            f"{OBR}.average_earnings": {"year:2028-01-01:1": np.float64(0.031)},
+        }
+    )
+    parameters = simulation.tax_benefit_system.parameters
+    assert uprating(parameters, 2028) == pytest.approx(0.045)
+    assert uprating(parameters, 2029) == pytest.approx(0.031)

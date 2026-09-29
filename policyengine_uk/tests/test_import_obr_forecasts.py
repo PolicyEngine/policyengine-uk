@@ -1,8 +1,17 @@
+from datetime import date
 from io import BytesIO
 from zipfile import ZipFile
 
+import pytest
+import yaml
+
 from policyengine_uk.utils.import_obr_forecasts import (
     STATUTORY_GAP_SPECS,
+    ForecastGap,
+    format_gap,
+    main,
+    read_calendar_values,
+    render_forecast_gap_yaml,
     build_efo_href,
     compute_statutory_forecast_gaps,
     extract_annual_series_from_xlsx,
@@ -35,7 +44,7 @@ def make_sheet(rows: dict[int, list[str]]) -> bytes:
     return xml.encode()
 
 
-def make_test_xlsx() -> bytes:
+def make_test_xlsx(earnings_quarter: bool = True) -> bytes:
     workbook_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
@@ -65,10 +74,16 @@ def make_test_xlsx() -> bytes:
                 make_inline_cell("B98", "2026"),
                 make_number_cell("Q98", 3.33),
             ],
-            99: [
-                make_inline_cell("B99", "2026Q2"),
-                make_number_cell("Q99", 3.67),
-            ],
+            **(
+                {
+                    99: [
+                        make_inline_cell("B99", "2026Q2"),
+                        make_number_cell("Q99", 3.67),
+                    ]
+                }
+                if earnings_quarter
+                else {}
+            ),
         }
     )
     sheet_17 = make_sheet(
@@ -451,3 +466,170 @@ metadata:
         "OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.19)" in content
     )
     assert "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/" in content
+
+
+def test_gaps_are_measured_from_the_stored_calendar_growth():
+    """Stored growth plus the gap must equal the OBR figure, so the gap is
+    taken from whatever yoy_growth.yaml holds, not the unrounded workbook."""
+    gaps = compute_statutory_forecast_gaps(
+        make_test_xlsx(),
+        2026,
+        1,
+        calendar_values={
+            "consumer_price_index": {2026: 0.025},
+            "average_earnings": {2026: 0.033},
+        },
+    )
+    assert gaps["cpi_september"][2026].value == pytest.approx(0.0208 - 0.025)
+    assert gaps["awe_total_pay_may_july"][2026].value == pytest.approx(0.0367 - 0.033)
+
+
+def test_read_calendar_values(tmp_path):
+    path = tmp_path / "yoy_growth.yaml"
+    path.write_text(YOY_GROWTH_FIXTURE)
+    values = read_calendar_values(path)
+    assert values["consumer_price_index"] == {
+        2024: 0.02,
+        2025: 0.0,
+        2026: 0.0,
+        2031: 0.02,
+    }
+
+
+@pytest.mark.parametrize(
+    "value, text",
+    [
+        (3e-05, "0.00003"),
+        (-4e-05, "-0.00004"),
+        (0.0003, "0.0003"),
+        (0.0, "0"),
+        (-0.00184, "-0.00184"),
+    ],
+)
+def test_small_gaps_are_written_in_fixed_point(value, text):
+    """YAML 1.1 reads 3e-05 as a string, which breaks parameter loading."""
+    assert format_gap(value) == text
+    spec = next(s for s in STATUTORY_GAP_SPECS if s.key == "cpi_september")
+    content = render_forecast_gap_yaml(
+        GAP_FIXTURE, spec, {2027: ForecastGap(value, "test", "test")}, "March", 2026
+    )
+    assert isinstance(yaml.safe_load(content)["values"][date(2027, 9, 1)], (int, float))
+
+
+SERIES_KEYS = [
+    "rpi",
+    "average_earnings",
+    "consumer_price_index",
+    "cpih",
+    "house_prices",
+    "mortgage_interest",
+    "rent",
+]
+YOY_GROWTH_FIXTURE = "obr:\n" + "".join(
+    f"""  {key}:
+    values:
+      2024-01-01: 0.0200
+      2025-01-01: 0.0000
+      2026-01-01: 0.0000
+      2031-01-01: 0.0200
+    metadata:
+      reference:
+        - title: Old
+          href: https://example.com/old
+"""
+    for key in SERIES_KEYS
+)
+GAP_FIXTURE = """description: Gap.
+values:
+  2010-09-01: 0
+metadata:
+  unit: /1
+  reference:
+    - title: Old
+      href: https://example.com/old
+"""
+
+
+def write_tree(tmp_path):
+    """A yoy_growth.yaml with the forecast_gap files next to it."""
+    yoy = tmp_path / "economic_assumptions" / "yoy_growth.yaml"
+    gap_dir = yoy.parent / "statutory_uprating_inputs" / "forecast_gap"
+    gap_dir.mkdir(parents=True)
+    yoy.write_text(YOY_GROWTH_FIXTURE)
+    for spec in STATUTORY_GAP_SPECS:
+        (gap_dir / f"{spec.key}.yaml").write_text(
+            GAP_FIXTURE.replace("09-01", spec.month_day)
+        )
+    return yoy, gap_dir
+
+
+def run_main(tmp_path, workbook, *extra):
+    economy = tmp_path / "economy_march_2026.xlsx"
+    economy.write_bytes(workbook)
+    receipts = tmp_path / "receipts.xlsx"
+    receipts.write_bytes(make_receipts_xlsx())
+    return main(
+        [
+            "--file",
+            str(economy),
+            "--forecast-start-year",
+            "2025",
+            "--forecast-years",
+            "2",
+            "--release-month",
+            "March",
+            "--release-year",
+            "2026",
+            "--receipts-file",
+            str(receipts),
+            *extra,
+        ]
+    )
+
+
+def test_main_writes_growth_and_gaps_next_to_the_yaml_path(tmp_path):
+    yoy, gap_dir = write_tree(tmp_path)
+    assert run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy)) == 0
+
+    assert "2026-01-01: 0.0248" in yoy.read_text()
+    cpi = yaml.safe_load((gap_dir / "cpi_september.yaml").read_text())["values"]
+    # September 2026 (2.12%) minus the 2026 CPI just written (2.48%).
+    assert cpi[date(2026, 9, 1)] == pytest.approx(-0.0036)
+    awe = yaml.safe_load((gap_dir / "awe_total_pay_may_july.yaml").read_text())
+    assert awe["values"][date(2026, 7, 1)] == pytest.approx(0.0034)
+
+
+def test_main_writes_nothing_when_a_gap_cannot_be_built(tmp_path):
+    """Without the Q2 earnings row there is no earnings gap: the run fails
+    before any file changes, so growth and gaps never mix two forecasts."""
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_text() for path in [yoy, *gap_dir.iterdir()]}
+
+    with pytest.raises(ValueError, match="No forecast gaps"):
+        run_main(
+            tmp_path, make_test_xlsx(earnings_quarter=False), "--yaml-path", str(yoy)
+        )
+
+    assert {path: path.read_text() for path in before} == before
+
+
+def test_main_requires_the_receipts_tables_for_the_gaps(tmp_path):
+    yoy, _ = write_tree(tmp_path)
+    economy = tmp_path / "economy_march_2026.xlsx"
+    economy.write_bytes(make_test_xlsx())
+    with pytest.raises(ValueError, match="receipts"):
+        main(["--file", str(economy), "--yaml-path", str(yoy)])
+
+
+def test_gaps_only_leaves_growth_alone(tmp_path):
+    yoy, gap_dir = write_tree(tmp_path)
+    growth = yoy.read_text()
+    assert (
+        run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy), "--gaps-only")
+        == 0
+    )
+
+    assert yoy.read_text() == growth
+    cpi = yaml.safe_load((gap_dir / "cpi_september.yaml").read_text())["values"]
+    # September 2026 (2.12%) minus the stored 2026 CPI (0%).
+    assert cpi[date(2026, 9, 1)] == pytest.approx(0.0212)

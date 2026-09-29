@@ -74,8 +74,8 @@ Each holds published figures and then a null. From the null onwards,
 `create_statutory_uprating_inputs.py` fills in a forecast: calendar-year
 growth in the matching OBR series (`yoy_growth.obr.consumer_price_index` or
 `yoy_growth.obr.average_earnings`) plus `forecast_gap`. The gap is the OBR's
-forecast of the statutory measure minus its calendar-year forecast, from the
-same Economic and Fiscal Outlook:
+statutory-basis forecast minus the calendar-year growth stored in
+`yoy_growth.yaml`, so that in the baseline the input equals the OBR's figure:
 
 - September CPI: the OBR's September CPI forecast (receipts Table 3.19, the
   CPI used to uprate tax thresholds), or Q3 CPI (economy Table 1.7) in years
@@ -85,14 +85,26 @@ same Economic and Fiscal Outlook:
   salaries per employee, and Q2 is the quarter nearest May to July.
 
 After the EFO horizon the gap is zero, so the inputs follow calendar-year
-growth. `policyengine_uk/utils/import_obr_forecasts.py` regenerates the gaps
-with the calendar-year series (pass `--receipts-file` or `--receipts-url`
-for September CPI).
+growth. Smooth forecasts pay the higher of earnings, CPI and 2.5% each year,
+so the baseline has none of the extra cost the triple lock builds up when
+September CPI and May-July earnings take turns to spike; the OBR's long-run
+projections add 0.56 percentage points a year over earnings for it (Fiscal
+risks and sustainability, July 2026). To capture it, supply simulated paths
+of the statutory inputs, as below.
+
+`policyengine_uk/utils/import_obr_forecasts.py` regenerates the gaps with the
+calendar-year series, from the EFO economy and receipts tables
+(`--receipts-file` or `--receipts-url`). After editing `yoy_growth.yaml` by
+hand, run it with `--gaps-only`.
 
 ### Scenarios
 
 A macro scenario applied before the data load that edits calendar-year
-growth moves the forecast inputs one for one, and so the triple lock:
+growth moves the forecast inputs one for one, and so the triple lock.
+Calendar-year series are keyed to 1 January, so key the change
+`year:YYYY-01-01:1`: a bare year names the fiscal year from 6 April, which
+lands in the next calendar-year value and so moves the following year's
+inputs.
 
 ```python
 from policyengine_uk.model_api import Scenario
@@ -127,20 +139,25 @@ Scenario(
 )
 ```
 
-These changes must go through `Scenario(parameter_changes=...)`. The rates
-are built when parameters are processed, and a `reform=` dictionary edits
-parameters after that, so it changes the parameter but not the uprating.
+These changes, and the reform levers below, must go through
+`Scenario(parameter_changes=...)`. The rates are built when parameters are
+processed, and a `reform=` dictionary edits parameters after that, so it
+changes the parameter but not the uprating.
 
 ### Reform levers
 
+- `triple_lock/minimum_rate.yaml` sets the floor. A double lock, the higher
+  of earnings and CPI, is the floor set to 0 (or below 0 to allow cash
+  cuts).
+- `triple_lock/include_earnings.yaml` and
+  `triple_lock/include_inflation.yaml` drop an element but keep the floor.
+  A CPI link is `include_earnings` false with the floor at or below 0.
 - `triple_lock/active.yaml` switches the triple lock off. The pension then
   rises by the statutory minimum from the review under the Social Security
   Administration Act 1992, section 150A: earnings growth, and nothing when
-  earnings fall.
-- `triple_lock/include_earnings.yaml` and
-  `triple_lock/include_inflation.yaml` drop an element, e.g. for a double
-  lock.
-- `triple_lock/minimum_rate.yaml` sets the floor.
+  earnings fall. The floor and the include flags no longer apply, and
+  neither do the one-year changes to section 150A for April 2021 and April
+  2022.
 - `triple_lock/earnings_path_guarantee.yaml` (off under current law) keeps
   the pension on or above an earnings path started from its level in the
   year before the guarantee first applies. With `include_earnings` false,
