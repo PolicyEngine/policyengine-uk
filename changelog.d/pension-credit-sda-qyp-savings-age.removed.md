@@ -1,0 +1,1 @@
+- Remove the `gov.dwp.pension_credit.savings_credit.cutoff_year` parameter; the Savings Credit age condition now reads `gov.dwp.pension_credit.savings_credit.age_requirement`.
