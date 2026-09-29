@@ -168,11 +168,21 @@ def test_savings_credit_age_condition_matches_pensions_act_tables():
 
 MEMBER = st.fixed_dictionaries(
     {
-        "in_receipt": st.booleans(),
+        # "dla_lowest" is a disability benefit that does not qualify.
+        "benefit": st.sampled_from([None, "aa", "pip", "dla_lowest"]),
         "hospital_aa_or_dla": st.booleans(),
         "hospital_daily_living": st.booleans(),
         "blind": st.booleans(),
         "receives_carers_allowance": st.booleans(),
+    }
+)
+BENEFIT_UNIT = st.fixed_dictionaries(
+    {
+        "claimant": MEMBER,
+        "partner": st.one_of(st.none(), MEMBER),
+        # A dependant: a 17-year-old carer, an 18-year-old qualifying young
+        # person, or a 19-year-old past the reg 4A terminal date.
+        "dependant": st.sampled_from([None, "carer_17", "qyp_18", "past_19"]),
     }
 )
 OTHER_ADULT = st.fixed_dictionaries(
@@ -183,107 +193,134 @@ OTHER_ADULT = st.fixed_dictionaries(
         "ignored": st.booleans(),
     }
 )
-BENEFIT_UNIT = st.fixed_dictionaries(
+HOUSEHOLD = st.fixed_dictionaries(
     {
-        "claimant": MEMBER,
-        "partner": st.one_of(st.none(), MEMBER),
-        "young_carer": st.booleans(),
+        "units": st.lists(BENEFIT_UNIT, min_size=1, max_size=2),
         "other_adult": st.one_of(st.none(), OTHER_ADULT),
     }
 )
 
 
-def _person(member, age):
+def _in_receipt(member):
+    return member["benefit"] in ("aa", "pip")
+
+
+def _member_person(member, age):
     person = {"age": {2026: age}}
-    if member["in_receipt"]:
+    if member["benefit"] == "aa":
         person["attendance_allowance"] = {2026: 5_000}
-    if member.get("hospital_aa_or_dla"):
+    elif member["benefit"] == "pip":
+        person["pip_dl"] = {2026: 5_000}
+    elif member["benefit"] == "dla_lowest":
+        person["dla_sc_category"] = {2026: "LOWER"}
+    if member["hospital_aa_or_dla"]:
         person["would_receive_aa_or_dla_care_but_for_hospital_stay"] = {2026: True}
-    if member.get("hospital_daily_living"):
+    if member["hospital_daily_living"]:
         person[
             "would_receive_daily_living_disability_benefit_but_for_hospital_stay"
         ] = {2026: True}
-    if member.get("blind"):
+    if member["blind"]:
         person["is_blind"] = {2026: True}
-    if member.get("receives_carers_allowance"):
+    if member["receives_carers_allowance"]:
         person["carers_allowance_reported"] = {2026: 1}
     return person
 
 
-def _reference_severe_disability_multiple(unit):
-    """Rate multiple from the Sch. I para. 1 and reg. 6(5) text."""
+DEPENDANTS = {
+    "carer_17": {"age": {2026: 17}, "carers_allowance_reported": {2026: 1}},
+    "qyp_18": {"age": {2026: 18}, "current_education": {2026: "UPPER_SECONDARY"}},
+    "past_19": {
+        "age": {2026: 19},
+        "current_education": {2026: "UPPER_SECONDARY"},
+        "age_started_or_accepted_current_education_or_training": {2026: 18},
+    },
+}
+
+
+def _reference_severe_disability_multiple(household, u):
+    """Rate multiple for unit u from the Sch. I paras 1-2 and reg. 6(5) text."""
+    unit = household["units"][u]
     claimants = [unit["claimant"]] + ([unit["partner"]] if unit["partner"] else [])
-    carers = [c["receives_carers_allowance"] for c in claimants] + [unit["young_carer"]]
-
-    def cared_for(i):
-        # A carer benefit received by another member of the benefit unit is
-        # taken to be for caring for this claimant or partner.
-        return sum(carers) - carers[i] > 0
-
-    other = unit["other_adult"]
-    barred = (
-        other is not None
-        and other["age"] >= 18
-        and not (other["in_receipt"] or other["blind"] or other["ignored"])
-    )
+    # Adults residing with this unit's claimant or partner who para 2 does
+    # not ignore: other units' claimants and partners, their 19-year-olds
+    # past the terminal date, this unit's own such 19-year-old, and the other
+    # adult. Qualifying young people (18) and under-18s are ignored.
+    residents = []
+    for v, other in enumerate(household["units"]):
+        if v != u:
+            residents += [other["claimant"]] + (
+                [other["partner"]] if other["partner"] else []
+            )
+    barred = any(not (_in_receipt(r) or r["blind"]) for r in residents)
+    barred |= any(unit_["dependant"] == "past_19" for unit_ in household["units"])
+    other = household["other_adult"]
+    if other is not None and other["age"] >= 18:
+        barred |= not (other["in_receipt"] or other["blind"] or other["ignored"])
     if barred:
         return 0
+    carers = [c["receives_carers_allowance"] for c in claimants]
+    carers.append(unit["dependant"] == "carer_17")
+    # A carer benefit received by another member is for caring for this
+    # claimant or partner; each carer cares for one person (SSCBA s.70(7)).
+    cared_for = [sum(carers) - carers[i] > 0 for i in range(len(claimants))]
     if len(claimants) == 1:
-        claimant = claimants[0]
-        return int(claimant["in_receipt"] and not cared_for(0))
-    number_cared_for = sum(cared_for(i) for i in range(2))
+        return int(_in_receipt(claimants[0]) and not cared_for[0])
+    number_cared_for = min(sum(cared_for), sum(carers))
     treated = [
-        c["in_receipt"] or c["hospital_aa_or_dla"] or c["hospital_daily_living"]
+        _in_receipt(c) or c["hospital_aa_or_dla"] or c["hospital_daily_living"]
         for c in claimants
     ]
-    head_b = all(treated) and number_cared_for <= 1
-    if head_b:
+    if all(treated) and number_cared_for <= 1:
         without_para_1_2_b = all(
-            c["in_receipt"] or c["hospital_daily_living"] for c in claimants
+            _in_receipt(c) or c["hospital_daily_living"] for c in claimants
         )
         return 2 if without_para_1_2_b and number_cared_for == 0 else 1
     head_c = any(
-        claimants[i]["in_receipt"] and not cared_for(i) and claimants[1 - i]["blind"]
+        _in_receipt(claimants[i]) and not cared_for[i] and claimants[1 - i]["blind"]
         for i in range(2)
     )
     return int(head_c)
 
 
 @PROPERTY_SETTINGS
-@given(units=st.lists(BENEFIT_UNIT, min_size=1, max_size=12))
-def test_severe_disability_addition_matches_regulation_text(units):
-    people, benunits, households = {}, {}, {}
-    for n, unit in enumerate(units):
-        members = [f"c{n}"]
-        people[f"c{n}"] = _person(unit["claimant"], 80)
-        if unit["partner"]:
-            members.append(f"p{n}")
-            people[f"p{n}"] = _person(unit["partner"], 78)
-        if unit["young_carer"]:
-            members.append(f"y{n}")
-            people[f"y{n}"] = {
-                "age": {2026: 17},
-                "carers_allowance_reported": {2026: 1},
-            }
-            people[members[0]]["is_parent"] = {2026: True}
-        benunits[f"b{n}"] = {"members": list(members)}
-        household = list(members)
-        other = unit["other_adult"]
+@given(households=st.lists(HOUSEHOLD, min_size=1, max_size=8))
+def test_severe_disability_addition_matches_regulation_text(households):
+    people, benunits, household_members = {}, {}, {}
+    for h, household in enumerate(households):
+        members = []
+        for u, unit in enumerate(household["units"]):
+            key = f"{h}_{u}"
+            unit_members = [f"c{key}"]
+            people[f"c{key}"] = _member_person(unit["claimant"], 80)
+            if unit["partner"]:
+                unit_members.append(f"p{key}")
+                people[f"p{key}"] = _member_person(unit["partner"], 78)
+            if unit["dependant"]:
+                unit_members.append(f"d{key}")
+                people[f"d{key}"] = dict(DEPENDANTS[unit["dependant"]])
+                people[f"c{key}"]["is_parent"] = {2026: True}
+            benunits[f"b{key}"] = {"members": unit_members}
+            members += unit_members
+        other = household["other_adult"]
         if other:
-            people[f"o{n}"] = {"age": {2026: other["age"]}}
+            people[f"o{h}"] = {"age": {2026: other["age"]}}
             if other["in_receipt"]:
-                people[f"o{n}"]["pip_dl"] = {2026: 5_000}
+                people[f"o{h}"]["pip_dl"] = {2026: 5_000}
             if other["blind"]:
-                people[f"o{n}"]["is_blind"] = {2026: True}
+                people[f"o{h}"]["is_blind"] = {2026: True}
             if other["ignored"]:
-                people[f"o{n}"][
+                people[f"o{h}"][
                     "is_ignored_resident_for_pension_credit_severe_disability"
                 ] = {2026: True}
-            benunits[f"ob{n}"] = {"members": [f"o{n}"]}
-            household.append(f"o{n}")
-        households[f"h{n}"] = {"members": household}
+            benunits[f"ob{h}"] = {"members": [f"o{h}"]}
+            members.append(f"o{h}")
+        household_members[f"h{h}"] = {"members": members}
     sim = Simulation(
-        situation={"people": people, "benunits": benunits, "households": households}
+        situation={
+            "people": people,
+            "benunits": benunits,
+            "households": household_members,
+        }
     )
     weekly = float(
         sim.tax_benefit_system.parameters(
@@ -293,15 +330,16 @@ def test_severe_disability_addition_matches_regulation_text(units):
     # Benefit units come back in the order the situation lists them.
     amounts = sim.calculate("severe_disability_minimum_guarantee_addition", 2026)
     order = list(benunits)
-    for n, unit in enumerate(units):
-        amount = float(amounts[order.index(f"b{n}")])
-        multiple = amount / (weekly * 52)
-        assert abs(multiple - round(multiple)) < 1e-4, (unit, amount)
-        assert round(multiple) in (0, 1, 2 if unit["partner"] else 1), (unit, amount)
-        assert round(multiple) == _reference_severe_disability_multiple(unit), (
-            unit,
-            amount,
-        )
+    for h, household in enumerate(households):
+        for u, unit in enumerate(household["units"]):
+            amount = float(amounts[order.index(f"b{h}_{u}")])
+            multiple = amount / (weekly * 52)
+            assert abs(multiple - round(multiple)) < 1e-4, (household, u, amount)
+            allowed = (0, 1, 2) if unit["partner"] else (0, 1)
+            assert round(multiple) in allowed, (household, u, amount)
+            assert round(multiple) == _reference_severe_disability_multiple(
+                household, u
+            ), (household, u, amount)
 
 
 # Qualifying young person.
@@ -325,8 +363,8 @@ def _reference_qualifying_young_person(y):
     """SPC Regs 2002 reg. 4A."""
     if not 16 <= y["age"] < 20 or y["own_benefits"]:  # 4A(1), 4A(5)
         return False
-    # 4A(1)(a): the date can only still be ahead at age 16.
-    if y["age"] == 16 and y["before_1_september_after_16th_birthday"]:
+    # 4A(1)(a); the input asserts the date is still ahead.
+    if y["before_1_september_after_16th_birthday"]:
         return True
     in_education = y["education"] == "UPPER_SECONDARY" or y["approved_training"]
     started_before_19 = y["age"] < 19 or y["entry_age"] < 19  # 4A(2)
@@ -349,7 +387,7 @@ def test_qualifying_young_person_matches_regulation_4a(young_people):
                 2026: y["entry_age"]
             },
             "is_before_first_september_after_16th_birthday": {
-                2026: y["before_1_september_after_16th_birthday"] and y["age"] == 16
+                2026: y["before_1_september_after_16th_birthday"]
             },
             "is_before_first_september_after_19th_birthday": {
                 2026: y["before_1_september_after_19th_birthday"]

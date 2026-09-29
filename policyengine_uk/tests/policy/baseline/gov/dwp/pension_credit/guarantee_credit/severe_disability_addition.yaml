@@ -269,6 +269,33 @@
     # blind partner.
     severe_disability_minimum_guarantee_addition: 0
 
+- name: Head (b) - a young carer in the couple's family cares for one partner only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_parent: true
+        attendance_allowance: 5_000
+      partner:
+        age: 78
+        attendance_allowance: 5_000
+      young_carer:
+        age: 17
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant, partner, young_carer]
+    households:
+      household:
+        members: [claimant, partner, young_carer]
+  output:
+    # One Carer's Allowance is for caring for one person (SSCBA 1992
+    # s.70(7)), so head (b) holds with a carer benefit for one partner only,
+    # at the reg 6(5)(a) rate: 86.05 * 52 = 4,474.60.
+    severe_disability_minimum_guarantee_addition: 4_474.6
+
 - name: Head (b) - a partner treated as in receipt by para 1(2)(b) gives the single rate.
   period: 2026
   absolute_error_margin: 0.01
@@ -403,7 +430,7 @@
     # Para 1(1)(c)(i) needs actual receipt; para 1(2)(b) reaches (1)(b) only.
     severe_disability_minimum_guarantee_addition: 0
 
-- name: Two households, each a pensioner receiving Attendance Allowance, ignore each other.
+- name: Two benefit units in one household, each a pensioner receiving Attendance Allowance, ignore each other.
   period: 2026
   absolute_error_margin: 0.01
   input:

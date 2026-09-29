@@ -10,8 +10,9 @@ class is_savings_credit_eligible(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/3"
 
     def formula(benunit, period, parameters):
-        # The claimant or partner must have reached SPA before the cutoff year.
-        has_pre_cutoff_spa_member = benunit.any(
+        # SPCA 2002 s.3(1): the claimant, or the other member of the couple,
+        # meets the age condition in s.3(1)(a).
+        meets_first_condition = benunit.any(
             benunit.members("is_claimant_or_partner", period)
             & benunit.members("meets_savings_credit_age_requirement", period)
         )
@@ -20,4 +21,4 @@ class is_savings_credit_eligible(Variable):
         relation_type = benunit("relation_type", period)
         threshold = sc.threshold[relation_type] * WEEKS_IN_YEAR
         meets_income_threshold = income > threshold
-        return has_pre_cutoff_spa_member & meets_income_threshold
+        return meets_first_condition & meets_income_threshold

@@ -13,9 +13,13 @@ class severe_disability_minimum_guarantee_addition(Variable):
         "(b)), or one must receive one while the other is certified blind "
         "(head (c)). An adult residing with them bars every head unless Sch. I "
         "para. 2 ignores them. The model does not record whom a carer cares "
-        "for: a carer benefit received by another member of the benefit unit "
-        "is taken to be for caring for the claimant or partner, and carers "
-        "outside the benefit unit are seen only through the residence bar."
+        "for: a carer benefit (Carer's Allowance or Carer Support Payment) "
+        "received by another member of the benefit unit is taken to be for "
+        "caring for a claimant or partner, each carer caring for one person. "
+        "Carers outside the benefit unit, including those with a Universal "
+        "Credit carer element, are seen only through the residence bar. With "
+        "three or more partners (a polygamous marriage), head (b) needs all of "
+        "them in receipt."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -26,6 +30,7 @@ class severe_disability_minimum_guarantee_addition(Variable):
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/2",
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/3",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6",
+        "https://www.legislation.gov.uk/ukpga/1992/4/section/70",
     )
 
     def formula(benunit, period, parameters):
@@ -50,15 +55,19 @@ class severe_disability_minimum_guarantee_addition(Variable):
             & person("would_receive_aa_or_dla_care_but_for_hospital_stay", period)
         )
         blind = claimant_or_partner & person("is_blind", period)
-        # Carer benefit received by someone else in the benefit unit is taken
-        # to be for caring for this claimant or partner. Nobody receives it
-        # for caring for themselves.
+        # A carer benefit received by someone else in the benefit unit is
+        # taken to be for caring for this claimant or partner; nobody receives
+        # it for caring for themselves. Each carer is entitled to one allowance
+        # (SSCBA 1992 s.70(7)), so no more partners are cared for than there
+        # are carers. It is paid only for caring for someone who receives a
+        # qualifying disability benefit (s.70(2)), so under head (c) a carer
+        # who is not a partner cares for the partner in receipt.
         carer = person("receives_carer_benefit", period)
         cared_for = claimant_or_partner & (benunit.project(benunit.sum(carer)) > carer)
 
         claimants = benunit.sum(claimant_or_partner)
         has_partner = claimants > 1
-        partners_cared_for = benunit.sum(cared_for)
+        partners_cared_for = min_(benunit.sum(cared_for), benunit.sum(carer))
         no_barring_resident = ~benunit(
             "has_non_exempt_adult_resident_for_pension_credit_severe_disability",
             period,

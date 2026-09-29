@@ -11,9 +11,11 @@ class is_before_first_september_after_16th_birthday(Variable):
         "qualifying young person for Pension Credit with no education or "
         "training condition (SPC Regs 2002 reg 4A(1)(a)). The annual model holds "
         "age in whole years and no date of birth, so this is an input. It "
-        "defaults to false. It matters only for a 16-year-old who is not in "
-        "non-advanced education or approved training: one who is qualifies "
-        "under reg 4A(1)(b) without it."
+        "defaults to false. It matters only for someone who is not in "
+        "non-advanced education or approved training (one who is qualifies "
+        "under reg 4A(1)(b) without it). As a person is taken to turn their "
+        "modelled age during the year, that can be someone modelled as 16 or "
+        "17."
     )
     definition_period = YEAR
     default_value = False

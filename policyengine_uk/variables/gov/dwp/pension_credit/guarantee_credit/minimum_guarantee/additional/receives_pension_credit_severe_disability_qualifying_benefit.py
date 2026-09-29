@@ -12,7 +12,11 @@ class receives_pension_credit_severe_disability_qualifying_benefit(Variable):
         "highest or middle rate, the Personal Independence Payment daily "
         "living component, or Armed Forces Independence Payment. The same "
         "list decides whether a person residing with the claimant is ignored "
-        "under Sch. I para. 2(2)(a)."
+        "under Sch. I para. 2(2)(a). The Scottish benefits the paragraph also "
+        "lists (Pension Age Disability Payment, the Adult Disability Payment "
+        "daily living component and Scottish adult Disability Living "
+        "Allowance) have no separate variables, so they count only where "
+        "recorded under the Attendance Allowance, DLA or PIP variables."
     )
     definition_period = YEAR
     reference = (

@@ -147,6 +147,22 @@
     is_pension_credit_eligible: true
     standard_minimum_guarantee: 12_937.6
 
+- name: In 2019-20 the exclusion is not yet applied, as parameters are read at 30 April.
+  period: 2019
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # s.4(1A) commenced on 15 May 2019, after the 30 April sampling date
+    # policyengine_uk/utils/parameters.py uses for each fiscal year.
+    is_pension_credit_eligible: true
+
 - name: In 2020-21 the exclusion applies to an unprotected mixed-age couple.
   period: 2020
   input:
