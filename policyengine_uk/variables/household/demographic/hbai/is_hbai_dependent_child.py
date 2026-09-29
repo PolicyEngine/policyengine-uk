@@ -24,7 +24,7 @@ class is_hbai_dependent_child(Variable):
     - an 18- or 19-year-old who is neither the head nor an identified parent
       is a dependent child only if they are in non-advanced education or
       approved training and the benefit unit contains an identified parent
-      (`is_parent`). Without an identified parent the model cannot tell a
+      (`is_parent`, aged 16 or over). Without an identified parent the model cannot tell a
       dependant from a partner, so it keeps treating them as an adult.
 
     This is a statistical definition. Benefit and tax rules use each
@@ -45,8 +45,10 @@ class is_hbai_dependent_child(Variable):
         in_education_or_training = person(
             "is_in_non_advanced_education", period
         ) | person("is_in_approved_training", period)
-        lives_with_identified_parent = person.benunit.any(is_parent)
         under_child_age = age < p.age_limit
+        # An identified parent is a benefit-unit member aged 16 or over
+        # flagged as a parent; a parent flag on a child is ignored.
+        lives_with_identified_parent = person.benunit.any(is_parent & ~under_child_age)
         under_18_dependant = lives_as_dependant & person("age_under_18", period)
         young_person = (
             lives_as_dependant
