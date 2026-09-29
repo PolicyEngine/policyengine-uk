@@ -47,7 +47,7 @@ earnings index.
 
 | Aspect | Resolution Foundation | PolicyEngine UK |
 |-------|------------------------|-----------------|
-| Working-age benefits | Uses statutory uprating with explicit overrides for announced policy (e.g. CoL Payments, benefit freezes). | Same approach. Parameters under `gov/dwp/` and `gov/hmrc/child_benefit/` track legislated rates; ad hoc payments live under `gov/treasury/cost_of_living_support`. |
+| Working-age benefits | Uses statutory uprating with explicit overrides for announced policy (e.g. CoL Payments, benefit freezes). | Same approach. Parameters under `gov/dwp/` and `gov/hmrc/child_benefit/` track legislated rates and, after the last published rate, rise each April by the previous September's CPI (`gov.benefit_uprating_cpi`, as in the s150 review); ad hoc payments live under `gov/treasury/cost_of_living_support`. |
 | State Pension | Models the triple lock explicitly, using its own internal earnings/CPI forecasts. | Models the triple lock from its statutory inputs (September CPI, May-July AWE total pay growth, 2.5% floor) in `gov/economic_assumptions/statutory_uprating_inputs/` and `gov/dwp/state_pension/triple_lock/`, forecast from the OBR's September CPI and Q2 earnings growth to the end of the EFO and calendar-year growth after; see the State Pension page. |
 
 ### Take-up

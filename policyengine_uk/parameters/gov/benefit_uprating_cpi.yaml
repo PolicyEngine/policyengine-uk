@@ -1,7 +1,15 @@
-description: Most recent September CPIH index value, updated for each uprating occurrence (2005=100).
+description: Index of the April prices uprating of benefits, which rises each April by the previous September's CPI inflation. Only ratios between dates are meaningful.
 values:
   2005-01-01: 100
   2010-01-01: 114.48
 metadata:
   label: Benefit uprating index
-  uprating: gov.economic_assumptions.indices.obr.lagged_cpi
+  # April Y uses September Y-1 CPI; see create_september_cpi_uprating.py.
+  uprating: gov.economic_assumptions.indices.september_cpi_uprating
+  reference:
+    - title: Social Security Administration Act 1992, s150 (annual up-rating of benefits)
+      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150
+    - title: Statutory Review of State Pension and Benefit Rates 2026/27, written statement HCWS1101 (26 November 2025)
+      href: https://questions-statements.parliament.uk/written-statements/detail/2025-11-26/hcws1101
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Order 2026 (SI 2026/148), paras 6.4-6.5 (CPI in the year to September 2025)
+      href: https://www.legislation.gov.uk/uksi/2026/148/pdfs/uksiem_20260148_en_001.pdf

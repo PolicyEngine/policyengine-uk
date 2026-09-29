@@ -81,6 +81,36 @@ September. Then replace May-July earnings with the October release's figure,
 which the review uses: the April 2025 and April 2026 rises used October's
 4.1% and 4.8%, where September's first estimates were 4.0% and 4.7%.
 
+## September CPI uprating
+
+Most benefits rise each April by the CPI 12-month rate for the previous
+September: the Secretary of State's annual review under Social Security
+Administration Act 1992 s150 measures prices that way (3.8% from September
+2025 for April 2026, written statement HCWS1101). Income Tax Act 2007 ss21
+and 57 index the basic rate limit and the personal allowance by the same
+measure once no freeze applies.
+[`create_september_cpi_uprating.py`](./create_september_cpi_uprating.py)
+builds `yoy_growth.september_cpi_uprating`, the rise in April of each year
+(keyed to 1 January, like the other series), from
+`statutory_uprating_inputs.cpi_september`: September CPI of the year before,
+rounded to the published 0.1 percentage points, and zero when prices fell
+(April 2016). Its index, `indices.september_cpi_uprating`, drives
+`gov.benefit_uprating_cpi`, which the benefit rate parameters name as their
+`uprating`. The triple lock reads the same rounded September figure, so a
+scenario that edits calendar-year CPI or sets September CPI directly moves
+both.
+
+Two amounts are outside the s150 review for 2026-27 to 2029-30 (Universal
+Credit Act 2025): the Universal Credit standard allowance, which follows its
+own index (September CPI times the Act's uplift, in
+`gov/dwp/universal_credit/standard_allowance/`), and the LCWRA element, which
+is frozen to April 2029. Amounts that were on `gov.benefit_uprating_cpi` but
+are not raised by September CPI (the Pension Credit standard minimum
+guarantee and savings credit threshold, the Housing Benefit earnings
+disregards, DfE early years funding rates and the council tax high value
+surcharge) keep the lagged calendar-year CPI projection they had, through
+`indices.obr.lagged_cpi`.
+
 ## Refreshing after a new EFO
 
 1. Replace the 2025-2030 block in each series with values from the new EFO

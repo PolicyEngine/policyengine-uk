@@ -16,7 +16,8 @@ metadata:
   period: year
   label: Personal allowance
   unit: currency-GBP
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
+  # Income Tax Act 2007 s57: indexed by September CPI once no freeze applies.
+  uprating: gov.economic_assumptions.indices.september_cpi_uprating
   reference:
     - title: Income Tax Act 2007 s. 35
       href: https://www.legislation.gov.uk/ukpga/2007/3/section/35

@@ -11,6 +11,14 @@ values:
   2024-04-01: 416.19
   2025-04-01: 423.27
   2026-04-01: 217.26
+  # Universal Credit Act 2025 s3: section 150 of the Social Security
+  # Administration Act 1992 does not apply to the LCWRA element for 2026-27
+  # to 2029-30, so this amount (for claimants other than pre-2026, severe
+  # conditions and terminally ill claimants, per s2) is frozen until
+  # April 2030, when September CPI uprating resumes.
+  2027-04-01: 217.26
+  2028-04-01: 217.26
+  2029-04-01: 217.26
 metadata:
   period: month
   label: Universal Credit disability element amount
@@ -21,3 +29,5 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36
     - title: Benefit and pension rates 2026 to 2027
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: Universal Credit Act 2025, ss2-3 (LCWRA element for 2026-27; freeze to 2029-30)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/3

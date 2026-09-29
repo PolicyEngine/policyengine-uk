@@ -1,0 +1,18 @@
+description: Relevant uplift percentage of the Universal Credit standard allowance under the Universal Credit Act 2025, applied on top of September CPI uprating from the 2025-26 amounts.
+values:
+  2025-04-01: 0
+  2026-04-01: 0.023
+  2027-04-01: 0.031
+  2028-04-01: 0.04
+  2029-04-01: 0.048
+metadata:
+  unit: /1
+  period: year
+  label: Universal Credit standard allowance uplift
+  # s1(2): each year's minimum is the 2025-26 standard allowance, raised by
+  # September CPI each year (Step 2), times 1 + that year's uplift (Step 3).
+  # From 2030-31, s150 of the Social Security Administration Act 1992
+  # applies again to the 2029-30 amount, so the 4.8% carries forward.
+  reference:
+    - title: Universal Credit Act 2025, s1 (standard allowance for tax years 2026-27 to 2029-30)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/1

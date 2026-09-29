@@ -4,7 +4,11 @@ metadata:
   threshold_unit: year
   amount_unit: currency-GBP
   label: Childcare entitlement hourly rates by age
-  uprating: gov.benefit_uprating_cpi
+  # Not uprated by September CPI: DfE funding rates are not amounts in the
+  # Social Security Administration Act 1992 s150 review. Keeps the lagged
+  # calendar-year CPI projection it had through gov.benefit_uprating_cpi until
+  # its own basis is modelled.
+  uprating: gov.economic_assumptions.indices.obr.lagged_cpi
   reference:
     - title: House of Commons Library | Early years funding in England
       href: https://commonslibrary.parliament.uk/research-briefings/cbp-8052/

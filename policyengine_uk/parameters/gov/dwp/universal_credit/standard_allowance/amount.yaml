@@ -19,7 +19,7 @@ SINGLE_YOUNG:
     2026-04-01: 338.58
   metadata:
     label: Universal Credit single amount (under 25)
-    uprating: gov.benefit_uprating_cpi
+    uprating: gov.dwp.universal_credit.standard_allowance.uprating_index
     unit: currency-GBP
     period: month
 SINGLE_OLD:
@@ -42,7 +42,7 @@ SINGLE_OLD:
     2026-04-01: 424.9
   metadata:
     label: Universal Credit single amount (over 25)
-    uprating: gov.benefit_uprating_cpi
+    uprating: gov.dwp.universal_credit.standard_allowance.uprating_index
     unit: currency-GBP
     period: month
 COUPLE_YOUNG:
@@ -65,7 +65,7 @@ COUPLE_YOUNG:
     2026-04-01: 528.34
   metadata:
     label: Universal Credit couple amount (both under 25)
-    uprating: gov.benefit_uprating_cpi
+    uprating: gov.dwp.universal_credit.standard_allowance.uprating_index
     unit: currency-GBP
     period: month
 COUPLE_OLD:
@@ -93,7 +93,7 @@ COUPLE_OLD:
     period: month
 metadata:
   unit: currency-GBP
-  uprating: gov.benefit_uprating_cpi
+  uprating: gov.dwp.universal_credit.standard_allowance.uprating_index
   propagate_metadata_to_children: true
   reference:
     - title: Benefit and pension rates 2020 to 2021 (DWP, gov.uk)
