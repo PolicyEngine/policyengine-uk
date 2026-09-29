@@ -11,6 +11,7 @@ uprating from April 2030.
 
 import pytest
 
+import policyengine_uk.scenarios.uc_reform as uc_reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import Scenario
 from policyengine_uk.system import system
@@ -114,7 +115,9 @@ def test_uplift_is_a_lever():
         },
         scenario=Scenario(
             parameter_changes={
-                f"{UC}.standard_allowance.uplift": {"year:2027-04-01:10": 0.023}
+                f"{UC}.rebalancing.standard_allowance_uplift": {
+                    "year:2027-01-01:10": 0.023
+                }
             },
             applied_before_data_load=True,
         ),
@@ -123,3 +126,19 @@ def test_uplift_is_a_lever():
     assert standard_allowance(parameters, "SINGLE_OLD", 2027) == pytest.approx(
         424.90 * (1 + rise(parameters, 2027)), rel=1e-5
     )
+
+
+def test_protected_lcwra_amount_for_2026_is_the_published_rate():
+    """s4: the protected LCWRA amount keeps standard allowance plus LCWRA
+    rising at least with September CPI. The model's protection scales the
+    2025-26 combined award by the benefit index, so with September CPI it
+    gives the published £429.80: (£400.14 + £423.27) x 1.038 - £424.90."""
+    simulation = Simulation(
+        situation={
+            "people": {"person": {"age": {2026: 30}}},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        }
+    )
+    protected = uc_reform._protected_existing_health_element_monthly(simulation, 2026)
+    assert protected == pytest.approx(429.80, abs=0.01)

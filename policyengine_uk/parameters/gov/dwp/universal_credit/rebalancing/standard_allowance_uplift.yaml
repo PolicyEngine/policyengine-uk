@@ -8,6 +8,13 @@ values:
 metadata:
   unit: /1
   label: Universal Credit rebalancing standard allowance uplift
+  # Applied through gov.dwp.universal_credit.standard_allowance.uprating_index:
+  # s1(2) raises the 2025-26 amounts by September CPI each year (Step 2) and
+  # then by that year's uplift (Step 3), which does not compound. From 2030-31
+  # section 150 of the Social Security Administration Act 1992 applies again,
+  # so the 4.8% carries forward.
   reference:
+    - title: Universal Credit Act 2025, s1 (standard allowance for tax years 2026-27 to 2029-30)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/1
     - title: Universal Credit Bill
       href: https://bills.parliament.uk/publications/62123/documents/6889

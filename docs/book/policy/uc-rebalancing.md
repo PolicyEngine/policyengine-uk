@@ -76,6 +76,10 @@ sim = Simulation(scenario=scenario)
 
 ### Changing the standard allowance uplift parameters
 
+The 2026-27 amounts are the published rates. The uplift sets how the amounts
+grow after that: each year's standard allowance rises by September CPI and by
+the change in the uplift, so these changes move the amounts from 2027-28 on.
+
 ```python
 from policyengine_uk import Simulation, Scenario
 
