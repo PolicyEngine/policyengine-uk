@@ -12,9 +12,11 @@ reproduces the published £424.90 for a single claimant aged 25 or over:
 amount rises by September CPI and the 4.8% carries forward.
 
 ``gov.dwp.universal_credit.standard_allowance.uprating_index`` is the
-September CPI index times 1 + the uplift in force in April of each year.
-The standard allowance names it as its uprating, so each year after the last
-published amount rises by September CPI and by the change in the uplift.
+September CPI index times 1 + the uplift in force in April of each year
+(``gov.dwp.universal_credit.rebalancing.standard_allowance_uplift``, zero
+while ``rebalancing.active`` is false). The standard allowance names it as
+its uprating, so each year after the last published amount rises by
+September CPI and by the change in the uplift.
 """
 
 from policyengine_core.parameters import Parameter, ParameterNode
@@ -27,11 +29,14 @@ def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNo
     September CPI index this compounds.
     """
     september_cpi = parameters.gov.economic_assumptions.indices.september_cpi_uprating
-    standard_allowance = parameters.gov.dwp.universal_credit.standard_allowance
+    universal_credit = parameters.gov.dwp.universal_credit
+    rebalancing = universal_credit.rebalancing
     values = {}
     for value in september_cpi.values_list:
-        year = int(value.instant_str[:4])
-        uplift = standard_allowance.uplift(f"{year}-04-30") or 0
+        instant = f"{value.instant_str[:4]}-04-30"
+        uplift = 0
+        if rebalancing.active(instant):
+            uplift = rebalancing.standard_allowance_uplift(instant) or 0
         values[value.instant_str] = value.value * (1 + uplift)
     index = Parameter(
         "gov.dwp.universal_credit.standard_allowance.uprating_index",
@@ -47,5 +52,5 @@ def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNo
             },
         },
     )
-    standard_allowance.add_child("uprating_index", index)
+    universal_credit.standard_allowance.add_child("uprating_index", index)
     return parameters

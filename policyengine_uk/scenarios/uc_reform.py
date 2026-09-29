@@ -92,8 +92,8 @@ def add_universal_credit_reform(sim: Microsimulation):
         )  # Monthly amount * 12
         sim.set_input("uc_LCWRA_element", year, current_health_element)
 
-    # Standard allowance uplift is handled in the formula itself so user
-    # reforms to the base amount are applied before the uplift.
+    # The standard allowance uplift is applied through the standard
+    # allowance's uprating index (standard_allowance/create_uprating_index.py).
 
 
 universal_credit_july_2025_reform = Scenario(
