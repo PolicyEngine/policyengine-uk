@@ -15,7 +15,9 @@ metadata:
     include_earnings false and this guarantee true from 2030.
     Each guaranteed year, the rise is the higher of the triple lock
     elements still included and the rise needed to reach the earnings path,
-    rounded up to 0.1 percentage points.
+    rounded up to 0.1 percentage points. Changes take effect through
+    Scenario(parameter_changes=...), which rebuilds the uprating rates; a
+    reform dictionary changes this parameter but not the rates.
   reference:
     - title: BBC News live, Labour conference speech, 29 September 2026
       href: https://www.bbc.co.uk/news/live/c6x2zrv774gvt

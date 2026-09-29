@@ -99,9 +99,11 @@ QUARTER_RE = re.compile(r"^(\d{4})\s*Q([1-4])$")
 class StatutoryGapSpec:
     """Forecast gap between a statutory uprating input and calendar-year growth.
 
-    The OBR does not forecast the statutory measures themselves, so the gap is
-    the quarter containing (or nearest) the statutory period minus the
-    calendar-year figure, both from the same workbook column.
+    The OBR publishes September CPI only as the receipts tables' memo row of
+    the CPI used to uprate tax thresholds, and does not forecast May-July AWE
+    at all. Where the September row is not supplied or does not cover a year,
+    the statutory figure is the quarter containing (or nearest) the statutory
+    period, from the same economy-table column as the calendar-year figure.
     """
 
     key: str
@@ -117,16 +119,14 @@ STATUTORY_GAP_SPECS = (
         series_key="consumer_price_index",
         quarter=3,
         month_day="09-01",
-        description="Q3 CPI 12-month rate minus calendar-year CPI inflation",
+        description="Q3 CPI 12-month rate",
     ),
     StatutoryGapSpec(
         key="awe_total_pay_may_july",
         series_key="average_earnings",
         quarter=2,
         month_day="07-01",
-        description=(
-            "Q2 average earnings growth on a year earlier minus calendar-year growth"
-        ),
+        description="Q2 average earnings growth on a year earlier",
     ),
 )
 
@@ -147,12 +147,10 @@ def get_yoy_growth_path() -> Path:
     )
 
 
-def get_forecast_gap_dir() -> Path:
-    return (
-        get_repo_root()
-        / "policyengine_uk/parameters/gov/economic_assumptions"
-        / "statutory_uprating_inputs/forecast_gap"
-    )
+def get_forecast_gap_dir(yoy_growth_path: Path | None = None) -> Path:
+    """The forecast_gap directory next to a yoy_growth.yaml."""
+    yoy_growth_path = yoy_growth_path or get_yoy_growth_path()
+    return yoy_growth_path.parent / "statutory_uprating_inputs" / "forecast_gap"
 
 
 def normalise_label(value: str | None) -> str:
@@ -393,16 +391,22 @@ def compute_statutory_forecast_gaps(
     forecast_start_year: int,
     forecast_years: int,
     receipts_xlsx_bytes: bytes | None = None,
+    calendar_values: dict[str, dict[int, float]] | None = None,
 ) -> dict[str, dict[int, ForecastGap]]:
     """Gap for each statutory input and forecast year, rounded to 1e-5.
 
-    September CPI comes from the receipts tables where they are supplied and
-    cover the year; otherwise each input uses its quarter from the economy
-    tables.
+    The gap is the OBR's statutory-basis figure minus the calendar-year growth
+    PolicyEngine stores, so that stored growth plus the gap reproduces the
+    OBR figure. ``calendar_values`` defaults to the values this importer
+    writes to yoy_growth.yaml. September CPI comes from the receipts tables
+    where they are supplied and cover the year; otherwise each input uses its
+    quarter from the economy tables.
     """
     series = extract_series_by_period_from_xlsx(
         xlsx_bytes, {spec.series_key for spec in STATUTORY_GAP_SPECS}
     )
+    if calendar_values is None:
+        calendar_values = extract_annual_series_from_xlsx(xlsx_bytes)
     september_table, september_cpi = (
         extract_september_cpi_from_receipts(receipts_xlsx_bytes)
         if receipts_xlsx_bytes is not None
@@ -411,17 +415,18 @@ def compute_statutory_forecast_gaps(
     gaps: dict[str, dict[int, ForecastGap]] = {}
     for spec in STATUTORY_GAP_SPECS:
         values = series[spec.series_key]
+        calendar = calendar_values.get(spec.series_key, {})
         table = next(s.table for s in SERIES_SPECS if s.key == spec.series_key)
         gaps[spec.key] = {}
         for year in range(forecast_start_year, forecast_start_year + forecast_years):
-            annual = values.get(str(year))
+            annual = calendar.get(year)
             if annual is None:
                 continue
             if spec.key == "cpi_september" and year in september_cpi:
                 statutory = september_cpi[year]
                 source = (
                     f"September CPI (receipts Table {september_table}) minus "
-                    f"calendar-year CPI (economy Table {table})"
+                    "calendar-year CPI growth in yoy_growth.yaml"
                 )
                 reference = (
                     f"detailed forecast tables, receipts, Table {september_table}"
@@ -430,7 +435,10 @@ def compute_statutory_forecast_gaps(
                 statutory = values.get(f"{year}Q{spec.quarter}")
                 if statutory is None:
                     continue
-                source = f"{spec.description} (economy Table {table})"
+                source = (
+                    f"{spec.description} (economy Table {table}) minus "
+                    "calendar-year growth in yoy_growth.yaml"
+                )
                 reference = f"detailed forecast tables, economy, Table {table}"
             gaps[spec.key][year] = ForecastGap(
                 value=round(statutory - annual, 5) + 0.0,
@@ -438,6 +446,28 @@ def compute_statutory_forecast_gaps(
                 reference_title=reference,
             )
     return gaps
+
+
+def read_calendar_values(yaml_path: Path) -> dict[str, dict[int, float]]:
+    """Calendar-year growth by year for each series in a yoy_growth.yaml."""
+    obr = yaml.safe_load(yaml_path.read_text())["obr"]
+    return {
+        key: {
+            int(str(instant)[:4]): float(value)
+            for instant, value in series["values"].items()
+        }
+        for key, series in obr.items()
+        if isinstance(series, dict) and "values" in series
+    }
+
+
+def format_gap(value: float) -> str:
+    """Fixed-point text: YAML 1.1 reads exponent notation such as 3e-05 as a
+    string."""
+    if value == 0:
+        return "0"
+    text = f"{value:.5f}".rstrip("0")
+    return text + "0" if text.endswith(".") else text
 
 
 def render_forecast_gap_values(
@@ -456,7 +486,9 @@ def render_forecast_gap_values(
         if gaps[gap_year].source != source:
             source = gaps[gap_year].source
             lines.append(f"  # OBR EFO {month} {year}: {source}.")
-        lines.append(f"  {gap_year}-{spec.month_day}: {gaps[gap_year].value:g}")
+        lines.append(
+            f"  {gap_year}-{spec.month_day}: {format_gap(gaps[gap_year].value)}"
+        )
     lines += [
         "  # After the EFO horizon: no gap, so the forecast is calendar-year growth.",
         f"  {max(gaps) + 1}-{spec.month_day}: 0",
@@ -481,15 +513,15 @@ def render_forecast_gap_references(
     return "\n".join(lines) + "\n"
 
 
-def update_forecast_gap_yaml(
-    yaml_path: Path,
+def render_forecast_gap_yaml(
+    content: str,
     spec: StatutoryGapSpec,
     gaps: dict[int, ForecastGap],
     month: str,
     year: int,
-) -> None:
-    """Rewrite the values block and the reference list (the last metadata key)."""
-    content = yaml_path.read_text()
+) -> str:
+    """Rewrite the values block and the reference list (the last metadata key),
+    and check every value loads as a number."""
     values_pattern = re.compile(
         r"^values:\n.*?(?=^metadata:)", re.MULTILINE | re.DOTALL
     )
@@ -505,9 +537,24 @@ def update_forecast_gap_yaml(
         count=1,
     )
     if not (values_count and reference_count):
-        raise ValueError(f"Could not find the values and reference in {yaml_path}")
-    yaml.safe_load(content)
-    yaml_path.write_text(content)
+        raise ValueError(f"Could not find the values and reference for {spec.key}")
+    loaded = yaml.safe_load(content)["values"]
+    bad = {k: v for k, v in loaded.items() if not isinstance(v, (int, float))}
+    if bad:
+        raise ValueError(f"Non-numeric forecast gaps for {spec.key}: {bad}")
+    return content
+
+
+def update_forecast_gap_yaml(
+    yaml_path: Path,
+    spec: StatutoryGapSpec,
+    gaps: dict[int, ForecastGap],
+    month: str,
+    year: int,
+) -> None:
+    yaml_path.write_text(
+        render_forecast_gap_yaml(yaml_path.read_text(), spec, gaps, month, year)
+    )
 
 
 def infer_release(source_name: str) -> tuple[str, int]:
@@ -581,7 +628,26 @@ def update_yoy_growth_yaml(
     forecast_start_year: int,
     forecast_years: int,
 ) -> None:
-    content = yaml_path.read_text()
+    yaml_path.write_text(
+        render_yoy_growth_yaml(
+            yaml_path.read_text(),
+            series_values,
+            month,
+            year,
+            forecast_start_year,
+            forecast_years,
+        )
+    )
+
+
+def render_yoy_growth_yaml(
+    content: str,
+    series_values: dict[str, dict[int, float]],
+    month: str,
+    year: int,
+    forecast_start_year: int,
+    forecast_years: int,
+) -> str:
     yaml.safe_load(content)
     forecast_end_year = forecast_start_year + forecast_years - 1
     href = build_efo_href(month, year)
@@ -618,7 +684,8 @@ def update_yoy_growth_yaml(
         )
         content = replace_series_section(content, spec.key, section)
 
-    yaml_path.write_text(content)
+    yaml.safe_load(content)
+    return content
 
 
 def print_summary(
@@ -688,6 +755,14 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--receipts-file", help="Local receipts XLSX file path")
     parser.add_argument(
+        "--gaps-only",
+        action="store_true",
+        help=(
+            "Leave yoy_growth.yaml as it is and regenerate the forecast gaps "
+            "against the calendar-year growth it holds"
+        ),
+    )
+    parser.add_argument(
         "--skip-statutory-gaps",
         action="store_true",
         help=(
@@ -723,41 +798,64 @@ def main(argv: list[str] | None = None) -> int:
     forecast_start_year = args.forecast_start_year or infer_forecast_start_year(
         month, year
     )
+    source_yaml_path = args.yaml_path or get_yoy_growth_path()
+    write_gaps = not args.skip_statutory_gaps and args.output is None
+    if args.gaps_only and not write_gaps:
+        raise ValueError("--gaps-only cannot be combined with --output")
+    if write_gaps and not (args.receipts_url or args.receipts_file):
+        message = (
+            "Pass --receipts-file or --receipts-url so September CPI uses the "
+            "OBR's September forecast, or --skip-statutory-gaps"
+        )
+        if not args.dry_run:
+            raise ValueError(message)
+        print(f"Warning: {message}")
+
     print_summary(series_values, forecast_start_year, args.forecast_years)
     receipts_bytes = None
     if args.receipts_url or args.receipts_file:
         _, receipts_bytes = load_source_bytes(args.receipts_url, args.receipts_file)
+    calendar_values = (
+        read_calendar_values(source_yaml_path) if args.gaps_only else series_values
+    )
     statutory_gaps = compute_statutory_forecast_gaps(
-        workbook_bytes, forecast_start_year, args.forecast_years, receipts_bytes
+        workbook_bytes,
+        forecast_start_year,
+        args.forecast_years,
+        receipts_bytes,
+        calendar_values,
     )
     for key, gaps in statutory_gaps.items():
-        window = ", ".join(f"{y}: {g.value:g}" for y, g in sorted(gaps.items()))
+        window = ", ".join(
+            f"{y}: {format_gap(g.value)}" for y, g in sorted(gaps.items())
+        )
         print(f"- forecast gap {key}: {window}")
+
+    # Render and check every file before writing any, so a failure cannot
+    # leave growth and gaps from different forecasts.
+    outputs: dict[Path, str] = {}
+    if not args.gaps_only:
+        outputs[args.output or source_yaml_path] = render_yoy_growth_yaml(
+            source_yaml_path.read_text(),
+            series_values,
+            month,
+            year,
+            forecast_start_year,
+            args.forecast_years,
+        )
+    if write_gaps:
+        gap_dir = get_forecast_gap_dir(source_yaml_path)
+        for spec in STATUTORY_GAP_SPECS:
+            gap_path = gap_dir / f"{spec.key}.yaml"
+            outputs[gap_path] = render_forecast_gap_yaml(
+                gap_path.read_text(), spec, statutory_gaps[spec.key], month, year
+            )
 
     if args.dry_run:
         return 0
-
-    source_yaml_path = args.yaml_path or get_yoy_growth_path()
-    target_yaml_path = args.output or source_yaml_path
-    if target_yaml_path != source_yaml_path:
-        target_yaml_path.write_text(source_yaml_path.read_text())
-    update_yoy_growth_yaml(
-        yaml_path=target_yaml_path,
-        series_values=series_values,
-        month=month,
-        year=year,
-        forecast_start_year=forecast_start_year,
-        forecast_years=args.forecast_years,
-    )
-    print(f"Updated {target_yaml_path}")
-
-    if not args.skip_statutory_gaps and args.output is None:
-        for spec in STATUTORY_GAP_SPECS:
-            gap_path = get_forecast_gap_dir() / f"{spec.key}.yaml"
-            update_forecast_gap_yaml(
-                gap_path, spec, statutory_gaps[spec.key], month, year
-            )
-            print(f"Updated {gap_path}")
+    for path, content in outputs.items():
+        path.write_text(content)
+        print(f"Updated {path}")
     return 0
 
 

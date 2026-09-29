@@ -13,8 +13,11 @@ this module runs. Each input is rounded to the one decimal place the ONS
 publishes, as the uprating review uses the published figure.
 
 With ``active`` false there is no triple lock, only the statutory minimum
-from the review under Social Security Administration Act 1992 s150A: the
-pension rises by earnings growth, and not at all when earnings fall.
+from the review under Social Security Administration Act 1992 s150A as it
+stands: the pension rises by earnings growth, and not at all when earnings
+fall. The one-year modifications of s150A for April 2021 and April 2022 are
+not applied, and ``include_earnings``, ``include_inflation`` and
+``minimum_rate`` are ignored.
 
 Years with a published rate that the rule cannot reproduce are overridden in
 ``triple_lock/outturn.yaml``. Only April 2011, when the basic State Pension
@@ -55,21 +58,24 @@ RATIO_PRECISION = Decimal("0.000000001")
 def uprating_instant(year: int) -> str:
     """Date at which policy parameters are read for the April ``year`` uprating.
 
-    30 April is the date fiscal-year conversion samples, so a reform keyed to
-    the bare year (the fiscal year from 6 April), to ``year:YYYY-01-01:1`` or
-    to 1 January all take effect in the uprating for that April.
+    30 April is the date fiscal-year conversion samples. A YAML value from
+    1 January, or a parameter change keyed to the bare year (the fiscal year
+    from 6 April) or to ``year:YYYY-01-01:N``, takes effect in the uprating
+    for that April. A change keyed to a single day covers only that day.
     """
     return f"{year}-04-30"
 
 
 def round_to_published_precision(rate: float) -> float:
     """Round a growth rate to 0.1 percentage points, halves away from zero."""
-    return float(Decimal(repr(rate)).quantize(PUBLISHED_PRECISION, ROUND_HALF_UP))
+    return float(
+        Decimal(repr(float(rate))).quantize(PUBLISHED_PRECISION, ROUND_HALF_UP)
+    )
 
 
 def round_up_to_published_precision(rate: float) -> float:
     """Round a guaranteed minimum rate up to the next 0.1 percentage points."""
-    cleaned = Decimal(repr(rate)).quantize(RATIO_PRECISION, ROUND_HALF_UP)
+    cleaned = Decimal(repr(float(rate))).quantize(RATIO_PRECISION, ROUND_HALF_UP)
     return float(cleaned.quantize(PUBLISHED_PRECISION, ROUND_CEILING))
 
 

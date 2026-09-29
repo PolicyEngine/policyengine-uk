@@ -69,7 +69,8 @@ growth (ONS KAC3). They are keyed to their observation month, not to
 Each series holds published figures and then a null. From there,
 [`create_statutory_uprating_inputs.py`](./create_statutory_uprating_inputs.py)
 fills in calendar-year growth from `yoy_growth.obr` plus `forecast_gap`, the
-OBR's forecast of the statutory measure minus its calendar-year forecast.
+OBR's statutory-basis forecast minus the calendar-year growth stored here, so
+the baseline input equals the OBR's figure.
 The gap is zero after the EFO horizon, so the forecasts fall back to
 calendar-year growth. A scenario that edits calendar-year growth therefore
 moves them, and a scenario can also set them directly.
@@ -93,6 +94,7 @@ which the review uses: the April 2025 and April 2026 rises used October's
 5. Regenerate `statutory_uprating_inputs/forecast_gap/` from the same EFO.
    `policyengine_uk/utils/import_obr_forecasts.py` does this when it updates
    `yoy_growth.yaml`; pass the receipts tables with `--receipts-file` or
-   `--receipts-url` so September CPI uses the OBR's September forecast.
+   `--receipts-url` so September CPI uses the OBR's September forecast. If
+   you edit `yoy_growth.yaml` by hand instead, rerun it with `--gaps-only`.
 
 [rpi-cpi]: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/

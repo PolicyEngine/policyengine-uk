@@ -22,7 +22,7 @@ Invariants, for every input path:
 import math
 
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
@@ -39,6 +39,10 @@ from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_
 published_rate = st.integers(min_value=-60, max_value=150).map(lambda n: n / 1000)
 minimum_rate = st.sampled_from([0.0, 0.02, 0.025, 0.03])
 LEVEL_TOLERANCE = 1e-9
+# Generation is cheap, but a loaded CI runner can trip the speed check.
+PROPERTIES = settings(
+    max_examples=300, deadline=None, suppress_health_check=[HealthCheck.too_slow]
+)
 
 
 def uprating_year(earnings_path_guarantee=st.booleans()):
@@ -60,6 +64,7 @@ def paths(earnings_path_guarantee=st.booleans(), min_size=1, max_size=20):
     ).map(lambda years: {2030 + i: year for i, year in enumerate(years)})
 
 
+@PROPERTIES
 @given(
     earnings=published_rate,
     cpi=published_rate,
@@ -84,6 +89,7 @@ def test_triple_lock_is_the_highest_included_element(
     assert rate in included
 
 
+@PROPERTIES
 @given(inputs=uprating_year())
 def test_rule_rate_is_the_triple_lock_or_the_statutory_earnings_link(inputs):
     rate = rule_rate(inputs)
@@ -100,6 +106,7 @@ def test_rule_rate_is_the_triple_lock_or_the_statutory_earnings_link(inputs):
         assert rate >= 0
 
 
+@PROPERTIES
 @given(
     earnings=published_rate,
     cpi=published_rate,
@@ -113,13 +120,14 @@ def test_triple_lock_never_falls_when_an_element_rises(earnings, cpi, floor, ris
     assert triple_lock_rate(earnings, cpi, floor + rise) >= rate
 
 
+@PROPERTIES
 @given(years=paths(earnings_path_guarantee=st.just(False)))
 def test_without_guarantee_the_path_is_the_yearly_rule(years):
     rates = uprating_rates(years)
     assert rates == {year: rule_rate(inputs) for year, inputs in years.items()}
 
 
-@settings(max_examples=300)
+@PROPERTIES
 @given(years=paths())
 def test_guarantee_keeps_the_pension_on_or_above_its_earnings_path(years):
     rates = uprating_rates(years)
@@ -143,7 +151,7 @@ def test_guarantee_keeps_the_pension_on_or_above_its_earnings_path(years):
             assert level >= rule_path * (1 - LEVEL_TOLERANCE)
 
 
-@settings(max_examples=300)
+@PROPERTIES
 @given(years=paths())
 def test_guarantee_top_up_is_the_smallest_step_that_reaches_the_path(years):
     rates = uprating_rates(years)
@@ -163,6 +171,7 @@ def test_guarantee_top_up_is_the_smallest_step_that_reaches_the_path(years):
         level *= 1 + rates[year]
 
 
+@PROPERTIES
 @given(years=paths())
 def test_rates_stay_on_the_published_grid(years):
     for rate in uprating_rates(years).values():
@@ -195,7 +204,7 @@ def reference_plan_rates(cpi, earnings, switch_index, floor=0.025, decimals=3):
     return rates
 
 
-@settings(max_examples=300)
+@PROPERTIES
 @given(
     data=st.lists(st.tuples(published_rate, published_rate), min_size=1, max_size=15),
     switch_index=st.integers(min_value=0, max_value=15),
@@ -218,6 +227,7 @@ def test_plan_matches_the_uk_triple_lock_reference(data, switch_index):
     assert [rates[year] for year in sorted(rates)] == pytest.approx(expected, abs=1e-12)
 
 
+@PROPERTIES
 @given(rate=st.floats(min_value=-0.5, max_value=0.5, allow_nan=False))
 def test_rounding_to_published_precision(rate):
     rounded = round_to_published_precision(rate)
