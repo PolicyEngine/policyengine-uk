@@ -1,0 +1,21 @@
+description: Whether the State Pension also rises at least enough to stay on an earnings path, started from its level in the year before this guarantee first applies and uprated each year by the May-July earnings input.
+values:
+  2010-01-01: false
+metadata:
+  unit: bool
+  label: State Pension earnings path guarantee
+  documentation: |
+    Not part of current law. It lets reforms that replace the triple lock
+    with a lower annual floor, but promise that the pension keeps pace with
+    earnings over time, be modelled as parameter changes. The plan announced
+    on 29 September 2026 drops the annual earnings link from April 2030 but
+    says the pension will hold its value relative to earnings over time. The
+    speech gave no formula; one reading (rises of at least CPI or 2.5%, and
+    the pension never below an earnings link from its 2029-30 level) is
+    include_earnings false and this guarantee true from 2030.
+    Each guaranteed year, the rise is the higher of the triple lock
+    elements still included and the rise needed to reach the earnings path,
+    rounded up to 0.1 percentage points.
+  reference:
+    - title: BBC News live, Labour conference speech, 29 September 2026
+      href: https://www.bbc.co.uk/news/live/c6x2zrv774gvt

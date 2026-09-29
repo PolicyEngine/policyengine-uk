@@ -2,10 +2,14 @@ from io import BytesIO
 from zipfile import ZipFile
 
 from policyengine_uk.utils.import_obr_forecasts import (
+    STATUTORY_GAP_SPECS,
     build_efo_href,
+    compute_statutory_forecast_gaps,
     extract_annual_series_from_xlsx,
+    extract_september_cpi_from_receipts,
     infer_forecast_start_year,
     infer_release,
+    update_forecast_gap_yaml,
     update_yoy_growth_yaml,
 )
 
@@ -61,6 +65,10 @@ def make_test_xlsx() -> bytes:
                 make_inline_cell("B98", "2026"),
                 make_number_cell("Q98", 3.33),
             ],
+            99: [
+                make_inline_cell("B99", "2026Q2"),
+                make_number_cell("Q99", 3.67),
+            ],
         }
     )
     sheet_17 = make_sheet(
@@ -93,6 +101,14 @@ def make_test_xlsx() -> bytes:
                 make_number_cell("F99", 2.55),
                 make_number_cell("H99", 7.97),
                 make_number_cell("I99", 3.34),
+            ],
+            100: [
+                make_inline_cell("B100", "2026Q3"),
+                make_number_cell("C100", 3.2),
+                make_number_cell("E100", 2.08),
+                make_number_cell("F100", 2.3),
+                make_number_cell("H100", 8.0),
+                make_number_cell("I100", 3.3),
             ],
         }
     )
@@ -328,3 +344,110 @@ def test_update_yoy_growth_yaml_keeps_existing_values_when_obr_has_blank_years(
     assert "2025-01-01: 0.0952" in content
     assert "2026-01-01: 0.0797" in content
     assert "2027-01-01: 0.0553" in content
+
+
+def make_receipts_xlsx() -> bytes:
+    workbook_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+ xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="3.18" sheetId="1" r:id="rId1"/>
+    <sheet name="3.19" sheetId="2" r:id="rId2"/>
+  </sheets>
+</workbook>
+"""
+    rels_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>
+</Relationships>
+"""
+    sheet_318 = make_sheet({2: [make_inline_cell("B2", "Other table")]})
+    sheet_319 = make_sheet(
+        {
+            4: [
+                make_inline_cell("C4", "2026-27"),
+                make_inline_cell("D4", "2027-28"),
+            ],
+            21: [
+                make_inline_cell("B21", "Memo: CPI used to uprate thresholds"),
+                make_number_cell("C21", 3.81),
+                make_number_cell("D21", 2.12),
+            ],
+        }
+    )
+    buffer = BytesIO()
+    with ZipFile(buffer, "w") as archive:
+        archive.writestr("xl/workbook.xml", workbook_xml)
+        archive.writestr("xl/_rels/workbook.xml.rels", rels_xml)
+        archive.writestr("xl/worksheets/sheet1.xml", sheet_318)
+        archive.writestr("xl/worksheets/sheet2.xml", sheet_319)
+    return buffer.getvalue()
+
+
+def test_september_cpi_is_keyed_to_the_september_before_the_uprating_year():
+    table, rates = extract_september_cpi_from_receipts(make_receipts_xlsx())
+
+    assert table == "3.19"
+    assert rates == {2025: 0.0381, 2026: 0.0212}
+
+
+def test_statutory_forecast_gaps_use_the_statutory_quarter():
+    gaps = compute_statutory_forecast_gaps(make_test_xlsx(), 2025, 2)
+
+    # Q3 CPI 2.08% minus calendar-year 2.48%; no 2025 quarter in the fixture.
+    assert {y: g.value for y, g in gaps["cpi_september"].items()} == {2026: -0.004}
+    # Q2 earnings 3.67% minus calendar-year 3.33%.
+    assert {y: g.value for y, g in gaps["awe_total_pay_may_july"].items()} == {
+        2026: 0.0034
+    }
+
+
+def test_statutory_forecast_gaps_prefer_published_september_cpi():
+    gaps = compute_statutory_forecast_gaps(
+        make_test_xlsx(), 2025, 2, receipts_xlsx_bytes=make_receipts_xlsx()
+    )
+
+    # September 2025 (3.81%) minus calendar-year 2025 CPI (3.45%), and
+    # September 2026 (2.12%) minus calendar-year 2026 CPI (2.48%).
+    cpi = gaps["cpi_september"]
+    assert {y: g.value for y, g in cpi.items()} == {2025: 0.0036, 2026: -0.0036}
+    assert "receipts Table 3.19" in cpi[2026].source
+
+
+def test_update_forecast_gap_yaml_rewrites_values_and_reference(tmp_path):
+    yaml_path = tmp_path / "cpi_september.yaml"
+    yaml_path.write_text("""description: Gap.
+values:
+  2010-09-01: 0
+  2025-09-01: 0.001
+  2031-09-01: 0
+metadata:
+  unit: /1
+  documentation: |
+    Kept.
+  reference:
+    - title: OBR EFO November 2025 (detailed forecast tables, economy, Table 1.7)
+      href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+""")
+    spec = next(s for s in STATUTORY_GAP_SPECS if s.key == "cpi_september")
+    gaps = compute_statutory_forecast_gaps(
+        make_test_xlsx(), 2025, 2, receipts_xlsx_bytes=make_receipts_xlsx()
+    )["cpi_september"]
+
+    update_forecast_gap_yaml(yaml_path, spec, gaps, "March", 2026)
+
+    content = yaml_path.read_text()
+    assert "2025-09-01: 0.0036" in content
+    assert "2026-09-01: -0.0036" in content
+    assert "2027-09-01: 0" in content
+    assert "0.001" not in content
+    assert "Kept." in content
+    assert "November 2025" not in content
+    assert (
+        "OBR EFO March 2026 (detailed forecast tables, economy, Table 1.7)" in content
+    )
+    assert (
+        "OBR EFO March 2026 (detailed forecast tables, receipts, Table 3.19)" in content
+    )
+    assert "https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/" in content
