@@ -92,6 +92,45 @@ SERIES_SPECS = (
 )
 
 
+QUARTER_RE = re.compile(r"^(\d{4})\s*Q([1-4])$")
+
+
+@dataclass(frozen=True)
+class StatutoryGapSpec:
+    """Forecast gap between a statutory uprating input and calendar-year growth.
+
+    The OBR does not forecast the statutory measures themselves, so the gap is
+    the quarter containing (or nearest) the statutory period minus the
+    calendar-year figure, both from the same workbook column.
+    """
+
+    key: str
+    series_key: str
+    quarter: int
+    month_day: str
+    description: str
+
+
+STATUTORY_GAP_SPECS = (
+    StatutoryGapSpec(
+        key="cpi_september",
+        series_key="consumer_price_index",
+        quarter=3,
+        month_day="09-01",
+        description="Q3 CPI 12-month rate minus calendar-year CPI inflation",
+    ),
+    StatutoryGapSpec(
+        key="awe_total_pay_may_july",
+        series_key="average_earnings",
+        quarter=2,
+        month_day="07-01",
+        description=(
+            "Q2 average earnings growth on a year earlier minus calendar-year growth"
+        ),
+    ),
+)
+
+
 def get_repo_root() -> Path:
     current = Path(__file__).resolve()
     while current != current.parent:
@@ -105,6 +144,14 @@ def get_yoy_growth_path() -> Path:
     return (
         get_repo_root()
         / "policyengine_uk/parameters/gov/economic_assumptions/yoy_growth.yaml"
+    )
+
+
+def get_forecast_gap_dir() -> Path:
+    return (
+        get_repo_root()
+        / "policyengine_uk/parameters/gov/economic_assumptions"
+        / "statutory_uprating_inputs/forecast_gap"
     )
 
 
@@ -268,6 +315,199 @@ def extract_annual_series_from_xlsx(
             values[year] = round(float(raw_value) / 100, 4)
         result[spec.key] = values
     return result
+
+
+def extract_series_by_period_from_xlsx(
+    xlsx_bytes: bytes, series_keys: set[str]
+) -> dict[str, dict[str, float]]:
+    """Full-precision values (as fractions) keyed by the row label in column B,
+    e.g. "2026" or "2026Q3"."""
+    specs = [spec for spec in SERIES_SPECS if spec.key in series_keys]
+    rows_by_sheet = {
+        sheet: read_sheet_rows(xlsx_bytes, sheet) for sheet in {s.sheet for s in specs}
+    }
+    result: dict[str, dict[str, float]] = {}
+    for spec in specs:
+        rows = rows_by_sheet[spec.sheet]
+        column = find_series_column(rows, spec)
+        values: dict[str, float] = {}
+        for row in rows:
+            label = str(row.get("B") or "").strip()
+            raw_value = row.get(column)
+            if not label or raw_value in (None, ""):
+                continue
+            if YEAR_RE.match(label) or QUARTER_RE.match(label):
+                values[label.replace(" ", "")] = float(raw_value) / 100
+        result[spec.key] = values
+    return result
+
+
+SEPTEMBER_CPI_LABEL = "cpi used to uprate thresholds"
+FISCAL_YEAR_RE = re.compile(r"^(\d{4})-(\d{2})$")
+
+
+@dataclass(frozen=True)
+class ForecastGap:
+    value: float
+    source: str
+    reference_title: str
+
+
+def extract_september_cpi_from_receipts(
+    xlsx_bytes: bytes,
+) -> tuple[str, dict[int, float]]:
+    """September CPI 12-month rates from the receipts tables.
+
+    The OBR publishes them as the memo row "CPI used to uprate thresholds",
+    one column per fiscal year of uprating: 2027-28 holds September 2026.
+    Returns the table number and the rates keyed by September's year.
+    """
+    with ZipFile(BytesIO(xlsx_bytes)) as archive:
+        sheet_names = list(_sheet_paths(archive))
+    for sheet in sheet_names:
+        rows = read_sheet_rows(xlsx_bytes, sheet)
+        for index, row in enumerate(rows):
+            if SEPTEMBER_CPI_LABEL not in normalise_label(row.get("B")):
+                continue
+            columns = {}
+            for header in reversed(rows[:index]):
+                columns = {
+                    column: int(match.group(1))
+                    for column, value in header.items()
+                    if value and (match := FISCAL_YEAR_RE.match(str(value).strip()))
+                }
+                if columns:
+                    break
+            rates = {
+                fiscal_year - 1: float(row[column]) / 100
+                for column, fiscal_year in columns.items()
+                if row.get(column) not in (None, "")
+            }
+            if rates:
+                return sheet, rates
+    raise ValueError("Could not find September CPI in the receipts workbook")
+
+
+def compute_statutory_forecast_gaps(
+    xlsx_bytes: bytes,
+    forecast_start_year: int,
+    forecast_years: int,
+    receipts_xlsx_bytes: bytes | None = None,
+) -> dict[str, dict[int, ForecastGap]]:
+    """Gap for each statutory input and forecast year, rounded to 1e-5.
+
+    September CPI comes from the receipts tables where they are supplied and
+    cover the year; otherwise each input uses its quarter from the economy
+    tables.
+    """
+    series = extract_series_by_period_from_xlsx(
+        xlsx_bytes, {spec.series_key for spec in STATUTORY_GAP_SPECS}
+    )
+    september_table, september_cpi = (
+        extract_september_cpi_from_receipts(receipts_xlsx_bytes)
+        if receipts_xlsx_bytes is not None
+        else (None, {})
+    )
+    gaps: dict[str, dict[int, ForecastGap]] = {}
+    for spec in STATUTORY_GAP_SPECS:
+        values = series[spec.series_key]
+        table = next(s.table for s in SERIES_SPECS if s.key == spec.series_key)
+        gaps[spec.key] = {}
+        for year in range(forecast_start_year, forecast_start_year + forecast_years):
+            annual = values.get(str(year))
+            if annual is None:
+                continue
+            if spec.key == "cpi_september" and year in september_cpi:
+                statutory = september_cpi[year]
+                source = (
+                    f"September CPI (receipts Table {september_table}) minus "
+                    f"calendar-year CPI (economy Table {table})"
+                )
+                reference = (
+                    f"detailed forecast tables, receipts, Table {september_table}"
+                )
+            else:
+                statutory = values.get(f"{year}Q{spec.quarter}")
+                if statutory is None:
+                    continue
+                source = f"{spec.description} (economy Table {table})"
+                reference = f"detailed forecast tables, economy, Table {table}"
+            gaps[spec.key][year] = ForecastGap(
+                value=round(statutory - annual, 5) + 0.0,
+                source=source,
+                reference_title=reference,
+            )
+    return gaps
+
+
+def render_forecast_gap_values(
+    spec: StatutoryGapSpec, gaps: dict[int, ForecastGap], month: str, year: int
+) -> str:
+    """The values block of a forecast_gap YAML file."""
+    if not gaps:
+        raise ValueError(f"No forecast gaps for {spec.key}")
+    lines = [
+        "values:",
+        "  # No gap applies to published years.",
+        f"  2010-{spec.month_day}: 0",
+    ]
+    source = None
+    for gap_year in sorted(gaps):
+        if gaps[gap_year].source != source:
+            source = gaps[gap_year].source
+            lines.append(f"  # OBR EFO {month} {year}: {source}.")
+        lines.append(f"  {gap_year}-{spec.month_day}: {gaps[gap_year].value:g}")
+    lines += [
+        "  # After the EFO horizon: no gap, so the forecast is calendar-year growth.",
+        f"  {max(gaps) + 1}-{spec.month_day}: 0",
+    ]
+    return "\n".join(lines) + "\n"
+
+
+def render_forecast_gap_references(
+    spec: StatutoryGapSpec, gaps: dict[int, ForecastGap], month: str, year: int
+) -> str:
+    table = next(s.table for s in SERIES_SPECS if s.key == spec.series_key)
+    titles = [f"detailed forecast tables, economy, Table {table}"]
+    for gap in gaps.values():
+        if gap.reference_title not in titles:
+            titles.append(gap.reference_title)
+    lines = ["  reference:"]
+    for title in titles:
+        lines += [
+            f"    - title: OBR EFO {month} {year} ({title})",
+            f"      href: {build_efo_href(month, year)}",
+        ]
+    return "\n".join(lines) + "\n"
+
+
+def update_forecast_gap_yaml(
+    yaml_path: Path,
+    spec: StatutoryGapSpec,
+    gaps: dict[int, ForecastGap],
+    month: str,
+    year: int,
+) -> None:
+    """Rewrite the values block and the reference list (the last metadata key)."""
+    content = yaml_path.read_text()
+    values_pattern = re.compile(
+        r"^values:\n.*?(?=^metadata:)", re.MULTILINE | re.DOTALL
+    )
+    content, values_count = values_pattern.subn(
+        lambda _: render_forecast_gap_values(spec, gaps, month, year),
+        content,
+        count=1,
+    )
+    reference_pattern = re.compile(r"^  reference:\n.*\Z", re.MULTILINE | re.DOTALL)
+    content, reference_count = reference_pattern.subn(
+        lambda _: render_forecast_gap_references(spec, gaps, month, year),
+        content,
+        count=1,
+    )
+    if not (values_count and reference_count):
+        raise ValueError(f"Could not find the values and reference in {yaml_path}")
+    yaml.safe_load(content)
+    yaml_path.write_text(content)
 
 
 def infer_release(source_name: str) -> tuple[str, int]:
@@ -440,6 +680,22 @@ def build_arg_parser() -> argparse.ArgumentParser:
         help="Number of forecast years to update (default: 6)",
     )
     parser.add_argument(
+        "--receipts-url",
+        help=(
+            "OBR receipts detailed forecast tables (XLSX), for September CPI; "
+            "without it the September CPI gap uses Q3 CPI"
+        ),
+    )
+    parser.add_argument("--receipts-file", help="Local receipts XLSX file path")
+    parser.add_argument(
+        "--skip-statutory-gaps",
+        action="store_true",
+        help=(
+            "Do not update the statutory uprating input forecast gaps "
+            "(September CPI, May-July earnings)"
+        ),
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="Print the extracted values without updating yoy_growth.yaml",
@@ -468,6 +724,15 @@ def main(argv: list[str] | None = None) -> int:
         month, year
     )
     print_summary(series_values, forecast_start_year, args.forecast_years)
+    receipts_bytes = None
+    if args.receipts_url or args.receipts_file:
+        _, receipts_bytes = load_source_bytes(args.receipts_url, args.receipts_file)
+    statutory_gaps = compute_statutory_forecast_gaps(
+        workbook_bytes, forecast_start_year, args.forecast_years, receipts_bytes
+    )
+    for key, gaps in statutory_gaps.items():
+        window = ", ".join(f"{y}: {g.value:g}" for y, g in sorted(gaps.items()))
+        print(f"- forecast gap {key}: {window}")
 
     if args.dry_run:
         return 0
@@ -485,6 +750,14 @@ def main(argv: list[str] | None = None) -> int:
         forecast_years=args.forecast_years,
     )
     print(f"Updated {target_yaml_path}")
+
+    if not args.skip_statutory_gaps and args.output is None:
+        for spec in STATUTORY_GAP_SPECS:
+            gap_path = get_forecast_gap_dir() / f"{spec.key}.yaml"
+            update_forecast_gap_yaml(
+                gap_path, spec, statutory_gaps[spec.key], month, year
+            )
+            print(f"Updated {gap_path}")
     return 0
 
 
