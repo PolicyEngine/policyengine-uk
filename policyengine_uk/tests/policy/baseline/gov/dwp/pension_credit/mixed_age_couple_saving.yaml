@@ -1,0 +1,162 @@
+- name: Unprotected mixed-age couple is excluded from Pension Credit.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_protected_mixed_age_couple_for_pension_credit: false
+  output:
+    # SPCA 2002 s.4(1A): the partner (60) is below the qualifying age (66).
+    is_pension_credit_eligible: false
+    pension_credit: 0
+
+- name: Protected mixed-age couple with no income gets the couple guarantee.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_protected_mixed_age_couple_for_pension_credit: true
+  output:
+    # SI 2019/37 art. 4(1) disapplies s.4(1A). SPC Regs reg 6(1)(a) couple rate
+    # £363.25/week x 52 = £18,889; income nil, so guarantee credit = £18,889.
+    is_pension_credit_eligible: true
+    standard_minimum_guarantee: 18_889
+    guarantee_credit: 18_889
+    pension_credit: 18_889
+
+- name: The saving cannot make a couple with no pension-age member eligible.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 60
+      partner:
+        age: 55
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_protected_mixed_age_couple_for_pension_credit: true
+  output:
+    # SPCA 2002 s.1(2)(b): the claimant must have attained the qualifying age;
+    # art. 4 only disapplies s.4(1A).
+    is_pension_credit_eligible: false
+    pension_credit: 0
+
+- name: The saving is redundant once both partners have reached the qualifying age.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 68
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_protected_mixed_age_couple_for_pension_credit: false
+  output:
+    # Not a mixed-age couple (SI 2019/37 art. 2(2)(a)), so s.4(1A) does not bite.
+    is_pension_credit_eligible: true
+    pension_credit: 18_889
+
+- name: A single pensioner is unaffected by the input.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant]
+        is_protected_mixed_age_couple_for_pension_credit: true
+  output:
+    # SPC Regs reg 6(1)(b) single rate £238/week x 52 = £12,376.
+    is_pension_credit_eligible: true
+    pension_credit: 12_376
+
+- name: Protected mixed-age couple gets savings credit through the older partner.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 80
+        private_pension_income: 12_000
+      partner:
+        age: 60
+        private_pension_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_protected_mixed_age_couple_for_pension_credit: true
+  output:
+    # Income £18,000 (both under the personal allowance, so no tax deducted).
+    # Guarantee credit: 18,889 - 18,000 = 889.
+    # SPCA 2002 s.3(1)(a): claimant (80) reached pensionable age before 6 April 2016.
+    # Savings credit threshold £329.75 x 52 = £17,147.
+    # Amount A = min(0.6 x (18,889 - 17,147) = 1,045.20, 0.6 x (18,000 - 17,147) = 511.80) = 511.80.
+    # Amount B = 0.4 x max(0, 18,000 - 18,889) = 0. Savings credit = 511.80.
+    is_pension_credit_eligible: true
+    guarantee_credit: 889
+    savings_credit: 511.8
+    pension_credit: 1_400.8
+
+- name: The same income without the saving pays no Pension Credit.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 80
+        private_pension_income: 12_000
+      partner:
+        age: 60
+        private_pension_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # Default false: s.4(1A) excludes the couple.
+    is_pension_credit_eligible: false
+    pension_credit: 0
+
+- name: Before s.4(1A) commenced, an unprotected mixed-age couple could claim.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # SI 2019/37 art. 3: s.4(1A) in force from 15 May 2019. 2018-19 couple rate
+    # £248.80/week (reg 6(1)(a) from 9 April 2018) x 52 = £12,937.60.
+    is_pension_credit_eligible: true
+    standard_minimum_guarantee: 12_937.6
+
+- name: In 2020-21 the exclusion applies to an unprotected mixed-age couple.
+  period: 2020
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    is_pension_credit_eligible: false
