@@ -78,7 +78,7 @@
     is_qualifying_young_person_for_child_benefit: [true, false, false, true]
     is_qualifying_young_person_for_pension_credit: [true, false, false, true]
 
-- name: Universal Credit qualifying young person aged 19 requires being before terminal date
+- name: Universal Credit and Pension Credit qualifying young people aged 19 require being before the terminal date
   period: 2024
   absolute_error_margin: 0
   input:
@@ -107,7 +107,8 @@
     is_qualifying_young_person_for_universal_credit: [true, false, true]
     is_qualifying_young_person_for_child_tax_credit: [true, true, true]
     is_qualifying_young_person_for_child_benefit: [true, true, true]
-    is_qualifying_young_person_for_pension_credit: [true, true, true]
+    # SPC Regs reg 4A(1)(b) has the same 1 September terminal date as UC reg 5(1)(b).
+    is_qualifying_young_person_for_pension_credit: [true, false, true]
 
 - name: Universal Credit qualifying young person excludes people receiving adult benefits in own right
   period: 2024

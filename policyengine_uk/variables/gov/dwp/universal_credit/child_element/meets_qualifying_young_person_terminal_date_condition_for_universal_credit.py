@@ -8,12 +8,12 @@ class meets_qualifying_young_person_terminal_date_condition_for_universal_credit
     entity = Person
     label = "Meets qualifying young person terminal date condition for Universal Credit"
     definition_period = YEAR
-    reference = "https://www.gov.uk/government/publications/universal-credit-and-families-with-more-than-2-children-information-for-stakeholders/universal-credit-and-families-with-more-than-2-children-information-for-stakeholders"
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/5"
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.elements.child.eligibility
         age = person("age", period)
         return (age < p.terminal_date_age_limit) | person(
-            "is_before_universal_credit_qualifying_young_person_terminal_date",
+            "is_before_first_september_after_19th_birthday",
             period,
         )

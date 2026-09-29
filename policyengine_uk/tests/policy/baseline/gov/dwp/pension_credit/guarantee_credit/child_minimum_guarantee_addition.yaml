@@ -30,6 +30,7 @@
         age: 19
         is_in_non_advanced_education: true
         age_started_or_accepted_current_education_or_training: 18
+        is_before_first_september_after_19th_birthday: true
       child:
         age: 6
         birth_year: 2020

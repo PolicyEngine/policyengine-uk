@@ -1,0 +1,195 @@
+# SPC Regs 2002 reg 4A (inserted 28.7.2016 by SI 2016/624 reg 4(5); unamended).
+- name: Reg 4A(1)(a) counts a 16-year-old before the 1 September after their 16th birthday without education
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      in_window_not_in_education:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_before_first_september_after_16th_birthday: true
+      past_window_not_in_education:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+      past_window_in_education:
+        age: 16
+        current_education: UPPER_SECONDARY
+      in_window_on_own_benefits:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_before_first_september_after_16th_birthday: true
+        receives_benefits_in_own_right: true
+    benunits:
+      benunit:
+        members:
+          [
+            in_window_not_in_education,
+            past_window_not_in_education,
+            past_window_in_education,
+            in_window_on_own_benefits,
+          ]
+  output:
+    # (a) needs no education; (b) covers the one in education; 4A(5) bars
+    # someone on UC, ESA, JSA or IS.
+    is_qualifying_young_person_for_pension_credit: [true, false, true, false]
+
+- name: Reg 4A(1)(b) ends at the 1 September after the 19th birthday
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      nineteen_before_terminal_date:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+        is_before_first_september_after_19th_birthday: true
+      nineteen_after_terminal_date:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+      nineteen_started_at_nineteen:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 19
+        is_before_first_september_after_19th_birthday: true
+      eighteen_in_education:
+        age: 18
+        current_education: UPPER_SECONDARY
+      twenty:
+        age: 20
+        current_education: UPPER_SECONDARY
+        is_before_first_september_after_19th_birthday: true
+    benunits:
+      benunit:
+        members:
+          [
+            nineteen_before_terminal_date,
+            nineteen_after_terminal_date,
+            nineteen_started_at_nineteen,
+            eighteen_in_education,
+            twenty,
+          ]
+  output:
+    # Before 19 the terminal date is always ahead; 4A(2) needs a 19-year-old's
+    # course begun before 19; 4A(1) stops at 20.
+    meets_qualifying_young_person_terminal_date_condition_for_pension_credit:
+      [true, false, true, true, true]
+    is_qualifying_young_person_for_pension_credit: [true, false, false, true, false]
+
+- name: The Universal Credit-named terminal date input still reaches Pension Credit
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 19
+    current_education: UPPER_SECONDARY
+    age_started_or_accepted_current_education_or_training: 18
+    is_before_universal_credit_qualifying_young_person_terminal_date: true
+  output:
+    is_before_first_september_after_19th_birthday: true
+    is_qualifying_young_person_for_pension_credit: true
+
+- name: 2026 single pensioner with a 19-year-old before the terminal date gets the first-child amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+      young_person:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+        is_before_first_september_after_19th_birthday: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # Sch IIA para 10: eldest QYP born before 6 April 2017, 81.07 a week.
+    # 81.07 * 52 = 4,215.64; (238.00 + 81.07) * 52 = 16,591.64.
+    child_minimum_guarantee_addition: 4_215.64
+    minimum_guarantee: 16_591.64
+
+- name: 2026 single pensioner with a 19-year-old past the terminal date gets no child addition
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+      young_person:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # Reg 4A(1)(b) no longer applies: 238.00 * 52 = 12,376.
+    child_minimum_guarantee_addition: 0
+    minimum_guarantee: 12_376
+
+- name: 2026 a 19-year-old past the terminal date no longer takes the first-child amount from a younger child
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+        is_parent: true
+      young_person:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+      child:
+        age: 6
+        birth_year: 2020
+    benunits:
+      benunit:
+        members: [claimant, young_person, child]
+  output:
+    # The eldest child counted is now born in 2020, after 5 April 2017, so
+    # para 10 does not apply: 69.98 * 52 = 3,638.96;
+    # (238.00 + 69.98) * 52 = 16,014.96.
+    child_minimum_guarantee_addition: 3_638.96
+    minimum_guarantee: 16_014.96
+
+- name: 2026 single pensioner with a 16-year-old school leaver before the 1 September after their 16th birthday
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_before_first_september_after_16th_birthday: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # Reg 4A(1)(a); born 2010, before 6 April 2017, so para 10's 81.07:
+    # 81.07 * 52 = 4,215.64; (238.00 + 81.07) * 52 = 16,591.64.
+    child_minimum_guarantee_addition: 4_215.64
+    minimum_guarantee: 16_591.64
+
+- name: 2026 single pensioner with a 16-year-old not in education after that 1 September
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    child_minimum_guarantee_addition: 0
+    minimum_guarantee: 12_376

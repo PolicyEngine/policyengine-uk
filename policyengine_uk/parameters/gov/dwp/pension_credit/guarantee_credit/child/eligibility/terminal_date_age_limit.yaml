@@ -1,0 +1,9 @@
+description: Age from which a Pension Credit qualifying young person in education or training counts only before the 1 September following their 19th birthday.
+values:
+  0001-01-01: 19
+metadata:
+  unit: year
+  label: Pension Credit qualifying young person terminal date age limit
+  reference:
+    - title: The State Pension Credit Regulations 2002 reg. 4A(1)(b)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A

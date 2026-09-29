@@ -6,7 +6,7 @@ class meets_qualifying_young_person_entry_condition_for_pension_credit(Variable)
     entity = Person
     label = "Meets qualifying young person entry condition for Pension Credit"
     definition_period = YEAR
-    reference = "https://www.gov.uk/government/publications/pension-credit-technical-guidance/a-detailed-guide-to-pension-credit-for-advisers-and-others"
+    reference = "https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A"
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.pension_credit.guarantee_credit.child.eligibility
