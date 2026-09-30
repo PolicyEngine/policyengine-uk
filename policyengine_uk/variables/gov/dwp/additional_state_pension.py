@@ -19,7 +19,14 @@ class additional_state_pension(Variable):
         else:
             data_year = period.start.year
         reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
-        pension_type = person("state_pension_type", data_year)
+        # Split by the period's type, as basic_state_pension and
+        # new_state_pension do, so the three components add up to the
+        # reported amount. Survey ages are held fixed across years, so a
+        # record's birth cohort, and with it its type, can differ from the
+        # data year's. The data year's type would pay the band between the
+        # two flat-rate ceilings twice for a record that is BASIC in the data
+        # year and NEW in the period, and leave it unpaid the other way round.
+        pension_type = person("state_pension_type", period)
         types = pension_type.possible_values
 
         bsp_amount = parameters.gov.dwp.state_pension.basic_state_pension.amount
@@ -51,7 +58,5 @@ class additional_state_pension(Variable):
             max_for_type_period / max_for_type_data,
             1,
         )
-        # No State Pension is paid before State Pension age; the data-year
-        # type above only splits the reported amount into its components.
-        is_sp_age = person("is_SP_age", period)
-        return is_sp_age * amount_in_data_year * uprating * WEEKS_IN_YEAR
+        # The type is NONE below State Pension age, so nothing is paid there.
+        return amount_in_data_year * uprating * WEEKS_IN_YEAR
