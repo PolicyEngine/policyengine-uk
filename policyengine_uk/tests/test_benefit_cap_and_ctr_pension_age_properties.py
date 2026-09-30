@@ -3,9 +3,11 @@ member over State Pension age.
 
 The law:
 
-- The Universal Credit benefit cap has no age exception (UC Regs 2013 regs
-  79, 82 and 83). A mixed-age couple can claim Universal Credit jointly (reg
-  3(2)(a)), and the cap applies to that award.
+- The Universal Credit benefit cap turns on earnings and benefit receipt, not
+  age (UC Regs 2013 regs 79, 82 and 83). A mixed-age couple can claim
+  Universal Credit jointly (reg 3(2)(a)), and the cap applies to that award.
+  The one age-based exception, SI 2014/1230 reg 60C, covers only claims where
+  every claimant has reached the qualifying age for State Pension Credit.
 - The Housing Benefit cap (HB Regs 2006 Part 8A) reaches only Housing Benefit
   under the working-age regulations. By reg 5 those cover a claimant or
   partner over the qualifying age for State Pension Credit only while either

@@ -1,7 +1,9 @@
 # The benefit cap and State Pension age.
 #
-# The Universal Credit cap (UC Regs 2013 regs 79, 82 and 83) has no age
-# exception, so it applies to a mixed-age couple's joint award (reg 3(2)(a)).
+# The Universal Credit cap (UC Regs 2013 regs 79, 82 and 83) turns on earnings
+# and benefit receipt, not age, so it applies to a mixed-age couple's joint
+# award (reg 3(2)(a)). The one age-based exception, SI 2014/1230 reg 60C,
+# covers only claims where every claimant has reached the qualifying age.
 # The Housing Benefit cap (HB Regs 2006 Part 8A) reaches only Housing Benefit
 # under the working-age regulations, which by reg 5 cover a claimant or partner
 # over the qualifying age for State Pension Credit only while either of them
@@ -108,7 +110,8 @@
 - name: A mixed-age couple on income-based JSA has working-age Housing Benefit, which is capped
   # HB Regs 2006 reg 5(1)(b): the working-age regulations, and so Part 8A,
   # apply to a claimant over the qualifying age whose partner is on
-  # income-based JSA. Income-based JSA ended on 31 March 2026, so 2025-26.
+  # income-based JSA. The model stops paying income-based JSA from April 2026
+  # (gov.dwp.JSA.income.active), so this case is in 2025-26.
   period: 2025
   absolute_error_margin: 0.01
   input:

@@ -31,10 +31,12 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         over_qualifying_age = person("is_SP_age", period)
         attained_qualifying_age = benunit.any(claimant_or_partner & over_qualifying_age)
         # Universal Credit needs a claimant or partner under the qualifying age
-        # (WRA 2012 s.4(1)(b); UC Regs 2013 reg 3(2)(a)). is_uc_eligible counts
-        # any working-age adult, so the model can pay Universal Credit to a
-        # pensioner whose only younger adult is a qualifying young person;
-        # that award does not take the family out of the pension-age rules.
+        # (WRA 2012 s.4(1)(b); UC Regs 2013 reg 3(2)(a)), except for tax credit
+        # migrants (SI 2014/1230 reg 60A), whose award is exempt from the cap
+        # (reg 60C). is_uc_eligible counts any working-age adult, so the model
+        # can pay Universal Credit to a pensioner whose only younger adult is
+        # a qualifying young person; that award does not take the family out
+        # of the pension-age rules.
         # The award is read before the benefit cap, which depends on this
         # variable.
         working_age_claimant = benunit.any(claimant_or_partner & ~over_qualifying_age)

@@ -70,7 +70,8 @@
     council_tax_benefit: 2_000
 
 - name: An English mixed-age couple on income-based JSA is not a pensioner couple
-  # Income-based JSA ended on 31 March 2026, so 2025-26.
+  # The model stops paying income-based JSA from April 2026
+  # (gov.dwp.JSA.income.active), so this case is in 2025-26.
   period: 2025
   absolute_error_margin: 0.01
   input:
