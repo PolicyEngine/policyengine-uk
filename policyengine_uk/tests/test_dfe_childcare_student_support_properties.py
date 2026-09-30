@@ -24,8 +24,10 @@ Invariants:
    condition through uc_limited_capability_for_WRA's default
    (is_disabled_for_benefits), which these families leave false.
 3. Tax-Free Childcare work condition (SI 2015/448 reg 13). Each applicant or
-   partner is in work, or receives a reg 13(1)(b) benefit and has a partner in
-   work who receives none (reg 13(3)). DLA, PIP and income-related ESA never
+   partner is in work, or receives a reg 13(1)(b) benefit or is on carer's
+   leave (13(1)(c)) and has a partner in work who receives no (1)(b) benefit
+   (reg 13(3)). In extended childcare, the Universal Credit carer element
+   counts only for the carer on an award that includes it (reg 11A(1)(c)). DLA, PIP and income-related ESA never
    matter. Reg 13(2)(b) deems the minimum income for anyone regarded as in
    paid work.
 4. Maintenance loan household income (SI 2011/1986 Sch 4 para 2(1)(a)). A
@@ -196,14 +198,18 @@ extended_adult = st.fixed_dictionaries(
     {
         "age": st.integers(20, 60),
         "earnings": st.sampled_from([0, 8_316, 8_320, 20_000, 100_000, 100_001]),
-        "status": st.sampled_from([None, *STATUS_INPUTS]),
+        "status": st.sampled_from([None, "carer", *STATUS_INPUTS]),
         "pip": st.sampled_from([0, 5_000]),
     }
 )
+# (universal_credit, uc_carer_element) for the benefit unit. Reg 11A(1)(c): the
+# carer element of a Universal Credit award, which belongs to the carer.
+UC_AWARDS = [(0, 0), (3_000, 0), (3_000, 2_400), (0, 2_400)]
 extended_child = st.tuples(st.sampled_from([0.5, 0.75, 1, 2, 3, 4, 6]), st.booleans())
 extended_family = st.tuples(
     st.lists(extended_adult, min_size=1, max_size=2),
     st.lists(extended_child, min_size=0, max_size=2),
+    st.sampled_from(UC_AWARDS),
 )
 YOUNG_CHILD_MINIMUM_AGE = {2023: 3, 2024: 2, 2025: 0.75, 2026: 0.75}
 
@@ -222,47 +228,53 @@ def meets_work_and_income(adult):
 )
 def test_extended_childcare_eligibility_matches_regs_13_to_15(year, families):
     built = []
-    for adults, children in families:
+    for adults, children, (uc, carer_element) in families:
         people = []
         for adult in adults:
             inputs = {
                 "age": adult["age"],
                 "is_parent": bool(children),
+                "is_carer_for_benefits": adult["status"] == "carer",
                 "employment_income": adult["earnings"],
                 "adjusted_net_income": adult["earnings"],
                 "minimum_wage": MINIMUM_WAGE,
                 "pip": adult["pip"],
             }
-            if adult["status"]:
+            if adult["status"] in STATUS_INPUTS:
                 inputs[adult["status"]] = STATUS_INPUTS[adult["status"]]
             people.append(inputs)
         for age, looked_after in children:
             people.append(
                 {"age": age, "is_looked_after_by_local_authority": looked_after}
             )
-        built.append((people, {}, {"country": "ENGLAND"}))
+        benunit = {"universal_credit": uc, "uc_carer_element": carer_element}
+        built.append((people, benunit, {"country": "ENGLAND"}))
     sim, _ = simulate(built, year)
     eligible = sim.calculate("extended_childcare_entitlement_eligible", year)
 
     minimum_age = YOUNG_CHILD_MINIMUM_AGE[year]
-    for (adults, children), result in zip(families, eligible):
+    for (adults, children, (uc, carer_element)), result in zip(families, eligible):
         has_young_child = any(
             minimum_age <= age < 5 and not looked_after
             for age, looked_after in children
         )
         meets = [meets_work_and_income(a) for a in adults]
+        status = [
+            a["status"] in STATUS_INPUTS
+            or (a["status"] == "carer" and uc > 0 and carer_element > 0)
+            for a in adults
+        ]
         ok = [
             meets[k]
-            or (
-                adults[k]["status"] is not None
-                and any(meets[m] for m in range(len(adults)) if m != k)
-            )
+            or (status[k] and any(meets[m] for m in range(len(adults)) if m != k))
             for k in range(len(adults))
         ]
         assert bool(result) == (has_young_child and all(ok)), (
             year,
             adults,
             children,
+            uc,
+            carer_element,
         )
 
 
@@ -283,6 +295,7 @@ tfc_adult = st.fixed_dictionaries(
         "in_work": st.booleans(),
         "benefit": st.sampled_from([None, *REG_13_BENEFITS]),
         "other": st.sampled_from([None, *NOT_REG_13]),
+        "carers_leave": st.booleans(),
     }
 )
 tfc_family = st.tuples(st.lists(tfc_adult, min_size=1, max_size=2), st.booleans())
@@ -298,6 +311,7 @@ def test_tax_free_childcare_work_condition_matches_reg_13(families):
             inputs = {
                 "age": 35,
                 "in_work": adult["in_work"],
+                "tax_free_childcare_on_carers_leave": adult["carers_leave"],
                 "adjusted_net_income": 20_000,
                 "minimum_wage": MINIMUM_WAGE,
             }
@@ -330,8 +344,10 @@ def test_tax_free_childcare_work_condition_matches_reg_13(families):
         families, work, regarded, meets_income
     ):
         has_benefit = [a["benefit"] is not None for a in adults]
+        # Reg 13(1)(c): carer's leave counts from 6 April 2024 (so in 2025), but
+        # reg 13(3) excludes only a partner with a (1)(b) benefit.
         reference_regarded = [
-            has_benefit[k]
+            (has_benefit[k] or adults[k]["carers_leave"])
             and any(
                 adults[m]["in_work"] and not has_benefit[m]
                 for m in range(len(adults))

@@ -26,7 +26,7 @@ values:
     - uc_limited_capability_for_WRA  # 14(4)(b)(i)-(ii): limited capability for work, or for work and work-related activity
     - carers_allowance  # 11A(1)(a): carer's allowance
     - carer_support_payment  # 11A(1)(b): carer's assistance under the Social Security (Scotland) Act 2018 s.28
-    - receives_uc_carer_element  # 11A(1)(c): the Universal Credit carer element (an award including it; reg 14(5)(a) as made)
+    - receives_uc_carer_element  # 11A(1)(c): the carer element under UC Regs reg 29, on an award (reg 14(5)(a) as made: "an award of universal credit [...] that includes the carer element")
     - receives_limited_capability_for_work_credits  # 11A(1)(d): credits for incapacity for work or limited capability for work
     - esa_contrib  # 11A(1)(e): employment and support allowance (contribution-based)
     - esa_income  # 11A(1)(e): employment and support allowance (income-related)
