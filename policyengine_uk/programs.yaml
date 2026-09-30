@@ -222,7 +222,7 @@ programs:
     full_name: Housing Benefit
     category: Benefits
     agency: DWP
-    status: complete
+    status: partial
     coverage: UK
     variable: housing_benefit
     parameter_prefix: gov.dwp.housing_benefit

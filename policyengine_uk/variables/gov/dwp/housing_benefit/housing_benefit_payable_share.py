@@ -25,6 +25,8 @@ class housing_benefit_payable_share(Variable):
     def formula(benunit, period, parameters):
         payable = parameters(period).gov.dwp.housing_benefit.working_age_awards_payable
         country = benunit.household("country", period)
+        # Great Britain's date applies everywhere but Northern Ireland,
+        # including an unknown country.
         working_age_share = where(
             country == country.possible_values.NORTHERN_IRELAND,
             payable.northern_ireland,
