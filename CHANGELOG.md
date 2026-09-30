@@ -1,3 +1,31 @@
+## [2.102.4] - 2026-09-30
+
+### Changed
+
+- - Require policyengine-core 3.32.9 or later, which sends `HUGGING_FACE_TOKEN` to public but gated Hugging Face repos such as policyengine-uk-data-private, and stop exporting `HF_TOKEN` in CI, the workaround that release makes unnecessary.
+
+
+## [2.102.3] - 2026-09-28
+
+### Changed
+
+- - Rebase the absolute poverty line to HBAI's FYE 2025 reference year from FYE 2022 onward, as DWP has reported it since March 2026: 431.69 BHC / 373.89 AHC a week at FYE 2025. On the enhanced FRS in 2026-27, absolute poverty rises by about 4 points overall and about 7 points for children after housing costs.
+
+
+## [2.102.2] - 2026-09-27
+
+### Fixed
+
+- - Fixed Class 4 National Insurance deducting employee Class 1 contributions from trading profits; Class 4 is now charged on the full profits, as SSCBA 1992 Schedule 2 requires, with the regulation 100 annual maximum still limiting combined liability.
+
+
+## [2.102.1] - 2026-09-27
+
+### Fixed
+
+- - Fixed Class 4 National Insurance dropping the additional-rate band above the Upper Profits Limit when uprated thresholds are not round numbers. The regulation 100 annual maximum no longer leaves its Case 1 choice to float32 rounding. It applies only when primary Class 1 contributions (or, before 6 April 2024, Class 2 contributions) are also payable, and it ignores Class 2 from 6 April 2024 as SI 2024/377 requires. It also no longer returns NaN when a reform sets the main Class 4 rate to zero.
+
+
 ## [2.102.0] - 2026-09-25
 
 ### Added

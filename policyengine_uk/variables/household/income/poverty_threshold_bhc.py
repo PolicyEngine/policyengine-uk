@@ -5,7 +5,8 @@ class poverty_threshold_bhc(Variable):
     label = "Poverty threshold (BHC)"
     documentation = (
         "The absolute poverty line before housing costs for a couple with no "
-        "children, per year: 60% of the 2010/11 median uprated by CPI. "
+        "children, per year: 60% of the FYE 2025 median (FYE 2011 before "
+        "FYE 2022), held constant in real terms. "
         "Compare against equivalised income; poverty_line_bhc is the same "
         "line scaled to the household's equivalisation factor."
     )
