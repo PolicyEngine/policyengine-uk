@@ -263,6 +263,18 @@ def test_status_matches_statute_for_every_birth_date(year):
     assert not mismatches, mismatches[:10]
 
 
+@pytest.mark.parametrize("year", YEARS)
+def test_attainment_date_matches_statute_for_every_birth_date(year):
+    """state_pension_age_date is the day a day-level reading of the statute
+    gives, for every birth date in the differential set, and the same day
+    whichever year the person is placed from."""
+    sim, keys = differential_simulation()
+    model = sim.calculate("state_pension_age_date", year)
+    expected = np.array([ymd(reference_attainment_day(b, m)) for b, m in keys])
+    wrong = np.flatnonzero(model != expected)
+    assert not len(wrong), [(keys[i], model[i], expected[i]) for i in wrong[:10]]
+
+
 def mid_year_share(year: int, age: int, male: bool) -> float:
     """Share of people aged `age` on 6 October who have attained pensionable
     age by then, with birthdays spread evenly over the year."""
