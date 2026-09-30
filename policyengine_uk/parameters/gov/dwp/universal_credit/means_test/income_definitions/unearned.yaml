@@ -8,6 +8,10 @@ metadata:
   reference:
     - title: The Universal Credit Regulations 2013 reg. 66
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 67 (retirement pension income)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/67
+    - title: State Pension Credit Act 2002 s. 16(1)(za), (a) (State Pension counts as retirement pension income)
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/16
     - title: The Universal Credit Regulations 2013 reg. 72
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/72
 
@@ -17,6 +21,7 @@ values:
   - carers_allowance
   - jsa_contrib
   - private_pension_income
+  - state_pension
   - uc_tariff_income
   - savings_interest_income
   - dividend_income
