@@ -526,6 +526,9 @@
         savings: 16_000
   output:
     # The limit excludes capital that "exceeds" 16,000 (SI 2012/2885 reg 11(2)).
+    # The award pins the model's current value: it has no pensioner tariff
+    # income from capital (Sch 1 para 37, 624 a year here), a known gap
+    # (#1933), so this is not the full legal amount.
     in_receipt_of_guarantee_credit: false
     council_tax_reduction_assessable_capital: 16_000
     council_tax_reduction: 2_000
@@ -576,7 +579,9 @@
         council_tax: 2_000
         savings: 16_000
   output:
-    # 2,000 - 0.2 x (14,247.02 - 13,312); SSI 2012/319 reg 25(4) excludes only more than 16,000.
+    # 2,000 - 0.2 x (14,247.02 - 13,312). The Secretary of State's capital is
+    # tested against the limit, which excludes only capital that exceeds
+    # 16,000 (SI 2012/2885 Sch 1 para 14(1) and reg 11(2)).
     in_receipt_of_savings_credit_only: true
     savings_credit: 309.02
     council_tax_reduction_assessable_capital: 16_000
