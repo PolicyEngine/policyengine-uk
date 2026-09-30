@@ -1,3 +1,17 @@
+## [2.102.5] - 2026-09-30
+
+### Fixed
+
+- Let families in which every adult is over State Pension age make new Housing Benefit claims, as SI 2014/1230 reg 6A(4) allows. They no longer need a reported claim, and `would_claim_uc` no longer blocks them because Universal Credit is not available to them. Household calculations previously paid pension-age renters no Housing Benefit, and pension-age families in the Enhanced FRS who report Housing Benefit lost it whenever they drew `would_claim_uc`. Working-age and mixed-age families keep the existing continuing-award rule.
+
+
+## [2.102.4] - 2026-09-30
+
+### Changed
+
+- - Require policyengine-core 3.32.9 or later, which sends `HUGGING_FACE_TOKEN` to public but gated Hugging Face repos such as policyengine-uk-data-private, and stop exporting `HF_TOKEN` in CI, the workaround that release makes unnecessary.
+
+
 ## [2.102.3] - 2026-09-28
 
 ### Changed
