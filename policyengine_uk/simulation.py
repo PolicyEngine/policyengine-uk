@@ -117,7 +117,7 @@ class Simulation(CoreSimulation):
             ]
         ] = None,
         trace: bool = False,
-        reform: Dict | Type[Reform] = None,
+        reform: Dict | Type[Reform] | Reform | tuple = None,
     ):
         """Initialize a UK simulation.
 
@@ -126,6 +126,9 @@ class Simulation(CoreSimulation):
             situation: A dictionary describing the situation to simulate
             dataset: Data source - can be DataFrame, URL string, or Dataset object
             trace: Whether to enable detailed tracing of calculations
+            reform: A parameter-change dict, a structural Reform class or
+                instance, or a tuple of these applied in order (see
+                Scenario.from_reform)
         """
         # Initialize tax-benefit rules
         self.tax_benefit_system = CountryTaxBenefitSystem()

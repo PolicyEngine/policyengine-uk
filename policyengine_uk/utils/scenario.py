@@ -6,6 +6,25 @@ from policyengine_core.periods import period, instant
 from policyengine_uk.utils.parameters import uk_fiscal_year_period
 
 
+def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
+    """Apply a structural ``Reform`` class to a simulation's own system.
+
+    policyengine-core's ``Reform.__init__`` takes a baseline system and
+    builds a separate reformed system, so a simulation instead runs the
+    class's ``apply`` on its own tax-benefit system, as
+    ``Simulation.apply_reform`` does. Before data load there are no
+    populations or cached values, so only the system changes; afterwards
+    ``Simulation.apply_reform`` also discards cached formula output.
+    """
+    if getattr(simulation, "populations", None) is None:
+        reform.apply(simulation.tax_benefit_system)
+    else:
+        simulation.apply_reform(reform)
+    # Adding or replacing parameter nodes does not clear the per-node
+    # at-instant caches the way ``Parameter.update`` does.
+    simulation.tax_benefit_system.reset_parameter_caches()
+
+
 class Scenario(BaseModel):
     """Represents a scenario configuration for policy simulations.
 
@@ -86,14 +105,20 @@ class Scenario(BaseModel):
         )
 
     @classmethod
-    def from_reform(cls, reform: Union[tuple, dict, Type[Reform]]) -> "Scenario":
+    def from_reform(
+        cls, reform: Union[tuple, dict, Type[Reform], Reform]
+    ) -> "Scenario":
         """Create a Scenario from various reform representations.
 
         Args:
             reform: Can be:
-                - A Reform class type (will be applied via simulation modifier)
+                - A Reform class, including one built by ``Reform.from_dict``
+                  or ``set_parameter``, applied to the simulation's own
+                  tax-benefit system as ``Simulation.apply_reform`` does
+                - A Reform instance, applied through its class
                 - A dict of parameter changes
-                - A tuple (treated as a Reform for backward compatibility)
+                - A tuple of any of these (nested tuples allowed), applied
+                  in order, as ``Simulation.apply_reform`` treats tuples
 
         Returns:
             A new Scenario configured with the reform
@@ -101,11 +126,14 @@ class Scenario(BaseModel):
         Raises:
             ValueError: If reform type is not supported
         """
+        if isinstance(reform, Reform):
+            reform = type(reform)
+
         if isinstance(reform, type) and issubclass(reform, Reform):
-            # Reform class - create modifier function
+            reform_class = reform
+
             def modifier(simulation: Simulation) -> None:
-                reform_instance = reform()
-                reform_instance.apply(simulation.tax_benefit_system)
+                _apply_reform_class(reform_class, simulation)
 
             return cls(
                 simulation_modifier=modifier,
@@ -155,30 +183,18 @@ class Scenario(BaseModel):
             )
 
         elif isinstance(reform, tuple):
-            # Tuple format (legacy support) - treat as a Reform class
-            # Assuming the tuple contains (reform_class, *args)
-            if (
-                len(reform) > 0
-                and isinstance(reform[0], type)
-                and issubclass(reform[0], Reform)
-            ):
-                reform_class = reform[0]
-                reform_args = reform[1:] if len(reform) > 1 else ()
-
-                def modifier(simulation: Simulation) -> None:
-                    reform_instance = reform_class(*reform_args)
-                    reform_instance.apply(simulation.tax_benefit_system)
-
-                return cls(
-                    simulation_modifier=modifier,
-                )
-            else:
-                raise ValueError(f"Invalid tuple format for reform: {reform}")
+            # A tuple is a sequence of reforms applied in order, matching
+            # policyengine-core's Simulation.apply_reform.
+            combined = cls()
+            for subreform in reform:
+                combined = combined + cls.from_reform(subreform)
+            return combined
 
         else:
             raise ValueError(
                 f"Unsupported reform type: {type(reform)}. "
-                "Expected Reform class, dict, or tuple."
+                "Expected a Reform class or instance, a dict, or a tuple "
+                "of these."
             )
 
     def apply(self, simulation: Simulation) -> None:
