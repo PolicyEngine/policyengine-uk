@@ -269,8 +269,9 @@
     carer_support_payment: 3_000
   output:
     # Reg. 66(1)(b)(iiia) starts on 19 November 2023, part-way through
-    # 2023-24. The yearly model takes the list in force at the start of the
-    # fiscal year, so Carer Support Payment first counts in 2024-25.
+    # 2023-24. The yearly model takes each parameter's value on 30 April of
+    # the fiscal year (convert_to_fiscal_year_parameters), so Carer Support
+    # Payment first counts in 2024-25.
     uc_unearned_carer_support_payment: 3_000
     uc_unearned_income: 0
 
