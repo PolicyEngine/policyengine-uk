@@ -1,0 +1,322 @@
+# Carers' benefits in Pension Credit income.
+# SPC Regs 2002 reg 15(1) prescribes "all social security benefits" as income
+# except those it lists. Carer's Allowance and Carer Support Payment are not
+# listed. Reg 15(1)(ri) excepts the Scottish Carer Supplement (SI 2026/246
+# art 17(3), from 15 March 2026), and reg 9 does not exclude either benefit
+# from Savings Credit qualifying income.
+# The carers here have no State Pension, so no overlapping-benefit adjustment
+# (reg 15(4)(a)) applies to their Carer's Allowance or Carer Support Payment.
+# 2026 rates: CA and CSP 86.45, Scottish Carer Supplement 11.70, standard
+# minimum guarantee 238.00 single and 363.25 couple, carer addition 48.15.
+
+- name: Carer's Allowance counts as Pension Credit income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    carers_allowance: 86.45 * 52
+    # 7,000 + 4,495.40 is below the personal allowance, so no income tax.
+    pension_credit_income: 7_000 + 86.45 * 52
+    minimum_guarantee: (238 + 48.15) * 52
+    guarantee_credit: (238 + 48.15 - 86.45) * 52 - 7_000
+
+- name: A reported Carer's Allowance award counts as Pension Credit income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 7_000
+        carers_allowance_reported: 1
+        care_hours: 0
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    carers_allowance: 86.45 * 52
+    pension_credit_income: 7_000 + 86.45 * 52
+
+- name: Carer Support Payment counts as Pension Credit income, the Scottish Carer Supplement does not
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+  output:
+    carers_allowance: 0
+    carer_support_payment: 86.45 * 52
+    scottish_carer_supplement: 11.70 * 52
+    # The supplement is taxable (ITEPA 2003 s.660 Table A, SI 2026/93), so it
+    # stays in social security income for income tax.
+    social_security_income: (86.45 + 11.70) * 52
+    # 7,000 + 5,103.80 is below the personal allowance, so no income tax.
+    income_tax: 0
+    pension_credit_income: 7_000 + 86.45 * 52
+    guarantee_credit: (238 + 48.15 - 86.45) * 52 - 7_000
+
+- name: Carer Support Payment counts as Pension Credit income before the Scottish Carer Supplement starts
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+  output:
+    carer_support_payment: 83.3 * 52
+    scottish_carer_supplement: 0
+    pension_credit_income: 7_000 + 83.3 * 52
+
+- name: Carer's Allowance counts as Pension Credit income in Scotland before Carer Support Payment
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+  output:
+    carers_allowance: 81.9 * 52
+    carer_support_payment: 0
+    pension_credit_income: 7_000 + 81.9 * 52
+
+- name: Carer's Allowance is Savings Credit qualifying income
+  # Aged 80, so State Pension age was reached before 6 April 2016 and Savings
+  # Credit is available. Income tax is (10,000 + 4,495.40 - 12,570) x 20%.
+  # Leaving out Carer's Allowance, qualifying income was below the 208.07
+  # threshold (SI 2026/148 art 29(3)) and Savings Credit was nil.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 80
+        state_pension: 0
+        private_pension_income: 10_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    income_tax: (10_000 + 86.45 * 52 - 12_570) * 0.2
+    pension_credit_income: 10_000 + 86.45 * 52 - (10_000 + 86.45 * 52 - 12_570) * 0.2
+    savings_credit_income: 10_000 + 86.45 * 52 - (10_000 + 86.45 * 52 - 12_570) * 0.2
+    guarantee_credit: (238 + 48.15) * 52 - (10_000 + 86.45 * 52 - (10_000 + 86.45 * 52 - 12_570) * 0.2)
+    # Qualifying income is above the threshold by more than enough, so Savings
+    # Credit is the maximum, 60% of (standard minimum guarantee - threshold).
+    savings_credit: 0.6 * (238 - 208.07) * 52
+
+- name: Housing Benefit no longer falls where Guarantee Credit used to end for a couple whose partner receives Carer's Allowance
+  # Before this change, Pension Credit left out the partner's Carer's
+  # Allowance, so Guarantee Credit ran on to a private pension of 9,700 and the
+  # Housing Benefit passport ended at 9,800, when HB counted the allowance:
+  # net income fell by 1,779.24. Now Guarantee Credit has ended well before,
+  # and each 100 of private pension adds 100 - 20 tax - 52 HB (65%) - 16 CTR.
+  # The HB earnings disregard is set to 0 so that the numbers do not depend on
+  # it; the couple has no earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant_1:
+        age: 70
+        state_pension: 13_500
+        private_pension_income: 9_700
+      carer_1:
+        age: 70
+        state_pension: 0
+        care_hours: 35
+      claimant_2:
+        age: 70
+        state_pension: 13_500
+        private_pension_income: 9_800
+      carer_2:
+        age: 70
+        state_pension: 0
+        care_hours: 35
+    benunits:
+      benunit_1:
+        members: [claimant_1, carer_1]
+        housing_benefit_applicable_income_disregard: 0
+      benunit_2:
+        members: [claimant_2, carer_2]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household_1:
+        members: [claimant_1, carer_1]
+        country: ENGLAND
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 8_000
+        council_tax: 2_000
+      household_2:
+        members: [claimant_2, carer_2]
+        country: ENGLAND
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 8_000
+        council_tax: 2_000
+  output:
+    # The claimant's tax is 20% of income above the 12,570 personal allowance,
+    # less the 252 marriage allowance transferred by the carer:
+    # 10,630 x 20% - 252 and 10,730 x 20% - 252.
+    income_tax: [1_874, 0, 1_894, 0]
+    # 13,500 + private pension + 4,495.40 Carer's Allowance - income tax.
+    pension_credit_income: [25_821.40, 25_901.40]
+    # (363.25 + 48.15) x 52.
+    minimum_guarantee: [21_392.80, 21_392.80]
+    guarantee_credit: [0, 0]
+    # HB and CTR applicable amount: couple aged allowance 383.35 plus carer
+    # premium 48.15, x 52 = 22,438. HB: 8,000 - 65% x (income - 22,438).
+    housing_benefit: [5_800.79, 5_748.79]
+    # CTR: 2,000 - 20% x (income - 22,438).
+    council_tax_benefit: [1_323.32, 1_307.32]
+
+- name: Net income rises where Guarantee Credit now ends for a couple whose partner receives Carer's Allowance
+  # Guarantee Credit ends at a private pension of about 4,164 (income 21,392.80
+  # = the minimum guarantee). Across 4,100 to 4,200 net income rises by
+  # 100 - 20 tax - 51.40 Guarantee Credit = 28.60: Housing Benefit and Council
+  # Tax Reduction stay at their maximum because their income is below the
+  # applicable amount of 22,438.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant_1:
+        age: 70
+        state_pension: 13_500
+        private_pension_income: 4_100
+      carer_1:
+        age: 70
+        state_pension: 0
+        care_hours: 35
+      claimant_2:
+        age: 70
+        state_pension: 13_500
+        private_pension_income: 4_200
+      carer_2:
+        age: 70
+        state_pension: 0
+        care_hours: 35
+    benunits:
+      benunit_1:
+        members: [claimant_1, carer_1]
+        housing_benefit_applicable_income_disregard: 0
+      benunit_2:
+        members: [claimant_2, carer_2]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household_1:
+        members: [claimant_1, carer_1]
+        country: ENGLAND
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 8_000
+        council_tax: 2_000
+      household_2:
+        members: [claimant_2, carer_2]
+        country: ENGLAND
+        region: NORTH_WEST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 8_000
+        council_tax: 2_000
+  output:
+    # 13,500 + private pension + 4,495.40 - income tax, where income tax is
+    # 5,030 x 20% - 252 = 754 and 5,130 x 20% - 252 = 774.
+    pension_credit_income: [21_341.40, 21_421.40]
+    # 21,392.80 - 21,341.40.
+    guarantee_credit: [51.40, 0]
+    housing_benefit: [8_000, 8_000]
+    council_tax_benefit: [2_000, 2_000]
+
+- name: Pension-age Housing Benefit counts Carer Support Payment but not the Scottish Carer Supplement
+  # HB (SPC) Regs 2006 reg 29(1)(j)(xviiha), inserted by SI 2026/246 art 21(3).
+  # Income is above the minimum guarantee, so no Guarantee Credit passport.
+  # Nobody pays income tax: 12,000 and 6,000 + 5,103.80 are each below the
+  # personal allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 0
+        private_pension_income: 12_000
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 6_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, carer]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [claimant, carer]
+        country: SCOTLAND
+        region: SCOTLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+        council_tax: 1_500
+  output:
+    # 86.45 x 52 and 11.70 x 52.
+    carer_support_payment: [0, 4_495.40]
+    scottish_carer_supplement: [0, 608.40]
+    income_tax: [0, 0]
+    pension_credit_income: 18_000 + 86.45 * 52
+    guarantee_credit: 0
+    housing_benefit_applicable_income: 18_000 + 86.45 * 52
+    housing_benefit: 6_000 - 0.65 * (18_000 + 86.45 * 52 - (383.35 + 48.15) * 52)
