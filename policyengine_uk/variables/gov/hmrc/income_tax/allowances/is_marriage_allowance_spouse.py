@@ -22,6 +22,8 @@ class is_marriage_allowance_spouse(Variable):
         married = status == status.possible_values.MARRIED
         # Without a marital status input, every member of a married benefit
         # unit, children included, is married; the two eldest are the couple.
-        rank = person.get_rank(person.benunit, -person("age", period), condition=married)
+        rank = person.get_rank(
+            person.benunit, -person("age", period), condition=married
+        )
         spouse = married & (rank < 2)
         return spouse & (person.benunit.sum(spouse) == 2)
