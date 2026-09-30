@@ -17,14 +17,12 @@ class is_mixed_age_couple(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        # Every adult in the benefit unit stands in for the claimant and
-        # partner, as in is_pension_credit_eligible and is_uc_eligible, so a
-        # pensioner couple with an 18 or 19 year old dependant also counts.
-        adult = person("is_adult", period)
-        pension_age = person("is_SP_age", period)
-        n_pension_age = benunit.sum(adult & pension_age)
-        return (
-            benunit("is_couple", period)
-            & (n_pension_age > 0)
-            & (n_pension_age < benunit.sum(adult))
+        # The claimant and partner: adults other than a child or qualifying
+        # young person for Pension Credit, so a pensioner with an 18 or 19
+        # year old dependant in education is not a couple here.
+        claimant_or_partner = person("is_adult", period) & ~person(
+            "is_child_or_qualifying_young_person_for_pension_credit", period
         )
+        pension_age = person("is_SP_age", period)
+        n_pension_age = benunit.sum(claimant_or_partner & pension_age)
+        return (benunit.sum(claimant_or_partner) == 2) & (n_pension_age == 1)

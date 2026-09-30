@@ -34,10 +34,10 @@ class housing_benefit_eligible(Variable):
         # SI 2019/37 art. 4 saving (reg 6A(5); NI reg 4A(5)). Before 15 May
         # 2019 mixed-age couples could claim too. These are the Pension
         # Credit age conditions, which also rule out Universal Credit
-        # (is_uc_eligible), so no family on this route receives it. Every
-        # adult in the benefit unit stands in for the claimant and partner,
-        # so a single pensioner with an 18 or 19 year old dependant is routed
-        # to Universal Credit.
+        # (is_uc_eligible), so no family on this route receives it. Outside
+        # mixed-age couples every adult in the benefit unit stands in for the
+        # claimant and partner, so a pensioner with an 18 or 19 year old
+        # dependant is routed to Universal Credit.
         pension_age = benunit("meets_pension_credit_age_conditions", period)
         # Working-age families, and mixed-age couples without the saving
         # (since 15 May 2019), claim Universal Credit instead. They keep an

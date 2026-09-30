@@ -11,8 +11,9 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
         "entitled, as that couple, to Pension Credit or pension-age Housing "
         "Benefit, and has been entitled to one of them ever since. Set it as "
         "an input where it is known. By default it is inferred from current "
-        "receipt: reported Pension Credit, or reported Housing Benefit without "
-        "Income Support, income-based JSA or income-related ESA (which would "
+        "receipt: reported Pension Credit, or Housing Benefit reported by the "
+        "pension-age member without Income Support, income-based JSA or "
+        "income-related ESA (which would "
         "put the couple under the working-age Housing Benefit Regulations), "
         "with no reported Universal Credit, where the older member was born "
         "early enough to have reached the qualifying age by 14 May 2019."
@@ -33,9 +34,19 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
             return add(benunit, period, variables) > 0
 
         # Art. 2(3): only Housing Benefit under the pension-age regulations
-        # (SI 2006/214) carries the saving; a couple on an income-related
-        # legacy benefit is under the working-age regulations (reg 5(2)).
-        pension_age_hb = reported(["housing_benefit_reported"]) & ~reported(
+        # (SI 2006/214) carries the saving. They apply to a claimant who has
+        # reached the qualifying age (reg 5(1)), so only HB reported by the
+        # pension-age member counts, and not where the couple is on an
+        # income-related legacy benefit, which puts it under the working-age
+        # regulations (reg 5(2)).
+        person = benunit.members
+        pension_age_member_hb = (
+            benunit.sum(
+                person("housing_benefit_reported", period) * person("is_SP_age", period)
+            )
+            > 0
+        )
+        pension_age_hb = pension_age_member_hb & ~reported(
             [
                 "income_support_reported",
                 "jsa_income_reported",
@@ -49,7 +60,6 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
         # Art. 4(1) needs the couple to have been a mixed-age couple on
         # 14 May 2019, so its older member had reached the qualifying age by
         # then.
-        person = benunit.members
         older_member_qualified = benunit.any(
             person("is_SP_age", period)
             & (person("birth_year", period) <= p.saving_latest_birth_year)

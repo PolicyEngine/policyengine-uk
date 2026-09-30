@@ -28,8 +28,9 @@ Invariants, for any generated population of families:
    non-increasing in private pension income.
 
 A pensioner with an 18 or 19 year old dependant counts as having a working-age
-adult for Housing Benefit, Pension Credit and Universal Credit alike, so the
-mutual exclusion holds for that shape too.
+adult for Housing Benefit, Pension Credit and Universal Credit alike (it is not
+a mixed-age couple, whose claimant and partner exclude a qualifying young
+person), so the mutual exclusion holds for that shape too.
 """
 
 import numpy as np
@@ -133,7 +134,6 @@ VARIABLES = [
     "benunit_rent",
     "LHA_eligible",
     "LHA_cap",
-    "has_mixed_age_couple_pension_credit_saving",
 ]
 
 
@@ -205,8 +205,15 @@ def test_dataset_take_up_stays_anchored_to_reported_claims(units):
                 and not unit["would_claim_uc"]
                 and renting_within_capital
             )
+            # SI 2019/37 art. 4 saving, computed from the drawn unit rather
+            # than the model: a mixed-age couple whose pension-age claimant
+            # reports Housing Benefit (no UC or legacy benefits are drawn)
+            # and was born by 1954 (over the qualifying age on 14 May 2019).
+            claimant_age = unit["members"][0][1]
             saved_mixed_age_couple = (
-                values["has_mixed_age_couple_pension_credit_saving"][i]
+                unit["shape"] == "mixed_age"
+                and unit["hb_reported"] > 0
+                and YEAR - claimant_age <= 1954
                 and renting_within_capital
             )
             assert bool(values["housing_benefit_eligible"][i]) == (

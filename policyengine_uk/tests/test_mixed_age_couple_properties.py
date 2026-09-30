@@ -21,8 +21,9 @@ P5  Differential against the formulas before this change: units that are
     Credit and household net income.
 P6  From model year 2020, the saving never lowers Pension Credit or Housing
     Benefit and leaves Universal Credit at 0.
-P7  In model years 2018 and 2019 every mixed-age couple meets the Pension
-    Credit age conditions, whatever the saving input.
+P7  In model years 2018 and 2019 every mixed-age couple not reported on
+    Universal Credit meets the Pension Credit age conditions, whatever the
+    saving input; one reported on UC meets them only with the saving.
 P8  The default saving is never set where the older member was born after
     1954 (so had not reached the qualifying age by 14 May 2019), or where
     the couple reports Universal Credit.
@@ -44,7 +45,13 @@ SHAPES = [
     "mixed",
     "single_working",
     "couple_working",
+    # An 18 year old dependant in upper secondary education is a qualifying
+    # young person for Pension Credit, not a partner.
+    "single_pension_with_dependant",
+    "couple_pension_with_dependant",
+    "mixed_with_dependant",
 ]
+MIXED_AGE_COUPLE_SHAPES = {"mixed", "mixed_with_dependant"}
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 
 
@@ -129,15 +136,22 @@ def cases(draw):
     shape = draw(st.sampled_from(SHAPES))
     pension_age = st.integers(67, 90)
     working_age = st.integers(25, 59)
-    older_is_pension_age = "pension" in shape or shape == "mixed"
+    older_is_pension_age = "pension" in shape or shape.startswith("mixed")
     people = {
         "older": {"age": draw(pension_age if older_is_pension_age else working_age)}
     }
-    if shape.startswith("couple") or shape == "mixed":
+    if shape.startswith("couple") or shape.startswith("mixed"):
         people["younger"] = {
-            "age": draw(pension_age if shape == "couple_pension" else working_age)
+            "age": draw(
+                pension_age if shape.startswith("couple_pension") else working_age
+            )
         }
-    for person in people.values():
+    if shape.endswith("with_dependant"):
+        people["dependant"] = {"age": 18, "current_education": "UPPER_SECONDARY"}
+        people["older"]["is_parent"] = True
+    for name, person in people.items():
+        if name == "dependant":
+            continue
         if person["age"] >= 67:
             person["state_pension"] = draw(st.integers(0, 15_000))
         else:
@@ -228,7 +242,7 @@ def test_mixed_age_couple_invariants(case):
         assert not (result["housing_benefit"] > 0 and result["universal_credit"] > 0)
         assert not (result["age_conditions"] and result["uc_eligible"]), context
     mixed = on["mixed"]
-    assert mixed == (case["shape"] == "mixed"), context
+    assert mixed == (case["shape"] in MIXED_AGE_COUPLE_SHAPES), context
     if not mixed:
         for variable in OUTPUTS + ["net"]:
             assert close(on[variable], off[variable]), (variable, context)  # P4
@@ -241,8 +255,11 @@ def test_mixed_age_couple_invariants(case):
         assert on["housing_benefit"] >= off["housing_benefit"] - 0.01, context
         assert on["universal_credit"] == 0, context
     else:
-        assert on["age_conditions"] and off["age_conditions"], context  # P7
-        assert default["age_conditions"], context
+        # P7: before the exclusion only a couple reported on UC stays on it.
+        on_uc = case["people"]["older"]["universal_credit_reported"] > 0
+        assert on["age_conditions"], context
+        assert off["age_conditions"] == (not on_uc), context
+        assert default["age_conditions"] == (not on_uc), context
     older = case["people"]["older"]
     if default["saving"]:  # P8
         assert case["year"] - older["age"] <= 1954, context
