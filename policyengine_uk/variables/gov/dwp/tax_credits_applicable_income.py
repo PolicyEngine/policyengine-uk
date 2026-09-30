@@ -19,7 +19,8 @@ class tax_credits_applicable_income(Variable):
             "dividend_income",
             "property_income",
         ]
-        income = add(benunit, period, STEP_1_COMPONENTS)
+        # The income of the claimant, or of both joint claimants (TCA 2002 s.7).
+        income = add_for_claimant_and_partner(benunit, period, STEP_1_COMPONENTS)
         income = max_(income - TC.means_test.non_earned_disregard, 0)
         STEP_2_COMPONENTS = [
             "employment_income",
@@ -30,7 +31,9 @@ class tax_credits_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
-        income += add(benunit, period, STEP_2_COMPONENTS)
+        income += add_for_claimant_and_partner(benunit, period, STEP_2_COMPONENTS)
         EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
-        on_exempt_benefits = add(benunit, period, EXEMPT_BENEFITS) > 0
+        on_exempt_benefits = (
+            add_for_claimant_and_partner(benunit, period, EXEMPT_BENEFITS) > 0
+        )
         return income * ~on_exempt_benefits

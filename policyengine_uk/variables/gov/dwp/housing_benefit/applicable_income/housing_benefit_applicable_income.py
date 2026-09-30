@@ -34,20 +34,31 @@ class housing_benefit_applicable_income(Variable):
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
-        # Add personal benefits, credits and total benefits to income
-        benefits = add(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS)
-        income = add(benunit, period, INCOME_COMPONENTS)
-        personal_benefits = add(benunit, period, PERSONAL_BENEFITS)
-        credits = add(benunit, period, ["tax_credits"])
+        # Add personal benefits, credits and total benefits to income. Only
+        # the claimant's and partner's income counts; a child's or young
+        # person's does not (HB Regs 2006 reg 25).
+        benefits = add_for_claimant_and_partner(
+            benunit, period, BENUNIT_MEANS_TESTED_BENEFITS
+        )
+        income = add_for_claimant_and_partner(benunit, period, INCOME_COMPONENTS)
+        personal_benefits = add_for_claimant_and_partner(
+            benunit, period, PERSONAL_BENEFITS
+        )
+        credits = add_for_claimant_and_partner(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefits + credits + benefits
 
         if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
-            increased_income -= add(benunit, period, ["basic_income"])
+            increased_income -= add_for_claimant_and_partner(
+                benunit, period, ["basic_income"]
+            )
         # Reduce increased income by pension contributions and tax
-        pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
+        pension_contributions = (
+            add_for_claimant_and_partner(benunit, period, ["pension_contributions"])
+            * 0.5
+        )
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
-        tax = add(benunit, period, TAX_COMPONENTS)
+        tax = add_for_claimant_and_partner(benunit, period, TAX_COMPONENTS)
         increased_income_reduced_by_tax_and_pensions = (
             increased_income - tax - pension_contributions
         )

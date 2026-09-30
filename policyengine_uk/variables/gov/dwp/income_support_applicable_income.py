@@ -20,16 +20,22 @@ class income_support_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
-        income = add(benunit, period, INCOME_COMPONENTS)
-        tax = add(
+        # The claimant's and partner's income only (IS Regs 1987 reg 23).
+        income = add_for_claimant_and_partner(benunit, period, INCOME_COMPONENTS)
+        tax = add_for_claimant_and_partner(
             benunit,
             period,
             ["income_tax", "national_insurance"],
         )
-        income += add(benunit, period, ["social_security_income"])
+        income += add_for_claimant_and_partner(
+            benunit, period, ["social_security_income"]
+        )
         income += benunit("income_support_tariff_income", period)
         income -= tax
-        income -= add(benunit, period, ["pension_contributions"]) * 0.5
+        income -= (
+            add_for_claimant_and_partner(benunit, period, ["pension_contributions"])
+            * 0.5
+        )
         # Schedule 8 paras 5, 6 and 10 use mutually exclusive claimant types.
         mt = IS.means_test
         single = benunit("is_single_person", period)

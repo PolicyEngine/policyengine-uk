@@ -33,15 +33,28 @@ class council_tax_reduction_applicable_income(Variable):
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
-        benefits = add(benunit, period, benunit_means_tested_benefits)
-        income = add(benunit, period, income_components)
-        personal_benefit_income = add(benunit, period, personal_benefits)
-        credits = add(benunit, period, ["tax_credits"])
+        # The applicant's and partner's income only (CTR (Prescribed
+        # Requirements) (England) Regs 2012 Sch 1 para 11).
+        benefits = add_for_claimant_and_partner(
+            benunit, period, benunit_means_tested_benefits
+        )
+        income = add_for_claimant_and_partner(benunit, period, income_components)
+        personal_benefit_income = add_for_claimant_and_partner(
+            benunit, period, personal_benefits
+        )
+        credits = add_for_claimant_and_partner(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefit_income + credits + benefits
 
         if not bi.interactions.include_in_means_tests:
-            increased_income -= add(benunit, period, ["basic_income"])
+            increased_income -= add_for_claimant_and_partner(
+                benunit, period, ["basic_income"]
+            )
 
-        pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
-        tax = add(benunit, period, ["income_tax", "national_insurance"])
+        pension_contributions = (
+            add_for_claimant_and_partner(benunit, period, ["pension_contributions"])
+            * 0.5
+        )
+        tax = add_for_claimant_and_partner(
+            benunit, period, ["income_tax", "national_insurance"]
+        )
         return max_(0, increased_income - tax - pension_contributions)
