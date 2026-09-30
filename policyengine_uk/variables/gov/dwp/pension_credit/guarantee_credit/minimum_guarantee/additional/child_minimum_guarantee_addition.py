@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.dates import birth_day
 
 
 class child_minimum_guarantee_addition(Variable):
@@ -16,7 +17,7 @@ class child_minimum_guarantee_addition(Variable):
         )
         # Sch IIA para 10: the eldest child or qualifying young person, by date
         # of birth, gets the first child amount if born before 6 April 2017.
-        date_of_birth = person("date_of_birth", period)
+        date_of_birth = birth_day(person, period)
         child_index = (
             person.get_rank(
                 person.benunit,

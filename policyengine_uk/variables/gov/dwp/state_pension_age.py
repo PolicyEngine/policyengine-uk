@@ -1,8 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.dates import (
     add_months_to_yyyymmdd,
-    exact_age_in_months,
-    grid_month,
+    birth_instant,
+    grid_months_to_yyyymmdd,
     yyyymmdd_to_grid_months,
 )
 
@@ -15,7 +15,7 @@ class state_pension_age(Variable):
         "The age at which this person attains State Pension age (pensionable "
         "age), set by their date of birth. Where the statute sets the day on "
         "which it is attained, this is the person's age on that day. The date "
-        "of birth is date_of_birth, which comes from age and "
+        "of birth is date_of_birth where given, and otherwise comes from age and "
         "months_since_last_birthday."
     )
     definition_period = YEAR
@@ -27,18 +27,14 @@ class state_pension_age(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.state_pension.age
-        # Dates are in months on a grid whose months start on the 6th, so the
-        # middle of the fiscal year (6 October) is a whole month.
-        mid_year = grid_month(period.start.year, 10)
-        age_in_months = exact_age_in_months(
-            person("age", period), person("months_since_last_birthday", period)
-        )
-        birth = mid_year - age_in_months
+        # Dates are in months on a grid whose months start on the 6th. The
+        # result is measured from the instant of birth, which
+        # months_since_state_pension_age shares, so that is 6 October less the
+        # day of attainment.
+        birth = birth_instant(person, period)
         # The day of birth: the one starting at or after that instant, so the
-        # person's legal age on 6 October is age. The result is measured from
-        # the instant, so months_since_state_pension_age, which subtracts it
-        # from the exact age, is 6 October less the day of attainment.
-        birth_date = person("date_of_birth", period)
+        # person's legal age on 6 October is age.
+        birth_date = grid_months_to_yyyymmdd(birth)
 
         # Pensions Act 1995 Sch 4 para 1 rule (1): men born before 6 December
         # 1953 attain pensionable age at 65. Everyone else follows the

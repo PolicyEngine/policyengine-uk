@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.dates import birth_day
 
 
 class uc_is_child_born_before_child_limit(Variable):
@@ -19,7 +20,7 @@ class uc_is_child_born_before_child_limit(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.elements.child.limit
-        born_before_limit = person("date_of_birth", period) < p.born_before
+        born_before_limit = birth_day(person, period) < p.born_before
         return (
             person("is_child_or_qualifying_young_person_for_universal_credit", period)
             & born_before_limit

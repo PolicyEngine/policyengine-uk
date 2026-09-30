@@ -115,3 +115,37 @@ def exact_age_in_months(age, months_since_last_birthday) -> np.ndarray:
         _LATEST_MONTHS_SINCE_BIRTHDAY,
     )
     return 12 * whole_years + months
+
+
+def birth_instant_from_age(year: int, age, months_since_last_birthday) -> np.ndarray:
+    """The instant of birth in grid months: age years and
+    months_since_last_birthday months before 6 October of ``year``."""
+    return grid_month(year, 10) - exact_age_in_months(age, months_since_last_birthday)
+
+
+def birth_instant(person, period) -> np.ndarray:
+    """A person's instant of birth in grid months, in float64, for every rule
+    that turns on the date of birth.
+
+    Where date_of_birth is given as an input and is not the day that age and
+    months_since_last_birthday place, it is the start of that day. Otherwise
+    it is the instant from age and months_since_last_birthday. A situation
+    that sets date_of_birth for some people gives everyone else 0, which
+    means not given.
+    """
+    from_age = birth_instant_from_age(
+        period.start.year,
+        person("age", period),
+        person("months_since_last_birthday", period),
+    )
+    given = np.asarray(person("date_of_birth", period), dtype=np.int64)
+    use_given = (given > 0) & (given != grid_months_to_yyyymmdd(from_age))
+    # Any valid date stands in where the input is not used.
+    safe_given = np.where(use_given, given, 19700106)
+    return np.where(use_given, yyyymmdd_to_grid_months(safe_given), from_age)
+
+
+def birth_day(person, period) -> np.ndarray:
+    """A person's day of birth as a YYYYMMDD number: date_of_birth where
+    given, and otherwise the day age and months_since_last_birthday place."""
+    return grid_months_to_yyyymmdd(birth_instant(person, period))

@@ -60,10 +60,10 @@ def situation(people: dict) -> dict:
 
 def test_household_situations_match_the_birth_year_rule():
     """A whole age in a household situation is the middle of the year of age,
-    6 April of the year the person turned that age. So for households the
-    date rule gives what the old birth-year rule (period - age < 2017) gave,
-    and birth_year is still period - age: only microdata, which spreads
-    birthdays over the year, moves."""
+    6 April of the year the person turned that age. So for households with
+    whole ages the date rule gives what the old birth-year rule (period - age
+    < 2017) gave, and birth_year is still period - age: only microdata, which
+    spreads birthdays over the year, and fractional ages move."""
     for year in range(2015, 2036):
         ages = range(20)
         people = {f"p{age}": {"age": {year: age}} for age in ages}
@@ -71,9 +71,12 @@ def test_household_situations_match_the_birth_year_rule():
         born = sim.calculate("date_of_birth", year)
         birth_year = sim.calculate("birth_year", year)
         exempt = sim.calculate("is_CTC_child_limit_exempt", year)
+        uc = sim.calculate("uc_is_child_born_before_child_limit", year)
         old_rule = np.array([year - age < 2017 for age in ages])
         assert np.array_equal(born < ymd(CUTOFF), old_rule), year
         assert np.array_equal(exempt, old_rule), year
+        under_16 = np.array(ages) < 16
+        assert np.array_equal(uc[under_16], old_rule[under_16]), year
         assert np.array_equal(birth_year, [year - age for age in ages]), year
 
 
@@ -237,3 +240,48 @@ def test_microdata_share_born_before_cutoff_matches_statute():
             )
             expected = cohort_share_born_before_calendar_year(year, age)
             assert abs(earlier_year - expected) <= tolerance, (year, age)
+
+
+@settings(max_examples=25, deadline=None)
+@given(
+    births=st.lists(
+        st.dates(min_value=date(1935, 1, 1), max_value=date(2020, 12, 31)),
+        min_size=1,
+        max_size=8,
+    ),
+    year=st.integers(min_value=2021, max_value=2040),
+)
+def test_a_date_of_birth_input_matches_the_same_birthday_by_age(births, year):
+    """Setting date_of_birth (with the legal age on 6 October) gives the same
+    State Pension age, status and cutoffs as placing the same day with
+    months_since_last_birthday. A person left without the input in the same
+    situation gets what they would with no input at all."""
+    mid_year = date(year, 10, 6)
+    by_date = {"unset": {"age": {year: 40}}}
+    by_months = {"unset": {"age": {year: 40}, "months_since_last_birthday": {year: 6}}}
+    for i, birth in enumerate(births):
+        age = legal_age(birth, mid_year)
+        months = grid_months(mid_year) - grid_months(birth) - 12 * age
+        by_date[f"p{i}"] = {"age": {year: age}, "date_of_birth": {year: ymd(birth)}}
+        by_months[f"p{i}"] = {
+            "age": {year: age},
+            "months_since_last_birthday": {year: months},
+        }
+    a = Simulation(situation=situation(by_date))
+    b = Simulation(situation=situation(by_months))
+    for variable in [
+        "birth_year",
+        "is_SP_age",
+        "uc_is_child_born_before_child_limit",
+        "is_CTC_child_limit_exempt",
+    ]:
+        assert np.array_equal(
+            a.calculate(variable, year), b.calculate(variable, year)
+        ), variable
+    assert np.allclose(
+        a.calculate("state_pension_age", year),
+        b.calculate("state_pension_age", year),
+        atol=1e-4,
+    )
+    assert list(a.calculate("date_of_birth", year)[1:]) == [ymd(d) for d in births]
+    assert a.calculate("date_of_birth", year)[0] == 0

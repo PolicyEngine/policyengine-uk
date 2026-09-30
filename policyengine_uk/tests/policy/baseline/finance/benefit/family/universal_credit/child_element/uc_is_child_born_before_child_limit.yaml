@@ -148,3 +148,29 @@
   output:
     uc_is_child_born_before_child_limit: [false, false]
     uc_individual_child_element: [0, 3_647.28]
+
+- name: Children without a date of birth input are placed by age.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        is_benunit_head: true
+        is_parent: true
+      child_1:
+        age: 10
+      child_2:
+        age: 8
+      child_3:
+        age: 8
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+  output:
+    # child_2 has no input (0), so is placed on 6 April 2017: after child_3,
+    # and not protected.
+    uc_is_child_born_before_child_limit: [false, true, false, true]
+    uc_child_index: [-1, 1, 3, 2]
+    uc_individual_child_element: [0, 4_068, 0, 3_513.72]
