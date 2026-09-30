@@ -259,3 +259,53 @@
         country: ENGLAND
   output:
     severe_disability_minimum_guarantee_addition: 0
+
+- name: A single claimant's own Carer's Allowance does not bar the addition
+  # Sch I para 1(1)(a)(iii) bars an allowance paid "in respect of caring for
+  # him"; the claimant's own award is for caring for someone else. 67.30 x 52.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: true
+    severe_disability_minimum_guarantee_addition: 67.3 * 52
+
+- name: The qualifying partner's own Carer's Allowance does not bar head (c)
+  # The partner receiving attendance allowance cares for the blind partner;
+  # (c)(iv) bars only a carer benefit paid for caring for the qualifying
+  # partner. Single amount, 67.30 x 52.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+      partner:
+        age: 70
+        is_blind: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [true, false]
+    severe_disability_minimum_guarantee_addition: 67.3 * 52

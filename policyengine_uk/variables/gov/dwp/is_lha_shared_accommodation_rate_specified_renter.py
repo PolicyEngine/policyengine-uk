@@ -11,7 +11,9 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         "person under the UC or Housing Benefit rules, no non-dependant under "
         "the household composition proxy, and not excepted by a disability "
         "benefit (UC Schedule 4 paragraph 29(5)). Other paragraph 29 "
-        "exceptions and couples claiming as single people are not modelled."
+        "exceptions and couples claiming as single people are not modelled. "
+        "The same category serves Housing Benefit, whose young-individual "
+        "definition (HB regulation 2(1)) has no disability exception."
     )
     definition_period = YEAR
     reference = (
@@ -26,7 +28,7 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.LHA
         person = benunit.members
-        # UC Sch 4 para 29(5) / HB reg 2(1): a renter under 35 receiving
+        # UC Sch 4 para 29(5): a renter under 35 receiving
         # attendance allowance, DLA care at the middle or highest rate, or the
         # PIP daily living component is excepted. Other para 29 exceptions
         # (care leavers, hostel residents, MAPPA, domestic abuse, modern
