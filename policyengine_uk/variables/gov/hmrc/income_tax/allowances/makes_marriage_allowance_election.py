@@ -107,8 +107,11 @@ class makes_marriage_allowance_election(Variable):
             # s. 55B(2)(b), (ba): the gaining party pays only basic rates.
             & (partner(without["meets_marriage_allowance_income_conditions"]) > 0)
         )
-        # Elect only to lower the couple's tax, and at most one spouse elects
-        # (s. 55E); on a tie the elder spouse elects.
+        # Elect only to lower the couple's tax. Only one spouse elects: s. 55E
+        # allows each of them one election and one reduction and does not bar
+        # elections both ways, but those help only when both spouses would
+        # pay nothing on the allowance they give up and both have tax to
+        # reduce, which is not modelled. On a tie the elder spouse elects.
         saving_if_allowed = where(allowed & (saving > 0), saving, 0)
         other_saving = partner(saving_if_allowed)
         elder = (

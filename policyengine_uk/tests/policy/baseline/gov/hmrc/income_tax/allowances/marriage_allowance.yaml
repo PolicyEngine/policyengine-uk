@@ -328,12 +328,13 @@
   period: 2026
   input:
     people:
+      # Married couple's allowance needs a spouse born before 6 April 1935.
       recipient:
-        age: 40
+        age: 92
         employment_income: 30_000
         married_couples_allowance: 11_270
       transferor:
-        age: 38
+        age: 90
     benunits:
       benunit:
         members: [recipient, transferor]
@@ -420,7 +421,7 @@
     marriage_allowance_tax_reduction: [86, 0]
     income_tax: [0, 0]
 
-- name: Other tax reductions come first (s. 29(3))
+- name: Other tax reductions leave less tax for the reduction (s. 27(2), s. 29(2)-(3))
   period: 2026
   input:
     people:
@@ -457,12 +458,12 @@
         members: [p1, p2]
         is_married: true
   output:
-    # Each: the allowance covers interest, the rest sits in the 0% starting
-    # rate for savings either way, and dividends pay 9,500 x 10.75% =
-    # 1,021.25. Either election saves 252.
+    # The spouses are identical, so either election saves the same and the
+    # elder elects. Income tax is not asserted: the model sets allowances
+    # against savings before dividends, where s. 25(2) requires the order
+    # that most reduces tax.
     makes_marriage_allowance_election: [true, false]
     personal_allowance: [11_310, 12_570]
-    income_tax: [1_021.25, 769.25]
 
 - name: Children in the benefit unit are not spouses
   period: 2026

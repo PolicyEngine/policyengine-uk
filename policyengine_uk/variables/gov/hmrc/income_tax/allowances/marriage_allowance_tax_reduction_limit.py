@@ -9,7 +9,9 @@ class marriage_allowance_tax_reduction_limit(Variable):
         "Tax at Step 5 of the income tax calculation left after the person's "
         "other tax reductions. The Marriage Allowance tax reduction cannot "
         "exceed it. Deducting the other reductions first gives the same total "
-        "as the order that most reduces the person's liability."
+        "as the order that most reduces the person's liability. Double "
+        "taxation relief should come after the Marriage Allowance (s. 27(6)), "
+        "but other_tax_credits does not separate it out."
     )
     definition_period = YEAR
     reference = [
