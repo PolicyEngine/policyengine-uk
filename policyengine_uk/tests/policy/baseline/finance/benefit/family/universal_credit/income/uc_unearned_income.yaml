@@ -221,9 +221,9 @@
         savings: 0
         other_residential_property_value: 10_000
   output:
-    # Tariff income on £10,000 of let property: (10,000 - 6,000) / 250 = 16
-    # steps x £4.35 x 12 = £835.20. Neither the rent nor the interest is
-    # added on top of it.
+    # Tariff income on £10,000 of capital in let property (taken as entered;
+    # reg. 49 valuation is #1960): (10,000 - 6,000) / 250 = 16 steps x £4.35
+    # x 12 = £835.20. Neither the rent nor the interest is added on top of it.
     uc_tariff_income: 835.20
     uc_unearned_income: 835.20
 
