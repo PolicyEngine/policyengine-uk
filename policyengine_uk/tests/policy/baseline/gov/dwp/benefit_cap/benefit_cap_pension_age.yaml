@@ -108,8 +108,8 @@
 - name: A mixed-age couple on income-based JSA has working-age Housing Benefit, which is capped
   # HB Regs 2006 reg 5(1)(b): the working-age regulations, and so Part 8A,
   # apply to a claimant over the qualifying age whose partner is on
-  # income-based JSA.
-  period: 2026
+  # income-based JSA. Income-based JSA ended on 31 March 2026, so 2025-26.
+  period: 2025
   absolute_error_margin: 0.01
   input:
     people:
@@ -117,18 +117,19 @@
         age: 70
       younger:
         age: 50
+        jsa_income_reported: 4_000
     benunits:
       benunit:
         members: [older, younger]
         would_claim_uc: false
         would_claim_housing_benefit: true
         housing_benefit_pre_benefit_cap: 30_000
-        jsa_income: 4_000
     households:
       household:
         members: [older, younger]
         region: LONDON
   output:
+    jsa_income: 4_000
     housing_benefit_pension_age_regulations_apply: false
     is_benefit_cap_exempt_other: false
     is_benefit_cap_exempt: false
@@ -190,3 +191,38 @@
     is_benefit_cap_exempt: false
     benefit_cap_reduction: 7_677
     universal_credit: 22_323
+
+- name: A pensioner whose only younger adult is a qualifying young person is not capped
+  # The model's is_uc_eligible counts any working-age adult, so it pays this
+  # family Universal Credit. In law Universal Credit needs a claimant or
+  # partner under the qualifying age (UC Regs 2013 reg 3(2)(a)); the family
+  # stays under the pension-age Housing Benefit rules, which have no cap.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 70
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+      child:
+        age: 9
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+        universal_credit_pre_benefit_cap: 30_000
+        child_benefit: 3_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [parent, young_person, child]
+        region: LONDON
+  output:
+    is_uc_claimant: [true, false, false]
+    is_uc_entitled: true
+    housing_benefit_pension_age_regulations_apply: true
+    is_benefit_cap_exempt_other: true
+    benefit_cap_reduction: 0
+    universal_credit: 30_000
