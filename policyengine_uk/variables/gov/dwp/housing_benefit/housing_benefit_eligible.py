@@ -11,14 +11,18 @@ class housing_benefit_eligible(Variable):
         "can make a new claim; Universal Credit is not available to it. Any "
         "other family keeps Housing Benefit only while it continues an "
         "existing award (reported Housing Benefit) and does not claim "
-        "Universal Credit. Claims for specified or temporary accommodation "
-        "are not modelled."
+        "Universal Credit. Working-age awards ended on 1 July 2026 in Great "
+        "Britain and 1 October 2026 in Northern Ireland, so from then only "
+        "families with a member over State Pension age continue one. Claims "
+        "for specified or temporary accommodation are not modelled."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/6A",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
         "https://www.legislation.gov.uk/uksi/2019/37/article/4",
+        "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
+        "https://www.legislation.gov.uk/nisr/2025/176/article/7",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/4",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/4A",
     )
@@ -42,11 +46,15 @@ class housing_benefit_eligible(Variable):
         # claim it (reg 8(2A)), so this route also rules out receiving
         # Universal Credit. For mixed-age couples the reported award stands
         # in for the SI 2019/37 art. 4 saving (reg 6A(5)). Working-age awards
-        # outside specified or temporary accommodation ended on 1 July 2026
-        # in Great Britain (SI 2025/1148 art. 7); that is not modelled.
+        # outside specified or temporary accommodation were abolished from
+        # 1 July 2026 in Great Britain (SI 2025/1148 art. 7) and 1 October
+        # 2026 in Northern Ireland (SR 2025/176 art. 7); a family with no
+        # member over State Pension age continues one only for the part of
+        # the year before that date (housing_benefit_payable_share).
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("would_claim_uc", period)
-        continuing_award = already_claiming & ~claiming_uc
+        still_payable = benunit("housing_benefit_payable_share", period) > 0
+        continuing_award = already_claiming & ~claiming_uc & still_payable
         social = benunit.any(person("in_social_housing", period))
         lha_eligible = benunit("LHA_eligible", period)
         any_over_SP_age = benunit.any(sp_age)

@@ -1,7 +1,8 @@
 description: Share of eligible Housing Benefit recipients that participate. Not used by
   the model, which takes Housing Benefit take-up from reported claims in survey data and
   assumes full take-up in household calculations. Pension-age families can make new
-  claims; working-age families only continue existing awards.
+  claims; working-age families only continued existing awards, until those were
+  abolished on 1 July 2026 in Great Britain and 1 October 2026 in Northern Ireland.
 metadata:
   economy: false
   label: Housing benefit take-up rate

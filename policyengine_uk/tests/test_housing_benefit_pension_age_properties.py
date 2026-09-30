@@ -4,7 +4,10 @@ New Housing Benefit claims are barred except where the claimant, and any
 partner, has reached the qualifying age for State Pension Credit (SI 2014/1230
 reg 6A(4)); Universal Credit is not available to them (Welfare Reform Act 2012
 s.4(1)(b)). Other families keep Housing Benefit only while they continue an
-existing award and do not claim Universal Credit.
+existing award and do not claim Universal Credit. YEAR is 2026-27, when
+working-age awards are still payable for part of the year, so eligibility
+follows the same rule; test_housing_benefit_working_age_abolition_properties.py
+covers the abolition itself.
 
 Invariants, for any generated population of families:
 

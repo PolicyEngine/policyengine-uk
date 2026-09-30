@@ -1,0 +1,40 @@
+description: Whether working-age Housing Benefit awards outside specified and temporary accommodation are still payable (1) or abolished (0). Housing Benefit was abolished for these awards from 1 July 2026 in Great Britain and 1 October 2026 in Northern Ireland; awards of claimants over the qualifying age for State Pension Credit, protected mixed-age couples and claimants in specified or temporary accommodation are saved. Each fiscal year takes the day-weighted average, which is the share of that year for which such awards stayed payable.
+great_britain:
+  description: Whether working-age Housing Benefit awards outside specified and temporary accommodation are still payable in Great Britain. Section 33(1)(d) of the Welfare Reform Act 2012 came into force for them on 1 July 2026.
+  values:
+    1988-04-01: 1
+    2026-07-01: 0
+  metadata:
+    label: Working-age Housing Benefit awards payable, Great Britain
+    unit: /1
+    period: year
+    fiscal_year_blend: true
+    reference:
+      - title: SI 2025/1148 art. 7 (inserted by SI 2026/409 art. 2(6))
+        href: https://www.legislation.gov.uk/uksi/2025/1148/article/7
+      - title: SI 2026/409, The Welfare Reform Act 2012 (Commencement No. 35) (Abolition of Benefits) (Amendment) Order 2026
+        href: https://www.legislation.gov.uk/uksi/2026/409/made
+      - title: Welfare Reform Act 2012 s. 33(1)(d)
+        href: https://www.legislation.gov.uk/ukpga/2012/5/section/33
+      - title: DWP HB circular A6/2026, closure of working age Housing Benefit
+        href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2026/a62026-closure-of-working-age-housing-benefit
+northern_ireland:
+  description: Whether working-age Housing Benefit awards outside specified and temporary accommodation are still payable in Northern Ireland. Article 39(1)(d) of the Welfare Reform (Northern Ireland) Order 2015 came into operation for them on 1 October 2026.
+  values:
+    1988-04-01: 1
+    2026-10-01: 0
+  metadata:
+    label: Working-age Housing Benefit awards payable, Northern Ireland
+    unit: /1
+    period: year
+    fiscal_year_blend: true
+    reference:
+      - title: SR 2025/176 art. 7 (inserted by SR 2026/115)
+        href: https://www.legislation.gov.uk/nisr/2025/176/article/7
+      - title: SR 2026/115
+        href: https://www.legislation.gov.uk/nisr/2026/115/made
+      - title: Welfare Reform (Northern Ireland) Order 2015 art. 39(1)(d)
+        href: https://www.legislation.gov.uk/nisi/2015/2006/article/39
+metadata:
+  label: Working-age Housing Benefit awards payable
+  economy: false
