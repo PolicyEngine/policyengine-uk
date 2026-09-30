@@ -503,3 +503,108 @@
     council_tax_reduction_assessable_capital: 10_000
     council_tax_reduction_applicable_income: 13_314
     council_tax_reduction: 1_999.60
+
+- name: Capital of exactly 16,000 is within the limit for a pensioner without Pension Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 13_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    # The limit excludes capital that "exceeds" 16,000 (SI 2012/2885 reg 11(2)).
+    in_receipt_of_guarantee_credit: false
+    council_tax_reduction_assessable_capital: 16_000
+    council_tax_reduction: 2_000
+
+- name: Capital just over 16,000 excludes a pensioner without Pension Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 13_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 16_000.01
+  output:
+    council_tax_reduction_assessable_capital: 16_000.01
+    council_tax_reduction: 0
+
+- name: Savings-credit-only Pension Credit capital of exactly 16,000 is within the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 12_000
+        private_pension_income: 1_500
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 16_000
+  output:
+    # 2,000 - 0.2 x (14,247.02 - 13,312); SSI 2012/319 reg 25(4) excludes only more than 16,000.
+    in_receipt_of_savings_credit_only: true
+    savings_credit: 309.02
+    council_tax_reduction_assessable_capital: 16_000
+    council_tax_reduction_applicable_income: 14_247.02
+    council_tax_reduction: 1_813
+
+- name: Savings-credit-only Pension Credit capital just over 16,000 is excluded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 12_000
+        private_pension_income: 1_500
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 16_000.01
+  output:
+    in_receipt_of_savings_credit_only: true
+    council_tax_reduction_assessable_capital: 16_000.01
+    council_tax_reduction: 0

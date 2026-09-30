@@ -30,8 +30,9 @@ liability, ND the non-dependant deductions and A the applicable amount:
 6. Metamorphic: nor when its savings change.
 7. Metamorphic: not claiming Pension Credit never raises a guarantee credit
    recipient's CTR, and a non-claimant is assessed under invariant 4.
-8. Under the Pension Credit freeze, a savings-credit-only award counts the
-   frozen savings credit actually paid.
+8. Under the Pension Credit freeze, receipt and the savings credit payable
+   follow the frozen (baseline) award, even where the reform alone would
+   change which credit is received.
 """
 
 import numpy as np
@@ -96,6 +97,13 @@ def families(draw):
         state_pension=draw(state_pension),
         private_pension=draw(st.one_of(st.just(0.0), st.floats(0, 5_000))),
         employment_income=draw(st.one_of(st.just(0.0), st.floats(0, 20_000))),
+        # Other income main's CTR definition counts, so the differential
+        # (invariant 4) sees more than pensions and earnings.
+        self_employment_income=draw(st.one_of(st.just(0.0), st.floats(0, 15_000))),
+        property_income=draw(st.one_of(st.just(0.0), st.floats(0, 5_000))),
+        carers_allowance=draw(st.one_of(st.just(0.0), st.floats(0, 4_500))),
+        child_ages=draw(st.lists(st.integers(1, 15), max_size=2)),
+        would_claim_uc=draw(st.booleans()),
         would_claim_pc=draw(st.sampled_from([True, True, False])),
         # A working-age non-dependant (a separate benefit unit) living with a
         # pension-age family; younger than the claimant, so never the head.
@@ -175,7 +183,17 @@ def situation(
                 person["private_pension_income"] = {YEAR: unit["private_pension"]}
             else:
                 person["employment_income"] = {YEAR: unit["employment_income"]}
+                person["self_employment_income"] = {
+                    YEAR: unit.get("self_employment_income", 0.0)
+                }
+            if j == 0:
+                person["property_income"] = {YEAR: unit.get("property_income", 0.0)}
+                person["carers_allowance"] = {YEAR: unit.get("carers_allowance", 0.0)}
             people[name] = person
+            names.append(name)
+        for k, child_age in enumerate(unit.get("child_ages", [])):
+            name = f"c{i}_{k}"
+            people[name] = {"age": {YEAR: child_age}}
             names.append(name)
         claim_pc = unit["would_claim_pc"] if would_claim_pc is None else would_claim_pc
         benunit = {
@@ -184,7 +202,7 @@ def situation(
             # whole simulation, so set it for every family.
             "claims_all_entitled_benefits": {YEAR: True},
             "would_claim_pc": {YEAR: claim_pc},
-            "would_claim_uc": {YEAR: False},
+            "would_claim_uc": {YEAR: unit.get("would_claim_uc", False)},
         }
         benunits[f"b{i}"] = benunit
         claimant_benunits.append(benunit_index)
@@ -489,3 +507,73 @@ def test_savings_credit_only_award_counts_the_frozen_savings_credit():
         "council_tax_reduction_applicable_income", YEAR
     )
     assert abs(unfrozen_income[0] - 14_183.89) < 0.01
+
+
+def freeze_case(age, state_pension, private_pension, savings, reform):
+    person = {
+        "age": {YEAR: age},
+        "state_pension": {YEAR: state_pension},
+        "private_pension_income": {YEAR: private_pension},
+    }
+    data = {
+        "people": {"pensioner": person},
+        "benunits": {
+            "benunit": {
+                "members": ["pensioner"],
+                "claims_all_entitled_benefits": {YEAR: True},
+            }
+        },
+        "households": {
+            "household": {
+                "members": ["pensioner"],
+                "country": {YEAR: "ENGLAND"},
+                "local_authority": {YEAR: "MAIDSTONE"},
+                "tenure_type": {YEAR: "OWNED_OUTRIGHT"},
+                "council_tax": {YEAR: 2_000},
+                "savings": {YEAR: savings},
+            }
+        },
+    }
+    period = f"{YEAR}-01-01.{YEAR}-12-31"
+    reform = {key: {period: value} for key, value in reform.items()}
+    frozen = Simulation(
+        situation=data,
+        reform={**reform, "gov.contrib.freeze_pension_credit": {period: True}},
+    )
+    unfrozen = Simulation(situation=data, reform=reform)
+    return frozen, unfrozen
+
+
+def test_freeze_keeps_savings_credit_only_receipt_when_the_reform_adds_guarantee_credit():
+    # A higher guarantee gives the reform a guarantee credit, but the frozen
+    # award is the baseline's savings credit of 558.62.
+    frozen, unfrozen = freeze_case(
+        90,
+        12_000,
+        1_500,
+        0,
+        {"gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE": 300},
+    )
+    assert unfrozen.calculate("in_receipt_of_guarantee_credit", YEAR)[0]
+    assert abs(unfrozen.calculate("council_tax_reduction", YEAR)[0] - 2_000) < 0.01
+    assert not frozen.calculate("in_receipt_of_guarantee_credit", YEAR)[0]
+    assert frozen.calculate("in_receipt_of_savings_credit_only", YEAR)[0]
+    # 2,000 - 0.2 x (13,314 + 558.62 - 13,312)
+    assert abs(frozen.calculate("council_tax_reduction", YEAR)[0] - 1_887.88) < 0.01
+
+
+def test_freeze_keeps_guarantee_credit_receipt_when_the_reform_removes_it():
+    # With no minimum guarantee the reform pays no guarantee credit, so the
+    # 20,000 savings exceed the capital limit; the frozen award is still the
+    # baseline guarantee credit, so capital is disregarded.
+    frozen, unfrozen = freeze_case(
+        70,
+        9_000,
+        0,
+        20_000,
+        {"gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE": 0},
+    )
+    assert not unfrozen.calculate("in_receipt_of_guarantee_credit", YEAR)[0]
+    assert unfrozen.calculate("council_tax_reduction", YEAR)[0] == 0
+    assert frozen.calculate("in_receipt_of_guarantee_credit", YEAR)[0]
+    assert abs(frozen.calculate("council_tax_reduction", YEAR)[0] - 2_000) < 0.01
