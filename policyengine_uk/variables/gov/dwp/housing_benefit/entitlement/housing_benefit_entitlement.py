@@ -51,7 +51,8 @@ class housing_benefit_entitlement(Variable):
         maximum_housing_benefit = eligible_rent - non_dep_deductions
         # 65% of the excess of income over the applicable amount is deducted
         # from the maximum (SSCBA 1992 s.130(3)(b), SI 2006/213 reg 71,
-        # SI 2006/214 reg 51; NI: 1992 Act s.129(3)(b), regs 69(b) and 49(b)).
+        # SI 2006/214 reg 51; NI: SSCB(NI)A 1992 s.129(3)(b), regs 69(b) and
+        # 49(b)).
         applicable_amount = benunit("housing_benefit_applicable_amount", period)
         income = benunit("housing_benefit_applicable_income", period)
         withdrawal_rate = parameters(
