@@ -37,7 +37,9 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
     savings_above_basic = add(
         person, period, ["higher_rate_savings_income", "add_rate_savings_income"]
     )
-    # Stacked as in dividend_income_tax, before the dividend allowance.
+    # Dividends stack on the other income as in dividend_income_tax, before
+    # the dividend allowance; the dividend upper rate starts at the basic
+    # rate limit (s. 13).
     below_dividends = person("earned_taxable_income", period) + max_(
         0, savings - person("received_allowances_savings_income", period)
     )
@@ -45,7 +47,7 @@ def liable_only_at_marriage_allowance_rates(person, period, parameters):
         0, dividends - person("received_allowances_dividend_income", period)
     )
     dividends_above_basic = (dividends_after_allowances > 0) & (
-        below_dividends + dividends_after_allowances > rates.dividends.thresholds[1]
+        below_dividends + dividends_after_allowances > rates.uk.thresholds[1]
     )
     return (
         (non_savings <= non_savings_limit)

@@ -127,7 +127,12 @@ def situation(
             name = f"c{i}_{k}"
             people[name] = {"age": {year: age}}
             names.append(name)
-        benunits[f"b{i}"] = {"members": names}
+        benunits[f"b{i}"] = {
+            "members": names,
+            # Marriage Allowance needs a marriage or civil partnership
+            # (ITA 2007 s. 55C(1)(a)).
+            "is_married": {year: len(unit["ages"]) == 2},
+        }
         households[f"h{i}"] = {
             "members": names,
             "rent": {year: unit["rent"]},
@@ -239,8 +244,9 @@ def test_state_pension_counts_like_property_income(units, year):
 def test_tax_on_state_pension_does_not_reduce_partners_earned_income():
     # 2026: pensioner aged 70 with State Pension 16,000 pays income tax of
     # (16,000 - 12,570) x 20% = 686. The partner aged 45 earns 13,000 and pays
-    # income tax of 86 and NI of 34.40 (above the personal allowance, so no
-    # marriage allowance). Council rent 20,000.
+    # income tax of 86 and NI of 34.40. Either spouse electing for Marriage
+    # Allowance would cost them 252 and save the other 252, so the couple
+    # does not elect. Council rent 20,000.
     # Earned income = 13,000 - 86 - 34.40 = 12,879.60 (reg. 55(5)(b)).
     # Maximum amount = 12 x 666.97 + 20,000 = 28,003.64.
     # UC = 28,003.64 - (0.55 x 12,879.60 + 16,000) = 4,919.86.
@@ -266,7 +272,8 @@ def test_state_pension_does_not_change_partners_marriage_allowance():
     # keeps them within the basic rate, so they can elect (s. 55C(1)(c)).
     # Partner's tax on earnings = (20,000 - 12,570) x 20% - 252 = 1,234 and
     # NI (20,000 - 12,569.96) x 8% = 594.40, so earned income = 18,171.60
-    # at any State Pension up to the pensioner's election limit.
+    # at any State Pension while the election saves the couple tax (below
+    # 12,570).
     # UC = 8,003.64 + 20,000 - (0.55 x 18,171.60 + 12,000) = 6,009.26.
     unit = dict(
         ages=[70, 45],

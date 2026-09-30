@@ -148,7 +148,12 @@ def situation(units, year, bump=None, earnings_only=False, election=None):
             name = f"c{i}_{k}"
             people[name] = {"age": {year: age}}
             names.append(name)
-        benunits[f"b{i}"] = {"members": names}
+        benunits[f"b{i}"] = {
+            "members": names,
+            # Marriage Allowance needs a marriage or civil partnership
+            # (ITA 2007 s. 55C(1)(a)).
+            "is_married": {year: len(unit["adults"]) == 2},
+        }
         households[f"h{i}"] = {
             "members": names,
             "rent": {year: unit["rent"]},

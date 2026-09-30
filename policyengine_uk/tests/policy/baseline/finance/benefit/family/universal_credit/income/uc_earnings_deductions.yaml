@@ -77,8 +77,8 @@
   output:
     # Pensioner: (16,000 - 12,570) x 20% = 686, on State Pension.
     # Partner: (13,000 - 12,570) x 20% = 86 and (13,000 - 12,569.96) x 8%
-    # = 34.40. Both are above the personal allowance, so there is no
-    # Marriage Allowance.
+    # = 34.40. Either spouse electing for Marriage Allowance would cost them
+    # 252 and save the other 252, so the couple does not elect.
     income_tax: [686, 86]
     uc_income_tax_on_earnings: [0, 86]
     uc_national_insurance_on_earnings: [0, 34.40]
