@@ -6,7 +6,9 @@
 # disability or enhanced disability premium. 2026-27 weekly rates: pension-age
 # personal allowance (attained pensionable age before 1 April 2021) 256.00,
 # couple 383.35; severe disability premium 86.05 (172.10 for a couple who
-# both qualify); carer premium 48.15.
+# both qualify); carer premium 48.15. Cases that assert an applicable amount
+# use claimants who reached State Pension age before 1 April 2021, whose
+# allowance does not depend on the April 2021 cohort split.
 
 - name: AA claimant just above the Guarantee Credit boundary keeps the severe disability premium in HB and CTR
   period: 2026
@@ -33,10 +35,9 @@
     severe_disability_minimum_guarantee_addition: 86.05 * 52
     pension_age_severe_disability_premium: 86.05 * 52
     benefits_premiums: 86.05 * 52
-    # (256.00 + 86.05) * 52 = 17,786.60
-    housing_benefit_applicable_amount: 17_786.60
-    council_tax_reduction_applicable_amount: 17_786.60
-    # HB income 16,548.80 is below the applicable amount: maximum HB.
+    # HB income 16,548.80 is below the applicable amount, (238.00 or 256.00
+    # + 86.05) * 52 = 16,850.60 or 17,786.60 whichever allowance cohort
+    # applies, so HB and CTR are at their maximum.
     housing_benefit: 6_240
     council_tax_benefit: 2_000
 
@@ -71,7 +72,7 @@
   input:
     people:
       claimant:
-        age: {2026: 70}
+        age: {2026: 80}
         dla_sc_category: {2026: HIGHER}
         is_disabled_for_benefits: {2026: true}
     benunits:
@@ -180,3 +181,100 @@
     # qualifies. (256.00 + 86.05) * 52 = 17,786.60.
     benefits_premiums: 86.05 * 52
     council_tax_reduction_applicable_amount: 17_786.60
+
+- name: A dependent child does not withhold the pensioner's severe disability premium
+  # SPC Regs 2002 Sch I para 1(1)(a)(ii) counts only residents aged 18 or
+  # over, and para 2(2)(f) ignores qualifying young people.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: {2026: 80}
+        dla_sc_category: {2026: HIGHER}
+      child:
+        age: {2026: 12}
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: {2026: ENGLAND}
+        tenure_type: {2026: RENT_FROM_COUNCIL}
+        rent: {2026: 6_240}
+  output:
+    severe_disability_minimum_guarantee_addition: 86.05 * 52
+    pension_age_severe_disability_premium: 86.05 * 52
+
+- name: A pensioner's own Carer's Allowance does not withhold their severe disability premium
+  # The addition is withheld only for a carer benefit paid "in respect of
+  # caring for him" (Sch I para 1(1)(a)(iii); HB(SPC) Sch 3 para 6(2)(a)(iii)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: {2026: 80}
+        dla_sc_category: {2026: HIGHER}
+        care_hours: {2026: 40}
+        carers_allowance_reported: {2026: 4_000}
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: {2026: ENGLAND}
+        tenure_type: {2026: RENT_FROM_COUNCIL}
+        rent: {2026: 6_240}
+  output:
+    receives_carer_benefit: true
+    pension_age_severe_disability_premium: 86.05 * 52
+    # Severe disability premium plus carer premium.
+    benefits_premiums: (86.05 + 48.15) * 52
+
+- name: Couple who both receive AA, one paid Carer's Allowance for the other, get one rate
+  # Sch I para 1(1)(b) and reg 6(5)(a): one rate where a carer benefit is
+  # paid for caring for one only of the partners.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: {2026: 80}
+        aa_category: {2026: HIGHER}
+      partner:
+        age: {2026: 78}
+        aa_category: {2026: LOWER}
+        care_hours: {2026: 40}
+        carers_allowance_reported: {2026: 4_000}
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: {2026: ENGLAND}
+        tenure_type: {2026: RENT_FROM_COUNCIL}
+        rent: {2026: 6_240}
+  output:
+    severe_disability_minimum_guarantee_addition: 86.05 * 52
+
+- name: The pension-age premium is zero below State Pension age
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: {2026: 40}
+        pip_dl_category: {2026: STANDARD}
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: {2026: ENGLAND}
+  output:
+    pension_age_severe_disability_premium: 0

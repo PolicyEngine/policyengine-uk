@@ -1,3 +1,4 @@
+import pytest
 from policyengine_uk import Simulation
 
 
@@ -43,7 +44,7 @@ def test_scottish_carers_move_to_csp_in_2025():
     assert sim.calculate("carer_support_payment", YEAR_2025)[0] > 0
 
 
-def test_csp_counts_for_pension_credit_carer_additions_and_blocks_severe_disability():
+def test_csp_counts_for_pension_credit_carer_additions_but_not_against_own_severe_disability():
     sim = Simulation(
         situation=_situation(
             YEAR_2025,
@@ -59,9 +60,18 @@ def test_csp_counts_for_pension_credit_carer_additions_and_blocks_severe_disabil
     assert sim.calculate("carer_minimum_guarantee_addition", YEAR_2025)[0] == (
         expected_carer_addition
     )
-    assert (
-        sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[0] == 0
+    # Carer Support Payment withholds the severe disability addition only when
+    # it is paid for caring for the disabled person (SPC Regs 2002 Sch I para
+    # 1(1)(a)(iii)), so a carer's own payment never withholds theirs.
+    expected_severe_disability_addition = (
+        float(
+            parameters.gov.dwp.pension_credit.guarantee_credit.severe_disability.addition
+        )
+        * 52
     )
+    assert sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[
+        0
+    ] == pytest.approx(expected_severe_disability_addition)
 
 
 def test_csp_counts_for_uc_non_dep_exemption_and_housing_benefit_income():

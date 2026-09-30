@@ -25,9 +25,11 @@ children or carers, who rent from the council in England in 2026:
    household net income, excluding the TV licence fee, does not fall. The
    free TV licence for over-75s on Pension Credit is a genuine statutory
    cliff, so it is excluded.
-3. Differential: over State Pension age the premium equals the Pension
-   Credit severe disability addition; below it, benefits_premiums is still
-   the sum of the four legacy premiums.
+3. Schedule: over State Pension age the premium is a whole number (0, 1 or
+   2) of weekly severe disability rates, equals the Pension Credit severe
+   disability addition, and is the only premium besides the carer premium;
+   below State Pension age it is zero and benefits_premiums is the sum of the
+   four legacy premiums, so working-age applicable amounts are unchanged.
 
 Carers are not drawn. Pension Credit income leaves out Carer's Allowance and
 two carers get one carer premium, so the invariants do not yet hold for
@@ -200,16 +202,21 @@ def test_premiums_follow_the_pension_age_and_working_age_schedules(adults, age):
         return float(simulation.calculate(variable, YEAR)[0])
 
     pension_age = bool(simulation.calculate("is_SP_age", YEAR).any())
+    premium = get("pension_age_severe_disability_premium")
     if pension_age:
-        assert (
-            abs(
-                get("pension_age_severe_disability_premium")
-                - get("severe_disability_minimum_guarantee_addition")
-            )
-            < 0.005
+        weekly_rate = float(
+            simulation.tax_benefit_system.parameters(
+                YEAR
+            ).gov.dwp.pension_credit.guarantee_credit.severe_disability.addition
         )
-        expected = get("pension_age_severe_disability_premium") + get("carer_premium")
+        rates = premium / (weekly_rate * 52)
+        assert min(abs(rates - k) for k in (0, 1, 2)) < 1e-6, rates
+        assert (
+            abs(premium - get("severe_disability_minimum_guarantee_addition")) < 0.005
+        )
+        expected = premium + get("carer_premium")
     else:
+        assert premium == 0
         expected = sum(
             get(variable)
             for variable in [

@@ -33,4 +33,6 @@ class pension_age_severe_disability_premium(Variable):
     )
 
     def formula(benunit, period, parameters):
-        return benunit("severe_disability_minimum_guarantee_addition", period)
+        pension_age = benunit.any(benunit.members("is_SP_age", period))
+        addition = benunit("severe_disability_minimum_guarantee_addition", period)
+        return where(pension_age, addition, 0)
