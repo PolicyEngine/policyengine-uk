@@ -5,9 +5,10 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 10
-    benunit_tax: 1
+    uc_income_tax_on_earnings: 1
   output:
-    uc_earned_income: 1100 - 11
+    uc_individual_earned_income: 1_100 - 1
+    uc_earned_income: 1_100 - 11
 
 - name: Capped at 0
   period: 2025
@@ -16,6 +17,45 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 2_000
-    benunit_tax: 1
+    uc_income_tax_on_earnings: 1
   output:
     uc_earned_income: 0
+
+- name: Each person's deductions come off only their own earnings
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      earner:
+        employment_income: 1_000
+        uc_income_tax_on_earnings: 100
+        uc_national_insurance_on_earnings: 10
+      partner:
+        uc_income_tax_on_earnings: 500
+        pension_contributions: 50
+    benunits:
+      benunit:
+        members: [earner, partner]
+        uc_work_allowance: 0
+  output:
+    uc_individual_earned_income: [890, 0]
+    uc_earned_income: 890
+
+- name: Work allowance comes off combined earnings after each person's deductions
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      earner:
+        employment_income: 1_000
+        uc_income_tax_on_earnings: 100
+      partner:
+        employment_income: 500
+        pension_contributions: 50
+    benunits:
+      benunit:
+        members: [earner, partner]
+        uc_work_allowance: 300
+  output:
+    uc_individual_earned_income: [900, 450]
+    uc_earned_income: 1_050
