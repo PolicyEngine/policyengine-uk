@@ -48,7 +48,11 @@ class housing_benefit_eligible(Variable):
         claiming_uc = benunit("would_claim_uc", period)
         continuing_award = already_claiming & ~claiming_uc
         social = benunit.any(person("in_social_housing", period))
-        lha_eligible = benunit("LHA_eligible", period)
+        # Social and private renters alike. A private renter of a houseboat,
+        # caravan or mobile home has no maximum rent (LHA) (SI 2006/213 and
+        # SI 2006/214 reg 13C(5)(d)(i)) but still pays rent (reg 12(1)), so
+        # this tests renting, not LHA_eligible.
+        renting = benunit("benunit_is_renting", period)
         any_over_SP_age = benunit.any(sp_age)
         capital = benunit("housing_benefit_assessable_capital", period)
         hb_capital = parameters(period).gov.dwp.housing_benefit.means_test.capital
@@ -58,7 +62,5 @@ class housing_benefit_eligible(Variable):
             hb_capital.working_age.limit,
         )
         return (
-            (pension_age | continuing_award)
-            & (social | lha_eligible)
-            & (capital <= limit)
+            (pension_age | continuing_award) & (social | renting) & (capital <= limit)
         )

@@ -1,0 +1,1 @@
+Private renters in a houseboat, caravan or mobile home no longer have their Housing Benefit eligible rent capped at the Local Housing Allowance (SI 2006/213 and SI 2006/214 reg 13C(5)(d)(i); SR 2006/405 and SR 2006/406 reg 14C(5)(d)(i)), and stay eligible for Housing Benefit.

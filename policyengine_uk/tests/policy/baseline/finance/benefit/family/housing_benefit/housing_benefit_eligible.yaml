@@ -1,39 +1,60 @@
+# Continuing-award route for a working-age family (age defaults to 40) in
+# 2021: a reported award, no Universal Credit claim, and renting, from a social
+# landlord or privately. Private renters qualify whether or not the Local
+# Housing Allowance sets their eligible rent (see lha_mobile_homes.yaml).
+
 - name: Social housing eligible
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: true
     housing_benefit_reported: 1
-    LHA_eligible: false
+    would_claim_uc: false
+    benunit_is_renting: true
   output:
     housing_benefit_eligible: true
 
-- name: LHA eligible
+- name: Private renter eligible
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: false
     housing_benefit_reported: 1
-    LHA_eligible: true
+    would_claim_uc: false
+    benunit_is_renting: true
   output:
     housing_benefit_eligible: true
 
 - name: Not already enrolled
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: false
     housing_benefit_reported: 0
-    LHA_eligible: true
+    would_claim_uc: false
+    benunit_is_renting: true
   output:
     housing_benefit_eligible: false
 
 - name: Not eligible
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: false
     housing_benefit_reported: 1
-    LHA_eligible: false
+    would_claim_uc: false
+    benunit_is_renting: false
   output:
     housing_benefit_eligible: false
+
+- name: Private renter of a caravan eligible
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    housing_benefit_reported: 1
+    would_claim_uc: false
+    tenure_type: RENT_PRIVATELY
+    accommodation_type: MOBILE
+  output:
+    LHA_eligible: false
+    housing_benefit_eligible: true
