@@ -30,9 +30,15 @@ Three variables under `gov/dwp/`:
 
 All three split the amount a person reported in the data year (the
 dataset's first year) by the person's `state_pension_type` in the year
-simulated, and uprate it by that type's flat rate: the year's full rate
-over the data year's. Together they pay the reported amount uprated by the
-flat rate, for anyone over State Pension age.
+simulated. The part up to that type's full rate in the data year is basic
+or new State Pension, and the part above it is additional State Pension.
+Both parts are uprated by the type's full rate (the year's over the data
+year's), so together they pay the reported amount uprated by the flat rate,
+for anyone over State Pension age. In law, additional pensions and
+protected payments rise with prices instead: the Social Security Benefits
+Up-rating Order 2026 raised them by 3.8% in April 2026 (articles 4(3) and
+6(3)), and the full rates by 4.8%. This is tracked in
+[#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941).
 
 Survey ages are held fixed in the years a dataset is projected to, so a
 record's birth cohort moves one year later for each year projected, and its
@@ -44,7 +50,9 @@ in 2021, on the new State Pension. Until the fix for
 used the year's, so for records like his the part of the reported amount
 between the basic and new flat rates was paid twice. The records keep their
 reported amounts: a record that moves to a new State Pension cohort is not
-given a new State Pension award.
+given a new State Pension award. That is one reason the model's State
+Pension per recipient grows more slowly than DWP's (see Known aggregate gap
+below).
 
 The flag-up split (`state_pension_type`) is settled by [PR #1618](https://github.com/PolicyEngine/policyengine-uk/pull/1618):
 classification is based on whether the person reaches State Pension age

@@ -58,5 +58,7 @@ class additional_state_pension(Variable):
             max_for_type_period / max_for_type_data,
             1,
         )
-        # The type is NONE below State Pension age, so nothing is paid there.
-        return amount_in_data_year * uprating * WEEKS_IN_YEAR
+        # No State Pension is paid before State Pension age. A computed type
+        # is already NONE there; this also holds if the type is an input.
+        is_sp_age = person("is_SP_age", period)
+        return is_sp_age * amount_in_data_year * uprating * WEEKS_IN_YEAR

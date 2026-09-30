@@ -5,8 +5,9 @@ State Pension a person reported in the data year. Survey ages are held fixed
 across the years a dataset is projected to, so a record's birth cohort moves
 one year later for each year projected, and its State Pension type in the
 period can differ from its type in the data year. All three components split
-by the period's type, so together they pay the reported amount uprated by that
-type's flat rate.
+by the period's type, so together they split the reported amount with no
+overlap and no gap: the part up to the type's full rate is uprated by the full
+rate, and the part above it by the add-on's uprating (see add_on_uprating).
 
 The YAML runner builds simulations without a dataset, where the data year is
 the period by construction, so these cases build simulations from data.
@@ -76,10 +77,29 @@ def flat_rates(sim, year: int) -> dict:
     }
 
 
+def flat_uprating(sim, year: int, pension_type: str) -> float:
+    """The type's full rate in the year over its full rate in the data year."""
+    return (
+        flat_rates(sim, year)[pension_type] / flat_rates(sim, DATA_YEAR)[pension_type]
+    )
+
+
+def add_on_uprating(sim, year: int, pension_type: str) -> float:
+    """Uprating of the part above the full rate (additional pension, protected
+    payments). The model uprates it by the full rate; in law these rise with
+    prices (Social Security Benefits Up-rating Order 2026 arts 4(3) and 6(3)),
+    tracked in PolicyEngine/policyengine-uk#1941. Change it here with the model."""
+    return flat_uprating(sim, year, pension_type)
+
+
 def uprated_reported(sim, year: int, pension_type: str, weekly: float) -> float:
-    """The data-year amount uprated by the flat rate of the period's type."""
-    now, then = flat_rates(sim, year), flat_rates(sim, DATA_YEAR)
-    return weekly * WEEKS_IN_YEAR * now[pension_type] / then[pension_type]
+    """The data-year amount, its part up to the full rate uprated by the full
+    rate and the part above it by the add-on's uprating."""
+    full = flat_rates(sim, DATA_YEAR)[pension_type]
+    return WEEKS_IN_YEAR * (
+        min(weekly, full) * flat_uprating(sim, year, pension_type)
+        + max(weekly - full, 0) * add_on_uprating(sim, year, pension_type)
+    )
 
 
 def calculate(sim, variable: str, year: int) -> np.ndarray:
@@ -114,18 +134,18 @@ def test_protected_payment_above_new_state_pension_follows_period_type():
     2014 on the basic State Pension; held at 72 she stands, by 2030-31, for a
     woman born in 1958, on the new State Pension. Her £240 a week exceeds the
     new State Pension's full rate, so the excess is additional State Pension
-    (a protected payment) at the new State Pension's uprating."""
+    (a protected payment), uprated as the model uprates add-ons."""
     person = {"age": 72, "male": False, "months": 3, "weekly": 240}
     sim = projected_simulation([person])
     assert calculate(sim, "state_pension_type", DATA_YEAR)[0] == "BASIC"
     assert calculate(sim, "state_pension_type", 2030)[0] == "NEW"
     rates, data_rates = flat_rates(sim, 2030), flat_rates(sim, DATA_YEAR)
-    uprating = rates["NEW"] / data_rates["NEW"]
     assert calculate(sim, "new_state_pension", 2030)[0] == pytest.approx(
         rates["NEW"] * WEEKS_IN_YEAR, abs=0.01
     )
     assert calculate(sim, "additional_state_pension", 2030)[0] == pytest.approx(
-        (240 - data_rates["NEW"]) * WEEKS_IN_YEAR * uprating, abs=0.01
+        (240 - data_rates["NEW"]) * WEEKS_IN_YEAR * add_on_uprating(sim, 2030, "NEW"),
+        abs=0.01,
     )
 
 
@@ -204,27 +224,46 @@ PEOPLE = st.lists(
 )
 
 
+def by_type(pension_type: np.ndarray, basic, new) -> np.ndarray:
+    return np.select([pension_type == "BASIC", pension_type == "NEW"], [basic, new], 0)
+
+
 def assert_components_add_up(sim, people: list, years) -> None:
     """For each person and year: below State Pension age, no component and type
-    NONE; over it, only the period type's flat-rate component, and the three
-    components sum to the reported amount uprated by that type's flat rate."""
+    NONE. Over it, only the period type's flat-rate component, which is the
+    reported amount up to the type's full rate, uprated by the full rate; and,
+    deflating each component by its own uprating, the three components add up
+    to exactly the reported amount, with no overlap and no gap."""
     weekly = np.array([p["weekly"] for p in people])
     for year in years:
         pension_type = calculate(sim, "state_pension_type", year).astype(str)
         over_spa = calculate(sim, "is_SP_age", year).astype(bool)
         basic, new, additional = (calculate(sim, v, year) for v in COMPONENTS)
         rates, data_rates = flat_rates(sim, year), flat_rates(sim, DATA_YEAR)
-        uprating = np.select(
-            [pension_type == "BASIC", pension_type == "NEW"],
-            [
-                rates["BASIC"] / data_rates["BASIC"],
-                rates["NEW"] / data_rates["NEW"],
-            ],
+        full = by_type(pension_type, data_rates["BASIC"], data_rates["NEW"])
+        flat_up = by_type(
+            pension_type,
+            flat_uprating(sim, year, "BASIC"),
+            flat_uprating(sim, year, "NEW"),
+        )
+        add_up = by_type(
+            pension_type,
+            add_on_uprating(sim, year, "BASIC"),
+            add_on_uprating(sim, year, "NEW"),
+        )
+        reported = weekly * WEEKS_IN_YEAR
+        assert np.array_equal(pension_type == "NONE", ~over_spa), year
+        flat = basic + new
+        expected_flat = over_spa * np.minimum(reported, full * WEEKS_IN_YEAR) * flat_up
+        assert np.allclose(flat, expected_flat, rtol=1e-5, atol=0.01)
+        deflated = np.where(
+            over_spa,
+            flat / np.where(over_spa, flat_up, 1)
+            + additional / np.where(over_spa, add_up, 1),
             0,
         )
-        expected = over_spa * weekly * WEEKS_IN_YEAR * uprating
-        assert np.array_equal(pension_type == "NONE", ~over_spa), year
-        assert np.allclose(basic + new + additional, expected, rtol=1e-5, atol=0.01)
+        assert np.allclose(deflated, over_spa * reported, rtol=1e-5, atol=0.01)
+        assert np.all(additional[~over_spa] == 0)
         assert np.all(basic[pension_type != "BASIC"] == 0)
         assert np.all(new[pension_type != "NEW"] == 0)
         assert np.all(additional >= 0)
