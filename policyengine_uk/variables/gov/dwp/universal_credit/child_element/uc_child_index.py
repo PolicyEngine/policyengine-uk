@@ -17,8 +17,8 @@ class uc_child_index(Variable):
         is_uc_child = person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
         ) & ~person("is_uc_claimant", period)
-        # Reg 24B orders children and qualifying young persons by date of
-        # birth, eldest first, where the claimant is their parent.
+        # Reg 24B(1) orders children and qualifying young persons by date of
+        # birth, taking the earliest first.
         child_ranking = (
             person.get_rank(
                 person.benunit,
