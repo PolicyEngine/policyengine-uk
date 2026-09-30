@@ -7,10 +7,14 @@ class in_receipt_of_guarantee_credit(Variable):
         "Whether the claimant or partner in this benefit unit is in receipt of "
         "a guarantee credit: the benefit unit is eligible for Pension Credit, "
         "claims it, and its Guarantee Credit is positive. A Guarantee Credit "
-        "computed for a family that does not claim Pension Credit, or is not "
-        "eligible for it (for example a working-age or mixed-age family), is "
-        "not received. Under the Pension Credit freeze the baseline receipt is "
-        "kept, because the frozen award is the baseline award."
+        "computed for a family that does not claim Pension Credit, or that the "
+        "model does not treat as eligible for it (for example a working-age "
+        "family), is not received. The model's Pension Credit eligibility "
+        "omits the SI 2019/37 article 4 saving, so a mixed-age couple it saves "
+        "(entitled to Pension Credit or Housing Benefit as that couple on 14 "
+        "May 2019, and to either ever since) is not treated as in receipt. Under "
+        "the Pension Credit freeze the baseline receipt is kept, because the "
+        "frozen award is the baseline award."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -18,6 +22,8 @@ class in_receipt_of_guarantee_credit(Variable):
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/1",
         "https://www.legislation.gov.uk/ukpga/2002/16/section/2",
+        "https://www.legislation.gov.uk/ukpga/1992/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2019/37/article/4",
     )
 
     def formula(benunit, period, parameters):
