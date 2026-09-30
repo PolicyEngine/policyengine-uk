@@ -11,6 +11,7 @@ from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
+import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -285,3 +286,27 @@ def test_a_date_of_birth_input_matches_the_same_birthday_by_age(births, year):
     )
     assert list(a.calculate("date_of_birth", year)[1:]) == [ymd(d) for d in births]
     assert a.calculate("date_of_birth", year)[0] == 0
+
+
+@pytest.mark.parametrize(
+    "date_of_birth, age",
+    [
+        (20170229, 8),  # 29 February 2017 does not exist
+        (20170340, 8),  # nor does 40 March
+        (2017, 8),  # a birth year, not a date
+    ],
+)
+def test_an_invalid_date_of_birth_is_rejected(date_of_birth, age):
+    people = {"child": {"age": {2025: age}, "date_of_birth": {2025: date_of_birth}}}
+    sim = Simulation(situation=situation(people))
+    with pytest.raises(ValueError, match="calendar date"):
+        sim.calculate("uc_is_child_born_before_child_limit", 2025)
+
+
+def test_a_date_of_birth_that_contradicts_age_is_rejected():
+    """A child given only a date of birth keeps the default age; the rules
+    would read them as a 40-year-old born in 2017."""
+    people = {"child": {"date_of_birth": {2025: 20170405}}}
+    sim = Simulation(situation=situation(people))
+    with pytest.raises(ValueError, match="aged 8 on 6 October 2025"):
+        sim.calculate("is_SP_age", 2025)

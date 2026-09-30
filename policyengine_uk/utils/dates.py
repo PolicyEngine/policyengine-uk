@@ -142,7 +142,41 @@ def birth_instant(person, period) -> np.ndarray:
     use_given = (given > 0) & (given != grid_months_to_yyyymmdd(from_age))
     # Any valid date stands in where the input is not used.
     safe_given = np.where(use_given, given, 19700106)
-    return np.where(use_given, yyyymmdd_to_grid_months(safe_given), from_age)
+    given_instant = yyyymmdd_to_grid_months(safe_given)
+    if use_given.any():
+        _check_given_dates_of_birth(
+            given[use_given],
+            given_instant[use_given],
+            np.asarray(person("age", period), dtype=np.float64)[use_given],
+            period.start.year,
+        )
+    return np.where(use_given, given_instant, from_age)
+
+
+def _check_given_dates_of_birth(dates, instants, ages, year: int) -> None:
+    """Reject a date_of_birth input that is not a calendar date, or whose
+    legal age on 6 October is not the person's age: silently normalising
+    either would misplace the person in every date-of-birth rule."""
+    invalid = grid_months_to_yyyymmdd(instants) != dates
+    if invalid.any():
+        raise ValueError(
+            "date_of_birth must be a calendar date written as YYYYMMDD, such "
+            f"as 20170405; got {sorted(set(dates[invalid].tolist()))[:5]}."
+        )
+    legal_age = np.floor((grid_month(year, 10) - instants) / 12)
+    mismatch = legal_age != np.floor(ages)
+    if mismatch.any():
+        examples = [
+            f"{d} is aged {int(a)} on 6 October {year}, not {int(np.floor(g))}"
+            for d, a, g in zip(
+                dates[mismatch][:5], legal_age[mismatch][:5], ages[mismatch][:5]
+            )
+        ]
+        raise ValueError(
+            "Set age to the age on 6 October that date_of_birth gives: "
+            + "; ".join(examples)
+            + "."
+        )
 
 
 def birth_day(person, period) -> np.ndarray:

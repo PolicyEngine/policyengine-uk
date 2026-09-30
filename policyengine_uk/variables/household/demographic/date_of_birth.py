@@ -19,9 +19,11 @@ class date_of_birth(Variable):
         "such as State Pension age and the 6 April 2017 cutoffs in Universal "
         "Credit, Child Tax Credit and Pension Credit, compare it with a date. "
         "A person's age is held fixed across years, so their date of birth "
-        "moves with the period. It can be set directly, with age set to the "
-        "person's age on 6 October; a situation that sets it for some people "
-        "gives the others 0, which the rules read as not given."
+        "moves with the period. It can be set directly for a year, with age "
+        "set to the person's age on 6 October of it (anything else raises an "
+        "error); like age, an input applies only to the year it is given for. "
+        "A situation that sets it for some people gives the others 0, which "
+        "the rules read as not given."
     )
     definition_period = YEAR
     unit = "date"
