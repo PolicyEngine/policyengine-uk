@@ -1,0 +1,91 @@
+description: Weekly earnings disregards for working-age applicants under the Scottish council tax reduction scheme.
+single:
+  description: Weekly earnings disregard for a single applicant to whom no other disregard applies.
+  values:
+    2013-04-01: 5
+  metadata:
+    label: Scotland working-age CTR earnings disregard, single
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 11
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+couple:
+  description: Weekly earnings disregard for a couple, a member of which is in employment, to whom no higher disregard applies.
+  values:
+    2013-04-01: 10
+  metadata:
+    label: Scotland working-age CTR earnings disregard, couple
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 8
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+lone_parent:
+  description: Weekly earnings disregard for a lone parent.
+  values:
+    2013-04-01: 25
+  metadata:
+    label: Scotland working-age CTR earnings disregard, lone parent
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 5
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+disability_or_carer:
+  description: Weekly earnings disregard where the applicable amount includes a disability premium, severe disability premium or carer premium.
+  values:
+    2013-04-01: 20
+  metadata:
+    label: Scotland working-age CTR earnings disregard, disability or carer
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 paras. 4 and 6
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+additional:
+  description: Additional weekly earnings disregard for applicants without Universal Credit who meet a work condition.
+  values:
+    2013-04-01: 17.10
+  metadata:
+    label: Scotland working-age CTR additional earnings disregard
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 15
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+additional_full_time_hours:
+  description: Weekly hours of remunerative work from which an applicant aged 25 or over qualifies for the additional earnings disregard.
+  values:
+    2013-04-01: 30
+  metadata:
+    label: Scotland working-age CTR additional earnings disregard full-time hours
+    unit: hour
+    period: week
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 15(2)
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+additional_full_time_age:
+  description: Age from which an applicant working the full-time hours qualifies for the additional earnings disregard.
+  values:
+    2013-04-01: 25
+  metadata:
+    label: Scotland working-age CTR additional earnings disregard full-time age
+    unit: year
+    period: year
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 15(2)
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+remunerative_work_hours:
+  description: Weekly hours from which a person is in remunerative work.
+  values:
+    2013-04-01: 16
+  metadata:
+    label: Scotland working-age CTR remunerative work hours
+    unit: hour
+    period: week
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 10(1)
+        href: https://www.legislation.gov.uk/ssi/2021/249/regulation/10
+metadata:
+  label: Scotland working-age CTR earnings disregards

@@ -4,7 +4,8 @@ Invariant: for any benefit unit, giving income to a member who is neither the
 claimant, the partner, nor the programme's own child or young person (for
 example an 18- or 19-year-old presumed the claimant's child but not in
 education, or a third adult) never changes a means test's income. The UC, HB,
-IS, tax credit, CTR and Pension Credit income totals are covered.
+IS, tax credit, CTR (including the Scottish and Welsh working-age income) and
+Pension Credit income totals are covered.
 
 Each example builds families twice in one simulation: once with the other
 member's income and once without, in separate households and benefit units.
@@ -24,6 +25,7 @@ INCOME_TESTS = [
     "income_support_applicable_income",
     "tax_credits_applicable_income",
     "council_tax_reduction_applicable_income",
+    "council_tax_reduction_working_age_applicable_income",
     "pension_credit_income",
 ]
 EDUCATIONS = ["NOT_IN_EDUCATION", "UPPER_SECONDARY", "TERTIARY"]
