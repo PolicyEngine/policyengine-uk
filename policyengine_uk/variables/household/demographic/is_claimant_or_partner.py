@@ -16,8 +16,8 @@ class is_claimant_or_partner(Variable):
     adult or a couple plus dependent children.
 
     - Only HBAI adults (`is_hbai_adult`) can be a claimant or partner.
-    - The claimant is the benefit-unit head, or the eldest adult if the head
-      is not an adult.
+    - The claimant is the benefit-unit head (the eldest adult head if more
+      than one is given), or the eldest adult if the head is not an adult.
     - The partner is one other member: the eldest other member flagged as a
       parent (`is_parent`) if there is one, otherwise the eldest other adult
       who is not presumed to be the claimant's child. A member under 20 and at
@@ -50,7 +50,12 @@ class is_claimant_or_partner(Variable):
         eldest_adult = adult & (
             person.get_rank(person.benunit, -age, condition=adult) == 0
         )
-        claimant = where(head_is_adult, is_head & adult, eldest_adult)
+        # With more than one head (malformed input), the eldest adult head.
+        adult_head = is_head & adult
+        eldest_adult_head = adult_head & (
+            person.get_rank(person.benunit, -age, condition=adult_head) == 0
+        )
+        claimant = where(head_is_adult, eldest_adult_head, eldest_adult)
         claimant_age = person.benunit.max(where(claimant, age, -np.inf))
         identified_parent = adult & person("is_parent", period)
         other_parent = identified_parent & ~claimant

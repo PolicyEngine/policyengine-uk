@@ -347,3 +347,27 @@
         members: [head, partner]
   output:
     is_couple: true
+
+- name: With two explicit heads, the eldest adult head is the claimant
+  # Malformed input: two members flagged as head. The eldest is the claimant,
+  # the other adult head becomes the partner, and the 24-year-old is neither.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head_1:
+        age: 45
+        is_benunit_head: true
+      head_2:
+        age: 43
+        is_benunit_head: true
+      other:
+        age: 24
+    benunits:
+      benunit:
+        members: [head_1, head_2, other]
+    households:
+      household:
+        members: [head_1, head_2, other]
+  output:
+    is_claimant_or_partner: [true, true, false]

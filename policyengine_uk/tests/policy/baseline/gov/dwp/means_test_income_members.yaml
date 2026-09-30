@@ -119,3 +119,44 @@
     tax_credits_applicable_income: 10_000
     council_tax_reduction_applicable_income: 10_000
     uc_earned_income: 10_000
+
+- name: A non-member's hours do not earn the claimant the HB worker disregard
+  # HB Sch 4 para 17 tests the claimant's or partner's work. The 19-year-old
+  # (not in education, presumed the claimant's child, not a young person)
+  # works 35 hours; only the single-claimant disregard applies, as for the
+  # claimant alone.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+      young_adult:
+        age: 19
+        weekly_hours: 35
+        employment_income: 15_000
+    benunits:
+      benunit:
+        members: [claimant, young_adult]
+    households:
+      household:
+        members: [claimant, young_adult]
+  output:
+    is_claimant_or_partner: [true, false]
+    housing_benefit_applicable_income_disregard: 344.58
+
+- name: The same claimant alone gets the same HB disregard
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    housing_benefit_applicable_income_disregard: 344.58

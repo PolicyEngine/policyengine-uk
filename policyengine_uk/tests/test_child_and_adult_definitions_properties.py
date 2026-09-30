@@ -229,7 +229,8 @@ def claimants_or_partners(family):
     adults = [i for i in range(n) if adult[i]]
     if not adults:
         return [False] * n
-    claimant = heads[0] if heads else max(adults, key=lambda i: (ages[i], -i))
+    pool = heads or adults
+    claimant = max(pool, key=lambda i: (ages[i], -i))
     parent = [adult[i] and family[i]["is_parent"] for i in range(n)]
     other_parents = [i for i in range(n) if parent[i] and i != claimant]
     if len(other_parents) >= 2 and not parent[claimant]:
