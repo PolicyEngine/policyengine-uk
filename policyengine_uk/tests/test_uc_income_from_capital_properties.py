@@ -246,10 +246,10 @@ def test_uc_is_non_increasing_in_capital(units, source, bump, year):
 
 @pytest.mark.xfail(
     strict=True,
+    raises=AssertionError,
     reason=(
-        "PolicyEngine/policyengine-uk#1942: uc_earned_income deducts the whole "
-        "benefit unit's income tax, including the partner's tax on dividends, "
-        "from earnings"
+        "PolicyEngine/policyengine-uk#1942: uc_earned_income deducts the benefit "
+        "unit's whole income tax, including tax on dividends, from earnings"
     ),
 )
 def test_tax_on_dividends_does_not_raise_a_working_familys_award():
