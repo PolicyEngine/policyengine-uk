@@ -10,9 +10,9 @@ class uc_minimum_income_floor_national_insurance(Variable):
         "individual threshold to give their net minimum income floor. The "
         "regulations leave it to the Secretary of State. The model takes the "
         "contributions the person would pay if the threshold were their only "
-        "earnings: primary Class 1 on pay of that amount, or, where the "
-        "parameter selects self-employed contributions, Class 2 and Class 4 "
-        "on profits of that amount."
+        "earnings: Class 2 and Class 4 on self-employed profits of that "
+        "amount, as in DWP's figures, or primary Class 1 on pay of that "
+        "amount where the parameter selects it."
     )
     definition_period = YEAR
     unit = GBP

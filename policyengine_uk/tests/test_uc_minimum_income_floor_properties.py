@@ -28,10 +28,11 @@ start-up periods, in England, Wales and Scotland:
    regulation.
 5. Differential against the tax engine: the notional income tax deducted
    from the threshold equals the income tax the same person would pay with
-   the gross threshold as their only income, from employment. The notional
-   NI equals the primary Class 1 they would pay on it as pay or, under the
-   self-employed basis, the Class 2 and Class 4 they would pay on it as
-   profits. So the net floor never exceeds the gross threshold.
+   the gross threshold as their only income, as pay (no trading
+   allowance). The notional NI equals the Class 2 and Class 4 they would
+   pay on it as profits (the default basis) or, with the parameter
+   switched, the primary Class 1 they would pay on it as pay. So the net
+   floor never exceeds the gross threshold.
 6. Monotone: more earnings never lower a benefit unit's earned income, and
    never raise UC before the benefit cap. Before this fix, a self-employed
    claimant under the floor was treated as having the gross threshold less

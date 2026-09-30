@@ -31,15 +31,14 @@ class uc_individual_earned_income_before_mif(Variable):
         # The deductions are the person's own and come off only their own
         # earnings, so one partner's tax, NI or pension contributions never
         # reduce the other partner's earned income.
-        earnings_components = [
-            "employment_income",
-            "self_employment_income",
-            "miscellaneous_income",
-        ]
+        earnings_components = ["employment_income", "miscellaneous_income"]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             earnings_components.append("basic_income")
-        earnings = add(person, period, earnings_components)
+        # A trading loss makes self-employed earnings nil (reg. 57(2)); it
+        # is not set against employed earnings.
+        self_employed = max_(0, person("self_employment_income", period))
+        earnings = add(person, period, earnings_components) + self_employed
         deductions = add(
             person,
             period,

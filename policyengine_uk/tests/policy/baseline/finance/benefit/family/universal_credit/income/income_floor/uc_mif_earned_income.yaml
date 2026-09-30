@@ -9,9 +9,11 @@
 #   by which that amount of earned income combined with their partner's
 #   earned income would exceed the couple threshold" (reg. 62(3)).
 #
-# Hand calculations use 2026-27 rates: net floor 20,168.88 for a claimant
-# aged 21 or over in England (23,124 gross, see uc_minimum_income_floor.yaml); personal allowance 12,570, basic rate 20%; trading allowance 1,000;
-# Class 4 NI 6% above 12,570; primary Class 1 NI 8% above 12,569.96; UC
+# Hand calculations use 2026-27 rates: net floor 20,386.03 for a claimant
+# aged 21 or over in England (23,132.20 gross, see
+# uc_minimum_income_floor.yaml); personal allowance 12,570, basic rate 20%;
+# trading allowance 1,000; Class 4 NI 6% above 12,570; primary Class 1 NI 8%
+# above 12,569.96; UC
 # standard allowance 424.90 a month (single, 25 or over), 666.97 (couple),
 # child element 303.94, work allowance 427 a month with housing costs; taper
 # 55%. Marriage Allowance is switched off to keep the tax simple.
@@ -35,14 +37,37 @@
     # Taxable profit 4,000 and profits of 5,000 are below the allowance and
     # the lower profits limit.
     uc_individual_earned_income_before_mif: 5_000
-    uc_individual_earned_income: 20_168.88
-    uc_earned_income: 20_168.88
+    uc_individual_earned_income: 20_386.03
+    uc_earned_income: 20_386.03
     # 424.90 x 12 + 9,600.
     uc_maximum_amount: 14_698.80
-    # 14,698.80 - 0.55 x 20,168.88. Treating the claimant as having the
-    # gross threshold of 12.71 x 35 x 52 = 23,132.20, as before this fix,
-    # gave 1,976.09.
-    universal_credit: 3_605.92
+    # 14,698.80 - 0.55 x 20,386.03. Treating the claimant as having the
+    # gross threshold of 23,132.20, as before this fix, gave 1,976.09.
+    universal_credit: 3_486.48
+
+- name: Higher profits under the floor do not change UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        self_employment_income: 20_000
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # 20,000 - (19,000 - 12,570) x 20% - (20,000 - 12,570) x 6% = 18,268.20,
+    # below the floor, so the same UC as with profits of 5,000. Before this
+    # fix the claimant was treated as having 23,132.20 - 1,286 - 445.80 =
+    # 21,400.40, and UC was 2,928.58 against 1,976.09 at 5,000 and 2,213.58
+    # at 15,000: UC rose with profits.
+    uc_individual_earned_income_before_mif: 18_268.20
+    uc_individual_earned_income: 20_386.03
+    universal_credit: 3_486.48
 
 - name: Floor applies when earnings are below the net floor, even above the gross threshold
   period: 2026
@@ -62,7 +87,7 @@
     # pension contributions too, so this is below the net floor. Before this
     # fix the gross 24,000 was above the gross threshold, so no floor.
     uc_individual_earned_income_before_mif: 18_828.20
-    uc_individual_earned_income: 20_168.88
+    uc_individual_earned_income: 20_386.03
 
 - name: Floor does not apply when net earnings are above the net floor, even below the gross threshold
   period: 2026
@@ -76,7 +101,7 @@
     uc_income_tax_on_earnings: 1_886
     # (23,000 - 12,570) x 6%.
     uc_national_insurance_on_earnings: 625.80
-    # 23,000 - 1,886 - 625.80 is above 20,168.88, so the actual amount
+    # 23,000 - 1,886 - 625.80 is above 20,386.03, so the actual amount
     # counts. Before this fix the gross 23,000 was below the gross threshold
     # and the claimant was treated as having 23,132.20 - 1,886 - 625.80
     # = 20,620.40.
@@ -94,7 +119,7 @@
     # 22,000 - (21,000 - 12,570) x 20% - (22,000 - 12,570) x 6%.
     uc_individual_earned_income_before_mif: 19_748.20
     # Before this fix: 23,132.20 - 1,686 - 565.80 = 20,880.40.
-    uc_individual_earned_income: 20_168.88
+    uc_individual_earned_income: 20_386.03
 
 - name: Floor does not apply in a start-up period
   period: 2026
@@ -235,15 +260,17 @@
     # Employee: 25,000 - (25,000 - 12,570) x 20% - (25,000 - 12,569.96) x 8%
     # = 25,000 - 2,486 - 994.40.
     uc_individual_earned_income_before_mif: [6_000, 21_519.60, 0, 0]
-    # 20,168.88 - (20,168.88 + 21,519.60 - 40,337.75) = 18,818.15, so the
-    # couple has 40,337.75, the couple threshold.
-    uc_individual_earned_income: [18_818.15, 21_519.60, 0, 0]
+    # The couple threshold is 2 x 20,386.028 = 40,772.056. The employee is
+    # 1,133.57 over their own floor, so the self-employed partner is treated
+    # as having 20,386.03 - 1,133.57 = 40,772.056 - 21,519.597 = 19,252.46,
+    # and the couple has the couple threshold.
+    uc_individual_earned_income: [19_252.46, 21_519.60, 0, 0]
     # Less the work allowance of 427 x 12 = 5,124.
-    uc_earned_income: 35_213.75
+    uc_earned_income: 35_648.06
     # 666.97 x 12 + 2 x 303.94 x 12 + 12,000.
     uc_maximum_amount: 27_298.20
-    # 27,298.20 - 0.55 x 35,213.75.
-    universal_credit: 7_930.64
+    # 27,298.20 - 0.55 x 35,648.06.
+    universal_credit: 7_691.77
 
 - name: Floor does not apply to a dependent child with self-employment income
   period: 2026
@@ -257,3 +284,59 @@
         self_employment_income: 500
   output:
     uc_mif_applies: [false, false]
+
+- name: A trading loss counts as self-employment, and the claimant gets the floor
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+    self_employment_income: -3_000
+  output:
+    # Gainful self-employment is a trade carried on in expectation of profit
+    # (reg. 64); a loss makes self-employed earnings nil (reg. 57(2)), and the
+    # floor then applies (ADM H4503).
+    uc_mif_applies: true
+    uc_individual_earned_income_before_mif: 0
+    uc_individual_earned_income: 20_386.03
+
+- name: A trading loss is not set against employed earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+    employment_income: 30_000
+    self_employment_income: -3_000
+  output:
+    # 30,000 - (30,000 - 12,570) x 20% - (30,000 - 12,569.96) x 8%, the same
+    # as with no loss, and above the floor.
+    uc_individual_earned_income_before_mif: 25_119.60
+    uc_individual_earned_income: 25_119.60
+
+- name: A third adult flagged as a claimant does not join the couple threshold
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      self_employed:
+        age: 40
+        self_employment_income: 1_000
+        would_claim_marriage_allowance: false
+      employee:
+        age: 40
+        employment_income: 35_000
+        would_claim_marriage_allowance: false
+      adult_child:
+        age: 25
+        would_claim_marriage_allowance: false
+    households:
+      household:
+        members: [self_employed, employee, adult_child]
+        region: NORTH_EAST
+  output:
+    # A claim has at most two claimants, so the couple is the two eldest.
+    # Employee: 35,000 - (35,000 - 12,570) x 20% - (35,000 - 12,569.96) x 8%
+    # = 28,719.60. Floor: 40,772.056 - 28,719.597 = 12,052.46. Adding the
+    # adult child's floor to the couple threshold would give 20,386.03.
+    uc_individual_earned_income: [12_052.46, 28_719.60, 0]

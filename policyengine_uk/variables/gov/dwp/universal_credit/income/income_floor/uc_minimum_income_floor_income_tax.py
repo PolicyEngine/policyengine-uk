@@ -10,8 +10,8 @@ class uc_minimum_income_floor_income_tax(Variable):
         "individual threshold to give their net minimum income floor. The "
         "regulations leave it to the Secretary of State; the model takes the "
         "income tax the person would pay if the threshold were their only "
-        "income, from employment: the threshold less the standard personal "
-        "allowance, at the person's own rest-of-UK or Scottish rates."
+        "income: the threshold less the standard personal allowance, at the "
+        "person's own rest-of-UK or Scottish rates."
     )
     definition_period = YEAR
     unit = GBP
@@ -29,8 +29,8 @@ class uc_minimum_income_floor_income_tax(Variable):
     def formula(person, period, parameters):
         # Reg. 62(4)(b) deducts "such amount for income tax ... as the
         # Secretary of State considers appropriate". The model treats the
-        # threshold as stand-alone employment income: only the standard
-        # personal allowance applies, and no other income or relief.
+        # threshold as the person's only income: only the standard personal
+        # allowance applies, and no other allowance or relief.
         income_tax = parameters(period).gov.hmrc.income_tax
         threshold = person("uc_minimum_income_floor_gross", period)
         taxable = max_(0, threshold - income_tax.allowances.personal_allowance.amount)

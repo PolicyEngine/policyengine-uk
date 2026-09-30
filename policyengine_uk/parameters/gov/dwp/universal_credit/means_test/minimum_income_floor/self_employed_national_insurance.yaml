@@ -1,11 +1,15 @@
-description: Whether the amount for National Insurance that converts the Universal Credit minimum income floor to a net amount is the Class 2 and Class 4 contributions due on self-employed profits equal to the threshold, rather than the primary Class 1 contributions due on pay equal to it. The regulations leave the amount to the Secretary of State. DWP describes the floor as what an employed person would earn at the minimum wage after tax and National Insurance, so the model uses Class 1; DWP's 2017 guidance on applying the floor deducted Class 2 and Class 4 instead.
+description: Whether the amount for National Insurance that converts the Universal Credit minimum income floor to a net amount is the Class 2 and Class 4 contributions due on self-employed profits equal to the threshold, rather than the primary Class 1 contributions due on pay equal to it. The regulations leave the amount to the Secretary of State. DWP's 2017 guidance on applying the floor deducts Class 2 and Class 4, and the floors DWP has worked through or given claimants match that basis (the ADM example of 946 in 2015-16, 1,144.15 a month in 2019-20 and 1,556.30 in 2024-25); DWP's quick guide describes the floor as what an employed person would earn after tax and National Insurance, which false models instead.
 values:
-  2013-04-29: false
+  2013-04-29: true
 metadata:
   unit: bool
   label: Universal Credit minimum income floor self-employed National Insurance
   reference:
     - title: The Universal Credit Regulations 2013 reg. 62(4)(b)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/62
+    - title: DWP, Applying the Minimum Income Floor, version 9 (3 April 2017, deposited paper DEP2017-0556)
+      href: https://data.parliament.uk/DepositedPapers/Files/DEP2017-0556/6_Applying_the_minimum_income_floor_V9.0.pdf
+    - title: DWP, Advice for Decision Making, chapter H4, H4079
+      href: https://www.gov.uk/government/publications/advice-for-decision-making-staff-guide
     - title: "DWP, Universal Credit and self-employment: quick guide"
       href: https://www.gov.uk/government/publications/universal-credit-for-the-self-employed/universal-credit-and-self-employment-quick-guide

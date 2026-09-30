@@ -8,8 +8,8 @@ class uc_minimum_income_floor_gross(Variable):
     documentation = (
         "The person's individual threshold before the deductions for income "
         "tax and National Insurance: the National Minimum Wage hourly rate "
-        "for their age times their expected hours of work each week, "
-        "converted to a monthly amount in whole pounds, over a year."
+        "for their age (never the apprenticeship rate) times their expected "
+        "hours of work each week, over a year."
     )
     definition_period = YEAR
     unit = GBP
@@ -23,22 +23,22 @@ class uc_minimum_income_floor_gross(Variable):
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/88",
         ),
         dict(
-            title="Universal Credit Regulations 2013 reg. 6(1A)(a)",
-            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/6",
+            title="National Minimum Wage Regulations 2015 regs. 4 and 4A",
+            href="https://www.legislation.gov.uk/uksi/2015/621/regulation/4A",
         ),
     ]
 
     def formula(person, period, parameters):
-        expected_hours = parameters(
-            period
-        ).gov.dwp.universal_credit.work_requirements.default_expected_hours
-        hourly_rate = person("minimum_wage", period).astype(np.float64)
-        # Reg. 90(2) converts the weekly amount "to a monthly amount by
-        # multiplying by 52 and dividing by 12", and reg. 6(1A)(a)
-        # disregards any fraction of a pound in a reg. 90 threshold (ADM
-        # H4079: 234.50 x 52 / 12 = 1,016). Rounding to a millionth first
-        # keeps a whole-pound result whole in floating point.
-        monthly = np.floor(
-            np.round(hourly_rate * expected_hours * WEEKS_IN_YEAR / MONTHS_IN_YEAR, 6)
+        p = parameters(period)
+        expected_hours = (
+            p.gov.dwp.universal_credit.work_requirements.default_expected_hours
         )
-        return monthly * MONTHS_IN_YEAR
+        # Reg. 90(2) uses the rate "a person of the same age as the claimant
+        # would be paid" under NMW Regs reg. 4 or 4A(1)(a) to (c): the rate
+        # for their age, never the apprenticeship rate of reg. 4A(1)(d).
+        hourly_rate = p.gov.hmrc.minimum_wage.non_apprentice.calc(person("age", period))
+        # Reg. 6(1A)(a) disregards fractions of a pound only in amounts
+        # calculated for reg. 90 itself. The floors DWP gives claimants keep
+        # the pence (for example 1,556.30 a month in 2024-25, from 11.44 x 35
+        # x 52 / 12 = 1,735.07), so the threshold here is not rounded.
+        return hourly_rate * expected_hours * WEEKS_IN_YEAR
