@@ -1,0 +1,374 @@
+description: People attain State Pension age at the commencement of this day, which depends on their date of birth; zero where the statute sets an age instead of a day.
+metadata:
+  type: single_amount
+  threshold_unit: date
+  amount_unit: date
+  label: State Pension age day by date of birth
+  documentation: Applies to women, and to men born on or after 6 December 1953; men born earlier follow the male rule. Where the statute sets the age at which State Pension age is attained, the amount is zero and age_by_birth_date gives the age. A person attains State Pension age on the later of the two.
+  reference:
+    - title: Pensions Act 1995, Schedule 4, paragraph 1 (rules for determining pensionable age)
+      href: https://www.legislation.gov.uk/ukpga/1995/26/schedule/4
+    - title: Pensions Act 2014, section 26 (increase in pensionable age to 67)
+      href: https://www.legislation.gov.uk/ukpga/2014/19/section/26
+    - title: Pensions Act 2011, section 1 (equalisation and increase to 66)
+      href: https://www.legislation.gov.uk/ukpga/2011/19/section/1
+    - title: Pensions Act 2007, section 13 (increases to 66, 67 and 68)
+      href: https://www.legislation.gov.uk/ukpga/2007/22/section/13
+    - title: Pensions (Northern Ireland) Order 1995, Schedule 2, paragraph 1 (the same timetable for Northern Ireland)
+      href: https://www.legislation.gov.uk/nisi/1995/3213/schedule/2
+
+# The timetable is keyed from the Pensions Act 1995 and reflects its current
+# text, last amended by the Pensions Act 2014 (section 26, in force 14 July
+# 2014). Earlier versions are not encoded separately: every amendment moved
+# only people who had not yet reached pensionable age, so the timetable gives
+# the right status for any past date.
+#
+# Dates of birth and days are written as YYYYMMDD numbers. Each bracket runs
+# from its threshold (inclusive) to the next threshold.
+
+brackets:
+  # Rule (2): born before 6th April 1950, pensionable age is set by age_by_birth_date.
+  - threshold:
+      1995-07-19: 0
+    amount:
+      1995-07-19: 0
+  # Rule (3), table 1: 6th April 1950 to 5th May 1950: 6th May 2010.
+  - threshold:
+      1995-07-19: 19500406
+    amount:
+      1995-07-19: 20100506
+  # Rule (3), table 1: 6th May 1950 to 5th June 1950: 6th July 2010.
+  - threshold:
+      1995-07-19: 19500506
+    amount:
+      1995-07-19: 20100706
+  # Rule (3), table 1: 6th June 1950 to 5th July 1950: 6th September 2010.
+  - threshold:
+      1995-07-19: 19500606
+    amount:
+      1995-07-19: 20100906
+  # Rule (3), table 1: 6th July 1950 to 5th August 1950: 6th November 2010.
+  - threshold:
+      1995-07-19: 19500706
+    amount:
+      1995-07-19: 20101106
+  # Rule (3), table 1: 6th August 1950 to 5th September 1950: 6th January 2011.
+  - threshold:
+      1995-07-19: 19500806
+    amount:
+      1995-07-19: 20110106
+  # Rule (3), table 1: 6th September 1950 to 5th October 1950: 6th March 2011.
+  - threshold:
+      1995-07-19: 19500906
+    amount:
+      1995-07-19: 20110306
+  # Rule (3), table 1: 6th October 1950 to 5th November 1950: 6th May 2011.
+  - threshold:
+      1995-07-19: 19501006
+    amount:
+      1995-07-19: 20110506
+  # Rule (3), table 1: 6th November 1950 to 5th December 1950: 6th July 2011.
+  - threshold:
+      1995-07-19: 19501106
+    amount:
+      1995-07-19: 20110706
+  # Rule (3), table 1: 6th December 1950 to 5th January 1951: 6th September 2011.
+  - threshold:
+      1995-07-19: 19501206
+    amount:
+      1995-07-19: 20110906
+  # Rule (3), table 1: 6th January 1951 to 5th February 1951: 6th November 2011.
+  - threshold:
+      1995-07-19: 19510106
+    amount:
+      1995-07-19: 20111106
+  # Rule (3), table 1: 6th February 1951 to 5th March 1951: 6th January 2012.
+  - threshold:
+      1995-07-19: 19510206
+    amount:
+      1995-07-19: 20120106
+  # Rule (3), table 1: 6th March 1951 to 5th April 1951: 6th March 2012.
+  - threshold:
+      1995-07-19: 19510306
+    amount:
+      1995-07-19: 20120306
+  # Rule (3), table 1: 6th April 1951 to 5th May 1951: 6th May 2012.
+  - threshold:
+      1995-07-19: 19510406
+    amount:
+      1995-07-19: 20120506
+  # Rule (3), table 1: 6th May 1951 to 5th June 1951: 6th July 2012.
+  - threshold:
+      1995-07-19: 19510506
+    amount:
+      1995-07-19: 20120706
+  # Rule (3), table 1: 6th June 1951 to 5th July 1951: 6th September 2012.
+  - threshold:
+      1995-07-19: 19510606
+    amount:
+      1995-07-19: 20120906
+  # Rule (3), table 1: 6th July 1951 to 5th August 1951: 6th November 2012.
+  - threshold:
+      1995-07-19: 19510706
+    amount:
+      1995-07-19: 20121106
+  # Rule (3), table 1: 6th August 1951 to 5th September 1951: 6th January 2013.
+  - threshold:
+      1995-07-19: 19510806
+    amount:
+      1995-07-19: 20130106
+  # Rule (3), table 1: 6th September 1951 to 5th October 1951: 6th March 2013.
+  - threshold:
+      1995-07-19: 19510906
+    amount:
+      1995-07-19: 20130306
+  # Rule (3), table 1: 6th October 1951 to 5th November 1951: 6th May 2013.
+  - threshold:
+      1995-07-19: 19511006
+    amount:
+      1995-07-19: 20130506
+  # Rule (3), table 1: 6th November 1951 to 5th December 1951: 6th July 2013.
+  - threshold:
+      1995-07-19: 19511106
+    amount:
+      1995-07-19: 20130706
+  # Rule (3), table 1: 6th December 1951 to 5th January 1952: 6th September 2013.
+  - threshold:
+      1995-07-19: 19511206
+    amount:
+      1995-07-19: 20130906
+  # Rule (3), table 1: 6th January 1952 to 5th February 1952: 6th November 2013.
+  - threshold:
+      1995-07-19: 19520106
+    amount:
+      1995-07-19: 20131106
+  # Rule (3), table 1: 6th February 1952 to 5th March 1952: 6th January 2014.
+  - threshold:
+      1995-07-19: 19520206
+    amount:
+      1995-07-19: 20140106
+  # Rule (3), table 1: 6th March 1952 to 5th April 1952: 6th March 2014.
+  - threshold:
+      1995-07-19: 19520306
+    amount:
+      1995-07-19: 20140306
+  # Rule (3), table 1: 6th April 1952 to 5th May 1952: 6th May 2014.
+  - threshold:
+      1995-07-19: 19520406
+    amount:
+      1995-07-19: 20140506
+  # Rule (3), table 1: 6th May 1952 to 5th June 1952: 6th July 2014.
+  - threshold:
+      1995-07-19: 19520506
+    amount:
+      1995-07-19: 20140706
+  # Rule (3), table 1: 6th June 1952 to 5th July 1952: 6th September 2014.
+  - threshold:
+      1995-07-19: 19520606
+    amount:
+      1995-07-19: 20140906
+  # Rule (3), table 1: 6th July 1952 to 5th August 1952: 6th November 2014.
+  - threshold:
+      1995-07-19: 19520706
+    amount:
+      1995-07-19: 20141106
+  # Rule (3), table 1: 6th August 1952 to 5th September 1952: 6th January 2015.
+  - threshold:
+      1995-07-19: 19520806
+    amount:
+      1995-07-19: 20150106
+  # Rule (3), table 1: 6th September 1952 to 5th October 1952: 6th March 2015.
+  - threshold:
+      1995-07-19: 19520906
+    amount:
+      1995-07-19: 20150306
+  # Rule (3), table 1: 6th October 1952 to 5th November 1952: 6th May 2015.
+  - threshold:
+      1995-07-19: 19521006
+    amount:
+      1995-07-19: 20150506
+  # Rule (3), table 1: 6th November 1952 to 5th December 1952: 6th July 2015.
+  - threshold:
+      1995-07-19: 19521106
+    amount:
+      1995-07-19: 20150706
+  # Rule (3), table 1: 6th December 1952 to 5th January 1953: 6th September 2015.
+  - threshold:
+      1995-07-19: 19521206
+    amount:
+      1995-07-19: 20150906
+  # Rule (3), table 1: 6th January 1953 to 5th February 1953: 6th November 2015.
+  - threshold:
+      1995-07-19: 19530106
+    amount:
+      1995-07-19: 20151106
+  # Rule (3), table 1: 6th February 1953 to 5th March 1953: 6th January 2016.
+  - threshold:
+      1995-07-19: 19530206
+    amount:
+      1995-07-19: 20160106
+  # Rule (3), table 1: 6th March 1953 to 5th April 1953: 6th March 2016.
+  - threshold:
+      1995-07-19: 19530306
+    amount:
+      1995-07-19: 20160306
+  # Rule (3), table 1: 6th April 1953 to 5th May 1953: 6th July 2016.
+  - threshold:
+      1995-07-19: 19530406
+    amount:
+      1995-07-19: 20160706
+  # Rule (3), table 1: 6th May 1953 to 5th June 1953: 6th November 2016.
+  - threshold:
+      1995-07-19: 19530506
+    amount:
+      1995-07-19: 20161106
+  # Rule (3), table 1: 6th June 1953 to 5th July 1953: 6th March 2017.
+  - threshold:
+      1995-07-19: 19530606
+    amount:
+      1995-07-19: 20170306
+  # Rule (3), table 1: 6th July 1953 to 5th August 1953: 6th July 2017.
+  - threshold:
+      1995-07-19: 19530706
+    amount:
+      1995-07-19: 20170706
+  # Rule (3), table 1: 6th August 1953 to 5th September 1953: 6th November 2017.
+  - threshold:
+      1995-07-19: 19530806
+    amount:
+      1995-07-19: 20171106
+  # Rule (3), table 1: 6th September 1953 to 5th October 1953: 6th March 2018.
+  - threshold:
+      1995-07-19: 19530906
+    amount:
+      1995-07-19: 20180306
+  # Rule (3), table 1: 6th October 1953 to 5th November 1953: 6th July 2018.
+  - threshold:
+      1995-07-19: 19531006
+    amount:
+      1995-07-19: 20180706
+  # Rule (3), table 1: 6th November 1953 to 5th December 1953: 6th November 2018.
+  - threshold:
+      1995-07-19: 19531106
+    amount:
+      1995-07-19: 20181106
+  # Rule (5), table 2: 6th December 1953 to 5th January 1954: 6th March 2019.
+  - threshold:
+      1995-07-19: 19531206
+    amount:
+      1995-07-19: 20190306
+  # Rule (5), table 2: 6th January 1954 to 5th February 1954: 6th May 2019.
+  - threshold:
+      1995-07-19: 19540106
+    amount:
+      1995-07-19: 20190506
+  # Rule (5), table 2: 6th February 1954 to 5th March 1954: 6th July 2019.
+  - threshold:
+      1995-07-19: 19540206
+    amount:
+      1995-07-19: 20190706
+  # Rule (5), table 2: 6th March 1954 to 5th April 1954: 6th September 2019.
+  - threshold:
+      1995-07-19: 19540306
+    amount:
+      1995-07-19: 20190906
+  # Rule (5), table 2: 6th April 1954 to 5th May 1954: 6th November 2019.
+  - threshold:
+      1995-07-19: 19540406
+    amount:
+      1995-07-19: 20191106
+  # Rule (5), table 2: 6th May 1954 to 5th June 1954: 6th January 2020.
+  - threshold:
+      1995-07-19: 19540506
+    amount:
+      1995-07-19: 20200106
+  # Rule (5), table 2: 6th June 1954 to 5th July 1954: 6th March 2020.
+  - threshold:
+      1995-07-19: 19540606
+    amount:
+      1995-07-19: 20200306
+  # Rule (5), table 2: 6th July 1954 to 5th August 1954: 6th May 2020.
+  - threshold:
+      1995-07-19: 19540706
+    amount:
+      1995-07-19: 20200506
+  # Rule (5), table 2: 6th August 1954 to 5th September 1954: 6th July 2020.
+  - threshold:
+      1995-07-19: 19540806
+    amount:
+      1995-07-19: 20200706
+  # Rule (5), table 2: 6th September 1954 to 5th October 1954: 6th September 2020.
+  - threshold:
+      1995-07-19: 19540906
+    amount:
+      1995-07-19: 20200906
+  # Rules (6) to (8): born 6th October 1954 to 5th April 1977, pensionable age is set by age_by_birth_date.
+  - threshold:
+      1995-07-19: 19541006
+    amount:
+      1995-07-19: 0
+  # Rule (9), table 4: 6th April 1977 to 5th May 1977: 6th May 2044.
+  - threshold:
+      1995-07-19: 19770406
+    amount:
+      1995-07-19: 20440506
+  # Rule (9), table 4: 6th May 1977 to 5th June 1977: 6th July 2044.
+  - threshold:
+      1995-07-19: 19770506
+    amount:
+      1995-07-19: 20440706
+  # Rule (9), table 4: 6th June 1977 to 5th July 1977: 6th September 2044.
+  - threshold:
+      1995-07-19: 19770606
+    amount:
+      1995-07-19: 20440906
+  # Rule (9), table 4: 6th July 1977 to 5th August 1977: 6th November 2044.
+  - threshold:
+      1995-07-19: 19770706
+    amount:
+      1995-07-19: 20441106
+  # Rule (9), table 4: 6th August 1977 to 5th September 1977: 6th January 2045.
+  - threshold:
+      1995-07-19: 19770806
+    amount:
+      1995-07-19: 20450106
+  # Rule (9), table 4: 6th September 1977 to 5th October 1977: 6th March 2045.
+  - threshold:
+      1995-07-19: 19770906
+    amount:
+      1995-07-19: 20450306
+  # Rule (9), table 4: 6th October 1977 to 5th November 1977: 6th May 2045.
+  - threshold:
+      1995-07-19: 19771006
+    amount:
+      1995-07-19: 20450506
+  # Rule (9), table 4: 6th November 1977 to 5th December 1977: 6th July 2045.
+  - threshold:
+      1995-07-19: 19771106
+    amount:
+      1995-07-19: 20450706
+  # Rule (9), table 4: 6th December 1977 to 5th January 1978: 6th September 2045.
+  - threshold:
+      1995-07-19: 19771206
+    amount:
+      1995-07-19: 20450906
+  # Rule (9), table 4: 6th January 1978 to 5th February 1978: 6th November 2045.
+  - threshold:
+      1995-07-19: 19780106
+    amount:
+      1995-07-19: 20451106
+  # Rule (9), table 4: 6th February 1978 to 5th March 1978: 6th January 2046.
+  - threshold:
+      1995-07-19: 19780206
+    amount:
+      1995-07-19: 20460106
+  # Rule (9), table 4: 6th March 1978 to 5th April 1978: 6th March 2046.
+  - threshold:
+      1995-07-19: 19780306
+    amount:
+      1995-07-19: 20460306
+  # Rule (10): born after 5th April 1978, pensionable age is set by age_by_birth_date.
+  - threshold:
+      1995-07-19: 19780406
+    amount:
+      1995-07-19: 0

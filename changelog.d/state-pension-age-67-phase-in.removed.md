@@ -1,0 +1,1 @@
+Remove `gov.dwp.state_pension.age.male` and `gov.dwp.state_pension.age.female`, a single State Pension age for each year, in favour of the statutory timetable by date of birth under `gov.dwp.state_pension.age`.

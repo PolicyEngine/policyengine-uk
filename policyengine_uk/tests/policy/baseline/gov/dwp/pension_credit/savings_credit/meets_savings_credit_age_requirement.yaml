@@ -75,3 +75,49 @@
         members: [person]
   output:
     meets_savings_credit_age_requirement: true
+# State Pension Credit Act 2002 s.3(1)(a): attained pensionable age before 6
+# April 2016 and attained the age of 65. Each person's pensionable age comes
+# from their date of birth (Pensions Act 1995 Sch 4 para 1).
+
+- name: Woman born 5 April 1953 reached State Pension age on 6 March 2016, before the cutoff
+  period: 2023
+  input:
+    age: 70
+    months_since_last_birthday: 6.032258
+    is_male: false
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: Woman born 6 April 1953 reached State Pension age on 6 July 2016, after the cutoff
+  period: 2023
+  input:
+    age: 70
+    months_since_last_birthday: 6
+    is_male: false
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: Man born in 1952 reached State Pension age at 65 in 2017, after the cutoff
+  period: 2023
+  input:
+    age: 71
+    is_male: true
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: Man aged 75 in 2025, born 1950, reached State Pension age at 65 in 2015
+  period: 2025
+  input:
+    age: 75
+    is_male: true
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: Woman over State Pension age but under 65 does not yet meet the age requirement
+  period: 2015
+  input:
+    age: 63
+    is_male: false
+  output:
+    is_SP_age: true
+    meets_savings_credit_age_requirement: false

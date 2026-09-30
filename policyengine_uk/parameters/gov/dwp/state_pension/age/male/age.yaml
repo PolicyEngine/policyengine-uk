@@ -1,0 +1,9 @@
+description: Men born before the male rule's cutoff date attain State Pension age when they reach this age.
+values:
+  1995-07-19: 780
+metadata:
+  unit: month
+  label: State Pension age for men born before 6 December 1953
+  reference:
+    - title: Pensions Act 1995, Schedule 4, paragraph 1, rule (1)
+      href: https://www.legislation.gov.uk/ukpga/1995/26/schedule/4
