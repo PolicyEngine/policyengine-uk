@@ -16,13 +16,18 @@ class is_claimant_or_partner(Variable):
     adult or a couple plus dependent children.
 
     - Only HBAI adults (`is_hbai_adult`) can be a claimant or partner.
-    - The benefit-unit head is the claimant.
-    - The partner is one other member: the eldest member flagged as a parent
-      (`is_parent`) if there is one, otherwise the eldest other adult who is
-      not presumed to be the head's child. A member under 20 and at least 16
-      years younger than the head is presumed to be their child (a PolicyEngine
-      presumption for households entered without relationships). Any further
-      adults are neither claimant nor partner.
+    - The claimant is the benefit-unit head, or the eldest adult if the head
+      is not an adult.
+    - The partner is one other member: the eldest other member flagged as a
+      parent (`is_parent`) if there is one, otherwise the eldest other adult
+      who is not presumed to be the claimant's child. A member under 20 and at
+      least 16 years younger than the claimant is presumed to be their child
+      (a PolicyEngine presumption for households entered without
+      relationships).
+    - If the claimant is not flagged as a parent but two or more other members
+      are, the two eldest of those are the claimant and partner instead (for
+      example parents living in a grandparent's benefit unit).
+    - Any further adults are neither claimant nor partner.
     """
 
     value_type = bool
@@ -41,14 +46,23 @@ class is_claimant_or_partner(Variable):
         age = person("age", period)
         adult = person("is_hbai_adult", period)
         is_head = person("is_benunit_head", period)
-        head_age = person.benunit.max(where(is_head, age, -np.inf))
-        presumed_child_of_head = (age < p.age_limit) & (
-            head_age - age >= p.minimum_age_gap
+        head_is_adult = person.benunit.any(is_head & adult)
+        eldest_adult = adult & (
+            person.get_rank(person.benunit, -age, condition=adult) == 0
         )
-        identified_partner = adult & ~is_head & person("is_parent", period)
-        other_adult = adult & ~is_head & ~presumed_child_of_head
-        pool = where(
-            person.benunit.any(identified_partner), identified_partner, other_adult
+        claimant = where(head_is_adult, is_head & adult, eldest_adult)
+        claimant_age = person.benunit.max(where(claimant, age, -np.inf))
+        identified_parent = adult & person("is_parent", period)
+        other_parent = identified_parent & ~claimant
+        # Two flagged parents other than a non-parent claimant are the couple.
+        parents_are_couple = (person.benunit.sum(other_parent) >= 2) & ~(
+            person.benunit.any(claimant & identified_parent)
         )
+        parent_couple = other_parent & (
+            person.get_rank(person.benunit, -age, condition=other_parent) < 2
+        )
+        presumed_child = (age < p.age_limit) & (claimant_age - age >= p.minimum_age_gap)
+        other_adult = adult & ~claimant & ~presumed_child
+        pool = where(person.benunit.any(other_parent), other_parent, other_adult)
         partner = pool & (person.get_rank(person.benunit, -age, condition=pool) == 0)
-        return (is_head & adult) | partner
+        return where(parents_are_couple, parent_couple, claimant | partner)

@@ -14,7 +14,8 @@ Invariants:
    has an HBAI adult; valid families (one or two adults aged 20+ and
    dependants) have exactly their adults. Couple/single and
    couple/lone-parent/single-person partition benefit units. Heads aged 16+
-   are claimants or partners, including when explicitly younger than others.
+   are claimants or partners, including when explicitly younger than others,
+   unless two other members are flagged parents and the head is not.
 3. All 23 deprecated shims retain their original age-18 formulas, including
    empty-group sentinels and historical eldest-child tie behaviour. Explicit
    age_under_18 has the same membership as the shims for school-attendance
@@ -215,26 +216,32 @@ def hbai_dependent_child(p, family):
 
 
 def claimants_or_partners(family):
-    # is_claimant_or_partner's documented rule: an HBAI-adult head, plus one
-    # partner: the eldest other HBAI adult flagged as a parent, else the
-    # eldest other HBAI adult not presumed the head's child (under 20 and at
-    # least 16 years younger than the head).
+    # is_claimant_or_partner's documented rule. The claimant is the head if an
+    # HBAI adult, else the eldest HBAI adult. The partner is the eldest other
+    # flagged parent, else the eldest other adult not presumed the claimant's
+    # child (under 20 and at least 16 years younger). If the claimant is not a
+    # flagged parent but two or more others are, the two eldest of those are
+    # the couple instead. Age ties go to the earlier member.
+    n = len(family)
     adult = [not hbai_dependent_child(p, family) for p in family]
-    head_ages = [p["age"] for p in family if p["is_benunit_head"]]
-    head_age = max(head_ages) if head_ages else -np.inf
-    others = [i for i, p in enumerate(family) if adult[i] and not p["is_benunit_head"]]
-    parents = [i for i in others if family[i]["is_parent"]]
-    not_presumed_children = [
+    ages = [p["age"] for p in family]
+    heads = [i for i in range(n) if family[i]["is_benunit_head"] and adult[i]]
+    adults = [i for i in range(n) if adult[i]]
+    if not adults:
+        return [False] * n
+    claimant = heads[0] if heads else max(adults, key=lambda i: (ages[i], -i))
+    parent = [adult[i] and family[i]["is_parent"] for i in range(n)]
+    other_parents = [i for i in range(n) if parent[i] and i != claimant]
+    if len(other_parents) >= 2 and not parent[claimant]:
+        couple = sorted(other_parents, key=lambda i: (-ages[i], i))[:2]
+        return [i in couple for i in range(n)]
+    pool = other_parents or [
         i
-        for i in others
-        if not (family[i]["age"] < 20 and head_age - family[i]["age"] >= 16)
+        for i in adults
+        if i != claimant and not (ages[i] < 20 and ages[claimant] - ages[i] >= 16)
     ]
-    pool = parents or not_presumed_children
-    partner = max(pool, key=lambda i: (family[i]["age"], -i)) if pool else None
-    return [
-        (a and p["is_benunit_head"]) or i == partner
-        for i, (p, a) in enumerate(zip(family, adult))
-    ]
+    partner = max(pool, key=lambda i: (ages[i], -i)) if pool else None
+    return [i == claimant or i == partner for i in range(n)]
 
 
 def legacy_child_or_young_person(p, claimant):
@@ -386,9 +393,17 @@ def assert_structure(sim, families, year=YEAR):
             for p, claimant in zip(family, expected)
         )
         assert lone[i] == (sum(expected) < 2 and responsible)
-        for p, claimant in zip(family, actual):
+        # An adult head is the claimant unless two other flagged parents form
+        # the couple.
+        parents = [
+            a and p["is_parent"] and not p["is_benunit_head"]
+            for p, a in zip(family, adults)
+        ]
+        for p, adult, claimant in zip(family, adults, actual):
             if p["is_benunit_head"] and p["age"] >= 16:
-                assert claimant
+                assert adult
+                if sum(parents) < 2 or p["is_parent"]:
+                    assert claimant
         offset += len(family)
 
 
