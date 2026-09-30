@@ -11,7 +11,7 @@ person over pensionable age at the beginning of the year of assessment (6
 April), so someone who reaches it during a year is liable for that whole year.
 """
 
-from datetime import date
+from datetime import date, timedelta
 
 import numpy as np
 import pytest
@@ -189,7 +189,10 @@ def test_consumers_use_the_qualifying_age(births, male, year):
 @settings(max_examples=20, deadline=None)
 @given(
     births=st.lists(
-        st.dates(min_value=date(1950, 4, 6), max_value=MALE_RULE_BORN_BEFORE),
+        st.dates(
+            min_value=date(1950, 4, 6),
+            max_value=MALE_RULE_BORN_BEFORE - timedelta(days=1),
+        ),
         min_size=1,
         max_size=40,
         unique=True,
@@ -198,7 +201,7 @@ def test_consumers_use_the_qualifying_age(births, male, year):
 )
 def test_consumers_use_the_qualifying_age_where_it_differs(births, year):
     """The same, for the cohort where the two ages differ: men born from 6
-    April 1950 to 6 December 1953, in 2015-16 to 2018-19."""
+    April 1950 to 5 December 1953, in 2015-16 to 2018-19."""
     assert_consumers_follow_the_qualifying_age(births, True, year)
 
 

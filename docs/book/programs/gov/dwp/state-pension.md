@@ -86,8 +86,8 @@ Other programmes test State Pension age in two ways:
   `is_SP_age` only for men born before 6 December 1953, so only in 2018-19
   and earlier: a man born on 6 April 1952 reached it on 6 May 2014, nearly
   three years before his State Pension age of 65.
-- **Class 4 National Insurance** stops from the tax year after State Pension
-  age: a person over it at the beginning of the tax year (6 April) is
+- **Class 4 National Insurance** stops from the first tax year that begins on
+  or after the day State Pension age is reached: a person over it at the beginning of the tax year (6 April) is
   excepted (Social Security (Contributions) Regulations 2001 reg 91(a)), so
   `ni_class_4_liable` needs `months_since_state_pension_age` below 6. Someone
   who reaches it on 6 April itself is read as over it at the beginning of
