@@ -7,8 +7,8 @@ class council_tax_reduction_pensioner(Variable):
     label = "Pensioner for Council Tax Reduction"
     documentation = (
         "Whether the family's claim falls under the pension-age Council Tax "
-        "Reduction rules: the claimant has reached the qualifying age for "
-        "State Pension Credit, and neither the claimant nor any partner is on "
+        "Reduction rules: the claimant or partner has reached the qualifying "
+        "age for State Pension Credit, and neither of them is on "
         "Income Support, income-based Jobseeker's Allowance or income-related "
         "Employment and Support Allowance, or has an award of Universal Credit. "
         "A mixed-age couple on Universal Credit is therefore not a pensioner in "
@@ -42,7 +42,11 @@ class council_tax_reduction_pensioner(Variable):
         # counts any working-age adult, including a qualifying young person.
         # This also stands in for the rules that disregard an award held after
         # both members reach the qualifying age (SI 2012/2885 reg 3(2);
-        # WSI 2013/3029 reg 3(2); SSI 2021/249 reg 3(2)).
+        # WSI 2013/3029 reg 3(2); SSI 2021/249 reg 3(2)). England and Wales
+        # also disregard a tax credit migrant's award (UC (TP) Regs 2014 reg
+        # 60A) and Scotland does not; the model has no such awards. The guard
+        # relies on is_uc_claimant, which needs is_parent to recognise a
+        # qualifying young person as a dependant.
         working_age_claimant = benunit.any(claimant_or_partner & ~over_qualifying_age)
         universal_credit_award = (
             benunit("is_uc_entitled", period) & working_age_claimant

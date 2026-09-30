@@ -14,7 +14,12 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         "them is on Universal Credit, Income Support, income-based Jobseeker's "
         "Allowance or income-related Employment and Support Allowance. The "
         "benefit cap (Part 8A of the working-age regulations) does not reach "
-        "Housing Benefit under the pension-age regulations."
+        "Housing Benefit under the pension-age regulations. A Universal Credit "
+        "award counts only where a claimant or partner is under the qualifying "
+        "age. That is right for the cap, which SI 2014/1230 reg 60C disapplies "
+        "for a claim where every claimant has reached that age, but not for "
+        "reg 5 itself, under which such an award would bring in the "
+        "working-age regulations; the model has no such awards."
     )
     definition_period = YEAR
     reference = (
@@ -36,7 +41,8 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         # (reg 60C). is_uc_eligible counts any working-age adult, so the model
         # can pay Universal Credit to a pensioner whose only younger adult is
         # a qualifying young person; that award does not take the family out
-        # of the pension-age rules.
+        # of the pension-age rules. is_uc_claimant recognises the young person
+        # as a dependant only when is_parent is set, as in the FRS datasets.
         # The award is read before the benefit cap, which depends on this
         # variable.
         working_age_claimant = benunit.any(claimant_or_partner & ~over_qualifying_age)
