@@ -28,17 +28,22 @@ class housing_benefit_eligible(Variable):
         sp_age = person("is_SP_age", period)
         # New claims are barred except where the claimant, and any partner,
         # has reached the qualifying age for State Pension Credit
-        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)). This counts
-        # the same members as is_uc_eligible and is_pension_credit_eligible,
-        # so no family qualifies for both Housing Benefit and Universal
-        # Credit; change the three together.
+        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)). Every adult in
+        # the benefit unit stands in for the claimant and partner, as in
+        # is_uc_eligible and is_pension_credit_eligible, so a pensioner with
+        # an 18 or 19 year old dependant is routed to Universal Credit.
+        # Because is_uc_eligible needs a working-age adult, no family on this
+        # route receives Universal Credit; change the three together.
         adult = person("is_adult", period)
         adult_count = benunit.sum(adult)
         pension_age = (adult_count > 0) & (benunit.sum(adult & sp_age) == adult_count)
         # Working-age and mixed-age families (since 15 May 2019) claim
         # Universal Credit instead. They keep an existing award until they
-        # claim it (reg 8(2A)); for mixed-age couples the reported award
-        # stands in for the SI 2019/37 art. 4 saving (reg 6A(5)).
+        # claim it (reg 8(2A)), so this route also rules out receiving
+        # Universal Credit. For mixed-age couples the reported award stands
+        # in for the SI 2019/37 art. 4 saving (reg 6A(5)). Working-age awards
+        # outside specified or temporary accommodation ended on 1 July 2026
+        # in Great Britain (SI 2025/1148 art. 7); that is not modelled.
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("would_claim_uc", period)
         continuing_award = already_claiming & ~claiming_uc
