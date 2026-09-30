@@ -18,7 +18,9 @@ class uc_mif_applies(Variable):
         has_self_empl_income = person("self_employment_income", period) > 0
         # A person whose main employment is the trade of a company they stand
         # as sole owner or partner of is treated as gainfully self-employed,
-        # so the floor applies (UC Regs 2013 reg. 77(3)(c)).
+        # so the floor applies (UC Regs 2013 reg. 77(3)(c)). Not modelled for
+        # either route: reg. 62(1)(b) limits the floor to claimants subject to
+        # all work-related requirements.
         company_gainful_self_employment = person(
             "uc_company_gainful_self_employment", period
         )

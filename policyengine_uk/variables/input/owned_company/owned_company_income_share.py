@@ -9,10 +9,14 @@ class owned_company_income_share(Variable):
         "The income of the company in which the person stands as sole owner "
         "or partner, or the person's share of that income, calculated as "
         "self-employed earnings would be: the company's actual receipts less "
-        "its permitted expenses. Pay the company gives the person as a "
-        "director or employee is a company expense here and is recorded in "
-        "employment_income instead. Dividends the person receives from the "
-        "company are paid out of this income, so they are not added to it."
+        "its permitted expenses, on a cash basis. Pay the company gives the "
+        "person as a director or employee is a company expense here and is "
+        "recorded in employment_income instead. Corporation tax is not "
+        "deducted: the self-employed earnings calculation deducts only "
+        "income tax and National Insurance the person pays, and neither the "
+        "regulations nor DWP guidance provide for corporation tax. Dividends "
+        "the person receives from the company are paid out of this income, "
+        "so they are not added to it."
     )
     definition_period = YEAR
     unit = GBP

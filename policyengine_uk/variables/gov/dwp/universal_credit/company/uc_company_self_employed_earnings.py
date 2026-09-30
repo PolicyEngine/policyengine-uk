@@ -11,7 +11,10 @@ class uc_company_self_employed_earnings(Variable):
         "earnings when they stand as the company's sole owner or partner. It "
         "is in addition to any pay they receive as the company's director or "
         "employee. A company that carries on only a property business gives "
-        "no earnings."
+        "no earnings. Where the minimum income floor applies it is compared "
+        "with the person's total earned income, including this amount and "
+        "their pay (reg. 62(2)); DWP guidance (ADM H4375) describes comparing "
+        "the company income alone."
     )
     definition_period = YEAR
     unit = GBP
