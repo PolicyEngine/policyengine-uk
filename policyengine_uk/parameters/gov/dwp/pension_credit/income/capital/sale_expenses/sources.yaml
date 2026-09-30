@@ -1,0 +1,26 @@
+description: >
+  Capital sources whose sale would incur expenses, so that Pension Credit
+  values them at 90% of market value. Land and property always have costs of
+  sale. Shares are sold through a broker, so `corporate_wealth` is listed; it
+  also holds unit trusts, which have no costs of sale, but the dataset does
+  not separate them. `savings` is not listed because a bank or building
+  society account is valued at its balance and withdrawing money is not a sale
+  (DMG 84712-84716, 84731 and 84772). Sources not counted as Pension Credit
+  capital are ignored.
+metadata:
+  label: Pension Credit capital sources with sale expenses
+  period: year
+  unit: list
+  reference:
+    - title: State Pension Credit Regulations 2002 reg. 19(a)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/19
+    - title: Decision Makers' Guide chapter 84, paras. 84712-84716
+      href: https://assets.publishing.service.gov.uk/media/6a5e38bb8b7e4fa537e693d5/dmg-ch84.pdf#page=99
+    - title: Decision Makers' Guide chapter 84, paras. 84731 and 84772
+      href: https://assets.publishing.service.gov.uk/media/6a5e38bb8b7e4fa537e693d5/dmg-ch84.pdf#page=102
+values:
+  2003-10-06:
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
+    - corporate_wealth

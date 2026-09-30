@@ -1,0 +1,16 @@
+description: >
+  Share of the current market or surrender value deducted from Universal
+  Credit capital where there would be expenses attributable to sale. The
+  deduction is a flat 10% whatever the actual costs, taken before any
+  encumbrance secured on the asset.
+values:
+  2013-04-29: 0.1
+metadata:
+  label: Universal Credit capital sale expense deduction
+  period: year
+  unit: /1
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 49(1)(a)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/49
+    - title: Advice for Decision Making chapter H1, paras. H1602-H1608
+      href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=44

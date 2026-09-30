@@ -1,0 +1,218 @@
+# Capital is valued at market value less 10% where a sale would incur
+# expenses, and less any encumbrance secured on it: UC Regs 2013 reg. 49(1);
+# HB Regs 2006 reg. 47; IS Regs 1987 reg. 49; JSA Regs 1996 reg. 111; ESA Regs
+# 2008 reg. 113; SPC Regs 2002 reg. 19. Savings in a bank or building society
+# have no sale expenses; land, property and shares do (ADM H1604-H1607).
+# Expected values are worked by hand from those provisions.
+
+- name: UC values a mortgaged holiday home as in ADM H1602
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 125,000 - 10% (12,500) - 100,500 mortgage = 12,000.
+        other_residential_property_value: 125_000
+        other_residential_property_secured_debt: 100_500
+  output:
+    uc_assessable_capital: 12_000
+    is_uc_eligible: true
+    # 24 steps of 250 above 6,000 at 4.35 a month: 24 * 4.35 * 12.
+    uc_tariff_income: 1_252.8
+
+- name: UC counts cash savings at face value
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 15_000
+  output:
+    uc_assessable_capital: 15_000
+    is_uc_eligible: true
+
+- name: UC shares valued less sale expenses bring capital within the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 5,000 + 90% of 12,000 = 15,800, within the 16,000 limit; at full
+        # value the household would hold 17,000.
+        savings: 5_000
+        corporate_wealth: 12_000
+  output:
+    uc_assessable_capital: 15_800
+    is_uc_eligible: true
+    # 9,800 above 6,000 is 40 steps of 250 (rounded up): 40 * 4.35 * 12.
+    uc_tariff_income: 2_088
+
+- name: UC negative equity in a second home does not reduce savings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # The mortgage is deducted only from the property it is secured on
+        # (ADM H1615-H1616), so the property is valued at nil.
+        savings: 10_000
+        other_residential_property_value: 100_000
+        other_residential_property_secured_debt: 150_000
+  output:
+    uc_assessable_capital: 10_000
+    is_uc_eligible: true
+
+- name: UC deducts sale expenses before the encumbrance on business premises
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # (90% of 40,000 - 20,000) + 90% of 5,000 = 16,000 + 4,500.
+        non_residential_property_value: 40_000
+        non_residential_property_secured_debt: 20_000
+        corporate_wealth: 5_000
+  output:
+    uc_assessable_capital: 20_500
+    is_uc_eligible: false
+
+- name: Housing Benefit values encumbered land less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        # 1,000 + (90% of 20,000 - 5,000) = 14,000 (HB Regs 2006 reg. 47).
+        savings: 1_000
+        owned_land: 20_000
+        owned_land_secured_debt: 5_000
+  output:
+    housing_benefit_assessable_capital: 14_000
+    # 32 steps of 250 above 6,000 at 1 a week: 32 * 52.
+    housing_benefit_tariff_income: 1_664
+    housing_benefit_eligible: true
+
+- name: Income Support values encumbered land less sale expenses
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 20,000 - 5,000 = 13,000 (IS Regs 1987 reg. 49).
+        owned_land: 20_000
+        owned_land_secured_debt: 5_000
+  output:
+    income_support_assessable_capital: 13_000
+
+- name: Income-based JSA values a mortgaged second home less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 2,000 + (90% of 30,000 - 25,000) = 4,000 (JSA Regs 1996 reg. 111).
+        savings: 2_000
+        other_residential_property_value: 30_000
+        other_residential_property_secured_debt: 25_000
+  output:
+    jsa_income_assessable_capital: 4_000
+
+- name: Income-related ESA values shares less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 3,000 + 90% of 10,000 = 12,000 (ESA Regs 2008 reg. 113).
+        savings: 3_000
+        corporate_wealth: 10_000
+  output:
+    esa_income_assessable_capital: 12_000
+
+- name: Pension Credit values mortgaged business premises less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 2,000 + (90% of 30,000 - 10,000) = 19,000 (SPC Regs 2002 reg. 19).
+        savings: 2_000
+        non_residential_property_value: 30_000
+        non_residential_property_secured_debt: 10_000
+  output:
+    pension_credit_assessable_capital: 19_000
+    # 18 steps of 500 above 10,000 at 1 a week: 18 * 52.
+    pension_credit_deemed_income: 936

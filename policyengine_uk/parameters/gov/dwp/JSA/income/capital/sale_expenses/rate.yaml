@@ -1,0 +1,14 @@
+description: >
+  Share of the current market or surrender value deducted from income-based JSA
+  capital where there would be expenses attributable to sale. The deduction
+  is a flat 10% whatever the actual costs, taken before any incumbrance
+  secured on the asset.
+values:
+  1996-10-07: 0.1
+metadata:
+  label: Income-based JSA capital sale expense deduction
+  period: year
+  unit: /1
+  reference:
+    - title: Jobseeker's Allowance Regulations 1996 reg. 111(a)
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/111

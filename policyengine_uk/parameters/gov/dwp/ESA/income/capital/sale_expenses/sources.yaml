@@ -1,0 +1,22 @@
+description: >
+  Capital sources whose sale would incur expenses, so that income-related ESA
+  values them at 90% of market value. Land and property always have costs of
+  sale. Shares are sold through a broker, so `corporate_wealth` is listed; it
+  also holds unit trusts, which have no costs of sale, but the dataset does
+  not separate them. `savings` is not listed because a bank or building
+  society account is valued at its balance and withdrawing money is not a sale
+  (see the Universal Credit parameter of the same name for the guidance).
+  Sources not counted as income-related ESA capital are ignored.
+metadata:
+  label: Income-related ESA capital sources with sale expenses
+  period: year
+  unit: list
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 113(a)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/113
+values:
+  2008-10-27:
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
+    - corporate_wealth

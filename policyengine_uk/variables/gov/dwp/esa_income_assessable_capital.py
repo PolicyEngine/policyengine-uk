@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import valued_capital
 
 
 class esa_income_assessable_capital(Variable):
@@ -7,7 +8,8 @@ class esa_income_assessable_capital(Variable):
     label = "Assessable capital for income-related ESA"
     documentation = (
         "Household capital apportioned to the benefit unit for the income-related "
-        "ESA capital test. Because the dataset only stores these stocks at "
+        "ESA capital test, valued at market value less 10% where a sale would "
+        "incur expenses and less any debt secured on it (reg. 113). Because the dataset only stores these stocks at "
         "household level, the model allocates full household capital to any "
         "benunit with a reported income-related ESA award and only falls back to "
         "an adult-share proxy when nobody in the household is on that reported "
@@ -23,8 +25,10 @@ class esa_income_assessable_capital(Variable):
         person = benunit.members
         claiming_esa_income = add(benunit, period, ["esa_income_reported"]) > 0
 
-        household_capital = sum(
-            benunit.max(person.household(source, period)) for source in sources
+        household_capital = valued_capital(
+            lambda variable: benunit.max(person.household(variable, period)),
+            sources,
+            ESA.capital.sale_expenses,
         )
         benunit_adults = add(benunit, period, ["is_adult"])
         household_reporting_claimants = benunit.max(

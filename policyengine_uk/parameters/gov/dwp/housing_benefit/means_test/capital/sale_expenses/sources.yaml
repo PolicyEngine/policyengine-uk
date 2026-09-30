@@ -1,0 +1,28 @@
+description: >
+  Capital sources whose sale would incur expenses, so that Housing Benefit
+  values them at 90% of market value. Land and property always have costs of
+  sale. Shares are sold through a broker, so `corporate_wealth` is listed; it
+  also holds unit trusts, which have no costs of sale, but the dataset does
+  not separate them. `savings` is not listed because a bank or building
+  society account is valued at its balance and withdrawing money is not a sale
+  (HBGM W1.430, W1.530-W1.531, P1.430 and P1.530-P1.531). Sources not counted
+  as Housing Benefit capital are ignored.
+metadata:
+  label: Housing Benefit capital sources with sale expenses
+  period: year
+  unit: list
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 47(a)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/47
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 45(a)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/45
+    - title: Housing Benefit Guidance Manual BW1, paras. W1.430 and W1.530-W1.531
+      href: https://assets.publishing.service.gov.uk/media/5a749328ed915d0e8e3994c0/hbgm-bw1-assessment-of-capital.pdf#page=36
+    - title: Housing Benefit Guidance Manual BP1, paras. P1.430 and P1.530-P1.531
+      href: https://assets.publishing.service.gov.uk/media/5a7ec5d840f0b6230268b71f/hbgm-bp1-assessment-of-capital.pdf#page=31
+values:
+  2006-04-10:
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
+    - corporate_wealth

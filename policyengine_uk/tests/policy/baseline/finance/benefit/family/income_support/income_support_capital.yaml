@@ -23,7 +23,9 @@
         other_residential_property_value: 3000
         non_residential_property_value: 4000
   output:
-    income_support_assessable_capital: 10500
+    # Savings at face value; land, shares and property less 10% for the
+    # expenses of sale (IS Regs 1987 reg. 49(a)): 1,000 + 90% of 9,500.
+    income_support_assessable_capital: 9550
 
 - name: Income Support has no tariff income at the lower capital threshold
   period: 2021
@@ -233,4 +235,6 @@
         corporate_wealth: 2000
         private_pension_wealth: 150000
   output:
-    income_support_assessable_capital: 3000
+    # Savings at face value; land, shares and property less 10% for the
+    # expenses of sale (IS Regs 1987 reg. 49(a)): 1,000 + 90% of 2,000.
+    income_support_assessable_capital: 2800

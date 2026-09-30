@@ -1,0 +1,26 @@
+description: >
+  Capital sources whose sale would incur expenses, so that Income Support
+  values them at 90% of market value. Land and property always have costs of
+  sale. Shares are sold through a broker, so `corporate_wealth` is listed; it
+  also holds unit trusts, which have no costs of sale, but the dataset does
+  not separate them. `savings` is not listed because a bank or building
+  society account is valued at its balance and withdrawing money is not a sale
+  (DMG 29620-29623, 29681 and 29685). Sources not counted as Income Support
+  capital are ignored.
+metadata:
+  label: Income Support capital sources with sale expenses
+  period: year
+  unit: list
+  reference:
+    - title: Income Support (General) Regulations 1987 reg. 49(a)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/49
+    - title: Decision Makers' Guide chapter 29, paras. 29620-29623
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=124
+    - title: Decision Makers' Guide chapter 29, paras. 29681 and 29685
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=139
+values:
+  2010-01-01:
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
+    - corporate_wealth

@@ -1,0 +1,14 @@
+description: >
+  Share of the current market or surrender value deducted from Income Support
+  capital where there would be expenses attributable to sale. The deduction
+  is a flat 10% whatever the actual costs, taken before any incumbrance
+  secured on the asset.
+values:
+  2010-01-01: 0.1
+metadata:
+  label: Income Support capital sale expense deduction
+  period: year
+  unit: /1
+  reference:
+    - title: Income Support (General) Regulations 1987 reg. 49(a)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/49

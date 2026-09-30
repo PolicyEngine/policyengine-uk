@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import valued_capital
 
 
 class housing_benefit_assessable_capital(Variable):
@@ -7,7 +8,10 @@ class housing_benefit_assessable_capital(Variable):
     label = "Housing Benefit assessable capital"
     documentation = (
         "Housing Benefit capital counted from the configured capital sources, "
-        "allocated across benunits using a household adult-share proxy."
+        "each valued at market value less 10% where a sale would incur "
+        "expenses and less any debt secured on it (reg. 47 of SI 2006/213, "
+        "reg. 45 of SI 2006/214), allocated across benunits using a household "
+        "adult-share proxy."
     )
     definition_period = YEAR
     unit = GBP
@@ -18,7 +22,9 @@ class housing_benefit_assessable_capital(Variable):
         person = benunit.members
         any_over_SP_age = benunit.any(person("is_SP_age", period))
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
-        household_capital = sum(household(source, period) for source in p.sources)
+        household_capital = valued_capital(
+            lambda variable: household(variable, period), p.sources, p.sale_expenses
+        )
         benunit_adults = add(benunit, period, ["is_adult"])
         household_adults = benunit.max(
             person.household.sum(person.household.members("is_adult", period))

@@ -1,0 +1,14 @@
+description: >
+  Share of the current market or surrender value deducted from Pension Credit
+  capital where there would be expenses attributable to sale. The deduction
+  is a flat 10% whatever the actual costs, taken before any encumbrance
+  secured on the asset.
+values:
+  2003-10-06: 0.1
+metadata:
+  label: Pension Credit capital sale expense deduction
+  period: year
+  unit: /1
+  reference:
+    - title: State Pension Credit Regulations 2002 reg. 19(a)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/19
