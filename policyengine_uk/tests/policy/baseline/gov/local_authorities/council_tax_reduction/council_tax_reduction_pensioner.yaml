@@ -1,0 +1,194 @@
+# Who is a pensioner for Council Tax Reduction.
+#
+# England (SI 2012/2885 reg 3(1)) and Wales (SI 2013/3029 reg 3(1)): a
+# pensioner has attained the qualifying age for State Pension Credit and is
+# not, nor is any partner, on Income Support, income-based JSA or
+# income-related ESA, or a person with an award of Universal Credit. Scotland
+# applies the same test through SSI 2021/249 reg 3 and SSI 2012/319 reg 12. A
+# mixed-age couple on Universal Credit therefore claims under the working-age
+# scheme.
+#
+# In England the pensioner scheme is national and working-age schemes are
+# local; the model simulates five local schemes and otherwise keeps reported
+# Council Tax Reduction.
+
+- name: An English mixed-age couple on Universal Credit uses the local working-age scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        council_tax_benefit_reported: 700
+      younger:
+        age: 50
+    benunits:
+      benunit:
+        members: [older, younger]
+        universal_credit_pre_benefit_cap: 10_000
+    households:
+      household:
+        members: [older, younger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_scheme_supported: false
+    simulated_council_tax_reduction_benunit: 0
+    council_tax_benefit: 700
+
+- name: An English mixed-age couple not on Universal Credit uses the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        council_tax_benefit_reported: 700
+      younger:
+        age: 50
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [older, younger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_uc_entitled: false
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_scheme_supported: true
+    # No income, so the full liability.
+    council_tax_benefit: 2_000
+
+- name: An English mixed-age couple on income-based JSA is not a pensioner couple
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        council_tax_benefit_reported: 700
+      younger:
+        age: 50
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        jsa_income: 4_000
+    households:
+      household:
+        members: [older, younger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_household_has_pensioner: false
+    council_tax_benefit: 700
+
+- name: An English couple over State Pension age is a pensioner couple
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 72
+      younger:
+        age: 68
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_scheme_supported: true
+
+- name: A Newham mixed-age couple on Universal Credit gets Newham's working-age scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 50
+    benunits:
+      benunit:
+        members: [older, younger]
+        universal_credit_pre_benefit_cap: 10_000
+    households:
+      household:
+        members: [older, younger]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_scheme_supported: true
+
+- name: A Welsh mixed-age couple on Universal Credit is not a pensioner couple
+  # Wales has one national scheme, so the scheme is still simulated.
+  period: 2026
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 50
+    benunits:
+      benunit:
+        members: [older, younger]
+        universal_credit_pre_benefit_cap: 10_000
+    households:
+      household:
+        members: [older, younger]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_scheme_supported: true
+
+- name: A Scottish mixed-age couple on Universal Credit is not a pensioner couple
+  period: 2026
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 50
+    benunits:
+      benunit:
+        members: [older, younger]
+        universal_credit_pre_benefit_cap: 10_000
+    households:
+      household:
+        members: [older, younger]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_scheme_supported: true
