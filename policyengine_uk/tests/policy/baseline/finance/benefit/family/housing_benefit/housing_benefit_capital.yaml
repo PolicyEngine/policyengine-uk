@@ -236,8 +236,9 @@
         members: person
         # The passport needs a guarantee credit that is paid. Pension Credit
         # income here is 10,000 plus 80 x 52 = 4,160 deemed from capital,
-        # 14,160 in all, above the 2025 minimum guarantee of 11,536.20, so
-        # Pension Credit eligibility is set along with the credit.
+        # 14,160 in all, above PolicyEngine's 2025 parameter for the minimum
+        # guarantee (221.85 x 52 = 11,536.20), so Pension Credit eligibility
+        # is set along with the credit.
         guarantee_credit: 1
         is_pension_credit_eligible: true
         would_claim_uc: false

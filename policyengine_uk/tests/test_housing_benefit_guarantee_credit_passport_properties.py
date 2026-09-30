@@ -19,9 +19,11 @@ Invariants, for any generated population of families:
    computed guarantee credit). The two passports differ exactly for families
    with someone over State Pension age and a computed guarantee credit that is
    not paid; there the pre-fix formula passports and this one does not
-   (intended). Housing Benefit itself then differs only when the counted
-   capital is over the limit or the counted income exceeds the applicable
-   amount.
+   (intended). For a mixed-age couple saved by SI 2019/37 art 4, which
+   is_pension_credit_eligible omits, that is a known departure from the law
+   until the saving is modelled. Housing Benefit itself then differs only
+   when the counted capital is over the limit or the counted income exceeds
+   the applicable amount.
 4. Metamorphic: not claiming Pension Credit never raises Housing Benefit.
 5. Under the Pension Credit freeze, receipt is the baseline receipt, because
    the frozen award is the baseline award.

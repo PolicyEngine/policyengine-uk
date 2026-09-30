@@ -48,7 +48,7 @@
     pension_credit: 0
     in_receipt_of_guarantee_credit: false
 
-- name: Case 3, mixed-age couple has a computed guarantee credit but is not eligible for Pension Credit.
+- name: Case 3, mixed-age couple receives no guarantee credit, because PolicyEngine does not model the SI 2019/37 art 4 saving.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -66,8 +66,11 @@
       household:
         members: [person1, person2]
   output:
-    # Couple minimum guarantee 18,889 - 10,000 = 8,889.
-    guarantee_credit: 8_889
+    # PolicyEngine's is_pension_credit_eligible omits the SI 2019/37 art 4
+    # saving, so no Pension Credit is paid. In law a mixed-age couple saved
+    # by art 4 may be entitled to it. The computed guarantee credit is not
+    # asserted, so the case does not depend on whether it is computed for a
+    # family PolicyEngine treats as ineligible.
     is_pension_credit_eligible: false
     pension_credit: 0
     in_receipt_of_guarantee_credit: false

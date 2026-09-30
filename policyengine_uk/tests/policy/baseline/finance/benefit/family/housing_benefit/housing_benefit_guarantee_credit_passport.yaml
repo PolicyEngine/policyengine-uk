@@ -2,7 +2,8 @@
 # whose partner is in receipt, of a guarantee credit, the whole of his capital
 # and income shall be disregarded." (SI 2006/214 reg 26; NI: SR 2006/406
 # reg 24.) The passport follows the guarantee credit actually paid, not one
-# computed for a family that does not claim Pension Credit or cannot get it.
+# computed for a family that does not claim Pension Credit or that
+# PolicyEngine does not treat as eligible for it.
 #
 # 2026 parameters: Pension Credit standard minimum guarantee 12,376 a year
 # single and 18,889 couple; Pension Credit and pension-age Housing Benefit
@@ -150,7 +151,7 @@
     housing_benefit_applicable_income: 0
     housing_benefit: 7_800
 
-- name: Case 5, mixed-age couple with a continuing award is not passported.
+- name: Case 5, mixed-age couple with a continuing award is not passported, because PolicyEngine does not model the SI 2019/37 art 4 saving.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -173,10 +174,18 @@
         tenure_type: RENT_FROM_COUNCIL
         savings: 20_000
   output:
-    # Computed guarantee credit 18,889 - (10,000 + 1,040) = 7,849, but a
-    # couple with a partner under State Pension age is not eligible for
-    # Pension Credit, so none is paid.
-    guarantee_credit: 7_849
+    # PolicyEngine's is_pension_credit_eligible omits the SI 2019/37 art 4
+    # saving, so it pays this couple no Pension Credit and there is no
+    # passport. In law a mixed-age couple saved under art 4(1)(b) (entitled
+    # to Housing Benefit as that couple on 14 May 2019, and to Pension Credit
+    # or Housing Benefit ever since, which the continuing award here may
+    # stand for) is not excluded by SPCA 2002 s.4(1A). It may then be
+    # entitled to a guarantee credit (18,889 - (10,000 + 1,040) = 7,849 on
+    # the 2026 parameters), and reg 26 would disregard its capital. This
+    # case pins the model, not the law, until that saving is modelled. The
+    # computed guarantee credit is not asserted, so the case does not depend
+    # on whether one is computed for a family PolicyEngine treats as
+    # ineligible.
     is_pension_credit_eligible: false
     pension_credit: 0
     in_receipt_of_guarantee_credit: false
