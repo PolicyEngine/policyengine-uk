@@ -11,6 +11,8 @@ class is_child_or_young_person_for_legacy_benefits(Variable):
     (SSCBA 1992 s.142), excluding young persons entitled to a benefit in
     their own right. That is the Child Benefit child or qualifying young
     person test, restricted to members who are not the claimant or partner.
+    A child or young person placed with the claimant by a local authority is
+    not a member of the claimant's household (IS reg 16(4); HB reg 21(3)).
     """
 
     value_type = bool
@@ -24,9 +26,13 @@ class is_child_or_young_person_for_legacy_benefits(Variable):
         "https://www.legislation.gov.uk/uksi/1996/207/regulation/76",
         "https://www.legislation.gov.uk/uksi/2008/794/regulation/2",
         "https://www.legislation.gov.uk/uksi/2012/2885/regulation/2",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/16",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/21",
     )
 
     def formula(person, period, parameters):
-        return person(
-            "is_child_or_qualifying_young_person_for_child_benefit", period
-        ) & ~person("is_claimant_or_partner", period)
+        return (
+            person("is_child_or_qualifying_young_person_for_child_benefit", period)
+            & ~person("is_claimant_or_partner", period)
+            & ~person("is_looked_after_by_local_authority", period)
+        )

@@ -74,17 +74,38 @@
     people:
       claimant:
         age: 79
+        is_claimant_or_partner: true
       partner:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # An identified partner: 1 of 2 claimants is pension age, so s.4(1A) bars PC.
+    is_pension_credit_eligible: false
+
+- name: Without relationships, a 19-year-old living with a 79-year-old is presumed their grandchild.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 79
+      young_person:
         age: 19
         is_in_non_advanced_education: true
         age_started_or_accepted_current_education_or_training: 18
     benunits:
       benunit:
-        members: [claimant, partner]
+        members: [claimant, young_person]
   output:
-    # No identified parent: 1 of 2 claimants is pension age, so s.4(1A) bars PC.
-    is_claimant_or_partner: [true, true]
-    is_pension_credit_eligible: false
+    # Under 20 and 60 years younger than the head: presumed a child of the
+    # household, not a partner (PolicyEngine presumption), so the pensioner
+    # claims alone.
+    is_claimant_or_partner: [true, false]
+    is_pension_credit_eligible: true
 
 - name: An explicitly identified under-18 partner must meet Pension Credit age conditions.
   period: 2026
@@ -92,6 +113,7 @@
     people:
       claimant:
         age: 79
+        is_claimant_or_partner: true
       partner:
         age: 17
         is_claimant_or_partner: true
