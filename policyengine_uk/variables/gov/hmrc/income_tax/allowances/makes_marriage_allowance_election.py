@@ -41,8 +41,8 @@ class makes_marriage_allowance_election(Variable):
         "allowance so that their spouse or civil partner gets the Marriage "
         "Allowance tax reduction. The couple elects only when the election "
         "is allowed and lowers their combined income tax, in whichever "
-        "direction lowers it more, and only if the elder spouse's "
-        "would_claim_marriage_allowance is true."
+        "direction lowers it more, and only if the spouse who would gain has "
+        "would_claim_marriage_allowance true."
     )
     definition_period = YEAR
     reference = [
@@ -119,9 +119,10 @@ class makes_marriage_allowance_election(Variable):
             (saving_if_allowed > other_saving)
             | ((saving_if_allowed == other_saving) & elder)
         )
-        # The couple's take-up draw is the elder spouse's, so each couple has
-        # one draw whichever of them elects.
-        would_claim = person.benunit.any(
-            spouse & elder & person("would_claim_marriage_allowance", period)
+        # The couple's take-up draw is the gaining spouse's, the same draw
+        # that decided take-up when the transfer was modelled on the
+        # recipient alone.
+        partner_would_claim = (
+            partner(person("would_claim_marriage_allowance", period)) > 0
         )
-        return chooses & would_claim
+        return chooses & partner_would_claim

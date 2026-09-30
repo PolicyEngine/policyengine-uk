@@ -344,7 +344,7 @@
     marriage_allowance: [0, 0]
     income_tax: [2_359, 0]
 
-- name: The couple's take-up follows the elder spouse
+- name: The couple's take-up follows the spouse who would gain
   period: 2026
   input:
     people:
@@ -362,7 +362,7 @@
     makes_marriage_allowance_election: [false, false]
     income_tax: [3_486, 0]
 
-- name: The younger spouse's take-up value does not stop the election
+- name: The electing spouse's take-up value does not stop the election
   period: 2026
   input:
     people:

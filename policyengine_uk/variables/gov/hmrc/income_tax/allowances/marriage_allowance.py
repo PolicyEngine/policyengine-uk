@@ -4,10 +4,10 @@ from policyengine_uk.model_api import *
 class would_claim_marriage_allowance(Variable):
     label = "Would claim Marriage Allowance"
     documentation = (
-        "Whether this person's couple would make a Marriage Allowance "
-        "election when it lowers their income tax. Generated stochastically "
-        "in the dataset using take-up rates. The couple's election follows "
-        "the value on its elder spouse or civil partner "
+        "Whether this person would claim Marriage Allowance from their spouse "
+        "or civil partner's election when it lowers the couple's income tax. "
+        "Generated stochastically in the dataset using take-up rates. The "
+        "couple's election follows the value on the spouse who would gain "
         "(makes_marriage_allowance_election)."
     )
     entity = Person
