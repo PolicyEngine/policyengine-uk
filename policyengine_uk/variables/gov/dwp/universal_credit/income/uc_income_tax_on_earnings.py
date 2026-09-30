@@ -32,14 +32,16 @@ class uc_income_tax_on_earnings(Variable):
     def formula(person, period, parameters):
         # Reg. 55(5)(b) deducts income tax paid by the person "in respect of
         # the employment" and reg. 57(2) step 3 income tax paid "in respect
-        # of any trade". When the person has other income too, earnings are
-        # taken as the lowest slice of their non-savings income, after the
-        # allowances they actually have. Savings and dividends sit above all
-        # non-savings income (ITA 2007 s. 16) and property income above the
-        # rest of it, so tax on them never falls on earnings. Other
-        # non-savings income (private pensions, State Pension, taxable
-        # benefits) sits above earnings. This is the tax a standard tax code
-        # deducts from a sole or main employment.
+        # of any trade". Neither says how to split a person's tax when they
+        # also have other income. Earnings are taken as the lowest slice of
+        # their non-savings income, after the allowances they actually have:
+        # savings and dividends sit above all non-savings income (as in ITA
+        # 2007 s. 16), property income above the rest of it (as in s. 16A
+        # from 2027-28), and other non-savings income (private pensions,
+        # State Pension, taxable benefits) above earnings. So tax on other
+        # income never comes off earnings. Under RTI, DWP deducts the PAYE
+        # actually taken on the job, which can include tax on a State
+        # Pension coded against it; that is not modelled.
         p = parameters(period)
         earnings_components = [
             "taxable_employment_income",
@@ -54,9 +56,7 @@ class uc_income_tax_on_earnings(Variable):
         # earned_taxable_income is non-savings, non-property income after
         # allowances. The part of it above earnings belongs to the person's
         # other non-savings income.
-        non_savings_non_property_income = person(
-            "adjusted_net_income", period
-        ) - add(
+        non_savings_non_property_income = person("adjusted_net_income", period) - add(
             person,
             period,
             [

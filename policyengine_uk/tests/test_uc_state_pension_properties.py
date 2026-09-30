@@ -12,20 +12,22 @@ Invariants, for any generated population of families:
 1. Monotone: the UC award, before and after the benefit cap, is
    non-increasing in State Pension, and more State Pension adds exactly that
    much to unearned income without changing the maximum amount.
-2. Pound for pound: with no earnings in the family, raising State Pension by
-   d lowers the award before the benefit cap by exactly min(d, award).
+2. Pound for pound: raising State Pension by d lowers the award before the
+   benefit cap by exactly min(d, award), whatever the partner earns, because
+   tax on State Pension never comes off earnings (reg. 55(5)(b), reg. 57(2)
+   step 3).
 3. Equivalence: UC with State Pension x equals UC with the same x of private
    pension income received by the same person instead (both are retirement
-   pension income, taxed the same way). With no earnings in the family, it
-   also equals UC with x of property income (held without property capital,
-   so it is not treated as capital yield under reg. 72).
+   pension income, taxed the same way). It also equals UC with x of property
+   income (held without property capital, so it is not treated as capital
+   yield under reg. 72), although property income is taxed on less.
 
-Invariants 2 and 3 are restricted to families without earnings because the
-model deducts the whole benefit unit's income tax from its earnings
-(PolicyEngine/policyengine-uk#1942), so tax on State Pension reduces earned
-income. Reg. 55(5)(b) and reg. 57 step 3 allow only tax paid in respect of
-the employment or trade. The strict xfail below pins that case and will flip
-when #1942 is fixed; widen invariants 2 and 3 to all families then.
+Marriage Allowance is switched off for invariants 2 and 3. The model gives
+the recipient min(partner's unused personal allowance, 10% of the personal
+allowance) instead of the fixed transferable amount in ITA 2007 s. 55B(4)-(6),
+so State Pension that uses up the pensioner's unused allowance raises the
+earning partner's tax on earnings. The strict xfail at the end pins that
+deviation (PolicyEngine/policyengine-uk#MA_ISSUE).
 """
 
 import numpy as np
@@ -71,12 +73,12 @@ UC_VARIABLES = [
 
 
 @st.composite
-def families(draw, with_earnings=True):
+def families(draw):
     # Weight towards mixed-age couples, the only shape UC can reach.
     shape = draw(
         st.sampled_from(["mixed_age", "mixed_age", "single_pension", "couple_pension"])
     )
-    earnings = draw(st.one_of(st.just(0.0), money)) if with_earnings else 0.0
+    earnings = draw(st.one_of(st.just(0.0), money))
     return dict(
         ages=[draw(age) for age in SHAPES[shape]],
         children=[draw(st.integers(0, 15)) for _ in range(draw(st.integers(0, 2)))],
@@ -88,14 +90,21 @@ def families(draw, with_earnings=True):
     )
 
 
-def situation(units, year, income_variable="state_pension", pension_bump=0.0):
+def situation(
+    units,
+    year,
+    income_variable="state_pension",
+    pension_bump=0.0,
+    marriage_allowance=True,
+):
     """Build one simulation holding every family.
 
     The eldest adult receives the family's State Pension (plus
     ``pension_bump``) under ``income_variable``; when that is not
     ``state_pension``, their State Pension is set to zero so the same amount
     arrives as the other income instead. A working-age partner receives the
-    family's earnings.
+    family's earnings. With ``marriage_allowance=False`` no one claims
+    Marriage Allowance.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
@@ -103,6 +112,8 @@ def situation(units, year, income_variable="state_pension", pension_bump=0.0):
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
             person = {"age": {year: age}, "state_pension": {year: 0.0}}
+            if not marriage_allowance:
+                person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
                 amount = unit["state_pension"] + pension_bump
                 person[income_variable] = {year: amount}
@@ -165,13 +176,15 @@ def test_uc_is_non_increasing_in_state_pension(units, bump, year):
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(YEARS),
 )
 def test_uc_falls_pound_for_pound_in_state_pension(units, bump, year):
-    low = calculate(units, year)
-    high = calculate(units, year, pension_bump=bump)
+    # Earnings in the family change nothing: tax on State Pension is never
+    # deducted from anyone's earnings (reg. 55(5)(b), reg. 57(2) step 3).
+    low = calculate(units, year, marriage_allowance=False)
+    high = calculate(units, year, pension_bump=bump, marriage_allowance=False)
     award = low["universal_credit_pre_benefit_cap"]
     np.testing.assert_allclose(
         high["universal_credit_pre_benefit_cap"],
@@ -196,25 +209,24 @@ def test_state_pension_counts_like_private_pension(units, year):
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     year=st.sampled_from(YEARS),
 )
 def test_state_pension_counts_like_property_income(units, year):
+    # Property income is taxed on less (the 1,000 property allowance), but
+    # neither tax comes off the partner's earnings.
     assert_same(
-        calculate(units, year),
-        calculate(units, year, income_variable="property_income"),
+        calculate(units, year, marriage_allowance=False),
+        calculate(
+            units,
+            year,
+            income_variable="property_income",
+            marriage_allowance=False,
+        ),
         str(units),
     )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "PolicyEngine/policyengine-uk#1942: uc_earned_income deducts the whole "
-        "benefit unit's income tax, including the pensioner's tax on State "
-        "Pension, from the partner's earnings"
-    ),
-)
 def test_tax_on_state_pension_does_not_reduce_partners_earned_income():
     # 2026: pensioner aged 70 with State Pension 16,000 pays income tax of
     # (16,000 - 12,570) x 20% = 686. The partner aged 45 earns 13,000 and pays
@@ -235,3 +247,35 @@ def test_tax_on_state_pension_does_not_reduce_partners_earned_income():
     values = calculate([unit], 2026)
     assert values["uc_earned_income"][0] == pytest.approx(12_879.60, abs=0.01)
     assert values["universal_credit"][0] == pytest.approx(4_919.86, abs=0.01)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "PolicyEngine/policyengine-uk#MA_ISSUE: Marriage Allowance is booked on "
+        "the recipient as the transferor's unused personal allowance, so the "
+        "transferor's State Pension raises the recipient's tax on earnings"
+    ),
+)
+def test_state_pension_does_not_change_partners_marriage_allowance():
+    # 2026: pensioner aged 70, partner aged 45 earning 20,000, council rent
+    # 20,000. Once the pensioner elects, ITA 2007 s. 55B gives the partner a
+    # fixed reduction of 20% x 1,260 = 252 and cuts the pensioner's own
+    # allowance by 1,260 (s. 55B(6)); the pensioner's State Pension of 12,000
+    # keeps them within the basic rate, so they can elect (s. 55C(1)(c)).
+    # Partner's tax on earnings = (20,000 - 12,570) x 20% - 252 = 1,234 and
+    # NI (20,000 - 12,569.96) x 8% = 594.40, so earned income = 18,171.60
+    # at any State Pension up to the pensioner's election limit.
+    # UC = 8,003.64 + 20,000 - (0.55 x 18,171.60 + 12,000) = 6,009.26.
+    unit = dict(
+        ages=[70, 45],
+        children=[],
+        tenure="RENT_FROM_COUNCIL",
+        rent=20_000.0,
+        savings=0.0,
+        earnings=20_000.0,
+        state_pension=12_000.0,
+    )
+    values = calculate([unit], 2026)
+    assert values["uc_earned_income"][0] == pytest.approx(18_171.60, abs=0.01)
+    assert values["universal_credit"][0] == pytest.approx(6_009.26, abs=0.01)
