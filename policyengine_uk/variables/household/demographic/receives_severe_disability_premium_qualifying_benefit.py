@@ -15,9 +15,12 @@ class receives_severe_disability_premium_qualifying_benefit(Variable):
         "ignored in the premium's residence condition. Armed Forces "
         "Compensation Scheme payments other than armed forces independence "
         "payment do not qualify. The Scottish equivalents (adult disability "
-        "payment, pension age disability payment and Scottish adult "
-        "disability living allowance) are not separate model variables, and "
-        "the hospital and concessionary-payment rules are not modelled."
+        "payment, pension age disability payment, Scottish adult disability "
+        "living allowance and, in Housing Benefit, the care component of "
+        "child disability payment) are not separate model variables; the "
+        "lists differ slightly between instruments (pension age disability "
+        "payment is not in the IS and JSA single-claimant lists). The "
+        "hospital and concessionary-payment rules are not modelled."
     )
     definition_period = YEAR
     reference = (

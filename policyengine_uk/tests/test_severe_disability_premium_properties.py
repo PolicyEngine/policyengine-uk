@@ -5,9 +5,10 @@ Sch 4 para 6 and JSA Regs 1996 Sch 1 para 15) pay the premium to a claimant
 who receives a qualifying benefit; for a couple, both partners must qualify
 unless the other partner is blind. No non-dependant aged 18 or over may
 reside with them (ignoring non-dependants who receive a qualifying benefit or
-are blind), and no one may receive a carer benefit for caring for them. A
-couple who both qualify get the double rate when no carer benefit is paid for
-either, and the single rate when one is paid for only one of them.
+are blind). A single claimant must have no one paid a carer benefit for caring
+for them; a couple who both qualify get the double rate when no carer benefit
+is paid for either, the single rate when one is paid for only one of them, and
+nothing when carers are paid for both.
 
 Invariants, for any generated population of households:
 
@@ -25,10 +26,10 @@ Invariants, for any generated population of households:
    increases the premium.
 5. Metamorphic: giving anyone in the household a qualifying benefit, or making
    them blind, never reduces the premium.
-6. Differential: for a family with no children, no carer and no one else in
-   the household, a single claimant or a couple who both or neither qualify
-   get exactly the Pension Credit severe disability addition, which lists the
-   same qualifying benefits (SPC Regs 2002 Sch I para 1; reg 6(5)). This keeps
+6. Differential: for a family with no children and no one else in the
+   household, the premium equals the Pension Credit severe disability
+   addition, which has the same qualifying benefits, couple, blind-partner and
+   carer rules and rates (SPC Regs 2002 Sch I para 1; reg 6(5)). This keeps
    two encodings of the same rule in step; it is not an independent oracle.
 """
 
@@ -127,6 +128,12 @@ def simulate(units, variables=("severe_disability_premium",)):
     return {v: np.asarray(sim.calculate(v, YEAR))[rows] for v in variables}
 
 
+def simulate_before_after(units, changed):
+    """The premium for the original and changed households, in one simulation."""
+    premium = simulate(units + changed)["severe_disability_premium"]
+    return premium[: len(units)], premium[len(units) :]
+
+
 def oracle(unit):
     """The premium by the statutory rule, written independently of the model."""
     adults, family = unit["adults"], unit["adults"] + unit["children"]
@@ -214,8 +221,7 @@ def test_carer_benefit_never_increases_premium(units, index):
         n = len(unit["adults"])
         return dict(unit, adults=family[:n], children=family[n:])
 
-    before = simulate(units)["severe_disability_premium"]
-    after = simulate([pay_carer(u) for u in units])["severe_disability_premium"]
+    before, after = simulate_before_after(units, [pay_carer(u) for u in units])
     assert np.all(after <= before + 0.01)
 
 
@@ -243,23 +249,17 @@ def test_qualifying_benefit_or_blindness_never_reduces_premium(units, index, cha
             others=changed[a + c :],
         )
 
-    before = simulate(units)["severe_disability_premium"]
-    after = simulate([apply(u) for u in units])["severe_disability_premium"]
+    before, after = simulate_before_after(units, [apply(u) for u in units])
     assert np.all(after >= before - 0.01)
 
 
 @PROPERTY_SETTINGS
 @given(st.lists(st.lists(person(ADULT_AGE), min_size=1, max_size=2), min_size=1))
 def test_matches_pension_credit_severe_disability_addition(families):
-    units = []
-    for adults in families:
-        adults = [dict(a, carer=False) for a in adults]
-        if len(adults) == 2 and qualifies(adults[0]) != qualifies(adults[1]):
-            # Restricted to the cases every version of the Pension Credit
-            # addition agrees on: versions differ on a couple with one
-            # qualifying partner, and on carers.
-            adults = [dict(a, benefit=adults[0]["benefit"]) for a in adults]
-        units.append(dict(adults=adults, children=[], others=[]))
+    # PolicyEngine/policyengine-uk#1896's Pension Credit addition applies the
+    # same couple, blind-partner and carer rules, so every family with no one
+    # else in the household is compared, carers and mixed couples included.
+    units = [dict(adults=adults, children=[], others=[]) for adults in families]
     values = simulate(
         units,
         ("severe_disability_premium", "severe_disability_minimum_guarantee_addition"),

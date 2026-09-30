@@ -311,11 +311,35 @@
       young_person:
         age: 19
         is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 17
         pip_dl_category: STANDARD
     benunits:
       family:
         members: [claimant, partner, young_person]
   output:
+    severe_disability_premium: 0
+
+- name: An 18-year-old in the benefit unit who is not a young person is a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        pip_dl_category: STANDARD
+      adult_child:
+        age: 18
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+    benunits:
+      family:
+        members: [parent, adult_child]
+  output:
+    # Not in education or training, so not a qualifying young person (HB
+    # Regs reg 19; SSCBA s.142): not in the family, so a non-dependant.
+    is_child_or_qualifying_young_person_for_child_benefit: [false, false]
+    has_non_dependant_for_severe_disability_premium: true
     severe_disability_premium: 0
 
 - name: A 17-year-old single claimant qualifies in their own right
@@ -469,7 +493,8 @@
       household:
         members: [disabled_adult, mother, father]
   output:
-    # HB/IS reg 3: close relatives living together are non-dependants.
+    # HB/IS reg 3: parents living with the claimant are non-dependants
+    # unless an exclusion applies (for example joint occupiers).
     severe_disability_premium: [0, 0]
 
 - name: People in other households are not non-dependants

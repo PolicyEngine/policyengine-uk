@@ -9,12 +9,18 @@ class severe_disability_premium(Variable):
         "Legacy benefit severe disability premium. A single claimant qualifies "
         "if they receive a qualifying benefit; a couple qualifies only if both "
         "partners do, or if one does and the other is blind (the blind "
-        "partner is then treated as absent and the single rate applies). "
-        "There must be no non-dependant aged 18 or over, and no one may "
-        "receive a carer benefit for caring for a qualifying partner. A "
-        "couple who both qualify get the double rate when no carer benefit is "
-        "paid for either of them, and the single rate when one is paid for "
-        "only one of them."
+        "partner is then treated as absent and the single rate applies). The "
+        "Regulations treat only the claimant's blind partner as absent; the "
+        "model assumes the qualifying partner is the claimant, as a couple "
+        "can arrange for Housing Benefit (HB Regs reg 82(1)). There must be "
+        "no non-dependant aged 18 or over, other than one who receives a "
+        "qualifying benefit or is blind. A single claimant (or one whose blind "
+        "partner is treated as absent) must have no one paid a carer benefit "
+        "for caring for them. A couple who both qualify get the double rate "
+        "when no carer benefit is paid for either of them, the single rate "
+        "when one is paid for only one of them, and nothing when carers are "
+        "paid for both. The law also counts a Universal Credit award with the "
+        "carer element, which the model does not."
     )
     definition_period = YEAR
     reference = (
@@ -30,10 +36,10 @@ class severe_disability_premium(Variable):
     def formula(benunit, period, parameters):
         # The person cared for is not observed. A carer benefit paid to
         # someone in the benefit unit is assumed to be for a claimant or
-        # partner other than its recipient, one person per award; carers
-        # outside the benefit unit are not observed. The hospital rules that
-        # keep a patient treated as in receipt (and then pay the single rate)
-        # are not modelled.
+        # partner other than its recipient, one person per award. Carers in
+        # other benefit units are not counted, and carers in other households
+        # are not observed. The hospital rules that keep a patient treated as
+        # in receipt (and then pay the single rate) are not modelled.
         p = parameters(period).gov.dwp.disability_premia
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)

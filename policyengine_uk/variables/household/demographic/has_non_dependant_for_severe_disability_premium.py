@@ -9,16 +9,21 @@ class has_non_dependant_for_severe_disability_premium(Variable):
         "A non-dependant aged 18 or over normally resides with the claimant, "
         "which bars the legacy severe disability premium. Non-dependants who "
         "receive a severe disability premium qualifying benefit, or who are "
-        "blind, are ignored. Every household member aged 18 or over outside "
-        "the benefit unit is treated as a non-dependant. The model cannot "
-        "identify the people the Regulations exclude from that definition "
-        "(joint occupiers, and commercial lodgers or landlords who are not "
-        "close relatives), or someone who is treated as blind for 28 weeks "
-        "after regaining their sight."
+        "blind, are ignored. Every household member aged 18 or over is "
+        "treated as a non-dependant unless they are in the claimant's family: "
+        "the claimant, their partner, and children and qualifying young "
+        "persons (the Child Benefit definition that the Regulations' "
+        "'young person' uses). The model cannot identify the other people the "
+        "Regulations exclude from the definition (for example joint "
+        "occupiers, commercial lodgers or landlords, and carers engaged by a "
+        "charity), apply the 12-week rule for someone who moves in to care "
+        "(IS, ESA and JSA only), or treat someone as blind for 28 weeks after "
+        "regaining their sight."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/19",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/3",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13",
@@ -32,6 +37,11 @@ class has_non_dependant_for_severe_disability_premium(Variable):
             & ~person("receives_severe_disability_premium_qualifying_benefit", period)
             & ~person("is_blind", period)
         )
-        # Counted residents of the household, less those in this benefit unit.
+        # The claimant's family is never a non-dependant (HB Regs reg 3(2)(a);
+        # "young person" is a Child Benefit qualifying young person, reg 19).
+        family = person("is_claimant_or_partner", period) | person(
+            "is_child_or_qualifying_young_person_for_child_benefit", period
+        )
+        # Counted residents of the household, less the claimant's family.
         in_household = benunit.max(person.household.sum(counted))
-        return in_household > benunit.sum(counted)
+        return in_household > benunit.sum(counted & family)

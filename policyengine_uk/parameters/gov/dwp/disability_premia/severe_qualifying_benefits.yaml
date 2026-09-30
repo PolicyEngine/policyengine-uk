@@ -6,7 +6,8 @@ description: >
   disability living allowance at the highest or middle rate, the daily living
   component of personal independence payment at either rate, armed forces
   independence payment, and the Scottish equivalents. The Scottish benefits
-  are not separate model variables.
+  are not separate model variables, and the lists differ slightly between
+  instruments.
 metadata:
   label: Legacy benefit severe disability premium qualifying benefits
   period: year
@@ -18,7 +19,7 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13
     - title: The Employment and Support Allowance Regulations 2008 Sch. 4 para. 6(2)(a)(i)
       href: https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6
-    - title: The Jobseeker's Allowance Regulations 1996 Sch. 1 para. 15(2)(a)(i)
+    - title: The Jobseeker's Allowance Regulations 1996 Sch. 1 para. 15(1)(a), (2)(a), (4)(a)
       href: https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15
 values:
   2006-03-06:

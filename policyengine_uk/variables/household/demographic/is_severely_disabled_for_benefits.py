@@ -17,7 +17,10 @@ class is_severely_disabled_for_benefits(Variable):
         "payments do not count. The Scottish equivalents and benefit that "
         "would be payable but for a hospital stay are not modelled. The "
         "legacy severe disability premium has its own, wider list "
-        "(receives_severe_disability_premium_qualifying_benefit)."
+        "(receives_severe_disability_premium_qualifying_benefit). The flag "
+        "also gates the Universal Credit higher disabled child addition, "
+        "whose condition (UC Regs 2013 reg 24(2)(b)) adds blindness and has "
+        "no armed forces independence payment limb; that is not yet separated."
     )
     definition_period = YEAR
     reference = (

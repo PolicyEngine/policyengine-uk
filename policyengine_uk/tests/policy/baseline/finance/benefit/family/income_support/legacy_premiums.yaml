@@ -69,6 +69,7 @@
       young_person:
         age: 19
         is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 17
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
@@ -122,6 +123,7 @@
       young_person:
         age: 19
         is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 17
     benunits:
       family:
         members: [parent, young_person]
