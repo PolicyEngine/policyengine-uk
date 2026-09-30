@@ -20,6 +20,12 @@ def filter_dataset(
     This function creates a new dataset containing only the specified household
     and the associated benefit units and people within that household.
 
+    Values imputed across the whole population (months_since_last_birthday and
+    attends_private_school) are taken from sim for the given year and carried
+    in as inputs, so the extract keeps them in later years too. Private school
+    attendance ranks incomes, so the first extract from a simulation computes
+    its taxes and benefits.
+
     Parameters
     ----------
     sim : Microsimulation

@@ -69,15 +69,18 @@ class attends_private_school(Variable):
 
         # Percentiles rank households within the simulated population, so a
         # region filtered from the data ranks against itself, not the UK.
+        # Households without weight stay at percentile 0 (a rate of 0 unless
+        # reformed), including when no household has weight.
         percentile = np.zeros_like(weighted_income).astype(numpy.int64)
         mask = household_weight > 0
 
-        percentile[mask] = (
-            weighted_income[mask]
-            .percentile_rank()
-            .clip(0, 100)
-            .values.astype(numpy.int64)
-        )
+        if mask.any():
+            percentile[mask] = (
+                weighted_income[mask]
+                .percentile_rank()
+                .clip(0, 100)
+                .values.astype(numpy.int64)
+            )
         # STUDENT_POPULATION_ADJUSTMENT_FACTOR = 0.78
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = population_adjustment_factor
 

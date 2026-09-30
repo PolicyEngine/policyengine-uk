@@ -30,6 +30,9 @@ UC_OUTPUTS = (
     "uc_deduction_combination",
     "uc_deductions",
 )
+# Weight per household for a national-scale population: 400 households carry
+# about 2.3m of weight, a quarter of them (one region) about 0.6m.
+NATIONAL_SCALE = 5_000
 
 
 def tables(n: int = 400, weight_scale: float = 1.0) -> dict:
@@ -99,7 +102,8 @@ def values(sim, variable: str) -> np.ndarray:
 
 @pytest.fixture(scope="module")
 def national():
-    t = tables()
+    t = tables(weight_scale=NATIONAL_SCALE)
+    assert t["household"].household_weight.sum() > 1e6
     return t, data_simulation(t)
 
 
@@ -117,12 +121,14 @@ def test_small_data_built_simulation_gets_hashed_draws():
 
 
 @settings(max_examples=6, deadline=None)
-@given(log_scale=st.floats(min_value=-4, max_value=9))
-def test_imputations_do_not_depend_on_total_weight(national, log_scale):
+@given(power=st.integers(min_value=-14, max_value=30))
+def test_imputations_do_not_depend_on_total_weight(national, power):
     """Scaling every weight by the same factor changes nothing: hashed draws
-    depend only on ids, and income percentiles only on relative weights."""
+    depend only on ids, and income percentiles only on relative weights.
+    Powers of two scale exactly in floating point, so this holds exactly for
+    totals from about a hundred to about 10^15."""
     t, reference = national
-    sim = data_simulation(tables(weight_scale=10**log_scale))
+    sim = data_simulation(tables(weight_scale=NATIONAL_SCALE * 2.0**power))
     for variable in (*UC_OUTPUTS, "attends_private_school"):
         assert np.array_equal(values(sim, variable), values(reference, variable)), (
             variable
@@ -134,6 +140,7 @@ def test_region_filtered_from_data_matches_the_national_run(national):
     deductions it has in the national simulation."""
     t, sim = national
     region = row_filter(t, lambda h: h.region == "LONDON")
+    # A constituency-sized share of a national-sized population.
     assert region["household"].household_weight.sum() < 1e6
     regional = data_simulation(region)
     kept = np.isin(t["benunit"].benunit_id, region["benunit"].benunit_id)
@@ -153,20 +160,38 @@ def test_extracted_household_keeps_its_imputations(national):
     than ranking at the 100th percentile of a population of one."""
     t, sim = national
     attends = values(sim, "attends_private_school")
-    person_household = t["person"].person_household_id.values
-    deductions = values(sim, "uc_deductions")
-    with_deductions = np.flatnonzero(deductions > 0)
+    person_household = values(sim, "person_household_id")
+    deductions = pd.Series(
+        values(sim, "uc_deductions"), index=values(sim, "benunit_id")
+    )
+    # One benefit unit per household, sharing its id.
+    with_deductions = deductions.index[deductions > 0]
     attending = np.unique(person_household[attends])
-    not_attending = np.setdiff1d(t["household"].household_id, attending)
+    not_attending = np.setdiff1d(values(sim, "household_id"), attending)
     assert len(with_deductions) and len(attending)
     for household in [*with_deductions[:3], *attending[:3], *not_attending[-3:]]:
         extract = filter_dataset(sim, household_id=int(household), year=YEAR)
         extracted = Microsimulation(dataset=UKMultiYearDataset(datasets=[extract]))
-        assert values(extracted, "uc_deductions")[0] == deductions[household]
+        assert np.array_equal(
+            values(extracted, "uc_deductions"),
+            deductions.loc[values(extracted, "benunit_id")].values,
+        )
         assert np.array_equal(
             values(extracted, "attends_private_school"),
             attends[person_household == household],
         )
+
+
+def test_data_without_weight_attends_no_private_school():
+    """Every household at zero weight: no income ranking is possible, so no
+    household reaches a percentile with a positive rate, and nothing fails."""
+    sim = data_simulation(tables(n=40, weight_scale=0))
+    assert not values(sim, "attends_private_school").any()
+    ids = values(sim, "benunit_id")
+    assert np.array_equal(
+        values(sim, "uc_deduction_random_draw"),
+        splitmix64_uniform(ids, salt=0).astype(np.float32),
+    )
 
 
 def test_situations_get_defaults_whatever_their_weight():
