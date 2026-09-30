@@ -13,8 +13,9 @@ Axiom input -> policyengine-uk input:
 - company_carries_on_property_business_within_meaning_of_corporation_tax_act_2009_section_204
   -> owned_company_carries_on_property_business
 - person_derives_company_income_that_is_employed_earnings_by_itepa_part_2_chapter_8/9/10
-  and intermediary_employed_earnings_derived_from_person_main_employment_activities
-  -> owned_company_income_is_intermediary_employed_earnings (their conjunction)
+  -> owned_company_intermediary_earnings_chapter
+- intermediary_employed_earnings_derived_from_person_main_employment_activities
+  -> owned_company_intermediary_earnings_from_main_employment
 - company_capital_value_or_person_share_value -> owned_company_capital
 - company_trade_asset_value_or_person_share_used_wholly_and_exclusively_for_trade
   -> owned_company_trade_assets
@@ -41,7 +42,8 @@ CASES = {
             stands=True,
             trade=True,
             property=False,
-            intermediary=False,
+            chapter="NONE",
+            chapter_main=False,
             capital=100_000,
             trade_assets=40_000,
             engaged=True,
@@ -66,7 +68,8 @@ CASES = {
             stands=True,
             trade=True,
             property=False,
-            intermediary=True,
+            chapter="CHAPTER_8",
+            chapter_main=True,
             capital=100_000,
             trade_assets=40_000,
             engaged=True,
@@ -91,7 +94,8 @@ CASES = {
             stands=True,
             trade=False,
             property=True,
-            intermediary=False,
+            chapter="NONE",
+            chapter_main=False,
             capital=50_000,
             trade_assets=5_000,
             engaged=True,
@@ -116,7 +120,8 @@ CASES = {
             stands=True,
             trade=True,
             property=False,
-            intermediary=False,
+            chapter="NONE",
+            chapter_main=False,
             capital=90_000,
             trade_assets=30_000,
             engaged=False,
@@ -147,7 +152,8 @@ def test_reg_77_matches_axiom(name):
         "stands_as_sole_owner_or_partner_of_company": i["stands"],
         "owned_company_carries_on_trade": i["trade"],
         "owned_company_carries_on_property_business": i["property"],
-        "owned_company_income_is_intermediary_employed_earnings": i["intermediary"],
+        "owned_company_intermediary_earnings_chapter": i["chapter"],
+        "owned_company_intermediary_earnings_from_main_employment": i["chapter_main"],
         "owned_company_capital": i["capital"],
         "owned_company_trade_assets": i["trade_assets"],
         "is_engaged_in_owned_company_trade": i["engaged"],

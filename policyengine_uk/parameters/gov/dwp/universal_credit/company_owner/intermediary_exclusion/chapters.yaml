@@ -1,0 +1,23 @@
+description: >
+  Chapters of Part 2 of the Income Tax (Earnings and Pensions) Act 2003 under
+  which employed earnings from a company take the person out of Universal
+  Credit's company owner rule. Chapter 10 was added from 28 November 2018.
+metadata:
+  label: Universal Credit company owner rule excluded intermediary chapters
+  period: year
+  unit: list
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 77(5) (as made)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/77/made
+    - title: The Universal Credit and Jobseeker's Allowance (Miscellaneous Amendments) Regulations 2018 reg. 3(5)
+      href: https://www.legislation.gov.uk/uksi/2018/1129/regulation/3/made
+    - title: The Universal Credit Regulations 2013 reg. 77(5)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/77
+values:
+  2013-04-29:
+    - CHAPTER_8
+    - CHAPTER_9
+  2018-11-28:
+    - CHAPTER_8
+    - CHAPTER_9
+    - CHAPTER_10

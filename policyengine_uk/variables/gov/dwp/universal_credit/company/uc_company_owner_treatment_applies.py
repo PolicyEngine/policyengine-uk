@@ -9,9 +9,10 @@ class uc_company_owner_treatment_applies(Variable):
         "Whether the person stands in a position analogous to a sole owner or "
         "partner in relation to a company that carries on a trade or a "
         "property business, so that Universal Credit treats them as that sole "
-        "owner or partner. This does not apply where the person derives "
-        "employed earnings from the company under the intermediaries or "
-        "managed service company rules from their main employment."
+        "owner or partner. This does not apply where income the person "
+        "derives from the company is employed earnings under the "
+        "intermediaries or managed service company rules "
+        "(uc_company_intermediary_exclusion_applies)."
     )
     definition_period = YEAR
     reference = [
@@ -32,5 +33,5 @@ class uc_company_owner_treatment_applies(Variable):
         return (
             person("stands_as_sole_owner_or_partner_of_company", period)
             & carries_on_business
-            & ~person("owned_company_income_is_intermediary_employed_earnings", period)
+            & ~person("uc_company_intermediary_exclusion_applies", period)
         )

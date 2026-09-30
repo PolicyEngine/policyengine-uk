@@ -48,7 +48,8 @@ COMPANY_FACTS = [
     "stands_as_sole_owner_or_partner_of_company",
     "owned_company_carries_on_trade",
     "owned_company_carries_on_property_business",
-    "owned_company_income_is_intermediary_employed_earnings",
+    "owned_company_intermediary_earnings_chapter",
+    "owned_company_intermediary_earnings_from_main_employment",
     "owned_company_is_main_employment",
     "is_engaged_in_owned_company_trade",
     "owned_company_income_share",
@@ -85,9 +86,12 @@ def companies(draw):
         stands_as_sole_owner_or_partner_of_company=draw(st.booleans()),
         owned_company_carries_on_trade=draw(st.booleans()),
         owned_company_carries_on_property_business=draw(st.booleans()),
-        owned_company_income_is_intermediary_employed_earnings=draw(
-            st.sampled_from([False, False, False, True])
+        owned_company_intermediary_earnings_chapter=draw(
+            st.sampled_from(
+                ["NONE", "NONE", "NONE", "CHAPTER_8", "CHAPTER_9", "CHAPTER_10"]
+            )
         ),
+        owned_company_intermediary_earnings_from_main_employment=draw(st.booleans()),
         owned_company_is_main_employment=draw(st.booleans()),
         is_engaged_in_owned_company_trade=draw(st.booleans()),
         owned_company_income_share=draw(money),
@@ -171,12 +175,17 @@ def calculate(variants):
     return out
 
 
+def _empty(value):
+    if isinstance(value, bool):
+        return False
+    if isinstance(value, str):
+        return "NONE"
+    return 0.0
+
+
 def no_company(unit):
     return {
-        j: {
-            k: (False if isinstance(v, bool) else 0.0)
-            for k, v in adult["company"].items()
-        }
+        j: {k: _empty(v) for k, v in adult["company"].items()}
         for j, adult in enumerate(unit["adults"])
     }
 
@@ -188,7 +197,11 @@ def applies(company):
             company["owned_company_carries_on_trade"]
             or company["owned_company_carries_on_property_business"]
         )
-        and not company["owned_company_income_is_intermediary_employed_earnings"]
+        and not (
+            # Reg. 77(5) as in force from 28 November 2018.
+            company["owned_company_intermediary_earnings_chapter"] != "NONE"
+            and company["owned_company_intermediary_earnings_from_main_employment"]
+        )
     )
 
 
@@ -206,7 +219,8 @@ def test_rule_is_inert_when_it_does_not_apply(unit_list):
                 excluded[j] = {"stands_as_sole_owner_or_partner_of_company": False}
             elif way == 1:
                 excluded[j] = {
-                    "owned_company_income_is_intermediary_employed_earnings": True
+                    "owned_company_intermediary_earnings_chapter": "CHAPTER_10",
+                    "owned_company_intermediary_earnings_from_main_employment": True,
                 }
             else:
                 excluded[j] = {
@@ -280,7 +294,7 @@ def _owner(unit, **facts):
     company = {
         "stands_as_sole_owner_or_partner_of_company": True,
         "owned_company_carries_on_trade": True,
-        "owned_company_income_is_intermediary_employed_earnings": False,
+        "owned_company_intermediary_earnings_chapter": "NONE",
         **facts,
     }
     return {0: company}
