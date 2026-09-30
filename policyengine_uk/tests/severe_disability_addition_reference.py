@@ -42,13 +42,14 @@ Modelling rules (from the spec; each is applied literally below):
    household other than this unit's claimant/partner is aged 18 or over and is
    not a para 2 person. Modelled para 2 persons: qualifying benefit (2(2)(a)),
    blind (2(2)(b)), qualifying young person (2(2)(f)). No other exceptions.
-3. Carers [as amended]. Nobody cares for themselves, and each award is for one
-   person. A claimant/partner who receives a carer benefit cares for their
-   partner if the partner qualifies. Any other member of a unit who receives a
-   carer benefit cares for a qualifying claimant/partner of their own unit if
-   it has one. The household's remaining carers each care for a different
-   qualifying claimant/partner of another unit who is not yet cared for; the
-   units take them in turn, eldest member first.
+3. Carers [as amended]. Nobody cares for themselves, each award is for one
+   person, and each person has at most one carer. Within their own unit,
+   carers care for qualifying claimants/partners first and then other
+   qualifying members (such as a disabled child). Every carer left over cares
+   for a qualifying claimant/partner of another unit who is not yet cared
+   for; the units take them in turn, eldest member first. This rule is
+   implemented as explicit person-to-person matching, independently of the
+   implementation's counting.
 4. Heads. Para 1(1)(a) applies to singles; (b) and then (c) apply to couples.
    (c) applies only where (b) does not, and (c)(iv) needs no carer for the
    partner to whom (c)(i) applies. If both partners qualify, either may be the
@@ -178,10 +179,60 @@ def _members(unit: Mapping[str, Any]) -> list:
     return list(unit["claimant_or_partner"]) + list(unit.get("others", []))
 
 
-def _cares_within_own_unit(people, unit, pid) -> bool:
-    """[Rule 3 as amended] A carer cares within their own unit if it has a
-    qualifying claimant or partner other than the carer."""
-    return any(qualifies(people[q]) for q in unit["claimant_or_partner"] if q != pid)
+def _best_within_unit(people, unit):
+    """[Rule 3 as amended, within a unit] Match carers to people they care for.
+
+    Each carer cares for at most one person in their own unit who receives a
+    qualifying benefit, never themselves; each such person has at most one
+    carer. Among all such matchings, take one that cares for the most
+    qualifying claimants/partners, and then the most people. Enumerated by
+    brute force (units are small). Returns (claimant/partners who must be cared
+    for in every best matching, the number cared for, carers left unmatched).
+    """
+    cp = list(unit["claimant_or_partner"])
+    members = _members(unit)
+    carers = [p for p in members if people[p]["receives_carer_benefit"]]
+    targets = [p for p in members if qualifies(people[p])]
+    best_key, best = None, []
+
+    def search(i, used, pairs):
+        nonlocal best_key, best
+        if i == len(carers):
+            covered = {t for _, t in pairs}
+            key = (len(covered & set(cp)), len(covered))
+            if best_key is None or key > best_key:
+                best_key, best = key, [covered]
+            elif key == best_key:
+                best.append(covered)
+            return
+        carer = carers[i]
+        search(i + 1, used, pairs)  # this carer cares for no one in the unit
+        for t in targets:
+            if t != carer and t not in used:
+                search(i + 1, used | {t}, pairs + [(carer, t)])
+
+    search(0, frozenset(), [])
+    cp_count, total = best_key
+    return cp_count, len(carers) - total
+
+
+def _feasible(carer_units, demand):
+    """Can each unit receive demand[unit] carers, one person each, from carers
+    who are not in that unit? Bipartite matching (augmenting paths)."""
+    slots = [u for u, n in demand.items() for _ in range(n)]
+    match = {}
+
+    def assign(c, seen):
+        for s_i, u in enumerate(slots):
+            if s_i in seen or carer_units[c] == u:
+                continue
+            seen.add(s_i)
+            if s_i not in match or assign(match[s_i], seen):
+                match[s_i] = c
+                return True
+        return False
+
+    return sum(assign(c, set()) for c in range(len(carer_units))) == len(slots)
 
 
 def household_carer_assignments(household: Mapping[str, Any]) -> dict:
@@ -195,16 +246,17 @@ def household_carer_assignments(household: Mapping[str, Any]) -> dict:
     person shall be entitled for the same day to (a) more than one allowance
     under this section", so each award is for one person.
 
-    Rule 3 [as amended]:
-      * Nobody cares for themselves.
-      * A claimant/partner who receives a carer benefit cares for their partner if
-        the partner qualifies. Any other member of a unit who receives one cares
-        for a qualifying claimant/partner of that unit if there is one.
-      * Every remaining carer in the household cares for a qualifying
-        claimant/partner of another unit who is not yet cared for, one each. The
-        units take them in turn, eldest member first (ties by listing order);
-        each unit takes as many as it has uncared-for qualifiers, from carers
-        outside it, while any remain.
+    Rule 3 [as amended; person-to-person matching, not the implementation's
+    counting]:
+      * Nobody cares for themselves, and each person has at most one carer.
+      * Within their own unit, carers care for qualifying claimants/partners
+        first and then other qualifying members (such as a disabled child),
+        as many as possible (``_best_within_unit``).
+      * Every carer left over cares for a qualifying claimant/partner of
+        another unit who is not yet cared for. The units, eldest member first
+        (ties by the listing order of their eldest member), each take the most
+        such carers that can still be placed without taking any from an
+        earlier unit (``_feasible``).
 
     Rule 3 does not say which partner a carer takes when both qualify and
     neither is yet cared for. This returns every allowed set, and
@@ -213,20 +265,14 @@ def household_carer_assignments(household: Mapping[str, Any]) -> dict:
     people = household["people"]
     units = household["benunits"]
     position = {pid: i for i, pid in enumerate(people)}
-    cared_by_partner, uncovered, qualifying, outside = {}, {}, {}, {}
+    qualifying, cared_within, carer_units = {}, {}, []
     for bu_id, unit in units.items():
-        cp = list(unit["claimant_or_partner"])
-        qualifying[bu_id] = [pid for pid in cp if qualifies(people[pid])]
-        carers = [p for p in _members(unit) if people[p]["receives_carer_benefit"]]
-        within = [p for p in carers if _cares_within_own_unit(people, unit, p)]
-        outside[bu_id] = len(carers) - len(within)
-        # A claimant/partner caring within the unit cares for their partner.
-        cared_by_partner[bu_id] = {
-            other for p in within if p in cp for other in cp if other != p
-        }
-        by_others = len([p for p in within if p not in cp])
-        covered = min(len(qualifying[bu_id]), len(cared_by_partner[bu_id]) + by_others)
-        uncovered[bu_id] = len(qualifying[bu_id]) - covered
+        qualifying[bu_id] = [
+            p for p in unit["claimant_or_partner"] if qualifies(people[p])
+        ]
+        cp_count, left_over = _best_within_unit(people, unit)
+        cared_within[bu_id] = cp_count
+        carer_units += [bu_id] * left_over
 
     def eldest_key(bu_id):
         members = _members(units[bu_id])
@@ -234,21 +280,29 @@ def household_carer_assignments(household: Mapping[str, Any]) -> dict:
         first = min(position[p] for p in members if people[p]["age"] == oldest)
         return (-oldest, first)
 
-    total_outside = sum(outside.values())
-    allocated, from_other_units = 0, {}
+    from_other_units = {}
     for bu_id in sorted(units, key=eldest_key):
-        available = max(
-            0, min(total_outside - outside[bu_id], total_outside - allocated)
-        )
-        from_other_units[bu_id] = min(uncovered[bu_id], available)
-        allocated += from_other_units[bu_id]
+        needed = len(qualifying[bu_id]) - cared_within[bu_id]
+        for k in range(needed, -1, -1):
+            if _feasible(carer_units, {**from_other_units, bu_id: k}):
+                from_other_units[bu_id] = k
+                break
 
     result = {}
-    for bu_id in units:
-        cared_count = (
-            len(qualifying[bu_id]) - uncovered[bu_id] + from_other_units[bu_id]
+    for bu_id, unit in units.items():
+        cared_count = cared_within[bu_id] + from_other_units[bu_id]
+        cp = list(unit["claimant_or_partner"])
+        # A claimant/partner caring for a qualifying partner fixes who is cared
+        # for; otherwise any of the qualifying claimant/partners may be.
+        must = frozenset(
+            other
+            for p in cp
+            if people[p]["receives_carer_benefit"]
+            for other in cp
+            if other != p and qualifies(people[other])
         )
-        must = frozenset(cared_by_partner[bu_id])
+        if len(must) > cared_count:
+            must = frozenset()
         rest = [q for q in qualifying[bu_id] if q not in must]
         result[bu_id] = [
             must | frozenset(choice)

@@ -62,7 +62,7 @@ class severe_disability_minimum_guarantee_addition(Variable):
         # rate. Para 1(1)(a): one rate.
         couple_rates = where(
             qualifying >= 2,
-            2 - cared_for,
+            max_(2 - cared_for, 0),
             (qualifying == 1) & other_partner_blind & (cared_for == 0),
         )
         single_rates = (qualifying >= 1) & (cared_for == 0)

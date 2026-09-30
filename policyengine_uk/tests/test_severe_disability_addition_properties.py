@@ -2,10 +2,10 @@
 
 State Pension Credit Regulations 2002 reg 6(4)-(5) and Sch I paras 1-2, as
 encoded in severe_disability_minimum_guarantee_addition and the variables it
-reads. Households are generated with a pension-age benefit unit (single or
-couple, possibly with dependants) and up to two other benefit units, each
-person drawn with a disability benefit (or none), blindness, a carer benefit
-and, for 16- to 19-year-olds, non-advanced education. is_claimant_or_partner is
+reads. Households are generated with a pension-age benefit unit and up to two
+other benefit units, each single or a couple and possibly with dependants,
+each person drawn with a disability benefit (or none), blindness, a carer
+benefit and, for 16- to 19-year-olds, non-advanced education. is_claimant_or_partner is
 set from the generated roles, as the survey data supply it.
 
 Invariants, for every benefit unit in every generated household:
@@ -77,7 +77,10 @@ def household(draw):
         dependants=draw(st.lists(person(0, 19), max_size=2)),
     )
     others = [
-        dict(claimants=[draw(person(16, 90))], dependants=[])
+        dict(
+            claimants=[draw(person(18, 90)) for _ in range(draw(st.integers(1, 2)))],
+            dependants=draw(st.lists(person(0, 19), max_size=1)),
+        )
         for _ in range(draw(st.integers(0, 2)))
     ]
     return [focal] + others
