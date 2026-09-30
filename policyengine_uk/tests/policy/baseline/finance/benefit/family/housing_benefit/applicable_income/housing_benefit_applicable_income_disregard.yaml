@@ -228,6 +228,38 @@
   output:
     housing_benefit_applicable_income_disregard: 1_149.20 # (£5 + £17.10) × 52
 
+- name: Net earnings exactly equal to £5 plus £17.10 a week get the additional disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 1_149.20 # (£5 + £17.10) × 52
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # Para 17(1): net earnings "equal or exceed" £5 × 52 + £0 childcare +
+    # £17.10 × 52 = £1,149.20, so (£5 + £17.10) × 52.
+    housing_benefit_applicable_income_disregard: 1_149.20
+
+- name: Net earnings a penny below £5 plus £17.10 a week miss the additional disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 1_149.19 # £1,149.20 − £0.01
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    housing_benefit_applicable_income_disregard: 260 # £5 × 52
+
 - name: Lone parent working 16 hours adds the additional disregard
   period: 2026
   absolute_error_margin: 0.01
@@ -262,6 +294,41 @@
         members: [parent, child]
   output:
     # £2,080 < (£25 + £17.10) × 52 = £2,189.20.
+    housing_benefit_applicable_income_disregard: 1_300 # £25 × 52
+
+- name: Lone parent working 16 hours whose net earnings exactly equal £25 plus £17.10 gets the additional disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 2_189.20 # (£25 + £17.10) × 52
+        weekly_hours: 16
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    # Para 17(1): £2,189.20 "equal or exceed" £1,300 + £0 childcare + £889.20.
+    housing_benefit_applicable_income_disregard: 2_189.20 # (£25 + £17.10) × 52
+
+- name: Lone parent working 16 hours whose net earnings are a penny below £25 plus £17.10 keeps only £25
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 2_189.19 # £2,189.20 − £0.01
+        weekly_hours: 16
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
     housing_benefit_applicable_income_disregard: 1_300 # £25 × 52
 
 - name: Childcare charges count against the additional disregard's earnings test
@@ -344,7 +411,7 @@
     # One member must work 30 hours; hours are not added across the couple.
     housing_benefit_applicable_income_disregard: 520 # £10 × 52
 
-- name: Disabled single person working 20 hours adds the additional disregard
+- name: Disabled single person working 20 hours gets £5 plus the additional disregard (model limitation; the law gives £20 plus it)
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -358,7 +425,17 @@
       benunit:
         members: [person]
   output:
-    housing_benefit_applicable_income_disregard: 1_149.20 # (£5 + £17.10) × 52
+    # Para 17(2)(b)(iv)(aa): a single claimant with the disability premium
+    # working 16 hours or more meets the condition.
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    # Intended model limitation. In law the same disability premium brings in
+    # the £20 disregard in place of £5: Sch 4 para 3(2), "This paragraph
+    # applies where the claimant's applicable amount includes an amount by
+    # way of the disability premium". The law gives (£20 + £17.10) × 52 =
+    # £1,929.20 (£8,000 ≥ £1,040 + £889.20). The £20 disregards are out of
+    # scope for this change and tracked as a follow-up; until then the model
+    # gives (£5 + £17.10) × 52.
+    housing_benefit_applicable_income_disregard: 1_149.20
 
 - name: Working-age claimant on Income Support has all earnings disregarded
   period: 2026
@@ -391,6 +468,38 @@
   output:
     housing_benefit_net_earnings: 0
     housing_benefit_applicable_income_disregard: 0
+
+- name: An 18-year-old young person's earnings and hours count as a partner's (known limitation of the is_adult proxy)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+      young_person:
+        age: 18
+        employment_income: 8_000
+        weekly_hours: 16
+        current_education: UPPER_SECONDARY
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+  output:
+    # Known limitation, pinned so a change is deliberate. The model takes
+    # the claimant and partner to be members aged 18 or over (is_adult)
+    # until a claimant-or-partner variable replaces it (PolicyEngine/
+    # policyengine-uk#1896). It counts the 18-year-old's £8,000 (below the
+    # tax and NI thresholds) as net earnings, treats the family as a couple
+    # with a child and one member working 16 hours, and £8,000 ≥ £520 +
+    # £889.20, so it gives (£10 + £17.10) × 52 = £1,409.20.
+    # In law a qualifying young person is a "young person" (SI 2006/213
+    # reg 19(1)), whose income "shall not be treated as the income ... of
+    # the claimant" (reg 25(3)); the parent is a lone parent with no
+    # earnings, so net earnings and the disregard are 0.
+    housing_benefit_net_earnings: 8_000
+    housing_benefit_applicable_income_disregard: 1_409.20
 
 - name: The coronavirus modification raised the additional disregard to £37.10 in 2020-21
   period: 2020

@@ -22,7 +22,11 @@ Invariants, for any generated population of families not on those benefits:
 6. Metamorphic: the pension-age and working-age schedules agree. Moving every
    adult between working age (25 to 60) and pension age (67 to 90), with
    earnings below the tax and National Insurance thresholds, leaves the
-   disregard unchanged.
+   disregard unchanged. It covers only those earnings and adults aged 25 or
+   over, where nothing age-dependent (para 12, the age-25 test, National
+   Insurance above State Pension age) can differ between the two groups, so
+   it pins the current behaviour rather than independently testing the two
+   schedules.
 7. Differential against the old flat formula (£5/£10/£25 by family type, plus
    £37.10 for summed hours over 30, or 16 for lone parents), read without
    CPI uprating. They agree for families whose net earnings cover the flat

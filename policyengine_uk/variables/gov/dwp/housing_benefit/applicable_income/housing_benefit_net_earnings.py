@@ -11,21 +11,33 @@ class housing_benefit_net_earnings(Variable):
         "income plus self-employment profit (each floored at zero, as a loss "
         "in one employment is not set against another), less income tax, "
         "Class 1, 2 and 4 National Insurance, and half of pension "
-        "contributions, floored at zero. The regulations deduct the income "
-        "tax deducted from, or notionally charged on, the earnings themselves; "
-        "PolicyEngine attributes a person's income tax to earnings in "
-        "proportion to their share of the person's total income. That is exact "
-        "when earnings are the person's only taxable income or no income tax "
-        "is due. Children's earnings are excluded (regulation 25(3); "
-        "pension age regulation 23(3))."
+        "contributions, floored at zero. For an employee the regulations "
+        "deduct the income tax deducted from the earnings (regulation 36(3); "
+        "pension age regulation 36(2)); for the self-employed, a notional "
+        "basic-rate tax on the profit alone less personal reliefs (regulation "
+        "39(1); pension age regulation 40(1)). PolicyEngine attributes a "
+        "person's income tax to earnings in proportion to their share of the "
+        "person's total income. For employment income that is a lower bound "
+        "on the tax on the earnings taxed as the top slice of income; for "
+        "self-employment profit alongside other income it can exceed the "
+        "notional tax. It is exact for an employee whose earnings are their "
+        "only taxable income, and whenever no income tax is due. The earnings "
+        "of a child or young person are not the claimant's (regulation 25(3); "
+        "pension age regulation 23(3)). The claimant and partner are proxied "
+        "by is_adult (aged 18 or over): earnings of members under 18 are "
+        "excluded, but those of a qualifying young person aged 18 or 19 are "
+        "counted, until a claimant-or-partner variable "
+        "(PolicyEngine/policyengine-uk#1896) replaces the proxy."
     )
     definition_period = YEAR
     unit = GBP
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/36",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/38",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/39",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/36",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/39",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/40",
     )
 
     def formula(benunit, period, parameters):
@@ -54,6 +66,7 @@ class housing_benefit_net_earnings(Variable):
             0,
         )
         # The claimant and partner; the model's other Housing Benefit
-        # variables use the same proxy.
+        # variables use the same proxy. It counts a qualifying young person
+        # aged 18 or 19, whose earnings the law excludes (#1896).
         claimant_or_partner = person("is_adult", period)
         return benunit.sum(net_earnings * claimant_or_partner)

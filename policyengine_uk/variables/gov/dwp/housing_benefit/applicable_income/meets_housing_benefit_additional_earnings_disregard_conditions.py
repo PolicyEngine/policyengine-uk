@@ -23,7 +23,12 @@ class meets_housing_benefit_additional_earnings_disregard_conditions(Variable):
         "tax credit can be claimed for 2025-26 onwards. The 50 plus element "
         "route (paragraph 17(2)(c) and 9(2)(c)) ended with the element on 6 "
         "April 2012. The net earnings test is applied in "
-        "housing_benefit_applicable_income_disregard."
+        "housing_benefit_applicable_income_disregard. The claimant and "
+        "partner are proxied by is_adult (aged 18 or over): members under 18 "
+        "are treated as children, but a qualifying young person aged 18 or 19 "
+        "is treated as a claimant or partner, so their hours can meet a "
+        "condition, until a claimant-or-partner variable "
+        "(PolicyEngine/policyengine-uk#1896) replaces the proxy."
     )
     definition_period = YEAR
     reference = (
@@ -37,7 +42,8 @@ class meets_housing_benefit_additional_earnings_disregard_conditions(Variable):
         p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         person = benunit.members
         # The claimant and partner; the model's other Housing Benefit
-        # variables use the same proxy.
+        # variables use the same proxy. It counts a qualifying young person
+        # aged 18 or 19 as an adult (#1896).
         claimant_or_partner = person("is_adult", period)
         hours = person("weekly_hours", period)
         works_hours = claimant_or_partner & (hours >= p.worker_hours)
