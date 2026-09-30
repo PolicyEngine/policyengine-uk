@@ -6,10 +6,13 @@ Invariants:
    approved training, own-benefit receipt and looked-after status, the four
    programmes' child predicates mean under 16. Their young-person predicates
    agree with the statutory age/education/entry conditions the model encodes.
-   Legacy children are Child Benefit children/QYPs other than claimants and
-   partners; the HBAI fallback follows its documented structural assumptions.
-2. HBAI types partition everyone. Valid families (one or two adults aged 20+
-   and dependants) have one or two claimants/partners; couple/single and
+   Legacy children are Child Benefit children/QYPs other than claimants,
+   partners and children placed by a local authority; the HBAI fallback and
+   the claimant-or-partner presumption follow their documented assumptions.
+2. HBAI types partition everyone. Any benefit unit with one head has at most
+   two claimants/partners, all of them HBAI adults, and at least one if it
+   has an HBAI adult; valid families (one or two adults aged 20+ and
+   dependants) have exactly their adults. Couple/single and
    couple/lone-parent/single-person partition benefit units. Heads aged 16+
    are claimants or partners, including when explicitly younger than others.
 3. All 23 deprecated shims retain their original age-18 formulas, including
@@ -46,7 +49,6 @@ from itertools import product
 from unittest.mock import patch
 
 import numpy as np
-import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -212,6 +214,41 @@ def hbai_dependent_child(p, family):
     )
 
 
+def claimants_or_partners(family):
+    # is_claimant_or_partner's documented rule: an HBAI-adult head, plus one
+    # partner: the eldest other HBAI adult flagged as a parent, else the
+    # eldest other HBAI adult not presumed the head's child (under 20 and at
+    # least 16 years younger than the head).
+    adult = [not hbai_dependent_child(p, family) for p in family]
+    head_ages = [p["age"] for p in family if p["is_benunit_head"]]
+    head_age = max(head_ages) if head_ages else -np.inf
+    others = [i for i, p in enumerate(family) if adult[i] and not p["is_benunit_head"]]
+    parents = [i for i in others if family[i]["is_parent"]]
+    not_presumed_children = [
+        i
+        for i in others
+        if not (family[i]["age"] < 20 and head_age - family[i]["age"] >= 16)
+    ]
+    pool = parents or not_presumed_children
+    partner = max(pool, key=lambda i: (family[i]["age"], -i)) if pool else None
+    return [
+        (a and p["is_benunit_head"]) or i == partner
+        for i, (p, a) in enumerate(zip(family, adult))
+    ]
+
+
+def legacy_child_or_young_person(p, claimant):
+    # SSCBA s137 and IS reg14 / HB reg19, minus the claimant and partner and
+    # anyone placed by a local authority (IS reg16(4), HB reg21(3)):
+    # https://www.legislation.gov.uk/uksi/1987/1967/regulation/16
+    # https://www.legislation.gov.uk/uksi/2006/213/regulation/21
+    return (
+        not claimant
+        and not p["is_looked_after_by_local_authority"]
+        and child_or_young_person(p, "child_benefit")
+    )
+
+
 def wtc_childcare_child(p, family):
     # Annual proxy for reg14(3)-(4), not the precise September/week cutoff:
     # https://www.legislation.gov.uk/uksi/2002/2005/regulation/14
@@ -265,7 +302,8 @@ def assert_definitions(families, year=YEAR):
     hbai = [hbai_dependent_child(p, family) for family in families for p in family]
     assert_values(sim, "is_hbai_dependent_child", hbai, year)
     assert_values(sim, "is_hbai_adult", [not child for child in hbai], year)
-    assert_values(sim, "is_claimant_or_partner", [not child for child in hbai], year)
+    claimants = [c for family in families for c in claimants_or_partners(family)]
+    assert_values(sim, "is_claimant_or_partner", claimants, year)
     # SSCBA s137 and IS reg14 / HB reg19, projected to the encoded family:
     # https://www.legislation.gov.uk/ukpga/1992/4/section/137
     # https://www.legislation.gov.uk/uksi/1987/1967/regulation/14
@@ -273,10 +311,7 @@ def assert_definitions(families, year=YEAR):
     assert_values(
         sim,
         "is_child_or_young_person_for_legacy_benefits",
-        [
-            child and child_or_young_person(p, "child_benefit")
-            for p, child in zip(people, hbai)
-        ],
+        [legacy_child_or_young_person(p, c) for p, c in zip(people, claimants)],
         year,
     )
     assert_values(
@@ -287,7 +322,12 @@ def assert_definitions(families, year=YEAR):
     )
     # Financial dependence is unobserved: test the documented membership proxy.
     # https://www.legislation.gov.uk/uksi/2011/1986/regulation/42
-    assert_values(sim, "is_dependent_child_for_student_support", hbai, year)
+    assert_values(
+        sim,
+        "is_dependent_child_for_student_support",
+        [not claimant for claimant in claimants],
+        year,
+    )
     assert_hbai_partition(sim, people, hbai, year)
     assert_structure(sim, families, year)
 
@@ -333,12 +373,16 @@ def assert_structure(sim, families, year=YEAR):
     )
     offset = 0
     for i, family in enumerate(families):
-        expected = [not hbai_dependent_child(p, family) for p in family]
+        expected = claimants_or_partners(family)
         actual = claimants[offset : offset + len(family)]
         np.testing.assert_array_equal(actual, expected)
+        adults = [not hbai_dependent_child(p, family) for p in family]
+        assert sum(actual) <= 2
+        assert (sum(actual) >= 1) == any(adults)
+        assert all(adult for adult, claimant in zip(adults, actual) if claimant)
         assert couple[i] == (sum(expected) >= 2)
         responsible = any(
-            not claimant and child_or_young_person(p, "child_benefit")
+            legacy_child_or_young_person(p, claimant)
             for p, claimant in zip(family, expected)
         )
         assert lone[i] == (sum(expected) < 2 and responsible)
@@ -509,6 +553,35 @@ def test_calculated_heads_are_claimants_at_16_or_over():
         if family[expected_head]["age"] >= 16:
             assert claimants[offset + expected_head]
         offset += len(family)
+
+
+@st.composite
+def arbitrary_benefit_units(draw):
+    # Any ages, education, parent flags and head position: not only the
+    # shapes the FRS produces.
+    families = []
+    for _ in range(draw(st.integers(1, 8))):
+        size = draw(st.integers(1, 6))
+        head = draw(st.integers(0, size - 1))
+        families.append(
+            [
+                person(
+                    draw(st.integers(0, 90)),
+                    current_education=draw(st.sampled_from(EDUCATIONS)),
+                    is_in_approved_training=draw(st.booleans()),
+                    is_parent=draw(st.booleans()),
+                    is_benunit_head=i == head,
+                )
+                for i in range(size)
+            ]
+        )
+    return families
+
+
+@PROPERTY_SETTINGS
+@given(arbitrary_benefit_units())
+def test_any_benefit_unit_has_at_most_two_claimants_or_partners(families):
+    assert_structure(simulate(families), families)
 
 
 @st.composite

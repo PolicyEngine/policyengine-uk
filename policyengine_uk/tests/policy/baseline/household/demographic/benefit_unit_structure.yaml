@@ -237,3 +237,113 @@
   output:
     is_hbai_child_under_14: [false, true, false, false]
     is_hbai_child_aged_14_or_over: [false, false, true, true]
+
+# A benefit unit has one claimant or a couple, never more. Without relationship
+# inputs, a member under 20 who is at least 16 years younger than the head is
+# presumed the head's child, not their partner (a PolicyEngine presumption);
+# any adults beyond a couple are neither claimant nor partner.
+
+- name: A couple with an 18-year-old in higher education stays a couple of two
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 42
+      parent_2:
+        age: 40
+      student:
+        age: 18
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+    households:
+      household:
+        members: [parent_1, parent_2, student]
+  output:
+    is_hbai_adult: [true, true, true]
+    is_claimant_or_partner: [true, true, false]
+    is_couple: true
+    marital_status: [MARRIED, MARRIED, SINGLE]
+
+- name: A lone parent with an 18-year-old in higher education is single
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+      student:
+        age: 18
+      toddler:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, student, toddler]
+    households:
+      household:
+        members: [parent, student, toddler]
+  output:
+    is_claimant_or_partner: [true, false, false]
+    is_couple: false
+
+- name: A partner close in age is still a partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 40
+      partner:
+        age: 22
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+  output:
+    # 22 is not under 20, so no presumption applies.
+    is_claimant_or_partner: [true, true]
+    is_couple: true
+
+- name: Three unrelated adults form one couple plus a non-dependant
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      eldest:
+        age: 50
+      second:
+        age: 48
+      third:
+        age: 45
+    benunits:
+      benunit:
+        members: [eldest, second, third]
+    households:
+      household:
+        members: [eldest, second, third]
+  output:
+    is_claimant_or_partner: [true, true, false]
+
+- name: A supplied claimant-or-partner flag overrides the presumption
+  # Supplying the flag replaces the formula for everyone, so set it for both.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 45
+        is_claimant_or_partner: true
+      partner:
+        age: 19
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+  output:
+    is_couple: true

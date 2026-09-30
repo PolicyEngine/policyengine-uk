@@ -317,3 +317,26 @@
         members: [parent_1, parent_2, student]
   output:
     tax_free_childcare_work_condition: [false, false, false]
+
+- name: A working lone parent with an 18-year-old and a toddler meets the work condition
+  # Default inputs: the 18-year-old is the parent's child, not a partner who
+  # would also have to work.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 80_000
+        in_work: true
+        incapacity_benefit: 0
+      student:
+        age: 18
+        incapacity_benefit: 0
+      toddler:
+        age: 3
+        incapacity_benefit: 0
+    benunits:
+      benunit:
+        members: [parent, student, toddler]
+  output:
+    tax_free_childcare_work_condition: [true, false, false]

@@ -114,3 +114,23 @@
   output:
     is_married: false
     marriage_allowance: [0, 0]
+
+- name: Parents do not receive Marriage Allowance from an 18-year-old's allowance
+  # Default inputs (no relationship or education flags). The couple are the
+  # spouses; their 18-year-old is neither. Each parent earns 40,000, so both
+  # use their full personal allowance and neither has one to transfer.
+  period: 2025
+  input:
+    people:
+      parent_1:
+        age: 42
+        employment_income: 40_000
+      parent_2:
+        age: 40
+        employment_income: 40_000
+      student:
+        age: 18
+    benunit:
+      members: [parent_1, parent_2, student]
+  output:
+    marriage_allowance: [0, 0, 0]

@@ -29,6 +29,11 @@ A pensioner with an 18 or 19 year old dependant is a pension-age claimant for
 Housing Benefit, Pension Credit and Universal Credit alike (the dependant is
 not a claimant or partner), so that family can claim Housing Benefit and not
 Universal Credit, and the mutual exclusion holds for that shape too.
+
+Every member's is_claimant_or_partner is set from its generated role, as the
+FRS supplies it. Without that input an 18- or 19-year-old partner of a
+pensioner would be presumed the pensioner's child; that presumption is tested
+in test_child_and_adult_definitions_properties.py.
 """
 
 import numpy as np
@@ -91,7 +96,12 @@ def situation(units, claims_all=None, flip_would_claim_uc=False, pension_bump=0.
         names = []
         for j, (role, age) in enumerate(unit["members"]):
             name = f"p{i}_{j}"
-            person = {"age": {YEAR: age}}
+            # Setting the input for anyone makes it an input for everyone, so
+            # set it for every member of every family.
+            person = {
+                "age": {YEAR: age},
+                "is_claimant_or_partner": {YEAR: role != "dependant"},
+            }
             if role != "dependant" and age >= 67:
                 person["state_pension_reported"] = {YEAR: unit["state_pension"]}
                 person["private_pension_income"] = {
