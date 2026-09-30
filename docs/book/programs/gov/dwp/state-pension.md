@@ -52,7 +52,10 @@ timetable row by row:
 A person attains State Pension age on the later of the two. The model
 places each person's date of birth with `age` and
 `months_since_last_birthday`, which counts months since their last
-birthday on 6 October, the middle of the fiscal year:
+birthday on 6 October, the middle of the fiscal year. `date_of_birth` holds
+the resulting day (as a YYYYMMDD number), which other date-of-birth rules
+also read, such as the 6 April 2017 cutoffs in Universal Credit, Child Tax
+Credit and Pension Credit:
 
 - `state_pension_age` is the person's own State Pension age;
 - `months_since_state_pension_age` is how long before 6 October they

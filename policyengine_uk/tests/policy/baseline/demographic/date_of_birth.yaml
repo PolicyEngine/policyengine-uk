@@ -1,0 +1,75 @@
+# The date of birth is age years and months_since_last_birthday months before
+# 6 October of the fiscal year, on a grid whose months start on the 6th; the
+# day of birth is the one starting at or after that instant.
+
+- name: A whole age in a household situation is the middle of the year of age.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+  output:
+    months_since_last_birthday: 6
+    # 6 October 2025 less 8 years and 6 months.
+    date_of_birth: 20170406
+    birth_year: 2017
+
+- name: One day more since the last birthday is born the day before.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+    # The grid month from 6 March to 5 April 2017 has 31 days.
+    months_since_last_birthday: 6.032258064516129
+  output:
+    date_of_birth: 20170405
+    birth_year: 2017
+
+- name: A birthday in December falls in the year before period less age.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+    months_since_last_birthday: 10
+  output:
+    # 6 October 2025 less 8 years and 10 months.
+    date_of_birth: 20161206
+    birth_year: 2016
+
+- name: A fractional age is the exact age on 6 October.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8.25
+  output:
+    months_since_last_birthday: 3
+    date_of_birth: 20170706
+    birth_year: 2017
+
+- name: A birthday on 6 October itself.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 0
+    months_since_last_birthday: 0
+  output:
+    date_of_birth: 20251006
+    birth_year: 2025
+
+- name: A date of birth from the age and birthday places the Universal Credit cutoff exactly, born 5 April 2017.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+    months_since_last_birthday: 6.032258064516129
+  output:
+    uc_is_child_born_before_child_limit: true
+    is_CTC_child_limit_exempt: true
+
+- name: A date of birth from the age and birthday places the Universal Credit cutoff exactly, born 6 April 2017.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+  output:
+    uc_is_child_born_before_child_limit: false
+    is_CTC_child_limit_exempt: false
