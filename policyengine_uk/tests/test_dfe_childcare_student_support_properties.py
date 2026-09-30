@@ -55,7 +55,7 @@ https://www.legislation.gov.uk/uksi/2011/1986/schedule/4
 from unittest.mock import patch
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -221,10 +221,26 @@ def meets_work_and_income(adult):
     )
 
 
+def _adult(earnings, status=None):
+    return {"age": 35, "earnings": earnings, "status": status, "pip": 0}
+
+
+# Explicit cases for the carer element's attribution (reg 11A(1)(c)): the
+# earner is the carer; the carer has no Universal Credit award; neither
+# partner is the carer. In each, the non-earner must not qualify through it.
 @PROPERTY_SETTINGS
 @given(
     st.sampled_from([2023, 2024, 2025, 2026]),
     st.lists(extended_family, min_size=1, max_size=6),
+)
+@example(
+    2025,
+    [
+        ([_adult(20_000, "carer"), _adult(0)], [(3, False)], (3_000, 2_400)),
+        ([_adult(20_000), _adult(0, "carer")], [(3, False)], (0, 2_400)),
+        ([_adult(20_000), _adult(0)], [(3, False)], (3_000, 2_400)),
+        ([_adult(20_000), _adult(0, "carer")], [(3, False)], (3_000, 2_400)),
+    ],
 )
 def test_extended_childcare_eligibility_matches_regs_13_to_15(year, families):
     built = []
