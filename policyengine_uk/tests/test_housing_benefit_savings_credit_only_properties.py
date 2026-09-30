@@ -50,7 +50,10 @@ from hypothesis import strategies as st
 from policyengine_uk import Simulation
 
 YEAR = 2026
-PENSIONS = np.arange(0, 24_001, 250)
+# Wide enough that every drawn family starts with a guarantee credit or savings
+# credit and ends with no Pension Credit: a couple both on Attendance Allowance
+# with no State Pension leaves savings credit at about £35,000.
+PENSIONS = np.arange(0, 40_001, 250)
 PROPERTY_SETTINGS = settings(
     max_examples=12,
     deadline=None,
@@ -95,7 +98,9 @@ def adult(draw):
         age=draw(st.integers(80, 100)),
         disability=draw(DISABILITY),
         blind=draw(st.booleans()),
-        state_pension=draw(money(0, 12_000)),
+        # At most £10,000 each, so a couple without disability starts below
+        # the top of the savings credit range (about £21,500 of income).
+        state_pension=draw(money(0, 10_000)),
     )
 
 

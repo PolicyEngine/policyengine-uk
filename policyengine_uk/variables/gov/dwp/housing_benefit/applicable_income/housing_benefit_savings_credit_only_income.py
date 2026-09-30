@@ -4,7 +4,9 @@ from policyengine_uk.model_api import *
 class housing_benefit_savings_credit_only_income(Variable):
     value_type = float
     entity = BenUnit
-    label = "Housing Benefit income where the Pension Credit award is savings credit only"
+    label = (
+        "Housing Benefit income where the Pension Credit award is savings credit only"
+    )
     documentation = (
         "Income for the Housing Benefit means test of a claimant who, or whose "
         "partner, has a Pension Credit award of savings credit only. The "
