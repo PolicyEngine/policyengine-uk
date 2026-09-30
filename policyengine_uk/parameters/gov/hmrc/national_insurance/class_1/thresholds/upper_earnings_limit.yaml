@@ -1,7 +1,8 @@
 description: The Upper Earnings Limit is the upper bound for the main rate of Class 1 National Insurance.
-# From 2021-22 the model stores the annual earnings period limit over 52 weeks
-# (50,270 / 52 = 966.73), so that 52 weeks give the statutory £50,270
-# (SI 2001/1004 reg 11(2A)). The weekly amount in reg 10(b) is £967.
+# From 2021-22 the model stores the annual earnings period limit divided by 52
+# (50,270 / 52, rounded to 966.73), as SI 2001/1004 reg 11(2A)(c) does for
+# periods of whole weeks; 52 weeks give £50,269.96. The weekly amount in
+# reg 10(b) is £967.
 # Legal status: SI 2001/1004 reg 10 sets the amounts for 2026-27 only. The
 # 2027-28 to 2030-31 values are announced policy (Autumn Statement 2022 and
 # Budget 2025), to be set in each year's rates, limits and thresholds
@@ -18,8 +19,8 @@ values:
     value: 966.73
     metadata:
       reference:
-        - title: The Social Security (Contributions) Regulations 2001 regs 10 and 11, as amended by SI 2026/231 reg 5 (2026-27)
-          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(b) and reg 11(2A), for 2026-27 (reg 10's tax year set by SI 2026/231 reg 5(2)(a))
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11/2026-04-06
         - title: SI 2026/231 reg 5
           href: https://www.legislation.gov.uk/uksi/2026/231/regulation/5/made
   2027-04-06:

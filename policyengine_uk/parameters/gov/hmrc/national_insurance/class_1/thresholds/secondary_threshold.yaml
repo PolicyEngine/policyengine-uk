@@ -7,6 +7,8 @@ metadata:
   - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
   unit: currency-GBP
+# The model stores the weekly £96 in reg 10(d) and annualises it as 52 weeks
+# (£4,992); reg 11(3A)(b) gives £5,000 a year (#1967).
 # Legal status: SI 2001/1004 reg 10 sets the amounts for 2026-27 only. The
 # 2027-28 to 2030-31 values are announced policy (Autumn Budget 2024 and
 # Budget 2025), to be set in each year's rates, limits and thresholds
@@ -27,7 +29,7 @@ values:
           and National Insurance Funds Payments) Regulations 2022(6)
     value: 175
   2024-01-01: 175
-  2025-01-01:
+  2025-04-06:
     value: 96
     metadata:
       reference:
@@ -37,8 +39,8 @@ values:
     value: 96
     metadata:
       reference:
-        - title: The Social Security (Contributions) Regulations 2001 regs 10 and 11, as amended by SI 2026/231 reg 5 (2026-27)
-          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(d) and reg 11(3A), for 2026-27 (reg 10's tax year set by SI 2026/231 reg 5(2)(a))
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11/2026-04-06
         - title: SI 2026/231 reg 5
           href: https://www.legislation.gov.uk/uksi/2026/231/regulation/5/made
   2027-04-06:

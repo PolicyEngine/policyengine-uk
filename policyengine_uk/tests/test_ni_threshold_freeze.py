@@ -6,14 +6,17 @@ limits (LPL, UPL), at their 2026-27 levels until 5 April 2031. The Lower
 Earnings Limit is not frozen: it rose with CPI to £129 a week in 2026-27.
 
 Model year Y is the fiscal year starting 6 April Y. The model stores PT and UEL
-as the annual amounts over 52 (12,570 / 52 and 50,270 / 52) and ST as the
-statutory weekly amount (£96), and annualises weekly thresholds as 52 weeks.
+as the annual amounts over 52 (12,570 / 52 and 50,270 / 52, as SI 2001/1004
+reg 11(3)(c) and 11(2A)(c) do for periods of whole weeks) and ST as the reg
+10(d) weekly amount (£96), and annualises weekly thresholds as 52 weeks. So the
+model's annual ST is £4,992, where reg 11(3A)(b) gives £5,000 (#1967); the
+statute table follows the model here, and a strict xfail marks the gap.
 
 Invariants:
 
 1. Statute table: in every year 2026-2030, each threshold equals the figure in
-   STATUTORY_2026_27, which is taken from SI 2026/231 and SSCBA 1992 s.15(3),
-   not from the parameter files.
+   STATUTORY_2026_27, which is taken from SI 2001/1004 regs 10-11 as they
+   stand for 2026-27 and SSCBA 1992 s.15(3), not from the parameter files.
 2. Cash freeze: PT, UEL, ST, LPL and UPL are identical in every year
    2026-2030.
 3. Indexation resumes from the frozen level: from 2031, each threshold is its
@@ -49,14 +52,15 @@ FROZEN_YEARS = [2026, 2027, 2028, 2029, 2030]
 PROJECTION_YEARS = list(range(2026, 2041))
 PARAMETER_DIR = Path(policyengine_uk.__file__).parent / "parameters"
 
-# Figures for 2026-27 from the Social Security (Contributions) (Rates, Limits
-# and Thresholds Amendments and National Insurance Funds Payments)
-# Regulations 2026 (SI 2026/231) and SSCBA 1992 s.15(3). Budget 2025 holds
-# all but the LEL at these levels until April 2031.
+# Figures for 2026-27 from the Social Security (Contributions) Regulations
+# 2001 regs 10-11, whose tax year SI 2026/231 reg 5 set to 2026-27, and SSCBA
+# 1992 s.15(3). Budget 2025 holds all but the LEL at these levels until April
+# 2031.
 STATUTORY_2026_27 = {
     "lower_earnings_limit": Fraction(129),  # weekly, CPI-uprated
     "primary_threshold": Fraction(12_570, 52),  # annual / 52
-    "secondary_threshold": Fraction(96),  # weekly
+    # reg 10(d) weekly, as the model stores it; see #1967 for the annual £5,000.
+    "secondary_threshold": Fraction(96),
     "upper_earnings_limit": Fraction(50_270, 52),  # annual / 52
     "lower_profits_limit": Fraction(12_570),  # annual
     "upper_profits_limit": Fraction(50_270),  # annual
@@ -119,8 +123,21 @@ def test_frozen_thresholds_match_statute(system, name, year):
     assert threshold(system, name, year) == pytest.approx(expected, abs=0.005)
 
 
-def test_lower_earnings_limit_2026_27(system):
+def test_lower_earnings_limit_2025_26_and_2026_27(system):
+    # SI 2025/288 reg 5(2)(b) and SI 2026/231 reg 5(2)(b).
+    assert threshold(system, "lower_earnings_limit", 2025) == 125
     assert threshold(system, "lower_earnings_limit", 2026) == 129
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="#1967: the model annualises the weekly ST as 52 x £96 = £4,992; "
+    "SI 2001/1004 reg 11(3A)(b) gives £5,000 a year.",
+)
+@pytest.mark.parametrize("year", FROZEN_YEARS)
+def test_annual_secondary_threshold_is_statutory(system, year):
+    annual = 52 * threshold(system, "secondary_threshold", year)
+    assert annual == pytest.approx(5_000, abs=0.5)
 
 
 # Invariant 2: cash freeze.
@@ -198,7 +215,7 @@ def test_frozen_year_values_cite_a_source():
         )
         values = yaml.safe_load(file.read_text())["values"]
         dated = {str(instant): entry for instant, entry in values.items()}
-        years = [2026] if name == "lower_earnings_limit" else FROZEN_YEARS
+        years = [2025, 2026] if name == "lower_earnings_limit" else FROZEN_YEARS
         for year in years:
             entry = dated.get(f"{year}-04-06")
             assert isinstance(entry, dict), (name, year)
