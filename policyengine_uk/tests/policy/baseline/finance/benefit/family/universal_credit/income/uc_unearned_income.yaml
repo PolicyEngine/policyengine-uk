@@ -4,8 +4,9 @@
 # ITTOIA 2005 Part 5 income, while interest and dividends are Part 4 and
 # property income is Part 3. Capital counts through its assumed yield instead
 # (reg. 72(1), reg. 66(1)(k)): £4.35 a month for each £250, or part of £250,
-# above £6,000. Reg. 72(3) treats actual income derived from capital, "for
-# example rental, interest or dividends", as capital.
+# above £6,000. Where capital is treated as yielding income, reg. 72(3) treats
+# the actual income derived from it, "for example rental, interest or
+# dividends", as capital.
 
 - name: Listed sources are summed and interest and dividends are not
   period: 2020

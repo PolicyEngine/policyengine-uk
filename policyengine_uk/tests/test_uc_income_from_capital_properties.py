@@ -5,7 +5,8 @@ following descriptions", and no description covers actual interest, dividends
 or rent (reg. 66(1)(m) reaches only ITTOIA 2005 Part 5 income; interest and
 dividends are Part 4, property income Part 3). Capital counts through its
 assumed yield under reg. 72(1), which reg. 66(1)(k) brings into unearned
-income, and reg. 72(3) treats actual income derived from capital as capital.
+income. Where capital is treated as yielding income, reg. 72(3) treats the
+actual income derived from it as capital.
 The UC Regs (NI) 2016 are the same on these points.
 
 Invariants, for any generated population of families:
