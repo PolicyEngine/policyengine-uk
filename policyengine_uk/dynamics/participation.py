@@ -583,7 +583,7 @@ def apply_participation_responses(
     # Calculate excluded individuals
     from .labour_supply import calculate_excluded_from_labour_supply_responses
 
-    excluded = calculate_excluded_from_labour_supply_responses(sim, count_adults)
+    excluded = calculate_excluded_from_labour_supply_responses(sim, count_adults, year)
 
     # Get employment status
     employment_income = sim.calculate("employment_income", year)

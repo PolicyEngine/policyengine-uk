@@ -23,6 +23,7 @@ from policyengine_uk.model_api import Scenario
 
 YEAR = 2025
 OBR_ASSUMPTIONS = "gov.dynamic.obr_labour_supply_assumptions"
+BASIC_RATE_RISE = {"gov.hmrc.income_tax.rates.uk[0].rate": {str(YEAR): 0.30}}
 
 
 def single_person(**person):
@@ -229,9 +230,7 @@ class TestBehavioralResponses:
         reformed, dynamics = simulate_dynamics(
             situation,
             obr=True,
-            parameter_changes={
-                "gov.hmrc.income_tax.rates.uk[0].rate": {str(YEAR): 0.30}
-            },
+            parameter_changes=BASIC_RATE_RISE,
         )
 
         # Both adults have positive substitution and negative income
@@ -261,7 +260,7 @@ class TestBehavioralResponses:
 
     def test_excluded_people_get_no_labour_supply_response(self):
         """Only included adults' employment income moves under a tax rise."""
-        people = ["grandparent", "adult1", "adult2", "child"]
+        family = ["grandparent", "adult1", "adult2", "child"]
         situation = {
             "people": {
                 # Aged 60 or over, and adult 1 in the household by age.
@@ -286,6 +285,21 @@ class TestBehavioralResponses:
                     "gender": "FEMALE",
                 },
                 "child": {"age": 4},
+                # Each alone in their household, so excluded only by status.
+                "self_employed": {
+                    "age": 40,
+                    "employment_income": 30_000,
+                    "hours_worked": 1800,
+                    "gender": "MALE",
+                    "employment_status": "FT_SELF_EMPLOYED",
+                },
+                "student": {
+                    "age": 22,
+                    "employment_income": 8_000,
+                    "hours_worked": 600,
+                    "gender": "MALE",
+                    "employment_status": "STUDENT",
+                },
             },
             "benunits": {
                 "grandparent_benunit": {"members": ["grandparent"]},
@@ -293,15 +307,19 @@ class TestBehavioralResponses:
                     "members": ["adult1", "adult2", "child"],
                     "is_married": True,
                 },
+                "self_employed_benunit": {"members": ["self_employed"]},
+                "student_benunit": {"members": ["student"]},
             },
-            "households": {"household": {"members": people}},
+            "households": {
+                "household": {"members": family},
+                "self_employed_household": {"members": ["self_employed"]},
+                "student_household": {"members": ["student"]},
+            },
         }
         reformed, dynamics = simulate_dynamics(
             situation,
             obr=True,
-            parameter_changes={
-                "gov.hmrc.income_tax.rates.uk[0].rate": {str(YEAR): 0.30}
-            },
+            parameter_changes=BASIC_RATE_RISE,
         )
 
         progression = dynamics.progression
@@ -312,6 +330,72 @@ class TestBehavioralResponses:
         employment_income = np.asarray(reformed.calculate("employment_income", YEAR))
         np.testing.assert_allclose(
             employment_income,
-            [30_000, 25_000 + total_response, 18_000, 0],
+            [30_000, 25_000 + total_response, 18_000, 0, 30_000, 8_000],
+            rtol=1e-6,
+        )
+
+    def test_automatic_baseline_matches_explicit_baseline(self):
+        """Dynamics agree whether the reform builds its own baseline or not."""
+        situation = LABOUR_SUPPLY_CASES[1]["situation"]  # married couple
+        explicit, _ = simulate_dynamics(
+            situation, obr=True, parameter_changes=BASIC_RATE_RISE
+        )
+        # As in docs/book/usage/dynamics.md: the reformed simulation's own
+        # baseline, built from the same situation without the scenario.
+        automatic = Microsimulation(
+            situation=situation,
+            scenario=Scenario(parameter_changes=BASIC_RATE_RISE),
+        )
+        automatic.apply_dynamics(YEAR)
+
+        explicit_income = np.asarray(explicit.calculate("employment_income", YEAR))
+        np.testing.assert_allclose(
+            np.asarray(automatic.calculate("employment_income", YEAR)),
+            explicit_income,
+            rtol=1e-6,
+        )
+        assert (explicit_income[:2] != [25_000, 18_000]).all()
+
+    def test_exclusion_uses_the_dynamics_year(self):
+        """Exclusion reads ages in the year the dynamics are applied to."""
+        year = 2026
+        people = {
+            # 59 in 2025 but 60 in 2026, so excluded in 2026.
+            "turns_60": {
+                "age": {2025: 59, year: 60},
+                "employment_income": 30_000,
+                "hours_worked": 1800,
+                "gender": "MALE",
+            },
+            "worker": {
+                "age": {2025: 40, year: 41},
+                "employment_income": 30_000,
+                "hours_worked": 1800,
+                "gender": "MALE",
+            },
+        }
+        situation = {
+            "people": people,
+            "benunits": {f"{name}_benunit": {"members": [name]} for name in people},
+            "households": {f"{name}_household": {"members": [name]} for name in people},
+        }
+        reformed = Microsimulation(
+            situation=situation,
+            scenario=Scenario(
+                parameter_changes={
+                    "gov.hmrc.income_tax.rates.uk[0].rate": {str(year): 0.30}
+                }
+            ),
+        )
+        # Employment income is uprated from the 2025 inputs.
+        before = np.array(reformed.calculate("employment_income", year))
+        dynamics = reformed.apply_dynamics(year)
+
+        assert len(dynamics.progression) == 1
+        total_response = float(np.asarray(dynamics.progression["total_response"])[0])
+        assert total_response != 0
+        np.testing.assert_allclose(
+            np.asarray(reformed.calculate("employment_income", year)),
+            before + [0, total_response],
             rtol=1e-6,
         )
