@@ -120,6 +120,7 @@ metadata:
   propagate_metadata_to_children: true
   threshold_unit: currency-GBP
   type: single_amount
+  uprating: gov.benefit_uprating_cpi
   reference:
     - title: The Housing Benefit Regulations 2006 sec. 74
       href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74/2024-04-01

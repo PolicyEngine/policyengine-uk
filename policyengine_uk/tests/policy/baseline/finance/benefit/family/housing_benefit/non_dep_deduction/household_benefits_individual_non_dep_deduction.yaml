@@ -27,10 +27,34 @@
   output:
     household_benefits_individual_non_dep_deduction: 101.35 * 52
 
-- name: Exclusive brackets
+- name: A band includes its lower edge (reg 74(2), "not less than £183")
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 9_517 # just over 183 weekly, the lower edge of the second band
+    total_income: 9_516 # exactly 183 weekly
   output:
     household_benefits_individual_non_dep_deduction: 45.15 * 52
+
+- name: Just below a band's lower edge stays in the band below
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    total_income: 9_515 # just under 183 weekly
+  output:
+    household_benefits_individual_non_dep_deduction: 19.65 * 52
+
+- name: The top band includes £577 exactly
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    total_income: 30_004 # exactly 577 weekly
+  output:
+    household_benefits_individual_non_dep_deduction: 126.65 * 52
+
+- name: A non-dependant with no income pays the lowest deduction (reg 74(1)(b))
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    total_income: 0
+  output:
+    household_benefits_individual_non_dep_deduction: 19.65 * 52

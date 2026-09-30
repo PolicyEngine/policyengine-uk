@@ -1,8 +1,8 @@
 description: Income Support applicable amount for couples aged over 18.
 values:
-  # 2019-20 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # 2015-16 to 2026-27: DWP Benefit and pension rates (gov.uk), each
   # year's rate as listed in that year's publication.
-  2015-04-01: 116.8
+  2015-04-01: 114.85
   2019-04-01: 114.85
   2020-04-01: 116.8
   2021-04-01: 117.4
@@ -29,3 +29,5 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
     - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
       href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
+    - title: Benefit and pension rates 2015 to 2016 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2015-to-2016

@@ -2,7 +2,6 @@ description: Carer premium for two qualifying carers for legacy benefits.
 values:
   # 2015-16 to 2026-27: twice the carer premium in DWP Benefit and pension rates
   # (gov.uk), as both members of the couple satisfy the condition.
-  2010-01-01: 37.5
   2015-04-01: 69.2
   2017-04-01: 69.9
   2018-04-01: 72

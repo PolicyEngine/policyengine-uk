@@ -1,9 +1,11 @@
 # DWP "Benefit and pension rates" (and HMRC tax credit rates), by fiscal year
 # (2025 = 2025-26), in each parameter's own unit and period. Each year's rate
 # appears in that year's publication and as the previous-year column of the
-# next year's, and the two agree. Amounts for 2025-26 and 2026-27 are those in
-# the Social Security Benefits Up-rating Orders 2025 (SI 2025/295) and 2026
-# (SI 2026/148). Read by test_dwp_published_rates.py.
+# next year's, and the two agree. For 2025-26 and 2026-27 the amounts match the
+# Social Security Benefits Up-rating Orders 2025 (SI 2025/295) and 2026 (SI
+# 2026/148), except the 2026-27 income-related ESA personal allowances, which
+# are set under the Universal Credit Act 2025 s.5. Rows marked `derived` are
+# computed from published rows as stated. Read by test_dwp_published_rates.py.
 
 sources:
   2015: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2015-to-2016
@@ -88,6 +90,10 @@ parameters:
   gov.dwp.ESA.income.couple:
     row: "DWP Benefit and pension rates > Employment and Support Allowance > Personal allowances (2026-27: 'Income Related ESA - Personal Allowances') > Couple 'Both over 18'"
     values:
+      2015: 114.85
+      2016: 114.85
+      2017: 114.85
+      2018: 114.85
       2019: 114.85
       2020: 116.8
       2021: 117.4
@@ -99,6 +105,10 @@ parameters:
   gov.dwp.IIDB.maximum:
     row: "Industrial Injuries Disablement Benefit > Standard rate, assessed level of disablement 1.00 (100%)"
     values:
+      2015: 168.0
+      2016: 168.0
+      2017: 169.7
+      2018: 174.8
       2019: 179
       2020: 182
       2021: 182.9
@@ -307,6 +317,7 @@ parameters:
       2026: 14753
   gov.dwp.carer_premium.couple:
     row: "Housing Benefit > Premiums > Carer (per qualifying person), doubled: the legal amount for two carers is 2 x this row"
+    derived: "twice the carer premium row: it is paid for each person who satisfies the condition (HB Regs 2006 Sch 3 Part 4)"
     values:
       2015: 69.2
       2016: 69.2
@@ -737,6 +748,10 @@ parameters:
   gov.dwp.income_support.amounts.amount_16_24:
     row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Single 'Under 25'"
     values:
+      2015: 57.9
+      2016: 57.9
+      2017: 57.9
+      2018: 57.9
       2019: 57.9
       2020: 58.9
       2021: 59.2
@@ -748,6 +763,10 @@ parameters:
   gov.dwp.income_support.amounts.amount_couples_16_17:
     row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Couple 'Both under 18' (standard rate; 'Both under 18 - higher rate' is 110.15 in 2025-26)"
     values:
+      2015: 57.9
+      2016: 57.9
+      2017: 57.9
+      2018: 57.9
       2019: 57.9
       2020: 58.9
       2021: 59.2
@@ -759,6 +778,10 @@ parameters:
   gov.dwp.income_support.amounts.amount_couples_age_gap:
     row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Couple 'One under 18, one 25 and over'"
     values:
+      2015: 73.1
+      2016: 73.1
+      2017: 73.1
+      2018: 73.1
       2019: 73.1
       2020: 74.35
       2021: 74.7
@@ -770,6 +793,10 @@ parameters:
   gov.dwp.income_support.amounts.amount_couples_over_18:
     row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Couple 'Both 18 or over'"
     values:
+      2015: 114.85
+      2016: 114.85
+      2017: 114.85
+      2018: 114.85
       2019: 114.85
       2020: 116.8
       2021: 117.4
@@ -781,6 +808,10 @@ parameters:
   gov.dwp.income_support.amounts.amount_lone_16_17:
     row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Lone parent 'Under 18'"
     values:
+      2015: 57.9
+      2016: 57.9
+      2017: 57.9
+      2018: 57.9
       2019: 57.9
       2020: 58.9
       2021: 59.2
@@ -792,6 +823,10 @@ parameters:
   gov.dwp.income_support.amounts.amount_lone_over_18:
     row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Lone parent '18 or over'"
     values:
+      2015: 73.1
+      2016: 73.1
+      2017: 73.1
+      2018: 73.1
       2019: 73.1
       2020: 74.35
       2021: 74.7
@@ -803,6 +838,10 @@ parameters:
   gov.dwp.income_support.amounts.amount_over_25:
     row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Single '25 or over'"
     values:
+      2015: 73.1
+      2016: 73.1
+      2017: 73.1
+      2018: 73.1
       2019: 73.1
       2020: 74.35
       2021: 74.7
@@ -1095,6 +1134,7 @@ parameters:
       2026: 30.3
   gov.dwp.sda.maximum:
     row: "Severe Disablement Allowance > Basic rate + Age-related addition (from Dec 90) Higher rate (sum of two rows)"
+    derived: "Severe Disablement Allowance basic rate plus the higher age-related addition"
     values:
       2019: 91.4
       2020: 92.95
@@ -1476,3 +1516,28 @@ parameters:
       2024: 311.68
       2025: 316.98
       2026: 338.58
+housing_benefit_non_dependant_deductions:  # gov.dwp.housing_benefit.non_dep_deduction.amount
+  2019:
+    lower_edges: [143, 209, 272, 363, 451]
+    deductions: [15.6, 35.85, 49.2, 80.55, 91.7, 100.65]
+  2020:
+    lower_edges: [149, 217, 283, 377, 469]
+    deductions: [15.85, 36.45, 50.05, 81.9, 93.25, 102.35]
+  2021:
+    lower_edges: [149, 217, 283, 377, 469]
+    deductions: [15.95, 36.65, 50.3, 82.3, 93.7, 102.85]
+  2022:
+    lower_edges: [154, 224, 292, 389, 484]
+    deductions: [16.45, 37.8, 51.85, 84.85, 96.6, 106.05]
+  2023:
+    lower_edges: [162, 236, 308, 410, 511]
+    deductions: [18.1, 41.6, 57.1, 93.4, 106.35, 116.75]
+  2024:
+    lower_edges: [176, 256, 334, 445, 554]
+    deductions: [19.3, 44.4, 60.95, 99.65, 113.5, 124.55]
+  2025:
+    lower_edges: [183, 266, 348, 463, 577]
+    deductions: [19.65, 45.15, 62.0, 101.35, 115.45, 126.65]
+  2026:
+    lower_edges: [192, 279, 365, 485, 605]
+    deductions: [20.4, 46.85, 64.35, 105.2, 119.85, 131.45]
