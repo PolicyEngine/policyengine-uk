@@ -91,7 +91,10 @@
   output:
     income_support_eligible: true
     income_support_tariff_income: 104
-    income_support: 4209.82
+    # 74.70 a week (2021-22 lone parent aged 18 or over). The tariff income is
+    # absorbed because the model applies the £20 lone-parent earnings disregard
+    # to all income, not only earnings.
+    income_support: 3884.40
 
 - name: Income Support remains eligible at the upper capital limit
   period: 2021

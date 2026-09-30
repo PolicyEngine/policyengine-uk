@@ -2,12 +2,33 @@ description: Exceptional rate for Constant Attendance Allowance.
 metadata:
   economy: false
   period: week
-  reference: https://www.gov.uk/constant-attendance-allowance/what-youll-get
+  reference:
+    - title: "Constant Attendance Allowance: what you'll get (gov.uk)"
+      href: https://www.gov.uk/constant-attendance-allowance/what-youll-get
+    - title: Benefit and pension rates 2015 to 2016 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2015-to-2016
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
   unit: currency-GBP
   label: Constant Attendance Allowance exceptional rate
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2015-04-01
+  uprating: gov.benefit_uprating_cpi
 values:
-  2015-04-01: 145.6
+  # 2015-16 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # year's rate as listed in that year's publication.
+  2015-04-01: 134.4
+  2017-04-01: 135.8
+  2018-04-01: 139.8
+  2019-04-01: 143.2
+  2020-04-01: 145.6
+  2021-04-01: 146.4
+  2022-04-01: 151
+  2023-04-01: 166.2
+  2024-04-01: 177.4
+  2025-04-01: 180.4
   2026-04-01: 187.2

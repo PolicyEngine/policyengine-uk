@@ -190,7 +190,7 @@
   output:
     esa_income: 0
     income_support_eligible: true
-    income_support: 5_252.0073
+    income_support: 4_786.60  # 92.05 a week (2025-26)
 
 - name: Income-related ESA capital test disregards private pension wealth
   period: 2026

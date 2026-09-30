@@ -1,20 +1,35 @@
-description: The following couple personal allowance is provided under the Housing Benefit if at least one member is over the state pension age threshold.
+description: Personal allowance for Housing Benefit for a couple where one or both members attained State Pension age before 1 April 2021 (and, before that date, every couple with a member over State Pension age).
 values:
+  # 2020-21 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # year's rate as listed in that year's publication.
   2015-04-01: 270.6
+  2020-04-01: 280.85
   2021-04-01: 286.05
   2022-04-06: 294.9
   2023-04-01: 324.7
   2024-04-01: 352
-  2025-04-01: 357.98
+  2025-04-01: 366
   2026-04-01: 383.35
 
 metadata:
   period: week
   unit: currency-GBP
-  label: Housing benefit aged couple personal allowance
+  label: Housing Benefit couple pension-age personal allowance
   uprating: gov.benefit_uprating_cpi
-  reference: 
-    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
-      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
+  reference:
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 (SI 2006/214), Schedule 3, paragraph 1(2)(b)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 (SR 2006/406), Schedule 4, paragraph 1 (the same amounts)
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/4
     - title: Benefit and pension rates 2024 to 2025 - Policy paper
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+    - title: Benefit and pension rates 2020 to 2021 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2020-to-2021/benefit-and-pension-rates-2020-to-2021
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
