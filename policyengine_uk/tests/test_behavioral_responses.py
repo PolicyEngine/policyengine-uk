@@ -1,39 +1,135 @@
 """
 Tests for behavioral labour supply responses.
 
-This test module validates that the behavioral response system works correctly
-and that all the critical fixes are functioning:
-- No more simulation state corruption from sim.reset_calculations()
-- Proper NaN handling prevents calculation errors
-- Income changes are calculated before any state modifications
-- The system correctly returns appropriate FTE responses
+Simulation.apply_dynamics applies the OBR labour supply responses when
+gov.dynamic.obr_labour_supply_assumptions is on. These tests run it on small
+household situations, so they need no survey data, and check that:
+- it returns no responses when the OBR assumptions are off;
+- with the OBR assumptions on but no policy change, every response and FTE
+  impact is zero and employment income is unchanged;
+- zero employment income and hours produce zero responses rather than NaN;
+- a real tax rise does produce responses, which change employment income by
+  exactly the total response.
 """
 
-import os
+import numpy as np
 import pytest
-import yaml
-from pathlib import Path
+
 from policyengine_uk import Microsimulation
 from policyengine_uk.model_api import Scenario
 
-# Check if a default dataset is available for data-dependent tests
-HF_TOKEN_AVAILABLE = bool(
-    os.environ.get("HUGGING_FACE_TOKEN")
-    or os.environ.get("POLICYENGINE_UK_DEFAULT_DATASET")
-)
-requires_hf_data = pytest.mark.skipif(
-    not HF_TOKEN_AVAILABLE,
-    reason="Requires HUGGING_FACE_TOKEN for private data access",
-)
+YEAR = 2025
+OBR_ASSUMPTIONS = "gov.dynamic.obr_labour_supply_assumptions"
 
 
-# Load YAML test cases
-yaml_file = (
-    Path(__file__).parent / "behavioral_responses" / "test_labour_supply_responses.yaml"
-)
-with open(yaml_file, "r") as f:
-    yaml_content = f.read()
-    test_cases = yaml.safe_load(yaml_content)
+def single_person(**person):
+    return {
+        "people": {"person": person},
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {"household": {"members": ["person"]}},
+    }
+
+
+LABOUR_SUPPLY_CASES = [
+    dict(
+        name="parent with two children",
+        obr=True,
+        situation={
+            "people": {
+                "parent": {
+                    "age": 30,
+                    "employment_income": 20_000,
+                    "hours_worked": 1500,
+                },
+                "child1": {"age": 5},
+                "child2": {"age": 3},
+            },
+            "benunits": {"benunit": {"members": ["parent", "child1", "child2"]}},
+            "households": {"household": {"members": ["parent", "child1", "child2"]}},
+        },
+    ),
+    dict(
+        name="married couple with two children",
+        obr=True,
+        situation={
+            "people": {
+                "adult1": {
+                    "age": 35,
+                    "employment_income": 25_000,
+                    "hours_worked": 1800,
+                    "gender": "MALE",
+                },
+                "adult2": {
+                    "age": 33,
+                    "employment_income": 18_000,
+                    "hours_worked": 1200,
+                    "gender": "FEMALE",
+                },
+                "child1": {"age": 6},
+                "child2": {"age": 4},
+            },
+            "benunits": {
+                "benunit": {
+                    "members": ["adult1", "adult2", "child1", "child2"],
+                    "is_married": True,
+                }
+            },
+            "households": {
+                "household": {"members": ["adult1", "adult2", "child1", "child2"]}
+            },
+        },
+    ),
+    dict(
+        name="lone parent",
+        obr=True,
+        situation={
+            "people": {
+                "parent": {
+                    "age": 28,
+                    "employment_income": 12_000,
+                    "hours_worked": 800,
+                    "gender": "FEMALE",
+                },
+                "child1": {"age": 7},
+                "child2": {"age": 4},
+            },
+            "benunits": {
+                "benunit": {
+                    "members": ["parent", "child1", "child2"],
+                    "is_married": False,
+                }
+            },
+            "households": {"household": {"members": ["parent", "child1", "child2"]}},
+        },
+    ),
+    dict(
+        name="OBR assumptions disabled",
+        obr=False,
+        situation=single_person(age=32, employment_income=15_000, hours_worked=1040),
+    ),
+    dict(
+        name="high earner",
+        obr=True,
+        situation=single_person(age=50, employment_income=100_000, hours_worked=2200),
+    ),
+    dict(
+        name="zero income and hours",
+        obr=True,
+        situation=single_person(age=30, employment_income=0, hours_worked=0),
+    ),
+]
+
+
+def simulate_dynamics(situation, obr, parameter_changes=None):
+    """Apply dynamics to a scenario that sets the OBR assumptions flag."""
+    baseline = Microsimulation(situation=situation)
+    changes = {OBR_ASSUMPTIONS: {str(YEAR): obr}, **(parameter_changes or {})}
+    reformed = Microsimulation(
+        situation=situation,
+        scenario=Scenario(parameter_changes=changes),
+    )
+    reformed.baseline = baseline
+    return reformed, reformed.apply_dynamics(YEAR)
 
 
 class TestBehavioralResponses:
@@ -64,191 +160,86 @@ class TestBehavioralResponses:
         assert lsr.labour_supply_responses.income_elasticity("2025") == 0.123
         assert lsr.labor_supply_responses.income_elasticity("2025") == 0.123
 
-    def test_yaml_file_structure(self):
-        """Test that YAML file loads correctly and has expected structure"""
-        assert len(test_cases) == 6, f"Expected 6 test cases, got {len(test_cases)}"
-
-        for i, test_case in enumerate(test_cases):
-            assert "name" in test_case, f"Test case {i + 1} missing 'name'"
-            assert "period" in test_case, f"Test case {i + 1} missing 'period'"
-            assert "input" in test_case, f"Test case {i + 1} missing 'input'"
-            assert "reforms" in test_case, f"Test case {i + 1} missing 'reforms'"
-            assert "output" in test_case, f"Test case {i + 1} missing 'output'"
-
-    @requires_hf_data
-    def test_obr_parameter_functionality(self):
-        """Test that OBR parameter can be enabled and disabled"""
-        # Test enabling OBR
-        scenario_on = Scenario(
-            parameter_changes={
-                "gov.dynamic.obr_labour_supply_assumptions": {"2025": True}
-            }
+    @pytest.mark.parametrize("obr", [True, False])
+    def test_obr_parameter_functionality(self, obr):
+        """Test that the OBR parameter can be enabled and disabled"""
+        sim = Microsimulation(
+            situation=single_person(age=30, employment_income=25_000),
+            scenario=Scenario(parameter_changes={OBR_ASSUMPTIONS: {str(YEAR): obr}}),
         )
-        sim_on = Microsimulation(scenario=scenario_on)
-        obr_on = sim_on.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(
-            "2025"
+        assert (
+            sim.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(
+                str(YEAR)
+            )
+            == obr
         )
 
-        # Test disabling OBR
-        scenario_off = Scenario(
-            parameter_changes={
-                "gov.dynamic.obr_labour_supply_assumptions": {"2025": False}
-            }
-        )
-        sim_off = Microsimulation(scenario=scenario_off)
-        obr_off = sim_off.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(
-            "2025"
-        )
+    @pytest.mark.parametrize(
+        "case", LABOUR_SUPPLY_CASES, ids=[case["name"] for case in LABOUR_SUPPLY_CASES]
+    )
+    def test_no_policy_change_gives_no_labour_supply_response(self, case):
+        """Without a policy change, dynamics leave employment income unchanged."""
+        reformed, dynamics = simulate_dynamics(case["situation"], case["obr"])
 
-        assert obr_on == True, "OBR parameter should be enabled when set to True"
-        assert obr_off == False, "OBR parameter should be disabled when set to False"
-
-    @requires_hf_data
-    def test_dynamics_no_crash_simple(self):
-        """Test that dynamics application doesn't crash with simple scenarios"""
-        situation = {
-            "people": {"person": {"age": 30, "employment_income": 25_000}},
-            "benunits": {"benunit": {"members": ["person"]}},
-            "households": {"household": {"members": ["person"]}},
-        }
-
-        baseline = Microsimulation(situation=situation)
-
-        scenario = Scenario(
-            parameter_changes={
-                "gov.dynamic.obr_labour_supply_assumptions": {"2025": True}
-            }
-        )
-        reformed = Microsimulation(situation=situation, scenario=scenario)
-        reformed.baseline = baseline
-
-        # Test dynamics application - may fail with bin edge error on single person
-        # or with read-only assignment error under pandas 3.x copy-on-write.
-        # These are expected behaviors; the important thing is no NaN/corruption.
-        try:
-            dynamics = reformed.apply_dynamics(2025)
-            # If successful, dynamics may be None if no income change
-            if dynamics is not None:
-                assert hasattr(dynamics, "fte_impacts"), (
-                    "Dynamics should have fte_impacts attribute"
-                )
-        except ValueError as e:
-            if (
-                "Bin labels must be one fewer than the number of bin edges" in str(e)
-            ) or ("assignment destination is read-only" in str(e)):
-                # Bin edge error: expected with single-person scenarios
-                # Read-only error: pandas 3.x copy-on-write; fix pending in core
-                pass
-            else:
-                # Re-raise other ValueError exceptions
-                raise
-
-    @requires_hf_data
-    def test_basic_behavioral_response_enabled(self):
-        """Test basic behavioral response mechanism with OBR enabled"""
-        test_case = test_cases[0]  # First test case
-
-        situation = test_case["input"]
-        reforms = test_case["reforms"]
-
-        scenario = Scenario(parameter_changes=reforms)
-        baseline = Microsimulation(situation=situation)
-        reformed = Microsimulation(situation=situation, scenario=scenario)
-        reformed.baseline = baseline
-
-        # Verify OBR is enabled
-        obr_enabled = reformed.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(
-            "2025"
-        )
-        assert obr_enabled == True, "OBR should be enabled for this test"
-
-        # Apply dynamics - should not crash (read-only error is a known
-        # pandas 3.x copy-on-write issue; fix pending in policyengine-core)
-        try:
-            dynamics = reformed.apply_dynamics(2025)
-        except ValueError as e:
-            if "assignment destination is read-only" in str(e):
-                pass  # pandas 3.x copy-on-write; fix pending in core
-            else:
-                raise
-        # Test passes if no exception is raised (or only the known one)
-
-    @requires_hf_data
-    def test_behavioral_response_disabled(self):
-        """Test behavioral response with OBR disabled"""
-        test_case = test_cases[3]  # OBR disabled test case
-
-        situation = test_case["input"]
-        reforms = test_case["reforms"]
-
-        scenario = Scenario(parameter_changes=reforms)
-        reformed = Microsimulation(situation=situation, scenario=scenario)
-
-        # Verify OBR is disabled
-        obr_enabled = reformed.tax_benefit_system.parameters.gov.dynamic.obr_labour_supply_assumptions(
-            "2025"
-        )
-        assert obr_enabled == False, "OBR should be disabled for this test"
-
-        # With baseline linked
-        baseline = Microsimulation(situation=situation)
-        reformed.baseline = baseline
-
-        # Apply dynamics - should return None when disabled
-        dynamics = reformed.apply_dynamics(2025)
-        assert dynamics is None, "Dynamics should be None when OBR is disabled"
-
-    @requires_hf_data
-    def test_zero_income_handling(self):
-        """Test that zero income cases don't cause NaN errors"""
-        test_case = test_cases[5]  # Zero income test case
-
-        situation = test_case["input"]
-        reforms = test_case["reforms"]
-
-        scenario = Scenario(parameter_changes=reforms)
-        baseline = Microsimulation(situation=situation)
-        reformed = Microsimulation(situation=situation, scenario=scenario)
-        reformed.baseline = baseline
-
-        # This should not crash even with zero income
-        try:
-            dynamics = reformed.apply_dynamics(2025)
-            # Test passes if no NaN-related exceptions are raised
-        except ValueError as e:
-            if "NaN" in str(e) or "inf" in str(e):
-                pytest.fail(f"NaN/inf error in zero income handling: {e}")
-            else:
-                # Other ValueError might be expected
-                pass
-
-    @requires_hf_data
-    @pytest.mark.parametrize("test_case", test_cases)
-    def test_all_yaml_cases_structure(self, test_case):
-        """Test that all YAML test cases have valid structure and can create simulations"""
-        situation = test_case["input"]
-        reforms = test_case["reforms"]
-
-        # Should be able to create simulations without errors
-        baseline = Microsimulation(situation=situation)
-
-        if reforms:
-            scenario = Scenario(parameter_changes=reforms)
-            reformed = Microsimulation(situation=situation, scenario=scenario)
+        if not case["obr"]:
+            assert dynamics is None, "Dynamics should be None when OBR is disabled"
         else:
-            reformed = Microsimulation(situation=situation)
+            assert dynamics is not None
+            fte_impacts = dynamics.fte_impacts
+            for impact in [
+                fte_impacts.substitution_response_ftes,
+                fte_impacts.income_response_ftes,
+                fte_impacts.total_response_ftes,
+                fte_impacts.ftes,
+            ]:
+                assert impact == 0
+            responses = np.asarray(
+                dynamics.progression[
+                    ["substitution_response", "income_response", "total_response"]
+                ],
+                dtype=float,
+            )
+            assert (responses == 0).all(), responses
 
-        # Basic validation - should have people
-        assert len(situation["people"]) > 0, (
-            f"Test case '{test_case['name']}' should have people"
+        people = case["situation"]["people"].values()
+        expected_income = [person.get("employment_income", 0) for person in people]
+        np.testing.assert_array_equal(
+            np.asarray(reformed.calculate("employment_income", YEAR)),
+            expected_income,
         )
 
-        # Should be able to calculate basic variables
-        employment_income = reformed.calculate("employment_income", test_case["period"])
-        assert employment_income is not None, (
-            f"Should be able to calculate employment_income for '{test_case['name']}'"
+    def test_tax_rise_produces_labour_supply_response(self):
+        """A basic rate rise moves labour supply, so dynamics are not inert."""
+        situation = LABOUR_SUPPLY_CASES[1]["situation"]  # married couple
+        reformed, dynamics = simulate_dynamics(
+            situation,
+            obr=True,
+            parameter_changes={
+                "gov.hmrc.income_tax.rates.uk[0].rate": {str(YEAR): 0.30}
+            },
         )
 
+        # Both adults have positive substitution and negative income
+        # elasticities: a lower marginal wage cuts hours, lower net income
+        # raises them.
+        fte_impacts = dynamics.fte_impacts
+        assert fte_impacts.substitution_response_ftes < 0
+        assert fte_impacts.income_response_ftes > 0
 
-if __name__ == "__main__":
-    pytest.main([__file__])
+        progression = dynamics.progression
+        total_response = np.asarray(progression["total_response"], dtype=float)
+        np.testing.assert_allclose(
+            total_response,
+            np.asarray(progression["substitution_response"], dtype=float)
+            + np.asarray(progression["income_response"], dtype=float),
+        )
+        assert (total_response != 0).all()
+
+        # Dynamics write each adult's response into employment income.
+        employment_income = np.asarray(reformed.calculate("employment_income", YEAR))
+        np.testing.assert_allclose(
+            employment_income[:2],
+            np.array([25_000, 18_000]) + total_response,
+            rtol=1e-6,
+        )
+        np.testing.assert_array_equal(employment_income[2:], [0, 0])

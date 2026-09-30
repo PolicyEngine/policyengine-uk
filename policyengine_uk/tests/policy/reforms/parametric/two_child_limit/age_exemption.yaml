@@ -1,4 +1,19 @@
-- name: With no age exemption, only first 2 children get element amounts 
+# Universal Credit two-child limit age exemption
+# (gov.contrib.two_child_limit.age_exemption.universal_credit).
+#
+# Families with a child under the threshold age are exempt from the two-child
+# limit, so every child gets the child element. The exemption does not grant
+# the higher first-child amount, which still requires a first child born
+# before 6 April 2017.
+#
+# Monthly amounts the model uses for 2023: standard allowance (single, 25 or
+# over) 368.74, child element 269.58, higher first-child amount 315.00.
+# Annually: 4,424.88, 3,234.96 and 3,780.00.
+#
+# uc_child_index is left to its formula so the parent gets -1; setting it only
+# for the children would default the parent to 0 and pay them a child element.
+
+- name: Without the exemption only the first two children get the child element
   period: 2023
   absolute_error_margin: 1
   input:
@@ -7,24 +22,24 @@
         age: 30
       child_1:
         age: 5
-        uc_child_index: 1
       child_2:
         age: 4
-        uc_child_index: 2
       child_3:
         age: 2
-        uc_child_index: 3
       child_4:
         age: 1
-        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14129.76  # Standard allowance + child elements with 2-child limit
+    uc_child_index: [-1, 1, 2, 3, 4]
+    uc_individual_child_element: [0, 3_234.96, 3_234.96, 0, 0]
+    uc_is_child_limit_affected: [false, false, false, true, true]
+    # 4,424.88 + 2 * 3,234.96
+    universal_credit: 10_894.80
 
-- name: With age exemption, all children get element when any child is below threshold
+- name: With the exemption the third and fourth children get the child element
   period: 2023
   absolute_error_margin: 1
   input:
@@ -34,24 +49,25 @@
         age: 30
       child_1:
         age: 5
-        uc_child_index: 1
       child_2:
         age: 4
-        uc_child_index: 2
       child_3:
-        age: 2  # This child is under the threshold
-        uc_child_index: 3
+        age: 2 # Under the threshold, so the family is exempt.
       child_4:
         age: 1
-        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14674.80  # All children get UC with exemption
+    uc_child_index: [-1, 1, 2, 3, 4]
+    # No child was born before April 2017, so no higher first-child amount.
+    uc_individual_child_element: [0, 3_234.96, 3_234.96, 3_234.96, 3_234.96]
+    uc_is_child_limit_affected: [false, false, false, false, false]
+    # 4,424.88 + 4 * 3,234.96
+    universal_credit: 17_364.72
 
-- name: No exemption when all children above age threshold
+- name: No exemption when no child is under the threshold age
   period: 2023
   absolute_error_margin: 1
   input:
@@ -61,24 +77,21 @@
         age: 30
       child_1:
         age: 5
-        uc_child_index: 1
       child_2:
         age: 4
-        uc_child_index: 2
       child_3:
-        age: 3  # No child below threshold
-        uc_child_index: 3
+        age: 3 # Not under the threshold.
       child_4:
         age: 3
-        uc_child_index: 4
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14129.76  # Only first 2 children get UC
+    uc_child_element: 6_469.92
+    universal_credit: 10_894.80
 
-- name: Shows baseline UC for a family with children under age 3
+- name: Without the exemption a first child born before April 2017 gets the higher amount
   period: 2023
   absolute_error_margin: 1
   input:
@@ -86,47 +99,66 @@
       parent:
         age: 30
       child_1:
-        age: 5
-        uc_child_index: 1
+        age: 8 # Born in 2015.
       child_2:
         age: 4
-        uc_child_index: 2
       child_3:
-        age: 2  # This child is under the threshold
-        uc_child_index: 3
+        age: 2
       child_4:
-        age: 1  # This child is under the threshold
-        uc_child_index: 4
+        age: 1
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14129.76  # Standard allowance + elements for only first 2 children
+    uc_individual_child_element: [0, 3_780, 3_234.96, 0, 0]
+    # 4,424.88 + 3,780 + 3,234.96
+    universal_credit: 11_439.84
 
-- name: Shows increased UC after applying age exemption reform
+- name: The exemption keeps the higher amount for a first child born before April 2017
   period: 2023
   absolute_error_margin: 1
   input:
-    gov.contrib.two_child_limit.age_exemption.universal_credit: 3  # Exempt families with under-3s
+    gov.contrib.two_child_limit.age_exemption.universal_credit: 3
     people:
       parent:
         age: 30
       child_1:
-        age: 5
-        uc_child_index: 1
+        age: 8 # Born in 2015.
       child_2:
         age: 4
-        uc_child_index: 2
       child_3:
-        age: 2  # This child is under the threshold
-        uc_child_index: 3
+        age: 2
       child_4:
-        age: 1  # This child is under the threshold
-        uc_child_index: 4
+        age: 1
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
         would_claim_uc: true
   output:
-    universal_credit: 14674.80  # Reform increases UC because 3rd and 4th children are now counted
+    uc_individual_child_element: [0, 3_780, 3_234.96, 3_234.96, 3_234.96]
+    # 4,424.88 + 3,780 + 3 * 3,234.96
+    universal_credit: 17_909.76
+
+- name: An unused exemption does not remove the higher first-child amount
+  period: 2023
+  absolute_error_margin: 1
+  input:
+    gov.contrib.two_child_limit.age_exemption.universal_credit: 3
+    people:
+      parent:
+        age: 30
+      child_1:
+        age: 8 # Born in 2015.
+      child_2:
+        age: 5
+      child_3:
+        age: 4 # No child under the threshold, so the family is not exempt.
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+        would_claim_uc: true
+  output:
+    uc_individual_child_element: [0, 3_780, 3_234.96, 0]
+    # 4,424.88 + 3,780 + 3,234.96
+    universal_credit: 11_439.84

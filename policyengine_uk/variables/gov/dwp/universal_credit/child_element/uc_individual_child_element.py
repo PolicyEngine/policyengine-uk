@@ -13,10 +13,11 @@ class uc_individual_child_element(Variable):
         p = parameters(period).gov.dwp.universal_credit.elements.child
         child_index = person("uc_child_index", period)
         born_before_limit = person("uc_is_child_born_before_child_limit", period)
-        child_limit_applying = where(~born_before_limit, p.limit.child_count, inf)
-        is_eligible = (child_index != -1) & (child_index <= child_limit_applying)
+        exempt_from_limit = born_before_limit
 
-        # Reform proposal
+        # Reform proposal: families with a child under the age threshold are
+        # exempt from the two-child limit. The exemption lifts the limit only;
+        # the higher first-child amount still requires a birth before the limit.
         age_exemption = (
             parameters.gov.contrib.two_child_limit.age_exemption.universal_credit(
                 period
@@ -24,7 +25,10 @@ class uc_individual_child_element(Variable):
         )
         if age_exemption > 0:
             is_exempt = person.benunit.any(person("age", period) < age_exemption)
-            born_before_limit = is_exempt
+            exempt_from_limit = exempt_from_limit | is_exempt
+
+        child_limit_applying = where(exempt_from_limit, inf, p.limit.child_count)
+        is_eligible = (child_index != -1) & (child_index <= child_limit_applying)
 
         return (
             select(
