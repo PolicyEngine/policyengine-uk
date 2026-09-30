@@ -61,20 +61,28 @@ class council_tax_reduction_applicable_income(Variable):
 
         pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
         tax = add(benunit, period, ["income_tax", "national_insurance"])
-        income = max_(0, increased_income - tax - pension_contributions)
+        income_under_general_rules = max_(
+            0, increased_income - tax - pension_contributions
+        )
 
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is
         # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases
         # the Secretary of State's assessment of net income is used, adjusted
-        # to take account of the savings credit payable.
-        guarantee_credit = benunit("in_receipt_of_guarantee_credit", period)
-        savings_credit_only = benunit("in_receipt_of_savings_credit_only", period)
-        pension_credit_assessed_income = benunit(
-            "pension_credit_income", period
-        ) + benunit("savings_credit", period)
+        # to take account of the savings credit payable. The Pension Credit
+        # paid on a savings-credit-only award is that savings credit (under the
+        # Pension Credit freeze, the frozen amount).
+        in_receipt_of_guarantee_credit = benunit(
+            "in_receipt_of_guarantee_credit", period
+        )
+        has_savings_credit_only_award = benunit(
+            "in_receipt_of_savings_credit_only", period
+        )
+        savings_credit_only_income = benunit("pension_credit_income", period) + benunit(
+            "pension_credit", period
+        )
         return select(
-            [guarantee_credit, savings_credit_only],
-            [0, pension_credit_assessed_income],
-            default=income,
+            [in_receipt_of_guarantee_credit, has_savings_credit_only_award],
+            [0, savings_credit_only_income],
+            default=income_under_general_rules,
         )

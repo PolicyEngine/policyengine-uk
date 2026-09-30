@@ -22,12 +22,16 @@ liability, ND the non-dependant deductions and A the applicable amount:
    A) - ND) when the Pension Credit assessment of capital is within 16,000, and
    nothing otherwise.
 4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
-   max(0, CTR income - A) - ND) when household savings are within 16,000.
+   max(0, I - A) - ND) when household savings are within 16,000, where I is the
+   income definition on main before this change, recomputed here from its
+   components rather than read from the variable under test.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
 6. Metamorphic: nor when its savings change.
 7. Metamorphic: not claiming Pension Credit never raises a guarantee credit
-   recipient's CTR.
+   recipient's CTR, and a non-claimant is assessed under invariant 4.
+8. Under the Pension Credit freeze, a savings-credit-only award counts the
+   frozen savings credit actually paid.
 """
 
 import numpy as np
@@ -67,6 +71,13 @@ state_pension = st.one_of(
     st.floats(0, 25_000, allow_nan=False, allow_infinity=False),
     st.floats(10_000, 16_000, allow_nan=False, allow_infinity=False),
 )
+# Half the populations get a standard minimum guarantee above the CTR
+# applicable amount (256.00 single, 383.35 couple a week), as an
+# earnings-linked guarantee path produces, so guarantee credit recipients can
+# have income above the applicable amount. Applied as a reform to the whole
+# population: a minimum_guarantee input on some benefit units would set it to
+# zero on every other one.
+guarantees = st.one_of(st.none(), st.floats(240, 450))
 CAPITAL_LIMIT = 16_000
 WITHDRAWAL_RATE = 0.2
 
@@ -86,10 +97,6 @@ def families(draw):
         private_pension=draw(st.one_of(st.just(0.0), st.floats(0, 5_000))),
         employment_income=draw(st.one_of(st.just(0.0), st.floats(0, 20_000))),
         would_claim_pc=draw(st.sampled_from([True, True, False])),
-        # A guarantee above the CTR applicable amount, as an earnings-linked
-        # guarantee path produces, so guarantee credit recipients can have
-        # income above the applicable amount.
-        minimum_guarantee=draw(st.one_of(st.none(), st.floats(12_000, 30_000))),
         # A working-age non-dependant (a separate benefit unit) living with a
         # pension-age family; younger than the claimant, so never the head.
         non_dependant_income=(
@@ -113,9 +120,38 @@ def savings_credit_families(draw):
         private_pension=draw(st.one_of(st.just(0.0), st.floats(0, 1_500))),
         employment_income=0.0,
         would_claim_pc=True,
-        minimum_guarantee=None,
         non_dependant_income=draw(st.one_of(st.none(), st.floats(0, 15_000))),
     )
+
+
+@st.composite
+def guarantee_credit_families(draw):
+    """Pensioners claiming Pension Credit with income low enough to keep a
+    guarantee credit under the State Pension and savings changes the
+    metamorphic tests make."""
+    shape = draw(st.sampled_from(["single_pension", "couple_pension"]))
+    return dict(
+        shape=shape,
+        ages=[draw(PENSION_AGE) for _ in SHAPES[shape]],
+        country=draw(st.sampled_from(sorted(COUNTRIES))),
+        council_tax=draw(st.floats(500, 4_000)),
+        savings=draw(st.one_of(st.just(0.0), st.floats(0, 40_000))),
+        other_property=0.0,
+        state_pension=draw(st.floats(0, 5_000)),
+        private_pension=0.0,
+        employment_income=0.0,
+        would_claim_pc=True,
+        non_dependant_income=draw(st.one_of(st.none(), st.floats(0, 15_000))),
+    )
+
+
+# Random families, plus a few that are sure to receive guarantee credit, so
+# the metamorphic tests always have recipients to check.
+populations = st.builds(
+    lambda random, recipients: random + recipients,
+    st.lists(families(), min_size=15, max_size=30),
+    st.lists(guarantee_credit_families(), min_size=3, max_size=6),
+)
 
 
 def situation(
@@ -150,8 +186,6 @@ def situation(
             "would_claim_pc": {YEAR: claim_pc},
             "would_claim_uc": {YEAR: False},
         }
-        if unit["minimum_guarantee"] is not None:
-            benunit["minimum_guarantee"] = {YEAR: unit["minimum_guarantee"]}
         benunits[f"b{i}"] = benunit
         claimant_benunits.append(benunit_index)
         benunit_index += 1
@@ -198,6 +232,30 @@ BENUNIT_VARIABLES = [
     "pension_credit_income",
     "pension_credit_assessable_capital",
 ]
+# council_tax_reduction_applicable_income on main before this change (1c5b4d04):
+# these incomes and benefits, less income tax, National Insurance and half of
+# pension contributions, floored at zero.
+MAIN_INCOME_COMPONENTS = [
+    "employment_income",
+    "self_employment_income",
+    "property_income",
+    "private_pension_income",
+    "carers_allowance",
+    "esa_contrib",
+    "jsa_contrib",
+    "state_pension",
+    "maternity_allowance",
+    "statutory_sick_pay",
+    "statutory_maternity_pay",
+    "ssmg",
+    "tax_credits",
+    "child_benefit",
+    "income_support",
+    "jsa_income",
+    "esa_income",
+    "universal_credit",
+]
+MAIN_DEDUCTIONS = ["income_tax", "national_insurance"]
 HOUSEHOLD_VARIABLES = [
     "council_tax_reduction_maximum_eligible_liability",
     "council_tax_reduction_household_has_pensioner",
@@ -205,15 +263,39 @@ HOUSEHOLD_VARIABLES = [
 ]
 
 
-def calculate(units, **kwargs):
+def guarantee_reform(single_weekly):
+    if single_weekly is None:
+        return None
+    period = f"{YEAR}-01-01.{YEAR}-12-31"
+    minimum_guarantee = "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee"
+    return {
+        f"{minimum_guarantee}.SINGLE": {period: single_weekly},
+        f"{minimum_guarantee}.COUPLE": {period: single_weekly * 1.53},
+    }
+
+
+def calculate(units, guarantee=None, **kwargs):
     data, claimants = situation(units, **kwargs)
-    sim = Simulation(situation=data)
+    sim = Simulation(situation=data, reform=guarantee_reform(guarantee))
     values = {
         v: np.asarray(sim.calculate(v, YEAR))[claimants] for v in BENUNIT_VARIABLES
     }
     # One household per family, in the same order as the claimant benefit units.
     for v in HOUSEHOLD_VARIABLES:
         values[v] = np.asarray(sim.calculate(v, YEAR))
+
+    def benunit_total(names):
+        return sum(
+            np.asarray(sim.calculate(v, YEAR, map_to="benunit"))[claimants]
+            for v in names
+        )
+
+    values["income_under_main_definition"] = np.maximum(
+        0,
+        benunit_total(MAIN_INCOME_COMPONENTS)
+        - benunit_total(MAIN_DEDUCTIONS)
+        - 0.5 * benunit_total(["pension_contributions"]),
+    )
     values["national"] = np.array(
         [
             unit["country"] != "ENGLAND" or has_pensioner
@@ -246,9 +328,9 @@ def check_structural(values):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=20, max_size=40))
-def test_awards_follow_the_pension_credit_routes(units):
-    check_routes(units, calculate(units))
+@given(st.lists(families(), min_size=20, max_size=40), guarantees)
+def test_awards_follow_the_pension_credit_routes(units, guarantee):
+    check_routes(units, calculate(units, guarantee))
 
 
 @PROPERTY_SETTINGS
@@ -281,23 +363,29 @@ def check_routes(units, values):
                 values["pension_credit_assessable_capital"][i] <= CAPITAL_LIMIT
             )
         else:
-            expected = tapered(
-                liability,
-                values["council_tax_reduction_applicable_income"][i],
-                applicable_amount,
-                non_dep,
-            ) * (values["savings"][i] <= CAPITAL_LIMIT)
+            income = values["income_under_main_definition"][i]
+            assert (
+                abs(values["council_tax_reduction_applicable_income"][i] - income)
+                < 0.01
+            ), unit
+            expected = tapered(liability, income, applicable_amount, non_dep) * (
+                values["savings"][i] <= CAPITAL_LIMIT
+            )
         assert abs(ctr - expected) < 0.01, (unit, ctr, expected)
 
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(families(), min_size=20, max_size=40),
+    populations,
+    guarantees,
     st.floats(-3_000, 3_000, allow_nan=False, allow_infinity=False),
 )
-def test_guarantee_credit_recipients_ctr_is_invariant_to_state_pension(units, change):
-    before = calculate(units)
-    after = calculate(units, state_pension_change=change)
+def test_guarantee_credit_recipients_ctr_is_invariant_to_state_pension(
+    units, guarantee, change
+):
+    before = calculate(units, guarantee)
+    after = calculate(units, guarantee, state_pension_change=change)
+    assert before["in_receipt_of_guarantee_credit"].any()
     for i, unit in enumerate(units):
         if (
             before["in_receipt_of_guarantee_credit"][i]
@@ -314,12 +402,16 @@ def test_guarantee_credit_recipients_ctr_is_invariant_to_state_pension(units, ch
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(families(), min_size=20, max_size=40),
+    populations,
+    guarantees,
     st.floats(0, 30_000, allow_nan=False, allow_infinity=False),
 )
-def test_guarantee_credit_recipients_ctr_is_invariant_to_savings(units, change):
-    before = calculate(units)
-    after = calculate(units, savings_change=change)
+def test_guarantee_credit_recipients_ctr_is_invariant_to_savings(
+    units, guarantee, change
+):
+    before = calculate(units, guarantee)
+    after = calculate(units, guarantee, savings_change=change)
+    assert before["in_receipt_of_guarantee_credit"].any()
     for i, unit in enumerate(units):
         if (
             before["in_receipt_of_guarantee_credit"][i]
@@ -335,14 +427,65 @@ def test_guarantee_credit_recipients_ctr_is_invariant_to_savings(units, change):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=20, max_size=40))
-def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units):
-    claiming = calculate(units, would_claim_pc=True)
-    not_claiming = calculate(units, would_claim_pc=False)
+@given(populations, guarantees)
+def test_not_claiming_pension_credit_never_raises_a_recipients_ctr(units, guarantee):
+    claiming = calculate(units, guarantee, would_claim_pc=True)
+    not_claiming = calculate(units, guarantee, would_claim_pc=False)
+    assert claiming["in_receipt_of_guarantee_credit"].any()
     assert not np.any(not_claiming["in_receipt_of_guarantee_credit"])
+    check_routes(units, not_claiming)
     for i, unit in enumerate(units):
         if claiming["in_receipt_of_guarantee_credit"][i]:
             assert (
                 not_claiming["simulated_council_tax_reduction_benunit"][i]
                 <= claiming["simulated_council_tax_reduction_benunit"][i] + 0.01
             ), unit
+
+
+def test_savings_credit_only_award_counts_the_frozen_savings_credit():
+    # A savings credit rate rise raises the reform's savings credit from
+    # 558.62 to 869.89, but the freeze keeps paying the baseline 558.62, and
+    # that is the savings credit payable.
+    person = {
+        "age": {YEAR: 90},
+        "state_pension": {YEAR: 12_000},
+        "private_pension_income": {YEAR: 1_500},
+    }
+    data = {
+        "people": {"pensioner": person},
+        "benunits": {
+            "benunit": {
+                "members": ["pensioner"],
+                "claims_all_entitled_benefits": {YEAR: True},
+            }
+        },
+        "households": {
+            "household": {
+                "members": ["pensioner"],
+                "country": {YEAR: "ENGLAND"},
+                "local_authority": {YEAR: "MAIDSTONE"},
+                "tenure_type": {YEAR: "OWNED_OUTRIGHT"},
+                "council_tax": {YEAR: 2_000},
+                "savings": {YEAR: 0},
+            }
+        },
+    }
+    period = f"{YEAR}-01-01.{YEAR}-12-31"
+    rate_rise = {"gov.dwp.pension_credit.savings_credit.rate.phase_in": {period: 0.8}}
+    frozen = Simulation(
+        situation=data,
+        reform={**rate_rise, "gov.contrib.freeze_pension_credit": {period: True}},
+    )
+    unfrozen = Simulation(situation=data, reform=rate_rise)
+    assert abs(frozen.calculate("savings_credit", YEAR)[0] - 869.89) < 0.01
+    assert abs(frozen.calculate("pension_credit", YEAR)[0] - 558.62) < 0.01
+    assert frozen.calculate("in_receipt_of_savings_credit_only", YEAR)[0]
+    # 13,314 Pension Credit income + 558.62 paid; 2,000 - 0.2 x 560.62.
+    frozen_income = frozen.calculate("council_tax_reduction_applicable_income", YEAR)
+    assert abs(frozen_income[0] - 13_872.62) < 0.01
+    assert abs(frozen.calculate("council_tax_reduction", YEAR)[0] - 1_887.88) < 0.01
+    # Without the freeze the higher savings credit is paid and counted.
+    unfrozen_income = unfrozen.calculate(
+        "council_tax_reduction_applicable_income", YEAR
+    )
+    assert abs(unfrozen_income[0] - 14_183.89) < 0.01

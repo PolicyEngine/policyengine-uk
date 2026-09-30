@@ -11,8 +11,10 @@ class council_tax_reduction_assessable_capital(Variable):
         "whose partner, is in receipt of Pension Credit guarantee credit, and "
         "use the Secretary of State's Pension Credit assessment of capital where "
         "the award is savings credit only. Otherwise household savings stand in "
-        "for the applicant's capital. The recalculation when capital rises above "
-        "the limit during an assessed income period is not modelled."
+        "for the applicant's capital; the schemes' own capital rules also count "
+        "other property and investments, so this understates capital for "
+        "pensioners without Pension Credit. The recalculation when capital rises "
+        "above the limit during an assessed income period is not modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -29,10 +31,14 @@ class council_tax_reduction_assessable_capital(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        guarantee_credit = benunit("in_receipt_of_guarantee_credit", period)
-        savings_credit_only = benunit("in_receipt_of_savings_credit_only", period)
+        in_receipt_of_guarantee_credit = benunit(
+            "in_receipt_of_guarantee_credit", period
+        )
+        has_savings_credit_only_award = benunit(
+            "in_receipt_of_savings_credit_only", period
+        )
         return select(
-            [guarantee_credit, savings_credit_only],
+            [in_receipt_of_guarantee_credit, has_savings_credit_only_award],
             [0, benunit("pension_credit_assessable_capital", period)],
             default=benunit.household("savings", period),
         )
