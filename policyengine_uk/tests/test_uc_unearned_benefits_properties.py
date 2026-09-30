@@ -55,7 +55,9 @@ PROPERTY_SETTINGS = settings(
 # Payment without the Scottish Carer Supplement, 2026 with it.
 YEARS = [2020, 2025, 2026]
 CSP_YEARS = [2025, 2026]
-BENEFITS = ["esa_contrib", "maternity_allowance", "iidb"]
+# Contributory ESA is entered as the reported amount, which income tax also
+# sees, so tests with earnings exercise the tax path (#1942).
+BENEFITS = ["esa_contrib_reported", "maternity_allowance", "iidb"]
 TENURES = [
     "RENT_FROM_COUNCIL",
     "RENT_FROM_HA",
@@ -181,10 +183,15 @@ def assert_monotone(low, high, increase, units):
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(YEARS),
 )
-@example(units=[CAPPED_LONE_PARENT], benefit="esa_contrib", bump=1_000.0, year=2026)
+@example(
+    units=[CAPPED_LONE_PARENT],
+    benefit="esa_contrib_reported",
+    bump=1_000.0,
+    year=2026,
+)
 @example(
     units=[dict(CAPPED_LONE_PARENT, amount=500.0)],
-    benefit="esa_contrib",
+    benefit="esa_contrib_reported",
     bump=1_000.0,
     year=2026,
 )
@@ -222,6 +229,25 @@ def test_uc_falls_pound_for_pound_in_each_benefit(units, benefit, bump, year):
     np.testing.assert_allclose(
         high["universal_credit_pre_benefit_cap"],
         award - np.minimum(bump, award),
+        atol=0.01,
+        err_msg=str(units),
+    )
+
+
+@PROPERTY_SETTINGS
+@given(
+    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
+    year=st.sampled_from(CSP_YEARS),
+)
+def test_uc_falls_pound_for_pound_in_counted_carer_support_payment(units, bump, year):
+    low = calculate(units, year, "carer_support_payment", carer=True)
+    high = calculate(units, year, "carer_support_payment", bump=bump, carer=True)
+    award = low["universal_credit_pre_benefit_cap"]
+    increase = high["counted_csp"] - low["counted_csp"]
+    np.testing.assert_allclose(
+        high["universal_credit_pre_benefit_cap"],
+        award - np.minimum(increase, award),
         atol=0.01,
         err_msg=str(units),
     )

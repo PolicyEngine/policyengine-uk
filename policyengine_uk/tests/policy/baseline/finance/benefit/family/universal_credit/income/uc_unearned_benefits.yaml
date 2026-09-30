@@ -262,6 +262,18 @@
     uc_unearned_carer_support_payment: 4_495.40
     uc_unearned_income: 4_495.40
 
+- name: Carer Support Payment does not count in 2023-24
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    carer_support_payment: 3_000
+  output:
+    # Reg. 66(1)(b)(iiia) starts on 19 November 2023, part-way through
+    # 2023-24. The yearly model takes the list in force at the start of the
+    # fiscal year, so Carer Support Payment first counts in 2024-25.
+    uc_unearned_carer_support_payment: 3_000
+    uc_unearned_income: 0
+
 - name: Carer Support Payment counts in 2024-25, before the Scottish Carer Supplement
   period: 2024
   absolute_error_margin: 0.01
@@ -291,8 +303,8 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 6_240
   output:
-    # Couple standard allowance 596.58 a month (with the 2020 uplift):
-    # 7,158.96 + 6,240 = 13,398.96; less 5,000 of contributory ESA.
-    uc_maximum_amount: 13_398.96
+    # The whole 5,000 is unearned income and comes off the maximum amount,
+    # which it does not exceed. (The maximum amount itself is not asserted:
+    # the 2020-21 standard allowance parameter holds the 2021-22 figures.)
     uc_unearned_income: 5_000
-    universal_credit: 8_398.96
+    uc_income_reduction: 5_000
