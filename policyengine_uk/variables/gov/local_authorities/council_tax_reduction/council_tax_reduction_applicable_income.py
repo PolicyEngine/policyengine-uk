@@ -5,8 +5,25 @@ class council_tax_reduction_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = "relevant income for Council Tax Reduction means test"
+    documentation = (
+        "Income taken into account in the Council Tax Reduction means test. The "
+        "pensioner schemes disregard the whole income of an applicant who, or "
+        "whose partner, is in receipt of Pension Credit guarantee credit, and "
+        "use the Secretary of State's Pension Credit assessment of income, plus "
+        "the savings credit payable, where the award is savings credit only. "
+        "The other adjustments those provisions allow (childcare charges, lone "
+        "parent and maintenance disregards, and the rest) are not modelled."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = [
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/13",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/14",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/7",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/24",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
+    ]
 
     def formula(benunit, period, parameters):
         benunit_means_tested_benefits = [
@@ -44,4 +61,20 @@ class council_tax_reduction_applicable_income(Variable):
 
         pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
         tax = add(benunit, period, ["income_tax", "national_insurance"])
-        return max_(0, increased_income - tax - pension_contributions)
+        income = max_(0, increased_income - tax - pension_contributions)
+
+        # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
+        # 2012/319 reg 24: a guarantee credit recipient's whole income is
+        # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases
+        # the Secretary of State's assessment of net income is used, adjusted
+        # to take account of the savings credit payable.
+        guarantee_credit = benunit("in_receipt_of_guarantee_credit", period)
+        savings_credit_only = benunit("in_receipt_of_savings_credit_only", period)
+        pension_credit_assessed_income = benunit(
+            "pension_credit_income", period
+        ) + benunit("savings_credit", period)
+        return select(
+            [guarantee_credit, savings_credit_only],
+            [0, pension_credit_assessed_income],
+            default=income,
+        )

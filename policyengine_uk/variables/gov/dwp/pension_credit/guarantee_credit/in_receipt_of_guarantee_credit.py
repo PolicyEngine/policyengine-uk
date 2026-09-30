@@ -1,0 +1,33 @@
+from policyengine_uk.model_api import *
+
+
+class in_receipt_of_guarantee_credit(Variable):
+    label = "in receipt of Guarantee Credit"
+    documentation = (
+        "Whether the claimant or partner in this benefit unit is in receipt of "
+        "a guarantee credit: the benefit unit is eligible for Pension Credit, "
+        "claims it, and its Guarantee Credit is positive. A Guarantee Credit "
+        "computed for a family that does not claim Pension Credit, or is not "
+        "eligible for it (for example a working-age or mixed-age family), is "
+        "not received. Under the Pension Credit freeze the baseline receipt is "
+        "kept, because the frozen award is the baseline award."
+    )
+    entity = BenUnit
+    definition_period = YEAR
+    value_type = bool
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2002/16/section/1",
+        "https://www.legislation.gov.uk/ukpga/2002/16/section/2",
+    )
+
+    def formula(benunit, period, parameters):
+        freeze = parameters(period).gov.contrib.freeze_pension_credit
+        baseline = benunit.simulation.baseline
+        if freeze and baseline is not None:
+            return baseline.populations["benunit"](
+                "in_receipt_of_guarantee_credit", period
+            )
+        eligible = benunit("is_pension_credit_eligible", period)
+        would_claim = benunit("would_claim_pc", period)
+        guarantee_credit = benunit("guarantee_credit", period)
+        return eligible & would_claim & (guarantee_credit > 0)

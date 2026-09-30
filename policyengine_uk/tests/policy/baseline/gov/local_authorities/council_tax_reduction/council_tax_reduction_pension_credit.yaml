@@ -1,0 +1,468 @@
+# Pension Credit recipients under the pensioner council tax reduction schemes.
+# Guarantee credit: the whole of the applicant's income and capital is
+# disregarded (SI 2012/2885 Sch 1 para 13; WSI 2013/3029 Sch 1 para 7; SSI
+# 2012/319 reg 24), so the award is the maximum reduction less non-dependant
+# deductions, whatever the income, and the capital limit cannot apply (SI
+# 2012/2885 reg 11(3); WSI 2013/3029 reg 30(2)). Savings credit only: the
+# Secretary of State's assessment of income and capital is used, adjusted for
+# the savings credit payable (SI 2012/2885 Sch 1 para 14; WSI 2013/3029 Sch 1
+# para 8; SSI 2012/319 reg 25).
+#
+# A minimum_guarantee input of 18,500 stands in for an earnings-linked
+# guarantee above the 13,312 CTR applicable amount, as on the uk-triple-lock
+# central path in 2039-40, where the State Pension figures below come from.
+
+- name: England guarantee credit recipient with income above the applicable amount gets maximum CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 18_712
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+        minimum_guarantee: 18_500
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    income_tax: 1_228.40
+    guarantee_credit: 1_016.40
+    in_receipt_of_guarantee_credit: true
+    council_tax_reduction_applicable_amount: 13_312
+    # Before the disregard: 17,483.60 and a tapered CTR of 1,165.68.
+    council_tax_reduction_applicable_income: 0
+    council_tax_reduction_assessable_capital: 0
+    simulated_council_tax_reduction_benunit: 2_000
+    council_tax_reduction: 2_000
+
+- name: England guarantee credit recipient's CTR does not rise when the State Pension falls by 72.70
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 18_639.30
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+        minimum_guarantee: 18_500
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 72.70 less State Pension: income tax -14.54, guarantee credit +58.16.
+    income_tax: 1_213.86
+    guarantee_credit: 1_074.56
+    # Before the disregard CTR rose by 11.63 to 1,177.31.
+    council_tax_reduction: 2_000
+
+- name: Entitled to guarantee credit but not claiming Pension Credit keeps the taper
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 18_712
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+        minimum_guarantee: 18_500
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    guarantee_credit: 1_016.40
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    council_tax_reduction_applicable_income: 17_483.60
+    # 2,000 - 0.2 x (17,483.60 - 13,312)
+    council_tax_reduction: 1_165.68
+
+- name: England pensioner without Pension Credit keeps the taper
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 18_712
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    guarantee_credit: 0
+    in_receipt_of_guarantee_credit: false
+    in_receipt_of_savings_credit_only: false
+    council_tax_reduction_applicable_income: 17_483.60
+    council_tax_reduction: 1_165.68
+
+- name: England guarantee credit recipient with capital above 16,000 gets maximum CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 20_000
+  output:
+    # 12,376 - 9,000 - 1,040 deemed income from capital.
+    guarantee_credit: 2_336
+    in_receipt_of_guarantee_credit: true
+    council_tax_reduction_assessable_capital: 0
+    # Before the disregard the 16,000 capital limit gave 0.
+    council_tax_reduction: 2_000
+
+- name: Capital limit still applies to a pensioner entitled to guarantee credit who does not claim it
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 20_000
+  output:
+    guarantee_credit: 2_336
+    in_receipt_of_guarantee_credit: false
+    council_tax_reduction_assessable_capital: 20_000
+    council_tax_reduction: 0
+
+- name: Pensioner couple on guarantee credit with 25,000 capital gets maximum CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 6_000
+      partner:
+        age: 68
+        state_pension: 6_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 25_000
+  output:
+    guarantee_credit: 5_329
+    in_receipt_of_guarantee_credit: true
+    council_tax_reduction: 2_000
+
+- name: Non-dependant deductions still apply to a guarantee credit recipient
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+      son:
+        age: 40
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+      son_benunit:
+        members: [son]
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # The son's guarantee_credit is calculated as 7,376, but he is not
+    # eligible for Pension Credit, so he is not in receipt of it.
+    guarantee_credit: [3_376, 7_376]
+    in_receipt_of_guarantee_credit: [true, false]
+    council_tax_reduction_applicable_income: [0, 5_000]
+    council_tax_reduction_non_dep_deductions: [1_060.80, 0]
+    # 2,000 - 1,060.80
+    simulated_council_tax_reduction_benunit: [939.20, 0]
+    council_tax_reduction: 939.20
+
+- name: Mixed-age couple is not in receipt of guarantee credit, so the capital limit applies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 9_000
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 20_000
+  output:
+    guarantee_credit: 8_849
+    is_pension_credit_eligible: false
+    in_receipt_of_guarantee_credit: false
+    council_tax_reduction: 0
+
+- name: Wales guarantee credit recipient gets maximum CTR above the capital limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 20_000
+  output:
+    guarantee_credit: 2_336
+    council_tax_reduction: 2_000
+
+- name: Wales guarantee credit recipient with income above the applicable amount gets maximum CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 18_712
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+        minimum_guarantee: 18_500
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    guarantee_credit: 1_016.40
+    council_tax_reduction_applicable_income: 0
+    council_tax_reduction: 2_000
+
+- name: Wales working-age earner with a calculated guarantee credit keeps the taper
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 10_000
+    benunits:
+      benunit:
+        members: [claimant]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    guarantee_credit: 2_376
+    in_receipt_of_guarantee_credit: false
+    council_tax_reduction_applicable_income: 10_000
+    council_tax_reduction: 993.72
+
+- name: Scotland guarantee credit recipient gets maximum CTR above the capital limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 20_000
+  output:
+    guarantee_credit: 2_336
+    council_tax_reduction: 2_000
+
+- name: Scotland guarantee credit recipient with income above the applicable amount gets maximum CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 18_712
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+        minimum_guarantee: 18_500
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    guarantee_credit: 976.73
+    council_tax_reduction_applicable_income: 0
+    council_tax_reduction: 2_000
+
+- name: Savings credit only counts the Pension Credit assessment of income plus the savings credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 12_000
+        private_pension_income: 1_500
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    guarantee_credit: 0
+    savings_credit: 558.62
+    in_receipt_of_savings_credit_only: true
+    pension_credit_income: 13_314
+    # 13,314 + 558.62. Before: 13,314 (the savings credit was not counted).
+    council_tax_reduction_applicable_income: 13_872.62
+    # 2,000 - 0.2 x (13,872.62 - 13,312). Before: 1,999.60.
+    council_tax_reduction: 1_887.88
+
+- name: Savings credit only tests the Pension Credit assessment of capital against the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 12_000
+        private_pension_income: 1_500
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 10_000
+        other_residential_property_value: 7_000
+  output:
+    savings_credit: 267.42
+    in_receipt_of_savings_credit_only: true
+    # Pension Credit counts the second property as capital; household
+    # savings alone (10,000) are under the limit. Before: CTR 1,999.60.
+    pension_credit_assessable_capital: 17_000
+    council_tax_reduction_assessable_capital: 17_000
+    council_tax_reduction: 0
