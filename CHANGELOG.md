@@ -1,3 +1,10 @@
+## [2.102.4] - 2026-09-30
+
+### Changed
+
+- - Require policyengine-core 3.32.9 or later, which sends `HUGGING_FACE_TOKEN` to public but gated Hugging Face repos such as policyengine-uk-data-private, and stop exporting `HF_TOKEN` in CI, the workaround that release makes unnecessary.
+
+
 ## [2.102.3] - 2026-09-28
 
 ### Changed
