@@ -22,6 +22,8 @@ Invariants, for any generated population of families:
    exactly that amount times the country's payable share for a family with no
    member over State Pension age, and exactly the same amount for every other
    family (the cap applies afterwards, so the final amount is compared by 5).
+   Mixed populations rarely hold a 2026 working-age continuing award, so a
+   targeted test builds only those, for each year and jurisdiction.
 5. Monotonic: the abolition never raises anyone's Housing Benefit and never
    changes Universal Credit (families on the continuing-award route do not
    claim it).
@@ -220,3 +222,46 @@ def test_abolition_matches_the_pre_abolition_rule_scaled_by_the_payable_share(
         assert current["universal_credit"][i] == pytest.approx(
             kept["universal_credit"][i], abs=0.01
         ), unit
+
+
+@st.composite
+def working_age_continuing_awards(draw, region):
+    """A working-age family continuing an award: reported HB, no UC claim."""
+    shape = draw(st.sampled_from(["single_working", "couple_working"]))
+    return dict(
+        shape=shape,
+        members=[(role, draw(age)) for role, age in SHAPES[shape]],
+        region=region,
+        tenure=draw(st.sampled_from(TENURES[:3])),
+        rent=draw(st.floats(1_000, 20_000, allow_nan=False, allow_infinity=False)),
+        earnings=draw(st.one_of(st.just(0.0), money)),
+        savings=draw(st.one_of(st.just(0.0), st.floats(0, 15_000))),
+        would_claim_uc=False,
+        hb_reported=1.0,
+    )
+
+
+@pytest.mark.parametrize("year", [2025, 2026, 2027])
+@pytest.mark.parametrize("region", ["LONDON", "NORTHERN_IRELAND"])
+@settings(PROPERTY_SETTINGS, max_examples=5)
+@given(data=st.data())
+def test_working_age_continuing_award_is_paid_for_the_payable_share(year, region, data):
+    # Every family here continues an award, and the first has no earnings, so
+    # at least one has a positive entitlement in every example.
+    units = data.draw(
+        st.lists(working_age_continuing_awards(region), min_size=1, max_size=8)
+    )
+    units[0]["earnings"] = 0.0
+    current = calculate(units, year, claims_all=False)
+    kept = calculate(units, year, claims_all=False, reform=KEEP_WORKING_AGE_AWARDS)
+    pre_cap = "housing_benefit_pre_benefit_cap"
+    assert kept[pre_cap][0] > 0, units[0]
+    expected_share = fiscal_year_share_before(
+        ABOLITION_DATES[jurisdiction(units[0])], year
+    )
+    assert np.allclose(current["housing_benefit_payable_share"], expected_share)
+    assert np.allclose(current[pre_cap], kept[pre_cap] * expected_share, atol=0.01)
+    assert np.all(
+        current["housing_benefit_eligible"]
+        == (kept["housing_benefit_eligible"] & (expected_share > 0))
+    )
