@@ -7,7 +7,7 @@ class ni_class_1_employer(Variable):
     label = "NI Class 1 employer-side contributions"
     definition_period = YEAR
     unit = GBP
-    defined_for = "ni_liable"
+    defined_for = "ni_class_1_secondary_liable"
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/9"
 
     def formula(person, period, parameters):
