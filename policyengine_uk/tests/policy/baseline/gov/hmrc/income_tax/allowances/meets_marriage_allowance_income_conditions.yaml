@@ -137,3 +137,15 @@
     dividend_income: 250
   output:
     meets_marriage_allowance_income_conditions: true
+
+- name: Dividends above property income cross the basic rate limit and fail the conditions
+  period: 2026
+  input:
+    # Property 47,000 less the 1,000 property allowance and the allowance of
+    # 12,570 leaves 33,430 of non-savings income. Dividends sit on top
+    # (s. 16), from 33,430 to 38,430, so 730 would be at the dividend upper
+    # rate (s. 55B(2)(ba)).
+    property_income: 47_000
+    dividend_income: 5_000
+  output:
+    meets_marriage_allowance_income_conditions: false

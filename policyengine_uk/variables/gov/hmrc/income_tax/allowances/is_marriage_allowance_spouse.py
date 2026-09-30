@@ -9,7 +9,9 @@ class is_marriage_allowance_spouse(Variable):
         "Whether this person is one of the married couple or civil partners "
         "in their benefit unit, who can make or gain from a Marriage "
         "Allowance election. These are the two eldest members whose marital "
-        "status is married, and only when the benefit unit has two."
+        "status is married, and only when the benefit unit has two. The Act "
+        "needs only a marriage or civil partnership, not living together, but "
+        "a spouse outside the benefit unit is not modelled."
     )
     definition_period = YEAR
     reference = dict(
