@@ -35,7 +35,11 @@ class attends_private_school(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        if not hasattr(person.simulation, "dataset"):
+        # Imputed only in simulations built from data, including a region or
+        # constituency filtered from them. A household situation has no
+        # income distribution to rank within, so it attends no private school
+        # unless set.
+        if not getattr(person.simulation, "built_from_dataset", False):
             return 0
         household = person.household
         # To ensure that our model matches
@@ -63,9 +67,8 @@ class attends_private_school(Variable):
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(net_income, weights=household_weight)
 
-        if household_weight.sum() < 1e6:
-            return 0
-
+        # Percentiles rank households within the simulated population, so a
+        # region filtered from the data ranks against itself, not the UK.
         percentile = np.zeros_like(weighted_income).astype(numpy.int64)
         mask = household_weight > 0
 

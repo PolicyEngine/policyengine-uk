@@ -37,17 +37,17 @@ def filter_dataset(
     dataset: UKSingleYearDataset = sim.dataset[year]
     new_dataset = dataset.copy()
     person = new_dataset.person
-    if "months_since_last_birthday" not in person.columns:
-        # Birthdays are spread over the year across the whole population, so
-        # carry each person's place across rather than recompute it for one
-        # household.
-        months = pd.Series(
-            np.asarray(sim.calculate("months_since_last_birthday", year)),
-            index=np.asarray(sim.calculate("person_id", year)),
-        )
-        person = person.assign(
-            months_since_last_birthday=months.loc[person.person_id].values
-        )
+    # These are imputed across the whole population: birthdays are spread over
+    # the year, and private school attendance follows each household's income
+    # percentile (one household alone would rank at the 100th). Carry each
+    # person's value across rather than recompute it for one household.
+    for variable in ("months_since_last_birthday", "attends_private_school"):
+        if variable not in person.columns:
+            values = pd.Series(
+                np.asarray(sim.calculate(variable, year)),
+                index=np.asarray(sim.calculate("person_id", year)),
+            )
+            person = person.assign(**{variable: values.loc[person.person_id].values})
     new_dataset.person = person[person.person_household_id == household_id]
     new_dataset.household = new_dataset.household[
         new_dataset.household.household_id == household_id
