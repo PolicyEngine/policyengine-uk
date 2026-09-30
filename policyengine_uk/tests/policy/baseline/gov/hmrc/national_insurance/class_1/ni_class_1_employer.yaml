@@ -63,15 +63,19 @@
   output:
     ni_class_1_employer: 0
 
-- name: One year below state pension age, both sides are charged
+# The next two cases set is_SP_age directly, so they test the split between
+# the two sides rather than how state pension age is derived.
+
+- name: Below state pension age, both sides are charged
   period: 2026
   absolute_error_margin: 0.01
   input:
     age: 66
-    state_pension_age: 67
+    is_SP_age: false
     employment_income: 40_000
   output:
-    is_SP_age: false
+    ni_liable: true
+    ni_class_1_secondary_liable: true
     ni_class_1_employee: 2_194.40  # 0.08 x (40,000 - 12,570)
     ni_class_1_employer: 5_251.20
 
@@ -79,11 +83,12 @@
   period: 2026
   absolute_error_margin: 0.01
   input:
-    age: 67
-    state_pension_age: 67
+    age: 66
+    is_SP_age: true
     employment_income: 40_000
   output:
-    is_SP_age: true
+    ni_liable: false
+    ni_class_1_secondary_liable: true
     ni_class_1_employee: 0
     ni_class_1_employer: 5_251.20
 
