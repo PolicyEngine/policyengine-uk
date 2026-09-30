@@ -10,9 +10,10 @@ class meets_severe_disability_addition_residence_condition(Variable):
         "normally resides with the claimant (and partner). Everyone else in the "
         "household counts, including a member of the benefit unit who is "
         "neither the claimant, the partner nor a qualifying young person. "
-        "Housing Benefit and Council Tax Reduction for pension-age claimants "
-        "apply the same test to non-dependants (HB(SPC) Regs 2006 Sch 3 para "
-        "6(2)(a)(ii), (b)(iii) and (6))."
+        "The pension-age Housing Benefit severe disability premium applies a "
+        "similar test to non-dependants (HB(SPC) Regs 2006 Sch 3 para "
+        "6(2)(a)(ii), (b)(iii) and (6)), which also counts a young person of "
+        "another family."
     )
     definition_period = YEAR
     reference = (

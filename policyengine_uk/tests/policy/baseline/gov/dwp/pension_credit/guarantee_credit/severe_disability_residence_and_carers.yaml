@@ -452,3 +452,266 @@
   output:
     # Standard minimum guarantee only: 238.00 x 52 = 12,376.
     minimum_guarantee: [12_376, 12_376]
+
+- name: A resident on the DLA care component at the middle rate or on AFIP is ignored, but not one on the lowest rate or on PIP mobility only
+  # Para 2(2)(a) lists DLA care at the highest or middle rate, PIP daily
+  # living and Armed Forces Independence Payment; other awards do not count.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant_1:
+        age: 80
+        aa_category: HIGHER
+      resident_1:
+        age: 40
+        dla_sc_category: MIDDLE
+      claimant_2:
+        age: 80
+        aa_category: HIGHER
+      resident_2:
+        age: 40
+        armed_forces_independence_payment: 1_000
+      claimant_3:
+        age: 80
+        aa_category: HIGHER
+      resident_3:
+        age: 40
+        dla_sc_category: LOWER
+      claimant_4:
+        age: 80
+        aa_category: HIGHER
+      resident_4:
+        age: 40
+        pip_m_category: ENHANCED
+    benunits:
+      unit_1:
+        members: [claimant_1]
+      resident_unit_1:
+        members: [resident_1]
+      unit_2:
+        members: [claimant_2]
+      resident_unit_2:
+        members: [resident_2]
+      unit_3:
+        members: [claimant_3]
+      resident_unit_3:
+        members: [resident_3]
+      unit_4:
+        members: [claimant_4]
+      resident_unit_4:
+        members: [resident_4]
+    households:
+      household_1:
+        members: [claimant_1, resident_1]
+      household_2:
+        members: [claimant_2, resident_2]
+      household_3:
+        members: [claimant_3, resident_3]
+      household_4:
+        members: [claimant_4, resident_4]
+  output:
+    is_counted_resident_for_severe_disability_addition:
+      [false, false, false, false, false, true, false, true]
+    # The middle-rate and AFIP residents qualify in their own right too.
+    severe_disability_minimum_guarantee_addition:
+      [4_474.60, 4_474.60, 4_474.60, 4_474.60, 0, 0, 0, 0]
+
+- name: A 19-year-old who started their course at 19 is not a qualifying young person and counts
+  # Reg 4A: the education must have started, or been enrolled on or accepted,
+  # before 19.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        aa_category: HIGHER
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 19
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+    households:
+      household:
+        members: [claimant, young_person]
+  output:
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    severe_disability_minimum_guarantee_addition: 0
+
+- name: A qualifying young person in another benefit unit is ignored for Pension Credit
+  # Para 2(2)(f) ignores any qualifying young person within reg 4A, not only
+  # the claimant's own. The young person's parent receives the PIP daily
+  # living component, so para 2(2)(a) ignores her too. (Housing Benefit counts
+  # a young person of another family as a non-dependant: HB(SPC) reg 3(2)(a).)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        aa_category: HIGHER
+      parent:
+        age: 45
+        is_parent: true
+        pip_dl_category: STANDARD
+      grandchild:
+        age: 18
+        is_in_non_advanced_education: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      parent_unit:
+        members: [parent, grandchild]
+    households:
+      household:
+        members: [claimant, parent, grandchild]
+  output:
+    severe_disability_minimum_guarantee_addition: [4_474.60, 4_474.60]
+
+- name: A third adult in the couple's own benefit unit counts unless their presence is ignored
+  # Supplying is_claimant_or_partner replaces the formula for everyone, so
+  # it is set for each member.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant_1:
+        age: 78
+        aa_category: HIGHER
+        is_parent: true
+        is_claimant_or_partner: true
+      partner_1:
+        age: 76
+        aa_category: HIGHER
+        is_parent: true
+        is_claimant_or_partner: true
+      adult_1:
+        age: 45
+        is_claimant_or_partner: false
+      claimant_2:
+        age: 78
+        aa_category: HIGHER
+        is_parent: true
+        is_claimant_or_partner: true
+      partner_2:
+        age: 76
+        aa_category: HIGHER
+        is_parent: true
+        is_claimant_or_partner: true
+      adult_2:
+        age: 45
+        pip_dl_category: STANDARD
+        is_claimant_or_partner: false
+    benunits:
+      couple_1:
+        members: [claimant_1, partner_1, adult_1]
+      couple_2:
+        members: [claimant_2, partner_2, adult_2]
+    households:
+      household_1:
+        members: [claimant_1, partner_1, adult_1]
+      household_2:
+        members: [claimant_2, partner_2, adult_2]
+  output:
+    severe_disability_minimum_guarantee_addition: [0, 8_949.20]
+
+- name: One carer's award covers one person, not every benefit unit in the household
+  # SSCBA 1992 s.70(7): one carer's allowance per carer. Two single pensioners
+  # on Attendance Allowance share a house with a 17-year-old who receives
+  # Carer's Allowance. The award is attributed to the elder pensioner only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      younger:
+        age: 70
+        aa_category: HIGHER
+      elder:
+        age: 72
+        aa_category: HIGHER
+      carer:
+        age: 17
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      younger_unit:
+        members: [younger]
+      elder_unit:
+        members: [elder]
+      carer_unit:
+        members: [carer]
+    households:
+      household:
+        members: [younger, elder, carer]
+        country: ENGLAND
+  output:
+    num_severe_disability_addition_qualifiers_cared_for: [0, 1, 0]
+    severe_disability_minimum_guarantee_addition: [4_474.60, 0, 0]
+
+- name: Two carers in the household cover two benefit units
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      younger:
+        age: 70
+        aa_category: HIGHER
+      elder:
+        age: 72
+        aa_category: HIGHER
+      carer_1:
+        age: 17
+        care_hours: 35
+        carers_allowance_reported: 1
+      carer_2:
+        age: 16
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      younger_unit:
+        members: [younger]
+      elder_unit:
+        members: [elder]
+      carer_unit_1:
+        members: [carer_1]
+      carer_unit_2:
+        members: [carer_2]
+    households:
+      household:
+        members: [younger, elder, carer_1, carer_2]
+        country: ENGLAND
+  output:
+    num_severe_disability_addition_qualifiers_cared_for: [1, 1, 0, 0]
+    severe_disability_minimum_guarantee_addition: [0, 0, 0, 0]
+
+- name: Two single pensioners who each receive Carer's Allowance care for each other
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 72
+        aa_category: HIGHER
+        care_hours: 35
+        carers_allowance_reported: 1
+      second:
+        age: 70
+        aa_category: HIGHER
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      first_unit:
+        members: [first]
+      second_unit:
+        members: [second]
+    households:
+      household:
+        members: [first, second]
+        country: ENGLAND
+  output:
+    num_severe_disability_addition_qualifiers_cared_for: [1, 1]
+    severe_disability_minimum_guarantee_addition: [0, 0]

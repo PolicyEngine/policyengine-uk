@@ -17,10 +17,12 @@ Invariants, for every benefit unit in every generated household:
    2 only for a couple. The qualifying-benefit flag matches the Sch I para
    1(1)(a)(i) list for the drawn benefit categories.
 3. Residence, metamorphic: adding another adult resident who is not a para 2
-   person removes the addition for every other benefit unit; adding a resident
-   whose presence is ignored (a qualifying-benefit recipient, a blind person,
-   a qualifying young person or anyone under 18) who receives no carer benefit
-   leaves every existing unit's addition unchanged.
+   person removes the addition for every other benefit unit. Adding a resident
+   whose presence is ignored and who receives no carer benefit leaves every
+   existing unit's addition unchanged if the resident does not qualify (a
+   blind person, a qualifying young person or anyone under 18), and never
+   lowers it if they do (a qualifying-benefit recipient, to whom a carer in
+   the household may then be attributed instead).
 4. Carers, metamorphic: giving someone a carer benefit never increases any
    unit's addition.
 5. Symmetry: swapping the drawn attributes of a couple's two partners leaves
@@ -200,12 +202,18 @@ def test_addition_matches_the_reference_and_is_bounded(households):
         )
 
 
+# (resident, whether they receive a para 1(1)(a)(i) qualifying benefit)
 IGNORED_RESIDENTS = [
-    dict(age=50, benefit="pip_dl_standard", blind=False, carer=False, education=False),
-    dict(age=50, benefit="aa_lower", blind=False, carer=False, education=False),
-    dict(age=50, benefit="none", blind=True, carer=False, education=False),
-    dict(age=18, benefit="none", blind=False, carer=False, education=True),
-    dict(age=17, benefit="none", blind=False, carer=False, education=False),
+    (
+        dict(
+            age=50, benefit="pip_dl_standard", blind=False, carer=False, education=False
+        ),
+        True,
+    ),
+    (dict(age=50, benefit="aa_lower", blind=False, carer=False, education=False), True),
+    (dict(age=50, benefit="none", blind=True, carer=False, education=False), False),
+    (dict(age=18, benefit="none", blind=False, carer=False, education=True), False),
+    (dict(age=17, benefit="none", blind=False, carer=False, education=False), False),
 ]
 COUNTED_RESIDENT = dict(
     age=30, benefit="none", blind=False, carer=False, education=False
@@ -215,13 +223,16 @@ COUNTED_RESIDENT = dict(
 @PROPERTY_SETTINGS
 @given(household(), st.sampled_from(range(len(IGNORED_RESIDENTS))))
 def test_residence_condition_is_metamorphic(original, ignored_index):
-    ignored = IGNORED_RESIDENTS[ignored_index]
+    ignored, ignored_qualifies = IGNORED_RESIDENTS[ignored_index]
     with_ignored = original + [dict(claimants=[ignored], dependants=[])]
     with_counted = original + [dict(claimants=[COUNTED_RESIDENT], dependants=[])]
     result = simulate([original, with_ignored, with_counted])
     base, ignored_rates, counted_rates = rates_by_household(result)
     n = len(original)
-    np.testing.assert_allclose(ignored_rates[:n], base, atol=1e-9)
+    if ignored_qualifies:
+        assert all(a >= b - 1e-9 for a, b in zip(ignored_rates[:n], base))
+    else:
+        np.testing.assert_allclose(ignored_rates[:n], base, atol=1e-9)
     np.testing.assert_allclose(counted_rates[:n], 0, atol=1e-9)
 
 

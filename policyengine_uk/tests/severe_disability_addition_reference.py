@@ -42,14 +42,13 @@ Modelling rules (from the spec; each is applied literally below):
    household other than this unit's claimant/partner is aged 18 or over and is
    not a para 2 person. Modelled para 2 persons: qualifying benefit (2(2)(a)),
    blind (2(2)(b)), qualifying young person (2(2)(f)). No other exceptions.
-3. Carers. Nobody cares for themselves. A claimant/partner who receives a carer
-   benefit cares for their partner if the partner qualifies; otherwise they care
-   for someone outside the unit. Any other member of a unit who receives a carer
-   benefit cares for a qualifying claimant/partner of their own unit if it has
-   one. Every remaining carer in the household (one not caring within their own
-   unit) cares for a qualifying claimant/partner of THIS unit. Each such carer
-   cares for a different qualifying person who is not already cared for, until
-   every qualifying claimant/partner is cared for.
+3. Carers [as amended]. Nobody cares for themselves, and each award is for one
+   person. A claimant/partner who receives a carer benefit cares for their
+   partner if the partner qualifies. Any other member of a unit who receives a
+   carer benefit cares for a qualifying claimant/partner of their own unit if
+   it has one. The household's remaining carers each care for a different
+   qualifying claimant/partner of another unit who is not yet cared for; the
+   units take them in turn, eldest member first.
 4. Heads. Para 1(1)(a) applies to singles; (b) and then (c) apply to couples.
    (c) applies only where (b) does not, and (c)(iv) needs no carer for the
    partner to whom (c)(i) applies. If both partners qualify, either may be the
@@ -175,80 +174,87 @@ def residence_condition_met(
 # ---------------------------------------------------------------------------
 
 
-def _cares_within_other_unit(people, units, pid, unit_id) -> bool:
-    """[Rule 3 as amended] Whether ``pid``, a member of a unit other than
-    ``unit_id``, cares for a qualifying claimant or partner of their own unit."""
-    for other_id, other in units.items():
-        if other_id == unit_id:
-            continue
-        members = list(other["claimant_or_partner"]) + list(other.get("others", []))
-        if pid not in members:
-            continue
-        return any(
-            qualifies(people[q]) for q in other["claimant_or_partner"] if q != pid
-        )
-    return False
+def _members(unit: Mapping[str, Any]) -> list:
+    return list(unit["claimant_or_partner"]) + list(unit.get("others", []))
 
 
-def carer_assignments(
-    people: Mapping[PersonId, Person],
-    claimant_or_partner: Sequence[PersonId],
-    units: Mapping[Hashable, Any] = None,
-    unit_id: Hashable = None,
-) -> list[frozenset]:
-    """Every allowed set of this unit's claimant/partners who are cared for.
+def _cares_within_own_unit(people, unit, pid) -> bool:
+    """[Rule 3 as amended] A carer cares within their own unit if it has a
+    qualifying claimant or partner other than the carer."""
+    return any(qualifies(people[q]) for q in unit["claimant_or_partner"] if q != pid)
+
+
+def household_carer_assignments(household: Mapping[str, Any]) -> dict:
+    """Every allowed set of cared-for claimant/partners, for each unit.
 
     The carer conditions are para 1(1)(a)(iii), (b)(ii) second limb, (c)(iv) and
     reg 6(5)(b). Each asks whether a person "is entitled to and in receipt of an
     allowance under section 70 of the 1992 Act (carer's allowance) or carer support
     payment , or has an award of universal credit which includes the carer
-    element, in respect of caring for" a named person.
+    element, in respect of caring for" a named person. SSCBA 1992 s.70(7): "No
+    person shall be entitled for the same day to (a) more than one allowance
+    under this section", so each award is for one person.
 
-    Spec rule 3:
+    Rule 3 [as amended]:
       * Nobody cares for themselves.
       * A claimant/partner who receives a carer benefit cares for their partner if
-        the partner qualifies; otherwise they care for someone outside the unit.
-      * Every other household member (an "other" in this unit or anyone in another
-        unit) who receives a carer benefit cares for a qualifying claimant/partner
-        of THIS unit. Each cares for a different qualifying person who is not
-        already cared for, until every qualifying claimant/partner is cared for.
+        the partner qualifies. Any other member of a unit who receives one cares
+        for a qualifying claimant/partner of that unit if there is one.
+      * Every remaining carer in the household cares for a qualifying
+        claimant/partner of another unit who is not yet cared for, one each. The
+        units take them in turn, eldest member first (ties by listing order);
+        each unit takes as many as it has uncared-for qualifiers, from carers
+        outside it, while any remain.
 
-    Rule 3 does not say which partner an outside carer takes when both qualify and
-    neither is yet cared for. This function returns every allowed assignment, and
+    Rule 3 does not say which partner a carer takes when both qualify and
+    neither is yet cared for. This returns every allowed set, and
     ``reference_rates`` asserts that the answer is the same for all of them.
     """
-    units = units or {}
-    unit = list(claimant_or_partner)
-    qualifying = [pid for pid in unit if qualifies(people[pid])]
+    people = household["people"]
+    units = household["benunits"]
+    position = {pid: i for i, pid in enumerate(people)}
+    cared_by_partner, uncovered, qualifying, outside = {}, {}, {}, {}
+    for bu_id, unit in units.items():
+        cp = list(unit["claimant_or_partner"])
+        qualifying[bu_id] = [pid for pid in cp if qualifies(people[pid])]
+        carers = [p for p in _members(unit) if people[p]["receives_carer_benefit"]]
+        within = [p for p in carers if _cares_within_own_unit(people, unit, p)]
+        outside[bu_id] = len(carers) - len(within)
+        # A claimant/partner caring within the unit cares for their partner.
+        cared_by_partner[bu_id] = {
+            other for p in within if p in cp for other in cp if other != p
+        }
+        by_others = len([p for p in within if p not in cp])
+        covered = min(len(qualifying[bu_id]), len(cared_by_partner[bu_id]) + by_others)
+        uncovered[bu_id] = len(qualifying[bu_id]) - covered
 
-    # Partner carers: A cares for B only when B qualifies. A claimant/partner is
-    # never their own carer, and in a single unit has no partner to care for.
-    cared_by_partner = set()
-    if len(unit) == 2:
-        first, second = unit
-        for carer, cared in ((first, second), (second, first)):
-            if people[carer]["receives_carer_benefit"] and qualifies(people[cared]):
-                cared_by_partner.add(cared)
+    def eldest_key(bu_id):
+        members = _members(units[bu_id])
+        oldest = max(people[p]["age"] for p in members)
+        first = min(position[p] for p in members if people[p]["age"] == oldest)
+        return (-oldest, first)
 
-    # Outside carers: every household member who is not this unit's claimant or
-    # partner and who is not caring within their own (other) unit. [Rule 3 as
-    # amended: a carer in another unit cares there if that unit has a
-    # qualifying claimant or partner other than the carer.]
-    own = set(unit)
-    outside_carers = sum(
-        1
-        for pid, person in people.items()
-        if pid not in own
-        and person["receives_carer_benefit"]
-        and not _cares_within_other_unit(people, units, pid, unit_id)
-    )
+    total_outside = sum(outside.values())
+    allocated, from_other_units = 0, {}
+    for bu_id in sorted(units, key=eldest_key):
+        available = max(
+            0, min(total_outside - outside[bu_id], total_outside - allocated)
+        )
+        from_other_units[bu_id] = min(uncovered[bu_id], available)
+        allocated += from_other_units[bu_id]
 
-    still_uncared = [pid for pid in qualifying if pid not in cared_by_partner]
-    newly_cared = min(outside_carers, len(still_uncared))
-    return [
-        frozenset(cared_by_partner) | frozenset(choice)
-        for choice in combinations(still_uncared, newly_cared)
-    ]
+    result = {}
+    for bu_id in units:
+        cared_count = (
+            len(qualifying[bu_id]) - uncovered[bu_id] + from_other_units[bu_id]
+        )
+        must = frozenset(cared_by_partner[bu_id])
+        rest = [q for q in qualifying[bu_id] if q not in must]
+        result[bu_id] = [
+            must | frozenset(choice)
+            for choice in combinations(rest, cared_count - len(must))
+        ]
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -434,13 +440,12 @@ def reference_rates(household: Mapping[str, Any]) -> dict:
     _validate(household)
     people = household["people"]
     result = {}
+    assignments = household_carer_assignments(household)
     for bu_id, unit in household["benunits"].items():
         claimant_or_partner = list(unit["claimant_or_partner"])
         outcomes = {
             rates_for_unit(people, claimant_or_partner, cared_for)
-            for cared_for in carer_assignments(
-                people, claimant_or_partner, household["benunits"], bu_id
-            )
+            for cared_for in assignments[bu_id]
         }
         # Rule 3 leaves open which qualifying partner an outside carer takes. The
         # law makes that choice immaterial: (b) depends only on how many partners
