@@ -162,10 +162,11 @@
   # Before this change, Pension Credit left out the partner's Carer's
   # Allowance, so Guarantee Credit ran on to a private pension of 9,700 and the
   # Housing Benefit passport ended at 9,800, when HB counted the allowance:
-  # net income fell by 1,779.24. Now Guarantee Credit has ended well before,
-  # and each 100 of private pension adds 100 - 20 tax - 52 HB (65%) - 16 CTR.
-  # The HB earnings disregard is set to 0 so that the numbers do not depend on
-  # it; the couple has no earnings.
+  # net income fell by 1,779.24 with the default HB income disregard (2,254.02
+  # with the disregard set to 0, as here). Now Guarantee Credit has ended well
+  # before, and each 100 of private pension adds 100 - 20 tax - 52 HB (65%)
+  # - 16 CTR. The HB income disregard is set to 0 so that the numbers do not
+  # depend on it; the couple has no earnings.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -320,3 +321,36 @@
     guarantee_credit: 0
     housing_benefit_applicable_income: 18_000 + 86.45 * 52
     housing_benefit: 6_000 - 0.65 * (18_000 + 86.45 * 52 - (383.35 + 48.15) * 52)
+
+- name: The Scottish Carer Supplement stays in benefit totals but not in Housing Benefit income
+  # A working-age carer in Scotland with no other income. HB Regs 2006 Sch 5
+  # para 75 (SI 2026/246 art 20(4)) disregards the supplement, so HB income is
+  # the Carer Support Payment component alone. The supplement is a benefit and
+  # taxable income, so every total still includes it: 86.45 x 52 + 11.70 x 52.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+  output:
+    carer_support_payment: 86.45 * 52
+    scottish_carer_supplement: 11.70 * 52
+    housing_benefit_applicable_income: 86.45 * 52
+    social_security_income: (86.45 + 11.70) * 52
+    household_benefits: (86.45 + 11.70) * 52
+    hbai_benefits: (86.45 + 11.70) * 52
+    hbai_household_net_income: (86.45 + 11.70) * 52
+    gov_spending: (86.45 + 11.70) * 52
+    pre_budget_change_household_benefits: (86.45 + 11.70) * 52
