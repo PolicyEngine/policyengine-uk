@@ -5,7 +5,7 @@ great_britain:
     1988-04-01: 1
     2026-07-01: 0
   metadata:
-    label: Working-age Housing Benefit awards payable, Great Britain
+    label: Working-age housing benefit awards payable in Great Britain
     unit: /1
     period: year
     fiscal_year_blend: true
@@ -24,7 +24,7 @@ northern_ireland:
     1988-04-01: 1
     2026-10-01: 0
   metadata:
-    label: Working-age Housing Benefit awards payable, Northern Ireland
+    label: Working-age housing benefit awards payable in Northern Ireland
     unit: /1
     period: year
     fiscal_year_blend: true
@@ -36,5 +36,5 @@ northern_ireland:
       - title: Welfare Reform (Northern Ireland) Order 2015 art. 39(1)(d)
         href: https://www.legislation.gov.uk/nisi/2015/2006/article/39
 metadata:
-  label: Working-age Housing Benefit awards payable
+  label: Working-age housing benefit awards payable
   economy: false
