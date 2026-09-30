@@ -1,10 +1,10 @@
-"""Means tests count the claimant's and partner's income, nobody else's.
+"""A means test never counts the income of someone outside its family.
 
 Invariant: for any benefit unit, giving income to a member who is neither the
-claimant nor the partner (a child, a young person, or another adult in the
-benefit unit) never changes a means test's income (UC Regs 2013 reg 22; HB
-Regs 2006 reg 25; IS Regs 1987 reg 23; TCA 2002 s.7; CTR (Prescribed
-Requirements) (England) Regs 2012 Sch 1 para 11; SPCA 2002 s.5).
+claimant, the partner, nor the programme's own child or young person (for
+example an 18- or 19-year-old presumed the claimant's child but not in
+education, or a third adult) never changes a means test's income. The UC, HB,
+IS, tax credit, CTR and Pension Credit income totals are covered.
 
 Each example builds families twice in one simulation: once with the other
 member's income and once without, in separate households and benefit units.
@@ -27,25 +27,31 @@ INCOME_TESTS = [
     "pension_credit_income",
 ]
 EDUCATIONS = ["NOT_IN_EDUCATION", "UPPER_SECONDARY", "TERTIARY"]
+FAMILY_FLAGS = [
+    "is_claimant_or_partner",
+    "is_child_or_qualifying_young_person_for_universal_credit",
+    "is_child_or_young_person_for_legacy_benefits",
+    "is_child_or_qualifying_young_person_for_child_tax_credit",
+]
 money = st.floats(0, 50_000, allow_nan=False, allow_infinity=False)
 
 
 @st.composite
 def families(draw):
     # A head, an optional partner, and one member who by construction is
-    # neither claimant nor partner: a child under 16, a 16-19-year-old at
-    # least 16 years younger than the head (presumed the head's child), or a
-    # third adult no older than the partner (the partner, earlier in member
-    # order, wins any age tie).
-    kind = draw(st.sampled_from(["child", "presumed_child", "third_adult"]))
-    if kind == "child":
-        other_age = draw(st.integers(0, 15))
-        head_age = draw(st.integers(25, 85))
-    elif kind == "presumed_child":
+    # outside every programme's family: a 16-19-year-old at least 16 years
+    # younger than the head (presumed the head's child) who is not in
+    # non-advanced education, so no programme's young person; or a third adult
+    # no older than the partner (the partner, earlier in member order, wins any
+    # age tie).
+    kind = draw(st.sampled_from(["presumed_child", "third_adult"]))
+    if kind == "presumed_child":
         other_age = draw(st.integers(16, 19))
         head_age = draw(st.integers(other_age + 16, 85))
+        education = draw(st.sampled_from(["NOT_IN_EDUCATION", "TERTIARY"]))
     else:
         head_age = draw(st.integers(25, 85))
+        education = draw(st.sampled_from(EDUCATIONS))
     family = [
         {
             "age": head_age,
@@ -61,7 +67,7 @@ def families(draw):
     family.append(
         {
             "age": other_age,
-            "current_education": draw(st.sampled_from(EDUCATIONS)),
+            "current_education": education,
             "employment_income": draw(st.floats(1, 50_000)),
             "private_pension_income": draw(money),
             "savings_interest_income": draw(money),
@@ -104,12 +110,13 @@ def test_income_of_non_claimants_never_counts(units):
         for family in units
     ]
     sim = Simulation(situation=situation(units + without))
-    claimant = sim.calculate("is_claimant_or_partner", YEAR)
     offsets = np.cumsum([0] + [len(f) for f in units])
     n = len(units)
-    for i in range(n):
-        # The generator's construction, checked against the model.
-        assert not claimant[offsets[i + 1] - 1], units[i]
+    for variable in FAMILY_FLAGS:
+        flags = sim.calculate(variable, YEAR)
+        for i in range(n):
+            # The generator's construction, checked against the model.
+            assert not flags[offsets[i + 1] - 1], (variable, units[i])
     for variable in INCOME_TESTS:
         values = sim.calculate(variable, YEAR)
         for i in range(n):

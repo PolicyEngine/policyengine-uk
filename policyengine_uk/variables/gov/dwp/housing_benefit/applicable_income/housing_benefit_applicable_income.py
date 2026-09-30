@@ -9,6 +9,14 @@ class housing_benefit_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
+        # Members whose income counts: the claimant and partner and, as the model did
+        # before, the programme's own children or young persons. The regulations count
+        # only the claimant's and partner's (HB Regs 2006 reg 25); dropping dependants'
+        # own income is a follow-up. Anyone else in the benefit unit does not count.
+        person = benunit.members
+        members = person("is_claimant_or_partner", period) | person(
+            "is_child_or_young_person_for_legacy_benefits", period
+        )
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
@@ -34,31 +42,26 @@ class housing_benefit_applicable_income(Variable):
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
-        # Add personal benefits, credits and total benefits to income. Only
-        # the claimant's and partner's income counts; a child's or young
-        # person's does not (HB Regs 2006 reg 25).
-        benefits = add_for_claimant_and_partner(
-            benunit, period, BENUNIT_MEANS_TESTED_BENEFITS
+        # Add personal benefits, credits and total benefits to income
+        benefits = add_for_members(
+            benunit, period, BENUNIT_MEANS_TESTED_BENEFITS, members
         )
-        income = add_for_claimant_and_partner(benunit, period, INCOME_COMPONENTS)
-        personal_benefits = add_for_claimant_and_partner(
-            benunit, period, PERSONAL_BENEFITS
-        )
-        credits = add_for_claimant_and_partner(benunit, period, ["tax_credits"])
+        income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
+        personal_benefits = add_for_members(benunit, period, PERSONAL_BENEFITS, members)
+        credits = add_for_members(benunit, period, ["tax_credits"], members)
         increased_income = income + personal_benefits + credits + benefits
 
         if not bi.interactions.include_in_means_tests:
             # Basic income is already in personal benefits, deduct if needed
-            increased_income -= add_for_claimant_and_partner(
-                benunit, period, ["basic_income"]
+            increased_income -= add_for_members(
+                benunit, period, ["basic_income"], members
             )
         # Reduce increased income by pension contributions and tax
         pension_contributions = (
-            add_for_claimant_and_partner(benunit, period, ["pension_contributions"])
-            * 0.5
+            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
         )
         TAX_COMPONENTS = ["income_tax", "national_insurance"]
-        tax = add_for_claimant_and_partner(benunit, period, TAX_COMPONENTS)
+        tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
         increased_income_reduced_by_tax_and_pensions = (
             increased_income - tax - pension_contributions
         )

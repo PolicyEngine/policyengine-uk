@@ -1,7 +1,7 @@
-# Means tests assess the income of the claimant and any partner only: not of
-# children or young persons, and not of other members of the benefit unit
-# (UC Regs 2013 reg 22; HB Regs 2006 reg 25; IS Regs 1987 reg 23; TCA 2002
-# s.7; CTR (Prescribed Requirements) (England) Regs 2012 Sch 1 para 11).
+# Means tests count the income of the claimant and any partner and, as the
+# model did before, of the programme's own children or young persons. A member
+# who is none of these (for example an 18- or 19-year-old presumed to be the
+# claimant's child but not in education) does not count.
 
 - name: An earning 18-year-old who is neither partner nor dependant does not reduce the parent's UC
   # Default inputs: the 18-year-old is presumed the parent's child, is not in
@@ -47,28 +47,28 @@
   output:
     universal_credit: 9_321.36
 
-- name: A qualifying young person's earnings are not UC income
-  # UC reg 22 deducts the claimant's earned income only.
+- name: A 17-year-old outside education is not a UC young person, so their pay does not count
   period: 2026
   absolute_error_margin: 1
   input:
     people:
       parent:
         age: 40
-      student:
+      teenager:
         age: 17
-        current_education: UPPER_SECONDARY
+        current_education: NOT_IN_EDUCATION
         employment_income: 5_000
       child:
         age: 10
     benunits:
       benunit:
-        members: [parent, student, child]
+        members: [parent, teenager, child]
     households:
       household:
-        members: [parent, student, child]
+        members: [parent, teenager, child]
   output:
-    is_child_or_qualifying_young_person_for_universal_credit: [false, true, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false, true]
+    is_claimant_or_partner: [true, false, false]
     uc_earned_income: 0
 
 - name: A non-dependant 19-year-old's pay is not the claimant's income under any legacy means test

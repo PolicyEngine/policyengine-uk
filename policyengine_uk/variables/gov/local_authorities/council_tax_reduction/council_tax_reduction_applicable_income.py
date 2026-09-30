@@ -9,6 +9,15 @@ class council_tax_reduction_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
+        # Members whose income counts: the claimant and partner and, as the model did
+        # before, the programme's own children or young persons. The regulations count
+        # only the claimant's and partner's (CTR (Prescribed Requirements) (England)
+        # Regs 2012 Sch 1 para 11); dropping dependants' own income is a follow-up.
+        # Anyone else in the benefit unit does not count.
+        person = benunit.members
+        members = person("is_claimant_or_partner", period) | person(
+            "is_child_or_young_person_for_legacy_benefits", period
+        )
         benunit_means_tested_benefits = [
             "child_benefit",
             "income_support",
@@ -33,28 +42,25 @@ class council_tax_reduction_applicable_income(Variable):
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
-        # The applicant's and partner's income only (CTR (Prescribed
-        # Requirements) (England) Regs 2012 Sch 1 para 11).
-        benefits = add_for_claimant_and_partner(
-            benunit, period, benunit_means_tested_benefits
+        benefits = add_for_members(
+            benunit, period, benunit_means_tested_benefits, members
         )
-        income = add_for_claimant_and_partner(benunit, period, income_components)
-        personal_benefit_income = add_for_claimant_and_partner(
-            benunit, period, personal_benefits
+        income = add_for_members(benunit, period, income_components, members)
+        personal_benefit_income = add_for_members(
+            benunit, period, personal_benefits, members
         )
-        credits = add_for_claimant_and_partner(benunit, period, ["tax_credits"])
+        credits = add_for_members(benunit, period, ["tax_credits"], members)
         increased_income = income + personal_benefit_income + credits + benefits
 
         if not bi.interactions.include_in_means_tests:
-            increased_income -= add_for_claimant_and_partner(
-                benunit, period, ["basic_income"]
+            increased_income -= add_for_members(
+                benunit, period, ["basic_income"], members
             )
 
         pension_contributions = (
-            add_for_claimant_and_partner(benunit, period, ["pension_contributions"])
-            * 0.5
+            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
         )
-        tax = add_for_claimant_and_partner(
-            benunit, period, ["income_tax", "national_insurance"]
+        tax = add_for_members(
+            benunit, period, ["income_tax", "national_insurance"], members
         )
         return max_(0, increased_income - tax - pension_contributions)

@@ -12,6 +12,14 @@ class tax_credits_applicable_income(Variable):
     )
 
     def formula(benunit, period, parameters):
+        # Members whose income counts: the claimant and partner and, as the model did
+        # before, the programme's own children or young persons. The regulations count
+        # only the claimant's and partner's (TCA 2002 s.7); dropping dependants' own
+        # income is a follow-up. Anyone else in the benefit unit does not count.
+        person = benunit.members
+        members = person("is_claimant_or_partner", period) | person(
+            "is_child_or_qualifying_young_person_for_child_tax_credit", period
+        )
         TC = parameters(period).gov.dwp.tax_credits
         STEP_1_COMPONENTS = [
             "private_pension_income",
@@ -19,8 +27,7 @@ class tax_credits_applicable_income(Variable):
             "dividend_income",
             "property_income",
         ]
-        # The income of the claimant, or of both joint claimants (TCA 2002 s.7).
-        income = add_for_claimant_and_partner(benunit, period, STEP_1_COMPONENTS)
+        income = add_for_members(benunit, period, STEP_1_COMPONENTS, members)
         income = max_(income - TC.means_test.non_earned_disregard, 0)
         STEP_2_COMPONENTS = [
             "employment_income",
@@ -31,9 +38,9 @@ class tax_credits_applicable_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
-        income += add_for_claimant_and_partner(benunit, period, STEP_2_COMPONENTS)
+        income += add_for_members(benunit, period, STEP_2_COMPONENTS, members)
         EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
         on_exempt_benefits = (
-            add_for_claimant_and_partner(benunit, period, EXEMPT_BENEFITS) > 0
+            add_for_members(benunit, period, EXEMPT_BENEFITS, members) > 0
         )
         return income * ~on_exempt_benefits
