@@ -6,12 +6,13 @@ pensionable age "without prejudice to any liability to pay secondary Class 1
 contributions". So, for any secondary threshold ST >= 0, employer rate r >= 0,
 earnings e >= 0 and age a:
 
-1. Secondary Class 1 continues past state pension age: for a >= 21,
-   ni_class_1_employer equals r * max(e - 52 * ST, 0), computed exactly, at
-   every age, including at and over state pension age. That is the s.9 charge
-   for an earner who is not an apprentice (the test people are not), before
-   the elective veterans and freeport reliefs and the employer-level
-   Employment Allowance. Ages 16 to 20 are not checked against it: s.9A sets
+1. Secondary Class 1 continues past state pension age: at every age from 21,
+   including at and over state pension age, ni_class_1_employer equals
+   r * max(e - 52 * ST, 0), computed exactly. That is the s.9 charge for an
+   earner who is not an apprentice, before the elective veterans and freeport
+   reliefs and the employer-level Employment Allowance. The test people are
+   not apprentices and have no employer pension contributions, so e is their
+   Class 1 earnings. Ages 16 to 20 are not checked against it: s.9A sets
    a 0% rate for them up to the upper secondary threshold, which the model
    does not implement.
 2. Nothing under 16: for a < 16, both ni_class_1_employer and
