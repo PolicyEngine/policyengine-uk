@@ -8,6 +8,8 @@ published value, that the State Pension triple lock reads the same September
 figure, and that scenarios on the inputs move benefit rates.
 """
 
+import math
+
 import pytest
 from policyengine_core.parameters import Parameter, load_parameter_file
 
@@ -155,26 +157,54 @@ def test_every_parameter_on_the_index_rises_by_september_cpi_after_its_last_valu
     assert checked >= 50
 
 
-def test_no_benefit_parameter_projects_from_an_earlier_start():
+# Parameters with a start_instant before their last value, each fixed in an
+# open pull request. Remove an entry when that pull request merges.
+KNOWN_EARLIER_START = {
+    # PolicyEngine/policyengine-uk#1888 drops start_instant from this file.
+    "gov.hmrc.national_insurance.class_2.small_profits_threshold",
+}
+
+
+def test_no_parameter_projects_from_an_earlier_start():
     """An uprating start_instant before the last value makes policyengine-core
     project from the start value, not the last published one, which put a
     12% jump into April 2027 for constant attendance allowance and the
     disability premiums."""
-    for parameter in uprated_by_the_index(system.parameters.gov):
-        uprating = parameter.metadata["uprating"]
-        assert not (isinstance(uprating, dict) and "start_instant" in uprating), (
-            parameter.name
+    raw = load_parameter_file(str(COUNTRY_DIR / "parameters"), name="")
+    offenders = []
+    for parameter in system.parameters.gov.get_descendants():
+        if not isinstance(parameter, Parameter):
+            continue
+        uprating = (parameter.metadata or {}).get("uprating")
+        if not (isinstance(uprating, dict) and "start_instant" in uprating):
+            continue
+        last = max(
+            value.instant_str for value in raw.get_child(parameter.name).values_list
         )
+        if str(uprating["start_instant"]) < last:
+            offenders.append(parameter.name)
+    assert set(offenders) <= KNOWN_EARLIER_START, offenders
 
 
-def test_personal_allowance_is_indexed_by_september_cpi_after_the_freeze():
-    """Income Tax Act 2007 s57: £12,570 to April 2030, then September CPI."""
+def test_tax_thresholds_are_indexed_by_september_cpi_after_the_freeze():
+    """Income Tax Act 2007 s57 and s21: £12,570 and £37,700 to April 2030,
+    then the September CPI increase, rounded up to £10 (the personal
+    allowance's increase) and £100 (the basic rate limit)."""
     parameters = system.parameters
     allowance = parameters.gov.hmrc.income_tax.allowances.personal_allowance.amount
+    basic_rate_limit = parameters.gov.hmrc.income_tax.rates.uk.brackets[1].threshold
     assert allowance("2030-04-30") == 12_570
-    assert allowance("2031-04-30") == pytest.approx(
-        12_570 * (1 + rise(parameters, 2031)), rel=1e-5
+    assert basic_rate_limit("2030-04-30") == 37_700
+    rise_2031 = rise(parameters, 2031)
+    assert allowance("2031-04-30") == 12_570 + math.ceil(12_570 * rise_2031 / 10) * 10
+    assert (
+        basic_rate_limit("2031-04-30")
+        == math.ceil(37_700 * (1 + rise_2031) / 100) * 100
     )
+    for year in range(2031, LAST_INDEX_YEAR + 1):
+        assert allowance(f"{year}-04-30") % 10 == 0
+        assert basic_rate_limit(f"{year}-04-30") % 100 == 0
+        assert allowance(f"{year}-04-30") >= allowance(f"{year - 1}-04-30")
 
 
 LAGGED_CPI = "gov.economic_assumptions.indices.obr.lagged_cpi"
@@ -183,7 +213,7 @@ LAGGED_CPI = "gov.economic_assumptions.indices.obr.lagged_cpi"
 def test_amounts_outside_the_review_keep_their_lagged_calendar_cpi_projection():
     """Amounts that were on gov.benefit_uprating_cpi but are not raised by
     September CPI (the Pension Credit standard minimum guarantee, the Housing
-    Benefit earnings disregards, DfE funding rates and others) still rise
+    Benefit pension-age allowances, DfE funding rates and others) still rise
     by the previous calendar year's CPI after their last value."""
     parameters = system.parameters
     raw = load_parameter_file(str(COUNTRY_DIR / "parameters"), name="")
@@ -207,12 +237,13 @@ def test_amounts_outside_the_review_keep_their_lagged_calendar_cpi_projection():
                 calendar_cpi(f"{year - 1}-01-01"), abs=2e-5
             ), (parameter.name, year)
     assert "gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE" in names
-    assert "gov.dwp.housing_benefit.means_test.income_disregard.single" in names
+    assert "gov.dwp.housing_benefit.allowances.single.aged" in names
 
 
 def test_the_triple_lock_reads_the_same_september_cpi():
-    """Two consumers of one statistic: the State Pension's CPI element and
-    the benefit rise must be the same rounded September figure."""
+    """The State Pension's CPI element and the benefit rise read the same
+    September CPI parameter through the same rounding, so they must agree
+    every year; this pins the year each reads (a one-year shift fails)."""
     parameters = system.parameters
     for year, inputs in read_uprating_years(parameters).items():
         assert max(inputs.cpi, 0.0) == rise(parameters, year), year

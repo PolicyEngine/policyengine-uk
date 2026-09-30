@@ -16,7 +16,9 @@ September CPI index times 1 + the uplift in force in April of each year
 (``gov.dwp.universal_credit.rebalancing.standard_allowance_uplift``, zero
 while ``rebalancing.active`` is false). The standard allowance names it as
 its uprating, so each year after the last published amount rises by
-September CPI and by the change in the uplift.
+September CPI and by the change in the uplift. Turning rebalancing off
+removes that extra growth but not the 2.3% already in the published 2026-27
+amounts; a reform that undoes the Act must set those amounts too.
 """
 
 from policyengine_core.parameters import Parameter, ParameterNode

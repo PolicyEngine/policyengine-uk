@@ -1,9 +1,21 @@
 description: Monthly value of the Universal Credit health element for new claimants from April 2026.
 values:
   2026-01-01: 217.26
+  # Universal Credit Act 2025 s3: section 150 of the Social Security
+  # Administration Act 1992 does not apply to the LCWRA element for 2026-27
+  # to 2029-30, so the amount is frozen until April 2030, when September CPI
+  # uprating resumes.
+  2027-01-01: 217.26
+  2028-01-01: 217.26
+  2029-01-01: 217.26
 metadata:
   unit: currency-GBP
   label: Universal Credit new claimant health element amount
+  uprating: gov.benefit_uprating_cpi
   reference:
+    - title: Universal Credit Act 2025, s2 (LCWRA element for tax year 2026-27)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/2
+    - title: Universal Credit Act 2025, s3 (freeze of the LCWRA element for 2026-27 to 2029-30)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/3
     - title: Universal Credit Bill
       href: https://bills.parliament.uk/publications/62123/documents/6889#page=16

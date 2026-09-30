@@ -16,6 +16,8 @@ SINGLE_YOUNG:
         - title: Benefits Uprating 2024/25 | Commons Library Briefing
           href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
     2025-04-01: 316.98
+    # Above the Universal Credit Act 2025 s1 minimum of £336.59
+    # (£316.98 x 1.038 x 1.023); projections keep the margin in proportion.
     2026-04-01: 338.58
   metadata:
     label: Universal Credit single amount (under 25)
