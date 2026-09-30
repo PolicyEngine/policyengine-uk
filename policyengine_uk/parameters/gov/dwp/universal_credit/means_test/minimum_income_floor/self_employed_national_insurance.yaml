@@ -1,0 +1,11 @@
+description: Whether the amount for National Insurance that converts the Universal Credit minimum income floor to a net amount is the Class 2 and Class 4 contributions due on self-employed profits equal to the threshold, rather than the primary Class 1 contributions due on pay equal to it. The regulations leave the amount to the Secretary of State. DWP describes the floor as what an employed person would earn at the minimum wage after tax and National Insurance, so the model uses Class 1; DWP's 2017 guidance on applying the floor deducted Class 2 and Class 4 instead.
+values:
+  2013-04-29: false
+metadata:
+  unit: bool
+  label: Universal Credit minimum income floor self-employed National Insurance
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 62(4)(b)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/62
+    - title: "DWP, Universal Credit and self-employment: quick guide"
+      href: https://www.gov.uk/government/publications/universal-credit-for-the-self-employed/universal-credit-and-self-employment-quick-guide

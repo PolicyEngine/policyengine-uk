@@ -1,0 +1,1 @@
+Add the `gov.dwp.universal_credit.means_test.minimum_income_floor.self_employed_national_insurance` parameter and the `uc_minimum_income_floor_gross`, `uc_minimum_income_floor_income_tax`, `uc_minimum_income_floor_national_insurance` and `uc_individual_earned_income_before_mif` variables; `uc_minimum_income_floor` is now the net floor.

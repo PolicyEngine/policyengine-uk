@@ -48,7 +48,7 @@ class uc_income_tax_on_earnings(Variable):
             "taxable_self_employment_income",
             "taxable_miscellaneous_income",
         ]
-        # Match the gross earnings in uc_mif_capped_earned_income.
+        # Match the gross earnings in uc_individual_earned_income_before_mif.
         bi = p.gov.contrib.ubi_center.basic_income.interactions
         if bi.include_in_means_tests and bi.include_in_taxable_income:
             earnings_components.append("basic_income")
