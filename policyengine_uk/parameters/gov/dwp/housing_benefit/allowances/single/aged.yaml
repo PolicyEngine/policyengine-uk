@@ -12,7 +12,12 @@ metadata:
   period: week
   unit: currency-GBP
   label: Housing benefit single aged personal allowance
-  uprating: gov.benefit_uprating_cpi
+  # Not uprated by September CPI: the pension-age personal allowances rose 4.75%
+  # in April 2026 (£244.40 to £256.00 single), when September CPI was 3.8%, and
+  # 2.3% in April 2017, when it was 1.0% (Benefit and pension rates 2026 to
+  # 2027, 2017 to 2018). Keeps the lagged calendar-year CPI projection it had
+  # through gov.benefit_uprating_cpi until its own basis is modelled.
+  uprating: gov.economic_assumptions.indices.obr.lagged_cpi
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
       href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212

@@ -105,8 +105,8 @@ def test_lcwra_element_is_frozen_to_2029_30_then_rises_by_september_cpi():
 
 
 def test_uplift_is_a_lever():
-    """Setting the uplift to zero from 2027-28 leaves the standard allowance
-    on September CPI alone after April 2026."""
+    """Holding the uplift at 2026-27's 2.3% from 2027-28 leaves the standard
+    allowance rising by September CPI alone after April 2026."""
     simulation = Simulation(
         situation={
             "people": {"person": {"age": {2026: 30}}},
@@ -142,3 +142,28 @@ def test_protected_lcwra_amount_for_2026_is_the_published_rate():
     )
     protected = uc_reform._protected_existing_health_element_monthly(simulation, 2026)
     assert protected == pytest.approx(429.80, abs=0.01)
+
+
+def test_inactive_rebalancing_removes_the_uplift_growth():
+    """With rebalancing inactive the index carries no uplift, so the standard
+    allowance rises by September CPI alone after April 2026. The published
+    2026-27 amounts, which include the 2.3% uplift, stay as they are."""
+    simulation = Simulation(
+        situation={
+            "people": {"person": {"age": {2026: 30}}},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        },
+        scenario=Scenario(
+            parameter_changes={
+                f"{UC}.rebalancing.active": {"year:2025-01-01:20": False}
+            },
+            applied_before_data_load=True,
+        ),
+    )
+    parameters = simulation.tax_benefit_system.parameters
+    assert standard_allowance(parameters, "SINGLE_OLD", 2026) == 424.90
+    for year in (2027, 2028, 2029):
+        before = standard_allowance(parameters, "SINGLE_OLD", year - 1)
+        after = standard_allowance(parameters, "SINGLE_OLD", year)
+        assert after / before - 1 == pytest.approx(rise(parameters, year), abs=2e-5)

@@ -16,8 +16,14 @@ metadata:
   period: year
   label: Personal allowance
   unit: currency-GBP
-  # Income Tax Act 2007 s57: indexed by September CPI once no freeze applies.
-  uprating: gov.economic_assumptions.indices.september_cpi_uprating
+  # Income Tax Act 2007 s57: once no freeze applies, the allowance rises by
+  # the September CPI increase, with the increase rounded up to a multiple of
+  # £10 (s57(3) Step 2).
+  uprating:
+    parameter: gov.economic_assumptions.indices.september_cpi_uprating
+    rounding:
+      type: upwards
+      interval: 10
   reference:
     - title: Income Tax Act 2007 s. 35
       href: https://www.legislation.gov.uk/ukpga/2007/3/section/35
