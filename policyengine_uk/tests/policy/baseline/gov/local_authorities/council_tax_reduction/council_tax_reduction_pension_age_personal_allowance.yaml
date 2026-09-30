@@ -131,3 +131,27 @@
         region: WALES
   output:
     council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: In England, a mixed-age couple whose older member attained State Pension age after April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 60
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: EAST_MIDLANDS
+  output:
+    council_tax_reduction_applicable_amount: 363.25 * 52

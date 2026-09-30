@@ -3,7 +3,8 @@
 # by SI 2021/188 from 1 April 2021. Higher rates (1)(b)/(2)(b) where a member
 # attained pensionable age before 1 April 2021; lower rates (1)(c)/(2)(c) where
 # every member attained it on or after. Amounts are the Up-rating Order rates.
-# Age and months_since_last_birthday place each date of birth at 6 October.
+# Each date of birth is placed by age and months_since_last_birthday, both
+# measured at 6 October of the fiscal year.
 
 - name: Single woman who attained State Pension age on 31 March 2021 keeps the higher rate
   period: 2026

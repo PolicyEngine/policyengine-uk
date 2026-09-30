@@ -22,7 +22,9 @@ Invariants, for any pension-age single person or couple in any year:
    earlier date of birth never gives a lower allowance.
 4. Before April 2021 there was one pension-age rate, which every pension-age
    unit gets.
-5. Council Tax Reduction: England's pensioner scheme has the same split and
+5. The lower rates and the cutoff equal the statute's table for every year
+   2021-22 to 2026-27 (hard-coded below from legislation.gov.uk).
+6. Council Tax Reduction: England's pensioner scheme has the same split and
    amounts (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29), so its
    allowance equals Housing Benefit's; the Scottish and Welsh schemes have
    one pension-age rate, the higher one.
@@ -173,7 +175,7 @@ def test_any_single_or_couple_follows_the_cohort_rule(units, year):
     region=st.sampled_from(["LONDON", "NORTH_WEST", "SCOTLAND", "WALES"]),
 )
 def test_council_tax_reduction_splits_only_in_england(units, year, region):
-    """Invariant 5 for random single people and couples."""
+    """Invariant 6 for random single people and couples."""
     sim = build(units, year, region)
     hb = sim.calculate("housing_benefit_applicable_amount", year) / 52
     ctr = sim.calculate("council_tax_reduction_applicable_amount", year) / 52
@@ -185,3 +187,29 @@ def test_council_tax_reduction_splits_only_in_england(units, year, region):
         else:
             expected = hb[i]
         assert abs(ctr[i] - expected) < 0.005, (members, region, ctr[i], expected)
+
+
+# SI 2006/214 Sch 3 para 1(1)(c) and (2)(c), weekly: inserted by SI 2021/188 reg
+# 2(3) from 1 April 2021, then set by the Up-rating Orders SI 2022/292,
+# 2023/316, 2024/242, 2025/295 and 2026/148 (legislation.gov.uk point-in-time
+# texts at 11 April 2022, 10 April 2023, 8 April 2024, 7 April 2025 and the
+# current text).
+STATUTE_LOWER_RATES = {
+    2021: (177.10, 270.30),
+    2022: (182.60, 278.70),
+    2023: (201.05, 306.85),
+    2024: (218.15, 332.95),
+    2025: (227.10, 346.60),
+    2026: (238.00, 363.25),
+}
+
+
+@pytest.mark.parametrize("year", sorted(STATUTE_LOWER_RATES))
+def test_lower_rates_and_cutoff_match_the_statute(year):
+    """Invariant 5."""
+    single, couple = STATUTE_LOWER_RATES[year]
+    at = f"{year}-06-01"
+    assert P.single.aged_from_cutoff(at) == pytest.approx(single, abs=1e-6)
+    assert P.lone_parent.aged_from_cutoff(at) == pytest.approx(single, abs=1e-6)
+    assert P.couple.aged_from_cutoff(at) == pytest.approx(couple, abs=1e-6)
+    assert P.pension_age_cutoff(at) == 20210401
