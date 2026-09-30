@@ -293,10 +293,11 @@
 
 - name: Case 13, a couple both born 6 June 1953 is not a mixed-age couple in 2017-18.
   # She reached pensionable age, and he the qualifying age, on 6 March 2017;
-  # his own pensionable age is 6 June 2018. State Pension Credit Act 2002
-  # s.4(1A) excludes a couple only where the other member "has not attained
-  # the qualifying age", so they can claim Pension Credit, not Universal
-  # Credit.
+  # his own pensionable age is 6 June 2018. Both have attained the qualifying
+  # age, so they can claim Pension Credit, not Universal Credit. (State
+  # Pension Credit Act 2002 s.4(1A), which excludes a couple where the other
+  # member "has not attained the qualifying age", came into force on 15 May
+  # 2019; the model applies it in every year, and it is met here either way.)
   period: 2017
   input:
     people:
@@ -319,3 +320,162 @@
     is_SP_age: [false, true]
     is_pension_credit_eligible: true
     is_uc_eligible: false
+
+- name: Case 14, the pension-age Housing Benefit and CTR personal allowance applies from the qualifying age.
+  # Born 6 April 1952, over the qualifying age in 2016-17, so the pension-age
+  # regulations (SI 2006/214) apply. The model's single pension-age rate for
+  # 2016-17 is 181 a week: 181 x 52 = 9,412. No premiums apply.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    benefits_premiums: 0
+    housing_benefit_applicable_amount: 9_412
+    council_tax_reduction_applicable_amount: 9_412
+
+- name: Case 15, below the qualifying age the working-age allowance for a single person aged 25 or over applies.
+  # Born 6 September 1953, under the qualifying age in 2017-18: 73.10 a week,
+  # 73.10 x 52 = 3,801.20.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    benefits_premiums: 0
+    council_tax_reduction_applicable_amount: 3_801.20
+
+- name: Case 16, Housing Benefit tariff income uses the pension-age rule from the qualifying age.
+  # Born 6 April 1952, over the qualifying age in 2016-17, with 16,000 of
+  # savings and a 15,000 private pension (so no guarantee credit). Pension-age
+  # tariff income is 1 a week for each 500, or part, above 10,000:
+  # ceil(6,000 / 500) = 12 a week, 12 x 52 = 624.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+        private_pension_income: 15_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 16_000
+  output:
+    guarantee_credit: 0
+    housing_benefit_assessable_capital: 16_000
+    housing_benefit_tariff_income: 624
+
+- name: Case 17, below the qualifying age Housing Benefit tariff income uses the working-age rule.
+  # Born 6 September 1953, under the qualifying age in 2017-18. Working-age
+  # tariff income is 1 a week for each 250, or part, above 6,000:
+  # ceil(10,000 / 250) = 40 a week, 40 x 52 = 2,080.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+        private_pension_income: 15_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 16_000
+  output:
+    housing_benefit_assessable_capital: 16_000
+    housing_benefit_tariff_income: 2_080
+
+- name: Case 18, guarantee credit from the qualifying age means Housing Benefit counts no income or capital.
+  # Born 6 April 1952, over the qualifying age in 2016-17, with a 3,000
+  # private pension, well below the standard minimum guarantee, and 5,000 of
+  # savings, so guarantee credit is payable. The model then counts no income
+  # or capital for pension-age Housing Benefit.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+        private_pension_income: 3_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 5_000
+  output:
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+
+- name: Case 19, Pension Credit counts household capital for adults over the qualifying age.
+  # Born 6 April 1952, over the qualifying age in 2016-17. The household's
+  # 20,000 of savings is split over its adults who have attained the
+  # qualifying age; he is the only one.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 20_000
+  output:
+    pension_credit_assessable_capital: 20_000
+
+- name: Case 20, Pension Credit counts no capital below the qualifying age.
+  # Born 6 September 1953, under the qualifying age in 2017-18.
+  period: 2017
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 20_000
+  output:
+    pension_credit_assessable_capital: 0

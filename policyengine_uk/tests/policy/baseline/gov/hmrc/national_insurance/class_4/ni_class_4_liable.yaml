@@ -71,7 +71,8 @@
 - name: Case 5, reaching State Pension age on 6 April itself excepts that year.
   # Born 6 April 1959: rule (6), 66, so the commencement of 6 April 2025, the
   # first day of 2025-26. Pensionable age is attained at the commencement of
-  # the day, so the person is over it at the beginning of the year.
+  # the day, so the model reads the person as over it at the beginning of the
+  # year (an interpretation: reg 91 and NIM24510 do not address this day).
   period: 2025
   input:
     people:

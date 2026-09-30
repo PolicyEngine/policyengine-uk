@@ -80,15 +80,18 @@ Other programmes test State Pension age in two ways:
   by 6 October. Pension Credit, Universal Credit (Welfare Reform Act 2012
   s.4(1)(b)), Housing Benefit (Housing Benefit Regulations 2006 reg 5 in both
   sets), Council Tax Reduction's pension-age schemes, Income Support
-  (SSCBA 1992 s.124(1)(aa)), the benefit cap's pensioner exception and
-  Winter Fuel Payment (to September 2024) use it. It differs from
+  (SSCBA 1992 s.124(1)(aa)), the benefit cap (which reaches only
+  working-age Housing Benefit and Universal Credit) and Winter Fuel Payment
+  (to September 2024) use it. It differs from
   `is_SP_age` only for men born before 6 December 1953, so only in 2018-19
   and earlier: a man born on 6 April 1952 reached it on 6 May 2014, nearly
   three years before his State Pension age of 65.
 - **Class 4 National Insurance** stops from the tax year after State Pension
   age: a person over it at the beginning of the tax year (6 April) is
   excepted (Social Security (Contributions) Regulations 2001 reg 91(a)), so
-  `ni_class_4_liable` needs `months_since_state_pension_age` below 6.
+  `ni_class_4_liable` needs `months_since_state_pension_age` below 6. Someone
+  who reaches it on 6 April itself is read as over it at the beginning of
+  that year.
   Class 1 employee contributions stop at State Pension age itself (SSCBA
   1992 s.6(3)), which the annual model reads as `is_SP_age`.
 

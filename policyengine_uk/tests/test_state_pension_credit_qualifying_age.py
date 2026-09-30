@@ -19,6 +19,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import WEEKS_IN_YEAR
 from policyengine_uk.tests.test_state_pension_age import (
     YEARS,
     differential_simulation,
@@ -125,24 +126,14 @@ def test_the_two_ages_do_differ_in_2015_to_2018():
         )
 
 
-@settings(max_examples=30, deadline=None)
-@given(
-    births=st.lists(
-        st.dates(min_value=date(1945, 1, 1), max_value=date(1965, 12, 31)),
-        min_size=1,
-        max_size=40,
-        unique=True,
-    ),
-    male=st.booleans(),
-    year=st.integers(min_value=2015, max_value=2030),
-)
-def test_consumers_use_the_qualifying_age(births, male, year):
+def assert_consumers_follow_the_qualifying_age(births, male, year):
     """For single people with no income or capital, each programme that the
     statute ties to the qualifying age for State Pension Credit follows it,
     not the person's own pensionable age: Pension Credit is available exactly
     from it, Universal Credit exactly before it, and the pension-age Council
-    Tax Reduction scheme and the benefit cap exception exactly from it. Winter
-    Fuel Payment follows it until 2023-24, when it still needed no benefit."""
+    Tax Reduction scheme, the benefit cap exception and the pension-age
+    Housing Benefit and CTR personal allowance exactly from it. Winter Fuel
+    Payment follows it until 2023-24, when it still needed no benefit."""
     people = {}
     for i, birth in enumerate(births):
         age_in_months = grid_months(date(year, 10, 6)) - grid_months(birth)
@@ -164,10 +155,51 @@ def test_consumers_use_the_qualifying_age(births, male, year):
         sim.calculate("council_tax_reduction_household_has_pensioner", year), attained
     )
     assert np.array_equal(sim.calculate("is_benefit_cap_exempt_other", year), attained)
+    aged = sim.tax_benefit_system.parameters(
+        f"{year}-06-01"
+    ).gov.dwp.housing_benefit.allowances.single.aged
+    assert np.array_equal(
+        np.isclose(
+            sim.calculate("council_tax_reduction_applicable_amount", year),
+            aged * WEEKS_IN_YEAR,
+        ),
+        attained,
+    )
     if year <= 2023:
         assert np.array_equal(
             sim.calculate("winter_fuel_allowance", year) > 0, attained
         )
+
+
+@settings(max_examples=30, deadline=None)
+@given(
+    births=st.lists(
+        st.dates(min_value=date(1945, 1, 1), max_value=date(1965, 12, 31)),
+        min_size=1,
+        max_size=40,
+        unique=True,
+    ),
+    male=st.booleans(),
+    year=st.integers(min_value=2015, max_value=2030),
+)
+def test_consumers_use_the_qualifying_age(births, male, year):
+    assert_consumers_follow_the_qualifying_age(births, male, year)
+
+
+@settings(max_examples=20, deadline=None)
+@given(
+    births=st.lists(
+        st.dates(min_value=date(1950, 4, 6), max_value=MALE_RULE_BORN_BEFORE),
+        min_size=1,
+        max_size=40,
+        unique=True,
+    ),
+    year=st.integers(min_value=2015, max_value=LAST_YEAR_THEY_DIFFER),
+)
+def test_consumers_use_the_qualifying_age_where_it_differs(births, year):
+    """The same, for the cohort where the two ages differ: men born from 6
+    April 1950 to 6 December 1953, in 2015-16 to 2018-19."""
+    assert_consumers_follow_the_qualifying_age(births, True, year)
 
 
 @settings(max_examples=40, deadline=None)

@@ -9,10 +9,15 @@ class is_benefit_cap_exempt_other(Variable):
     reference = "https://www.gov.uk/benefit-cap/when-youre-not-affected"
 
     def formula(benunit, period, parameters):
-        # The benefit cap applies to working-age Housing Benefit (Housing
-        # Benefit Regulations 2006 Part 8A) and Universal Credit, which both
-        # end at the qualifying age for State Pension Credit (reg 5; Welfare
-        # Reform Act 2012 s.4(1)(b)).
+        # The benefit cap has no age exception (Universal Credit Regulations
+        # 2013 regs 79 to 83; Housing Benefit Regulations 2006 Part 8A). It
+        # does not reach pension-age Housing Benefit (SI 2006/214, which
+        # applies once the claimant or partner has attained the qualifying age
+        # for State Pension Credit: reg 5), and a single person or couple over
+        # that age cannot get Universal Credit (Welfare Reform Act 2012
+        # s.4(1)(b)). A Universal Credit mixed-age couple can still be capped
+        # (reg 3(2)(a)); exempting any unit with a member over the age does
+        # not model that.
         person = benunit.members
         over_qualifying_age = person(
             "has_attained_state_pension_credit_qualifying_age", period

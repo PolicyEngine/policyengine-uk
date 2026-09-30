@@ -17,6 +17,10 @@ import numpy as np
 
 _MONTHS_BEFORE_1970 = 12 * 1970
 
+# The fiscal year starts on 6 April, six grid months before its middle (6
+# October), where annual status such as is_SP_age is read.
+MONTHS_FROM_TAX_YEAR_START_TO_MID_YEAR = 6
+
 
 def grid_month(year: int, month: int) -> int:
     """The grid month that starts on the 6th of ``month`` in ``year``."""

@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.dates import MONTHS_FROM_TAX_YEAR_START_TO_MID_YEAR
 
 
 class ni_class_4_liable(Variable):
@@ -22,12 +23,15 @@ class ni_class_4_liable(Variable):
     def formula(person, period, parameters):
         # Social Security (Contributions) Regulations 2001 reg 91(a): an
         # earner who "at the beginning of a year of assessment is over
-        # pensionable age" is excepted from Class 4 liability. The enabling
-        # power (SSCBA 1992 s.17(2)(b)) is for "a person having attained
-        # pensionable age", and pensionable age is attained at the
-        # commencement of the day, so attaining it on 6 April itself counts.
-        # 6 April is six months before 6 October, the middle of the year.
+        # pensionable age" is excepted from Class 4 liability. Neither the
+        # regulations nor HMRC's manual (NIM24510) address someone who
+        # attains pensionable age on 6 April itself.
+        # This reads them as over it at the beginning of that year:
+        # pensionable age is attained at the commencement of the day, and
+        # the enabling power (SSCBA 1992 s.17(2)(b)) is for "a person having
+        # attained pensionable age".
         over_pension_age_at_start_of_year = (
-            person("months_since_state_pension_age", period) >= 6
+            person("months_since_state_pension_age", period)
+            >= MONTHS_FROM_TAX_YEAR_START_TO_MID_YEAR
         )
         return person("over_16", period) & ~over_pension_age_at_start_of_year
