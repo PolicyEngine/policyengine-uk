@@ -360,3 +360,93 @@ def test_numpy_inputs_are_accepted():
     parameters = simulation.tax_benefit_system.parameters
     assert uprating(parameters, 2028) == pytest.approx(0.045)
     assert uprating(parameters, 2029) == pytest.approx(0.031)
+
+
+def test_a_zero_input_is_kept_not_forecast():
+    """Zero is a value, not a missing figure: with the triple lock off, the
+    rise is the 0% earnings input, not the 2.4% forecast."""
+    parameters = parameters_under(
+        {
+            f"{INPUTS}.awe_total_pay_may_july": {"2027": 0.0},
+            f"{INPUTS}.cpi_september": {"2027": 0.0},
+            f"{TRIPLE_LOCK}.active": {"year:2028-01-01:1": False},
+        }
+    )
+    inputs = statutory_inputs(parameters)
+    assert inputs.awe_total_pay_may_july("2027-07-01") == 0
+    assert inputs.cpi_september("2027-09-01") == 0
+    assert uprating(parameters, 2028) == 0
+
+
+def test_no_economic_assumptions_zeroes_the_forecast_inputs():
+    simulation = Simulation(situation=PENSIONER, scenario=no_economic_assumptions)
+    inputs = statutory_inputs(simulation.tax_benefit_system.parameters)
+    cutoff_year = int(simulation.default_input_period)
+    for year in range(max(cutoff_year, 2027), 2074):
+        assert inputs.cpi_september(f"{year}-09-01") == 0, year
+        assert inputs.awe_total_pay_may_july(f"{year}-07-01") == 0, year
+        assert inputs.forecast_gap.cpi_september(f"{year}-09-01") == 0, year
+
+
+def test_policy_levers_apply_from_the_april_of_the_year_they_name():
+    """A floor of 3% keyed to the bare year 2028 (the fiscal year from
+    6 April 2028) sets the April 2028 rise, read on 30 April, and no other
+    year's; so do the include flags."""
+    low_growth = {
+        f"{INPUTS}.awe_total_pay_may_july": {"2027": 0.01, "2028": 0.01},
+        f"{INPUTS}.cpi_september": {"2027": 0.05, "2028": 0.01},
+    }
+    floor = parameters_under(
+        {**low_growth, f"{TRIPLE_LOCK}.minimum_rate": {"2028": 0.03}}
+    )
+    assert [uprating(floor, year) for year in (2028, 2029)] == pytest.approx(
+        [0.05, 0.025]
+    )
+    floor_binds = parameters_under(
+        {
+            **low_growth,
+            f"{INPUTS}.cpi_september": {"2027": 0.01, "2028": 0.01},
+            f"{TRIPLE_LOCK}.minimum_rate": {"2028": 0.03},
+        }
+    )
+    assert [uprating(floor_binds, year) for year in (2027, 2028, 2029)] == (
+        pytest.approx([0.039, 0.03, 0.025])
+    )
+    no_cpi = parameters_under(
+        {**low_growth, f"{TRIPLE_LOCK}.include_inflation": {"2028": False}}
+    )
+    assert uprating(no_cpi, 2028) == pytest.approx(0.025)
+
+
+def test_inputs_are_rounded_to_published_precision():
+    """The review uses the published one-decimal figure: 3.04% CPI pays
+    3.0%."""
+    parameters = parameters_under(
+        {
+            f"{INPUTS}.cpi_september": {"2027": 0.0304},
+            f"{INPUTS}.awe_total_pay_may_july": {"2027": 0.0296},
+        }
+    )
+    assert uprating(parameters, 2028) == pytest.approx(0.030)
+
+
+def test_horizon_ends_with_the_shorter_calendar_series():
+    parameters = parameters_under(
+        {f"{OBR}.consumer_price_index": {"year:2075-01-01:1": 0.02}}
+    )
+    triple_lock = parameters.gov.economic_assumptions.yoy_growth.triple_lock
+    assert max(int(v.instant_str[:4]) for v in triple_lock.values_list) == 2074
+
+
+def test_the_rule_needs_the_forecasts_filled_in_first():
+    """Read before the forecasts are filled in, September 2026 CPI is still
+    null, and the rule refuses rather than guessing."""
+    from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
+        read_uprating_years,
+    )
+    from policyengine_uk.tax_benefit_system import CountryTaxBenefitSystem
+
+    raw = CountryTaxBenefitSystem()
+    raw.reset_parameters()
+    with pytest.raises(ValueError, match="September 2026 CPI"):
+        read_uprating_years(raw.parameters)

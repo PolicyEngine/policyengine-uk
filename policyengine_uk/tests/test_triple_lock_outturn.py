@@ -46,6 +46,25 @@ PUBLISHED_UPRATINGS = [
     (2026, 0.048, "earnings", "SI 2026/148"),
 ]
 
+# The inputs each review used, transcribed independently of the parameter
+# files, so a typo in a year where the input did not set the rate is still
+# caught. September CPI: ONS D7G7. May-July earnings: DWP, Abstract of DWP
+# benefit rate statistics 2025, table 5 ("Earnings (KAC3)"), except 2017,
+# where the table shows a later revision (2.3%) and the Explanatory
+# Memorandum to SI 2018/281 gives the 2.2% the review used.
+SEPTEMBER_CPI_USED = {
+    2010: 0.031, 2011: 0.052, 2012: 0.022, 2013: 0.027, 2014: 0.012,
+    2015: -0.001, 2016: 0.010, 2017: 0.030, 2018: 0.024, 2019: 0.017,
+    2020: 0.005, 2021: 0.031, 2022: 0.101, 2023: 0.067, 2024: 0.017,
+    2025: 0.038,
+}  # fmt: skip
+MAY_JULY_EARNINGS_USED = {
+    2010: 0.013, 2011: 0.028, 2012: 0.016, 2013: 0.012, 2014: 0.006,
+    2015: 0.029, 2016: 0.024, 2017: 0.022, 2018: 0.026, 2019: 0.039,
+    2020: -0.010, 2021: 0.083, 2022: 0.055, 2023: 0.085, 2024: 0.041,
+    2025: 0.048,
+}  # fmt: skip
+
 # (year, expected weekly £). Cross-referenced against gov.uk benefit and
 # pension rates publications.
 BASIC_STATE_PENSION_WEEKLY = [
@@ -74,6 +93,16 @@ def nearest_5p(amount):
         (Decimal(repr(amount)) / Decimal("0.05")).quantize(Decimal(1), ROUND_HALF_UP)
         * Decimal("0.05")
     )
+
+
+def test_inputs_are_the_figures_each_review_used():
+    inputs = parameters.gov.economic_assumptions.statutory_uprating_inputs
+    for year, value in SEPTEMBER_CPI_USED.items():
+        assert inputs.cpi_september(f"{year}-09-01") == pytest.approx(value), year
+    for year, value in MAY_JULY_EARNINGS_USED.items():
+        assert inputs.awe_total_pay_may_july(f"{year}-07-01") == pytest.approx(value), (
+            year
+        )
 
 
 @pytest.mark.parametrize("year, rate, element, order", PUBLISHED_UPRATINGS)

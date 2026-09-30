@@ -239,6 +239,9 @@ def test_rounding_to_published_precision(rate):
 
 def test_rounding_takes_halves_away_from_zero():
     assert round_to_published_precision(0.0255) == 0.026
+    # Round-half-even would give 0.024 and -0.024.
+    assert round_to_published_precision(0.0245) == 0.025
+    assert round_to_published_precision(-0.0245) == -0.025
     assert round_to_published_precision(-0.0095) == -0.010
     assert round_up_to_published_precision(0.025000000000000355) == 0.025
     assert round_up_to_published_precision(0.02500001) == 0.026
@@ -262,3 +265,26 @@ def test_plan_example_by_hand():
         }
     )
     assert rates == {2030: 0.04, 2031: 0.025}
+
+
+def test_overrides_are_paid_as_published_even_when_zero():
+    rates = uprating_rates(
+        {2030: UpratingYear(earnings=0.03, cpi=0.02, minimum_rate=0.025, outturn=0.0)}
+    )
+    assert rates == {2030: 0.0}
+
+
+def test_an_override_under_the_guarantee_is_paid_as_is_and_the_path_carries_on():
+    """An override sets the rate with no top-up, but the earnings path still
+    grows that year: 1.05 against a level of 1.01, so the next year needs
+    1.05 / 1.01 - 1 = 3.96%, rounded up to 4.0%."""
+    plan = dict(
+        minimum_rate=0.025, include_earnings=False, earnings_path_guarantee=True
+    )
+    rates = uprating_rates(
+        {
+            2030: UpratingYear(earnings=0.05, cpi=0.0, outturn=0.01, **plan),
+            2031: UpratingYear(earnings=0.0, cpi=0.0, **plan),
+        }
+    )
+    assert rates == {2030: 0.01, 2031: 0.04}

@@ -380,6 +380,11 @@ def make_receipts_xlsx() -> bytes:
     sheet_318 = make_sheet({2: [make_inline_cell("B2", "Other table")]})
     sheet_319 = make_sheet(
         {
+            # An earlier table on the same sheet, with other years.
+            2: [
+                make_inline_cell("C2", "2020-21"),
+                make_inline_cell("D2", "2021-22"),
+            ],
             4: [
                 make_inline_cell("C4", "2026-27"),
                 make_inline_cell("D4", "2027-28"),
