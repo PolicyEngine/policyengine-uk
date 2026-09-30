@@ -17,7 +17,9 @@ Invariants, for any generated population of benefit units:
 
 1. Bounds: 0 <= HB <= eligible rent <= rent, and for LHA tenants
    HB <= LHA_cap = min(rent, LHA rate).
-2. Closed form: HB equals the formula above.
+2. Closed form: HB equals the formula above. This pins the formula to the
+   law as read here; the hand-computed YAML cases, the bounds and the
+   differential are the independent checks.
 3. Monotonicity: HB is non-increasing in applicable income and in
    non-dependant deductions, and non-decreasing in rent, the LHA rate and the
    applicable amount.
@@ -29,8 +31,9 @@ Invariants, for any generated population of benefit units:
    where there is no taper, and where the old award was 0. Otherwise the new
    award is lower, and old - new = min(rent - LHA_cap, taper, old) exactly.
    This difference is intended.
-6. End to end: for pension-age renters, housing_benefit satisfies the closed
-   form in the model's own applicable income and amount.
+6. End to end: for pension-age renters, some with a working-age
+   non-dependant, housing_benefit satisfies the closed form in the model's
+   own applicable income, applicable amount and non-dependant deductions.
 """
 
 import numpy as np
@@ -233,16 +236,14 @@ def pension_age_households(draw):
         tenure=draw(st.sampled_from(RENTED_TENURES)),
         rent=draw(st.one_of(above(lha_rate, 15_000), money(30_000))),
         lha_rate=lha_rate,
+        # A working-age adult in their own benefit unit, whose presence
+        # brings a non-dependant deduction.
+        non_dependant_earnings=draw(st.one_of(st.none(), money(40_000))),
     )
 
 
-@settings(PROPERTY_SETTINGS, max_examples=15)
-@given(st.lists(pension_age_households(), min_size=1, max_size=20))
-def test_end_to_end_pension_age_housing_benefit(population):
-    # The applicable income and amount are the model's own, so this holds
-    # whatever the earnings disregard or the Guarantee Credit passport do to
-    # them. Pensioners are exempt from the benefit cap, and household
-    # calculations claim every entitled benefit.
+def end_to_end(population):
+    """Housing Benefit and its inputs, all computed by the model."""
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(population):
         names = []
@@ -258,35 +259,69 @@ def test_end_to_end_pension_age_housing_benefit(population):
             "members": names,
             "BRMA_LHA_rate": {YEAR: unit["lha_rate"]},
         }
+        household_members = list(names)
+        if unit["non_dependant_earnings"] is not None:
+            # Younger than the pensioners, so never the household head who
+            # is liable for the rent.
+            name = f"n{i}"
+            people[name] = {
+                "age": {YEAR: 30},
+                "employment_income": {YEAR: unit["non_dependant_earnings"]},
+            }
+            benunits[f"n{i}"] = {"members": [name]}
+            household_members.append(name)
         households[f"h{i}"] = {
-            "members": names,
+            "members": household_members,
             "rent": {YEAR: unit["rent"]},
             "tenure_type": {YEAR: unit["tenure"]},
         }
     sim = Simulation(
         situation={"people": people, "benunits": benunits, "households": households}
     )
-
-    def get(variable):
-        return np.asarray(sim.calculate(variable, YEAR), dtype=float)
-
+    values = {
+        variable: np.asarray(sim.calculate(variable, YEAR), dtype=float)
+        for variable in [
+            "housing_benefit",
+            "housing_benefit_eligible",
+            "benunit_rent",
+            "BRMA_LHA_rate",
+            "LHA_cap",
+            "LHA_eligible",
+            "housing_benefit_applicable_amount",
+            "housing_benefit_applicable_income",
+            "housing_benefit_non_dep_deductions",
+        ]
+    }
     rate = sim.tax_benefit_system.parameters(
         YEAR
     ).gov.dwp.housing_benefit.means_test.withdrawal_rate
-    rent = get("benunit_rent")
-    lha = get("LHA_eligible").astype(bool)
-    eligible_rent = np.where(lha, get("LHA_cap"), rent)
-    taper = rate * np.maximum(
+    values["lha"] = values["LHA_eligible"].astype(bool)
+    values["taper"] = rate * np.maximum(
         0,
-        get("housing_benefit_applicable_income")
-        - get("housing_benefit_applicable_amount"),
+        values["housing_benefit_applicable_income"]
+        - values["housing_benefit_applicable_amount"],
     )
+    return values
+
+
+@settings(PROPERTY_SETTINGS, max_examples=15)
+@given(st.lists(pension_age_households(), min_size=1, max_size=20))
+def test_end_to_end_pension_age_housing_benefit(population):
+    # The applicable income and amount and the non-dependant deductions are
+    # the model's own, so this holds whatever the earnings disregard or the
+    # Guarantee Credit passport do to them. Pensioners are exempt from the
+    # benefit cap, and household calculations claim every entitled benefit.
+    values = end_to_end(population)
+    rent = values["benunit_rent"]
+    lha = values["lha"]
+    eligible_rent = np.where(lha, values["LHA_cap"], rent)
     expected = np.maximum(
-        0, eligible_rent - get("housing_benefit_non_dep_deductions") - taper
+        0,
+        eligible_rent - values["housing_benefit_non_dep_deductions"] - values["taper"],
     )
-    hb = get("housing_benefit")
-    eligible = get("housing_benefit_eligible").astype(bool)
+    hb = values["housing_benefit"]
+    eligible = values["housing_benefit_eligible"].astype(bool)
     assert np.allclose(hb[eligible], expected[eligible], atol=TOLERANCE), population
     assert np.all(hb[~eligible] == 0)
-    lha_limit = np.minimum(rent, get("BRMA_LHA_rate"))
+    lha_limit = np.minimum(rent, values["BRMA_LHA_rate"])
     assert np.all(hb[lha] <= lha_limit[lha] + TOLERANCE), population
