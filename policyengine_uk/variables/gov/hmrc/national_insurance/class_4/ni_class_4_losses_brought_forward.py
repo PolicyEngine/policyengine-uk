@@ -11,7 +11,9 @@ class ni_class_4_losses_brought_forward(Variable):
         "ni_class_4_losses_carried_forward. By default, losses are carried "
         "forward from the first year a trading_loss is known for, however "
         "many years back. Set this for a year to supply the unrelieved "
-        "losses from before it; later years then build on that balance."
+        "losses from before it; later years then build on that balance. "
+        "trading_loss carries into later years that are not set, so set "
+        "them to zero for a one-off loss."
     )
     definition_period = YEAR
     unit = GBP

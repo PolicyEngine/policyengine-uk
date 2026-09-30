@@ -470,3 +470,29 @@ def test_losses_carry_forward_over_many_years(years, opening_balance, random):
             profits,
             float(reference_year["profits"]),
         )
+
+
+def test_losses_carry_forward_beyond_the_spiral_limit():
+    # A £720,000 loss in 2016 against £50,000 of profit a year: 2016-2029
+    # use £700,000, so £20,000 is brought into 2030 and 2030's Class 4
+    # profits are £30,000. A formula recursing on the previous year would
+    # be cut off by the engine's spiral guard after ten years, dropping the
+    # loss and leaving £50,000.
+    years = range(2016, 2031)
+    sim = Simulation(
+        situation={
+            "people": {
+                "person": {
+                    "age": {2016: 40},
+                    "self_employment_income": {year: 50_000 for year in years},
+                    "trading_loss": {
+                        year: 720_000 if year == 2016 else 0 for year in years
+                    },
+                }
+            },
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        }
+    )
+    assert sim.calculate("ni_class_4_losses_brought_forward", 2030)[0] == 20_000
+    assert sim.calculate("ni_class_4_profits", 2030)[0] == 30_000

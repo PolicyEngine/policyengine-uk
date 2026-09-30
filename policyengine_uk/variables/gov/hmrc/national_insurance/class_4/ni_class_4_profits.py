@@ -10,7 +10,9 @@ class ni_class_4_profits(Variable):
         "Chapter 2 (after capital allowances and the trading allowance), less "
         "trading losses as SSCBA 1992 Sch. 2 para. 3 allows. Personal "
         "reliefs, interest relief and pension contributions are not deducted "
-        "(para. 3(2)), and neither are Class 1 contributions."
+        "(para. 3(2)), and neither are Class 1 contributions. The para. 3(5) "
+        "deductions for trade interest and certain royalties are not "
+        "modelled."
     )
     definition_period = YEAR
     unit = GBP

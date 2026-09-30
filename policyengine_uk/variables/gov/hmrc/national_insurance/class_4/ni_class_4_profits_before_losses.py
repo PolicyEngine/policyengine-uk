@@ -12,8 +12,9 @@ class ni_class_4_profits_before_losses(Variable):
         "charged. Capital allowances are a trade expense (CAA 2001 s. 247). "
         "The trading allowance recomputes the trade's profits (ITTOIA 2005 "
         "ss. 783AF and 783AI), so no Class 4 NICs are due on income it covers "
-        "(HMRC BIM86052). Allowances in excess of profit do not create a loss "
-        "here; supply any such loss through trading_loss."
+        "(HMRC BIM86052). As for income tax in this model, a negative "
+        "self_employment_income, or capital allowances in excess of profit, "
+        "create no loss here; supply losses through trading_loss."
     )
     definition_period = YEAR
     unit = GBP
