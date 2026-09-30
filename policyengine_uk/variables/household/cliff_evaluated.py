@@ -5,7 +5,6 @@ class cliff_evaluated(Variable):
     value_type = bool
     entity = Person
     label = "cliff evaluated"
-    unit = GBP
     documentation = "Whether this person's cliff has been simulated. If not, then the cliff gap is assumed to be zero."
     definition_period = YEAR
 

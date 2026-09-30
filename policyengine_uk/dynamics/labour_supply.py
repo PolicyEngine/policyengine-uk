@@ -297,26 +297,36 @@ def apply_progression_responses(
     df = pd.concat([df, response_df], axis=1)
 
     # Apply relative {substitution, income, total} changes to hours as well
-    # Apply relative changes to hours using the same factor for all response types
+    # Apply relative changes to hours using the same factor for all response types.
+    # People without employment income have no hours to change.
+    earnings = df["employment_income"].to_numpy(dtype=float)
+    ftes_per_pound = np.divide(
+        df["hours_per_week"].to_numpy(dtype=float) / 37.5,
+        earnings,
+        out=np.zeros(len(df)),
+        where=earnings > 0,
+    )
     for response_type in [
         "substitution_response",
         "income_response",
         "total_response",
     ]:
         df[f"{response_type}_ftes"] = (
-            df[response_type] / df["employment_income"] * df["hours_per_week"] / 37.5
+            df[response_type].to_numpy(dtype=float) * ftes_per_pound
         )
 
     excluded = calculate_excluded_from_labour_supply_responses(
         sim, count_adults=count_adults
     )
 
-    for col in df.columns:
-        df.loc[excluded, col] = 0
+    # Zero excluded people's rows. mask returns a new frame, so this works
+    # when columns wrap read-only arrays (pandas copy-on-write).
+    df = df.mask(pd.Series(excluded, index=df.index), 0, axis=0)
 
     df["excluded"] = excluded
 
-    response = response_df["total_response"].values
+    # Excluded people get no response.
+    response = np.where(excluded, 0, response_df["total_response"].to_numpy())
 
     # Apply the labour supply response to the simulation
     sim.reset_calculations()

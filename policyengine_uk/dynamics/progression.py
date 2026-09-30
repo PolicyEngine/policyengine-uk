@@ -37,13 +37,17 @@ def calculate_derivative(
     Returns:
         Array of marginal rates clipped between 0 and 1
     """
-    # Get baseline values for input variable and identify adults
-    input_variable_values = sim.calculate(input_variable, year).copy()
-    adult_index = sim.calculate("adult_index")
+    # Get baseline values for input variable and identify adults. Work on plain
+    # arrays: boolean-mask assignment into weighted MicroSeries fails with
+    # recent microdf and pandas releases.
+    input_variable_values = np.array(sim.calculate(input_variable, year))
+    adult_index = np.asarray(sim.calculate("adult_index"))
     entity_key = sim.tax_benefit_system.variables[input_variable].entity.key
 
     # Calculate baseline target values
-    original_target_values = sim.calculate(target_variable, year, map_to=entity_key)
+    original_target_values = np.array(
+        sim.calculate(target_variable, year, map_to=entity_key)
+    )
     new_target_values = original_target_values.copy()
 
     # Apply delta change to each adult sequentially to calculate marginal effects
@@ -53,17 +57,15 @@ def calculate_derivative(
         new_input_variable_values[gets_pay_rise] += delta
         sim.reset_calculations()
         sim.set_input(input_variable, year, new_input_variable_values)
-        new_target_values[gets_pay_rise] = sim.calculate(
-            target_variable, year, map_to=entity_key
+        new_target_values[gets_pay_rise] = np.asarray(
+            sim.calculate(target_variable, year, map_to=entity_key)
         )[gets_pay_rise]
 
     # Calculate marginal rate as change in target per unit change in input
-    rel_marginal_wages = (new_target_values - original_target_values) / delta
+    rel_marginal_wages = pd.Series((new_target_values - original_target_values) / delta)
 
     # Set non-adult observations to NaN
-    rel_marginal_wages[~pd.Series(adult_index).isin(range(1, count_adults + 1))] = (
-        np.nan
-    )
+    rel_marginal_wages[~np.isin(adult_index, range(1, count_adults + 1))] = np.nan
 
     # Reset simulation to original state
     sim.reset_calculations()

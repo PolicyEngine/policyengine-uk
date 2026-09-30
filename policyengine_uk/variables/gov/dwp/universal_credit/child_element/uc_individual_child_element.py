@@ -15,9 +15,10 @@ class uc_individual_child_element(Variable):
         born_before_limit = person("uc_is_child_born_before_child_limit", period)
         exempt_from_limit = born_before_limit
 
-        # Reform proposal: families with a child under the age threshold are
-        # exempt from the two-child limit. The exemption lifts the limit only;
-        # the higher first-child amount still requires a birth before the limit.
+        # Reform proposal: a benefit unit with any member under the age
+        # threshold is exempt from the two-child limit. The exemption lifts the
+        # limit only; the higher first-child amount still requires a birth
+        # before the limit.
         age_exemption = (
             parameters.gov.contrib.two_child_limit.age_exemption.universal_credit(
                 period

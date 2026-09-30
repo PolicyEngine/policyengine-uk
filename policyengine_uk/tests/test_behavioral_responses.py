@@ -7,9 +7,12 @@ household situations, so they need no survey data, and check that:
 - it returns no responses when the OBR assumptions are off;
 - with the OBR assumptions on but no policy change, every response and FTE
   impact is zero and employment income is unchanged;
-- zero employment income and hours produce zero responses rather than NaN;
+- zero employment income and hours produce zero responses and FTE impacts
+  rather than NaN;
 - a real tax rise does produce responses, which change employment income by
-  exactly the total response.
+  exactly the total response, and only for people who are not excluded (aged
+  60 or over, self-employed, students, or beyond the first two adults in the
+  household).
 """
 
 import numpy as np
@@ -200,6 +203,18 @@ class TestBehavioralResponses:
                 dtype=float,
             )
             assert (responses == 0).all(), responses
+            # People without employment income have zero, not NaN, FTE responses.
+            ftes = np.asarray(
+                dynamics.progression[
+                    [
+                        "substitution_response_ftes",
+                        "income_response_ftes",
+                        "total_response_ftes",
+                    ]
+                ],
+                dtype=float,
+            )
+            assert (ftes == 0).all(), ftes
 
         people = case["situation"]["people"].values()
         expected_income = [person.get("employment_income", 0) for person in people]
@@ -243,3 +258,60 @@ class TestBehavioralResponses:
             rtol=1e-6,
         )
         np.testing.assert_array_equal(employment_income[2:], [0, 0])
+
+    def test_excluded_people_get_no_labour_supply_response(self):
+        """Only included adults' employment income moves under a tax rise."""
+        people = ["grandparent", "adult1", "adult2", "child"]
+        situation = {
+            "people": {
+                # Aged 60 or over, and adult 1 in the household by age.
+                "grandparent": {
+                    "age": 65,
+                    "employment_income": 30_000,
+                    "hours_worked": 1500,
+                    "gender": "MALE",
+                },
+                # Adult 2: the only person included.
+                "adult1": {
+                    "age": 35,
+                    "employment_income": 25_000,
+                    "hours_worked": 1800,
+                    "gender": "MALE",
+                },
+                # Adult 3: beyond the first two adults.
+                "adult2": {
+                    "age": 33,
+                    "employment_income": 18_000,
+                    "hours_worked": 1200,
+                    "gender": "FEMALE",
+                },
+                "child": {"age": 4},
+            },
+            "benunits": {
+                "grandparent_benunit": {"members": ["grandparent"]},
+                "family": {
+                    "members": ["adult1", "adult2", "child"],
+                    "is_married": True,
+                },
+            },
+            "households": {"household": {"members": people}},
+        }
+        reformed, dynamics = simulate_dynamics(
+            situation,
+            obr=True,
+            parameter_changes={
+                "gov.hmrc.income_tax.rates.uk[0].rate": {str(YEAR): 0.30}
+            },
+        )
+
+        progression = dynamics.progression
+        assert len(progression) == 1
+        total_response = float(np.asarray(progression["total_response"])[0])
+        assert total_response != 0
+
+        employment_income = np.asarray(reformed.calculate("employment_income", YEAR))
+        np.testing.assert_allclose(
+            employment_income,
+            [30_000, 25_000 + total_response, 18_000, 0],
+            rtol=1e-6,
+        )

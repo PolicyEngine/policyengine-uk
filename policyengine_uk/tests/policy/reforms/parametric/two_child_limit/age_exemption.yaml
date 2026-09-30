@@ -1,8 +1,9 @@
 # Universal Credit two-child limit age exemption
 # (gov.contrib.two_child_limit.age_exemption.universal_credit).
 #
-# Families with a child under the threshold age are exempt from the two-child
-# limit, so every child gets the child element. The exemption does not grant
+# A benefit unit with any member under the threshold age (in practice, a
+# child) is exempt from the two-child limit, so every child gets the child
+# element. The exemption does not grant
 # the higher first-child amount, which still requires a first child born
 # before 6 April 2017.
 #
