@@ -32,4 +32,10 @@ class housing_benefit_tariff_income(Variable):
         excess_capital = max_(0, capital - threshold)
         steps = np.ceil(excess_capital / step)
         tariff_income = steps * amount * WEEKS_IN_YEAR
+        # SI 2006/214 reg 27(5) (NI: SR 2006/406 reg 25(5)): where the award of
+        # Pension Credit is savings credit only, Housing Benefit's tariff
+        # income rule does not apply; the Secretary of State's assessment of
+        # income already counts Pension Credit deemed income from capital.
+        savings_credit_only = benunit("in_receipt_of_savings_credit_only", period)
+        tariff_income = where(savings_credit_only, 0, tariff_income)
         return where(guarantee_credit, 0, tariff_income)
