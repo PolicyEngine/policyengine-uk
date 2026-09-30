@@ -24,9 +24,9 @@ Invariants, for every generated case:
    (or unknown receipts), capital allowances, losses and employment income,
    wherever Class 2 does not change; and non-increasing in capital
    allowances and trading losses.
-5. Carry-forward over many years matches the reference fold, whatever order
-   the years are calculated in, including beyond the engine's ten-step
-   spiral limit.
+5. Carry-forward over many years matches the reference fold, with or
+   without a supplied brought-forward balance, whatever order the years are
+   calculated in, including beyond the engine's ten-step spiral limit.
 
 test_ni_class_4_properties.py checks s. 15(3) and regulation 100 given these
 profits, for arbitrary thresholds and rates. Comparisons allow float32
@@ -111,13 +111,16 @@ def reference_profits_before_losses(profit, receipts, capital_allowances):
     return max(Fraction(0), profit - capital_allowances)
 
 
-def reference_losses(years):
+def reference_losses(years, supplied=None):
     """Sch. 2 para. 3: each year's losses (its own and those brought
     forward) are set against its profits; the rest is carried forward to the
-    following years without limit (para. 3(4)(b); ITA 2007 s. 84)."""
+    following years without limit (para. 3(4)(b); ITA 2007 s. 84).
+    `supplied` maps a year's index to a supplied brought-forward balance."""
     brought_forward = Fraction(0)
     out = []
-    for profits, trading_loss in years:
+    for index, (profits, trading_loss) in enumerate(years):
+        if supplied and index in supplied:
+            brought_forward = supplied[index]
         losses = max(trading_loss, 0) + brought_forward
         relief = min(losses, profits)
         out.append(
@@ -402,23 +405,33 @@ def test_class_4_is_non_increasing_in_reliefs(sim, drawn, vary):
         min_size=2,
         max_size=16,
     ),
+    # Optionally, a brought-forward balance supplied for one year.
+    st.one_of(
+        st.none(),
+        st.tuples(st.integers(0, 15), st.floats(0, 100_000)),
+    ),
     st.randoms(use_true_random=False),
 )
-def test_losses_carry_forward_over_many_years(years, random):
+def test_losses_carry_forward_over_many_years(years, opening_balance, random):
     last_year = 2030
     first_year = last_year - len(years) + 1
     periods = list(range(first_year, last_year + 1))
+    person = {
+        "age": {first_year: 40},
+        "self_employment_income": dict(zip(periods, (profit for profit, _ in years))),
+        "trading_loss": dict(zip(periods, (loss for _, loss in years))),
+    }
+    supplied = None
+    if opening_balance is not None:
+        index = opening_balance[0] % len(years)
+        person["ni_class_4_losses_brought_forward"] = {
+            periods[index]: opening_balance[1]
+        }
+        # Compare against the stored (float32) input.
+        supplied = {index: exact(np.float32(opening_balance[1]))}
     sim = Simulation(
         situation={
-            "people": {
-                "person": {
-                    "age": {first_year: 40},
-                    "self_employment_income": dict(
-                        zip(periods, (profit for profit, _ in years))
-                    ),
-                    "trading_loss": dict(zip(periods, (loss for _, loss in years))),
-                }
-            },
+            "people": {"person": person},
             "benunits": {"benunit": {"members": ["person"]}},
             "households": {"household": {"members": ["person"]}},
         }
@@ -434,8 +447,10 @@ def test_losses_carry_forward_over_many_years(years, random):
                 exact(sim.calculate("trading_loss", period)[0]),
             )
             for period in periods
-        ]
+        ],
+        supplied,
     )
+    total_losses = sum(loss for _, loss in years) + sum((supplied or {}).values())
     order = periods.copy()
     random.shuffle(order)
     for period in order:
@@ -444,7 +459,7 @@ def test_losses_carry_forward_over_many_years(years, random):
             sim.calculate("ni_class_4_losses_brought_forward", period)[0]
         )
         profits = float(sim.calculate("ni_class_4_profits", period)[0])
-        tol = tolerance(reference_year["brought_forward"], sum(l for _, l in years))
+        tol = tolerance(total_losses)
         assert abs(brought_forward - float(reference_year["brought_forward"])) <= tol, (
             period,
             brought_forward,
