@@ -1,0 +1,67 @@
+# HBAI FYE 2025 data table 2.4ts: 60% of median equivalised income translated
+# to cash for each family type, pounds a week in 2024/25 prices. At FYE 2025
+# (period 2024) the absolute line is 60% of the FYE 2025 median, so each
+# household's poverty_line_* should equal these values times 52 (margin: the
+# penny rounding of the weekly parameter). Children aged 5 and 14 exercise the
+# modified OECD scale's under-14 and 14-and-over weights.
+
+- name: Single person with no children, BHC 289.2314 and AHC 216.8541 a week
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+  output:
+    poverty_line_bhc: 15_040.0
+    poverty_line_ahc: 11_276.4
+
+- name: Couple with two children aged 5 and 14, BHC 660.4836 and AHC 605.6960 a week
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      adult_1:
+        age: 40
+      adult_2:
+        age: 40
+      child_1:
+        age: 5
+      child_2:
+        age: 14
+    benunits:
+      benunit:
+        members: [adult_1, adult_2, child_1, child_2]
+    households:
+      household:
+        members: [adult_1, adult_2, child_1, child_2]
+  output:
+    poverty_line_bhc: 34_345.1
+    poverty_line_ahc: 31_496.2
+
+- name: Single adult with two children aged 5 and 14, BHC 518.0264 and AHC 448.6637 a week
+  period: 2024
+  absolute_error_margin: 1
+  input:
+    people:
+      adult:
+        age: 40
+      child_1:
+        age: 5
+      child_2:
+        age: 14
+    benunits:
+      benunit:
+        members: [adult, child_1, child_2]
+    households:
+      household:
+        members: [adult, child_1, child_2]
+  output:
+    poverty_line_bhc: 26_937.4
+    poverty_line_ahc: 23_330.5
