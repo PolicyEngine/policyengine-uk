@@ -6,10 +6,14 @@ pensionable age "without prejudice to any liability to pay secondary Class 1
 contributions". So, for any secondary threshold ST >= 0, employer rate r >= 0,
 earnings e >= 0 and age a:
 
-1. Secondary Class 1 ignores age above 16: for a >= 16, ni_class_1_employer
-   equals r * max(e - 52 * ST, 0), computed exactly. That holds above state
-   pension age too, so it equals the amount for a working-age earner with the
-   same earnings.
+1. Secondary Class 1 continues past state pension age: for a >= 21,
+   ni_class_1_employer equals r * max(e - 52 * ST, 0), computed exactly, at
+   every age, including at and over state pension age. That is the s.9 charge
+   for an earner who is not an apprentice (the test people are not), before
+   the elective veterans and freeport reliefs and the employer-level
+   Employment Allowance. Ages 16 to 20 are not checked against it: s.9A sets
+   a 0% rate for them up to the upper secondary threshold, which the model
+   does not implement.
 2. Nothing under 16: for a < 16, both ni_class_1_employer and
    ni_class_1_employee are zero.
 3. Primary Class 1 stops at state pension age: when is_SP_age holds,
@@ -20,7 +24,7 @@ Comparisons allow float32 rounding: the model stores values as float32.
 
 from fractions import Fraction
 
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -116,9 +120,18 @@ def statutory_secondary(earnings, weekly_threshold, rate):
     return Fraction(float(rate)) * max(Fraction(float(earnings)) - threshold, 0)
 
 
+# The #1894 regression: an employee aged 70 on £40,000 in 2026, next to a
+# working-age employee on the same pay.
+REGRESSION_EXAMPLE = (
+    dict(year=2026, secondary_threshold=None, employer_rate=None),
+    [(70, 40_000.0), (35, 40_000.0)],
+)
+
+
 @PROPERTY_SETTINGS
 @given(populations())
-def test_secondary_class_1_ignores_age_above_16(population):
+@example(REGRESSION_EXAMPLE)
+def test_secondary_class_1_continues_past_state_pension_age(population):
     policy, people = population
     values = simulate(policy, people)
     for i, (age, _) in enumerate(people):
@@ -126,6 +139,9 @@ def test_secondary_class_1_ignores_age_above_16(population):
         earnings = float(values["ni_class_1_income"][i])
         if age < 16:
             assert model == 0
+            continue
+        if age < 21:
+            # s.9A under-21 relief is not modelled; see the module docstring.
             continue
         expected = statutory_secondary(
             earnings, values["secondary_threshold"], values["employer_rate"]
@@ -141,6 +157,7 @@ def test_secondary_class_1_ignores_age_above_16(population):
 
 @PROPERTY_SETTINGS
 @given(populations())
+@example(REGRESSION_EXAMPLE)
 def test_primary_class_1_stops_at_state_pension_age(population):
     policy, people = population
     values = simulate(policy, people)
