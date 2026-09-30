@@ -19,7 +19,10 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         "age. That is right for the cap, which SI 2014/1230 reg 60C disapplies "
         "for a claim where every claimant has reached that age, but not for "
         "reg 5 itself, under which such an award would bring in the "
-        "working-age regulations; the model has no such awards."
+        "working-age regulations. The model has no lawful such awards (tax "
+        "credit migrants under SI 2014/1230 reg 60A are not modelled); the "
+        "ones it pays through is_uc_eligible's any-adult test are not awards "
+        "in law, so the pension-age regulations are the right result."
     )
     definition_period = YEAR
     reference = (

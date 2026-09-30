@@ -42,9 +42,10 @@ class council_tax_reduction_pensioner(Variable):
         # counts any working-age adult, including a qualifying young person.
         # This also stands in for the rules that disregard an award held after
         # both members reach the qualifying age (SI 2012/2885 reg 3(2);
-        # WSI 2013/3029 reg 3(2); SSI 2021/249 reg 3(2)). England and Wales
-        # also disregard a tax credit migrant's award (UC (TP) Regs 2014 reg
-        # 60A) and Scotland does not; the model has no such awards. The guard
+        # WSI 2013/3029 reg 3(2); SSI 2021/249 reg 3(2)). England, and Wales
+        # for schemes from 2026-27, also disregard a tax credit migrant's award
+        # (UC (TP) Regs 2014 reg 60A) and Scotland does not; the model does not
+        # model those migrants. The guard
         # relies on is_uc_claimant, which needs is_parent to recognise a
         # qualifying young person as a dependant.
         working_age_claimant = benunit.any(claimant_or_partner & ~over_qualifying_age)
