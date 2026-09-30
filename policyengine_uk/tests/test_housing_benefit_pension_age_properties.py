@@ -13,9 +13,9 @@ Invariants, for any generated population of families:
    above the capital limit; and no family gets both Housing Benefit and
    Universal Credit.
 2. Calculator mode (no reported benefits): a family is eligible exactly when
-   every adult is over State Pension age, it rents, and its capital is within
-   the limit; eligible families are paid their full entitlement (pensioners
-   are exempt from the benefit cap).
+   the claimant and any partner are over State Pension age, it rents, and its
+   capital is within the limit; eligible families are paid their full
+   entitlement (pensioners are exempt from the benefit cap).
 3. Dataset mode (claims_all_entitled_benefits False, as in the FRS): Housing
    Benefit is paid only to reported claimants, and for families with a
    working-age adult eligibility equals the continuing-award rule (reported,
@@ -25,9 +25,10 @@ Invariants, for any generated population of families:
 5. Metamorphic: a wholly pension-age family's Housing Benefit is
    non-increasing in private pension income.
 
-A pensioner with an 18 or 19 year old dependant counts as having a working-age
-adult for Housing Benefit, Pension Credit and Universal Credit alike, so the
-mutual exclusion holds for that shape too.
+A pensioner with an 18 or 19 year old dependant is a pension-age claimant for
+Housing Benefit, Pension Credit and Universal Credit alike (the dependant is
+not a claimant or partner), so that family can claim Housing Benefit and not
+Universal Credit, and the mutual exclusion holds for that shape too.
 """
 
 import numpy as np
@@ -151,7 +152,8 @@ def calculate(units, **kwargs):
 
 
 def wholly_pension_age(unit):
-    return all(role != "dependant" and age >= 67 for role, age in unit["members"])
+    # The claimant and any partner, not dependants (SI 2014/1230 reg 6A(4)).
+    return all(age >= 67 for role, age in unit["members"] if role != "dependant")
 
 
 def check_structural(values):
