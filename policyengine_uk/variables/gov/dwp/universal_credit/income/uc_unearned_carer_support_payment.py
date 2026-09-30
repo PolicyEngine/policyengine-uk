@@ -9,12 +9,13 @@ class uc_unearned_carer_support_payment(Variable):
         "Carer Support Payment counts as unearned income 'but only up to a "
         "maximum of the amount a claimant would receive if they had an "
         "entitlement to carer's allowance' (UC Regs 2013 reg. 66(1)(b)(iiia), "
-        "from 19 November 2023). Reg. 2 limits 'carer support payment' to the "
-        "carer support payment component of carer support, so the Scottish "
-        "Carer Supplement that carer_support_payment also includes is left "
-        "out: carer_support_payment is scaled by the component's share of "
-        "the weekly amount it is built from, then capped at a year of "
-        "Carer's Allowance."
+        "from 19 November 2023). From 15 March 2026 reg. 2 limits 'carer "
+        "support payment' to the carer support payment component of carer "
+        "support (S.I. 2026/246 art. 25), so the Scottish Carer Supplement "
+        "that carer_support_payment also includes is left out: "
+        "carer_support_payment is scaled by the component's share of the "
+        "weekly amount it is built from (all of it before the supplement "
+        "starts), then capped at a year of Carer's Allowance."
     )
     definition_period = YEAR
     unit = GBP
@@ -22,6 +23,7 @@ class uc_unearned_carer_support_payment(Variable):
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/66",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2023/1218/article/23",
+        "https://www.legislation.gov.uk/uksi/2026/246/article/25",
     ]
 
     def formula(person, period, parameters):
