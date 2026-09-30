@@ -273,3 +273,58 @@
     housing_benefit_assessable_capital: 20_000
     housing_benefit_eligible: false
     housing_benefit: 0
+
+- name: Case 9, pensioner not claiming Pension Credit with capital of exactly 16,000 is within the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 16_000
+  output:
+    # (16,000 - 10,000) / 500 = 12 steps; 12 x 52 = 624. Computed guarantee
+    # credit 12,376 - (10,000 + 624) = 1,752, not paid.
+    guarantee_credit: 1_752
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 16_000
+    housing_benefit_tariff_income: 624
+    # The limit bites only where capital "exceeds" 16,000.
+    housing_benefit_eligible: true
+    # Applicable income is at most 10,000 + 624 = 10,624, below 13,312, so
+    # no taper whatever the earnings disregard.
+    housing_benefit: 6_240
+
+- name: Case 10, the same pensioner with capital just over 16,000 is not eligible.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 16_000.01
+  output:
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 16_000.01
+    housing_benefit_eligible: false
+    housing_benefit: 0
