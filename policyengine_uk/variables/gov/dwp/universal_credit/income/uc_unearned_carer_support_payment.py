@@ -9,13 +9,13 @@ class uc_unearned_carer_support_payment(Variable):
         "Carer Support Payment counts as unearned income 'but only up to a "
         "maximum of the amount a claimant would receive if they had an "
         "entitlement to carer's allowance' (UC Regs 2013 reg. 66(1)(b)(iiia), "
-        "from 19 November 2023). From 15 March 2026 reg. 2 limits 'carer "
-        "support payment' to the carer support payment component of carer "
-        "support (S.I. 2026/246 art. 25), so the Scottish Carer Supplement "
-        "that carer_support_payment also includes is left out: "
-        "carer_support_payment is scaled by the component's share of the "
-        "weekly amount it is built from (all of it before the supplement "
-        "starts), then capped at a year of Carer's Allowance."
+        "from 19 November 2023), so it is capped at a year of Carer's "
+        "Allowance. From 15 March 2026 reg. 2 limits 'carer support payment' "
+        "to the carer support payment component of carer support (S.I. "
+        "2026/246 art. 25), which excludes the Scottish Carer Supplement. The "
+        "component is paid at the Carer's Allowance rate, so for a full year "
+        "of Carer Support Payment the cap also removes the supplement that "
+        "carer_support_payment currently includes."
     )
     definition_period = YEAR
     unit = GBP
@@ -27,8 +27,6 @@ class uc_unearned_carer_support_payment(Variable):
     ]
 
     def formula(person, period, parameters):
-        csp = parameters(period).gov.social_security_scotland.carer_support_payment
         ca = parameters(period).gov.dwp.carers_allowance
-        component_share = csp.rate / (csp.rate + csp.supplement)
-        component = person("carer_support_payment", period) * component_share
-        return min_(component, ca.rate * WEEKS_IN_YEAR)
+        carer_support_payment = person("carer_support_payment", period)
+        return min_(carer_support_payment, ca.rate * WEEKS_IN_YEAR)

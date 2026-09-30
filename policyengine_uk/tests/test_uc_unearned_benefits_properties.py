@@ -8,12 +8,15 @@ maximum amount.
 
 Invariants, for any generated population of working-age families:
 
-1. Monotone: the UC award, before and after the benefit cap, is
-   non-increasing in each of the four benefits, the maximum amount does not
-   change, and unearned income rises by exactly the amount that counts: the
-   whole increase for ESA, maternity allowance and industrial injuries
-   benefit, and for carer support payment the increase in
-   min(component, a year of Carer's Allowance).
+1. Monotone: the UC award before the benefit cap is non-increasing in each
+   of the four benefits, the maximum amount does not change, and unearned
+   income rises by exactly the amount that counts: the whole increase for
+   ESA, maternity allowance and industrial injuries benefit, and for carer
+   support payment the increase in min(payment, a year of Carer's
+   Allowance). The award after the benefit cap is non-increasing too for
+   families that already received the benefit; starting to receive
+   contributory ESA or industrial injuries benefit can lift the cap, because
+   receipt exempts the family from it.
 2. Pound for pound: with no earnings in the family, raising one of the
    benefits by d lowers the award before the benefit cap by exactly
    min(counted increase, award).
@@ -22,16 +25,22 @@ Invariants, for any generated population of working-age families:
    received by the same person instead. For carer support payment both
    families keep the carer's caring hours, so both get the carer element.
 
-Invariants 2 and 3 are restricted to families without earnings because the
-model deducts the whole benefit unit's income tax from its earnings
+Invariants 2 and 3, and invariant 1 for carer support payment, are
+restricted to families without earnings because the model deducts the whole
+benefit unit's income tax from its earnings
 (PolicyEngine/policyengine-uk#1942), so tax on a taxable benefit or pension
-reduces earned income. They compare the award before the benefit cap because
+reduces earned income. Carer support payment is taxable, so above the cap,
+where more of it adds nothing to unearned income, the carer's extra tax
+lowers the partner's earned income and raises the award. The strict xfail
+below pins that case and will flip when #1942 is fixed; widen these
+invariants to all families then. They compare the award before the benefit cap because
 contributory ESA and industrial injuries benefit trigger benefit cap
 exemptions and ESA counts towards the cap, which private pension does not.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+import pytest
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -54,6 +63,18 @@ TENURES = [
     "OWNED_OUTRIGHT",
     "OWNED_WITH_MORTGAGE",
 ]
+# A lone parent of two in 2026 whose private rent takes UC over the benefit
+# cap: starting contributory ESA exempts the family from the cap, so the award
+# after the cap rises even though the award before it falls.
+CAPPED_LONE_PARENT = dict(
+    ages=[30],
+    children=[3, 5],
+    tenure="RENT_PRIVATELY",
+    rent=25_000.0,
+    savings=0.0,
+    earnings=0.0,
+    amount=0.0,
+)
 WORKING_AGE = st.integers(18, 60)
 money = st.floats(0, 30_000, allow_nan=False, allow_infinity=False)
 UC_VARIABLES = [
@@ -137,8 +158,11 @@ def assert_same(a, b, variables, message):
 
 
 def assert_monotone(low, high, increase, units):
-    for variable in ["universal_credit", "universal_credit_pre_benefit_cap"]:
-        assert np.all(high[variable] <= low[variable] + 0.01), (variable, units)
+    pre_cap = "universal_credit_pre_benefit_cap"
+    assert np.all(high[pre_cap] <= low[pre_cap] + 0.01), units
+    received = np.array([unit["amount"] > 0 for unit in units])
+    capped = high["universal_credit"][received]
+    assert np.all(capped <= low["universal_credit"][received] + 0.01), units
     np.testing.assert_allclose(
         high["uc_maximum_amount"], low["uc_maximum_amount"], atol=0.01
     )
@@ -157,6 +181,13 @@ def assert_monotone(low, high, increase, units):
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(YEARS),
 )
+@example(units=[CAPPED_LONE_PARENT], benefit="esa_contrib", bump=1_000.0, year=2026)
+@example(
+    units=[dict(CAPPED_LONE_PARENT, amount=500.0)],
+    benefit="esa_contrib",
+    bump=1_000.0,
+    year=2026,
+)
 def test_uc_is_non_increasing_in_each_benefit(units, benefit, bump, year):
     low = calculate(units, year, benefit)
     high = calculate(units, year, benefit, bump=bump)
@@ -165,7 +196,7 @@ def test_uc_is_non_increasing_in_each_benefit(units, benefit, bump, year):
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(), min_size=1, max_size=20),
+    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(CSP_YEARS),
 )
@@ -228,3 +259,54 @@ def test_carer_support_payment_counts_like_capped_private_pension(units, year):
         [v for v in UC_VARIABLES if v != "universal_credit"],
         str(units),
     )
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "PolicyEngine/policyengine-uk#1942: uc_earned_income deducts the whole "
+        "benefit unit's income tax, including the carer's tax on Carer Support "
+        "Payment, from the partner's earnings"
+    ),
+)
+def test_carer_support_payment_above_the_cap_does_not_change_uc():
+    # 2026, Scotland: a carer aged 40 caring 40 hours a week with private
+    # pension of 9,000 and a partner aged 38 earning 4,000 (under the personal
+    # allowance and the NI primary threshold, so no tax or NI of their own),
+    # council rent 6,240. Carer Support Payment of 6,000 and of 7,000 both
+    # count as the cap, 86.45 x 52 = 4,495.40. The carer pays more income tax
+    # on the larger payment, but reg. 55(5)(b) and reg. 57 step 3 allow only
+    # tax on the partner's own earnings, so earned income stays 4,000 and the
+    # award is the same:
+    # maximum amount = 8,003.64 + 6,240 + 2,512.08 = 16,755.72;
+    # UC = 16,755.72 - (4,495.40 + 9,000) - 0.55 x 4,000 = 1,060.32.
+    for carer_support_payment in [6_000, 7_000]:
+        people = {
+            "carer": {
+                "age": {2026: 40},
+                "care_hours": {2026: 40},
+                "carer_support_payment": {2026: carer_support_payment},
+                "private_pension_income": {2026: 9_000},
+            },
+            "partner": {"age": {2026: 38}, "employment_income": {2026: 4_000}},
+        }
+        members = list(people)
+        sim = Simulation(
+            situation={
+                "people": people,
+                "benunits": {"benunit": {"members": members}},
+                "households": {
+                    "household": {
+                        "members": members,
+                        "country": {2026: "SCOTLAND"},
+                        "tenure_type": {2026: "RENT_FROM_COUNCIL"},
+                        "rent": {2026: 6_240},
+                    }
+                },
+            }
+        )
+        assert sim.calculate("income_tax", 2026)[0] > 0
+        earned = sim.calculate("uc_earned_income", 2026)[0]
+        award = sim.calculate("universal_credit", 2026)[0]
+        assert earned == pytest.approx(4_000, abs=0.01)
+        assert award == pytest.approx(1_060.32, abs=0.01)

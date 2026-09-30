@@ -205,8 +205,8 @@
     carers_allowance: [0, 0]
     # (86.45 + 11.70) x 52.
     carer_support_payment: [5_103.80, 0]
-    # 5,103.80 x 86.45 / 98.15 = 86.45 x 52, which equals the cap of a
-    # year of Carer's Allowance.
+    # Capped at a year of Carer's Allowance, 86.45 x 52, which is also the
+    # carer support payment component without the supplement.
     uc_unearned_carer_support_payment: [4_495.40, 0]
     uc_unearned_income: 4_495.40
     uc_maximum_amount: 16_755.72
@@ -242,15 +242,15 @@
     uc_maximum_amount: 16_755.72
     universal_credit: 12_260.32
 
-- name: Carer Support Payment below a year of Carer's Allowance counts less the supplement share
+- name: Carer Support Payment below a year of Carer's Allowance counts in full
   period: 2026
   absolute_error_margin: 0.01
   input:
     carer_support_payment: 3_000
   output:
-    # 3,000 x 86.45 / (86.45 + 11.70) = 2,642.38, under the cap of 4,495.40.
-    uc_unearned_carer_support_payment: 2_642.38
-    uc_unearned_income: 2_642.38
+    # Under the cap of 86.45 x 52 = 4,495.40.
+    uc_unearned_carer_support_payment: 3_000
+    uc_unearned_income: 3_000
 
 - name: Carer Support Payment above a year of Carer's Allowance is capped
   period: 2026
@@ -258,7 +258,7 @@
   input:
     carer_support_payment: 6_000
   output:
-    # 6,000 x 86.45 / 98.15 = 5,284.77, capped at 86.45 x 52 = 4,495.40.
+    # Capped at 86.45 x 52 = 4,495.40.
     uc_unearned_carer_support_payment: 4_495.40
     uc_unearned_income: 4_495.40
 
@@ -268,7 +268,7 @@
   input:
     carer_support_payment: 3_000
   output:
-    # No supplement in 2024-25 and a cap of 81.90 x 52 = 4,258.80.
+    # Under the 2024-25 cap of 81.90 x 52 = 4,258.80.
     uc_unearned_carer_support_payment: 3_000
     uc_unearned_income: 3_000
 
