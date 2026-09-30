@@ -1,5 +1,8 @@
 description: Child Tax Credit severely disabled child element.
 values:
+  # 2023-24 and 2024-25: HMRC tax credit rates and the Tax Credits Up-rating
+  # Regulations (the extra for a severely disabled child). Tax credits ended on
+  # 5 April 2025.
   2016-04-06:
     value: 1275
   2017-04-06:
@@ -14,11 +17,19 @@ values:
   2021-04-06:
     value: 1390
   2022-04-01: 1_430
+  2023-04-01: 1575
+  2024-04-01: 1680
 metadata:
   period: year
   unit: currency-GBP
   label: "CTC severely disabled child element"
   uprating: gov.benefit_uprating_cpi
   reference:
-    - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance,
-    - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28
+    - title: "Tax credits, Child Benefit and Guardian's Allowance: rates and allowances (HMRC, gov.uk)"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
+    - title: The Tax Credits Up-rating Regulations 2023 (SI 2023/237)
+      href: https://www.legislation.gov.uk/uksi/2023/237/contents/made
+    - title: The Tax Credits Up-rating Regulations 2024 (SI 2024/247)
+      href: https://www.legislation.gov.uk/uksi/2024/247/contents/made
+    - title: UKMOD country report (EUROMOD)
+      href: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=28

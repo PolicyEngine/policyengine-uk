@@ -1,0 +1,1478 @@
+# DWP "Benefit and pension rates" (and HMRC tax credit rates), by fiscal year
+# (2025 = 2025-26), in each parameter's own unit and period. Each year's rate
+# appears in that year's publication and as the previous-year column of the
+# next year's, and the two agree. Amounts for 2025-26 and 2026-27 are those in
+# the Social Security Benefits Up-rating Orders 2025 (SI 2025/295) and 2026
+# (SI 2026/148). Read by test_dwp_published_rates.py.
+
+sources:
+  2015: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2015-to-2016
+  2016: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2016-to-2017
+  2017: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2017-to-2018
+  2018: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2018-to-2019
+  2019: https://www.gov.uk/government/publications/benefit-and-pension-rates-2019-to-2020/proposed-benefit-and-pension-rates-2019-to-2020
+  2020: https://www.gov.uk/government/publications/benefit-and-pension-rates-2020-to-2021/benefit-and-pension-rates-2020-to-2021
+  2021: https://www.gov.uk/government/publications/benefit-and-pension-rates-2021-to-2022/benefit-and-pension-rates-2021-to-2022
+  2022: https://www.gov.uk/government/publications/benefit-and-pension-rates-2022-to-2023/proposed-benefit-and-pension-rates-2022-to-2023
+  2023: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024/benefit-and-pension-rates-2023-to-2024
+  2024: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+  2025: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+  2026: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+parameters:
+  gov.dwp.ESA.income.amount_18_24:
+    row: "DWP Benefit and pension rates > Employment and Support Allowance > Personal allowances (2026-27: 'Income Related ESA - Personal Allowances') > Single 'Under 25' / 'Single under 25'"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 77.52
+  gov.dwp.ESA.income.amount_over_25:
+    row: "DWP Benefit and pension rates > Employment and Support Allowance > Personal allowances (2026-27: 'Income Related ESA - Personal Allowances') > Single '25 or over' / 'Single 25 or over'"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 97.75
+  gov.dwp.ESA.income.capital.limit:
+    row: "DWP Benefit and pension rates > Capital limits (rules common to IS, income-based JSA, income-related ESA and HB) > 'Upper limit' 16,000"
+    values:
+      2019: 16000
+      2020: 16000
+      2021: 16000
+      2022: 16000
+      2023: 16000
+      2024: 16000
+      2025: 16000
+      2026: 16000
+  gov.dwp.ESA.income.capital.tariff_income.amount:
+    row: "DWP Benefit and pension rates > Tariff income: '£1 for every £250, or part thereof, between the amount of capital disregarded and the capital upper limit'"
+    values:
+      2019: 1
+      2020: 1
+      2021: 1
+      2022: 1
+      2023: 1
+      2024: 1
+      2025: 1
+      2026: 1
+  gov.dwp.ESA.income.capital.tariff_income.step:
+    row: "DWP Benefit and pension rates > Tariff income: '£1 for every £250, or part thereof'"
+    values:
+      2019: 250
+      2020: 250
+      2021: 250
+      2022: 250
+      2023: 250
+      2024: 250
+      2025: 250
+      2026: 250
+  gov.dwp.ESA.income.capital.tariff_income.threshold:
+    row: "DWP Benefit and pension rates > Capital limits > 'Amount disregarded' 6,000 (2019-20/2020-21 label: 'Amount disregarded – all benefits except Pension Credit and Housing Benefit for those above the qua"
+    values:
+      2019: 6000
+      2020: 6000
+      2021: 6000
+      2022: 6000
+      2023: 6000
+      2024: 6000
+      2025: 6000
+      2026: 6000
+  gov.dwp.ESA.income.couple:
+    row: "DWP Benefit and pension rates > Employment and Support Allowance > Personal allowances (2026-27: 'Income Related ESA - Personal Allowances') > Couple 'Both over 18'"
+    values:
+      2019: 114.85
+      2020: 116.8
+      2021: 117.4
+      2022: 121.05
+      2023: 133.3
+      2024: 142.25
+      2025: 144.65
+      2026: 153.61
+  gov.dwp.IIDB.maximum:
+    row: "Industrial Injuries Disablement Benefit > Standard rate, assessed level of disablement 1.00 (100%)"
+    values:
+      2019: 179
+      2020: 182
+      2021: 182.9
+      2022: 188.6
+      2023: 207.6
+      2024: 221.5
+      2025: 225.3
+      2026: 233.9
+  gov.dwp.JSA.contrib.amount_18_24:
+    row: "DWP Benefit and pension rates > Jobseeker's Allowance > Contribution-based JSA personal rates > 'Under 25'"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 75.65
+  gov.dwp.JSA.contrib.amount_over_25:
+    row: "DWP Benefit and pension rates > Jobseeker's Allowance > Contribution-based JSA personal rates > '25 or over'"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 95.55
+  gov.dwp.JSA.income.amount_18_24:
+    row: "DWP Benefit and pension rates > Jobseeker's Allowance > Income-based JSA personal allowances > Single 'Under 25'"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 75.65
+  gov.dwp.JSA.income.amount_over_25:
+    row: "DWP Benefit and pension rates > Jobseeker's Allowance > Income-based JSA personal allowances > Single '25 or over'"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 95.55
+  gov.dwp.JSA.income.capital.limit:
+    row: "DWP Benefit and pension rates > Capital limits > 'Upper limit' 16,000"
+    values:
+      2019: 16000
+      2020: 16000
+      2021: 16000
+      2022: 16000
+      2023: 16000
+      2024: 16000
+      2025: 16000
+      2026: 16000
+  gov.dwp.JSA.income.capital.tariff_income.amount:
+    row: "DWP Benefit and pension rates > Tariff income: '£1 for every £250, or part thereof, between the amount of capital disregarded and the capital upper limit'"
+    values:
+      2019: 1
+      2020: 1
+      2021: 1
+      2022: 1
+      2023: 1
+      2024: 1
+      2025: 1
+      2026: 1
+  gov.dwp.JSA.income.capital.tariff_income.step:
+    row: "DWP Benefit and pension rates > Tariff income: '£1 for every £250, or part thereof'"
+    values:
+      2019: 250
+      2020: 250
+      2021: 250
+      2022: 250
+      2023: 250
+      2024: 250
+      2025: 250
+      2026: 250
+  gov.dwp.JSA.income.capital.tariff_income.threshold:
+    row: "DWP Benefit and pension rates > Capital limits > 'Amount disregarded' 6,000"
+    values:
+      2019: 6000
+      2020: 6000
+      2021: 6000
+      2022: 6000
+      2023: 6000
+      2024: 6000
+      2025: 6000
+      2026: 6000
+  gov.dwp.JSA.income.couple:
+    row: "DWP Benefit and pension rates > Jobseeker's Allowance > Income-based JSA personal allowances > Couple 'Both 18 or over'"
+    values:
+      2019: 114.85
+      2020: 116.8
+      2021: 117.4
+      2022: 121.05
+      2023: 133.3
+      2024: 142.25
+      2025: 144.65
+      2026: 150.15
+  gov.dwp.JSA.income.income_disregard_couple:
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Couple (not ESA(IR))' 10.00"
+    values:
+      2019: 10
+      2020: 10
+      2021: 10
+      2022: 10
+      2023: 10
+      2024: 10
+      2025: 10
+      2026: 10
+  gov.dwp.JSA.income.income_disregard_lone_parent:
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Higher (special occupations/circumstances)' 20.00 (JSA Regs 1996 Sch 6"
+    values:
+      2019: 20
+      2020: 20
+      2021: 20
+      2022: 20
+      2023: 20
+      2024: 20
+      2025: 20
+      2026: 20
+  gov.dwp.JSA.income.income_disregard_single:
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Standard (single claimant) (not ESA(IR))' 5.00"
+    values:
+      2019: 5
+      2020: 5
+      2021: 5
+      2022: 5
+      2023: 5
+      2024: 5
+      2025: 5
+      2026: 5
+  gov.dwp.attendance_allowance.higher:
+    row: "Attendance Allowance > Higher rate"
+    values:
+      2019: 87.65
+      2020: 89.15
+      2021: 89.6
+      2022: 92.4
+      2023: 101.75
+      2024: 108.55
+      2025: 110.4
+      2026: 114.6
+  gov.dwp.attendance_allowance.lower:
+    row: "Attendance Allowance > Lower rate"
+    values:
+      2019: 58.7
+      2020: 59.7
+      2021: 60
+      2022: 61.85
+      2023: 68.1
+      2024: 72.65
+      2025: 73.9
+      2026: 76.7
+  gov.dwp.benefit_cap.non_single.in_london:
+    row: "Annual level of benefit cap (Greater London) - Couples (with or without children) or single claimants with a child of qualifying age"
+    values:
+      2019: 23000
+      2020: 23000
+      2021: 23000
+      2022: 23000
+      2023: 25323
+      2024: 25323
+      2025: 25323
+      2026: 25323
+  gov.dwp.benefit_cap.non_single.outside_london:
+    row: "Annual level of benefit cap (rest of Great Britain) - Couples (with or without children) or single claimants with a child of qualifying age"
+    values:
+      2019: 20000
+      2020: 20000
+      2021: 20000
+      2022: 20000
+      2023: 22020
+      2024: 22020
+      2025: 22020
+      2026: 22020
+  gov.dwp.benefit_cap.single.in_london:
+    row: "Annual level of benefit cap (Greater London) - Single adult households without children"
+    values:
+      2019: 15410
+      2020: 15410
+      2021: 15410
+      2022: 15410
+      2023: 16967
+      2024: 16967
+      2025: 16967
+      2026: 16967
+  gov.dwp.benefit_cap.single.outside_london:
+    row: "Annual level of benefit cap (rest of Great Britain) - Single adult households without children"
+    values:
+      2019: 13400
+      2020: 13400
+      2021: 13400
+      2022: 13400
+      2023: 14753
+      2024: 14753
+      2025: 14753
+      2026: 14753
+  gov.dwp.carer_premium.couple:
+    row: "Housing Benefit > Premiums > Carer (per qualifying person), doubled: the legal amount for two carers is 2 x this row"
+    values:
+      2015: 69.2
+      2016: 69.2
+      2017: 69.9
+      2018: 72.0
+      2019: 73.7
+      2020: 75.0
+      2021: 75.4
+      2022: 77.7
+      2023: 85.5
+      2024: 91.2
+      2025: 92.8
+      2026: 96.3
+  gov.dwp.carer_premium.single:
+    row: "Housing Benefit > Premiums > Carer"
+    values:
+      2019: 36.85
+      2020: 37.5
+      2021: 37.7
+      2022: 38.85
+      2023: 42.75
+      2024: 45.6
+      2025: 46.4
+      2026: 48.15
+  gov.dwp.carers_allowance.rate:
+    row: "Carer's Allowance > Carer's Allowance"
+    values:
+      2019: 66.15
+      2020: 67.25
+      2021: 67.6
+      2022: 69.7
+      2023: 76.75
+      2024: 81.9
+      2025: 83.3
+      2026: 86.45
+  gov.dwp.constant_attendance_allowance.exceptional_rate:
+    row: "Industrial Injuries Disablement Benefit > Constant Attendance Allowance > Exceptional rate (own section in the 2019-20 to 2023-24 docs, inside the IIDB section from 2024-25)"
+    values:
+      2015: 134.4
+      2016: 134.4
+      2017: 135.8
+      2018: 139.8
+      2019: 143.2
+      2020: 145.6
+      2021: 146.4
+      2022: 151
+      2023: 166.2
+      2024: 177.4
+      2025: 180.4
+      2026: 187.2
+  gov.dwp.constant_attendance_allowance.full_day_rate:
+    row: "Industrial Injuries Disablement Benefit > Constant Attendance Allowance > Normal maximum rate"
+    values:
+      2015: 67.2
+      2016: 67.2
+      2017: 67.9
+      2018: 69.9
+      2019: 71.6
+      2020: 72.8
+      2021: 73.2
+      2022: 75.5
+      2023: 83.1
+      2024: 88.7
+      2025: 90.2
+      2026: 93.6
+  gov.dwp.constant_attendance_allowance.intermediate_rate:
+    row: "Industrial Injuries Disablement Benefit > Constant Attendance Allowance > Intermediate rate"
+    values:
+      2015: 100.8
+      2016: 100.8
+      2017: 101.85
+      2018: 104.85
+      2019: 107.4
+      2020: 109.2
+      2021: 109.8
+      2022: 113.25
+      2023: 124.65
+      2024: 133.05
+      2025: 135.3
+      2026: 140.4
+  gov.dwp.constant_attendance_allowance.part_day_rate:
+    row: "Industrial Injuries Disablement Benefit > Constant Attendance Allowance > Part-time rate"
+    values:
+      2015: 33.6
+      2016: 33.6
+      2017: 33.95
+      2018: 34.95
+      2019: 35.8
+      2020: 36.4
+      2021: 36.6
+      2022: 37.75
+      2023: 41.55
+      2024: 44.35
+      2025: 45.1
+      2026: 46.8
+  gov.dwp.disability_premia.disability_couple:
+    row: "Housing Benefit > Premiums > Disability > Couple"
+    values:
+      2015: 45.95
+      2016: 45.95
+      2017: 46.4
+      2018: 47.8
+      2019: 48.95
+      2020: 49.8
+      2021: 50.05
+      2022: 51.6
+      2023: 56.8
+      2024: 60.6
+      2025: 61.65
+      2026: 64
+  gov.dwp.disability_premia.disability_single:
+    row: "Housing Benefit > Premiums > Disability > Single"
+    values:
+      2015: 32.25
+      2016: 32.25
+      2017: 32.55
+      2018: 33.55
+      2019: 34.35
+      2020: 34.95
+      2021: 35.1
+      2022: 36.2
+      2023: 39.85
+      2024: 42.5
+      2025: 43.2
+      2026: 44.85
+  gov.dwp.disability_premia.enhanced_couple:
+    row: "Housing Benefit > Premiums > Enhanced disability > Couple"
+    values:
+      2015: 22.6
+      2016: 22.6
+      2017: 22.85
+      2018: 23.55
+      2019: 24.1
+      2020: 24.5
+      2021: 24.6
+      2022: 25.35
+      2023: 27.9
+      2024: 29.75
+      2025: 30.25
+      2026: 31.4
+  gov.dwp.disability_premia.enhanced_single:
+    row: "Housing Benefit > Premiums > Enhanced disability > Single"
+    values:
+      2015: 15.75
+      2016: 15.75
+      2017: 15.9
+      2018: 16.4
+      2019: 16.8
+      2020: 17.1
+      2021: 17.2
+      2022: 17.75
+      2023: 19.55
+      2024: 20.85
+      2025: 21.2
+      2026: 22
+  gov.dwp.disability_premia.severe_couple:
+    row: "Housing Benefit > Premiums > Severe disability > Couple (higher rate)"
+    values:
+      2015: 123.7
+      2016: 123.7
+      2017: 124.9
+      2018: 128.6
+      2019: 131.7
+      2020: 133.9
+      2021: 134.6
+      2022: 138.8
+      2023: 152.8
+      2024: 163
+      2025: 165.8
+      2026: 172.1
+  gov.dwp.disability_premia.severe_single:
+    row: "Housing Benefit > Premiums > Severe disability > Single"
+    values:
+      2015: 61.85
+      2016: 61.85
+      2017: 62.45
+      2018: 64.3
+      2019: 65.85
+      2020: 66.95
+      2021: 67.3
+      2022: 69.4
+      2023: 76.4
+      2024: 81.5
+      2025: 82.9
+      2026: 86.05
+  gov.dwp.dla.mobility.higher:
+    row: "Disability Living Allowance > Mobility component > Higher"
+    values:
+      2019: 61.2
+      2020: 62.25
+      2021: 62.55
+      2022: 64.5
+      2023: 71
+      2024: 75.75
+      2025: 77.05
+      2026: 80
+  gov.dwp.dla.mobility.lower:
+    row: "Disability Living Allowance > Mobility component > Lower"
+    values:
+      2019: 23.2
+      2020: 23.6
+      2021: 23.7
+      2022: 24.45
+      2023: 26.9
+      2024: 28.7
+      2025: 29.2
+      2026: 30.3
+  gov.dwp.dla.self_care.higher:
+    row: "Disability Living Allowance > Care component > Highest"
+    values:
+      2019: 87.65
+      2020: 89.15
+      2021: 89.6
+      2022: 92.4
+      2023: 101.75
+      2024: 108.55
+      2025: 110.4
+      2026: 114.6
+  gov.dwp.dla.self_care.lower:
+    row: "Disability Living Allowance > Care component > Lowest"
+    values:
+      2019: 23.2
+      2020: 23.6
+      2021: 23.7
+      2022: 24.45
+      2023: 26.9
+      2024: 28.7
+      2025: 29.2
+      2026: 30.3
+  gov.dwp.dla.self_care.middle:
+    row: "Disability Living Allowance > Care component > Middle"
+    values:
+      2019: 58.7
+      2020: 59.7
+      2021: 60
+      2022: 61.85
+      2023: 68.1
+      2024: 72.65
+      2025: 73.9
+      2026: 76.7
+  gov.dwp.housing_benefit.allowances.couple.aged:
+    row: "Housing Benefit > Personal allowances > Couple - State Pension age or over (one or both reached SPA before 1 April 2021); 'one or both 65 and over' row for 2015-2019"
+    values:
+      2019: 270.6
+      2020: 280.85
+      2021: 286.05
+      2022: 294.9
+      2023: 324.7
+      2024: 352
+      2025: 366
+      2026: 383.35
+  gov.dwp.housing_benefit.allowances.couple.older:
+    row: "Housing Benefit > Personal allowances > Couple > One or both 18 or over"
+    values:
+      2019: 114.85
+      2020: 116.8
+      2021: 117.4
+      2022: 121.05
+      2023: 133.3
+      2024: 142.25
+      2025: 144.65
+      2026: 150.15
+  gov.dwp.housing_benefit.allowances.couple.younger:
+    row: "Housing Benefit > Personal allowances > Couple > Both under 18"
+    values:
+      2019: 87.5
+      2020: 89
+      2021: 89.45
+      2022: 92.2
+      2023: 101.5
+      2024: 108.3
+      2025: 110.15
+      2026: 114.35
+  gov.dwp.housing_benefit.allowances.lone_parent.aged:
+    row: "Housing Benefit > Personal allowances > Single / lone parent - State Pension age or over (pre-1-April-2021 cohort); 65 and over row for 2015-2019"
+    values:
+      2019: 181
+      2020: 187.75
+      2021: 191.15
+      2022: 197.1
+      2023: 217
+      2024: 235.2
+      2025: 244.4
+      2026: 256
+  gov.dwp.housing_benefit.allowances.lone_parent.older:
+    row: "Housing Benefit > Personal allowances > Lone parent > 18 or over"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 95.55
+  gov.dwp.housing_benefit.allowances.lone_parent.younger:
+    row: "Housing Benefit > Personal allowances > Lone parent > Under 18"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 75.65
+  gov.dwp.housing_benefit.allowances.single.aged:
+    row: "Housing Benefit > Personal allowances > Single / lone parent - State Pension age or over (pre-1-April-2021 cohort); 65 and over row for 2015-2019"
+    values:
+      2019: 181
+      2020: 187.75
+      2021: 191.15
+      2022: 197.1
+      2023: 217
+      2024: 235.2
+      2025: 244.4
+      2026: 256
+  gov.dwp.housing_benefit.allowances.single.older:
+    row: "Housing Benefit > Personal allowances > Single > 25 or over"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 95.55
+  gov.dwp.housing_benefit.allowances.single.younger:
+    row: "Housing Benefit > Personal allowances > Single > Under 25"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 75.65
+  gov.dwp.housing_benefit.means_test.capital.pension_age.limit:
+    row: "Capital limits > Upper limit (rules common to IS/JSA/ESA/HB); 'Upper limit - PC and those getting HB and PC Guarantee Credit: No limit'"
+    values:
+      2019: 16000
+      2020: 16000
+      2021: 16000
+      2022: 16000
+      2023: 16000
+      2024: 16000
+      2025: 16000
+      2026: 16000
+  gov.dwp.housing_benefit.means_test.capital.pension_age.tariff_income.amount:
+    row: "Capital limits > Tariff income - pension age ('£1 for every £500')"
+    values:
+      2019: 1
+      2020: 1
+      2021: 1
+      2022: 1
+      2023: 1
+      2024: 1
+      2025: 1
+      2026: 1
+  gov.dwp.housing_benefit.means_test.capital.pension_age.tariff_income.step:
+    row: "Capital limits > Tariff income - Pension Credit and Housing Benefit where claimant/partner is over State Pension age ('£1 for every £500, or part thereof')"
+    values:
+      2019: 500
+      2020: 500
+      2021: 500
+      2022: 500
+      2023: 500
+      2024: 500
+      2025: 500
+      2026: 500
+  gov.dwp.housing_benefit.means_test.capital.pension_age.tariff_income.threshold:
+    row: "Capital limits > Amount disregarded - Pension Credit and HB for those above the qualifying age for Pension Credit"
+    values:
+      2019: 10000
+      2020: 10000
+      2021: 10000
+      2022: 10000
+      2023: 10000
+      2024: 10000
+      2025: 10000
+      2026: 10000
+  gov.dwp.housing_benefit.means_test.capital.working_age.limit:
+    row: "Capital limits > Upper limit"
+    values:
+      2019: 16000
+      2020: 16000
+      2021: 16000
+      2022: 16000
+      2023: 16000
+      2024: 16000
+      2025: 16000
+      2026: 16000
+  gov.dwp.housing_benefit.means_test.capital.working_age.tariff_income.amount:
+    row: "Capital limits > Tariff income ('£1 for every £250')"
+    values:
+      2019: 1
+      2020: 1
+      2021: 1
+      2022: 1
+      2023: 1
+      2024: 1
+      2025: 1
+      2026: 1
+  gov.dwp.housing_benefit.means_test.capital.working_age.tariff_income.step:
+    row: "Capital limits > Tariff income ('£1 for every £250, or part thereof')"
+    values:
+      2019: 250
+      2020: 250
+      2021: 250
+      2022: 250
+      2023: 250
+      2024: 250
+      2025: 250
+      2026: 250
+  gov.dwp.housing_benefit.means_test.capital.working_age.tariff_income.threshold:
+    row: "Capital limits > Amount disregarded (IS/JSA/ESA/HB)"
+    values:
+      2019: 6000
+      2020: 6000
+      2021: 6000
+      2022: 6000
+      2023: 6000
+      2024: 6000
+      2025: 6000
+      2026: 6000
+  gov.dwp.income_support.amounts.amount_16_24:
+    row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Single 'Under 25'"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 75.65
+  gov.dwp.income_support.amounts.amount_couples_16_17:
+    row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Couple 'Both under 18' (standard rate; 'Both under 18 - higher rate' is 110.15 in 2025-26)"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 75.65
+  gov.dwp.income_support.amounts.amount_couples_age_gap:
+    row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Couple 'One under 18, one 25 and over'"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 95.55
+  gov.dwp.income_support.amounts.amount_couples_over_18:
+    row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Couple 'Both 18 or over'"
+    values:
+      2019: 114.85
+      2020: 116.8
+      2021: 117.4
+      2022: 121.05
+      2023: 133.3
+      2024: 142.25
+      2025: 144.65
+      2026: 150.15
+  gov.dwp.income_support.amounts.amount_lone_16_17:
+    row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Lone parent 'Under 18'"
+    values:
+      2019: 57.9
+      2020: 58.9
+      2021: 59.2
+      2022: 61.05
+      2023: 67.2
+      2024: 71.7
+      2025: 72.9
+      2026: 75.65
+  gov.dwp.income_support.amounts.amount_lone_over_18:
+    row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Lone parent '18 or over'"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 95.55
+  gov.dwp.income_support.amounts.amount_over_25:
+    row: "DWP Benefit and pension rates > Income Support > Personal Allowances > Single '25 or over'"
+    values:
+      2019: 73.1
+      2020: 74.35
+      2021: 74.7
+      2022: 77
+      2023: 84.8
+      2024: 90.5
+      2025: 92.05
+      2026: 95.55
+  gov.dwp.income_support.means_test.capital.limit:
+    row: "DWP Benefit and pension rates > Capital limits > 'Upper limit' 16,000"
+    values:
+      2019: 16000
+      2020: 16000
+      2021: 16000
+      2022: 16000
+      2023: 16000
+      2024: 16000
+      2025: 16000
+      2026: 16000
+  gov.dwp.income_support.means_test.capital.tariff_income.amount:
+    row: "DWP Benefit and pension rates > Tariff income: '£1 for every £250, or part thereof, between the amount of capital disregarded and the capital upper limit'"
+    values:
+      2019: 1
+      2020: 1
+      2021: 1
+      2022: 1
+      2023: 1
+      2024: 1
+      2025: 1
+      2026: 1
+  gov.dwp.income_support.means_test.capital.tariff_income.step:
+    row: "DWP Benefit and pension rates > Tariff income: '£1 for every £250, or part thereof'"
+    values:
+      2019: 250
+      2020: 250
+      2021: 250
+      2022: 250
+      2023: 250
+      2024: 250
+      2025: 250
+      2026: 250
+  gov.dwp.income_support.means_test.capital.tariff_income.threshold:
+    row: "DWP Benefit and pension rates > Capital limits > 'Amount disregarded' 6,000"
+    values:
+      2019: 6000
+      2020: 6000
+      2021: 6000
+      2022: 6000
+      2023: 6000
+      2024: 6000
+      2025: 6000
+      2026: 6000
+  gov.dwp.income_support.means_test.earn_disregard:
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Standard (single claimant) (not ESA(IR))' 5.00"
+    values:
+      2019: 5
+      2020: 5
+      2021: 5
+      2022: 5
+      2023: 5
+      2024: 5
+      2025: 5
+      2026: 5
+  gov.dwp.income_support.means_test.income_disregard_couple:
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Couple (not ESA(IR))' 10.00"
+    values:
+      2019: 10
+      2020: 10
+      2021: 10
+      2022: 10
+      2023: 10
+      2024: 10
+      2025: 10
+      2026: 10
+  gov.dwp.income_support.means_test.income_disregard_lone_parent:
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Higher (special occupations/circumstances)' 20.00 (IS Regs 1987 Sch 8 "
+    values:
+      2019: 20
+      2020: 20
+      2021: 20
+      2022: 20
+      2023: 20
+      2024: 20
+      2025: 20
+      2026: 20
+  gov.dwp.income_support.means_test.income_disregard_single:
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Standard (single claimant) (not ESA(IR))' 5.00"
+    values:
+      2019: 5
+      2020: 5
+      2021: 5
+      2022: 5
+      2023: 5
+      2024: 5
+      2025: 5
+      2026: 5
+  gov.dwp.pension_credit.guarantee_credit.carer.addition:
+    row: "Pension Credit | Additional amount for carers"
+    values:
+      2019: 36.85
+      2020: 37.5
+      2021: 37.7
+      2022: 38.85
+      2023: 42.75
+      2024: 45.6
+      2025: 46.4
+      2026: 48.15
+  gov.dwp.pension_credit.guarantee_credit.child.addition:
+    row: "Pension Credit | Children | Subsequent children"
+    values:
+      2018: 53.34
+      2019: 53.34
+      2020: 54.32
+      2021: 54.6
+      2022: 56.35
+      2023: 61.88
+      2024: 66.29
+      2025: 67.42
+      2026: 69.98
+  gov.dwp.pension_credit.guarantee_credit.child.disability.addition:
+    row: "Pension Credit | Disabled child | Lower rate"
+    values:
+      2018: 29.02
+      2019: 29.02
+      2020: 29.52
+      2021: 29.66
+      2022: 30.58
+      2023: 33.67
+      2024: 35.93
+      2025: 36.54
+      2026: 37.93
+  gov.dwp.pension_credit.guarantee_credit.child.disability.severe.addition:
+    row: "Pension Credit | Disabled child | Higher rate"
+    values:
+      2018: 88.34
+      2019: 90.23
+      2020: 92.12
+      2021: 92.54
+      2022: 95.48
+      2023: 104.86
+      2024: 112.21
+      2025: 114.12
+      2026: 118.46
+  gov.dwp.pension_credit.guarantee_credit.child.first.addition:
+    row: "Pension Credit | Children | First child born before 6 April 2017"
+    values:
+      2019: 63.84
+      2020: 64.82
+      2021: 65.1
+      2022: 66.85
+      2023: 72.31
+      2024: 76.79
+      2025: 78.1
+      2026: 81.07
+  gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.COUPLE:
+    row: "Pension Credit | Standard minimum guarantee | Couple"
+    values:
+      2019: 255.25
+      2020: 265.2
+      2021: 270.3
+      2022: 278.7
+      2023: 306.85
+      2024: 332.95
+      2025: 346.6
+      2026: 363.25
+  gov.dwp.pension_credit.guarantee_credit.minimum_guarantee.SINGLE:
+    row: "Pension Credit | Standard minimum guarantee | Single"
+    values:
+      2019: 167.25
+      2020: 173.75
+      2021: 177.1
+      2022: 182.6
+      2023: 201.05
+      2024: 218.15
+      2025: 227.1
+      2026: 238
+  gov.dwp.pension_credit.guarantee_credit.severe_disability.addition:
+    row: "Pension Credit | Additional amount for severe disability | Single (= Couple, one qualifies)"
+    values:
+      2015: 61.85
+      2016: 61.85
+      2017: 62.45
+      2018: 64.3
+      2019: 65.85
+      2020: 66.95
+      2021: 67.3
+      2022: 69.4
+      2023: 76.4
+      2024: 81.5
+      2025: 82.9
+      2026: 86.05
+  gov.dwp.pension_credit.income.capital.lower_threshold:
+    row: "Capital limits | Amount disregarded – Pension Credit and HB for those above the qualifying age for Pension Credit"
+    values:
+      2019: 10000
+      2020: 10000
+      2021: 10000
+      2022: 10000
+      2023: 10000
+      2024: 10000
+      2025: 10000
+      2026: 10000
+  gov.dwp.pension_credit.income.capital.tariff_income.amount:
+    row: "Tariff income – Pension Credit and Housing Benefit where claimant/partner is over State Pension age: '£1 for every £500, or part thereof'"
+    values:
+      2019: 1
+      2020: 1
+      2021: 1
+      2022: 1
+      2023: 1
+      2024: 1
+      2025: 1
+      2026: 1
+  gov.dwp.pension_credit.income.capital.tariff_income.step:
+    row: "Tariff income – Pension Credit and Housing Benefit where claimant/partner is over State Pension age: '£1 for every £500, or part thereof'"
+    values:
+      2019: 500
+      2020: 500
+      2021: 500
+      2022: 500
+      2023: 500
+      2024: 500
+      2025: 500
+      2026: 500
+  gov.dwp.pension_credit.savings_credit.threshold.COUPLE:
+    row: "Pension Credit | Savings credit | Threshold – couple"
+    values:
+      2019: 229.67
+      2020: 239.17
+      2021: 244.12
+      2022: 251.7
+      2023: 277.12
+      2024: 301.22
+      2025: 314.34
+      2026: 329.75
+  gov.dwp.pension_credit.savings_credit.threshold.SINGLE:
+    row: "Pension Credit | Savings credit | Threshold – single"
+    values:
+      2019: 144.38
+      2020: 150.47
+      2021: 153.7
+      2022: 158.47
+      2023: 174.49
+      2024: 189.8
+      2025: 198.27
+      2026: 208.07
+  gov.dwp.pip.daily_living.enhanced:
+    row: "Personal Independence Payment > Daily living component > Enhanced"
+    values:
+      2019: 87.65
+      2020: 89.15
+      2021: 89.6
+      2022: 92.4
+      2023: 101.75
+      2024: 108.55
+      2025: 110.4
+      2026: 114.6
+  gov.dwp.pip.daily_living.standard:
+    row: "Personal Independence Payment > Daily living component > Standard"
+    values:
+      2019: 58.7
+      2020: 59.7
+      2021: 60
+      2022: 61.85
+      2023: 68.1
+      2024: 72.65
+      2025: 73.9
+      2026: 76.7
+  gov.dwp.pip.mobility.enhanced:
+    row: "Personal Independence Payment > Mobility component > Enhanced"
+    values:
+      2019: 61.2
+      2020: 62.25
+      2021: 62.55
+      2022: 64.5
+      2023: 71
+      2024: 75.75
+      2025: 77.05
+      2026: 80
+  gov.dwp.pip.mobility.standard:
+    row: "Personal Independence Payment > Mobility component > Standard"
+    values:
+      2019: 23.2
+      2020: 23.6
+      2021: 23.7
+      2022: 24.45
+      2023: 26.9
+      2024: 28.7
+      2025: 29.2
+      2026: 30.3
+  gov.dwp.sda.maximum:
+    row: "Severe Disablement Allowance > Basic rate + Age-related addition (from Dec 90) Higher rate (sum of two rows)"
+    values:
+      2019: 91.4
+      2020: 92.95
+      2021: 93.4
+      2022: 96.3
+      2023: 106
+      2024: 113.1
+      2025: 115
+      2026: 119.35
+  gov.dwp.state_pension.basic_state_pension.amount:
+    row: "Old State Pension | Category A or B basic pension"
+    values:
+      2019: 129.2
+      2020: 134.25
+      2021: 137.6
+      2022: 141.85
+      2023: 156.2
+      2024: 169.5
+      2025: 176.45
+      2026: 184.9
+  gov.dwp.state_pension.new_state_pension.amount:
+    row: "New State Pension | Full rate"
+    values:
+      2019: 168.6
+      2020: 175.2
+      2021: 179.6
+      2022: 185.15
+      2023: 203.85
+      2024: 221.2
+      2025: 230.25
+      2026: 241.3
+  gov.dwp.tax_credits.child_tax_credit.elements.child_element:
+    row: "HMRC 'Tax credits, Child Benefit and Guardian's Allowance' rates > Child Tax Credit rates > 'Child element'"
+    values:
+      2019: 2780
+      2020: 2830
+      2021: 2845
+      2022: 2935
+      2023: 3235
+      2024: 3455
+  gov.dwp.tax_credits.child_tax_credit.elements.dis_child_element:
+    row: "HMRC tax credit rates > Child Tax Credit rates > 'Disabled child element' / 'Disability element: disabled child rate'"
+    values:
+      2019: 3355
+      2020: 3415
+      2021: 3435
+      2022: 3545
+      2023: 3905
+      2024: 4170
+  gov.dwp.tax_credits.child_tax_credit.elements.family_element:
+    row: "HMRC tax credit rates > Child Tax Credit rates > 'Child Tax Credit family element'"
+    values:
+      2019: 545
+      2020: 545
+      2021: 545
+      2022: 545
+      2023: 545
+      2024: 545
+  gov.dwp.tax_credits.child_tax_credit.elements.severe_dis_child_element:
+    row: "HMRC tax credit rates > Child Tax Credit rates > 'Severely disabled child element' / 'Disability element: severely disabled child rate'"
+    values:
+      2019: 1360
+      2020: 1385
+      2021: 1390
+      2022: 1430
+      2023: 1575
+      2024: 1680
+  gov.dwp.tax_credits.means_test.income_reduction_rate:
+    row: "HMRC tax credit rates > Tax credits income thresholds and withdrawal rates > 'Withdrawal threshold rate (%)' 41%"
+    values:
+      2019: 0.41
+      2020: 0.41
+      2021: 0.41
+      2022: 0.41
+      2023: 0.41
+      2024: 0.41
+  gov.dwp.tax_credits.means_test.income_threshold:
+    row: "HMRC tax credit rates > Tax credits income thresholds > 'Income threshold'"
+    values:
+      2019: 6420
+      2020: 6530
+      2021: 6565
+      2022: 6770
+      2023: 7455
+      2024: 7955
+  gov.dwp.tax_credits.means_test.income_threshold_CTC_only:
+    row: "HMRC tax credit rates > Tax credits income thresholds > 'Threshold for those entitled to Child Tax Credit only'"
+    values:
+      2019: 16105
+      2020: 16385
+      2021: 16480
+      2022: 17005
+      2023: 18725
+      2024: 19995
+  gov.dwp.tax_credits.working_tax_credit.elements.basic:
+    row: "HMRC tax credit rates > Working Tax Credit rates > 'Basic element'"
+    values:
+      2019: 1960
+      2020: 3040
+      2021: 2005
+      2022: 2070
+      2023: 2280
+      2024: 2435
+  gov.dwp.tax_credits.working_tax_credit.elements.childcare_1:
+    row: "HMRC tax credit rates > Childcare element of WTC > 'Maximum eligible cost for 1 child' £175/week; and DWP Benefit and pension rates > Disregards > Housing Benefit > 'Childcare charges' 175.00"
+    values:
+      2019: 175
+      2020: 175
+      2021: 175
+      2022: 175
+      2023: 175
+      2024: 175
+      2025: 175
+      2026: 175
+  gov.dwp.tax_credits.working_tax_credit.elements.childcare_2:
+    row: "HMRC tax credit rates > Childcare element of WTC > 'Maximum eligible cost for 2 or more children' £300/week; and DWP Benefit and pension rates > Disregards > Housing Benefit > 'Childcare charges (2 or"
+    values:
+      2019: 300
+      2020: 300
+      2021: 300
+      2022: 300
+      2023: 300
+      2024: 300
+      2025: 300
+      2026: 300
+  gov.dwp.tax_credits.working_tax_credit.elements.childcare_coverage:
+    row: "HMRC tax credit rates > Childcare element of WTC > 'Percentage of eligible costs covered' 70%"
+    values:
+      2019: 0.7
+      2020: 0.7
+      2021: 0.7
+      2022: 0.7
+      2023: 0.7
+      2024: 0.7
+  gov.dwp.tax_credits.working_tax_credit.elements.couple:
+    row: "HMRC tax credit rates > Working Tax Credit rates > 'Couple and lone parent element'"
+    values:
+      2019: 2010
+      2020: 2045
+      2021: 2060
+      2022: 2125
+      2023: 2340
+      2024: 2500
+  gov.dwp.tax_credits.working_tax_credit.elements.disabled:
+    row: "HMRC tax credit rates > Working Tax Credit rates > 'Disabled worker element'"
+    values:
+      2019: 3165
+      2020: 3220
+      2021: 3240
+      2022: 3345
+      2023: 3685
+      2024: 3935
+  gov.dwp.tax_credits.working_tax_credit.elements.lone_parent:
+    row: "HMRC tax credit rates > Working Tax Credit rates > 'Couple and lone parent element'"
+    values:
+      2019: 2010
+      2020: 2045
+      2021: 2060
+      2022: 2125
+      2023: 2340
+      2024: 2500
+  gov.dwp.tax_credits.working_tax_credit.elements.severely_disabled:
+    row: "HMRC tax credit rates > Working Tax Credit rates > 'Severe disability element'"
+    values:
+      2019: 1365
+      2020: 1390
+      2021: 1400
+      2022: 1445
+      2023: 1595
+      2024: 1705
+  gov.dwp.tax_credits.working_tax_credit.elements.worker:
+    row: "HMRC tax credit rates > Working Tax Credit rates > '30 hour element'"
+    values:
+      2019: 810
+      2020: 825
+      2021: 830
+      2022: 860
+      2023: 950
+      2024: 1015
+  gov.dwp.universal_credit.deductions.cap:
+    row: "UC 'Overall maximum deduction rate at X% of UC standard allowance' (the percentage is in the row or section heading; the cash rows are X% of each standard allowance)"
+    values:
+      2019: 0.4
+      2020: 0.3
+      2021: 0.25
+      2022: 0.25
+      2023: 0.25
+      2024: 0.25
+      2025: 0.15
+      2026: 0.15
+  gov.dwp.universal_credit.elements.carer.amount:
+    row: "Universal Credit - Carer amount"
+    values:
+      2019: 160.2
+      2020: 162.92
+      2021: 163.73
+      2022: 168.81
+      2023: 185.86
+      2024: 198.31
+      2025: 201.68
+      2026: 209.34
+  gov.dwp.universal_credit.elements.child.amount:
+    row: "Universal Credit child amounts - First child (born on or after 6 April 2017) or second child and subsequent child (where an exception or transitional provision applies)"
+    values:
+      2019: 231.67
+      2020: 235.83
+      2021: 237.08
+      2022: 244.58
+      2023: 269.58
+      2024: 287.92
+      2025: 292.81
+      2026: 303.94
+  gov.dwp.universal_credit.elements.child.disabled.amount:
+    row: "Disabled child additions - Lower rate addition"
+    values:
+      2019: 126.11
+      2020: 128.25
+      2021: 128.89
+      2022: 132.89
+      2023: 146.31
+      2024: 156.11
+      2025: 158.76
+      2026: 164.79
+  gov.dwp.universal_credit.elements.child.first.higher_amount:
+    row: "Universal Credit child amounts - First child (born prior to 6 April 2017)"
+    values:
+      2019: 277.08
+      2020: 281.25
+      2021: 282.5
+      2022: 290
+      2023: 315
+      2024: 333.33
+      2025: 339
+      2026: 351.88
+  gov.dwp.universal_credit.elements.child.severely_disabled.amount:
+    row: "Disabled child additions - Higher rate addition"
+    values:
+      2019: 392.08
+      2020: 400.29
+      2021: 402.41
+      2022: 414.88
+      2023: 456.89
+      2024: 487.58
+      2025: 495.87
+      2026: 514.71
+  gov.dwp.universal_credit.elements.disabled.amount:
+    row: "Limited Capability for Work and Work-Related Activity amount (2026-27: new-claimant row £217.26; separate row 'Pre-2026 claimant, severe conditions criteria claimant or claimant who is terminally ill'"
+    values:
+      2019: 336.2
+      2020: 341.92
+      2021: 343.63
+      2022: 354.28
+      2023: 390.06
+      2024: 416.19
+      2025: 423.27
+      2026: 217.26
+  gov.dwp.universal_credit.elements.housing.non_dep_deduction.amount:
+    row: "Non-dependants' housing cost contributions (UC section)"
+    values:
+      2019: 73.89
+      2020: 75.15
+      2021: 75.53
+      2022: 77.87
+      2023: 85.73
+      2024: 91.47
+      2025: 93.02
+      2026: 96.55
+  gov.dwp.universal_credit.means_test.capital.limit:
+    row: "2019-20 and 2020-21: 'Capital limits - Upper limit' (general row); from 2021-22: 'Capital limit - Universal Credit - Upper limit'"
+    values:
+      2019: 16000
+      2020: 16000
+      2021: 16000
+      2022: 16000
+      2023: 16000
+      2024: 16000
+      2025: 16000
+      2026: 16000
+  gov.dwp.universal_credit.means_test.capital.tariff_income.amount:
+    row: "Assumed income from capital for every £250 or part thereof, between capital disregard and upper capital limit"
+    values:
+      2019: 4.35
+      2020: 4.35
+      2021: 4.35
+      2022: 4.35
+      2023: 4.35
+      2024: 4.35
+      2025: 4.35
+      2026: 4.35
+  gov.dwp.universal_credit.means_test.capital.tariff_income.step:
+    row: "Row label of the assumed-income row: 'for every £250 or part thereof'"
+    values:
+      2019: 250
+      2020: 250
+      2021: 250
+      2022: 250
+      2023: 250
+      2024: 250
+      2025: 250
+      2026: 250
+  gov.dwp.universal_credit.means_test.capital.tariff_income.threshold:
+    row: "2019-20 and 2020-21: 'Capital limits - Amount disregarded - all benefits except Pension Credit and Housing Benefit for those above the qualifying age for Guarantee Credit'; from 2021-22: 'Capital limi"
+    values:
+      2019: 6000
+      2020: 6000
+      2021: 6000
+      2022: 6000
+      2023: 6000
+      2024: 6000
+      2025: 6000
+      2026: 6000
+  gov.dwp.universal_credit.means_test.work_allowance.with_housing:
+    row: "Work allowances - Lower work allowance (one or more dependent children or limited capability for work)"
+    values:
+      2019: 287
+      2020: 292
+      2021: 293
+      2022: 344
+      2023: 379
+      2024: 404
+      2025: 411
+      2026: 427
+  gov.dwp.universal_credit.means_test.work_allowance.without_housing:
+    row: "Work allowances - Higher work allowance (no housing amount) (one or more dependent children or limited capability for work)"
+    values:
+      2019: 503
+      2020: 512
+      2021: 515
+      2022: 573
+      2023: 631
+      2024: 673
+      2025: 684
+      2026: 710
+  gov.dwp.universal_credit.rebalancing.new_claimant_health_element:
+    row: "2026-27 'Limited Capability for Work and Work-Related Activity amount' (new-claimant row)"
+    values:
+      2026: 217.26
+  gov.dwp.universal_credit.standard_allowance.amount.COUPLE_OLD:
+    row: "UC Standard allowance - Joint claimants, one or both 25 or over"
+    values:
+      2019: 498.89
+      2020: 594.04
+      2021: 596.58
+      2022: 525.72
+      2023: 578.82
+      2024: 617.6
+      2025: 628.1
+      2026: 666.97
+  gov.dwp.universal_credit.standard_allowance.amount.COUPLE_YOUNG:
+    row: "UC Standard allowance - Joint claimants both under 25"
+    values:
+      2019: 395.2
+      2020: 488.59
+      2021: 490.6
+      2022: 416.45
+      2023: 458.51
+      2024: 489.23
+      2025: 497.55
+      2026: 528.34
+  gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD:
+    row: "UC Standard allowance - Single 25 or over"
+    values:
+      2019: 317.82
+      2020: 409.89
+      2021: 411.51
+      2022: 334.91
+      2023: 368.74
+      2024: 393.45
+      2025: 400.14
+      2026: 424.9
+  gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG:
+    row: "UC Standard allowance - Single under 25"
+    values:
+      2019: 251.77
+      2020: 342.72
+      2021: 344
+      2022: 265.31
+      2023: 292.11
+      2024: 311.68
+      2025: 316.98
+      2026: 338.58

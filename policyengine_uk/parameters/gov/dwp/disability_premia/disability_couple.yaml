@@ -1,12 +1,33 @@
 description: Disability premium for a couple.
 values:
-  2015-04-01: 49.8
+  # 2015-16 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # year's rate as listed in that year's publication.
+  2015-04-01: 45.95
+  2017-04-01: 46.4
+  2018-04-01: 47.8
+  2019-04-01: 48.95
+  2020-04-01: 49.8
+  2021-04-01: 50.05
+  2022-04-01: 51.6
+  2023-04-01: 56.8
+  2024-04-01: 60.6
+  2025-04-01: 61.65
   2026-04-01: 64
 metadata:
   period: week
   unit: currency-GBP
   label: Legacy benefit disability premium (couple)
-  uprating:
-    parameter: gov.benefit_uprating_cpi
-    start_instant: 2015-04-01
-  reference: https://www.gov.uk/disability-premiums/what-youll-get
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: "Disability premiums: what you'll get (gov.uk)"
+      href: https://www.gov.uk/disability-premiums/what-youll-get
+    - title: Benefit and pension rates 2015 to 2016 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/proposed-benefit-and-pension-rates-2015-to-2016
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made

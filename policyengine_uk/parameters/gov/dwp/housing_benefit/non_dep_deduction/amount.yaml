@@ -1,81 +1,117 @@
 description: The following amount is provided for individuals under the Housing Benefit non-dependent deduction, based on total income.
 
+# Bands and amounts from DWP Benefit and pension rates (gov.uk) for each year,
+# as set in the Housing Benefit Regulations 2006 reg 74 by each year's
+# Social Security Benefits Up-rating Order (bands unchanged in 2021-22: SI
+# 2021/162 art 24(3)).
 brackets:
 - threshold:
     2018-06-18: 0
   amount:
     2018-06-18: 15.25
+    2019-04-01: 15.6
+    2020-04-01: 15.85
     2021-04-01: 15.95
     2022-04-01: 16.45
     2023-04-01: 18.1
     2024-04-01: 19.3
+    2025-04-01: 19.65
     2026-04-01: 20.4
 - threshold:
     2018-06-18: 139
-    2021-04-01: 154
+    2019-04-01: 143
+    2020-04-01: 149
+    2022-04-01: 154
     2023-04-01: 162
     2024-04-01: 176
+    2025-04-01: 183
     2026-04-01: 192
   amount:
     2018-06-18: 35
+    2019-04-01: 35.85
+    2020-04-01: 36.45
     2021-04-01: 36.65
     2022-04-01: 37.8
     2023-04-01: 41.6
     2024-04-01: 44.4
+    2025-04-01: 45.15
     2026-04-01: 46.85
 - threshold:
     2018-06-18: 204
-    2021-04-01: 224
+    2019-04-01: 209
+    2020-04-01: 217
+    2022-04-01: 224
     2023-04-01: 236
     2024-04-01: 256
+    2025-04-01: 266
     2026-04-01: 279
   amount:
     2018-06-18: 48.05
+    2019-04-01: 49.2
+    2020-04-01: 50.05
     2021-04-01: 50.3
     2022-04-01: 51.85
     2023-04-01: 57.1
     2024-04-01: 60.95
+    2025-04-01: 62
     2026-04-01: 64.35
 - threshold:
     2018-06-18: 265
-    2021-04-01: 292
+    2019-04-01: 272
+    2020-04-01: 283
+    2022-04-01: 292
     2023-04-01: 308
     2024-04-01: 334
+    2025-04-01: 348
     2026-04-01: 365
   amount:
     2018-06-18: 78.65
+    2019-04-01: 80.55
+    2020-04-01: 81.9
     2021-04-01: 82.3
     2022-04-01: 84.85
     2023-04-01: 93.4
     2024-04-01: 99.65
+    2025-04-01: 101.35
     2026-04-01: 105.2
 - threshold:
     2018-06-18: 354
-    2021-04-01: 389
+    2019-04-01: 363
+    2020-04-01: 377
+    2022-04-01: 389
     2023-04-01: 410
     2024-04-01: 445
+    2025-04-01: 463
     2026-04-01: 485
   amount:
     2018-06-18: 89.55
+    2019-04-01: 91.7
+    2020-04-01: 93.25
     2021-04-01: 93.7
     2022-04-01: 96.6
     2023-04-01: 106.35
     2024-04-01: 113.5
+    2025-04-01: 115.45
     2026-04-01: 119.85
 - threshold:
     2018-06-18: 439
-    2021-04-01: 484
+    2019-04-01: 451
+    2020-04-01: 469
+    2022-04-01: 484
     2023-04-01: 511
     2024-04-01: 554
+    2025-04-01: 577
     2026-04-01: 605
   amount:
     2018-06-18: 98.3
+    2019-04-01: 100.65
+    2020-04-01: 102.35
     2021-04-01: 102.85
     2022-04-01: 106.05
     2023-04-01: 116.75
     2024-04-01: 124.55
+    2025-04-01: 126.65
     2026-04-01: 131.45
-
 
 metadata:
   amount_unit: currency-GBP
@@ -84,6 +120,20 @@ metadata:
   propagate_metadata_to_children: true
   threshold_unit: currency-GBP
   type: single_amount
-  reference: 
+  reference:
     - title: The Housing Benefit Regulations 2006 sec. 74
       href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74/2024-04-01
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 (SI 2006/214), regulation 55 (the same deductions)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/55
+    - title: The Social Security Benefits Up-rating Order 2021 (SI 2021/162), article 24(3) (bands unchanged)
+      href: https://www.legislation.gov.uk/uksi/2021/162/article/24/made
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295), article 23(3)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148), article 23(3)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
+    - title: Benefit and pension rates 2019 to 2020 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2019-to-2020/proposed-benefit-and-pension-rates-2019-to-2020
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027

@@ -4,8 +4,30 @@ metadata:
   economy: false
   period: week
   label: Income support applicable amount (couples, one under 18, one over 25)
-  reference: https://www.gov.uk/income-support/what-youll-get
+  reference:
+    - title: "Income Support: what you'll get (gov.uk)"
+      href: https://www.gov.uk/income-support/what-youll-get
+    - title: Benefit and pension rates 2019 to 2020 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2019-to-2020/proposed-benefit-and-pension-rates-2019-to-2020
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi
 values:
+  # 2019-20 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+  # year's rate as listed in that year's publication.
   2015-04-01: 74.35
+  2019-04-01: 73.1
+  2020-04-01: 74.35
+  2021-04-01: 74.7
+  2022-04-01: 77
+  2023-04-01: 84.8
+  2024-04-01: 90.5
+  2025-04-01: 92.05
+  2026-04-01: 95.55

@@ -11,7 +11,7 @@ SINGLE:
     2022-04-01: 182.6
     2023-04-01: 201.05
     2024-04-01: 218.15
-    2025-04-01: 221.85
+    2025-04-01: 227.1
     2026-04-01: 238
   metadata:
     uprating: gov.benefit_uprating_cpi
@@ -27,7 +27,7 @@ COUPLE:
     2022-04-01: 278.7
     2023-04-01: 306.85
     2024-04-01: 332.95
-    2025-04-01: 338.61
+    2025-04-01: 346.6
     2026-04-01: 363.25
   metadata:
     uprating: gov.benefit_uprating_cpi
@@ -35,8 +35,15 @@ metadata:
   period: week
   label: Pension Credit minimum guarantee
   unit: currency-GBP
+  propagate_metadata_to_children: true
   reference:
     - title: The State Pension Credit Regulations 2002 reg. 6
       href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/6/2021-04-12
     - title: Benefit and pension rates 2026 to 2027
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
