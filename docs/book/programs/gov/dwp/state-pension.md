@@ -70,6 +70,28 @@ extracts. The weighted share of each age over State Pension age then matches
 the statute: three quarters of 66-year-olds in 2026-27, a quarter in 2027-28
 and none from 2028-29.
 
+Other programmes test State Pension age in two ways:
+
+- **The qualifying age for State Pension Credit** (State Pension Credit Act
+  2002 s.1(6)) is a woman's State Pension age, and for a man the State
+  Pension age of a woman born on the same day. `state_pension_credit_qualifying_age`
+  applies the timetable without rule (1), and
+  `has_attained_state_pension_credit_qualifying_age` is whether it is reached
+  by 6 October. Pension Credit, Universal Credit (Welfare Reform Act 2012
+  s.4(1)(b)), Housing Benefit (Housing Benefit Regulations 2006 reg 5 in both
+  sets), Council Tax Reduction's pension-age schemes, Income Support
+  (SSCBA 1992 s.124(1)(aa)), the benefit cap's pensioner exception and
+  Winter Fuel Payment (to September 2024) use it. It differs from
+  `is_SP_age` only for men born before 6 December 1953, so only in 2018-19
+  and earlier: a man born on 6 April 1952 reached it on 6 May 2014, nearly
+  three years before his State Pension age of 65.
+- **Class 4 National Insurance** stops from the tax year after State Pension
+  age: a person over it at the beginning of the tax year (6 April) is
+  excepted (Social Security (Contributions) Regulations 2001 reg 91(a)), so
+  `ni_class_4_liable` needs `months_since_state_pension_age` below 6.
+  Class 1 employee contributions stop at State Pension age itself (SSCBA
+  1992 s.6(3)), which the annual model reads as `is_SP_age`.
+
 A person attains an age at the start of the anniversary of their birth
 (Family Law Reform Act 1969 s.9(1)), and an age of "N years and M months" on
 the same day of the month, or the month's last day where that day does not

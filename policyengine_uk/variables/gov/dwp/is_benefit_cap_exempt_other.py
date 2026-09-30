@@ -9,10 +9,15 @@ class is_benefit_cap_exempt_other(Variable):
     reference = "https://www.gov.uk/benefit-cap/when-youre-not-affected"
 
     def formula(benunit, period, parameters):
-        # Check if anyone in benefit unit is over state pension age
+        # The benefit cap applies to working-age Housing Benefit (Housing
+        # Benefit Regulations 2006 Part 8A) and Universal Credit, which both
+        # end at the qualifying age for State Pension Credit (reg 5; Welfare
+        # Reform Act 2012 s.4(1)(b)).
         person = benunit.members
-        over_pension_age = person("is_SP_age", period)
-        has_pensioner = benunit.any(over_pension_age)
+        over_qualifying_age = person(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
+        has_pensioner = benunit.any(over_qualifying_age)
 
         # UC-specific exemptions
         # Limited capability for work and work-related activity

@@ -11,21 +11,25 @@ class housing_benefit_tariff_income(Variable):
 
     def formula(benunit, period, parameters):
         capital = benunit("housing_benefit_assessable_capital", period)
-        any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
-        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
+        any_over_qualifying_age = benunit.any(
+            benunit.members("has_attained_state_pension_credit_qualifying_age", period)
+        )
+        guarantee_credit = any_over_qualifying_age & (
+            benunit("guarantee_credit", period) > 0
+        )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         threshold = where(
-            any_over_SP_age,
+            any_over_qualifying_age,
             p.pension_age.tariff_income.threshold,
             p.working_age.tariff_income.threshold,
         )
         step = where(
-            any_over_SP_age,
+            any_over_qualifying_age,
             p.pension_age.tariff_income.step,
             p.working_age.tariff_income.step,
         )
         amount = where(
-            any_over_SP_age,
+            any_over_qualifying_age,
             p.pension_age.tariff_income.amount,
             p.working_age.tariff_income.amount,
         )

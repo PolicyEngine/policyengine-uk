@@ -20,10 +20,17 @@ class pension_credit_assessable_capital(Variable):
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
         household_capital = sum(household(source, period) for source in p.sources)
-        any_pension_age = benunit.any(person("is_SP_age", period))
-        benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
+        # Pension-age adults: those who have attained the qualifying age for
+        # State Pension Credit (State Pension Credit Act 2002 s.1(6)).
+        pension_age = person("has_attained_state_pension_credit_qualifying_age", period)
+        any_pension_age = benunit.any(pension_age)
+        benunit_pension_age_adults = benunit.sum(pension_age)
         household_pension_age_adults = benunit.max(
-            person.household.sum(person.household.members("is_SP_age", period))
+            person.household.sum(
+                person.household.members(
+                    "has_attained_state_pension_credit_qualifying_age", period
+                )
+            )
         )
         adult_divisor = max_(1, household_pension_age_adults)
         household_capital_proxy = (

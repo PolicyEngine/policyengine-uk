@@ -16,7 +16,9 @@ class housing_benefit_assessable_capital(Variable):
     def formula(benunit, period, parameters):
         household = benunit.household
         person = benunit.members
-        any_over_SP_age = benunit.any(person("is_SP_age", period))
+        any_over_qualifying_age = benunit.any(
+            person("has_attained_state_pension_credit_qualifying_age", period)
+        )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = sum(household(source, period) for source in p.sources)
         benunit_adults = add(benunit, period, ["is_adult"])
@@ -29,5 +31,7 @@ class housing_benefit_assessable_capital(Variable):
             household_capital * benunit_adults / adult_divisor,
             0,
         )
-        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
+        guarantee_credit = any_over_qualifying_age & (
+            benunit("guarantee_credit", period) > 0
+        )
         return where(guarantee_credit, 0, max_(0, household_capital_proxy))
