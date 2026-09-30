@@ -22,8 +22,13 @@ class lha_renter_has_non_dependant(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        child_or_qyp = person(
-            "is_child_or_qualifying_young_person_for_universal_credit", period
+        # A child or young person under either scheme (UC reg 5; HB reg 19)
+        # is a dependant, not a non-dependant.
+        age = person("age", period)
+        child_or_qyp = (
+            person("is_child_or_qualifying_young_person_for_universal_credit", period)
+            | person("is_child_or_young_person_for_legacy_benefits", period)
+            | ((age >= 16) & (age < 17))
         )
         within_benefit_unit = benunit.any(~claimant_or_partner & ~child_or_qyp)
         other_benefit_unit_claimants = benunit.max(

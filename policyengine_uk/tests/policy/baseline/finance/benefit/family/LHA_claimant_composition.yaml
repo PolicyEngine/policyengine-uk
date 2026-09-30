@@ -220,3 +220,42 @@
     is_lha_shared_accommodation_rate_specified_renter: false
     # 40 >= 35, but actual shared accommodation independently gives A.
     LHA_category: A
+
+- name: A disabled 17-year-old renter is excepted from the shared accommodation rate
+  # UC Sch 4 para 29(5)(c): a renter under 35 receiving the PIP daily living
+  # component is an excepted person, so the one-bedroom rate applies: B.
+  period: 2025
+  input:
+    age: 17
+    pip_dl: 3_000
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B
+
+- name: A disabled 16-year-old renter is excepted from the shared accommodation rate
+  # UC Sch 4 para 29(5)(a): the DLA care component at the middle or highest
+  # rate makes a renter under 35 an excepted person: B.
+  period: 2025
+  input:
+    age: 16
+    dla_sc_middle_plus: true
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B
+
+- name: A 16-year-old renter without a disability benefit gets the shared rate
+  period: 2025
+  input:
+    age: 16
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: true
+    LHA_category: A
+
+- name: A renter under 35 on attendance allowance is excepted from the shared rate
+  period: 2025
+  input:
+    age: 30
+    attendance_allowance: 3_000
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B

@@ -1,0 +1,14 @@
+description: Disability benefits whose recipients under 35 are excepted from the shared accommodation rate.
+values:
+  2013-04-29:
+    - attendance_allowance
+    - dla_sc_middle_plus
+    - pip_dl
+metadata:
+  unit: list
+  label: shared accommodation rate disability exceptions
+  reference:
+    - title: Universal Credit Regulations 2013 Sch 4 para 29(5)
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/29
+    - title: Housing Benefit Regulations 2006 reg 2(1) ("young individual")
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/2

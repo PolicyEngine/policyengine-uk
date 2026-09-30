@@ -283,3 +283,55 @@
     # Exemption makes the cap infinite: max(100,000 - infinity, 0) = 0.
     # Assert the resulting reduction because the YAML runner cannot compare infinities.
     benefit_cap_reduction: 0
+
+- name: A Housing Benefit young person keeps the family cap though not a UC qualifying young person
+  # The 19-year-old started non-advanced education at 17 and is past UC's
+  # terminal date, so is not a UC qualifying young person (UC reg 5), but is a
+  # Child Benefit qualifying young person, which Housing Benefit uses (HB reg
+  # 19). One cap serves both, so the family rate applies: 22,020.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+    benunits:
+      benunit:
+        members: [parent, student]
+        is_benefit_cap_exempt: false
+    households:
+      household:
+        members: [parent, student]
+        region: SOUTH_EAST
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    benefit_cap: 22_020
+
+- name: A 16-year-old outside education keeps the family cap (UC reg 5(1)(a) window)
+  # Every 16-year-old is a UC qualifying young person until the 1 September
+  # after their 16th birthday; annual ages cannot place that date.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      teenager:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, teenager]
+        is_benefit_cap_exempt: false
+    households:
+      household:
+        members: [parent, teenager]
+        region: SOUTH_EAST
+  output:
+    benefit_cap: 22_020

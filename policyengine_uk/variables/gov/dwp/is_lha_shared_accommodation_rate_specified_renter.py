@@ -7,12 +7,11 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
     label = "LHA renter restricted to the shared accommodation rate"
     documentation = (
         "The modelled specified-renter conditions: no partner, below the shared "
-        "accommodation age threshold, not responsible for a UC child or "
-        "qualifying young person, and no non-dependant under the household "
-        "composition proxy. UC Schedule 4 paragraph 29 exceptions and couples "
-        "claiming as single people are not modelled. This category also serves "
-        "Housing Benefit, whose young-person definition instead follows Child "
-        "Benefit (HB regulation 19)."
+        "accommodation age threshold, not responsible for a child or young "
+        "person under the UC or Housing Benefit rules, no non-dependant under "
+        "the household composition proxy, and not excepted by a disability "
+        "benefit (UC Schedule 4 paragraph 29(5)). Other paragraph 29 "
+        "exceptions and couples claiming as single people are not modelled."
     )
     definition_period = YEAR
     reference = (
@@ -26,6 +25,16 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.LHA
+        person = benunit.members
+        # UC Sch 4 para 29(5) / HB reg 2(1): a renter under 35 receiving
+        # attendance allowance, DLA care at the middle or highest rate, or the
+        # PIP daily living component is excepted. Other para 29 exceptions
+        # (care leavers, hostel residents, MAPPA, domestic abuse, modern
+        # slavery, foster parents) are not observed.
+        excepted_disabled_renter = benunit.any(
+            person("is_claimant_or_partner", period)
+            & (add(person, period, p.shared_accommodation_exception_benefits) > 0)
+        )
         return (
             ~benunit("is_couple", period)
             & (
@@ -33,8 +42,9 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
                 < p.shared_accommodation_age_threshold
             )
             & ~benunit(
-                "is_responsible_for_child_or_qualifying_young_person_for_universal_credit",
+                "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
                 period,
             )
             & ~benunit("lha_renter_has_non_dependant", period)
+            & ~excepted_disabled_renter
         )
