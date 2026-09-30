@@ -14,8 +14,11 @@ Invariants, for every reform representation R:
 2. Representation equivalence (differential): a parameter dict with
    ``start.stop`` keys, the same dict as a ``Reform.from_dict`` class, a
    ``Reform`` subclass making the same update (directly or through
-   ``modify_parameters`` / ``set_parameter``), a ``Reform`` instance, and a
-   one-element tuple of any of these all give identical results.
+   ``modify_parameters`` / ``set_parameter``), and a one-element tuple of any
+   of these all give identical results. A bare-year dict key means that year
+   only, whereas ``Reform.from_dict`` reads it as that year onwards; a test
+   pins the difference. A ``Reform`` instance is rejected, since the class is
+   what a simulation applies.
 3. Composition: ``reform=(A, B)`` equals applying A and then B with
    ``Simulation.apply_reform``; ``reform=()`` is no reform; nested tuples
    flatten in order.
@@ -166,7 +169,6 @@ def test_formula_replacing_reform_class(baseline_income_tax):
             set_parameter(PERSONAL_ALLOWANCE, 0, period=f"year:{YEAR_}:1"),
             id="set_parameter",
         ),
-        pytest.param(no_personal_allowance_via_direct_update(system), id="instance"),
         pytest.param((no_personal_allowance_via_direct_update,), id="one_tuple"),
         pytest.param((NO_PERSONAL_ALLOWANCE,), id="one_tuple_dict"),
         pytest.param(((NO_PERSONAL_ALLOWANCE,),), id="nested_tuple_dict"),
@@ -222,15 +224,38 @@ def test_empty_tuple_is_no_reform(baseline_income_tax):
 
 
 @pytest.mark.parametrize(
-    "reform",
+    "reform, message",
     [
-        pytest.param(42, id="int"),
-        pytest.param((neutralize_income_tax, system), id="legacy_class_with_args"),
+        pytest.param(42, "Unsupported reform type", id="int"),
+        pytest.param(
+            (neutralize_income_tax, system),
+            "reform_class, \\*args",
+            id="legacy_class_with_args",
+        ),
+        pytest.param(
+            no_personal_allowance_via_direct_update(system),
+            "not an instance",
+            id="instance",
+        ),
     ],
 )
-def test_unsupported_reform_types_raise_value_error(reform):
-    with pytest.raises(ValueError, match="Unsupported reform type"):
+def test_unsupported_reform_types_raise_value_error(reform, message):
+    with pytest.raises(ValueError, match=message):
         Simulation(situation=SITUATION, reform=reform)
+
+
+def test_bare_year_dict_keys_mean_that_year_only_unlike_reform_from_dict():
+    bare_year = {PERSONAL_ALLOWANCE: {str(YEAR_): 0}}
+    as_dict = Simulation(situation=SITUATION, reform=bare_year)
+    as_class = Simulation(situation=SITUATION, reform=Reform.from_dict(bare_year))
+    unreformed = Simulation(situation=SITUATION)
+    # Both remove the allowance in the named year.
+    np.testing.assert_array_equal(tax(as_dict), tax(as_class))
+    assert tax(as_dict)[0] > tax(unreformed)[0]
+    # The dict changes that fiscal year only; Reform.from_dict carries on.
+    next_year = YEAR_ + 1
+    np.testing.assert_array_equal(tax(as_dict, next_year), tax(unreformed, next_year))
+    assert tax(as_class, next_year)[0] > tax(unreformed, next_year)[0]
 
 
 def _tiny_dataset():

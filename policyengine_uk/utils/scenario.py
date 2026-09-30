@@ -16,6 +16,9 @@ def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
     populations or cached values, so only the system changes; afterwards
     ``Simulation.apply_reform`` also discards cached formula output.
     """
+    # A modifier cannot know its phase when the Scenario is built, because
+    # ``applied_before_data_load`` is set on the Scenario afterwards, so the
+    # simulation's populations (created by data load) are the phase signal.
     if getattr(simulation, "populations", None) is None:
         reform.apply(simulation.tax_benefit_system)
     else:
@@ -105,9 +108,7 @@ class Scenario(BaseModel):
         )
 
     @classmethod
-    def from_reform(
-        cls, reform: Union[tuple, dict, Type[Reform], Reform]
-    ) -> "Scenario":
+    def from_reform(cls, reform: Union[tuple, dict, Type[Reform]]) -> "Scenario":
         """Create a Scenario from various reform representations.
 
         Args:
@@ -115,19 +116,32 @@ class Scenario(BaseModel):
                 - A Reform class, including one built by ``Reform.from_dict``
                   or ``set_parameter``, applied to the simulation's own
                   tax-benefit system as ``Simulation.apply_reform`` does
-                - A Reform instance, applied through its class
                 - A dict of parameter changes
                 - A tuple of any of these (nested tuples allowed), applied
-                  in order, as ``Simulation.apply_reform`` treats tuples
+                  in order
+
+        A dict keeps this module's reading of its keys, including inside a
+        tuple: a bare-year key such as ``"2026"`` changes that fiscal year
+        only, and a scalar value applies from 2023. ``Reform.from_dict``
+        (and policyengine-core's ``Simulation.apply_reform``, which turns a
+        dict into one) reads a bare year as that year onwards. The two agree
+        for ``"YYYY-MM-DD.YYYY-MM-DD"`` keys.
 
         Returns:
             A new Scenario configured with the reform
 
         Raises:
-            ValueError: If reform type is not supported
+            ValueError: If reform type is not supported, including a Reform
+                instance (whose own state would be lost, since the reform is
+                applied to the simulation's system through its class) and the
+                removed ``(reform_class, *args)`` tuple form
         """
         if isinstance(reform, Reform):
-            reform = type(reform)
+            raise ValueError(
+                "Pass the Reform class, not an instance: a simulation applies "
+                "the class to its own tax-benefit system, so an instance's own "
+                "state would be lost."
+            )
 
         if isinstance(reform, type) and issubclass(reform, Reform):
             reform_class = reform
@@ -185,6 +199,21 @@ class Scenario(BaseModel):
         elif isinstance(reform, tuple):
             # A tuple is a sequence of reforms applied in order, matching
             # policyengine-core's Simulation.apply_reform.
+            if (
+                len(reform) > 1
+                and isinstance(reform[0], type)
+                and issubclass(reform[0], Reform)
+                and not all(
+                    isinstance(item, (dict, tuple))
+                    or (isinstance(item, type) and issubclass(item, Reform))
+                    for item in reform[1:]
+                )
+            ):
+                raise ValueError(
+                    "Unsupported reform type: the (reform_class, *args) tuple "
+                    "form is no longer supported; a tuple is a sequence of "
+                    "reforms applied in order."
+                )
             combined = cls()
             for subreform in reform:
                 combined = combined + cls.from_reform(subreform)
@@ -193,8 +222,7 @@ class Scenario(BaseModel):
         else:
             raise ValueError(
                 f"Unsupported reform type: {type(reform)}. "
-                "Expected a Reform class or instance, a dict, or a tuple "
-                "of these."
+                "Expected a Reform class, a dict, or a tuple of these."
             )
 
     def apply(self, simulation: Simulation) -> None:
