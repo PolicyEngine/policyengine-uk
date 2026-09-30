@@ -19,21 +19,23 @@ class care_to_learn_eligible(Variable):
         is_parent = person("is_parent", period)
 
         # The young parent must be the main carer of, and receive Child
-        # Benefit for, the child they claim for (ESFA conditions of grant).
-        # So the child is a Child Benefit child or qualifying young person in
-        # the benefit unit, other than the parent themselves.
-        cares_for_child_benefit_child = person.benunit.any(
-            person("is_child_or_qualifying_young_person_for_child_benefit", period)
-            & ~is_parent
+        # Benefit for, a child they claim for (ESFA conditions of grant,
+        # section 2.2).
+        cares_for_qualifying_child = person.benunit.any(
+            person("care_to_learn_qualifying_child", period)
         )
         p = parameters(period).gov.dfe.care_to_learn
         age_eligible = person("age", period) < p.age_limit
 
+        # Care to Learn funds childcare while the young parent is on a
+        # publicly funded study programme (sections 1.2 and 2.3). Higher
+        # education courses are not eligible, and a young parent who is not
+        # in education has no study programme to fund childcare for.
         current_ed = person("current_education", period)
         education_types = current_ed.possible_values
-
-        # Only exclude higher education/tertiary
-        not_higher_education = current_ed != education_types.TERTIARY
+        on_study_programme = (current_ed != education_types.NOT_IN_EDUCATION) & (
+            current_ed != education_types.TERTIARY
+        )
 
         not_apprentice = ~person("is_apprentice", period)
 
@@ -44,9 +46,9 @@ class care_to_learn_eligible(Variable):
 
         return (
             is_parent
-            & cares_for_child_benefit_child
+            & cares_for_qualifying_child
             & age_eligible
-            & not_higher_education
+            & on_study_programme
             & lives_in_england
             & not_apprentice
         )

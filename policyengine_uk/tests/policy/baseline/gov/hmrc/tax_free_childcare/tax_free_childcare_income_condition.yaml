@@ -84,3 +84,69 @@
     tax_free_childcare_self_employment_start_up_period: true
   output:
     tax_free_childcare_meets_income_requirements: true
+
+
+# SI 2015/448 reg 13(2)(b): a person regarded as in paid work under reg 13 has
+# expected income equal to the minimum weekly income, so meets the minimum
+# income requirement with no earnings. With a £10 minimum wage the threshold is
+# 10 x 16 x 13 = £2,080 a declaration period; the earner's £20,000 a year is
+# £5,000 a period.
+- name: A non-working partner on Carer's Allowance whose partner works meets the income requirement
+  period: 2025
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      carer:
+        age: 38
+        carers_allowance: 4_000
+        adjusted_net_income: 4_000
+        minimum_wage: 10
+    benunits:
+      benunit:
+        members: [earner, carer]
+  output:
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_meets_income_requirements: [true, true]
+
+- name: A lone Carer's Allowance recipient with no earnings does not meet the income requirement
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 38
+        carers_allowance: 4_000
+        adjusted_net_income: 4_000
+        minimum_wage: 10
+    benunits:
+      benunit:
+        members: [carer]
+  output:
+    tax_free_childcare_regarded_as_in_paid_work: false
+    tax_free_childcare_meets_income_requirements: false
+
+# Reg 13 deems work and minimum income only; reg 15's £100,000 adjusted net
+# income limit still applies.
+- name: A Carer's Allowance recipient over the adjusted net income limit does not meet the income requirement
+  period: 2025
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      carer:
+        age: 38
+        carers_allowance: 4_000
+        adjusted_net_income: 150_000
+        minimum_wage: 10
+    benunits:
+      benunit:
+        members: [earner, carer]
+  output:
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_meets_income_requirements: [true, false]
