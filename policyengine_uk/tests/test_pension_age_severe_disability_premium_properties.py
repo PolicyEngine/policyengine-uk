@@ -31,11 +31,12 @@ children or carers, who rent from the council in England in 2026:
    below State Pension age it is zero and benefits_premiums is the sum of the
    four legacy premiums, so working-age applicable amounts are unchanged.
 
-Carers are not drawn. Pension Credit income leaves out Carer's Allowance and
-two carers get one carer premium, so the invariants do not yet hold for
-carers; nor does full monotonicity in income, because Housing Benefit and
-Council Tax Reduction income leave out Savings Credit. Those are separate
-fixes.
+Carers are not drawn: the invariants for carers also depend on Pension
+Credit income counting Carer's Allowance and on the carer premium per carer,
+which are separate changes. Full monotonicity in income is not asserted: it
+also depends on the savings-credit-only income rules for Housing Benefit and
+Council Tax Reduction (HB(SPC) Regs 2006 reg 27 and the CTR equivalents),
+which are likewise separate.
 """
 
 import numpy as np
