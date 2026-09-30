@@ -1,0 +1,1 @@
+Use the Pension Credit assessment of income and capital, plus the savings credit payable, for Housing Benefit where the Pension Credit award is savings credit only (HB(SPC) Regs 2006 reg 27), so a rise in income no longer lowers net income for pensioners on savings credit only.
