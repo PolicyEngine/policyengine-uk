@@ -63,5 +63,6 @@ class housing_benefit_applicable_income(Variable):
             - disregard
             - childcare_element,
         )
-        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
-        return where(guarantee_credit, 0, applicable_income)
+        # SI 2006/214 reg 26 (NI: SR 2006/406 reg 24).
+        passported = any_over_SP_age & benunit("in_receipt_of_guarantee_credit", period)
+        return where(passported, 0, applicable_income)
