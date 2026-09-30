@@ -1,0 +1,413 @@
+# Mixed-age couples: State Pension Credit Act 2002 s.4(1A), in force 15 May
+# 2019 (SI 2019/37 art. 3; NI: SR 2019/4 art. 3), with the SI 2019/37 art. 4
+# saving (NI: SR 2019/4 art. 4). Housing Benefit follows UC (Transitional
+# Provisions) Regs 2014 reg 6A(4)-(5).
+#
+# Expected amounts are hand-computed from the law's rates:
+#   2026-27 couple standard minimum guarantee GBP 363.25 a week: 363.25 x 52 = 18,889
+#   2018-19 couple standard minimum guarantee GBP 248.80 a week: 248.80 x 52 = 12,937.60
+#   Guarantee Credit = minimum guarantee - income (State Pension 9,000 only)
+#   Housing Benefit on Guarantee Credit = full eligible rent (HB SPC Regs reg 26)
+
+- name: Protected mixed-age couple (art. 4 saving input) gets Pension Credit and HB, not UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: true
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    is_mixed_age_couple: true
+    meets_pension_credit_age_conditions: true
+    is_pension_credit_eligible: true
+    guarantee_credit: 9_889
+    pension_credit: 9_889
+    housing_benefit_eligible: true
+    housing_benefit: 6_240
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Reported Pension Credit sets the saving, whatever the UC take-up draw
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: true
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_mixed_age_couple_pension_credit_saving: true
+    pension_credit: 9_889
+    universal_credit: 0
+
+- name: Reported pension-age HB sets the saving
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        housing_benefit_reported: 5_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_mixed_age_couple_pension_credit_saving: true
+    is_pension_credit_eligible: true
+    housing_benefit: 6_240
+    universal_credit: 0
+
+- name: HB alongside income-related ESA is working-age HB, so no saving (art. 2(3); HB SPC Regs reg 5(2))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        housing_benefit_reported: 5_000
+        esa_income_reported: 3_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_mixed_age_couple_pension_credit_saving: false
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    # continuing award route (TP reg 8(2A)), unchanged from main
+    housing_benefit_eligible: true
+
+- name: A UC award ends the saving (art. 4(2))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+        universal_credit_reported: 2_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_mixed_age_couple_pension_credit_saving: false
+    pension_credit: 0
+    is_uc_eligible: true
+
+- name: The saving input can be switched off despite reported Pension Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: false
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    is_uc_eligible: true
+
+- name: Unprotected mixed-age couple after 15 May 2019 claims UC, not PC or HB
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension: 9_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_mixed_age_couple_pension_credit_saving: false
+    is_pension_credit_eligible: false
+    housing_benefit_eligible: false
+    is_uc_eligible: true
+
+- name: Before 15 May 2019 a mixed-age couple takes the Pension Credit route (2018-19)
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension: 9_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    meets_pension_credit_age_conditions: true
+    guarantee_credit: 3_937.60
+    pension_credit: 3_937.60
+    housing_benefit: 6_240
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: Model year 2019 (2019-20, parameters read at 30 April 2019) is before the exclusion
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension: 9_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    meets_pension_credit_age_conditions: true
+    is_uc_eligible: false
+    universal_credit: 0
+
+- name: From model year 2020 an unprotected mixed-age couple is excluded
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension: 9_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    meets_pension_credit_age_conditions: false
+    is_pension_credit_eligible: false
+    is_uc_eligible: true
+
+- name: Wholly pension-age couple is unaffected by the saving input
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension: 9_000
+      younger:
+        age: 68
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: true
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    is_mixed_age_couple: false
+    pension_credit: 9_889
+    housing_benefit: 6_240
+    universal_credit: 0
+
+- name: Working-age couple is unaffected by the saving input
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 40
+      younger:
+        age: 38
+    benunits:
+      benunit:
+        members: [older, younger]
+        has_mixed_age_couple_pension_credit_saving: true
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    is_mixed_age_couple: false
+    meets_pension_credit_age_conditions: false
+    is_pension_credit_eligible: false
+    is_uc_eligible: true
+
+- name: Reported Pension Credit does not protect a couple whose older member reached pension age after 14 May 2019
+  # 70 in 2026-27 means 63 on 14 May 2019, below the qualifying age (65 in the
+  # model's 2019 parameters), so the couple was not a mixed-age couple then.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_mixed_age_couple_pension_credit_saving: false
+    pension_credit: 0
+    is_uc_eligible: true
+
+- name: Protected couple gets the pension-age couple HB allowance (HB SPC Regs Sch 3 para 1(2)(b))
+  # 383.35 a week x 52 = 19,934.20
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_applicable_amount: 19_934.20
+
+- name: Protected couple that does not take up Pension Credit gets neither PC nor UC, but keeps reported HB
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        housing_benefit_reported: 5_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_pc: false
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_mixed_age_couple_pension_credit_saving: true
+    pension_credit: 0
+    housing_benefit: 6_240
+    universal_credit: 0
+
+- name: Northern Ireland protected couple follows the same rule (SR 2019/4 art. 4)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 75
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTHERN_IRELAND
+  output:
+    pension_credit: 9_889
+    housing_benefit: 6_240
+    universal_credit: 0
