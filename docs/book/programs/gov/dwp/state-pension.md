@@ -60,13 +60,23 @@ birthday on 6 October, the middle of the fiscal year:
 - `is_SP_age` is whether they have attained it by 6 October, so are over
   it for most of the year.
 
-Single-household simulations take a whole age to be the middle of the
-year of age (six months since the birthday); a fractional age is read as
-the exact age on 6 October. Survey microdata records whole years only, so
-each single year of age and sex is spread evenly over the year by weight.
-The weighted share of each age over State Pension age then matches the
-statute: three quarters of 66-year-olds in 2026-27, a quarter in 2027-28
+Simulations of a household situation take a whole age to be the middle of
+the year of age (six months since the birthday); a fractional age is read as
+the exact age on 6 October. Survey microdata records whole years only, so in
+simulations built from data, including a region or constituency filtered
+from it, each single year of age and sex is spread evenly over the year by
+weight, and `filter_dataset` carries each person's place into a household it
+extracts. The weighted share of each age over State Pension age then matches
+the statute: three quarters of 66-year-olds in 2026-27, a quarter in 2027-28
 and none from 2028-29.
+
+A person attains an age at the start of the anniversary of their birth
+(Family Law Reform Act 1969 s.9(1)), and an age of "N years and M months" on
+the same day of the month, or the month's last day where that day does not
+exist; that also gives the three days rule (7A) sets. A reform can change the
+age or day of any row, or where a row starts; a new phase-in that needs extra
+rows, such as bringing forward the rise to 68, needs new rows in the
+parameter files.
 
 ## Uprating
 

@@ -46,15 +46,22 @@ def yyyymmdd_to_grid_months(dates) -> np.ndarray:
 
 
 def grid_months_to_yyyymmdd(months) -> np.ndarray:
-    """Convert (fractional) grid months to YYYYMMDD integers."""
+    """Convert (fractional) grid months to YYYYMMDD integers: the calendar day
+    that starts at or after each instant.
+
+    A person attains an age at the commencement of the anniversary of their
+    date of birth (Family Law Reform Act 1969 s.9(1)). Taking a birth instant
+    that falls within a day as the next day keeps the whole number of years
+    between it and a later midnight equal to the person's legal age there.
+    """
     months = np.asarray(months, dtype=np.float64)
     whole = np.floor(months).astype(np.int64)
     start = _sixth_of(whole)
     length = (_sixth_of(whole + 1) - start).astype(np.int64)
-    # Model variables are stored as float32, which can put a date that falls
-    # exactly at midnight a fraction of a second early. A tolerance of about a
-    # minute and a half keeps it on its day.
-    elapsed = np.floor((months - whole) * length + 1e-3).astype(np.int64)
+    # Model variables are stored as float32, which can put an instant that is
+    # exactly midnight a fraction of a second either side of it. A tolerance
+    # of about a minute and a half keeps it on its day.
+    elapsed = np.ceil((months - whole) * length - 1e-3).astype(np.int64)
     overflow = elapsed >= length
     whole = np.where(overflow, whole + 1, whole)
     elapsed = np.where(overflow, 0, elapsed)
@@ -72,7 +79,9 @@ def add_months_to_yyyymmdd(dates, months) -> np.ndarray:
 
     Where that day does not exist in the target month, the result is the
     month's last day, as when a person born on 31 July attains an age of some
-    years and four months on 30 November.
+    years and four months on 30 November. That also puts a 29 February
+    anniversary on 28 February in other years; the statute does not say, and
+    State Pension age status, read on the 6th, is the same either way.
     """
     dates = np.asarray(dates, dtype=np.int64)
     months = np.round(np.asarray(months, dtype=np.float64)).astype(np.int64)
@@ -88,3 +97,21 @@ def add_months_to_yyyymmdd(dates, months) -> np.ndarray:
         + (target % 12 + 1) * 100
         + np.minimum(day, days_in_month)
     )
+
+
+# Months since the last birthday stop about four minutes short of 12, beyond
+# the tolerance above, so an exact age never rounds onto the next birthday.
+_LATEST_MONTHS_SINCE_BIRTHDAY = 12 - 1e-4
+
+
+def exact_age_in_months(age, months_since_last_birthday) -> np.ndarray:
+    """Exact age in months from a whole age and the months since the last
+    birthday, in float64: at around 24,000 months, float32 is only good to an
+    hour."""
+    whole_years = np.floor(np.asarray(age, dtype=np.float64))
+    months = np.clip(
+        np.asarray(months_since_last_birthday, dtype=np.float64),
+        0,
+        _LATEST_MONTHS_SINCE_BIRTHDAY,
+    )
+    return 12 * whole_years + months

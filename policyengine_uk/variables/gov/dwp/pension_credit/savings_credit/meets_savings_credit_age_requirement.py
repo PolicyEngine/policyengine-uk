@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.dates import exact_age_in_months
 
 
 class meets_savings_credit_age_requirement(Variable):
@@ -21,8 +22,7 @@ class meets_savings_credit_age_requirement(Variable):
             person("months_since_state_pension_age", period)
             > months_from_cutoff_to_mid_year
         )
-        # float64, so that exact ages compare cleanly with State Pension age.
-        age = np.floor(person("age", period)).astype(np.float64)
-        months = person("months_since_last_birthday", period).astype(np.float64)
-        age_in_months = 12 * age + months
+        age_in_months = exact_age_in_months(
+            person("age", period), person("months_since_last_birthday", period)
+        )
         return reached_before_cutoff & (age_in_months >= 12 * p.minimum_age)

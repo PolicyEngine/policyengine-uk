@@ -12,6 +12,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
@@ -189,8 +190,7 @@ class TestParametersMatchStatute:
         assert self.brackets(self.p.day_by_birth_date) == expected
 
     def test_male_rule_matches_statute(self):
-        year, month, day = self.p.male.born_before("2026-01-01")
-        assert date(year, month, day) == parse_date(MEN_BEFORE)
+        assert self.p.male.born_before("2026-01-01") == ymd(parse_date(MEN_BEFORE))
         assert self.p.male.age("2026-01-01") == 12 * int(MEN_AGE)
 
 
@@ -230,9 +230,10 @@ def differential_simulation() -> tuple:
 
 @pytest.mark.parametrize("year", YEARS)
 def test_status_matches_statute_for_every_birth_date(year):
-    """State Pension age status, type and the Savings Credit age test agree with
-    a day-level reading of the statute, for births every third day from 1945 to
-    1984 and on both sides of every statutory boundary, at both sexes."""
+    """State Pension age status, type, the Savings Credit age test and the day
+    State Pension age is attained all agree with a day-level reading of the
+    statute, for births every third day from 1945 to 1984 and on both sides of
+    every statutory boundary, at both sexes."""
     sim, keys = differential_simulation()
     status = sim.calculate("is_SP_age", year)
     pension_type = sim.calculate("state_pension_type", year)
@@ -256,11 +257,7 @@ def test_status_matches_statute_for_every_birth_date(year):
             status[i] != (attained <= mid_year)
             or pension_type[i] != expected_type
             or savings[i] != expected_savings
-            # The grid spreads each month's days evenly, so an anniversary a
-            # whole number of months on can land a day off when the months
-            # differ in length. Status is only read on the 6th, where the grid
-            # is exact.
-            or abs((model_day - attained).days) > 1
+            or model_day != attained
         ):
             mismatches.append((birth, male, attained, status[i], spa[i]))
     assert not mismatches, mismatches[:10]
@@ -278,47 +275,90 @@ def mid_year_share(year: int, age: int, male: bool) -> float:
     return np.mean([reference_attainment_day(b, male) <= mid_year for b in days])
 
 
-def test_microdata_share_at_state_pension_age_matches_statute():
-    """In representative data, each single year of age and sex is spread evenly
-    over the year by weight, so the weighted share of 66-year-olds over State
-    Pension age is the statutory share: three quarters in 2026-27 and a quarter
-    in 2027-28, as births from 6 April 1960 reach it at 66 and 1 to 11 months."""
-    rng = np.random.default_rng(0)
-    n = 4_000
-    weights = rng.lognormal(7, 1, n)
-    people = {}
-    for i in range(n):
-        people[f"p{i}"] = {
-            "age": {y: 60 + i % 11 for y in range(2015, 2031)},
-            "is_male": {y: bool(i % 2) for y in range(2015, 2031)},
-        }
-    households = {
-        f"h{i}": {
-            "members": [f"p{i}"],
-            "household_weight": {y: float(weights[i]) for y in range(2015, 2031)},
-        }
-        for i in range(n)
-    }
-    benunits = {f"b{i}": {"members": [f"p{i}"]} for i in range(n)}
-    sim = Simulation(
-        situation={"people": people, "benunits": benunits, "households": households}
-    )
-    age = np.array([60 + i % 11 for i in range(n)])
-    male = np.array([bool(i % 2) for i in range(n)])
-    for year in (2015, 2016, 2017, 2018, 2019, 2020, 2026, 2027, 2028):
-        status = sim.calculate("is_SP_age", year)
+def microdata_simulation(weights: np.ndarray, years=range(2015, 2031)):
+    """A simulation built from data: one person per household, ages 60 to 70
+    in turn, alternating sex."""
+    from policyengine_uk import Microsimulation
+    from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+
+    n = len(weights)
+    ids = np.arange(n)
+
+    def year(y):
+        person = pd.DataFrame(
+            {
+                "person_id": ids * 10 + 7,
+                "person_benunit_id": ids,
+                "person_household_id": ids,
+                "age": 60 + ids % 11,
+                "gender": np.where(ids % 2 == 1, "MALE", "FEMALE"),
+            }
+        )
+        return UKSingleYearDataset(
+            person=person,
+            benunit=pd.DataFrame({"benunit_id": ids}),
+            household=pd.DataFrame({"household_id": ids, "household_weight": weights}),
+            fiscal_year=y,
+        )
+
+    dataset = UKMultiYearDataset(datasets=[year(y) for y in years])
+    return Microsimulation(dataset=dataset), 60 + ids % 11, ids % 2 == 1
+
+
+def assert_shares_match_statute(sim, age, male, weights, years):
+    for year in years:
+        status = np.asarray(sim.calculate("is_SP_age", year))
         for a in range(60, 71):
             for sex in (True, False):
                 cell = (age == a) & (male == sex)
                 share = np.average(status[cell], weights=weights[cell])
-                # Within the largest weight in the cell plus one day of births.
+                # Within the largest weight in the cell, plus a day of births
+                # for where the month grid and the calendar differ.
                 tolerance = weights[cell].max() / weights[cell].sum() + 1 / 365
-                assert abs(share - mid_year_share(year, a, sex)) <= tolerance, (
-                    year,
-                    a,
-                    sex,
-                    share,
-                )
+                expected = mid_year_share(year, a, sex)
+                assert abs(share - expected) <= tolerance, (year, a, sex, share)
+
+
+def test_microdata_share_at_state_pension_age_matches_statute():
+    """In data, each single year of age and sex is spread evenly over the year by
+    weight, so the weighted share over State Pension age is the statutory share:
+    three quarters of 66-year-olds in 2026-27 and a quarter in 2027-28, as births
+    from 6 April 1960 reach it at 66 and 1 to 11 months."""
+    weights = np.random.default_rng(0).lognormal(7, 0.5, 11 * 2 * 200)
+    sim, age, male = microdata_simulation(weights)
+    years = (2015, 2016, 2017, 2018, 2019, 2020, 2026, 2027, 2028)
+    assert_shares_match_statute(sim, age, male, weights, years)
+
+
+def test_small_region_of_data_still_spreads_birthdays():
+    """A constituency or local authority filtered from the data carries well under
+    a million people of weight; it is still data, not a household situation."""
+    weights = np.random.default_rng(1).lognormal(2, 0.5, 11 * 2 * 100)
+    assert weights.sum() < 1e6
+    sim, age, male = microdata_simulation(weights, years=(2026, 2027))
+    assert_shares_match_statute(sim, age, male, weights, (2026, 2027))
+
+
+def test_extracted_household_keeps_its_birthday():
+    """filter_dataset carries each person's place in the year into the extract,
+    so a household keeps the status it had in the full simulation."""
+    from policyengine_uk import Microsimulation
+    from policyengine_uk.data import UKMultiYearDataset, filter_dataset
+
+    weights = np.random.default_rng(2).lognormal(7, 0.5, 11 * 2 * 20)
+    sim, age, _ = microdata_simulation(weights, years=(2026,))
+    months = np.asarray(sim.calculate("months_since_last_birthday", 2026))
+    status = np.asarray(sim.calculate("is_SP_age", 2026))
+    for household in np.flatnonzero(age == 66)[:10]:
+        extract = filter_dataset(sim, household_id=int(household), year=2026)
+        extracted = Microsimulation(dataset=UKMultiYearDataset(datasets=[extract]))
+        assert np.allclose(
+            np.asarray(extracted.calculate("months_since_last_birthday", 2026)),
+            months[household],
+        )
+        assert (
+            np.asarray(extracted.calculate("is_SP_age", 2026))[0] == status[household]
+        )
 
 
 def test_single_household_uses_the_middle_of_the_year_of_age():
@@ -360,6 +400,57 @@ def test_state_pension_age_properties(births, male, year):
     attained = np.array([grid_months(b) for b in births]) + 12 * spa
     assert np.all(np.diff(attained) >= -1e-3)
     assert np.array_equal(status, since >= 0)
+
+
+def birth_day_from_grid(months: float) -> date:
+    """The calendar day starting at or after an instant on the grid (within
+    about a minute and a half, as the model treats float error)."""
+    whole = int(np.floor(months))
+    start = date(whole // 12, whole % 12 + 1, 6)
+    end = date((whole + 1) // 12, (whole + 1) % 12 + 1, 6)
+    offset = int(np.ceil((months - whole) * (end - start).days - 1e-3))
+    return start + timedelta(days=offset)
+
+
+def legal_age(birth: date, on: date) -> int:
+    return on.year - birth.year - ((on.month, on.day) < (birth.month, birth.day))
+
+
+@settings(max_examples=60, deadline=None)
+@given(
+    cases=st.lists(
+        st.tuples(
+            st.integers(min_value=2015, max_value=2050),
+            st.integers(min_value=55, max_value=75),
+            st.floats(min_value=0, max_value=12, exclude_max=True),
+            st.booleans(),
+        ),
+        min_size=1,
+        max_size=30,
+    )
+)
+def test_any_birthday_position_follows_the_statute(cases):
+    """For any whole age and any position in the year, including instants within
+    a day: the day of birth the model uses gives the person that legal age on
+    6 October (a person attains an age at the start of the anniversary), and
+    their status is the statute's for that day."""
+    for year, age, months, male in cases:
+        people = {
+            "p": {
+                "age": {year: age},
+                "months_since_last_birthday": {year: months},
+                "is_male": {year: male},
+            }
+        }
+        sim = Simulation(situation=situation(people))
+        mid_year = date(year, 10, 6)
+        # The model caps months since the last birthday about four minutes
+        # short of 12, so the exact age never rounds onto the next birthday.
+        months = min(months, 12 - 1e-4)
+        birth = birth_day_from_grid(grid_months(mid_year) - 12 * age - months)
+        assert legal_age(birth, mid_year) == age, (year, age, months, birth)
+        expected = reference_attainment_day(birth, male) <= mid_year
+        assert sim.calculate("is_SP_age", year)[0] == expected, (year, age, months)
 
 
 @settings(max_examples=100, deadline=None)

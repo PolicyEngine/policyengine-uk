@@ -11,12 +11,13 @@ class months_since_last_birthday(Variable):
         "fiscal year (6 October), from 0 up to 12. With age, this places the "
         "date of birth: the person was born age years and this many months "
         "before 6 October. A fractional age is read as the exact age on 6 "
-        "October. For a whole age, single-household simulations use 6, the "
-        "middle of the year of age. Representative microdata records age only "
-        "in whole years, so each single year of age and sex is spread evenly "
-        "over the year: records are ordered by a deterministic hash of the "
-        "person id and placed by their share of the group's weight. Datasets "
-        "and situations can set this directly."
+        "October. For a whole age, simulations of a household situation use 6, "
+        "the middle of the year of age. Microdata records age only in whole "
+        "years, so in simulations built from data each single year of age and "
+        "sex is spread evenly over the year: records are ordered by a "
+        "deterministic hash of the person id and placed by their share of the "
+        "group's weight. Datasets and situations can set this directly, and "
+        "filter_dataset carries it into a household extracted from the data."
     )
     definition_period = YEAR
     unit = "month"
@@ -25,15 +26,12 @@ class months_since_last_birthday(Variable):
         age = person("age", period)
         whole_years = np.floor(age)
         fraction = age - whole_years
-        weight = person("person_weight", period)
-        # Representative microdata carries tens of millions of people of
-        # weight; single-household situations carry about one.
-        if weight.sum() < 1e6:
-            position = np.full(person.count, 0.5)
-        else:
+        if getattr(person.simulation, "built_from_dataset", False):
             position = stratified_uniform(
                 strata=whole_years * 2 + person("is_male", period),
                 draws=splitmix64_uniform(person("person_id", period), salt=2),
-                weights=weight,
+                weights=person("person_weight", period),
             )
+        else:
+            position = np.full(person.count, 0.5)
         return 12 * where(fraction > 0, fraction, position)

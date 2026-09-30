@@ -63,7 +63,7 @@
   absolute_error_margin: 0.001
   input:
     age: 64
-    months_since_last_birthday: 10.0333
+    months_since_last_birthday: 10.033333
     is_male: true
   output:
     state_pension_age: 65.0  # attained 5 December 2018
@@ -85,7 +85,7 @@
   absolute_error_margin: 0.001
   input:
     age: 64
-    months_since_last_birthday: 10.0333
+    months_since_last_birthday: 10.033333
     is_male: false
   output:
     state_pension_age: 64.9194  # attained 6 November 2018
@@ -107,7 +107,7 @@
   absolute_error_margin: 0.001
   input:
     age: 65
-    months_since_last_birthday: 10.0333
+    months_since_last_birthday: 10.033333
     is_male: true
   output:
     state_pension_age: 65.0  # attained 5 December 2018
@@ -118,7 +118,7 @@
   absolute_error_margin: 0.001
   input:
     age: 66
-    months_since_last_birthday: 0.0333
+    months_since_last_birthday: 0.033333
     is_male: true
   output:
     state_pension_age: 65.9194  # attained 6 September 2020
@@ -140,7 +140,7 @@
   absolute_error_margin: 0.001
   input:
     age: 65
-    months_since_last_birthday: 11.9677
+    months_since_last_birthday: 11.967742
     is_male: false
   output:
     state_pension_age: 66.0  # attained 7 October 2020
@@ -173,7 +173,7 @@
   absolute_error_margin: 0.001
   input:
     age: 66
-    months_since_last_birthday: 3.0333
+    months_since_last_birthday: 3.033333
     is_male: false
   output:
     state_pension_age: 66.25  # attained 5 October 2026
@@ -217,7 +217,7 @@
   absolute_error_margin: 0.001
   input:
     age: 67
-    months_since_last_birthday: 7.0357
+    months_since_last_birthday: 7.035714
     is_male: false
   output:
     state_pension_age: 66.917  # attained 5 February 2028

@@ -1,12 +1,9 @@
-description: Men born before this date attain State Pension age at the male State Pension age; men born on or after it follow the same timetable as women.
+description: Men born before this date, written as a YYYYMMDD number, attain State Pension age at the male State Pension age; men born on or after it follow the same timetable as women.
 values:
-  '1995-07-19':
-  - 1953
-  - 12
-  - 6
+  1995-07-19: 19531206
 metadata:
   unit: date
-  label: Birth date from which men follow the equalised State Pension age timetable
+  label: Male State Pension age cutoff date of birth
   reference:
     - title: Pensions Act 1995, Schedule 4, paragraph 1, rule (1)
       href: https://www.legislation.gov.uk/ukpga/1995/26/schedule/4
