@@ -1,0 +1,184 @@
+# The Local Housing Allowance caps the eligible rent before the taper.
+# Where a maximum rent (LHA) applies, it is the eligible rent (SI 2006/213 and
+# SI 2006/214 reg 12D(2)(a)), and it is the rent where the rent is below the
+# LHA (reg 13D(5)). The appropriate maximum Housing Benefit is the eligible rent
+# less non-dependant deductions (reg 70; SPC reg 50), and 65% of the excess of
+# income over the applicable amount is deducted from it (SSCBA 1992
+# s.130(3)(b); reg 71; SPC reg 51). So:
+#   HB = max(0, min(rent, LHA) - non-dependant deductions - taper)
+# The code before this fix capped after the taper:
+#   max(0, min(max(0, rent - taper), LHA) - non-dependant deductions)
+#
+# Applicable income and amount are inputs, so the taper is exact and does not
+# depend on the earnings disregard or the Guarantee Credit passport.
+# LHA_cap is min(rent, LHA rate), as LHA_cap.py computes it.
+
+- name: Rent above the LHA is tapered from the LHA, not from the rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    benunit_rent: 30_000
+    LHA_eligible: true
+    LHA_cap: 9_467.64
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit_applicable_income: 14_948.80
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # taper = 0.65 * (14,948.80 - 13,312) = 0.65 * 1,636.80 = 1,063.92
+    # HB = 9,467.64 - 1,063.92 = 8,403.72
+    # (the old order gave min(30,000 - 1,063.92, 9,467.64) = 9,467.64)
+    housing_benefit_entitlement: 8_403.72
+
+- name: Single pensioner private renter with rent above the LHA
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 16_000
+    benunits:
+      benunit:
+        members: [person]
+        # The model's 2026 rate for this household (default BRMA, Maidstone,
+        # one-bedroom category) is also 9,467.64; it is an input here so the
+        # test pins the order of the cap and the taper, not the LHA table.
+        BRMA_LHA_rate: 9_467.64
+        # Inputs, so the earnings disregard and the pension-age allowance
+        # cannot move the taper.
+        housing_benefit_applicable_amount: 13_312
+        housing_benefit_applicable_income: 14_948.80
+    households:
+      household:
+        members: [person]
+        rent: 30_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # State Pension of 16,000 is above the Guarantee Credit minimum guarantee,
+    # so no Guarantee Credit passport applies.
+    guarantee_credit: 0
+    LHA_eligible: true
+    # LHA_cap = min(30,000, 9,467.64) = 9,467.64
+    LHA_cap: 9_467.64
+    housing_benefit_non_dep_deductions: 0
+    # 9,467.64 - 0.65 * (14,948.80 - 13,312) = 9,467.64 - 1,063.92 = 8,403.72
+    housing_benefit_eligible: true
+    housing_benefit: 8_403.72
+
+- name: Rent below the LHA is the eligible rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    benunit_rent: 8_000
+    LHA_eligible: true
+    # min(8,000, 9,467.64) = 8,000
+    LHA_cap: 8_000
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit_applicable_income: 14_948.80
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # 8,000 - 1,063.92 = 6,936.08, as under the old order
+    housing_benefit_entitlement: 6_936.08
+
+- name: Taper larger than the excess of the rent over the LHA
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    benunit_rent: 12_000
+    LHA_eligible: true
+    LHA_cap: 9_467.64
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit_applicable_income: 21_312
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # taper = 0.65 * (21,312 - 13,312) = 0.65 * 8,000 = 5,200
+    # HB = 9,467.64 - 5,200 = 4,267.64
+    # (the old order gave min(12,000 - 5,200, 9,467.64) = 6,800, which is
+    # 2,532.36 = rent - LHA more)
+    housing_benefit_entitlement: 4_267.64
+
+- name: Taper larger than the LHA leaves no Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    benunit_rent: 30_000
+    LHA_eligible: true
+    LHA_cap: 9_467.64
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit_applicable_income: 33_312
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # taper = 0.65 * (33,312 - 13,312) = 0.65 * 20,000 = 13,000 > 9,467.64
+    # HB = max(0, 9,467.64 - 13,000) = 0
+    # (the old order gave min(30,000 - 13,000, 9,467.64) = 9,467.64)
+    housing_benefit_entitlement: 0
+
+- name: Income below the applicable amount gets the LHA in full
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    benunit_rent: 30_000
+    LHA_eligible: true
+    LHA_cap: 9_467.64
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit_applicable_income: 10_000
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # taper = 0.65 * max(0, 10,000 - 13,312) = 0; HB = 9,467.64
+    housing_benefit_entitlement: 9_467.64
+
+- name: LHA couple with a non-dependant (rulespec-uk pipeline case 4)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    benunit_rent: 9_000
+    LHA_eligible: true
+    # min(9,000, LHA 8,000) = 8,000
+    LHA_cap: 8_000
+    housing_benefit_applicable_amount: 7_807.80
+    housing_benefit_applicable_income: 12_000
+    housing_benefit_non_dep_deductions: 3_346.20
+  output:
+    # taper = 0.65 * (12,000 - 7,807.80) = 0.65 * 4,192.20 = 2,724.93
+    # HB = 8,000 - 3,346.20 - 2,724.93 = 1,928.87
+    # (the old order gave min(9,000 - 2,724.93, 8,000) - 3,346.20
+    #  = 6,275.07 - 3,346.20 = 2,928.87)
+    housing_benefit_entitlement: 1_928.87
+
+- name: Council tenant with the same rent and taper is not capped
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_amount: 7_807.80
+        housing_benefit_applicable_income: 12_000
+        housing_benefit_non_dep_deductions: 3_346.20
+    households:
+      household:
+        members: [person]
+        rent: 9_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    LHA_eligible: false
+    # eligible rent = rent = 9,000
+    # HB = 9,000 - 3,346.20 - 2,724.93 = 2,928.87, as under the old order
+    housing_benefit_entitlement: 2_928.87
+
+- name: Non-dependant deductions above the LHA leave no Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    benunit_rent: 9_000
+    LHA_eligible: true
+    LHA_cap: 8_000
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit_applicable_income: 10_000
+    housing_benefit_non_dep_deductions: 8_500
+  output:
+    # no taper; HB = max(0, 8,000 - 8,500) = 0
+    housing_benefit_entitlement: 0
