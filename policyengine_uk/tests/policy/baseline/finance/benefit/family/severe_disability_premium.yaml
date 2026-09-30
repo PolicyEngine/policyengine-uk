@@ -230,6 +230,103 @@
   output:
     severe_disability_premium: 0
 
+# The claimant and partner, not every adult in the benefit unit (para 14(2);
+# HB Regs reg 2 "family"). An 18 or 19 year old qualifying young person is a
+# member of the family, neither a partner nor a non-dependant.
+
+- name: A lone parent qualifies alongside an 18-year-old young person
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        pip_dl_category: STANDARD
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+    benunits:
+      family:
+        members: [parent, young_person]
+  output:
+    severe_disability_premium: 4474.60
+
+- name: A qualifying young person does not make a couple both qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        pip_dl_category: STANDARD
+      partner:
+        age: 42
+        is_parent: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        dla_sc_category: MIDDLE
+    benunits:
+      family:
+        members: [claimant, partner, young_person]
+  output:
+    severe_disability_premium: 0
+
+- name: A blind young person is not a partner treated as absent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        pip_dl_category: STANDARD
+      partner:
+        age: 42
+        is_parent: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        is_blind: true
+    benunits:
+      family:
+        members: [claimant, partner, young_person]
+  output:
+    severe_disability_premium: 0
+
+- name: A qualifying young person does not qualify the couple
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        is_blind: true
+      partner:
+        age: 42
+        is_parent: true
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members: [claimant, partner, young_person]
+  output:
+    severe_disability_premium: 0
+
+- name: A 17-year-old single claimant qualifies in their own right
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 17
+    pip_dl_category: STANDARD
+  output:
+    severe_disability_premium: 4474.60
+
 # Carers (para 14(2)(a)(iii)).
 
 - name: A single claimant's own carer benefit is not paid for caring for them

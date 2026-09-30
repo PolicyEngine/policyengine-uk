@@ -28,13 +28,14 @@ Invariants, for any generated population of households:
 6. Differential: for a family with no children, no carer and no one else in
    the household, a single claimant or a couple who both or neither qualify
    get exactly the Pension Credit severe disability addition, which lists the
-   same qualifying benefits (SPC Regs 2002 Sch I para 1; reg 6(5)).
+   same qualifying benefits (SPC Regs 2002 Sch I para 1; reg 6(5)). This keeps
+   two encodings of the same rule in step; it is not an independent oracle.
 """
 
 from itertools import product
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -77,7 +78,9 @@ def person(draw, age):
         age=draw(age),
         benefit=draw(benefit),
         blind=draw(st.booleans()),
-        carer=draw(st.booleans()),
+        # Carer benefits are rarer than not, so couples who both qualify with
+        # no carer (the double rate) are generated as well.
+        carer=draw(st.sampled_from([False, False, False, True])),
     )
 
 
@@ -156,11 +159,35 @@ def oracle(unit):
     return SINGLE if cared_for == 0 else 0.0
 
 
+def _adult(benefit, blind=False, carer=False):
+    return dict(age=40, benefit=benefit, blind=blind, carer=carer)
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(households(), min_size=1, max_size=10))
+@example(
+    [
+        # Both qualify, no carer: the double rate.
+        dict(
+            adults=[_adult("pip_standard"), _adult("aa_lower")],
+            children=[],
+            others=[],
+        ),
+        # One qualifies, the other is blind: the single rate.
+        dict(
+            adults=[_adult("dla_middle"), _adult("none", blind=True)],
+            children=[],
+            others=[],
+        ),
+    ]
+)
 def test_premium_matches_statutory_oracle_and_range(units):
     premium = simulate(units)["severe_disability_premium"]
     for unit, value in zip(units, premium):
+        event(
+            f"{len(unit['adults'])} adult(s), premium "
+            f"{'double' if value > SINGLE + 1 else 'single' if value > 1 else 'none'}"
+        )
         assert np.isclose(value, oracle(unit), atol=0.01), unit
         assert any(np.isclose(value, x, atol=0.01) for x in (0, SINGLE, DOUBLE))
         if np.isclose(value, DOUBLE, atol=0.01):
@@ -228,8 +255,9 @@ def test_matches_pension_credit_severe_disability_addition(families):
     for adults in families:
         adults = [dict(a, carer=False) for a in adults]
         if len(adults) == 2 and qualifies(adults[0]) != qualifies(adults[1]):
-            # The Pension Credit formula does not yet apply the couple rule
-            # (PolicyEngine/policyengine-uk#1896 adds it).
+            # Restricted to the cases every version of the Pension Credit
+            # addition agrees on: versions differ on a couple with one
+            # qualifying partner, and on carers.
             adults = [dict(a, benefit=adults[0]["benefit"]) for a in adults]
         units.append(dict(adults=adults, children=[], others=[]))
     values = simulate(

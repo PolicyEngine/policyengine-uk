@@ -14,7 +14,7 @@
     is_disabled_for_benefits: true
     is_enhanced_disabled_for_benefits: true
     is_severely_disabled_for_benefits: true
-    pip_dl_category: STANDARD
+    pip_dl_category: ENHANCED
   output:
     # The claimant qualifies in their own right: no statutory age-18 floor.
     disability_premium: 2332.20
@@ -29,7 +29,7 @@
     is_disabled_for_benefits: true
     is_enhanced_disabled_for_benefits: true
     is_severely_disabled_for_benefits: true
-    pip_dl_category: STANDARD
+    pip_dl_category: ENHANCED
   output:
     disability_premium: 2332.20
     enhanced_disability_premium: 1144
@@ -48,7 +48,7 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
-        pip_dl_category: STANDARD
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [parent, young_person]
@@ -72,7 +72,7 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
-        pip_dl_category: STANDARD
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [parent, young_person]
@@ -95,7 +95,7 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
-        pip_dl_category: STANDARD
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [claimant, partner]
@@ -118,7 +118,7 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
-        pip_dl_category: STANDARD
+        pip_dl_category: ENHANCED
       young_person:
         age: 19
         is_in_non_advanced_education: true
@@ -142,7 +142,7 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
-        pip_dl_category: STANDARD
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [parent, child]
@@ -161,13 +161,13 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
-        pip_dl_category: STANDARD
+        pip_dl_category: ENHANCED
       partner:
         age: 32
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
-        pip_dl_category: STANDARD
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [claimant, partner]
