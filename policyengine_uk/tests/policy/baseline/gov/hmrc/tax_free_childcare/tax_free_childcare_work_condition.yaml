@@ -512,6 +512,26 @@
   output:
     tax_free_childcare_work_condition: [false, false]
 
+# Reg 13(3) excludes a working partner who receives a reg 13(1)(b) benefit, not
+# one on carer's leave under reg 13(1)(c): the spouse on Carer's Allowance is
+# still regarded as in qualifying paid work.
+- name: Working partner on carer's leave does not stop the other partner qualifying under reg 13
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+        tax_free_childcare_on_carers_leave: true
+      spouse:
+        in_work: false
+        carers_allowance: 4_000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_work_condition: true
+
 - name: A working lone parent with an 18-year-old and a toddler meets the work condition
   # Default inputs: the 18-year-old is the parent's child, not a partner who
   # would also have to work.

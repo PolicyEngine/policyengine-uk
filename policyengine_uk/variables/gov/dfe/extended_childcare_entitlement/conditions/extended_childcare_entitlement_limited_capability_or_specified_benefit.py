@@ -12,9 +12,9 @@ class extended_childcare_entitlement_limited_capability_or_specified_benefit(Var
         "regs 11A, 14(4)(b) and 15(4); SI 2016/1257 reg 9(1)(b) before "
         "1 December 2022). A parent or partner in this position meets the "
         "parent and partner conditions without the work or income conditions "
-        "when the other meets them. A benefit-unit-level benefit in the list, "
-        "such as the Universal Credit carer element, counts for both members "
-        "of a couple."
+        "when the other meets them. A benefit-unit-level benefit in the list "
+        "(income-related ESA) counts for both members of a couple; the "
+        "Universal Credit carer element counts for the carer only."
     )
     definition_period = YEAR
     reference = (

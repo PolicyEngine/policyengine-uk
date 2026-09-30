@@ -77,9 +77,10 @@
   output:
     extended_childcare_entitlement_work_condition: [true, true, false]
 
-# Reg 11A(1)(c): the Universal Credit carer element. It is a benefit-unit
-# amount, so it counts for both members of the couple.
-- name: One parent working, the family has the UC carer element - both meet the condition
+# Reg 11A(1)(c): the Universal Credit carer element, meaning an award of
+# Universal Credit that includes it (reg 14(5)(a) as made). It belongs to the
+# carer.
+- name: One parent working, the other the carer on a UC award with the carer element - both meet the condition
   period: 2025
   input:
     people:
@@ -92,15 +93,73 @@
       parent2:
         age: 38
         is_parent: true
+        is_carer_for_benefits: true
         minimum_wage: 10
       child:
         age: 4
     benunits:
       benunit:
         members: [parent1, parent2, child]
-        uc_carer_element: 100
+        universal_credit: 3_000
+        uc_carer_element: 2_400
   output:
+    receives_uc_carer_element: [false, true, false]
     extended_childcare_entitlement_work_condition: [true, true, false]
+
+# The earner is the carer, so the carer element does not make the non-working
+# partner a person entitled to a specified benefit.
+- name: The earner is the carer on the UC award - the non-working partner does not meet the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        is_carer_for_benefits: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        universal_credit: 3_000
+        uc_carer_element: 2_400
+  output:
+    receives_uc_carer_element: [true, false, false]
+    extended_childcare_entitlement_work_condition: [true, false, false]
+
+# Without a Universal Credit award there is no carer element to be entitled to.
+- name: A carer with no UC award - does not meet the condition through the carer element
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        is_carer_for_benefits: true
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        universal_credit: 0
+        uc_carer_element: 2_400
+  output:
+    receives_uc_carer_element: [false, false, false]
+    extended_childcare_entitlement_work_condition: [true, false, false]
 
 # Reg 11A(1)(e): employment and support allowance under WRA 2007 s.1, which
 # includes income-related ESA.

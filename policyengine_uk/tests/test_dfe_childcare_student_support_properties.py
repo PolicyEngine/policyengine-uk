@@ -19,8 +19,10 @@ Invariants:
    Each claimant or partner must also meet reg 14(3)/15(3), meaning earnings
    of at least 16 x minimum wage x 13 a quarter and adjusted net income of at
    most £100,000, or meet reg 14(4)/15(4): a specified benefit or limited
-   capability for work, with a partner who meets reg 14(3)/15(3). PIP never
-   matters.
+   capability for work, with a partner who meets reg 14(3)/15(3). PIP itself
+   never matters here. In datasets, reported DLA/PIP can still reach the
+   condition through uc_limited_capability_for_WRA's default
+   (is_disabled_for_benefits), which these families leave false.
 3. Tax-Free Childcare work condition (SI 2015/448 reg 13). Each applicant or
    partner is in work, or receives a reg 13(1)(b) benefit and has a partner in
    work who receives none (reg 13(3)). DLA, PIP and income-related ESA never

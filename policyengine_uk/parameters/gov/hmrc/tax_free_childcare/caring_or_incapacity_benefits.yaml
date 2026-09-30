@@ -1,12 +1,10 @@
-description: HMRC regards a person whose partner is in qualifying paid work as in qualifying paid work themselves, for Tax-Free Childcare, while they receive or are entitled to any of these benefits, allowances or credits, or are on carer's leave.
+description: HMRC regards a person whose partner is in qualifying paid work as in qualifying paid work themselves, for Tax-Free Childcare, while they are paid or entitled to any of these benefits, allowances or credits.
 metadata:
   reference:
     - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 13(1)
       href: https://www.legislation.gov.uk/uksi/2015/448/regulation/13
     - title: The Childcare Payments (Miscellaneous Amendments) Regulations 2022 - Regulation 2(6)
       href: https://www.legislation.gov.uk/uksi/2022/1148/regulation/2/made
-    - title: The Carer's Leave (Consequential Amendments to Subordinate Legislation) Regulations 2024 - Regulation 8(2)
-      href: https://www.legislation.gov.uk/uksi/2024/266/regulation/8/made
   period: year
   unit: program
   label: Tax-Free Childcare caring or incapacity benefits
@@ -25,12 +23,3 @@ values:
     - esa_contrib
     - receives_limited_capability_for_work_credits
     - carer_support_payment  # 13(1)(b)(vii): carer's assistance under the Social Security (Scotland) Act 2018 s.28
-  # SI 2024/266 reg 8(2) inserted 13(1)(c) from 6 April 2024.
-  2024-04-06:
-    - incapacity_benefit
-    - sda
-    - carers_allowance
-    - esa_contrib
-    - receives_limited_capability_for_work_credits
-    - carer_support_payment
-    - tax_free_childcare_on_carers_leave  # 13(1)(c): carer's leave under the Employment Rights Act 1996 s.80J

@@ -8,12 +8,13 @@ class tax_free_childcare_caring_or_incapacity_benefit(Variable):
     documentation = (
         "Whether this person is paid or entitled to a benefit, allowance or "
         "credit listed in regulation 13(1)(b) of the Childcare Payments "
-        "(Eligibility) Regulations 2015, or is on carer's leave (regulation "
-        "13(1)(c)). The list is incapacity benefit, severe disablement "
-        "allowance, carer's allowance, contributory employment and support "
-        "allowance, credits for incapacity or limited capability for work, "
-        "and Scottish carer's assistance. Disability Living Allowance and "
-        "Personal Independence Payment are not on it."
+        "(Eligibility) Regulations 2015: incapacity benefit, severe "
+        "disablement allowance, carer's allowance, contributory employment "
+        "and support allowance, credits for incapacity or limited capability "
+        "for work, and Scottish carer's assistance. Disability Living "
+        "Allowance and Personal Independence Payment are not on the list. "
+        "Carer's leave (regulation 13(1)(c)) is handled separately, because "
+        "regulation 13(3) refers to paragraph (1)(b) only."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2015/448/regulation/13"
