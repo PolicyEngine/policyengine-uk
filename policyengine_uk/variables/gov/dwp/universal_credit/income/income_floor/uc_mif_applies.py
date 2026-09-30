@@ -8,10 +8,21 @@ class uc_mif_applies(Variable):
     documentation = (
         "Whether the Minimum Income Floor should be used to determine UC entitlement"
     )
-    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/62/2021-04-06"
+    reference = [
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/62/2021-04-06",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/77",
+    ]
     definition_period = YEAR
 
     def formula(person, period, parameters):
         has_self_empl_income = person("self_employment_income", period) > 0
+        # A person whose main employment is the trade of a company they stand
+        # as sole owner or partner of is treated as gainfully self-employed,
+        # so the floor applies (UC Regs 2013 reg. 77(3)(c)).
+        company_gainful_self_employment = person(
+            "uc_company_gainful_self_employment", period
+        )
         in_startup_period = person("uc_is_in_startup_period", period)
-        return has_self_empl_income & ~in_startup_period
+        return (
+            has_self_empl_income | company_gainful_self_employment
+        ) & ~in_startup_period

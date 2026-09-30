@@ -1,0 +1,349 @@
+# The Universal Credit Regulations 2013 reg. 77 (company analogous to a
+# partnership or one person business), as explained in DWP's Advice for
+# Decision Making Chapter H4, paras. H4360-H4377. Expected values are worked
+# by hand from the regulation; the capital cases use the same figures as the
+# Axiom encoding's tests (rulespec-uk uk/regulations/uksi/2013/376/77.test.yaml).
+# Company earnings are not taxable income, so no income tax or National
+# Insurance comes off them in these cases.
+
+- name: Sole owner of a trading company whose main employment it is has the floor applied to the company income
+  # H4374-H4375 and Example 2 (Claudia): the company's income is the owner's
+  # self-employed earnings (reg. 77(3)(b)) and, as the trade is their main
+  # employment, they are treated as gainfully self-employed so the minimum
+  # income floor applies (reg. 77(3)(c)). max(6,000, 20,000) = 20,000.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_is_main_employment: true
+    owned_company_income_share: 6_000
+    uc_minimum_income_floor: 20_000
+  output:
+    uc_company_owner_treatment_applies: true
+    uc_company_self_employed_earnings: 6_000
+    uc_company_gainful_self_employment: true
+    uc_mif_applies: true
+    uc_mif_capped_earned_income: 20_000
+
+- name: A partner-like shareholder in a start-up period has only their share of the company income counted
+  # H4376 Example 1 (Ezgjan): a 50% owner with meaningful influence, working
+  # 60 hours a week with no salary, in a start-up period. Reg. 62(5) keeps
+  # the floor off during the start-up period; their half of 24,000 counts.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_is_main_employment: true
+    owned_company_income_share: 24_000 * 0.5
+    uc_is_in_startup_period: true
+    uc_minimum_income_floor: 20_000
+  output:
+    uc_company_gainful_self_employment: true
+    uc_mif_applies: false
+    uc_mif_capped_earned_income: 12_000
+
+- name: Company income is counted in addition to the owner's pay as its director
+  # Reg. 77(4): 9,000 of director's pay (employed earnings) plus 15,000 of
+  # company income is 24,000, above the 20,000 floor.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 9_000
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_is_main_employment: true
+    owned_company_income_share: 15_000
+    uc_minimum_income_floor: 20_000
+  output:
+    uc_company_self_employed_earnings: 15_000
+    uc_mif_capped_earned_income: 24_000
+
+- name: When the company is not the owner's main employment its income counts but no floor applies
+  # Reg. 77(3)(b) applies to any owner of a trading company; reg. 77(3)(c)
+  # only when the trade is the main employment.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 18_000
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_is_main_employment: false
+    owned_company_income_share: 1_000
+    uc_minimum_income_floor: 20_000
+  output:
+    uc_company_gainful_self_employment: false
+    uc_mif_applies: false
+    uc_mif_capped_earned_income: 19_000
+
+- name: The company income is tapered like other earnings
+  # A single claimant with no children and no limited capability for work has
+  # no work allowance (reg. 22). Earned income is the 8,000 floor (above the
+  # 6,000 of company income) and the taper takes 55% of it (reg. 22(1)(b)),
+  # which is less than the maximum amount, so the reduction is not capped.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_is_main_employment: true
+        owned_company_income_share: 6_000
+        uc_minimum_income_floor: 8_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    uc_earned_income: 8_000
+    uc_income_reduction: 8_000 * 0.55
+
+- name: A property company gives capital but no earnings
+  # H4365-H4367 (Pablo): a major shareholder in a company letting a seaside
+  # cottage. The shares (90,000, held within corporate_wealth) are disregarded
+  # and the company's capital (the 120,000 cottage) is counted instead
+  # (reg. 77(2)). Reg. 77(3), including the trade asset disregard and the
+  # earnings rule, applies only to a trade (H4376). 2,000 + 90,000 - 90,000
+  # + 120,000 = 122,000.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_property_business: true
+        is_engaged_in_owned_company_trade: true
+        owned_company_is_main_employment: true
+        owned_company_income_share: 10_000
+        owned_company_capital: 120_000
+        owned_company_trade_assets: 120_000
+        owned_company_holding_value: 90_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 2_000
+        corporate_wealth: 90_000
+  output:
+    uc_company_owner_treatment_applies: [true]
+    uc_company_self_employed_earnings: [0]
+    uc_company_gainful_self_employment: [false]
+    uc_company_capital: [120_000]
+    uc_company_holding_disregard: [90_000]
+    uc_mif_capped_earned_income: [0]
+    uc_assessable_capital: 122_000
+
+- name: Trade assets are disregarded while the owner works in the trade
+  # Reg. 77(2) and (3)(a); Axiom test trade_company_main_employment_treats_capital_income_and_mif.
+  # Company capital 100,000 less 40,000 of assets used wholly and
+  # exclusively for the trade = 60,000; the 25,000 holding is disregarded.
+  # 3,000 + 25,000 - 25,000 + 60,000 = 63,000.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        is_engaged_in_owned_company_trade: true
+        owned_company_capital: 100_000
+        owned_company_trade_assets: 40_000
+        owned_company_holding_value: 25_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 3_000
+        corporate_wealth: 25_000
+  output:
+    uc_company_capital: [60_000]
+    uc_company_holding_disregard: [25_000]
+    uc_assessable_capital: 63_000
+
+- name: Trade assets count when the owner does not work in the trade
+  # Reg. 77(3)(a) disregards trade assets only "while they are engaged in
+  # activities in the course of that trade"; Axiom test
+  # trade_assets_not_disregarded_when_person_not_engaged_in_trade_activities.
+  # 90,000 counted; 20,000 holding disregarded. 20,000 - 20,000 + 90,000.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        is_engaged_in_owned_company_trade: false
+        owned_company_capital: 90_000
+        owned_company_trade_assets: 30_000
+        owned_company_holding_value: 20_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        corporate_wealth: 20_000
+  output:
+    uc_company_capital: [90_000]
+    uc_assessable_capital: 90_000
+
+- name: Income that is employed earnings through an intermediary from the main employment takes the owner out of the rule
+  # Reg. 77(5): nothing in reg. 77 applies, so the shares count as ordinary
+  # capital and the company income is not self-employed earnings. Axiom test
+  # intermediary_employed_earnings_main_employment_excludes_regulation.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_income_is_intermediary_employed_earnings: true
+        owned_company_is_main_employment: true
+        is_engaged_in_owned_company_trade: true
+        owned_company_income_share: 36_000
+        owned_company_capital: 100_000
+        owned_company_trade_assets: 40_000
+        owned_company_holding_value: 25_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        corporate_wealth: 25_000
+  output:
+    uc_company_owner_treatment_applies: [false]
+    uc_company_self_employed_earnings: [0]
+    uc_company_gainful_self_employment: [false]
+    uc_mif_applies: [false]
+    uc_company_capital: [0]
+    uc_company_holding_disregard: [0]
+    uc_assessable_capital: 25_000
+
+- name: An investor in a company with many shareholders is not treated as its owner
+  # H4364: such a shareholder has no influence over the running of the
+  # company, so reg. 77 does not apply and the shares are ordinary capital
+  # (reg. 46). Company facts recorded for them have no effect.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: false
+        owned_company_carries_on_trade: true
+        owned_company_is_main_employment: true
+        owned_company_income_share: 50_000
+        owned_company_capital: 1_000_000
+        owned_company_holding_value: 12_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        corporate_wealth: 12_000
+  output:
+    uc_company_owner_treatment_applies: [false]
+    uc_mif_capped_earned_income: [0]
+    uc_assessable_capital: 12_000
+
+- name: A company carrying on neither a trade nor a property business is outside the rule
+  # Reg. 77(1) needs a company "carrying on a trade or a property business".
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_capital: 50_000
+        owned_company_holding_value: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        corporate_wealth: 10_000
+  output:
+    uc_company_owner_treatment_applies: [false]
+    uc_assessable_capital: 10_000
+
+- name: Each partner's company is attributed to the couple's capital
+  # Couples' capital is combined (reg. 18(2)). Two 50% owners of the same
+  # trading company, neither working in it: each is treated as holding half
+  # of the 30,000 company capital and each 5,000 holding is disregarded.
+  # 10,000 + 15,000 + 15,000 - 5,000 - 5,000 = 30,000.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      a:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_capital: 15_000
+        owned_company_holding_value: 5_000
+      b:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_capital: 15_000
+        owned_company_holding_value: 5_000
+    benunits:
+      benunit:
+        members: [a, b]
+    households:
+      household:
+        members: [a, b]
+        corporate_wealth: 10_000
+  output:
+    uc_assessable_capital: 30_000
+
+- name: The company's capital can take the owner over the capital limit
+  # 1,000 of savings and a disregarded 1,000 holding, but the company holds
+  # 20,000 of cash not used wholly and exclusively for its trade: assessable
+  # capital 1,000 + 1,000 - 1,000 + 20,000 = 21,000 exceeds the 16,000 limit
+  # (reg. 18(1)), so no award.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        is_engaged_in_owned_company_trade: true
+        owned_company_capital: 20_000
+        owned_company_holding_value: 1_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 1_000
+        corporate_wealth: 1_000
+  output:
+    uc_assessable_capital: 21_000
+    is_uc_eligible: false
+    universal_credit: 0

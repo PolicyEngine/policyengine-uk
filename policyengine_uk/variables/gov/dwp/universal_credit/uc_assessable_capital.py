@@ -7,7 +7,9 @@ class uc_assessable_capital(Variable):
     label = "Universal Credit assessable capital"
     documentation = (
         "Universal Credit capital counted from the configured capital sources, "
-        "with benunit-reported overrides when available."
+        "with benunit-reported overrides when available, and with a holding "
+        "in a company the person stands as sole owner or partner of replaced "
+        "by the company's capital."
     )
     definition_period = YEAR
     unit = GBP
@@ -40,4 +42,12 @@ class uc_assessable_capital(Variable):
             reported_capital,
             household_capital_proxy,
         )
-        return max_(0, assessed_capital)
+        # A person who stands as sole owner or partner of a company has their
+        # holding in it disregarded and is treated as possessing the company's
+        # capital (or their share of it) instead (UC Regs 2013 reg. 77(2),
+        # (3)(a)). Both the household sources and uc_reported_capital value
+        # the assets held, so the substitution applies to either.
+        company_capital = add(benunit, period, ["uc_company_capital"]) - add(
+            benunit, period, ["uc_company_holding_disregard"]
+        )
+        return max_(0, assessed_capital + company_capital)
