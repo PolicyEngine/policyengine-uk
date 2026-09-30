@@ -28,9 +28,11 @@ or earnings, with private pension on a £250 grid:
    not fall.
 2. Boundary: on the step where savings credit ends, household net income does
    not fall, excluding the TV licence, the Winter Fuel Payment and the
-   Scottish Pension Age Winter Heating Payment. Those three depend on
-   receiving Pension Credit, a genuine statutory cliff. Housing Benefit
-   switches from the Secretary of State's figure to its own rules there.
+   Scottish Pension Age Winter Heating Payment, which the model makes depend
+   on receiving Pension Credit (the free licence at 75, the Scottish payment's
+   Pension Credit rates, and the Winter Fuel Payment above £35,000 of taxable
+   income). Housing Benefit switches from the Secretary of State's figure to
+   its own rules there.
 3. Differential: a savings-credit-only family's Housing Benefit income is the
    Pension Credit income, recomputed here from pensions, income tax and the
    deemed income on savings, plus the savings credit, less the earnings
@@ -92,9 +94,10 @@ def money(low, high):
 def adult(draw):
     return dict(
         # Aged 80 or over in 2026, so State Pension age was reached before
-        # 6 April 2016 and savings credit is possible. (The model tests that
-        # with the current State Pension age, so it excludes some people aged
-        # 75 to 79 who qualify.)
+        # 6 April 2016 and savings credit is possible. (The model tests this
+        # against the current State Pension age of 66, so in 2026 it admits
+        # only people aged 77 or over and excludes qualifying people aged 76
+        # or under.)
         age=draw(st.integers(80, 100)),
         disability=draw(DISABILITY),
         blind=draw(st.booleans()),

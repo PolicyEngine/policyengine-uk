@@ -7,11 +7,12 @@ class housing_benefit_applicable_income(Variable):
     label = "relevant income for Housing Benefit means test"
     documentation = (
         "Income taken into account in the Housing Benefit means test. It is "
-        "zero for a Guarantee Credit recipient. Where the Pension Credit award "
-        "is savings credit only, it is the Secretary of State's assessment of "
-        "income plus the savings credit payable, less childcare charges and "
-        "the earnings disregards. Otherwise it is the family's income under "
-        "the Housing Benefit rules."
+        "zero where anyone in the family is over State Pension age and the "
+        "family's guarantee credit is positive (the guarantee credit "
+        "passport). Where the Pension Credit award is savings credit only, it "
+        "is the Secretary of State's assessment of income plus the savings "
+        "credit payable, less childcare charges and the earnings disregards. "
+        "Otherwise it is the family's income under the Housing Benefit rules."
     )
     definition_period = YEAR
     unit = GBP

@@ -187,7 +187,7 @@
     # 7,800 - 0.65 x (13,372.62 - 13,312) = 7,800 - 39.40 = 7,760.60.
     housing_benefit: 7_760.60
 
-- name: Case 5, savings credit only lone parent, childcare charges and the lone parent earnings disregard are deducted.
+- name: Case 5, savings credit only lone parent in work, childcare charges and the lone parent and additional earnings disregards are deducted.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -196,6 +196,9 @@
         age: 78
         state_pension: 11_000
         employment_income: 7_000
+        # 20 hours a week, so remunerative work (reg 6) and the reg 31
+        # condition for deducting childcare charges are met.
+        hours_worked: 1_040
       person2:
         age: 8
         childcare_expenses: 2_600
@@ -204,10 +207,12 @@
         members: [person1, person2]
         # Reg 27(4)(c)(i): the higher amount disregarded for a lone parent's
         # earnings, £25 a week (Sch 4 para 2) against Pension Credit's £20
-        # (SPC Regs 2002 Sch VI para 1). Pension Credit income in the model
-        # disregards no earnings, so the whole £25 is deducted: 25 x 52 =
-        # 1,300.
-        housing_benefit_applicable_income_disregard: 1_300
+        # (SPC Regs 2002 Sch VI para 1); and (d): the additional £17.10 (Sch
+        # 4 para 9(1)) for a lone parent working 16 hours or more whose net
+        # earnings cover the disregards and childcare. Pension Credit income
+        # in the model disregards no earnings, so the whole of both is
+        # deducted: (25 + 17.10) x 52 = 2,189.20, the value #1908 gives.
+        housing_benefit_applicable_income_disregard: 2_189.20
     households:
       household:
         members: [person1, person2]
@@ -223,11 +228,12 @@
     # 933.82 - 0.4 x (16,914 - 16,014.96) = 933.82 - 359.62 = 574.20.
     savings_credit: 574.20
     in_receipt_of_savings_credit_only: true
-    # Reg 27(4)(b): 2,600 of childcare, below the weekly maximum.
+    # Reg 27(4)(b): 2,600 of childcare (£50 a week), below the weekly
+    # maximum and the earnings.
     housing_benefit_applicable_income_childcare_element: 2_600
-    # 16,914 + 574.20 - 2,600 - 1,300 = 13,588.20.
-    housing_benefit_savings_credit_only_income: 13_588.20
-    housing_benefit_applicable_income: 13_588.20
+    # 16,914 + 574.20 - 2,600 - 2,189.20 = 12,699.
+    housing_benefit_savings_credit_only_income: 12_699
+    housing_benefit_applicable_income: 12_699
 
 - name: Case 6, guarantee credit and savings credit together, the award is not savings credit only and the guarantee credit passport applies.
   period: 2026
