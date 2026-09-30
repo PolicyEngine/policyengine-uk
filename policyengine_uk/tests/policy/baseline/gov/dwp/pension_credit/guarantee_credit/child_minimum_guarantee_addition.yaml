@@ -7,13 +7,66 @@
         age: 81
       older_child:
         age: 10
-        birth_year: 2016
       younger_child:
         age: 6
-        birth_year: 2020
     benunits:
       benunit:
         members: [claimant, older_child, younger_child]
   output:
     child_minimum_guarantee_addition: 7_854.6
     minimum_guarantee: 20_230.6
+
+# Sch IIA para 10: the eldest child or qualifying young person gets 81.07 a week
+# instead of 69.98 if born before 6 April 2017. 81.07 * 52 = 4,215.64 and
+# 69.98 * 52 = 3,638.96.
+- name: An only child born on 5 April 2017 gets the first child amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      child:
+        age: 9
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [claimant, child]
+  output:
+    child_minimum_guarantee_addition: 4_215.64
+
+- name: An only child born on 6 April 2017 gets the standard child amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      child:
+        age: 9
+        date_of_birth: 20170406
+    benunits:
+      benunit:
+        members: [claimant, child]
+  output:
+    child_minimum_guarantee_addition: 3_638.96
+
+- name: The eldest of two children of the same age is the one born first.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+      born_later:
+        age: 9
+        date_of_birth: 20170406
+      born_earlier:
+        age: 9
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [claimant, born_later, born_earlier]
+  output:
+    # (81.07 + 69.98) * 52 = 7,854.60.
+    child_minimum_guarantee_addition: 7_854.60

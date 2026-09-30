@@ -1,5 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.dates import exact_age_in_months
+from policyengine_uk.utils.dates import birth_instant, grid_month
 
 
 class months_since_state_pension_age(Variable):
@@ -9,14 +9,15 @@ class months_since_state_pension_age(Variable):
     documentation = (
         "Months between the day this person attains State Pension age and the "
         "middle of the fiscal year (6 October); negative if they attain it "
-        "later. Exact age is age plus months_since_last_birthday."
+        "later. Exact age is measured from the same instant of birth as "
+        "state_pension_age."
     )
     definition_period = YEAR
     unit = "month"
 
     def formula(person, period, parameters):
-        age_in_months = exact_age_in_months(
-            person("age", period), person("months_since_last_birthday", period)
+        age_in_months = grid_month(period.start.year, 10) - birth_instant(
+            person, period
         )
         spa = person("state_pension_age", period).astype(np.float64)
         months_since = age_in_months - 12 * spa
