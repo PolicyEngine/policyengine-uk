@@ -139,3 +139,48 @@
     uc_unearned_income: 0
     uc_maximum_amount: 8_003.64
     universal_credit: 2_503.64
+
+# The two cases below pin monotonicity at the tariff threshold. Before this
+# fix, £1 more savings switched interest out of unearned income and raised the
+# award from £2,098.80 to £5,046.60.
+- name: Interest does not reduce the award with savings of £6,000
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 3_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_000
+  output:
+    uc_tariff_income: 0
+    uc_unearned_income: 0
+    universal_credit: 5_098.80
+
+- name: One more pound of savings lowers the award by the tariff income only
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 3_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+  output:
+    # £1 over £6,000 is an incomplete £250 step: £4.35 x 12 = £52.20.
+    # UC = 5,098.80 - 52.20 = £5,046.60.
+    uc_tariff_income: 52.20
+    uc_unearned_income: 52.20
+    universal_credit: 5_046.60
