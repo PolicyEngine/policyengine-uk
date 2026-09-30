@@ -75,7 +75,14 @@ class uc_income_tax_on_earnings(Variable):
             rates.scotland.rates.calc(taxable_earnings),
             rates.uk.calc(taxable_earnings),
         )
-        # Tax reductions (for example the married couple's allowance) can
-        # leave total income tax below the tax on the earnings slice; never
-        # deduct more than the person pays.
+        # HMRC gives a Marriage Allowance recipient the transfer through
+        # their tax code (code letter M), so it comes off the tax on their
+        # earnings first.
+        tax = max_(0, tax - person("marriage_allowance_tax_reduction", period))
+        # Other tax reductions (for example the married couple's allowance)
+        # can leave total income tax below the tax on the earnings slice;
+        # never deduct more than the person pays. That sets them against tax
+        # on other income first, the opposite order to the Marriage
+        # Allowance; the married couple's allowance needs a birth before
+        # 6 April 1935, so it hardly ever reaches a UC claimant.
         return min_(tax, person("income_tax", period))
