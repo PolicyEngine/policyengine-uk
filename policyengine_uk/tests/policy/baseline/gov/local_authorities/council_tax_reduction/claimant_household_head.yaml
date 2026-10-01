@@ -1,0 +1,400 @@
+# Who claims Council Tax Reduction in a household of several families.
+# Only a person liable to pay the council tax is in a class entitled to a
+# reduction: England SI 2012/2885 Sch 1 paras 2(a) and 3(a); Wales SI
+# 2013/3029 regs 22(a) to 25(a); Scotland SSI 2021/249 reg 13(1) and (3)(a)
+# and SSI 2012/319 reg 14(1) and (3)(a). The liable resident is the one with
+# the greatest interest in the dwelling (Local Government Finance Act 1992
+# s.6 in England and Wales, s.75 in Scotland), not the eldest. The model
+# takes the household head (the household reference person, a householder)
+# as that person, so the head's family claims and every other adult is a
+# non-dependant (SI 2012/2885 reg 9; SI 2013/3029 reg 9; SSI 2021/249 reg 8).
+# Joint liability where the rent is shared: joint_liability.yaml.
+
+- name: Two single pensioners of the same age in England - only the head's family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      friend:
+        age: 85
+        is_household_head: false
+        council_tax_reduction_individual_non_dep_deduction: 0
+      householder:
+        age: 85
+        is_household_head: true
+    benunits:
+      friend_family:
+        members: [friend]
+        council_tax_reduction_applicable_income: 0
+      householder_family:
+        members: [householder]
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [friend, householder]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    benunit_contains_household_head: [false, true]
+    council_tax_reduction_claimant_benunit: [false, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [true, false]
+    simulated_council_tax_reduction_benunit: [0, 1_800]
+    # One award of the council tax, not two.
+    council_tax_reduction: 1_800
+
+- name: Two single pensioners of the same age in Scotland with no head flagged - one family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      first:
+        age: 85
+        council_tax_reduction_individual_non_dep_deduction: 0
+      second:
+        age: 85
+        council_tax_reduction_individual_non_dep_deduction: 0
+    benunits:
+      first_family:
+        members: [first]
+        council_tax_reduction_applicable_income: 0
+      second_family:
+        members: [second]
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [first, second]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # With no input, the eldest member is the head, ties by order.
+    is_household_head: [true, false]
+    council_tax_reduction_claimant_benunit: [true, false]
+    simulated_council_tax_reduction_benunit: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Two single pensioners of the same age in Wales - only the head's family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 85
+        is_household_head: true
+      friend:
+        age: 85
+        is_household_head: false
+        council_tax_reduction_individual_non_dep_deduction: 0
+    benunits:
+      householder_family:
+        members: [householder]
+        council_tax_reduction_applicable_income: 0
+      friend_family:
+        members: [friend]
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [householder, friend]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_claimant_benunit: [true, false]
+    simulated_council_tax_reduction_benunit: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Two working-age adults of the same age in Newham - the other adult is a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      friend:
+        age: 40
+        is_household_head: false
+      householder:
+        age: 40
+        is_household_head: true
+    benunits:
+      friend_family:
+        members: [friend]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      householder_family:
+        members: [householder]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      home:
+        members: [friend, householder]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_claimant_benunit: [false, true]
+    # The friend, not in remunerative work: 7.54 a week x 52 = 392.08.
+    newham_council_tax_reduction_non_dep_deductions: [0, 392.08]
+    # 1,800 x 70% - 392.08 = 867.92, once.
+    newham_council_tax_reduction: [0, 867.92]
+    council_tax_reduction: 867.92
+
+- name: Two working-age adults of the same age in Merton - only the head's family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      friend:
+        age: 40
+        is_household_head: false
+        merton_council_tax_reduction_individual_non_dep_deduction: 0
+    benunits:
+      householder_family:
+        members: [householder]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      friend_family:
+        members: [friend]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      home:
+        members: [householder, friend]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    merton_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Two working-age adults of the same age in Kingston upon Thames - only the head's family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      friend:
+        age: 40
+        is_household_head: false
+        kingston_upon_thames_council_tax_reduction_individual_non_dep_deduction: 0
+    benunits:
+      householder_family:
+        members: [householder]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      friend_family:
+        members: [friend]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      home:
+        members: [householder, friend]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 1_800
+        savings: 0
+  output:
+    kingston_upon_thames_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Two working-age adults of the same age in Westminster - only the head's family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      friend:
+        age: 40
+        is_household_head: false
+        westminster_council_tax_reduction_individual_non_dep_deduction: 0
+    benunits:
+      householder_family:
+        members: [householder]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      friend_family:
+        members: [friend]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      home:
+        members: [householder, friend]
+        country: ENGLAND
+        local_authority: WESTMINSTER
+        council_tax: 1_800
+        savings: 0
+  output:
+    westminster_council_tax_reduction: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Two working-age adults of the same age in Oxford - the other adult is a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      friend:
+        age: 40
+        is_household_head: false
+    benunits:
+      householder_family:
+        members: [householder]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      friend_family:
+        members: [friend]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      home:
+        members: [householder, friend]
+        country: ENGLAND
+        local_authority: OXFORD
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The friend, not in remunerative work: 5.20 a week x 52 = 270.40.
+    oxford_council_tax_reduction_non_dep_deductions: [270.4, 0]
+    oxford_council_tax_reduction: [1_529.6, 0]
+    council_tax_reduction: 1_529.6
+
+- name: A pensioner living in their adult child's home in Scotland is a non-dependant, not the claimant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      parent:
+        age: 80
+        is_household_head: false
+        council_tax_reduction_individual_non_dep_deduction: 200
+    benunits:
+      householder_family:
+        members: [householder]
+        council_tax_reduction_applicable_income: 0
+      parent_family:
+        members: [parent]
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [householder, parent]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The eldest adult is not the liable resident; the head is.
+    benunit_contains_household_head: [true, false]
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_non_dep_deductions: [200, 0]
+    simulated_council_tax_reduction_benunit: [1_600, 0]
+    council_tax_reduction: 1_600
+
+- name: A pensioner in their working-age child's home in England does not put the household on the pensioner scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      parent:
+        age: 80
+        is_household_head: false
+        attendance_allowance: 5_000
+    benunits:
+      householder_family:
+        members: [householder]
+        would_claim_uc: false
+      parent_family:
+        members: [parent]
+    households:
+      home:
+        members: [householder, parent]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The claimant's family is working-age; Maidstone's working-age scheme is
+    # not modelled, so no simulated reduction.
+    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_scheme_supported: false
+    simulated_council_tax_reduction_benunit: [0, 0]
+    # A non-dependant's Attendance Allowance does not exempt the claimant
+    # from non-dependant deductions (SI 2012/2885 Sch 1 para 8(6)).
+    council_tax_reduction_household_has_non_dep_exemption: false
+
+- name: With two members flagged as head, the eldest flagged member's family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      younger_flagged:
+        age: 60
+        is_household_head: true
+      eldest_unflagged:
+        age: 90
+        is_household_head: false
+      older_flagged:
+        age: 70
+        is_household_head: true
+    benunits:
+      younger_family:
+        members: [younger_flagged]
+      eldest_family:
+        members: [eldest_unflagged]
+      older_family:
+        members: [older_flagged]
+    households:
+      home:
+        members: [younger_flagged, eldest_unflagged, older_flagged]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+  output:
+    benunit_contains_household_head: [false, false, true]
+    council_tax_reduction_claimant_benunit: [false, false, true]
+
+- name: With no member flagged as head, the eldest member's family claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      younger:
+        age: 30
+        is_household_head: false
+      elder:
+        age: 50
+        is_household_head: false
+    benunits:
+      younger_family:
+        members: [younger]
+      elder_family:
+        members: [elder]
+    households:
+      home:
+        members: [younger, elder]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+  output:
+    benunit_contains_household_head: [false, true]
+    council_tax_reduction_claimant_benunit: [false, true]
