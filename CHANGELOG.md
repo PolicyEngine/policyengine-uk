@@ -1,3 +1,10 @@
+## [2.104.2] - 2026-10-01
+
+### Fixed
+
+- Disregard the whole income and capital of Pension Credit guarantee credit recipients in the England pensioner, Wales and Scotland council tax reduction schemes, so they get the maximum reduction less non-dependant deductions whatever their income or savings (SI 2012/2885 Sch 1 para 13; WSI 2013/3029 Sch 1 para 7; SSI 2012/319 reg 24). For savings-credit-only recipients, use the Pension Credit assessment of income plus the savings credit paid, and of capital (para 14; para 8; reg 25). Their reduction can fall, because the savings credit counts as income and the capital limit applies to all the capital Pension Credit counts, not only savings.
+
+
 ## [2.104.1] - 2026-10-01
 
 ### Fixed
