@@ -19,6 +19,7 @@ generated from it by
 | `road_fuel_volume`      | Petrol + diesel road-fuel clearances                     | HMRC Hydrocarbon Oils + OBR fuel-duty forecast |
 | `petrol_spending_litre_proxy` | Spending growth that preserves road-fuel litres    | HMRC + OBR              |
 | `diesel_spending_litre_proxy` | Same, for diesel                                   | HMRC + OBR              |
+| `finance_ni.domestic_rates` | Average Northern Ireland domestic rates bill (regional plus district poundage) | DoF rate poundages, LPS rates paid, NI draft Budget 2026-29 |
 
 ## Time horizons
 
