@@ -45,7 +45,9 @@
         # test pins the order of the cap and the taper, not the LHA table.
         BRMA_LHA_rate: 9_467.64
         # Inputs, so the earnings disregard and the pension-age allowance
-        # cannot move the taper.
+        # cannot move the taper. The applicable income input overrides the
+        # income computed from state_pension_reported, which only keeps
+        # guarantee_credit at 0 below.
         housing_benefit_applicable_amount: 13_312
         housing_benefit_applicable_income: 14_948.80
     households:
