@@ -1,0 +1,598 @@
+# Who counts in the LHA size criteria beyond the claimant's own family, and
+# the additional bedrooms for foster parents and overnight care.
+#
+# Universal Credit (UC Regs 2013 Sch 4): the renter's extended benefit unit is
+# the renter, the children and qualifying young persons they are responsible
+# for, and their non-dependants (para 9(1)). A non-dependant is anyone who
+# normally lives with the renter except, among others, a foster child of the
+# renter (9(2)(c), 9(3)), a person liable to pay for their occupation on a
+# commercial basis such as a lodger (9(2)(d)), and a child or qualifying young
+# person no one in the extended benefit unit is responsible for (9(2)(g)). A
+# non-dependant's own child is their responsibility (reg 4(2)), so is a
+# non-dependant too, and counts as a child in para 10(1)(d)-(f). No one is
+# responsible for a child looked after by a local authority (reg 4(6)(a)),
+# except a child placed for adoption (reg 4A(1)(c)). Para 12 gives one
+# additional bedroom for each of the overnight care condition and the foster
+# parent condition (12(9)).
+#
+# Housing Benefit (HB Regs 2006 and HB (SPC) Regs 2006 reg 13D): one bedroom
+# for each category of "occupier", everyone who occupies the dwelling as
+# their home except a joint tenant outside the claimant's household (13D(12)),
+# so the children of a non-dependant, boarder or lodger count. A child or
+# young person placed with the claimant as a foster child or for adoption
+# does not occupy the dwelling (reg 21(3)); the claimant is then a
+# "qualifying parent or carer" (reg 2(1)) with one additional bedroom
+# (13D(3A)(b)), and one more for overnight care (13D(3A)(a), (3B)).
+#
+# DWP guidance: ADM F3016, F3034, F3111-F3112, F3131-F3138; LHA Guidance
+# Manual (April 2014) paras 2.030-2.033, 2.090, 2.093; HB/CTB circular A4/2012
+# paras 36-38 and 44.
+#
+# Rents of £200 a week (£10,400 a year) sit between the published Maidstone
+# one-bedroom (B) and two-bedroom (C) rates (VOA, LHA April 2024, held for
+# 2025-26: B £172.60, C £208.27 a week), so where the category is C the rent
+# is met in full.
+
+- name: A non-dependant's child of the opposite sex needs a bedroom of their own
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 48
+        is_household_head: true
+        is_male: false
+      son:
+        age: 12
+        is_male: true
+      daughter:
+        age: 24
+        is_male: false
+      granddaughter:
+        age: 11
+        is_male: false
+    benunits:
+      renter_family:
+        members: [renter, son]
+      daughter_family:
+        members: [daughter, granddaughter]
+    households:
+      home:
+        members: [renter, son, daughter, granddaughter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_non_dependant_of_household_head: [false, false, true, true]
+    # UC: the renter (para 10(1)(a)), the daughter (10(1)(c)), and the son
+    # and the granddaughter, who are of opposite sexes and over 10 (10(1)(f)):
+    # 4 bedrooms. The daughter's own entitlement counts her and her child.
+    LHA_allowed_bedrooms: [4, 2]
+    LHA_category: [E, C]
+    # HB: the same four occupiers' categories (reg 13D(3)(a), (b), (e)).
+    housing_benefit_LHA_allowed_bedrooms: [4, 2]
+    housing_benefit_LHA_category: [E, C]
+
+- name: A non-dependant's child shares with the renter's child of the same sex
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 48
+        is_household_head: true
+        is_male: false
+      son:
+        age: 12
+        is_male: true
+      daughter:
+        age: 24
+        is_male: false
+      grandson:
+        age: 8
+        is_male: true
+    benunits:
+      renter_family:
+        members: [renter, son]
+      daughter_family:
+        members: [daughter, grandson]
+    households:
+      home:
+        members: [renter, son, daughter, grandson]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The son and the grandson share (UC para 10(1)(e); HB reg 13D(3)(c)):
+    # 3 bedrooms, the same as without the grandson.
+    LHA_allowed_bedrooms: [3, 2]
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+
+- name: A non-dependant's two children under 10 share one bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 55
+        is_household_head: true
+      daughter:
+        age: 27
+        is_male: false
+      grandson:
+        age: 6
+        is_male: true
+      granddaughter:
+        age: 4
+        is_male: false
+    benunits:
+      renter_family:
+        members: [renter]
+      daughter_family:
+        members: [daughter, grandson, granddaughter]
+    households:
+      home:
+        members: [renter, daughter, grandson, granddaughter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC: the renter, the daughter (para 10(1)(c)) and the two grandchildren
+    # under 10 (10(1)(d)): 3 bedrooms, category D.
+    LHA_allowed_bedrooms: [3, 2]
+    LHA_category: [D, C]
+    # HB: reg 13D(3)(a), (b), (d).
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+    housing_benefit_LHA_category: [D, C]
+
+- name: A lodger's child counts for Housing Benefit but not Universal Credit
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      lodger:
+        age: 30
+        rent_paid_as_lodger: 5_000
+      lodgers_child:
+        age: 5
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger, lodgers_child]
+    households:
+      home:
+        members: [householder, lodger, lodgers_child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_non_dependant_of_household_head: [false, false, false]
+    # UC: the lodger is liable to pay on a commercial basis (para 9(2)(d)),
+    # so is not in the householder's extended benefit unit, and the lodger's
+    # child is excluded by para 9(2)(g): the householder's bedroom only.
+    LHA_allowed_bedrooms: [1, 2]
+    # HB: the lodger and the lodger's child occupy the dwelling as their home
+    # (reg 13D(12); LHA Guidance Manual para 2.030; circular A4/2012 para
+    # 44): 3 bedrooms. The lodger's own claim counts their own family.
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+
+- name: A joint tenant's child does not count for the other joint tenant
+  period: 2026
+  input:
+    people:
+      tenant_1:
+        age: 40
+        is_household_head: true
+      tenant_2:
+        age: 38
+      tenant_2_child:
+        age: 7
+    benunits:
+      family_1:
+        members: [tenant_1]
+      family_2:
+        members: [tenant_2, tenant_2_child]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [tenant_1, tenant_2, tenant_2_child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # A joint tenant outside the claimant's household is not an occupier
+    # (HB reg 13D(12)), nor their household (LHA Guidance Manual paras 2.031
+    # and 2.093); under UC they are liable for their occupation (para
+    # 9(2)(d)). Each joint tenant counts their own family.
+    LHA_allowed_bedrooms: [1, 2]
+    housing_benefit_LHA_allowed_bedrooms: [1, 2]
+
+- name: Foster children have no bedrooms of their own; the foster parent has one additional bedroom
+  period: 2026
+  input:
+    people:
+      foster_parent:
+        age: 45
+        is_household_head: true
+      foster_son:
+        age: 12
+        is_male: true
+        is_looked_after_by_local_authority: true
+      foster_daughter:
+        age: 11
+        is_male: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [foster_parent, foster_son, foster_daughter]
+    households:
+      home:
+        members: [foster_parent, foster_son, foster_daughter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false, false]
+    is_child_or_young_person_placed_with_family: [false, true, true]
+    # UC: foster children are in no one's extended benefit unit (paras 9(1),
+    # 9(2)(c), 9(3); reg 4(6)(a)); the renter is a foster parent with one
+    # additional bedroom however many children are placed (para 12(4)(a),
+    # (9)(b); ADM F3138 example 2): 2 bedrooms, category C.
+    lha_renter_meets_foster_parent_condition: true
+    LHA_additional_bedrooms: 1
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # HB: the foster children do not occupy the dwelling (reg 21(3); LHA
+    # Guidance Manual para 2.033); the claimant is a qualifying parent or
+    # carer (reg 2(1)) with one additional bedroom (reg 13D(3A)(b)).
+    is_housing_benefit_qualifying_parent_or_carer: true
+    housing_benefit_LHA_additional_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+    uc_housing_costs_element: 10_400
+
+- name: A couple fostering a child alongside their own child
+  period: 2026
+  input:
+    people:
+      parent_1:
+        age: 38
+        is_household_head: true
+        is_parent: true
+      parent_2:
+        age: 36
+        is_parent: true
+      son:
+        age: 5
+        is_male: true
+      foster_daughter:
+        age: 3
+        is_male: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [parent_1, parent_2, son, foster_daughter]
+    households:
+      home:
+        members: [parent_1, parent_2, son, foster_daughter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, true, false, false]
+    # UC: the couple, their son (para 10(1)(f)), and the foster parent's
+    # additional bedroom (para 12(9)(b)): 3 bedrooms. The foster daughter
+    # does not share with the son as a child of the extended benefit unit.
+    LHA_allowed_bedrooms: 3
+    LHA_category: D
+    # HB: the couple, the son (reg 13D(3)(e)) and the qualifying parent or
+    # carer's bedroom (13D(3A)(b)).
+    housing_benefit_LHA_allowed_bedrooms: 3
+    housing_benefit_LHA_category: D
+
+- name: A single foster parent under 35 is not restricted to the shared accommodation rate
+  period: 2026
+  input:
+    people:
+      foster_parent:
+        age: 28
+        is_household_head: true
+      foster_child:
+        age: 7
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [foster_parent, foster_child]
+    households:
+      home:
+        members: [foster_parent, foster_child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC: not responsible for the foster child (reg 4(6)(a)), who is not a
+    # non-dependant (para 9(2)(c)), but excepted as a renter who satisfies
+    # the foster parent condition (para 29(9A)).
+    is_responsible_for_child_or_young_person_for_uc_or_housing_benefit: false
+    lha_renter_has_non_dependant: false
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # HB: a single claimant under 35, but a qualifying parent or carer is not
+    # a young individual (reg 2(1)).
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+
+- name: An approved foster parent between placements keeps the additional bedroom
+  period: 2026
+  input:
+    people:
+      foster_parent:
+        age: 30
+        is_household_head: true
+        is_approved_foster_parent_without_placement: true
+    benunits:
+      family:
+        members: [foster_parent]
+    households:
+      home:
+        members: [foster_parent]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC Sch 4 para 12(5); HB reg 2(1), "qualifying parent or carer" (b).
+    lha_renter_meets_foster_parent_condition: true
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    is_housing_benefit_qualifying_parent_or_carer: true
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+    uc_housing_costs_element: 10_400
+
+- name: A child placed for adoption counts under Universal Credit but not Housing Benefit
+  period: 2026
+  input:
+    people:
+      adopter:
+        age: 40
+        is_household_head: true
+      child:
+        age: 4
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [adopter, child]
+    households:
+      home:
+        members: [adopter, child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC: the adopter is responsible for the child (reg 4A(1)(c), from 1
+    # April 2024), who has a bedroom (para 10(1)(f)), and as an adopter with
+    # whom a child is placed meets the foster parent condition (para
+    # 12(4)(b); ADM F3133): 3 bedrooms.
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    lha_renter_meets_foster_parent_condition: true
+    LHA_allowed_bedrooms: 3
+    LHA_category: D
+    # HB: the child is not a member of the household nor an occupier (reg
+    # 21(3)(b)-(c)); the adopter is a qualifying parent or carer: 2 bedrooms.
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    is_child_or_young_person_placed_with_family: [false, true]
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+
+- name: A disabled renter with a non-resident overnight carer has an additional bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 62
+        is_household_head: true
+        attendance_allowance: 5_000
+        has_non_resident_overnight_carer: true
+    benunits:
+      family:
+        members: [renter]
+    households:
+      home:
+        members: [renter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC Sch 4 para 12(A1)(a), (3) (ADM F3132 example 1); HB reg
+    # 13D(3A)(a)(i).
+    meets_lha_overnight_care_condition: true
+    LHA_additional_bedrooms: 1
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    housing_benefit_LHA_additional_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+    uc_housing_costs_element: 10_400
+
+- name: Overnight care from a partner who lives in the home gives no additional bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 50
+        is_household_head: true
+        pip_dl: 5_000
+      partner:
+        age: 49
+    benunits:
+      couple:
+        members: [renter, partner]
+    households:
+      home:
+        members: [renter, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The carer must not live in the home (UC para 12(3)(b); ADM F3132
+    # example 3; HB reg 2(1), "person who requires overnight care" (b)).
+    meets_lha_overnight_care_condition: [false, false]
+    LHA_additional_bedrooms: 0
+    LHA_allowed_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 1
+
+- name: Overnight care for a non-dependant gives the renter an additional bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 58
+        is_household_head: true
+      son:
+        age: 30
+        pip_dl: 5_000
+        has_non_resident_overnight_carer: true
+    benunits:
+      renter_family:
+        members: [renter]
+      son_family:
+        members: [son]
+    households:
+      home:
+        members: [renter, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC: the son is a non-dependant (para 9(2)), in the renter's extended
+    # benefit unit, and meets the overnight care condition (para
+    # 12(A1)(b)): the renter, the son and the carer's room, 3 bedrooms.
+    LHA_additional_bedrooms: [1, 1]
+    LHA_allowed_bedrooms: [3, 2]
+    # HB: an occupier other than the claimant or partner who requires
+    # overnight care (reg 13D(3A)(a)(iii)).
+    housing_benefit_LHA_additional_bedrooms: [1, 1]
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+
+- name: Two people needing overnight care give one additional bedroom
+  period: 2026
+  input:
+    people:
+      partner_1:
+        age: 55
+        is_household_head: true
+        dla_sc_middle_plus: true
+        has_non_resident_overnight_carer: true
+      partner_2:
+        age: 54
+        dla_sc_middle_plus: true
+        has_non_resident_overnight_carer: true
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+    households:
+      home:
+        members: [partner_1, partner_2]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC para 12(9)(a) (ADM F3138 example 1); HB reg 13D(3A)(a).
+    LHA_additional_bedrooms: 1
+    LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_additional_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: Foster parents one of whom needs overnight care have two additional bedrooms
+  period: 2026
+  input:
+    people:
+      parent_1:
+        age: 44
+        is_household_head: true
+        attendance_allowance: 5_000
+        has_non_resident_overnight_carer: true
+      parent_2:
+        age: 42
+      foster_child_1:
+        age: 9
+        is_looked_after_by_local_authority: true
+      foster_child_2:
+        age: 6
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [parent_1, parent_2, foster_child_1, foster_child_2]
+    households:
+      home:
+        members: [parent_1, parent_2, foster_child_1, foster_child_2]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, true, false, false]
+    # UC para 12(9)(a)-(b) (ADM F3138 example 2): the couple's bedroom and
+    # one for each condition, 3 bedrooms.
+    LHA_additional_bedrooms: 2
+    LHA_allowed_bedrooms: 3
+    # HB reg 13D(3B): two additional bedrooms where 13D(3A)(a) and (b) both
+    # apply.
+    housing_benefit_LHA_additional_bedrooms: 2
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A single Housing Benefit claimant under 35 who needs overnight care is not a young individual
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 25
+        is_household_head: true
+        pip_dl: 5_000
+        has_non_resident_overnight_carer: true
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # HB Regs 2006 reg 2(1), "young individual": not one who requires
+    # overnight care. One bedroom plus the carer's.
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+    # UC: excepted from shared accommodation by the daily living component
+    # (para 29(5)); 2 bedrooms with the carer's.
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+
+- name: An armed forces independence payment excepts a renter under 35 from the shared accommodation rate
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 30
+        is_household_head: true
+        armed_forces_independence_payment: 8_000
+    benunits:
+      family:
+        members: [renter]
+    households:
+      home:
+        members: [renter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC Sch 4 para 29(5)(b): attendance allowance, which includes armed
+    # forces independence payment (reg 2).
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B

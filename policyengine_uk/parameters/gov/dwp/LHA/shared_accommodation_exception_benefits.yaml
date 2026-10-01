@@ -2,6 +2,7 @@ description: Disability benefits whose recipients under 35 are excepted from the
 values:
   2013-04-29:
     - attendance_allowance
+    - armed_forces_independence_payment
     - dla_sc_middle_plus
     - pip_dl
 metadata:
@@ -10,3 +11,5 @@ metadata:
   reference:
     - title: Universal Credit Regulations 2013 Sch 4 para 29(5)
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/29
+    - title: Universal Credit Regulations 2013 reg 2, "attendance allowance" (includes armed forces independence payment)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2

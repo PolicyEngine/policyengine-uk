@@ -15,8 +15,10 @@ class is_non_dependant_of_household_head(Variable):
         "Credit counts a non-dependant in one claim only, which the model "
         "gives to the household head's family; Housing Benefit and Council "
         "Tax Reduction apportion a non-dependant of several joint occupiers "
-        "between them. Foster children and carers engaged through a charity "
-        "are not identified."
+        "between them. A non-dependant's own children are non-dependants "
+        "too; a child looked after by a local authority is not (see "
+        "LHA_allowed_bedrooms). Carers engaged through a charity are not "
+        "identified."
     )
     definition_period = YEAR
     reference = (
