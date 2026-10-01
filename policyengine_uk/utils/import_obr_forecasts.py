@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import re
+import shutil
 from dataclasses import dataclass
 from io import BytesIO
 from pathlib import Path
@@ -782,31 +783,56 @@ def build_arg_parser() -> argparse.ArgumentParser:
 def write_all_or_none(outputs: dict[Path, str]) -> None:
     """Write every file or leave all of them as they were.
 
-    Each file is staged beside its target, then moved into place. If staging
-    or a move fails, files already moved get their original text back and
-    the staged copies are removed, so growth and gaps never mix forecasts.
+    Each new file is staged beside its target and each existing target is
+    copied to a backup beside it before anything moves. Targets are then
+    replaced by atomic moves. On any failure, each replaced target is put
+    back by an atomic move from its backup, which never truncates it, so a
+    second failure cannot leave a file empty. If a restore fails, its backup
+    is kept and named in the error. Growth and gaps never mix forecasts
+    silently.
     """
-    originals = {path: path.read_text() if path.exists() else None for path in outputs}
     staged: dict[Path, Path] = {}
+    backups: dict[Path, Path] = {}
     replaced: list[Path] = []
+    keep: set[Path] = set()
     try:
         for path, content in outputs.items():
             staging = path.with_name(f".{path.name}.staged")
             staging.write_text(content)
             staged[path] = staging
+        for path in outputs:
+            if path.exists():
+                backup = path.with_name(f".{path.name}.backup")
+                shutil.copy2(path, backup)
+                backups[path] = backup
         for path, staging in staged.items():
             os.replace(staging, path)
             replaced.append(path)
-    except BaseException:
+    except BaseException as error:
+        unrestored = []
         for path in replaced:
-            if originals[path] is None:
-                path.unlink()
-            else:
-                path.write_text(originals[path])
+            try:
+                if path in backups:
+                    os.replace(backups[path], path)
+                else:
+                    path.unlink()
+            except OSError:
+                unrestored.append(path)
+        if unrestored:
+            keep = {backups[path] for path in unrestored if path in backups}
+            raise OSError(
+                "Could not restore "
+                + ", ".join(str(path) for path in unrestored)
+                + "; the original text is kept in "
+                + ", ".join(str(backup) for backup in sorted(keep))
+            ) from error
         raise
     finally:
         for staging in staged.values():
             staging.unlink(missing_ok=True)
+        for backup in backups.values():
+            if backup not in keep:
+                backup.unlink(missing_ok=True)
 
 
 def main(argv: list[str] | None = None) -> int:

@@ -666,7 +666,7 @@ def test_main_restores_every_file_when_a_write_fails(
         run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy))
 
     assert {path: path.read_text() for path in before} == before
-    leftovers = [p for p in tmp_path.rglob("*.staged")]
+    leftovers = [*tmp_path.rglob("*.staged"), *tmp_path.rglob("*.backup")]
     assert leftovers == []
 
 
@@ -688,4 +688,36 @@ def test_main_leaves_files_alone_when_staging_fails(tmp_path, monkeypatch):
         run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy))
 
     assert {path: path.read_text() for path in before} == before
+    assert [*tmp_path.rglob("*.staged"), *tmp_path.rglob("*.backup")] == []
+
+
+def test_a_failed_restore_keeps_the_original_and_never_empties_a_file(
+    tmp_path, monkeypatch
+):
+    """The third move fails and so does the first restore. No file may be
+    left empty: the unrestored file keeps the new text, its original is kept
+    in a backup named in the error, and the other file is restored."""
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_text() for path in [yoy, *gap_dir.iterdir()]}
+    real_replace = os.replace
+    calls = []
+
+    def failing_replace(source, target):
+        calls.append(target)
+        if len(calls) in (3, 4):
+            raise OSError("I/O error")
+        real_replace(source, target)
+
+    monkeypatch.setattr(import_obr_forecasts.os, "replace", failing_replace)
+    with pytest.raises(OSError, match="original text is kept in") as error:
+        run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy))
+
+    unrestored = Path(calls[3])
+    backup = unrestored.with_name(f".{unrestored.name}.backup")
+    assert str(backup) in str(error.value)
+    assert backup.read_text() == before[unrestored]
+    for path, original in before.items():
+        assert path.read_text(), path
+        if path not in (unrestored, Path(calls[2])):
+            assert path.read_text() == original, path
     assert list(tmp_path.rglob("*.staged")) == []
