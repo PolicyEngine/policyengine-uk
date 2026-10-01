@@ -1,3 +1,10 @@
+## [2.103.0] - 2026-10-01
+
+### Added
+
+- - Added the Lifetime ISA holdings that microcosm datasets carry (`lifetime_isa_balance`, `has_lifetime_isa`, `household_lifetime_isa_balance`) and the Lifetime ISA withdrawal-charge parameters. Universal Credit, Housing Benefit, Income Support, income-based JSA, income-related ESA and Pension Credit now count a Lifetime ISA at its surrender value (75% of the balance under 60, the whole balance from 60) as capital of the holder's own benefit unit when the holder is its claimant or partner, and not before the Lifetime ISA existed (6 April 2017). Datasets without the columns are unaffected.
+
+
 ## [2.102.6] - 2026-09-30
 
 ### Fixed
