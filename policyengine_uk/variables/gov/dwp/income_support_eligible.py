@@ -6,7 +6,12 @@ class income_support_eligible(Variable):
     entity = BenUnit
     label = "Whether eligible for Income Support"
     definition_period = YEAR
-    reference = "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/4ZA",
+        "https://www.legislation.gov.uk/ukpga/1992/4/section/124",
+        "https://www.legislation.gov.uk/uksi/1987/1968/regulation/4",
+    )
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
@@ -18,14 +23,21 @@ class income_support_eligible(Variable):
         )
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_with_young_child = lone_parent & youngest_child_5_or_under
-        has_carers = add(benunit, period, ["is_carer_for_benefits"]) > 0
+        # Sch 1B para 4 prescribes the carer, and SSCBA s.124(1)(e) requires
+        # the claimant to fall within a prescribed category. A couple choose
+        # which of them claims (Claims and Payments Regs 1987 reg 4(3)), so
+        # either partner's caring qualifies; a child's or young person's
+        # caring does not.
+        claimant_or_partner = benunit.members("is_claimant_or_partner", period)
+        carer = benunit.members("is_carer_for_benefits", period)
+        claimant_or_partner_cares = benunit.any(claimant_or_partner & carer)
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_esa_income = benunit("esa_income", period) > 0
         already_claiming = add(benunit, period, ["income_support_reported"]) > 0
         capital = benunit("income_support_assessable_capital", period)
         limit = IS.means_test.capital.limit
         return (
-            (has_carers | lone_parent_with_young_child)
+            (claimant_or_partner_cares | lone_parent_with_young_child)
             & none_SP_age
             & ~has_esa_income
             & already_claiming
