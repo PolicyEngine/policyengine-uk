@@ -2,6 +2,29 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
     bedrooms_for_children,
 )
+from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
+    non_dependants_residing_with,
+)
+
+
+def housing_benefit_other_occupiers(benunit, period, other_occupier):
+    """For each family, the number of people marked by ``other_occupier``
+    (occupiers outside every family liable for the household's rent) who
+    occupy its dwelling (HB Regs 2006 reg 13D(12)). A boarder or lodger, who
+    pays the householder, counts for the household head's family. A
+    non-dependant counts for each joint occupier they normally reside with
+    (LHA Guidance Manual paras 2.093 and 2.110; see
+    non_dependant_normally_resides_with)."""
+    person = benunit.members
+    boarder_or_lodger = person("pays_rent_to_householder", period)
+    head_family = benunit.any(person("is_household_head", period))
+    of_householder = head_family * benunit.max(
+        person.household.sum(other_occupier & boarder_or_lodger)
+    )
+    non_dependants = non_dependants_residing_with(
+        benunit, period, other_occupier & ~boarder_or_lodger
+    )
+    return of_householder + non_dependants
 
 
 class housing_benefit_LHA_allowed_bedrooms(Variable):
@@ -59,9 +82,8 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         # everyone in a non-dependant's, boarder's or lodger's family,
         # including their children.
         other_occupier = ~head_family & ~sharer & occupier
-        is_head_family = benunit.any(person("is_household_head", period))
-        other_occupiers = is_head_family * benunit.max(
-            person.household.sum(other_occupier & aged_16_or_over)
+        other_occupiers = housing_benefit_other_occupiers(
+            benunit, period, other_occupier & aged_16_or_over
         )
         # Reg 13D(3)(c)-(e): the occupiers' children, the claimant's own and
         # other families', share rooms with each other.
@@ -70,6 +92,9 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
             period,
             own_child=occupier,
             other_child=other_occupier,
+            count_other=lambda mask: housing_benefit_other_occupiers(
+                benunit, period, mask
+            ),
         )
         # Reg 13D(3A) and (3B): additional bedrooms.
         additional = benunit("housing_benefit_LHA_additional_bedrooms", period)

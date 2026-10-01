@@ -26,7 +26,9 @@ def rooms_for_children(boys_under_10, older_boys, girls_under_10, older_girls):
     return over_10_rooms + under_10_rooms
 
 
-def bedrooms_for_children(benunit, period, own_child=None, other_child=None):
+def bedrooms_for_children(
+    benunit, period, own_child=None, other_child=None, count_other=None
+):
     """Bedrooms for the children under 16 in the family's size criteria.
 
     Children must share rooms in pairs unless they are opposite-sex and one
@@ -37,7 +39,9 @@ def bedrooms_for_children(benunit, period, own_child=None, other_child=None):
     default, every member under 16). ``other_child`` marks people under 16 in
     other families of the household who count in the household head's
     family's size criteria, such as a non-dependant's child; they share rooms
-    with the head family's own children.
+    with the head family's own children. ``count_other``, if given, maps a
+    person mask to the number of those people counted for each family, in
+    place of counting them all for the household head's family.
     """
     person = benunit.members
     age = person("age", period)
@@ -53,8 +57,10 @@ def bedrooms_for_children(benunit, period, own_child=None, other_child=None):
         own = benunit.sum(own_child & group)
         if other_child is None:
             return own
-        others = person.household.sum(other_child & under_16 & group)
-        return own + head_family * benunit.max(others)
+        others = other_child & under_16 & group
+        if count_other is not None:
+            return own + count_other(others)
+        return own + head_family * benunit.max(person.household.sum(others))
 
     return rooms_for_children(
         count(under_10 & male),
