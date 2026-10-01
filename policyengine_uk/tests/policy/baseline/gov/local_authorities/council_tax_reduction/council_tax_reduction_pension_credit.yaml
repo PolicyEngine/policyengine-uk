@@ -239,9 +239,10 @@
         council_tax: 2_000
         savings: 0
   output:
-    # The son's guarantee_credit is calculated as 7,376, but he is not
-    # eligible for Pension Credit, so he is not in receipt of it.
-    guarantee_credit: [3_376, 7_376]
+    # The son's guarantee_credit is calculated as 7,636 (his earnings less the
+    # 5 pound a week SPC Regs Sch VI para 5 disregard), but he is not eligible
+    # for Pension Credit, so he is not in receipt of it.
+    guarantee_credit: [3_376, 7_636]
     in_receipt_of_guarantee_credit: [true, false]
     council_tax_reduction_applicable_income: [0, 5_000]
     # The national schemes' non-dependant deduction currently uses Housing
@@ -354,7 +355,9 @@
         council_tax: 2_000
         savings: 0
   output:
-    guarantee_credit: 2_376
+    # Calculated with the 5 pound a week Sch VI para 5 earnings disregard
+    # (12,376 - (10,000 - 260)); not received, as the claimant is working age.
+    guarantee_credit: 2_636
     in_receipt_of_guarantee_credit: false
     council_tax_reduction_applicable_income: 10_000
     council_tax_reduction: 993.72
