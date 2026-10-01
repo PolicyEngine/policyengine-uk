@@ -158,10 +158,9 @@
       household:
         members: [recipient, transferor]
   output:
-    # The transferor's unused allowance of 2,570 exceeds the 1,257 cap, which
-    # rounds up to 1,260. Tax on the recipient's earnings:
-    # (15,000 - 12,570 - 1,260) x 20% = 234, the same as 486 less the
-    # 20% x 1,260 = 252 reduction. Dividends: (5,000 - 500) x 10.75% = 483.75,
+    # The transferor (10,000, below the cut allowance of 11,310) elects, and
+    # the recipient's tax falls by 20% x 1,260 = 252. Tax on the recipient's
+    # earnings: (15,000 - 12,570) x 20% = 486, less the 252 reduction = 234. Dividends: (5,000 - 500) x 10.75% = 483.75,
     # not deducted.
     marriage_allowance: [1_260, 0]
     income_tax: [717.75, 0]

@@ -21,9 +21,15 @@ class is_marriage_allowance_spouse(Variable):
 
     def formula(person, period, parameters):
         status = person("marital_status", period)
-        married = status == status.possible_values.MARRIED
+        minimum_age = parameters(
+            period
+        ).gov.hmrc.income_tax.allowances.marriage_allowance.minimum_spouse_age
+        married = (status == status.possible_values.MARRIED) & (
+            person("age", period) >= minimum_age
+        )
         # Without a marital status input, every member of a married benefit
-        # unit, children included, is married; the two eldest are the couple.
+        # unit, children included, is married; the two eldest old enough to
+        # marry are the couple.
         rank = person.get_rank(
             person.benunit, -person("age", period), condition=married
         )

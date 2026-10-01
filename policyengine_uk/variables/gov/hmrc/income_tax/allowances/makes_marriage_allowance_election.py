@@ -6,6 +6,28 @@ BRANCH_OUTPUTS = [
     "marriage_allowance_tax_reduction_limit",
     "meets_marriage_allowance_income_conditions",
 ]
+# Inputs to income tax that do not depend on the election. Resolving them
+# before branching lets both branches reuse them, and keeps the result
+# independent of which variable a caller asks for first (a reform that
+# branches inside adjusted_net_income would otherwise see a cached election).
+INDEPENDENT_OF_ELECTION = [
+    "age",
+    "adjusted_net_income",
+    "gift_aid_grossed_up",
+    "gift_aid",
+    "blind_persons_allowance",
+    "covenanted_payments",
+    "charitable_investment_gifts",
+    "other_deductions",
+    "pension_contributions_relief",
+    "taxable_savings_interest_income",
+    "taxable_dividend_income",
+    "taxable_property_income",
+    "pays_scottish_income_tax",
+    "CB_HITC",
+    "other_tax_credits",
+    "married_couples_allowance",
+]
 
 
 def tax_position(simulation, name, period, relinquished):
@@ -13,8 +35,8 @@ def tax_position(simulation, name, period, relinquished):
 
     The branch holds the election off, so no one gains a reduction, and cuts
     each person's personal allowance by ``relinquished`` (ITA 2007 s. 55B(6)).
-    The branch is dropped afterwards so a later period starts from a fresh
-    copy of the simulation.
+    The branch is dropped afterwards, and its copied arrays freed, so a later
+    period starts from a fresh copy of the simulation.
     """
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"
@@ -30,6 +52,9 @@ def tax_position(simulation, name, period, relinquished):
         return {variable: population(variable, period) for variable in BRANCH_OUTPUTS}
     finally:
         del simulation.branches[name]
+        for population in branch.populations.values():
+            for holder in population._holders.values():
+                holder._memory_storage._arrays.clear()
 
 
 class makes_marriage_allowance_election(Variable):
@@ -42,7 +67,9 @@ class makes_marriage_allowance_election(Variable):
         "Allowance tax reduction. The couple elects only when the election "
         "is allowed and lowers their combined income tax, in whichever "
         "direction lowers it more, and only if the spouse who would gain has "
-        "would_claim_marriage_allowance true."
+        "would_claim_marriage_allowance true. Set as an input, an election "
+        "is taken to be one the other spouse is entitled to gain from: the "
+        "conditions are checked only when the model makes the choice."
     )
     definition_period = YEAR
     reference = [
@@ -61,6 +88,8 @@ class makes_marriage_allowance_election(Variable):
     ]
 
     def formula(person, period, parameters):
+        for variable in INDEPENDENT_OF_ELECTION:
+            person(variable, period)
         spouse = person("is_marriage_allowance_spouse", period)
         transferable = person("marriage_allowance_transferable_amount", period)
         simulation = person.simulation
@@ -107,20 +136,26 @@ class makes_marriage_allowance_election(Variable):
             # s. 55B(2)(b), (ba): the gaining party pays only basic rates.
             & (partner(without["meets_marriage_allowance_income_conditions"]) > 0)
         )
-        # Elect only to lower the couple's tax. Only one spouse elects: s. 55E
-        # allows each of them one election and one reduction and does not bar
-        # elections both ways, but those help only when both spouses would
-        # pay nothing on the allowance they give up and both have tax to
-        # reduce, which is not modelled. On a tie the elder spouse elects.
+        # Elect only to lower the couple's tax. Only one spouse elects. s. 55E
+        # allows each of them one election and one reduction and does not
+        # bar elections both ways, which would lower some couples' tax
+        # further (where giving up allowance costs less than the basic rate,
+        # as on dividends or at the Scottish starter rate), but HMRC's
+        # guidance describes a single transfer from the lower earner.
         saving_if_allowed = where(allowed & (saving > 0), saving, 0)
         other_saving = partner(saving_if_allowed)
+        # On a tie the spouse with the lower adjusted net income elects, then
+        # the elder, then the first listed.
+        income = person("adjusted_net_income", period)
+        other_income = partner(income)
         elder = (
             person.get_rank(person.benunit, -person("age", period), condition=spouse)
             == 0
         )
+        first_on_tie = (income < other_income) | ((income == other_income) & elder)
         chooses = (saving_if_allowed > 0) & (
             (saving_if_allowed > other_saving)
-            | ((saving_if_allowed == other_saving) & elder)
+            | ((saving_if_allowed == other_saving) & first_on_tie)
         )
         # The couple's take-up draw is the gaining spouse's, the same draw
         # that decided take-up when the transfer was modelled on the

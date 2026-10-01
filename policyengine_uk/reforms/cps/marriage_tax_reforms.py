@@ -8,6 +8,7 @@ from typing import Union, Optional
 def create_expanded_ma_reform(
     max_child_age: Optional[int] = None,
     child_education_levels: Optional[List[str]] = None,
+    remove_income_condition: bool = True,
 ) -> Reform:
     class meets_expanded_ma_conditions(Variable):
         label = "Qualifies for an expanded Marriage Allowance"
@@ -42,9 +43,12 @@ def create_expanded_ma_reform(
         reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
 
         def formula(person, period, parameters):
-            return liable_only_at_marriage_allowance_rates(
+            conditions = liable_only_at_marriage_allowance_rates(
                 person, period, parameters
-            ) | person("meets_expanded_ma_conditions", period)
+            )
+            if not remove_income_condition:
+                return conditions
+            return conditions | person("meets_expanded_ma_conditions", period)
 
     class marriage_allowance_transferable_amount(Variable):
         value_type = float
@@ -194,6 +198,7 @@ def create_marriage_tax_reform(parameters, period):
     if remove_income_condition or rate != original_rate:
         ma_reform = create_expanded_ma_reform(
             max_child_age=ma_max_child_age if ma_max_child_age > 0 else None,
+            remove_income_condition=bool(remove_income_condition),
         )
     else:
         ma_reform = None
@@ -220,4 +225,5 @@ def create_marriage_tax_reform(parameters, period):
 # These build the reform classes with no child-age / education conditions, so the reform
 # applies to every married couple regardless of child presence.
 expanded_ma_reform = create_expanded_ma_reform()
+expanded_ma_reform_rate_only = create_expanded_ma_reform(remove_income_condition=False)
 marriage_neutral_it_reform = create_marriage_neutral_income_tax_reform()

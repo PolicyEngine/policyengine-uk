@@ -17,6 +17,8 @@ class marriage_allowance_relinquished(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        return person("makes_marriage_allowance_election", period) * person(
-            "marriage_allowance_transferable_amount", period
+        # Only a spouse or civil partner can give allowance up.
+        elects = person("makes_marriage_allowance_election", period) & person(
+            "is_marriage_allowance_spouse", period
         )
+        return elects * person("marriage_allowance_transferable_amount", period)
