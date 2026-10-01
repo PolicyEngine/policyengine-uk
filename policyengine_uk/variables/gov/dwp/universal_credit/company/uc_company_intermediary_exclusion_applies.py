@@ -28,4 +28,6 @@ class uc_company_intermediary_exclusion_applies(Variable):
         from_main_employment = person(
             "owned_company_intermediary_earnings_from_main_employment", period
         )
-        return excluded_chapter & (from_main_employment | ~p.requires_main_employment)
+        if p.requires_main_employment:
+            return excluded_chapter & from_main_employment
+        return excluded_chapter

@@ -7,7 +7,9 @@ class owned_company_trade_assets(Variable):
     label = "owned company trade assets"
     documentation = (
         "The part of owned_company_capital made up of the company's assets "
-        "that are used wholly and exclusively for the purposes of its trade."
+        "that are used wholly and exclusively for the purposes of its trade, "
+        "valued net of any liabilities secured on them so that it is a "
+        "component of the net owned_company_capital."
     )
     definition_period = YEAR
     unit = GBP

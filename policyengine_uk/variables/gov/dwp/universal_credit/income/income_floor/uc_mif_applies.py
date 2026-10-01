@@ -11,6 +11,7 @@ class uc_mif_applies(Variable):
     reference = [
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/62/2021-04-06",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/77",
+        "https://www.legislation.gov.uk/nisr/2016/216/regulation/63",
     ]
     definition_period = YEAR
 

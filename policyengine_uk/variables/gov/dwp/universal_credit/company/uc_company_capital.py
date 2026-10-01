@@ -11,10 +11,10 @@ class uc_company_capital(Variable):
         "stand as the company's sole owner or partner. Assets used wholly and "
         "exclusively for the company's trade are disregarded while the person "
         "is engaged in activities in the course of that trade. This follows "
-        "the regulation: DWP guidance (ADM H4372) instead disregards all of "
-        "the company capital while the person works in the business, and "
-        "H1880 paraphrases the test as 'wholly or mainly', both closer to the "
-        "older Income Support rule."
+        "the regulation. DWP guidance (ADM H4372) instead disregards all of "
+        "the company capital while the person works in the business, and ADM "
+        "H1880 paraphrases the test as 'wholly or mainly', the wording of the "
+        "business-assets disregard in Schedule 10 para. 7."
     )
     definition_period = YEAR
     unit = GBP
@@ -32,9 +32,14 @@ class uc_company_capital(Variable):
 
     def formula(person, period, parameters):
         applies = person("uc_company_owner_treatment_applies", period)
-        trade_assets_disregarded = person(
-            "owned_company_carries_on_trade", period
-        ) & person("is_engaged_in_owned_company_trade", period)
+        # A person whose main employment is the company's trade is engaged in
+        # activities in the course of that trade.
+        engaged = person("is_engaged_in_owned_company_trade", period) | person(
+            "owned_company_is_main_employment", period
+        )
+        trade_assets_disregarded = (
+            person("owned_company_carries_on_trade", period) & engaged
+        )
         disregarded = where(
             trade_assets_disregarded,
             person("owned_company_trade_assets", period),

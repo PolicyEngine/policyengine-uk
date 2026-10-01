@@ -19,6 +19,10 @@ class uc_company_gainful_self_employment(Variable):
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/77",
         ),
         dict(
+            title="The Universal Credit Regulations (Northern Ireland) 2016 regs. 77(3)(c) and 63",
+            href="https://www.legislation.gov.uk/nisr/2016/216/regulation/77",
+        ),
+        dict(
             title="Advice for Decision Making, Chapter H4, para. H4375",
             href="https://www.gov.uk/government/publications/advice-for-decision-making-staff-guide",
         ),

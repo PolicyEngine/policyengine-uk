@@ -18,17 +18,24 @@ Invariants, for any generated benefit units:
    77(5) applies, or the company carries on neither a trade nor a property
    business, no company fact changes Universal Credit, its capital or its
    earned income.
-2. Capital identity: assessable capital equals the capital without the rule,
-   plus each owner's company capital net of disregarded trade assets, less
-   each owner's holding, floored at zero.
-3. Earnings identity: without the floor, gross earned income is pay plus
-   self-employment profit plus the company income share for a trading
-   company, and nothing for a property-only company.
-4. Floor: a trading-company owner whose main employment it is and who is not
+2. Capital identity: assessable capital equals the capital without the rule
+   less the owners' holdings (floored at zero), plus each owner's company
+   capital net of trade assets disregarded while they work in the trade.
+3. Conservation: in a household of two benefit units, the units' assessable
+   capital sums to the household's capital less the owners' holdings
+   (floored at zero), plus the owners' company capital.
+4. Earnings identity: without the floor, gross earned income is pay plus
+   self-employment profit plus the company income share (a loss counts as
+   nil) for a trading company, and nothing for a property-only company.
+5. Floor: a trading-company owner whose main employment it is and who is not
    in a start-up period has earned income of at least the floor.
-5. Monotone: Universal Credit is non-increasing in the company income share
+6. Monotone: Universal Credit is non-increasing in the company income share
    and in the company's capital, and non-decreasing in the value of the
    disregarded holding and of disregarded trade assets.
+
+The strategies make most adults owners of a trading company, keep capital
+mostly under the £16,000 limit and put earnings around the floor, so each
+property is exercised rather than satisfied vacuously.
 """
 
 import numpy as np
@@ -39,7 +46,7 @@ from policyengine_uk import Simulation
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
-    max_examples=6,
+    max_examples=10,
     deadline=None,
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
@@ -68,7 +75,9 @@ PERSON_VARIABLES = [
     "uc_mif_applies",
 ]
 
-money = st.floats(0, 60_000, allow_nan=False, allow_infinity=False)
+money = st.floats(0, 30_000, allow_nan=False, allow_infinity=False)
+company_income = st.floats(-20_000, 40_000, allow_nan=False, allow_infinity=False)
+small_capital = st.one_of(st.just(0.0), st.floats(0, 8_000))
 
 
 def close(a, b):
@@ -76,28 +85,27 @@ def close(a, b):
     return abs(a - b) <= 1e-2 + 1e-6 * abs(b)
 
 
-capital = st.one_of(st.just(0.0), st.floats(0, 40_000))
-
-
 @st.composite
 def companies(draw):
-    company_capital = draw(capital)
+    company_capital = draw(st.one_of(st.just(0.0), st.floats(0, 12_000)))
     return dict(
-        stands_as_sole_owner_or_partner_of_company=draw(st.booleans()),
-        owned_company_carries_on_trade=draw(st.booleans()),
-        owned_company_carries_on_property_business=draw(st.booleans()),
+        stands_as_sole_owner_or_partner_of_company=draw(
+            st.sampled_from([True, True, True, False])
+        ),
+        owned_company_carries_on_trade=draw(st.sampled_from([True, True, True, False])),
+        owned_company_carries_on_property_business=draw(
+            st.sampled_from([False, False, True])
+        ),
         owned_company_intermediary_earnings_chapter=draw(
-            st.sampled_from(
-                ["NONE", "NONE", "NONE", "CHAPTER_8", "CHAPTER_9", "CHAPTER_10"]
-            )
+            st.sampled_from(["NONE"] * 5 + ["CHAPTER_8", "CHAPTER_9", "CHAPTER_10"])
         ),
         owned_company_intermediary_earnings_from_main_employment=draw(st.booleans()),
         owned_company_is_main_employment=draw(st.booleans()),
         is_engaged_in_owned_company_trade=draw(st.booleans()),
-        owned_company_income_share=draw(money),
+        owned_company_income_share=draw(company_income),
         owned_company_capital=company_capital,
         owned_company_trade_assets=draw(st.floats(0, 1)) * company_capital,
-        owned_company_holding_value=draw(capital),
+        owned_company_holding_value=draw(small_capital),
     )
 
 
@@ -106,8 +114,8 @@ def adults(draw):
     return dict(
         age=draw(st.integers(25, 60)),
         employment_income=draw(st.one_of(st.just(0.0), money)),
-        self_employment_income=draw(st.one_of(st.just(0.0), money)),
-        uc_is_in_startup_period=draw(st.booleans()),
+        self_employment_income=draw(st.one_of(st.just(0.0), st.floats(0, 15_000))),
+        uc_is_in_startup_period=draw(st.sampled_from([False, False, True])),
         company=draw(companies()),
     )
 
@@ -118,8 +126,8 @@ def units(draw):
         adults=draw(st.lists(adults(), min_size=1, max_size=2)),
         children=draw(st.integers(0, 2)),
         rent=draw(st.floats(0, 15_000)),
-        savings=draw(capital),
-        corporate_wealth=draw(capital),
+        savings=draw(small_capital),
+        corporate_wealth=draw(small_capital),
     )
 
 
@@ -205,6 +213,20 @@ def applies(company):
     )
 
 
+def company_capital_of(company):
+    """Capital treated as possessed under reg. 77(2), net of 77(3)(a)."""
+    engaged = (
+        company["is_engaged_in_owned_company_trade"]
+        or company["owned_company_is_main_employment"]
+    )
+    disregarded = (
+        company["owned_company_trade_assets"]
+        if company["owned_company_carries_on_trade"] and engaged
+        else 0.0
+    )
+    return max(0.0, company["owned_company_capital"] - disregarded)
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(units(), min_size=2, max_size=4))
 def test_rule_is_inert_when_it_does_not_apply(unit_list):
@@ -241,25 +263,17 @@ def test_capital_and_earnings_identities(unit_list):
     got = calculate([(u, {}) for u in unit_list])
     base = calculate([(u, no_company(u)) for u in unit_list])
     for i, unit in enumerate(unit_list):
-        net_company_capital = 0.0
+        holdings, company_capital = 0.0, 0.0
         for j, adult in enumerate(unit["adults"]):
             c = adult["company"]
             k = got["adult_positions"][i][j]
             assert got["uc_company_owner_treatment_applies"][k] == applies(c)
             if applies(c):
-                disregarded = (
-                    c["owned_company_trade_assets"]
-                    if c["owned_company_carries_on_trade"]
-                    and c["is_engaged_in_owned_company_trade"]
-                    else 0.0
-                )
-                net_company_capital += (
-                    max(0.0, c["owned_company_capital"] - disregarded)
-                    - c["owned_company_holding_value"]
-                )
+                holdings += c["owned_company_holding_value"]
+                company_capital += company_capital_of(c)
             # Earnings identity, compared before the floor.
             company_earnings = (
-                c["owned_company_income_share"]
+                max(0.0, c["owned_company_income_share"])
                 if applies(c) and c["owned_company_carries_on_trade"]
                 else 0.0
             )
@@ -285,7 +299,9 @@ def test_capital_and_earnings_identities(unit_list):
                 assert capped >= got["uc_minimum_income_floor"][k] - 1e-2
             if adult["uc_is_in_startup_period"]:
                 assert not got["uc_mif_applies"][k]
-        expected = max(0.0, base["uc_assessable_capital"][i] + net_company_capital)
+        expected = (
+            max(0.0, base["uc_assessable_capital"][i] - holdings) + company_capital
+        )
         assert close(got["uc_assessable_capital"][i], expected)
 
 
@@ -387,3 +403,45 @@ def test_property_company_gives_no_earnings(unit_list, share):
     for v in ["universal_credit", "uc_earned_income"]:
         a, b = got[v].reshape(-1, 2).T
         np.testing.assert_allclose(a, b, rtol=0, atol=1e-6, err_msg=v)
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(st.tuples(units(), units()), min_size=1, max_size=3))
+def test_household_capital_is_conserved_across_benefit_units(pairs):
+    # Each household holds two benefit units: the first unit's adults and the
+    # second's, with the first unit's savings and corporate wealth. No unit
+    # reports its own capital, so the household pool is shared by adults.
+    people, benunits, households = {}, {}, {}
+    expected = []
+    for h, (first, second) in enumerate(pairs):
+        names, holdings, company_capital = [], 0.0, 0.0
+        for b, unit in enumerate((first, second)):
+            members = []
+            for j, adult in enumerate(unit["adults"]):
+                name = f"h{h}_b{b}_p{j}"
+                c = adult["company"]
+                people[name] = {
+                    "age": {YEAR: adult["age"]},
+                    **{k: {YEAR: v} for k, v in c.items()},
+                }
+                if applies(c):
+                    holdings += c["owned_company_holding_value"]
+                    company_capital += company_capital_of(c)
+                members.append(name)
+            benunits[f"h{h}_b{b}"] = {"members": members}
+            names += members
+        households[f"h{h}"] = {
+            "members": names,
+            "savings": {YEAR: first["savings"]},
+            "corporate_wealth": {YEAR: first["corporate_wealth"]},
+        }
+        pool = first["savings"] + first["corporate_wealth"]
+        expected.append(max(0.0, pool - holdings) + company_capital)
+    sim = Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+    capital = np.asarray(sim.calculate("uc_assessable_capital", YEAR))
+    assert (capital >= 0).all()
+    per_household = capital.reshape(-1, 2).sum(axis=1)
+    for got, want in zip(per_household, expected):
+        assert close(got, want)

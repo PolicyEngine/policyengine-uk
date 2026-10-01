@@ -1,10 +1,18 @@
-"""Differential test: Universal Credit reg. 77 against the Axiom encoding.
+"""Golden-case parity: Universal Credit reg. 77 against the Axiom encoding.
 
-The four cases are the tests of TheAxiomFoundation/rulespec-uk
+The four cases are copied from the tests of TheAxiomFoundation/rulespec-uk
 uk/regulations/uksi/2013/376/77.test.yaml (commit 0644db8), which encodes the
 Universal Credit Regulations 2013 reg. 77 independently of this model. Axiom
 works in monthly assessment periods; income amounts here are the monthly
-figures times 12, and capital amounts are unchanged.
+figures times 12, and capital amounts are unchanged. This mirrors Axiom's
+expected outputs; it does not run Axiom, so it will not notice if that
+encoding changes.
+
+Outputs compared: the 77(5) exclusion, treatment, the trade-asset
+disregard, capital treated as possessed, the holding disregard, the 77(3)(b)
+self-employed earnings, the 77(4) total of those earnings and director pay
+(through the model's earned income), gainful self-employment and the
+minimum income floor trigger.
 
 Axiom input -> policyengine-uk input:
 - person_stands_in_position_analogous_to_sole_owner_or_partner_in_relation_to_company
@@ -187,11 +195,17 @@ def test_reg_77_matches_axiom(name):
     assert calc("uc_company_self_employed_earnings") == pytest.approx(
         o["company_earnings"] * MONTHS
     )
-    # Reg. 77(4): the company earnings are in addition to director pay.
+    assert bool(calc("uc_company_intermediary_exclusion_applies")) == (
+        i["chapter"] != "NONE" and i["chapter_main"]
+    )
+    # Reg. 77(4): the model's earned income adds the company earnings to
+    # director pay. These cases' totals are above the floor, so the floor
+    # does not change them.
     if o["company_and_director_earnings"]:
-        assert calc("uc_company_self_employed_earnings") + calc(
-            "employment_income"
-        ) == pytest.approx(o["company_and_director_earnings"] * MONTHS)
+        assert calc("uc_mif_capped_earned_income") == pytest.approx(
+            o["company_and_director_earnings"] * MONTHS
+        )
+        assert calc("uc_mif_capped_earned_income") > calc("uc_minimum_income_floor")
     assert bool(calc("uc_company_gainful_self_employment")) == o["gainful"]
     # Axiom's minimum_income_floor_applies_due_to_company_trade is the reg.
     # 77(3)(c) trigger; the model's floor also applies to self-employment

@@ -325,7 +325,7 @@
   # 1,000 of savings and a disregarded 1,000 holding, but the company holds
   # 20,000 of cash not used wholly and exclusively for its trade: assessable
   # capital 1,000 + 1,000 - 1,000 + 20,000 = 21,000 exceeds the 16,000 limit
-  # (reg. 18(1)), so no award.
+  # (reg. 18(1); Welfare Reform Act 2012 s. 5(1)(a)), so no award.
   period: 2026
   absolute_error_margin: 0
   input:
@@ -399,3 +399,113 @@
     uc_company_intermediary_exclusion_applies: false
     uc_company_owner_treatment_applies: true
     uc_company_self_employed_earnings: 10_000
+
+- name: A company loss counts as nil, not against the owner's pay
+  # Reg. 57(2): if the result of steps 1 to 3 "is nil or a negative amount,
+  # the amount of the person's self-employed earnings ... is nil". A 10,000
+  # loss leaves the 20,000 of director's pay intact (reg. 77(4)).
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 20_000
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_income_share: -10_000
+  output:
+    uc_company_self_employed_earnings: 0
+    uc_mif_capped_earned_income: 20_000
+
+- name: Working in the trade as one's main employment is engagement in it
+  # Reg. 77(3)(a) disregards trade assets "while they are engaged in
+  # activities in the course of that trade"; a person whose main employment
+  # is that trade is. 100,000 - 40,000 = 60,000 treated as possessed.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_is_main_employment: true
+    is_engaged_in_owned_company_trade: false
+    owned_company_capital: 100_000
+    owned_company_trade_assets: 40_000
+  output:
+    uc_company_capital: 60_000
+
+- name: In a household of two benunits the disregarded holding leaves the household pool before it is shared
+  # The household has 10,000 of savings and the owner's 30,000 of shares
+  # (within corporate_wealth). Reg. 77(2) disregards the shares, so 10,000
+  # remains, shared between the two unreported adults: 5,000 each. The
+  # company has no other capital.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      owner:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_holding_value: 30_000
+      lodger:
+        age: 30
+    benunits:
+      owner_unit:
+        members: [owner]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [owner, lodger]
+        savings: 10_000
+        corporate_wealth: 30_000
+  output:
+    household_uc_unreported_company_holdings: 30_000
+    uc_assessable_capital: [5_000, 5_000]
+
+- name: A benunit that reports its capital has its own holding taken off what it reports
+  # Reported capital of 50,000 includes the 30,000 holding: 20,000 remains,
+  # plus 15,000 of company capital not used in the trade = 35,000.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_holding_value: 30_000
+        owned_company_capital: 15_000
+    benunits:
+      benunit:
+        members: person
+        uc_reported_capital: 50_000
+    households:
+      household:
+        members: person
+  output:
+    uc_assessable_capital: 35_000
+
+- name: Company earnings count towards the benefit cap earnings exemption
+  # UC Regs 2013 reg. 82(1)(a): the cap does not apply where earned income is
+  # at least the threshold. Reg. 77(3)(b) earnings are self-employed earnings
+  # (the model's threshold is 10,152 a year); only income deemed by the
+  # minimum income floor is excluded (reg. 82(4)). 20,000 of company income,
+  # not in a start-up period but not the main employment, so no floor.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_income_share: 20_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    is_benefit_cap_exempt_earnings: true
