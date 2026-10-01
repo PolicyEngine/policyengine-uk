@@ -1,3 +1,17 @@
+## [2.104.2] - 2026-10-01
+
+### Fixed
+
+- Disregard the whole income and capital of Pension Credit guarantee credit recipients in the England pensioner, Wales and Scotland council tax reduction schemes, so they get the maximum reduction less non-dependant deductions whatever their income or savings (SI 2012/2885 Sch 1 para 13; WSI 2013/3029 Sch 1 para 7; SSI 2012/319 reg 24). For savings-credit-only recipients, use the Pension Credit assessment of income plus the savings credit paid, and of capital (para 14; para 8; reg 25). Their reduction can fall, because the savings credit counts as income and the capital limit applies to all the capital Pension Credit counts, not only savings.
+
+
+## [2.104.1] - 2026-10-01
+
+### Fixed
+
+- Count contributory Employment and Support Allowance, Maternity Allowance, industrial injuries benefit and (from 19 November 2023) Scottish Carer Support Payment as Universal Credit unearned income, as UC Regs 2013 reg. 66(1)(b)(ii), (viii), (ix) and (iiia) require. Carer Support Payment counts only its carer support payment component (not the Scottish Carer Supplement) and only up to a year of Carer's Allowance.
+
+
 ## [2.104.0] - 2026-10-01
 
 ### Added
