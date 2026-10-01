@@ -1,0 +1,83 @@
+# A Universal Credit claim is made by a single person or jointly by the two
+# members of a couple (Welfare Reform Act 2012 s. 2(1)); "claimant" means a
+# single claimant or each of joint claimants (s. 40). Only claimants' income
+# counts (UC Regs 2013 reg. 22(1)).
+
+- name: A lone parent is the claimant and their child is not
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    is_uc_claimant: [true, false]
+    is_uc_assessed_claimant: [true, false]
+
+- name: Both members of a couple are claimants and their qualifying young person is not
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 40
+        is_parent: true
+      parent_2:
+        age: 38
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, young_person]
+  output:
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false, true]
+    is_uc_claimant: [true, true, false]
+    is_uc_assessed_claimant: [true, true, false]
+
+- name: An adult child flagged as a claimant is not a third claimant
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 50
+      parent_2:
+        age: 48
+      adult_child:
+        age: 25
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, adult_child]
+  output:
+    is_uc_claimant: [true, true, true]
+    is_uc_assessed_claimant: [true, true, false]
+
+- name: Of more than two members flagged as claimants, the two eldest are the claimants whatever their order
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      youngest:
+        age: 30
+        is_uc_claimant: true
+      eldest:
+        age: 60
+        is_uc_claimant: true
+      middle:
+        age: 45
+        is_uc_claimant: true
+    benunits:
+      benunit:
+        members: [youngest, eldest, middle]
+  output:
+    is_uc_assessed_claimant: [false, true, true]

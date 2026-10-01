@@ -1,0 +1,129 @@
+# A dependant's earnings are not the claimant's. Besides the income
+# deducted from the award (reg. 22(1): income/uc_earned_income.yaml and
+# income/uc_unearned_income.yaml), two Universal Credit tests read earnings:
+# the benefit cap's earnings exception (reg. 82(1)(a): "the claimant's earned
+# income or, if the claimant is a member of a couple, the couple's combined
+# earned income") and the childcare work condition (reg. 32(1): "the claimant
+# is in paid work" and, in a couple, "the other member").
+
+- name: A qualifying young person's earnings do not exempt the family from the benefit cap
+  # Reg. 80A(2)(d)(ii): £22,020 a year outside Greater London for a claimant
+  # responsible for a child or qualifying young person. Before this was
+  # fixed the young person's £12,000 met the earnings exception.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        employment_income: 12_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_exempt_earnings: false
+    benefit_cap: 22_020
+
+- name: The claimant's own earnings still meet the benefit cap earnings exception
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        employment_income: 12_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_exempt_earnings: true
+
+- name: Joint claimants' combined earnings meet the benefit cap earnings exception
+  # Neither partner's £6,000 reaches the threshold alone; together they do.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 40
+        is_parent: true
+        employment_income: 6_000
+      parent_2:
+        age: 38
+        is_parent: true
+        employment_income: 6_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, child]
+    households:
+      household:
+        members: [parent_1, parent_2, child]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_exempt_earnings: true
+
+- name: A dependent 18-year-old's job makes no difference to the childcare work condition
+  # The working lone parent meets it whether or not the young person works.
+  # Before this was fixed an 18-year-old without a job blocked it, so their
+  # taking one switched the childcare costs element on.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        employment_income: 15_000
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+  output:
+    is_uc_claimant: [true, false, false]
+    uc_childcare_work_condition: true
+
+- name: A dependent 18-year-old's job does not meet the childcare work condition for a parent out of work
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        employment_income: 5_000
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+  output:
+    uc_childcare_work_condition: false
