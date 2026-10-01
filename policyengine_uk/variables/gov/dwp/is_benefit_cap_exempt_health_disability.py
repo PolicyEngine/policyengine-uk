@@ -15,8 +15,10 @@ class is_benefit_cap_exempt_health_disability(Variable):
         has_pensioner = benunit.any(over_pension_age)
 
         # UC-specific exemptions
-        # Limited capability for work and work-related activity
-        has_lcwra = benunit.any(person("uc_limited_capability_for_WRA", period))
+        # Limited capability for work and work-related activity: "the LCWRA
+        # element is included in the award" (UC Regs 2013 reg. 83(1)(a)),
+        # which it is only for a claimant (reg. 27(1)).
+        has_lcwra = benunit("uc_LCWRA_element", period) > 0
 
         # Carer element in UC indicates caring for someone with disability
         gets_uc_carer_element = benunit("uc_carer_element", period) > 0

@@ -1,0 +1,110 @@
+# Universal Credit Regulations 2013 reg. 83(1): "The benefit cap does not apply
+# in relation to any assessment period where— (a) the LCWRA element is included
+# in the award of universal credit or the claimant is receiving an employment
+# and support allowance that includes the support component; ... (f) a
+# claimant, or a child or qualifying young person for whom a claimant is
+# responsible, is receiving disability living allowance; ... (g) a claimant,
+# or a qualifying young person for whom a claimant is responsible, is
+# receiving personal independence payment; ... (i) a claimant, or a qualifying
+# young person for whom a claimant is responsible, is entitled to carer's
+# allowance; ... (j) the carer element is included in the award of universal
+# credit".
+# The LCWRA element and the carer element are included only for a claimant
+# (regs 27(1) and 29(1)).
+
+- name: A claimant with LCWRA is exempt, the LCWRA element being in the award (reg. 83(1)(a))
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        uc_limited_capability_for_WRA: true
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    is_benefit_cap_exempt_health_disability: true
+
+- name: A disabled child not receiving disability living allowance does not exempt the award
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 10
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_LCWRA_element: 0
+    dla: [0, 0]
+    is_benefit_cap_exempt_health_disability: false
+
+- name: A child receiving disability living allowance exempts the award (reg. 83(1)(f))
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_LCWRA_element: 0
+    is_benefit_cap_exempt_health_disability: true
+
+- name: A qualifying young person receiving personal independence payment exempts the award (reg. 83(1)(g))
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    uc_LCWRA_element: 0
+    is_benefit_cap_exempt_health_disability: true
+
+- name: A qualifying young person entitled to Carer's Allowance exempts the award (reg. 83(1)(i)) without giving it the carer element
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    uc_carer_element: 0
+    is_benefit_cap_exempt_health_disability: true
+
+- name: A claimant who is a carer is exempt, the carer element being in the award (reg. 83(1)(j))
+  period: 2026
+  input:
+    age: 40
+    care_hours: 35
+    would_claim_carers_allowance: false
+  output:
+    carers_allowance: 0
+    is_benefit_cap_exempt_health_disability: true

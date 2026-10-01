@@ -1,3 +1,15 @@
+# Universal Credit Regulations 2013 reg. 27(1): "An award of universal credit
+# is to include an amount in respect of the fact that a claimant has limited
+# capability for work and work-related activity ("the LCWRA element")."
+# Reg. 36 table, LCWRA element: £423.27 a month in 2025-26 (£5,079.24 a year);
+# in 2026-27, £217.26 for a claimant "other than a pre-2026 claimant, a severe
+# conditions criteria claimant or a claimant who is terminally ill" (£2,607.12
+# a year). These tests run the formula, which uses that 2026-27 amount; a
+# simulation then sets protected amounts for existing claimants.
+# A disabled child or qualifying young person has the "additional amount for
+# disabled child or qualifying young person" instead (reg. 24(2)): lower rate
+# £164.79 a month in 2026-27 (£1,977.48 a year).
+
 - name: Ineligible
   period: 2022
   absolute_error_margin: 0
@@ -23,3 +35,130 @@
         members: person
   output:
     uc_LCWRA_element: 2_607.12
+
+- name: A single claimant with LCWRA has the LCWRA element, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    uc_limited_capability_for_WRA: true
+  output:
+    is_uc_assessed_claimant: true
+    uc_LCWRA_element: 5_079.24 # 423.27 * 12
+
+- name: A disabled child gives the claimant no LCWRA element, only the disabled child addition
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 10
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    is_uc_assessed_claimant: [true, false]
+    uc_limited_capability_for_WRA: [false, true]
+    uc_LCWRA_element: 0
+    uc_individual_disabled_child_element: [0, 1_977.48] # 164.79 * 12
+    uc_disability_elements: 1_977.48
+
+- name: A child flagged with limited capability gives the claimant no LCWRA element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 10
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_LCWRA_element: 0
+    uc_disability_elements: 0
+
+- name: A disabled qualifying young person gives the claimant no LCWRA element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_uc_assessed_claimant: [true, false]
+    uc_LCWRA_element: 0
+    uc_disability_elements: 1_977.48
+
+- name: A disabled parent of a disabled child has the LCWRA element and the disabled child addition
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_disabled_for_benefits: true
+      child:
+        age: 10
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_LCWRA_element: 2_607.12
+    uc_disability_elements: 4_584.60 # 2,607.12 + 1,977.48
+
+- name: Joint claimants, one of them with LCWRA, have the LCWRA element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    is_uc_assessed_claimant: [true, true]
+    uc_LCWRA_element: 2_607.12
+
+- name: A third member flagged as a claimant is not a claimant, and their limited capability gives no LCWRA element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 50
+        is_uc_claimant: true
+      partner:
+        age: 48
+        is_uc_claimant: true
+      adult_child:
+        age: 22
+        is_uc_claimant: true
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner, adult_child]
+  output:
+    is_uc_assessed_claimant: [true, true, false]
+    uc_LCWRA_element: 0
