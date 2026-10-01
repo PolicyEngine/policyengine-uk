@@ -9,7 +9,9 @@
 # 2026 parameters: standard minimum guarantee £238.00 a week single and
 # £363.25 couple (12,376 and 18,889 a year); child addition £69.98 a week
 # (3,638.96 a year); Savings Credit threshold £208.07 a week single
-# (10,819.64 a year), phase-in 60%, phase-out 40%; State Pension age 66.
+# (10,819.64 a year), phase-in 60%, phase-out 40%. Ages avoid the State
+# Pension age boundary: 65 is below it and 67 or over is above it in 2026
+# both under the flat age-66 parameter and under the date-of-birth rule.
 
 - name: Case 1, working-age lone parent with a 2-year-old and no income does not qualify through a computed guarantee credit.
   period: 2026
@@ -64,7 +66,7 @@
     targeted_childcare_entitlement_eligible: false
     is_child_receiving_targeted_childcare: [false, false, false]
 
-- name: Case 3, parent one year below the qualifying age does not qualify through a computed guarantee credit.
+- name: Case 3, parent aged 65, below the qualifying age, does not qualify through a computed guarantee credit.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -87,13 +89,13 @@
     targeted_childcare_entitlement_eligible: false
     is_child_receiving_targeted_childcare: [false, false]
 
-- name: Case 4, parent at the qualifying age with a guarantee credit and a 2-year-old qualifies.
+- name: Case 4, parent over the qualifying age with no income, a guarantee credit and a 2-year-old qualifies.
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       person1:
-        age: 66
+        age: 67
       person2:
         age: 2
     benunits:

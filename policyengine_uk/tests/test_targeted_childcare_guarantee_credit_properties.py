@@ -51,8 +51,10 @@ PROPERTY_SETTINGS = settings(
 )
 OUTSIDE_ENGLAND = ["WALES", "SCOTLAND", "NORTHERN_IRELAND"]
 REGIONS = ["LONDON", "NORTH_EAST", "SOUTH_WEST"] + OUTSIDE_ENGLAND
-# State Pension age is 66 in every test year. 67 and over is unambiguously at
-# the qualifying age and 65 and under unambiguously below it.
+# State Pension age is at least 66 in every test year, under the flat age-66
+# parameter and under the date-of-birth rule with the rise to 67, so 65 and
+# under is always below it. 67 and over is above it in 2025 and 2026, where
+# the known families sit; no invariant needs it to be above it in 2029.
 PENSION_AGE = st.integers(67, 100)
 WORKING_AGE = st.integers(18, 65)
 SHAPES = {
