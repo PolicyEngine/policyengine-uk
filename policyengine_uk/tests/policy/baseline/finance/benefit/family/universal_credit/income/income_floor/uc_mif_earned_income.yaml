@@ -340,3 +340,19 @@
     # = 28,719.60. Floor: 40,772.056 - 28,719.597 = 12,052.46. Adding the
     # adult child's floor to the couple threshold would give 20,386.03.
     uc_individual_earned_income: [12_052.46, 28_719.60, 0]
+
+- name: Break-even reads as no self-employment, so the floor stops at exactly zero profit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+    self_employment_income: 0
+  output:
+    # The model has no self-employment status input, so zero profit is no
+    # self-employment. In law a break-even trader in gainful self-employment
+    # gets the floor like a loss-maker (reg. 57(2)); the Enhanced FRS has no
+    # negative profits, so only hand-built households see the difference
+    # from the -3,000 case above.
+    uc_mif_applies: false
+    uc_individual_earned_income: 0

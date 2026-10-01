@@ -38,7 +38,9 @@ class uc_minimum_income_floor_gross(Variable):
         # for their age, never the apprenticeship rate of reg. 4A(1)(d).
         hourly_rate = p.gov.hmrc.minimum_wage.non_apprentice.calc(person("age", period))
         # Reg. 6(1A)(a) disregards fractions of a pound only in amounts
-        # calculated for reg. 90 itself. The floors DWP gives claimants keep
-        # the pence (for example 1,556.30 a month in 2024-25, from 11.44 x 35
-        # x 52 / 12 = 1,735.07), so the threshold here is not rounded.
+        # calculated for reg. 90 itself. Floors DWP has issued keep the pence:
+        # 1,642.72 a month for 2025-26 from a threshold of 1,851.85 (12.21 x
+        # 35 x 52 / 12; University of Bath IPR, "Going it alone", 2025,
+        # "information supplied by the DWP"), where a whole-pound threshold
+        # would give 1,642.09. So the threshold here is not rounded.
         return hourly_rate * expected_hours * WEEKS_IN_YEAR

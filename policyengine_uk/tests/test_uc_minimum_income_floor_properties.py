@@ -34,9 +34,13 @@ start-up periods, in England, Wales and Scotland:
    switched, the primary Class 1 they would pay on it as pay. So the net
    floor never exceeds the gross threshold.
 6. Monotone: more earnings never lower a benefit unit's earned income, and
-   never raise UC before the benefit cap. Before this fix, a self-employed
-   claimant under the floor was treated as having the gross threshold less
-   the tax on their actual profits, so UC rose with their profits.
+   never raise UC before the benefit cap, with one intended exception: the
+   model reads self-employment income of exactly zero as no
+   self-employment, so a trading loss (which gets the floor, reg. 57(2) and
+   ADM H4503) raised to exactly break-even loses it. Before this fix, a
+   self-employed claimant under the floor was treated as having the gross
+   threshold less the tax on their actual profits, so UC rose with their
+   profits.
 
 Marriage Allowance is switched off throughout: a transfer can lower one
 partner's earned income when the other's earnings rise, which is a separate,
@@ -44,7 +48,7 @@ lawful, non-monotonicity.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -68,7 +72,8 @@ SHAPES = {
     "mixed_age": [PENSION_AGE, WORKING_AGE],
 }
 # Profits and pay straddle the floor (about 16,000-23,000 gross).
-self_employment = st.one_of(st.just(0.0), st.floats(0, 40_000))
+# Profits and losses: a trading loss is nil self-employed earnings.
+self_employment = st.one_of(st.just(0.0), st.floats(-10_000, 40_000))
 employment = st.one_of(st.just(0.0), st.floats(0, 40_000))
 pension = st.one_of(st.just(0.0), st.floats(0, 4_000))
 bumps = st.floats(1, 10_000)
@@ -334,7 +339,10 @@ def bumped(draw):
     i = draw(st.integers(0, len(units) - 1))
     j = draw(st.integers(0, len(units[i]["adults"]) - 1))
     variable = draw(st.sampled_from(["self_employment_income", "employment_income"]))
-    return units, (i, j, variable, draw(bumps))
+    amount = draw(bumps)
+    # The intended exception to monotonicity: a loss raised to exactly zero.
+    assume(units[i]["adults"][j][variable] + amount != 0)
+    return units, (i, j, variable, amount)
 
 
 @PROPERTY_SETTINGS
