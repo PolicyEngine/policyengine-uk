@@ -5,16 +5,33 @@ class income_support_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = "Relevant income for Income Support means test"
+    documentation = (
+        "Income taken into account for Income Support. Income derived from "
+        "capital, such as rent from property, interest and dividends, is "
+        "treated as capital from the date it is due (regulation 48(4)) and "
+        "disregarded as income (Schedule 9 paragraph 22); the capital counts "
+        "through the capital limit and tariff income. Tax on that income is "
+        "not deducted, as Schedule 9 paragraph 1 disregards tax only on income "
+        "taken into account. Rent for letting part of the home stays income, "
+        "less the paragraph 19 disregard. Rent from other premises whose value "
+        "is disregarded (Schedule 10 paragraphs 2, 4 and 25 to 28) also stays "
+        "income, but the model cannot identify those premises."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = [
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/40",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/48",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/9",
+    ]
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",
-            "property_income",
             "private_pension_income",
+            "legacy_benefits_home_letting_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
@@ -23,7 +40,7 @@ class income_support_applicable_income(Variable):
         tax = add(
             benunit,
             period,
-            ["income_tax", "national_insurance"],
+            ["legacy_means_test_income_tax", "national_insurance"],
         )
         income += add(benunit, period, ["social_security_income"])
         income += benunit("income_support_tariff_income", period)

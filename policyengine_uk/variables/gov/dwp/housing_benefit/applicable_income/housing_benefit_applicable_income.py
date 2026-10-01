@@ -5,8 +5,27 @@ class housing_benefit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = "relevant income for Housing Benefit means test"
+    documentation = (
+        "Income taken into account for Housing Benefit. Income derived from "
+        "capital, such as rent from property, interest and dividends, is not "
+        "income: for working-age claimants regulation 46(4) treats it as "
+        "capital and Schedule 5 paragraph 17 disregards it, and for claimants "
+        "over the qualifying age for State Pension Credit Schedule 5 paragraph "
+        "22 of the pension-age regulations disregards any actual income from "
+        "capital. The capital counts through the capital limit and tariff "
+        "income. Tax on that income is not deducted. Rent for letting part of "
+        "the home stays income, less the sub-tenant disregard. Rent from other "
+        "premises whose value is disregarded also stays income, but the model "
+        "cannot identify those premises."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = [
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/46",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/5",
+    ]
 
     def formula(benunit, period, parameters):
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
@@ -30,8 +49,8 @@ class housing_benefit_applicable_income(Variable):
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",
-            "property_income",
             "private_pension_income",
+            "legacy_benefits_home_letting_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         # Add personal benefits, credits and total benefits to income
@@ -46,7 +65,7 @@ class housing_benefit_applicable_income(Variable):
             increased_income -= add(benunit, period, ["basic_income"])
         # Reduce increased income by pension contributions and tax
         pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
-        TAX_COMPONENTS = ["income_tax", "national_insurance"]
+        TAX_COMPONENTS = ["legacy_means_test_income_tax", "national_insurance"]
         tax = add(benunit, period, TAX_COMPONENTS)
         increased_income_reduced_by_tax_and_pensions = (
             increased_income - tax - pension_contributions

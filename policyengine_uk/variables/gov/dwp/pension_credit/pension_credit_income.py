@@ -17,7 +17,11 @@ class pension_credit_income(Variable):
         if bi.interactions.include_in_means_tests:
             total += add(benunit, period, ["basic_income"])
         pension_contributions = add(benunit, period, ["pension_contributions"])
-        tax = add(benunit, period, ["income_tax", "national_insurance"])
+        # Reg 17(10)(a) disregards tax only on income taken into account, and
+        # Schedule IV paragraph 18 disregards actual income from capital.
+        tax = add(
+            benunit, period, ["legacy_means_test_income_tax", "national_insurance"]
+        )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
         deductions = tax + pension_contributions * pen_con_deduction_rate
         return max_(0, total - deductions)

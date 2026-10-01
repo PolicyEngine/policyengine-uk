@@ -1,0 +1,1 @@
+Stop counting rent from property, and deducting tax on rent, interest and dividends, in the Income Support, Housing Benefit, Pension Credit and council tax reduction means tests, which treat income derived from capital as capital; count rent for letting part of the home less the £20 weekly sub-tenant disregard.

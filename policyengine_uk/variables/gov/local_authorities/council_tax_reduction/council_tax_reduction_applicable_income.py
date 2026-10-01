@@ -1,12 +1,38 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
+    is_scotland_scheme,
+)
 
 
 class council_tax_reduction_applicable_income(Variable):
     value_type = float
     entity = BenUnit
     label = "relevant income for Council Tax Reduction means test"
+    documentation = (
+        "Income taken into account for council tax reduction. No scheme counts "
+        "income derived from capital, such as rent from property, interest and "
+        "dividends, as income, so it is not listed and tax on it is not "
+        "deducted. The pensioner schemes disregard any actual income from "
+        "capital; the Welsh working-age scheme and the English default scheme "
+        "treat it as capital; the Scottish working-age scheme counts only the "
+        "unearned income it lists, which includes the assumed yield from "
+        "capital but not actual rent, interest or dividends. Rent for letting "
+        "part of the home counts, less the sub-tenant disregard, except in the "
+        "Scottish working-age scheme, which does not list it."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = [
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/16",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/5",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/64",
+        "https://www.legislation.gov.uk/uksi/2012/2886/schedule/8",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/4",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/3",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/63",
+    ]
 
     def formula(benunit, period, parameters):
         benunit_means_tested_benefits = [
@@ -29,7 +55,6 @@ class council_tax_reduction_applicable_income(Variable):
         income_components = [
             "employment_income",
             "self_employment_income",
-            "property_income",
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
@@ -38,10 +63,20 @@ class council_tax_reduction_applicable_income(Variable):
         personal_benefit_income = add(benunit, period, personal_benefits)
         credits = add(benunit, period, ["tax_credits"])
         increased_income = income + personal_benefit_income + credits + benefits
+        scotland_working_age = is_scotland_scheme(
+            benunit.household("country", period)
+        ) & ~benunit.household("council_tax_reduction_household_has_pensioner", period)
+        increased_income += where(
+            scotland_working_age,
+            0,
+            benunit("legacy_benefits_home_letting_income", period),
+        )
 
         if not bi.interactions.include_in_means_tests:
             increased_income -= add(benunit, period, ["basic_income"])
 
         pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
-        tax = add(benunit, period, ["income_tax", "national_insurance"])
+        tax = add(
+            benunit, period, ["legacy_means_test_income_tax", "national_insurance"]
+        )
         return max_(0, increased_income - tax - pension_contributions)

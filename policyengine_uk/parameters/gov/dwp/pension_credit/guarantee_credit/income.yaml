@@ -7,6 +7,8 @@ metadata:
     title: State Pension Credit Act 2002 s. 15(1)
   - href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/15
     title: State Pension Credit Regulations 2002 reg. 15
+  - href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV/paragraph/18
+    title: State Pension Credit Regulations 2002 Schedule IV para. 18 (actual income from capital disregarded)
   unit: list
 values:
   2002-01-01:
@@ -14,7 +16,11 @@ values:
   - working_tax_credit
   - state_pension
   - private_pension_income
-  - property_income
+  # Rent from other property is actual income from capital, disregarded by
+  # Schedule IV para. 18; the property counts through deemed income. Rent for
+  # part of the claimant's home is reg. 15(5)(i) income, less the Schedule IV
+  # para. 9 disregard.
+  - legacy_benefits_home_letting_income
   - pension_credit_deemed_income
   - esa_contrib
   - jsa_contrib
