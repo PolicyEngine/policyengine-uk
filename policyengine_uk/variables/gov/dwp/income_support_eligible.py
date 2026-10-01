@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
 
 class income_support_eligible(Variable):
@@ -13,9 +14,13 @@ class income_support_eligible(Variable):
         "new claim, so the claimant is the one of the claimant and partner "
         "who has the existing award (income_support_reported). They must be "
         "under the qualifying age for State Pension Credit, fall within a "
-        "prescribed category (a carer, or a lone parent of a young child) "
-        "and not be entitled to Employment and Support Allowance. Neither "
-        "the claimant nor the partner may be entitled to income-related ESA. "
+        "prescribed category (a carer, or a lone parent of a young child), "
+        "not be engaged in remunerative work (16 hours a week or more, unless "
+        "a carer) and not be entitled to Employment and Support Allowance or "
+        "Jobseeker's Allowance. The partner must not be engaged in "
+        "remunerative work (24 hours a week or more, unless a carer). Neither "
+        "the claimant nor the partner may be entitled to income-related ESA "
+        "or income-based JSA. "
         "A member of the benefit unit who is neither the claimant, the "
         "partner nor a child or young person in the family (such as a "
         "non-dependent adult) does not affect eligibility."
@@ -24,6 +29,8 @@ class income_support_eligible(Variable):
     reference = (
         "https://www.legislation.gov.uk/ukpga/1992/4/section/124",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/4ZA",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/5",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/6",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B",
         "https://www.legislation.gov.uk/uksi/1987/1968/regulation/4",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/6A",
@@ -68,11 +75,40 @@ class income_support_eligible(Variable):
         # Reading Pension Credit here would make a dependency cycle through
         # Working Tax Credit.
         under_qualifying_age = ~person("is_SP_age", period)
+        # s.124(1)(c): neither the claimant nor the other member of a couple
+        # is engaged in remunerative work: paid work of at least 16 hours a
+        # week for the claimant (IS Regs 1987 reg 5(1)) and 24 for the
+        # partner (reg 5(1A)). A person to whom Sch 1B para 4 applies, a carer,
+        # is not treated as engaged in it, whether claimant or partner
+        # (reg 6(4)(c)). The partner's threshold applies to whoever is not
+        # the claimant, so it is tested for each candidate claimant against
+        # the other member of the couple.
+        WORK = IS.eligibility.remunerative_work
+        hours = person("income_support_remunerative_work_hours", period)
+        not_treated_as_working = person("is_carer_for_benefits", period)
+        works_as_claimant = ~not_treated_as_working & (hours >= WORK.claimant_hours)
+        works_as_partner = (
+            claimant_or_partner
+            & ~not_treated_as_working
+            & (hours >= WORK.partner_hours)
+        )
+        other_member_works = (
+            benunit.project(benunit.sum(works_as_partner)) - works_as_partner
+        ) > 0
+        # s.124(1)(f): the claimant is not entitled to a jobseeker's allowance
+        # of either kind. Income-based JSA is tested below for both of them.
+        no_contributory_jsa = person("jsa_contrib", period) <= 0
         # s.124(1)(h): the claimant is not entitled to an employment and
         # support allowance of either kind ...
         no_contributory_esa = person("esa_contrib", period) <= 0
         claimant = (
-            has_award & prescribed_category & under_qualifying_age & no_contributory_esa
+            has_award
+            & prescribed_category
+            & under_qualifying_age
+            & no_contributory_esa
+            & no_contributory_jsa
+            & ~works_as_claimant
+            & ~other_member_works
         )
         # ... and the other member of a couple is not entitled to an
         # income-related allowance. An income-related allowance covers the
@@ -89,9 +125,22 @@ class income_support_eligible(Variable):
                 person("esa_income_reported", period) * claimant_or_partner
             )
             income_related_esa = income_related_esa_award(benunit, period, reported) > 0
+        # s.124(1)(f): neither the claimant nor the other member of a couple
+        # is, and the couple are not, entitled to an income-based jobseeker's
+        # allowance. As for ESA: the award on their reported amounts after
+        # the same capital test as jsa_income, or a jsa_income entered
+        # directly, taken to be theirs.
+        if "jsa_income" in benunit.simulation.input_variables:
+            income_based_jsa = benunit("jsa_income", period) > 0
+        else:
+            reported = benunit.sum(
+                person("jsa_income_reported", period) * claimant_or_partner
+            )
+            income_based_jsa = income_related_jsa_award(benunit, period, reported) > 0
         capital = benunit("income_support_assessable_capital", period)
         return (
             benunit.any(claimant)
             & ~income_related_esa
+            & ~income_based_jsa
             & (capital <= IS.means_test.capital.limit)
         )
