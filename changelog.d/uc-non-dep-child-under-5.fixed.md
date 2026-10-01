@@ -1,0 +1,1 @@
+- Exempt a Universal Credit non-dependant who is responsible for a child under 5 from the housing cost contribution (UC Regs 2013 Sch 4 para 16(2)(i)).

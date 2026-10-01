@@ -1,0 +1,10 @@
+description: No housing cost contribution is deducted under the Universal Credit housing element for a non-dependant who is responsible for a child under this age.
+values:
+  2013-04-29: 5
+metadata:
+  unit: year
+  period: year
+  label: Universal Credit housing cost contribution young child age limit
+  reference:
+    - title: The Universal Credit Regulations 2013 Sch 4 para 16(2)(i)
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/16

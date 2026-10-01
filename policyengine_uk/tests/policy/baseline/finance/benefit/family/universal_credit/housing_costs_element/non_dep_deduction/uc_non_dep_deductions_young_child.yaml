@@ -1,0 +1,205 @@
+# UC Regs 2013 Sch 4 para 16(2)(i): no housing cost contribution is deducted
+# for a non-dependant "who is responsible for a child under 5 years old".
+# Responsibility follows reg 4: the model reads "normally lives with" as
+# benefit-unit membership, so a non-dependant family's claimant and partner
+# are responsible for its children, and nobody is responsible for a child in
+# someone else's benefit unit.
+#
+# 2026-27 contribution: £96.55 a month (para 14(1)), £1,158.60 a year.
+
+- name: A non-dependant lone parent with a baby bears no housing cost contribution
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 55
+        is_household_head: true
+        is_claimant_or_partner: true
+      mother:
+        age: 23
+        is_claimant_or_partner: true
+      baby:
+        age: 1
+    benunits:
+      renter:
+        members: [grandmother]
+      non_dependant_family:
+        members: [mother, baby]
+    households:
+      household:
+        members: [grandmother, mother, baby]
+  output:
+    is_non_dependant_of_household_head: [false, true, true]
+    is_responsible_for_child_under_5_for_universal_credit: [false, true, false]
+    uc_non_dep_deduction_exempt: [false, true, false]
+    uc_individual_non_dep_deduction: [0, 0, 0]
+    uc_non_dep_deductions: [0, 0]
+
+- name: The contribution applies once the non-dependant's child is 5
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 55
+        is_household_head: true
+        is_claimant_or_partner: true
+      mother:
+        age: 23
+        is_claimant_or_partner: true
+      child:
+        age: 5
+    benunits:
+      renter:
+        members: [grandmother]
+      non_dependant_family:
+        members: [mother, child]
+    households:
+      household:
+        members: [grandmother, mother, child]
+  output:
+    is_responsible_for_child_under_5_for_universal_credit: [false, false, false]
+    uc_individual_non_dep_deduction: [0, 1_158.60, 0]
+    uc_non_dep_deductions: [1_158.60, 0]
+
+# Reg 4(4) limits responsibility to one person only among people who are not
+# a couple, so both members of a non-dependant couple are responsible.
+- name: Neither member of a non-dependant couple with a toddler bears a contribution
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      renter:
+        age: 58
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 26
+        is_claimant_or_partner: true
+      daughter_partner:
+        age: 28
+        is_claimant_or_partner: true
+      toddler:
+        age: 3
+    benunits:
+      renter_family:
+        members: [renter]
+      non_dependant_family:
+        members: [daughter, daughter_partner, toddler]
+    households:
+      household:
+        members: [renter, daughter, daughter_partner, toddler]
+  output:
+    uc_individual_non_dep_deduction: [0, 0, 0, 0]
+    uc_non_dep_deductions: [0, 0]
+
+- name: Both members of a non-dependant couple whose child is 8 bear a contribution
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      renter:
+        age: 58
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 26
+        is_claimant_or_partner: true
+      daughter_partner:
+        age: 28
+        is_claimant_or_partner: true
+      child:
+        age: 8
+    benunits:
+      renter_family:
+        members: [renter]
+      non_dependant_family:
+        members: [daughter, daughter_partner, child]
+    households:
+      household:
+        members: [renter, daughter, daughter_partner, child]
+  output:
+    uc_individual_non_dep_deduction: [0, 1_158.60, 1_158.60, 0]
+    uc_non_dep_deductions: [2_317.20, 0]
+
+# The exemption belongs to the non-dependant who is responsible for the child:
+# the renter's own young child does not exempt the renter's non-dependants.
+- name: A non-dependant grandparent is not responsible for the renter's toddler
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        is_household_head: true
+        is_claimant_or_partner: true
+      toddler:
+        age: 2
+      grandmother:
+        age: 60
+        is_claimant_or_partner: true
+    benunits:
+      renter_family:
+        members: [parent, toddler]
+      grandmother_family:
+        members: [grandmother]
+    households:
+      household:
+        members: [parent, toddler, grandmother]
+  output:
+    is_responsible_for_child_under_5_for_universal_credit: [true, false, false]
+    uc_individual_non_dep_deduction: [0, 0, 1_158.60]
+    uc_non_dep_deductions: [1_158.60, 0]
+
+- name: An adult son in the renter's benefit unit is not responsible for his young sibling
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+      sibling:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, son, sibling]
+    households:
+      household:
+        members: [parent, son, sibling]
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true, false]
+    uc_individual_non_dep_deduction: [0, 1_158.60, 0]
+    uc_non_dep_deductions: 1_158.60
+
+- name: The housing costs element is not reduced for a non-dependant lone parent with a baby
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 55
+        is_household_head: true
+        is_claimant_or_partner: true
+      mother:
+        age: 23
+        is_claimant_or_partner: true
+      baby:
+        age: 1
+    benunits:
+      renter:
+        members: [grandmother]
+        benunit_tenure_type: RENT_FROM_COUNCIL
+        benunit_rent: 6_000
+      non_dependant_family:
+        members: [mother, baby]
+    households:
+      household:
+        members: [grandmother, mother, baby]
+  output:
+    uc_housing_costs_element: [6_000, 0]
