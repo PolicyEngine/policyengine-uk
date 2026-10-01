@@ -428,7 +428,8 @@
     # Para 17(2)(b)(iv)(aa): a single claimant with the disability premium
     # working 16 hours or more meets the condition.
     meets_housing_benefit_additional_earnings_disregard_conditions: true
-    # Intended model limitation. In law the same disability premium brings in
+    # KNOWN LIMITATION: the law gives £1,929.20. Intended model limitation.
+    # In law the same disability premium brings in
     # the £20 disregard in place of £5: Sch 4 para 3(2), "This paragraph
     # applies where the claimant's applicable amount includes an amount by
     # way of the disability premium". The law gives (£20 + £17.10) × 52 =
@@ -487,7 +488,8 @@
       benunit:
         members: [parent, young_person, child]
   output:
-    # Known limitation, pinned so a change is deliberate. The model takes
+    # KNOWN LIMITATION: the law gives 0. Pinned so a change is deliberate.
+    # The model takes
     # the claimant and partner to be members aged 18 or over (is_adult)
     # until a claimant-or-partner variable replaces it (PolicyEngine/
     # policyengine-uk#1896). It counts the 18-year-old's £8,000 (below the
