@@ -175,9 +175,13 @@ def uprate_rent(
         )
         pass
     else:
-        private_rent_growth = growth.ons.private_rental_prices(year)[
-            np.array(region.values.astype(str))
-        ]
+        # Region.UNKNOWN has no regional index of its own, so those households
+        # take the UK-wide one.
+        region_index = np.array(region.values.astype(str))
+        region_index = np.where(
+            region_index == "UNKNOWN", "UNITED_KINGDOM", region_index
+        )
+        private_rent_growth = growth.ons.private_rental_prices(year)[region_index]
         current_year.household["rent"] = np.where(
             is_private_rented,
             prev_rent * (1 + private_rent_growth),
