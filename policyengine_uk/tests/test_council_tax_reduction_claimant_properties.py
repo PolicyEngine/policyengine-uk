@@ -18,7 +18,8 @@ age, no head flagged, and several heads flagged:
    the head's and the families liable for a share of it.
 3. No other family gets a reduction, and the household's reduction never
    exceeds its council tax.
-4. Non-dependants: no member of a claimant family is a non-dependant; every
+4. Non-dependants: no claimant or partner of a claimant family is a
+   non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)); every
    adult in a family that neither claims nor pays rent is.
 5. Differential: where the input flags at most one head, the family holding
    the head is the one holding the person-level household head that Housing
@@ -221,7 +222,8 @@ def test_claimant_invariants(population):
     person_claimant = claimant[facts["benunit"]]
     person_rent_liable = calc(sim, "benunit_is_rent_liable")[facts["benunit"]]
     adult = calc(sim, "age") >= 18
-    assert not np.any(non_dep & person_claimant)
+    claimant_or_partner = calc(sim, "is_claimant_or_partner")
+    assert not np.any(non_dep & person_claimant & claimant_or_partner)
     assert np.all(non_dep[adult & ~person_claimant & ~person_rent_liable])
 
     # 5. Differential with the person-level household head. Once anyone in
