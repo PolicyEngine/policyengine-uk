@@ -1,0 +1,251 @@
+# A member of the benefit unit aged 16 or over who is not the claimant or
+# partner has their own bedroom in the size criteria.
+#
+# Universal Credit: UC Regs 2013 Sch 4 para 10(1)(b), "a qualifying young
+# person for whom the renter or either joint renter is responsible"; anyone
+# else aged 16 or over living with the renter is a non-dependant (para 9(2))
+# with a bedroom under para 10(1)(c), "a non-dependant who is not a child",
+# except a qualifying young person no one is responsible for (para 9(2)(g)).
+# A child is a person under 16 (WRA 2012 s.40).
+#
+# Housing Benefit: HB Regs 2006 and HB (SPC) Regs 2006 reg 13D(3)(b), "a
+# person who is not a child", where a child is a person under 16 (reg 2(1)).
+#
+# Rents of £200 a week (£10,400 a year) sit between the published Maidstone
+# one-bedroom (B) and two-bedroom (C) rates (VOA, LHA April 2024, held for
+# 2025-26: B £172.60, C £208.27 a week), so the bedroom decides whether the
+# rent is met in full.
+
+- name: A qualifying young person has their own bedroom
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_household_head: true
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    # UC: the renter (para 10(1)(a)) and the qualifying young person (para
+    # 10(1)(b)): 2 bedrooms, category C.
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # The rent is below the two-bedroom rate, so it is met in full.
+    uc_housing_costs_element: 10_400
+    # HB: one bedroom each for the claimant and the young person, neither of
+    # whom is a child (reg 13D(3)(b)): 2 bedrooms, category C.
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+
+- name: A qualifying young person aged 19 has their own bedroom
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_parent: true
+      young_person:
+        age: 19
+        current_education: UPPER_SECONDARY
+        # UC Regs 2013 reg 5(1)(b) and 5(2): enrolled before 19, and before
+        # the 1 September after their 19th birthday.
+        age_started_or_accepted_current_education_or_training: 18
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      home:
+        members: [parent, young_person]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    uc_housing_costs_element: 10_400
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+
+- name: A member aged 18 who is not a qualifying young person is a non-dependant with a bedroom
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+        is_household_head: true
+        is_parent: true
+      son:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [parent, son]
+    households:
+      home:
+        members: [parent, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, false]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    # UC: not a qualifying young person, so a non-dependant (para 9(2)) who
+    # is not a child (para 10(1)(c)).
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # HB: a person who is not a child (reg 13D(3)(b)).
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+
+- name: A qualifying young person no one is responsible for has no Universal Credit bedroom
+  period: 2026
+  input:
+    people:
+      carer:
+        age: 40
+        is_household_head: true
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        # UC Regs 2013 reg 4(6)(a): no one is responsible for a qualifying
+        # young person looked after by a local authority.
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [carer, young_person]
+    households:
+      home:
+        members: [carer, young_person]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    # Not under para 10(1)(b), and not a non-dependant (para 9(2)(g)): the
+    # renter's bedroom only.
+    LHA_allowed_bedrooms: 1
+    LHA_category: B
+
+- name: A qualifying young person cannot share with a younger sibling of the same sex
+  period: 2026
+  input:
+    people:
+      parent_1:
+        age: 42
+        is_household_head: true
+        is_parent: true
+        is_male: true
+      parent_2:
+        age: 40
+        is_parent: true
+        is_male: false
+      young_person:
+        age: 17
+        is_male: true
+        current_education: UPPER_SECONDARY
+      boy:
+        age: 12
+        is_male: true
+      girl:
+        age: 8
+        is_male: false
+    benunits:
+      family:
+        members: [parent_1, parent_2, young_person, boy, girl]
+    households:
+      home:
+        members: [parent_1, parent_2, young_person, boy, girl]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, true, false, false, false]
+    # UC: the couple (para 10(1)(a)), the qualifying young person (b), and
+    # one bedroom each for the boy and the girl, who are of opposite sexes
+    # and one of whom is 10 or over ((d)-(f)): 4 bedrooms, category E.
+    LHA_allowed_bedrooms: 4
+    LHA_category: E
+    # HB: the couple (reg 13D(3)(a)), the young person ((b)), and the two
+    # children ((e)): 4 bedrooms, the maximum category.
+    housing_benefit_LHA_allowed_bedrooms: 4
+    housing_benefit_LHA_category: E
+
+- name: A partner aged 19 adds no bedroom
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 24
+        is_household_head: true
+      partner:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, true]
+    # The couple share one bedroom (UC para 10(1)(a); HB reg 13D(3)(a)).
+    LHA_allowed_bedrooms: 1
+    LHA_category: B
+    housing_benefit_LHA_allowed_bedrooms: 1
+    housing_benefit_LHA_category: B
+
+- name: A pensioner couple's grandchild in full-time education has their own Housing Benefit bedroom
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 70
+        is_household_head: true
+      grandparent_2:
+        age: 68
+      grandchild:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      family:
+        members: [grandparent_1, grandparent_2, grandchild]
+    households:
+      home:
+        members: [grandparent_1, grandparent_2, grandchild]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, true, false]
+    is_child_or_young_person_for_legacy_benefits: [false, false, true]
+    # HB (SPC) Regs 2006 reg 13D(3): the couple ((a)) and the young person
+    # ((b)): 2 bedrooms, category C.
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+    # No income, so Housing Benefit meets the eligible rent: the rent, which
+    # is below the two-bedroom rate.
+    housing_benefit: 10_400
