@@ -76,10 +76,16 @@
         other_residential_property_value: 55_370
         savings: 455
   output:
-    pension_credit_assessable_capital: 55_825
-    pension_credit_deemed_income: 4_784
-    pension_credit_income: 15_260
-    pension_credit: 0
+    # 455 + 90% of 55,370 (SPC Regs 2002 reg. 19(a)). Deemed income is
+    # 81 steps of 500 above 10,000 at 1 a week: 81 * 52 = 4,212.
+    pension_credit_assessable_capital: 50_288
+    pension_credit_deemed_income: 4_212
+    pension_credit_income: 14_688
+    # Income exceeds the 12,376 guarantee, so no guarantee credit. Savings
+    # credit: 60% of (12,376 - 208.07 * 52) = 933.82, less 40% of
+    # (14,688 - 12,376) = 924.80, leaves 9.02.
+    guarantee_credit: 0
+    pension_credit: 9.016
 
 - name: Case 5, 2026 Pension Credit uses tariff income with the published guarantee rate.
   period: 2026
@@ -99,12 +105,14 @@
         savings: 87_285
         corporate_wealth: 12_650
   output:
-    pension_credit_assessable_capital: 99_935
-    pension_credit_deemed_income: 9_360
-    pension_credit_income: 9_360
+    # 87,285 + 90% of 12,650 (SPC Regs 2002 reg. 19(a)). Deemed income is
+    # 178 steps of 500 above 10,000 at 1 a week: 178 * 52 = 9,256.
+    pension_credit_assessable_capital: 98_670
+    pension_credit_deemed_income: 9_256
+    pension_credit_income: 9_256
     standard_minimum_guarantee: 12_376
-    guarantee_credit: 3_016
-    pension_credit: 3_016
+    guarantee_credit: 3_120
+    pension_credit: 3_120
 
 - name: Pension Credit capital disregards private pension wealth
   period: 2026

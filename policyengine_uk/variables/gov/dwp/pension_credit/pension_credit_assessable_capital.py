@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import valued_capital
 
 
 class pension_credit_assessable_capital(Variable):
@@ -7,7 +8,8 @@ class pension_credit_assessable_capital(Variable):
     label = "Pension Credit assessable capital"
     documentation = (
         "Pension Credit capital counted from the configured capital sources, "
-        "split only across pension-age adults in the household so pensioner "
+        "each valued at market value less 10% where a sale would incur "
+        "expenses and less any debt secured on it (reg. 19), split only across pension-age adults in the household so pensioner "
         "couples pool capital together without dilution by unrelated working-"
         "age adults."
     )
@@ -19,7 +21,9 @@ class pension_credit_assessable_capital(Variable):
         household = benunit.household
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
-        household_capital = sum(household(source, period) for source in p.sources)
+        household_capital = valued_capital(
+            lambda variable: household(variable, period), p.sources, p.sale_expenses
+        )
         any_pension_age = benunit.any(person("is_SP_age", period))
         benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
         household_pension_age_adults = benunit.max(

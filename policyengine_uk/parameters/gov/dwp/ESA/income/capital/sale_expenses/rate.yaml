@@ -1,0 +1,18 @@
+description: >
+  Share of the current market or surrender value deducted from income-related
+  ESA capital where there would be expenses attributable to sale. It is a flat
+  10% whatever the actual costs, taken from the gross value before any
+  encumbrance secured on the asset is deducted.
+values:
+  2008-10-27: 0.1
+metadata:
+  label: Income-related ESA capital sale expense deduction
+  period: year
+  unit: /1
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 113(a)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/113
+    - title: Employment and Support Allowance Regulations (Northern Ireland) 2008 reg. 113(a)
+      href: https://www.legislation.gov.uk/nisr/2008/280/regulation/113
+    - title: Decision Makers' Guide chapter 52, para. 52624
+      href: https://assets.publishing.service.gov.uk/media/69d8f30ad3e08b8871b665ac/dmg-Ch-52.pdf#page=116

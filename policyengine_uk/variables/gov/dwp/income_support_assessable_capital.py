@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import valued_capital
 
 
 class income_support_assessable_capital(Variable):
@@ -7,7 +8,8 @@ class income_support_assessable_capital(Variable):
     label = "Assessable capital for Income Support"
     documentation = (
         "Household capital apportioned to the benefit unit for the Income Support "
-        "capital test. Because the dataset only stores these stocks at household "
+        "capital test, valued at market value less 10% where a sale would incur "
+        "expenses and less any debt secured on it (reg. 49). Because the dataset only stores these stocks at household "
         "level, the model allocates full household capital to any benunit on the "
         "IS claim path and only falls back to an adult-share proxy when nobody in "
         "the household is on that path."
@@ -27,8 +29,10 @@ class income_support_assessable_capital(Variable):
         # any benunit on the IS claim path gets the full observed household total.
         # If nobody in the household is on that path, fall back to an all-adults
         # proxy so direct inspection still returns a usable value.
-        household_capital = sum(
-            benunit.max(person.household(source, period)) for source in sources
+        household_capital = valued_capital(
+            lambda variable: benunit.max(person.household(variable, period)),
+            sources,
+            IS.means_test.capital.sale_expenses,
         )
         benunit_adults = add(benunit, period, ["is_adult"])
         household_claiming_adults = benunit.max(

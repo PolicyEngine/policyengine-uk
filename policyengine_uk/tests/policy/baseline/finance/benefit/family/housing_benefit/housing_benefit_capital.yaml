@@ -89,7 +89,7 @@
 
 - name: Housing Benefit counts direct land holdings as capital
   period: 2025
-  absolute_error_margin: 0
+  absolute_error_margin: 0.01
   input:
     people:
       person:
@@ -103,10 +103,35 @@
     households:
       household:
         members: person
+        # 90% of 17,780 is 16,002, over the 16,000 limit after the 10%
+        # deduction for the expenses of sale (HB Regs 2006 reg. 47(a)).
+        owned_land: 17_780
+  output:
+    housing_benefit_assessable_capital: 16_002
+    housing_benefit_eligible: false
+
+- name: Housing Benefit values land less 10% for the expenses of sale
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        # Land worth 16,001 is valued at 14,400.90 (HB Regs 2006 reg. 47(a)),
+        # within the limit.
         owned_land: 16_001
   output:
-    housing_benefit_assessable_capital: 16_001
-    housing_benefit_eligible: false
+    housing_benefit_assessable_capital: 14_400.9
+    housing_benefit_eligible: true
 
 - name: Housing Benefit counts corporate wealth as a broad financial-capital proxy
   period: 2025
@@ -126,7 +151,9 @@
         members: person
         corporate_wealth: 50_000
   output:
-    housing_benefit_assessable_capital: 50_000
+    # Market value less 10% for the expenses of sale (HB Regs 2006
+    # reg. 47(a)).
+    housing_benefit_assessable_capital: 45_000
     housing_benefit_eligible: false
 
 - name: Mixed benunits split household Housing Benefit capital by adult share
