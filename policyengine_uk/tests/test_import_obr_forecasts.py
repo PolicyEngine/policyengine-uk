@@ -1,9 +1,13 @@
+import os
 from datetime import date
+from pathlib import Path
 from io import BytesIO
 from zipfile import ZipFile
 
 import pytest
 import yaml
+
+from policyengine_uk.utils import import_obr_forecasts
 
 from policyengine_uk.utils.import_obr_forecasts import (
     STATUTORY_GAP_SPECS,
@@ -638,3 +642,50 @@ def test_gaps_only_leaves_growth_alone(tmp_path):
     cpi = yaml.safe_load((gap_dir / "cpi_september.yaml").read_text())["values"]
     # September 2026 (2.12%) minus the stored 2026 CPI (0%).
     assert cpi[date(2026, 9, 1)] == pytest.approx(0.0212)
+
+
+@pytest.mark.parametrize("failing_call", [1, 2, 3])
+def test_main_restores_every_file_when_a_write_fails(
+    tmp_path, monkeypatch, failing_call
+):
+    """A failure while moving the second or third file into place (or the
+    first) leaves growth and both gap files exactly as they were."""
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_text() for path in [yoy, *gap_dir.iterdir()]}
+    real_replace = os.replace
+    calls = []
+
+    def flaky_replace(source, target):
+        calls.append(target)
+        if len(calls) == failing_call:
+            raise OSError("disk full")
+        real_replace(source, target)
+
+    monkeypatch.setattr(import_obr_forecasts.os, "replace", flaky_replace)
+    with pytest.raises(OSError, match="disk full"):
+        run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy))
+
+    assert {path: path.read_text() for path in before} == before
+    leftovers = [p for p in tmp_path.rglob("*.staged")]
+    assert leftovers == []
+
+
+def test_main_leaves_files_alone_when_staging_fails(tmp_path, monkeypatch):
+    yoy, gap_dir = write_tree(tmp_path)
+    before = {path: path.read_text() for path in [yoy, *gap_dir.iterdir()]}
+    real_write_text = Path.write_text
+    staged = []
+
+    def flaky_write_text(self, *args, **kwargs):
+        if self.name.endswith(".staged"):
+            staged.append(self)
+            if len(staged) == 2:
+                raise OSError("disk full")
+        return real_write_text(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", flaky_write_text)
+    with pytest.raises(OSError, match="disk full"):
+        run_main(tmp_path, make_test_xlsx(), "--yaml-path", str(yoy))
+
+    assert {path: path.read_text() for path in before} == before
+    assert list(tmp_path.rglob("*.staged")) == []

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import os
 import re
 from dataclasses import dataclass
 from io import BytesIO
@@ -778,6 +779,36 @@ def build_arg_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def write_all_or_none(outputs: dict[Path, str]) -> None:
+    """Write every file or leave all of them as they were.
+
+    Each file is staged beside its target, then moved into place. If staging
+    or a move fails, files already moved get their original text back and
+    the staged copies are removed, so growth and gaps never mix forecasts.
+    """
+    originals = {path: path.read_text() if path.exists() else None for path in outputs}
+    staged: dict[Path, Path] = {}
+    replaced: list[Path] = []
+    try:
+        for path, content in outputs.items():
+            staging = path.with_name(f".{path.name}.staged")
+            staging.write_text(content)
+            staged[path] = staging
+        for path, staging in staged.items():
+            os.replace(staging, path)
+            replaced.append(path)
+    except BaseException:
+        for path in replaced:
+            if originals[path] is None:
+                path.unlink()
+            else:
+                path.write_text(originals[path])
+        raise
+    finally:
+        for staging in staged.values():
+            staging.unlink(missing_ok=True)
+
+
 def main(argv: list[str] | None = None) -> int:
     args = build_arg_parser().parse_args(argv)
 
@@ -853,8 +884,8 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.dry_run:
         return 0
-    for path, content in outputs.items():
-        path.write_text(content)
+    write_all_or_none(outputs)
+    for path in outputs:
         print(f"Updated {path}")
     return 0
 
