@@ -158,6 +158,21 @@
     benefit_cap_earned_income: 10_500
     is_benefit_cap_exempt_earnings: false
 
+- name: Pension contributions paid after 75 are not deducted
+  # Finance Act 2004 s. 188(3)(a): contributions after 75 are not relievable,
+  # so reg. 55(5)(a) does not deduct them. 11,000 is under the personal
+  # allowance and no NI is due over State Pension age, so earned income is
+  # 11,000.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 76
+        employment_income: 11_000
+        employee_pension_contributions: 1_000
+  output:
+    benefit_cap_earned_income: 11_000
+
 - name: Voluntary Class 3 contributions are not deducted
   period: 2026
   input:
