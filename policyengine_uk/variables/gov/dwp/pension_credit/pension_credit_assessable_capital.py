@@ -9,7 +9,8 @@ class pension_credit_assessable_capital(Variable):
         "Pension Credit capital counted from the configured capital sources, "
         "split only across pension-age adults in the household so pensioner "
         "couples pool capital together without dilution by unrelated working-"
-        "age adults."
+        "age adults. Person-level sources, such as a Lifetime ISA, count "
+        "only in the holder's own benunit."
     )
     definition_period = YEAR
     unit = GBP
@@ -20,6 +21,9 @@ class pension_credit_assessable_capital(Variable):
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
         household_capital = sum(household(source, period) for source in p.sources)
+        person_capital = sum(
+            benunit.sum(person(source, period)) for source in p.person_sources
+        )
         any_pension_age = benunit.any(person("is_SP_age", period))
         benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
         household_pension_age_adults = benunit.max(
@@ -29,4 +33,8 @@ class pension_credit_assessable_capital(Variable):
         household_capital_proxy = (
             household_capital * benunit_pension_age_adults / adult_divisor
         )
-        return where(any_pension_age, max_(0, household_capital_proxy), 0)
+        return where(
+            any_pension_age,
+            max_(0, household_capital_proxy + person_capital),
+            0,
+        )

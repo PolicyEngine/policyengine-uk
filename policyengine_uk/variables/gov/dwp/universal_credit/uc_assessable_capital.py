@@ -7,7 +7,9 @@ class uc_assessable_capital(Variable):
     label = "Universal Credit assessable capital"
     documentation = (
         "Universal Credit capital counted from the configured capital sources, "
-        "with benunit-reported overrides when available."
+        "with benunit-reported overrides when available. Household sources are "
+        "allocated by the household proxy; person-level sources, such as a "
+        "Lifetime ISA, count only in the holder's own benunit."
     )
     definition_period = YEAR
     unit = GBP
@@ -18,6 +20,10 @@ class uc_assessable_capital(Variable):
         p = parameters(period).gov.dwp.universal_credit.means_test
         household_capital = sum(
             household(source, period) for source in p.capital.sources
+        )
+        person_capital = sum(
+            benunit.sum(benunit.members(source, period))
+            for source in p.capital.person_sources
         )
         benunit_adults = add(benunit, period, ["is_adult"])
         household_reported_capital = household("household_uc_reported_capital", period)
@@ -38,6 +44,6 @@ class uc_assessable_capital(Variable):
         assessed_capital = where(
             use_reported_capital,
             reported_capital,
-            household_capital_proxy,
+            household_capital_proxy + person_capital,
         )
         return max_(0, assessed_capital)

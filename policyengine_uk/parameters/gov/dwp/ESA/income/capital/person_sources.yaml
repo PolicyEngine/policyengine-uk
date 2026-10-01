@@ -1,0 +1,20 @@
+description: >
+  Person-level model variables counted as income-related Employment and
+  Support Allowance capital of the person's own benefit unit. They are summed
+  over the benefit unit's members, so they need none of the household proxy
+  that the household `sources` use. `lifetime_isa_countable_capital` is a
+  Lifetime ISA at its surrender value: regulation 113 values capital at its
+  current market or surrender value, and DMG 52665 counts a Lifetime ISA at
+  75% of its value under 60 and in full from 60.
+metadata:
+  label: Income-related ESA person-level capital sources
+  period: year
+  unit: list
+  reference:
+    - title: The Employment and Support Allowance Regulations 2008 reg. 113
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/113
+    - title: Decision Makers' Guide, Chapter 52 (Capital), para. 52665
+      href: https://assets.publishing.service.gov.uk/media/69d8f30ad3e08b8871b665ac/dmg-Ch-52.pdf
+values:
+  2017-04-06:
+    - lifetime_isa_countable_capital

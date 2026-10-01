@@ -10,7 +10,9 @@ class income_support_assessable_capital(Variable):
         "capital test. Because the dataset only stores these stocks at household "
         "level, the model allocates full household capital to any benunit on the "
         "IS claim path and only falls back to an adult-share proxy when nobody in "
-        "the household is on that path."
+        "the household is on that path. "
+        "Person-level sources, such as a Lifetime ISA, count only in the "
+        "holder's own benunit."
     )
     definition_period = YEAR
     unit = GBP
@@ -42,4 +44,11 @@ class income_support_assessable_capital(Variable):
         fallback_divisor = max_(1, household_adults)
         claiming_proxy = where(would_claim_is, household_capital, 0)
         fallback_proxy = household_capital * benunit_adults / fallback_divisor
-        return where(household_claiming_adults > 0, claiming_proxy, fallback_proxy)
+        person_capital = sum(
+            benunit.sum(person(source, period))
+            for source in IS.means_test.capital.person_sources
+        )
+        household_share = where(
+            household_claiming_adults > 0, claiming_proxy, fallback_proxy
+        )
+        return household_share + person_capital

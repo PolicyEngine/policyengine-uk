@@ -11,7 +11,9 @@ class esa_income_assessable_capital(Variable):
         "household level, the model allocates full household capital to any "
         "benunit with a reported income-related ESA award and only falls back to "
         "an adult-share proxy when nobody in the household is on that reported "
-        "claim path."
+        "claim path. "
+        "Person-level sources, such as a Lifetime ISA, count only in the "
+        "holder's own benunit."
     )
     definition_period = YEAR
     unit = GBP
@@ -38,4 +40,10 @@ class esa_income_assessable_capital(Variable):
         fallback_divisor = max_(1, household_adults)
         claiming_proxy = where(claiming_esa_income, household_capital, 0)
         fallback_proxy = household_capital * benunit_adults / fallback_divisor
-        return where(household_reporting_claimants > 0, claiming_proxy, fallback_proxy)
+        person_capital = sum(
+            benunit.sum(person(source, period)) for source in ESA.capital.person_sources
+        )
+        household_share = where(
+            household_reporting_claimants > 0, claiming_proxy, fallback_proxy
+        )
+        return household_share + person_capital

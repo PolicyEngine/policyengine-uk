@@ -6,8 +6,10 @@ class housing_benefit_assessable_capital(Variable):
     entity = BenUnit
     label = "Housing Benefit assessable capital"
     documentation = (
-        "Housing Benefit capital counted from the configured capital sources, "
-        "allocated across benunits using a household adult-share proxy."
+        "Housing Benefit capital counted from the configured capital sources. "
+        "Household sources are allocated across benunits using a household "
+        "adult-share proxy; person-level sources, such as a Lifetime ISA, "
+        "count only in the holder's own benunit."
     )
     definition_period = YEAR
     unit = GBP
@@ -19,6 +21,9 @@ class housing_benefit_assessable_capital(Variable):
         any_over_SP_age = benunit.any(person("is_SP_age", period))
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = sum(household(source, period) for source in p.sources)
+        person_capital = sum(
+            benunit.sum(person(source, period)) for source in p.person_sources
+        )
         benunit_adults = add(benunit, period, ["is_adult"])
         household_adults = benunit.max(
             person.household.sum(person.household.members("is_adult", period))
@@ -30,4 +35,8 @@ class housing_benefit_assessable_capital(Variable):
             0,
         )
         guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
-        return where(guarantee_credit, 0, max_(0, household_capital_proxy))
+        return where(
+            guarantee_credit,
+            0,
+            max_(0, household_capital_proxy + person_capital),
+        )
