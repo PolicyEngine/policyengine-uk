@@ -1,0 +1,1 @@
+Copy arrays read from the simulation before writing into them in the Universal Credit rebalancing and PIP phase-in scenario modifiers, so the cache changes only through `set_input`. Results are unchanged; a new code-health test fails on in-place writes into cached arrays.
