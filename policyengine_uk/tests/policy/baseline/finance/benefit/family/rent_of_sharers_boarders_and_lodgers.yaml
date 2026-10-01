@@ -4,7 +4,7 @@
 # UC Regs 2013 (SI 2013/376) Sch 1 para 2, Sch 4 paras 9, 10, 20, 24, 25, 27-29.
 # HB Regs 2006 (SI 2006/213) regs 3, 12, 12B, 13, 13C, 13D, Sch 1 para 2.
 
-- name: The household head's couple shares the household's rent equally
+- name: The household head carries the rent of a couple liable for it
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -22,8 +22,9 @@
         members: [head, partner]
         rent: 12_000
   output:
-    # Two people liable: 12,000 / 2 each; the family's total is the rent.
-    personal_rent: [6_000, 6_000]
+    # The family's share (the whole rent) sits on the household head.
+    share_of_household_rent: 1
+    personal_rent: [12_000, 0]
     benunit_rent: 12_000
 
 - name: Sharers split the household's rent per person liable
