@@ -13,8 +13,9 @@ Invariants, for any generated population of families:
 
 1. Single count (differential): unearned income equals the tariff income
    computed independently from reg. 72(1) on assessable capital, plus the
-   other listed sources the model carries, whatever interest, dividends and
-   rent the family receives. So capital yield enters once, as tariff income.
+   other sources on the model's reg. 66(1) list, whatever interest, dividends
+   and rent the family receives. So capital yield enters once, as tariff
+   income. None of those three is on the list in any year.
 2. Invariance: interest, dividends and rent change nothing in unearned income,
    tariff income, eligibility or the maximum amount. For families without
    earnings they change nothing in the award either.
@@ -79,7 +80,6 @@ UC_VARIABLES = [
     "uc_assessable_capital",
     "is_uc_eligible",
 ]
-OTHER_LISTED_SOURCES = ["carers_allowance", "jsa_contrib", "private_pension_income"]
 
 
 @st.composite
@@ -150,11 +150,24 @@ def situation(units, year, income_scale=1.0, capital_bump=None):
     return {"people": people, "benunits": benunits, "households": households}
 
 
+def listed_sources(sim, year):
+    """The model's reg. 66(1) list for the year, as variable names."""
+    parameters = sim.tax_benefit_system.parameters(f"{year}-01-01")
+    means_test = parameters.gov.dwp.universal_credit.means_test
+    return list(means_test.income_definitions.unearned)
+
+
 def calculate(units, year, **kwargs):
     sim = Simulation(situation=situation(units, year, **kwargs))
     values = {v: np.asarray(sim.calculate(v, year)) for v in UC_VARIABLES}
-    for v in OTHER_LISTED_SOURCES:
-        values[v] = np.asarray(sim.calculate(v, year, map_to="benunit"))
+    sources = listed_sources(sim, year)
+    # No actual income from capital is on the list in any year.
+    assert not set(CAPITAL_INCOME) & set(sources), sources
+    values["other_listed_sources"] = sum(
+        np.asarray(sim.calculate(v, year, map_to="benunit"))
+        for v in sources
+        if v != "uc_tariff_income"
+    )
     return values
 
 
@@ -177,9 +190,11 @@ def test_capital_yield_is_counted_once_as_tariff_income(units, year):
     np.testing.assert_allclose(
         values["uc_tariff_income"], tariff, atol=0.01, err_msg=str(units)
     )
-    listed = sum(values[v] for v in OTHER_LISTED_SOURCES)
     np.testing.assert_allclose(
-        values["uc_unearned_income"], tariff + listed, atol=0.01, err_msg=str(units)
+        values["uc_unearned_income"],
+        tariff + values["other_listed_sources"],
+        atol=0.01,
+        err_msg=str(units),
     )
 
 

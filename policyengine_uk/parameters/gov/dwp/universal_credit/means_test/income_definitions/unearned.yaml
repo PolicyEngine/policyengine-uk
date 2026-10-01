@@ -63,9 +63,6 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
-  - savings_interest_income
-  - dividend_income
-  - property_income
   2023-11-19:
   - carers_allowance
   - uc_unearned_carer_support_payment
