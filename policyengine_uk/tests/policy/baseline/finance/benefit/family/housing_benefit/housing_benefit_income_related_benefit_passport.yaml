@@ -131,14 +131,16 @@
 
 - name: Couple where the partner is on income-based JSA is passported, earnings included
   # Sch 5 para 5 (a joint-claim couple) and the benefit-unit reading of
-  # para 4: the model holds the award for the benefit unit.
-  period: 2026
+  # para 4: the model holds the award for the benefit unit. The claimant's
+  # £12,000 of earnings would otherwise take the couple's income above their
+  # applicable amount.
+  period: 2025
   absolute_error_margin: 0.01
   input:
     people:
       claimant:
         age: 32
-        employment_income: 2_000
+        employment_income: 12_000
         housing_benefit_reported: 1
       partner:
         age: 30
@@ -163,7 +165,9 @@
   # SI 2006/214 reg 5(2) disapplies the pension-age ones), so Sch 5 para 4 and
   # Sch 6 para 5 disregard the State Pension and the savings. Guarantee Credit
   # is set to nil to show the result does not come from the Pension Credit
-  # passport. Members over State Pension age keep the award all year.
+  # passport. Members over State Pension age keep the award all year. The
+  # private pension would otherwise take the couple's income above their
+  # applicable amount.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -171,6 +175,7 @@
       older:
         age: 70
         state_pension_reported: 12_000
+        private_pension_income: 15_000
         housing_benefit_reported: 1
       younger:
         age: 60
@@ -201,6 +206,7 @@
       older:
         age: 70
         state_pension_reported: 12_000
+        private_pension_income: 15_000
         housing_benefit_reported: 1
       younger:
         age: 60
