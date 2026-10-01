@@ -1,0 +1,3 @@
+- Apply the Income Support entitlement conditions only to the claimant and partner (SSCBA 1992 s.124(1)). Another member of the benefit unit, such as a non-dependent adult, no longer bars the claim by being over state pension age or by having income-related ESA, and no longer counts as having an existing Income Support award.
+- Let a couple claim Income Support through either partner (Claims and Payments Regs 1987 reg 4(3)): the partner who claims must be under state pension age, in a prescribed category and without ESA, so a mixed-age couple can claim through the younger partner.
+- Bar Income Support when the claimant is entitled to contributory ESA (s.124(1)(h)). Income-related ESA of the claimant or partner still bars it.
