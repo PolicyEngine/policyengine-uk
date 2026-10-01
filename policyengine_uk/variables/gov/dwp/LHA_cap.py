@@ -32,7 +32,7 @@ class LHA_cap(Variable):
         # the LHA rate or, if lower, the cap rent. A rent officer finding
         # that a substantial part of the rent is for board and attendance
         # takes the case off the LHA (reg 13C(5)(e)); the maximum rent then
-        # has the Sch 1 para 2 amount for meals deducted (reg 13(13)).
+        # has the Sch 1 para 2 amount for meals deducted (reg 13(7)).
         rent = max_(
             0,
             benunit("benunit_rent", period)

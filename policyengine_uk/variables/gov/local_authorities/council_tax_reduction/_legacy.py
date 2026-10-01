@@ -18,7 +18,9 @@ def legacy_council_tax_reduction(
     non_dep_deductions_variable,
     additional_applicable_income=0,
 ):
-    is_household_head_benunit = benunit("benunit_contains_household_head", period)
+    is_household_head_benunit = benunit(
+        "council_tax_reduction_claimant_benunit", period
+    )
     would_claim = benunit("would_claim_council_tax_reduction", period)
     applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
     applicable_income = benunit("council_tax_reduction_applicable_income", period)
@@ -39,7 +41,7 @@ def legacy_council_tax_reduction(
     )
     liability = benunit.household(
         "council_tax_reduction_maximum_eligible_liability", period
-    )
+    ) * benunit("council_tax_reduction_joint_liability_share", period)
     non_dep_deductions = benunit(non_dep_deductions_variable, period)
     excess_income = max_(0, applicable_income - applicable_amount)
     excess_income = where(
@@ -86,7 +88,10 @@ def local_non_dep_deductions(
     deductions_in_household = benunit.max(
         benunit.members.household.sum(deductions_to_count)
     )
-    return deductions_in_household - deduction_for_benunit
+    # A non-dependant of two or more jointly liable people is apportioned
+    # equally between them (SI 2012/2885 Sch 1 para 8(5)).
+    share = benunit("council_tax_reduction_joint_liability_share", period)
+    return (deductions_in_household - deduction_for_benunit) * share
 
 
 def normal_gross_income_non_dep_deduction(

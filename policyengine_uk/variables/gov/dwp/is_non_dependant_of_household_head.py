@@ -11,12 +11,12 @@ class is_non_dependant_of_household_head(Variable):
         "sharer of the rent, a boarder and a lodger are liable on a "
         "commercial basis for their occupation, so none is a non-dependant "
         "of anyone. The household head and their household are not "
-        "non-dependants of a boarder or lodger who pays them, and someone who "
-        "is already a non-dependant of one claimant is not one of another "
-        "claimant liable for the same accommodation, so in this model only "
-        "the household head's family has non-dependants from other families. "
-        "Foster children and carers engaged through a charity are not "
-        "identified."
+        "non-dependants of a boarder or lodger who pays them. Universal "
+        "Credit counts a non-dependant in one claim only, which the model "
+        "gives to the household head's family; Housing Benefit and Council "
+        "Tax Reduction apportion a non-dependant of several joint occupiers "
+        "between them. Foster children and carers engaged through a charity "
+        "are not identified."
     )
     definition_period = YEAR
     reference = (
