@@ -12,6 +12,14 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/67
     - title: State Pension Credit Act 2002 s. 16(1)(za), (a) (State Pension counts as retirement pension income)
       href: https://www.legislation.gov.uk/ukpga/2002/16/section/16
+    - title: The Universal Credit Regulations 2013 reg. 66(1)(b)(ii), (viii) and (ix) (contributory ESA, maternity allowance, industrial injuries benefit)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 2 (employment and support allowance and jobseeker's allowance mean the contributory allowances; industrial injuries benefit means benefit under SSCBA 1992 Part 5)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2
+    - title: S.I. 2023/1218 art. 23(2) and (5) (defines carer support payment in reg. 2 and inserts reg. 66(1)(b)(iiia), from 19 November 2023)
+      href: https://www.legislation.gov.uk/uksi/2023/1218/article/23
+    - title: S.I. 2026/246 art. 25 (from 15 March 2026 carer support payment means the carer support payment component of carer support)
+      href: https://www.legislation.gov.uk/uksi/2026/246/article/25
     - title: The Universal Credit Regulations 2013 reg. 72
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/72
 
@@ -20,6 +28,22 @@ values:
   2013-04-29:
   - carers_allowance
   - jsa_contrib
+  - esa_contrib
+  - maternity_allowance
+  - iidb
+  - private_pension_income
+  - state_pension
+  - uc_tariff_income
+  - savings_interest_income
+  - dividend_income
+  - property_income
+  2023-11-19:
+  - carers_allowance
+  - uc_unearned_carer_support_payment
+  - jsa_contrib
+  - esa_contrib
+  - maternity_allowance
+  - iidb
   - private_pension_income
   - state_pension
   - uc_tariff_income
