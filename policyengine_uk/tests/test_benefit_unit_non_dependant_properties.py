@@ -7,9 +7,10 @@ CTR SI 2012/2885 reg 9 and equivalents). Invariants, for any generated
 population of households:
 
 1. Oracle: each family's Universal Credit, Housing Benefit and Council Tax
-   Reduction non-dependant deductions equal an independent calculation from
-   the generated household structure: who is a non-dependant, of whom, and
-   how a non-dependant of several joint occupiers is apportioned.
+   Reduction non-dependant deductions, and who is eligible for an individual
+   deduction, equal an independent calculation from the generated household
+   structure: who is a non-dependant, of whom, and how a non-dependant of
+   several joint occupiers is apportioned.
 2. Conservation: every Housing Benefit and Council Tax Reduction
    non-dependant deduction is borne in full, once, across the household's
    families; every Universal Credit contribution is borne by exactly one
@@ -282,6 +283,23 @@ def test_deductions_match_the_oracle(population):
     assert np.allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions"), exp_ctr, atol=0.01
     )
+    # HB and CTR eligibility: a non-dependant aged 18 or over, either in a
+    # family not liable for rent or within their own benefit unit.
+    expected_eligible = np.array(
+        [
+            row["age"] >= 18
+            and (
+                family_rows[row["family"]]["role"] == "non_dependant"
+                or row["kind"] == "non_dependant"
+            )
+            for row in person_rows
+        ]
+    )
+    for variable in [
+        "housing_benefit_individual_non_dep_deduction_eligible",
+        "council_tax_reduction_individual_non_dep_deduction_eligible",
+    ]:
+        assert np.array_equal(calc(sim, variable) > 0, expected_eligible), variable
 
 
 @PROPERTY_SETTINGS

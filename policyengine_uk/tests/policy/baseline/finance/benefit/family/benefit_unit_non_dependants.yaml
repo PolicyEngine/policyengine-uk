@@ -194,6 +194,9 @@
       household:
         members: [parent, son, child]
   output:
+    # A child under 16 is never a non-dependant (WRA 2012 s.40).
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true, false]
     uc_non_dep_deductions_renter_exempt: false
     uc_non_dep_deductions: 1_158.60
 
