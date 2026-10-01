@@ -69,17 +69,26 @@ def households(draw):
 
 
 def simulate(people, units, household, overrides=None):
+    year = str(YEAR)
     benunits = {}
     for i, unit in enumerate(units):
         value = unit["reported"] if overrides is None else overrides[i]
         benunits[f"b{i}"] = {
             "members": unit["members"],
-            "pension_credit_reported_capital": value,
+            "pension_credit_reported_capital": {year: value},
         }
     situation = {
-        "people": people,
+        "people": {
+            name: {k: {year: v} for k, v in person.items()}
+            for name, person in people.items()
+        },
         "benunits": benunits,
-        "households": {"h": {"members": list(people), **household}},
+        "households": {
+            "h": {
+                "members": list(people),
+                **{k: {year: v} for k, v in household.items()},
+            }
+        },
     }
     return Simulation(situation=situation)
 
