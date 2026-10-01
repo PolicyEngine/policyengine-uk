@@ -169,6 +169,34 @@
   output:
     uc_non_dep_deductions: 0
 
+# Para 15(1)(a) exempts "any renter who is a single person to whom
+# sub-paragraph (2) applies": the renter's own disability, not a child's.
+- name: UC, a disabled child in the renter's family does not exempt the renter
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+      child:
+        age: 10
+        is_claimant_or_partner: false
+        dla_sc_category: MIDDLE
+    benunits:
+      benunit:
+        members: [parent, son, child]
+    households:
+      household:
+        members: [parent, son, child]
+  output:
+    uc_non_dep_deductions_renter_exempt: false
+    uc_non_dep_deductions: 1_158.60
+
 # Sch 4 para 16(2)(d): no contribution for a non-dependant receiving
 # Attendance Allowance.
 - name: UC, no contribution for a non-dependant in the benefit unit receiving Attendance Allowance
