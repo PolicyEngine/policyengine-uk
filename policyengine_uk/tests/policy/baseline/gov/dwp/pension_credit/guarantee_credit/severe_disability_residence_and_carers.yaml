@@ -773,6 +773,7 @@
         members: [first, second, third]
         country: ENGLAND
   output:
+    is_cared_for_by_carer_benefit_recipient: [true, true, true]
     severe_disability_minimum_guarantee_addition: 0
 
 - name: A carer whose own disabled child qualifies is treated as caring for the child
