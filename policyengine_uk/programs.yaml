@@ -285,6 +285,7 @@ programs:
     variable: carers_allowance
     parameter_prefix: gov.dwp.carers_allowance
     verified_start_year: 2022
+    notes: Reduced by overlapping benefits such as State Pension and contributory ESA
 
   - id: dla
     name: DLA
