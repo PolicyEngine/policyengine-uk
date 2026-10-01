@@ -18,6 +18,8 @@ class tax_credits_applicable_income(Variable):
             "savings_interest_income",
             "dividend_income",
             "property_income",
+            # Rent-a-room receipts count only where income tax charges them.
+            "taxable_rent_a_room_income",
         ]
         income = add(benunit, period, STEP_1_COMPONENTS)
         income = max_(income - TC.means_test.non_earned_disregard, 0)

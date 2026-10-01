@@ -10,6 +10,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "dividend_income",
     "miscellaneous_income",
     "property_income",
+    "sublet_income",
     "private_pension_income",
     "private_transfer_income",
     "maintenance_income",

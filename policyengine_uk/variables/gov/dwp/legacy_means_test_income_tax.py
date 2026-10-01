@@ -9,8 +9,11 @@ class legacy_means_test_income_tax(Variable):
         "Income Tax less the tax on savings interest, dividends and property "
         "income, floored at zero. The legacy means tests disregard tax only on "
         "income they take into account, and they treat income derived from "
-        "capital as capital, not income, so tax on it is not deducted. Tax "
-        "reductions are set against the remaining tax first."
+        "capital as capital, not income, so tax on it is not deducted. Rent "
+        "from boarders, lodgers and sub-tenants in the home is income they "
+        "take into account, so the tax on rent-a-room income above the limit "
+        "stays deducted. Tax reductions are set against the remaining tax "
+        "first."
     )
     definition_period = YEAR
     unit = GBP
@@ -28,4 +31,10 @@ class legacy_means_test_income_tax(Variable):
             period,
             ["savings_income_tax", "dividend_income_tax", "property_income_tax"],
         )
-        return max_(0, person("income_tax", period) - tax_on_income_from_capital)
+        tax_on_counted_letting_income = person("rent_a_room_income_tax", period)
+        return max_(
+            0,
+            person("income_tax", period)
+            - tax_on_income_from_capital
+            + tax_on_counted_letting_income,
+        )

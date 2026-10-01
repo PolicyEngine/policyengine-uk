@@ -1,0 +1,283 @@
+# Rent from boarders and lodgers living in the household, in the legacy means
+# tests (legacy_benefits_home_letting_income, counted by Income Support,
+# Housing Benefit, Pension Credit and council tax reduction).
+#
+# Board and lodging, per boarder: the first £20 a week is disregarded and half
+# the excess (IS Sch 9 para 20; HB Sch 5 para 42; HB (SPC) Sch 5 para 9; SPC Sch
+# IV para 8; CTR (England) Sch 5 para 9). Lodging only: £20 a week is
+# disregarded. Claimants over the qualifying age for State Pension Credit
+# disregard it from "the amount paid by that person" (HB (SPC) Sch 5 para 10;
+# SPC Sch IV para 9); working-age claimants from the aggregate paid by "that
+# person or a member of his family" (HB Sch 5 para 22; IS Sch 9 para 19), £4
+# before 7 April 2008. Universal Credit does not count this rent (UC Regs 2013
+# reg 66(1); ADM H5112).
+
+- name: Pension-age householder, one lodger paying £100 a week
+  # (100 - 20) x 52 = 4,160.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    legacy_benefits_home_letting_income: [4_160, 0]
+
+- name: One boarder paying £100 a week
+  # 0.5 x (100 - 20) x 52 = 2,080.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      boarder:
+        age: 30
+        is_household_head: false
+        rent_paid_as_boarder: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      boarder_unit:
+        members: [boarder]
+    households:
+      household:
+        members: [householder, boarder]
+  output:
+    legacy_benefits_home_letting_income: [2_080, 0]
+
+- name: A boarder paying £15 a week is disregarded in full
+  # 780 / 52 = 15 < 20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      boarder:
+        age: 30
+        is_household_head: false
+        rent_paid_as_boarder: 780
+    benunits:
+      householder_unit:
+        members: [householder]
+      boarder_unit:
+        members: [boarder]
+    households:
+      household:
+        members: [householder, boarder]
+  output:
+    legacy_benefits_home_letting_income: [0, 0]
+
+- name: Pension-age householder, a lodger couple each paying £60 a week
+  # Per person: (60 - 20) + (60 - 20) = 80 a week; x 52 = 4,160.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      lodger_1:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+      lodger_2:
+        age: 32
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_couple:
+        members: [lodger_1, lodger_2]
+    households:
+      household:
+        members: [householder, lodger_1, lodger_2]
+  output:
+    legacy_benefits_home_letting_income: [4_160, 0]
+
+- name: Working-age householder, the same lodger couple
+  # Aggregate for the family: 120 - 20 = 100 a week; x 52 = 5,200.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger_1:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+      lodger_2:
+        age: 32
+        is_household_head: false
+        rent_paid_as_lodger: 3_120
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_couple:
+        members: [lodger_1, lodger_2]
+    households:
+      household:
+        members: [householder, lodger_1, lodger_2]
+  output:
+    legacy_benefits_home_letting_income: [5_200, 0]
+
+- name: A boarder and a lodger, each paying £100 a week
+  # Boarder 0.5 x 80 = 40; lodger 80; 120 a week; x 52 = 6,240.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+      boarder:
+        age: 30
+        is_household_head: false
+        rent_paid_as_boarder: 5_200
+      lodger:
+        age: 40
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      boarder_unit:
+        members: [boarder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, boarder, lodger]
+  output:
+    legacy_benefits_home_letting_income: [6_240, 0, 0]
+
+- name: Working-age lodger disregard was £4 before April 2008
+  # 2007-08: lodger (100 - 4) x 52 = 4,992; a boarder at £100 would give
+  # 0.5 x 80 x 52 = 2,080, here alongside: total 7,072.
+  period: 2007
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+      boarder:
+        age: 31
+        is_household_head: false
+        rent_paid_as_boarder: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+      boarder_unit:
+        members: [boarder]
+    households:
+      household:
+        members: [householder, lodger, boarder]
+  output:
+    legacy_benefits_home_letting_income: [7_072, 0, 0]
+
+- name: Universal Credit does not count rent from a lodger
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 35
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    uc_unearned_income: [0, 0]
+
+- name: Rent between members of a household is not household income
+  # The lodger's earnings are the household's only market income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 35
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        employment_income: 20_000
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    household_market_income: 20_000
+
+- name: Tax on counted rent from a lodger is deducted in the legacy means tests
+  # 2026-27. Private pension 15,000: (15,000 - 12,570) x 20% = 486. Lodger rent
+  # 10,400 is rent-a-room receipts; 10,400 - 7,500 = 2,900 taxable, x 20% =
+  # 580. Income tax 1,066, all of it on income the means tests count (IS Sch 9
+  # para 1; HB Sch 5 para 1; SPC reg 17), so all of it is deducted. Counted
+  # rent: (200 - 20) x 52 = 9,360.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+        private_pension_income: 15_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_400
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    income_tax: [1_066, 0]
+    property_income_tax: [580, 0]
+    rent_a_room_income_tax: [580, 0]
+    legacy_means_test_income_tax: [1_066, 0]
+    legacy_benefits_home_letting_income: [9_360, 0]
