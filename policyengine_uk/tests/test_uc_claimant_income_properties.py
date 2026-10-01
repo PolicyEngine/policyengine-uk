@@ -22,6 +22,9 @@ cap, and a third to have working claimants paying for childcare:
    contributory benefits leaves UC, UC before the benefit cap, the cap
    reduction, earned income, unearned income and the childcare costs element
    exactly as they are when the dependants have no income.
+   A separate property builds only families over the cap, each with a child
+   earning more than the earnings exception's threshold, and checks that the
+   cap still applies in full.
 2. The assessed claimants are the claimants: in every generated family the
    model assesses the claimant and partner and nobody else.
 3. Differential against the regulations, for 2026-27: with earnings below the
@@ -248,6 +251,57 @@ def test_dependants_income_never_changes_universal_credit(units, year):
     b = benunit_values(without_income, year)
     for v in BENUNIT_VARIABLES:
         np.testing.assert_allclose(a[v], b[v], atol=0.01, err_msg=f"{v}: {units}")
+
+
+@st.composite
+def capped_families(draw):
+    """Working-age claimants with no income, four or five children and a high
+    council rent, so the benefit cap always bites; at least one child has
+    earnings well over the earnings exception's threshold."""
+    claimants = [
+        dict(age=draw(st.integers(25, 60))) for _ in range(draw(st.integers(1, 2)))
+    ]
+    children = [
+        dict(age=draw(st.integers(0, 15)), employment_income=draw(amount))
+        for _ in range(draw(st.integers(3, 4)))
+    ]
+    children.append(
+        dict(
+            age=draw(st.integers(0, 15)),
+            employment_income=draw(st.floats(15_000, 30_000)),
+        )
+    )
+    return dict(
+        claimants=claimants,
+        dependants=children,
+        tenure="RENT_FROM_COUNCIL",
+        rent=draw(st.floats(15_000, 30_000)),
+        region=draw(st.sampled_from(REGIONS)),
+        savings=0.0,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(
+    units=st.lists(capped_families(), min_size=1, max_size=6),
+    year=st.sampled_from(YEARS),
+)
+def test_dependants_earnings_do_not_lift_the_benefit_cap(units, year):
+    with_income = Simulation(situation=situation(units, year))
+    without_income = Simulation(situation=situation(units, year, zero_dependants=True))
+    capped = np.asarray(without_income.calculate("benefit_cap_reduction", year))
+    # Every generated family is over the cap, so the property is not vacuous.
+    assert np.all(capped > 0), units
+    for v in ["benefit_cap_reduction", "universal_credit"]:
+        np.testing.assert_allclose(
+            np.asarray(with_income.calculate(v, year)),
+            np.asarray(without_income.calculate(v, year)),
+            atol=0.01,
+            err_msg=f"{v}: {units}",
+        )
+    assert not np.any(
+        np.asarray(with_income.calculate("is_benefit_cap_exempt_earnings", year))
+    ), units
 
 
 @PROPERTY_SETTINGS
