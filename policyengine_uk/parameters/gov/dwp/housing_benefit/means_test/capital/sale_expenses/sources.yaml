@@ -2,7 +2,8 @@ description: >
   Capital sources whose sale would incur expenses, so that Housing Benefit
   values them at 90% of market value. Costs of sale normally arise where an
   agent, broker, auctioneer, solicitor or accountant is needed, and real
-  property always has them (HBGM W1.430), so `owned_land`,
+  property always has them (R(IS) 21/93, as DMG 29622 applies it; HBGM W1.430
+  states the general 10% rule), so `owned_land`,
   `other_residential_property_value` and `non_residential_property_value` are
   listed. `savings` is not listed: a bank or building society account is
   valued at its balance, and the costs of withdrawing money are not costs of
@@ -31,6 +32,8 @@ metadata:
       href: https://assets.publishing.service.gov.uk/media/5a749328ed915d0e8e3994c0/hbgm-bw1-assessment-of-capital.pdf#page=36
     - title: Housing Benefit Guidance Manual BP1, para. P1.430
       href: https://assets.publishing.service.gov.uk/media/5a7ec5d840f0b6230268b71f/hbgm-bp1-assessment-of-capital.pdf#page=31
+    - title: Decision Makers' Guide chapter 29, para. 29622 (real property, R(IS) 21/93)
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=124
     - title: Housing Benefit Guidance Manual BW1, para. W1.513
       href: https://assets.publishing.service.gov.uk/media/5a749328ed915d0e8e3994c0/hbgm-bw1-assessment-of-capital.pdf#page=43
     - title: Housing Benefit Guidance Manual BW1, paras. W1.530-W1.531
