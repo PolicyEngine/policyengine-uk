@@ -162,3 +162,42 @@
   output:
     is_uc_assessed_claimant: [true, true, false]
     uc_LCWRA_element: 0
+
+# Reg. 27(4)(a): "In the case of joint claimants, where each of them has
+# limited capability for work and work-related activity, the award is only to
+# include one LCWRA element".
+
+- name: Joint claimants who both have LCWRA have one LCWRA element, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    is_uc_assessed_claimant: [true, true]
+    uc_LCWRA_element: 5_079.24 # 423.27 * 12, once
+
+- name: Joint claimants who both have LCWRA have one LCWRA element, 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_LCWRA_element: 2_607.12 # 217.26 * 12, once
