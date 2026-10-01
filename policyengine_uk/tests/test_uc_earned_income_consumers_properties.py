@@ -21,7 +21,8 @@ taxable unearned income:
    benefit_cap_earned_income and is_benefit_cap_exempt_earnings unchanged.
 2. Differential against the UC means test: benefit cap earned income equals
    the UC earned income before the work allowance when no one's minimum
-   income floor applies, and never exceeds it.
+   income floor applies, and never exceeds it; and switching every floor off
+   never changes it (reg. 82(4)).
 3. The threshold is 12 x floor(12.71 x 16 x 52 / 12) in 2026-27 and the same
    formula on the national living wage parameter in every year, for every
    family.
@@ -98,12 +99,16 @@ def families(draw):
     )
 
 
-def situation(units, year, bump=None, earnings_only=False):
+def situation(units, year, bump=None, earnings_only=False, no_floor=False):
     """One simulation holding every family.
 
-    ``bump`` is (family index, adult index, variable, amount) to add.
+    ``bump`` is (family index, adult index, variable, amount) to add, or a
+    list of them.
     ``earnings_only`` drops Class 3 and every kind of unearned income.
+    ``no_floor`` puts every adult in a start-up period, so no minimum income
+    floor applies.
     """
+    bumps = [] if bump is None else [bump] if isinstance(bump, tuple) else bump
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         names = []
@@ -114,9 +119,12 @@ def situation(units, year, bump=None, earnings_only=False):
                 if earnings_only and (variable in UNEARNED or variable == "ni_class_3"):
                     continue
                 person[variable] = {year: value}
-            if bump is not None and bump[:2] == (i, j):
-                variable, amount = bump[2], bump[3]
-                person[variable] = {year: adult.get(variable, 0.0) + amount}
+            if no_floor:
+                person["uc_is_in_startup_period"] = {year: True}
+            for b in bumps:
+                if b[:2] == (i, j):
+                    variable, amount = b[2], b[3]
+                    person[variable] = {year: adult.get(variable, 0.0) + amount}
             people[name] = person
             names.append(name)
         for k, age in enumerate(unit["children"]):
@@ -178,14 +186,54 @@ def bumped(draw, variables):
     return units, (i, j, draw(st.sampled_from(variables)), draw(bumps))
 
 
+# Annual benefit cap earnings thresholds (12 x the monthly amount).
+THRESHOLDS = {2020: 7_248, 2023: 8_664, 2025: 10_152, 2026: 10_572}
+
+
+@st.composite
+def near_threshold_families(draw, year):
+    """A family whose one earner is just either side of the threshold, so
+    that any deduction wrongly taken from earned income moves the
+    exception."""
+    earner = dict(
+        age=draw(st.integers(18, 60)),
+        employment_income=THRESHOLDS[year] + draw(st.floats(-300, 900)),
+    )
+    adults = [earner]
+    if draw(st.booleans()):
+        adults.append(dict(age=draw(st.integers(18, 60))))
+    return dict(
+        adults=adults,
+        children=[draw(st.integers(0, 15)) for _ in range(draw(st.integers(0, 4)))],
+        tenure=draw(st.sampled_from(TENURES)),
+        rent=draw(st.floats(0, 15_000)),
+        local_authority=draw(st.sampled_from(LOCAL_AUTHORITIES)),
+        council_tax=draw(st.floats(500, 3_000)),
+    )
+
+
 @PROPERTY_SETTINGS
-@given(case=bumped(UNEARNED + ["ni_class_3"]), year=st.sampled_from(YEARS))
-def test_benefit_cap_exception_ignores_tax_not_on_earnings(case, year):
-    units, (i, j, variable, amount) = case
-    if variable == "ni_class_3":
-        # Class 3 is a flat weekly amount; keep it to a plausible year.
-        amount = min(amount, 950.0)
-    bump = (i, j, variable, amount)
+@given(year=st.sampled_from(YEARS), data=st.data())
+def test_benefit_cap_exception_ignores_tax_not_on_earnings(year, data):
+    units = data.draw(
+        st.lists(
+            st.one_of(families(), near_threshold_families(year)),
+            min_size=1,
+            max_size=8,
+        )
+    )
+    # One adult in every family gets more Class 3 (up to a year's worth) or
+    # unearned income large enough to be taxed, so a wrongly deducted charge
+    # would move an earner near the threshold across it.
+    bump = []
+    for i, unit in enumerate(units):
+        j = data.draw(st.integers(0, len(unit["adults"]) - 1))
+        variable = data.draw(st.sampled_from(UNEARNED + ["ni_class_3"]))
+        if variable == "ni_class_3":
+            amount = data.draw(st.floats(500, 950))
+        else:
+            amount = data.draw(st.floats(2_000, 9_000))
+        bump.append((i, j, variable, amount))
     low = calculate(units, year)
     high = calculate(units, year, bump=bump)
     np.testing.assert_allclose(
@@ -213,6 +261,22 @@ def test_benefit_cap_earned_income_matches_uc_without_the_floor(units, year):
     no_floor = ~v["floor_applies"]
     np.testing.assert_allclose(cap[no_floor], uc[no_floor], atol=0.01, err_msg=units)
     assert np.all(cap <= uc + 0.01), units
+
+
+@PROPERTY_SETTINGS
+@given(
+    units=st.lists(families(), min_size=1, max_size=8),
+    year=st.sampled_from(YEARS),
+)
+def test_minimum_income_floor_never_counts_for_the_benefit_cap(units, year):
+    with_floor = calculate(units, year)
+    without_floor = calculate(units, year, no_floor=True)
+    np.testing.assert_allclose(
+        with_floor["benefit_cap_earned_income"],
+        without_floor["benefit_cap_earned_income"],
+        atol=0.01,
+        err_msg=str(units),
+    )
 
 
 @PROPERTY_SETTINGS
