@@ -244,14 +244,12 @@
     guarantee_credit: [3_376, 7_376]
     in_receipt_of_guarantee_credit: [true, false]
     council_tax_reduction_applicable_income: [0, 5_000]
-    # The national schemes' non-dependant deduction currently uses Housing
-    # Benefit amounts (20.40 a week here), not the CTR schedules' own amounts
-    # and exemptions (SI 2012/2885 Sch 1 para 8); this pins that the deduction
-    # still applies on guarantee credit, not its size.
-    council_tax_reduction_non_dep_deductions: [1_060.80, 0]
-    # 2,000 - 1,060.80
-    simulated_council_tax_reduction_benunit: [939.20, 0]
-    council_tax_reduction: 939.20
+    # SI 2012/2885 Sch 1 para 8(1)(b): the son has no hours, so he is not in
+    # remunerative work and pays the 2026-27 lowest amount, 5.20 a week.
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+    # 2,000 - 270.40
+    simulated_council_tax_reduction_benunit: [1_729.60, 0]
+    council_tax_reduction: 1_729.60
 
 - name: Mixed-age couple is not in receipt of guarantee credit, so the capital limit applies
   period: 2026

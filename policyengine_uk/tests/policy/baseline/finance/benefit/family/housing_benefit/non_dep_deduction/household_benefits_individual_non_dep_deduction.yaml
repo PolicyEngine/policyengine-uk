@@ -1,31 +1,189 @@
-- name: Reduced rent without LHA
-  period: 2025
-  input:
-    housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 5_200 # 100 weekly
-  output:
-    household_benefits_individual_non_dep_deduction: 19.3 * 52
+# 2026-27 deductions (HB Regs 2006 reg 74(1)-(2); SI 2006/214 reg 55(1)-(2);
+# up-rated by SI 2026/148 art 23(3)). In remunerative work (16 hours or more,
+# reg 6(1)): under £192 a week 20.40; not less than £192 46.85; £279 64.35;
+# £365 105.20; £485 119.85; £605 and above 131.45. Not in remunerative work:
+# 20.40 (reg 74(1)(b)). Bands include their lower edge ("not less than").
 
-- name: Higher amount
-  period: 2025
+- name: In remunerative work with no income pays the lowest amount
+  period: 2026
+  absolute_error_margin: 0.01
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 28_912 # 556 weekly
+    age: 30
+    total_income: 0
+    weekly_hours: 35
   output:
-    household_benefits_individual_non_dep_deduction: 124.55 * 52
+    # reg 74(2)(a) and (1)(b)
+    household_benefits_individual_non_dep_deduction: 20.4 * 52
 
-- name: Middle amount
-  period: 2025
+- name: Just below the second band
+  period: 2026
+  absolute_error_margin: 0.01
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 17_420 # 335 weekly
+    age: 30
+    total_income: 9983.48
+    weekly_hours: 35
   output:
-    household_benefits_individual_non_dep_deduction: 99.65 * 52
+    # 191.99 a week
+    household_benefits_individual_non_dep_deduction: 20.4 * 52
 
-- name: Exclusive brackets
-  period: 2025
+- name: Exactly 192 a week is in the band starting at 192
+  period: 2026
+  absolute_error_margin: 0.01
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    total_income: 9_153 # 176 weekly
+    age: 30
+    total_income: 9984
+    weekly_hours: 35
   output:
-    household_benefits_individual_non_dep_deduction: 44.4 * 52
+    household_benefits_individual_non_dep_deduction: 46.85 * 52
+
+- name: Exactly 279 a week is in the band starting at 279
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 14508
+    weekly_hours: 35
+  output:
+    household_benefits_individual_non_dep_deduction: 64.35 * 52
+
+- name: Exactly 365 a week is in the band starting at 365
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 18980
+    weekly_hours: 35
+  output:
+    household_benefits_individual_non_dep_deduction: 105.2 * 52
+
+- name: Exactly 485 a week is in the band starting at 485
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 25220
+    weekly_hours: 35
+  output:
+    household_benefits_individual_non_dep_deduction: 119.85 * 52
+
+- name: Exactly 605 a week is in the band starting at 605
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 31460
+    weekly_hours: 35
+  output:
+    household_benefits_individual_non_dep_deduction: 131.45 * 52
+
+- name: Just below the top band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 31459.48
+    weekly_hours: 35
+  output:
+    # 604.99 a week
+    household_benefits_individual_non_dep_deduction: 119.85 * 52
+
+- name: Not in remunerative work pays the lowest amount whatever the income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 40000
+    weekly_hours: 0
+  output:
+    # reg 74(1)(b): the bands apply only in remunerative work
+    household_benefits_individual_non_dep_deduction: 20.4 * 52
+
+- name: Just under 16 hours is not remunerative work
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 40000
+    weekly_hours: 15.9
+  output:
+    household_benefits_individual_non_dep_deduction: 20.4 * 52
+
+- name: 16 hours is remunerative work
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: 40000
+    weekly_hours: 16
+  output:
+    household_benefits_individual_non_dep_deduction: 131.45 * 52
+
+- name: A loss counts as no income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 30
+    total_income: -5000
+    weekly_hours: 35
+  output:
+    household_benefits_individual_non_dep_deduction: 20.4 * 52
+
+- name: A couple's joint income sets the band for the member in remunerative work
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 30
+        total_income: 10_400 # 200 a week
+        weekly_hours: 35
+        housing_benefit_individual_non_dep_deduction_eligible: true
+      partner:
+        age: 30
+        total_income: 10_400
+        weekly_hours: 0
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      couple:
+        members: [worker, partner]
+    households:
+      household:
+        members: [worker, partner]
+  output:
+    # reg 74(4): joint income 400 a week is in the 365 band; the partner, not
+    # in remunerative work, would pay 20.40 (reg 74(1)(b)).
+    household_benefits_individual_non_dep_deduction: [5_470.40, 1_060.80]
+
+- name: A dependent child's income does not count towards the couple's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        total_income: 9_360 # 180 a week
+        weekly_hours: 35
+        housing_benefit_individual_non_dep_deduction_eligible: true
+      child:
+        age: 17
+        total_income: 5_200
+    benunits:
+      family:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    household_benefits_individual_non_dep_deduction: [1_060.80, 0]

@@ -1,11 +1,13 @@
-description: A non dependent deduction is provided under Housing Benefit for filers at or above this age threshold.
+description: Housing Benefit makes a non-dependant deduction only for non-dependants at or above this age.
 metadata:
   label: Housing benefit non dependent deduction age threshold
   period: year
   unit: year
-  reference: 
-    - title: The Housing Benefit Regulations 2006 sec. 74 (1)
-      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74/2024-04-01
+  reference:
+    - title: The Housing Benefit Regulations 2006 reg. 74(1)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 55(1)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/55
 
 values:
-  2019-04-01: 18
+  2006-03-06: 18
