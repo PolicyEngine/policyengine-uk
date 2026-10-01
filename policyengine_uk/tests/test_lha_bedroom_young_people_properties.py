@@ -20,16 +20,18 @@ Invariants, for any generated population of households:
    household head's family also gains one bedroom under both schemes if the
    person joins a non-dependant's family (UC: unless no one is responsible
    for them), and one Housing Benefit bedroom if they join a boarder's or
-   lodger's family. No other family's bedrooms change.
+   lodger's family (HB: unless placed with it as a foster child). No other
+   family's bedrooms change.
 3. Children: adding a child under 16 who is neither fostered nor placed for
    adoption to any family never lowers any family's bedrooms under either
    scheme and raises each by at most one.
 4. Foster children: adding a foster child to a family gives that family one
    more bedroom under each scheme if it did not already meet the foster
    parent condition (UC) or have a qualifying parent or carer (HB), and none
-   otherwise. No other family's Universal Credit bedrooms change; the
-   household head's Housing Benefit bedrooms rise by at most one when the
-   child is placed with an occupier's family, whose children are occupiers.
+   otherwise. No other family's bedrooms change under either scheme: a
+   child placed with another family is not in the household head's
+   extended benefit unit (UC para 9(2)(g)) and, following DWP, not an
+   occupier (HB; LHA Guidance Manual para 2.033).
 5. Reference: every family's bedrooms, and its additional bedrooms, equal an
    independent count of the size criteria:
    - one for the claimant or couple;
@@ -38,15 +40,15 @@ Invariants, for any generated population of households:
      family as a foster child);
    - for the household head's family, one for each person aged 16 or over
      in a non-dependant's family (and, for HB, in a boarder's or lodger's
-     family);
+     family), except one no one is responsible for (UC) or placed with that
+     family as a foster child (HB);
    - the fewest rooms that hold the counted children under 16 two to a
      room, where only children of the same sex or two children under 10 may
      share, found by brute force. UC counts the family's own children and,
      for the household head's family, the non-dependants' children, but no
-     foster child. HB counts the family's own children other than foster
-     children and children placed for adoption and, for the household
-     head's family, every child of a non-dependant's, boarder's or lodger's
-     family;
+     foster child. HB counts the children of the family and, for the
+     household head's family, of a non-dependant's, boarder's or lodger's
+     family, other than foster children and children placed for adoption;
    - one additional bedroom if anyone so counted, or a foster child of the
      family, has overnight care, and one if the family fosters, has a child
      placed for adoption, or has an approved foster parent between
@@ -298,9 +300,8 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     head = keys.index((target[0], 0))
     if fam["role"] == "non_dependant":
         expected_uc[head] += 0 if added["unclaimed"] else 1
-        expected_hb[head] += 1
-    elif fam["role"] in ("boarder", "lodger"):
-        expected_hb[head] += 1
+    if fam["role"] in ("non_dependant", "boarder", "lodger"):
+        expected_hb[head] += 0 if added["placed"] else 1
     assert np.array_equal(uc_after - uc_before, expected_uc)
     assert np.array_equal(hb_after - hb_before, expected_hb)
 
@@ -333,16 +334,7 @@ def test_a_foster_child_adds_only_the_foster_parents_bedroom(case):
     expected_uc = np.zeros(len(keys))
     expected_uc[t] = new_carer
     assert np.array_equal(uc_after - uc_before, expected_uc)
-    hb_change = hb_after - hb_before
-    assert hb_change[t] == new_carer
-    head = keys.index((target[0], 0))
-    for b in range(len(keys)):
-        if b == t:
-            continue
-        if b == head and fam["role"] in ("non_dependant", "boarder", "lodger"):
-            assert hb_change[b] in (0, 1)
-        else:
-            assert hb_change[b] == 0
+    assert np.array_equal(hb_after - hb_before, expected_uc)
 
 
 @PROPERTY_SETTINGS
@@ -388,10 +380,12 @@ def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
                         c[3] for c in other["children"] if c[2] != "foster"
                     )
                 if other["role"] in ("non_dependant", "boarder", "lodger"):
-                    hb_rooms += len(other["adults"]) + int(joins)
-                    hb_children += list(other["children"])
+                    hb_rooms += len(other["adults"]) + int(
+                        joins and not added["placed"]
+                    )
+                    hb_children += [c for c in other["children"] if c[2] == "own"]
                     hb_overnight |= any(o for _, o in other["adults"]) or any(
-                        c[3] for c in other["children"]
+                        c[3] for c in other["children"] if c[2] == "own"
                     )
         expected_uc_additional = int(uc_overnight) + int(uc_foster)
         expected_hb_additional = int(hb_overnight) + int(hb_carer)

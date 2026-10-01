@@ -21,8 +21,8 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "householder's boarder or lodger and a non-dependant, but a sharer "
         "of the rent does not. The children of a non-dependant, boarder or "
         "lodger are occupiers too, and share rooms with the claimant's "
-        "children. A child or young person placed with the claimant or "
-        "partner as a foster child or for adoption is not an occupier. A "
+        "children. A child or young person placed with a family in the "
+        "household as a foster child or for adoption is not an occupier. A "
         "sharer's, boarder's or lodger's own claim counts only their own "
         "family."
     )
@@ -42,7 +42,11 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         aged_16_or_over = person("age", period) >= 16
         # HB Regs 2006 reg 21(3): a child or young person placed with the
         # claimant or partner as a foster child or for adoption does not
-        # occupy the claimant's dwelling.
+        # occupy the claimant's dwelling. Reg 21(3) names only placements
+        # with the claimant or partner; the model follows DWP in treating a
+        # child placed with anyone in the household as no occupier (LHA
+        # Guidance Manual para 2.033; HB circular A21/2013 para 22), as
+        # Universal Credit does (UC Sch 4 para 9(2)(g)).
         occupier = ~person("is_child_or_young_person_placed_with_family", period)
         # HB Regs 2006 reg 13D(3)(b): a person who is not a child, here a
         # member of the benefit unit other than the claimant or partner.
@@ -54,7 +58,7 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         # Reg 13D(3) for occupiers outside the family, as defined in 13D(12):
         # everyone in a non-dependant's, boarder's or lodger's family,
         # including their children.
-        other_occupier = ~head_family & ~sharer
+        other_occupier = ~head_family & ~sharer & occupier
         is_head_family = benunit.any(person("is_household_head", period))
         other_occupiers = is_head_family * benunit.max(
             person.household.sum(other_occupier & aged_16_or_over)

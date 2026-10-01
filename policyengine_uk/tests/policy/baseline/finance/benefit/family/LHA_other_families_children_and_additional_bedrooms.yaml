@@ -207,6 +207,44 @@
     LHA_allowed_bedrooms: [1, 2]
     housing_benefit_LHA_allowed_bedrooms: [1, 2]
 
+- name: A non-dependant's foster child does not count for the renter
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+      daughter:
+        age: 32
+        is_male: false
+      foster_child:
+        age: 6
+        is_looked_after_by_local_authority: true
+    benunits:
+      renter_family:
+        members: [renter]
+      daughter_family:
+        members: [daughter, foster_child]
+    households:
+      home:
+        members: [renter, daughter, foster_child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC: no one in the renter's extended benefit unit is responsible for a
+    # looked-after child (reg 4(6)(a)), so the child is not a non-dependant
+    # (para 9(2)(g)): the renter and the daughter, 2 bedrooms.
+    LHA_allowed_bedrooms: [2, 2]
+    # HB: reg 21(3) names only a child placed with the claimant or partner,
+    # but DWP treats foster children as not occupying the dwelling (LHA
+    # Guidance Manual para 2.033; circular A21/2013 para 22), and the model
+    # follows it: 2 bedrooms. The daughter's own size criteria include the
+    # foster parent's or qualifying parent or carer's additional bedroom.
+    housing_benefit_LHA_allowed_bedrooms: [2, 2]
+    LHA_additional_bedrooms: [0, 1]
+    housing_benefit_LHA_additional_bedrooms: [0, 1]
+
 - name: Foster children have no bedrooms of their own; the foster parent has one additional bedroom
   period: 2026
   input:
