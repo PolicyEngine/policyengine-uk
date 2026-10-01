@@ -76,6 +76,20 @@ additional_full_time_age:
     reference:
       - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 15(2)
         href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+additional_employed_earnings_only:
+  description: Whether the additional earnings disregard depends on employed earnings only (1) rather than all net earnings (0). From 1 April 2022 it applies where earnings are calculated under regulation 50 (employed earnings) and the employed earnings cover the other disregards, childcare charges and the additional amount.
+  values:
+    2013-04-01: 0
+    2022-04-01: 1
+  metadata:
+    label: Scotland working-age CTR additional disregard on employed earnings only
+    unit: bool
+    period: year
+    reference:
+      - title: The Council Tax Reduction (Scotland) Regulations 2021 Sch. 3 para. 15(1)
+        href: https://www.legislation.gov.uk/ssi/2021/249/schedule/3
+      - title: The Council Tax Reduction (Scotland) Regulations 2012 Sch. 3 para. 18(1) (net earnings, before 1 April 2022)
+        href: https://www.legislation.gov.uk/ssi/2012/303/schedule/3
 remunerative_work_hours:
   description: Weekly hours from which a person is in remunerative work.
   values:

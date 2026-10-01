@@ -11,7 +11,8 @@ class council_tax_reduction_working_age_childcare_deduction(Variable):
     documentation = (
         "Annual relevant childcare charges deducted from a working-age "
         "applicant's income in Scotland or Wales. Without Universal Credit, "
-        "childcare spending is deducted from earnings, up to a weekly cap for "
+        "childcare spending is deducted from earnings after the earnings "
+        "disregards (never below zero), up to a weekly cap for "
         "one child or for two or more, where a lone parent, or both members "
         "of a couple, are in remunerative work. A Scottish applicant with "
         "Universal Credit deducts the Universal Credit childcare costs element "
@@ -69,10 +70,9 @@ class council_tax_reduction_working_age_childcare_deduction(Variable):
                 wales.childcare.maximum_one_child,
             ),
         )
-        earnings = benunit("council_tax_reduction_working_age_earned_income", period)
         legacy = where(
             (children > 0) & all_claimants_in_work,
-            min_(min_(charges, weekly_cap * WEEKS_IN_YEAR), earnings),
+            min_(charges, weekly_cap * WEEKS_IN_YEAR),
             0,
         )
         # Scotland, with Universal Credit: the childcare costs element grossed

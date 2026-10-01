@@ -417,3 +417,273 @@
         council_tax: 1_200
   output:
     council_tax_reduction_working_age_applicable_amount: 10_358.40
+
+- name: Wales, carer disregard is £20 of the carer's earnings plus up to £10 of the partner's
+  # Sch 8 paras 6-7: the carer (Carer's Allowance, no earnings) contributes
+  # nothing, so only £10 of the working partner's earnings is disregarded
+  # (520 a year). Partner: 14,000 less tax 34 (after the 252 marriage
+  # allowance) and NI 114.40 = 13,851.60. Applicable amount (159.85 couple +
+  # 48.15 carer premium) x 52 = 10,816. Income 13,851.60 - 520 + 4,495.40
+  # Carer's Allowance = 17,827; excess 7,011; award 1,800 - 1,402.20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: true
+        council_tax_benefit_reported: 100
+      partner:
+        age: 40
+        employment_income: 14_000
+        weekly_hours: 20
+    benunits:
+      benunit:
+        members: [carer, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer, partner]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earnings_disregard: 520
+    council_tax_reduction_working_age_applicable_income: 17_827
+    simulated_council_tax_reduction_benunit: 397.80
+
+- name: Wales, the £17.10 needs the disabled member of a couple to be the one in work
+  # Sch 8 para 18(2)(b)(v): the disabled claimant does not work, so only the
+  # £20 disability disregard applies (para 4), 1,040 a year.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_disabled_for_benefits: true
+        council_tax_benefit_reported: 100
+      partner:
+        age: 40
+        employment_income: 14_000
+        weekly_hours: 20
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earnings_disregard: 1_040
+    simulated_council_tax_reduction_benunit: 1_565.72
+
+- name: Wales, tax on unearned income is disregarded
+  # Sch 9 para 4: income tax of 286 on a 14,000 private pension comes off
+  # unearned income. Income 13,714; applicable amount 101.85 x 52 = 5,296.20;
+  # award 2,000 - 0.2 x 8,417.80 = 316.44.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        private_pension_income: 14_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unabsorbed_tax: 286
+    council_tax_reduction_working_age_applicable_income: 13_714
+    simulated_council_tax_reduction_benunit: 316.44
+
+- name: Scotland, only the Carer Support Payment component counts, not the Carer Supplement
+  # SSI 2021/249 reg 4(1) (as amended by SSI 2025/340) and reg 57(1)(b)(iva):
+  # 86.45 x 52 = 4,495.40. Earnings 5,000 less the £20 carer disregard;
+  # applicable amount (95.55 + 48.15) x 52 = 7,472.40; income 8,455.40;
+  # award 1,800 - 196.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 35
+        care_hours: 40
+        would_claim_carers_allowance: true
+        employment_income: 5_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_unearned_income: 4_495.40
+    simulated_council_tax_reduction_benunit: 1_603.40
+
+- name: Scotland, a carer premium for each partner who is a carer
+  # Sch 1 para 5(3): 2 x 48.15 x 52 = 5,007.60. Applicable amount 150.15 x 52
+  # + 5,007.60 = 12,815.40. Income 6,000 - 1,040 + 2 x 4,495.40 = 13,950.80;
+  # award 1,800 - 0.2 x 1,135.40 = 1,572.92.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer_one:
+        age: 40
+        care_hours: 40
+        would_claim_carers_allowance: true
+        employment_income: 6_000
+        weekly_hours: 10
+        council_tax_benefit_reported: 100
+      carer_two:
+        age: 40
+        care_hours: 40
+        would_claim_carers_allowance: true
+    benunits:
+      benunit:
+        members: [carer_one, carer_two]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer_one, carer_two]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_adult_premiums: 5_007.60
+    council_tax_reduction_working_age_applicable_amount: 12_815.40
+    simulated_council_tax_reduction_benunit: 1_572.92
+
+- name: Scotland, statutory maternity pay is earnings on the Universal Credit route
+  # Reg 49(4): SMP counts as employed earnings, which takes this family's
+  # income well above its applicable amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        employment_income: 15_000
+        weekly_hours: 30
+        council_tax_benefit_reported: 100
+      partner:
+        age: 30
+        statutory_maternity_pay: 9_000
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [claimant, partner, baby]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant, partner, baby]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 6_000
+        savings: 0
+  output:
+    simulated_council_tax_reduction_benunit: 0
+
+- name: Scotland, the £17.10 needs employed earnings from April 2022
+  # Sch 3 para 15(1): a self-employed lone parent gets only the £25 disregard
+  # (1,300 a year). Applicable amount (95.55 + 109.85) x 52 = 10,680.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        self_employment_income: 15_000
+        weekly_hours: 30
+        council_tax_benefit_reported: 100
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earnings_disregard: 1_300
+    simulated_council_tax_reduction_benunit: 1_279.66
+
+- name: Scotland, an employed lone parent working 30 hours gets the £17.10
+  # (25 + 17.10) x 52 = 2,189.20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 15_000
+        weekly_hours: 30
+        council_tax_benefit_reported: 100
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earnings_disregard: 2_189.20
+
+- name: Scotland 2025-26, the disability premium is the Scottish amount
+  # SSI 2025/24: £43.20 a week (2,246.40 a year), not the projected DWP rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_adult_premiums: 2_246.40

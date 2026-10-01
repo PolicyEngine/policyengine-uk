@@ -18,8 +18,8 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         "income figure (earnings before the work allowance, plus Universal "
         "Credit unearned income) plus the Universal Credit award. Everyone "
         "else counts net earnings less disregards and childcare charges, "
-        "unearned income, tariff income from capital and, in Scotland, the "
-        "relevant Universal Credit payments."
+        "unearned income (in Wales, less tax on it), tariff income from "
+        "capital and, in Scotland, the relevant Universal Credit payments."
     )
     definition_period = YEAR
     unit = GBP
@@ -50,19 +50,37 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         childcare = benunit(
             "council_tax_reduction_working_age_childcare_deduction", period
         )
+        # Without Universal Credit, childcare charges come off earnings after
+        # the disregards (WSI 2013/3029 Sch 6 para 20(1)(c); SSI 2021/249 reg
+        # 38(2)(c)). A Scottish applicant with Universal Credit deducts them
+        # from income (reg 42(2)(c)).
+        earnings_after_deductions = max_(
+            0, earnings - disregard - where(has_universal_credit, 0, childcare)
+        )
+        unearned = benunit("council_tax_reduction_working_age_unearned_income", period)
+        # Wales disregards tax on unearned income (Sch 9 para 4); Scotland
+        # counts unearned income gross (reg 57).
+        unearned_tax = where(
+            wales & ~has_universal_credit,
+            min_(
+                benunit("council_tax_reduction_working_age_unabsorbed_tax", period),
+                unearned,
+            ),
+            0,
+        )
         own_rules_income = (
-            earnings
-            - disregard
+            earnings_after_deductions
+            + unearned
+            - unearned_tax
             + add(
                 benunit,
                 period,
                 [
-                    "council_tax_reduction_working_age_unearned_income",
                     "council_tax_reduction_working_age_tariff_income",
                     "council_tax_reduction_relevant_universal_credit_payments",
                 ],
             )
-            - childcare
+            - where(has_universal_credit, childcare, 0)
         )
         income = where(
             wales & has_universal_credit,

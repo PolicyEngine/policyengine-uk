@@ -16,10 +16,9 @@ class council_tax_reduction_working_age_applicable_amount(Variable):
         "give the same annual total). Otherwise, and for every Scottish "
         "applicant including those on Universal Credit, it is the personal "
         "allowance, the amounts for children, and the adult disability, "
-        "severe disability, enhanced disability and carer premiums. The adult "
-        "premiums use the model's legacy-benefit premium variables, whose "
-        "amounts equal the Scottish and Welsh amounts. The employment and "
-        "support allowance components are not modelled."
+        "severe disability, enhanced disability and carer premiums at each "
+        "country's own amounts. The employment and support allowance "
+        "components are not modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -41,7 +40,7 @@ class council_tax_reduction_working_age_applicable_amount(Variable):
             [
                 "council_tax_reduction_working_age_personal_allowance",
                 "council_tax_reduction_working_age_child_amounts",
-                "benefits_premiums",
+                "council_tax_reduction_working_age_adult_premiums",
             ],
         )
         return where(
