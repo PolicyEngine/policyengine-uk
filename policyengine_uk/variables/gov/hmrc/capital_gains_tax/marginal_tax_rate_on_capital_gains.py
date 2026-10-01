@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
+from policyengine_uk.utils.capital_gains import RESPONSE_VARIABLES
 from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
 
@@ -37,6 +38,12 @@ class marginal_tax_rate_on_capital_gains(Variable):
                     and not variable_data.is_input_variable()
                 ):
                     alt_simulation.delete_arrays(variable)
+            # Hold the realisation response at this simulation's values, so the
+            # branch reads its schedule split instead of measuring it again.
+            for response in RESPONSE_VARIABLES:
+                response_variable = simulation.tax_benefit_system.variables[response]
+                if not response_variable.is_neutralized:
+                    alt_simulation.set_input(response, period, person(response, period))
             alt_simulation.set_input("capital_gains", period, gains + mask * step)
             alt_person = alt_simulation.person
             # Float32 rounds the higher gains, so the rise actually stored can

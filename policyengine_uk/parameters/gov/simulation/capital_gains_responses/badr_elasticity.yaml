@@ -1,9 +1,9 @@
-description: Elasticity of capital gains realisations with respect to the capital gains retention rate for people with gains qualifying for Business Asset Disposal Relief or Investors' Relief. It applies only while separate_badr_elasticity is true; otherwise they take the main elasticity. The OBR's costing of the October 2024 rate rises used 1.4 for these gains and 3.6 for main-rate gains.
+description: Elasticity of realisations of gains qualifying for Business Asset Disposal Relief or Investors' Relief with respect to the capital gains retention rate. It applies to those gains only while separate_badr_elasticity is true; otherwise they take the main elasticity, as the person's other gains always do. The OBR's costing of the October 2024 rate rises used 1.4 for these gains and 3.6 for main-rate gains.
 values:
   2000-01-01: 1.4
 metadata:
   unit: /1
-  label: Capital gains elasticity for Business Asset Disposal Relief claimants
+  label: Capital gains retention-rate elasticity for Business Asset Disposal Relief gains
   reference:
     - title: OBR (2025), Costing of changes to the main, BADR and IR rates of capital gains tax, paragraph 1.9 and Table 1.1
       href: https://obr.uk/docs/dlm_uploads/CGT-supplementary-release-Jan-2025.pdf

@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
+from policyengine_uk.utils.capital_gains import (
+    badr_gains_before_response,
+    realisation_factors,
+)
 
 
 class capital_gains_behavioural_response(Variable):
@@ -9,54 +13,21 @@ class capital_gains_behavioural_response(Variable):
     documentation = (
         "Change in realised gains under a reform to the taxation of gains, "
         "given an elasticity of realisations with respect to either the "
-        "retention rate or the marginal tax rate."
+        "retention rate or the marginal tax rate. Gains qualifying for "
+        "Business Asset Disposal Relief respond at their own elasticity "
+        "(capital_gains_badr_behavioural_response); the rest at the main one."
     )
     unit = GBP
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        response_parameters = parameters(period).gov.simulation.capital_gains_responses
-        retention_elasticity = response_parameters.elasticity
-        badr_elasticity = (
-            response_parameters.badr_elasticity
-            if response_parameters.separate_badr_elasticity
-            else retention_elasticity
-        )
-        mtr_elasticity = response_parameters.mtr_elasticity
-
-        if retention_elasticity != 0 and mtr_elasticity != 0:
-            raise ValueError(
-                "gov.simulation.capital_gains_responses.elasticity and "
-                "gov.simulation.capital_gains_responses.mtr_elasticity "
-                "cannot both be nonzero for the same period."
-            )
-        if badr_elasticity != 0 and mtr_elasticity != 0:
-            raise ValueError(
-                "gov.simulation.capital_gains_responses.badr_elasticity, in "
-                "effect while separate_badr_elasticity is true, and "
-                "gov.simulation.capital_gains_responses.mtr_elasticity "
-                "cannot both be nonzero for the same period."
-            )
-
-        simulation = person.simulation
-        if simulation.baseline is None:
+        factors = realisation_factors(person, period, parameters)
+        if factors is None:
             return 0
-
-        if retention_elasticity == 0 and badr_elasticity == 0 and mtr_elasticity == 0:
-            return 0
+        main_factor, _ = factors
 
         capital_gains = person("capital_gains_before_response", period)
-        if mtr_elasticity != 0:
-            relative_change = person("relative_capital_gains_mtr_change", period)
-            elasticity = mtr_elasticity
-        else:
-            relative_change = person(
-                "relative_capital_gains_retention_rate_change", period
-            )
-            elasticity = person("capital_gains_elasticity", period)
-
-        # Calculate response using log differences
-        response_factor = np.exp(elasticity * relative_change) - 1
-        response = capital_gains * response_factor
-
-        return response
+        other_gains = capital_gains - badr_gains_before_response(person, period)
+        return other_gains * (main_factor - 1) + person(
+            "capital_gains_badr_behavioural_response", period
+        )
