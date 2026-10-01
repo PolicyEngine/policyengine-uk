@@ -56,13 +56,29 @@ def adult_inputs(draw, min_age=18):
     }
 
 
+PRIMED_CLAIMANT = {
+    "income_support_reported": 1_000,
+    "esa_income_reported": 0,
+    "esa_contrib_reported": 0,
+}
+
+
 @st.composite
 def families(draw):
-    """A claimant, an optional partner, up to three dependants and capital."""
-    n_dependants = draw(st.integers(0, 3))
+    """A claimant, an optional partner, up to three dependants and capital.
+
+    Half the families are drawn at random. The rest are primed to sit at the
+    edge of eligibility, where an added member could change the result: a
+    claimant who reports Income Support and cares, or a lone parent who
+    reports it, does not care and has only children over 5.
+    """
+    shape = draw(st.sampled_from(["random", "random", "carer", "lone_parent"]))
+    n_dependants = draw(st.integers(1 if shape == "lone_parent" else 0, 3))
     dependants = []
     for _ in range(n_dependants):
-        if draw(st.booleans()):
+        if shape == "lone_parent":
+            dependant = {"age": draw(st.integers(6, 15))}
+        elif draw(st.booleans()):
             dependant = {"age": draw(st.integers(0, 15))}
         else:
             # A qualifying young person: 16-19 in non-advanced education.
@@ -73,8 +89,19 @@ def families(draw):
         dependants.append(dependant)
     eldest_dependant = max([d["age"] for d in dependants], default=0)
     adults = [draw(adult_inputs(min_age=max(18, eldest_dependant + 16)))]
-    if draw(st.booleans()):
+    if shape != "lone_parent" and draw(st.booleans()):
         adults.append(draw(adult_inputs()))
+    if shape == "carer":
+        adults[0].update(
+            PRIMED_CLAIMANT, age=min(adults[0]["age"], 65), receives_carer_benefit=True
+        )
+    elif shape == "lone_parent":
+        adults[0].update(
+            PRIMED_CLAIMANT,
+            age=min(adults[0]["age"], 65),
+            receives_carer_benefit=False,
+            care_hours=0,
+        )
     for adult in adults:
         adult["is_parent"] = n_dependants > 0
     capital = draw(st.sampled_from([0, 6_250, 10_000, 20_000]))
@@ -88,9 +115,10 @@ def excluded_members(draw):
     Either an adult not in education (so a 16 to 19 year old is not a
     qualifying young person), or a child placed by a local authority.
     """
-    if draw(st.integers(0, 3)) == 0:
+    if draw(st.booleans()):
+        # Mostly 5 or under, the ages that could open the lone-parent route.
         return {
-            "age": draw(st.integers(0, 15)),
+            "age": draw(st.one_of(st.integers(0, 5), st.integers(6, 15))),
             "is_looked_after_by_local_authority": True,
             "receives_carer_benefit": draw(st.booleans()),
         }
@@ -111,7 +139,7 @@ def input_settings(draw, n):
     capital_as_savings = draw(st.booleans())
     esa_income = (
         draw(st.lists(st.sampled_from([0, 3_000]), min_size=n, max_size=n))
-        if draw(st.integers(0, 3)) == 0
+        if draw(st.booleans())
         else None
     )
     return capital_as_savings, esa_income
@@ -164,10 +192,15 @@ SETTINGS = settings(
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
 
+# The invariance property needs rarer combinations (a placed young child in a
+# lone parent's family, a direct esa_income beside an added member's ESA), so
+# it runs more examples.
+INVARIANCE_SETTINGS = settings(SETTINGS, max_examples=25)
+
 FAMILIES = st.lists(st.tuples(families(), excluded_members()), min_size=1, max_size=8)
 
 
-@SETTINGS
+@INVARIANCE_SETTINGS
 @given(FAMILIES, st.data())
 def test_excluded_member_never_changes_is_eligibility(drawn, data):
     capital_as_savings, esa_income = data.draw(input_settings(len(drawn)))
