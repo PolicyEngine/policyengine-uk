@@ -1,8 +1,12 @@
-description: The Department for Education designates these programs as qualifying benefits for the targeted childcare entitlement eligibility (the 2-year-old entitlement) in England.
+description: The Department for Education designates these programs as qualifying benefits for the targeted childcare entitlement eligibility (the 2-year-old entitlement) in England. A parent qualifies through Pension Credit only when entitled to its guaranteed element, so that entry is receipt of a guarantee credit rather than the amount computed for every benefit unit.
 metadata:
   reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 1(2), "eligible child"
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/1
     - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - part 2.a
       href: https://www.legislation.gov.uk/uksi/2018/146/regulation/2/made
+    - title: State Pension Credit Act 2002 - section 1(2), entitlement requires the qualifying age
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/1
   period: year
   unit: program
   label: Qualifying benefits for targeted childcare entitlement
@@ -11,4 +15,4 @@ values:
     - income_support
     - jsa_income
     - esa_income
-    - guarantee_credit
+    - in_receipt_of_guarantee_credit
