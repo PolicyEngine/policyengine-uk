@@ -19,7 +19,8 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "unit aged 16 or over who is not the claimant or partner adds a "
         "bedroom, such as a young person in full-time education; so do a "
         "householder's boarder or lodger and a non-dependant, but a sharer "
-        "of the rent does not. The children of a non-dependant, boarder or "
+        "of the rent does not. A couple, such as a non-dependant and their "
+        "partner, has one bedroom between them. The children of a non-dependant, boarder or "
         "lodger are occupiers too, and share rooms with the claimant's "
         "children. A child or young person placed with a family in the "
         "household as a foster child or for adoption is not an occupier. A "
@@ -59,9 +60,18 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         # everyone in a non-dependant's, boarder's or lodger's family,
         # including their children.
         other_occupier = ~head_family & ~sharer & occupier
+        # Reg 13D(3)(a): a couple, here the claimant and partner of an
+        # occupier's family, has one bedroom; (b): every other occupier aged
+        # 16 or over has their own. Each member of a couple counts as half.
+        couple_member = person("is_claimant_or_partner", period) & person.benunit(
+            "is_couple", period
+        )
+        occupier_rooms = (other_occupier & aged_16_or_over) * where(
+            couple_member, 0.5, 1
+        )
         is_head_family = benunit.any(person("is_household_head", period))
         other_occupiers = is_head_family * benunit.max(
-            person.household.sum(other_occupier & aged_16_or_over)
+            person.household.sum(occupier_rooms)
         )
         # Reg 13D(3)(c)-(e): the occupiers' children, the claimant's own and
         # other families', share rooms with each other.

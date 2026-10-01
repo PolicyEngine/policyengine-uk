@@ -380,9 +380,9 @@ def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
                         c[3] for c in other["children"] if c[2] != "foster"
                     )
                 if other["role"] in ("non_dependant", "boarder", "lodger"):
-                    hb_rooms += len(other["adults"]) + int(
-                        joins and not added["placed"]
-                    )
+                    # HB reg 13D(3)(a): the family's claimant or couple
+                    # has one bedroom.
+                    hb_rooms += 1 + int(joins and not added["placed"])
                     hb_children += [c for c in other["children"] if c[2] == "own"]
                     hb_overnight |= any(o for _, o in other["adults"]) or any(
                         c[3] for c in other["children"] if c[2] == "own"
