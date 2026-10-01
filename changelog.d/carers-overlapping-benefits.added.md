@@ -1,0 +1,1 @@
+Add `carers_allowance_pre_overlap`, `carer_support_payment_pre_overlap`, their `*_overlapping_benefits` totals, `overlapping_state_pension` and `is_entitled_to_carer_benefit`. `carers_allowance` and `carer_support_payment` are now the amounts payable after the overlapping-benefit reduction.

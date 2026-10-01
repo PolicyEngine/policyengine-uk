@@ -1,0 +1,347 @@
+# Carer's Allowance after the overlapping-benefit adjustment.
+# Social Security (Overlapping Benefits) Regulations 1979 (SI 1979/597):
+# reg 4(1)(a) makes Carer's Allowance overlap with other personal benefits
+# under SSCBA 1992 Parts II and III, the Welfare Reform Act 2007 Part 1, the
+# Pensions Act 2014 Part 1 and the Jobseekers Act 1995. Reg 12 reduces Carer's
+# Allowance by the other benefit, except additional pension and graduated
+# retirement benefit, so that the two together are never less than the
+# unadjusted allowance. A new State Pension (Pensions Act 2014 Part 1)
+# overlaps in full, including any protected payment above the full rate.
+# 2026-27 weekly rates: Carer's Allowance 86.45 (SI 2026/148), full basic
+# State Pension 184.90, full new State Pension 241.30, Pension Credit
+# standard minimum guarantee 238.00 and carer addition 48.15.
+
+- name: Case 1, no overlapping benefit leaves Carer's Allowance in full.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 0
+    care_hours: 35
+    country: ENGLAND
+  output:
+    carers_allowance_pre_overlap: 86.45 * 52
+    carers_allowance_overlapping_benefits: 0
+    carers_allowance: 86.45 * 52
+
+- name: Case 2, State Pension below the allowance reduces it pound for pound.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 2_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    overlapping_state_pension: 2_000
+    carers_allowance_pre_overlap: 86.45 * 52
+    carers_allowance: 86.45 * 52 - 2_000
+    receives_carers_allowance: true
+
+- name: Case 3, State Pension equal to the allowance reduces it to nil.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 86.45 * 52
+    care_hours: 35
+    country: ENGLAND
+  output:
+    carers_allowance: 0
+    receives_carers_allowance: false
+    is_entitled_to_carer_benefit: true
+
+- name: Case 4, State Pension above the allowance leaves underlying entitlement and the carer addition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 6_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    carers_allowance_pre_overlap: 86.45 * 52
+    carers_allowance: 0
+    receives_carer_benefit: false
+    is_entitled_to_carer_benefit: true
+    is_carer_for_benefits: true
+    # SPC Regs 2002 Sch I para 4(2): the claimant is entitled to Carer's
+    # Allowance, whether or not it is paid.
+    carer_minimum_guarantee_addition: 48.15 * 52
+
+- name: Case 5, the additional pension in an old State Pension does not overlap.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    basic_state_pension: 2_000
+    additional_state_pension: 5_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    state_pension_type: BASIC
+    state_pension: 7_000
+    overlapping_state_pension: 2_000
+    carers_allowance: 86.45 * 52 - 2_000
+
+- name: Case 6, a new State Pension overlaps in full, protected payment included.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 68
+    new_state_pension: 2_000
+    additional_state_pension: 5_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    state_pension_type: NEW
+    overlapping_state_pension: 7_000
+    carers_allowance: 0
+
+- name: Case 7, a reported old State Pension above the full basic rate overlaps up to that rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    state_pension_reported: 13_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    basic_state_pension: 184.90 * 52
+    additional_state_pension: 13_000 - 184.90 * 52
+    overlapping_state_pension: 184.90 * 52
+    carers_allowance: 0
+
+- name: Case 8, a reported old State Pension below the allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 80
+    state_pension_reported: 3_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    overlapping_state_pension: 3_000
+    carers_allowance: 86.45 * 52 - 3_000
+
+- name: Case 9, a reported new State Pension below the allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 68
+    state_pension_reported: 3_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    new_state_pension: 3_000
+    overlapping_state_pension: 3_000
+    carers_allowance: 86.45 * 52 - 3_000
+
+- name: Case 10, contributory ESA reduces the allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    esa_contrib_reported: 3_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    carers_allowance_overlapping_benefits: 3_000
+    carers_allowance: 86.45 * 52 - 3_000
+
+- name: Case 11, contribution-based JSA and Maternity Allowance together reduce the allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    jsa_contrib_reported: 1_000
+    maternity_allowance_reported: 1_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    carers_allowance_overlapping_benefits: 2_000
+    carers_allowance: 86.45 * 52 - 2_000
+
+- name: Case 12, incapacity benefit above the allowance keeps the benefit cap exemption.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 50
+    incapacity_benefit_reported: 5_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: true
+    # HB Regs 2006 reg 75F(1)(h) and UC Regs 2013 reg 83(1)(i) exempt a
+    # person "entitled to" Carer's Allowance.
+    is_benefit_cap_exempt_health_disability: true
+
+- name: Case 13, Severe Disablement Allowance at its maximum rate exceeds the allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 50
+    sda_reported: 1
+    care_hours: 35
+    country: ENGLAND
+  output:
+    # gov.dwp.sda.maximum is 119.35 a week in 2026-27.
+    sda: 119.35 * 52
+    carers_allowance: 0
+
+- name: Case 14, industrial injuries and armed forces compensation do not overlap.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 50
+    iidb_reported: 5_000
+    afcs_reported: 10_000
+    care_hours: 35
+    country: ENGLAND
+  output:
+    carers_allowance_overlapping_benefits: 0
+    carers_allowance: 86.45 * 52
+
+- name: Case 15, a carer who would not claim has no entitlement to keep.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    state_pension: 6_000
+    care_hours: 35
+    would_claim_carers_allowance: false
+    country: ENGLAND
+  output:
+    carers_allowance_pre_overlap: 0
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: false
+    # Caring 35 hours a week still makes the person a carer for benefits.
+    is_carer_for_benefits: true
+
+- name: Case 16, Carer's Allowance supplied as an input is treated as an entitlement.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    carers_allowance: 1_000
+    care_hours: 0
+    country: ENGLAND
+  output:
+    carers_allowance_pre_overlap: 0
+    receives_carers_allowance: true
+    is_entitled_to_carer_benefit: true
+    is_benefit_cap_exempt_health_disability: true
+
+- name: Case 17, Pension Credit counts the allowance after the overlap.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 2_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    carers_allowance: 86.45 * 52 - 2_000
+    # SPC Regs 2002 reg 15(3)-(4)(a): the adjusted amount counts, so State
+    # Pension and Carer's Allowance together count as the allowance alone.
+    pension_credit_income: 86.45 * 52
+    minimum_guarantee: (238 + 48.15) * 52
+    guarantee_credit: (238 + 48.15 - 86.45) * 52
+
+- name: Case 18, Pension Credit counts no allowance when State Pension exceeds it.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 6_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+  output:
+    carers_allowance: 0
+    pension_credit_income: 6_000
+    minimum_guarantee: (238 + 48.15) * 52
+    guarantee_credit: (238 + 48.15) * 52 - 6_000
+
+- name: Case 19, an allowance reduced to nil does not withhold the severe disability addition.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        state_pension: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    # SPC Regs 2002 Sch I para 1(1): the addition is withheld only where a
+    # person is "entitled to and in receipt of" Carer's Allowance for caring.
+    carers_allowance: [0, 0]
+    receives_carer_benefit: [false, false]
+    is_entitled_to_carer_benefit: [false, true]
+    is_carer_for_benefits: [false, true]
+    severe_disability_minimum_guarantee_addition: 67.3 * 52
+
+- name: Case 20, a parent entitled to an allowance reduced to nil still meets the childcare work condition.
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        in_work: true
+        is_parent: true
+      parent2:
+        age: 38
+        in_work: false
+        is_parent: true
+        care_hours: 35
+        maternity_allowance_reported: 5_000
+      child:
+        age: 4
+        is_parent: false
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        family_type: COUPLE_WITH_CHILDREN
+    households:
+      household:
+        members: [parent1, parent2, child]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 0, 0]
+    # Childcare (Free of Charge for Working Parents) (England) Regulations
+    # 2022 regs 14-15 and 11A(1)(a): "entitled to a specified benefit".
+    extended_childcare_entitlement_work_condition: [1, 1, 0]
