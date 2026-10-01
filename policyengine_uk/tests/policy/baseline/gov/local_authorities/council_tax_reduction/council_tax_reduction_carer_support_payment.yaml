@@ -1,0 +1,329 @@
+# Carer Support Payment in Council Tax Reduction income.
+# Scottish carers receive Carer Support Payment (CSP) in place of Carer's
+# Allowance (CA); the model moves them in 2025. Scottish Council Tax Reduction
+# counts the CSP component in full:
+# - working age: Council Tax Reduction (Scotland) Regulations 2021 (SSI
+#   2021/249) reg 57(1)(b)(iva), a closed list of unearned income;
+# - pension age: Council Tax Reduction (State Pension Credit) (Scotland)
+#   Regulations 2012 (SSI 2012/319) reg 27(1)(j), social security benefits
+#   other than those it lists.
+# Neither counts the Scottish Carer Supplement, paid with CSP from 15 March
+# 2026: reg 57(1) does not list it and reg 27(1)(j)(xxib) excepts it. It is
+# taxable, so it reaches Council Tax Reduction income only through income tax.
+# Neither instrument disregards CSP above the CA amount.
+#
+# Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
+# carer premium 48.15, personal allowance 95.55 (single, 25 or over), 256.00
+# (single, pension age) and 383.35 (couple, pension age). 2025: CSP 83.30, no
+# supplement, carer premium 46.38, personal allowance 92.04. 2024: CA 81.90,
+# carer premium 45.60, personal allowance 90.50. Reduction is withdrawn at 20%
+# of income above the applicable amount. Council tax is 2,000 throughout.
+# The working-age cases take no Universal Credit, so the award does not turn
+# on how Universal Credit treats CSP.
+
+- name: Carer Support Payment counts as working-age Council Tax Reduction income in Scotland
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    carers_allowance: 0
+    carer_support_payment: 86.45 * 52
+    scottish_carer_supplement: 11.70 * 52
+    # 7,000 + 4,495.40 + 608.40 is below the 12,570 personal allowance.
+    income_tax: 0
+    # The CSP component only: 7,000 + 4,495.40. Counting the supplement too
+    # would give 12,103.80.
+    council_tax_reduction_applicable_income: 7_000 + 86.45 * 52
+    council_tax_reduction_applicable_amount: (95.55 + 48.15) * 52
+    # 2,000 - 0.2 x (11,495.40 - 7,472.40)
+    council_tax_benefit: 2_000 - 0.2 * (7_000 + 86.45 * 52 - (95.55 + 48.15) * 52)
+    council_tax_reduction: 1_195.40
+
+- name: A reported carer's award in Scotland counts as Council Tax Reduction income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        private_pension_income: 7_000
+        carers_allowance_reported: 1
+        care_hours: 0
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    carer_support_payment: 86.45 * 52
+    council_tax_reduction_applicable_income: 7_000 + 86.45 * 52
+    council_tax_reduction: 1_195.40
+
+- name: A Welsh carer on Carer's Allowance gets the same Council Tax Reduction as the Scottish carer
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer]
+        country: WALES
+        region: WALES
+        council_tax: 2_000
+        savings: 0
+  output:
+    carers_allowance: 86.45 * 52
+    carer_support_payment: 0
+    scottish_carer_supplement: 0
+    council_tax_reduction_applicable_income: 7_000 + 86.45 * 52
+    council_tax_reduction: 1_195.40
+
+- name: A Scottish carer who does not claim Carer Support Payment has none counted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        private_pension_income: 7_000
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    carer_support_payment: 0
+    scottish_carer_supplement: 0
+    council_tax_reduction_applicable_income: 7_000
+    # The caring hours still give the carer premium, and 7,000 is below the
+    # applicable amount of 7,472.40.
+    council_tax_reduction: 2_000
+
+- name: Carer Support Payment counts in 2025, before the Scottish Carer Supplement
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    carers_allowance: 0
+    carer_support_payment: 83.30 * 52
+    scottish_carer_supplement: 0
+    council_tax_reduction_applicable_income: 7_000 + 83.30 * 52
+    council_tax_reduction_applicable_amount: (92.04 + 46.38) * 52
+    # 2,000 - 0.2 x (11,331.60 - 7,197.84) = 1,173.25
+    council_tax_reduction: 2_000 - 0.2 * (7_000 + 83.30 * 52 - (92.04 + 46.38) * 52)
+
+- name: In 2024 the Scottish carer is still on Carer's Allowance, which was already counted
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        private_pension_income: 7_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+        would_claim_uc: false
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    carers_allowance: 81.90 * 52
+    carer_support_payment: 0
+    council_tax_reduction_applicable_income: 7_000 + 81.90 * 52
+    # 2,000 - 0.2 x (11,258.80 - 7,077.20) = 1,163.68. The award no longer
+    # jumps to 2,000 when the carer moves to Carer Support Payment in 2025.
+    council_tax_reduction: 2_000 - 0.2 * (7_000 + 81.90 * 52 - (90.50 + 45.60) * 52)
+
+- name: Pension-age Council Tax Reduction counts Carer Support Payment, and the supplement only through tax
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 14_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    carer_support_payment: 86.45 * 52
+    scottish_carer_supplement: 11.70 * 52
+    # Taxable income is 14,000 + 4,495.40 + 608.40 - 12,570 = 6,533.80: the
+    # first 3,967 at the Scottish starter rate of 19% and 2,566.80 at 20%.
+    # The supplement adds 608.40 x 20% = 121.68 of that tax.
+    income_tax: 3_967 * 0.19 + 2_566.80 * 0.20
+    # 14,000 + 4,495.40 - 1,267.09: the supplement is not added.
+    council_tax_reduction_applicable_income: 14_000 + 86.45 * 52 - 1_267.09
+    council_tax_reduction_applicable_amount: (256 + 48.15) * 52
+    # Income is above the minimum guarantee of (238 + 48.15) x 52 = 14,879.80.
+    guarantee_credit: 0
+    # 2,000 - 0.2 x (17,228.31 - 15,815.80)
+    council_tax_reduction: 1_717.50
+
+- name: A pension-age couple's Council Tax Reduction counts the partner's Carer Support Payment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 0
+        private_pension_income: 12_000
+      partner:
+        age: 70
+        state_pension: 0
+        private_pension_income: 6_500
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 86.45 x 52 and 11.70 x 52, for the partner.
+    carer_support_payment: [0, 4_495.40]
+    scottish_carer_supplement: [0, 608.40]
+    # Each is below the personal allowance: 12,000, and 6,500 + 4,495.40 +
+    # 608.40 = 11,603.80.
+    income_tax: [0, 0]
+    council_tax_reduction_applicable_income: 12_000 + 6_500 + 86.45 * 52
+    council_tax_reduction_applicable_amount: (383.35 + 48.15) * 52
+    # Income is above the minimum guarantee of (363.25 + 48.15) x 52 =
+    # 21,392.80.
+    guarantee_credit: 0
+    # 2,000 - 0.2 x (22,995.40 - 22,438.00)
+    council_tax_reduction: 1_888.52
+
+- name: A pension-age couple below the applicable amount keeps full Council Tax Reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 0
+        private_pension_income: 9_000
+      partner:
+        age: 70
+        state_pension: 0
+        private_pension_income: 6_500
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+        region: SCOTLAND
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_applicable_income: 9_000 + 6_500 + 86.45 * 52
+    # Guarantee Credit is paid: 21,392.80 - 19,995.40.
+    guarantee_credit: (363.25 + 48.15) * 52 - (9_000 + 6_500 + 86.45 * 52)
+    council_tax_reduction: 2_000
+
+- name: An English pensioner carer's Council Tax Reduction is unchanged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 70
+        state_pension: 0
+        private_pension_income: 14_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [carer]
+    households:
+      household:
+        members: [carer]
+        country: ENGLAND
+        region: NORTH_WEST
+        council_tax: 2_000
+        savings: 0
+  output:
+    carers_allowance: 86.45 * 52
+    carer_support_payment: 0
+    scottish_carer_supplement: 0
+    # (14,000 + 4,495.40 - 12,570) x 20%
+    income_tax: 1_185.08
+    council_tax_reduction_applicable_income: 14_000 + 86.45 * 52 - 1_185.08
+    # 2,000 - 0.2 x (17,310.32 - 15,815.80)
+    council_tax_reduction: 1_701.10
