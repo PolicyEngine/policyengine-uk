@@ -9,7 +9,13 @@ class housing_benefit_entitlement(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        rent = benunit("benunit_rent", period)
+        # Charges for meals are not eligible to be met by Housing Benefit
+        # (HB Regs 2006 reg 12B(2)(b) and Sch 1 paras 1(a)(i) and 2).
+        rent = max_(
+            0,
+            benunit("benunit_rent", period)
+            - benunit("housing_benefit_meals_deduction", period),
+        )
         applicable_amount = benunit("housing_benefit_applicable_amount", period)
         income = benunit("housing_benefit_applicable_income", period)
         withdrawal_rate = parameters(

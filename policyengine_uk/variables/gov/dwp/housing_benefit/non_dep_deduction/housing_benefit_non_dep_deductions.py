@@ -7,13 +7,21 @@ class housing_benefit_non_dep_deductions(Variable):
     label = "non-dependent deductions"
     definition_period = YEAR
     unit = GBP
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/74",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/55",
+    )
 
     def formula(benunit, period, parameters):
-        deductions = benunit.members(
+        # Deductions are made for non-dependants residing with the claimant
+        # (HB Regs 2006 reg 74; HB (SPC) Regs 2006 reg 55). Joint occupiers,
+        # boarders, lodgers and the landlord's household are not
+        # non-dependants (reg 3(2)(d)-(e), 3(4)), so only the household
+        # head's family has them.
+        person = benunit.members
+        deductions = person(
             "household_benefits_individual_non_dep_deduction", period
-        )
-        non_dep_deductions_in_hh = benunit.max(
-            benunit.members.household.sum(deductions)
-        )
-        non_dep_deductions_in_bu = benunit.sum(deductions)
-        return non_dep_deductions_in_hh - non_dep_deductions_in_bu
+        ) * person("is_non_dependant_of_household_head", period)
+        head_family = benunit.any(person("is_household_head", period))
+        return head_family * benunit.max(person.household.sum(deductions))
