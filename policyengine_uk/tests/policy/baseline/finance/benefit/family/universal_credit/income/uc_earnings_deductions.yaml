@@ -248,3 +248,97 @@
     property_income_tax: 880
     income_tax: 2_366
     uc_income_tax_on_earnings: 1_486
+
+- name: A tax reduction comes off the tax on earnings first
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # Married couple's allowance reduction: 10% x 11,000 = 1,100.
+    capped_mcad: [1_100, 0]
+    # (20,000 - 12,570) x 20% = 1,486, less 1,100.
+    income_tax: [386, 0]
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: Pension income does not change the tax on earnings when a reduction applies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        private_pension_income: 5_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # 1,486 on earnings + 5,000 x 20% on the pension - 1,100.
+    income_tax: [1_386, 0]
+    # The reduction still comes off the earnings slice: 1,486 - 1,100.
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: The pension annual allowance charge is not deducted, even with a tax reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        employer_pension_contributions: 65_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # Contributions of 65,000 exceed the 60,000 annual allowance by 5,000,
+    # charged at the basic rate: 1,000.
+    personal_pension_contributions_tax: [1_000, 0]
+    income_tax: [1_386, 0]
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: Pension contributions paid after 75 are not relievable, so are not deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 76
+    employment_income: 15_000
+    employee_pension_contributions: 1_000
+  output:
+    # No relief after 75 (FA 2004 s. 188(3)(a)): (15,000 - 12,570) x 20%.
+    uc_income_tax_on_earnings: 486
+    # Over State Pension age, so no Class 1 NI.
+    uc_national_insurance_on_earnings: 0
+    # 15,000 - 486, with the 1,000 of contributions not deducted.
+    uc_individual_earned_income: 14_514

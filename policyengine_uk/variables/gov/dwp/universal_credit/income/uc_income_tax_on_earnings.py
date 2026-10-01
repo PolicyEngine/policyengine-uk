@@ -35,11 +35,11 @@ class uc_income_tax_on_earnings(Variable):
         # of any trade". Neither says how to split a person's tax when they
         # also have other income. Earnings are taken as the lowest slice of
         # their non-savings income, after the allowances they actually have:
-        # savings and dividends sit above all non-savings income (as in ITA
-        # 2007 s. 16), property income above the rest of it (as in s. 16A
-        # from 2027-28), and other non-savings income (private pensions,
-        # State Pension, taxable benefits) above earnings. So tax on other
-        # income never comes off earnings. Under RTI, DWP deducts the PAYE
+        # savings and dividends sit above earnings and other non-savings
+        # income (as in ITA 2007 s. 16), property income above the rest of
+        # it (as in s. 16A from 2027-28), and other non-savings income
+        # (private pensions, State Pension, taxable benefits) above
+        # earnings. So tax on other income never comes off earnings. Under RTI, DWP deducts the PAYE
         # actually taken on the job, which can include tax on a State
         # Pension coded against it; that is not modelled.
         p = parameters(period)
@@ -75,7 +75,10 @@ class uc_income_tax_on_earnings(Variable):
             rates.scotland.rates.calc(taxable_earnings),
             rates.uk.calc(taxable_earnings),
         )
-        # Tax reductions (for example the married couple's allowance) can
-        # leave total income tax below the tax on the earnings slice; never
-        # deduct more than the person pays.
-        return min_(tax, person("income_tax", period))
+        # Tax reductions (for example the married couple's allowance) come
+        # off the tax on earnings first, as allowances do. So the deduction
+        # never exceeds the income tax the person pays, never includes a
+        # charge such as the High Income Child Benefit Charge, and does not
+        # move when other income absorbs more or less of a reduction.
+        reductions = add(person, period, p.gov.hmrc.income_tax.income_tax_subtractions)
+        return max_(0, tax - reductions)
