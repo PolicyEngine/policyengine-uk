@@ -8,8 +8,10 @@
 #   Regulations 2012 (SSI 2012/319) reg 27(1)(j), social security benefits
 #   other than those it lists.
 # Neither counts the Scottish Carer Supplement, paid with CSP from 15 March
-# 2026: reg 57(1) does not list it and reg 27(1)(j)(xxib) excepts it. It is
-# taxable, so it reaches Council Tax Reduction income only through income tax.
+# 2026: reg 57(1) does not list it and reg 27(1)(j)(xxib) excepts it. Both
+# instruments deduct income tax only from earnings, but the model deducts all
+# income tax, so the taxable supplement reaches the model's Council Tax
+# Reduction income through income tax and in no other way.
 # Neither instrument disregards CSP above the CA amount.
 #
 # Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
