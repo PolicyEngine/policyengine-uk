@@ -132,10 +132,12 @@ def code(claimant):
 
 
 @st.composite
-def dependants(draw, minimum=0, maximum=4):
+def dependants(draw, minimum=0, maximum=4, first_child=False):
+    """Up to ``maximum`` dependants aged 0 to 19. With ``first_child`` the
+    first is a child under 16 (WRA 2012 s. 40), whatever their education."""
     members = []
-    for _ in range(draw(st.integers(minimum, maximum))):
-        age = draw(st.integers(0, 19))
+    for i in range(draw(st.integers(minimum, maximum))):
+        age = draw(st.integers(0, 15 if first_child and i == 0 else 19))
         member = dict(age=age)
         for variable, strategy in DEPENDANT_CIRCUMSTANCES.items():
             member[variable] = draw(strategy)
@@ -177,7 +179,7 @@ def families(draw, capped=False):
             claimant.update(care_hours=0.0, uc_limited_capability_for_WRA=False)
         return dict(
             claimants=claimants,
-            dependants=draw(dependants(minimum=3)),
+            dependants=draw(dependants(minimum=3, first_child=True)),
             tenure="RENT_FROM_COUNCIL",
             rent=draw(st.floats(12_000, 30_000)),
             region=draw(st.sampled_from(REGIONS)),
@@ -204,8 +206,8 @@ def situation(
     ``reverse`` the people of each family are entered, and listed in their
     benefit unit and household, in reverse order. ``claimant_overrides``
     replaces inputs of every claimant. With ``dependant_dla`` the first
-    dependant of each family receives the middle-rate care component of
-    disability living allowance.
+    dependant of each family, a child under 16 in the capped families,
+    receives the middle-rate care component of disability living allowance.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
