@@ -1,11 +1,18 @@
 description: >
   Capital sources whose sale would incur expenses, so that income-related ESA
-  values them at 90% of market value. Land and property always have costs of
-  sale. Shares are sold through a broker, so `corporate_wealth` is listed; it
-  also holds unit trusts, which have no costs of sale, but the dataset does
-  not separate them. `savings` is not listed because a bank or building
-  society account is valued at its balance and withdrawing money is not a sale
-  (see the Universal Credit parameter of the same name for the guidance).
+  values them at 90% of market value. Costs of sale normally arise where an
+  agent, broker, auctioneer, solicitor or accountant is needed, and real
+  property always has them (DMG 52622), so `owned_land`,
+  `other_residential_property_value` and `non_residential_property_value` are
+  listed. `savings` is not listed: a bank or building society account is
+  valued at its balance, and the costs of withdrawing money are not costs of
+  sale (DMG 52620-52623 and 52685). `corporate_wealth` is listed because
+  shares are valued less 10% for the costs of selling them (DMG 52671).
+  It is a mixed variable, though: it also holds unit trusts, which have no
+  costs of sale (DMG 52681), stocks and shares ISAs and employee share
+  options, and datasets built before private pension wealth was split out also
+  fold non-defined-benefit pension wealth into it, which is not capital at
+  all. The deduction reaches all of these until the data separate them.
   Sources not counted as income-related ESA capital are ignored.
 metadata:
   label: Income-related ESA capital sources with sale expenses
@@ -14,6 +21,16 @@ metadata:
   reference:
     - title: Employment and Support Allowance Regulations 2008 reg. 113(a)
       href: https://www.legislation.gov.uk/uksi/2008/794/regulation/113
+    - title: Employment and Support Allowance Regulations (Northern Ireland) 2008 reg. 113(a)
+      href: https://www.legislation.gov.uk/nisr/2008/280/regulation/113
+    - title: Decision Makers' Guide chapter 52, paras. 52620-52622
+      href: https://assets.publishing.service.gov.uk/media/69d8f30ad3e08b8871b665ac/dmg-Ch-52.pdf#page=115
+    - title: Decision Makers' Guide chapter 52, para. 52623
+      href: https://assets.publishing.service.gov.uk/media/69d8f30ad3e08b8871b665ac/dmg-Ch-52.pdf#page=116
+    - title: Decision Makers' Guide chapter 52, para. 52671
+      href: https://assets.publishing.service.gov.uk/media/69d8f30ad3e08b8871b665ac/dmg-Ch-52.pdf#page=126
+    - title: Decision Makers' Guide chapter 52, paras. 52681 and 52685
+      href: https://assets.publishing.service.gov.uk/media/69d8f30ad3e08b8871b665ac/dmg-Ch-52.pdf#page=128
 values:
   2008-10-27:
     - owned_land

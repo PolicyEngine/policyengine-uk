@@ -1,8 +1,11 @@
 description: >
   Share of the current market or surrender value deducted from Housing Benefit
-  capital where there would be expenses attributable to sale. The deduction
-  is a flat 10% whatever the actual costs, taken before any encumbrance
-  secured on the asset.
+  capital where there would be expenses attributable to sale. It is a flat 10%
+  whatever the actual costs, taken from the gross value before any encumbrance
+  secured on the asset is deducted. Before 1 October 2007 the same deduction
+  sat in reg. 47(a)(i) (reg. 45(a)(i) at pension age) alongside a separate
+  valuation for National Savings Certificates; SI 2007/2618 substituted the
+  regulation in its current form.
 values:
   2006-04-10: 0.1
 metadata:
@@ -14,3 +17,11 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2006/213/regulation/47
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 45(a)
       href: https://www.legislation.gov.uk/uksi/2006/214/regulation/45
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 reg. 44(a)
+      href: https://www.legislation.gov.uk/nisr/2006/405/regulation/44
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 reg. 43(a)
+      href: https://www.legislation.gov.uk/nisr/2006/406/regulation/43
+    - title: Housing Benefit Guidance Manual BW1, para. W1.430
+      href: https://assets.publishing.service.gov.uk/media/5a749328ed915d0e8e3994c0/hbgm-bw1-assessment-of-capital.pdf#page=36
+    - title: MH v London Borough of Waltham Forest (HB) [2016] UKUT 161 (AAC), para. 43
+      href: https://www.gov.uk/administrative-appeals-tribunal-decisions/mh-v-london-borough-of-waltham-forest-hb-2016-ukut-161-aac

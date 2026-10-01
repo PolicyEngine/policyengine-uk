@@ -1,8 +1,9 @@
 # Capital is valued at market value less 10% where a sale would incur
 # expenses, and less any encumbrance secured on it: UC Regs 2013 reg. 49(1);
 # HB Regs 2006 reg. 47; IS Regs 1987 reg. 49; JSA Regs 1996 reg. 111; ESA Regs
-# 2008 reg. 113; SPC Regs 2002 reg. 19. Savings in a bank or building society
-# have no sale expenses; land, property and shares do (ADM H1604-H1607).
+# 2008 reg. 113; SPC Regs 2002 reg. 19. A bank or building society account is
+# valued at its balance (ADM H1604-H1607, H1675); land and property always have
+# costs of sale (H1606) and shares are valued less 10% (H1665).
 # Expected values are worked by hand from those provisions.
 
 - name: UC values a mortgaged holiday home as in ADM H1602
@@ -216,3 +217,79 @@
     pension_credit_assessable_capital: 19_000
     # 18 steps of 500 above 10,000 at 1 a week: 18 * 52.
     pension_credit_deemed_income: 936
+
+- name: UC floors each encumbered source at nil on its own
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # The second home is in negative equity (90,000 - 150,000), so it is
+        # valued at nil; the business premises keep 90% of 10,000. Netting the
+        # debts across both would wrongly give nil.
+        other_residential_property_value: 100_000
+        other_residential_property_secured_debt: 150_000
+        non_residential_property_value: 10_000
+  output:
+    uc_assessable_capital: 9_000
+
+- name: Housing Benefit values mortgaged second homes and premises less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        # 1,000 + (90% of 50,000 - 30,000) + max(0, 90% of 20,000 - 25,000)
+        # = 1,000 + 15,000 + 0 = 16,000, at the limit (HB Regs 2006 reg. 47).
+        savings: 1_000
+        other_residential_property_value: 50_000
+        other_residential_property_secured_debt: 30_000
+        non_residential_property_value: 20_000
+        non_residential_property_secured_debt: 25_000
+  output:
+    housing_benefit_assessable_capital: 16_000
+    # 40 steps of 250 above 6,000 at 1 a week: 40 * 52.
+    housing_benefit_tariff_income: 2_080
+    housing_benefit_eligible: true
+
+- name: Pension-age Housing Benefit values encumbered land less sale expenses
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # 90% of 200,000 - 50,000 = 130,000 (HB (SPC) Regs 2006 reg. 45). Its
+        # Pension Credit deemed income, 240 steps of 500 above 10,000 at 1 a
+        # week (12,480 a year), exceeds the 12,376 guarantee, so there is no
+        # guarantee credit to disregard the capital.
+        owned_land: 200_000
+        owned_land_secured_debt: 50_000
+  output:
+    pension_credit_assessable_capital: 130_000
+    pension_credit_deemed_income: 12_480
+    guarantee_credit: 0
+    housing_benefit_assessable_capital: 130_000

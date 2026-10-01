@@ -1,17 +1,19 @@
 description: >
   Capital sources whose sale would incur expenses, so that Universal Credit
-  values them at 90% of market value. Real property always has costs of sale
-  (ADM H1606, citing R(IS) 21/93), so `owned_land`,
+  values them at 90% of market value. Costs of sale normally arise where an
+  agent, broker, auctioneer, solicitor or accountant is needed, and real
+  property always has them (ADM H1606), so `owned_land`,
   `other_residential_property_value` and `non_residential_property_value` are
-  listed. `savings` is not listed: the 10% applies only where selling needs
-  an agent, broker, solicitor or accountant (ADM H1604-H1605), the costs of
-  withdrawing money from a building society are not costs of sale (H1607),
-  and an account is valued at its balance (H1675). `corporate_wealth` is
-  listed because quoted shares are valued less 10% for costs of sale (H1665).
-  It also holds unit trusts, which have no costs of sale (H1674), and stocks
-  and shares ISAs, which the guidance values at their withdrawal value
-  (H1656); the dataset does not separate these, so the deduction also
-  reaches them. Sources not counted as Universal Credit capital are ignored.
+  listed. `savings` is not listed: a bank or building society account is
+  valued at its balance, and the costs of withdrawing money are not costs of
+  sale (ADM H1604-H1607 and H1675). `corporate_wealth` is listed because
+  shares are valued less 10% for the costs of selling them (ADM H1665). It is
+  a mixed variable, though: it also holds unit trusts, which have no costs of
+  sale (ADM H1674), stocks and shares ISAs and employee share options, and
+  datasets built before private pension wealth was split out also fold non-
+  defined-benefit pension wealth into it, which is not capital at all. The
+  deduction reaches all of these until the data separate them. Sources not
+  counted as Universal Credit capital are ignored.
 metadata:
   label: Universal Credit capital sources with sale expenses
   period: year
@@ -19,10 +21,16 @@ metadata:
   reference:
     - title: The Universal Credit Regulations 2013 reg. 49(1)(a)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/49
+    - title: The Universal Credit Regulations (Northern Ireland) 2016 reg. 49(1)(a)
+      href: https://www.legislation.gov.uk/nisr/2016/216/regulation/49
     - title: Advice for Decision Making chapter H1, paras. H1604-H1607
       href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=44
-    - title: Advice for Decision Making chapter H1, paras. H1665 and H1673-H1675
+    - title: Advice for Decision Making chapter H1, para. H1656
+      href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=55
+    - title: Advice for Decision Making chapter H1, para. H1665
       href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=57
+    - title: Advice for Decision Making chapter H1, paras. H1673-H1675
+      href: https://assets.publishing.service.gov.uk/media/6a5e0ac7a2662d4563fe39e0/adm-ch-h1.pdf#page=59
 values:
   2013-04-29:
     - owned_land

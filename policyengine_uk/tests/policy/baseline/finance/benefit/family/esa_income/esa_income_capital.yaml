@@ -212,6 +212,6 @@
         corporate_wealth: 2_000
         private_pension_wealth: 150_000
   output:
-    # Savings at face value; land, shares and property less 10% for the
-    # expenses of sale (ESA Regs 2008 reg. 113(a)): 1,000 + 90% of 2,000.
+    # Savings at face value; shares less 10% for the expenses of sale
+    # (ESA Regs 2008 reg. 113(a)): 1,000 + 90% of 2,000.
     esa_income_assessable_capital: 2_800

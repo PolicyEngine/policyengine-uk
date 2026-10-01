@@ -1,8 +1,11 @@
 description: >
-  Share of the current market or surrender value deducted from income-based JSA
-  capital where there would be expenses attributable to sale. The deduction
-  is a flat 10% whatever the actual costs, taken before any incumbrance
-  secured on the asset.
+  Share of the current market or surrender value deducted from income-based
+  JSA capital where there would be expenses attributable to sale. It is a flat
+  10% whatever the actual costs, taken from the gross value before any
+  encumbrance secured on the asset is deducted. Before 1 October 2007 the same
+  deduction sat in reg. 111(a)(i) alongside a separate valuation for National
+  Savings Certificates; SI 2007/2618 substituted the regulation in its current
+  form.
 values:
   1996-10-07: 0.1
 metadata:
@@ -12,3 +15,7 @@ metadata:
   reference:
     - title: Jobseeker's Allowance Regulations 1996 reg. 111(a)
       href: https://www.legislation.gov.uk/uksi/1996/207/regulation/111
+    - title: Jobseeker's Allowance Regulations (Northern Ireland) 1996 reg. 111(a), as substituted by S.R. 2007/396 reg. 7(11)
+      href: https://www.legislation.gov.uk/nisr/2007/396/regulation/7
+    - title: Decision Makers' Guide chapter 29, para. 29624
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=125

@@ -7,7 +7,10 @@ class other_residential_property_secured_debt(Variable):
         "Amount owed on mortgages and other charges secured on residential "
         "property the household owns other than the main residence, such as a "
         "buy-to-let mortgage. Means tests deduct it from that property's value "
-        "(UC Regs 2013 reg. 49(1)(b) and its legacy equivalents)."
+        "after the 10% for sale expenses, flooring the property at nil (UC Regs "
+        "2013 reg. 49(1)(b) and its legacy equivalents). The value and the debt "
+        "are household totals across all such properties, so debt on one "
+        "property offsets equity in another."
     )
     entity = Household
     definition_period = YEAR

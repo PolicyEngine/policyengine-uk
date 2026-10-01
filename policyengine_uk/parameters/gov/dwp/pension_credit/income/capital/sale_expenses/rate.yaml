@@ -1,8 +1,10 @@
 description: >
   Share of the current market or surrender value deducted from Pension Credit
-  capital where there would be expenses attributable to sale. The deduction
-  is a flat 10% whatever the actual costs, taken before any encumbrance
-  secured on the asset.
+  capital where there would be expenses attributable to sale. It is a flat 10%
+  whatever the actual costs, taken from the gross value before any encumbrance
+  secured on the asset is deducted. Before 1 October 2007 the same deduction
+  sat in reg. 19(a)(i) alongside a separate valuation for National Savings
+  Certificates; SI 2007/2618 substituted the regulation in its current form.
 values:
   2003-10-06: 0.1
 metadata:
@@ -12,3 +14,7 @@ metadata:
   reference:
     - title: State Pension Credit Regulations 2002 reg. 19(a)
       href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/19
+    - title: State Pension Credit Regulations (Northern Ireland) 2003 reg. 19(a)
+      href: https://www.legislation.gov.uk/nisr/2003/28/regulation/19
+    - title: Decision Makers' Guide chapter 84, paras. 84712-84716
+      href: https://assets.publishing.service.gov.uk/media/6a5e38bb8b7e4fa537e693d5/dmg-ch84.pdf#page=99
