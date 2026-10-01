@@ -15,15 +15,19 @@ Invariants, for any generated population of households:
 1. Range: the premium is 0, the single rate or the double rate, and the double
    rate goes only to a couple who both qualify.
 2. Oracle: the premium equals an independent statement of the rule in which
-   the carer condition is a brute-force assignment of each carer award to a
-   benefit-unit member other than its recipient (the model does not observe
-   who is cared for, so it takes the assignment that covers the most
-   qualifying members).
+   the carer condition is the person-to-person matching of
+   severe_disability_addition_reference.household_carer_assignments, the
+   reference the Pension Credit severe disability addition is tested against
+   (the model does not observe who is cared for; both rules read the one
+   attribution, is_cared_for_by_carer_benefit_recipient). Carers in other
+   benefit units of the household are attributed too, so a non-dependant
+   whose presence is ignored can still bar the premium as the claimant's
+   carer.
 3. Metamorphic: adding a household member aged 18 or over, in another benefit
    unit, who receives no qualifying benefit and is not blind, removes the
    premium. The oracle also treats a benefit-unit member aged 18 or 19 who is
    not a qualifying young person as a non-dependant (HB Regs regs 3, 19).
-4. Metamorphic: paying anyone in the benefit unit a carer benefit never
+4. Metamorphic: paying anyone in the household a carer benefit never
    increases the premium.
 5. Metamorphic: giving anyone in the household a qualifying benefit, or making
    them blind, never reduces the premium.
@@ -34,11 +38,10 @@ Invariants, for any generated population of households:
    two encodings of the same rule in step; it is not an independent oracle.
 """
 
-from itertools import product
-
 import numpy as np
 from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
+from severe_disability_addition_reference import household_carer_assignments
 
 from policyengine_uk import Simulation
 
@@ -175,9 +178,41 @@ def simulate_before_after(units, changed):
     return premium[: len(units)], premium[len(units) :]
 
 
+def claimants_and_partners_cared_for(unit):
+    """Every allowed set of the family's adults a carer benefit is paid for.
+
+    The household as the shared carer reference reads it: the family's adults
+    are its claimant and partner, and each other person is a benefit unit of
+    their own, its claimant from age 16. People are listed in simulation
+    order.
+    """
+    family = family_members(unit)
+    people, benunits = {}, {}
+    benunits["family"] = {"claimant_or_partner": [], "others": []}
+    for i, p in enumerate(family):
+        role = "claimant_or_partner" if i < len(unit["adults"]) else "others"
+        benunits["family"][role].append(("family", i))
+        people[("family", i)] = p
+    for j, p in enumerate(unit["others"]):
+        role = "claimant_or_partner" if p["age"] >= 16 else "others"
+        benunits[("other", j)] = {"claimant_or_partner": [], "others": []}
+        benunits[("other", j)][role].append(("other", j))
+        people[("other", j)] = p
+    people = {
+        pid: dict(
+            age=p["age"],
+            qualifying_benefit=qualifies(p),
+            receives_carer_benefit=p["carer"],
+        )
+        for pid, p in people.items()
+    }
+    allowed = household_carer_assignments({"people": people, "benunits": benunits})
+    return [{i for _, i in cared_for} for cared_for in allowed["family"]]
+
+
 def oracle(unit):
     """The premium by the statutory rule, written independently of the model."""
-    adults, family = unit["adults"], family_members(unit)
+    adults = unit["adults"]
     # Non-dependants: other benefit units in the household, and anyone in the
     # benefit unit who is not the claimant, partner, a child or a qualifying
     # young person (HB Regs regs 3(2)(a), 19).
@@ -198,17 +233,18 @@ def oracle(unit):
         return 0.0
     elif len(adults) == 1 and not qualifying:
         return 0.0
-    # Assign each carer award to one family member other than its recipient,
-    # and count the most qualifying members that can be covered.
-    carers = [i for i, p in enumerate(family) if p["carer"]]
-    cared_for = 0
-    for assignment in product(range(len(family)), repeat=len(carers)):
-        if any(c == target for c, target in zip(carers, assignment)):
-            continue
-        cared_for = max(cared_for, len(set(assignment) & set(qualifying)))
-    if len(adults) == 2 and len(qualifying) == 2:
-        return (2 - cared_for) * SINGLE
-    return SINGLE if cared_for == 0 else 0.0
+    # Which qualifying members a carer benefit is paid for caring for. Where
+    # the attribution leaves a choice between partners, the premium must not
+    # depend on it.
+    premiums = set()
+    for cared_for in claimants_and_partners_cared_for(unit):
+        cared_for = len(cared_for & set(qualifying))
+        if len(adults) == 2 and len(qualifying) == 2:
+            premiums.add((2 - cared_for) * SINGLE)
+        else:
+            premiums.add(SINGLE if cared_for == 0 else 0.0)
+    assert len(premiums) == 1, (unit, premiums)
+    return premiums.pop()
 
 
 def _adult(benefit, blind=False, carer=False):
@@ -246,6 +282,20 @@ def _adult(benefit, blind=False, carer=False):
             young=[dict(_adult("none"), age=19, in_education=True, entry_age=17)],
             others=[],
         ),
+        # A non-dependant who receives a qualifying benefit is ignored as a
+        # resident (para 14(4)(a)) but, receiving a carer benefit, is the
+        # claimant's carer: no premium.
+        dict(
+            adults=[_adult("pip_standard")],
+            children=[],
+            others=[_adult("pip_standard", carer=True)],
+        ),
+        # The same for a couple who both qualify: the single rate.
+        dict(
+            adults=[_adult("pip_standard"), _adult("aa_lower")],
+            children=[],
+            others=[_adult("none", blind=True, carer=True)],
+        ),
     ]
 )
 def test_premium_matches_statutory_oracle_and_range(units):
@@ -272,13 +322,14 @@ def test_counted_non_dependant_removes_premium(units, age):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(households(), min_size=1, max_size=10), st.integers(0, 2))
+@given(st.lists(households(), min_size=1, max_size=10), st.integers(0, 4))
 def test_carer_benefit_never_increases_premium(units, index):
     def pay_carer(unit):
         family = family_members(unit)
-        i = index % len(family)
-        family = [dict(p, carer=p["carer"] or k == i) for k, p in enumerate(family)]
-        return with_family(unit, family)
+        everyone = family + unit["others"]
+        i = index % len(everyone)
+        paid = [dict(p, carer=p["carer"] or k == i) for k, p in enumerate(everyone)]
+        return dict(with_family(unit, paid[: len(family)]), others=paid[len(family) :])
 
     before, after = simulate_before_after(units, [pay_carer(u) for u in units])
     assert np.all(after <= before + 0.01)

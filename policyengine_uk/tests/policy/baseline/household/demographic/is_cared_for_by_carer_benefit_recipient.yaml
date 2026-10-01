@@ -1,0 +1,283 @@
+# Whom a carer benefit is paid for caring for: the carer condition of the
+# legacy severe disability premium (HB Regs 2006 Sch 3 para 14(2)(a)(iii) and
+# (2)(b)) and of the Pension Credit severe disability addition (SPC Regs 2002
+# Sch I para 1(1)). A carer benefit is paid for caring for a severely disabled
+# person (SSCBA 1992 s.70(2)), one award per carer (s.70(7)) and one carer per
+# severely disabled person (s.70(7ZA)). The data do not say whom a carer cares
+# for, so each award is attributed: within the carer's own benefit unit first
+# (a claimant or partner, then another member), then to a claimant or partner
+# of another benefit unit in the household, eldest unit first.
+
+- name: Attendance Allowance, DLA care at the middle rate, PIP daily living and AFIP make a person severely disabled for Carer's Allowance
+  period: 2026
+  input:
+    people:
+      attendance_allowance:
+        age: 70
+        aa_category: LOWER
+      dla_care_middle:
+        age: 40
+        dla_sc_category: MIDDLE
+      dla_care_lowest:
+        age: 40
+        dla_sc_category: LOWER
+      pip_daily_living:
+        age: 40
+        pip_dl_category: STANDARD
+      pip_mobility_only:
+        age: 40
+        pip_m_category: ENHANCED
+      afip:
+        age: 40
+        armed_forces_independence_payment: 1_000
+      none:
+        age: 40
+  output:
+    is_severely_disabled_for_carers_allowance: [true, true, false, true, false, true, false]
+
+- name: No one is their own carer
+  period: 2026
+  input:
+    age: 40
+    pip_dl_category: STANDARD
+    receives_carer_benefit: true
+  output:
+    is_cared_for_by_carer_benefit_recipient: false
+
+- name: A carer benefit is not paid for caring for someone who is not severely disabled
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 40
+        receives_carer_benefit: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [false, false]
+
+- name: A partner who receives a carer benefit cares for the claimant
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: STANDARD
+      partner:
+        age: 40
+        receives_carer_benefit: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+
+- name: When both partners are severely disabled and one receives a carer benefit, the other is cared for
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+      partner:
+        age: 40
+        pip_dl_category: STANDARD
+    benunits:
+      couple:
+        members: [claimant, partner]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [false, true]
+
+- name: When both partners receive a carer benefit, each cares for the other
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+      partner:
+        age: 40
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, true]
+
+- name: One carer for two severely disabled partners cares for the first in person order
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 45
+        pip_dl_category: STANDARD
+      partner:
+        age: 45
+        pip_dl_category: STANDARD
+      young_carer:
+        age: 17
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner, young_carer]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+
+- name: A parent who receives a carer benefit cares for their disabled child
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        receives_carer_benefit: true
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+    benunits:
+      family:
+        members: [parent, child]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [false, true]
+
+- name: A carer cares for a severely disabled partner before a disabled child
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: STANDARD
+      partner:
+        age: 40
+        receives_carer_benefit: true
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+    benunits:
+      family:
+        members: [claimant, partner, child]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+
+- name: Two carers in a benefit unit care for the severely disabled partner and the disabled child
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 45
+        pip_dl_category: STANDARD
+      partner:
+        age: 45
+        receives_carer_benefit: true
+      young_carer:
+        age: 17
+        receives_carer_benefit: true
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+    benunits:
+      family:
+        members: [claimant, partner, young_carer, child]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, false, false, true]
+
+- name: A carer with no one to care for in their own benefit unit cares for a claimant in another
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+        receives_carer_benefit: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+
+- name: A carer in another benefit unit cares for a claimant or partner, not a disabled child
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+      child:
+        age: 10
+        dla_sc_category: MIDDLE
+      grandparent:
+        age: 70
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [parent, child]
+      grandparent_family:
+        members: [grandparent]
+    households:
+      household:
+        members: [parent, child, grandparent]
+  output:
+    # The attribution places a carer from another benefit unit only with a
+    # claimant or partner, so the grandparent's award is for someone outside
+    # the household.
+    is_cared_for_by_carer_benefit_recipient: [false, false, false]
+
+- name: One carer's award is for one person, in the benefit unit with the eldest member
+  period: 2026
+  input:
+    people:
+      younger:
+        age: 55
+        pip_dl_category: STANDARD
+      older:
+        age: 60
+        pip_dl_category: STANDARD
+      carer:
+        age: 30
+        receives_carer_benefit: true
+    benunits:
+      younger_family:
+        members: [younger]
+      older_family:
+        members: [older]
+      carer_family:
+        members: [carer]
+    households:
+      household:
+        members: [younger, older, carer]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [false, true, false]
+
+- name: A carer in another household is not attributed
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      daughter:
+        age: 25
+        receives_carer_benefit: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      daughter_family:
+        members: [daughter]
+    households:
+      claimant_household:
+        members: [claimant]
+      daughter_household:
+        members: [daughter]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [false, false]

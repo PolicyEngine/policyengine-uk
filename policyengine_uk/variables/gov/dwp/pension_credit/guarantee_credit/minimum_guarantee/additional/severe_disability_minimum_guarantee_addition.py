@@ -23,10 +23,11 @@ class severe_disability_minimum_guarantee_addition(Variable):
         "either partner, to qualify where the other partner is blind. Not "
         "modelled: the hospital-patient deeming (para 1(2)(b)-(bd)) "
         "and backdating (para 1(2)(a), (c)); sight regained within 28 weeks "
-        "(para 1(3)); polygamous marriages; and the unmodelled para 2 and 3 "
-        "exceptions and carer attribution described on "
-        "is_counted_resident_for_severe_disability_addition and "
-        "num_severe_disability_addition_qualifiers_cared_for. Blindness "
+        "(para 1(3)); polygamous marriages; and the para 2 and 3 exceptions "
+        "listed on is_counted_resident_for_severe_disability_addition. Whom "
+        "a carer benefit is paid for caring for is attributed by "
+        "is_cared_for_by_carer_benefit_recipient, which the legacy severe "
+        "disability premium shares. Blindness "
         "(is_blind) is not in the survey data, so in microsimulation the "
         "blind-partner route never applies and a blind resident is counted."
     )
@@ -54,8 +55,13 @@ class severe_disability_minimum_guarantee_addition(Variable):
         other_partner_blind = benunit.any(
             claimant_or_partner & ~qualifies & person("is_blind", period)
         )
-        cared_for = benunit(
-            "num_severe_disability_addition_qualifiers_cared_for", period
+        # How many qualifying claimants and partners someone receives a carer
+        # benefit for caring for (the attribution is shared with the legacy
+        # severe disability premium).
+        cared_for = benunit.sum(
+            claimant_or_partner
+            & qualifies
+            & person("is_cared_for_by_carer_benefit_recipient", period)
         )
         # Para 1(1)(b) with reg 6(5): two rates, less one for each partner a
         # carer benefit is paid for (none if paid for both). Para 1(1)(c): one
