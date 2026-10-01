@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
 
 
 class income_support_eligible(Variable):
@@ -7,16 +8,17 @@ class income_support_eligible(Variable):
     label = "Whether eligible for Income Support"
     documentation = (
         "SSCBA 1992 s.124(1) sets the conditions for the claimant and, for "
-        "some of them, the claimant's partner. A couple choose which of them "
-        "claims (Claims and Payments Regs 1987 reg 4(3)), so the benefit unit "
-        "is eligible when either the claimant or the partner could claim: "
-        "they are under the qualifying age for State Pension Credit, fall "
-        "within a prescribed category (a carer, or a lone parent of a young "
-        "child) and are not entitled to Employment and Support Allowance. "
-        "Neither of them may be entitled to income-related ESA, "
-        "and one of them must already have an award, because new claims are "
-        "closed. Other members of the benefit unit, such as a non-dependent "
-        "adult, do not affect eligibility."
+        "some of them, the claimant's partner. No new claims for Income "
+        "Support can be made, and a partner who takes over an award makes a "
+        "new claim, so the claimant is the one of the claimant and partner "
+        "who has the existing award (income_support_reported). They must be "
+        "under the qualifying age for State Pension Credit, fall within a "
+        "prescribed category (a carer, or a lone parent of a young child) "
+        "and not be entitled to Employment and Support Allowance. Neither "
+        "the claimant nor the partner may be entitled to income-related ESA. "
+        "A member of the benefit unit who is neither the claimant, the "
+        "partner nor a child or young person in the family (such as a "
+        "non-dependent adult) does not affect eligibility."
     )
     definition_period = YEAR
     reference = (
@@ -31,10 +33,17 @@ class income_support_eligible(Variable):
         IS = parameters(period).gov.dwp.income_support
         person = benunit.members
         # SSCBA s.124(1) names the claimant and, in paras (c), (f), (g) and
-        # (h), the other member of a couple. A couple choose which of them
-        # claims (Claims and Payments Regs 1987 reg 4(3)), so either of them
-        # can be the claimant; nobody else in the benefit unit is named.
+        # (h), the other member of a couple; nobody else in the benefit unit.
         claimant_or_partner = person("is_claimant_or_partner", period)
+        # No new claims for Income Support can be made (Universal Credit
+        # (Transitional Provisions) Regs 2014 reg 6A(1)). A couple choose
+        # which of them claims (Claims and Payments Regs 1987 reg 4(3)), but a
+        # partner who takes over an award does so by claiming (reg 4(4)), so
+        # the claimant is whichever of them has the existing award. The model
+        # takes that to be the claimant or partner who reports Income Support.
+        has_award = claimant_or_partner & (
+            person("income_support_reported", period) > 0
+        )
         # s.124(1)(e), reg 4ZA and Sch 1B: the claimant falls within a
         # prescribed category. Para 1 is a lone parent responsible for a child
         # under 5; Schedule 1B para 1 says "under 5", and the model retains
@@ -56,45 +65,33 @@ class income_support_eligible(Variable):
         # only if the partner is entitled to State Pension Credit, which a
         # mixed-age couple cannot be (SPCA 2002 s.4(1A); the SI 2019/37
         # art. 4 savings are not modelled, as in is_pension_credit_eligible).
+        # Reading Pension Credit here would make a dependency cycle through
+        # Working Tax Credit.
         under_qualifying_age = ~person("is_SP_age", period)
         # s.124(1)(h): the claimant is not entitled to an employment and
         # support allowance of either kind ...
         no_contributory_esa = person("esa_contrib", period) <= 0
-        could_claim = (
-            claimant_or_partner
-            & prescribed_category
-            & under_qualifying_age
-            & no_contributory_esa
+        claimant = (
+            has_award & prescribed_category & under_qualifying_age & no_contributory_esa
         )
         # ... and the other member of a couple is not entitled to an
         # income-related allowance. An income-related allowance covers the
-        # couple, so it bars Income Support whichever of them has it. This is
-        # esa_income restricted to the claimant's and partner's reported
-        # awards, with the same capital screen. An award entered directly as
-        # esa_income, with no reported awards, is taken to be theirs.
-        reported_income_related_esa = benunit.sum(
-            person("esa_income_reported", period) * claimant_or_partner
-        )
-        income_related_esa = where(
-            add(benunit, period, ["esa_income_reported"]) > 0,
-            benunit("esa_income_eligible", period)
-            & (
-                reported_income_related_esa
-                > benunit("esa_income_tariff_income", period)
-            ),
-            benunit("esa_income", period) > 0,
-        )
-        # No new claims for Income Support can be made (Universal Credit
-        # (Transitional Provisions) Regs 2014 reg 6A(1)), so the claimant or
-        # partner must already have an award.
-        already_claiming = (
-            benunit.sum(person("income_support_reported", period) * claimant_or_partner)
-            > 0
-        )
+        # couple, so it bars Income Support whichever of them has it: the
+        # award on the claimant's and partner's reported amounts, after the
+        # same capital test as esa_income. When esa_income is entered
+        # directly (a simulation input) rather than calculated, the reported
+        # amounts do not say whose award it is, and it is taken to be the
+        # claimant's or partner's.
+        if "esa_income" in benunit.simulation.input_variables:
+            income_related_esa = benunit("esa_income", period) > 0
+        else:
+            reported = benunit.sum(
+                person("esa_income_reported", period) * claimant_or_partner
+            )
+            income_related_esa = income_related_esa_award(benunit, period, reported) > 0
         capital = benunit("income_support_assessable_capital", period)
         return (
-            benunit.any(could_claim)
+            benunit.any(claimant)
             & ~income_related_esa
-            & already_claiming
             & (capital <= IS.means_test.capital.limit)
         )
