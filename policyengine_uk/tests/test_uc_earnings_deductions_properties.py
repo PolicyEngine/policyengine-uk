@@ -1,8 +1,9 @@
 """Property-based tests for the Universal Credit deductions from earnings.
 
-UC Regs 2013 reg. 55(5) and reg. 57(2) deduct from a person's earnings only
-their own relievable pension contributions and the income tax and National
-Insurance they pay in respect of their employment or trade. The model takes
+UC Regs 2013 reg. 55(5) and reg. 57(2) deduct from a person's earnings their
+own relievable pension contributions, the income tax and National Insurance
+they pay in respect of their employment or trade, and payroll giving (reg.
+55(5)(c), which the model does not have). The model takes
 earnings as the lowest slice of the person's non-savings income, after their
 allowances, with other income above it (ITA 2007 s. 16 for savings and
 dividends).
@@ -25,10 +26,11 @@ earnings, self-employment and every kind of taxable unearned income:
 
 Invariants 1-3 hold only while unearned income leaves the person's
 allowances alone, so the generated incomes keep adjusted net income below
-the personal allowance taper (100,000), no one is old enough for the
-married couple's allowance, and no one claims Marriage Allowance (see
-test_uc_state_pension_properties.py for the Marriage Allowance deviation).
-Invariant 4 runs with Marriage Allowance claimed.
+the personal allowance taper (100,000) and no one claims Marriage Allowance
+(see test_uc_state_pension_properties.py for the Marriage Allowance
+deviation). Tax reductions are covered: adults born before 6 April 1935 can
+have a married couple's allowance, which comes off the tax on earnings
+first. Invariant 4 runs with Marriage Allowance claimed.
 """
 
 import numpy as np
@@ -62,13 +64,19 @@ UNEARNED = [
     "savings_interest_income",
     "dividend_income",
 ]
-# Married couple's allowance needs a birth before 6 April 1935 (85 in 2020).
-PENSION_AGE = st.integers(67, 84)
+# The married couple's allowance needs a birth before 6 April 1935, which
+# every adult aged 93 or over meets in each simulated year.
+MCA_BIRTH_YEAR = 1934
+PENSION_AGE = st.integers(67, 96)
+MCA_AGE = st.integers(93, 96)
 WORKING_AGE = st.integers(18, 60)
 SHAPES = {
     "single": [WORKING_AGE],
     "couple": [WORKING_AGE, WORKING_AGE],
     "mixed_age": [PENSION_AGE, WORKING_AGE],
+    # An older partner who works and has a married couple's allowance, so a
+    # tax reduction applies to someone with earnings.
+    "mixed_age_with_tax_reduction": [MCA_AGE, WORKING_AGE],
 }
 # Per adult: earnings up to 50,000 and unearned income up to 5 x 7,000,
 # plus a bump up to 9,000, keeps adjusted net income under 100,000.
@@ -95,9 +103,12 @@ def families(draw):
     shape = draw(st.sampled_from(list(SHAPES)))
     adults = []
     for age in [draw(age) for age in SHAPES[shape]]:
+        has_tax_reduction = shape == "mixed_age_with_tax_reduction" and age >= 93
         adult = dict(
             age=age,
-            employment_income=draw(earnings),
+            employment_income=(
+                draw(st.floats(15_000, 30_000)) if has_tax_reduction else draw(earnings)
+            ),
             self_employment_income=draw(self_employment),
             # Some self-employed are in a start-up period, so the minimum
             # income floor does not apply.
@@ -107,6 +118,12 @@ def families(draw):
             if variable == "state_pension" and age < 67:
                 continue
             adult[variable] = draw(unearned)
+        # Used only where the adult is old enough in the simulated year.
+        adult["married_couples_allowance"] = (
+            draw(st.floats(3_000, 12_000))
+            if has_tax_reduction
+            else draw(st.one_of(st.just(0.0), st.floats(0, 12_000)))
+        )
         adults.append(adult)
     return dict(
         adults=adults,
@@ -131,6 +148,10 @@ def situation(units, year, bump=None, earnings_only=False, marriage_allowance=Fa
             person = {"state_pension": {year: 0.0}}
             for variable, value in adult.items():
                 if earnings_only and variable in UNEARNED:
+                    continue
+                if variable == "married_couples_allowance" and (
+                    year - adult["age"] > MCA_BIRTH_YEAR
+                ):
                     continue
                 person[variable] = {year: value}
             if bump is not None and bump[:2] == (i, j) and not earnings_only:
