@@ -1240,12 +1240,13 @@ finance_ni:
       2024-01-01: 0.0491 # regional +4.0%, district +5.91%
       2025-01-01: 0.0474 # regional +5.0%, district +4.46%
       2026-01-01: 0.0433 # regional +5.0%, district +3.58%
-      # Projection: 2026-27 growth held. The Finance Minister's 2026-29
-      # draft Budget assumes the domestic regional rate rises 5% a year (not
-      # agreed by the Executive; nothing published beyond 2028-29). No
-      # district rate forecast exists, so district growth is held at its
-      # 2026-27 rate. Regional 5% plus district 3.58% gives 4.34% to 4.36% a
-      # year as the regional share drifts up, within 0.03pp of the value held.
+      # Projection: 2026-27 growth held. The Finance Minister's 2026-29/30
+      # draft Budget proposals (6 January 2026, published before Executive
+      # agreement; no final Budget found by October 2026) assume the domestic
+      # regional rate rises 5% a year to 2028-29. No district rate forecast
+      # exists, so district growth is held at its 2026-27 rate. Regional 5%
+      # plus district 3.58% gives 4.34% to 4.36% a year as the regional share
+      # drifts up, within 0.03pp of the value held.
       2027-01-01: 0.0433
       2028-01-01: 0.0433
       2029-01-01: 0.0433
