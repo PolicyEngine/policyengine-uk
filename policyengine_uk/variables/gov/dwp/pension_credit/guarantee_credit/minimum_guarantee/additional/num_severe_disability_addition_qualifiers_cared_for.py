@@ -22,8 +22,8 @@ class num_severe_disability_addition_qualifiers_cared_for(Variable):
         "carer in the household, including one left over in their own unit, "
         "is allocated to a qualifying claimant or partner not yet cared for in "
         "another benefit unit, one each, taking the units in descending order "
-        "of their eldest member's age (ties in the order the units' eldest "
-        "members are listed in the household). Carers outside the household, "
+        "of their eldest member's age (ties in person order, the order people "
+        "are listed in the input or dataset). Carers outside the household, "
         "and Universal Credit awards that include the carer element, are not "
         "counted. Reading Universal Credit here would be circular, because the "
         "Universal Credit non-dependant deduction exemption reads Pension "
@@ -75,7 +75,7 @@ class num_severe_disability_addition_qualifiers_cared_for(Variable):
             0,
         )
         outside_in_household = benunit.max(person.household.sum(outside_members))
-        # Order the household's units by their eldest member (ties by position)
+        # Order the household's units by their eldest member (ties by person order)
         # and give each unit, in turn, carers from the other units.
         age = person("age", period)
         representative = person.get_rank(person.benunit, -age) == 0

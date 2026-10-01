@@ -186,24 +186,22 @@ def _best_within_unit(people, unit):
     qualifying benefit, never themselves; each such person has at most one
     carer. Among all such matchings, take one that cares for the most
     qualifying claimants/partners, and then the most people. Enumerated by
-    brute force (units are small). Returns (claimant/partners who must be cared
-    for in every best matching, the number cared for, carers left unmatched).
+    brute force (units are small). Returns (the number of qualifying
+    claimant/partners cared for, the number of carers left unmatched).
     """
     cp = list(unit["claimant_or_partner"])
     members = _members(unit)
     carers = [p for p in members if people[p]["receives_carer_benefit"]]
     targets = [p for p in members if qualifies(people[p])]
-    best_key, best = None, []
+    best_key = None
 
     def search(i, used, pairs):
-        nonlocal best_key, best
+        nonlocal best_key
         if i == len(carers):
             covered = {t for _, t in pairs}
             key = (len(covered & set(cp)), len(covered))
             if best_key is None or key > best_key:
-                best_key, best = key, [covered]
-            elif key == best_key:
-                best.append(covered)
+                best_key = key
             return
         carer = carers[i]
         search(i + 1, used, pairs)  # this carer cares for no one in the unit
@@ -254,9 +252,9 @@ def household_carer_assignments(household: Mapping[str, Any]) -> dict:
         as many as possible (``_best_within_unit``).
       * Every carer left over cares for a qualifying claimant/partner of
         another unit who is not yet cared for. The units, eldest member first
-        (ties by the listing order of their eldest member), each take the most
-        such carers that can still be placed without taking any from an
-        earlier unit (``_feasible``).
+        (ties in person order, the order people are listed in the input),
+        each take the most such carers that can still be placed without
+        taking any from an earlier unit (``_feasible``).
 
     Rule 3 does not say which partner a carer takes when both qualify and
     neither is yet cared for. This returns every allowed set, and

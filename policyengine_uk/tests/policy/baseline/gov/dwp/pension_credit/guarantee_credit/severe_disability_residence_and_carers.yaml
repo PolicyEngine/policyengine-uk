@@ -810,7 +810,7 @@
 - name: A second carer in a pensioner's unit is attributed to a pensioner in another unit
   # Each person has only one carer (SSCBA 1992 s.70(7ZA)), so the second of
   # two young carers in the first pensioner's unit cares for the second
-  # pensioner. The result is the same whichever unit the carers are in.
+  # pensioner, as when the carers are in units of their own (next case).
   period: 2026
   absolute_error_margin: 0
   input:
@@ -842,7 +842,7 @@
     num_severe_disability_addition_qualifiers_cared_for: [1, 1]
     severe_disability_minimum_guarantee_addition: [0, 0]
 
-- name: When two benefit units' eldest members are the same age, the one listed first takes a carer
+- name: When two benefit units' eldest members are the same age, the one whose eldest member comes first in person order takes a carer
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -871,3 +871,75 @@
   output:
     num_severe_disability_addition_qualifiers_cared_for: [1, 0, 0]
     severe_disability_minimum_guarantee_addition: [0, 4_474.60, 0]
+
+- name: A carer who is the only qualifying member of their own unit cares for someone in another unit
+  # No one is their own carer. The 17-year-old receives the DLA care
+  # component at the middle rate and Carer's Allowance; her blind father
+  # (ignored as a resident) receives no qualifying benefit, so she has no one
+  # to care for in her own unit and is attributed to the grandmother.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      grandmother:
+        age: 80
+        aa_category: HIGHER
+      father:
+        age: 45
+        is_parent: true
+        is_blind: true
+      daughter:
+        age: 17
+        dla_sc_category: MIDDLE
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      grandmother_unit:
+        members: [grandmother]
+      father_unit:
+        members: [father, daughter]
+    households:
+      household:
+        members: [grandmother, father, daughter]
+        country: ENGLAND
+  output:
+    num_severe_disability_addition_qualifiers_cared_for: [1, 0]
+    severe_disability_minimum_guarantee_addition: [0, 0]
+
+- name: The two young carers cover both pensioners when each is in their own unit too
+  # The same people as the case with both carers in the first pensioner's
+  # unit, with the carers now in benefit units of their own.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 80
+        aa_category: HIGHER
+      carer_1:
+        age: 17
+        care_hours: 35
+        carers_allowance_reported: 1
+      carer_2:
+        age: 16
+        care_hours: 35
+        carers_allowance_reported: 1
+      second:
+        age: 78
+        aa_category: HIGHER
+    benunits:
+      first_unit:
+        members: [first]
+      carer_unit_1:
+        members: [carer_1]
+      carer_unit_2:
+        members: [carer_2]
+      second_unit:
+        members: [second]
+    households:
+      household:
+        members: [first, carer_1, carer_2, second]
+        country: ENGLAND
+  output:
+    num_severe_disability_addition_qualifiers_cared_for: [1, 0, 0, 1]
+    severe_disability_minimum_guarantee_addition: [0, 0, 0, 0]
