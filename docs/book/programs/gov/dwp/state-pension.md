@@ -87,13 +87,13 @@ Other programmes test State Pension age in two ways:
   and earlier: a man born on 6 April 1952 reached it on 6 May 2014, nearly
   three years before his State Pension age of 65.
 - **Class 4 National Insurance** stops from the first tax year that begins on
-  or after the day State Pension age is reached: a person over it at the beginning of the tax year (6 April) is
-  excepted (Social Security (Contributions) Regulations 2001 reg 91(a)), so
-  `ni_class_4_liable` needs `months_since_state_pension_age` below 6. Someone
-  who reaches it on 6 April itself is read as over it at the beginning of
-  that year.
-  Class 1 employee contributions stop at State Pension age itself (SSCBA
-  1992 s.6(3)), which the annual model reads as `is_SP_age`.
+  or after the day State Pension age is reached: a person over it at the
+  beginning of the tax year (6 April) is excepted (Social Security
+  (Contributions) Regulations 2001 reg 91(a)), so `ni_class_4_liable` needs
+  `months_since_state_pension_age` below 6. Someone who reaches it on 6 April
+  itself is read as over it at the beginning of that year. Class 1 employee
+  contributions stop at State Pension age itself (SSCBA 1992 s.6(3)), which
+  the annual model reads as `is_SP_age`.
 
 A person attains an age at the start of the anniversary of their birth
 (Family Law Reform Act 1969 s.9(1)), and an age of "N years and M months" on
