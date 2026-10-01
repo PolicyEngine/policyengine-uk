@@ -17,6 +17,11 @@ class capital_gains_behavioural_response(Variable):
     def formula(person, period, parameters):
         response_parameters = parameters(period).gov.simulation.capital_gains_responses
         retention_elasticity = response_parameters.elasticity
+        badr_elasticity = (
+            response_parameters.badr_elasticity
+            if response_parameters.separate_badr_elasticity
+            else retention_elasticity
+        )
         mtr_elasticity = response_parameters.mtr_elasticity
 
         if retention_elasticity != 0 and mtr_elasticity != 0:
@@ -25,12 +30,19 @@ class capital_gains_behavioural_response(Variable):
                 "gov.simulation.capital_gains_responses.mtr_elasticity "
                 "cannot both be nonzero for the same period."
             )
+        if badr_elasticity != 0 and mtr_elasticity != 0:
+            raise ValueError(
+                "gov.simulation.capital_gains_responses.badr_elasticity, in "
+                "effect while separate_badr_elasticity is true, and "
+                "gov.simulation.capital_gains_responses.mtr_elasticity "
+                "cannot both be nonzero for the same period."
+            )
 
         simulation = person.simulation
         if simulation.baseline is None:
             return 0
 
-        if retention_elasticity == 0 and mtr_elasticity == 0:
+        if retention_elasticity == 0 and badr_elasticity == 0 and mtr_elasticity == 0:
             return 0
 
         capital_gains = person("capital_gains_before_response", period)

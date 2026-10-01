@@ -241,3 +241,106 @@ def test_two_gainers_in_one_household_respond_symmetrically():
 
     assert responses[0] < 0
     assert responses[0] == pytest.approx(responses[1])
+
+
+# Business Asset Disposal Relief elasticity (issue #1979). Three people on
+# £200k of earnings with £500k of gains each in 2026: a claimant whose gains
+# all qualify for the relief, an investor with none, and a mixed case with
+# half. The reform charges every schedule at income tax rates and withdraws
+# the relief, so the claimant's marginal rate goes from 18% to 45%, the
+# investor's from 24% and the mixed case's from the share-weighted 21%.
+
+BADR_GAINS = {"claimant": 500_000, "investor": 0, "mixed": 250_000}
+
+EQUALISATION = {
+    f"gov.hmrc.cgt.{schedule}{band}": {str(YEAR): rate}
+    for schedule in ("", "residential_property.", "carried_interest.")
+    for band, rate in (
+        ("basic_rate", 0.20),
+        ("higher_rate", 0.40),
+        ("additional_rate", 0.45),
+    )
+}
+EQUALISATION["gov.hmrc.cgt.badr.lifetime_limit"] = {str(YEAR): 0}
+
+
+def simulate_badr(**responses) -> Microsimulation:
+    people = {}
+    for name, badr_gains in BADR_GAINS.items():
+        person = {
+            "age": {YEAR: 50},
+            "employment_income": {YEAR: 200_000},
+            "capital_gains": {YEAR: 500_000},
+        }
+        if badr_gains:
+            person["capital_gains_badr"] = {YEAR: badr_gains}
+        people[name] = person
+    situation = {
+        "people": people,
+        "benunits": {f"{name}_benunit": {"members": [name]} for name in people},
+        "households": {f"{name}_household": {"members": [name]} for name in people},
+    }
+    changes = dict(EQUALISATION)
+    for name, value in responses.items():
+        changes[f"gov.simulation.capital_gains_responses.{name}"] = {str(YEAR): value}
+    return Microsimulation(
+        situation=situation, scenario=Scenario(parameter_changes=changes)
+    )
+
+
+def realisation_factors(sim) -> list:
+    """Realised over pre-response gains, for each person."""
+    gains = sim.calculate("capital_gains_before_response", YEAR).values
+    response = sim.calculate("capital_gains_behavioural_response", YEAR).values
+    return list(1 + response / gains)
+
+
+def factor(elasticity: float, baseline_rate: float) -> float:
+    """exp(e x log change in the retention rate) for a move to 45%."""
+    return math.exp(elasticity * math.log(0.55 / (1 - baseline_rate)))
+
+
+def test_badr_claimants_take_the_main_elasticity_by_default():
+    """With the switch off, existing results don't move: everyone responds
+    at the main elasticity."""
+    sim = simulate_badr(elasticity=3.6)
+
+    assert realisation_factors(sim) == pytest.approx(
+        [factor(3.6, 0.18), factor(3.6, 0.24), factor(3.6, 0.21)], abs=1e-4
+    )
+
+
+def test_badr_elasticity_applies_to_anyone_with_qualifying_gains():
+    """The OBR's assumptions: 1.4 for BADR gains and 3.6 for main-rate gains.
+
+    The elasticity is a person's, applied to all of their gains, so the mixed
+    case responds at 1.4 to its share-weighted rate. The relief is withdrawn
+    in the reform, so this also checks that claimants keep the BADR elasticity
+    when no gains are charged at the BADR rate any more.
+    """
+    sim = simulate_badr(elasticity=3.6, separate_badr_elasticity=True)
+
+    assert list(sim.calculate("capital_gains_elasticity", YEAR).values) == (
+        pytest.approx([1.4, 3.6, 1.4])
+    )
+    assert realisation_factors(sim) == pytest.approx(
+        [factor(1.4, 0.18), factor(3.6, 0.24), factor(1.4, 0.21)], abs=1e-4
+    )
+
+
+def test_badr_elasticity_alone_moves_only_claimants():
+    """A BADR elasticity with the main elasticity left at zero still responds."""
+    sim = simulate_badr(separate_badr_elasticity=True)
+
+    assert realisation_factors(sim) == pytest.approx(
+        [factor(1.4, 0.18), 1.0, factor(1.4, 0.21)], abs=1e-4
+    )
+
+
+def test_badr_and_mtr_elasticities_raise():
+    """The BADR elasticity is a retention-rate elasticity, so it cannot be
+    combined with the MTR convention."""
+    sim = simulate_badr(separate_badr_elasticity=True, mtr_elasticity=-0.5)
+
+    with pytest.raises(ValueError, match=r"badr_elasticity"):
+        sim.calculate("capital_gains_behavioural_response", YEAR)

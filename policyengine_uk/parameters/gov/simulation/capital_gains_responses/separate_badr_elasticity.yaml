@@ -1,0 +1,6 @@
+description: Whether people with gains qualifying for Business Asset Disposal Relief or Investors' Relief respond with the BADR elasticity rather than the main elasticity. While false, everyone responds with the main elasticity.
+values:
+  2000-01-01: false
+metadata:
+  unit: bool
+  label: Separate capital gains elasticity for Business Asset Disposal Relief claimants
