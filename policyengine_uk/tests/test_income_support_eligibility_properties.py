@@ -21,7 +21,9 @@ Nobody else in a benefit unit is named, so:
   has income-related ESA or income-based JSA (s.124(1)(h), (f)), meaning the
   award on their reported amounts after that benefit's capital test, or an
   esa_income or jsa_income entered directly; and capital is within the
-  Income Support limit.
+  Income Support limit;
+- raising any claimant's or partner's hours or JSA never makes a family
+  eligible, because (c) and (f) only ever bar a claim.
 
 The second property is a reference check of the bounded model gate, not of
 legal entitlement: caring, work hours, ESA, JSA and Income Support are the
@@ -330,3 +332,43 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
         )
         assert eligible[i] == expected, units[i]
         start += len(adults) + len(dependants) + 1
+
+
+@st.composite
+def more_work_or_jsa(draw, adults):
+    """The same adults with more paid work or JSA (s.124(1)(c), (f))."""
+    more = [dict(adult) for adult in adults]
+    for adult in more:
+        adult["hours_worked"] += draw(st.sampled_from([0, 260, 832, 1_248]))
+        adult["jsa_contrib_reported"] += draw(st.sampled_from([0, 0, 3_000]))
+        adult["jsa_income_reported"] += draw(st.sampled_from([0, 0, 3_000]))
+    return more
+
+
+@SETTINGS
+@given(st.lists(families(), min_size=1, max_size=8), st.data())
+def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
+    """(c) and (f) only ever bar a claim: raising any claimant's or partner's
+    hours or JSA cannot turn an ineligible family eligible."""
+    capital_as_savings, esa_income, jsa_income = data.draw(input_settings(len(drawn)))
+    jsa_income = None if jsa_income is None else jsa_income * 2
+    more = [
+        (data.draw(more_work_or_jsa(adults)), dependants, capital)
+        for adults, dependants, capital in drawn
+    ]
+    units = [(*family, None) for family in drawn + more]
+    sim = Simulation(
+        situation=situation(
+            units,
+            capital_as_savings,
+            None if esa_income is None else esa_income * 2,
+            jsa_income,
+        )
+    )
+    eligible = sim.calculate("income_support_eligible", YEAR)
+    if eligible[: len(drawn)].any():
+        event("some family eligible before")
+    if (eligible[: len(drawn)] & ~eligible[len(drawn) :]).any():
+        event("more work or JSA removed eligibility")
+    for i in range(len(drawn)):
+        assert not (eligible[len(drawn) + i] and not eligible[i]), (drawn[i], more[i])
