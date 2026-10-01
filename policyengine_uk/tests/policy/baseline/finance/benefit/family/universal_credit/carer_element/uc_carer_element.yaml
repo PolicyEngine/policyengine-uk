@@ -1,15 +1,311 @@
-- name: No carers, no element
-  period: 2022
+# Universal Credit Regulations 2013 reg. 29(1): "An award of universal credit
+# is to include an amount ("the carer element") specified in the table in
+# regulation 36 where a claimant has regular and substantial caring
+# responsibilities for a severely disabled person". Reg. 30(1)(a) and (2): a
+# person has those responsibilities if they satisfy the conditions for
+# entitlement to a carer's allowance, "whether or not the person has made a
+# claim for a carer's allowance" (35 hours a week: SSCBA 1992 s. 70).
+# Reg. 36 table, carer element: £201.68 a month in 2025-26 (£2,420.16 a year)
+# and £209.34 in 2026-27 (£2,512.08).
+
+- name: No carer, no carer element
+  period: 2026
   absolute_error_margin: 0
   input:
-    benunit_has_carer: false
+    age: 40
+    care_hours: 0
   output:
     uc_carer_element: 0
 
-- name: Carer gets element
+- name: A single claimant caring 35 hours a week has the carer element, 2025-26
   period: 2025
-  absolute_error_margin: 100
+  absolute_error_margin: 0.01
   input:
-    benunit_has_carer: true
+    age: 40
+    care_hours: 35
   output:
-    uc_carer_element: 2417
+    is_uc_assessed_claimant: true
+    uc_carer_element: 2_420.16 # 201.68 * 12
+
+- name: A single claimant caring 35 hours a week has the carer element, 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+  output:
+    uc_carer_element: 2_512.08 # 209.34 * 12
+
+- name: A claimant caring 34 hours a week has no carer element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    care_hours: 34
+  output:
+    uc_carer_element: 0
+
+- name: The carer element does not need a Carer's Allowance claim (reg. 30(2))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    would_claim_carers_allowance: false
+  output:
+    carers_allowance: 0
+    uc_carer_element: 2_512.08
+
+- name: A qualifying young person who is a carer gives the claimant no carer element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_uc_assessed_claimant: [true, false]
+    is_carer_for_benefits: [false, true]
+    uc_carer_element: 0
+
+- name: A qualifying young person receiving Carer's Allowance gives the claimant no carer element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        carers_allowance_reported: 4_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_uc_assessed_claimant: [true, false]
+    is_carer_for_benefits: [false, true]
+    uc_carer_element: 0
+
+- name: The claimant's own caring still counts when a qualifying young person also cares
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        care_hours: 35
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    uc_carer_element: 2_512.08
+
+- name: Joint claimants, one of them a carer, have one carer element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [carer, partner]
+  output:
+    is_uc_assessed_claimant: [true, true]
+    uc_carer_element: 2_512.08
+
+- name: A third member flagged as a claimant is not a claimant, and their caring gives no carer element
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 50
+        is_uc_claimant: true
+      partner:
+        age: 48
+        is_uc_claimant: true
+      adult_child:
+        age: 22
+        is_uc_claimant: true
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [claimant, partner, adult_child]
+  output:
+    is_uc_assessed_claimant: [true, true, false]
+    uc_carer_element: 0
+
+# Reg. 29(2): "In the case of joint claimants, an award is to include the
+# carer element for both joint claimants if they both qualify for it, but only
+# if they are not caring for the same severely disabled person." The model
+# does not record who is cared for and takes two carers to care for different
+# people.
+
+- name: Joint claimants who are both carers have two carer elements
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element: 5_024.16 # 209.34 * 12 * 2
+
+# Reg. 29(4): "Where an amount would, apart from this paragraph, be included
+# in an award in relation to a claimant by virtue of paragraphs (1) to (3),
+# and the claimant has limited capability for work and work-related activity
+# (and, in the case of joint claimants, the LCWRA element has not been
+# included in respect of the other claimant), only the LCWRA element may be
+# included in respect of the claimant." Reg. 27(4)(a): joint claimants who
+# both have limited capability have one LCWRA element.
+
+- name: A single claimant who is a carer with LCWRA has the LCWRA element only
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    uc_limited_capability_for_WRA: true
+  output:
+    uc_carer_element: 0
+    uc_LCWRA_element: 2_607.12
+
+- name: A carer with LCWRA whose partner has neither has the LCWRA element only
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element: 0
+    uc_LCWRA_element: 2_607.12
+
+- name: A carer whose partner has LCWRA - the award has both elements
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element: 2_512.08
+    uc_LCWRA_element: 2_607.12
+
+- name: A carer with LCWRA whose partner has LCWRA keeps the carer element, the LCWRA element being the partner's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element: 2_512.08
+    uc_LCWRA_element: 2_607.12
+
+- name: A carer with LCWRA whose partner is a carer - LCWRA element for one, carer element for the other
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element: 2_512.08
+    uc_LCWRA_element: 2_607.12
+
+- name: Joint claimants who are both carers with LCWRA have one LCWRA element and one carer element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element: 2_512.08
+    uc_LCWRA_element: 2_607.12
+
+- name: A qualifying young person's limited capability does not displace the claimant's carer element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        care_hours: 35
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    uc_carer_element: 2_512.08
+    uc_LCWRA_element: 0

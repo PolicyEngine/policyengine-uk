@@ -15,8 +15,10 @@ class is_benefit_cap_exempt_health_disability(Variable):
         has_pensioner = benunit.any(over_pension_age)
 
         # UC-specific exemptions
-        # Limited capability for work and work-related activity
-        has_lcwra = benunit.any(person("uc_limited_capability_for_WRA", period))
+        # Limited capability for work and work-related activity: "the LCWRA
+        # element is included in the award" (UC Regs 2013 reg. 83(1)(a)),
+        # which it is only for a claimant (reg. 27(1)).
+        has_lcwra = benunit("uc_LCWRA_element", period) > 0
 
         # Carer element in UC indicates caring for someone with disability
         gets_uc_carer_element = benunit("uc_carer_element", period) > 0
@@ -32,15 +34,34 @@ class is_benefit_cap_exempt_health_disability(Variable):
         earnings_threshold = 10_152
         meets_earnings_test = uc_earned >= earnings_threshold
 
-        # Disability and carer benefits that exempt from cap
-        QUAL_PERSONAL_BENEFITS = [
+        # Disability and carer benefits that exempt from cap. Whose receipt
+        # exempts the award depends on the benefit (UC Regs 2013 reg. 83(1));
+        # HB Regs 2006 reg. 75F(1) draws the same lines between the claimant
+        # or partner and a child or young person.
+        claimant = person("is_uc_assessed_claimant", period)
+        child_or_young_person = person(
+            "is_child_or_qualifying_young_person_for_universal_credit", period
+        )
+        young_person = child_or_young_person & person(
+            "is_qualifying_young_person_for_universal_credit", period
+        )
+        # "a claimant is receiving" (reg. 83(1)(b), (c))
+        QUAL_CLAIMANT_BENEFITS = [
             "attendance_allowance",
+            "iidb",  # Industrial injuries disability benefit
+        ]
+        # "a claimant, or a qualifying young person for whom a claimant is
+        # responsible" (reg. 83(1)(g), (i), (ia))
+        QUAL_CLAIMANT_OR_YOUNG_PERSON_BENEFITS = [
             "carers_allowance",
             "carer_support_payment",
-            "dla",  # Disability Living Allowance (includes components)
             "pip_dl",  # PIP daily living component
             "pip_m",  # PIP mobility component
-            "iidb",  # Industrial injuries disability benefit
+        ]
+        # "a claimant, or a child or qualifying young person for whom a
+        # claimant is responsible" (reg. 83(1)(f))
+        QUAL_CLAIMANT_OR_CHILD_BENEFITS = [
+            "dla",  # Disability Living Allowance (includes components)
         ]
 
         # ESA and Working Tax Credit
@@ -49,14 +70,32 @@ class is_benefit_cap_exempt_health_disability(Variable):
             "working_tax_credit",  # If getting WTC, likely working enough
         ]
 
-        qualifying_personal_benefits = add(benunit, period, QUAL_PERSONAL_BENEFITS)
+        qualifying_personal_benefits = (
+            add_for_members(benunit, period, QUAL_CLAIMANT_BENEFITS, claimant)
+            + add_for_members(
+                benunit,
+                period,
+                QUAL_CLAIMANT_OR_YOUNG_PERSON_BENEFITS,
+                claimant | young_person,
+            )
+            + add_for_members(
+                benunit,
+                period,
+                QUAL_CLAIMANT_OR_CHILD_BENEFITS,
+                claimant | child_or_young_person,
+            )
+        )
         qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
 
-        # Check for Armed Forces Compensation Scheme payments
-        afcs = benunit("afcs", period) > 0
+        # Check for Armed Forces Compensation Scheme payments: "a claimant is
+        # receiving" (reg. 83(1)(e))
+        afcs = add_for_members(benunit, period, ["afcs"], claimant) > 0
 
-        # ESA contribution-based with support component
-        esa_support_component = benunit("esa_contrib", period) > 0
+        # ESA contribution-based with support component: "the claimant is
+        # receiving" (reg. 83(1)(a))
+        esa_support_component = (
+            add_for_members(benunit, period, ["esa_contrib"], claimant) > 0
+        )
 
         return (
             has_lcwra

@@ -51,10 +51,17 @@ class is_benefit_cap_exempt_other(Variable):
         qualifying_personal_benefits = add(benunit, period, QUAL_PERSONAL_BENEFITS)
         qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
 
+        # These exempt the award where "a claimant is receiving" them (UC Regs
+        # 2013 reg. 83(1)(a), (e); HB Regs 2006 reg. 75F(1)(a), (d): "the
+        # claimant or the claimant's partner"), not where a dependant is.
+        claimants = benunit.members("is_uc_assessed_claimant", period)
+
         # Check for Armed Forces Compensation Scheme payments
-        afcs = benunit("afcs", period) > 0
+        afcs = add_for_members(benunit, period, ["afcs"], claimants) > 0
 
         # ESA contribution-based with support component
-        esa_support_component = benunit("esa_contrib", period) > 0
+        esa_support_component = (
+            add_for_members(benunit, period, ["esa_contrib"], claimants) > 0
+        )
 
         return has_pensioner | afcs | esa_support_component

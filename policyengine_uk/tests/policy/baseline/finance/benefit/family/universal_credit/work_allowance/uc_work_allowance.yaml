@@ -6,3 +6,26 @@
     uc_limited_capability_for_WRA: true
   output:
     uc_work_allowance: 4_924
+
+# Reg. 22(2) table, 2026-27: higher work allowance £710.00 a month (no housing
+# costs element), lower work allowance £427.00 (with one).
+
+- name: Higher work allowance for a claimant with limited capability and no housing costs element, 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    uc_housing_costs_element: 0
+    uc_limited_capability_for_WRA: true
+  output:
+    uc_work_allowance: 8_520 # 710 * 12
+
+- name: Lower work allowance for a claimant with limited capability and a housing costs element, 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    uc_housing_costs_element: 1
+    uc_limited_capability_for_WRA: true
+  output:
+    uc_work_allowance: 5_124 # 427 * 12
