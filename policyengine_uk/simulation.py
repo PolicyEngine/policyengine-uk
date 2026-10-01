@@ -102,6 +102,11 @@ class Simulation(CoreSimulation):
     calculated_periods: List[str] = []
     _variable_dependencies: Dict[str, List[str]] = None
     dataset = None
+    # True when built from survey or other microdata rather than a situation
+    # dictionary. Variables that impute unobserved detail across a population
+    # (such as months_since_last_birthday) read it; unlike the sum of weights,
+    # it stays true for a region or constituency filtered from the data.
+    built_from_dataset: bool = False
 
     def __init__(
         self,
@@ -171,6 +176,7 @@ class Simulation(CoreSimulation):
             self.build_from_dataset_source(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
+        self.built_from_dataset = situation is None
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.

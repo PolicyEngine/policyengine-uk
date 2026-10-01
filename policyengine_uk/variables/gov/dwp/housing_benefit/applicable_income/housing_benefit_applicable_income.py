@@ -9,7 +9,9 @@ class housing_benefit_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        any_over_qualifying_age = benunit.any(
+            benunit.members("has_attained_state_pension_credit_qualifying_age", period)
+        )
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",
@@ -63,5 +65,7 @@ class housing_benefit_applicable_income(Variable):
             - disregard
             - childcare_element,
         )
-        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
+        guarantee_credit = any_over_qualifying_age & (
+            benunit("guarantee_credit", period) > 0
+        )
         return where(guarantee_credit, 0, applicable_income)

@@ -30,7 +30,78 @@ Three variables under `gov/dwp/`:
 
 The flag-up split (`state_pension_type`) is settled by [PR #1618](https://github.com/PolicyEngine/policyengine-uk/pull/1618):
 classification is based on whether the person reaches State Pension age
-before or on/after 6 April 2016.
+before or on/after 6 April 2016. No component is paid before State
+Pension age.
+
+## State Pension age
+
+State Pension age depends on date of birth. Pensions Act 1995 Schedule 4
+paragraph 1 sets it for each birth period, either as an age or as the day
+on which it is attained, and the Pensions Act 2014 s.26 raises it from 66
+to 67 for people born on or after 6 April 1960: 66 years and 1 to 11
+months for births from 6 April 1960 to 5 March 1961, and 67 from 6 March
+1961. The parameters under `gov/dwp/state_pension/age/` encode that
+timetable row by row:
+
+- `age_by_birth_date` — the age, in months, by date of birth (women, and
+  men born on or after 6 December 1953);
+- `day_by_birth_date` — the day, where the statute sets a day instead;
+- `male/age` and `male/born_before` — rule (1): men born before 6
+  December 1953 attain it at 65.
+
+A person attains State Pension age on the later of the two. The model
+places each person's date of birth with `age` and
+`months_since_last_birthday`, which counts months since their last
+birthday on 6 October, the middle of the fiscal year:
+
+- `state_pension_age` is the person's own State Pension age;
+- `months_since_state_pension_age` is how long before 6 October they
+  attained it (negative if later);
+- `is_SP_age` is whether they have attained it by 6 October, so are over
+  it for most of the year.
+
+Simulations of a household situation take a whole age to be the middle of
+the year of age (six months since the birthday); a fractional age is read as
+the exact age on 6 October. Survey microdata records whole years only, so in
+simulations built from data, including a region or constituency filtered
+from it, each single year of age and sex is spread evenly over the year by
+weight, and `filter_dataset` carries each person's place into a household it
+extracts. The weighted share of each age over State Pension age then matches
+the statute: three quarters of 66-year-olds in 2026-27, a quarter in 2027-28
+and none from 2028-29.
+
+Other programmes test State Pension age in two ways:
+
+- **The qualifying age for State Pension Credit** (State Pension Credit Act
+  2002 s.1(6)) is a woman's State Pension age, and for a man the State
+  Pension age of a woman born on the same day. `state_pension_credit_qualifying_age`
+  applies the timetable without rule (1), and
+  `has_attained_state_pension_credit_qualifying_age` is whether it is reached
+  by 6 October. Pension Credit, Universal Credit (Welfare Reform Act 2012
+  s.4(1)(b)), Housing Benefit (Housing Benefit Regulations 2006 reg 5 in both
+  sets), Council Tax Reduction's pension-age schemes, Income Support
+  (SSCBA 1992 s.124(1)(aa)), the benefit cap (which reaches only
+  working-age Housing Benefit and Universal Credit) and Winter Fuel Payment
+  (to September 2024) use it. It differs from
+  `is_SP_age` only for men born before 6 December 1953, so only in 2018-19
+  and earlier: a man born on 6 April 1952 reached it on 6 May 2014, nearly
+  three years before his State Pension age of 65.
+- **Class 4 National Insurance** stops from the first tax year that begins on
+  or after the day State Pension age is reached: a person over it at the
+  beginning of the tax year (6 April) is excepted (Social Security
+  (Contributions) Regulations 2001 reg 91(a)), so `ni_class_4_liable` needs
+  `months_since_state_pension_age` below 6. Someone who reaches it on 6 April
+  itself is read as over it at the beginning of that year. Class 1 employee
+  contributions stop at State Pension age itself (SSCBA 1992 s.6(3)), which
+  the annual model reads as `is_SP_age`.
+
+A person attains an age at the start of the anniversary of their birth
+(Family Law Reform Act 1969 s.9(1)), and an age of "N years and M months" on
+the same day of the month, or the month's last day where that day does not
+exist; that also gives the three days rule (7A) sets. A reform can change the
+age or day of any row, or where a row starts; a new phase-in that needs extra
+rows, such as bringing forward the rise to 68, needs new rows in the
+parameter files.
 
 ## Uprating
 
