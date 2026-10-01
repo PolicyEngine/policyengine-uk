@@ -1,3 +1,10 @@
+## [2.104.1] - 2026-10-01
+
+### Fixed
+
+- Count contributory Employment and Support Allowance, Maternity Allowance, industrial injuries benefit and (from 19 November 2023) Scottish Carer Support Payment as Universal Credit unearned income, as UC Regs 2013 reg. 66(1)(b)(ii), (viii), (ix) and (iiia) require. Carer Support Payment counts only its carer support payment component (not the Scottish Carer Supplement) and only up to a year of Carer's Allowance.
+
+
 ## [2.104.0] - 2026-10-01
 
 ### Added
