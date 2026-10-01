@@ -85,12 +85,3 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI }}
           skip_existing: true
-      - name: Update API
-        run: |
-          if [ -n "$CROSS_REPO_TOKEN" ]; then
-            GITHUB_TOKEN="$CROSS_REPO_TOKEN" python .github/update_api.py
-          else
-            echo "Skipping cross-repo API update (App token not minted)"
-          fi
-        env:
-          CROSS_REPO_TOKEN: ${{ steps.app-token.outputs.token }}

@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
+from policyengine_uk.utils.capital_gains import measure_capital_gains_mtrs
 
 
 class relative_capital_gains_mtr_change(Variable):
@@ -10,39 +11,7 @@ class relative_capital_gains_mtr_change(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        simulation: Simulation = person.simulation
-        baseline_branch = simulation.get_branch("baseline").get_branch(
-            "baseline_cgr_measurement"
-        )
-        baseline_branch.set_input(
-            "capital_gains_before_response",
-            period,
-            person("capital_gains_before_response", period),
-        )
-        baseline_person = baseline_branch.populations["person"]
-        baseline_branch.tax_benefit_system.neutralize_variable(
-            "capital_gains_behavioural_response"
-        )
-        baseline_branch.set_input(
-            "capital_gains_before_response",
-            period,
-            person("capital_gains_before_response", period),
-        )
-        baseline_mtr = baseline_person("marginal_tax_rate_on_capital_gains", period)
-        del simulation.branches["baseline"].branches["baseline_cgr_measurement"]
-
-        measurement_branch = simulation.get_branch("cgr_measurement")
-        measurement_branch.tax_benefit_system.neutralize_variable(
-            "capital_gains_behavioural_response"
-        )
-        measurement_branch.set_input(
-            "capital_gains_before_response",
-            period,
-            person("capital_gains_before_response", period),
-        )
-        measurement_person = measurement_branch.populations["person"]
-        reform_mtr = measurement_person("marginal_tax_rate_on_capital_gains", period)
-        del simulation.branches["cgr_measurement"]
+        reform_mtr, baseline_mtr = measure_capital_gains_mtrs(person, period)
 
         # Handle zeros in tax rates to prevent log(0)
         min_rate = 0.001

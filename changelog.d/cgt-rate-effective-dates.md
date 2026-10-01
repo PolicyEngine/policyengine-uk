@@ -1,0 +1,3 @@
+- Corrected the effective date of the capital gains tax rate rise to 30 October 2024, as Finance Act 2025 s.7 provides, from 6 April 2025.
+- Added opt-in day-weighted annualisation for parameters that change part-way through a fiscal year, and applied it to the capital gains rates, so 2024-25 reflects both rate schedules rather than only the one in force at the start of the year.
+- Annual Scenario parameter changes now cover the UK fiscal year they name, so an override applies at full strength instead of blending with prior law over its final five months.

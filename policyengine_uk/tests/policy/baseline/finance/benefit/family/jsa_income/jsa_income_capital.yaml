@@ -165,3 +165,23 @@
         savings: 18_000
   output:
     jsa_income_assessable_capital: [18_000, 18_000]
+
+- name: Income-based JSA capital test disregards private pension wealth
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 1_000
+    benunits:
+      benunit:
+        members: claimant
+    households:
+      household:
+        members: claimant
+        savings: 1_000
+        corporate_wealth: 2_000
+        private_pension_wealth: 150_000
+  output:
+    jsa_income_assessable_capital: 3_000

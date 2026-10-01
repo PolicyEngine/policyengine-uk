@@ -12,7 +12,11 @@ class severe_disability_minimum_guarantee_addition(Variable):
     def formula(benunit, period, parameters):
         # 1. At least one adult receives a qualifying benefit
         # 2. No children (except children receiving qualifying benefits)
-        # 3. Nobody receives Carer's Allowance (technically 'for one of the claimants', but we assume this is true)
+        # 3. Nobody receives Carer's Allowance (technically 'for one of the
+        #    claimants', but we assume this is true). This is receipt, not
+        #    entitlement: the addition is withheld only where a carer's
+        #    allowance is "entitled to and in receipt of" for the claimant, so
+        #    a carer with underlying entitlement alone does not block it.
         severe_disability = parameters(
             period
         ).gov.dwp.pension_credit.guarantee_credit.severe_disability

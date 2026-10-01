@@ -1,0 +1,95 @@
+- name: Case 1, fallback distinguishes two parents and an older qualifying child.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+      person2:
+        age: 39
+        is_parent: true
+      person3:
+        age: 18
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+  output:
+    is_uc_claimant: [true, true, false]
+
+- name: Case 2, one supplied parent flag does not erase a genuine adult partner.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+      person2:
+        age: 39
+      person3:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+  output:
+    is_uc_claimant: [true, true, false]
+
+- name: Case 3, an identified young parent remains a claimant while in education.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 18
+        is_parent: true
+        is_in_non_advanced_education: true
+      person2:
+        age: 25
+        is_parent: true
+      person3:
+        age: 1
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+  output:
+    is_uc_claimant: [true, true, false]
+
+- name: Case 4, explicit source roles override an age-only fallback.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_uc_claimant: true
+      person2:
+        age: 19
+        is_uc_claimant: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_claimant: [true, false]
+
+- name: Case 5, the head of a young person's own benefit unit is a claimant.
+  period: 2025
+  input:
+    age: 17
+    is_in_non_advanced_education: true
+  output:
+    is_uc_claimant: true
+
+- name: Case 6, an older member without qualifying education remains an adult fallback.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+      person2:
+        age: 18
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    # The default education input does not establish an older dependent QYP.
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_uc_claimant: [true, true]

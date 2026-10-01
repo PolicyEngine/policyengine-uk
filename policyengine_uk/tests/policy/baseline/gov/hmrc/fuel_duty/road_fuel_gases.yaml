@@ -1,0 +1,43 @@
+# Gas quantities are kilograms. FY2026 weights are 148/91/90/36 days.
+# Rural relief only reduces the petrol/diesel component.
+- name: No road fuel gas consumption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    lpg_kg: 0
+    natural_gas_kg: 0
+    petrol_litres: 0
+    diesel_litres: 0
+  output:
+    fuel_duty: 0
+- name: LPG and natural gas are charged per kilogram
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    lpg_kg: 1000
+    natural_gas_kg: 1000
+    petrol_litres: 0
+    diesel_litres: 0
+  output:
+    fuel_duty: 514.5
+- name: Rural relief does not apply to road fuel gases
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    lpg_kg: 1000
+    natural_gas_kg: 1000
+    petrol_litres: 1000
+    diesel_litres: 0
+    in_rural_fuel_duty_relief_area: true
+  output:
+    fuel_duty: 994
+- name: Fiscal 2026 includes all three gas rate increases
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    lpg_kg: 1000
+    natural_gas_kg: 1000
+    petrol_litres: 0
+    diesel_litres: 0
+  output:
+    fuel_duty: 528.9367123287672

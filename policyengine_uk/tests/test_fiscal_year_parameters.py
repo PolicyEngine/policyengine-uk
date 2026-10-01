@@ -102,6 +102,121 @@ class TestFiscalYearBoundary:
         assert child_limit == 2
 
 
+class TestMidYearRateChanges:
+    """Tests for changes taking effect part-way through a fiscal year.
+
+    Sampling one date per year drops any change taking effect after it.
+    Parameters carrying `fiscal_year_blend: true` are day-weighted across
+    the year instead.
+    """
+
+    # Fiscal year 2024-25 runs 6 April 2024 to 5 April 2025: 207 days at the
+    # rates in force before 30 October 2024, then 158 days at the rates after.
+    DAYS_BEFORE = 207
+    DAYS_AFTER = 158
+    TOTAL_DAYS = DAYS_BEFORE + DAYS_AFTER
+
+    def blended(self, before, after):
+        return (before * self.DAYS_BEFORE + after * self.DAYS_AFTER) / self.TOTAL_DAYS
+
+    @pytest.mark.parametrize(
+        "rate_name, before, after",
+        [("basic_rate", 0.10, 0.18), ("higher_rate", 0.20, 0.24)],
+    )
+    def test_cgt_rates_blend_across_the_split_year(self, rate_name, before, after):
+        """2024-25 carries both statutory rates, so the year takes their average."""
+        system = CountryTaxBenefitSystem()
+        rates = {
+            year: getattr(
+                system.get_parameters_at_instant(str(year)).gov.hmrc.cgt, rate_name
+            )
+            for year in (2023, 2024, 2025)
+        }
+
+        assert rates[2023] == pytest.approx(before)
+        assert rates[2024] == pytest.approx(self.blended(before, after))
+        assert rates[2025] == pytest.approx(after)
+
+    def test_cgt_rate_rise_takes_effect_from_the_statutory_date(self):
+        """Finance Act 2025 s.7 applies to disposals from 30 October 2024.
+
+        Read before fiscal year conversion, which is what the statutory dates
+        feed. Regression test for dating the rise to 6 April 2025, which moved
+        a change the legislation makes in 2024-25 into the following year.
+        """
+        import policyengine_uk
+        from pathlib import Path
+        from policyengine_core.parameters import ParameterNode
+
+        parameters = ParameterNode(
+            directory_path=str(Path(policyengine_uk.__file__).parent / "parameters")
+        )
+        higher_rate = parameters.gov.hmrc.cgt.higher_rate
+
+        assert higher_rate("2024-10-29") == pytest.approx(0.20)
+        assert higher_rate("2024-10-30") == pytest.approx(0.24)
+
+    def test_blending_is_opt_in(self, uk_system):
+        """Parameters without the flag keep one sampled value for the year.
+
+        National Insurance rates fell part-way through 2022-23, and the year
+        still takes the rate in force at its start rather than an average.
+        Whether to blend is a decision per parameter: a transaction is taxed
+        at the rate in force on its date, not at a yearly average.
+        """
+        parameters = uk_system.get_parameters_at_instant("2022")
+        employee_rates = parameters.gov.hmrc.national_insurance.class_1.rates.employee
+
+        assert employee_rates.main == pytest.approx(0.1325)
+
+
+class TestScenarioOverrides:
+    """Annual Scenario overrides name UK fiscal years.
+
+    Written as calendar years, an override's final five months fell back to
+    prior law and fiscal-year conversion blended the two: an override of 0.5
+    on a blended CGT rate resolved to 0.42. The override now covers 6 April
+    to 5 April.
+    """
+
+    def _reformed(self):
+        from policyengine_uk import Microsimulation
+        from policyengine_uk.model_api import Scenario
+
+        return Microsimulation(
+            situation={
+                "people": {
+                    "person": {
+                        "age": {2025: 45},
+                        "adjusted_net_income": {2025: 20_000},
+                        "capital_gains": {2025: 23_000},
+                    }
+                },
+                "benunits": {"benunit": {"members": ["person"]}},
+                "households": {"household": {"members": ["person"]}},
+            },
+            scenario=Scenario(
+                parameter_changes={"gov.hmrc.cgt.basic_rate": {"2025": 0.5}}
+            ),
+        )
+
+    def test_override_applies_at_full_strength(self):
+        sim = self._reformed()
+        rate = sim.tax_benefit_system.parameters.gov.hmrc.cgt.basic_rate
+
+        assert rate("2025") == pytest.approx(0.5)
+        cgt = sim.calculate("capital_gains_tax", 2025).values[0]
+        assert cgt == pytest.approx(10_000.0)
+
+    def test_override_leaves_other_years_on_law(self):
+        """The split 2024-25 blend and the 2026 reversion both survive."""
+        sim = self._reformed()
+        rate = sim.tax_benefit_system.parameters.gov.hmrc.cgt.basic_rate
+
+        assert rate("2024") == pytest.approx((0.10 * 207 + 0.18 * 158) / 365)
+        assert rate("2026") == pytest.approx(0.18)
+
+
 class TestFiscalYearCoverage:
     """Tests to verify fiscal year conversion covers all needed years."""
 

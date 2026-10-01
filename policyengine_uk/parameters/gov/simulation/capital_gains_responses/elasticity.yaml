@@ -1,6 +1,11 @@
-description: Elasticity of capital gains with respect to the capital gains marginal tax rate.
+description: Elasticity of capital gains realisations with respect to the capital gains retention rate, the share of a marginal pound of gains kept after tax. Higher values mean a given rate rise reduces realisations by more. Published estimates span roughly 0.5 to 2.
 values:
   2000-01-01: 0
 metadata:
   unit: /1
   label: Capital gains elasticity
+  reference:
+    - title: Agersnap and Zidar (2021), The tax elasticity of capital gains and revenue-maximizing rates
+      href: https://www.aeaweb.org/articles?id=10.1257/aeri.20200535
+    - title: Advani, Lonsdale and Summers (2024), Reforming Capital Gains Tax
+      href: https://centax.org.uk/wp-content/uploads/2024/10/AdvaniLonsdaleSummers2024_CGTReform.pdf

@@ -3,6 +3,19 @@
   absolute_error_margin: 100
   input:
     age: 6
+    is_uc_claimant: false
     is_disabled_for_benefits: true
   output:
     uc_individual_disabled_child_element: 1_902
+
+- name: Case 2, an explicit young claimant receives no disabled child addition for themselves.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 18
+    is_in_non_advanced_education: true
+    is_uc_claimant: true
+    is_disabled_for_benefits: true
+  output:
+    is_child_or_qualifying_young_person_for_universal_credit: true
+    uc_individual_disabled_child_element: 0

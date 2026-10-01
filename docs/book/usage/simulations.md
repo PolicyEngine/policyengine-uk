@@ -10,22 +10,9 @@ Every simulation starts with a situation that describes the people, benefit unit
 from policyengine_uk import Simulation
 
 situation = {
-    "people": {
-        "person_1": {
-            "age": {2025: 30},
-            "employment_income": {2025: 30_000}
-        }
-    },
-    "benunits": {
-        "benunit_1": {
-            "members": ["person_1"]
-        }
-    },
-    "households": {
-        "household_1": {
-            "members": ["person_1"]
-        }
-    }
+    "people": {"person_1": {"age": {2025: 30}, "employment_income": {2025: 30_000}}},
+    "benunits": {"benunit_1": {"members": ["person_1"]}},
+    "households": {"household_1": {"members": ["person_1"]}},
 }
 
 sim = Simulation(situation=situation)
@@ -115,9 +102,11 @@ Scenarios create reformed simulations without modifying your original baseline s
 from policyengine_uk import Scenario
 
 # Create a scenario that increases UC standard allowance
-scenario = Scenario(parameter_changes={
-    "gov.dwp.universal_credit.standard_allowance.single.OVER_25": 500
-})
+scenario = Scenario(
+    parameter_changes={
+        "gov.dwp.universal_credit.standard_allowance.single.OVER_25": 500
+    }
+)
 
 # Apply the scenario to create a new simulation
 reformed_sim = Simulation(situation=situation, scenario=scenario)
@@ -142,33 +131,19 @@ Each person must belong to exactly one benefit unit and one household. Children 
 ```python
 family_with_children = {
     "people": {
-        "parent": {
-            "age": {2025: 35},
-            "employment_income": {2025: 28_000}
-        },
-        "partner": {
-            "age": {2025: 33},
-            "employment_income": {2025: 12_000}
-        },
-        "child_1": {
-            "age": {2025: 7}
-        },
-        "child_2": {
-            "age": {2025: 4}
-        }
+        "parent": {"age": {2025: 35}, "employment_income": {2025: 28_000}},
+        "partner": {"age": {2025: 33}, "employment_income": {2025: 12_000}},
+        "child_1": {"age": {2025: 7}},
+        "child_2": {"age": {2025: 4}},
     },
-    "benunits": {
-        "family": {
-            "members": ["parent", "partner", "child_1", "child_2"]
-        }
-    },
+    "benunits": {"family": {"members": ["parent", "partner", "child_1", "child_2"]}},
     "households": {
         "home": {
             "members": ["parent", "partner", "child_1", "child_2"],
             "housing_costs": {2025: 9600},  # Annual housing costs
-            "childcare_costs": {2025: 7200}  # Annual childcare costs
+            "childcare_costs": {2025: 7200},  # Annual childcare costs
         }
-    }
+    },
 }
 
 family_sim = Simulation(situation=family_with_children)
@@ -191,12 +166,14 @@ If you have data in a DataFrame, convert it to the right format:
 import pandas as pd
 
 # Your data needs specific column naming
-df = pd.DataFrame({
-    "person_id__2025": [1, 2, 3],
-    "age__2025": [25, 45, 65],
-    "employment_income__2025": [20000, 40000, 0],
-    "state_pension__2025": [0, 0, 180]  # Weekly pension
-})
+df = pd.DataFrame(
+    {
+        "person_id__2025": [1, 2, 3],
+        "age__2025": [25, 45, 65],
+        "employment_income__2025": [20000, 40000, 0],
+        "state_pension__2025": [0, 0, 180],  # Weekly pension
+    }
+)
 
 # Create simulation from the DataFrame
 sim_from_df = Simulation(dataset=df)
@@ -220,23 +197,29 @@ import pandas as pd
 from policyengine_uk import Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 
-person_2025 = pd.DataFrame({
-    "person_id": [1, 2],
-    "person_benunit_id": [1, 1],
-    "person_household_id": [1, 1],
-    "age": [35, 7],
-    "employment_income": [32_000, 0],
-})
+person_2025 = pd.DataFrame(
+    {
+        "person_id": [1, 2],
+        "person_benunit_id": [1, 1],
+        "person_household_id": [1, 1],
+        "age": [35, 7],
+        "employment_income": [32_000, 0],
+    }
+)
 
-benunit_2025 = pd.DataFrame({
-    "benunit_id": [1],
-})
+benunit_2025 = pd.DataFrame(
+    {
+        "benunit_id": [1],
+    }
+)
 
-household_2025 = pd.DataFrame({
-    "household_id": [1],
-    "region": ["LONDON"],
-    "council_tax": [1_800],
-})
+household_2025 = pd.DataFrame(
+    {
+        "household_id": [1],
+        "region": ["LONDON"],
+        "council_tax": [1_800],
+    }
+)
 
 dataset_2025 = UKSingleYearDataset(
     person=person_2025,
@@ -326,12 +309,10 @@ baseline = Microsimulation(
 )
 
 # Create a scenario that increases the basic rate of income tax to 25%
-scenario = Scenario(parameter_changes={
-    "gov.hmrc.income_tax.rates.uk[0].rate": 0.25
-})
+scenario = Scenario(parameter_changes={"gov.hmrc.income_tax.rates.uk[0].rate": 0.25})
 reformed = Microsimulation(
     dataset="hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5",
-    scenario=scenario
+    scenario=scenario,
 )
 
 # Calculate revenue impact by comparing household net incomes
@@ -374,15 +355,15 @@ income_tax = sim.calculate("income_tax", 2025)  # Cached after first calculation
 # To insert new values, use set_input with arrays
 current_income = sim.calculate("employment_income", 2025)
 new_income = current_income * 0 + 35_000  # Create array with new values
-sim.set_input("employment_income", 2025, new_income)  # This will invalidate related caches
+sim.set_input(
+    "employment_income", 2025, new_income
+)  # This will invalidate related caches
 
 # Parameters are also cached when requested
 parameters = sim.tax_benefit_system.parameters(2025)  # Cached for 2025
 
 # If you have a reform that changes parameters after requesting them:
-scenario = Scenario(parameter_changes={
-    "gov.hmrc.income_tax.rates.uk[0].rate": 0.25
-})
+scenario = Scenario(parameter_changes={"gov.hmrc.income_tax.rates.uk[0].rate": 0.25})
 # The parameter change won't take effect unless you reset the cache:
 sim.tax_benefit_system.reset_parameter_caches()
 ```
@@ -393,7 +374,12 @@ Instead of calculating variables one by one, you can get multiple results at onc
 
 ```python
 # Get multiple variables in a single DataFrame
-variables = ["employment_income", "income_tax", "universal_credit", "household_net_income"]
+variables = [
+    "employment_income",
+    "income_tax",
+    "universal_credit",
+    "household_net_income",
+]
 results_df = sim.calculate_dataframe(variables, 2025)
 
 # This gives you a DataFrame with columns for each variable
@@ -414,7 +400,7 @@ for year in years:
 # Compare average household income across years
 for year in years:
     avg_income = income_by_year[year].mean()
-    print(f"{year}: £{avg_income/12:.2f} per month")
+    print(f"{year}: £{avg_income / 12:.2f} per month")
 ```
 
 ### Mapping variables to different entities
@@ -448,7 +434,7 @@ modified_weights = weights * 1.1  # Increase all weights by 10%
 # Calculate population total with modified weights
 unweighted_values = sim.calculate("income_tax", 2025, use_weights=False)
 weighted_total = (unweighted_values * modified_weights).sum()
-print(f"Total with 10% higher weights: £{weighted_total/1e9:.1f}bn")
+print(f"Total with 10% higher weights: £{weighted_total / 1e9:.1f}bn")
 ```
 
 ## Debugging simulations
@@ -513,14 +499,12 @@ reformed = Microsimulation()  # Apply your reforms here
 
 # Compare specific variables between simulations
 comparison_df = baseline.compare(
-    reformed, 
-    baseline.get_variable_dependencies("income_tax", depth=1), 
-    2029
+    reformed, baseline.get_variable_dependencies("income_tax", depth=1), 2029
 )
 
 # The DataFrame has columns for each variable:
 # - variable_self: baseline value
-# - variable_other: reformed value  
+# - variable_other: reformed value
 # - variable_change: difference between reformed and baseline
 ```
 

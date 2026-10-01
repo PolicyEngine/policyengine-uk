@@ -7,7 +7,7 @@ class uc_childcare_element(Variable):
     label = "Universal Credit childcare element"
     definition_period = YEAR
     unit = GBP
-    defined_for = "uc_childcare_work_condition"
+    defined_for = "uc_childcare_element_claimed"
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.universal_credit.elements.childcare

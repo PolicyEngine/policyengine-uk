@@ -77,4 +77,4 @@ Each of the variables above is either derived from other variables, or is a dire
 | `rent` | gov.obr.rent | Social rents uprated by CPI+1%, private rents uprated with outturn data by region to 2025, then with backed-out private rent level growth from OBR aggregate rent forecasts (assuming social rent grows at CPI+1%) |
 | `water_and_sewerage_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |
 | `mortgage_interest_repayment` | gov.obr.mortgage_interest | Uprated based on outturn Ofwat data to 2025, then Ofwat projections onwards |
-| `housing_service_charges` | gov.obr.consumer_price_index | Uprated based on CPI as proxy |
+| `housing_service_charges` | gov.economic_assumptions.indices.obr.lagged_average_earnings | Uprated based on lagged average earnings as proxy |

@@ -315,3 +315,22 @@
   output:
     uc_assessable_capital: 0
     is_uc_eligible: true
+
+- name: Private pension wealth is disregarded from Universal Credit capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_000
+        private_pension_wealth: 150_000
+  output:
+    uc_assessable_capital: 10_000
+    is_uc_eligible: true

@@ -1,0 +1,134 @@
+- name: Households have no deductions by default in single-household simulations
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: person
+  output:
+    uc_deductions: 0
+    universal_credit: 6_000
+
+- name: Deductions reduce the UC award under the 25% cap in 2024
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        benefit_cap_reduction: 0
+        uc_latent_deduction_rate: 0.25
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    # Single claimant 25 or over: standard allowance 393.45/month in 2024-25.
+    # 0.25 x 393.45 x 12 = 1,180.35.
+    uc_deductions: 1_180.35
+    universal_credit: 4_819.65
+
+- name: The Fair Repayment Rate caps the same latent demand at 15% in 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        benefit_cap_reduction: 0
+        uc_latent_deduction_rate: 0.25
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    # Standard allowance 400.14/month in 2025-26. 0.15 x 400.14 x 12 = 720.25.
+    uc_deductions: 720.25
+    universal_credit: 5_279.75
+
+- name: The last resort excess above 25% sits on top of the cap
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        benefit_cap_reduction: 0
+        uc_latent_deduction_rate: 0.28
+        uc_deduction_combination: GOVERNMENT_ONLY
+    households:
+      household:
+        members: person
+  output:
+    # Cappable portion min(0.25, cap 0.15) plus last resort excess 0.03:
+    # 0.18 x 400.14 x 12 = 864.30.
+    uc_deductions: 864.30
+
+- name: Deductions leave at least one penny per assessment period payable
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 500
+        benefit_cap_reduction: 0
+        uc_latent_deduction_rate: 0.25
+        uc_deduction_combination: ADVANCE_ONLY
+    households:
+      household:
+        members: person
+  output:
+    # Schedule 6 of SI 2013/380: the award cannot be deducted below one
+    # penny per assessment period (12p per year).
+    uc_deductions: 499.88
+    universal_credit: 0.12
+
+- name: High-incidence regions still get no deductions by default in single-household simulations
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 6_000
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: person
+        region: NORTH_EAST
+  output:
+    uc_deductions: 0
+    universal_credit: 6_000

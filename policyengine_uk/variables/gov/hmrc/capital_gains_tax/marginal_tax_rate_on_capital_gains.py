@@ -5,7 +5,11 @@ from policyengine_core.simulations import *
 class marginal_tax_rate_on_capital_gains(Variable):
     label = "capital gains marginal tax rate"
     documentation = (
-        "Percent of marginal capital gains that do not increase household net income."
+        "Percent of marginal capital gains that do not increase household net "
+        "income. The marginal gains are added to capital_gains itself, so they "
+        "are shared across the person's schedules (main rates, Business Asset "
+        "Disposal Relief, residential property, carried interest) in proportion "
+        "to their pre-response shares: this is a share-weighted marginal rate."
     )
     entity = Person
     definition_period = YEAR

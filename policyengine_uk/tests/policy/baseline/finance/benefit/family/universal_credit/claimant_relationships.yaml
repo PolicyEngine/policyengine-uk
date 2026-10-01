@@ -1,0 +1,215 @@
+# Regulations 22 and 36 of SI 2013/376 distinguish claimants from the
+# children or qualifying young people for whom they are responsible.
+# 2025 annual amounts: single 25+ = 400.14 * 12; couple under 25 =
+# 497.55 * 12; first child born before April 2017 = 339 * 12.
+# With no housing, the work allowance is 684 * 12. On 12,000 earnings
+# below the tax/NI thresholds, the UC reduction is (12,000 - 8,208) * 0.55.
+
+- name: Case 1, lone parent with an 18-year-old qualifying young person.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 12_000
+        is_benunit_head: true
+        is_parent: true
+      person2:
+        age: 18
+        is_benunit_head: false
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    uc_standard_allowance_claimant_type: SINGLE_OLD
+    uc_standard_allowance: 4_801.68
+    uc_work_allowance: 8_208
+    uc_child_element: 4_068
+    universal_credit: 6_784.08
+
+- name: Case 2, lone parent with a 19-year-old before the qualifying terminal date.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 12_000
+        is_benunit_head: true
+        is_parent: true
+      person2:
+        age: 19
+        is_benunit_head: false
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    uc_standard_allowance_claimant_type: SINGLE_OLD
+    uc_standard_allowance: 4_801.68
+    uc_work_allowance: 8_208
+    uc_child_element: 4_068
+    universal_credit: 6_784.08
+
+- name: Case 3, genuine couple with an older qualifying child remains a couple.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        employment_income: 12_000
+        is_benunit_head: true
+        is_parent: true
+      person2:
+        age: 39
+        is_benunit_head: false
+        is_parent: true
+      person3:
+        age: 18
+        is_benunit_head: false
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        is_married: false
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2, person3]
+  output:
+    uc_standard_allowance_claimant_type: COUPLE_OLD
+    uc_standard_allowance: 7_537.20
+    uc_work_allowance: 8_208
+    universal_credit: 9_519.60
+
+- name: Case 4, cohabiting young claimants do not need a marriage input.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 24
+      person2:
+        age: 23
+    benunits:
+      benunit:
+        members: [person1, person2]
+        is_married: false
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    uc_standard_allowance_claimant_type: COUPLE_YOUNG
+    uc_standard_allowance: 5_970.60
+    uc_work_allowance: 0
+    universal_credit: 5_970.60
+
+# The existing eligibility formula excludes all under-18 claimants. This case
+# fixes claimant classification only; it does not implement the legal exceptions.
+- name: Case 5, an under-18 parent is not a couple because adult count is zero.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 17
+        is_benunit_head: true
+        is_parent: true
+      person2:
+        age: 1
+        is_benunit_head: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    uc_standard_allowance_claimant_type: SINGLE_YOUNG
+    uc_standard_allowance: 3_803.76
+    universal_credit: 0
+
+- name: Case 6, retained nonqualifying child roles do not imply a partner.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 40
+        is_uc_claimant: true
+      person2:
+        age: 19
+        is_uc_claimant: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # The generic family variable deliberately retains its existing semantics.
+    family_type: COUPLE_NO_CHILDREN
+    uc_standard_allowance_claimant_type: SINGLE_OLD
+    uc_standard_allowance: 4_801.68
+    uc_work_allowance: 0
+    uc_child_element: 0
+    universal_credit: 4_801.68
+
+- name: Case 7, a cohabiting 19-year-old in education is not the partner's child.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 24
+      person2:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+    benunits:
+      benunit:
+        members: [person1, person2]
+        uc_reported_capital: 0
+        uc_latent_deduction_rate: 0
+        benefit_cap_reduction: 0
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # No role or marriage inputs: two claimants under 25, no dependent children.
+    # The 2025 monthly couple allowance is 497.55; 497.55 * 12 = 5,970.60.
+    is_uc_claimant: [true, true]
+    uc_standard_allowance_claimant_type: COUPLE_YOUNG
+    uc_standard_allowance: 5_970.60
+    uc_child_index: [-1, -1]
+    uc_child_element: 0
+    uc_work_allowance: 0
+    universal_credit: 5_970.60

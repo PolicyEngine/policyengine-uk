@@ -3,6 +3,18 @@
   absolute_error_margin: 100
   input:
     age: 6
+    is_uc_claimant: false
     is_severely_disabled_for_benefits: true
   output:
     uc_individual_severely_disabled_child_element: 5_942
+
+- name: Case 2, a fallback young claimant receives no severe child addition for themselves.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 18
+    is_in_non_advanced_education: true
+    is_severely_disabled_for_benefits: true
+  output:
+    is_uc_claimant: true
+    uc_individual_severely_disabled_child_element: 0

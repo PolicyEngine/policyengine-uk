@@ -23,6 +23,9 @@ class carer_support_payment(Variable):
         weekly_care_hours = person("care_hours", period)
         meets_hours = weekly_care_hours >= csp.min_hours
         receives_ca = person("carers_allowance_reported", period) > 0
-        eligible = in_scotland & csp_in_effect & (meets_hours | receives_ca)
+        would_claim = person("would_claim_carers_allowance", period)
+        eligible = (
+            in_scotland & csp_in_effect & (meets_hours | receives_ca) & would_claim
+        )
         weekly_amount = csp.rate + csp.supplement
         return eligible * weekly_amount * WEEKS_IN_YEAR

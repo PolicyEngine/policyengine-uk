@@ -247,3 +247,25 @@
     housing_benefit_tariff_income: 0
     housing_benefit_applicable_income: 0
     housing_benefit_eligible: true
+
+- name: Private pension wealth is disregarded from Housing Benefit capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        savings: 5_000
+        private_pension_wealth: 150_000
+  output:
+    housing_benefit_assessable_capital: 5_000
+    housing_benefit_eligible: true

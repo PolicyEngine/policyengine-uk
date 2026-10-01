@@ -1,0 +1,39 @@
+- name: Private pension wealth counts in total wealth and corporate sector wealth
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        property_wealth: 200_000
+        corporate_wealth: 30_000
+        private_pension_wealth: 120_000
+        savings: 10_000
+  output:
+    corporate_sector_wealth: 150_000
+    total_wealth: 360_000
+
+- name: Private pension wealth defaults to zero so corporate sector wealth equals corporate wealth
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        corporate_wealth: 30_000
+  output:
+    private_pension_wealth: 0
+    corporate_sector_wealth: 30_000
+    total_wealth: 30_000

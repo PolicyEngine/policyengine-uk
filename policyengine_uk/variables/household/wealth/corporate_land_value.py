@@ -11,7 +11,7 @@ class corporate_land_value(Variable):
     quantity_type = STOCK
 
     def formula(household, period, parameters):
-        corporate_wealth = household("corporate_wealth", period)
+        corporate_wealth = household("corporate_sector_wealth", period)
         household_weight = household("household_weight", period)
         total_weighted_corporate_wealth = (corporate_wealth * household_weight).sum()
         if total_weighted_corporate_wealth == 0:
