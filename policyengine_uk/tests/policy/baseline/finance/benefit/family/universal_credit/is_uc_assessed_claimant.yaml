@@ -81,3 +81,26 @@
         members: [youngest, eldest, middle]
   output:
     is_uc_assessed_claimant: [false, true, true]
+
+- name: Flagged claimants of the same age rank in the order listed
+  # The Act fixes the number of claimants, not which of three flagged
+  # members they are; taking the eldest two, and the first listed on a tie,
+  # is a modelling rule.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+        is_uc_claimant: true
+      second:
+        age: 40
+        is_uc_claimant: true
+      third:
+        age: 40
+        is_uc_claimant: true
+    benunits:
+      benunit:
+        members: [first, second, third]
+  output:
+    is_uc_assessed_claimant: [true, true, false]
