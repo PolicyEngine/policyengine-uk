@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_core.enums import EnumArray
 from policyengine_uk.variables.household.demographic.tenure_type import (
     TenureType,
 )
@@ -33,8 +34,11 @@ class benunit_tenure_type(Variable):
         pays_householder = benunit.any(
             benunit.members("pays_rent_to_householder", period)
         )
-        return where(
-            pays_householder,
-            TenureType.RENT_PRIVATELY,
-            household_tenure.decode(),
+        return EnumArray(
+            where(
+                pays_householder,
+                TenureType.RENT_PRIVATELY.index,
+                household_tenure,
+            ).astype(np.int16),
+            TenureType,
         )
