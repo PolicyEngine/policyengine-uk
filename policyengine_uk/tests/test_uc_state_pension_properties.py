@@ -27,7 +27,7 @@ the recipient min(partner's unused personal allowance, 10% of the personal
 allowance) instead of the fixed transferable amount in ITA 2007 s. 55B(4)-(6),
 so State Pension that uses up the pensioner's unused allowance raises the
 earning partner's tax on earnings. The strict xfail at the end pins that
-deviation (PolicyEngine/policyengine-uk#MA_ISSUE).
+deviation (PolicyEngine/policyengine-uk#1947).
 """
 
 import numpy as np
@@ -252,7 +252,7 @@ def test_tax_on_state_pension_does_not_reduce_partners_earned_income():
 @pytest.mark.xfail(
     strict=True,
     reason=(
-        "PolicyEngine/policyengine-uk#MA_ISSUE: Marriage Allowance is booked on "
+        "PolicyEngine/policyengine-uk#1947: Marriage Allowance is booked on "
         "the recipient as the transferor's unused personal allowance, so the "
         "transferor's State Pension raises the recipient's tax on earnings"
     ),
