@@ -1,0 +1,311 @@
+# Benefits that UC Regs 2013 reg. 66(1)(b) counts as unearned income, in full
+# and pound for pound (reg. 22(1)(a)):
+# - (ii) employment and support allowance, which reg. 2 limits to the
+#   contributory allowance (esa_contrib);
+# - (iiia) carer support payment, from 19 November 2023, "but only up to a
+#   maximum of the amount a claimant would receive if they had an entitlement
+#   to carer's allowance"; from 15 March 2026 reg. 2 limits it to the carer
+#   support payment component of carer support (S.I. 2026/246 art. 25), so
+#   the Scottish Carer Supplement is left out;
+# - (viii) maternity allowance;
+# - (ix) industrial injuries benefit (SSCBA 1992 Part 5, reg. 2), excluding
+#   the s. 104 and s. 105 increases.
+#
+# Hand calculations use the 2026-27 rates read in April 2026:
+# - couple standard allowance (one over 25): 666.97 a month = 8,003.64 a year;
+# - carer element: 209.34 a month = 2,512.08 a year;
+# - Carer's Allowance and the Carer Support Payment component: 86.45 a week,
+#   so 86.45 x 52 = 4,495.40 a year; Scottish Carer Supplement 11.70 a week,
+#   so Carer Support Payment is (86.45 + 11.70) x 52 = 5,103.80 a year;
+# - council rent of 6,240 a year is met in full by the housing costs element.
+# So a couple's maximum amount is 8,003.64 + 6,240 = 14,243.64, or
+# 16,755.72 with the carer element.
+
+- name: Contributory ESA counts as unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    esa_contrib: 5_000
+  output:
+    uc_unearned_income: 5_000
+
+- name: Reported contributory ESA flows through to unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    esa_contrib_reported: 5_000
+  output:
+    esa_contrib: 5_000
+    uc_unearned_income: 5_000
+
+- name: Maternity Allowance counts as unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    maternity_allowance: 3_000
+  output:
+    uc_unearned_income: 3_000
+
+- name: Industrial injuries benefit counts as unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    iidb: 4_000
+  output:
+    uc_unearned_income: 4_000
+
+- name: The added benefits sum with the other unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    esa_contrib: 5_000
+    maternity_allowance: 1_000
+    iidb: 2_000
+    private_pension_income: 1_000
+  output:
+    uc_unearned_income: 9_000
+
+- name: Couple renting from the council, contributory ESA reduces UC pound for pound
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib: 5_000
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    uc_maximum_amount: 14_243.64
+    uc_unearned_income: 5_000
+    uc_income_reduction: 5_000
+    # 14,243.64 - 5,000. Before this fix the award was 14,243.64.
+    universal_credit: 9_243.64
+
+- name: Same couple with the same amount of private pension instead gets the same UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        private_pension_income: 5_000
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    uc_unearned_income: 5_000
+    universal_credit: 9_243.64
+
+- name: Maternity Allowance reduces UC pound for pound
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        maternity_allowance: 3_000
+      partner:
+        age: 32
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    uc_unearned_income: 3_000
+    # 14,243.64 - 3,000.
+    universal_credit: 11_243.64
+
+- name: Industrial injuries benefit reduces UC pound for pound
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        iidb: 4_000
+      partner:
+        age: 48
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    uc_unearned_income: 4_000
+    # 14,243.64 - 4,000.
+    universal_credit: 10_243.64
+
+- name: Contributory ESA above the maximum amount removes UC entirely
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib: 20_000
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    uc_unearned_income: 20_000
+    # The reduction is capped at the maximum amount.
+    uc_income_reduction: 14_243.64
+    universal_credit: 0
+
+- name: Scottish carer on Carer Support Payment, only the component up to Carer's Allowance counts
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 40
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: SCOTLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    carers_allowance: [0, 0]
+    # (86.45 + 11.70) x 52.
+    carer_support_payment: [5_103.80, 0]
+    # Capped at a year of Carer's Allowance, 86.45 x 52, which is also the
+    # carer support payment component without the supplement.
+    uc_unearned_carer_support_payment: [4_495.40, 0]
+    uc_unearned_income: 4_495.40
+    uc_maximum_amount: 16_755.72
+    # 16,755.72 - 4,495.40. Before this fix the award was 16,755.72.
+    universal_credit: 12_260.32
+
+- name: Same carer in England gets Carer's Allowance and the same UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 40
+        care_hours: 40
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    carers_allowance: [4_495.40, 0]
+    carer_support_payment: [0, 0]
+    uc_unearned_carer_support_payment: [0, 0]
+    # Carer's Allowance alone, not counted a second time as Carer Support
+    # Payment.
+    uc_unearned_income: 4_495.40
+    uc_maximum_amount: 16_755.72
+    universal_credit: 12_260.32
+
+- name: Carer Support Payment below a year of Carer's Allowance counts in full
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    carer_support_payment: 3_000
+  output:
+    # Under the cap of 86.45 x 52 = 4,495.40.
+    uc_unearned_carer_support_payment: 3_000
+    uc_unearned_income: 3_000
+
+- name: Carer Support Payment above a year of Carer's Allowance is capped
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    carer_support_payment: 6_000
+  output:
+    # Capped at 86.45 x 52 = 4,495.40.
+    uc_unearned_carer_support_payment: 4_495.40
+    uc_unearned_income: 4_495.40
+
+- name: Carer Support Payment does not count in 2023-24
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    carer_support_payment: 3_000
+  output:
+    # Reg. 66(1)(b)(iiia) starts on 19 November 2023, part-way through
+    # 2023-24. The yearly model takes each parameter's value on 30 April of
+    # the fiscal year (convert_to_fiscal_year_parameters), so Carer Support
+    # Payment first counts in 2024-25.
+    uc_unearned_carer_support_payment: 3_000
+    uc_unearned_income: 0
+
+- name: Carer Support Payment counts in 2024-25, before the Scottish Carer Supplement
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    carer_support_payment: 3_000
+  output:
+    # Under the 2024-25 cap of 81.90 x 52 = 4,258.80.
+    uc_unearned_carer_support_payment: 3_000
+    uc_unearned_income: 3_000
+
+- name: Contributory ESA also counts in 2020-21
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib: 5_000
+      partner:
+        age: 38
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    # The whole 5,000 is unearned income and comes off the maximum amount,
+    # which it does not exceed. (The maximum amount itself is not asserted:
+    # the 2020-21 standard allowance parameter holds the 2021-22 figures.)
+    uc_unearned_income: 5_000
+    uc_income_reduction: 5_000
