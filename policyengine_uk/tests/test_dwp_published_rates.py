@@ -20,9 +20,10 @@ Invariants:
 4. The carer premium for two carers is twice the premium for one, in every
    year, because it is paid for each person who satisfies the condition.
 5. Housing Benefit non-dependant deductions: each year's bands and deductions
-   are the published ones; a band includes its lower edge ("not less than",
-   HB Regs 2006 reg 74(2)); nobody with income pays less than the lowest
-   deduction; and the deduction never falls as income rises.
+   are the published ones, and the scale, read with lower edges inclusive as
+   reg 74(2) words them ("not less than"), never falls as income rises.
+   (The HB and CTR formulas still call the scale with right=True and do not
+   apply the reg 74(6)-(7) exemptions; that is a separate fix.)
 """
 
 from pathlib import Path
@@ -100,7 +101,7 @@ NON_DEP_SCALE = system.parameters.gov.dwp.housing_benefit.non_dep_deduction.amou
 
 @pytest.mark.parametrize("year", sorted(NON_DEP))
 def test_non_dependant_deductions_match_the_published_table(year):
-    """Invariant 5: bands, deductions and the inclusive lower edges."""
+    """Invariant 5: the published bands and deductions, read inclusively."""
     at = f"{year}-04-30"
     edges = NON_DEP[year]["lower_edges"]
     deductions = NON_DEP[year]["deductions"]
