@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.inputs import entered_directly
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
 
 
@@ -79,10 +80,10 @@ class income_support_eligible(Variable):
         # couple, so it bars Income Support whichever of them has it: the
         # award on the claimant's and partner's reported amounts, after the
         # same capital test as esa_income. When esa_income is entered
-        # directly (a simulation input) rather than calculated, the reported
+        # directly for this period (an input, not the formula), the reported
         # amounts do not say whose award it is, and it is taken to be the
         # claimant's or partner's.
-        if "esa_income" in benunit.simulation.input_variables:
+        if entered_directly(benunit, "esa_income", period):
             income_related_esa = benunit("esa_income", period) > 0
         else:
             reported = benunit.sum(
