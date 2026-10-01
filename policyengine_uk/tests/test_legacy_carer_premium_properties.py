@@ -14,7 +14,14 @@ dependent children or qualifying young persons:
 - a dependant's caring never changes carer_premium or income_support_eligible;
 - carer_premium equals the per-person amount, weekly x 52, times the number
   of caring claimants and partners, so it is 0, one amount or two;
-- caring by the claimant or partner never removes Income Support eligibility.
+- when the partners care for the same severely disabled person, carer_premium
+  is at most one amount and never more than otherwise (SSCBA s.70(7ZA));
+- caring by the claimant or partner never removes Income Support eligibility
+  or lowers the premium, and below pension age it always opens the IS route.
+
+Adults are 18 to 85, so pension-age families are covered; a partner is never
+16 or more years younger than the claimant, which the model would presume to
+be the claimant's child.
 
 Each example builds every family twice in one simulation, in separate
 households and benefit units: once as drawn and once with a changed caring
@@ -54,8 +61,8 @@ def families(draw):
                 "current_education": "UPPER_SECONDARY",
             }
         dependants.append({**dependant, **draw(carer_inputs())})
-    youngest = max([d["age"] for d in dependants], default=0)
-    head_age = draw(st.integers(max(25, youngest + 16), 60))
+    eldest_dependant = max([d["age"] for d in dependants], default=0)
+    head_age = draw(st.integers(max(18, eldest_dependant + 16), 85))
     has_parent_flag = n_dependants > 0
     head = {
         "age": head_age,
@@ -67,7 +74,7 @@ def families(draw):
     if draw(st.booleans()):
         family.append(
             {
-                "age": draw(st.integers(25, 60)),
+                "age": draw(st.integers(max(18, head_age - 15), 85)),
                 "is_parent": has_parent_flag,
                 **draw(carer_inputs()),
             }
@@ -75,7 +82,7 @@ def families(draw):
     return family + dependants, len(family)
 
 
-def situation(units):
+def situation(units, same_person=None):
     people, benunits, households = {}, {}, {}
     for i, family in enumerate(units):
         names = []
@@ -87,6 +94,9 @@ def situation(units):
             "members": names,
             "esa_income": {YEAR: 0},
             "income_support_assessable_capital": {YEAR: 0},
+            "partners_care_for_same_severely_disabled_person": {
+                YEAR: bool(same_person[i]) if same_person else False
+            },
         }
         households[f"h{i}"] = {"members": names}
     return {"people": people, "benunits": benunits, "households": households}
@@ -151,8 +161,26 @@ def test_claimant_or_partner_caring_never_removes_is_eligibility(drawn, data):
     sim = Simulation(situation=situation(units + with_caring))
     eligible = sim.calculate("income_support_eligible", YEAR)
     premium = sim.calculate("carer_premium", YEAR)
+    sp_age = sim.calculate("is_SP_age", YEAR)
+    offsets = np.cumsum([0] + [len(f) for f in units + with_caring])
     k = len(units)
     for i in range(k):
         assert eligible[k + i] >= eligible[i], units[i]
-        assert eligible[k + i], units[i]
+        if not sp_age[offsets[k + i] : offsets[k + i + 1]].any():
+            assert eligible[k + i], units[i]
         assert premium[k + i] >= premium[i] - 0.01, units[i]
+
+
+@SETTINGS
+@given(st.lists(families(), min_size=1, max_size=6))
+def test_caring_for_the_same_person_pays_at_most_one_premium(drawn):
+    units = [family for family, _ in drawn]
+    k = len(units)
+    sim = Simulation(
+        situation=situation(units + units, same_person=[False] * k + [True] * k)
+    )
+    premium = sim.calculate("carer_premium", YEAR)
+    amount = sim.tax_benefit_system.parameters(YEAR).gov.dwp.carer_premium.single
+    for i in range(k):
+        assert premium[k + i] <= premium[i] + 0.01, units[i]
+        assert abs(premium[k + i] - min(premium[i], amount * WEEKS)) < 0.01, units[i]

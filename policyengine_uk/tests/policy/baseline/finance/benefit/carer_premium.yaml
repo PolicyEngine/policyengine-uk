@@ -159,7 +159,7 @@
     num_carers: 3
     carer_premium: 2 * 48.15 * 52
 
-- name: Two caring partners' premiums enter the legacy applicable amounts
+- name: Two caring partners' premiums enter the working-age applicable amounts
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -178,3 +178,84 @@
         severe_disability_premium: 0
   output:
     benefits_premiums: 2 * 48.15 * 52
+    # Council tax reduction applicable amount: the model's couple allowance
+    # (HB Regs 2006 Sch 3 para 1(3)(b), £150.15) plus two premiums.
+    council_tax_reduction_applicable_amount: (150.15 + 2 * 48.15) * 52
+
+- name: Pension-age couple who both receive Carer's Allowance get two premiums in Housing Benefit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        receives_carer_benefit: true
+      partner:
+        age: 73
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner]
+        disability_premium: 0
+        enhanced_disability_premium: 0
+        severe_disability_premium: 0
+  output:
+    carer_premium: 2 * 48.15 * 52
+    # HB (SPC) Regs 2006 Sch 3 para 1(2)(b): £383.35 for a couple with a
+    # member who reached pensionable age before 1 April 2021; para 9 and
+    # para 12(4): £48.15 for each of them.
+    housing_benefit_applicable_amount: (383.35 + 2 * 48.15) * 52
+
+- name: One premium when both partners care for the same severely disabled person (SSCBA s.70(7ZA))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, partner]
+        partners_care_for_same_severely_disabled_person: true
+  output:
+    carer_premium: 48.15 * 52
+
+- name: Two premiums when the partners care for different people (the default)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, partner]
+        partners_care_for_same_severely_disabled_person: false
+  output:
+    carer_premium: 2 * 48.15 * 52
+
+- name: A 17-year-old partner supplied as the partner counts
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 18
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        care_hours: 35
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    carer_premium: 48.15 * 52

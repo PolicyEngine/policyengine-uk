@@ -6,16 +6,22 @@ class carer_premium(Variable):
     entity = BenUnit
     label = "Carer premium"
     documentation = (
-        "The legacy benefits' carer premium: one amount for each of the "
-        "claimant and partner who is entitled to Carer's Allowance or Carer "
-        "Support Payment (is_carer_for_benefits). A child or young person in "
-        "the family who cares does not qualify the family, and a couple who "
-        "both qualify get the amount twice. Scottish Council Tax Reduction "
-        "pays one premium when both partners care for the same person; the "
-        "model does not know who is cared for, so it pays two. The premium "
-        "enters the Income Support, Housing Benefit and council tax reduction "
-        "applicable amounts; the model takes income-based JSA and "
-        "income-related ESA from reported awards."
+        "The legacy benefits' carer premium: one amount for each claimant or "
+        "partner who qualifies. The model treats a person as qualifying when "
+        "is_carer_for_benefits holds (a carer benefit, or at least the Carer's "
+        "Allowance qualifying hours of care), its proxy for entitlement to "
+        "Carer's Allowance or Carer Support Payment. A child or young person "
+        "in the family who cares does not qualify the family. A couple who "
+        "both qualify get the amount twice, unless they care for the same "
+        "severely disabled person "
+        "(partners_care_for_same_severely_disabled_person): only one of them "
+        "can then be entitled to Carer's Allowance, and Scottish working-age "
+        "council tax reduction pays one premium. Members flagged as claimant "
+        "or partner beyond two (for example the partners of a polygamous "
+        "marriage, supplied as inputs) each count. The premium enters the "
+        "Income Support, Housing Benefit and council tax reduction applicable "
+        "amounts; the model takes income-based JSA and income-related ESA "
+        "from reported awards."
     )
     definition_period = YEAR
     reference = (
@@ -30,6 +36,7 @@ class carer_premium(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7/paragraph/14",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/1/paragraph/10",
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1/paragraph/5",
+        "https://www.legislation.gov.uk/ukpga/1992/4/section/70",
     )
     unit = GBP
 
@@ -37,10 +44,20 @@ class carer_premium(Variable):
         # IS Regs 1987 Sch 2 para 14ZA(1): "the claimant or his partner is, or
         # both of them are, entitled to a carer's allowance ... or carer
         # support payment". Para 15(7) pays the premium "in respect of each
-        # person who satisfied the condition"; the JSA, ESA, HB and CTR
-        # schedules use the same words.
+        # person who satisfied the condition". The JSA, ESA and HB schedules,
+        # and the English, Welsh and Scottish pension-age council tax
+        # reduction schedules, use the same condition and amount; Scottish
+        # working-age council tax reduction (SSI 2021/249 Sch 1 para 5) tests
+        # caring responsibilities and pays each partner who qualifies.
         claimant_or_partner = benunit.members("is_claimant_or_partner", period)
         carer = benunit.members("is_carer_for_benefits", period)
         qualifying_carers = benunit.sum(claimant_or_partner & carer)
+        # Two people caring for the same severely disabled person cannot both
+        # be entitled to Carer's Allowance (SSCBA s.70(7ZA)); SSI 2021/249
+        # Sch 1 para 5(3)-(4) pays one premium in that case too.
+        same_person = benunit("partners_care_for_same_severely_disabled_person", period)
+        qualifying_carers = where(
+            same_person, min_(qualifying_carers, 1), qualifying_carers
+        )
         amount = parameters(period).gov.dwp.carer_premium.single
         return qualifying_carers * amount * WEEKS_IN_YEAR

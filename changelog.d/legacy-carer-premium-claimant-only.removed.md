@@ -1,1 +1,1 @@
-Remove the `gov.dwp.carer_premium.couple` parameter. It held the single rate, while the law pays the per-person amount (`gov.dwp.carer_premium.single`) once for each qualifying claimant and partner. Reforms should change `gov.dwp.carer_premium.single`.
+- Remove the `gov.dwp.carer_premium.couple` parameter. It held the single rate, while the law pays the per-person amount (`gov.dwp.carer_premium.single`) once for each qualifying claimant and partner. Reforms should change `gov.dwp.carer_premium.single`.

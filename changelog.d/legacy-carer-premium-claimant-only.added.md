@@ -1,0 +1,1 @@
+- Add the `partners_care_for_same_severely_disabled_person` benefit-unit input (default false). When the claimant and partner both care for the same severely disabled person, only one of them can be entitled to Carer's Allowance (SSCBA s.70(7ZA)), so the carer premium is paid once.
