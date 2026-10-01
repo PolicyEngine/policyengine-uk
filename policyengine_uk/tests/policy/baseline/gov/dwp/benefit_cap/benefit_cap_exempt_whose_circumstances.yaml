@@ -108,3 +108,156 @@
   output:
     carers_allowance: 0
     is_benefit_cap_exempt_health_disability: true
+
+# Reg. 83(1)(a) to (e): "the claimant is receiving an employment and support
+# allowance that includes the support component"; "(b) a claimant is receiving
+# industrial injuries benefit; (c) a claimant is receiving attendance
+# allowance; ... (e) a claimant is receiving a payment under article 15(1)(c)
+# or article 29(1)(a) of the Armed Forces and Reserve Forces (Compensation
+# Scheme) Order 2011". These name the claimant alone, so a dependant's payment
+# does not exempt the award. Housing Benefit Regulations 2006 reg. 75F(1)(a) to
+# (d) say "the claimant or the claimant's partner".
+
+- name: A claimant receiving industrial injuries benefit exempts the award (reg. 83(1)(b))
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        iidb_reported: 3_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_benefit_cap_exempt_health_disability: true
+
+- name: A qualifying young person receiving industrial injuries benefit does not exempt the award
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        iidb_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_uc_assessed_claimant: [true, false]
+    is_benefit_cap_exempt_health_disability: false
+    is_benefit_cap_exempt: false
+
+- name: A claimant receiving contributory ESA exempts the award (reg. 83(1)(a))
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        esa_contrib_reported: 5_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_benefit_cap_exempt_health_disability: true
+    is_benefit_cap_exempt_other: true
+
+- name: A dependant receiving contributory ESA does not exempt the award
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        esa_contrib_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_benefit_cap_exempt_health_disability: false
+    is_benefit_cap_exempt_other: false
+    is_benefit_cap_exempt: false
+
+- name: A claimant receiving an armed forces compensation payment exempts the award (reg. 83(1)(e))
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        afcs_reported: 5_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_benefit_cap_exempt_other: true
+
+- name: A dependant receiving an armed forces compensation payment does not exempt the award
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        afcs_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_benefit_cap_exempt_other: false
+
+- name: A partner receiving industrial injuries benefit exempts the award, each joint claimant being a claimant
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 38
+        iidb_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    is_uc_assessed_claimant: [true, true]
+    is_benefit_cap_exempt_health_disability: true
+
+- name: A third member flagged as a claimant receiving personal independence payment, not being a claimant or qualifying young person, does not exempt the award
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 50
+        is_uc_claimant: true
+      partner:
+        age: 48
+        is_uc_claimant: true
+      adult_child:
+        age: 22
+        is_uc_claimant: true
+        pip_dl_category: STANDARD
+    benunits:
+      benunit:
+        members: [claimant, partner, adult_child]
+  output:
+    is_uc_assessed_claimant: [true, true, false]
+    is_benefit_cap_exempt_health_disability: false
