@@ -43,6 +43,17 @@ class uc_income_tax_on_earnings(Variable):
         # actually taken on the job, which can include tax on a State
         # Pension coded against it; that is not modelled.
         p = parameters(period)
+        income_tax = p.gov.hmrc.income_tax
+        # earned_taxable_income is adjusted net income less the incomes and
+        # allowances on the exclusions list. Read that list, so a reform
+        # that changes it (for example one that exempts pensions) is
+        # followed here.
+        exclusions = list(income_tax.earned_taxable_income_exclusions)
+        excluded_incomes = [
+            variable
+            for variable in exclusions
+            if variable in income_tax.adjusted_net_income_components
+        ]
         earnings_components = [
             "taxable_employment_income",
             "taxable_self_employment_income",
@@ -52,24 +63,25 @@ class uc_income_tax_on_earnings(Variable):
         bi = p.gov.contrib.ubi_center.basic_income.interactions
         if bi.include_in_means_tests and bi.include_in_taxable_income:
             earnings_components.append("basic_income")
-        earnings = add(person, period, earnings_components)
-        # earned_taxable_income is non-savings, non-property income after
-        # allowances. The part of it above earnings belongs to the person's
-        # other non-savings income.
-        non_savings_non_property_income = person("adjusted_net_income", period) - add(
+        earnings = add(
             person,
             period,
             [
-                "taxable_savings_interest_income",
-                "taxable_dividend_income",
-                "taxable_property_income",
+                variable
+                for variable in earnings_components
+                if variable not in exclusions
             ],
         )
-        other_income = max_(0, non_savings_non_property_income - earnings)
+        # The income left in earned_taxable_income before allowances. The
+        # part of it above earnings is the person's other non-savings income.
+        income_in_base = person("adjusted_net_income", period) - add(
+            person, period, excluded_incomes
+        )
+        other_income = max_(0, income_in_base - earnings)
         taxable_earnings = max_(
             0, person("earned_taxable_income", period) - other_income
         )
-        rates = p.gov.hmrc.income_tax.rates
+        rates = income_tax.rates
         tax = where(
             person("pays_scottish_income_tax", period),
             rates.scotland.rates.calc(taxable_earnings),
@@ -80,5 +92,5 @@ class uc_income_tax_on_earnings(Variable):
         # never exceeds the income tax the person pays, never includes a
         # charge such as the High Income Child Benefit Charge, and does not
         # move when other income absorbs more or less of a reduction.
-        reductions = add(person, period, p.gov.hmrc.income_tax.income_tax_subtractions)
+        reductions = add(person, period, income_tax.income_tax_subtractions)
         return max_(0, tax - reductions)
