@@ -1,0 +1,32 @@
+# SSCBA 1992 s.6(1)(b) and s.6(3): secondary Class 1 contributions are due on
+# earners over 16 and continue after pensionable age.
+
+- name: Under 16 is not liable for secondary Class 1
+  period: 2026
+  input:
+    age: 15
+  output:
+    ni_class_1_secondary_liable: false
+
+- name: Aged 16 is liable for secondary Class 1
+  period: 2026
+  input:
+    age: 16
+  output:
+    ni_class_1_secondary_liable: true
+
+- name: Working-age adult is liable for secondary Class 1
+  period: 2026
+  input:
+    age: 35
+  output:
+    ni_class_1_secondary_liable: true
+
+- name: Adult over state pension age remains liable for secondary Class 1
+  period: 2026
+  input:
+    age: 70
+  output:
+    is_SP_age: true
+    ni_liable: false
+    ni_class_1_secondary_liable: true

@@ -1,3 +1,10 @@
+## [2.102.6] - 2026-09-30
+
+### Fixed
+
+- Charge secondary (employer) Class 1 National Insurance on employees over state pension age. SSCBA 1992 s.6(3) ends only primary (employee) contributions at pensionable age.
+
+
 ## [2.102.5] - 2026-09-30
 
 ### Fixed
