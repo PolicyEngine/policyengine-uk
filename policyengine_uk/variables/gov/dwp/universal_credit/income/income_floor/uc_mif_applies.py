@@ -16,7 +16,7 @@ class uc_mif_applies(Variable):
         # Reg. 62(1) applies to a claimant, not a dependant, in gainful
         # self-employment: a trade carried on in expectation of profit (reg.
         # 64), so a trading loss counts (ADM H4503).
-        claimant = person("is_uc_claimant", period)
+        claimant = person("is_uc_assessed_claimant", period)
         has_self_empl_income = person("self_employment_income", period) != 0
         in_startup_period = person("uc_is_in_startup_period", period)
         return claimant & has_self_empl_income & ~in_startup_period

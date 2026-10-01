@@ -15,7 +15,9 @@ class uc_childcare_work_condition(Variable):
     reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/32"
 
     def formula(benunit, period, parameters):
+        # Reg. 32(1): "the claimant is in paid work" and, in a couple, "the
+        # other member". Nobody else's work counts or is required.
         person = benunit.members
-        claimant = person("is_uc_claimant", period)
+        claimant = person("is_uc_assessed_claimant", period)
         in_work = person("in_work", period)
         return benunit.any(claimant & in_work) & benunit.all(in_work | ~claimant)

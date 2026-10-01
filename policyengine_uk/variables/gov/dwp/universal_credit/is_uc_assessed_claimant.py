@@ -13,7 +13,9 @@ class is_uc_assessed_claimant(Variable):
         "of a couple claims as a single person, their partner's income counts "
         "as if they were joint claimants. A child's or qualifying young "
         "person's income is theirs, not the claimant's, and does not count; "
-        "nor does the income of anyone else in the benefit unit."
+        "nor does the income of anyone else in the benefit unit. Who the "
+        "claimants are comes from `is_uc_claimant`: a member it flags is "
+        "taken as a claimant, whatever their age."
     )
     definition_period = YEAR
     reference = [
@@ -40,7 +42,8 @@ class is_uc_assessed_claimant(Variable):
         # a couple (WRA 2012 s. 2(1)), and "claimant" means a single claimant
         # or each of joint claimants (s. 40), so there are at most two. Where
         # the data flag more (an adult child in the parents' benefit unit),
-        # the two eldest are the claimants.
+        # the two eldest are the claimants; members of the same age rank in
+        # the order they are listed.
         claimant = person("is_uc_claimant", period)
         age = person("age", period)
         rank = person.get_rank(person.benunit, -age, condition=claimant)
