@@ -15,6 +15,11 @@ brackets:
     2020-04-01: 4.55
     2021-04-01: 4.62
     2022-04-01: 4.81
+    2023-04-01:
+      value: 5.28
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 6.4
       reference:
@@ -44,6 +49,11 @@ brackets:
     2020-04-01: 6.45
     2021-04-01: 6.56
     2022-04-01: 6.83
+    2023-04-01:
+      value: 7.49
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 8.6
       reference:
@@ -74,6 +84,11 @@ brackets:
     2020-04-01: 8.2
     2021-04-01: 8.36
     2022-04-01: 9.18
+    2023-04-01:
+      value: 10.18
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 11.44
       reference:
@@ -103,6 +118,11 @@ brackets:
     2020-04-01: 8.2
     2021-04-01: 8.91
     2022-04-01: 9.5
+    2023-04-01:
+      value: 10.42
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 11.44
       reference:
@@ -132,6 +152,11 @@ brackets:
     2020-04-01: 8.72
     2021-04-01: 8.91
     2022-04-01: 9.5
+    2023-04-01:
+      value: 10.42
+      reference:
+        - title: The National Minimum Wage (Amendment) Regulations 2023
+          href: https://www.legislation.gov.uk/uksi/2023/354/made
     2024-04-01:
       value: 11.44
       reference:

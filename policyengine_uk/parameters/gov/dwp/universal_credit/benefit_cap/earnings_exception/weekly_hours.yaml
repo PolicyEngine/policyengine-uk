@@ -1,0 +1,13 @@
+description: Hours a week at the national living wage rate whose pay, converted to a monthly amount, is the earned income at or above which a Universal Credit award is excepted from the benefit cap. Zero before 1 April 2017, when the regulations set a fixed sum instead.
+values:
+  2013-04-29: 0
+  2017-04-01: 16
+metadata:
+  unit: hour
+  period: week
+  label: Universal Credit benefit cap earnings exception weekly hours at the national living wage
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 82(1)(a)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+    - title: The Universal Credit (Benefit Cap Earnings Exception) Amendment Regulations 2017 reg. 2(3)(a)
+      href: https://www.legislation.gov.uk/uksi/2017/138/regulation/2/made

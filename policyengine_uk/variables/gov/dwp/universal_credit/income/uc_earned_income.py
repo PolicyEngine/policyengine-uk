@@ -16,6 +16,6 @@ class uc_earned_income(Variable):
         # Each person's earned income is net of their own deductions
         # (reg. 55(5), reg. 57(2)); the work allowance then comes off the
         # combined earned income before the taper (reg. 22(1)(b)).
-        earned_income = add(benunit, period, ["uc_individual_earned_income"])
+        earned_income = benunit("uc_earned_income_before_work_allowance", period)
         work_allowance = benunit("uc_work_allowance", period)
         return max_(0, earned_income - work_allowance)

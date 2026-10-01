@@ -1,0 +1,306 @@
+# Universal Credit benefit cap earnings exception, UC Regs 2013 reg. 82.
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+#
+# (1)(a): the cap does not apply where "the claimant's earned income or, if
+# the claimant is a member of a couple, the couple's combined earned income"
+# is at least the pay for 16 hours a week at the reg. 4 National Minimum
+# Wage Regulations rate (the national living wage), times 52 and divided by
+# 12. Reg. 6(1A)(za) disregards a fraction of a pound in that amount.
+# (4): earned income excludes income treated as earned under reg. 62 (the
+# minimum income floor).
+# Earned income is net of the person's own income tax, NI and relievable
+# pension contributions on their earnings (regs. 55(5), 57(2)); Class 3 is not
+# on earnings. In 2025-26 and 2026-27 the personal allowance and the primary
+# threshold are both 12,570 a year.
+
+# --- Threshold: 16 x national living wage x 52 / 12, whole pounds ---
+
+- name: Before 1 April 2017 the threshold was 430 a month
+  # Reg. 82(1)(a) as made; SI 2017/138 substituted the hours formula.
+  period: 2016
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 5_160 # 430 x 12
+
+- name: 2017-18 threshold from the 7.50 national living wage
+  # 7.50 x 16 x 52 / 12 = 520.00.
+  period: 2017
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 6_240 # 520 x 12
+
+- name: 2020-21 threshold rounds 604.59 down to 604 a month
+  # 8.72 x 16 x 52 / 12 = 604.59.
+  period: 2020
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 7_248 # 604 x 12
+
+- name: 2022-23 threshold rounds 658.67 down to 658 a month
+  # 9.50 x 16 x 52 / 12 = 658.67.
+  period: 2022
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 7_896 # 658 x 12
+
+- name: 2023-24 threshold from the 10.42 national living wage
+  # 10.42 x 16 x 52 / 12 = 722.45 (NMW (Amendment) Regulations 2023).
+  period: 2023
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 8_664 # 722 x 12
+
+- name: 2024-25 threshold rounds 793.17 down to 793 a month
+  # 11.44 x 16 x 52 / 12 = 793.17.
+  period: 2024
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 9_516 # 793 x 12
+
+- name: 2025-26 threshold is 846 a month
+  # 12.21 x 16 x 52 / 12 = 846.56; GOV.UK gives 846 to 31 March 2026.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 10_152 # 846 x 12
+
+- name: 2026-27 threshold is 881 a month
+  # 12.71 x 16 x 52 / 12 = 881.23; GOV.UK gives 881 from 1 April 2026.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+  output:
+    benefit_cap_earnings_threshold: 10_572 # 881 x 12
+
+- name: The threshold uses the national living wage whatever the claimant's age
+  # Reg. 82(1)(a) refers to the reg. 4 rate, not the claimant's own rate.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 19
+  output:
+    benefit_cap_earnings_threshold: 10_572
+
+# --- Earned income at the threshold ---
+
+- name: Earnings of 10,573 meet the 2026-27 threshold after rounding
+  # 10,573 >= 10,572. Without the whole-pound rounding the threshold would be
+  # 10,574.72 and the exception would not apply.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 10_573
+  output:
+    benefit_cap_earned_income: 10_573
+    is_benefit_cap_exempt_earnings: true
+
+- name: Earnings of 10,571 fall short of the 2026-27 threshold
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 10_571
+  output:
+    benefit_cap_earned_income: 10_571
+    is_benefit_cap_exempt_earnings: false
+
+- name: Earned income is net of the person's income tax and NI on the earnings
+  # Tax (14,000 - 12,570) x 20% = 286; Class 1 (14,000 - 12,570) x 8% =
+  # 114.40; 14,000 - 286 - 114.40 = 13,599.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 14_000
+  output:
+    benefit_cap_earned_income: 13_599.60
+    is_benefit_cap_exempt_earnings: true
+
+- name: Pension contributions are deducted from earned income
+  # Reg. 55(5)(a): 11,500 - 1,000 = 10,500 < 10,572.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 11_500
+        employee_pension_contributions: 1_000
+  output:
+    benefit_cap_earned_income: 10_500
+    is_benefit_cap_exempt_earnings: false
+
+- name: Voluntary Class 3 contributions are not deducted
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 10_600
+        ni_class_3: 900
+  output:
+    benefit_cap_earned_income: 10_600
+    is_benefit_cap_exempt_earnings: true
+
+- name: Tax on the person's property income is not deducted from their earnings
+  # Earnings are the lowest slice of income and sit inside the personal
+  # allowance, so the tax on earnings is nil.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 10_600
+        property_income: 40_000
+  output:
+    benefit_cap_earned_income: 10_600
+    is_benefit_cap_exempt_earnings: true
+
+- name: A partner's tax on property income does not reduce the couple's earned income
+  period: 2026
+  input:
+    people:
+      earner:
+        age: 30
+        employment_income: 10_600
+      partner:
+        age: 30
+        property_income: 40_000
+    benunits:
+      benunit:
+        members: [earner, partner]
+  output:
+    benefit_cap_earned_income: 10_600
+    is_benefit_cap_exempt_earnings: true
+
+- name: A couple's earned income is combined
+  # Reg. 82(1)(a): 6,000 + 6,000 = 12,000 >= 10,572.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        employment_income: 6_000
+      person2:
+        age: 30
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    benefit_cap_earned_income: 12_000
+    is_benefit_cap_exempt_earnings: true
+
+- name: Income treated as earned under the minimum income floor does not count
+  # Reg. 82(4). Profits of 3,000 are below the Class 4 lower profits limit, so
+  # earned income is 3,000; the floor (35 x 12.71 x 52 = 23,132.20 gross)
+  # counts for the award but not for the exception.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        self_employment_income: 3_000
+        uc_is_in_startup_period: false
+  output:
+    uc_mif_applies: true
+    benefit_cap_earned_income: 3_000
+    is_benefit_cap_exempt_earnings: false
+
+- name: Earnings of 5,200 in 2016-17 meet the 430 a month threshold
+  period: 2016
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 5_200
+  output:
+    is_benefit_cap_exempt_earnings: true
+
+- name: Earnings of 8,700 in 2023-24 meet the 722 a month threshold
+  period: 2023
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 8_700
+  output:
+    is_benefit_cap_exempt_earnings: true
+
+- name: Earnings of 8,600 in 2023-24 fall short of the 722 a month threshold
+  period: 2023
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 8_600
+  output:
+    is_benefit_cap_exempt_earnings: false
+
+# --- #1986 counterexample ---
+
+- name: A partner's voluntary Class 3 does not remove the couple's exception
+  # London couple, four children, private rent 36,000, 2025-26. One partner
+  # earns 10,300; the other has no earnings and pays 923 of Class 3. Earned
+  # income is 10,300 >= 846 x 12 = 10,152, so the cap does not apply. Before
+  # #1986 the model deducted the partner's Class 3 and capped the award.
+  period: 2025
+  input:
+    people:
+      earner:
+        age: 35
+        employment_income: 10_300
+      partner:
+        age: 35
+        ni_class_3: 923
+      child1:
+        age: 3
+      child2:
+        age: 5
+      child3:
+        age: 8
+      child4:
+        age: 10
+    benunits:
+      benunit:
+        members: [earner, partner, child1, child2, child3, child4]
+        would_claim_uc: true
+    households:
+      household:
+        members: [earner, partner, child1, child2, child3, child4]
+        region: LONDON
+        tenure_type: RENT_PRIVATELY
+        rent: 36_000
+  output:
+    benefit_cap_earned_income: 10_300
+    benefit_cap_earnings_threshold: 10_152
+    is_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0

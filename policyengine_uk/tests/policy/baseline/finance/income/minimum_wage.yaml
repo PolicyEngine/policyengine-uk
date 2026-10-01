@@ -62,3 +62,46 @@
     is_apprentice: true
   output:
     minimum_wage: 8
+
+- name: 2023-24 national living wage for a person aged 23 or over
+  # NMW (Amendment) Regulations 2023 (SI 2023/354): reg. 4 rate 10.42.
+  period: 2023
+  absolute_error_margin: 0.001
+  input:
+    age: 30
+  output:
+    minimum_wage: 10.42
+
+- name: 2023-24 rate for a person aged 21 or 22
+  period: 2023
+  absolute_error_margin: 0.001
+  input:
+    age: 21
+  output:
+    minimum_wage: 10.18
+
+- name: 2023-24 rate for a person aged 18 to 20
+  period: 2023
+  absolute_error_margin: 0.001
+  input:
+    age: 19
+  output:
+    minimum_wage: 7.49
+
+- name: 2023-24 rate for a person aged under 18
+  period: 2023
+  absolute_error_margin: 0.001
+  input:
+    age: 17
+  output:
+    minimum_wage: 5.28
+
+- name: 2023-24 apprenticeship rate
+  period: 2023
+  absolute_error_margin: 0.001
+  input:
+    age: 19
+    is_apprentice: true
+  output:
+    minimum_wage: 5.28
+
