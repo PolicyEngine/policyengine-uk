@@ -354,3 +354,93 @@
         members: [claimant, partner]
   output:
     pension_credit_assessable_capital: 7_500
+
+- name: A dependent young person's Lifetime ISA does not count against the parent's claim
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        # A qualifying young person: 18 and in non-advanced education.
+        age: 18
+        current_education: POST_SECONDARY
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+  output:
+    is_uc_claimant: [true, false]
+    uc_assessable_capital: 0
+    housing_benefit_assessable_capital: 0
+    income_support_assessable_capital: 0
+    jsa_income_assessable_capital: 0
+    esa_income_assessable_capital: 0
+
+- name: A holder the dataset records as a dependant does not count
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 50
+      dependant:
+        age: 19
+        is_uc_claimant: false
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [parent, dependant]
+    households:
+      household:
+        members: [parent, dependant]
+  output:
+    uc_assessable_capital: 0
+    housing_benefit_assessable_capital: 0
+
+- name: A pensioner's Pension Credit does not count a dependent young person's Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: POST_SECONDARY
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [pensioner, young_person]
+    households:
+      household:
+        members: [pensioner, young_person]
+  output:
+    pension_credit_assessable_capital: 0
+
+- name: Before the Lifetime ISA existed the means tests count none
+  period: 2016
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    uc_assessable_capital: 0
+    housing_benefit_assessable_capital: 0
+    income_support_assessable_capital: 0
+    jsa_income_assessable_capital: 0
+    esa_income_assessable_capital: 0

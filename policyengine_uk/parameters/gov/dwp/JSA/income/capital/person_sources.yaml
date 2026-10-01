@@ -1,20 +1,27 @@
 description: >
   Person-level model variables counted as income-based Jobseeker's Allowance
   capital of the person's own benefit unit. They are summed over the benefit
-  unit's members, so they need none of the household proxy that the household
-  `sources` use. `lifetime_isa_countable_capital` is a Lifetime ISA at its
-  surrender value: regulation 111 values capital at its current market or
-  surrender value, and DMG 29665 counts a Lifetime ISA at 75% of its value
-  under 60 and in full from 60.
+  unit's claimant and partner (`is_uc_claimant`), so they need none of the
+  household proxy that the household `sources` use, and a dependant's holding
+  is left out: regulation 109 kept a child's or young person's capital out of
+  the claimant's, and since children moved to child tax credit they are
+  outside the assessment altogether. `lifetime_isa_countable_capital` is a
+  Lifetime ISA at its surrender value: regulation 111 values capital at its
+  current market or surrender value, and DMG 29665 counts a Lifetime ISA at
+  75% of its value under 60 and in full from 60. Lifetime ISAs exist from 6
+  April 2017, and the list is empty before then.
 metadata:
   label: Income-based JSA person-level capital sources
   period: year
   unit: list
   reference:
+    - title: The Jobseeker's Allowance Regulations 1996 reg. 109
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/109
     - title: The Jobseeker's Allowance Regulations 1996 reg. 111
       href: https://www.legislation.gov.uk/uksi/1996/207/regulation/111
     - title: Decision Makers' Guide, Chapter 29 (Capital), para. 29665
       href: https://assets.publishing.service.gov.uk/media/6894a69d3080e72710b2e237/dmg-ch-29.pdf
 values:
+  1996-10-07: []
   2017-04-06:
     - lifetime_isa_countable_capital

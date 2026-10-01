@@ -1,20 +1,27 @@
 description: >
   Person-level model variables counted as Income Support capital of the
-  person's own benefit unit. They are summed over the benefit unit's members,
-  so they need none of the household proxy that the household `sources` use.
-  `lifetime_isa_countable_capital` is a Lifetime ISA at its surrender value:
-  regulation 49 values capital at its current market or surrender value, and
-  DMG 29665 counts a Lifetime ISA at 75% of its value under 60 and in full
-  from 60.
+  person's own benefit unit. They are summed over the benefit unit's claimant
+  and partner (`is_uc_claimant`), so they need none of the household proxy
+  that the household `sources` use, and a dependant's holding is left out:
+  regulation 47 kept a child's or young person's capital out of the
+  claimant's, and since children moved to child tax credit they are outside
+  the assessment altogether. `lifetime_isa_countable_capital` is a Lifetime
+  ISA at its surrender value: regulation 49 values capital at its current
+  market or surrender value, and DMG 29665 counts a Lifetime ISA at 75% of its
+  value under 60 and in full from 60. Lifetime ISAs exist from 6 April 2017,
+  and the list is empty before then.
 metadata:
   label: Income Support person-level capital sources
   period: year
   unit: list
   reference:
+    - title: The Income Support (General) Regulations 1987 reg. 47
+      href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/47
     - title: The Income Support (General) Regulations 1987 reg. 49
       href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/49
     - title: Decision Makers' Guide, Chapter 29 (Capital), para. 29665
       href: https://assets.publishing.service.gov.uk/media/6894a69d3080e72710b2e237/dmg-ch-29.pdf
 values:
+  2010-01-01: []
   2017-04-06:
     - lifetime_isa_countable_capital

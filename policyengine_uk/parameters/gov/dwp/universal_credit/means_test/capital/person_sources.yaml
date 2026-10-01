@@ -1,20 +1,26 @@
 description: >
   Person-level model variables counted as Universal Credit capital of the
-  person's own benefit unit. They are summed over the benefit unit's members,
-  so they need none of the household proxy that the household `sources` use.
-  `lifetime_isa_countable_capital` is a Lifetime ISA at its surrender value:
-  regulation 49(1) values capital at its current market or surrender value,
-  and ADM H1659 counts a Lifetime ISA at 75% of its value under 60 and in
-  full from 60.
+  person's own benefit unit. They are summed over the benefit unit's claimant
+  and partner (`is_uc_claimant`), so they need none of the household proxy
+  that the household `sources` use, and a dependant's holding is left out:
+  section 5 of the Welfare Reform Act 2012 tests the claimant's, or the joint
+  claimants' combined, capital. `lifetime_isa_countable_capital` is a
+  Lifetime ISA at its surrender value: regulation 49(1) values capital at its
+  current market or surrender value, and ADM H1659 counts a Lifetime ISA at
+  75% of its value under 60 and in full from 60. Lifetime ISAs exist from 6
+  April 2017, and the list is empty before then.
 metadata:
   label: Universal Credit person-level capital sources
   period: year
   unit: list
   reference:
+    - title: Welfare Reform Act 2012 s. 5
+      href: https://www.legislation.gov.uk/ukpga/2012/5/section/5
     - title: The Universal Credit Regulations 2013 reg. 49(1)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/49/1
     - title: Advice for Decision Making, Chapter H1 (Capital), para. H1659
       href: https://assets.publishing.service.gov.uk/media/693ace15c72b0f8ccf33d609/adm-ch-H1.pdf
 values:
+  2013-04-29: []
   2017-04-06:
     - lifetime_isa_countable_capital

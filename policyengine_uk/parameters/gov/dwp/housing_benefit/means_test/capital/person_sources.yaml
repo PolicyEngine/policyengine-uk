@@ -1,17 +1,22 @@
 description: >
   Person-level model variables counted as Housing Benefit capital of the
-  person's own benefit unit. They are summed over the benefit unit's members,
-  so they need none of the household proxy that the household `sources` use.
-  `lifetime_isa_countable_capital` is a Lifetime ISA at its surrender value:
-  regulation 47 (regulation 45 of the pension-age regulations) values capital
-  at its current market or surrender value, in the words of the DWP benefits'
-  regulations, for which DWP guidance counts a Lifetime ISA at 75% of its
-  value under 60 and in full from 60.
+  person's own benefit unit. They are summed over the benefit unit's claimant
+  and partner (`is_uc_claimant`), so they need none of the household proxy
+  that the household `sources` use, and a dependant's holding is left out:
+  regulation 45 says the capital of a child or young person in the claimant's
+  family is not the claimant's. `lifetime_isa_countable_capital` is a
+  Lifetime ISA at its surrender value: regulation 47 (regulation 45 of the
+  pension-age regulations) values capital at its current market or surrender
+  value, in the words of the DWP benefits' regulations, for which DWP guidance
+  counts a Lifetime ISA at 75% of its value under 60 and in full from 60.
+  Lifetime ISAs exist from 6 April 2017, and the list is empty before then.
 metadata:
   label: Housing Benefit person-level capital sources
   period: year
   unit: list
   reference:
+    - title: The Housing Benefit Regulations 2006 reg. 45
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/45
     - title: The Housing Benefit Regulations 2006 reg. 47
       href: https://www.legislation.gov.uk/uksi/2006/213/regulation/47
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 45
@@ -19,5 +24,6 @@ metadata:
     - title: Decision Makers' Guide, Chapter 29 (Capital), para. 29665 (Income Support and JSA, whose valuation rule has the same words)
       href: https://assets.publishing.service.gov.uk/media/6894a69d3080e72710b2e237/dmg-ch-29.pdf
 values:
+  2006-04-10: []
   2017-04-06:
     - lifetime_isa_countable_capital

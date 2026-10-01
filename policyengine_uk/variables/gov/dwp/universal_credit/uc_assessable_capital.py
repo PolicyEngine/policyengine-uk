@@ -9,7 +9,9 @@ class uc_assessable_capital(Variable):
         "Universal Credit capital counted from the configured capital sources, "
         "with benunit-reported overrides when available. Household sources are "
         "allocated by the household proxy; person-level sources, such as a "
-        "Lifetime ISA, count only in the holder's own benunit."
+        "Lifetime ISA, count only for the holder's own benunit, and only when "
+        "the holder is its claimant or partner (is_uc_claimant): a dependant's "
+        "capital is not the claimant's."
     )
     definition_period = YEAR
     unit = GBP
@@ -21,8 +23,9 @@ class uc_assessable_capital(Variable):
         household_capital = sum(
             household(source, period) for source in p.capital.sources
         )
+        claimant_or_partner = benunit.members("is_uc_claimant", period)
         person_capital = sum(
-            benunit.sum(benunit.members(source, period))
+            benunit.sum(benunit.members(source, period) * claimant_or_partner)
             for source in p.capital.person_sources
         )
         benunit_adults = add(benunit, period, ["is_adult"])
