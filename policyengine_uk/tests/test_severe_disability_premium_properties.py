@@ -21,7 +21,8 @@ Invariants, for any generated population of households:
    qualifying members).
 3. Metamorphic: adding a household member aged 18 or over, in another benefit
    unit, who receives no qualifying benefit and is not blind, removes the
-   premium.
+   premium. The oracle also treats a benefit-unit member aged 18 or 19 who is
+   not a qualifying young person as a non-dependant (HB Regs regs 3, 19).
 4. Metamorphic: paying anyone in the benefit unit a carer benefit never
    increases the premium.
 5. Metamorphic: giving anyone in the household a qualifying benefit, or making
@@ -86,20 +87,60 @@ def person(draw, age):
 
 
 @st.composite
+def young_person(draw):
+    # A 16-19 year old in the benefit unit, who is a qualifying young person
+    # only if in non-advanced education and (at 19) started before 19.
+    return dict(
+        draw(person(st.integers(16, 19))),
+        in_education=draw(st.booleans()),
+        entry_age=draw(st.sampled_from([17, 19])),
+    )
+
+
+@st.composite
 def households(draw):
-    adults = draw(st.lists(person(ADULT_AGE), min_size=1, max_size=2))
+    young = draw(st.lists(young_person(), max_size=1))
+    # With a 16-19 year old present, adults aged 40+ make them the head's
+    # presumed child under #1896's claimant and partner inference.
+    adult_age = st.integers(40, 60) if young else ADULT_AGE
+    adults = draw(st.lists(person(adult_age), min_size=1, max_size=2))
     children = draw(st.lists(person(st.integers(0, 15)), max_size=1))
     others = draw(st.lists(person(st.integers(15, 70)), max_size=2))
-    return dict(adults=adults, children=children, others=others)
+    return dict(adults=adults, children=children, young=young, others=others)
+
+
+def family_members(unit):
+    return unit["adults"] + unit["children"] + unit.get("young", [])
+
+
+def with_family(unit, family):
+    a, c = len(unit["adults"]), len(unit["children"])
+    return dict(
+        unit, adults=family[:a], children=family[a : a + c], young=family[a + c :]
+    )
 
 
 def qualifies(p):
     return BENEFITS[p["benefit"]][1]
 
 
+def is_qualifying_young_person(p):
+    """Child Benefit qualifying young person (SSCBA s.142), as HB reg 19 uses."""
+    return (
+        16 <= p["age"] < 20
+        and p.get("in_education", False)
+        and (p["age"] < 19 or p.get("entry_age", 99) < 19)
+    )
+
+
 def person_inputs(p):
     inputs = {"age": {YEAR: p["age"]}, "is_blind": {YEAR: p["blind"]}}
     inputs["receives_carer_benefit"] = {YEAR: p["carer"]}
+    if "in_education" in p:
+        inputs["is_in_non_advanced_education"] = {YEAR: p["in_education"]}
+        inputs["age_started_or_accepted_current_education_or_training"] = {
+            YEAR: p["entry_age"]
+        }
     for name, value in BENEFITS[p["benefit"]][0].items():
         inputs[name] = {YEAR: value}
     return inputs
@@ -110,7 +151,7 @@ def simulate(units, variables=("severe_disability_premium",)):
     people, benunits, hh = {}, {}, {}
     for i, unit in enumerate(units):
         family = []
-        for j, p in enumerate(unit["adults"] + unit["children"]):
+        for j, p in enumerate(family_members(unit)):
             people[f"h{i}_f{j}"] = person_inputs(p)
             family.append(f"h{i}_f{j}")
         benunits[f"h{i}_family"] = {"members": family}
@@ -136,11 +177,15 @@ def simulate_before_after(units, changed):
 
 def oracle(unit):
     """The premium by the statutory rule, written independently of the model."""
-    adults, family = unit["adults"], unit["adults"] + unit["children"]
+    adults, family = unit["adults"], family_members(unit)
+    # Non-dependants: other benefit units in the household, and anyone in the
+    # benefit unit who is not the claimant, partner, a child or a qualifying
+    # young person (HB Regs regs 3(2)(a), 19).
+    candidates = unit["others"] + [
+        y for y in unit.get("young", []) if not is_qualifying_young_person(y)
+    ]
     blocking = [
-        o
-        for o in unit["others"]
-        if o["age"] >= 18 and not qualifies(o) and not o["blind"]
+        o for o in candidates if o["age"] >= 18 and not qualifies(o) and not o["blind"]
     ]
     if blocking:
         return 0.0
@@ -186,6 +231,21 @@ def _adult(benefit, blind=False, carer=False):
             children=[],
             others=[],
         ),
+        # An 18-year-old in the benefit unit, not in education: a
+        # non-dependant, so no premium.
+        dict(
+            adults=[_adult("pip_standard")],
+            children=[],
+            young=[dict(_adult("none"), age=18, in_education=False, entry_age=17)],
+            others=[],
+        ),
+        # A 19-year-old qualifying young person: family, so the single rate.
+        dict(
+            adults=[_adult("pip_standard")],
+            children=[],
+            young=[dict(_adult("none"), age=19, in_education=True, entry_age=17)],
+            others=[],
+        ),
     ]
 )
 def test_premium_matches_statutory_oracle_and_range(units):
@@ -215,11 +275,10 @@ def test_counted_non_dependant_removes_premium(units, age):
 @given(st.lists(households(), min_size=1, max_size=10), st.integers(0, 2))
 def test_carer_benefit_never_increases_premium(units, index):
     def pay_carer(unit):
-        family = unit["adults"] + unit["children"]
+        family = family_members(unit)
         i = index % len(family)
         family = [dict(p, carer=p["carer"] or k == i) for k, p in enumerate(family)]
-        n = len(unit["adults"])
-        return dict(unit, adults=family[:n], children=family[n:])
+        return with_family(unit, family)
 
     before, after = simulate_before_after(units, [pay_carer(u) for u in units])
     assert np.all(after <= before + 0.01)
@@ -233,7 +292,8 @@ def test_carer_benefit_never_increases_premium(units, index):
 )
 def test_qualifying_benefit_or_blindness_never_reduces_premium(units, index, change):
     def apply(unit):
-        everyone = unit["adults"] + unit["children"] + unit["others"]
+        family = family_members(unit)
+        everyone = family + unit["others"]
         i = index % len(everyone)
         changed = [
             dict(p, **({"blind": True} if change == "blind" else {"benefit": change}))
@@ -241,12 +301,8 @@ def test_qualifying_benefit_or_blindness_never_reduces_premium(units, index, cha
             else p
             for k, p in enumerate(everyone)
         ]
-        a, c = len(unit["adults"]), len(unit["children"])
         return dict(
-            unit,
-            adults=changed[:a],
-            children=changed[a : a + c],
-            others=changed[a + c :],
+            with_family(unit, changed[: len(family)]), others=changed[len(family) :]
         )
 
     before, after = simulate_before_after(units, [apply(u) for u in units])
