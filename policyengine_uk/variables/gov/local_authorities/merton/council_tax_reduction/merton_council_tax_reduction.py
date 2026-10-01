@@ -18,9 +18,7 @@ class merton_council_tax_reduction(Variable):
         ctr = parameters(period).gov.local_authorities.merton.council_tax_reduction
         local_authority = benunit.household("local_authority", period)
         country = benunit.household("country", period)
-        has_pensioner = benunit.household(
-            "council_tax_reduction_household_has_pensioner", period
-        )
+        has_pensioner = benunit("council_tax_reduction_pensioner", period)
         working_age = is_merton_working_age(local_authority, country, has_pensioner)
         return legacy_council_tax_reduction(
             benunit,

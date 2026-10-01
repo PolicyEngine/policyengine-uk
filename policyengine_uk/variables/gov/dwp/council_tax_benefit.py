@@ -9,7 +9,7 @@ class council_tax_benefit(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        supported = benunit.household("council_tax_reduction_scheme_supported", period)
+        supported = benunit("council_tax_reduction_scheme_supported", period)
         simulated = benunit("simulated_council_tax_reduction_benunit", period)
         reported = benunit("council_tax_benefit_reported", period)
         return where(supported, simulated, reported)

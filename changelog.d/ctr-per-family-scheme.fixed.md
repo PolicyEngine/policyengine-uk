@@ -1,0 +1,1 @@
+Assess each family that claims Council Tax Reduction under its own scheme and its own non-dependant exemption, so in a shared-rent household a working-age sharer no longer takes the pensioner scheme because the household head's family is pension-age (or the reverse), and one claimant's disability no longer exempts another's claim from non-dependant deductions.
