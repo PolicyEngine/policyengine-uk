@@ -12,7 +12,10 @@ class carer_premium(Variable):
         "the family who cares does not qualify the family, and a couple who "
         "both qualify get the amount twice. Scottish Council Tax Reduction "
         "pays one premium when both partners care for the same person; the "
-        "model does not know who is cared for, so it pays two."
+        "model does not know who is cared for, so it pays two. The premium "
+        "enters the Income Support, Housing Benefit and council tax reduction "
+        "applicable amounts; the model takes income-based JSA and "
+        "income-related ESA from reported awards."
     )
     definition_period = YEAR
     reference = (
