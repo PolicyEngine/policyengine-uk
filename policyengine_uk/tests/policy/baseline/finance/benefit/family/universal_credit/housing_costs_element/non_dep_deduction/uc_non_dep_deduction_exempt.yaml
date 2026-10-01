@@ -49,3 +49,32 @@
   output:
     receives_carers_allowance: false
     uc_non_dep_deduction_exempt: true
+
+# UC Regs 2013 Sch 4 para 16(2)(i).
+- name: Exempt - responsible for a child under 5
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 23
+    pension_credit: 0
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    is_carer_for_benefits: false
+    is_responsible_for_child_under_5_for_universal_credit: true
+  output:
+    uc_non_dep_deduction_exempt: true
+
+- name: Not exempt - not responsible for a child under 5
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 23
+    pension_credit: 0
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    is_carer_for_benefits: false
+    is_responsible_for_child_under_5_for_universal_credit: false
+  output:
+    uc_non_dep_deduction_exempt: false
