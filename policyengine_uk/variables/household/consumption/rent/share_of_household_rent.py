@@ -8,7 +8,8 @@ class share_of_household_rent(Variable):
     documentation = (
         "The share of the household's rent this family is liable for: the "
         "people liable for it in this family over all the people liable for "
-        "it. The household head's family has the whole rent unless other "
+        "it (UC Regs 2013 Sch 4 para 24(4): A / B x C; HB Regs 2006 reg "
+        "12B(4)). The household head's family has the whole rent unless other "
         "families are liable for a share."
     )
     definition_period = YEAR
