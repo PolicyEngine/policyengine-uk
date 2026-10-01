@@ -1,6 +1,8 @@
-description: The Department for Education designates these programs as qualifying benefits for the targeted childcare entitlement eligibility (the 2-year-old entitlement) in England.
+description: The Department for Education designates these programs as qualifying benefits for the targeted childcare entitlement eligibility (the 2-year-old entitlement) in England. The child's parent must be entitled to one, so income-based JSA and income-related ESA count only as the claimant's or partner's award.
 metadata:
   reference:
+    - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) Regulations 2014 - regulation 2(1), "eligible child"
+      href: https://www.legislation.gov.uk/uksi/2014/2147/regulation/2
     - title: The Local Authority (Duty to Secure Early Years Provision Free of Charge) (Amendment) Regulations 2018 - part 2.a
       href: https://www.legislation.gov.uk/uksi/2018/146/regulation/2/made
   period: year
@@ -9,6 +11,6 @@ metadata:
 values:
   2014-01-01:
     - income_support
-    - jsa_income
-    - esa_income
+    - claimant_or_partner_jsa_income
+    - claimant_or_partner_esa_income
     - guarantee_credit

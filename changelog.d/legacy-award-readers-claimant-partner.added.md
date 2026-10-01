@@ -1,0 +1,2 @@
+- Add `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income`: the income-related award on the claimant's and partner's reported amounts after the capital test, or a directly entered `esa_income` or `jsa_income`.
+- Add `is_on_income_related_esa`, `is_on_income_based_jsa` and `is_on_income_support`: whether the award is payable to the person, through their couple's award for the claimant and partner and through their own report for anyone else.

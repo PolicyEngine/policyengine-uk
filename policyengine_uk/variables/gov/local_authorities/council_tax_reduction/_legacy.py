@@ -127,10 +127,13 @@ def normal_gross_income_non_dep_deduction(
         "council_tax_reduction_household_has_non_dep_exemption", period
     )
     full_time_student = is_full_time_student_non_dep(person, period)
+    # No deduction for a non-dependant "who is on" Income Support, income-based
+    # JSA or income-related ESA: their own (or their couple's) award, not that of
+    # another member of their benefit unit.
     income_based_benefit = (
-        (person.benunit("income_support", period) > 0)
-        | (person.benunit("jsa_income", period) > 0)
-        | (person.benunit("esa_income", period) > 0)
+        person("is_on_income_support", period)
+        | person("is_on_income_based_jsa", period)
+        | person("is_on_income_related_esa", period)
         | (person.benunit("pension_credit", period) > 0)
     )
     has_uc = person.benunit("universal_credit", period) > 0

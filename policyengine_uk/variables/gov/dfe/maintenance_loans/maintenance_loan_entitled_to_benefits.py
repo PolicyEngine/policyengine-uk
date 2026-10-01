@@ -27,6 +27,9 @@ class maintenance_loan_entitled_to_benefits(Variable):
             > 0
         )
         has_child = person("is_parent", period)
-        receives_income_related_esa = person.benunit("esa_income", period) > 0
+        # The student's own award (or their couple's), not another benefit-unit
+        # member's: the schedule is for students who could claim benefits
+        # themselves (SI 2011/1986 regs 61(2) and 71(1)(h)).
+        receives_income_related_esa = person("is_on_income_related_esa", period)
 
         return has_child | qualifying_disability_support | receives_income_related_esa
