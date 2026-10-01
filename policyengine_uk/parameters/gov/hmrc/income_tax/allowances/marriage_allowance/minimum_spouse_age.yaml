@@ -1,0 +1,11 @@
+description: Youngest age at which anyone in the UK can be a party to a marriage, and so a spouse who can make or gain from a Marriage Allowance election. It is 16 in Scotland; England and Wales raised it to 18 from 27 February 2023.
+values:
+  0000-01-01: 16
+metadata:
+  unit: year
+  label: Minimum age of a Marriage Allowance spouse
+  reference:
+    - title: Marriage (Scotland) Act 1977 s. 1(1)
+      href: https://www.legislation.gov.uk/ukpga/1977/15/section/1
+    - title: Marriage and Civil Partnership (Minimum Age) Act 2022 s. 1
+      href: https://www.legislation.gov.uk/ukpga/2022/28/section/1

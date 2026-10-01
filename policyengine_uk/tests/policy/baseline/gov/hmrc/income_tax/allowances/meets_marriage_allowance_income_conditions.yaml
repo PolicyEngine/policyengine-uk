@@ -1,41 +1,151 @@
-- name: Basic rate band is eligible for Marriage Allowance
-  period: 2021
+# ITA 2007 s. 55B(2)(b), (ba) and s. 55C(1)(c), (ca): only the basic rates,
+# the Scottish starter and intermediate rates, the dividend ordinary rate and
+# the nil and starting rates for savings. 2026-27: personal allowance 12,570,
+# basic rate limit 37,700, Scottish higher rate from 31,092 of taxable income.
+
+- name: Basic-rate earner meets the conditions
+  period: 2026
   input:
-    tax_band: BASIC
+    employment_income: 30_000
   output:
     meets_marriage_allowance_income_conditions: true
 
-- name: Higher rate band is ineligible for Marriage Allowance
-  period: 2021
+- name: No income meets the conditions
+  period: 2026
   input:
-    tax_band: HIGHER
+    employment_income: 0
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Taxable income exactly at the basic rate limit meets the conditions
+  period: 2026
+  input:
+    # 50,270 - 12,570 = 37,700, all at the basic rate.
+    employment_income: 50_270
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: One pound into the higher rate fails the conditions
+  period: 2026
+  input:
+    employment_income: 50_271
   output:
     meets_marriage_allowance_income_conditions: false
 
-- name: Additional rate band is ineligible for Marriage Allowance
-  period: 2021
+- name: Additional-rate earner fails the conditions
+  period: 2026
   input:
-    tax_band: ADDITIONAL
+    employment_income: 150_000
   output:
     meets_marriage_allowance_income_conditions: false
 
-- name: Below-PA earner (band NONE) is eligible for Marriage Allowance (regression for #395)
-  period: 2021
+- name: Transferor test uses the cut allowance (s. 55C(1)(c))
+  period: 2026
   input:
-    tax_band: NONE
+    # Allowance 12,570 - 1,260 = 11,310, so 50,000 leaves 38,690 taxable,
+    # 990 above the basic rate limit.
+    employment_income: 50_000
+    marriage_allowance_relinquished: 1_260
+  output:
+    personal_allowance: 11_310
+    meets_marriage_allowance_income_conditions: false
+
+- name: The same income meets the conditions with the full allowance
+  period: 2026
+  input:
+    # 50,000 - 12,570 = 37,430, within the basic rate band.
+    employment_income: 50_000
   output:
     meets_marriage_allowance_income_conditions: true
 
-- name: Scottish starter rate band is eligible for Marriage Allowance
-  period: 2021
+- name: Scottish intermediate-rate earner meets the conditions
+  period: 2026
   input:
-    tax_band: STARTER
+    # 40,000 - 12,570 = 27,430, below the Scottish higher rate at 31,092.
+    employment_income: 40_000
+    region: SCOTLAND
   output:
     meets_marriage_allowance_income_conditions: true
 
-- name: Scottish intermediate rate band is eligible for Marriage Allowance
-  period: 2021
+- name: Scottish starter-rate earner meets the conditions
+  period: 2026
   input:
-    tax_band: INTERMEDIATE
+    employment_income: 14_000
+    region: SCOTLAND
   output:
     meets_marriage_allowance_income_conditions: true
+
+- name: Scottish higher-rate earner fails the conditions
+  period: 2026
+  input:
+    # 44,000 - 12,570 = 31,430, above 31,092.
+    employment_income: 44_000
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Scottish savings are banded on UK rates, so an intermediate-rate earner with savings meets the conditions
+  period: 2026
+  input:
+    # Non-savings 27,430 is below the Scottish higher rate; savings stack on
+    # it to 32,430, below the UK basic rate limit of 37,700.
+    employment_income: 40_000
+    savings_interest_income: 5_000
+    region: SCOTLAND
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Savings within the savings nil rate above the basic rate limit meet the conditions
+  period: 2026
+  input:
+    # Non-savings 50,070 - 12,570 = 37,500. The 500 of interest is covered by
+    # the savings nil rate (s. 12A), which s. 55B(2)(b) allows, so none of it
+    # is charged at the savings higher rate.
+    employment_income: 50_070
+    savings_interest_income: 500
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Dividends within the dividend nil rate above the basic rate limit fail the conditions
+  period: 2026
+  input:
+    # The same 500 as dividends: s. 55B(2)(ba) ignores the dividend nil rate
+    # (s. 13A), and 37,500 + 500 = 38,000 would put 300 at the dividend upper
+    # rate.
+    employment_income: 50_070
+    dividend_income: 500
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: Savings charged at the savings higher rate fail the conditions
+  period: 2026
+  input:
+    # Taxable income 37,500 + 2,000 = 39,500. A higher-rate taxpayer's
+    # savings nil rate covers 500, leaving savings at the higher rate.
+    employment_income: 50_070
+    savings_interest_income: 2_000
+  output:
+    meets_marriage_allowance_income_conditions: false
+
+- name: The dividend test uses the basic rate limit (2025-26, 37,700)
+  period: 2025
+  input:
+    # Taxable income 49,970 - 12,570 = 37,400, plus 250 of dividends within
+    # the dividend allowance: 37,650 is inside the basic rate limit, so no
+    # dividends would be at the dividend upper rate even without s. 13A.
+    employment_income: 49_970
+    dividend_income: 250
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: Dividends above property income cross the basic rate limit and fail the conditions
+  period: 2026
+  input:
+    # Property 47,000 less the 1,000 property allowance and the allowance of
+    # 12,570 leaves 33,430 of non-savings income. Dividends sit on top
+    # (s. 16), from 33,430 to 38,430, so 730 would be at the dividend upper
+    # rate (s. 55B(2)(ba)).
+    property_income: 47_000
+    dividend_income: 5_000
+  output:
+    meets_marriage_allowance_income_conditions: false

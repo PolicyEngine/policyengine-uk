@@ -1,10 +1,14 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.hmrc.income_tax.allowances.meets_marriage_allowance_income_conditions import (
+    liable_only_at_marriage_allowance_rates,
+)
 from typing import Union, Optional
 
 
 def create_expanded_ma_reform(
     max_child_age: Optional[int] = None,
     child_education_levels: Optional[List[str]] = None,
+    remove_income_condition: bool = True,
 ) -> Reform:
     class meets_expanded_ma_conditions(Variable):
         label = "Qualifies for an expanded Marriage Allowance"
@@ -28,66 +32,54 @@ def create_expanded_ma_reform(
 
     class meets_marriage_allowance_income_conditions(Variable):
         label = "Meets Marriage Allowance income conditions"
-        documentation = "Whether this person (and their partner) meets the conditions for this person to be eligible for the Marriage Allowance, as set out in the Income Tax Act 2007 sections 55B and 55C"
+        documentation = (
+            "Whether this person pays income tax only at the rates that allow "
+            "a Marriage Allowance election, or meets the reform's expansion "
+            "conditions, which lift that restriction."
+        )
         entity = Person
         definition_period = YEAR
         value_type = bool
         reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
 
         def formula(person, period, parameters):
-            band = person("tax_band", period)
-            eligible_bands = parameters(
-                period
-            ).gov.hmrc.income_tax.allowances.marriage_allowance.eligible_bands
-            base_eligible = np.isin(band.decode_to_str(), eligible_bands)
-            # Expand to higher bands if the reform's expansion conditions are met.
-            bands = band.possible_values
-            expansion = person("meets_expanded_ma_conditions", period) & (
-                (band == bands.HIGHER) | (band == bands.ADDITIONAL)
+            conditions = liable_only_at_marriage_allowance_rates(
+                person, period, parameters
             )
-            return base_eligible | expansion
+            if not remove_income_condition:
+                return conditions
+            return conditions | person("meets_expanded_ma_conditions", period)
 
-    class marriage_allowance(Variable):
+    class marriage_allowance_transferable_amount(Variable):
         value_type = float
         entity = Person
-        label = "Marriage Allowance"
+        label = "Marriage Allowance transferable amount"
+        documentation = (
+            "The share of the personal allowance a Marriage Allowance election "
+            "transfers, at the reform's rate for couples meeting its expansion "
+            "conditions, rounded up to the rounding increment."
+        )
         definition_period = YEAR
-        reference = "https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A"
+        reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
         unit = GBP
 
         def formula(person, period, parameters):
-            marital = person("marital_status", period)
-            married = marital == marital.possible_values.MARRIED
-            eligible = married & person(
-                "meets_marriage_allowance_income_conditions", period
-            )
-            transferable_amount = person("partners_unused_personal_allowance", period)
-            allowances = parameters(period).gov.hmrc.income_tax.allowances
-            capped_percentage = allowances.marriage_allowance.max
-            expanded_ma_cap = parameters(
-                period
-            ).gov.contrib.cps.marriage_tax_reforms.expanded_ma.ma_rate
-            capped_percentage = where(
+            p = parameters(period)
+            allowances = p.gov.hmrc.income_tax.allowances
+            share = where(
                 person("meets_expanded_ma_conditions", period),
-                expanded_ma_cap,
-                capped_percentage,
+                p.gov.contrib.cps.marriage_tax_reforms.expanded_ma.ma_rate,
+                allowances.marriage_allowance.max,
             )
-            max_amount = allowances.personal_allowance.amount * capped_percentage
-            amount_if_eligible_pre_rounding = min_(transferable_amount, max_amount)
-            # Round up.
-            rounding_increment = allowances.marriage_allowance.rounding_increment
-            amount_if_eligible = (
-                np.ceil(amount_if_eligible_pre_rounding / rounding_increment)
-                * rounding_increment
-            )
-            takes_up = person("would_claim_marriage_allowance", period)
-            return eligible * amount_if_eligible * takes_up
+            amount = allowances.personal_allowance.amount * share
+            increment = allowances.marriage_allowance.rounding_increment
+            return np.ceil(amount / increment) * increment
 
     class reform(Reform):
         def apply(self):
             self.add_variable(meets_expanded_ma_conditions)
             self.update_variable(meets_marriage_allowance_income_conditions)
-            self.update_variable(marriage_allowance)
+            self.update_variable(marriage_allowance_transferable_amount)
 
     return reform
 
@@ -206,6 +198,7 @@ def create_marriage_tax_reform(parameters, period):
     if remove_income_condition or rate != original_rate:
         ma_reform = create_expanded_ma_reform(
             max_child_age=ma_max_child_age if ma_max_child_age > 0 else None,
+            remove_income_condition=bool(remove_income_condition),
         )
     else:
         ma_reform = None
@@ -232,4 +225,5 @@ def create_marriage_tax_reform(parameters, period):
 # These build the reform classes with no child-age / education conditions, so the reform
 # applies to every married couple regardless of child presence.
 expanded_ma_reform = create_expanded_ma_reform()
+expanded_ma_reform_rate_only = create_expanded_ma_reform(remove_income_condition=False)
 marriage_neutral_it_reform = create_marriage_neutral_income_tax_reform()
