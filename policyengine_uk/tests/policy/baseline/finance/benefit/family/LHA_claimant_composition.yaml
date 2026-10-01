@@ -9,7 +9,8 @@
   output:
     is_claimant_or_partner: true
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
+    housing_benefit_claimant_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: true
     # Single; 17 < 35; no dependant or non-dependant: A (previously B).
     LHA_category: A
@@ -19,7 +20,8 @@
   input:
     age: 30
   output:
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
+    housing_benefit_claimant_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: true
     # Single; 30 < 35; no other occupants: A.
     LHA_category: A
@@ -61,7 +63,8 @@
         members: [renter, apprentice]
   output:
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
-    lha_renter_has_non_dependant: true
+    universal_credit_renter_has_non_dependant: true
+    housing_benefit_claimant_has_non_dependant: true
     is_lha_shared_accommodation_rate_specified_renter: false
     # No UC QYP (UC Regs 2013 reg 5(3): training under a contract of
     # employment does not count), but a non-dependant blocks A. The
@@ -88,7 +91,8 @@
   output:
     is_couple: false
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
+    housing_benefit_claimant_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: false
     # Responsibility for a UC QYP blocks A. The QYP has a bedroom (Sch 4
     # para 10(1)(b)): 1 + 1 = 2: C.
@@ -113,7 +117,8 @@
   output:
     is_couple: true
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
-    lha_renter_has_non_dependant: false
+    universal_credit_renter_has_non_dependant: false
+    housing_benefit_claimant_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: false
     # A partner establishes neither QYP responsibility nor a non-dependant;
     # couple room = 1: B under the existing bedroom calculation.
@@ -138,7 +143,8 @@
       home:
         members: [renter, apprentice]
   output:
-    lha_renter_has_non_dependant: [true, false]
+    universal_credit_renter_has_non_dependant: [true, false]
+    housing_benefit_claimant_has_non_dependant: [true, false]
     is_lha_shared_accommodation_rate_specified_renter: [false, true]
     # The renter (the household head, the elder) has the apprentice as a
     # non-dependant: 1 + 1 non-dependant aged 16+ = 2: C. Only the household
@@ -165,7 +171,8 @@
       home:
         members: [renter, student_claimant]
   output:
-    lha_renter_has_non_dependant: [true, false]
+    universal_credit_renter_has_non_dependant: [true, false]
+    housing_benefit_claimant_has_non_dependant: [true, false]
     # The other family's claimant is the household head's non-dependant even
     # if their age and education meet the QYP test: 1 + 1 = 2: C. The
     # student's own family has no non-dependant: A.
@@ -191,7 +198,8 @@
         members: [renter, other_renter]
   output:
     eldest_claimant_or_partner_age: [30, 40]
-    lha_renter_has_non_dependant: [false, false]
+    universal_credit_renter_has_non_dependant: [false, false]
+    housing_benefit_claimant_has_non_dependant: [false, false]
     # A person liable on a commercial basis for their occupation is not a
     # non-dependant (UC Sch 4 para 9(2)(d)), so neither family adds a bedroom
     # to the other. Renter: single, 30 < 35, no non-dependant: A. Household
@@ -217,7 +225,8 @@
       second_home:
         members: [other_renter]
   output:
-    lha_renter_has_non_dependant: [false, false]
+    universal_credit_renter_has_non_dependant: [false, false]
+    housing_benefit_claimant_has_non_dependant: [false, false]
     # Single, 30 < 35, nobody else in this household: A.
     # Other renter 40 >= 35; 1 bedroom: B.
     LHA_category: [A, B]
