@@ -1,3 +1,14 @@
+## [2.104.0] - 2026-10-01
+
+### Added
+
+- - Added a capital gains realisation elasticity for gains qualifying for Business Asset Disposal Relief: while `gov.simulation.capital_gains_responses.separate_badr_elasticity` is on, those gains respond with `badr_elasticity` (1.4, the OBR's assumption for BADR gains) and the person's other gains with the main elasticity, both to the same share-weighted rate change. The switch is off by default, so existing results don't move.
+
+### Fixed
+
+- - Fixed marginal tax rates losing precision at large values: `marginal_tax_rate_on_capital_gains`, `marginal_tax_rate`, `marginal_tax_rate_wrt_employer_cost` and the labour supply derivative now add £1,000 or 0.1% of the value, whichever is larger, and divide by the step as stored in float32. A fixed £1,000 step had read the 24% main rate of capital gains tax as 24.8% at £185m of gains and 23.2% at £561m, and anywhere from -2.4% to 48.8% above £1bn, which fed straight into the capital gains realisation response. Below £1m the step is still £1,000, so readings there move only where float32 rounds the £1,000 step, and then by less than 0.01 percentage points.
+
+
 ## [2.103.0] - 2026-10-01
 
 ### Added
