@@ -1,0 +1,36 @@
+description: Tariff income treated as arising from the capital of an applicant who is not a pensioner under the Welsh council tax reduction schemes.
+threshold:
+  description: Capital above which an applicant who is not a pensioner is treated as having tariff income.
+  values:
+    2014-04-01: 6_000
+  metadata:
+    label: Wales working-age CTR tariff income threshold
+    unit: currency-GBP
+    period: year
+    reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 33
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/33
+step:
+  description: Size of each capital step, or part of one, above the threshold that yields the weekly tariff income amount.
+  values:
+    2014-04-01: 250
+  metadata:
+    label: Wales working-age CTR tariff income capital step
+    unit: currency-GBP
+    period: year
+    reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 33
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/33
+amount:
+  description: Weekly tariff income for each capital step, or part of one, above the threshold.
+  values:
+    2014-04-01: 1
+  metadata:
+    label: Wales working-age CTR weekly tariff income per step
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 33
+        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/33
+metadata:
+  label: Wales working-age CTR tariff income
