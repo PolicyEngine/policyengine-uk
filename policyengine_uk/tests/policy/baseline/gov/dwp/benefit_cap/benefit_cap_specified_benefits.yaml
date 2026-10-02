@@ -351,7 +351,28 @@
     # 18,000 + 7,000 - 14,753
     benefit_cap_reduction: 10_247
 
-- name: An ESA recipient with the support component has LCWRA without a disability benefit
+- name: An ESA recipient with the support component and the disability flag has LCWRA
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_contrib_reported: 7_000
+        esa_includes_support_component: true
+        is_disabled_for_benefits: true
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    uc_limited_capability_for_WRA: true
+    # 2025-26 LCWRA element: 423.27 a month x 12
+    uc_LCWRA_element: 5_079.24
+
+- name: The support component alone does not give LCWRA (it is only ever inferred away)
   period: 2025
   input:
     people:
@@ -368,11 +389,10 @@
         members: [claimant]
         region: NORTH_EAST
   output:
-    uc_limited_capability_for_WRA: true
-    # 2025-26 LCWRA element: 423.27 a month x 12
-    uc_LCWRA_element: 5_079.24
-
-- name: An ESA recipient without the support component still has limited capability for work
+    uc_limited_capability_for_WRA: false
+    # The ESA head still lifts the cap.
+    is_benefit_cap_exempt_health_disability: true
+- name: An ESA recipient without the support component, flagged disabled, keeps limited capability for work
   period: 2025
   input:
     people:
@@ -389,14 +409,14 @@
         members: [claimant]
         region: NORTH_EAST
   output:
-    # UC Regs 2013 reg 39(1)(a): Universal Credit takes the ESA determination
-    # of limited capability for work, which keeps the work allowance
-    # (reg 22(1)(b)).
+    # The ESA award removes limited capability for work-related activity
+    # (no support component) but not for work, which keeps the work allowance
+    # (UC Regs 2013 regs 22(1)(b), 39(1)(a)).
     uc_limited_capability_for_WRA: false
     uc_limited_capability_for_work: true
     is_uc_work_allowance_eligible: true
 
-- name: A 17-year-old ESA recipient without the support component meets the reduced UC minimum age
+- name: A 17-year-old ESA recipient without the support component, flagged disabled, meets the reduced UC minimum age
   period: 2025
   input:
     people:
@@ -405,6 +425,7 @@
         is_benunit_head: true
         esa_contrib_reported: 3_000
         esa_includes_support_component: false
+        is_disabled_for_benefits: true
     benunits:
       family:
         members: [claimant]
@@ -417,13 +438,13 @@
     uc_limited_capability_for_WRA: false
     uc_limited_capability_for_work: true
     meets_uc_minimum_age_condition: true
-
-- name: An income-related award entered for a single claimant gives them the ESA assessment
+- name: An income-related award entered for a single claimant is theirs, with the support component
   period: 2025
   input:
     people:
       claimant:
         age: 40
+        is_disabled_for_benefits: true
     benunits:
       family:
         members: [claimant]
@@ -438,7 +459,6 @@
     uc_limited_capability_for_WRA: true
     # 2025-26 LCWRA element: 423.27 a month x 12
     uc_LCWRA_element: 5_079.24
-
 - name: An income-related award entered for a single claimant without the support component gives no LCWRA
   period: 2025
   input:

@@ -16,9 +16,9 @@ class meets_uc_minimum_age_condition(Variable):
     for work, caring, and responsibility for a child.
 
     uc_limited_capability_for_work is a proxy (limited capability for work and
-    work-related activity, which defaults to is_disabled_for_benefits, or an
-    ESA award of the person's own), not an observation of LCW or a pending
-    assessment supported by medical evidence under regulation 8(1)(a)-(b).
+    work-related activity, or is_disabled_for_benefits), not an observation of
+    LCW or a pending assessment supported by medical evidence under regulation
+    8(1)(a)-(b).
     is_carer_for_benefits means receipt of Carer's Allowance or Scottish Carer
     Support Payment, or at least the Carer's Allowance qualifying hours of
     care (currently 35 weekly). Its hours limb does not verify the recipient's

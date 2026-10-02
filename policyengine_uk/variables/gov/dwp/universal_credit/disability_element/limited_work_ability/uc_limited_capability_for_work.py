@@ -9,11 +9,14 @@ class uc_limited_capability_for_work(Variable):
         "Whether this person has limited capability for work (UC Regs 2013 "
         "reg 39), which the work allowance (reg 22) and the reduced minimum "
         "age (reg 8(1)(a)) need. Limited capability for work and work-related "
-        "activity includes it (uc_limited_capability_for_WRA). So does an ESA "
-        "award of the person's own (has_own_esa_award), however it is made "
-        "up: Universal Credit takes an ESA determination of limited capability "
-        "for work (reg 39(1)(a)). Someone still in the ESA assessment phase "
-        "has not yet been assessed, but the model counts them too."
+        "activity (uc_limited_capability_for_WRA) includes it, and otherwise "
+        "it defaults to is_disabled_for_benefits. An ESA award without the "
+        "support component therefore removes limited capability for "
+        "work-related activity but not for work. Universal Credit also takes "
+        "an ESA determination of limited capability for work (reg 39(1)(a)), "
+        "so any ESA award of the person's own would imply it; the model does "
+        "not infer that yet, because the work allowance still reads every "
+        "member of the benefit unit, not only the claimants."
     )
     definition_period = YEAR
     reference = (
@@ -24,5 +27,5 @@ class uc_limited_capability_for_work(Variable):
 
     def formula(person, period, parameters):
         return person("uc_limited_capability_for_WRA", period) | person(
-            "has_own_esa_award", period
+            "is_disabled_for_benefits", period
         )

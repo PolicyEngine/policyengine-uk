@@ -15,8 +15,8 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
 - a Universal Credit claimant has limited capability for work and
   work-related activity or caring responsibilities, so the award includes the
   LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)). A person with
-  ESA of their own has limited capability for work-related activity exactly
-  when their ESA includes the support component (reg 40(1)(a)(ii));
+  ESA of their own whose ESA lacks the support component is inferred not to
+  have limited capability for work-related activity (reg 40(1)(a)(ii));
 - the claimant or couple is entitled to working tax credit (HB reg 75E(2)).
 
 The model applies one cap to both schemes, so either scheme's exception
@@ -213,8 +213,10 @@ def reference_exempt(members, working_tax_credit):
         return receiving and support_component(m)
 
     def lcwra(m):
-        # UC Regs 2013 reg 40(1)(a)(ii): the ESA assessment decides.
-        return support_component(m) if own_esa(m) else m["is_disabled_for_benefits"]
+        # UC Regs 2013 reg 40(1)(a)(ii): an ESA award without the support
+        # component means the ESA assessment found no LCWRA.
+        no_support = own_esa(m) and not support_component(m)
+        return m["is_disabled_for_benefits"] and not no_support
 
     def carer(m):
         return (
@@ -239,9 +241,12 @@ def reference_exempt(members, working_tax_credit):
 
 
 def reference_cap(members):
+    # The family-rate helper counts any 16-year-old (UC reg 5(1)(a)); it does
+    # not yet apply reg 5(5) to one receiving benefits in their own right.
     claimants = sum(m["_role"] == "claimant" for m in members)
     dependants = any(
-        m["_role"] in ("child", "young_person", "sixteen") for m in members
+        m["_role"] in ("child", "young_person", "sixteen", "sixteen_own_right")
+        for m in members
     )
     return SINGLE_CAP if claimants == 1 and not dependants else FAMILY_CAP
 
