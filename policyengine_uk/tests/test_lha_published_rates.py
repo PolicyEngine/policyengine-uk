@@ -279,12 +279,26 @@ def whole_pence(values) -> bool:
 
 
 def independent_march_2020_floor(universal_credit: bool) -> np.ndarray:
-    """The 31 March 2020 rates, computed here rather than by the model."""
+    """The 31 March 2020 rates, computed here rather than by the model.
+
+    The April 2020 tables, with Rent Officers Wales's restatements (pinned in
+    ``WELSH_RESTATEMENTS``) applied, and Northern Ireland's monthly figures
+    converted from its weekly ones.
+    """
     rates = published_rates()
-    weekly = rates.at("rate", FIRST_RULES_YEAR)
+
+    def restated(measure):
+        values = rates.at(measure, FIRST_RULES_YEAR).copy()
+        for brma, category, original, held in WELSH_RESTATEMENTS[measure]:
+            i, j = rates.brmas.get_loc(brma), CATEGORIES.index(category)
+            assert values[i, j] == pytest.approx(original, abs=0.001)
+            values[i, j] = held
+        return values
+
+    weekly = restated("rate")
     if not universal_credit:
         return weekly
-    monthly = rates.at("uc_rate", FIRST_RULES_YEAR)
+    monthly = restated("uc_rate")
     converted = np.floor(np.round(weekly * 365 / 84 * 100, 6) + 0.5) / 100
     return np.where(np.isnan(monthly), converted, monthly)
 

@@ -12,12 +12,12 @@ determination would:
 
 1. the rent at the 30th percentile of the BRMA's list of rents for the twelve
    months to the previous September (Sch 3B para 2(4) to (8));
-2. the lower of that rent and the national maximum (para 2(2));
+2. the lower of that rent and the national maximum (para 2(2)), rounded to
+   the nearest penny, halves up (para 2(10));
 3. the anomalous-rate rule: a category is raised to the highest rate of any
    smaller category (para 3);
 4. from April 2024, the minimum: no rate below the one determined on 31 March
-   2020 (para 3A, inserted by SI 2024/11);
-5. rounded to the nearest penny, halves up (para 2(10)).
+   2020 (para 3A, inserted by SI 2024/11).
 
 While ``gov.dwp.LHA.freeze`` is true, the rates are those of the last year in
 which it was false (the Modification Orders substitute the earlier
@@ -283,16 +283,25 @@ def restatement(measure: str, determined: int, year: int) -> np.ndarray:
 def march_2020_rates(universal_credit: bool = False) -> np.ndarray:
     """The rates determined on 31 March 2020, for the minimum (para 3A).
 
-    The April 2020 tables publish those determinations. Northern Ireland's
-    monthly Universal Credit rates were not published before April 2024, so
-    for them the weekly rate is converted as the model converts any weekly
-    percentile (to within about 3p of the Housing Executive's own figure).
+    The April 2020 tables publish those determinations. Rent Officers Wales's
+    April 2022 and April 2023 tables, which hold them, restate 14 weekly (17
+    monthly) of them; each restated monthly figure is a round monthly rent
+    (16 of the 17 are multiples of GBP 5), which reads as a correction to the
+    percentile, so the minimum uses the latest held table's figure. Northern
+    Ireland's monthly Universal Credit rates were not published before April
+    2024, so for them the weekly rate is converted as the model converts any
+    weekly percentile (to within about 3p of the Housing Executive's figure).
     """
     rates = published_rates()
+    latest_hold = max(y for y, d in HELD_TABLES.items() if d == FIRST_RULES_YEAR)
+    weekly = rates.at("rate", FIRST_RULES_YEAR) + restatement(
+        "rate", FIRST_RULES_YEAR, latest_hold
+    )
     if not universal_credit:
-        return rates.at("rate", FIRST_RULES_YEAR)
-    monthly = rates.at("uc_rate", FIRST_RULES_YEAR)
-    weekly = rates.at("rate", FIRST_RULES_YEAR)
+        return weekly
+    monthly = rates.at("uc_rate", FIRST_RULES_YEAR) + restatement(
+        "uc_rate", FIRST_RULES_YEAR, latest_hold
+    )
     return np.where(
         np.isnan(monthly), round_half_up(weekly * WEEKLY_TO_MONTHLY), monthly
     )
