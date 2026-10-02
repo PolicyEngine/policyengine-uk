@@ -156,7 +156,7 @@
     is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
     housing_benefit_claimant_has_non_dependant: false
 
-- name: A looked-after 17-year-old who has left education is a non-dependant under both schemes
+- name: A looked-after 17-year-old who has left education is a UC foster child but an HB non-dependant
   period: 2026
   input:
     people:
@@ -176,13 +176,18 @@
       home:
         members: [renter, placed]
   output:
-    # UC: neither a child nor a qualifying young person, so para 9(2)(c) (a
-    # foster child is a child) and (g) do not apply: a non-dependant. HB:
-    # not a young person, so reg 21(3) and reg 3(2)(c) do not apply either.
+    # UC: not a qualifying young person, but a looked-after person under 18
+    # placed with the renter, so the renter's foster child (para 9(3), with
+    # the foster parent definition in reg 2) and not a non-dependant (para
+    # 9(2)(c)). This is the model's reading; the WRA 2012 s.40 definition of
+    # a child (under 16) would make them a non-dependant. HB: not a young
+    # person (reg 19), so reg 21(3) and reg 3(2)(c) do not apply: a
+    # non-dependant.
+    is_lha_foster_child: [false, true]
     is_child_or_young_person_placed_with_family: [false, false]
     is_benefit_unit_non_dependant_for_universal_credit: [false, true]
     is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
-    universal_credit_renter_has_non_dependant: true
+    universal_credit_renter_has_non_dependant: false
     housing_benefit_claimant_has_non_dependant: true
 
 - name: A foster child under 16 is a non-dependant under neither scheme

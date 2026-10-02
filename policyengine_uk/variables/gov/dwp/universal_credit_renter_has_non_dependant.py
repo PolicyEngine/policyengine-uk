@@ -10,7 +10,8 @@ class universal_credit_renter_has_non_dependant(Variable):
         "third condition for a specified renter. A member of the renter's "
         "benefit unit is one if aged 16 or over and neither the claimant or "
         "partner nor a qualifying young person (see "
-        "is_benefit_unit_non_dependant_for_universal_credit). For the "
+        "is_benefit_unit_non_dependant_for_universal_credit), other than a "
+        "foster child of the renter (see is_lha_foster_child). For the "
         "household head's family, so is a member of another family of the "
         "household who is not liable for rent (see "
         "is_non_dependant_of_household_head). A non-dependant counts in one "
@@ -22,6 +23,7 @@ class universal_credit_renter_has_non_dependant(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/9",
         "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/2",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
     )
 
@@ -33,8 +35,15 @@ class universal_credit_renter_has_non_dependant(Variable):
         # (reg 5), with no separate rule for 16-year-olds: one outside it is
         # a non-dependant, one within it is a qualifying young person the
         # renter is responsible for, and either fails para 28.
+        # Para 9(2)(c): the renter's foster child is not a non-dependant. The
+        # model reads "foster child" (para 9(3)) as a looked-after person
+        # under 18 placed with the renter, following the foster parent
+        # definition in reg 2; the Welfare Reform Act 2012 s.40 definition of
+        # a child (under 16) would instead make a looked-after 16- or
+        # 17-year-old who is not a qualifying young person a non-dependant.
         within_benefit_unit = benunit.any(
             person("is_benefit_unit_non_dependant_for_universal_credit", period)
+            & ~person("is_lha_foster_child", period)
         )
         # Para 9(2)(d)-(f): the claimant or partner of another family who is
         # not liable for rent, counted in the household head's claim only, as
