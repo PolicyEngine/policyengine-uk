@@ -261,3 +261,38 @@ def test_the_half_penny_tolerance_endpoints():
     assert not eligible(three_person_family([0], benunit_inputs=entered))
     assert eligible(three_person_family([100.004], benunit_inputs=entered))
     assert not eligible(three_person_family([100.006], benunit_inputs=entered))
+
+
+def test_a_stored_zero_never_bars_the_claim():
+    # The claimant's own report of £0.004 is within half a penny of a stored
+    # £0, so the reports "explain" the zero; their sub-penny award must not
+    # then bar the claim, whether the zero is entered or the award removed.
+    claimant = {
+        "age": {YEAR: 40},
+        "is_claimant_or_partner": {YEAR: True},
+        "receives_carer_benefit": {YEAR: True},
+        "income_support_reported": {YEAR: 1_000},
+        "jsa_income_reported": {YEAR: 0.004},
+    }
+
+    def single(benunit_inputs=None):
+        return Simulation(
+            situation={
+                "people": {"carer": claimant},
+                "benunits": {
+                    "family": {
+                        "members": ["carer"],
+                        "income_support_assessable_capital": {YEAR: 0},
+                        "jsa_income_assessable_capital": {YEAR: 0},
+                        **(benunit_inputs or {}),
+                    }
+                },
+                "households": {"home": {"members": ["carer"]}},
+            }
+        )
+
+    assert eligible(single({"jsa_income": {YEAR: 0}}))
+    removed = single()
+    removed.tax_benefit_system.neutralize_variable("jsa_income")
+    removed.delete_arrays("jsa_income")
+    assert eligible(removed)

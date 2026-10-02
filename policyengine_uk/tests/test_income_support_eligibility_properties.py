@@ -180,7 +180,8 @@ def families(draw):
     if draw(st.integers(0, 3)) == 0:
         dependants.append(
             {
-                "age": draw(st.integers(0, 15)),
+                # Up to 17: para 2 covers only a placed child under 16.
+                "age": draw(st.integers(0, 17)),
                 "is_looked_after_by_local_authority": True,
             }
         )
@@ -377,7 +378,8 @@ def reference_eligibility(
         and min(child_ages, default=math.inf)
         <= IS.eligibility.lone_parent_youngest_child_age_limit
     )
-    single_with_placed_child = len(adults) == 1 and len(placed) > 0
+    # A child is under 16 (SSCBA s.137(1)).
+    single_with_placed_child = len(adults) == 1 and any(d["age"] < 16 for d in placed)
 
     def carer(adult):
         return adult["receives_carer_benefit"] or adult["care_hours"] >= 35
