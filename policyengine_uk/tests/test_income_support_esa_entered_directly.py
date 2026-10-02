@@ -14,6 +14,7 @@ and partner's reported amounts. "Entered directly" has to follow the input:
 import numpy as np
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.inputs import entered_directly
 
 YEAR = 2025
 CARER = {
@@ -76,3 +77,103 @@ def test_award_entered_for_another_year_does_not_count_this_year():
     )
     assert sim.calculate("esa_income", YEAR)[0] == 3_000
     assert sim.calculate("income_support_eligible", YEAR)[0]
+
+
+# The record of direct inputs follows the stored value through deletion,
+# clones and branches (the ESA cases of #2025's
+# test_entered_directly_lifecycle.py, which also covers jsa_income). In each,
+# an adult outside the couple reports £3,000 of income-related ESA, so the
+# formula's esa_income is £3,000; that report alone must never bar the claim.
+
+EXCLUDED_ADULT = {
+    "age": {YEAR: 30},
+    "is_claimant_or_partner": {YEAR: False},
+    "current_education": {YEAR: "NOT_IN_EDUCATION"},
+    "esa_income_reported": {YEAR: 3_000},
+}
+
+
+def family():
+    return simulation({"carer": CARER, "other_adult": EXCLUDED_ADULT})
+
+
+def eligible(sim):
+    sim.delete_arrays("income_support_eligible")
+    return bool(sim.calculate("income_support_eligible", YEAR)[0])
+
+
+def direct(sim, period=YEAR):
+    return entered_directly(sim.benunit, "esa_income", period)
+
+
+def test_the_excluded_adults_report_never_bars_the_claim():
+    sim = family()
+    assert sim.calculate("esa_income", YEAR)[0] == 3_000
+    assert not direct(sim)
+    assert eligible(sim)
+
+
+def test_a_deleted_input_does_not_make_a_later_formula_result_direct():
+    sim = family()
+    sim.set_input("esa_income", YEAR, [0])
+    assert direct(sim) and eligible(sim)
+    sim.delete_arrays("esa_income")
+    assert not direct(sim)
+    assert sim.calculate("esa_income", YEAR)[0] == 3_000
+    assert not direct(sim)
+    assert eligible(sim)
+
+
+def test_a_deleted_input_then_the_gate_reads_reports():
+    sim = family()
+    sim.set_input("esa_income", YEAR, [3_000])
+    assert not eligible(sim)
+    sim.delete_arrays("esa_income")
+    assert eligible(sim)
+
+
+def test_an_input_on_a_clone_does_not_reach_the_original():
+    sim = family()
+    assert sim.calculate("esa_income", YEAR)[0] == 3_000
+    clone = sim.clone()
+    clone.set_input("esa_income", YEAR, [0])
+    assert direct(clone)
+    assert not direct(sim)
+    assert eligible(sim)
+
+
+def test_a_parent_input_does_not_reach_an_earlier_branch():
+    sim = family()
+    assert sim.calculate("esa_income", YEAR)[0] == 3_000
+    branch = sim.get_branch("before", clone_system=False)
+    sim.set_input("esa_income", YEAR, [3_000])
+    assert direct(sim) and not eligible(sim)
+    assert not direct(branch)
+    assert eligible(branch)
+
+
+def test_a_branch_made_after_a_parent_input_inherits_it():
+    sim = family()
+    sim.set_input("esa_income", YEAR, [3_000])
+    branch = sim.get_branch("after", clone_system=False)
+    assert direct(branch)
+    assert not eligible(branch)
+
+
+def test_nested_branches_read_the_nearest_stored_input():
+    sim = family()
+    outer = sim.get_branch("outer", clone_system=False)
+    outer.set_input("esa_income", YEAR, [3_000])
+    inner = outer.get_branch("inner", clone_system=False)
+    assert direct(inner) and not eligible(inner)
+    inner.set_input("esa_income", YEAR, [0])
+    assert direct(inner) and eligible(inner)
+    assert not eligible(outer)
+    assert not direct(sim) and eligible(sim)
+
+
+def test_a_period_given_as_a_string_is_the_same_year():
+    sim = family()
+    sim.set_input("esa_income", YEAR, [0])
+    assert direct(sim, str(YEAR))
+    assert not direct(sim, str(YEAR + 1))
