@@ -9,16 +9,18 @@ warnings.filterwarnings("ignore")
 class LHA_cap(Variable):
     value_type = float
     entity = BenUnit
-    label = "Applicable amount for LHA"
+    label = "Maximum rent (LHA)"
     documentation = (
-        "Rent eligible for Housing Benefit for a private renter. On the Local "
-        "Housing Allowance route it is the lower of the rent (gross, meals "
-        "included) and the Housing Benefit LHA rate. Where a rent officer has "
-        "found that a substantial part of the rent is for board and "
-        "attendance (housing_benefit_board_and_attendance_determination), the "
-        "LHA does not apply and the maximum rent is the rent officer's "
-        "figure less the fixed amount for meals; the model takes the rent "
-        "less that amount, as it has no rent officer determinations."
+        "The Housing Benefit maximum rent (LHA): the Housing Benefit Local "
+        "Housing Allowance rate for the benefit unit, or its rent (gross, "
+        "meals included) where that is lower (SI 2006/213 and 2006/214 reg "
+        "13D(5): where the LHA exceeds the cap rent, the maximum rent (LHA) "
+        "is the cap rent). Where a rent officer has found that a substantial "
+        "part of the rent is for board and attendance "
+        "(housing_benefit_board_and_attendance_determination), the LHA does "
+        "not apply and the maximum rent is the rent officer's figure less the "
+        "fixed amount for meals; the model takes the rent less that amount, "
+        "as it has no rent officer determinations."
     )
     definition_period = YEAR
     unit = GBP

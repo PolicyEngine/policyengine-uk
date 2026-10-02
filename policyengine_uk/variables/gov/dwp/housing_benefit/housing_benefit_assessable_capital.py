@@ -6,10 +6,14 @@ class housing_benefit_assessable_capital(Variable):
     entity = BenUnit
     label = "Housing Benefit assessable capital"
     documentation = (
-        "Housing Benefit capital counted from the configured capital sources, "
-        "allocated across benunits in proportion to their claimants and partners. "
-        "This is a PolicyEngine convention because household capital data "
-        "cannot identify ownership; children and young persons add no weight."
+        "Housing Benefit capital counted from the configured capital sources. "
+        "Household sources are allocated across benunits in proportion to their "
+        "claimants and partners, a PolicyEngine convention because household "
+        "capital data cannot identify ownership; children and young persons add "
+        "no weight. Person-level sources, such as a Lifetime ISA, count only for "
+        "the holder's own benunit, and only when the holder is its claimant or "
+        "partner (is_claimant_or_partner): a dependant's capital is not the "
+        "claimant's."
     )
     definition_period = YEAR
     unit = GBP
@@ -22,6 +26,11 @@ class housing_benefit_assessable_capital(Variable):
         any_over_SP_age = benunit.any(person("is_SP_age", period))
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = sum(household(source, period) for source in p.sources)
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        person_capital = sum(
+            benunit.sum(person(source, period) * claimant_or_partner)
+            for source in p.person_sources
+        )
         benunit_claimants_and_partners = add(
             benunit, period, ["is_claimant_or_partner"]
         )
@@ -37,4 +46,8 @@ class housing_benefit_assessable_capital(Variable):
             0,
         )
         guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
-        return where(guarantee_credit, 0, max_(0, household_capital_proxy))
+        return where(
+            guarantee_credit,
+            0,
+            max_(0, household_capital_proxy + person_capital),
+        )
