@@ -1,0 +1,6 @@
+description: Age below which a benefit-unit member much younger than the head is presumed to be the head's child rather than their partner, when relationships are not supplied. This is a PolicyEngine modelling presumption, not a statutory rule.
+values:
+  0001-01-01: 20
+metadata:
+  unit: year
+  label: presumed child age limit

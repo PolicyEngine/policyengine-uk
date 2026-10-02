@@ -126,9 +126,11 @@
     uc_work_allowance: 0
     universal_credit: 5_970.60
 
-# The existing eligibility formula excludes all under-18 claimants. This case
-# fixes claimant classification only; it does not implement the legal exceptions.
-- name: Case 5, an under-18 parent is not a couple because adult count is zero.
+# UC Regulations 2013 reg.8(1)(d) lowers the minimum age to 16 for a claimant
+# responsible for a child: https://www.legislation.gov.uk/uksi/2013/376/regulation/8
+# This deliberate change admits the 17-year-old lone parent previously excluded.
+# 2025 UC = (316.98 standard allowance + 292.81 child element) * 12 = 7,317.48.
+- name: Case 5, a 17-year-old lone parent meets the reduced UC minimum age.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -151,7 +153,9 @@
   output:
     uc_standard_allowance_claimant_type: SINGLE_YOUNG
     uc_standard_allowance: 3_803.76
-    universal_credit: 0
+    is_uc_eligible: true
+    uc_child_element: 3_513.72
+    universal_credit: 7_317.48
 
 - name: Case 6, retained nonqualifying child roles do not imply a partner.
   period: 2025
