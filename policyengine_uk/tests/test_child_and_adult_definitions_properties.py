@@ -9,6 +9,11 @@ Invariants:
    Legacy children are Child Benefit children/QYPs other than claimants,
    partners and children placed by a local authority; the HBAI fallback and
    the claimant-or-partner presumption follow their documented assumptions.
+   An unflagged member at least 16 years younger than a claimant flagged as
+   a parent is never their partner, at any age; flagging the claimant as a
+   parent never adds a partner; and benefit units shaped like the FRS's
+   (one or two adults, all flagged as parents when there are dependants)
+   keep the earlier under-20 presumption exactly.
 2. HBAI types partition everyone. Any benefit unit with one head has at most
    two claimants/partners, all of them HBAI adults, and at least one if it
    has an HBAI adult; valid families (one or two adults aged 20+ and
@@ -215,13 +220,15 @@ def hbai_dependent_child(p, family):
     )
 
 
-def claimants_or_partners(family):
+def claimants_or_partners(family, flagged_parent_lifts_age_limit=True):
     # is_claimant_or_partner's documented rule. The claimant is the head if an
     # HBAI adult, else the eldest HBAI adult. The partner is the eldest other
     # flagged parent, else the eldest other adult not presumed the claimant's
-    # child (under 20 and at least 16 years younger). If the claimant is not a
-    # flagged parent but two or more others are, the two eldest of those are
-    # the couple instead. Age ties go to the earlier member.
+    # child: at least 16 years younger and either under 20 or below a claimant
+    # flagged as a parent. If the claimant is not a flagged parent but two or
+    # more others are, the two eldest of those are the couple instead. Age ties
+    # go to the earlier member. flagged_parent_lifts_age_limit=False is the
+    # earlier rule (under 20 only), kept for the FRS-shape differential test.
     n = len(family)
     adult = [not hbai_dependent_child(p, family) for p in family]
     ages = [p["age"] for p in family]
@@ -236,10 +243,12 @@ def claimants_or_partners(family):
     if len(other_parents) >= 2 and not parent[claimant]:
         couple = sorted(other_parents, key=lambda i: (-ages[i], i))[:2]
         return [i in couple for i in range(n)]
+    no_age_limit = flagged_parent_lifts_age_limit and parent[claimant]
     pool = other_parents or [
         i
         for i in adults
-        if i != claimant and not (ages[i] < 20 and ages[claimant] - ages[i] >= 16)
+        if i != claimant
+        and not ((ages[i] < 20 or no_age_limit) and ages[claimant] - ages[i] >= 16)
     ]
     partner = max(pool, key=lambda i: (ages[i], -i)) if pool else None
     return [i == claimant or i == partner for i in range(n)]
@@ -748,3 +757,123 @@ def test_parent_marked_under_16_entrant_preserves_existing_claimants():
     sim = simulate([family, family + [person(0, is_parent=True)]])
     actual = sim.calculate("is_claimant_or_partner", YEAR)
     np.testing.assert_array_equal(actual[:2], actual[2:4])
+
+
+@st.composite
+def flagged_claimant_units(draw):
+    # A head flagged as a parent, with unflagged others of any age, education
+    # and training below or near them.
+    families = []
+    for _ in range(draw(st.integers(1, 8))):
+        claimant_age = draw(st.integers(32, 90))
+        family = [person(claimant_age, is_parent=True, is_benunit_head=True)]
+        for _ in range(draw(st.integers(1, 4))):
+            family.append(
+                person(
+                    draw(st.integers(0, claimant_age)),
+                    current_education=draw(st.sampled_from(EDUCATIONS)),
+                    is_in_approved_training=draw(st.booleans()),
+                )
+            )
+        families.append(family)
+    return families
+
+
+@PROPERTY_SETTINGS
+@given(flagged_claimant_units())
+def test_member_far_below_a_flagged_claimant_is_never_their_partner(families):
+    sim = simulate(families)
+    assert_structure(sim, families)
+    claimants = sim.calculate("is_claimant_or_partner", YEAR)
+    offset = 0
+    for family in families:
+        claimant_age = family[0]["age"]
+        assert claimants[offset]
+        for j, p in enumerate(family[1:], start=1):
+            if claimant_age - p["age"] >= 16:
+                assert not claimants[offset + j]
+        offset += len(family)
+
+
+@st.composite
+def unflagged_units_with_adult_head(draw):
+    families = []
+    for _ in range(draw(st.integers(1, 8))):
+        family = [person(draw(st.integers(20, 90)), is_benunit_head=True)]
+        for _ in range(draw(st.integers(0, 4))):
+            family.append(
+                person(
+                    draw(st.integers(0, 90)),
+                    current_education=draw(st.sampled_from(EDUCATIONS)),
+                    is_in_approved_training=draw(st.booleans()),
+                )
+            )
+        families.append(family)
+    return families
+
+
+@PROPERTY_SETTINGS
+@given(unflagged_units_with_adult_head())
+def test_flagging_the_claimant_as_a_parent_never_adds_a_partner(families):
+    # Metamorphic: the same units before and after flagging the head (the
+    # claimant) as a parent. The flag can only remove members from the partner
+    # pool, so the claimant stays and the count of claimants and partners
+    # never rises; any partner left is under 16 years younger.
+    flagged = [[{**family[0], "is_parent": True}] + family[1:] for family in families]
+    combined = families + flagged
+    sim = simulate(combined)
+    assert_structure(sim, combined)
+    claimants = sim.calculate("is_claimant_or_partner", YEAR)
+    n = sum(map(len, families))
+    before_offset, after_offset = 0, n
+    for family in families:
+        before = claimants[before_offset : before_offset + len(family)]
+        after = claimants[after_offset : after_offset + len(family)]
+        assert before[0] and after[0]
+        assert after.sum() <= before.sum()
+        for p, partner in zip(family[1:], after[1:]):
+            if partner:
+                assert family[0]["age"] - p["age"] < 16
+        before_offset += len(family)
+        after_offset += len(family)
+
+
+@st.composite
+def frs_shaped_units(draw):
+    # The FRS's benefit unit: one adult or a couple (any ages and gap, either
+    # one the head), plus dependants; every adult is flagged as a parent if and
+    # only if there are dependants (policyengine-uk-data's is_parent).
+    families = []
+    for _ in range(draw(st.integers(1, 8))):
+        adults = draw(st.lists(st.integers(16, 90), min_size=1, max_size=2))
+        dependants = draw(st.lists(st.integers(0, 19), max_size=4))
+        head = draw(st.integers(0, len(adults) - 1))
+        family = [
+            person(age, is_parent=bool(dependants), is_benunit_head=i == head)
+            for i, age in enumerate(adults)
+        ]
+        for age in dependants:
+            family.append(
+                person(
+                    age,
+                    current_education=draw(st.sampled_from(EDUCATIONS)),
+                    is_in_approved_training=draw(st.booleans()),
+                )
+            )
+        families.append(family)
+    return families
+
+
+@PROPERTY_SETTINGS
+@given(frs_shaped_units())
+def test_frs_shaped_units_keep_the_under_20_presumption(families):
+    # Differential: on FRS-shaped units the rule equals the earlier, age-limited
+    # one, so the change cannot move the enhanced FRS microsimulation.
+    sim = simulate(families)
+    expected = [
+        c
+        for family in families
+        for c in claimants_or_partners(family, flagged_parent_lifts_age_limit=False)
+    ]
+    assert_values(sim, "is_claimant_or_partner", expected)
+    assert expected == [c for f in families for c in claimants_or_partners(f)]
