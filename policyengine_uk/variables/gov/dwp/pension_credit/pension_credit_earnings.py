@@ -6,7 +6,11 @@ class pension_credit_earnings(Variable):
     documentation = (
         "Earnings of the claimant and partner. A claimant's income includes "
         "their partner's (State Pension Credit Act 2002 s.5), but not that of "
-        "children or young persons in the family."
+        "children or young persons in the family. Earnings include statutory "
+        "sick, maternity and paternity pay (State Pension Credit Regulations "
+        "2002 reg. 17A(2)(h) and (i)); the parameter "
+        "gov.dwp.pension_credit.guarantee_credit.earnings_sources lists the "
+        "sources and the statutory payments that have no variable."
     )
     entity = BenUnit
     definition_period = YEAR
