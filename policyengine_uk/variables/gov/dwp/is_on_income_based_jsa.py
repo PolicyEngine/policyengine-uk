@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
     is_payee_of_couple_award,
+    own_report_is_paid,
 )
 
 
@@ -18,8 +19,10 @@ class is_on_income_based_jsa(Variable):
         "while their award (claimant_or_partner_jsa_income) is positive. The "
         "model has no joint-claim JSA input. Any other member of the benefit "
         "unit, such as a non-dependent adult, claims in their own right and "
-        "is on it only if they report an award themselves while the benefit "
-        "unit's modelled income-based JSA is positive."
+        "is on it only if the award on their own report alone is positive: "
+        "the report exceeds the tariff income from the benefit unit's "
+        "capital, within the capital limit, while the benefit unit's "
+        "modelled award is positive."
     )
     definition_period = YEAR
     reference = (
@@ -31,9 +34,6 @@ class is_on_income_based_jsa(Variable):
         couple_award = (
             person.benunit("claimant_or_partner_jsa_income", period) > 0
         ) & (is_payee_of_couple_award(person, period, "jsa_income_reported"))
-        # Their own report, while the model pays income-based JSA in the
-        # benefit unit (so not once it closes or a reform removes it).
-        own_award = (person("jsa_income_reported", period) > 0) & (
-            person.benunit("jsa_income", period) > 0
-        )
+        # The award on their own report alone, never another member's.
+        own_award = own_report_is_paid(person, period, "jsa_income")
         return where(person("is_claimant_or_partner", period), couple_award, own_award)
