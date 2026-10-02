@@ -1,5 +1,24 @@
-- name: A household gets the full transfer.
+- name: A Great Britain household receives the 2022 instalments.
   period: 2022
   input: {}
   output:
-    ebr_energy_bills_credit: 200
+    ebr_energy_bills_credit: 199
+
+- name: A Great Britain household receives the 2023 instalments.
+  period: 2023
+  input: {}
+  output:
+    ebr_energy_bills_credit: 201
+
+- name: A Northern Ireland household receives the full discount in 2023.
+  period: 2023
+  input:
+    country: NORTHERN_IRELAND
+  output:
+    ebr_energy_bills_credit: 400
+
+- name: The scheme has ended in 2024.
+  period: 2024
+  input: {}
+  output:
+    ebr_energy_bills_credit: 0

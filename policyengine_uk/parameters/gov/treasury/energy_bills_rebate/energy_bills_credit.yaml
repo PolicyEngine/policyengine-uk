@@ -1,11 +1,16 @@
-description: Credit on energy bills paid to households. This is modeled as a flat transfer to households.
+description: >-
+  Great Britain Energy Bills Support Scheme discounts received in each
+  calendar year. This is modeled as a flat transfer to households.
 values:
-  2022-01-01: 200
-  2023-01-01: 0
+  2022-01-01: 199
+  2023-01-01: 201
+  2024-01-01: 0
 metadata:
   unit: currency-GBP
   period: year
-  label: Energy bills credit
+  label: Great Britain Energy Bills Support Scheme discount
   reference:
-    - title: GOV.UK Press release
-      href: https://www.gov.uk/government/news/millions-to-receive-350-boost-to-help-with-rising-energy-costs
+    - title: Energy Bills Support Scheme direction
+      href: https://assets.publishing.service.gov.uk/media/632c38bf8fa8f53cb3746e74/energy-bills-support-scheme-ministerial-direction.pdf
+    - title: £400 energy bills discount to support households this winter
+      href: https://www.gov.uk/government/news/400-energy-bills-discount-to-support-households-this-winter
