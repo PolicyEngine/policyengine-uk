@@ -225,9 +225,9 @@ def test_meals_and_council_tax(population):
     # 6. Meals.
     assert np.all(calc(a, "housing_benefit_meals_deduction") >= 0)
     assert np.all(calc(a, "LHA_cap") <= calc(b, "LHA_cap") + 1e-6)
-    # 7. Council tax shares, where the rent is shared. (Elsewhere the family
-    # of the household's oldest adult claims, and families tied for oldest
-    # both do: a separate, existing issue.)
+    # 7. Council tax shares, where the rent is shared. (Elsewhere only the
+    # household head's family claims: test_council_tax_reduction_claimant_
+    # properties.py.)
     claimant = calc(a, "council_tax_reduction_claimant_benunit")
     share = calc(a, "council_tax_reduction_joint_liability_share")
     total = a.map_result(claimant * share, "benunit", "household")

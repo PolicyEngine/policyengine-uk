@@ -23,6 +23,6 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
         # SI 2012/2885 reg 9(2)(d)-(e) and the Welsh and Scottish equivalents.
         return (
             (person("age", period) >= 18)
-            & ~person.benunit("benunit_contains_household_head", period)
+            & ~person.benunit("council_tax_reduction_claimant_benunit", period)
             & ~person.benunit("benunit_is_rent_liable", period)
         )
