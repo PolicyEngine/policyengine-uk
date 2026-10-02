@@ -182,6 +182,13 @@ class Simulation(CoreSimulation):
 
         self.tax_benefit_system.reset_parameter_caches()
 
+        # Core applies a reform by calling its apply() with the tax-benefit
+        # system as self, so reforms that change the data (such as
+        # disable_simulated_benefits) reach the simulation through
+        # tax_benefit_system.simulation. Core's Simulation.__init__ sets it;
+        # this __init__ replaces core's, so it sets it too.
+        self.tax_benefit_system.simulation = self
+
         # Apply structural reforms based on parameters
         structural_reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters,
