@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.inputs import entered_directly
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
-from policyengine_uk.utils.inputs import entered_directly
 from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
 
