@@ -1,14 +1,17 @@
 description: >-
-  Northern Ireland Energy Bills Support Scheme discount received in each
-  calendar year. This is modeled as a flat transfer to households.
+  Northern Ireland provides this one-off Energy Bills Support Scheme amount to
+  eligible domestic electricity customers.
 values:
   2022-01-01: 0
   2023-01-01: 400
-  2024-01-01: 0
+  2023-02-01: 0
 metadata:
   unit: currency-GBP
-  period: year
-  label: Northern Ireland Energy Bills Support Scheme discount
+  period: month
+  label: Northern Ireland one-off Energy Bills Support Scheme discount
   reference:
+    - title: Energy Bills Support Scheme and Alternative Fuel Payment Northern Ireland direction, definitions
+      href: https://assets.publishing.service.gov.uk/media/63a59ed48fa8f5654fe0a812/ebss-ni-direction.pdf#page=2
     - title: Households across Northern Ireland to start receiving £600 UK government energy support
       href: https://www.gov.uk/government/news/households-across-northern-ireland-to-start-receiving-600-uk-government-energy-support
+  preserve_calendar_dates: true

@@ -3,7 +3,10 @@ from policyengine_uk.model_api import *
 
 class ebr_energy_bills_credit(Variable):
     label = "Energy bills credit (EBR)"
-    documentation = "Energy Bills Support Scheme discount. Modeled as a flat transfer."
+    documentation = (
+        "Calendar-year compatibility wrapper for the monthly Energy Bills Support "
+        "Scheme discount."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -14,11 +17,10 @@ class ebr_energy_bills_credit(Variable):
     )
 
     def formula(household, period, parameters):
-        ebr = parameters(period).gov.treasury.energy_bills_rebate
-        country = household("country", period)
-        is_northern_ireland = country == country.possible_values.NORTHERN_IRELAND
-        return where(
-            is_northern_ireland,
-            ebr.energy_bills_credit_northern_ireland,
-            ebr.energy_bills_credit,
-        )
+        annual_credit = 0
+        for month in range(1, MONTHS_IN_YEAR + 1):
+            annual_credit = annual_credit + household(
+                "monthly_ebr_energy_bills_credit",
+                f"{period.this_year}-{month:02d}",
+            )
+        return annual_credit

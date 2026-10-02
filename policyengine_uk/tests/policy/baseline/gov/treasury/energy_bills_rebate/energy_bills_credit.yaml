@@ -1,24 +1,66 @@
-- name: A Great Britain household receives the 2022 instalments.
+- name: Case 1, Great Britain monthly instalments begin in October 2022.
+  period: 2022
+  input: {}
+  output:
+    monthly_ebr_energy_bills_credit:
+      2022-09: 0
+      2022-10: 66
+      2022-11: 66
+      2022-12: 67
+
+- name: Case 2, Great Britain monthly instalments end in March 2023.
+  period: 2023
+  input: {}
+  output:
+    monthly_ebr_energy_bills_credit:
+      2023-01: 67
+      2023-02: 67
+      2023-03: 67
+      2023-04: 0
+
+- name: Case 3, Great Britain annual wrapper sums calendar-year instalments.
   period: 2022
   input: {}
   output:
     ebr_energy_bills_credit: 199
 
-- name: A Great Britain household receives the 2023 instalments.
+- name: Case 4, Great Britain annual wrapper includes remaining instalments.
   period: 2023
   input: {}
   output:
     ebr_energy_bills_credit: 201
 
-- name: A Northern Ireland household receives the full discount in 2023.
+- name: Case 5, a household without a qualifying electricity supply is ineligible.
+  period: 2022-10
+  input:
+    ebr_energy_bills_credit_eligible: false
+  output:
+    ebr_energy_bills_credit_eligible: false
+    monthly_ebr_energy_bills_credit: 0
+
+- name: Case 6, annual wrapper reflects monthly eligibility changes.
+  period: 2022
+  input:
+    ebr_energy_bills_credit_eligible:
+      2022-10: false
+      2022-11: true
+  output:
+    ebr_energy_bills_credit: 133
+
+- name: Case 7, Northern Ireland receives its one-off main-scheme amount.
   period: 2023
   input:
     country: NORTHERN_IRELAND
   output:
+    monthly_ebr_energy_bills_credit:
+      2023-01: 400
+      2023-02: 0
     ebr_energy_bills_credit: 400
 
-- name: The scheme has ended in 2024.
+- name: Case 8, the main scheme has ended in 2024.
   period: 2024
   input: {}
   output:
+    monthly_ebr_energy_bills_credit:
+      2024-01: 0
     ebr_energy_bills_credit: 0
