@@ -1,9 +1,12 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional, Callable, Dict, Type, Union
 from policyengine_core.simulations import Simulation
 from policyengine_core.reforms import Reform
 from policyengine_core.periods import period, instant
-from policyengine_uk.utils.parameters import uk_fiscal_year_period
+from policyengine_uk.utils.parameters import (
+    check_parameter_not_removed,
+    uk_fiscal_year_period,
+)
 
 
 class Scenario(BaseModel):
@@ -32,10 +35,7 @@ class Scenario(BaseModel):
     simulation_modifier: Optional[Callable[["Simulation"], None]] = None
     """A function that modifies the simulation before running it."""
 
-    class Config:
-        """Pydantic configuration."""
-
-        arbitrary_types_allowed = True  # Allow Callable types
+    model_config = ConfigDict(arbitrary_types_allowed=True)
 
     def __add__(self, other: "Scenario") -> "Scenario":
         """Combine two scenarios by merging parameter changes and chaining modifiers.
@@ -104,8 +104,7 @@ class Scenario(BaseModel):
         if isinstance(reform, type) and issubclass(reform, Reform):
             # Reform class - create modifier function
             def modifier(simulation: Simulation) -> None:
-                reform_instance = reform()
-                reform_instance.apply(simulation.tax_benefit_system)
+                simulation.tax_benefit_system = reform(simulation.tax_benefit_system)
 
             return cls(
                 simulation_modifier=modifier,
@@ -117,6 +116,7 @@ class Scenario(BaseModel):
 
             def modifier(sim: Simulation):
                 for parameter in reform:
+                    check_parameter_not_removed(parameter)
                     target = sim.tax_benefit_system.parameters.get_child(parameter)
                     if isinstance(reform[parameter], dict):
                         for period_str, value in reform[parameter].items():
@@ -166,8 +166,9 @@ class Scenario(BaseModel):
                 reform_args = reform[1:] if len(reform) > 1 else ()
 
                 def modifier(simulation: Simulation) -> None:
-                    reform_instance = reform_class(*reform_args)
-                    reform_instance.apply(simulation.tax_benefit_system)
+                    simulation.tax_benefit_system = reform_class(
+                        simulation.tax_benefit_system, *reform_args
+                    )
 
                 return cls(
                     simulation_modifier=modifier,
@@ -194,17 +195,29 @@ class Scenario(BaseModel):
             for path, value in self.parameter_changes.items():
                 if isinstance(value, dict):
                     # Handle nested parameter changes
+                    if not value:
+                        check_parameter_not_removed(path)
                     for sub_path, sub_value in value.items():
                         full_path = f"{path}.{sub_path}"
-                        simulation.tax_benefit_system.parameters.update(
-                            full_path,
+                        check_parameter_not_removed(full_path)
+                        try:
+                            target = simulation.tax_benefit_system.parameters.get_child(
+                                full_path
+                            )
+                        except ValueError:
+                            # A saved period-valued policy on a removed scalar
+                            # path still needs the migration message; valid
+                            # children such as male.age remain reformable.
+                            check_parameter_not_removed(path)
+                            raise
+                        target.update(
                             period=None,  # Apply to all periods
                             value=sub_value,
                         )
                 else:
                     # Simple parameter change
-                    simulation.tax_benefit_system.parameters.update(
-                        path,
+                    check_parameter_not_removed(path)
+                    simulation.tax_benefit_system.parameters.get_child(path).update(
                         period=None,
                         value=value,  # Apply to all periods
                     )
