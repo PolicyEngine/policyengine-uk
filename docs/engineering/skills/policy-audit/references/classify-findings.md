@@ -26,7 +26,9 @@ The structured review must contain:
 - non-empty `periods_reviewed` and `jurisdictions`;
 - structured official `evidence`;
 - findings, implementation parts, and code citation targets when a change is
-  required; and
+  required;
+- cited `follow_ups` when research exposes a possible discrepancy in a
+  different audit unit; and
 - an `issue_title` for publishable conclusions.
 
 Validate and record it:

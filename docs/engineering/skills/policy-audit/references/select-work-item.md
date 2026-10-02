@@ -22,6 +22,12 @@ every unit has a review, the least recently checked unit is selected. The
 `last_checked_at` field records past work; it is not evidence that the policy is
 still current.
 
+Pending cited follow-ups take priority over the ordinary date ordering.
+`suspected_incorrect_in_release` and `suspected_superseded_since_release` come
+first, followed by `dependency_review`; each group is ordered by enqueue time.
+The `selection_reason` and `follow_up` fields explain why a prioritized unit was
+returned.
+
 Parameter YAML documents are one audit unit by default. Brackets and breakdown
 members in the document must be researched together.
 

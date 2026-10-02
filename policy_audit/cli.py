@@ -14,7 +14,11 @@ from policy_audit.errors import PolicyAuditError
 from policy_audit.github import publish_issue
 from policy_audit.inventory import apply_parameter_groups, build_inventory
 from policy_audit.ledger import (
+    close_follow_up,
+    enqueue_follow_up,
     read_catalog,
+    read_follow_ups,
+    read_reviews,
     record_review,
     select_next_unit,
     write_catalog,
@@ -27,6 +31,7 @@ from policy_audit.reviews import (
     ISSUE_CONCLUSIONS,
     load_structured_file,
     render_issue,
+    validate_follow_up_request,
     validate_review,
 )
 
@@ -118,6 +123,81 @@ def _command_context(args: argparse.Namespace) -> dict[str, Any]:
         args.unit_id,
         _load_overrides(args.program_overrides),
     )
+
+
+def _follow_up_inputs(
+    args: argparse.Namespace,
+) -> tuple[Path, dict[str, Any], dict[str, Any]]:
+    repository, state_directory = _paths(args)
+    request = load_structured_file(Path(args.request))
+    version = request.get("release_version")
+    if not isinstance(version, str):
+        raise PolicyAuditError("Follow-up request has no release_version")
+    catalog = read_catalog(state_directory, version)
+    release_root = _checkout_for_catalog(repository, state_directory, catalog)
+    validate_follow_up_request(request, catalog, release_root)
+    origin = request["origin_review"]
+    matching_reviews = [
+        review
+        for review in read_reviews(state_directory, version)
+        if review.get("unit_id") == origin["unit_id"]
+        and review.get("audited_at") == origin["audited_at"]
+    ]
+    if not matching_reviews:
+        raise PolicyAuditError(
+            "The originating review is not recorded in this audit state"
+        )
+    return state_directory, request, matching_reviews[0]
+
+
+def _command_enqueue_follow_up(args: argparse.Namespace) -> dict[str, Any]:
+    state_directory, request, origin_review = _follow_up_inputs(args)
+    path, record, deduplicated = enqueue_follow_up(
+        state_directory,
+        request,
+        origin_review,
+    )
+    return {
+        "follow_up": str(path),
+        "release_version": record["release_version"],
+        "unit_id": record["unit_id"],
+        "status": record["status"],
+        "deduplicated": deduplicated,
+    }
+
+
+def _command_follow_ups(args: argparse.Namespace) -> dict[str, Any]:
+    _, state_directory = _paths(args)
+    read_catalog(state_directory, args.version)
+    records = read_follow_ups(state_directory, args.version, args.status)
+    return {
+        "release_version": args.version,
+        "status": args.status,
+        "count": len(records),
+        "follow_ups": records,
+    }
+
+
+def _command_close_follow_up(args: argparse.Namespace) -> dict[str, Any]:
+    _, state_directory = _paths(args)
+    catalog = read_catalog(state_directory, args.version)
+    if args.unit_id not in {unit["unit_id"] for unit in catalog["units"]}:
+        raise PolicyAuditError(f"Unknown audit unit: {args.unit_id}")
+    reason = args.reason.strip()
+    if not reason:
+        raise PolicyAuditError("A non-empty close reason is required")
+    path, record = close_follow_up(
+        state_directory,
+        args.version,
+        args.unit_id,
+        reason,
+    )
+    return {
+        "follow_up": str(path),
+        "release_version": record["release_version"],
+        "unit_id": record["unit_id"],
+        "status": record["status"],
+    }
 
 
 def _review_inputs(
@@ -219,6 +299,34 @@ def build_parser() -> argparse.ArgumentParser:
     context_parser.add_argument("--program-overrides")
     _add_storage_arguments(context_parser)
     context_parser.set_defaults(handler=_command_context)
+
+    follow_ups_parser = subparsers.add_parser(
+        "follow-ups", help="List prioritized audit follow-ups"
+    )
+    follow_ups_parser.add_argument("--version", required=True)
+    follow_ups_parser.add_argument(
+        "--status",
+        choices=("pending", "resolved", "closed", "all"),
+        default="pending",
+    )
+    _add_storage_arguments(follow_ups_parser)
+    follow_ups_parser.set_defaults(handler=_command_follow_ups)
+
+    enqueue_parser = subparsers.add_parser(
+        "enqueue-follow-up", help="Prioritize a cited related audit unit"
+    )
+    enqueue_parser.add_argument("request")
+    _add_storage_arguments(enqueue_parser)
+    enqueue_parser.set_defaults(handler=_command_enqueue_follow_up)
+
+    close_parser = subparsers.add_parser(
+        "close-follow-up", help="Close a pending audit follow-up"
+    )
+    close_parser.add_argument("unit_id")
+    close_parser.add_argument("--version", required=True)
+    close_parser.add_argument("--reason", required=True)
+    _add_storage_arguments(close_parser)
+    close_parser.set_defaults(handler=_command_close_follow_up)
 
     for name, help_text, handler in (
         ("validate", "Validate a structured review", _command_validate),

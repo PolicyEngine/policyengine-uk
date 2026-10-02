@@ -10,9 +10,19 @@ from policy_audit.context import build_program_context, load_programs
 from policy_audit.errors import ReviewValidationError
 from policy_audit.github import publish_issue
 from policy_audit.inventory import apply_parameter_groups, build_inventory
-from policy_audit.ledger import record_review, select_next_unit
+from policy_audit.ledger import (
+    close_follow_up,
+    enqueue_follow_up,
+    read_follow_ups,
+    record_review,
+    select_next_unit,
+)
 from policy_audit.repository import ReleaseCheckout, prepare_release_checkout
-from policy_audit.reviews import render_issue, validate_review
+from policy_audit.reviews import (
+    render_issue,
+    validate_follow_up_request,
+    validate_review,
+)
 from policy_audit.yaml_utils import load_yaml
 
 
@@ -294,6 +304,155 @@ def test_next_unit_orders_unchecked_by_oldest_model_change(tmp_path):
     )
     second = select_next_unit(tmp_path, catalog, create_claim=False)
     assert second["unit_id"] == "parameter:newer"
+
+
+def test_cited_follow_up_takes_priority_and_resolves_with_target_review(tmp_path):
+    release_root = tmp_path / "release"
+    origin_path = "policyengine_uk/parameters/gov/dwp/program/amount.yaml"
+    target_path = "policyengine_uk/parameters/gov/dwp/program/threshold.yaml"
+    _write(release_root / origin_path, "values: {}\n")
+    _write(release_root / target_path, "values: {}\n")
+    catalog = {
+        "release_version": "1.0.0",
+        "units": [
+            {
+                "unit_id": "parameter:gov.dwp.program.amount",
+                "kind": "parameter",
+                "classification": "policy_rule",
+                "model_last_modified_at": "2020-01-01",
+                "source_paths": [origin_path],
+            },
+            {
+                "unit_id": "parameter:gov.dwp.program.threshold",
+                "kind": "parameter",
+                "classification": "policy_rule",
+                "model_last_modified_at": "2025-01-01",
+                "source_paths": [target_path],
+            },
+            {
+                "unit_id": "parameter:gov.dwp.program.older",
+                "kind": "parameter",
+                "classification": "policy_rule",
+                "model_last_modified_at": "2019-01-01",
+                "source_paths": [
+                    "policyengine_uk/parameters/gov/dwp/program/older.yaml"
+                ],
+            },
+        ],
+    }
+    review = _valid_review()
+    review["conclusion"] = "current"
+    review["follow_ups"] = [
+        {
+            "unit_id": "parameter:gov.dwp.program.threshold",
+            "reason_code": "suspected_incorrect_in_release",
+            "reason": "The released threshold differs from the official amount.",
+            "observed_model": "The release contains 100.",
+            "expected_policy": "The official source specifies 110.",
+            "evidence_ids": ["law"],
+            "model_locations": [
+                {
+                    "path": target_path,
+                    "location": "values.2026-04-01",
+                }
+            ],
+        }
+    ]
+
+    validate_review(review, catalog, release_root)
+    record_review(tmp_path, review)
+
+    pending = read_follow_ups(tmp_path, "1.0.0")
+    assert len(pending) == 1
+    assert pending[0]["unit_id"] == "parameter:gov.dwp.program.threshold"
+    selected = select_next_unit(tmp_path, catalog, create_claim=False)
+    assert selected["unit_id"] == "parameter:gov.dwp.program.threshold"
+    assert selected["selection_reason"] == "audit_follow_up"
+
+    record_review(
+        tmp_path,
+        {
+            "release_version": "1.0.0",
+            "unit_id": "parameter:gov.dwp.program.threshold",
+            "audited_at": "2026-10-03",
+            "conclusion": "incorrect_in_release",
+        },
+    )
+    assert read_follow_ups(tmp_path, "1.0.0") == []
+    resolved = read_follow_ups(tmp_path, "1.0.0", "resolved")
+    assert resolved[0]["resolved_by_review"]["conclusion"] == "incorrect_in_release"
+
+
+def test_post_review_follow_up_validates_and_deduplicates(tmp_path):
+    release_root = tmp_path / "release"
+    target_path = "policyengine_uk/parameters/gov/dwp/program/threshold.yaml"
+    _write(release_root / target_path, "values: {}\n")
+    catalog = {
+        "release_version": "1.0.0",
+        "units": [
+            {
+                "unit_id": "parameter:gov.dwp.program.amount",
+                "source_paths": [
+                    "policyengine_uk/parameters/gov/dwp/program/amount.yaml"
+                ],
+            },
+            {
+                "unit_id": "parameter:gov.dwp.program.threshold",
+                "source_paths": [target_path],
+            },
+        ],
+    }
+    request = {
+        "release_version": "1.0.0",
+        "unit_id": "parameter:gov.dwp.program.threshold",
+        "origin_review": {
+            "unit_id": "parameter:gov.dwp.program.amount",
+            "audited_at": "2026-10-02",
+        },
+        "reason_code": "suspected_incorrect_in_release",
+        "reason": "The threshold differs from the official amount.",
+        "observed_model": "The release contains 100.",
+        "expected_policy": "The official source specifies 110.",
+        "evidence_ids": ["law"],
+        "model_locations": [{"path": target_path, "location": "values.2026-04-01"}],
+        "evidence": _valid_review()["evidence"],
+    }
+
+    validate_follow_up_request(request, catalog, release_root)
+    origin_review = {
+        "unit_id": "parameter:gov.dwp.program.amount",
+        "audited_at": "2026-10-02",
+    }
+    _, _, first_deduplicated = enqueue_follow_up(
+        tmp_path,
+        request,
+        origin_review,
+    )
+    _, _, second_deduplicated = enqueue_follow_up(
+        tmp_path,
+        request,
+        origin_review,
+    )
+
+    assert first_deduplicated is False
+    assert second_deduplicated is True
+    assert len(read_follow_ups(tmp_path, "1.0.0")[0]["origins"]) == 1
+
+    _, closed = close_follow_up(
+        tmp_path,
+        "1.0.0",
+        "parameter:gov.dwp.program.threshold",
+        "The discrepancy was caused by a transcription error in the request.",
+    )
+    assert closed["status"] == "closed"
+    assert read_follow_ups(tmp_path, "1.0.0") == []
+    assert len(read_follow_ups(tmp_path, "1.0.0", "closed")) == 1
+
+    request["model_locations"][0]["path"] = (
+        "policyengine_uk/parameters/gov/dwp/program/other.yaml"
+    )
+    with pytest.raises(ReviewValidationError, match="not a source path"):
+        validate_follow_up_request(request, catalog, release_root)
 
 
 def _valid_review() -> dict:

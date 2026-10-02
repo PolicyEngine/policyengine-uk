@@ -24,6 +24,11 @@ CONCLUSIONS = {
     "program_mapping_required",
 }
 ISSUE_CONCLUSIONS = {"incorrect_in_release", "superseded_since_release"}
+FOLLOW_UP_REASON_CODES = {
+    "suspected_incorrect_in_release",
+    "suspected_superseded_since_release",
+    "dependency_review",
+}
 
 
 def load_structured_file(path: Path) -> dict[str, Any]:
@@ -127,6 +132,107 @@ def _validate_evidence_ids(
     unknown = [evidence_id for evidence_id in ids if evidence_id not in evidence]
     if unknown:
         errors.append(f"{location} contains unknown evidence ids: {unknown}")
+
+
+def _validate_follow_up(
+    follow_up: Any,
+    location: str,
+    units: dict[str, dict[str, Any]],
+    origin_unit_id: str,
+    evidence: dict[str, dict[str, Any]],
+    release_root: Path,
+    errors: list[str],
+) -> None:
+    if not isinstance(follow_up, dict):
+        errors.append(f"{location} must be an object")
+        return
+    unit_id = _required_string(follow_up, "unit_id", location, errors)
+    target = units.get(unit_id)
+    if unit_id and target is None:
+        errors.append(f"{location}.unit_id names unknown audit unit {unit_id}")
+    if unit_id and unit_id == origin_unit_id:
+        errors.append(f"{location}.unit_id must differ from the originating unit")
+    reason_code = _required_string(follow_up, "reason_code", location, errors)
+    if reason_code and reason_code not in FOLLOW_UP_REASON_CODES:
+        errors.append(f"{location}.reason_code is unknown: {reason_code}")
+    for field_name in ("reason", "observed_model", "expected_policy"):
+        _required_string(follow_up, field_name, location, errors)
+    _validate_evidence_ids(
+        follow_up.get("evidence_ids"),
+        f"{location}.evidence_ids",
+        evidence,
+        errors,
+    )
+    model_locations = follow_up.get("model_locations")
+    if not isinstance(model_locations, list) or not model_locations:
+        errors.append(f"{location}.model_locations must not be empty")
+        return
+    target_paths = set(target.get("source_paths", [])) if target else set()
+    for index, model_location in enumerate(model_locations):
+        item_location = f"{location}.model_locations[{index}]"
+        if not isinstance(model_location, dict):
+            errors.append(f"{item_location} must be an object")
+            continue
+        source_path = _required_string(
+            model_location,
+            "path",
+            item_location,
+            errors,
+        )
+        _required_string(model_location, "location", item_location, errors)
+        if source_path and target and source_path not in target_paths:
+            errors.append(
+                f"{item_location}.path is not a source path for follow-up unit "
+                f"{unit_id}"
+            )
+        elif source_path and not (release_root / source_path).is_file():
+            errors.append(
+                f"{item_location}.path does not exist in the selected release"
+            )
+
+
+def validate_follow_up_request(
+    request: dict[str, Any],
+    catalog: dict[str, Any],
+    release_root: Path,
+) -> None:
+    """Validate a post-review request to prioritize a related audit unit."""
+
+    errors: list[str] = []
+    version = _required_string(request, "release_version", "request", errors)
+    if version and version != catalog["release_version"]:
+        errors.append(
+            f"Request release {version} does not match catalog release "
+            f"{catalog['release_version']}"
+        )
+    origin = request.get("origin_review")
+    if not isinstance(origin, dict):
+        errors.append("request.origin_review must be an object")
+        origin = {}
+    origin_unit_id = _required_string(origin, "unit_id", "origin_review", errors)
+    units = {unit["unit_id"]: unit for unit in catalog["units"]}
+    if origin_unit_id and origin_unit_id not in units:
+        errors.append(
+            f"origin_review.unit_id names unknown audit unit {origin_unit_id}"
+        )
+    audited_at = _required_string(origin, "audited_at", "origin_review", errors)
+    if audited_at:
+        try:
+            date.fromisoformat(audited_at)
+        except ValueError:
+            errors.append("origin_review.audited_at must use YYYY-MM-DD")
+    evidence = _validate_evidence(request, errors)
+    _validate_follow_up(
+        request,
+        "request",
+        units,
+        origin_unit_id,
+        evidence,
+        release_root,
+        errors,
+    )
+    if errors:
+        raise ReviewValidationError("\n".join(f"- {error}" for error in errors))
 
 
 def validate_review(
@@ -245,6 +351,21 @@ def validate_review(
                         errors.append(
                             f"{target_location}.path does not exist in release {version}"
                         )
+
+    follow_ups = review.get("follow_ups", [])
+    if not isinstance(follow_ups, list):
+        errors.append("review.follow_ups must be a list")
+        follow_ups = []
+    for follow_up_index, follow_up in enumerate(follow_ups):
+        _validate_follow_up(
+            follow_up,
+            f"follow_ups[{follow_up_index}]",
+            units,
+            unit_id,
+            evidence,
+            release_root,
+            errors,
+        )
 
     if conclusion in ISSUE_CONCLUSIONS:
         _required_string(review, "issue_title", "review", errors)

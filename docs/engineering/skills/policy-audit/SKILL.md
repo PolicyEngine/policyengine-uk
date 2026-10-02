@@ -21,12 +21,15 @@ asserts that a rule will remain current until a later date.
    generate and inspect the bounded context for the claimed unit.
 3. Read [research-official-sources.md](references/research-official-sources.md)
    and research both the encoded rule and subsequent changes.
-4. Read [classify-findings.md](references/classify-findings.md) and write the
+4. If the research identifies a discrepancy in a different audit unit, read
+   [enqueue-follow-ups.md](references/enqueue-follow-ups.md) and create a cited
+   follow-up without misclassifying the selected unit.
+5. Read [classify-findings.md](references/classify-findings.md) and write the
    structured review.
-5. If a change is needed, read
+6. If a change is needed, read
    [place-code-citations.md](references/place-code-citations.md) and identify
    where every supporting source belongs in the model source.
-6. Validate and record the review. For a publishable conclusion, read
+7. Validate and record the review. For a publishable conclusion, read
    [publish-github-issue.md](references/publish-github-issue.md) before opening
    the issue.
 
