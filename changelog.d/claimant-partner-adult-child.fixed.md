@@ -1,1 +1,0 @@
-A member at least 16 years younger than a claimant flagged as a parent is now presumed their child at any age, so a flagged lone parent living with an adult son or daughter is no longer read as a couple.
