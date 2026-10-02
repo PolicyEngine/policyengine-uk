@@ -32,7 +32,9 @@ class council_tax_reduction_applicant_has_non_dep_exemption(Variable):
         # applicant or his partner is" blind or receiving one of the listed
         # benefits "in respect of himself".
         person = benunit.members
-        claimant_or_partner = person("is_claimant_or_partner", period)
+        applicant_or_partner = person(
+            "council_tax_reduction_applicant_or_partner", period
+        )
         exempting = (
             person("is_blind", period)
             | (person("attendance_allowance", period) > 0)
@@ -40,4 +42,4 @@ class council_tax_reduction_applicant_has_non_dep_exemption(Variable):
             | (person("dla_sc", period) > 0)
             | (person("armed_forces_independence_payment", period) > 0)
         )
-        return benunit.any(claimant_or_partner & exempting)
+        return benunit.any(applicant_or_partner & exempting)

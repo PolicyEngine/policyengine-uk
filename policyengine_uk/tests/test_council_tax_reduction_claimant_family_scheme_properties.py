@@ -11,7 +11,10 @@ Sch para 30(6); SI 2013/3029 Sch 1 para 3(6) and Sch 6 para 5(6); SSI
 2021/249 reg 90(6); SSI 2012/319 reg 48(6)).
 
 Invariants, for any generated population of households with a flagged head,
-up to two sharer families and at most one non-dependant family:
+up to two sharer families and at most one non-dependant family. Every adult
+here is 20 or over and the head is a claimant, so each family's applicant and
+partner are its claimant and partner (the YAML cases cover a head who is
+not):
 
 1. Own members: a family is a pensioner exactly when its claimant or partner
    has reached State Pension age. It is exempt from non-dependant deductions

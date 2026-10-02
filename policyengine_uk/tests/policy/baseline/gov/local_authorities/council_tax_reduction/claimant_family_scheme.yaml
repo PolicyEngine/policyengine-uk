@@ -566,3 +566,81 @@
     council_tax_reduction_applicable_amount: [4_968.60, 13_312]
     simulated_council_tax_reduction_benunit: [293.72, 562.40]
     council_tax_reduction: 856.12
+
+- name: A pension-age household head applies as a pensioner although her family's claimant and partner are young parents
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+        pip_dl: 3_000
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The grandmother is the liable resident, so she is the applicant; the
+    # young parents are the family's claimant and partner but not hers.
+    is_claimant_or_partner: [false, true, true, false]
+    council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    # Her age puts the claim on the pensioner scheme (SI 2012/2885 reg 3).
+    council_tax_reduction_pensioner: [true]
+    council_tax_reduction_scheme_supported: [true]
+    # The young mother's PIP is not the applicant's or her partner's
+    # (Sch 1 para 8(6)).
+    council_tax_reduction_applicant_has_non_dep_exemption: [false]
+    simulated_council_tax_reduction_benunit: [1_800]
+
+- name: An applicant's partner under 18 still counts for the applicant's exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 19
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_household_head: false
+        is_claimant_or_partner: true
+        pip_dl: 3_000
+    benunits:
+      couple:
+        members: [head, partner]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, partner]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Only the head is liable (LGFA 1992 s.6(5)), but para 8(6) asks about
+    # "the applicant or his partner".
+    council_tax_reduction_liable_person: [true, false]
+    council_tax_reduction_applicant_or_partner: [true, true]
+    council_tax_reduction_applicant_has_non_dep_exemption: [true]
+    council_tax_reduction_pensioner: [false]

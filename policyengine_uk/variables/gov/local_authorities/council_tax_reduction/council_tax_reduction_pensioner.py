@@ -7,12 +7,12 @@ class council_tax_reduction_pensioner(Variable):
     label = "Pensioner for Council Tax Reduction"
     documentation = (
         "Whether this family's claim falls under the pension-age Council Tax "
-        "Reduction rules: the claimant or partner has reached State Pension "
-        "age. Each applicant's scheme follows their own family, so where "
-        "families share the rent and each claims, a working-age family is "
+        "Reduction rules: the applicant or the applicant's partner has reached "
+        "State Pension age. Each applicant's scheme follows their own family, "
+        "so where families share the rent and each claims, a working-age family is "
         "assessed under the working-age rules even if the household head's "
         "family is pension-age, and the reverse. The further condition that "
-        "neither the claimant nor a partner is on Income Support, income-based "
+        "neither the applicant nor a partner is on Income Support, income-based "
         "Jobseeker's Allowance, income-related Employment and Support "
         "Allowance or Universal Credit is not modelled here."
     )
@@ -30,5 +30,7 @@ class council_tax_reduction_pensioner(Variable):
         # state pension credit". is_SP_age stands in for that age, as
         # elsewhere in the model.
         person = benunit.members
-        claimant_or_partner = person("is_claimant_or_partner", period)
-        return benunit.any(claimant_or_partner & person("is_SP_age", period))
+        applicant_or_partner = person(
+            "council_tax_reduction_applicant_or_partner", period
+        )
+        return benunit.any(applicant_or_partner & person("is_SP_age", period))
