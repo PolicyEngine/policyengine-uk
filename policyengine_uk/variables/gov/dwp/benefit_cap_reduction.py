@@ -3,26 +3,15 @@ from policyengine_uk.model_api import *
 
 class benefit_cap_reduction(Variable):
     label = "benefit cap reduction"
+    documentation = (
+        "The reduction the benefit cap makes to the family's Universal Credit "
+        "(uc_benefit_cap_reduction, UC Regs 2013 reg. 81) or Housing Benefit "
+        "(housing_benefit_benefit_cap_reduction, HB Regs 2006 reg. 75D). Each "
+        "scheme applies its own cap; the model pays a family one or the "
+        "other, never both. A family with neither award has no reduction."
+    )
     entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP
-
-    def formula(benunit, period, parameters):
-        CAPPED_BENEFITS = [
-            "child_benefit",
-            "child_tax_credit",
-            "jsa_income",
-            "income_support",
-            "esa_income",
-            "universal_credit_pre_benefit_cap",
-            "housing_benefit_pre_benefit_cap",
-            "jsa_contrib",
-            "incapacity_benefit",
-            "esa_contrib",
-            "sda",
-        ]
-        return max_(
-            add(benunit, period, CAPPED_BENEFITS) - benunit("benefit_cap", period),
-            0,
-        )
+    adds = ["uc_benefit_cap_reduction", "housing_benefit_benefit_cap_reduction"]

@@ -26,7 +26,7 @@ class uc_deductions(Variable):
         standard_allowance = benunit("uc_standard_allowance", period)
         award = max_(
             benunit("universal_credit_pre_benefit_cap", period)
-            - benunit("benefit_cap_reduction", period),
+            - benunit("uc_benefit_cap_reduction", period),
             0,
         )
         minimum_payable = p.minimum_payable * MONTHS_IN_YEAR

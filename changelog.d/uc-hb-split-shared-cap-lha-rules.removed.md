@@ -1,0 +1,1 @@
+The shared benefit cap variables `benefit_cap`, `is_benefit_cap_exempt`, `is_benefit_cap_exempt_earnings`, `is_benefit_cap_exempt_health_disability`, `is_benefit_cap_exempt_other` and `is_benefit_cap_single_claimant_rate`, replaced by each scheme's own. `benefit_cap_reduction` remains as the sum of the Universal Credit and Housing Benefit reductions.

@@ -443,14 +443,18 @@
     benunits:
       benunit:
         members: [claimant, partner, child]
-        is_benefit_cap_exempt: false
+        is_uc_benefit_cap_exempt: false
+        is_housing_benefit_benefit_cap_exempt: false
     households:
       household:
         members: [claimant, partner, child]
         region: NORTH_EAST
   output:
-    is_benefit_cap_single_claimant_rate: false
-    benefit_cap: 22_020
+    is_uc_benefit_cap_single_claimant_rate: false
+    uc_benefit_cap: 22_020
+    # HB: a couple with a child, so not a single claimant either.
+    is_housing_benefit_benefit_cap_single_claimant_rate: false
+    housing_benefit_benefit_cap: 22_020
 
 - name: Reg. 80A(2)(c) - a single claimant with no child has the single cap
   period: 2026
@@ -466,14 +470,19 @@
     benunits:
       benunit:
         members: [claimant, partner]
-        is_benefit_cap_exempt: false
+        is_uc_benefit_cap_exempt: false
+        is_housing_benefit_benefit_cap_exempt: false
     households:
       household:
         members: [claimant, partner]
         region: NORTH_EAST
   output:
-    is_benefit_cap_single_claimant_rate: true
-    benefit_cap: 14_753
+    is_uc_benefit_cap_single_claimant_rate: true
+    uc_benefit_cap: 14_753
+    # HB has no single claim by a member of a couple: the claimant has a
+    # partner, so is not a single claimant (HB reg 2(1)); reg. 75CA(2)(d).
+    is_housing_benefit_benefit_cap_single_claimant_rate: false
+    housing_benefit_benefit_cap: 22_020
 
 - name: Reg. 83(1)(g) - the other member's PIP does not lift the cap
   period: 2026
@@ -495,8 +504,12 @@
         members: [claimant, partner]
         region: NORTH_EAST
   output:
-    is_benefit_cap_exempt_health_disability: false
-    is_benefit_cap_exempt: false
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_uc_benefit_cap_exempt: false
+    # HB reg. 75F(1)(ea): the claimant's partner receiving PIP lifts the HB
+    # cap; HB has no single claim by a member of a couple.
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt: true
 
 - name: Reg. 83(1)(g) - joint claimants, either receiving PIP, are not capped (control)
   period: 2026
@@ -517,7 +530,8 @@
         members: [claimant, partner]
         region: NORTH_EAST
   output:
-    is_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
 
 - name: Reg. 83(1)(g) - the claimant's own PIP lifts the cap on a single claim
   period: 2026
@@ -539,7 +553,8 @@
         members: [claimant, partner]
         region: NORTH_EAST
   output:
-    is_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
 
 - name: Reg. 82(1)(a) - the couple's combined earned income, the other member's included, meets the earnings exception
   period: 2026
@@ -566,7 +581,11 @@
     # wage of 12.71 (NMW Regs 2015 reg. 4 from 1 April 2026):
     # 12.71 x 16 x 52 / 12 = 881.23 a month. The model uses a fixed
     # 10,152 a year; 11,000 clears both.
-    is_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt_earnings: true
+    # Housing Benefit has no earnings exception (HB Regs 2006 regs.
+    # 75E-75F); with no working tax credit the HB cap applies.
+    working_tax_credit: 0
+    is_housing_benefit_benefit_cap_exempt: false
 
 - name: Sch 4 para 28(2) - a renter under 35 claiming as a single person is a specified renter, whatever the partner's age
   period: 2026
@@ -592,6 +611,10 @@
     lha_renter_has_non_dependant: false
     is_lha_shared_accommodation_rate_specified_renter: true
     LHA_category: A
+    # HB: a claimant with a partner is not a young individual (HB reg 2(1));
+    # a couple has one bedroom (reg. 13D(3)(a)): B.
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_category: B
 
 - name: Sch 4 para 28(2) - a renter aged 35 or over claiming as a single person is not a specified renter
   period: 2026
@@ -615,6 +638,8 @@
   output:
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_category: B
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_category: B
 
 - name: Sch 4 para 29(5) - only the renter's own disability benefit excepts them from the shared rate
   period: 2026
@@ -659,7 +684,7 @@
     is_uc_single_or_joint_claimant: false
     is_uc_eligible: false
 
-- name: A family claiming legacy benefits keeps the couple rules Housing Benefit shares, while the UC award is a single claim
+- name: A single claim is single for UC's cap and shared rate and a couple for HB's, whether or not the family claims legacy benefits
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -675,7 +700,8 @@
     benunits:
       benunit:
         members: [renter, partner]
-        is_benefit_cap_exempt: false
+        is_uc_benefit_cap_exempt: false
+        is_housing_benefit_benefit_cap_exempt: false
     households:
       household:
         members: [renter, partner]
@@ -684,10 +710,18 @@
   output:
     claims_legacy_benefits: true
     uc_member_of_couple_claims_as_single_person: true
-    # Housing Benefit has no single claim by a member of a couple.
-    is_benefit_cap_single_claimant_rate: false
-    benefit_cap: 22_020
-    is_lha_shared_accommodation_rate_specified_renter: false
-    LHA_category: B
+    # Each scheme applies its own rules, so the family's legacy claim
+    # changes neither. UC: a single claimant (reg. 80A(2)(c); Sch 4 para
+    # 28(2)).
+    is_uc_benefit_cap_single_claimant_rate: true
+    uc_benefit_cap: 14_753
+    is_lha_shared_accommodation_rate_specified_renter: true
+    LHA_category: A
+    # Housing Benefit has no single claim by a member of a couple
+    # (reg. 75CA(2)(d); reg. 13D(3)(a)).
+    is_housing_benefit_benefit_cap_single_claimant_rate: false
+    housing_benefit_benefit_cap: 22_020
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_category: B
     # 424.90 x 12
     uc_standard_allowance: 5_098.80
