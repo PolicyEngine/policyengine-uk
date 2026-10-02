@@ -2,7 +2,6 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
     has_earned_income,
     is_award_payee,
-    is_claimant_or_partner,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
     is_full_time_student_non_dep,
@@ -57,7 +56,7 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         full_time_student = is_full_time_student_non_dep(person, period)
         # IS, income-based JSA, income-related ESA and SPC count for the person
         # they are payable to; Universal Credit for both joint claimants.
-        claimant_or_partner = is_claimant_or_partner(person, period)
+        claimant_or_partner = person("is_claimant_or_partner", period)
         on_income_related_benefit = (
             is_award_payee(person, period, "income_support", "income_support_reported")
             | is_award_payee(person, period, "jsa_income", "jsa_income_reported")

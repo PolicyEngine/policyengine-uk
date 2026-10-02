@@ -426,3 +426,146 @@
     council_tax_reduction_non_dep_deductions: [270.40, 0]
     housing_benefit_non_dep_deduction_exempt: [false, false, false]
     housing_benefit_non_dep_deductions: [3_497.00, 0]
+
+# Round 3: partners are the SSCBA s.137 couple (is_claimant_or_partner), not
+# whoever is not a child benefit child or qualifying young person.
+
+- name: A blind 16-year-old partner exempts a Welsh 19-year-old applicant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 16
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        is_blind: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 18
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant, partner]
+        benunit_is_rent_liable: true
+      lodger_unit:
+        members: [lodger]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [applicant, partner, lodger]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    # HB reg 74(6)(a) and WSI 2013/3029 Sch 6 para 5(6)(a): the claimant's
+    # partner is blind, so no deduction for the lodger (576.92 a week, which
+    # would otherwise be 119.85 HB and 16.80 CTR a week).
+    housing_benefit_non_dep_deductions_claimant_exempt: [true, false]
+    council_tax_reduction_household_has_non_dep_exemption: true
+    housing_benefit_non_dep_deductions: [0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+
+- name: A non-dependant couple with a partner at school is banded on joint income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      older_partner:
+        age: 20
+        employment_income: 9_360
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      younger_partner:
+        age: 18
+        employment_income: 8_320
+        weekly_hours: 10
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      couple_unit:
+        members: [older_partner, younger_partner]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, older_partner, younger_partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # HB reg 74(3)-(4) and CTR Sch 1 para 8(3)-(4): one deduction for the
+    # couple, banded on their joint 340 a week because the older partner is in
+    # remunerative work: 64.35 HB (269 band) and 10.60 CTR (279 band).
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: A 17-year-old partner's PIP exempts a Merton applicant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        pip_dl_category: STANDARD
+        is_claimant_or_partner: true
+      lodger:
+        age: 40
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant, partner]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, partner, lodger]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Merton scheme para 30(6): no deduction where the applicant or partner
+    # gets the daily living component of PIP.
+    council_tax_reduction_household_has_non_dep_exemption: true
+    merton_council_tax_reduction_non_dep_deductions: [0, 0]
