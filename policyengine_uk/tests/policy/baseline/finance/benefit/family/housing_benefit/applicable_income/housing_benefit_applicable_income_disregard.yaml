@@ -491,7 +491,7 @@
     housing_benefit_net_earnings: 0
     housing_benefit_applicable_income_disregard: 0
 
-- name: An 18-year-old young person's earnings and hours count as a partner's (known limitation of the is_adult proxy)
+- name: An 18-year-old young person's earnings and hours are not the claimant's
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -509,20 +509,13 @@
       benunit:
         members: [parent, young_person, child]
   output:
-    # KNOWN LIMITATION: the law gives 0. Pinned so a change is deliberate.
-    # The model takes
-    # the claimant and partner to be members aged 18 or over (is_adult)
-    # until a claimant-or-partner variable replaces it (PolicyEngine/
-    # policyengine-uk#1896). It counts the 18-year-old's £8,000 (below the
-    # tax and NI thresholds) as net earnings, treats the family as a couple
-    # with a child and one member working 16 hours, and £8,000 ≥ £520 +
-    # £889.20, so it gives (£10 + £17.10) × 52 = £1,409.20.
-    # In law a qualifying young person is a "young person" (SI 2006/213
-    # reg 19(1)), whose income "shall not be treated as the income ... of
-    # the claimant" (reg 25(3)); the parent is a lone parent with no
-    # earnings, so net earnings and the disregard are 0.
-    housing_benefit_net_earnings: 8_000
-    housing_benefit_applicable_income_disregard: 1_409.20
+    # A qualifying young person is a "young person" (SI 2006/213 reg
+    # 19(1)), whose income "shall not be treated as the income ... of the
+    # claimant" (reg 25(3)). The parent is a lone parent with no earnings,
+    # so net earnings and the disregard are 0. (Under the old is_adult proxy
+    # the model gave £8,000 and £1,409.20.)
+    housing_benefit_net_earnings: 0
+    housing_benefit_applicable_income_disregard: 0
 
 - name: The coronavirus modification raised the additional disregard to £37.10 in 2020-21
   period: 2020

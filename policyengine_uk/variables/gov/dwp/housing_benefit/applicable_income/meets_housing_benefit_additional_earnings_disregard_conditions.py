@@ -23,12 +23,10 @@ class meets_housing_benefit_additional_earnings_disregard_conditions(Variable):
         "tax credit can be claimed for 2025-26 onwards. The 50 plus element "
         "route (paragraph 17(2)(c) and 9(2)(c)) ended with the element on 6 "
         "April 2012. The net earnings test is applied in "
-        "housing_benefit_applicable_income_disregard. The claimant and "
-        "partner are proxied by is_adult (aged 18 or over): members under 18 "
-        "are treated as children, but a qualifying young person aged 18 or 19 "
-        "is treated as a claimant or partner, so their hours can meet a "
-        "condition, until a claimant-or-partner variable "
-        "(PolicyEngine/policyengine-uk#1896) replaces the proxy."
+        "housing_benefit_applicable_income_disregard. Only the claimant's and "
+        "partner's hours count (is_claimant_or_partner), and the child or "
+        "young person test uses the legacy benefits definition "
+        "(is_child_or_young_person_for_legacy_benefits)."
     )
     definition_period = YEAR
     reference = (
@@ -41,17 +39,16 @@ class meets_housing_benefit_additional_earnings_disregard_conditions(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.means_test.income_disregard
         person = benunit.members
-        # The claimant and partner; the model's other Housing Benefit
-        # variables use the same proxy. It counts a qualifying young person
-        # aged 18 or 19 as an adult (#1896).
-        claimant_or_partner = person("is_adult", period)
+        claimant_or_partner = person("is_claimant_or_partner", period)
         hours = person("weekly_hours", period)
         works_hours = claimant_or_partner & (hours >= p.worker_hours)
         works_lower_hours = claimant_or_partner & (hours >= p.worker_hours_lower)
         # Para 17(2)(b)(i) and 9(2)(b)(i): one person meets both tests.
         aged_worker = benunit.any(works_hours & (person("age", period) >= p.worker_age))
         # Para 17(2)(b)(ii)-(iii) and 9(2)(b)(ii)-(iii).
-        has_child = benunit.any(~claimant_or_partner)
+        has_child = benunit.any(
+            person("is_child_or_young_person_for_legacy_benefits", period)
+        )
         family_with_child = (benunit("is_couple", period) & has_child) | benunit(
             "is_lone_parent", period
         )
