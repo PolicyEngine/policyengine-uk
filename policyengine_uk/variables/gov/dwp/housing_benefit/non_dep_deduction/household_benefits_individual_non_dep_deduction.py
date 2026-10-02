@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
+    is_award_payee,
     non_dependant_weekly_gross_income,
 )
 
@@ -28,10 +29,10 @@ class household_benefits_individual_non_dep_deduction(Variable):
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
         weekly_income = non_dependant_weekly_gross_income(person, period)
-        on_income_related_benefit = person("is_claimant_or_partner", period) & (
-            (person.benunit("income_support", period) > 0)
-            | (person.benunit("jsa_income", period) > 0)
-            | (person.benunit("esa_income", period) > 0)
+        on_income_related_benefit = (
+            is_award_payee(person, period, "income_support", "income_support_reported")
+            | is_award_payee(person, period, "jsa_income", "jsa_income_reported")
+            | is_award_payee(person, period, "esa_income", "esa_income_reported")
         )
         in_remunerative_work = (
             person("weekly_hours", period) >= p.remunerative_work_hours
