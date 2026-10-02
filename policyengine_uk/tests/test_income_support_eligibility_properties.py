@@ -9,7 +9,10 @@ No adult outside the couple is named, so:
 
 - adding an adult who is neither the claimant, the partner nor a young person
   in the family never changes income_support_eligible, whatever that adult's
-  age, ESA, Income Support or caring;
+  age, ESA, Income Support or caring. The declared exception, outside the
+  values drawn here, is an esa_income entered directly that the new adult's
+  report makes equal to what the reports give: it is then read through the
+  reports (test_income_support_esa_entered_directly.py);
 - income_support_eligible equals a family-by-family reading of the model's
   gate: one of the claimant and partner reports Income Support, is under
   state pension age, is in a prescribed category the model covers (a carer;
@@ -135,7 +138,8 @@ def families(draw):
     if draw(st.integers(0, 3)) == 0:
         dependants.append(
             {
-                "age": draw(st.integers(0, 15)),
+                # Up to 17: para 2 covers only a placed child under 16.
+                "age": draw(st.integers(0, 17)),
                 "is_looked_after_by_local_authority": True,
             }
         )
@@ -292,7 +296,8 @@ def reference_eligibility(adults, dependants, capital, esa_income, sp_age, param
         and min(child_ages, default=math.inf)
         <= IS.eligibility.lone_parent_youngest_child_age_limit
     )
-    single_with_placed_child = len(adults) == 1 and len(placed) > 0
+    # A child is under 16 (SSCBA s.137(1)).
+    single_with_placed_child = len(adults) == 1 and any(d["age"] < 16 for d in placed)
 
     def is_claimant(adult, over_qualifying_age):
         carer = adult["receives_carer_benefit"] or adult["care_hours"] >= 35
