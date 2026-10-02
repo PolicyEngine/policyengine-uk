@@ -36,7 +36,7 @@ import datetime
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
@@ -178,8 +178,32 @@ def _any_by_family(families, benunit, mask):
     return result
 
 
+def _child(age, birth_year_offset=None):
+    return {"age": age, "in_education": False, "birth_year_offset": birth_year_offset}
+
+
+# Birth years entered for some people only: the others are left at 0.
+PARTIAL_BIRTH_YEARS = [
+    # Entered 2018 for one child; the sibling's birth year is 2021.
+    {
+        "adults": 1,
+        "children": [_child(6, 0), _child(3)],
+        "reports_ctc": True,
+        "would_claim_uc": False,
+    },
+    # Entered 2019 for the younger child; the older child's is 2014.
+    {
+        "adults": 2,
+        "children": [_child(10), _child(5, 0)],
+        "reports_ctc": True,
+        "would_claim_uc": False,
+    },
+]
+
+
 @PROPERTY_SETTINGS
 @given(population, st.integers(2015, 2024))
+@example(PARTIAL_BIRTH_YEARS, 2024)
 def test_family_element_is_one_flat_amount_for_a_child_born_before_the_cutoff(
     families, year
 ):

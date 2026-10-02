@@ -4,10 +4,11 @@ values:
   # on 5 April 2025: CTC Regs 2002 reg 7(3)(b) as made ("in any other case"),
   # then reg 7(3) as substituted by SI 2011/1035 reg 2(2) from 6 April 2011.
   # Until 5 April 2011, reg 7(3)(a) set £1,090 where a child was under one
-  # (family_element_baby_addition). Of every amendment to reg 7 recorded by
-  # legislation.gov.uk, only SI 2011/1035 reg 2(2) changed paragraph (3); the
-  # Tax Credits Up-rating Regulations 2004 to 2024 changed only paragraphs (4)
-  # and (5). The amount was never uprated and is not projected.
+  # (family_element_baby_addition). Apart from that 2011 substitution, the Tax
+  # Credits Up-rating Regulations from 2004 to 2024 amended only paragraphs (4)
+  # and (5), and the point-in-time texts of reg 7 for 2003-04, 2010-11,
+  # 2011-12, 2016-17, 2017-18 and 2024-25 all give £545. The amount was never
+  # uprated and is not projected.
   2003-04-06: 545
 metadata:
   period: year

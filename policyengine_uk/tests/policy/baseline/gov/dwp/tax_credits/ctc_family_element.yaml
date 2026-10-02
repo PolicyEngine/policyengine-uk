@@ -14,6 +14,11 @@
 #   (reg 7(4)(c), SI 2024/247 reg 3(a)); threshold £19,995 and taper 41%
 #   (SI 2002/2008 reg 8(3) steps 4 and 5, SI 2024/247 reg 4(4)). For income of
 #   £25,000 the reduction is 41% x (25,000 - 19,995) = £2,052.05.
+# - Award amounts follow the model's annual arithmetic: maximum rate less the
+#   reduction. Reg 8(3) steps 1 and 2 take each element as a daily rate rounded
+#   up to the penny, which the model does not, so a full-year statutory award is
+#   a few pounds higher (e.g. £1,952.00 rather than £1,947.95 for the first
+#   case). The element amounts and the family element condition are exact.
 #
 # Every family claims CTC (reported) and not Universal Credit, has no one in
 # work for 16 hours (so no WTC), and has no disabled child.
@@ -230,6 +235,48 @@
   output:
     CTC_family_element: 0  # birth years 2018 and 2021
 
+- name: 2024-25, a birth year entered for the younger child only - the older child (period less age, 2014) still brings the family element
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      older_child:
+        age: 10
+      younger_child:
+        age: 5
+        birth_year: 2019
+    benunits:
+      benunit:
+        members: [parent, older_child, younger_child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+
+- name: 2024-25, two children born before the cutoff - still one family element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 12
+      child_2:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+    CTC_maximum_rate: 7_455  # 2 x 3,455 + 545
+    child_tax_credit: 5_402.95
+
 - name: 2023-24, the family element is 545, not uprated
   period: 2023
   absolute_error_margin: 0
@@ -300,11 +347,13 @@
   output:
     CTC_family_element: 545
 
-# Before 2016-17 the model has no individual element or income thresholds, so
-# these cases enter CTC eligibility and test the family element alone. PE-UK
-# converts parameters to fiscal years for 2015 to 2040 only; an earlier YEAR
-# period reads them at 1 January, which falls in the previous tax year. The
-# periods below are chosen so that both tax years have the same law.
+# The individual element and income thresholds start in April 2016 in the
+# parameter files, and the model backdates every parameter's earliest value to
+# 1 January 2015, so they have no values before 2015. These cases enter CTC
+# eligibility and test the family element alone. PE-UK converts parameters to
+# fiscal years for 2015 to 2040 only; an earlier YEAR period reads them at
+# 1 January, which falls in the previous tax year. The periods below are chosen
+# so that both tax years have the same law.
 
 - name: 2012 (read at 1 January 2012, in 2011-12), a child under one - 545 (reg 7(3) as substituted by SI 2011/1035)
   period: 2012
