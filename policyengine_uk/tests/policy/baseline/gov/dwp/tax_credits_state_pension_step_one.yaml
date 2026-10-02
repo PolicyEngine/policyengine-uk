@@ -1,0 +1,333 @@
+# State Pension is step-one pension income for tax credits, with the £300
+# disregard.
+#
+# SI 2002/2006 reg 3(1), Step One adds "the pension income (as defined in
+# regulation 5(1)), the investment income ..., the property income ..., the
+# foreign income ... and the notional income"; "If the result of this step is
+# £300 or less, it is treated as nil. If the result of this step is more than
+# £300, only the excess is taken into account in the following steps." Step Two
+# adds employment income, "the social security income (as defined in
+# regulation 7)", student income and miscellaneous income.
+#
+# Reg 5(1)(a): pension income means "any pension to which section 577 or 629
+# of ITEPA applies"; ITEPA 2003 s.577(1) applies to "the state pension". Reg
+# 7(2): "Pensions under the Contributions and Benefits Act which are pension
+# income by virtue of regulation 5(1)(a) are not social security income."
+# Carer's Allowance (SSCBA 1992 s.70) and contributory ESA (Welfare Reform Act
+# 2007 Part 1) are social security income (reg 7(1)(a)); Table 3 disregards
+# neither.
+#
+# 2024-25 rates:
+# - WTC basic element £2,435, couple element £2,500 (WTC Regs 2002 Sch 2).
+# - Income threshold £7,955, or £19,995 for a claim with no WTC entitlement;
+#   withdrawal rate 41% (SI 2002/2008 regs 3 and 7, as uprated).
+# - CTC child element £3,455; family element £545 (CTC Regs 2002 reg 7).
+# - Standard minimum guarantee £218.15 a week single, £332.95 couple (SPC Regs
+#   2002 reg 6). WEEKS_IN_YEAR is 52.
+#
+# Each pensioner reached State Pension age after 6 April 2016, so has no
+# savings credit (SPCA 2002 s.3(1)(a)). The CTC family element is entered at
+# £545, its statutory amount, which the model uprates.
+
+- name: State Pension is step one, so the £300 disregard applies to it
+  # Tax credit income: step one 9,500 - 300 = £9,200; step two £2,600; total
+  # £11,800. (With State Pension in step two it would be £12,100.)
+  # WTC: 2,435 - 0.41 x (11,800 - 7,955) = £858.55.
+  # Pension Credit income is at least 9,500 + 2,600 - 5 x 52 + 858.55 =
+  # £12,698.55, above the 218.15 x 52 = £11,343.80 guarantee, so no Pension
+  # Credit, with or without the passport. No income tax: £12,100 is within the
+  # personal allowance.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 9_500
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+  output:
+    tax_credits_current_year_income: 11_800
+    tax_credits_applicable_income: 11_800
+    working_tax_credit: 858.55
+    pension_credit: 0
+
+- name: Other step-one income uses part of the £300, and State Pension the rest
+  # Step one: 9,500 + 100 - 300 = £9,300; total 9,300 + 2,600 = £11,900.
+  # (With State Pension in step two: 0 + 2,600 + 9,500 = £12,100.)
+  # WTC: 2,435 - 0.41 x (11,900 - 7,955) = £817.55.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 9_500
+        savings_interest_income: 100
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+  output:
+    tax_credits_current_year_income: 11_900
+    working_tax_credit: 817.55
+    pension_credit: 0
+
+- name: Private pension of £300 or more already uses the disregard
+  # Step one: 8,500 + 1,000 - 300 = £9,200; total £11,800, as it would be with
+  # State Pension in step two: (1,000 - 300) + 2,600 + 8,500 = £11,800.
+  # WTC: 2,435 - 0.41 x (11,800 - 7,955) = £858.55. Pension Credit income
+  # includes the private pension: at least 8,500 + 1,000 + 2,340 + 858.55 =
+  # £12,698.55, so none. No income tax on £12,100.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 8_500
+        private_pension_income: 1_000
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+  output:
+    tax_credits_current_year_income: 11_800
+    working_tax_credit: 858.55
+    pension_credit: 0
+
+- name: A joint claim has one £300 disregard, across both State Pensions
+  # Step one is the claimants' aggregate: 8,000 + 7,500 - 300 = £15,200 (not
+  # less £600). Total: 15,200 + 2,600 = £17,800.
+  # WTC maximum: 2,435 + 2,500 = £4,935; less 0.41 x (17,800 - 7,955) =
+  # £4,036.45; so £898.55. (With State Pension in step two: £18,100 and
+  # £775.55.)
+  # Pension Credit income is at least 15,500 + 2,600 - 10 x 52 + 898.55 =
+  # £18,478.55, above the 332.95 x 52 = £17,313.40 couple guarantee.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner_1:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 8_000
+        working_tax_credit_reported: 1
+      pensioner_2:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 7_500
+    benunits:
+      benunit:
+        members: [pensioner_1, pensioner_2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner_1, pensioner_2]
+  output:
+    tax_credits_current_year_income: 17_800
+    working_tax_credit: 898.55
+    pension_credit: 0
+
+- name: A grandparent's Child Tax Credit is tapered on income with the State Pension in step one
+  # A grandparent aged 70 responsible for a grandchild aged 10, working 10
+  # hours a week (no WTC: a single claimant with a child needs 16), claiming
+  # CTC only.
+  # Tax credit income: (11,000 - 300) + 9,500 = £20,200, above the £19,995
+  # threshold. CTC: 545 + 3,455 = £4,000, less 0.41 x 205 = £84.05, so
+  # £3,915.95. (With State Pension in step two: £20,500 and £3,792.95.)
+  # Pension Credit income is above the guarantee: 11,000 + 9,500 less income
+  # tax of 0.2 x (20,500 - 12,570) = £1,586. SPC Regs reg 6(6)(d) and (11)
+  # give no child amount to a tax credit recipient; it is entered because the
+  # model applies neither.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 9_500
+        weekly_hours: 10
+        state_pension: 11_000
+        child_tax_credit_reported: 1
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent, grandchild]
+        would_claim_uc: false
+        child_minimum_guarantee_addition: 0
+        CTC_family_element: 545
+    households:
+      household:
+        members: [grandparent, grandchild]
+  output:
+    tax_credits_current_year_income: 20_200
+    child_tax_credit: 3_915.95
+    working_tax_credit: 0
+    pension_credit: 0
+
+- name: Where Pension Credit is paid without the passport, it falls by the WTC gained
+  # The case with no consistent passport state (see
+  # tax_credits_pension_credit_passport.yaml), with no savings interest.
+  # Tax credit income: (6,600 - 300) + 2,600 = £8,900.
+  # Passport: with the test lifted WTC is £2,435, and Pension Credit income
+  # 2,340 + 6,600 + 2,435 = £11,375 is above the £11,343.80 guarantee, so the
+  # income test stays.
+  # WTC: 2,435 - 0.41 x (8,900 - 7,955) = £2,047.55. Guarantee Credit:
+  # 11,343.80 - (2,340 + 6,600 + 2,047.55) = £356.25.
+  # With State Pension in step two, income is £9,200, WTC £1,924.55 and
+  # Pension Credit £479.25: the £123 more WTC is £123 less Guarantee Credit.
+  # Pension Credit earnings are entered net of the SPC Regs Sch VI para 5
+  # disregard (£5 a week), which the model does not apply.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 6_600
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+    households:
+      household:
+        members: [pensioner]
+  output:
+    tax_credits_current_year_income: 8_900
+    tax_credits_applicable_income: 8_900
+    working_tax_credit: 2_047.55
+    pension_credit: 356.25
+
+- name: The State Pension disregard can bring a family within the childcare tax credit income limit
+  # England's two-year-old offer: a child whose parent is entitled to "child
+  # tax credit where that parent is not also entitled to working tax credit
+  # ... and has an annual gross income not exceeding £16,190" (SI 2014/2147
+  # reg 1(2), "eligible child", as at 1 September 2024).
+  # Tax credit income: (11,490 - 300) + 5,000 = £16,190, within the limit.
+  # (With State Pension in step two: £16,490, above it.)
+  # CTC: £4,000, below the £19,995 threshold. Pension Credit income,
+  # 11,490 + 5,000 less income tax of 0.2 x (16,490 - 12,570) = £784, is above
+  # the guarantee.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 5_000
+        weekly_hours: 10
+        state_pension: 11_490
+        child_tax_credit_reported: 1
+      grandchild:
+        age: 2
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent, grandchild]
+        would_claim_uc: false
+        child_minimum_guarantee_addition: 0
+        CTC_family_element: 545
+        working_tax_credit_run_on: false
+        extended_childcare_entitlement_eligible: false
+    households:
+      household:
+        members: [grandparent, grandchild]
+        country: ENGLAND
+  output:
+    tax_credits_current_year_income: 16_190
+    child_tax_credit: 4_000
+    pension_credit: 0
+    meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
+    targeted_childcare_entitlement_eligible: true
+
+- name: A State Pension within the £300 is wholly disregarded
+  # A pensioner whose only State Pension is £200 a year of graduated
+  # retirement benefit (ITEPA s.577(1)), with no other step-one income: step
+  # one is nil, and income is the £2,600 of earnings. Pension Credit is not
+  # claimed, so the income test applies; WTC is the £2,435 maximum.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 200
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+  output:
+    tax_credits_current_year_income: 2_600
+    tax_credits_applicable_income: 2_600
+    working_tax_credit: 2_435
+
+- name: Carer's Allowance and contributory ESA stay in step two, with no disregard
+  # Social security income (reg 7(1)(a)): Carer's Allowance £81.90 x 52 =
+  # £4,258.80 and contribution-based ESA £5,000; Table 3 disregards neither.
+  # Step one is nil, so income is 4,258.80 + 5,000 = £9,258.80.
+  # CTC: £4,000, below the £19,995 threshold.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 45
+        is_claimant_or_partner: true
+        carers_allowance: 4_258.80
+        child_tax_credit_reported: 1
+      partner:
+        age: 45
+        is_claimant_or_partner: true
+        esa_contrib_reported: 5_000
+      child:
+        age: 8
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [carer, partner, child]
+        would_claim_uc: false
+        CTC_family_element: 545
+    households:
+      household:
+        members: [carer, partner, child]
+  output:
+    tax_credits_current_year_income: 9_258.80
+    child_tax_credit: 4_000
