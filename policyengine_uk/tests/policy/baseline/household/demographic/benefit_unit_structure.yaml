@@ -373,8 +373,9 @@
     is_claimant_or_partner: [true, true, false]
 
 # Below a claimant flagged as a parent, a member at least 16 years younger is
-# presumed their child at any age. Without flags, the under-20 limit stays:
-# survey childless couples carry no flags and include large age gaps.
+# presumed their child at any age, unless a member under 20 and at least 16
+# years younger already explains the flag. Without flags, the under-20 limit
+# stays: survey childless couples carry no flags and include large age gaps.
 
 - name: A flagged lone parent with an adult son is single
   period: 2025
@@ -466,7 +467,10 @@
   output:
     is_claimant_or_partner: [true, false, true, true]
 
-- name: A flagged grandparent's adult daughter is not their partner
+- name: A flagged grandparent's daughter is read as a partner when a grandchild explains the flag
+  # Documented limitation, as before this rule: the grandchild under 20
+  # explains the grandparent's parent flag, so the under-20 limit stays and the
+  # 45-year-old is the partner. Supply is_claimant_or_partner for such homes.
   period: 2025
   absolute_error_margin: 0
   input:
@@ -485,7 +489,7 @@
       household:
         members: [grandparent, daughter, grandchild]
   output:
-    is_claimant_or_partner: [true, false, false]
+    is_claimant_or_partner: [true, true, false]
 
 - name: Without flags the under-20 limit still applies at the boundary
   period: 2025
@@ -513,10 +517,9 @@
   output:
     is_claimant_or_partner: [true, false, true, true]
 
-- name: Flagging only one partner of a large-gap couple assesses a lone parent
-  # Known trade-off of the presumption: the unflagged partner, 18 years
-  # younger, is presumed the flagged claimant's child, so their earnings drop
-  # out of the UC means test.
+- name: A young child explains a lone flag, so a large-gap partner stays the partner
+  # Only the 60-year-old is flagged, but the 10-year-old explains the flag, so
+  # the under-20 limit stays and the 42-year-old partner keeps their place.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -536,9 +539,11 @@
       household:
         members: [claimant, partner, child]
   output:
-    is_claimant_or_partner: [true, false, false]
-    is_lone_parent: true
-    uc_earned_income: 0
+    is_claimant_or_partner: [true, true, false]
+    is_couple: true
+    is_lone_parent: false
+    uc_earned_income: 31_563.60
+    universal_credit: 0
 
 - name: Flagging both partners keeps the large-gap couple
   period: 2025
@@ -593,3 +598,49 @@
     is_lone_parent: false
     uc_earned_income: 31_563.60
     universal_credit: 0
+
+- name: A flagged lone parent with an adult child and a younger child is read as a couple
+  # Documented limitation, as before this rule: the 12-year-old explains the
+  # parent flag, so the 25-year-old (not under 20) is read as the partner.
+  # Supply is_claimant_or_partner to enter this household.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 50
+        is_parent: true
+      adult_child:
+        age: 25
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [parent, adult_child, child]
+    households:
+      household:
+        members: [parent, adult_child, child]
+  output:
+    is_claimant_or_partner: [true, true, false]
+
+- name: An unexplained parent flag on one of a childless large-gap pair makes them single
+  # Trade-off: with no child under 20 to explain it, the flag on the
+  # 60-year-old marks the 42-year-old as their adult child, not their partner.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      older:
+        age: 60
+        is_parent: true
+      younger:
+        age: 42
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_couple: false
