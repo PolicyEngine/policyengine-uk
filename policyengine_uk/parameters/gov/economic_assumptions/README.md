@@ -23,7 +23,8 @@ generated from it by
 
 ## Time horizons
 
-Three horizons are stitched together for each series:
+Three horizons are stitched together for each OBR and ONS series (not
+`finance_ni.domestic_rates`, which has its own method, below):
 
 1. **Outturn** (history through 2024): ONS published data, copied from OBR
    detailed forecast tables.
@@ -69,5 +70,30 @@ analysis.
    to regenerate the cumulative `indices/` parameters that uprating depends
    on.
 4. Update the EFO reference in each series' `metadata.reference`.
+
+The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
+publish a Northern Ireland domestic rates bill series (see below).
+
+## Northern Ireland domestic rates
+
+`finance_ni.domestic_rates` is the growth in the average Northern Ireland
+domestic rates bill: the combined regional and district domestic poundage
+across the 11 councils, each council weighted by its domestic rates paid in
+the previous year. It is a national average, so it does not reproduce any one
+council's bill or changes in reliefs. The comments in
+[`yoy_growth.yaml`](./yoy_growth.yaml) give the derivation and
+`policyengine_uk/tests/test_domestic_rates_uprating.py` recomputes it from the
+published figures. To refresh it each spring:
+
+1. Add the new year's domestic district and regional poundages for every
+   council from the Department of Finance
+   [rate poundages](https://www.finance-ni.gov.uk/articles/rate-poundages)
+   tables, and the latest year of Land & Property Services' domestic rates
+   collected by district council, to the test's tables, and extend the
+   years it checks.
+2. Set the new year's value to the recomputed growth, rounded to 4 decimals.
+3. Revisit the projection that follows the last published year against the
+   regional rate Order and any agreed Northern Ireland Budget, and keep it
+   labelled as an assumption.
 
 [rpi-cpi]: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/
