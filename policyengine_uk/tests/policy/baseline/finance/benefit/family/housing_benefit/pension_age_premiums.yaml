@@ -1,10 +1,9 @@
 # Pension-age Housing Benefit and Council Tax Reduction premiums.
 # HB(SPC) Regs 2006 Sch 3 paras 4-12 and CTR (Prescribed Requirements)
-# (England) Regs 2012 Sch 2 paras 4-12: the severe disability premium has the
-# same conditions and amounts as the Pension Credit severe disability
-# additional amount (SPC Regs 2002 Sch I para 1, reg 6(5)); there is no adult
-# disability or enhanced disability premium. 2026-27 weekly rates: pension-age
-# personal allowance (attained pensionable age before 1 April 2021) 256.00,
+# (England) Regs 2012 Sch 2 paras 4-12: the severe disability premium applies
+# HB's qualifying benefit, non-dependant and carer conditions; there is no
+# adult disability or enhanced disability premium. 2026-27 weekly rates:
+# pension-age personal allowance (attained pensionable age before 1 April 2021) 256.00,
 # couple 383.35; severe disability premium 86.05 (172.10 for a couple who
 # both qualify); carer premium 48.15. Cases that assert an applicable amount
 # use claimants who reached State Pension age before 1 April 2021, whose
@@ -16,7 +15,7 @@
   input:
     people:
       claimant:
-        age: {2026: 70}
+        age: {2026: 72}
         state_pension: {2026: 6_000}
         private_pension_income: {2026: 12_000}
         aa_category: {2026: HIGHER}
@@ -35,9 +34,9 @@
     severe_disability_minimum_guarantee_addition: 86.05 * 52
     pension_age_severe_disability_premium: 86.05 * 52
     benefits_premiums: 86.05 * 52
-    # HB income 16,548.80 is below the applicable amount, (238.00 or 256.00
-    # + 86.05) * 52 = 16,850.60 or 17,786.60 whichever allowance cohort
-    # applies, so HB and CTR are at their maximum.
+    # The claimant reached pension age before 1 April 2021, so the older
+    # allowance applies. HB income 16,548.80 is below the applicable amount,
+    # (256.00 + 86.05) * 52 = 17,786.60, so HB and CTR are at their maximum.
     housing_benefit: 6_240
     council_tax_benefit: 2_000
 
@@ -47,7 +46,7 @@
   input:
     people:
       claimant:
-        age: {2026: 70}
+        age: {2026: 72}
         state_pension: {2026: 6_000}
         private_pension_income: {2026: 11_900}
         aa_category: {2026: HIGHER}
