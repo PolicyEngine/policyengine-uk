@@ -1,6 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
-    bedrooms_for_children,
+    child_bedrooms,
 )
 
 
@@ -9,49 +9,61 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
     entity = BenUnit
     label = "Bedrooms in the Housing Benefit size criteria"
     documentation = (
-        "Housing Benefit size criteria: one bedroom for the claimant or "
-        "couple, one for each other occupier aged 16 or over (an occupier "
-        "couple sharing one), and the children's bedrooms. Occupiers are "
-        "everyone who lives in the dwelling as their home except a joint "
-        "tenant outside the claimant's household. So every member of the benefit unit aged 16 or over who "
-        "is not the claimant or partner adds a bedroom, such as a young "
-        "person in full-time education; so do a householder's boarder or "
-        "lodger and a non-dependant, but a sharer of the rent does not. A "
-        "sharer's, boarder's or lodger's own claim counts only their own "
-        "family."
+        "Housing Benefit size criteria over the claim's occupiers: one "
+        "bedroom for each couple, one for each other occupier aged 16 or "
+        "over, and the children's bedrooms, pairing children across all the "
+        "occupiers. Occupiers are everyone who lives in the dwelling as their "
+        "home except a joint tenant outside the claimant's household. For "
+        "the household head's family or a sharer's, that is its own family, "
+        "the household's non-dependants and anyone paying the householder "
+        "rent (but not the other families liable for the rent). A boarder's "
+        "or lodger's own claim counts only their own family. Couples who "
+        "cannot share a bedroom and the additional bedrooms for overnight "
+        "care or foster parents are not modelled."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/13D",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/13D",
-        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
-        "https://www.legislation.gov.uk/uksi/2006/214/regulation/2",
     )
 
     def formula(benunit, period, parameters):
+        # HB Regs 2006 reg 13D(3) with "occupiers" as defined in 13D(12).
         person = benunit.members
-        # A child is a person under 16 (HB Regs 2006 reg 2(1)).
-        aged_16_or_over = person("age", period) >= 16
-        # HB Regs 2006 reg 13D(3)(b): a person who is not a child, here a
-        # member of the benefit unit other than the claimant or partner.
+        age = person("age", period)
         claimant_or_partner = person("is_claimant_or_partner", period)
-        family_rooms = benunit.sum(aged_16_or_over & ~claimant_or_partner)
-        head_family = person.benunit.any(person("is_household_head", period))
-        sharer = person.benunit("liable_for_share_of_household_rent", period)
-        # Reg 13D(3) for occupiers outside the family, as defined in 13D(12):
-        # a couple has one bedroom ((a)) and anyone else aged 16 or over one
-        # each ((b)), so each member of a couple counts as half. The extra
-        # bedroom for a couple who cannot share ((za)) is not modelled.
-        in_couple = claimant_or_partner & (
-            person.benunit.sum(claimant_or_partner & aged_16_or_over) == 2
+        liable_family = person.benunit.any(
+            person("is_liable_for_household_rent", period)
         )
-        other_occupier = (aged_16_or_over & ~head_family & ~sharer) * where(
-            in_couple, 0.5, 1
+        # Members of families not liable for the household's rent:
+        # non-dependants and people paying the householder.
+        other = ~liable_family
+        is_liable_claim = benunit.any(person("is_liable_for_household_rent", period))
+
+        def occupiers_total(values):
+            own = benunit.sum(values)
+            others = benunit.max(person.household.sum(values * other))
+            return own + where(is_liable_claim, others, 0)
+
+        # 13D(3)(zb), (a): one bedroom for each couple or single claimant.
+        adult_units = (
+            occupiers_total(
+                claimant_or_partner & (person.benunit.sum(claimant_or_partner) > 0)
+            )
+            - occupiers_total(
+                claimant_or_partner & (person.benunit.sum(claimant_or_partner) == 2)
+            )
+            / 2
         )
-        is_head_family = benunit.any(person("is_household_head", period))
-        other_occupiers = is_head_family * benunit.max(
-            person.household.sum(other_occupier)
+        # 13D(3)(b): any other person who is not a child.
+        other_adults = occupiers_total((age >= 16) & ~claimant_or_partner)
+        under_16 = age < 16
+        male = person("is_male", period)
+        under_10 = age < 10
+        rooms_for_children = child_bedrooms(
+            occupiers_total(under_10 & male),
+            occupiers_total(~under_10 & under_16 & male),
+            occupiers_total(under_10 & ~male),
+            occupiers_total(~under_10 & under_16 & ~male),
         )
-        return (
-            1 + family_rooms + other_occupiers + bedrooms_for_children(benunit, period)
-        )
+        return max_(adult_units, 1) + other_adults + rooms_for_children
