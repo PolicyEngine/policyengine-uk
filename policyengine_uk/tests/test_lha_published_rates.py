@@ -371,3 +371,23 @@ def test_freezing_the_2024_reset_holds_the_2020_rates():
         2024, "MAIDSTONE", "C", reform={"gov.dwp.LHA.freeze": {"2024": True}}
     )
     assert held == pytest.approx(187.56, abs=0.001)
+
+
+def test_devolved_percentile_ratios_use_the_english_median():
+    """Welsh, Scottish and NI lists of rents in the file copy English ones.
+
+    So a percentile reform scales their published rates by the median English
+    ratio for the category, not by a copied list's shape.
+    """
+    from policyengine_uk.utils.lha import _percentile_ratios, _sorted_list_of_rents
+
+    lists, devolved = _sorted_list_of_rents()
+    assert {"LOTHIAN", "CARDIFF", "BELFAST"} <= devolved
+    assert not devolved & {"MAIDSTONE", "CENTRAL_LONDON"}
+    ratios = _percentile_ratios(0.5)
+    brmas = published_rates().brmas
+    english = [i for i, b in enumerate(brmas) if b not in devolved]
+    for b in ("LOTHIAN", "CARDIFF", "BELFAST"):
+        row = ratios[brmas.get_loc(b)]
+        np.testing.assert_allclose(row, np.median(ratios[english], axis=0))
+    assert (ratios >= 1).all()

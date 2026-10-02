@@ -1,4 +1,4 @@
-description: Local Housing Allowance rates are set at this percentile of private rents in the family's Broad Rental Market Area. The published tables give the 30th percentile; another value scales it by the ratio of the two percentiles in the model's list of rents for the same area and category. This parameter does not apply if LHA is frozen, or to determinations before April 2020, which are taken as published.
+description: Local Housing Allowance rates are set at this percentile of private rents in the family's Broad Rental Market Area. The published tables give the 30th percentile; another value scales it by the ratio of the two percentiles in the model's list of rents for the same area and category (in Wales, Scotland and Northern Ireland, whose lists in the file are copies of English ones, the median English ratio for the category). This parameter does not apply if LHA is frozen, or to determinations before April 2020, which are taken as published.
 values:
   2015-01-01:
     value: 0.3

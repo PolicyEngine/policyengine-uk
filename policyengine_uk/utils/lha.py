@@ -131,15 +131,26 @@ def published_rates() -> PublishedRates:
     return PublishedRates(pd.read_csv(PUBLISHED_RATES_PATH))
 
 
+DEVOLVED_REGIONS = ("WALES", "SCOTLAND", "NORTHERN_IRELAND")
+
+
 @lru_cache(maxsize=1)
-def _sorted_list_of_rents() -> dict:
-    """The latest list of rents, sorted, keyed by (BRMA, category)."""
+def _sorted_list_of_rents() -> tuple[dict, set]:
+    """The latest list of rents, sorted, keyed by (BRMA, category).
+
+    Returns the lists and the set of BRMAs outside England. Every Welsh,
+    Scottish and Northern Irish list in the file is a copy of an English
+    BRMA's list, often of another category, so those lists do not describe
+    their own areas.
+    """
     rents = pd.read_csv(LIST_OF_RENTS_PATH)
     rents = rents[rents.year == rents.year.max()]
-    return {
+    lists = {
         key: np.sort(group.weekly_rent.to_numpy(dtype=float))
         for key, group in rents.groupby(["brma", "lha_category"])
     }
+    devolved = set(rents.brma[rents.region.isin(DEVOLVED_REGIONS)])
+    return lists, devolved
 
 
 def statutory_percentile(rents: np.ndarray, percentile: float) -> float:
@@ -164,19 +175,31 @@ def _percentile_ratios(percentile: float) -> np.ndarray:
 
     The published tables give only the 30th percentile, so another percentile
     is reached by scaling it by this ratio from the model's list of rents.
-    Cells the list does not cover keep a ratio of one.
+    Only the English lists describe their own areas (see
+    ``_sorted_list_of_rents``), so BRMAs in Wales, Scotland and Northern
+    Ireland take the median English ratio for the same category. Cells with
+    no list keep a ratio of one.
     """
     rates = published_rates()
+    lists, devolved = _sorted_list_of_rents()
     ratios = np.ones((len(rates.brmas), len(CATEGORIES)))
-    for (brma, category), rents in _sorted_list_of_rents().items():
+    english = {category: [] for category in CATEGORIES}
+    for (brma, category), rents in lists.items():
         position = rates.brmas.get_indexer([brma])[0]
-        if position < 0 or category not in CATEGORIES:
+        if position < 0 or category not in CATEGORIES or brma in devolved:
             continue
         base = statutory_percentile(rents, PUBLISHED_PERCENTILE)
         if base > 0:
-            ratios[position, CATEGORIES.index(category)] = (
-                statutory_percentile(rents, percentile) / base
-            )
+            ratio = statutory_percentile(rents, percentile) / base
+            ratios[position, CATEGORIES.index(category)] = ratio
+            english[category].append(ratio)
+    for brma in devolved:
+        position = rates.brmas.get_indexer([brma])[0]
+        if position < 0:
+            continue
+        for index, category in enumerate(CATEGORIES):
+            if english[category]:
+                ratios[position, index] = float(np.median(english[category]))
     return ratios
 
 
