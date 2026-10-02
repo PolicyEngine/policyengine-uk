@@ -44,7 +44,7 @@ import re
 from pathlib import Path
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 import policyengine_uk
@@ -144,6 +144,43 @@ def households(draw):
 
 
 population = st.lists(households(), min_size=1, max_size=5)
+
+
+def _family(ages, child_age=None, role="non_dependant"):
+    return dict(
+        ages=ages,
+        child_age=child_age,
+        earnings=[0.0, 0.0],
+        role=role,
+        payment=1.0,
+        student=False,
+    )
+
+
+def _household(families, head_flags, head_choice, rent=9_000.0):
+    return dict(
+        families=families,
+        scheme=("ENGLAND", "MAIDSTONE"),
+        tenure="RENT_PRIVATELY",
+        rent=rent,
+        council_tax=1_500.0,
+        head_flags=head_flags,
+        head_choice=head_choice,
+    )
+
+
+# Households where no one is liable for the rent, so share_of_household_rent
+# falls back to the head's family, and the raw flags disagree with the head.
+# Random generation rarely builds them.
+NO_ONE_LIABLE = [
+    # A flagged household beside one of two children with no member flagged:
+    # the elder child's family has the rent.
+    _household([_family([40])], "one", [0], rent=6_000.0),
+    _household([_family([], 12), _family([], 9)], "none", [0]),
+    # Two flagged children: the elder, alone in its family, is the head, and
+    # the younger's parent is neither liable nor a sharer.
+    _household([_family([], 12), _family([40], 8)], "several", [0, 2]),
+]
 
 
 def flagged_members(house):
@@ -270,6 +307,7 @@ def sum_in_household(values, household):
 
 @PROPERTY_SETTINGS
 @given(population)
+@example(NO_ONE_LIABLE)
 def test_every_programme_reads_one_head(population):
     situation, facts = build(population)
     sim = Simulation(situation=situation)
@@ -343,6 +381,7 @@ def identical(a, b):
 
 @PROPERTY_SETTINGS
 @given(population)
+@example(NO_ONE_LIABLE)
 def test_flags_matter_only_through_the_head(population):
     situation, facts = build(population)
     well_formed, _ = build(population, head_input=reference_head(facts))
