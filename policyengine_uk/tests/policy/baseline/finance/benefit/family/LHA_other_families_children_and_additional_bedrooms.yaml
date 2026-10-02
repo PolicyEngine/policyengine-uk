@@ -1197,7 +1197,8 @@
     # With relation_type SINGLE the family is not a couple (is_couple), so
     # reg 13D(3)(a) does not merge the two adults into one bedroom for the
     # renter: 3. (The inputs flag both as claimant or partner, which a
-    # single family cannot have; only the renter's figure is the point, and
-    # the other family's 1 just reflects those inputs.)
+    # single family cannot have, so only the renter's figure is asserted.)
     is_couple: [false, false]
-    housing_benefit_LHA_allowed_bedrooms: [3, 1]
+    benunits:
+      renter_family:
+        housing_benefit_LHA_allowed_bedrooms: 3

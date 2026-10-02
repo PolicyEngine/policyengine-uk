@@ -108,3 +108,40 @@
     youngest_child_age_for_legacy_benefits: 10
     income_support_eligible: true
 
+- name: A couple with a child placed for adoption is not in the Income Support adoption category
+  period: 2025
+  input:
+    people:
+      adopter_1:
+        age: 30
+        income_support_reported: true
+      adopter_2:
+        age: 31
+      child:
+        age: 2
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [adopter_1, adopter_2, child]
+  output:
+    # Sch 1B para 2A covers only a single claimant or lone parent.
+    income_support_eligible: false
+
+- name: A placement aged 16 is not a child for the Income Support adoption category
+  period: 2025
+  input:
+    people:
+      adopter:
+        age: 40
+        income_support_reported: true
+      young_person:
+        age: 16
+        current_education: UPPER_SECONDARY
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [adopter, young_person]
+  output:
+    # Para 2A needs "a child", a person under 16 (SSCBA 1992 s.137(1)).
+    income_support_eligible: false
+
