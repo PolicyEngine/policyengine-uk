@@ -16,7 +16,10 @@ class is_benefit_unit_non_dependant_for_legacy_benefits(Variable):
         "by Child Benefit) but normally resides with the claimant, so is a "
         "non-dependant. A child or young person is either in the family or, "
         "if placed with the claimant by a local authority, excluded from "
-        "being a non-dependant."
+        "being a non-dependant. Such a person's own benefit awards are not "
+        "modelled, so the exemptions for a non-dependant on an income-related "
+        "benefit or on Universal Credit with no earned income (HB reg 74(8), "
+        "CTR Sch 1 para 8(8)) never apply to them."
     )
     definition_period = YEAR
     reference = (
