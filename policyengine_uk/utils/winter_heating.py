@@ -42,9 +42,8 @@ def is_on_relevant_benefit(person, period, eligibility):
     ``minimum_tax_credit_award`` (infinite when tax credits do not count).
     """
     listed = add(person, period, eligibility.relevant_benefits) > 0
-    tax_credits = (
-        person("tax_credit_award", period) >= eligibility.minimum_tax_credit_award
-    )
+    award = person("tax_credit_award", period)
+    tax_credits = (award > 0) & (award >= eligibility.minimum_tax_credit_award)
     return listed | tax_credits
 
 
@@ -53,17 +52,16 @@ def reports_relevant_benefit(person, period, eligibility):
     reports = [
         report
         for variable in eligibility.relevant_benefits
-        for report in REPORTED_AWARDS.get(variable, [])
+        for report in REPORTED_AWARDS[variable]
     ]
     own_award = add(person, period, reports) > 0 if reports else False
-    tax_credits = (
-        add(person, period, TAX_CREDIT_REPORTS) >= eligibility.minimum_tax_credit_award
-    )
+    reported = add(person, period, TAX_CREDIT_REPORTS)
+    tax_credits = (reported > 0) & (reported >= eligibility.minimum_tax_credit_award)
     return own_award | tax_credits
 
 
 def is_excluded_relevant_benefit_partner(
-    person, period, qualifies, on_relevant_benefit, reports_relevant_benefit
+    person, period, qualifies, on_relevant_benefit, reports
 ):
     """Whether the person is the partner of the person paid for their couple.
 
@@ -74,14 +72,15 @@ def is_excluded_relevant_benefit_partner(
     award; failing that, the benefit-unit head; failing that, the elder. The
     choice matters beyond the couple: whether someone else in the household
     lives with an entitled person aged 80 or over depends on whom the couple's
-    payment is made to (SI 2025/969 reg 3(5) and (6)).
+    payment is made to (SI 2000/729 reg 2(2)(b); SI 2025/969 reg 3(5) and (6);
+    SSI 2024/351 reg 10(6) as substituted by SSI 2025/282).
     """
     age = person("age", period)
     couple_member = (
         qualifies & person("is_claimant_or_partner", period) & on_relevant_benefit
     )
     precedence = where(
-        reports_relevant_benefit,
+        reports,
         0,
         where(person("is_benunit_head", period), 1, 2),
     )

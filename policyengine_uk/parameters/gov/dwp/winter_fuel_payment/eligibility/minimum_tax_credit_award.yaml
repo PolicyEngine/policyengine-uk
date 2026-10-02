@@ -12,6 +12,8 @@ values:
     reference:
       - title: The Social Fund Winter Fuel Payment Regulations 2024, reg. 2(2)(b)(ii)
         href: https://www.legislation.gov.uk/uksi/2024/869/regulation/2/made
+      - title: The Social Fund Winter Fuel Payment Regulations (Northern Ireland) 2024, reg. 2(2)(b)(ii)
+        href: https://www.legislation.gov.uk/nisr/2024/160/regulation/2/made
   2025-01-01:
     value: .inf
     reference:

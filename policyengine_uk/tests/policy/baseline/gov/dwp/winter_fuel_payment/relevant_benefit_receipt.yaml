@@ -234,6 +234,62 @@
     is_on_winter_fuel_payment_relevant_benefit: [true]
     winter_fuel_payment: [200]
 
+- name: 2024 a pensioner who is neither claimant nor partner reporting a tax credit award of £25
+  # The pensioner is neither claimant nor partner in a 40-year-old's benefit
+  # unit, so only their own award counts; £25 is below the
+  # £26 minimum (reg. 2(2)(b)(ii)).
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 40
+        is_claimant_or_partner: true
+      pensioner:
+        age: 70
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 25
+    benunits:
+      unit:
+        members: [adult, pensioner]
+        tax_credits: 0
+        pension_credit: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [adult, pensioner]
+        country: ENGLAND
+  output:
+    tax_credit_award: [0, 25]
+    winter_fuel_payment: [0, 0]
+
+- name: 2024 a pensioner who is neither claimant nor partner reporting a tax credit award of £26
+  # The pensioner is neither claimant nor partner in a 40-year-old's benefit
+  # unit, so only their own award counts; £26 meets the
+  # minimum (reg. 2(2)(b)(ii)) and reg. 3(c) gives £200.
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 40
+        is_claimant_or_partner: true
+      pensioner:
+        age: 70
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 26
+    benunits:
+      unit:
+        members: [adult, pensioner]
+        tax_credits: 0
+        pension_credit: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [adult, pensioner]
+        country: ENGLAND
+  output:
+    tax_credit_award: [0, 26]
+    winter_fuel_payment: [0, 200]
+
 - name: 2025 a non-dependant's income-related ESA does not exempt the pensioner from the income test
   # Under SI 2025/969 the pensioner is entitled (reg. 2) to £200 (reg. 3(1)),
   # but the winter fuel payment charge recovers it: total income over

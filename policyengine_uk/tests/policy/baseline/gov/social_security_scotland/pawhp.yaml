@@ -149,6 +149,81 @@
     pension_age_winter_heating_payment: [0]
     pawhp: 0
 
+- name: 2024 a tax credit award of exactly £26 qualifies
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 67
+    benunits:
+      unit:
+        members: [pensioner]
+        tax_credits: 26
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    is_on_pawhp_relevant_benefit: [true]
+    pension_age_winter_heating_payment: [200]
+
+- name: 2024 a pensioner who is neither claimant nor partner reporting a tax credit award of £25
+  # The pensioner is neither claimant nor partner in a 40-year-old's benefit
+  # unit, so only their own award counts; £25 is below the
+  # £26 minimum (reg. 2 as made).
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 40
+        is_claimant_or_partner: true
+      pensioner:
+        age: 70
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 25
+    benunits:
+      unit:
+        members: [adult, pensioner]
+        tax_credits: 0
+        pension_credit: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [adult, pensioner]
+        country: SCOTLAND
+  output:
+    tax_credit_award: [0, 25]
+    pension_age_winter_heating_payment: [0, 0]
+
+- name: 2024 a pensioner who is neither claimant nor partner reporting a tax credit award of £26
+  # The pensioner is neither claimant nor partner in a 40-year-old's benefit
+  # unit, so only their own award counts; £26 meets the
+  # minimum (reg. 2 as made) and reg. 10(c) gives £200.
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 40
+        is_claimant_or_partner: true
+      pensioner:
+        age: 70
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 26
+    benunits:
+      unit:
+        members: [adult, pensioner]
+        tax_credits: 0
+        pension_credit: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [adult, pensioner]
+        country: SCOTLAND
+  output:
+    tax_credit_award: [0, 26]
+    pension_age_winter_heating_payment: [0, 200]
+
 - name: 2025 a single pensioner not on a relevant benefit gets £203.40
   # Reg. 10(5)(a): under 80, not entitled to a relevant benefit and not
   # living with another entitled individual.
@@ -306,7 +381,8 @@
 
 - name: 2025 the couple's payment goes to the Pension Credit claimant, which sets a lodger's shared amount
   # The claimant, aged 70, is entitled to Pension Credit; reg. 10(4)(a)(ii):
-  # £305.10 (partner aged 85). The partner is not paid (reg. 9(d)). The
+  # £305.10 (partner aged 85). The partner is not paid, on the model's
+  # reading of reg. 9(d) for the 2025 week (see pawhp_eligible). The
   # lodger, aged 82, lives with an entitled individual under 80 and none
   # aged 80: reg. 10(6)(b), £203.40.
   period: 2025
