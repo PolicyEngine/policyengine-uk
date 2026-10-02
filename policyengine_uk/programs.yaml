@@ -179,7 +179,8 @@ programs:
     coverage: UK
     variable: minimum_wage
     parameter_prefix: gov.hmrc.minimum_wage
-    verified_start_year: 2015
+    verified_start_year: 2017
+    notes: Rates from 2015 are the 30 April values; the October 2015 and October 2016 changes fall mid fiscal year
 
   # --- DWP programs ---
   - id: universal_credit
