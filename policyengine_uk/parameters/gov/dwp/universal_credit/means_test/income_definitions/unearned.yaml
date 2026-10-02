@@ -8,6 +8,10 @@ metadata:
   reference:
     - title: The Universal Credit Regulations 2013 reg. 66
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
+    - title: The Universal Credit Regulations 2013 reg. 67 (retirement pension income)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/67
+    - title: State Pension Credit Act 2002 s. 16(1)(za), (a) (State Pension counts as retirement pension income)
+      href: https://www.legislation.gov.uk/ukpga/2002/16/section/16
     - title: The Universal Credit Regulations 2013 reg. 66(1)(b)(ii), (viii) and (ix) (contributory ESA, maternity allowance, industrial injuries benefit)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
     - title: The Universal Credit Regulations 2013 reg. 2 (employment and support allowance and jobseeker's allowance mean the contributory allowances; industrial injuries benefit means benefit under SSCBA 1992 Part 5)
@@ -28,6 +32,7 @@ values:
   - maternity_allowance
   - iidb
   - private_pension_income
+  - state_pension
   - uc_tariff_income
   - savings_interest_income
   - dividend_income
@@ -40,6 +45,7 @@ values:
   - maternity_allowance
   - iidb
   - private_pension_income
+  - state_pension
   - uc_tariff_income
   - savings_interest_income
   - dividend_income
