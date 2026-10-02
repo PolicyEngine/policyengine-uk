@@ -10,6 +10,7 @@ Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note
 import numpy as np
 import pandas as pd
 from policyengine_uk import Simulation
+from policyengine_uk.dynamics.demographics import benunit_age_18_composition
 from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
 
@@ -212,8 +213,9 @@ def calculate_labour_substitution_elasticities(
     # Get demographic characteristics for elasticity assignment
     gender = sim.calculate("gender")
     is_married = sim.calculate("is_married", map_to="person")
-    has_children = sim.calculate("benunit_count_children", map_to="person") > 0
-    youngest_child_age = sim.calculate("youngest_child_age", map_to="person")
+    composition = benunit_age_18_composition(sim)
+    has_children = composition["count_under_18"].values > 0
+    youngest_child_age = composition["youngest_under_18_age"].values
 
     # Initialize elasticity array
     elasticities = np.zeros(gender.shape, dtype=float)
@@ -282,8 +284,9 @@ def calculate_labour_net_income_elasticities(
     # Get demographic characteristics for elasticity assignment
     gender = sim.calculate("gender")
     is_married = sim.calculate("is_married", map_to="person")
-    has_children = sim.calculate("benunit_count_children", map_to="person") > 0
-    youngest_child_age = sim.calculate("youngest_child_age", map_to="person")
+    composition = benunit_age_18_composition(sim)
+    has_children = composition["count_under_18"].values > 0
+    youngest_child_age = composition["youngest_under_18_age"].values
 
     # Initialize elasticity array
     elasticities = np.zeros(gender.shape, dtype=float)

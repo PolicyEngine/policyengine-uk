@@ -32,7 +32,7 @@ deviation (PolicyEngine/policyengine-uk#1947).
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -111,7 +111,15 @@ def situation(
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {year: age}, "state_pension": {year: 0.0}}
+            # The generated adults are the claimant and partner; say so, so the
+            # claimant-or-partner presumption (a member under 20 and much
+            # younger is the head's child) does not turn a 67-and-18 couple
+            # into a parent and child. Children get False below.
+            person = {
+                "age": {year: age},
+                "state_pension": {year: 0.0},
+                "is_claimant_or_partner": {year: True},
+            }
             if not marriage_allowance:
                 person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
@@ -123,7 +131,7 @@ def situation(
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
         households[f"h{i}"] = {
@@ -179,6 +187,25 @@ def test_uc_is_non_increasing_in_state_pension(units, bump, year):
     units=st.lists(families(), min_size=1, max_size=20),
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(YEARS),
+)
+@example(
+    # A partner just above the personal allowance and a pensioner just above
+    # it too, so a pound of State Pension is taxed while the partner's
+    # earnings reduce UC. Deducting the pensioner's tax from the partner's
+    # earnings (the formula before #1942) breaks pound for pound here.
+    units=[
+        dict(
+            ages=[67, 18],
+            children=[],
+            tenure="RENT_FROM_COUNCIL",
+            rent=12_000.0,
+            savings=0.0,
+            earnings=12_571.0,
+            state_pension=12_571.0,
+        )
+    ],
+    bump=1.0,
+    year=2026,
 )
 def test_uc_falls_pound_for_pound_in_state_pension(units, bump, year):
     # Earnings in the family change nothing: tax on State Pension is never
