@@ -61,7 +61,20 @@ class housing_benefit_applicable_income_disregard(Variable):
         # 2006/213 reg 5(1)(b); SI 2006/214 reg 5(2)), so there is no age
         # condition. Families on Universal Credit cannot receive Housing
         # Benefit in the model.
+        # The claimant's or partner's own award: Income Support already needs
+        # it (income_support_eligible), and income-based JSA and income-related
+        # ESA are read on their reports only, since another member of the
+        # benefit unit claims in their own right.
         on_income_related_benefit = (
-            add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
+            add(
+                benunit,
+                period,
+                [
+                    "income_support",
+                    "claimant_or_partner_jsa_income",
+                    "claimant_or_partner_esa_income",
+                ],
+            )
+            > 0
         )
         return where(on_income_related_benefit, net_earnings, standard + additional)
