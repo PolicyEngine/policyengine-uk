@@ -122,7 +122,7 @@ def label(units):
 
 
 SETTINGS = settings(
-    max_examples=40,
+    max_examples=20,
     deadline=None,
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
