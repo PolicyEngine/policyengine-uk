@@ -167,9 +167,11 @@ def test_class_4_parameters_match_statute(year):
     assert class_4.annual_maximum.includes_class_2 == (year in CLASS_2)
 
 
-# Hand-derived liabilities. Class 1 is the year's primary Class 1 at the main
-# percentage. Amounts in pounds; regulation 100 steps are numbered as in reg
-# 100(3) and "max" is the reg 100 maximum.
+# Hand-derived liabilities, with regulation 100 Cases 1, 2 and 3 in each
+# regime (to 2021-22, 2022-23, 2023-24 and from 2024-25). Class 1 is the
+# year's primary Class 1 at the main percentage. Amounts in pounds;
+# regulation 100 steps are numbered as in reg 100(3) and "max" is the reg 100
+# maximum.
 HAND_DERIVED = [
     # 2015-16. s.15(3): 9% x (42,385 - 8,060) + 2% x (50,000 - 42,385)
     # = 3,089.25 + 152.30 = 3,241.55. Class 2 52 x 2.80 = 145.60.
@@ -195,6 +197,10 @@ HAND_DERIVED = [
     # Step 7 = 41,368 - 19,179.11 = 22,188.89; Step 8 = 443.78.
     # Max = 1,726.12 + 443.78 = 2,169.90. Binding.
     (2019, 50_000, 2_000, 156.00, 2_169.90),
+    # 2019-20 with £6,000 of Class 1. Step 4 = 3,723.12 + 159 - 156 - 6,000
+    # < 0 (Case 3, nil). Step 7 = Step 6 = 50,000 - 8,632 = 41,368;
+    # Step 8 = 2% x 41,368 = 827.36; Step 9 = 0. Max = 827.36. Binding.
+    (2019, 50_000, 6_000, 156.00, 827.36),
     # 2020-21. 9% x (20,000 - 9,500) = 945. Class 2 52 x 3.05 = 158.60.
     (2020, 20_000, 0, 158.60, 945.00),
     # 2021-22 at the lower profits limit: Class 2 (profits of, or exceeding,
@@ -207,6 +213,11 @@ HAND_DERIVED = [
     # = 163.80. Step 4 = 9.73% x 38,362 + 53 x 3.15 - 163.80 = 3,735.77
     # (Case 1). Not binding.
     (2022, 30_000, 0, 163.80, 1_760.35),
+    # 2022-23. 9.73% x 38,362 + 2.73% x 9,730 = 3,732.62 + 265.63
+    # = 3,998.25. Step 4 = 3,735.77 does not exceed 163.80 + 3,732.62
+    # (Case 2). Step 5 = 3,735.77 / 9.73% = 38,394.37 exceeds Step 6
+    # (38,362), so Step 8 is 0; Step 9 = 265.63. Max = 4,001.40.
+    (2022, 60_000, 0, 163.80, 3_998.25),
     # 2022-23 with £6,000 of Class 1. Step 4 = 3,899.57 - 163.80 - 6,000 < 0
     # (Case 3). Max = 2.73% x 38,362 + 2.73% x 49,730 = 1,047.28
     # + 1,357.63 = 2,404.91.
@@ -221,6 +232,10 @@ HAND_DERIVED = [
     # = 33,295; Step 8 = 665.90; Step 9 = 2% x 9,730 = 194.60.
     # Max = 396.45 + 665.90 + 194.60 = 1,256.95. Binding.
     (2023, 60_000, 3_000, 179.40, 1_256.95),
+    # 2023-24 with £6,000 of Class 1. Step 4 = 3,575.85 - 179.40 - 6,000
+    # < 0 (Case 3, nil). Max = 2% x 37,700 + 2% x 49,730 = 754 + 994.60
+    # = 1,748.60. Binding (s.15(3): 3,393 + 994.60 = 4,387.60).
+    (2023, 100_000, 6_000, 179.40, 1_748.60),
     # 2024-25 with £1,000 of Class 1. s.15(3): 6% x 37,700 + 2% x 9,730
     # = 2,262 + 194.60 = 2,456.60. No Class 2 and no Step Three.
     # Step 4 = 2,262 - 1,000 = 1,262 (Case 2). Step 5 = 21,033.33;

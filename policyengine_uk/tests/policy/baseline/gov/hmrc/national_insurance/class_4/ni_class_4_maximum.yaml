@@ -5,10 +5,11 @@
   # Step 1: 50,270 - 12,570 = 37,700. Step 2: 37,700 x 9% = 3,393.
   # Step 3: 3,393 + 53 x 3.45 = 3,575.85.
   # Step 4: less Class 2 of 52 x 3.45 = 179.40 and primary Class 1 at the
-  # main percentage on £100,000 of pay. That is at least 10% (the lowest
-  # main primary percentage in 2023-24) of the £37,700 between the primary
-  # threshold and the upper earnings limit, £3,770, so Step 4 is negative:
-  # Case 3, treated as nil.
+  # main percentage on £100,000 of pay. With pay spread over the year that is
+  # at least 10% (the lowest main primary percentage in 2023-24; a director's
+  # annual rate was 11.5%) of the £37,700 between the primary threshold and
+  # the upper earnings limit, £3,770, so Step 4 is negative: Case 3, treated
+  # as nil. The model charges 12%, £4,524.
   # Step 5: 0. Step 6: min(50,270, 100,000) - 12,570 = 37,700.
   # Step 7: 37,700 - 0 = 37,700. Step 8: 37,700 x 2% = 754.
   # Step 9: (100,000 - 50,270) x 2% = 994.60.
