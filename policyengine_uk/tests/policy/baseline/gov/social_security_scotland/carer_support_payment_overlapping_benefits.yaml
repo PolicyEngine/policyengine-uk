@@ -11,6 +11,9 @@
 # Supplement 11.70 (SSI 2026/170 reg 12(3)); 2025-26 Carer Support Payment
 # 83.30. Pension Credit standard minimum guarantee 238.00, carer addition
 # 48.15.
+# Reg 16(2) works award week by award week. Cases using reported annual
+# benefits verify the model's annual-netting approximation; part-year spells
+# are not resolved. Constant year-round amounts agree with the weekly rule.
 
 - name: Case 1, State Pension below Carer Support Payment reduces it and the supplement is paid in full.
   period: 2026
@@ -86,7 +89,7 @@
   output:
     carer_support_payment: 83.30 * 52 - 2_000
 
-- name: Case 5, contributory ESA reduces Carer Support Payment.
+- name: Case 5, annual netting of contributory ESA reduces Carer Support Payment.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -125,3 +128,46 @@
     overlapping_state_pension: 7_000
     carer_support_payment: 0
     scottish_carer_supplement: 0
+
+- name: Case 8, nil CSP keeps the premium but gives no UC non-dependant carer exemption.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    incapacity_benefit_reported: 5_000
+    country: SCOTLAND
+  output:
+    carer_support_payment: 0
+    is_entitled_to_carer_benefit: true
+    carer_premium: 48.15 * 52
+    uc_non_dep_deduction_exempt: false
+
+- name: Case 9, partial CSP gives the UC non-dependant carer exemption.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    incapacity_benefit_reported: 1_000
+    country: SCOTLAND
+  output:
+    carer_support_payment: 86.45 * 52 - 1_000
+    receives_carer_benefit: true
+    uc_non_dep_deduction_exempt: true
+
+- name: Case 10, a Scottish carer without a claim has no addition premium or receipt exemption.
+  period: 2026
+  input:
+    age: 40
+    care_hours: 35
+    would_claim_carers_allowance: false
+    country: SCOTLAND
+  output:
+    carer_support_payment: 0
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
+    benunit_has_carer: true
+    carer_minimum_guarantee_addition: 0
+    carer_premium: 0
+    uc_non_dep_deduction_exempt: false

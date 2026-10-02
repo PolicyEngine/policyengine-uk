@@ -9,8 +9,13 @@ class overlapping_state_pension(Variable):
         "The State Pension by which Carer's Allowance and Carer Support Payment "
         "are reduced. A new State Pension under Part 1 of the Pensions Act 2014 "
         "overlaps in full, including any protected payment above the full rate. "
-        "An old State Pension overlaps without its additional pension. A State "
-        "Pension supplied directly, with no components, overlaps in full."
+        "An old State Pension overlaps without its additional pension. When "
+        "only a reported total is available, the model estimates its basic "
+        "component up to the full basic rate and treats the excess as "
+        "additional pension. This split cannot identify basic-pension "
+        "increments above that rate or additional pension within a partial "
+        "pension below it. A State Pension supplied directly, with no "
+        "components, overlaps in full as an input convention."
     )
     definition_period = YEAR
     unit = GBP

@@ -9,9 +9,9 @@ class carers_allowance_pre_overlap(Variable):
         "The Carer's Allowance a person is entitled to before the Social "
         "Security (Overlapping Benefits) Regulations 1979 reduce it by another "
         "personal benefit. A person whose allowance is reduced to nil keeps "
-        "this underlying entitlement, which is what carer premiums, the "
-        "Pension Credit carer addition and the benefit cap exemption look at. "
-        "carers_allowance is the amount payable."
+        "this underlying entitlement. is_entitled_to_carer_benefit combines "
+        "the pre-overlap amounts and any benefit in payment for rules that "
+        "test entitlement. carers_allowance is the amount payable."
     )
     definition_period = YEAR
     unit = GBP

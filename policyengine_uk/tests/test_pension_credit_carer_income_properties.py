@@ -34,21 +34,23 @@ Support Payment (Scotland), renting from the council in 2026:
    income tax: each plus income tax is unchanged.
 
 These compare PolicyEngine's own income measures, so they hold whatever
-carer's benefit the model pays. The model does not yet apply the
-overlapping-benefit reduction of Carer's Allowance and Carer Support Payment
-by State Pension (SPC Regs reg 15(4)(a) and (g)).
+carer's benefit the model pays. State Pension overlaps with Carer's Allowance
+and Carer Support Payment and reduces them (Social Security (Overlapping
+Benefits) Regulations 1979 reg 12; Carer Support Payment Regulations 2023 reg
+16(2)), to nil where it is at least as much. So the carer's own State Pension
+is drawn below the carer benefit, which leaves some of it paid; the other
+partner's State Pension is drawn up to £15,000.
 
 Only one member of a couple is drawn as a carer. Two carers in a couple get
 two Pension Credit carer additions (SPC Regs reg 6(8)) but, until the couple
 carer premium is set to twice the single rate, one Housing Benefit carer
 premium, so invariant 2 does not yet hold for them. Disability benefits are
-not drawn: with a carer benefit in payment in the benefit unit, Pension Credit
-withholds its severe disability addition, but the Housing Benefit severe
-disability premium keys on a different disability test.
+not drawn: Pension Credit and Housing Benefit use different severe-disability
+tests and retain different approximations for carers and household composition.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -65,6 +67,22 @@ REGIONS = {
     "ENGLAND": "NORTH_WEST",
     "WALES": "WALES",
     "SCOTLAND": "SCOTLAND",
+}
+# Below the 2026-27 Carer's Allowance and Carer Support Payment of £86.45 a
+# week (£4,495.40 a year), so the overlapping-benefit reduction leaves some of
+# the carer's benefit payable.
+CARER_STATE_PENSION_MAX = 4_400
+# Keep a near-complete overlap in every run: a reported carer award still
+# leaves £95.40 of CSP paid, so the income and supplement properties apply.
+PARTIALLY_OVERLAPPED_SCOTTISH_CARER = {
+    "adults": [{"age": 80, "state_pension": 15_000}],
+    "carer": 0,
+    "carer_state_pension": CARER_STATE_PENSION_MAX,
+    "by_hours": False,
+    "country": "SCOTLAND",
+    "rent": 6_000,
+    "council_tax": 1_500,
+    "savings": 0,
 }
 NO_SCOTTISH_CARER_SUPPLEMENT = {
     "gov.social_security_scotland.carer_support_payment.supplement": {
@@ -91,6 +109,7 @@ def family(draw, countries=tuple(REGIONS)):
     return dict(
         adults=adults,
         carer=draw(st.integers(0, len(adults) - 1)),
+        carer_state_pension=draw(money(CARER_STATE_PENSION_MAX)),
         # The carer qualifies either by caring hours or by a reported award.
         by_hours=draw(st.booleans()),
         country=draw(st.sampled_from(countries)),
@@ -108,13 +127,17 @@ def situation(families):
             names = []
             for j, a in enumerate(fam["adults"]):
                 name = f"p{i}_{k}_{j}"
+                is_carer = j == fam["carer"]
+                state_pension = (
+                    fam["carer_state_pension"] if is_carer else a["state_pension"]
+                )
                 person = {
                     "age": {YEAR: a["age"]},
-                    "state_pension": {YEAR: a["state_pension"]},
+                    "state_pension": {YEAR: state_pension},
                     # All private pension goes to the first adult.
                     "private_pension_income": {YEAR: float(pension) * (j == 0)},
                 }
-                if j == fam["carer"]:
+                if is_carer:
                     if fam["by_hours"]:
                         person["care_hours"] = {YEAR: 35}
                     else:
@@ -176,6 +199,7 @@ def assert_carer_benefit_paid(g, i, fam):
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example([PARTIALLY_OVERLAPPED_SCOTTISH_CARER])
 def test_pension_credit_and_housing_benefit_assess_the_same_carer_income(families):
     g = grid(families)
     for i, fam in enumerate(families):
@@ -199,6 +223,7 @@ def test_pension_credit_and_housing_benefit_assess_the_same_carer_income(familie
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example([PARTIALLY_OVERLAPPED_SCOTTISH_CARER])
 def test_net_income_does_not_fall_where_guarantee_credit_ends_for_carers(families):
     g = grid(families)
     net = g["household_net_income"] + g["tv_licence"]
@@ -221,6 +246,7 @@ def test_net_income_does_not_fall_where_guarantee_credit_ends_for_carers(familie
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(countries=("SCOTLAND",)), min_size=1, max_size=4))
+@example([PARTIALLY_OVERLAPPED_SCOTTISH_CARER])
 def test_scottish_carer_supplement_is_not_means_tested_income(families):
     g = grid(families)
     without = grid(families, reform=NO_SCOTTISH_CARER_SUPPLEMENT)

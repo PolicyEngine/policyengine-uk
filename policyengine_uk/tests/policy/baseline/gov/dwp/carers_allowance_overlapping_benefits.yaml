@@ -9,7 +9,11 @@
 # overlaps in full, including any protected payment above the full rate.
 # 2026-27 weekly rates: Carer's Allowance 86.45 (SI 2026/148), full basic
 # State Pension 184.90, full new State Pension 241.30, Pension Credit
-# standard minimum guarantee 238.00 and carer addition 48.15.
+# standard minimum guarantee 238.00, carer addition 48.15 and severe
+# disability addition 86.05 (172.10 doubled, SPC Regs 2002 reg 6(5)).
+# The regulations work week by week. Cases using reported annual benefits
+# verify the model's annual-netting approximation; part-year spells are not
+# resolved. This agrees with the weekly rule for constant year-round amounts.
 
 - name: Case 1, no overlapping benefit leaves Carer's Allowance in full.
   period: 2026
@@ -106,7 +110,7 @@
     overlapping_state_pension: 7_000
     carers_allowance: 0
 
-- name: Case 7, a reported old State Pension above the full basic rate overlaps up to that rate.
+- name: Case 7, the model splits a reported old State Pension at the full basic rate and only the basic part overlaps.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -145,7 +149,7 @@
     overlapping_state_pension: 3_000
     carers_allowance: 86.45 * 52 - 3_000
 
-- name: Case 10, contributory ESA reduces the allowance.
+- name: Case 10, annual netting of contributory ESA reduces the allowance.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -154,10 +158,11 @@
     care_hours: 35
     country: ENGLAND
   output:
+    # Contributory ESA of 3,000 paid evenly over the year.
     carers_allowance_overlapping_benefits: 3_000
     carers_allowance: 86.45 * 52 - 3_000
 
-- name: Case 11, contribution-based JSA and Maternity Allowance together reduce the allowance.
+- name: Case 11, annual netting sums contribution-based JSA and Maternity Allowance.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -167,6 +172,8 @@
     care_hours: 35
     country: ENGLAND
   output:
+    # This checks annual netting, not payment for individual award weeks.
+    # The annual inputs contain no start/end dates for either benefit.
     carers_allowance_overlapping_benefits: 2_000
     carers_allowance: 86.45 * 52 - 2_000
 
@@ -178,6 +185,10 @@
     incapacity_benefit_reported: 5_000
     care_hours: 35
     country: ENGLAND
+    # No Universal Credit carer element, as for a Housing Benefit claimant.
+    # The model otherwise gives every benefit unit with a carer that
+    # element, which exempts it from the cap by itself.
+    uc_carer_element: 0
   output:
     carers_allowance: 0
     is_entitled_to_carer_benefit: true
@@ -194,7 +205,8 @@
     care_hours: 35
     country: ENGLAND
   output:
-    # gov.dwp.sda.maximum is 119.35 a week in 2026-27.
+    # The model pays a reported SDA at its parameter gov.dwp.sda.maximum,
+    # 119.35 a week in 2026-27.
     sda: 119.35 * 52
     carers_allowance: 0
 
@@ -224,8 +236,11 @@
     carers_allowance_pre_overlap: 0
     carers_allowance: 0
     is_entitled_to_carer_benefit: false
-    # Caring 35 hours a week still makes the person a carer for benefits.
+    # UC Regs 2013 reg 30(2) does not require a Carer's Allowance claim.
+    # SPC Sch I para 4(2) and HB Sch 3 para 9 require entitlement.
     is_carer_for_benefits: true
+    carer_minimum_guarantee_addition: 0
+    carer_premium: 0
 
 - name: Case 16, Carer's Allowance supplied as an input is treated as an entitlement.
   period: 2026
@@ -235,6 +250,7 @@
     carers_allowance: 1_000
     care_hours: 0
     country: ENGLAND
+    uc_carer_element: 0
   output:
     carers_allowance_pre_overlap: 0
     receives_carers_allowance: true
@@ -287,8 +303,8 @@
     minimum_guarantee: (238 + 48.15) * 52
     guarantee_credit: (238 + 48.15) * 52 - 6_000
 
-- name: Case 19, an allowance reduced to nil does not withhold the severe disability addition.
-  period: 2021
+- name: Case 19, an allowance reduced to nil does not withhold the double severe disability addition.
+  period: 2026
   absolute_error_margin: 0.01
   input:
     people:
@@ -297,6 +313,7 @@
         attendance_allowance: 100
       partner:
         age: 70
+        attendance_allowance: 100
         state_pension: 7_000
         care_hours: 35
     benunits:
@@ -307,15 +324,45 @@
         members: [claimant, partner]
         country: ENGLAND
   output:
-    # SPC Regs 2002 Sch I para 1(1): the addition is withheld only where a
-    # person is "entitled to and in receipt of" Carer's Allowance for caring.
     carers_allowance: [0, 0]
     receives_carer_benefit: [false, false]
     is_entitled_to_carer_benefit: [false, true]
-    is_carer_for_benefits: [false, true]
-    severe_disability_minimum_guarantee_addition: 67.3 * 52
+    # SPC Regs 2002 Sch I para 1(1)(b): both partners receive Attendance
+    # Allowance. Reg 6(5)(b) doubles the addition where no one is "entitled
+    # to and in receipt of" Carer's Allowance for caring for either partner:
+    # the partner is entitled, but nothing is paid.
+    severe_disability_minimum_guarantee_addition: 172.10 * 52
 
-- name: Case 20, a parent entitled to an allowance reduced to nil still meets the childcare work condition.
+- name: Case 20, an allowance still in payment after the overlap withholds the double amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        attendance_allowance: 100
+        state_pension: 2_000
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    # Numeric list entries: the YAML runner evaluates arithmetic only for
+    # scalar outputs. The partial payment is 86.45 * 52 - 2_000.
+    carers_allowance: [0, 2_495.40]
+    receives_carer_benefit: [false, true]
+    # Reg 6(5)(a): a carer's allowance paid for caring for one partner
+    # leaves the single amount.
+    severe_disability_minimum_guarantee_addition: 86.05 * 52
+
+- name: Case 21, a parent entitled to an allowance reduced to nil still meets the childcare work condition.
   period: 2025
   input:
     people:
@@ -328,6 +375,7 @@
         in_work: false
         is_parent: true
         care_hours: 35
+        # Annual-netting approximation; the input has no payment dates.
         maternity_allowance_reported: 5_000
       child:
         age: 4
@@ -336,6 +384,9 @@
       benunit:
         members: [parent1, parent2, child]
         family_type: COUPLE_WITH_CHILDREN
+        # No Universal Credit carer element, which would meet reg 11A(1)(c)
+        # by itself, so the entitlement is what counts.
+        uc_carer_element: 0
     households:
       household:
         members: [parent1, parent2, child]
@@ -345,3 +396,68 @@
     # Childcare (Free of Charge for Working Parents) (England) Regulations
     # 2022 regs 14-15 and 11A(1)(a): "entitled to a specified benefit".
     extended_childcare_entitlement_work_condition: [1, 1, 0]
+
+- name: Case 22, a nil allowance gives a carer premium but no UC non-dependant carer exemption.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    incapacity_benefit_reported: 5_000
+    country: ENGLAND
+  output:
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: true
+    receives_carer_benefit: false
+    # HB (SPC) Sch 3 para 9 and working-age HB Sch 3 para 17 use entitlement.
+    carer_premium: 48.15 * 52
+    # UC Sch 4 para 16(2)(g) requires receipt.
+    uc_non_dep_deduction_exempt: false
+
+- name: Case 23, a partially paid allowance gives the UC non-dependant carer exemption.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    incapacity_benefit_reported: 1_000
+    country: ENGLAND
+  output:
+    carers_allowance: 86.45 * 52 - 1_000
+    receives_carer_benefit: true
+    uc_non_dep_deduction_exempt: true
+
+- name: Case 24, caring hours without a claim keep UC carer status but give no premium or receipt exemption.
+  period: 2026
+  input:
+    age: 40
+    care_hours: 35
+    would_claim_carers_allowance: false
+    country: ENGLAND
+  output:
+    carers_allowance: 0
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
+    benunit_has_carer: true
+    carer_premium: 0
+    uc_non_dep_deduction_exempt: false
+
+- name: Case 25, a dependent young person's entitlement gives neither the claimant's premium nor Pension Credit carer addition.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        is_entitled_to_carer_benefit: false
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    is_claimant_or_partner: [true, false]
+    carer_premium: 0
+    carer_minimum_guarantee_addition: 0
