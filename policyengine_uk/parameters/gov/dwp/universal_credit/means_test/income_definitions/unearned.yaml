@@ -1,4 +1,25 @@
-description: Unearned income sources for Universal Credit.
+description: >
+  Unearned income sources for Universal Credit. Regulation 66(1) defines
+  unearned income as income "falling within the following descriptions" and
+  lists them in sub-paragraphs (a) to (m); income outside that list is not
+  taken into account (DWP Advice for Decision Making H5002 and H5112). Actual
+  interest, dividends and rent fall in none of them: sub-paragraph (m) reaches
+  only income taxable under Part 5 of the Income Tax (Trading and Other Income)
+  Act 2005, whereas interest and dividends are charged under Part 4 and
+  property income under Part 3. Capital counts instead through its assumed
+  yield under regulation 72(1) (`uc_tariff_income`, sub-paragraph (k)). Where
+  capital is treated as yielding income, regulation 72(3) makes the actual
+  income derived from it, "for example rental, interest or dividends", part of
+  the person's capital. So `savings_interest_income`, `dividend_income` and
+  `property_income` are not on this list at any capital level. Income from a
+  trust or an annuity (sub-paragraphs (i) and (j)) and estate income (ITTOIA
+  Part 5 Chapter 6, sub-paragraph (m)) still count, but none of them is in
+  those three variables. Letting that amounts to a trade, such as a bed and
+  breakfast, gives self-employed earnings under regulation 57, which the model
+  reads from `self_employment_income`. Whether other letting can be a trade is
+  unsettled: DWP staff guidance treats a self-employed landlord's rent as
+  self-employed income, while letting is not a trade for tax, and the model
+  does not identify such landlords.
 metadata:
   economy: false
   label: Universal Credit unearned income sources
@@ -6,7 +27,7 @@ metadata:
   period: year
   unit: list
   reference:
-    - title: The Universal Credit Regulations 2013 reg. 66
+    - title: The Universal Credit Regulations 2013 reg. 66(1)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/66
     - title: The Universal Credit Regulations 2013 reg. 67 (retirement pension income)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/67
@@ -22,6 +43,14 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2026/246/article/25
     - title: The Universal Credit Regulations 2013 reg. 72
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/72
+    - title: The Universal Credit Regulations 2013 reg. 57
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/57
+    - title: The Universal Credit Regulations (Northern Ireland) 2016 reg. 66(1)
+      href: https://www.legislation.gov.uk/nisr/2016/216/regulation/66
+    - title: The Universal Credit Regulations (Northern Ireland) 2016 reg. 72
+      href: https://www.legislation.gov.uk/nisr/2016/216/regulation/72
+    - title: DWP Advice for Decision Making, Chapter H5 (unearned income), H5002, H5093-H5094 and H5112
+      href: https://www.gov.uk/government/publications/advice-for-decision-making-staff-guide
 
 
 values:
@@ -34,9 +63,6 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
-  - savings_interest_income
-  - dividend_income
-  - property_income
   2023-11-19:
   - carers_allowance
   - uc_unearned_carer_support_payment
@@ -47,6 +73,3 @@ values:
   - private_pension_income
   - state_pension
   - uc_tariff_income
-  - savings_interest_income
-  - dividend_income
-  - property_income
