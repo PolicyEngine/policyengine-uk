@@ -39,7 +39,7 @@ def council_tax_reduction_joint_liability_non_dep_deductions(
     share = benunit("council_tax_reduction_joint_liability_share", period)
     sole = (in_household - own) * share
     joint = apportioned_non_dependant_deductions(
-        benunit, period, deductions, equally=True
+        benunit, period, deductions, equally=True, every_joint_occupier_part=share
     )
     return where(rent_is_shared, joint, sole)
 

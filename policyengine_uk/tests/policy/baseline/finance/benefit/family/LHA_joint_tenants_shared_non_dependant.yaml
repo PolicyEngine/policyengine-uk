@@ -448,3 +448,184 @@
     # and requires overnight care.
     housing_benefit_LHA_additional_bedrooms: [1, 1, 1]
     housing_benefit_LHA_allowed_bedrooms: [3, 3, 2]
+
+- name: Supplied rent shares set each joint tenant's part of a shared non-dependant's deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 40
+      friend:
+        age: 40
+        household_benefits_individual_non_dep_deduction: 1_000
+    benunits:
+      head_family:
+        members: [head]
+        share_of_household_rent: 0.75
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        share_of_household_rent: 0.25
+      friend_family:
+        members: [friend]
+        share_of_household_rent: 0
+    households:
+      home:
+        members: [head, sharer, friend]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Reg 74(5): "having regard to ... the proportion of the payments in
+    # respect of the dwelling payable by each of them".
+    housing_benefit_non_dep_deductions: [750, 250, 0]
+
+- name: A non-dependant of some joint tenants is split by their supplied rent shares
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer_1:
+        age: 40
+      sharer_2:
+        age: 41
+      friend:
+        age: 38
+        household_benefits_individual_non_dep_deduction: 1_000
+    benunits:
+      head_family:
+        members: [head]
+        share_of_household_rent: 0.5
+      sharer_1_family:
+        members: [sharer_1]
+        liable_for_share_of_household_rent: true
+        share_of_household_rent: 0.3
+      sharer_2_family:
+        members: [sharer_2]
+        liable_for_share_of_household_rent: true
+        share_of_household_rent: 0.2
+      friend_family:
+        members: [friend]
+        share_of_household_rent: 0
+        non_dependant_normally_resides_with: OTHER_JOINT_OCCUPIERS
+    households:
+      home:
+        members: [head, sharer_1, sharer_2, friend]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # 0.3 / (0.3 + 0.2) and 0.2 / (0.3 + 0.2) of the deduction.
+    housing_benefit_non_dep_deductions: [0, 600, 400, 0]
+
+- name: A sharer with no rent is never its own or the head's non-dependant
+  period: 2026
+  input:
+    people:
+      head:
+        age: 30
+        is_household_head: true
+      sharer:
+        age: 30
+    benunits:
+      head_family:
+        members: [head]
+        housing_benefit_shares_accommodation: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        housing_benefit_shares_accommodation: false
+    households:
+      home:
+        members: [head, sharer]
+        rent: 0
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # HB reg 3(2)(a), (d): neither joint occupier is a non-dependant of
+    # either, whatever the rent; so each 30-year-old is a young individual
+    # with no non-dependant (13D(2)(a)(i)).
+    housing_benefit_claimant_has_non_dependant: [false, false]
+    housing_benefit_LHA_allowed_bedrooms: [1, 1]
+    housing_benefit_LHA_category: [A, A]
+
+- name: Without sharers the CTR deductions keep the previous formula, national and local
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_reduction_individual_non_dep_deduction: 0
+        merton_council_tax_reduction_individual_non_dep_deduction: 0
+      adult_1:
+        age: 40
+        council_tax_reduction_individual_non_dep_deduction: 300
+        merton_council_tax_reduction_individual_non_dep_deduction: 300
+      adult_2:
+        age: 40
+        council_tax_reduction_individual_non_dep_deduction: 200
+        merton_council_tax_reduction_individual_non_dep_deduction: 200
+    benunits:
+      head_family:
+        members: [head]
+      family_1:
+        members: [adult_1]
+      family_2:
+        members: [adult_2]
+    households:
+      home:
+        members: [head, adult_1, adult_2]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Every family has every other family's deductions (only the claimant's
+    # value is used): 300 + 200, 200 and 300.
+    council_tax_reduction_non_dep_deductions: [500, 200, 300]
+    merton_council_tax_reduction_non_dep_deductions: [500, 200, 300]
+
+- name: A non-dependant of only a couple who share the rent with a sharer falls wholly on the couple's CTR claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 45
+        is_household_head: true
+      head_partner:
+        age: 44
+      sharer:
+        age: 40
+      relative:
+        age: 30
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      head_family:
+        members: [head, head_partner]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      relative_family:
+        members: [relative]
+        non_dependant_normally_resides_with: HOUSEHOLD_HEAD_FAMILY
+    households:
+      home:
+        members: [head, head_partner, sharer, relative]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+  output:
+    # The model treats a couple as one claim here, as it does when no one
+    # else is liable: the relative resides with that family alone, so its
+    # claim bears the whole deduction. Where both partners are named joint
+    # tenants (liable under LGFA 1992 s.6, not only s.9), the literal Sch 1
+    # para 8(5) would split it between the two of them; the model cannot
+    # tell how a couple is liable.
+    council_tax_reduction_non_dep_deductions: [300, 0, 0]

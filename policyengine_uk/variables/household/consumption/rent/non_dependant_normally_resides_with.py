@@ -65,52 +65,96 @@ def _joint_occupiers_by_residence(benunit, period):
     )
 
 
+def _outside_joint_occupiers(benunit, period):
+    """Whether each person is outside every family liable for the household's
+    rent (the household head's family and the sharers). A joint occupier is
+    never a non-dependant of itself or of another joint occupier (HB Regs
+    2006 reg 3(2)(a), (d); SI 2012/2885 reg 9(2)(a), (d)), whatever its own
+    rent."""
+    person = benunit.members
+    head_family = person.benunit.any(person("is_household_head", period))
+    sharer = person.benunit("liable_for_share_of_household_rent", period)
+    return ~head_family & ~sharer
+
+
+def _household_total_over_families(benunit, period, value, families):
+    """For each family, the household total of a family-level ``value`` over
+    the families marked by ``families``."""
+    person = benunit.members
+    on_head = person("is_benunit_head", period)
+    return benunit.max(
+        person.household.sum(on_head * benunit.project(value * families))
+    )
+
+
 def non_dependants_residing_with(benunit, period, non_dependant):
     """For each family, the sum of ``non_dependant`` (a count or weight for
     each member of a non-dependant family, zero for anyone else) over the
     household's people who normally reside with it under
-    non_dependant_normally_resides_with."""
+    non_dependant_normally_resides_with. Members of the joint occupiers'
+    families are never counted."""
     person = benunit.members
     residence = person.benunit("non_dependant_normally_resides_with", period)
+    source = non_dependant * _outside_joint_occupiers(benunit, period)
     count = 0
     for value, joint_occupier in _joint_occupiers_by_residence(benunit, period):
-        in_household = benunit.max(
-            person.household.sum(non_dependant * (residence == value))
-        )
+        in_household = benunit.max(person.household.sum(source * (residence == value)))
         count = count + joint_occupier * in_household
     return count
 
 
-def apportioned_non_dependant_deductions(benunit, period, deductions, equally):
+def apportioned_non_dependant_deductions(
+    benunit, period, deductions, equally, every_joint_occupier_part
+):
     """For each family, its part of the deductions for the household's
     non-dependants (``deductions``, one amount per person and zero for anyone
-    who is not a non-dependant), each split between the joint occupiers the
-    non-dependant normally resides with.
+    who is not a non-dependant; members of the joint occupiers' families are
+    never counted), each split between the joint occupiers the non-dependant
+    normally resides with.
 
-    With ``equally`` false (Housing Benefit, reg 74(5)), each joint occupier's
-    part is its share of the rent among them: the people liable for the rent
-    in its family over those in all of them. With ``equally`` true (Council
-    Tax Reduction, SI 2012/2885 Sch 1 para 8(5)), each part is one over the
+    For a non-dependant of every joint occupier, each family's part is
+    ``every_joint_occupier_part``: its share of the rent for Housing Benefit
+    (share_of_household_rent) and its joint liability share for Council Tax
+    Reduction (council_tax_reduction_joint_liability_share), as before.
+
+    For a non-dependant of some of them, with ``equally`` false (Housing
+    Benefit, reg 74(5)), each joint occupier's part is its share of the rent
+    over the shares of all of them, or its people liable for the rent over
+    theirs where those shares sum to zero; with ``equally`` true (Council Tax
+    Reduction, SI 2012/2885 Sch 1 para 8(5)), each part is one over the
     number of people liable among them, and the whole where only the family
     is liable.
     """
     person = benunit.members
     residence = person.benunit("non_dependant_normally_resides_with", period)
+    source = deductions * _outside_joint_occupiers(benunit, period)
     liable = person("is_liable_for_household_rent", period)
     liable_in_family = benunit.sum(liable)
+    share = benunit("share_of_household_rent", period)
+    values = NonDependantResidence
     total = 0
     for value, joint_occupier in _joint_occupiers_by_residence(benunit, period):
         liable_in_joint_occupiers = benunit.max(
             person.household.sum(liable & benunit.project(joint_occupier))
         )
-        if equally:
+        if value == values.EVERY_JOINT_OCCUPIER:
+            part = every_joint_occupier_part
+        elif equally:
             part = where(
                 liable_in_joint_occupiers > liable_in_family,
                 1 / max_(liable_in_joint_occupiers, 1),
                 1,
             )
         else:
-            part = liable_in_family / max_(liable_in_joint_occupiers, 1)
-        pool = benunit.max(person.household.sum(deductions * (residence == value)))
+            share_of_joint_occupiers = _household_total_over_families(
+                benunit, period, share, joint_occupier
+            )
+            part = where(
+                share_of_joint_occupiers > 0,
+                share
+                / where(share_of_joint_occupiers > 0, share_of_joint_occupiers, 1),
+                liable_in_family / max_(liable_in_joint_occupiers, 1),
+            )
+        pool = benunit.max(person.household.sum(source * (residence == value)))
         total = total + joint_occupier * part * pool
     return total

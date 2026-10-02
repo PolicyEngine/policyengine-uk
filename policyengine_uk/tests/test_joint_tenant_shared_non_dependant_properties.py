@@ -15,9 +15,12 @@ Invariants, for any generated population of households:
    deductions equal the previous formula (differential).
 3. Differential: with every non-dependant shared (the default), the Housing
    Benefit deductions equal the previous formula (each family's share of the
-   rent times the household's deductions) and the Council Tax Reduction
-   deductions equal the previous formula (the deductions outside the family
-   times council_tax_reduction_joint_liability_share).
+   rent, computed or supplied, times the household's deductions) and the
+   Council Tax Reduction deductions equal the previous formula (the
+   deductions outside the family times
+   council_tax_reduction_joint_liability_share), wherever the rent is
+   positive. With no rent a sharer is not rent-liable, and the previous
+   formulas wrongly counted its members as non-dependants.
 4. Attribution: a shared non-dependant counts in the household head's
    family's size criteria exactly as when they are the head family's only,
    and in a sharer's exactly as when they are the other joint occupiers'
@@ -30,7 +33,7 @@ Invariants, for any generated population of households:
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, assume, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -75,7 +78,12 @@ def households(draw):
             )
         ),
         lodger=draw(st.booleans()),
-        rent=draw(st.floats(2_000, 30_000, allow_nan=False)),
+        rent=draw(st.one_of(st.just(0.0), st.floats(2_000, 30_000, allow_nan=False))),
+        # Supplied rent-share weights for the head and up to two sharers
+        # (normalised over the families liable for the rent), or None.
+        share_weights=draw(
+            st.one_of(st.none(), st.lists(st.floats(0.05, 1), min_size=3, max_size=3))
+        ),
     )
 
 
@@ -85,6 +93,7 @@ population = st.lists(households(), min_size=1, max_size=5)
 def build(population, residence_override=None):
     """One situation for the whole population, with each family's role."""
     people, benunits, homes, roles = {}, {}, {}, []
+    supplied = any(house["share_weights"] is not None for house in population)
     for h, house in enumerate(population):
         members = []
 
@@ -112,14 +121,37 @@ def build(population, residence_override=None):
             roles.append(role)
             return ids
 
-        head_ids = add_family(f"h{h}_head", house["head"], "head", {})
+        weights = house["share_weights"]
+        shares = [None] * (1 + len(house["sharers"]))
+        if weights is not None:
+            used = weights[: len(shares)]
+            shares = [w / sum(used) for w in used]
+        elif supplied:
+            # policyengine-core treats a variable given for some families as
+            # an input for all, defaulting the rest to zero, so supply the
+            # formula's shares (people liable over people liable in the
+            # household; every adult here is a claimant or partner).
+            adults = [len(house["head"]["ages"])] + [
+                len(sharer["ages"]) for sharer in house["sharers"]
+            ]
+            shares = [a / sum(adults) for a in adults]
+
+        def share_input(i):
+            if shares[i] is None:
+                return {}
+            return {"share_of_household_rent": {YEAR: shares[i]}}
+
+        head_ids = add_family(f"h{h}_head", house["head"], "head", share_input(0))
         people[head_ids[0]]["is_household_head"] = {YEAR: True}
         for f, sharer in enumerate(house["sharers"]):
             add_family(
                 f"h{h}_s{f}",
                 sharer,
                 "sharer",
-                {"liable_for_share_of_household_rent": {YEAR: True}},
+                {
+                    "liable_for_share_of_household_rent": {YEAR: True},
+                    **share_input(f + 1),
+                },
             )
         for f, (non_dep, residence) in enumerate(house["non_dependants"]):
             add_family(
@@ -129,7 +161,8 @@ def build(population, residence_override=None):
                 {
                     "non_dependant_normally_resides_with": {
                         YEAR: residence_override or residence
-                    }
+                    },
+                    **({"share_of_household_rent": {YEAR: 0.0}} if supplied else {}),
                 },
             )
         if house["lodger"]:
@@ -137,7 +170,7 @@ def build(population, residence_override=None):
                 f"h{h}_l",
                 dict(ages=[40], child_age=None, income=10_000),
                 "lodger",
-                {},
+                {"share_of_household_rent": {YEAR: 0.0}} if supplied else {},
             )
             people[ids[0]]["rent_paid_as_lodger"] = {YEAR: 4_000}
         homes[f"h{h}"] = {
@@ -179,6 +212,13 @@ def person_per_household(sim, person_values):
     )
 
 
+def in_joint_occupier_family(sim, roles):
+    """Whether each person belongs to the household head's or a sharer's
+    family: such people are never anyone's non-dependant."""
+    person_role = roles[sim.populations["benunit"].members_entity_id]
+    return (person_role == "head") | (person_role == "sharer")
+
+
 def has_sharer(sim, roles):
     return (
         per_household(sim, (roles == "sharer").astype(float))[benunit_household(sim)]
@@ -190,8 +230,12 @@ def has_sharer(sim, roles):
 @given(population)
 def test_housing_benefit_deductions_are_conserved(population):
     sim, roles = build(population)
-    deductions = calc(sim, "household_benefits_individual_non_dep_deduction") * calc(
-        sim, "is_non_dependant_of_household_head"
+    # A sharer with no rent is not rent-liable, but is still a joint
+    # occupier and so no one's non-dependant (HB reg 3(2)(d)).
+    deductions = (
+        calc(sim, "household_benefits_individual_non_dep_deduction")
+        * calc(sim, "is_non_dependant_of_household_head")
+        * ~in_joint_occupier_family(sim, roles)
     )
     families = calc(sim, "housing_benefit_non_dep_deductions")
     np.testing.assert_allclose(
@@ -252,11 +296,7 @@ def test_shared_default_matches_the_previous_formulas(population):
         sim, "is_non_dependant_of_household_head"
     )
     share = calc(sim, "share_of_household_rent")
-    np.testing.assert_allclose(
-        calc(sim, "housing_benefit_non_dep_deductions"),
-        share * person_per_household(sim, hb_individual)[household],
-        atol=MONEY_TOLERANCE,
-    )
+    previous_hb = share * person_per_household(sim, hb_individual)[household]
     ctr_individual = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
     own = np.bincount(
         sim.populations["benunit"].members_entity_id,
@@ -267,9 +307,17 @@ def test_shared_default_matches_the_previous_formulas(population):
         sim, "council_tax_reduction_joint_liability_share"
     )
     joint_occupier = (roles == "head") | (roles == "sharer")
+    # With no rent, a sharer is not rent-liable, so the previous formulas
+    # counted its own members as non-dependants; that case is excluded.
+    positive_rent = np.array([house["rent"] > 0 for house in population])[household]
+    hb = calc(sim, "housing_benefit_non_dep_deductions")
     np.testing.assert_allclose(
-        calc(sim, "council_tax_reduction_non_dep_deductions")[joint_occupier],
-        previous[joint_occupier],
+        hb[positive_rent], previous_hb[positive_rent], atol=MONEY_TOLERANCE
+    )
+    compared = joint_occupier & positive_rent
+    np.testing.assert_allclose(
+        calc(sim, "council_tax_reduction_non_dep_deductions")[compared],
+        previous[compared],
         atol=MONEY_TOLERANCE,
     )
 
@@ -279,6 +327,8 @@ def test_shared_default_matches_the_previous_formulas(population):
 def test_shared_counts_as_head_only_for_the_head_and_as_others_only_for_sharers(
     population,
 ):
+    # Only households with both a sharer and a non-dependant test anything.
+    assume(any(h["sharers"] and h["non_dependants"] for h in population))
     shared, roles = build(population, residence_override="EVERY_JOINT_OCCUPIER")
     head_only, _ = build(population, residence_override="HOUSEHOLD_HEAD_FAMILY")
     others_only, _ = build(population, residence_override="OTHER_JOINT_OCCUPIERS")

@@ -48,8 +48,12 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "non-dependant, boarder or "
         "lodger are occupiers too, and share rooms with the claimant's "
         "children. A child or young person placed with a family in the "
-        "household as a foster child or for adoption is not an occupier. A "
-        "sharer's, boarder's or lodger's own claim counts only their own "
+        "household as a foster child or for adoption is not an occupier. "
+        "Where the rent is shared, a non-dependant and their children count "
+        "for each joint occupier they normally reside with, by default every "
+        "one (see non_dependant_normally_resides_with), while a boarder or "
+        "lodger, who pays the household head, counts for the head's family "
+        "only. A boarder's or lodger's own claim counts only their own "
         "family."
     )
     definition_period = YEAR

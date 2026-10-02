@@ -33,5 +33,9 @@ class housing_benefit_non_dep_deductions(Variable):
             "household_benefits_individual_non_dep_deduction", period
         ) * person("is_non_dependant_of_household_head", period)
         return apportioned_non_dependant_deductions(
-            benunit, period, deductions, equally=False
+            benunit,
+            period,
+            deductions,
+            equally=False,
+            every_joint_occupier_part=benunit("share_of_household_rent", period),
         )
