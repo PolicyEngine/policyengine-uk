@@ -6,9 +6,9 @@ class council_tax_reduction_non_dep_deductions(Variable):
     entity = BenUnit
     label = "CTR non-dependent deductions"
     documentation = (
-        "Deductions for a claiming family's non-dependants: those in its own "
-        "benefit unit, in full, and those in other families, apportioned "
-        "equally between the jointly liable people."
+        "Deductions for a claiming family's non-dependants, whether in its "
+        "own benefit unit or another family's, apportioned equally between "
+        "the jointly liable people."
     )
     definition_period = YEAR
     unit = GBP
@@ -23,17 +23,18 @@ class council_tax_reduction_non_dep_deductions(Variable):
             "council_tax_reduction_individual_non_dep_deduction", period
         )
         claims = benunit("council_tax_reduction_claimant_benunit", period)
-        # A non-dependant in a claiming family's own benefit unit is that
-        # applicant's alone (as for HB: LHA Guidance Manual 2.093, example 2).
-        own_family = person(
+        # Every eligible non-dependant normally resides with each liable
+        # person (SI 2012/2885 reg 9(1)): another family's adult, an
+        # applicant's own adult son, or a boarder's or lodger's (reg 9(2)(e)
+        # excludes only the person liable to pay the applicant). A
+        # non-dependant of two or more jointly liable people is apportioned
+        # equally between them (Sch 1 para 8(5)). Members of the applicant's
+        # own family are not its non-dependants (reg 9(2)(a)).
+        own_family_member = ~person(
             "is_benefit_unit_non_dependant_for_legacy_benefits", period
-        ) & person.benunit("council_tax_reduction_claimant_benunit", period)
-        from_own_family = benunit.sum(deductions * own_family)
-        # A non-dependant from another family is a non-dependant of each
-        # jointly liable person, apportioned equally between them (SI
-        # 2012/2885 Sch 1 para 8(5)).
-        share = benunit("council_tax_reduction_joint_liability_share", period)
-        from_other_families = share * benunit.max(
-            person.household.sum(deductions * ~own_family)
         )
-        return claims * (from_other_families + from_own_family)
+        non_dependants = benunit.max(person.household.sum(deductions)) - benunit.sum(
+            deductions * own_family_member
+        )
+        share = benunit("council_tax_reduction_joint_liability_share", period)
+        return claims * share * non_dependants

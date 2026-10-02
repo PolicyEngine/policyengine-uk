@@ -448,10 +448,10 @@
     is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
     housing_benefit_non_dep_deductions: 0
 
-# A joint occupier's own adult son is that occupier's non-dependant only (LHA
-# Guidance Manual 2.093, example 2), so reg 74(5) apportionment does not apply
-# and his family bears the whole deduction, though it pays half the rent.
-- name: HB, a joint tenant's adult son is that tenant's non-dependant only
+# A joint tenant's adult son normally resides with both joint tenants (reg
+# 3(1) and (4)) and is in neither's family under reg 3(2)(a), so he is a
+# non-dependant of each, apportioned by their shares of the rent (reg 74(5)).
+- name: HB, joint tenants share the deduction for one tenant's adult son
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -480,11 +480,47 @@
         rent: 12_000
   output:
     share_of_household_rent: [0.5, 0.5]
-    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    housing_benefit_non_dep_deductions: [530.40, 530.40]
 
-# A lodger's family has no share of the household's rent: it bears only the
-# non-dependant in its own benefit unit.
-- name: HB, a lodger bears the non-dependant in their own benefit unit
+# The same son coded as his own benefit unit gives the same deductions: the
+# result does not depend on how the survey groups him.
+- name: HB, joint tenants share the deduction for an adult son in his own benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 10
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      benunit_3:
+        members: [son]
+    households:
+      household:
+        members: [head, son, sharer]
+        rent: 12_000
+  output:
+    housing_benefit_non_dep_deductions: [530.40, 530.40, 0]
+
+# A lodger's adult son is the lodger's non-dependant, and the householder's
+# too: reg 3(2)(e)(i) excludes only the person liable to pay the householder.
+# The lodger is not a joint occupier with the householder, so reg 74(5) does
+# not apportion him and each bears the whole deduction.
+- name: HB, a lodger's adult son is a non-dependant of the lodger and of the householder
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -512,7 +548,7 @@
         members: [head, lodger, lodger_son]
         rent: 9_000
   output:
-    housing_benefit_non_dep_deductions: [0, 1_060.80]
+    housing_benefit_non_dep_deductions: [1_060.80, 1_060.80]
 
 - name: CTR, the claimant's family bears the non-dependant in its benefit unit
   period: 2026
@@ -560,9 +596,10 @@
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
     council_tax_reduction_non_dep_deductions: 0
 
-# An applicant's own adult son is that applicant's non-dependant only, so SI
-# 2012/2885 Sch 1 para 8(5) apportionment does not apply.
-- name: CTR, a jointly liable applicant's adult son is that applicant's non-dependant only
+# An applicant's adult son normally resides with both jointly liable people
+# and is in neither's family (SI 2012/2885 reg 9(1), (2)(a)), so the deduction
+# is apportioned equally between them (Sch 1 para 8(5)).
+- name: CTR, jointly liable applicants share the deduction for one applicant's adult son
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -590,7 +627,7 @@
         rent: 12_000
   output:
     council_tax_reduction_joint_liability_share: [0.5, 0.5]
-    council_tax_reduction_non_dep_deductions: [300, 0]
+    council_tax_reduction_non_dep_deductions: [150, 150]
 
 # Para 8(5) still apportions a non-dependant from another family between the
 # jointly liable people.
@@ -625,9 +662,10 @@
   output:
     council_tax_reduction_non_dep_deductions: [150, 150, 0]
 
-# A lodger's family is one commercial arrangement with the applicant (SI
-# 2012/2885 reg 9(2)(e)), so the lodger's adult son is no one's non-dependant.
-- name: CTR, a lodger's adult son is not the applicant's non-dependant
+# SI 2012/2885 reg 9(2)(e) excludes only the person liable to pay the
+# applicant, so a lodger's adult son who pays nothing himself is the
+# applicant's non-dependant.
+- name: CTR, a lodger's adult son is the applicant's non-dependant
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -643,6 +681,7 @@
       lodger_son:
         age: 21
         is_claimant_or_partner: false
+        council_tax_reduction_individual_non_dep_deduction: 300
     benunits:
       benunit_1:
         members: [head]
@@ -653,8 +692,8 @@
         members: [head, lodger, lodger_son]
         rent: 9_000
   output:
-    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false]
-    council_tax_reduction_non_dep_deductions: [0, 0]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
+    council_tax_reduction_non_dep_deductions: [300, 0]
 
 # Only a family that claims bears deductions; the non-dependant's own family
 # does not.
@@ -686,3 +725,44 @@
   output:
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, true, true]
     council_tax_reduction_non_dep_deductions: [300, 0]
+
+# The English working-age local schemes keep their own aggregation, which
+# charges only other families' non-dependants. Widening the shared
+# eligibility must not make a jointly liable sharer bear the head's own son.
+- name: Local CTR (Newham), a jointly liable sharer does not bear the head's own in-unit son
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        employment_income: 20_000
+        weekly_hours: 37.5
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [head, son]
+        would_claim_council_tax_reduction: true
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [head, son, sharer]
+        rent: 12_000
+        region: LONDON
+        local_authority: NEWHAM
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+  output:
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    newham_council_tax_reduction_non_dep_deductions: [0, 0]
+    newham_council_tax_reduction: [630, 630]

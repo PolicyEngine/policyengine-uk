@@ -74,7 +74,15 @@ def local_non_dep_deductions(
     individual_deduction_variable,
     one_deduction_for_uc_couples=True,
 ):
-    deductions = benunit.members(individual_deduction_variable, period)
+    # The local schemes still charge only the non-dependants of other
+    # families. Non-dependants within a family's own benefit unit, now
+    # eligible for the national schemes, are left out here until each
+    # council's aggregation is brought into line.
+    person = benunit.members
+    other_family = ~person.benunit(
+        "benunit_contains_household_head", period
+    ) & ~person.benunit("benunit_is_rent_liable", period)
+    deductions = person(individual_deduction_variable, period) * other_family
     deduction_for_benunit = benunit.max(deductions)
     if not one_deduction_for_uc_couples:
         has_uc = benunit("universal_credit", period) > 0

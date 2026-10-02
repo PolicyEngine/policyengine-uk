@@ -9,10 +9,10 @@ class housing_benefit_non_dep_deductions(Variable):
         "Deductions for the claimant's non-dependants: members of other "
         "families of the household who are not liable for rent, and members "
         "of a family liable for the rent who are not its claimant, partner or "
-        "a child or young person. A non-dependant from another family is "
-        "apportioned between joint occupiers by their shares of the rent. A "
-        "non-dependant in a family's own benefit unit is that family's alone, "
-        "including a boarder's or lodger's."
+        "a child or young person. Each non-dependant is apportioned between "
+        "joint occupiers by their shares of the rent, whichever family they "
+        "are in. A boarder or lodger also bears the whole deduction for a "
+        "non-dependant in its own benefit unit."
     )
     definition_period = YEAR
     unit = GBP
@@ -21,7 +21,6 @@ class housing_benefit_non_dep_deductions(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/74",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/3",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/55",
-        "https://assets.publishing.service.gov.uk/media/5a758238ed915d6faf2b38a2/lha-guidance-manual.pdf#page=33",
         "https://assets.publishing.service.gov.uk/media/5a7ce2b840f0b6629523c64c/hbgm-a5-calculating-benefit.pdf",
     )
 
@@ -39,19 +38,20 @@ class housing_benefit_non_dep_deductions(Variable):
             person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
             & ~other_family
         )
-        # A non-dependant of more than one joint occupier is apportioned
-        # between them by their shares of the payments (reg 74(5); SPC reg
-        # 55(5)). A member of a joint occupier's own family unit is that
-        # occupier's non-dependant only (LHA Guidance Manual 2.093, example
-        # 2: a joint tenant's sister "is treated as Sarah's non-dependant"),
-        # and "if a person is a non-dependant of only one of the joint
-        # occupiers, take the whole of the deduction from that joint
-        # occupier's entitlement" (HBGM A5 5.622). Their family bears the
-        # whole deduction, whatever its share of the rent; so does a boarder
-        # or lodger.
+        # A non-dependant normally resides with each joint occupier (reg 3(1)
+        # and (4)), whichever family they belong to: another family's adult,
+        # a joint occupier's own adult son, or a boarder's or lodger's (reg
+        # 3(2)(e)(i) excludes only the person liable to pay the claimant).
+        # One who is a non-dependant of more than one joint occupier is
+        # apportioned between them by their shares of the payments (reg
+        # 74(5); SPC reg 55(5)).
         share = benunit("share_of_household_rent", period)
-        from_other_families = share * benunit.max(
-            person.household.sum(deductions * other_family)
+        from_joint_occupiers = share * benunit.max(
+            person.household.sum(deductions * (other_family | own_family))
         )
-        from_own_family = benunit.sum(deductions * own_family)
-        return from_other_families + from_own_family
+        # A boarder or lodger is not a joint occupier with the householder,
+        # so it also bears the whole deduction for a non-dependant in its own
+        # benefit unit. The model charges it for no one else.
+        joint_occupier = share > 0
+        from_own_family = where(joint_occupier, 0, benunit.sum(deductions * own_family))
+        return from_joint_occupiers + from_own_family
