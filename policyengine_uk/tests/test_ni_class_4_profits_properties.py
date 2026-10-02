@@ -27,6 +27,14 @@ Invariants, for every generated case:
 5. Carry-forward over many years matches the reference fold, with or
    without a supplied brought-forward balance, whatever order the years are
    calculated in, including beyond the engine's ten-step spiral limit.
+6. Each loss is relieved once. With losses entered for only some years, the
+   model matches a reference in which a year without an entry makes no new
+   loss, though the engine carries the last entry into it. Total relief
+   never exceeds the losses entered (relief plus the final carry-forward
+   equals them), Class 4 profits are never negative, and a year with no
+   loss entered and none brought forward has no relief. Calculating income
+   tax's loss relief or the carried-over trading_loss first, or calculating
+   on a branch, changes none of this.
 
 test_ni_class_4_properties.py checks s. 15(3) and regulation 100 given these
 profits, for arbitrary thresholds and rates. Comparisons allow float32
@@ -496,3 +504,142 @@ def test_losses_carry_forward_beyond_the_spiral_limit():
     )
     assert sim.calculate("ni_class_4_losses_brought_forward", 2030)[0] == 20_000
     assert sim.calculate("ni_class_4_profits", 2030)[0] == 30_000
+
+
+def single_person(person):
+    return Simulation(
+        situation={
+            "people": {"person": person},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        }
+    )
+
+
+@settings(
+    max_examples=20,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(
+    st.lists(
+        st.tuples(
+            st.one_of(st.just(0.0), st.floats(0, 80_000)),  # profit
+            st.one_of(st.just(0.0), st.floats(0, 150_000)),  # loss
+            st.booleans(),  # whether the loss is entered for the year
+        ),
+        min_size=2,
+        max_size=12,
+    ),
+    st.randoms(use_true_random=False),
+)
+def test_a_loss_entered_for_some_years_is_relieved_once(years, random):
+    last_year = 2030
+    first_year = last_year - len(years) + 1
+    periods = list(range(first_year, last_year + 1))
+    entered = {
+        period: loss
+        for period, (_, loss, is_entered) in zip(periods, years)
+        if is_entered
+    }
+    person = {
+        "age": {first_year: 40},
+        "self_employment_income": dict(
+            zip(periods, (profit for profit, _, _ in years))
+        ),
+    }
+    if entered:
+        person["trading_loss"] = entered
+    sim = single_person(person)
+    # Fill the engine's caches first, in random order: trading_loss carried
+    # into the years without an entry, and income tax's loss relief, which
+    # reads it there. Neither may count as a new loss for Class 4.
+    for period in random.sample(periods, random.randint(0, len(periods))):
+        sim.calculate(random.choice(["trading_loss", "loss_relief"]), period)
+
+    # Independent reference: the stored (float32) inputs, a loss only in the
+    # years it is entered for, and the year-by-year fold.
+    stored_losses = {
+        period: exact(np.float32(loss)) for period, loss in entered.items()
+    }
+    expected = reference_losses(
+        [
+            (
+                reference_profits_before_losses(
+                    exact(np.float32(profit)), Fraction(0), Fraction(0)
+                ),
+                stored_losses.get(period, Fraction(0)),
+            )
+            for period, (profit, _, _) in zip(periods, years)
+        ]
+    )
+    names = [
+        "losses_brought_forward",
+        "loss_relief",
+        "losses_carried_forward",
+        "profits_before_losses",
+        "profits",
+    ]
+    queries = [(period, name) for period in periods for name in names]
+    random.shuffle(queries)
+    model = {period: {} for period in periods}
+    for period, name in queries:
+        model[period][name] = float(sim.calculate(f"ni_class_4_{name}", period)[0])
+
+    total_entered = float(sum(stored_losses.values()))
+    tol = tolerance(total_entered, *(profit for profit, _, _ in years))
+    for period in periods:
+        reference_year = expected[period - first_year]
+        values = model[period]
+        for name, reference_name in [
+            ("losses_brought_forward", "brought_forward"),
+            ("loss_relief", "relief"),
+            ("losses_carried_forward", "carried_forward"),
+            ("profits", "profits"),
+        ]:
+            assert abs(values[name] - float(reference_year[reference_name])) <= tol, (
+                period,
+                name,
+                values[name],
+                float(reference_year[reference_name]),
+            )
+        # Class 4 profits are never negative, nor above profits before losses.
+        assert 0 <= values["profits"] <= values["profits_before_losses"] + tol
+        assert values["loss_relief"] >= 0
+        # No relief without a loss entered for the year or brought forward.
+        if stored_losses.get(period, 0) == 0 and values["losses_brought_forward"] == 0:
+            assert values["loss_relief"] == 0, (period, values)
+    # Conservation: each loss entered is relieved at most once, and what is
+    # not relieved is still being carried forward at the end.
+    total_relief = sum(model[period]["loss_relief"] for period in periods)
+    assert total_relief <= total_entered + tol
+    assert (
+        abs(total_relief + model[last_year]["losses_carried_forward"] - total_entered)
+        <= tol
+    )
+
+
+def test_class_4_counts_only_supplied_losses_on_branches():
+    # A £10,000 loss entered for 2025 only, with £40,000 of profit in 2026
+    # and 2027. A branch made before any calculation adds a £5,000 loss in
+    # 2026. Each simulation counts only the losses supplied to it.
+    sim = single_person(
+        {
+            "age": {2025: 40},
+            "self_employment_income": {2026: 40_000, 2027: 40_000},
+            "trading_loss": {2025: 10_000},
+        }
+    )
+    branch = sim.get_branch("extra_2026_loss")
+    branch.set_input("trading_loss", 2026, np.array([5_000.0]))
+    # The engine carries the 2025 loss into 2027, but it is not a new loss.
+    assert sim.calculate("trading_loss", 2027)[0] == 10_000
+    assert sim.calculate("ni_class_4_profits", 2026)[0] == 30_000
+    assert sim.calculate("ni_class_4_profits", 2027)[0] == 40_000
+    # On the branch, 2026 relieves its own 5,000 and the 10,000 from 2025.
+    assert branch.calculate("ni_class_4_trading_loss", 2026)[0] == 5_000
+    assert branch.calculate("ni_class_4_profits", 2026)[0] == 25_000
+    assert branch.calculate("ni_class_4_profits", 2027)[0] == 40_000
+    # The branch's input does not reach the simulation it was made from.
+    assert sim.calculate("ni_class_4_trading_loss", 2026)[0] == 0
