@@ -111,7 +111,15 @@ def situation(
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {year: age}, "state_pension": {year: 0.0}}
+            # The generated adults are the claimant and partner; say so, so the
+            # claimant-or-partner presumption (a member under 20 and much
+            # younger is the head's child) does not turn a 67-and-18 couple
+            # into a parent and child. Children get False below.
+            person = {
+                "age": {year: age},
+                "state_pension": {year: 0.0},
+                "is_claimant_or_partner": {year: True},
+            }
             if not marriage_allowance:
                 person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
@@ -123,7 +131,7 @@ def situation(
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
         households[f"h{i}"] = {

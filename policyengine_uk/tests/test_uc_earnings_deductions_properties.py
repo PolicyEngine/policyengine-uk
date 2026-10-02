@@ -145,7 +145,13 @@ def situation(units, year, bump=None, earnings_only=False, marriage_allowance=Fa
         names = []
         for j, adult in enumerate(unit["adults"]):
             name = f"p{i}_{j}"
-            person = {"state_pension": {year: 0.0}}
+            # The generated adults are the claimant and partner; say so, so the
+            # claimant-or-partner presumption (a member under 20 and much
+            # younger is the head's child) does not apply. Children get False.
+            person = {
+                "state_pension": {year: 0.0},
+                "is_claimant_or_partner": {year: True},
+            }
             for variable, value in adult.items():
                 if earnings_only and variable in UNEARNED:
                     continue
@@ -163,7 +169,7 @@ def situation(units, year, bump=None, earnings_only=False, marriage_allowance=Fa
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
         households[f"h{i}"] = {
