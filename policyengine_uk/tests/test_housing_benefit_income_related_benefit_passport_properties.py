@@ -30,7 +30,9 @@ continuing award (some with a non-dependant in the household):
    family in receipt equals the rent whether its members are of working age,
    a mixed-age couple or over State Pension age.
 7. Contributory JSA and ESA are not a passport: moving an amount from
-   income-based to contribution-based JSA or ESA turns the passport off.
+   income-based to contribution-based JSA or ESA turns the passport off, and
+   with no guarantee credit either (which passports a pension-age family in
+   its own right) the family's savings stay its capital.
 """
 
 import numpy as np
@@ -287,6 +289,11 @@ def test_contributory_jsa_and_esa_are_not_a_passport(units, amount):
         if name.startswith("a") and name.endswith("_0"):
             person["jsa_contrib"] = {YEAR: amount}
             person["esa_contrib"] = {YEAR: amount}
+    # A pension-age family can still have its capital disregarded through the
+    # Guarantee Credit passport, so hold that at nil to isolate this one.
+    for name, benunit in contributory["benunits"].items():
+        if name.startswith("b"):
+            benunit["guarantee_credit"] = {YEAR: 0.0}
     sim = Simulation(situation=contributory)
     on_benefit = np.asarray(
         sim.calculate("in_receipt_of_income_support_jsa_ib_or_esa_ir", YEAR)
@@ -294,6 +301,6 @@ def test_contributory_jsa_and_esa_are_not_a_passport(units, amount):
     assert not on_benefit.any()
     capital = np.asarray(sim.calculate("housing_benefit_assessable_capital", YEAR))
     savings = np.array([unit["savings"] for unit in units])
-    # Without the passport the family's savings count as its capital (no
+    # With neither passport the family's savings count as its capital (no
     # non-dependants here, so no household apportionment).
     assert np.allclose(capital, savings, atol=0.01)
