@@ -7,7 +7,8 @@ class has_non_dependant_for_severe_disability_premium(Variable):
     label = "Has a non-dependant who blocks the severe disability premium"
     documentation = (
         "A non-dependant aged 18 or over normally resides with the claimant, "
-        "which bars the legacy severe disability premium. Non-dependants who "
+        "which bars the working-age and pension-age Housing Benefit severe "
+        "disability premiums. Non-dependants who "
         "receive a severe disability premium qualifying benefit, or who are "
         "blind, are ignored. Every household member aged 18 or over is "
         "treated as a non-dependant unless they are in the claimant's family: "
@@ -31,6 +32,9 @@ class has_non_dependant_for_severe_disability_premium(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/3",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/19",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/19",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/6",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/3",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13",
     )

@@ -1,26 +1,27 @@
 """Pension-age severe disability premium and the Guarantee Credit boundary.
 
-Pension Credit's minimum guarantee included the severe disability addition
-for an Attendance Allowance recipient, but the Housing Benefit and Council
-Tax Reduction applicable amounts did not include the severe disability
-premium, because the legacy premium tested a narrower, tax-credit style
-disability flag. While Guarantee Credit was paid, Housing Benefit was
-passported to its maximum and hid the gap; when Guarantee Credit ended,
-Housing Benefit fell by 65% of it. A single pensioner on Attendance
-Allowance lost £2,040.52 of net income when private pension rose from
-£11,900 to £12,000 in 2026.
+These properties compare the pension-age Housing Benefit and Council Tax
+Reduction applicable amounts with the Pension Credit minimum guarantee,
+and exercise the income step where Guarantee Credit ends.
 
-Invariants, for single people and couples over State Pension age without
-children or carers, who rent from the council in England in 2026:
+The structural and boundary properties draw single people and couples aged
+at least 72 without children, carers or other household residents, who rent
+from the council in England in 2026. The schedule property also draws
+younger claimants:
 
 1. Structural: where Housing Benefit is available, its applicable amount is
    at least the Pension Credit minimum guarantee, and so is the Council Tax
    Reduction applicable amount. In law the pension-age personal allowances
    (HB(SPC) Regs 2006 Sch 3 para 1; CTR (Prescribed Requirements) (England)
    Regs 2012 Sch 2 para 1) are at least the standard minimum guarantee (SPC
-   Regs 2002 reg 6(1)), and the severe disability premium (Sch 3 paras 6 and
-   12(1)) has the same conditions and amounts as the severe disability
-   addition (SPC Regs Sch I para 1 and reg 6(5)).
+   Regs 2002 reg 6(1)). The severe disability premium (Sch 3 paras 6 and
+   12(1)) equals the severe disability addition (SPC Regs Sch I para 1 and
+   reg 6(5)) for these households. Their residence conditions differ: an
+   18-year-old qualifying young person of another family can leave the
+   Pension Credit addition payable while barring the HB premium. The
+   property excludes other residents rather than asserting equivalence for
+   them. Where only one partner qualifies and the other is blind, the model
+   assumes the qualifying partner makes the HB claim, as reg 63(1) allows.
 2. Boundary: on the private-pension step where Guarantee Credit ends,
    household net income, excluding the TV licence fee, does not fall. The
    free TV licence for over-75s on Pension Credit is a genuine statutory
@@ -31,12 +32,9 @@ children or carers, who rent from the council in England in 2026:
    below State Pension age it is zero and benefits_premiums is the sum of the
    four legacy premiums, so working-age applicable amounts are unchanged.
 
-Carers are not drawn: the invariants for carers also depend on Pension
-Credit income counting Carer's Allowance and on the carer premium per carer,
-which are separate changes. Full monotonicity in income is not asserted: it
-also depends on the savings-credit-only income rules for Housing Benefit and
-Council Tax Reduction (HB(SPC) Regs 2006 reg 27 and the CTR equivalents),
-which are likewise separate.
+Carers and other household residents have separate attribution and residence
+cases in the YAML tests. The income property checks the Guarantee Credit
+boundary rather than asserting monotonicity at every possible income step.
 """
 
 import numpy as np
@@ -72,9 +70,9 @@ def money(high):
 
 
 @st.composite
-def adult(draw):
+def adult(draw, minimum_age=67):
     return dict(
-        age=draw(st.integers(67, 95)),
+        age=draw(st.integers(minimum_age, 95)),
         disability=draw(DISABILITY),
         blind=draw(st.booleans()),
         state_pension=draw(money(15_000)),
@@ -82,9 +80,15 @@ def adult(draw):
 
 
 @st.composite
-def family(draw):
+def standalone_family(draw):
+    """Only a claimant and optional partner, in the older allowance cohort.
+
+    No other residents, children or carers are added by situation(). This
+    keeps the HB and Pension Credit residence conditions aligned, including
+    the absence of young people belonging to another benefit unit.
+    """
     return dict(
-        adults=[draw(adult()) for _ in range(draw(st.integers(1, 2)))],
+        adults=[draw(adult(minimum_age=72)) for _ in range(draw(st.integers(1, 2)))],
         rent=draw(money(12_000)),
         council_tax=draw(money(3_000)),
         savings=draw(st.one_of(st.just(0.0), money(15_000))),
@@ -143,8 +147,15 @@ def grid(families):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(family(), min_size=1, max_size=4))
+@given(st.lists(standalone_family(), min_size=1, max_size=4))
 def test_pension_age_applicable_amounts_cover_the_minimum_guarantee(families):
+    """Compare only older-cohort households with no other residents or carers.
+
+    HB and Pension Credit do not have identical residence conditions: a
+    qualifying young person of another family may bar only HB's premium.
+    Those households are excluded by the generator. Couples can nominate
+    the qualifying partner as claimant where the other partner is blind.
+    """
     g = grid(families)
     for i, fam in enumerate(families):
         eligible = g["housing_benefit_eligible"][i].astype(bool)
@@ -156,7 +167,7 @@ def test_pension_age_applicable_amounts_cover_the_minimum_guarantee(families):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(family(), min_size=1, max_size=4))
+@given(st.lists(standalone_family(), min_size=1, max_size=4))
 def test_net_income_does_not_fall_where_guarantee_credit_ends(families):
     g = grid(families)
     net = g["household_net_income"] + g["tv_licence"]
