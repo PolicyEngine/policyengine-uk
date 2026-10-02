@@ -43,6 +43,16 @@ over State Pension age:
    Scotland, where the carer's benefit is Carer Support Payment, and in
    England and Wales, where it is Carer's Allowance.
 
+Invariants 1 to 3 concern Council Tax Reduction income under the general rules.
+A pension-age family in receipt of a guarantee credit has its whole income
+disregarded (SSI 2012/319 reg 24), and one in receipt of savings credit only is
+assessed on the Secretary of State's Pension Credit income plus the savings
+credit (reg 25), so those cells are left out of 1 to 3 and checked instead by:
+
+4. Pension Credit routes: where the family is in receipt of a guarantee credit,
+   Council Tax Reduction income is nil; where it is in receipt of savings credit
+   only, it equals Pension Credit income plus the Pension Credit paid.
+
 These compare the model's own income measures, so they hold whatever carer's
 benefit the model pays. The model does not yet reduce Carer Support Payment
 by State Pension (the Carer's Assistance (Carer Support Payment) (Scotland)
@@ -51,7 +61,7 @@ amounts to every nation's Council Tax Reduction.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -96,6 +106,10 @@ BENUNIT_VARIABLES = [
     "housing_benefit_applicable_income_disregard",
     "housing_benefit_applicable_income_childcare_element",
     "housing_benefit_tariff_income",
+    "in_receipt_of_guarantee_credit",
+    "in_receipt_of_savings_credit_only",
+    "pension_credit_income",
+    "pension_credit",
     *OTHER_COUNTED_BENEFITS,
 ]
 PERSON_VARIABLES = [
@@ -106,6 +120,16 @@ PERSON_VARIABLES = [
     "national_insurance",
 ]
 CLAIMS = (True, False)
+# A Scottish pensioner carer with no State Pension: across the private pension
+# grid this family moves between the general rules and savings credit only.
+SAVINGS_CREDIT_CARER = dict(
+    pension_age=True,
+    adults=[dict(age=80, state_pension=0.0)],
+    carer=0,
+    by_hours=True,
+    country="SCOTLAND",
+    council_tax=2_000.0,
+)
 
 
 def money(high):
@@ -198,6 +222,12 @@ def grid(families, reform=None):
         + g["national_insurance"]
         - g["other_counted_benefits"]
     )
+    # Cells whose Council Tax Reduction income follows the general rules, not
+    # the Pension Credit routes of SSI 2012/319 regs 24 and 25.
+    g["general_rules"] = ~(
+        g["in_receipt_of_guarantee_credit"].astype(bool)
+        | g["in_receipt_of_savings_credit_only"].astype(bool)
+    )
     return g
 
 
@@ -209,6 +239,7 @@ def partial(g, i):
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=3))
+@example([SAVINGS_CREDIT_CARER])
 def test_council_tax_reduction_income_counts_the_carer_support_payment_component(
     families,
 ):
@@ -225,8 +256,10 @@ def test_council_tax_reduction_income_counts_the_carer_support_payment_component
             atol=0.01,
         ), fam
         assert np.all(g["carers_allowance"][i] == 0), fam
-        # Only where the zero floor on income does not bind in either run.
-        compared = (income[i, :, 0] > 0) & (income[i, :, 1] > 0)
+        # Only where the zero floor on income does not bind in either run, and
+        # both runs follow the general rules.
+        general = g["general_rules"][i, :, 0] & g["general_rules"][i, :, 1]
+        compared = (income[i, :, 0] > 0) & (income[i, :, 1] > 0) & general
         rise = g["income_before_tax"][i, :, 0] - g["income_before_tax"][i, :, 1]
         assert np.allclose(rise[compared], CARER_SUPPORT_PAYMENT, atol=0.05), (
             fam,
@@ -237,7 +270,7 @@ def test_council_tax_reduction_income_counts_the_carer_support_payment_component
         # gains the premium with it, so only the hours case is compared.
         if fam["by_hours"]:
             assert np.all(award[i, :, 0] <= award[i, :, 1] + 0.01), fam
-            both_partial = partial(g, i)[:, 0] & partial(g, i)[:, 1]
+            both_partial = partial(g, i)[:, 0] & partial(g, i)[:, 1] & general
             fall = award[i, :, 1] - award[i, :, 0]
             income_rise = income[i, :, 0] - income[i, :, 1]
             assert np.allclose(
@@ -249,6 +282,7 @@ def test_council_tax_reduction_income_counts_the_carer_support_payment_component
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=3))
+@example([SAVINGS_CREDIT_CARER])
 def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
     families,
 ):
@@ -265,8 +299,10 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
             )
         income = g["council_tax_reduction_applicable_income"][i]
         income_without = without["council_tax_reduction_applicable_income"][i]
-        # Only where the zero floor on income does not bind in either run.
-        compared = (income > 0) & (income_without > 0)
+        # Only where the zero floor on income does not bind in either run, and
+        # both runs follow the general rules.
+        general = g["general_rules"][i] & without["general_rules"][i]
+        compared = (income > 0) & (income_without > 0) & general
         assert np.allclose(
             (income + g["income_tax"][i])[compared],
             (income_without + without["income_tax"][i])[compared],
@@ -276,7 +312,7 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
         award_without = without["council_tax_benefit"][i]
         # The supplement can only add tax, which lowers income.
         assert np.all(award >= award_without - 0.01), fam
-        both_partial = partial(g, i) & partial(without, i)
+        both_partial = partial(g, i) & partial(without, i) & general
         tax_on_supplement = g["income_tax"][i] - without["income_tax"][i]
         assert np.allclose(
             (award - award_without)[both_partial],
@@ -285,6 +321,8 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
         ), fam
         # Without a claim there is no supplement, so nothing moves.
         assert np.allclose(income[:, 1], income_without[:, 1], atol=0.01), fam
+        # The supplement never lowers the award, even on the Pension Credit
+        # routes; on them income follows invariant 4.
 
 
 @PROPERTY_SETTINGS
@@ -301,7 +339,9 @@ def test_council_tax_reduction_and_housing_benefit_assess_the_same_carer_income(
         # Guarantee Credit passports pension-age Housing Benefit to nil
         # income; the zero floors must not bind.
         passported = fam["pension_age"] & (g["guarantee_credit"][i] > 0)
-        compared = ~passported & (hb_income > 0) & (ctr_income > 0)
+        compared = (
+            ~passported & g["general_rules"][i] & (hb_income > 0) & (ctr_income > 0)
+        )
         hb_before_adjustments = (
             hb_income
             + g["housing_benefit_applicable_income_disregard"][i]
@@ -311,3 +351,22 @@ def test_council_tax_reduction_and_housing_benefit_assess_the_same_carer_income(
         assert np.allclose(
             hb_before_adjustments[compared], ctr_income[compared], atol=0.05
         ), (fam, hb_before_adjustments[compared], ctr_income[compared])
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(family(), min_size=1, max_size=3))
+@example([SAVINGS_CREDIT_CARER])
+def test_council_tax_reduction_income_on_the_pension_credit_routes(families):
+    g = grid(families)
+    for i, fam in enumerate(families):
+        income = g["council_tax_reduction_applicable_income"][i]
+        guarantee = g["in_receipt_of_guarantee_credit"][i].astype(bool)
+        savings_only = g["in_receipt_of_savings_credit_only"][i].astype(bool)
+        assert not np.any(guarantee & savings_only), fam
+        assert np.all(income[guarantee] == 0), fam
+        expected = g["pension_credit_income"][i] + g["pension_credit"][i]
+        assert np.allclose(income[savings_only], expected[savings_only], atol=0.01), (
+            fam,
+            income[savings_only],
+            expected[savings_only],
+        )
