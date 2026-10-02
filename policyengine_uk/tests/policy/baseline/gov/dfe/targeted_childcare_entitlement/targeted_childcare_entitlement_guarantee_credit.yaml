@@ -197,8 +197,8 @@
         members: [person1, person2]
   output:
     # Income tax (20,000 - 12,570) x 20% = 1,486, so income is 18,514,
-    # above 16,014.96. A person who reached State Pension age after April
-    # 2016 cannot get Savings Credit.
+    # above 16,014.96. A single person who reached pensionable age on or
+    # after 6 April 2016 cannot get Savings Credit (SPCA s.3(1)).
     income_tax: [1_486, 0]
     guarantee_credit: 0
     pension_credit: 0
@@ -260,10 +260,10 @@
         members: [person1, person2, person3]
   output:
     # Minimum guarantee 18,889 + 3,638.96 = 22,527.96, above income of
-    # 10,000. Since 15 May 2019 a mixed-age couple cannot newly get Pension
-    # Credit; in law a couple saved by SI 2019/37 art 4 may still be
-    # entitled, and PolicyEngine's is_pension_credit_eligible omits that
-    # saving.
+    # 10,000. From 15 May 2019 SPCA s.4(1A) excludes a mixed-age couple
+    # unless SI 2019/37 art 4 saves it (entitled to Pension Credit or Housing
+    # Benefit as that couple on 14 May 2019); PolicyEngine's
+    # is_pension_credit_eligible omits that saving.
     minimum_guarantee: 22_527.96
     is_guarantee_credit_eligible: true
     guarantee_credit: 0
