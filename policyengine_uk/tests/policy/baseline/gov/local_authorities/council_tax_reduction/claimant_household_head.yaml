@@ -142,7 +142,7 @@
     newham_council_tax_reduction: [0, 867.92]
     council_tax_reduction: 867.92
 
-- name: Two working-age adults of the same age in Merton - only the head's family claims
+- name: Two working-age adults of the same age in Merton - the other adult is a non-dependant
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -153,7 +153,6 @@
       friend:
         age: 40
         is_household_head: false
-        merton_council_tax_reduction_individual_non_dep_deduction: 0
     benunits:
       householder_family:
         members: [householder]
@@ -171,10 +170,12 @@
         council_tax: 1_800
         savings: 0
   output:
-    merton_council_tax_reduction: [1_800, 0]
-    council_tax_reduction: 1_800
+    # The friend, not in remunerative work: 5.20 a week x 52 = 270.40.
+    merton_council_tax_reduction_non_dep_deductions: [270.4, 0]
+    merton_council_tax_reduction: [1_529.6, 0]
+    council_tax_reduction: 1_529.6
 
-- name: Two working-age adults of the same age in Kingston upon Thames - only the head's family claims
+- name: Two working-age adults of the same age in Kingston upon Thames - the other adult is a non-dependant
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -185,7 +186,6 @@
       friend:
         age: 40
         is_household_head: false
-        kingston_upon_thames_council_tax_reduction_individual_non_dep_deduction: 0
     benunits:
       householder_family:
         members: [householder]
@@ -203,10 +203,12 @@
         council_tax: 1_800
         savings: 0
   output:
-    kingston_upon_thames_council_tax_reduction: [1_800, 0]
-    council_tax_reduction: 1_800
+    # The friend, not in remunerative work: 5.64 a week x 52 = 293.28.
+    kingston_upon_thames_council_tax_reduction_non_dep_deductions: [293.28, 0]
+    kingston_upon_thames_council_tax_reduction: [1_506.72, 0]
+    council_tax_reduction: 1_506.72
 
-- name: Two working-age adults of the same age in Westminster - only the head's family claims
+- name: Two working-age adults of the same age in Westminster - the other adult is a non-dependant
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -217,7 +219,6 @@
       friend:
         age: 40
         is_household_head: false
-        westminster_council_tax_reduction_individual_non_dep_deduction: 0
     benunits:
       householder_family:
         members: [householder]
@@ -235,8 +236,10 @@
         council_tax: 1_800
         savings: 0
   output:
-    westminster_council_tax_reduction: [1_800, 0]
-    council_tax_reduction: 1_800
+    # The friend, not in remunerative work: 5.20 a week x 52 = 270.40.
+    westminster_council_tax_reduction_non_dep_deductions: [270.4, 0]
+    westminster_council_tax_reduction: [1_529.6, 0]
+    council_tax_reduction: 1_529.6
 
 - name: Two working-age adults of the same age in Oxford - the other adult is a non-dependant
   period: 2026
@@ -373,28 +376,225 @@
     benunit_contains_household_head: [false, false, true]
     council_tax_reduction_claimant_benunit: [false, false, true]
 
-- name: With no member flagged as head, the eldest member's family claims
+- name: With no member flagged as head and the eldest tied, the first eldest member's family claims
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
+      first_eldest:
+        age: 50
+        is_household_head: false
       younger:
         age: 30
         is_household_head: false
-      elder:
+      second_eldest:
         age: 50
         is_household_head: false
     benunits:
+      first_family:
+        members: [first_eldest]
       younger_family:
         members: [younger]
-      elder_family:
-        members: [elder]
+      second_family:
+        members: [second_eldest]
     households:
       home:
-        members: [younger, elder]
+        members: [first_eldest, younger, second_eldest]
         country: WALES
         local_authority: CARDIFF
         council_tax: 1_800
   output:
-    benunit_contains_household_head: [false, true]
-    council_tax_reduction_claimant_benunit: [false, true]
+    benunit_contains_household_head: [true, false, false]
+    council_tax_reduction_claimant_benunit: [true, false, false]
+
+- name: A sharer with no rent to pay is a claimant, not a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 35
+        is_household_head: false
+    benunits:
+      householder_family:
+        members: [householder]
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [householder, sharer]
+        rent: 0
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_claimant_benunit: [true, true]
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    # Jointly and severally liable people are not non-dependants (SI 2013/3029
+    # reg 9(2)(d)), even when no rent is payable.
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+    simulated_council_tax_reduction_benunit: [900, 900]
+    council_tax_reduction: 1_800
+
+- name: With no member flagged as head and the rent shared, the eldest member's family and the sharer split the council tax
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      eldest:
+        age: 60
+        is_household_head: false
+      sharer:
+        age: 40
+        is_household_head: false
+      other_adult:
+        age: 30
+        is_household_head: false
+        council_tax_reduction_individual_non_dep_deduction: 0
+    benunits:
+      eldest_family:
+        members: [eldest]
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+      other_family:
+        members: [other_adult]
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [eldest, sharer, other_adult]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_claimant_benunit: [true, true, false]
+    # Two people jointly liable: the head (by the eldest-member fallback) and
+    # the sharer. The shares sum to one.
+    council_tax_reduction_joint_liability_share: [0.5, 0.5, 1]
+    simulated_council_tax_reduction_benunit: [900, 900, 0]
+    council_tax_reduction: 1_800
+
+- name: With two members flagged as head and the rent shared, the council tax is still split only among claimants
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older_flagged:
+        age: 60
+        is_household_head: true
+      younger_flagged:
+        age: 50
+        is_household_head: true
+      sharer:
+        age: 40
+        is_household_head: false
+    benunits:
+      older_family:
+        members: [older_flagged]
+        council_tax_reduction_applicable_income: 0
+      younger_family:
+        members: [younger_flagged]
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [older_flagged, younger_flagged, sharer]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Malformed input. The eldest flagged member is the head; the other
+    # flagged family neither claims nor counts as jointly liable. (Rent
+    # variables read the raw flag, so that family still has a share of the
+    # rent.)
+    council_tax_reduction_claimant_benunit: [true, false, true]
+    council_tax_reduction_joint_liability_share: [0.5, 1, 0.5]
+    simulated_council_tax_reduction_benunit: [900, 0, 900]
+    council_tax_reduction: 1_800
+
+- name: A sharer family with no adult does not claim, so the head's family claims the whole council tax
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      child_sharer:
+        age: 15
+        is_household_head: false
+    benunits:
+      householder_family:
+        members: [householder]
+        council_tax_reduction_applicable_income: 0
+      child_family:
+        members: [child_sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [householder, child_sharer]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Only a resident aged 18 or over can be liable (LGFA 1992 s.6(5)).
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_joint_liability_share: [1, 1]
+    simulated_council_tax_reduction_benunit: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: A sharer family whose only member is 17 does not claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      young_sharer:
+        age: 17
+        is_household_head: false
+    benunits:
+      householder_family:
+        members: [householder]
+        council_tax_reduction_applicable_income: 0
+      young_family:
+        members: [young_sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [householder, young_sharer]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_joint_liability_share: [1, 1]
+    simulated_council_tax_reduction_benunit: [1_800, 0]

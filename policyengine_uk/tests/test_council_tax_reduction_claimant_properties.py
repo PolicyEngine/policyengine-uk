@@ -8,19 +8,24 @@ reduction (SI 2012/2885 Sch 1 paras 2-3; SI 2013/3029 regs 22-25; SSI
 families liable for a share of the rent as jointly liable with the head's.
 
 Invariants, for any generated population of households, including ties in
-age, no head flagged, and several heads flagged:
+age, no head flagged, several heads flagged, and sharer families with no
+member aged 18 or over. Invariants marked "pin" restate the formula, so they
+guard against regressions rather than check it independently.
 
 1. One head: exactly one family in each household contains the household
    head. With one or more members flagged, it holds a flagged member; with
    none, it holds a member of the greatest age.
 2. Claimants: a household whose rent is not shared has exactly one claimant
-   family, the head's. Where the rent is shared, the claimant families are
-   the head's and the families liable for a share of it.
-3. No other family gets a reduction, and the household's reduction never
-   exceeds its council tax.
+   family, the head's. A family with no member aged 18 or over never claims
+   (no one under 18 can be liable, LGFA 1992 s.6(5)). Pin: the claimant
+   families are the head's and the sharers, each with a claimant or partner
+   aged 18 or over.
+3. Simulated reductions: no family outside the claimants gets one, and a
+   household's total never exceeds its council tax. (Reported reductions,
+   used where a scheme is not modelled, are outside this test.)
 4. Non-dependants: no claimant or partner of a claimant family is a
-   non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)); every
-   adult in a family that neither claims nor pays rent is.
+   non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)). Pin:
+   every adult in a family that neither claims nor pays rent is one.
 5. Differential: where the input flags at most one head, the family holding
    the head is the one holding the person-level household head that Housing
    Benefit and Universal Credit use.
@@ -29,6 +34,9 @@ age, no head flagged, and several heads flagged:
 7. No-op: where the flagged head is strictly the eldest member and the rent
    is not shared, the claimant family is the eldest adult's family, the
    previous rule.
+8. Shares: in every household, the claimant families' shares of the council
+   tax sum to at most one, so jointly liable claims never cover more than
+   the whole council tax.
 """
 
 import numpy as np
@@ -69,13 +77,20 @@ def family(draw):
         child_age=draw(st.one_of(st.none(), st.integers(0, 15))),
         earnings=draw(st.lists(money, min_size=2, max_size=2)),
         sharer=draw(st.booleans()),
+        # Outside the first family: sometimes a single person aged 15-17.
+        minor_age=draw(st.one_of(st.none(), st.none(), st.integers(15, 17))),
     )
+
+
+def adult_ages(fam, f):
+    """The family's adults (none for a minor-only family after the first)."""
+    return [] if f > 0 and fam["minor_age"] is not None else fam["ages"]
 
 
 @st.composite
 def households(draw):
     families = draw(st.lists(family(), min_size=1, max_size=4))
-    adults = sum(len(f["ages"]) for f in families)
+    adults = sum(len(adult_ages(fam, f)) for f, fam in enumerate(families))
     return dict(
         families=families,
         scheme=draw(st.sampled_from(SCHEMES)),
@@ -110,7 +125,7 @@ def build(population, age_override=None):
         members, adult_index = [], 0
         for f, fam in enumerate(house["families"]):
             ids = []
-            for i, age in enumerate(fam["ages"]):
+            for i, age in enumerate(adult_ages(fam, f)):
                 pid = f"h{h}_f{f}_adult_{i}"
                 flagged = adult_index in flagged_adults
                 if age_override is not None:
@@ -123,14 +138,17 @@ def build(population, age_override=None):
                 facts["flagged"].append(flagged)
                 facts["age"].append(age)
                 adult_index += 1
-            if fam["child_age"] is not None:
+            child_age = fam["child_age"]
+            if f > 0 and fam["minor_age"] is not None:
+                child_age = fam["minor_age"]
+            if child_age is not None:
                 pid = f"h{h}_f{f}_child"
-                people[pid] = {"age": fam["child_age"]}
+                people[pid] = {"age": child_age}
                 if house["head_flags"] != "unset":
                     people[pid]["is_household_head"] = False
                 ids.append(pid)
                 facts["flagged"].append(False)
-                facts["age"].append(fam["child_age"])
+                facts["age"].append(child_age)
             facts["household"].extend([h] * len(ids))
             facts["benunit"].extend([benunit_index] * len(ids))
             # The first family is only a sharer if it does not hold the head.
@@ -209,20 +227,33 @@ def test_claimant_invariants(population):
     # 2. Claimants.
     claimants = per_household(claimant, facts)
     assert np.all(claimants[~shared] == 1)
-    assert np.array_equal(claimant, head | sharer)
+    age = calc(sim, "age")
+    claimant_or_partner = calc(sim, "is_claimant_or_partner")
+    has_adult = np.zeros(claimant.size, dtype=bool)
+    np.logical_or.at(has_adult, facts["benunit"], age >= 18)
+    assert not np.any(claimant & ~has_adult)
+    adult_claimant = np.zeros(claimant.size, dtype=bool)
+    np.logical_or.at(
+        adult_claimant, facts["benunit"], claimant_or_partner & (age >= 18)
+    )
+    assert np.array_equal(claimant, (head | sharer) & adult_claimant)
 
-    # 3. No reduction outside claimant families; never above the council tax.
+    # 3. Simulated reductions: none outside claimant families; never above
+    # the council tax.
     reduction = calc(sim, "simulated_council_tax_reduction_benunit")
     assert np.all(reduction[~claimant] == 0)
-    household_reduction = calc(sim, "council_tax_reduction")
-    assert np.all(household_reduction <= calc(sim, "council_tax") + 0.01)
+    council_tax = calc(sim, "council_tax")
+    assert np.all(per_household(reduction, facts) <= council_tax + 0.01)
+
+    # 8. Shares of the council tax sum to at most one.
+    share = calc(sim, "council_tax_reduction_joint_liability_share")
+    assert np.all(per_household(share * claimant, facts) <= 1 + 1e-6)
 
     # 4. Non-dependants.
     non_dep = calc(sim, "council_tax_reduction_individual_non_dep_deduction_eligible")
     person_claimant = claimant[facts["benunit"]]
     person_rent_liable = calc(sim, "benunit_is_rent_liable")[facts["benunit"]]
-    adult = calc(sim, "age") >= 18
-    claimant_or_partner = calc(sim, "is_claimant_or_partner")
+    adult = age >= 18
     assert not np.any(non_dep & person_claimant & claimant_or_partner)
     assert np.all(non_dep[adult & ~person_claimant & ~person_rent_liable])
 
