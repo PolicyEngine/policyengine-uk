@@ -1,4 +1,4 @@
-description: Minimum age gap below the claimant at which a younger member is presumed to be the claimant's child rather than their partner, when relationships are not supplied. It applies at any age when the claimant is flagged as a parent, and otherwise only under the presumed child age limit; a larger gap (the minimum age gap at any age) applies at any age without flags. This is a PolicyEngine modelling presumption, not a statutory rule.
+description: Minimum age gap below the claimant at which a younger member is presumed to be the claimant's child rather than their partner, when relationships are not supplied. It applies at any age when the claimant is flagged as a parent and no younger member under the presumed child age limit explains the flag, and otherwise only under that limit; a larger gap (the minimum age gap at any age) applies at any age. This is a PolicyEngine modelling presumption, not a statutory rule.
 values:
   0001-01-01: 16
 metadata:

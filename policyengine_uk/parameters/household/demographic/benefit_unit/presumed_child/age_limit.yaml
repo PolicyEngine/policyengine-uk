@@ -1,4 +1,4 @@
-description: Age below which a benefit-unit member much younger than the claimant is presumed to be the claimant's child rather than their partner, when relationships are not supplied. The limit does not apply when the claimant is flagged as a parent, nor to a member younger by at least the minimum age gap at any age. This is a PolicyEngine modelling presumption, not a statutory rule.
+description: Age below which a benefit-unit member much younger than the claimant is presumed to be the claimant's child rather than their partner, when relationships are not supplied. The limit does not apply when the claimant is flagged as a parent and no member under it, at least the minimum age gap younger, explains the flag, nor to a member younger by at least the minimum age gap at any age. This is a PolicyEngine modelling presumption, not a statutory rule.
 values:
   0001-01-01: 20
 metadata:
