@@ -13,10 +13,9 @@ class maintenance_loan_has_sponsor(Variable):
         age = person("age", period)
         in_higher_education = person("maintenance_loan_in_higher_education", period)
         adult_index = person("adult_index", period)
-        is_adult = person("is_adult", period)
         in_he = in_higher_education | person("in_HE", period)
 
-        sponsor_candidate = is_adult & np.logical_not(in_he) & (age >= 29)
+        sponsor_candidate = np.logical_not(in_he) & (age >= 29)
         head_candidate = sponsor_candidate & (adult_index == 1)
         second_candidate = sponsor_candidate & (adult_index == 2)
 
