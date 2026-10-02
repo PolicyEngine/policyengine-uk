@@ -66,15 +66,16 @@ def _joint_occupiers_by_residence(benunit, period):
 
 
 def non_dependants_residing_with(benunit, period, non_dependant):
-    """For each family, the number of the household's people marked by
-    ``non_dependant`` (members of non-dependant families) who normally reside
-    with it under non_dependant_normally_resides_with."""
+    """For each family, the sum of ``non_dependant`` (a count or weight for
+    each member of a non-dependant family, zero for anyone else) over the
+    household's people who normally reside with it under
+    non_dependant_normally_resides_with."""
     person = benunit.members
     residence = person.benunit("non_dependant_normally_resides_with", period)
     count = 0
     for value, joint_occupier in _joint_occupiers_by_residence(benunit, period):
         in_household = benunit.max(
-            person.household.sum(non_dependant & (residence == value))
+            person.household.sum(non_dependant * (residence == value))
         )
         count = count + joint_occupier * in_household
     return count

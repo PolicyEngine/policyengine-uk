@@ -142,6 +142,36 @@
     housing_benefit_LHA_allowed_bedrooms: [3, 2]
     housing_benefit_LHA_category: [D, C]
 
+- name: A non-dependant couple has a bedroom each under Universal Credit but one between them under Housing Benefit
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+      son:
+        age: 30
+      sons_partner:
+        age: 29
+    benunits:
+      renter_family:
+        members: [renter]
+      son_family:
+        members: [son, sons_partner]
+    households:
+      home:
+        members: [renter, son, sons_partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC: each is "a non-dependant who is not a child" (para 10(1)(c); ADM
+    # F3112 note 1): 3 bedrooms.
+    LHA_allowed_bedrooms: [3, 1]
+    # HB: the occupier couple is one category, "a couple" (reg 13D(3)(a);
+    # LHA Guidance Manual para 2.012): 2 bedrooms.
+    housing_benefit_LHA_allowed_bedrooms: [2, 1]
+
 - name: A lodger's child counts for Housing Benefit but not Universal Credit
   period: 2026
   input:
