@@ -1,0 +1,90 @@
+# SPCA 2002 ss.2(5), 3 and SPC Regulations 2002 regs 6-7, Sch IIA para 10.
+# These integration cases use the foundation's relation_type formula.
+- name: Single pensioner with a qualifying young person receives single rates and Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+        is_parent: true
+        private_pension_income: 12_000
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    relation_type: SINGLE
+    is_pension_credit_eligible: true
+    is_savings_credit_eligible: true
+    # 238 * 52 = 12,376; eldest QYP born before 2017: 81.07 * 52 = 4,215.64.
+    standard_minimum_guarantee: 12_376
+    child_minimum_guarantee_addition: 4_215.64
+    minimum_guarantee: 16_591.64
+    pension_credit_income: 12_000
+    # Guarantee: 16,591.64 - 12,000 = 4,591.64.
+    guarantee_credit: 4_591.64
+    # Savings: (12,000 - 208.07 * 52) * 0.6 = 708.216, below maximum 933.816.
+    savings_credit: 708.216
+    pension_credit_entitlement: 5_299.856
+
+- name: Pensioner couple with a qualifying young person retains couple rates and Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+        is_parent: true
+        private_pension_income: 10_000
+      partner:
+        age: 79
+        private_pension_income: 8_000
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+    benunits:
+      benunit:
+        members: [claimant, partner, young_person]
+  output:
+    relation_type: COUPLE
+    is_pension_credit_eligible: true
+    is_savings_credit_eligible: true
+    # 363.25 * 52 = 18,889; child addition 81.07 * 52 = 4,215.64.
+    standard_minimum_guarantee: 18_889
+    minimum_guarantee: 23_104.64
+    pension_credit_income: 18_000
+    guarantee_credit: 5_104.64
+    # (18,000 - 329.75 * 52) * 0.6 = 511.80, below maximum 1,045.20.
+    savings_credit: 511.80
+    pension_credit_entitlement: 5_616.44
+
+- name: Guarantee Credit is zero for a working-age family
+  # Guarantee credit is part of State Pension Credit (SPCA 2002 ss.1-2), so a
+  # working-age family on a low income has none. Previously it was computed for
+  # everyone below the minimum guarantee, which passported working-age families
+  # into the targeted (two-year-old) childcare entitlement.
+  period: 2026
+  input:
+    people:
+      parent_1:
+        age: 30
+        is_parent: true
+      parent_2:
+        age: 30
+        is_parent: true
+      toddler:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, toddler]
+    households:
+      household:
+        members: [parent_1, parent_2, toddler]
+        country: ENGLAND
+  output:
+    is_pension_credit_eligible: false
+    guarantee_credit: 0

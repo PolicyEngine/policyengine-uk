@@ -1,0 +1,82 @@
+# SPC Regulations 2002 Sch I paras 1-2 and reg 6(5).
+# Children and qualifying young people do not block the addition or receive
+# a claimant/partner addition. The 2026 weekly single amount is GBP 86.05.
+- name: A child without disability benefits does not block the claimant's addition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 79
+        attendance_allowance: 100
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, child]
+  output:
+    # One qualifying claimant: 1 * 86.05 * 52 = 4,474.60.
+    severe_disability_minimum_guarantee_addition: 4_474.60
+
+- name: An 18-year-old qualifying young person's PIP does not add a second claimant amount.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 79
+        is_parent: true
+        attendance_allowance: 100
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        pip_dl: 100
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # Only the claimant qualifies: 1 * 86.05 * 52 = 4,474.60.
+    severe_disability_minimum_guarantee_addition: 4_474.60
+
+- name: Two qualifying partners with a disabled young person receive two claimant amounts.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 79
+        is_parent: true
+        attendance_allowance: 100
+      partner:
+        age: 70
+        attendance_allowance: 100
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+        pip_dl: 100
+    benunits:
+      benunit:
+        members: [claimant, partner, young_person]
+  output:
+    # Reg 6(5)(b): 2 * 86.05 * 52 = 8,949.20, excluding the dependant.
+    severe_disability_minimum_guarantee_addition: 8_949.20
+
+- name: A dependant's disability benefit alone does not qualify the claimant.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 79
+        is_parent: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        pip_dl: 100
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # No qualifying claimant: 0 * 86.05 * 52 = 0.
+    severe_disability_minimum_guarantee_addition: 0

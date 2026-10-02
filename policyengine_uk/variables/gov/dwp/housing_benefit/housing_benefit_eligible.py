@@ -6,8 +6,9 @@ class housing_benefit_eligible(Variable):
     entity = BenUnit
     label = "eligible for the Housing Benefit"
     documentation = (
-        "Whether this family can receive Housing Benefit. A family in which "
-        "every adult has reached the qualifying age for State Pension Credit "
+        "Whether this family can receive Housing Benefit. A family whose "
+        "claimant and any partner have reached the qualifying age for State "
+        "Pension Credit "
         "can make a new claim; Universal Credit is not available to it. Any "
         "other family keeps Housing Benefit only while it continues an "
         "existing award (reported Housing Benefit) and does not claim "
@@ -28,15 +29,14 @@ class housing_benefit_eligible(Variable):
         sp_age = person("is_SP_age", period)
         # New claims are barred except where the claimant, and any partner,
         # has reached the qualifying age for State Pension Credit
-        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)). Every adult in
-        # the benefit unit stands in for the claimant and partner, as in
-        # is_uc_eligible and is_pension_credit_eligible, so a pensioner with
-        # an 18 or 19 year old dependant is routed to Universal Credit.
-        # Because is_uc_eligible needs a working-age adult, no family on this
-        # route receives Universal Credit; change the three together.
-        adult = person("is_adult", period)
-        adult_count = benunit.sum(adult)
-        pension_age = (adult_count > 0) & (benunit.sum(adult & sp_age) == adult_count)
+        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)). This is the
+        # same claimant-and-partner set is_uc_eligible and
+        # is_pension_credit_eligible use, so a pensioner with an 18 or 19 year
+        # old dependant can claim Housing Benefit and not Universal Credit;
+        # change the three together.
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        count = benunit.sum(claimant_or_partner)
+        pension_age = (count > 0) & (benunit.sum(claimant_or_partner & sp_age) == count)
         # Working-age and mixed-age families (since 15 May 2019) claim
         # Universal Credit instead. They keep an existing award until they
         # claim it (reg 8(2A)), so this route also rules out receiving

@@ -10,9 +10,10 @@ class is_savings_credit_eligible(Variable):
     reference = "https://www.legislation.gov.uk/ukpga/2002/16/section/3"
 
     def formula(benunit, period, parameters):
-        # Check if any member reached SPA before the cutoff year
+        # The claimant or partner must have reached SPA before the cutoff year.
         has_pre_cutoff_spa_member = benunit.any(
-            benunit.members("meets_savings_credit_age_requirement", period)
+            benunit.members("is_claimant_or_partner", period)
+            & benunit.members("meets_savings_credit_age_requirement", period)
         )
         income = benunit("savings_credit_income", period)
         sc = parameters(period).gov.dwp.pension_credit.savings_credit
