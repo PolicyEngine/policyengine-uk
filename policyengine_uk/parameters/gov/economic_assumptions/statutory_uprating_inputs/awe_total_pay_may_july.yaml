@@ -26,8 +26,9 @@ values:
   2023-07-01: 0.085 # SI 2024/242 EM
   2024-07-01: 0.041 # SI 2025/295 EM
   2025-07-01: 0.048 # SI 2026/148 EM
-  # First estimate (ONS labour market release, 15 September 2026). Replace
-  # with the October release, due 20 October 2026, once published.
+  # Provisional: 3.9% is the 15 September 2026 first estimate and stays
+  # provisional until the October labour market release (due 20 October),
+  # the vintage the uprating review uses; replace it once published.
   2026-07-01: 0.039
   # Not yet published. From here the value is calendar-year earnings growth
   # (yoy_growth.obr.average_earnings) plus forecast_gap.awe_total_pay_may_july.
