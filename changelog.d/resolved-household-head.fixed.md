@@ -1,0 +1,1 @@
+Read one household head per household in every programme, so an `is_household_head` input that flags several members, or none, can no longer leave rent, non-dependant and Council Tax Reduction rules disagreeing about whose household it is.

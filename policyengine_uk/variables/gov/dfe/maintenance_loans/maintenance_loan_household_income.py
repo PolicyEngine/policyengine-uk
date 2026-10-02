@@ -20,7 +20,7 @@ class maintenance_loan_household_income(Variable):
         has_sponsor = person("maintenance_loan_has_sponsor", period)
         sponsor_income = person("maintenance_loan_sponsor_income", period)
         is_couple = person.benunit("is_couple", period)
-        is_household_head = person("is_household_head", period)
+        is_household_head = person("is_resolved_household_head", period)
         is_parent = person("is_parent", period)
         tenure_holder = person.household.get_holder("tenure_type")
         has_explicit_tenure = (

@@ -28,6 +28,6 @@ class is_non_dependant_of_household_head(Variable):
     def formula(person, period, parameters):
         # UC Regs 2013 Sch 4 para 9(2)(d)-(f); HB Regs 2006 reg 3(2)(d)-(e)
         # and 3(4); HB (SPC) Regs 2006 reg 3.
-        head_family = person.benunit.any(person("is_household_head", period))
+        head_family = person.benunit("benunit_contains_household_head", period)
         liable_for_rent = person.benunit("benunit_is_rent_liable", period)
         return ~head_family & ~liable_for_rent

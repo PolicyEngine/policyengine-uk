@@ -36,7 +36,7 @@ class lha_renter_has_non_dependant(Variable):
         non_dependant_claimants = claimant_or_partner & person(
             "is_non_dependant_of_household_head", period
         )
-        head_family = benunit.any(person("is_household_head", period))
+        head_family = benunit("benunit_contains_household_head", period)
         other_family_non_dependants = head_family * benunit.max(
             person.household.sum(non_dependant_claimants)
         )

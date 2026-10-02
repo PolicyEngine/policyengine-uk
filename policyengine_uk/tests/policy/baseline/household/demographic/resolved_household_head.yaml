@@ -1,0 +1,324 @@
+# One household head per household, whatever is_household_head flags. With
+# several members flagged, the eldest flagged member is the head; with none,
+# the eldest member is; a tie in age goes to the member listed first among
+# the people (is_resolved_household_head).
+# Rent liability (UC Regs 2013 Sch 4 para 24; HB Regs 2006 reg 12B),
+# non-dependants and the size criteria (UC Regs 2013 Sch 4 paras 9-10; HB Regs
+# 2006 regs 3, 13D and 74), boarders and lodgers, Council Tax Reduction
+# claimants and non-dependants (SI 2012/2885 reg 9 and Sch 1 paras 2-3; SI
+# 2013/3029 reg 9; SSI 2021/249 reg 8) and the maintenance loan's
+# living-arrangement proxy all read the same head, so they agree on whose
+# household it is.
+
+- name: Two members of separate families flagged as head - only the eldest flagged member's family has the rent, and the other family is its non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      younger_flagged:
+        age: 40
+        is_household_head: true
+        uc_individual_non_dep_deduction: 1_000
+        household_benefits_individual_non_dep_deduction: 800
+        council_tax_reduction_individual_non_dep_deduction: 200
+      elder_flagged:
+        age: 60
+        is_household_head: true
+    benunits:
+      younger_family:
+        members: [younger_flagged]
+      elder_family:
+        members: [elder_flagged]
+    households:
+      home:
+        members: [younger_flagged, elder_flagged]
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+  output:
+    is_resolved_household_head: [false, true]
+    benunit_contains_household_head: [false, true]
+    # Each flagged family used to have half the rent (6,000), and the younger
+    # one was then neither a Council Tax Reduction claimant nor a
+    # non-dependant of anyone.
+    is_liable_for_household_rent: [false, true]
+    share_of_household_rent: [0, 1]
+    personal_rent: [0, 12_000]
+    benunit_rent: [0, 12_000]
+    is_non_dependant_of_household_head: [true, false]
+    uc_non_dep_deductions: [0, 1_000]
+    housing_benefit_non_dep_deductions: [0, 800]
+    LHA_allowed_bedrooms: [1, 2]
+    housing_benefit_LHA_allowed_bedrooms: [1, 2]
+    lha_renter_has_non_dependant: [false, true]
+    council_tax_reduction_claimant_benunit: [false, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [true, false]
+    council_tax_reduction_non_dep_deductions: [0, 200]
+
+- name: A couple both flagged as head carry the household's rent once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 38
+        is_household_head: true
+    benunits:
+      family:
+        members: [head, partner]
+    households:
+      home:
+        members: [head, partner]
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    is_resolved_household_head: [true, false]
+    is_liable_for_household_rent: [true, true]
+    # The family's share sits on one person, not on each flagged partner.
+    personal_rent: [12_000, 0]
+    benunit_rent: 12_000
+
+- name: No member flagged as head - the eldest member's family has the rent, and the other family is its non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      younger:
+        age: 40
+        is_household_head: false
+        uc_individual_non_dep_deduction: 1_000
+        household_benefits_individual_non_dep_deduction: 800
+        council_tax_reduction_individual_non_dep_deduction: 200
+      elder:
+        age: 60
+        is_household_head: false
+    benunits:
+      younger_family:
+        members: [younger]
+      elder_family:
+        members: [elder]
+    households:
+      home:
+        members: [younger, elder]
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_resolved_household_head: [false, true]
+    benunit_contains_household_head: [false, true]
+    # No family used to be liable for the rent at all.
+    is_liable_for_household_rent: [false, true]
+    share_of_household_rent: [0, 1]
+    personal_rent: [0, 12_000]
+    is_non_dependant_of_household_head: [true, false]
+    uc_non_dep_deductions: [0, 1_000]
+    housing_benefit_non_dep_deductions: [0, 800]
+    LHA_allowed_bedrooms: [1, 2]
+    housing_benefit_LHA_allowed_bedrooms: [1, 2]
+    lha_renter_has_non_dependant: [false, true]
+    council_tax_reduction_claimant_benunit: [false, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [true, false]
+    council_tax_reduction_non_dep_deductions: [0, 200]
+
+- name: No member flagged as head and the eldest tied - the first eldest member's family is the head's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      first:
+        age: 50
+        is_household_head: false
+      second:
+        age: 50
+        is_household_head: false
+        uc_individual_non_dep_deduction: 1_000
+        household_benefits_individual_non_dep_deduction: 800
+    benunits:
+      first_family:
+        members: [first]
+      second_family:
+        members: [second]
+    households:
+      home:
+        members: [first, second]
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+  output:
+    is_resolved_household_head: [true, false]
+    personal_rent: [12_000, 0]
+    is_non_dependant_of_household_head: [false, true]
+    uc_non_dep_deductions: [1_000, 0]
+    housing_benefit_non_dep_deductions: [800, 0]
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+
+- name: Two members flagged as head beside a sharer - the eldest flagged member's family and the sharer split the rent and claim, and the other flagged family is a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      younger_flagged:
+        age: 30
+        is_household_head: true
+        uc_individual_non_dep_deduction: 1_000
+        household_benefits_individual_non_dep_deduction: 800
+        council_tax_reduction_individual_non_dep_deduction: 200
+      elder_flagged:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 45
+        is_household_head: false
+    benunits:
+      younger_family:
+        members: [younger_flagged]
+      elder_family:
+        members: [elder_flagged]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [younger_flagged, elder_flagged, sharer]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+  output:
+    is_resolved_household_head: [false, true, false]
+    benunit_contains_household_head: [false, true, false]
+    # Two people liable (UC Sch 4 para 24(4)): 10,000 each.
+    is_liable_for_household_rent: [false, true, true]
+    share_of_household_rent: [0, 0.5, 0.5]
+    benunit_rent: [0, 10_000, 10_000]
+    is_non_dependant_of_household_head: [true, false, false]
+    # UC counts the non-dependant in the head's claim only; HB apportions it
+    # between the joint occupiers by their shares of the rent (reg 74(5)).
+    uc_non_dep_deductions: [0, 1_000, 0]
+    housing_benefit_non_dep_deductions: [0, 400, 400]
+    council_tax_reduction_claimant_benunit: [false, true, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [true, false, false]
+
+- name: A lodger flagged as head beside the householder pays the householder and has no share of the rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: true
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        rent: 12_000
+        tenure_type: RENT_FROM_COUNCIL
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+  output:
+    is_resolved_household_head: [true, false]
+    pays_rent_to_householder: [false, true]
+    share_of_household_rent: [1, 0]
+    personal_rent: [12_000, 5_200]
+    # The lodger rents privately from the householder, not from the council.
+    benunit_tenure_type: [RENT_FROM_COUNCIL, RENT_PRIVATELY]
+    is_non_dependant_of_household_head: [false, false]
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+
+- name: A student flagged as head beside their parent lives with their parents for the maintenance loan
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 52
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 30_000
+        is_household_head: true
+      student:
+        age: 20
+        current_education: TERTIARY
+        adjusted_net_income: 2_000
+        is_household_head: true
+    benunits:
+      parent_benunit:
+        members: [parent]
+      student_benunit:
+        members: [student]
+    households:
+      household:
+        members: [parent, student]
+        country: ENGLAND
+        region: NORTH_WEST
+  output:
+    is_resolved_household_head: [true, false]
+    maintenance_loan_living_arrangement: [AWAY_OUTSIDE_LONDON, LIVING_WITH_PARENTS]
+    maintenance_loan_household_income: [30_000, 32_000]
+
+- name: Where only one household flags its head, every other household's eldest member is its head
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      first_head:
+        age: 40
+        is_household_head: true
+      first_parent:
+        age: 70
+        is_household_head: false
+      second_younger:
+        age: 30
+      second_elder:
+        age: 65
+    benunits:
+      first_head_family:
+        members: [first_head]
+      first_parent_family:
+        members: [first_parent]
+      second_younger_family:
+        members: [second_younger]
+      second_elder_family:
+        members: [second_elder]
+    households:
+      first_home:
+        members: [first_head, first_parent]
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+      second_home:
+        members: [second_younger, second_elder]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_500
+  output:
+    # The second household's members default to false once anyone has the
+    # input, so no one there is flagged.
+    is_household_head: [true, false, false, false]
+    is_resolved_household_head: [true, false, false, true]
+    personal_rent: [12_000, 0, 0, 9_000]
+    is_non_dependant_of_household_head: [false, true, true, false]
+    council_tax_reduction_claimant_benunit: [true, false, false, true]
