@@ -26,11 +26,8 @@ class housing_benefit_net_earnings(Variable):
         "notional tax. It is exact for an employee whose earnings are their "
         "only taxable income, and whenever no income tax is due. The earnings "
         "of a child or young person are not the claimant's (regulation 25(3); "
-        "pension age regulation 23(3)). The claimant and partner are proxied "
-        "by is_adult (aged 18 or over): earnings of members under 18 are "
-        "excluded, but those of a qualifying young person aged 18 or 19 are "
-        "counted, until a claimant-or-partner variable "
-        "(PolicyEngine/policyengine-uk#1896) replaces the proxy."
+        "pension age regulation 23(3)), so only the claimant's and partner's "
+        "count (is_claimant_or_partner)."
     )
     definition_period = YEAR
     unit = GBP
@@ -50,13 +47,20 @@ class housing_benefit_net_earnings(Variable):
         person = benunit.members
         employment_income = person("employment_income", period)
         self_employment_income = person("self_employment_income", period)
-        earnings = max_(employment_income, 0) + max_(self_employment_income, 0)
-        # Income tax is attributed by the earnings' share of total income
-        # before any employment or self-employment loss, so that a loss set
-        # against other income for tax does not drop the tax on these
-        # earnings.
+        # Statutory sick and maternity pay are earnings (reg 35(1)(i); pension
+        # age reg 35(1)(h)). The model taxes them as employment income
+        # (employment_benefits) but leaves them out of total_income.
+        statutory_pay = person("employment_benefits", period)
+        earnings = (
+            max_(employment_income, 0) + max_(self_employment_income, 0) + statutory_pay
+        )
+        # Income tax is attributed by the earnings' share of total income,
+        # with statutory pay added and before any employment or
+        # self-employment loss, so that a loss set against other income for
+        # tax does not drop the tax on these earnings.
         income_before_losses = (
             person("total_income", period)
+            + statutory_pay
             + max_(-employment_income, 0)
             + max_(-self_employment_income, 0)
         )
@@ -67,11 +71,6 @@ class housing_benefit_net_earnings(Variable):
             where=income_before_losses > 0,
         )
         income_tax = person("income_tax", period) * min_(earnings_share, 1)
-        # Statutory sick and maternity pay are earnings (reg 35(1)(i); pension
-        # age reg 35(1)(h)). The model does not tax them.
-        statutory_pay = add(
-            person, period, ["statutory_sick_pay", "statutory_maternity_pay"]
-        )
         national_insurance = add(
             person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
         )
@@ -80,15 +79,10 @@ class housing_benefit_net_earnings(Variable):
             * p.pension_contribution_deduction_rate
         )
         net_earnings = max_(
-            earnings
-            + statutory_pay
-            - income_tax
-            - national_insurance
-            - pension_contributions,
+            earnings - income_tax - national_insurance - pension_contributions,
             0,
         )
-        # The claimant and partner; the model's other Housing Benefit
-        # variables use the same proxy. It counts a qualifying young person
-        # aged 18 or 19, whose earnings the law excludes (#1896).
-        claimant_or_partner = person("is_adult", period)
+        # The claimant and partner: a child's or young person's earnings are
+        # not the claimant's (reg 25(3); pension age reg 23(3)).
+        claimant_or_partner = person("is_claimant_or_partner", period)
         return benunit.sum(net_earnings * claimant_or_partner)

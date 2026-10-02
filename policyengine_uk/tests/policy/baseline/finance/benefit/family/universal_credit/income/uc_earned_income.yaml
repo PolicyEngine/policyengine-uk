@@ -5,7 +5,8 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 10
-    benunit_tax: 1
+    # The claimant's own tax (UC reg 22 counts the claimant's earnings).
+    tax: 1
   output:
     uc_earned_income: 1100 - 11
 
@@ -16,6 +17,7 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 2_000
-    benunit_tax: 1
+    # The claimant's own tax (UC reg 22 counts the claimant's earnings).
+    tax: 1
   output:
     uc_earned_income: 0

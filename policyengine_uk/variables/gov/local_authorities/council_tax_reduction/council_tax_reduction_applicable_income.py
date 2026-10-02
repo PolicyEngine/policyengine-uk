@@ -31,6 +31,15 @@ class council_tax_reduction_applicable_income(Variable):
     ]
 
     def formula(benunit, period, parameters):
+        # Members whose income counts: the claimant and partner and, as the model did
+        # before, the programme's own children or young persons. The regulations count
+        # only the claimant's and partner's (CTR (Prescribed Requirements) (England)
+        # Regs 2012 Sch 1 para 11); dropping dependants' own income is a follow-up.
+        # Anyone else in the benefit unit does not count.
+        person = benunit.members
+        members = person("is_claimant_or_partner", period) | person(
+            "is_child_or_young_person_for_legacy_benefits", period
+        )
         benunit_means_tested_benefits = [
             "child_benefit",
             "income_support",
@@ -55,17 +64,27 @@ class council_tax_reduction_applicable_income(Variable):
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
-        benefits = add(benunit, period, benunit_means_tested_benefits)
-        income = add(benunit, period, income_components)
-        personal_benefit_income = add(benunit, period, personal_benefits)
-        credits = add(benunit, period, ["tax_credits"])
+        benefits = add_for_members(
+            benunit, period, benunit_means_tested_benefits, members
+        )
+        income = add_for_members(benunit, period, income_components, members)
+        personal_benefit_income = add_for_members(
+            benunit, period, personal_benefits, members
+        )
+        credits = add_for_members(benunit, period, ["tax_credits"], members)
         increased_income = income + personal_benefit_income + credits + benefits
 
         if not bi.interactions.include_in_means_tests:
-            increased_income -= add(benunit, period, ["basic_income"])
+            increased_income -= add_for_members(
+                benunit, period, ["basic_income"], members
+            )
 
-        pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
-        tax = add(benunit, period, ["income_tax", "national_insurance"])
+        pension_contributions = (
+            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+        )
+        tax = add_for_members(
+            benunit, period, ["income_tax", "national_insurance"], members
+        )
         # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
         # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
         # earnings disregards, capped at net earnings. Zero for working-age
@@ -76,7 +95,6 @@ class council_tax_reduction_applicable_income(Variable):
         income_under_general_rules = max_(
             0, increased_income - tax - pension_contributions - earnings_disregard
         )
-
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is
         # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases

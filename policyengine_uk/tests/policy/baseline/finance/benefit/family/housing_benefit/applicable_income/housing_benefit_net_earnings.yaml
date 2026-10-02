@@ -138,7 +138,8 @@
       benunit:
         members: [parent, child]
   output:
-    # SI 2006/213 reg 35(1)(i). The model does not tax statutory pay.
+    # SI 2006/213 reg 35(1)(i). £8,000 is below the personal allowance and
+    # the NI primary threshold.
     housing_benefit_net_earnings: 8_000
     # Lone parent: 25 x 52.
     housing_benefit_applicable_income_disregard: 1_300
@@ -158,3 +159,26 @@
     # SI 2006/214 reg 35(1)(h). 5 x 52.
     housing_benefit_net_earnings: 2_000
     housing_benefit_applicable_income_disregard: 260
+
+- name: Income tax on statutory maternity pay is attributed to earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 10_000
+        statutory_maternity_pay: 20_000
+        private_pension_income: 10_000
+        income_tax: 5_486
+        ni_class_1_employee: 1_394.40
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # Taxable income 40,000: total_income 20,000 (employment and pension)
+    # plus 20,000 of statutory maternity pay, which the model taxes as
+    # employment income. Earnings are 10,000 + 20,000 = 30,000, so 3/4 of
+    # the 5,486 of income tax (4,114.50) is attributed to them.
+    # 30,000 - 4,114.50 - 1,394.40 = 24,491.10.
+    housing_benefit_net_earnings: 24_491.10

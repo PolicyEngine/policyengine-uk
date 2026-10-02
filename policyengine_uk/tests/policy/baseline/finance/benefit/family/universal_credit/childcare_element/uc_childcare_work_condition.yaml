@@ -4,6 +4,7 @@
   input:
     people:
       person:
+        age: 30
         in_work: false
   output:
     uc_childcare_work_condition: false
@@ -14,6 +15,7 @@
   input:
     people:
       person:
+        age: 30
         in_work: true
   output:
     uc_childcare_work_condition: true
@@ -25,10 +27,10 @@
     people:
       person1:
         in_work: false
-        is_adult: true
+        age: 40
       person2:
         in_work: true
-        is_adult: false
+        age: 17
   output:
     uc_childcare_work_condition: false
 
@@ -39,10 +41,10 @@
     people:
       person1:
         in_work: false
-        is_adult: true
+        age: 40
       person2:
         in_work: true
-        is_adult: true
+        age: 39
     benunits:
       benunit:
         members: [person1, person2]
@@ -56,12 +58,149 @@
     people:
       person1:
         in_work: true
-        is_adult: true
+        age: 40
       person2:
         in_work: true
-        is_adult: true
+        age: 39
     benunits:
       benunit:
         members: [person1, person2]
   output:
     uc_childcare_work_condition: true
+
+- name: Nonworking dependent aged 18 does not block a working claimant's childcare
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        in_work: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        in_work: false
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+  output:
+    # Reg. 32 tests claimant/partner work, not the dependent young person's:
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/32
+    # Reg. 34: min(5,000 * 85%, 1,031.88 * 12) = 4,250, formerly zero.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/34
+    is_uc_claimant: [true, false, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: Nonworking dependent aged 19 does not block working joint claimants' childcare
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        in_work: true
+      partner:
+        age: 39
+        in_work: true
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        in_work: false
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, partner, young_person, child]
+  output:
+    # Reg. 32: both claimants work; the dependent young person is excluded.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/32
+    # Reg. 34: min(5,000 * 85%, 1,031.88 * 12) = 4,250, formerly zero.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/34
+    is_uc_claimant: [true, true, false, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: Working claimant aged 16 satisfies the childcare work condition
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 16
+        is_benunit_head: true
+        is_parent: true
+        in_work: true
+      child:
+        age: 1
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    # Reg. 32: the single claimant works; age 18 is not a work condition.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/32
+    # Reg. 34: min(5,000 * 85%, 1,031.88 * 12) = 4,250, formerly zero.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/34
+    is_uc_claimant: [true, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: Working claimant aged 17 satisfies the childcare work condition
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 17
+        is_benunit_head: true
+        is_parent: true
+        in_work: true
+      child:
+        age: 1
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    # Reg. 32: the single claimant works; age 18 is not a work condition.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/32
+    # Reg. 34: min(5,000 * 85%, 1,031.88 * 12) = 4,250, formerly zero.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/34
+    is_uc_claimant: [true, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: An explicitly identified nonworking partner aged 17 fails the work condition
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 20
+        is_parent: true
+        is_uc_claimant: true
+        in_work: true
+      partner:
+        age: 17
+        is_uc_claimant: true
+        in_work: false
+      child:
+        age: 1
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [parent, partner, child]
+  output:
+    # Reg. 32(1)(b) applies to a partner regardless of age.
+    # https://www.legislation.gov.uk/uksi/2013/376/regulation/32
+    # No partner exception is modelled: failed work condition * 5,000 * 85%
+    # = 0, formerly 4,250 when the partner was excluded by the age-18 flag.
+    uc_childcare_work_condition: false
+    uc_childcare_element: 0
