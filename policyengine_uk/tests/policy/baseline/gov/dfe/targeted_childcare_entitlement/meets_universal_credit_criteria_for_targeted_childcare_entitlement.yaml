@@ -115,6 +115,63 @@
     uc_earned_income_before_work_allowance: 16_000
     meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
 
+- name: Combined earned income exactly at the limit meets the criterion
+  # "not exceeding": 7,700 + 7,700 = 15,400 <= 15,400. Each is under the
+  # personal allowance and primary threshold, so no tax or NI.
+  period: 2026
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 7_700
+      parent2:
+        age: 30
+        employment_income: 7_700
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent1, parent2, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_earned_income_before_work_allowance: 15_400
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: true
+
+- name: Income treated as earned under the minimum income floor counts
+  # Reg. 1(3)(a) uses UC Part 6 Chapter 2, which includes reg. 62. The
+  # partner who is not the child's carer has profits of 3,000 and is subject
+  # to the floor (35 hours at the national living wage), so the couple's
+  # earned income is far above 15,400, although actual earnings are 3,000.
+  period: 2026
+  input:
+    people:
+      self_employed_partner:
+        age: 30
+        self_employment_income: 3_000
+        uc_is_in_startup_period: false
+      carer:
+        age: 30
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [self_employed_partner, carer, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [self_employed_partner, carer, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_mif_applies: [true, false, false]
+    benefit_cap_earned_income: 3_000
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+
 - name: Without pension contributions, earnings of 16,800 exceed the limit
   # Tax 4,230 x 20% = 846; NI 4,230 x 8% = 338.40; earned income 15,615.60.
   period: 2026

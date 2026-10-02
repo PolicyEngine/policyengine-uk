@@ -8,6 +8,9 @@
 # 12. Reg. 6(1A)(za) disregards a fraction of a pound in that amount.
 # (4): earned income excludes income treated as earned under reg. 62 (the
 # minimum income floor).
+# The exception applies "to an award of universal credit": the income test is
+# uc_benefit_cap_earnings_threshold_met, and is_benefit_cap_exempt_earnings
+# also needs a UC award. Cases without one test the income test only.
 # Earned income is net of the person's own income tax, NI and relievable
 # pension contributions on their earnings (regs. 55(5), 57(2)); Class 3 is not
 # on earnings. In 2025-26 and 2026-27 the personal allowance and the primary
@@ -118,7 +121,19 @@
         employment_income: 10_573
   output:
     benefit_cap_earned_income: 10_573
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
+
+- name: Earnings exactly at the 2026-27 threshold meet it
+  # "equal to or exceeds": 10,572 >= 10,572.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 10_572
+  output:
+    benefit_cap_earned_income: 10_572
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: Earnings of 10,571 fall short of the 2026-27 threshold
   period: 2026
@@ -129,7 +144,7 @@
         employment_income: 10_571
   output:
     benefit_cap_earned_income: 10_571
-    is_benefit_cap_exempt_earnings: false
+    uc_benefit_cap_earnings_threshold_met: false
 
 - name: Earned income is net of the person's income tax and NI on the earnings
   # Tax (14,000 - 12,570) x 20% = 286; Class 1 (14,000 - 12,570) x 8% =
@@ -143,7 +158,7 @@
         employment_income: 14_000
   output:
     benefit_cap_earned_income: 13_599.60
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: Pension contributions are deducted from earned income
   # Reg. 55(5)(a): 11,500 - 1,000 = 10,500 < 10,572.
@@ -156,10 +171,24 @@
         employee_pension_contributions: 1_000
   output:
     benefit_cap_earned_income: 10_500
-    is_benefit_cap_exempt_earnings: false
+    uc_benefit_cap_earnings_threshold_met: false
 
-- name: Pension contributions paid after 75 are not deducted
-  # Finance Act 2004 s. 188(3)(a): contributions after 75 are not relievable,
+- name: Pension contributions paid at 74 are deducted
+  # Under 75 the contribution is relievable (Finance Act 2004 s. 188(3)(a)):
+  # 11,000 - 1,000 = 10,000. No NI is due over State Pension age.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 74
+        employment_income: 11_000
+        employee_pension_contributions: 1_000
+  output:
+    benefit_cap_earned_income: 10_000
+
+- name: Pension contributions paid at 75 are not deducted
+  # Finance Act 2004 s. 188(3)(a): contributions paid once the person has
+  # reached 75 are not relievable,
   # so reg. 55(5)(a) does not deduct them. 11,000 is under the personal
   # allowance and no NI is due over State Pension age, so earned income is
   # 11,000.
@@ -167,7 +196,7 @@
   input:
     people:
       person:
-        age: 76
+        age: 75
         employment_income: 11_000
         employee_pension_contributions: 1_000
   output:
@@ -183,7 +212,7 @@
         ni_class_3: 900
   output:
     benefit_cap_earned_income: 10_600
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: Tax on the person's property income is not deducted from their earnings
   # Earnings are the lowest slice of income and sit inside the personal
@@ -197,7 +226,7 @@
         property_income: 40_000
   output:
     benefit_cap_earned_income: 10_600
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: A partner's tax on property income does not reduce the couple's earned income
   period: 2026
@@ -214,7 +243,7 @@
         members: [earner, partner]
   output:
     benefit_cap_earned_income: 10_600
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: A couple's earned income is combined
   # Reg. 82(1)(a): 6,000 + 6,000 = 12,000 >= 10,572.
@@ -232,7 +261,7 @@
         members: [person1, person2]
   output:
     benefit_cap_earned_income: 12_000
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: Income treated as earned under the minimum income floor does not count
   # Reg. 82(4). Profits of 3,000 are below the Class 4 lower profits limit, so
@@ -248,7 +277,7 @@
   output:
     uc_mif_applies: true
     benefit_cap_earned_income: 3_000
-    is_benefit_cap_exempt_earnings: false
+    uc_benefit_cap_earnings_threshold_met: false
 
 - name: Earnings of 5,200 in 2016-17 meet the 430 a month threshold
   period: 2016
@@ -258,7 +287,7 @@
         age: 30
         employment_income: 5_200
   output:
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: Earnings of 8,700 in 2023-24 meet the 722 a month threshold
   period: 2023
@@ -268,7 +297,7 @@
         age: 30
         employment_income: 8_700
   output:
-    is_benefit_cap_exempt_earnings: true
+    uc_benefit_cap_earnings_threshold_met: true
 
 - name: Earnings of 8,600 in 2023-24 fall short of the 722 a month threshold
   period: 2023
@@ -278,7 +307,7 @@
         age: 30
         employment_income: 8_600
   output:
-    is_benefit_cap_exempt_earnings: false
+    uc_benefit_cap_earnings_threshold_met: false
 
 # --- #1986 counterexample ---
 
@@ -312,6 +341,7 @@
       household:
         members: [earner, partner, child1, child2, child3, child4]
         region: LONDON
+        brma: INNER_NORTH_LONDON
         tenure_type: RENT_PRIVATELY
         rent: 36_000
   output:
@@ -319,3 +349,46 @@
     benefit_cap_earnings_threshold: 10_152
     is_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
+    uc_benefit_cap_earnings_threshold_met: true
+
+# --- The exception is for Universal Credit only ---
+
+- name: Earnings over the UC threshold do not except a Housing Benefit award
+  # Reg. 82 applies "to an award of universal credit". A Housing Benefit
+  # claimant with no UC and no Working Tax Credit has no earnings exception
+  # (HB Regs 2006 reg. 75E needs entitlement to WTC). 2023-24: 8,700 is over
+  # the UC threshold of 722 x 12 = 8,664, but the family cap still applies.
+  period: 2023
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 8_700
+        hours_worked: 416
+        housing_benefit_reported: 100
+      child1:
+        age: 8
+      child2:
+        age: 6
+      child3:
+        age: 4
+      child4:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child1, child2, child3, child4]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        working_tax_credit: 0
+    households:
+      household:
+        members: [parent, child1, child2, child3, child4]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 36_000
+  output:
+    uc_benefit_cap_earnings_threshold_met: true
+    universal_credit_pre_benefit_cap: 0
+    is_benefit_cap_exempt_earnings: false
+    is_benefit_cap_exempt: false
+    benefit_cap: 25_323

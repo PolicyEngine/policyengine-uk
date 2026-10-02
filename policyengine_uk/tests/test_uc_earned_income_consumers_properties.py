@@ -18,16 +18,19 @@ taxable unearned income:
 
 1. The benefit cap exception never depends on income tax or NI that is not
    on earnings: adding Class 3 or any unearned income to any adult leaves
-   benefit_cap_earned_income and is_benefit_cap_exempt_earnings unchanged.
+   benefit_cap_earned_income and the income test unchanged, and the
+   exception too wherever there is a UC award before and after.
 2. Differential against the UC means test: benefit cap earned income equals
    the UC earned income before the work allowance when no one's minimum
    income floor applies, and never exceeds it; and switching every floor off
-   never changes it (reg. 82(4)).
+   never changes it (reg. 82(4)). The exception is the income test plus a
+   UC award (reg. 82(1)), so it never applies to Housing Benefit alone.
 3. The threshold is 12 x floor(12.71 x 16 x 52 / 12) in 2026-27 and the same
    formula on the national living wage parameter in every year, for every
    family.
-4. Monotone in earnings: the exception is non-decreasing, and the childcare
-   criterion non-increasing, in any adult's employment income.
+4. Monotone in earnings: the benefit cap income test is non-decreasing, and
+   the childcare criterion non-increasing, in any adult's employment income.
+   A fixed example crosses the childcare limit with a UC award throughout.
 5. Differential against the formulas #1986 replaced: the childcare criterion
    now implies the old criterion (earned income before the work allowance is
    never below earned income after it), and local CTR is never higher.
@@ -45,7 +48,7 @@ benefit cap measure.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -153,6 +156,8 @@ BENUNIT_VARIABLES = [
     "benefit_cap_earned_income",
     "benefit_cap_earnings_threshold",
     "is_benefit_cap_exempt_earnings",
+    "uc_benefit_cap_earnings_threshold_met",
+    "universal_credit_pre_benefit_cap",
     "uc_earned_income_before_work_allowance",
     "uc_earned_income",
     "uc_unearned_income",
@@ -243,8 +248,18 @@ def test_benefit_cap_exception_ignores_tax_not_on_earnings(year, data):
         err_msg=f"{bump} {units}",
     )
     np.testing.assert_array_equal(
-        high["is_benefit_cap_exempt_earnings"],
-        low["is_benefit_cap_exempt_earnings"],
+        high["uc_benefit_cap_earnings_threshold_met"],
+        low["uc_benefit_cap_earnings_threshold_met"],
+        err_msg=f"{bump} {units}",
+    )
+    # Unearned income can end the UC award, and with it the exception; where
+    # there is an award either way, the exception does not move.
+    on_uc = (low["universal_credit_pre_benefit_cap"] > 0) & (
+        high["universal_credit_pre_benefit_cap"] > 0
+    )
+    np.testing.assert_array_equal(
+        high["is_benefit_cap_exempt_earnings"][on_uc],
+        low["is_benefit_cap_exempt_earnings"][on_uc],
         err_msg=f"{bump} {units}",
     )
 
@@ -260,6 +275,13 @@ def test_benefit_cap_earned_income_matches_uc_without_the_floor(units, year):
     uc = v["uc_earned_income_before_work_allowance"]
     no_floor = ~v["floor_applies"]
     np.testing.assert_allclose(cap[no_floor], uc[no_floor], atol=0.01, err_msg=units)
+    # The exception is the income test plus an award of UC (reg. 82(1)).
+    np.testing.assert_array_equal(
+        v["is_benefit_cap_exempt_earnings"],
+        v["uc_benefit_cap_earnings_threshold_met"]
+        & (v["universal_credit_pre_benefit_cap"] > 0),
+        err_msg=str(units),
+    )
     assert np.all(cap <= uc + 0.01), units
 
 
@@ -295,15 +317,34 @@ def test_benefit_cap_threshold_is_16_hours_at_the_living_wage(units, year):
         np.testing.assert_allclose(v["benefit_cap_earnings_threshold"], 10_572)
 
 
+CHILDCARE_LIMIT_CROSSING = (
+    [
+        dict(
+            adults=[dict(age=30, employment_income=16_500.0)],
+            children=[2],
+            tenure="RENT_FROM_COUNCIL",
+            rent=9_600.0,
+            local_authority="MERTON",
+            council_tax=1_800.0,
+        )
+    ],
+    (0, 0, "employment_income", 1.0),
+)
+
+
 @PROPERTY_SETTINGS
 @given(case=bumped(["employment_income"]), year=st.sampled_from(YEARS))
+# Earned income goes from 15,399.60 to 15,400.32, across the 15,400 limit,
+# with a UC award throughout.
+@example(case=CHILDCARE_LIMIT_CROSSING, year=2026)
 def test_monotone_in_earnings(case, year):
     units, bump = case
     low = calculate(units, year)
     high = calculate(units, year, bump=bump)
-    # More earnings never take away the benefit cap exception...
+    # More earnings never take away the benefit cap income test...
     assert np.all(
-        high["is_benefit_cap_exempt_earnings"] >= low["is_benefit_cap_exempt_earnings"]
+        high["uc_benefit_cap_earnings_threshold_met"]
+        >= low["uc_benefit_cap_earnings_threshold_met"]
     ), (bump, units)
     # ...and never bring a family within the childcare earnings limit. Where
     # the minimum income floor applies, the floor stands in for gross
