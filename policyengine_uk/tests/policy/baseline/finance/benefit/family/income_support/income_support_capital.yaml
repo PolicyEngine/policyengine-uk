@@ -8,7 +8,6 @@
         income_support_reported: true
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -35,7 +34,6 @@
         income_support_reported: true
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -57,7 +55,6 @@
         income_support_reported: true
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -79,7 +76,6 @@
         income_support_reported: true
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -103,7 +99,6 @@
         income_support_reported: true
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -125,7 +120,6 @@
         income_support_reported: true
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -138,7 +132,7 @@
     income_support_eligible: false
     income_support: 0
 
-- name: Income Support allocates household capital by adult share across benunits
+- name: Income Support allocates household capital by claimant and partner share across benunits
   period: 2021
   absolute_error_margin: 1
   input:
@@ -221,7 +215,6 @@
         income_support_reported: true
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
