@@ -25,13 +25,13 @@ class income_support_eligible(Variable):
         "the claimant nor the partner may be entitled to income-related ESA "
         "or income-based JSA. An adult in the benefit unit who is neither the "
         "claimant nor the partner (such as a non-dependent adult) does not "
-        "affect eligibility, except in one case. An award entered directly as "
-        "esa_income or jsa_income is taken to be the claimant's or partner's "
-        "unless it equals, to within half a penny at the precision the award "
-        "is stored in, the award all the reported "
-        "amounts give or their plain total; then the reported amounts decide "
-        "whose it is. So another member's report can change how a directly "
-        "entered award is read."
+        "affect eligibility, except in one case. A stored esa_income or "
+        "jsa_income, whether entered directly or replaced by a reform, is "
+        "taken to be the claimant's or partner's unless it equals, to within "
+        "half a penny after rounding to the precision it is stored in, the "
+        "award all the reported amounts give or their plain total; then the "
+        "reported amounts decide whose it is. So another member's report can "
+        "change how such an award is read."
     )
     definition_period = YEAR
     reference = (
