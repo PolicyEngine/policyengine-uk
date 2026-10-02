@@ -270,8 +270,8 @@ baseline_sim = Simulation(situation=benefit_cap_family)
 reformed_sim = Simulation(situation=benefit_cap_family, scenario=reindex_benefit_cap)
 
 # Compare the benefit cap levels
-baseline_cap = baseline_sim.calculate("benefit_cap", 2026).mean()
-reformed_cap = reformed_sim.calculate("benefit_cap", 2026).mean()
+baseline_cap = baseline_sim.calculate("uc_benefit_cap", 2026).mean()
+reformed_cap = reformed_sim.calculate("uc_benefit_cap", 2026).mean()
 
 print(
     f"Benefit cap - frozen: £{baseline_cap:.0f}/year, indexed: £{reformed_cap:.0f}/year"
