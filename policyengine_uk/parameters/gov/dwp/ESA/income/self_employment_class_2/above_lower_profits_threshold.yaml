@@ -1,0 +1,20 @@
+description: Whether the notional Class 2 deduction from a self-employed claimant's profit for income-related ESA applies only above the lower profits threshold, rather than from the small profits threshold.
+values:
+  2008-10-27:
+    value: false
+    reference:
+      - title: Employment and Support Allowance Regulations 2008 reg. 99(3)(a) ("less than ... (small profits threshold)")
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/99/2015-04-06
+  2022-04-06:
+    value: true
+    reference:
+      - title: Social Security (Class 2 National Insurance Contributions Increase of Threshold) Regulations 2022 (SI 2022/1329) reg. 5, with effect from 6 April 2022 ("equal to or less than ... (lower profits threshold)")
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/99/2023-04-06
+metadata:
+  unit: bool
+  label: ESA self-employed Class 2 deduction above the lower profits threshold
+  reference:
+    - title: Employment and Support Allowance Regulations 2008 reg. 99(3)(a)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/99
+    - title: Social Security Contributions and Benefits Act 1992 s. 11(4)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/11

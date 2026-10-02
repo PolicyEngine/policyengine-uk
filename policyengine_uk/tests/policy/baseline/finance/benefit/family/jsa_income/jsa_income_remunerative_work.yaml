@@ -1,0 +1,414 @@
+# Income-based JSA remunerative work conditions.
+# Jobseekers Act 1995 s.1(2)(e): a claimant is entitled if he "is not engaged
+# in remunerative work"; s.3(1)(e): the income-based conditions include that
+# the claimant "is not a member of a couple the other member of which is
+# engaged in remunerative work". JSA Regs 1996 reg 51(1): remunerative work is
+# paid work of "not less than 16 hours per week" for "a claimant" and "not
+# less than 24 hours per week" for "any partner of the claimant".
+# A couple without children claim jointly, and each member of a joint-claim
+# couple is a claimant (s.1(2B)(b), s.35(1)). But reg 3E(1) lets a member of a
+# joint-claim couple claim alone, under s.3, where the other member "is
+# engaged ... in remunerative work for 16 hours or more per week but less than
+# 24 hours per week" (reg 3E(2)(g)). So whatever the family, an award ends
+# only when the claimant works 16 hours or the other member 24.
+# Reg 53 has no exception for carers doing unrelated paid work.
+#
+# Hours are annual hours_worked; the weekly figure is hours_worked / 52, so
+# 780 is 15 hours, 832 is 16, 1,040 is 20, 1,196 is 23 and 1,248 is 24. 2025
+# is used because the model pays income-based JSA until 31 March 2026.
+# Capital is nil.
+
+- name: A single claimant working 15 hours a week keeps the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 3_000
+        hours_worked: 780
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    jsa_remunerative_work_hours: 15
+    jsa_income_eligible: true
+    jsa_income: 3_000
+
+- name: A single claimant working 16 hours a week is in remunerative work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 3_000
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    jsa_remunerative_work_hours: 16
+    jsa_income_eligible: false
+    jsa_income: 0
+
+- name: A carer claimant working 16 hours is still in remunerative work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        jsa_income_reported: 3_000
+        receives_carer_benefit: true
+        hours_worked: 832
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    jsa_income_eligible: false
+
+# A couple with a child: claimant and partner (s.3(1)(e), reg 51(1)(b)).
+
+- name: With a child, a partner working 23 hours does not end the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        jsa_income_reported: 3_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        hours_worked: 1_196
+      child:
+        age: 5
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    jsa_income_eligible: true
+    jsa_income: 3_000
+
+- name: With a child, a partner working 24 hours ends the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        jsa_income_reported: 3_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        hours_worked: 1_248
+      child:
+        age: 5
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    jsa_income_eligible: false
+    jsa_income: 0
+
+- name: With a child, the claimant working 16 hours ends the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        jsa_income_reported: 3_000
+        hours_worked: 832
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+      child:
+        age: 5
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    jsa_income_eligible: false
+
+- name: With a child, a carer partner working 30 hours still ends the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        jsa_income_reported: 3_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        receives_carer_benefit: true
+        hours_worked: 1_560
+      child:
+        age: 5
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    jsa_income_eligible: false
+
+# A couple without children (a joint-claim couple, s.1(4), reg 3A(1)).
+
+- name: Without children, the other member working 15 hours does not end it
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      second:
+        age: 30
+        is_claimant_or_partner: true
+        hours_worked: 780
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+  output:
+    jsa_income_eligible: true
+    jsa_income: 3_000
+
+- name: Without children, the other member working 16 hours does not end it
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      second:
+        age: 30
+        is_claimant_or_partner: true
+        # A joint claim would fail, but the first member can claim alone
+        # (reg 3E(1), (2)(g)) and the second is under 24 hours (s.3(1)(e)).
+        hours_worked: 832
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+  output:
+    jsa_income_eligible: true
+    jsa_income: 3_000
+
+- name: Without children, the other member working 20 hours does not end it
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      second:
+        age: 30
+        is_claimant_or_partner: true
+        hours_worked: 1_040
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+  output:
+    jsa_income_eligible: true
+    jsa_income: 3_000
+
+- name: Without children, the other member working 23 hours does not end it
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      second:
+        age: 30
+        is_claimant_or_partner: true
+        hours_worked: 1_196
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+  output:
+    jsa_income_eligible: true
+    jsa_income: 3_000
+
+- name: Without children, the other member working 24 hours ends it
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      second:
+        age: 30
+        is_claimant_or_partner: true
+        hours_worked: 1_248
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+  output:
+    jsa_income_eligible: false
+    jsa_income: 0
+
+- name: A couple caring for a placed child have the same 24-hour limit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      second:
+        age: 40
+        is_claimant_or_partner: true
+        hours_worked: 1_040
+      child:
+        age: 8
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [first, second, child]
+    households:
+      household:
+        members: [first, second, child]
+  output:
+    # Not a joint-claim couple (reg 3A(1) with reg 78(4)(a)); the partner's
+    # 20 hours are under 24, as for a couple without children.
+    jsa_income_eligible: true
+
+# Members outside the family.
+
+- name: A non-dependent adult's own award is tested on their own work alone
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 50
+        is_claimant_or_partner: true
+        hours_worked: 2_080
+      lodger:
+        age: 30
+        is_claimant_or_partner: false
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [head, lodger]
+    households:
+      household:
+        members: [head, lodger]
+  output:
+    jsa_income_eligible: true
+    jsa_income: 3_000
+
+- name: A non-dependent adult's award does not rescue the claimant's
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 50
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+        hours_worked: 832
+      lodger:
+        age: 30
+        is_claimant_or_partner: false
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, lodger]
+    households:
+      household:
+        members: [claimant, lodger]
+  output:
+    jsa_income_eligible: false
+
+# The Income Support gate reads the screened award (s.124(1)(f)).
+
+- name: A carer's own JSA lost to 16 hours of work no longer bars Income Support
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_income_reported: 3_000
+        # 20 hours a week: a carer is not in remunerative work for Income
+        # Support (IS Regs reg 6(4)(c)), but is for JSA.
+        hours_worked: 1_040
+    benunits:
+      benunit:
+        members: [carer]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [carer]
+  output:
+    jsa_income_eligible: false
+    jsa_income: 0
+    income_support_eligible: true

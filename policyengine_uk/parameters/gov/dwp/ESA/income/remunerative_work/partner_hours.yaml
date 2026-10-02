@@ -1,0 +1,16 @@
+description: Income-related Employment and Support Allowance treats a claimant's partner as engaged in remunerative work at this many weekly hours of paid work or more.
+values:
+  2008-10-27:
+    value: 24
+    reference:
+      - title: Employment and Support Allowance Regulations 2008 reg. 42(1) (as made)
+        href: https://www.legislation.gov.uk/uksi/2008/794/regulation/42/2008-10-27
+metadata:
+  unit: hour
+  period: week
+  label: Income-related ESA partner remunerative work hours
+  reference:
+    - title: Welfare Reform Act 2007 Sch. 1 para. 6(1)(f)
+      href: https://www.legislation.gov.uk/ukpga/2007/5/schedule/1/paragraph/6
+    - title: Employment and Support Allowance Regulations 2008 reg. 42(1)
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/42

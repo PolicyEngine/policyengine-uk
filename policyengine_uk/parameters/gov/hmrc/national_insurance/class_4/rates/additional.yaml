@@ -1,12 +1,20 @@
 description: The additional National Insurance rate paid above the Upper Profits Limit for self-employed profits.
 values:
   2015-04-01: 0.02
-  2022-04-01:
-    value: 0.035
+  # Class 4 is charged on the year's profits, so the 2022-23 rate is one
+  # rate for the whole tax year.
+  2022-04-06:
+    value: 0.0273
     metadata:
       reference:
-        - title: Autumn Budget and Spending Review 2022
-          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
+        - title: Health and Social Care Levy (Repeal) Act 2022 s. 2(2)(b)
+          href: https://www.legislation.gov.uk/ukpga/2022/43/section/2
+  2023-04-06:
+    value: 0.02
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s. 15(3ZA)(b), as at 6 April 2023
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2023-04-06
   2024-01-01:
     value: 0.02
     metadata:

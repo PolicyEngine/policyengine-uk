@@ -6,8 +6,10 @@
     ni_class_2: 0
 
 - name: NI Class 2 - over LPL.
+  # SSCBA 1992 s.11(2) as at 6 April 2023: profits over the £12,570 lower
+  # profits threshold pay £3.45 a week.
   period: 2023
   input:
     self_employment_income: 15_000
   output:
-    ni_class_2: 3.15 * 52
+    ni_class_2: 3.45 * 52

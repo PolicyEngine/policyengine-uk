@@ -15,7 +15,8 @@ class esa_income(Variable):
     entity = BenUnit
     label = "ESA (income-based)"
     documentation = (
-        "Reported income-related ESA screened through a bounded capital test. "
+        "Reported income-related ESA screened through bounded capital and "
+        "remunerative work tests (esa_income_eligible). "
         "This is not a full entitlement model."
     )
     definition_period = YEAR

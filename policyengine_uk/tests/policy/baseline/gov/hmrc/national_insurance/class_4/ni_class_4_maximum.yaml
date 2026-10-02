@@ -1,8 +1,21 @@
 - name: NI Class 4 with employment and self-employment income - over UPL has maximum capped.
+  # SI 2001/1004 reg 100(3) as at 6 April 2023, with the SSCBA 1992 s.11
+  # and s.15 amounts for 2023-24 (lower profits limit £12,570, upper
+  # £50,270, main 9%, additional 2%, Class 2 £3.45 a week).
+  # Step 1: 50,270 - 12,570 = 37,700. Step 2: 37,700 x 9% = 3,393.
+  # Step 3: 3,393 + 53 x 3.45 = 3,575.85.
+  # Step 4: less Class 2 of 52 x 3.45 = 179.40 and primary Class 1 at the
+  # main percentage on £100,000 of pay, which is at least 10% of the
+  # £37,700 between the primary threshold and the upper earnings limit
+  # (£3,770), so the result is negative: Case 3, treated as nil.
+  # Step 5: 0 x 100/9 = 0. Step 6: min(50,270, 100,000) - 12,570 = 37,700.
+  # Step 7: 37,700 - 0 = 37,700.
+  # Step 8: 37,700 x 2% = 754. Step 9: (100,000 - 50,270) x 2% = 994.60.
+  # Maximum: 0 + 754 + 994.60 = 1,748.60.
   period: 2023
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
     self_employment_income: 100_000
     employment_income: 100_000
   output:
-    ni_class_4_maximum: 3_083.22
+    ni_class_4_maximum: 1_748.60
