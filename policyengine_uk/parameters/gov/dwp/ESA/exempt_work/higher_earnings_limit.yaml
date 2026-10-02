@@ -67,8 +67,13 @@ metadata:
   period: week
   label: ESA exempt work higher earnings limit
   # The National Living Wage is set with reference to earnings, so later
-  # years follow average earnings until the rate is announced.
-  uprating: gov.economic_assumptions.indices.obr.average_earnings
+  # years follow average earnings until the rate is announced, rounded up to
+  # the next 50p as reg. 45(9A) rounds 16 x NMW.
+  uprating:
+    parameter: gov.economic_assumptions.indices.obr.average_earnings
+    rounding:
+      type: upwards
+      interval: 0.5
   reference:
     - title: Employment and Support Allowance Regulations 2008 reg. 45(4) and (9A)
       href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45

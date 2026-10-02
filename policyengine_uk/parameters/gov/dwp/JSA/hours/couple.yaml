@@ -1,4 +1,4 @@
-description: Income-based Jobseeker's Allowance treats a claimant's partner as engaged in remunerative work at this many weekly hours of paid work or more, except in a joint claim, where each member is a claimant at the claimant's hours. Kept for existing users; the model reads gov.dwp.JSA.remunerative_work.partner_hours.
+description: Income-based Jobseeker's Allowance treats a claimant's partner as engaged in remunerative work at this many weekly hours of paid work or more. Kept for existing users; the model reads gov.dwp.JSA.remunerative_work.partner_hours.
 values:
   2015-04-01:
     value: 24

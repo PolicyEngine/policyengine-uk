@@ -4,7 +4,8 @@ from policyengine_uk.model_api import *
 def income_related_jsa_award(benunit, period, reported_award):
     """Income-based JSA paid on a reported award: the award less tariff
     income from capital, or nothing if the scheme is not active or the
-    benefit unit fails the capital test (jsa_income_eligible)."""
+    benefit unit fails the capital or remunerative work tests
+    (jsa_income_eligible)."""
     JSA = benunit.simulation.tax_benefit_system.parameters(period).gov.dwp.JSA
     if not JSA.income.active:
         return benunit.empty_array()
@@ -18,7 +19,8 @@ class jsa_income(Variable):
     entity = BenUnit
     label = "JSA (income-based)"
     documentation = (
-        "Reported income-based JSA screened through a bounded capital test. "
+        "Reported income-based JSA screened through bounded capital and "
+        "remunerative work tests (jsa_income_eligible). "
         "This is not a full entitlement model."
     )
     definition_period = YEAR

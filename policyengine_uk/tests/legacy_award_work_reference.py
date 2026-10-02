@@ -4,7 +4,8 @@ Written from the law, family by family and in plain Python, for property
 tests to compare with the model (test_legacy_award_work_properties.py and
 test_income_support_eligibility_properties.py). Each adult is a dict of
 simulation inputs for one year: hours_worked (annual), employment_income,
-employee_pension_contributions, receives_carer_benefit, care_hours, age and
+self_employment_income, employee_pension_contributions,
+personal_pension_contributions, receives_carer_benefit, care_hours, age and
 the reported awards.
 
 - Capital (WRA 2007 Sch 1 para 6(1)(b), ESA Regs reg 110; JSA 1995 s.13(1),
@@ -13,13 +14,18 @@ the reported awards.
 - ESA claimant (para 6(1)(e), ESA Regs reg 41(1)): paid work is remunerative
   unless it is exempt work: earnings of no more than £20 a week (reg 45(2)),
   or under 16 hours with earnings within the higher limit (reg 45(4)).
-  Earnings are net of income tax, National Insurance and half the pension
-  contributions (regs 96(3), 98(4)).
+  Pay is net of income tax, primary Class 1 and half the pension
+  contributions (reg 96(3)). Self-employment is the profit less a notional
+  basic-rate tax on the profit above the personal allowance, notional
+  main-rate Class 4 and half the personal pension contributions (reg 98(3),
+  reg 99); a loss is not set against pay (reg 98(11)).
 - ESA partner (para 6(1)(f), reg 42(1)): 24 hours or more, unless a carer
   (reg 43(2)(c)).
 - JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no carer
-  exception. Each member of a joint-claim couple is a claimant (s.1(2B)(b));
-  otherwise the partner's limit is 24 hours (s.3(1)(e), reg 51(1)(b)).
+  exception. The other member of the couple: 24 hours or more (s.3(1)(e),
+  reg 51(1)(b)). In a joint-claim couple each member is a claimant at 16
+  hours (s.1(2B)(b)), but a member may claim alone when the other works 16 to
+  under 24 hours (reg 3E(1), (2)(g)), so the limit is 24 either way.
 - The claimant is a member who reports the award; when the claimant or
   partner reports one, only they are candidates.
 """
@@ -59,21 +65,43 @@ def weekly_hours(adult):
 
 
 def esa_weekly_earnings(adult, parameters):
-    """Net weekly earnings for the exempt work limits, for an employee with no
-    other income and earnings within the basic rate band."""
-    gross = adult.get("employment_income", 0)
-    pension = adult.get("employee_pension_contributions", 0)
+    """Net weekly earnings for the exempt work limits. Covers pay within the
+    basic rate band, a self-employment profit within the Class 4 upper limit
+    or a loss, and no other income; Class 4 is for someone under state
+    pension age."""
     hmrc = parameters.gov.hmrc
     allowance = hmrc.income_tax.allowances.personal_allowance.amount
     basic_rate = hmrc.income_tax.rates.uk.rates[0]
-    # Pension contributions are only used with pay below the personal
-    # allowance, so how they are relieved for tax does not arise.
-    assert pension == 0 or gross <= allowance, adult
-    tax = basic_rate * max(0, gross - allowance)
+    pay = adult.get("employment_income", 0)
+    profit = max(0, adult.get("self_employment_income", 0))
+    personal_pension = adult.get("personal_pension_contributions", 0)
+    pension_from_profit = personal_pension if profit > 0 else 0
+    pension_from_pay = (
+        adult.get("employee_pension_contributions", 0)
+        + personal_pension
+        - pension_from_profit
+    )
+    # Pension contributions from pay are only used with pay below the
+    # personal allowance, so how they are relieved for tax does not arise.
+    assert pension_from_pay == 0 or pay <= allowance, adult
+    tax_on_pay = basic_rate * max(0, pay - allowance)
     class_1 = hmrc.national_insurance.class_1
     threshold = class_1.thresholds.primary_threshold * WEEKS
-    national_insurance = class_1.rates.employee.main * max(0, gross - threshold)
-    return max(0, gross - tax - national_insurance - pension / 2) / WEEKS
+    class_1_on_pay = class_1.rates.employee.main * max(0, pay - threshold)
+    net_pay = max(0, pay - tax_on_pay - class_1_on_pay - pension_from_pay / 2)
+    # Reg 99(1): basic rate on the profit less the personal allowance, whatever
+    # relief pension contributions attract. Reg 99(3)(b): main-rate Class 4.
+    notional_tax = basic_rate * max(0, profit - allowance)
+    class_4 = hmrc.national_insurance.class_4
+    notional_class_4 = class_4.rates.main * max(
+        0,
+        min(profit, class_4.thresholds.upper_profits_limit)
+        - class_4.thresholds.lower_profits_limit,
+    )
+    net_profit = max(
+        0, profit - notional_tax - notional_class_4 - pension_from_profit / 2
+    )
+    return (net_pay + net_profit) / WEEKS
 
 
 def esa_claimant_in_remunerative_work(adult, parameters):
@@ -122,27 +150,13 @@ def esa_screen(couple, others, capital, parameters):
     return passes and capital <= ESA.capital.limit
 
 
-def jsa_joint_claim(couple, family_has_child, year, parameters):
-    joint_claim = parameters.gov.dwp.JSA.income.joint_claim
-    return (
-        bool(joint_claim.in_effect)
-        and len(couple) == 2
-        and not family_has_child
-        and any(
-            adult["age"] >= 18 and year - adult["age"] > joint_claim.born_after_year
-            for adult in couple
-        )
-    )
-
-
-def jsa_screen(couple, others, capital, joint_claim, parameters):
-    """jsa_income_eligible for a claimant and partner (couple), other members
-    of the benefit unit outside the family (others) and the couple's
-    joint-claim status."""
+def jsa_screen(couple, others, capital, parameters):
+    """jsa_income_eligible for a claimant and partner (couple) and other
+    members of the benefit unit outside the family (others)."""
     JSA = parameters.gov.dwp.JSA
     WORK = JSA.remunerative_work
     members = couple + others
-    other_limit = WORK.claimant_hours if joint_claim else WORK.partner_hours
+    other_limit = WORK.partner_hours
 
     def other_member_works(i):
         if i >= len(couple):

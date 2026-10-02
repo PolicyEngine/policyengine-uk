@@ -50,7 +50,7 @@ import numpy as np
 from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
-from legacy_award_work_reference import esa_screen, jsa_joint_claim, jsa_screen
+from legacy_award_work_reference import esa_screen, jsa_screen
 from policyengine_uk import Simulation
 
 YEAR = 2025
@@ -398,15 +398,12 @@ def reference_eligibility(
     if jsa_income is not None:
         income_based_jsa = jsa_income > 0
     else:
-        # A child placed with the couple ends a joint claim (JSA Regs 1996
-        # reg 3A(1) with reg 78(4)(a)), so every dependant counts here.
-        joint_claim = jsa_joint_claim(adults, bool(dependants), YEAR, parameters)
         income_based_jsa = (
             JSA.active
             and income_related_award(
                 sum(a["jsa_income_reported"] for a in adults), capital, JSA.capital
             )
-            and jsa_screen(adults, [], capital, joint_claim, parameters)
+            and jsa_screen(adults, [], capital, parameters)
         )
     return (
         any(is_claimant(i) for i in range(len(adults)))
@@ -476,14 +473,13 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
             reported_total = sum(
                 member.get("jsa_income_reported", 0) for member in adults + [extra]
             )
-            joint_claim = jsa_joint_claim(adults, bool(dependants), YEAR, parameters)
             if not explained_by_reports(
                 jsa_income[i],
                 reported_total,
                 capital,
                 parameters,
                 parameters.gov.dwp.JSA.income.capital,
-                screen=jsa_screen(adults, others, capital, joint_claim, parameters),
+                screen=jsa_screen(adults, others, capital, parameters),
             ):
                 entered_jsa = jsa_income[i]
         expected = reference_eligibility(
@@ -537,16 +533,16 @@ def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
     if (eligible[: len(drawn)] & ~eligible[len(drawn) :]).any():
         event("more work or JSA removed eligibility")
     n = len(drawn)
-    # An award entered directly is the same on both sides; one calculated
-    # from reports can end when the work test fails.
+    # An award entered directly is the same on both sides. One calculated
+    # from reports can end when the work test fails: these families have no
+    # member outside the couple, so esa_income and jsa_income are the
+    # claimant's and partner's award, after tariff income and while the
+    # scheme is active.
     lost_award = np.zeros(n, dtype=bool)
-    for variable, direct in [
-        ("esa_income_eligible", esa_income),
-        ("jsa_income_eligible", jsa_income),
-    ]:
+    for variable, direct in [("esa_income", esa_income), ("jsa_income", jsa_income)]:
         if direct is None:
-            screen = sim.calculate(variable, YEAR)
-            lost_award |= screen[:n] & ~screen[n:]
+            award = sim.calculate(variable, YEAR)
+            lost_award |= (award[:n] > 0) & (award[n:] <= 0)
     if (eligible[n:] & ~eligible[:n] & lost_award).any():
         event("more work ended an award that barred Income Support")
     for i in range(n):

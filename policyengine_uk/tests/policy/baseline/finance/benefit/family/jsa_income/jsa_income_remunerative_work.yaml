@@ -2,19 +2,21 @@
 # Jobseekers Act 1995 s.1(2)(e): a claimant is entitled if he "is not engaged
 # in remunerative work"; s.3(1)(e): the income-based conditions include that
 # the claimant "is not a member of a couple the other member of which is
-# engaged in remunerative work". s.1(2B)(b): in a joint claim "each member of
-# the couple satisfies the conditions set out in paragraphs (a) to (c) and (e)
-# to (i) of subsection (2)", and s.35(1) makes each member a claimant. A
-# joint-claim couple is a couple with no child or young person for whom one
-# of them gets Child Benefit (s.1(4)), at least one of whom is 18 or over and
-# born after 28 October 1947 (JSA Regs 1996 reg 3A(1)).
-# JSA Regs 1996 reg 51(1): remunerative work is paid work of "not less than
-# 16 hours per week" for "a claimant" and "not less than 24 hours per week"
-# for "any partner of the claimant". Reg 53 has no exception for carers.
+# engaged in remunerative work". JSA Regs 1996 reg 51(1): remunerative work is
+# paid work of "not less than 16 hours per week" for "a claimant" and "not
+# less than 24 hours per week" for "any partner of the claimant".
+# A couple without children claim jointly, and each member of a joint-claim
+# couple is a claimant (s.1(2B)(b), s.35(1)). But reg 3E(1) lets a member of a
+# joint-claim couple claim alone, under s.3, where the other member "is
+# engaged ... in remunerative work for 16 hours or more per week but less than
+# 24 hours per week" (reg 3E(2)(g)). So whatever the family, an award ends
+# only when the claimant works 16 hours or the other member 24.
+# Reg 53 has no exception for carers doing unrelated paid work.
 #
 # Hours are annual hours_worked; the weekly figure is hours_worked / 52, so
-# 780 is 15 hours, 832 is 16, 1,196 is 23 and 1,248 is 24. 2025 is used
-# because the model pays income-based JSA until 31 March 2026. Capital is nil.
+# 780 is 15 hours, 832 is 16, 1,040 is 20, 1,196 is 23 and 1,248 is 24. 2025
+# is used because the model pays income-based JSA until 31 March 2026.
+# Capital is nil.
 
 - name: A single claimant working 15 hours a week keeps the award
   period: 2025
@@ -102,7 +104,6 @@
       household:
         members: [claimant, partner, child]
   output:
-    is_jsa_joint_claim_couple: false
     jsa_income_eligible: true
     jsa_income: 3_000
 
@@ -189,9 +190,9 @@
   output:
     jsa_income_eligible: false
 
-# A couple without children: a joint claim (s.1(2B)(b)).
+# A couple without children (a joint-claim couple, s.1(4), reg 3A(1)).
 
-- name: In a joint claim, the other member working 15 hours does not end it
+- name: Without children, the other member working 15 hours does not end it
   period: 2025
   absolute_error_margin: 0
   input:
@@ -211,11 +212,10 @@
       household:
         members: [first, second]
   output:
-    is_jsa_joint_claim_couple: true
     jsa_income_eligible: true
     jsa_income: 3_000
 
-- name: In a joint claim, the other member working 16 hours ends it
+- name: Without children, the other member working 16 hours does not end it
   period: 2025
   absolute_error_margin: 0
   input:
@@ -227,8 +227,8 @@
       second:
         age: 30
         is_claimant_or_partner: true
-        # Under the 24 hours that would apply to a partner, but each member
-        # of a joint-claim couple is a claimant.
+        # A joint claim would fail, but the first member can claim alone
+        # (reg 3E(1), (2)(g)) and the second is under 24 hours (s.3(1)(e)).
         hours_worked: 832
     benunits:
       couple:
@@ -237,11 +237,10 @@
       household:
         members: [first, second]
   output:
-    is_jsa_joint_claim_couple: true
-    jsa_income_eligible: false
-    jsa_income: 0
+    jsa_income_eligible: true
+    jsa_income: 3_000
 
-- name: A couple entered as not a joint-claim couple use the partner's 24 hours
+- name: Without children, the other member working 20 hours does not end it
   period: 2025
   absolute_error_margin: 0
   input:
@@ -257,26 +256,26 @@
     benunits:
       couple:
         members: [first, second]
-        # For example where one member claims alone (JSA Regs 1996 reg 3E).
-        is_jsa_joint_claim_couple: false
     households:
       household:
         members: [first, second]
   output:
     jsa_income_eligible: true
+    jsa_income: 3_000
 
-- name: A couple born before the prescribed date are not a joint-claim couple
+- name: Without children, the other member working 23 hours does not end it
   period: 2025
   absolute_error_margin: 0
   input:
     people:
       first:
-        # Born in 1945, before 28 October 1947.
-        age: 80
+        age: 30
         is_claimant_or_partner: true
+        jsa_income_reported: 3_000
       second:
-        age: 80
+        age: 30
         is_claimant_or_partner: true
+        hours_worked: 1_196
     benunits:
       couple:
         members: [first, second]
@@ -284,25 +283,33 @@
       household:
         members: [first, second]
   output:
-    is_jsa_joint_claim_couple: false
+    jsa_income_eligible: true
+    jsa_income: 3_000
 
-- name: A single claimant is not a joint-claim couple
+- name: Without children, the other member working 24 hours ends it
   period: 2025
   absolute_error_margin: 0
   input:
     people:
-      claimant:
+      first:
         age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      second:
+        age: 30
+        is_claimant_or_partner: true
+        hours_worked: 1_248
     benunits:
-      benunit:
-        members: [claimant]
+      couple:
+        members: [first, second]
     households:
       household:
-        members: [claimant]
+        members: [first, second]
   output:
-    is_jsa_joint_claim_couple: false
+    jsa_income_eligible: false
+    jsa_income: 0
 
-- name: A couple caring for a placed child are not a joint-claim couple
+- name: A couple caring for a placed child have the same 24-hour limit
   period: 2025
   absolute_error_margin: 0
   input:
@@ -310,9 +317,11 @@
       first:
         age: 40
         is_claimant_or_partner: true
+        jsa_income_reported: 3_000
       second:
         age: 40
         is_claimant_or_partner: true
+        hours_worked: 1_040
       child:
         age: 8
         is_claimant_or_partner: false
@@ -324,9 +333,9 @@
       household:
         members: [first, second, child]
   output:
-    # Reg 3A(1) excludes a couple caring for a child in the circumstances
-    # of reg 78(4), which include a child placed by a local authority.
-    is_jsa_joint_claim_couple: false
+    # Not a joint-claim couple (reg 3A(1) with reg 78(4)(a)); the partner's
+    # 20 hours are under 24, as for a couple without children.
+    jsa_income_eligible: true
 
 # Members outside the family.
 

@@ -88,6 +88,11 @@ def test_esa_exempt_work_higher_limit_is_16_x_nmw_rounded_up():
     assert limit("2024") == 183.5
     assert limit("2025") == 195.5
     assert limit("2026") == 203.5
+    # Later years follow average earnings, rounded up to 50p like reg 45(9A).
+    for year in range(2027, 2041):
+        value = limit(str(year))
+        assert value == _round_up_to_50p(value), year
+        assert value >= limit(str(year - 1)), year
 
 
 def test_esa_and_jsa_remunerative_work_parameters_by_date():
@@ -105,9 +110,3 @@ def test_esa_and_jsa_remunerative_work_parameters_by_date():
     for year in range(2015, 2031):
         assert dwp.JSA.hours.single(str(year)) == work.claimant_hours(str(year))
         assert dwp.JSA.hours.couple(str(year)) == work.partner_hours(str(year))
-    joint_claim = dwp.JSA.income.joint_claim
-    assert not joint_claim.in_effect("2001-03-18")
-    assert joint_claim.in_effect("2001-03-19")
-    assert joint_claim.born_after_year("2001-03-19") == 1976
-    assert joint_claim.born_after_year("2002-10-28") == 1957
-    assert joint_claim.born_after_year("2008-02-25") == 1947

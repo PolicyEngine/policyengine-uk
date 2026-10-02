@@ -1,12 +1,12 @@
 """Properties of the income-related ESA and income-based JSA work conditions.
 
 Welfare Reform Act 2007 Sch 1 para 6(1)(e) and (f) and Jobseekers Act 1995
-ss.1(2)(e), 1(2B)(b) and 3(1)(e) bar an award when the claimant, or the other
-member of the couple, is engaged in remunerative work. For every family:
+ss.1(2)(e) and 3(1)(e) (with JSA Regs 1996 reg 3E for joint-claim couples)
+bar an award when the claimant, or the other member of the couple, is engaged
+in remunerative work. For every family:
 
 - esa_income_eligible and jsa_income_eligible equal a family-by-family
-  reading of the law (legacy_award_work_reference), and is_jsa_joint_claim_couple
-  equals the reading of s.1(4) and JSA Regs reg 3A(1);
+  reading of the law (legacy_award_work_reference);
 - more hours or more pay for anyone never makes a family eligible, because
   the conditions only ever bar a claim;
 - caring never ends an ESA award (a carer partner is not treated as in
@@ -16,8 +16,10 @@ member of the couple, is engaged in remunerative work. For every family:
   the family (a non-dependent adult, with any award and any work) never
   changes either screen.
 
-The reference covers employees with no other income and pay within the basic
-rate band. Roles are given explicitly (is_claimant_or_partner). Each example
+Adults are employees (pay within the basic rate band), self-employed (a
+profit within the Class 4 upper limit, under state pension age) or employees
+with a self-employment loss, with no other income: the scope the reference
+covers. Roles are given explicitly (is_claimant_or_partner). Each example
 builds many families in one simulation, in separate households and benefit
 units.
 """
@@ -26,7 +28,7 @@ import numpy as np
 from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
-from legacy_award_work_reference import esa_screen, jsa_joint_claim, jsa_screen
+from legacy_award_work_reference import esa_screen, jsa_screen
 from policyengine_uk import Simulation
 
 # 0, 15, 16, 20, 23, 24 and 40 hours a week.
@@ -34,27 +36,40 @@ HOURS = [0, 0, 780, 832, 1_040, 1_196, 1_248, 2_080]
 # £0, £20 (the lower limit), £21, £100, £195.50 (the 2025-26 higher limit),
 # £196, £203.50 (2026-27), £204 and £300 a week.
 PAY = [0, 0, 1_040, 1_092, 5_200, 10_166, 10_192, 10_582, 10_608, 15_600]
+# Profits around the limits once reg 99's notional tax and Class 4 come off,
+# and £13,200, which needs half a £5,900 pension premium to fall within them.
+PROFIT = [1_040, 5_200, 10_166, 10_300, 13_200, 15_600]
 
 
 @st.composite
 def adults(draw, outside_family=False):
-    pay = draw(st.sampled_from(PAY))
+    kind = draw(st.sampled_from(["employee", "employee", "self_employed", "loss"]))
+    min_age = 18 if not outside_family else 20
+    if kind == "self_employed":
+        # Class 4 stops at state pension age.
+        age = draw(st.integers(min_age, 64))
+    else:
+        age = draw(st.one_of(st.integers(min_age, 64), st.integers(70, 90)))
+    pay = 0 if kind == "self_employed" else draw(st.sampled_from(PAY))
     adult = {
-        "age": draw(
-            st.one_of(
-                st.integers(18 if not outside_family else 20, 64), st.integers(70, 90)
-            )
-        ),
+        "age": age,
         "esa_income_reported": draw(st.sampled_from([0, 0, 3_000])),
         "jsa_income_reported": draw(st.sampled_from([0, 0, 3_000])),
         "hours_worked": draw(st.sampled_from(HOURS)),
         "employment_income": pay,
         "employee_pension_contributions": (
-            draw(st.sampled_from([0, 0, 520])) if pay <= 12_570 else 0
+            draw(st.sampled_from([0, 0, 520])) if 0 < pay <= 12_570 else 0
         ),
         "receives_carer_benefit": draw(st.booleans()),
         "care_hours": draw(st.sampled_from([0, 0, 35])),
     }
+    if kind == "self_employed":
+        adult["self_employment_income"] = draw(st.sampled_from(PROFIT))
+        adult["personal_pension_contributions"] = draw(
+            st.sampled_from([0, 0, 520, 5_900])
+        )
+    elif kind == "loss":
+        adult["self_employment_income"] = -1_000
     if outside_family:
         adult["current_education"] = "NOT_IN_EDUCATION"
     return adult
@@ -119,6 +134,10 @@ def label(units):
         event("placed child")
     if any(others for *_, others, _ in units):
         event("member outside the family")
+    if any(a.get("self_employment_income", 0) > 0 for a in adults_):
+        event("self-employed")
+    if any(a.get("self_employment_income", 0) < 0 for a in adults_):
+        event("self-employment loss beside pay")
 
 
 SETTINGS = settings(
@@ -138,19 +157,14 @@ def test_screens_match_a_family_by_family_reading(units, year):
     sim = Simulation(situation=situation(units, year))
     esa = sim.calculate("esa_income_eligible", year)
     jsa = sim.calculate("jsa_income_eligible", year)
-    joint = sim.calculate("is_jsa_joint_claim_couple", year)
     if esa.any():
         event("some ESA award passes")
     if jsa.any():
         event("some JSA award passes")
     parameters = sim.tax_benefit_system.parameters(year)
     for i, (couple, children, others, capital) in enumerate(units):
-        expected_joint = jsa_joint_claim(couple, bool(children), year, parameters)
-        assert joint[i] == expected_joint, units[i]
         assert esa[i] == esa_screen(couple, others, capital, parameters), units[i]
-        assert jsa[i] == jsa_screen(
-            couple, others, capital, expected_joint, parameters
-        ), units[i]
+        assert jsa[i] == jsa_screen(couple, others, capital, parameters), units[i]
 
 
 @st.composite
@@ -162,6 +176,8 @@ def more_work(draw, family):
         adult = dict(adult)
         adult["hours_worked"] += draw(st.sampled_from([0, 52, 260, 832, 1_248]))
         adult["employment_income"] += draw(st.sampled_from([0, 52, 1_040, 5_200]))
+        if adult.get("self_employment_income", 0) > 0:
+            adult["self_employment_income"] += draw(st.sampled_from([0, 52, 1_040]))
         return adult
 
     return [more(a) for a in couple], children, [more(a) for a in others], capital
