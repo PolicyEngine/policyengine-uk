@@ -1,3 +1,10 @@
+## [2.104.5] - 2026-10-02
+
+### Fixed
+
+- Give households with an unknown region the UK-wide private rent index when uprating rent, so datasets containing `Region.UNKNOWN` (such as Survey of Personal Incomes records with an address abroad) can be simulated instead of raising `ParameterNotFoundError`.
+
+
 ## [2.104.4] - 2026-10-02
 
 ### Fixed
