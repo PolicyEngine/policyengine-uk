@@ -429,8 +429,11 @@
     is_claimant_or_partner: [true, true]
     uc_assessable_capital: 7_500
     housing_benefit_assessable_capital: 7_500
+    income_support_assessable_capital: 7_500
+    jsa_income_assessable_capital: 7_500
+    esa_income_assessable_capital: 7_500
 
-- name: Pension Credit does not count the capital of a holder the dataset records as a dependant
+- name: Pension Credit counts only the capital of members the dataset records as claimant or partner
   period: 2025
   absolute_error_margin: 0
   input:
@@ -438,19 +441,42 @@
       pensioner:
         age: 70
         is_claimant_or_partner: true
-      dependant:
-        # Old enough to be presumed the pensioner's partner without the flag.
+      other_adult:
+        # Without the flag the age presumption makes this 60-year-old the
+        # pensioner's partner, whose Lifetime ISA would count in full.
         age: 60
         is_claimant_or_partner: false
         lifetime_isa_balance: 10_000
     benunits:
       family:
-        members: [pensioner, dependant]
+        members: [pensioner, other_adult]
     households:
       household:
-        members: [pensioner, dependant]
+        members: [pensioner, other_adult]
   output:
     pension_credit_assessable_capital: 0
+
+- name: Pension Credit capital follows is_claimant_or_partner, not the Universal Credit claimant flag
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_uc_claimant: true
+      partner:
+        age: 60
+        is_uc_claimant: false
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+  output:
+    is_claimant_or_partner: [true, true]
+    pension_credit_assessable_capital: 10_000
 
 - name: A pensioner's Pension Credit does not count a dependent young person's Lifetime ISA
   period: 2025
