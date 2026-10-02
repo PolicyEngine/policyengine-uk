@@ -250,3 +250,14 @@ def test_a_claimants_report_can_explain_a_direct_award():
 
     assert not eligible(single(0))
     assert eligible(single(200))
+
+
+def test_the_half_penny_tolerance_endpoints():
+    # A direct £100 against an excluded adult's report: within half a penny
+    # (£100.004, stored as £100.00399...) the reports explain it and say it
+    # is that adult's; beyond it (£100.006), or with no report, it is the
+    # couple's and bars the claim.
+    entered = {"jsa_income": {YEAR: 100}}
+    assert not eligible(three_person_family([0], benunit_inputs=entered))
+    assert eligible(three_person_family([100.004], benunit_inputs=entered))
+    assert not eligible(three_person_family([100.006], benunit_inputs=entered))

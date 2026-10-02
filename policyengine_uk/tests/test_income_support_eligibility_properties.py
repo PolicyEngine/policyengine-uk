@@ -29,9 +29,11 @@ No adult outside the couple is named, so:
   eligible, because (c) and (f) only ever bar a claim.
 
 The first and third hold for every input except at the value convention's
-boundary. A directly entered esa_income or jsa_income that equals what the
-reported amounts give is read through them, so a change to another member's
-report, or to the claimant's own, can change how the entered award is read.
+boundary. A stored esa_income or jsa_income (entered directly or replaced by
+a reform) that equals what the reported amounts give, to within half a penny
+after rounding to the precision it is stored in, is read through them. So a
+change to another member's report, or to the claimant's own, can change how
+that award is read.
 The generators stay off that boundary. They enter £4,000, which no generated
 total of reports can equal, or £0, whose two readings agree: where £0 is
 what the reports give, they give no award to bar the claim either.
@@ -525,3 +527,47 @@ def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
         event("more work or JSA removed eligibility")
     for i in range(len(drawn)):
         assert not (eligible[len(drawn) + i] and not eligible[i]), (drawn[i], more[i])
+
+
+# One fixed example: situation() records Hypothesis events, so it runs inside
+# a test with a single, constant draw.
+@settings(max_examples=1, deadline=None, derandomize=True)
+@given(st.just(None))
+def test_direct_awards_match_the_reference_deterministically(_):
+    """Both direct-award modes, for an otherwise eligible carer: a direct
+    income-related ESA or income-based JSA of £4,000, which no report
+    explains, bars the claim; a direct £0 lifts a reported award's bar.
+    Random draws reach these combinations only some of the time."""
+    carer = {
+        "age": 40,
+        "receives_carer_benefit": True,
+        "care_hours": 0,
+        "esa_income_reported": 0,
+        "esa_contrib_reported": 0,
+        "income_support_reported": 1_000,
+        "hours_worked": 0,
+        "jsa_contrib_reported": 0,
+        "jsa_income_reported": 0,
+    }
+    reporting_carer = {
+        **carer,
+        "esa_income_reported": 3_000,
+        "jsa_income_reported": 3_000,
+    }
+    cases = [
+        (carer, 4_000, 0, False),
+        (carer, 0, 4_000, False),
+        (carer, 0, 0, True),
+        (reporting_carer, 0, 0, True),
+        (reporting_carer, 4_000, 0, False),
+    ]
+    units = [([dict(adult)], [], 0, None) for adult, *_ in cases]
+    sim = Simulation(
+        situation=situation(units, False, [c[1] for c in cases], [c[2] for c in cases])
+    )
+    eligible = sim.calculate("income_support_eligible", YEAR)
+    parameters = sim.tax_benefit_system.parameters(YEAR)
+    for i, (adult, esa, jsa, expected) in enumerate(cases):
+        reference = reference_eligibility([adult], [], 0, esa, jsa, [False], parameters)
+        assert reference == expected, (adult, esa, jsa)
+        assert eligible[i] == expected, (adult, esa, jsa)
