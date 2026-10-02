@@ -7,3 +7,35 @@
     domestic_energy_consumption: 1_000
   output:
     epg_subsidy: 500
+
+- name: Case 2, Energy Price Guarantee is inactive before October 2022.
+  period: 2022-09
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0
+
+- name: Case 3, Energy Price Guarantee starts in October 2022.
+  period: 2022-10
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 50
+
+- name: Case 4, Energy Price Guarantee remains available in March 2024.
+  period: 2024-03
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 40
+
+- name: Case 5, Energy Price Guarantee ends in April 2024.
+  period: 2024-04
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0
