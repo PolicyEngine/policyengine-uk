@@ -10,12 +10,13 @@ class housing_benefit_claimant_has_non_dependant(Variable):
         "stops a young individual getting the shared accommodation rate. A "
         "member of the claimant's benefit unit is one if neither the claimant "
         "or partner nor a child or young person (see "
-        "is_benefit_unit_non_dependant_for_legacy_benefits). So is the "
-        "claimant or partner of another family of the household who is not "
-        "liable for rent (see is_non_dependant_of_household_head). A "
-        "non-dependant who lives with joint occupiers resides with each of "
-        "them, so a family liable for a share of the rent also has the other "
-        "liable families' non-dependants, as in "
+        "is_benefit_unit_non_dependant_for_legacy_benefits). So is a member "
+        "of another family of the household that is not liable for rent (see "
+        "is_non_dependant_of_household_head). A "
+        "non-dependant resides with each of the household's joint occupiers, "
+        "whichever family they belong to, so a family liable for a share of "
+        "the rent also has every other family's non-dependants, including a "
+        "joint tenant's adult son and a lodger's, as in "
         "housing_benefit_non_dep_deductions. A boarder or lodger has only "
         "their own family's. Universal Credit has its own test: see "
         "universal_credit_renter_has_non_dependant."
@@ -39,18 +40,16 @@ class housing_benefit_claimant_has_non_dependant(Variable):
         # way the claimant is not a young individual with no non-dependant.
         own_family = person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
         within_benefit_unit = benunit.any(own_family)
-        # Reg 3(2)(d)-(e), (4): the claimant or partner of another family who
-        # is not liable for rent resides with the household's joint
-        # occupiers, as does a non-dependant in a joint occupier's own family
-        # (reg 74(5)). A boarder or lodger has no share of the household's
-        # rent and lives with neither.
-        other_family_claimant = person("is_claimant_or_partner", period) & person(
-            "is_non_dependant_of_household_head", period
-        )
-        member_of_joint_occupier = person.benunit("share_of_household_rent", period) > 0
-        resides_with_joint_occupiers = other_family_claimant | (
-            own_family & member_of_joint_occupier
-        )
+        # Reg 3(1), (4): a non-dependant normally resides with each joint
+        # occupier, whichever family they belong to: a member of another
+        # family that is not liable for rent, a joint occupier's own adult
+        # son, or a boarder's or lodger's (reg 3(2)(e)(i) excludes only the
+        # person liable to pay the claimant). Reg 74(5) apportions them. These
+        # are the people housing_benefit_non_dep_deductions pools, so a
+        # deduction always implies a non-dependant. A boarder or lodger has no
+        # share of the household's rent and has only their own family's.
+        other_family = person("is_non_dependant_of_household_head", period)
+        resides_with_joint_occupiers = other_family | own_family
         joint_occupier = benunit("share_of_household_rent", period) > 0
         from_joint_occupation = joint_occupier & (
             benunit.max(person.household.sum(resides_with_joint_occupiers)) > 0

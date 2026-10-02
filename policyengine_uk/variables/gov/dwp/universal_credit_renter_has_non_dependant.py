@@ -15,8 +15,8 @@ class universal_credit_renter_has_non_dependant(Variable):
         "household head's family, so is a member of another family of the "
         "household who is not liable for rent (see "
         "is_non_dependant_of_household_head). A non-dependant counts in one "
-        "claim only, so a joint renter, boarder or lodger outside the head's "
-        "family has only their own benefit unit's. Housing Benefit has its "
+        "claim only, so a sharer of the rent, boarder or lodger outside the "
+        "head's family has only their own benefit unit's. Housing Benefit has its "
         "own test: see housing_benefit_claimant_has_non_dependant."
     )
     definition_period = YEAR
@@ -45,14 +45,13 @@ class universal_credit_renter_has_non_dependant(Variable):
             person("is_benefit_unit_non_dependant_for_universal_credit", period)
             & ~person("is_lha_foster_child", period)
         )
-        # Para 9(2)(d)-(f): the claimant or partner of another family who is
-        # not liable for rent, counted in the household head's claim only, as
-        # in uc_non_dep_deductions.
-        other_family_claimant = person("is_claimant_or_partner", period) & person(
-            "is_non_dependant_of_household_head", period
-        )
+        # Para 9(2)(d)-(f): members of another family who is not liable for
+        # rent, counted in the household head's claim only. The same people
+        # as uc_non_dep_deductions charges, so a contribution always implies
+        # a non-dependant.
+        other_family = person("is_non_dependant_of_household_head", period)
         head_family = benunit.any(person("is_household_head", period))
         from_other_families = head_family & (
-            benunit.max(person.household.sum(other_family_claimant)) > 0
+            benunit.max(person.household.sum(other_family)) > 0
         )
         return within_benefit_unit | from_other_families

@@ -270,3 +270,40 @@ def test_the_examples_decide_each_invariant():
     assert hb[0] > 0 and uc[0] > 0
     # Head of the second household: an earning adult son in their own family.
     assert hb[2] > 0 and uc[2] > 0
+
+
+def test_a_deduction_implies_a_non_dependant_when_a_family_has_no_claimant():
+    """Invariant 3 holds for any input, including another family whose only
+    member is not flagged as a claimant or partner: both flags count the same
+    people the deduction formulas charge."""
+    situation = {
+        "people": {
+            "head": {
+                "age": 45,
+                "is_claimant_or_partner": True,
+                "is_household_head": True,
+            },
+            "other": {
+                "age": 30,
+                "is_claimant_or_partner": False,
+                "is_household_head": False,
+                "employment_income": 30_000.0,
+            },
+        },
+        "benunits": {
+            "head_family": {"members": ["head"]},
+            "other": {"members": ["other"]},
+        },
+        "households": {
+            "home": {
+                "members": ["head", "other"],
+                "rent": 9_000.0,
+                "tenure_type": "RENT_PRIVATELY",
+            }
+        },
+    }
+    sim = Simulation(situation=situation)
+    assert calc(sim, "uc_non_dep_deductions")[0] > 0
+    assert calc(sim, "universal_credit_renter_has_non_dependant")[0]
+    assert calc(sim, "housing_benefit_non_dep_deductions")[0] > 0
+    assert calc(sim, "housing_benefit_claimant_has_non_dependant")[0]
