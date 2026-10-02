@@ -12,12 +12,12 @@ carries forward.
    every year from the latest one to this year, brma is that input; if not,
    brma is the default for this year's region.
 
-With region input for every year, the rule holds exactly for any households
-(each with or without BRMA inputs in the same years), regions by year and order
-in which years are calculated. With region input in only some years, it holds
-for years calculated in order, taking each year's region as the latest region
-input at or before it (or London, region's default), and calculating brma never
-changes any year's region.
+Each year's region is the latest region input at or before it, or London
+(region's default) if there is none. brma reads stored values only, so the
+rule holds in any order of calculation, and calculating brma never changes any
+year's region. Like core's own input handling, it assumes every household has
+BRMA inputs in the same years (or none) and region inputs in the same years:
+core fills a household missing from a year's input with the default.
 """
 
 from pathlib import Path
@@ -206,6 +206,62 @@ def test_calculating_brma_does_not_change_region_or_other_results():
     assert float(tested.calculate("income_tax", 2025)[0]) == expected_tax
 
 
+def test_calculating_brma_without_inputs_does_not_change_region_or_tax():
+    def simulation():
+        return Simulation(
+            situation={
+                "people": {
+                    "p": {"age": {2024: 40}, "employment_income": {2025: 50_000}}
+                },
+                "benunits": {"b": {"members": ["p"]}},
+                "households": {"h": {"members": ["p"], "region": {2024: "SCOTLAND"}}},
+            }
+        )
+
+    expected_tax = float(simulation().calculate("income_tax", 2025)[0])
+    tested = simulation()
+    assert str(tested.calculate("brma", 2026)[0]) == "LOTHIAN"
+    assert str(tested.calculate("region", 2025)[0]) == "SCOTLAND"
+    assert float(tested.calculate("income_tax", 2025)[0]) == expected_tax
+
+
+def test_region_carries_forward_until_its_next_input():
+    regions = {2024: "SCOTLAND", 2026: "WALES"}
+    situation = {
+        "people": {"adult": {"age": {2024: 40}}},
+        "benunits": {"benunit": {"members": ["adult"]}},
+        "households": {"household": {"members": ["adult"], "region": regions}},
+    }
+    simulation = Simulation(situation=situation)
+    assert [str(simulation.calculate("brma", year)[0]) for year in (2025, 2026)] == [
+        "LOTHIAN",
+        "CARDIFF",
+    ]
+
+
+def test_brma_stored_only_on_another_branch_is_not_carried():
+    simulation = Simulation(
+        situation={
+            "people": {"adult": {"age": {2024: 40}}},
+            "benunits": {"benunit": {"members": ["adult"]}},
+            "households": {
+                "household": {
+                    "members": ["adult"],
+                    "region": {2024: "SCOTLAND"},
+                    "brma": {2024: "GREATER_GLASGOW"},
+                }
+            },
+        }
+    )
+    child = simulation.get_branch("child")
+    # More years than core's spiral limit, all stored only on the child.
+    for year in range(2025, 2036):
+        child.calculate("brma", year)
+    sibling = child.get_branch("default")
+    assert str(sibling.calculate("brma", 2036)[0]) == "GREATER_GLASGOW"
+    assert str(simulation.calculate("brma", 2036)[0]) == "GREATER_GLASGOW"
+
+
 def expected_brma(regions, inputs, year):
     """The rule, given the region each year resolves to and the BRMA inputs."""
     if year in inputs:
@@ -280,13 +336,14 @@ def sparse_scenarios(draw):
         year: [draw(st.sampled_from(BRMAS)) for _ in range(household_count)]
         for year in sorted(input_years)
     }
-    return region_inputs_by_household, brma_inputs
+    order = draw(st.permutations(YEARS))
+    return region_inputs_by_household, brma_inputs, order
 
 
 @PROPERTY_SETTINGS
 @given(sparse_scenarios())
 def test_brma_with_sparse_regions_follows_the_rule_and_keeps_regions(scenario):
-    region_inputs_by_household, brma_inputs = scenario
+    region_inputs_by_household, brma_inputs, order = scenario
     fresh = build(region_inputs_by_household, brma_inputs)
     fresh_regions = {
         year: [str(value) for value in fresh.calculate("region", year)]
@@ -294,15 +351,16 @@ def test_brma_with_sparse_regions_follows_the_rule_and_keeps_regions(scenario):
     }
     tested = build(region_inputs_by_household, brma_inputs)
     result = {
-        year: [str(value) for value in tested.calculate("brma", year)] for year in YEARS
+        year: [str(value) for value in tested.calculate("brma", year)] for year in order
     }
     for year in YEARS:
         regions_after = [str(value) for value in tested.calculate("region", year)]
         assert regions_after == fresh_regions[year]
     for index, region_inputs in enumerate(region_inputs_by_household):
         # The region in effect each year: the latest input at or before it, or
-        # region's default (London). Core's carry-over can instead give the
-        # default for a year that has a later input; brma follows the inputs.
+        # region's default (London). Core's own carry-over can instead give
+        # the default for a year that has a later input
+        # (policyengine-core#562); brma follows the inputs.
         regions = {
             year: region_inputs[max(past for past in region_inputs if past <= year)]
             if any(past <= year for past in region_inputs)
