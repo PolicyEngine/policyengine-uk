@@ -70,7 +70,6 @@
         is_parent: true
       child:
         age: 1
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -432,7 +431,6 @@
         is_parent: true
       child:
         age: 1
-        is_child: true
     benunits:
       grandparent_benunit:
         members: ["grandparent"]

@@ -175,7 +175,10 @@ def situation(
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {YEAR: age}}
+            # The generated adults are the claimant and partner (a mixed-age
+            # couple may pair 67 with 18); say so, so the claimant-or-partner
+            # presumption does not apply. It must be set for everyone.
+            person = {"age": {YEAR: age}, "is_claimant_or_partner": {YEAR: True}}
             if age >= 67:
                 person["state_pension"] = {
                     YEAR: max(0.0, unit["state_pension"] + state_pension_change)
@@ -193,7 +196,10 @@ def situation(
             names.append(name)
         for k, child_age in enumerate(unit.get("child_ages", [])):
             name = f"c{i}_{k}"
-            people[name] = {"age": {YEAR: child_age}}
+            people[name] = {
+                "age": {YEAR: child_age},
+                "is_claimant_or_partner": {YEAR: False},
+            }
             names.append(name)
         claim_pc = unit["would_claim_pc"] if would_claim_pc is None else would_claim_pc
         benunit = {
@@ -213,6 +219,8 @@ def situation(
             people[name] = {
                 "age": {YEAR: 40},
                 "employment_income": {YEAR: unit["non_dependant_income"]},
+                # The claimant of their own benefit unit.
+                "is_claimant_or_partner": {YEAR: True},
             }
             benunits[f"n{i}"] = {
                 "members": [name],
