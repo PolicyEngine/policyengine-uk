@@ -194,3 +194,38 @@
         local_authority: MERTON
   output:
     merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 270.40]
+
+- name: A non-dependant couple on ESA pays the partner's deduction
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+      payee:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 4_000
+      partner:
+        age: 29
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      nondep_unit:
+        members: [payee, partner]
+        universal_credit: 0
+    households:
+      household:
+        members: [applicant, payee, partner]
+        country: ENGLAND
+        local_authority: MERTON
+  output:
+    # ESA is payable to the payee only (HB Regs 2006 reg 2(3A), as the
+    # schemes define it), so only they are exempt. One deduction is made for
+    # the couple, the higher of the two (Default Scheme Sch para 30(3)): the
+    # partner's £5.20 a week.
+    is_on_income_related_esa: [false, true, false]
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 270.40]
