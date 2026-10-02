@@ -1,0 +1,394 @@
+# The Guarantee Credit route into the 2-year-old entitlement.
+# SI 2014/2147 reg 1(2), "eligible child": a young child "whose parent is
+# entitled to any one or more of the following— ... the guaranteed element of
+# state pension credit under the State Pension Credit Act 2002". Entitlement
+# to state pension credit needs the claimant to have "attained the qualifying
+# age" (SPCA 2002 s.1(2)(b)) and a claim, so the route follows
+# in_receipt_of_guarantee_credit (eligible for Pension Credit, claiming it,
+# paid it, with a positive guarantee credit) and not the guarantee credit
+# amount, which PolicyEngine computes whether or not the family claims.
+# The minimum_guarantee outputs show the income test a family below the
+# qualifying age would otherwise pass.
+# 2026 parameters: standard minimum guarantee £238.00 a week single and
+# £363.25 couple (12,376 and 18,889 a year); child addition £69.98 a week
+# (3,638.96 a year); Savings Credit threshold £208.07 a week single
+# (10,819.64 a year), phase-in 60%, phase-out 40%. Ages avoid the State
+# Pension age boundary: 65 is below it and 67 or over is above it in 2026
+# both under the flat age-66 parameter and under the date-of-birth rule.
+
+- name: Case 1, working-age lone parent with a 2-year-old and no income does not qualify through a computed guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # Income of 0 is below the minimum guarantee of 12,376 + 3,638.96 =
+    # 16,014.96, but a 30-year-old has not attained the qualifying age, so
+    # there is no guarantee credit and no Pension Credit.
+    minimum_guarantee: 16_014.96
+    is_guarantee_credit_eligible: true
+    guarantee_credit: 0
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false]
+
+- name: Case 2, working-age couple with a 2-year-old and no income does not qualify through a computed guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+      person2:
+        age: 32
+      person3:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3]
+  output:
+    # Minimum guarantee 18,889 + 3,638.96 = 22,527.96; neither member has
+    # attained the qualifying age.
+    minimum_guarantee: 22_527.96
+    is_guarantee_credit_eligible: true
+    guarantee_credit: 0
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false, false]
+
+- name: Case 3, parent aged 65, below the qualifying age, does not qualify through a computed guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 65
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    minimum_guarantee: 16_014.96
+    is_guarantee_credit_eligible: true
+    guarantee_credit: 0
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false]
+
+- name: Case 4, parent over the qualifying age with no income, a guarantee credit and a 2-year-old qualifies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 67
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # 12,376 + 3,638.96 = 16,014.96, paid as Pension Credit.
+    guarantee_credit: 16_014.96
+    is_pension_credit_eligible: true
+    pension_credit: 16_014.96
+    in_receipt_of_guarantee_credit: true
+    targeted_childcare_entitlement_eligible: true
+    is_child_receiving_targeted_childcare: [false, true]
+
+- name: Case 5, pension-age parent with a State Pension below the minimum guarantee and a 2-year-old qualifies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 68
+        state_pension_reported: 10_000
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # 16,014.96 - 10,000 = 6,014.96.
+    guarantee_credit: 6_014.96
+    pension_credit: 6_014.96
+    in_receipt_of_guarantee_credit: true
+    targeted_childcare_entitlement_eligible: true
+    is_child_receiving_targeted_childcare: [false, true]
+
+- name: Case 6, the same pension-age parent not claiming Pension Credit does not qualify.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 68
+        state_pension_reported: 10_000
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # The guarantee credit is still computed, but without a claim there is
+    # no entitlement.
+    guarantee_credit: 6_014.96
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false]
+
+- name: Case 7, pension-age parent with income above the minimum guarantee does not qualify.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 68
+        state_pension_reported: 20_000
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # Income tax (20,000 - 12,570) x 20% = 1,486, so income is 18,514,
+    # above 16,014.96. A single person who reached pensionable age on or
+    # after 6 April 2016 cannot get Savings Credit (SPCA s.3(1)).
+    income_tax: [1_486, 0]
+    guarantee_credit: 0
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false]
+
+- name: Case 8, Savings Credit alone is not the guaranteed element.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        # Reached State Pension age long before April 2016, so can get
+        # Savings Credit.
+        age: 90
+        state_pension_reported: 17_000
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # Income tax (17,000 - 12,570) x 20% = 886, so income is 16,114, above
+    # 16,014.96: no guarantee credit. Savings Credit: maximum
+    # 0.6 x (12,376 - 10,819.64) = 933.816, less
+    # 0.4 x (16,114 - 16,014.96) = 39.616; = 894.20.
+    income_tax: [886, 0]
+    guarantee_credit: 0
+    savings_credit: 894.20
+    pension_credit: 894.20
+    in_receipt_of_guarantee_credit: false
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false]
+
+- name: Case 9, mixed-age couple does not qualify, because PolicyEngine does not model the SI 2019/37 art 4 saving.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+      person2:
+        age: 40
+      person3:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3]
+  output:
+    # Minimum guarantee 18,889 + 3,638.96 = 22,527.96, above income of
+    # 10,000. From 15 May 2019 SPCA s.4(1A) excludes a mixed-age couple
+    # unless SI 2019/37 art 4 saves it (entitled to Pension Credit or Housing
+    # Benefit as that couple on 14 May 2019); PolicyEngine's
+    # is_pension_credit_eligible omits that saving.
+    minimum_guarantee: 22_527.96
+    is_guarantee_credit_eligible: true
+    guarantee_credit: 0
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false, false]
+
+- name: Case 10, pension-age couple receiving a guarantee credit in Wales does not qualify for the England entitlement.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 5_000
+      person2:
+        age: 68
+      person3:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2, person3]
+        region: WALES
+  output:
+    # 18,889 + 3,638.96 - 5,000 = 17,527.96.
+    guarantee_credit: 17_527.96
+    pension_credit: 17_527.96
+    in_receipt_of_guarantee_credit: true
+    targeted_childcare_entitlement_eligible: false
+    is_child_receiving_targeted_childcare: [false, false, false]
+
+- name: Case 11, working-age lone parent on Universal Credit with no earnings still qualifies through Universal Credit.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+      person2:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    in_receipt_of_guarantee_credit: false
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: true
+    targeted_childcare_entitlement_eligible: true
+    is_child_receiving_targeted_childcare: [false, true]
+
+- name: Case 12, pension-age parent with a 17-year-old in non-advanced education and a 2-year-old qualifies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 68
+        is_parent: true
+        state_pension_reported: 10_000
+      person2:
+        age: 17
+        is_in_non_advanced_education: true
+      person3:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3]
+  output:
+    # The 17-year-old is a qualifying young person, not a partner. Minimum
+    # guarantee: single 12,376, plus the child addition for a first child
+    # born before 6 April 2017 (81.07 x 52 = 4,215.64) and for the
+    # 2-year-old (69.98 x 52 = 3,638.96), = 20,230.60. Less the State
+    # Pension of 10,000, the guarantee credit is 10,230.60.
+    minimum_guarantee: 20_230.60
+    is_claimant_or_partner: [true, false, false]
+    guarantee_credit: 10_230.60
+    pension_credit: 10_230.60
+    in_receipt_of_guarantee_credit: true
+    targeted_childcare_entitlement_eligible: true
+    is_child_receiving_targeted_childcare: [false, false, true]
+
+- name: Case 13, the same family qualifies after the young person turns 18.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 68
+        is_parent: true
+        state_pension_reported: 10_000
+      person2:
+        age: 18
+        is_in_non_advanced_education: true
+      person3:
+        age: 2
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+        would_claim_pc: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person1, person2, person3]
+  output:
+    # SPCA 2002 s.1(2)(b) asks whether the claimant has attained the
+    # qualifying age, and s.4(1A) whether the other member of a couple has.
+    # An 18-year-old in non-advanced education is neither, so the family's
+    # eligibility and award are as in Case 12.
+    is_claimant_or_partner: [true, false, false]
+    is_pension_credit_eligible: true
+    guarantee_credit: 10_230.60
+    pension_credit: 10_230.60
+    in_receipt_of_guarantee_credit: true
+    targeted_childcare_entitlement_eligible: true
+    is_child_receiving_targeted_childcare: [false, false, true]

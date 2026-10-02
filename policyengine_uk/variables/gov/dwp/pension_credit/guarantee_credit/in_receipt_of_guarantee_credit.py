@@ -6,14 +6,18 @@ class in_receipt_of_guarantee_credit(Variable):
     documentation = (
         "Whether the claimant or partner in this benefit unit is in receipt of "
         "a guarantee credit: the benefit unit is eligible for Pension Credit, "
-        "claims it, and its Guarantee Credit is positive. A Guarantee Credit "
-        "computed for a family that does not claim Pension Credit, or that the "
-        "model does not treat as eligible for it (for example a working-age "
-        "family), is not received. The model's Pension Credit eligibility "
-        "omits the SI 2019/37 article 4 saving, so a mixed-age couple it saves "
-        "(entitled to Pension Credit or Housing Benefit as that couple on 14 "
-        "May 2019, and to either ever since) is not treated as in receipt. Under "
-        "the Pension Credit freeze the baseline receipt is kept, because the "
+        "claims it, is paid Pension Credit, and its Guarantee Credit is "
+        "positive. A Guarantee Credit computed for a family that does not "
+        "claim Pension Credit, or that the model does not treat as eligible "
+        "for it (for example a working-age family), is not received, and "
+        "nor is one under a reform that stops Pension Credit being paid. The "
+        "model's Pension Credit eligibility omits the SI 2019/37 article 4 "
+        "saving, so a member of a mixed-age couple it saves (entitled to "
+        "Pension Credit or Housing Benefit as that couple on 14 May 2019, "
+        "until a later day when entitled to neither as that couple, with "
+        "Universal Credit days after managed migration disregarded) is not "
+        "treated as in receipt. Under the Pension Credit freeze the baseline "
+        "receipt is kept while Pension Credit is still paid, because the "
         "frozen award is the baseline award."
     )
     entity = BenUnit
@@ -27,13 +31,14 @@ class in_receipt_of_guarantee_credit(Variable):
     )
 
     def formula(benunit, period, parameters):
+        paid = benunit("pension_credit", period) > 0
         freeze = parameters(period).gov.contrib.freeze_pension_credit
         baseline = benunit.simulation.baseline
         if freeze and baseline is not None:
-            return baseline.populations["benunit"](
+            return paid & baseline.populations["benunit"](
                 "in_receipt_of_guarantee_credit", period
             )
         eligible = benunit("is_pension_credit_eligible", period)
         would_claim = benunit("would_claim_pc", period)
         guarantee_credit = benunit("guarantee_credit", period)
-        return eligible & would_claim & (guarantee_credit > 0)
+        return eligible & would_claim & paid & (guarantee_credit > 0)
