@@ -29,7 +29,7 @@ Properties, for any family:
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -121,9 +121,73 @@ SETTINGS = settings(
 )
 FAMILIES = st.lists(families(), min_size=1, max_size=6)
 
+# The YAML cases, run on every invocation: random draws seldom raise CTC or
+# hit the third row. Pension Credit earnings are net of SPC Regs Sch VI
+# para 5; the CTC family element and the Sch IIA child amount are entered at
+# their statutory values (see the YAML file).
+_PENSIONER = {
+    "age": 70,
+    "employment_income": 2_600,
+    "weekly_hours": 20,
+    "savings_interest_income": 300,
+    "working_tax_credit_reported": 1,
+}
+YAML_FAMILIES = [
+    # Guarantee Credit with WTC: passported.
+    (
+        [{**_PENSIONER, "state_pension": 6_000}],
+        [],
+        {"pension_credit_earnings": 2_340},
+        {"savings": 10_000},
+    ),
+    # Pension Credit only on the income-tested award: the third row.
+    (
+        [{**_PENSIONER, "state_pension": 6_600}],
+        [],
+        {"pension_credit_earnings": 2_340},
+        {"savings": 10_000},
+    ),
+    # Savings Credit alone, with CTC raised by the passport.
+    (
+        [
+            {
+                "age": 80,
+                "state_pension": 9_000,
+                "employment_income": 3_000,
+                "savings_interest_income": 500,
+                "child_tax_credit_reported": 1,
+            },
+            {"age": 80, "state_pension": 8_000},
+        ],
+        [{"age": 10}],
+        {
+            "pension_credit_earnings": 2_480,
+            "child_minimum_guarantee_addition": 0,
+            "CTC_family_element": 545,
+        },
+        {"savings": 10_000},
+    ),
+    # A mixed-age couple: no Pension Credit, no passport.
+    (
+        [
+            {"age": 70, "state_pension": 6_000, "savings_interest_income": 300},
+            {
+                "age": 40,
+                "employment_income": 2_600,
+                "weekly_hours": 20,
+                "working_tax_credit_reported": 1,
+            },
+        ],
+        [],
+        {},
+        {"savings": 10_000},
+    ),
+]
+
 
 @SETTINGS
 @given(FAMILIES)
+@example(YAML_FAMILIES)
 def test_passport_matches_an_independent_passported_simulation(drawn):
     on = calculate(Simulation(situation=situation(drawn, ACTIVE_YEAR)), ACTIVE_YEAR)
     off = calculate(
@@ -163,6 +227,7 @@ def test_passport_matches_an_independent_passported_simulation(drawn):
 
 @SETTINGS
 @given(FAMILIES)
+@example(YAML_FAMILIES)
 def test_results_do_not_depend_on_request_order(drawn):
     forward = calculate(
         Simulation(situation=situation(drawn, ACTIVE_YEAR)), ACTIVE_YEAR
@@ -178,6 +243,7 @@ def test_results_do_not_depend_on_request_order(drawn):
 
 @SETTINGS
 @given(FAMILIES)
+@example(YAML_FAMILIES)
 def test_without_awards_pension_credit_alone_decides_the_passport(drawn):
     on = calculate(Simulation(situation=situation(drawn, INACTIVE_YEAR)), INACTIVE_YEAR)
     off = calculate(
@@ -225,3 +291,24 @@ def test_passport_works_in_traced_and_nested_branch_simulations():
         assert PENSION_CREDIT_PASSPORT_BRANCH not in sim.branches
         for branch in sim.branches.values():
             assert PENSION_CREDIT_PASSPORT_BRANCH not in branch.branches
+
+
+def test_yaml_families_reach_every_case():
+    """The pinned examples are not vacuous: they hit each row of the rule."""
+    year = ACTIVE_YEAR
+    on = calculate(Simulation(situation=situation(YAML_FAMILIES, year)), year)
+    off = calculate(
+        Simulation(situation=situation(YAML_FAMILIES, year), reform=PASSPORT_OFF),
+        year,
+    )
+    passported = (on["tax_credits_applicable_income"] == 0) & (
+        off["tax_credits_applicable_income"] > 0
+    )
+    assert passported.tolist() == [True, False, True, False]
+    # The passport raises WTC (first) and CTC (third).
+    assert on["working_tax_credit"][0] > off["working_tax_credit"][0]
+    assert on["child_tax_credit"][2] > off["child_tax_credit"][2]
+    # The third row: Pension Credit paid without the passport.
+    assert on["pension_credit"][1] > 0 and not passported[1]
+    # The mixed-age couple gets no Pension Credit.
+    assert on["pension_credit"][3] == 0
