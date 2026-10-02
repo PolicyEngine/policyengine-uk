@@ -30,7 +30,7 @@ from hypothesis import strategies as st
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data.dataset_schema import UKSingleYearDataset
 from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
-    REPORTED_BENEFITS,
+    BENEFITS,
     YEARS_IN_FUTURE,
 )
 from policyengine_uk.utils.scenario import Scenario
@@ -56,8 +56,8 @@ REGIONS = [
 ]
 FIRST_PAWHP_YEAR = 2024
 # Simulated benefits with a reported counterpart that the reform does not
-# set from REPORTED_BENEFITS, and why.
-NOT_IN_REPORTED_BENEFITS = {
+# set from BENEFITS, and why.
+NOT_IN_BENEFITS = {
     "winter_fuel_allowance": "set with pawhp from the one reported winter heating payment",
     "maternity_allowance": "already the reported amount (adds maternity_allowance_reported)",
     "employee_pension_contributions": "not a benefit",
@@ -126,9 +126,7 @@ def check_winter_heating(simulation, regions, winter_heating, first_year):
 
 
 def test_every_listed_benefit_has_a_reported_amount():
-    missing = [
-        name for name in REPORTED_BENEFITS if f"{name}_reported" not in SYSTEM.variables
-    ]
+    missing = [name for name in BENEFITS if f"{name}_reported" not in SYSTEM.variables]
     assert not missing, missing
 
 
@@ -138,7 +136,7 @@ def test_every_simulated_benefit_with_a_reported_amount_is_set():
         for name in SYSTEM.variables
         if name.endswith("_reported") and name[: -len("_reported")] in SYSTEM.variables
     }
-    unlisted = reported - set(REPORTED_BENEFITS) - set(NOT_IN_REPORTED_BENEFITS)
+    unlisted = reported - set(BENEFITS) - set(NOT_IN_BENEFITS)
     assert not unlisted, unlisted
 
 

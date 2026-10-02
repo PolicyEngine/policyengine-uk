@@ -6,7 +6,7 @@ from policyengine_core.model_api import *
 # (aa_category, dla_sc_category, dla_m_category, pip_dl_category and
 # pip_m_category), so they already follow the reported award. The winter
 # heating payments are set separately (see below).
-REPORTED_BENEFITS = [
+BENEFITS = [
     "afcs",
     "bsp",
     "carers_allowance",
@@ -41,7 +41,7 @@ def disable_simulated_benefits(parameters, period):
                 time_period = int(simulation.dataset.time_period)
                 years = range(time_period, time_period + YEARS_IN_FUTURE)
 
-                for variable in REPORTED_BENEFITS:
+                for variable in BENEFITS:
                     entity = simulation.tax_benefit_system.variables[
                         variable
                     ].entity.key
