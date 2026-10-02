@@ -1,0 +1,187 @@
+# State Pension is retirement pension income, which counts in full as
+# Universal Credit unearned income: UC Regs 2013 reg. 66(1)(a), with the
+# meaning in reg. 67(1) taken from State Pension Credit Act 2002 s. 16(1)(za)
+# (new State Pension) and (a) (Category A or B retirement pension). Only a
+# mixed-age couple can have both a UC award and a State Pension, because UC
+# needs a member under State Pension age.
+#
+# Hand calculations use the 2026-27 rates read in April 2026:
+# - couple standard allowance (one over 25): 666.97 a month = 8,003.64 a year;
+# - earned income reduction rate: 55%;
+# - council rent of 6,240 a year is met in full by the housing costs element.
+# So the maximum amount is 8,003.64 + 6,240 = 14,243.64.
+
+- name: State Pension counts as unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    state_pension: 9_000
+  output:
+    uc_unearned_income: 9_000
+
+- name: State Pension adds to private pension income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    state_pension: 9_000
+    private_pension_income: 1_000
+  output:
+    uc_unearned_income: 10_000
+
+- name: Reported new State Pension flows through to unearned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension_type: NEW
+        # 9,000 / 52 = 173.08 a week, under the full new State Pension, so
+        # all of it is new_state_pension and none is a protected payment.
+        state_pension_reported: 9_000
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+  output:
+    state_pension: [9_000, 0]
+    uc_unearned_income: 9_000
+
+- name: Mixed-age couple renting from the council, State Pension reduces UC pound for pound
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 1_500
+  output:
+    uc_standard_allowance: 8_003.64
+    uc_housing_costs_element: 6_240
+    uc_maximum_amount: 14_243.64
+    uc_unearned_income: 9_000
+    uc_income_reduction: 9_000
+    # 14,243.64 - 9,000. Before this fix the award was 14,243.64.
+    universal_credit: 5_243.64
+    # The pension-age CTR income is State Pension plus UC:
+    # 9,000 + 5,243.64 = 14,243.64, below the applicable amount of
+    # 383.35 x 52 = 19,934.20, so council tax is met in full. Before this fix
+    # the inflated UC gave an income of 23,243.64 and CTR of
+    # 1,500 - 20% x (23,243.64 - 19,934.20) = 838.11.
+    council_tax_benefit: 1_500
+
+- name: Same couple with the same amount of private pension instead gets the same UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 9_000
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 1_500
+  output:
+    uc_unearned_income: 9_000
+    universal_credit: 5_243.64
+
+- name: State Pension above the maximum amount removes UC entirely
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 20_000
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    uc_unearned_income: 20_000
+    # The reduction is capped at the maximum amount.
+    uc_income_reduction: 14_243.64
+    universal_credit: 0
+
+- name: State Pension and the younger partner's earnings both reduce UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+      partner:
+        age: 60
+        # Below the personal allowance and the NI primary threshold, so net
+        # earnings equal gross earnings.
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    uc_earned_income: 6_000
+    # No children and no limited capability for work, so no work allowance:
+    # 55% x 6,000 = 3,300 of earnings plus 9,000 of State Pension.
+    uc_income_reduction: 12_300
+    # 14,243.64 - 12,300.
+    universal_credit: 1_943.64
+
+- name: State Pension also counts in 2020-21
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+  output:
+    # Couple standard allowance 596.58 a month (with the 2020 uplift):
+    # 7,158.96 + 6,240 = 13,398.96; less 9,000 of State Pension.
+    uc_maximum_amount: 13_398.96
+    uc_unearned_income: 9_000
+    universal_credit: 4_398.96
