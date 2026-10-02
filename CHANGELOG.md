@@ -1,3 +1,10 @@
+## [2.104.3] - 2026-10-02
+
+### Fixed
+
+- - Count contributory JSA once in `household_benefits`. `HOUSEHOLD_BENEFIT_VARIABLES` listed `jsa_contrib` twice, which overstated household benefits, net income and gross income by each household's contributory JSA. Also remove a duplicate `pension_credit` from the means-tested cost-of-living qualifying benefits (no output change), and test that no list of variable names repeats an entry.
+
+
 ## [2.104.2] - 2026-10-01
 
 ### Fixed
