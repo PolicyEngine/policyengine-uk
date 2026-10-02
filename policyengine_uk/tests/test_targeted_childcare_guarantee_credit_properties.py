@@ -41,10 +41,11 @@ also with a dependent young person aged 16 to 19 in non-advanced education:
 5. Metamorphic: not claiming Pension Credit closes the route and never makes
    a family eligible. Fails for filed and main; holds for fix.
 6. Not claiming targeted childcare never leaves a family eligible.
-7. Payment: a reform that stops Pension Credit being paid closes the route.
+7. Payment: a reform that stops Pension Credit being paid closes the route,
+   with or without the Pension Credit freeze (fixed examples).
 8. Under the Pension Credit freeze the route follows the baseline receipt,
    even where the reformed guarantee credit is zero, so invariants 3 and 4
-   are stated for the unreformed model only.
+   are stated for the unreformed model only (fixed example).
 """
 
 import numpy as np
@@ -471,6 +472,24 @@ def test_stopping_pension_credit_payments_closes_the_route():
     assert stopped["pension_credit"].tolist() == [0]
     assert stopped["in_receipt_of_guarantee_credit"].tolist() == [False]
     assert stopped["targeted_childcare_entitlement_eligible"].tolist() == [False]
+
+    # The same holds with Pension Credit frozen: the frozen award is not
+    # paid either, so the baseline receipt does not carry over.
+    frozen_and_stopped = calculate(
+        year,
+        units,
+        scenario=Scenario(
+            parameter_changes={"gov.contrib.freeze_pension_credit": True},
+            simulation_modifier=lambda sim: sim.tax_benefit_system.neutralize_variable(
+                "pension_credit"
+            ),
+        ),
+    )
+    assert frozen_and_stopped["pension_credit"].tolist() == [0]
+    assert frozen_and_stopped["in_receipt_of_guarantee_credit"].tolist() == [False]
+    assert frozen_and_stopped["targeted_childcare_entitlement_eligible"].tolist() == [
+        False
+    ]
 
 
 def test_pension_credit_freeze_keeps_the_baseline_route():
