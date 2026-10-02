@@ -4,6 +4,7 @@ import yaml
 from policyengine_core.parameters import ParameterNode
 from pathlib import Path
 import numpy as np
+import pandas as pd
 import logging
 
 # Base year for the FRS dataset - used to calculate age offsets
@@ -30,6 +31,23 @@ _ENGLAND_REGIONS = {
 }
 
 _PLAN1_WRITEOFF_YEARS = 29
+
+# The council tax growth series (a child of
+# gov.economic_assumptions.yoy_growth.obr.council_tax) for each Region label.
+# Northern Ireland has no council tax (the Local Government Finance Act 1992
+# does not extend there; it levies domestic rates, carried in domestic_rates),
+# OBR forecasts council tax for England, Scotland and Wales only, and the FRS
+# gives Northern Ireland households none. So it has no series, and any council
+# tax a dataset does give them is held flat. An unknown region takes England's
+# series, the nearest to a Great Britain one: England raises 89% of the council
+# tax OBR forecasts for 2025-26.
+_COUNCIL_TAX_GROWTH_SERIES = {
+    **dict.fromkeys(_ENGLAND_REGIONS, "england"),
+    "WALES": "wales",
+    "SCOTLAND": "scotland",
+    "NORTHERN_IRELAND": None,
+    "UNKNOWN": "england",
+}
 
 
 def extend_single_year_dataset(
@@ -122,33 +140,20 @@ def uprate_council_tax(
     # Uprate council tax for a single year dataset.
 
     council_tax = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
-    region = current_year.household["region"]
-    country = np.select(
-        [
-            region == "WALES",
-            region == "SCOTLAND",
-            region == "NORTHERN IRELAND",
-        ],
-        [
-            "WALES",
-            "SCOTLAND",
-            "NORTHERN IRELAND",
-        ],
-        default="ENGLAND",
-    )
-    growth_rates = np.select(
-        [
-            country == "ENGLAND",
-            country == "WALES",
-            country == "SCOTLAND",
-        ],
-        [
-            council_tax.england(current_year.time_period),
-            council_tax.wales(current_year.time_period),
-            council_tax.scotland(current_year.time_period),
-        ],
-        default=0,
-    )
+    region = pd.Series(np.asarray(current_year.household["region"]).astype(str))
+    unrecognised = set(region) - set(_COUNCIL_TAX_GROWTH_SERIES)
+    if unrecognised:
+        raise ValueError(
+            "Cannot uprate council tax for unrecognised regions: "
+            f"{sorted(unrecognised)}"
+        )
+    growth_by_region = {
+        name: 0.0
+        if series is None
+        else council_tax.get_child(series)(current_year.time_period)
+        for name, series in _COUNCIL_TAX_GROWTH_SERIES.items()
+    }
+    growth_rates = region.map(growth_by_region).to_numpy()
 
     current_year.household["council_tax"] = previous_year.household["council_tax"] * (
         1 + growth_rates
@@ -175,9 +180,13 @@ def uprate_rent(
         )
         pass
     else:
-        private_rent_growth = growth.ons.private_rental_prices(year)[
-            np.array(region.values.astype(str))
-        ]
+        # Region.UNKNOWN has no regional index of its own, so those households
+        # take the UK-wide one.
+        region_index = np.array(region.values.astype(str))
+        region_index = np.where(
+            region_index == "UNKNOWN", "UNITED_KINGDOM", region_index
+        )
+        private_rent_growth = growth.ons.private_rental_prices(year)[region_index]
         current_year.household["rent"] = np.where(
             is_private_rented,
             prev_rent * (1 + private_rent_growth),
