@@ -5,11 +5,13 @@ description: >
   award, is in `disability_benefit_unit_benefits`.
   `incapacity_benefit` stands for long-term incapacity benefit (para.
   4(1)(a)(i)); the model does not separate the short-term rates. Not modelled:
-  the war pensions mobility supplement (v), the working tax credit disability
-  elements (vi), pension age disability payment (iiia, from 21 October 2024),
-  Scottish adult disability living allowance (iva, from 21 March 2025) and
-  adult disability payment (viiia, from 21 March 2022), which have no separate
-  variables.
+  the war pensions mobility supplement (v), which has no variable; pension age
+  disability payment (iiia, from 21 October 2024), Scottish adult disability
+  living allowance (iva, from 21 March 2025) and adult disability payment
+  (viiia, from 21 March 2022), which have no separate variables; and the
+  working tax credit disability elements (vi), left out because in the model
+  they follow from DLA or PIP, which are listed, and working tax credit ended
+  in April 2025.
 metadata:
   label: Pension Credit higher earnings disregard disability benefits
   unit: list
@@ -20,7 +22,7 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2008/1554/regulation/4
     - title: The Personal Independence Payment (Supplementary Provisions and Consequential Amendments) Regulations 2013 Sch. para. 27(8)(b) (PIP, from 8 April 2013)
       href: https://www.legislation.gov.uk/uksi/2013/388/schedule/paragraph/27
-    - title: The Armed Forces and Reserve Forces Compensation Scheme (Consequential Provisions Subordinate Legislation) Order 2013 Sch. para. 23(8)(b) (AFIP, from 8 April 2013)
+    - title: "The Armed Forces and Reserve Forces Compensation Scheme (Consequential Provisions: Subordinate Legislation) Order 2013 Sch. para. 23(8)(b) (AFIP, from 8 April 2013)"
       href: https://www.legislation.gov.uk/uksi/2013/591/schedule/paragraph/23
 values:
   2003-10-06:

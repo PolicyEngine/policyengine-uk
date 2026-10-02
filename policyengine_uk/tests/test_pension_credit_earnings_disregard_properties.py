@@ -1,19 +1,24 @@
 """Properties of the Pension Credit earnings disregards (SPC Regs 2002 Sch VI).
 
-Invariants, over generated pension-age benefit units:
+Invariants, over generated benefit units (England, so the basic rate is 20%):
 
-1. Statute: the disregard equals min(earnings, 52 x w), where w is 20 if the
-   unit has a lone parent, a carer satisfying Sch I para 4, or a claimant or
-   partner on a listed disability benefit or certified blind, and otherwise 5
-   for a single claimant and 10 for a couple. The expected value is computed
-   here from the inputs, not read from the model.
-2. Bounds: 0 <= disregard <= min(earnings, 20 x 52).
+1. Statute: the disregard equals min(net earnings, 52 x w). Net earnings are
+   the claimant's and partner's gross earnings less earnings NI, half of
+   pension contributions and income tax on the earnings (the lesser of their
+   income tax and 20% of their earnings), recomputed here from the inputs and
+   the model's tax and NI. w is 20 if the unit is a lone-parent family, or a
+   claimant or partner is a carer (an input here), receives a listed
+   disability benefit or is blind; otherwise 5 single, 10 couple. A dependent
+   child's DLA or caring never qualifies.
+2. Bounds: 0 <= disregard <= min(gross earnings, 20 x 52).
 3. Differential: Pension Credit income is the pre-change income (sources less
-   tax, NI and half of pension contributions, floored at 0, recomputed from
-   the model's own components) less the disregard, floored at 0.
-4. Monotonicity: the guarantee credit never falls when the disregard applies,
-   i.e. it is at least the guarantee credit without it.
-5. The dated benefit lists follow the amending instruments: ESA from 27
+   tax, NI and half of pension contributions, floored at 0) less the
+   disregard, floored at 0.
+4. Monotonicity: the guarantee credit is never below its value without the
+   disregard.
+5. Earning more never raises Pension Credit entitlement (reg 17(9) applies the
+   disregard to net earnings).
+6. The dated benefit lists follow the amending instruments: ESA from 27
    October 2008, PIP and AFIP from 8 April 2013.
 """
 
@@ -43,16 +48,16 @@ DISABILITY = [
 @st.composite
 def units(draw):
     couple = draw(st.booleans())
-    child = draw(st.booleans()) and not couple
+    child = draw(st.booleans())
     people = {}
     names = ["claimant"] + (["partner"] if couple else [])
     for n in names:
         person = {
             "age": draw(st.sampled_from([67, 72, 85])),
-            "employment_income": draw(st.sampled_from([0, 50, 400, 3_000])),
+            "employment_income": draw(st.sampled_from([0, 50, 400, 1_040, 3_000])),
             "self_employment_income": draw(st.sampled_from([0, 0, 1_500])),
             "state_pension": draw(st.integers(min_value=0, max_value=12_000)),
-            "private_pension_income": draw(st.sampled_from([0, 2_000])),
+            "private_pension_income": draw(st.sampled_from([0, 2_000, 6_000])),
             "is_blind": draw(st.sampled_from([False, False, False, True])),
             "is_carer_for_benefits": draw(st.sampled_from([False, False, False, True])),
         }
@@ -61,7 +66,12 @@ def units(draw):
             person[benefit] = 2_000
         people[n] = person
     if child:
-        people["child"] = {"age": 10, "dla_sc": draw(st.sampled_from([0, 2_000]))}
+        # A dependent child's DLA or caring never qualifies the unit.
+        people["child"] = {
+            "age": 10,
+            "dla_sc": draw(st.sampled_from([0, 2_000])),
+            "is_carer_for_benefits": draw(st.booleans()),
+        }
     return people
 
 
@@ -80,24 +90,51 @@ def simulate(people):
     )
 
 
+def unit_value(sim, variable):
+    return float(sim.calculate(variable, YEAR)[0])
+
+
+def person_values(sim, variable):
+    return np.asarray(sim.calculate(variable, YEAR, map_to="person"), dtype=float)
+
+
 @SETTINGS
 @given(units())
 def test_statute_bounds_differential_and_monotonicity(people):
     sim = simulate(people)
-    calc = lambda v: float(sim.calculate(v, YEAR)[0])
-    adults = [p for n, p in people.items() if n != "child"]
-    earnings = sum(p["employment_income"] + p["self_employment_income"] for p in adults)
-    couple = len(adults) == 2
-    disabled = any(
-        p.get("is_blind") or any(p.get(b, 0) > 0 for b in DISABILITY) for p in adults
+    names = list(people)
+    adults = [n != "child" for n in names]
+    gross = np.array(
+        [
+            people[n]["employment_income"] + people[n].get("self_employment_income", 0)
+            if n != "child"
+            else 0
+            for n in names
+        ],
+        dtype=float,
     )
-    carer = calc("carer_minimum_guarantee_addition") > 0
-    lone_parent = "child" in people
+    ni = sum(
+        person_values(sim, v)
+        for v in ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
+    )
+    tax_on_earnings = np.minimum(person_values(sim, "income_tax"), 0.2 * gross)
+    contributions = 0.5 * person_values(sim, "pension_contributions")
+    net = np.maximum(0, gross - ni - tax_on_earnings - contributions)
+    net_earnings = float(net[adults].sum())
+
+    adult_people = [people[n] for n in names if n != "child"]
+    couple = len(adult_people) == 2
+    disabled = any(
+        p.get("is_blind") or any(p.get(b, 0) > 0 for b in DISABILITY)
+        for p in adult_people
+    )
+    carer = any(p.get("is_carer_for_benefits") for p in adult_people)
+    lone_parent = "child" in people and not couple
     weekly = 20 if (disabled or carer or lone_parent) else (10 if couple else 5)
-    expected = min(earnings, weekly * WEEKS_IN_YEAR)
-    disregard = calc("pension_credit_earnings_disregard")
+    expected = min(net_earnings, weekly * WEEKS_IN_YEAR)
+    disregard = unit_value(sim, "pension_credit_earnings_disregard")
     assert np.isclose(disregard, expected, atol=0.01)
-    assert 0 <= disregard <= min(earnings, 20 * WEEKS_IN_YEAR) + 0.01
+    assert 0 <= disregard <= min(gross.sum(), 20 * WEEKS_IN_YEAR) + 0.01
 
     sources = sim.tax_benefit_system.parameters(
         f"{YEAR}-06-01"
@@ -110,10 +147,22 @@ def test_statute_bounds_differential_and_monotonicity(people):
     )
     before = max(0.0, total - deductions)
     assert np.isclose(
-        calc("pension_credit_income"), max(0.0, before - disregard), atol=0.01
+        unit_value(sim, "pension_credit_income"),
+        max(0.0, before - disregard),
+        atol=0.01,
     )
-    gc_without = max(0.0, calc("minimum_guarantee") - before)
-    assert calc("guarantee_credit") >= gc_without - 0.01
+    gc_without = max(0.0, unit_value(sim, "minimum_guarantee") - before)
+    assert unit_value(sim, "guarantee_credit") >= gc_without - 0.01
+
+
+@SETTINGS
+@given(units(), st.sampled_from([1, 50, 260, 1_040, 5_000]))
+def test_earning_more_never_raises_pension_credit(people, extra):
+    more = {name: dict(person) for name, person in people.items()}
+    more["claimant"]["employment_income"] += extra
+    before = unit_value(simulate(people), "pension_credit_entitlement")
+    after = unit_value(simulate(more), "pension_credit_entitlement")
+    assert after <= before + 0.01
 
 
 def test_benefit_lists_follow_amending_instruments():

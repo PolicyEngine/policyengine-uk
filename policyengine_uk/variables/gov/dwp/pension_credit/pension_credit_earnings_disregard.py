@@ -11,8 +11,14 @@ class pension_credit_earnings_disregard(Variable):
         "receives a listed disability benefit or is certified blind "
         "(para. 4(1)); otherwise 5 pounds a week for a single claimant and 10 "
         "pounds for a couple (para. 5). 20 pounds is the most disregarded "
-        "however many conditions are met (para. 4A), and the disregard never "
-        "exceeds the earnings. Not modelled: the employment-specific 20 pound "
+        "however many conditions are met (para. 4A). Reg. 17(9) disregards the "
+        "sums 'in calculating the claimant's earnings', which are net of income "
+        "tax and National Insurance (reg. 17(10)) and of half of pension "
+        "contributions (reg. 17A(4A)), so the disregard never exceeds the "
+        "claimant's and partner's net earnings. Income tax on earnings is taken "
+        "as the lesser of the person's income tax and the basic rate on their "
+        "earnings, the tax deducted where the personal allowance goes against "
+        "pension income first. Not modelled: the employment-specific 20 pound "
         "disregards of paras. 2 to 2B (part-time firefighters, auxiliary "
         "coastguards, lifeboat crew, reserve forces) and the transitional "
         "protections of para. 4(2) to (4)."
@@ -24,12 +30,15 @@ class pension_credit_earnings_disregard(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/VI",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A",
     )
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.pension_credit.earnings_disregard
+        pc = parameters(period).gov.dwp.pension_credit
+        p = pc.earnings_disregard
         person = benunit.members
-        claimant_or_partner = person("is_uc_claimant", period)
+        claimant_or_partner = person("is_claimant_or_partner", period)
+
         on_disability_benefit = (
             add(person, period, p.higher.disability_benefits) > 0
         ) | person("is_blind", period)
@@ -43,7 +52,10 @@ class pension_credit_earnings_disregard(Variable):
             benunit.any(claimant_or_partner & on_disability_benefit)
             | unit_on_disability_benefit
         )
-        carer = benunit("carer_minimum_guarantee_addition", period) > 0
+        # Sch. I para. 4: a claimant or partner entitled to carer's allowance.
+        carer = benunit.any(
+            claimant_or_partner & person("is_carer_for_benefits", period)
+        )
         lone_parent = benunit("is_lone_parent", period)
         relation_type = benunit("relation_type", period)
         weekly = where(
@@ -51,5 +63,21 @@ class pension_credit_earnings_disregard(Variable):
             p.higher.amount,
             p.standard[relation_type],
         )
-        earnings = max_(0, benunit("pension_credit_earnings", period))
-        return min_(weekly * WEEKS_IN_YEAR, earnings)
+
+        # Net earnings of the claimant and partner (regs. 17(10), 17A(4A)).
+        gross = max_(0, add(person, period, pc.guarantee_credit.earnings_sources))
+        national_insurance = add(
+            person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
+        )
+        basic_rate = parameters(period).gov.hmrc.income_tax.rates.uk.rates[0]
+        income_tax_on_earnings = min_(person("income_tax", period), basic_rate * gross)
+        pension_contributions = (
+            person("pension_contributions", period)
+            * pc.income.pension_contributions_deduction
+        )
+        net = max_(
+            0,
+            gross - national_insurance - income_tax_on_earnings - pension_contributions,
+        )
+        net_earnings = benunit.sum(net * claimant_or_partner)
+        return min_(weekly * WEEKS_IN_YEAR, net_earnings)
