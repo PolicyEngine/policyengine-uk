@@ -388,10 +388,13 @@
   input:
     people:
       parent:
-        age: 50
+        # Only 15 years older, so without the flags the 19-year-old would be
+        # presumed the parent's partner rather than child.
+        age: 34
+        is_claimant_or_partner: true
       dependant:
         age: 19
-        is_uc_claimant: false
+        is_claimant_or_partner: false
         lifetime_isa_balance: 10_000
     benunits:
       family:
@@ -402,6 +405,52 @@
   output:
     uc_assessable_capital: 0
     housing_benefit_assessable_capital: 0
+    income_support_assessable_capital: 0
+    jsa_income_assessable_capital: 0
+    esa_income_assessable_capital: 0
+
+- name: Without the dataset flags a 19-year-old 15 years younger is the partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 34
+      dependant:
+        age: 19
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [parent, dependant]
+    households:
+      household:
+        members: [parent, dependant]
+  output:
+    is_claimant_or_partner: [true, true]
+    uc_assessable_capital: 7_500
+    housing_benefit_assessable_capital: 7_500
+
+- name: Pension Credit does not count the capital of a holder the dataset records as a dependant
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      dependant:
+        # Old enough to be presumed the pensioner's partner without the flag.
+        age: 60
+        is_claimant_or_partner: false
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [pensioner, dependant]
+    households:
+      household:
+        members: [pensioner, dependant]
+  output:
+    pension_credit_assessable_capital: 0
 
 - name: A pensioner's Pension Credit does not count a dependent young person's Lifetime ISA
   period: 2025
