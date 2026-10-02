@@ -1,8 +1,10 @@
 # Income Support conditions name the claimant and, for some, the partner.
 # SSCBA 1992 s.124(1): a person is entitled to Income Support if
 #   (aa) "he has not attained the qualifying age for state pension credit";
-#   (e) "he falls within a prescribed category of person" (reg 4ZA, Sch 1B:
-#       para 1 lone parent of a child under 5, para 4 carer);
+#   (e) "he falls within a prescribed category of person" (reg 4ZA, Sch 1B;
+#       the model covers para 1, a lone parent of a child under 5; para 2,
+#       a single claimant or lone parent with whom a child is placed; and
+#       para 4, a carer);
 #   (g) "if he is a member of a couple, the other member of the couple is not
 #       entitled to state pension credit"; and
 #   (h) "he is not entitled to an employment and support allowance and, if he
@@ -15,10 +17,12 @@
 # award. The model takes that to be the claimant or partner who reports
 # Income Support.
 #
-# A member who is neither the claimant, the partner nor a child or young
-# person in the family (here an adult given is_claimant_or_partner: false, or
-# a child placed by a local authority) is named by none of these conditions,
-# so it never changes eligibility. These cases test the model's bounded gate:
+# An adult who is neither the claimant nor the partner (here given
+# is_claimant_or_partner: false) is named by none of these conditions, so it
+# never changes eligibility. A child placed by a local authority is not a
+# member of the claimant's household (IS Regs 1987 reg 16(4)), so it is not a
+# young child for para 1, but it brings a single claimant within para 2.
+# These cases test the model's bounded gate:
 # caring is is_carer_for_benefits, ESA and Income Support are reported
 # awards, and the means test is out of scope. 2025 is used because the model
 # pays Income Support until 2025-26; state pension age is 66 in 2025.
@@ -173,7 +177,7 @@
     # could only claim, and reg 6A(1) bars a new claim.
     income_support_eligible: false
 
-- name: A child placed by a local authority does not make the claimant a lone parent of a young child
+- name: A child placed with a lone parent brings them within Sch 1B para 2, not para 1
   period: 2025
   input:
     people:
@@ -195,9 +199,54 @@
         income_support_assessable_capital: 0
   output:
     # IS Regs 1987 reg 16(4): a child placed by a local authority is not a
-    # member of the claimant's household.
+    # member of the claimant's household, so the youngest child is 8 and
+    # para 1 does not apply. Para 2: "A single claimant or a lone parent with
+    # whom a child is placed" by a local authority.
     is_child_or_young_person_for_legacy_benefits: [false, true, false]
     youngest_child_age_for_legacy_benefits: 8
+    income_support_eligible: true
+
+- name: A single claimant with only a placed child is within Sch 1B para 2
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      placed_child:
+        age: 10
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [claimant, placed_child]
+        income_support_assessable_capital: 0
+  output:
+    is_lone_parent: false
+    income_support_eligible: true
+
+- name: A couple with a placed child are not within Sch 1B para 2
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+      placed_child:
+        age: 3
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [claimant, partner, placed_child]
+        income_support_assessable_capital: 0
+  output:
+    # Para 2 needs a single claimant or lone parent; neither partner cares.
     income_support_eligible: false
 
 # s.124(1)(aa) and (g): the claimant's age, and the partner's SPC entitlement.

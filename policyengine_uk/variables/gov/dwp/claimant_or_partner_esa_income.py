@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.inputs import entered_directly
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
 
 
@@ -15,11 +14,13 @@ class claimant_or_partner_esa_income(Variable):
         "claimant, the partner nor a child or young person they are "
         "responsible for (for example a non-dependent adult) claims in their "
         "own right, so their award is left out here; it still counts in "
-        "esa_income and so in household income. When esa_income is entered "
-        "directly rather than calculated from reported awards, the entered "
-        "award is taken to be the claimant's or partner's. Entered directly "
-        "means set as an input for this period (entered_directly), not "
-        "merely for some other year."
+        "esa_income and so in household income. When esa_income holds what the "
+        "reported awards give, either after the capital test (its formula) "
+        "or as their plain total (the disable_simulated_benefits reform), the "
+        "reports say whose award it is. When it holds anything else (an "
+        "award entered directly, or a reform that replaces or removes it), "
+        "they do not, and it is taken to be the claimant's or partner's. An "
+        "entered award equal to either amount is read through the reports."
     )
     definition_period = YEAR
     unit = GBP
@@ -30,11 +31,19 @@ class claimant_or_partner_esa_income(Variable):
     )
 
     def formula(benunit, period, parameters):
-        if entered_directly(benunit, "esa_income", period):
-            return benunit("esa_income", period)
         person = benunit.members
-        reported_award = benunit.sum(
-            person("esa_income_reported", period)
-            * person("is_claimant_or_partner", period)
+        esa_income = benunit("esa_income", period)
+        reported_total = add(benunit, period, ["esa_income_reported"])
+        award_on_all_reports = income_related_esa_award(benunit, period, reported_total)
+        award_on_claimant_or_partner_reports = income_related_esa_award(
+            benunit,
+            period,
+            benunit.sum(
+                person("esa_income_reported", period)
+                * person("is_claimant_or_partner", period)
+            ),
         )
-        return income_related_esa_award(benunit, period, reported_award)
+        as_reported = np.isclose(
+            esa_income, award_on_all_reports, rtol=0, atol=0.005
+        ) | np.isclose(esa_income, reported_total, rtol=0, atol=0.005)
+        return where(as_reported, award_on_claimant_or_partner_reports, esa_income)
