@@ -38,9 +38,11 @@ and a non-dependant family of one or two adults:
    a State Pension Credit recipient, or under 25 and on Income Support,
    income-based JSA or Universal Credit without earned income. CTR (any age):
    a full-time student, on IS, JSA(IB), ESA(IR) or SPC, or, in a national
-   scheme, on Universal Credit without earned income. Benefit receipt counts
-   only for the claimant or partner of the award; a self-employed loss counts
-   as nil earnings (UC reg 57(2)).
+   scheme, on Universal Credit without earned income, or an adult for whom
+   someone else is entitled to child benefit (LGFA 1992 Sch 1 para 3). IS,
+   JSA(IB), ESA(IR) and SPC count only for the person they are payable to;
+   Universal Credit for both joint claimants; a self-employed loss counts as
+   nil earnings (UC reg 57(2)).
 """
 
 from pathlib import Path
@@ -238,6 +240,7 @@ def calculate(sim, year):
             "council_tax_reduction_individual_non_dep_deduction",
             "is_benunit_head",
             "is_child_or_qualifying_young_person_for_child_benefit",
+            "is_qualifying_young_person_for_child_benefit",
         ],
         benunit=[
             "housing_benefit_non_dep_deductions",
@@ -373,9 +376,16 @@ def test_non_dependant_deduction_invariants(population, year):
         if nd is None:
             continue
         # 9. The exemptions, read straight from the inputs.
-        # A family award belongs to its claimant and partner; a self-employed
-        # loss counts as nil earnings (UC reg 57(2)).
-        on = {b: bool(couple[i]) and household["benefits"][b] > 0 for b in BENEFITS}
+        # IS, JSA(IB), ESA(IR) and SPC count for their payee: here the benefit
+        # unit's head, as no member reports them (HB reg 2(3)-(3A)). Universal
+        # Credit counts for both joint claimants. A self-employed loss counts as
+        # nil earnings (UC reg 57(2)).
+        payee = bool(r["is_benunit_head"][i])
+        on = {
+            b: (bool(couple[i]) if b == "universal_credit_pre_benefit_cap" else payee)
+            and household["benefits"][b] > 0
+            for b in BENEFITS
+        }
         student = nd["education"] != "NOT_IN_EDUCATION"
         # Inputs are stored as float32, so a tiny draw can underflow to nil.
         earned = (
@@ -406,6 +416,13 @@ def test_non_dependant_deduction_invariants(population, year):
                 ]
             )
             or (national and uc_without_earnings)
+            # LGFA 1992 Sch 1 para 3: an adult qualifying young person in
+            # someone else's family.
+            or (
+                nd["age"] >= 18
+                and bool(r["is_qualifying_young_person_for_child_benefit"][i])
+                and not couple[i]
+            )
         )
         assert (
             bool(r["council_tax_reduction_non_dep_deduction_exempt"][i]) == ctr_exempt
