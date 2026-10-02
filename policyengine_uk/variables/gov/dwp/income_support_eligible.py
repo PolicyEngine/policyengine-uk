@@ -25,7 +25,13 @@ class income_support_eligible(Variable):
         "the claimant nor the partner may be entitled to income-related ESA "
         "or income-based JSA. An adult in the benefit unit who is neither the "
         "claimant nor the partner (such as a non-dependent adult) does not "
-        "affect eligibility."
+        "affect eligibility, except in one case. An award entered directly as "
+        "esa_income or jsa_income is taken to be the claimant's or partner's "
+        "unless it equals, to within half a penny at the precision the award "
+        "is stored in, the award all the reported "
+        "amounts give or their plain total; then the reported amounts decide "
+        "whose it is. So another member's report can change how a directly "
+        "entered award is read."
     )
     definition_period = YEAR
     reference = (
@@ -161,9 +167,16 @@ class income_support_eligible(Variable):
             period,
             benunit.sum(person("jsa_income_reported", period) * claimant_or_partner),
         )
+        # Compare in the stored award's precision: the holder keeps it as
+        # float32, while the sums are float64.
         jsa_as_reported = np.isclose(
-            jsa_income, jsa_award_on_all_reports, rtol=0, atol=0.005
-        ) | np.isclose(jsa_income, jsa_reported_total, rtol=0, atol=0.005)
+            jsa_income,
+            jsa_award_on_all_reports.astype(jsa_income.dtype),
+            rtol=0,
+            atol=0.005,
+        ) | np.isclose(
+            jsa_income, jsa_reported_total.astype(jsa_income.dtype), rtol=0, atol=0.005
+        )
         income_based_jsa = where(
             jsa_as_reported,
             jsa_award_on_claimant_or_partner_reports > 0,
