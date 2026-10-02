@@ -518,7 +518,7 @@
   # younger, is presumed the flagged claimant's child, so their earnings drop
   # out of the UC means test.
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
     people:
       claimant:
@@ -542,7 +542,7 @@
 
 - name: Flagging both partners keeps the large-gap couple
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
     people:
       claimant:
@@ -568,7 +568,7 @@
 
 - name: Supplying claimant and partner roles keeps the large-gap couple
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
     people:
       claimant:

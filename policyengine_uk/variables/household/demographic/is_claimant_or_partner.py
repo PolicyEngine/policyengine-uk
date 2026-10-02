@@ -24,9 +24,9 @@ class is_claimant_or_partner(Variable):
       years younger than the claimant is presumed to be their child if they
       are under 20 or the claimant is flagged as a parent (a PolicyEngine
       presumption for households entered without relationships). So a lone
-      parent flagged `is_parent` who lives with an unflagged adult son or
-      daughter is single, and the son or daughter is neither claimant nor
-      partner.
+      parent flagged `is_parent` who is the claimant and lives with an
+      unflagged son or daughter at least 16 years younger is single, and the
+      son or daughter is neither claimant nor partner.
     - Without any parent flag, a member aged 20 or over is never presumed a
       child. Survey benefit units carry no flags for childless couples, and
       those include large age gaps, so the model cannot tell such a couple
