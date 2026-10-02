@@ -99,3 +99,36 @@
   output:
     # 12,000 > 208.07 * 52, but no claimant reached SPA before the cutoff.
     is_savings_credit_eligible: false
+
+- name: Case 6, 2025 single claimant below the published threshold is ineligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        savings_credit_income: 10_100
+  output:
+    is_savings_credit_eligible: false
+
+- name: Case 7, 2025 couple below the published threshold is ineligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+      person2:
+        age: 78
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person, person2]
+        relation_type: COUPLE
+        savings_credit_income: 16_000
+  output:
+    is_savings_credit_eligible: false
