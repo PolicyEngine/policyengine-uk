@@ -22,7 +22,8 @@ def entered_directly(population, variable, period):
     """
     simulation = population.simulation
     period = periods.period(period)
-    keys = simulation._user_input_keys
+    # A simulation that no input has been set on yet has no record.
+    keys = getattr(simulation, "_user_input_keys", ())
     stored = set(simulation.get_holder(variable).get_known_branch_periods())
     for branch in simulation._get_visible_branch_names():
         if (branch, period) in stored:

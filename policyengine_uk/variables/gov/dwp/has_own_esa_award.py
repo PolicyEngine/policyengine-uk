@@ -25,12 +25,13 @@ class has_own_esa_award(Variable):
         income_related = person("esa_income_reported", period)
         own_report = (person("esa_contrib", period) > 0) | (income_related > 0)
         claimant = person("is_claimant_or_partner", period)
-        reported_by_couple = person.benunit.sum(income_related * claimant) > 0
-        entered_for_couple = (
-            person.benunit("claimant_or_partner_esa_income", period) > 0
-        ) & ~reported_by_couple
+        # An income-related award with no member's report behind it was
+        # entered for the family (esa_income).
+        entered_for_family = (person.benunit("esa_income", period) > 0) & (
+            person.benunit.sum(income_related) == 0
+        )
         head_first = person("is_benunit_head", period) * 1_000 + person("age", period)
         attributed = claimant & (
             person.get_rank(person.benunit, -head_first, condition=claimant) == 0
         )
-        return own_report | (entered_for_couple & attributed)
+        return own_report | (entered_for_family & attributed)
