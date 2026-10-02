@@ -1,0 +1,1 @@
+- Deprecate `gov.dwp.winter_fuel_payment.eligibility.taxable_income_test`: it is off from 2025 and has effect only in a reform that requires a relevant benefit. Its limit now admits total income equal to it. Use `gov.hmrc.income_tax.charges.winter_fuel_payment` for the charge.

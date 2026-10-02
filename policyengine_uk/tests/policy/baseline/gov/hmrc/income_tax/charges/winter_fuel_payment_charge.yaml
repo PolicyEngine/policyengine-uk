@@ -1,0 +1,485 @@
+# The winter fuel payment charge, ITEPA 2003 s.681I (inserted by FA 2026
+# Sch. 10 para. 1, for 2025-26 on). Expected values are worked from the law:
+# - P is liable if entitled to a winter fuel payment for the qualifying week
+#   and P's own total income for the tax year exceeds £35,000 (s.681I(1));
+# - the charge equals the payment (s.681I(3));
+# - P is not liable if entitled to income support, income-based JSA, Pension
+#   Credit, income-related ESA or Universal Credit (s.681I(4) and (5));
+# - "winter fuel payment" covers SI 2025/969 (England and Wales), SSI 2024/351
+#   (Scotland's Pension Age Winter Heating Payment) and NISR 2025/142
+#   (Northern Ireland) (s.681I(6)(a));
+# - the charge is additional tax at Step 7 of the income tax calculation (ITA
+#   2007 ss.23 and 30).
+# The payments are worked from SI 2025/969 regs 2 to 4, NISR 2025/142 regs 2
+# and 3, and SSI 2024/351 reg 10 as substituted by SSI 2025/282 (amounts from
+# SSI 2025/100 and SSI 2026/170). Entitlement to a payment, and so who counts
+# as "a person entitled to a winter fuel payment" for the shared amounts, does
+# not depend on the charge. Benefit-unit awards are entered directly.
+
+- name: 2025 total income of exactly £35,000 is not charged
+  # s.681I(1)(b): total income must exceed £35,000. Reg. 2 and 3(1): £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 35_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    winter_fuel_allowance: 200
+
+- name: 2025 total income of £35,001 is charged the whole payment
+  # s.681I(1) and (3).
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 35_001
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+    winter_fuel_allowance: 200
+
+- name: 2025 a pensioner aged 85 with £50,000 is charged £300
+  # Reg. 3(4): £300 at 80 or over, living alone. s.681I(3): charge £300.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 85
+        total_income: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+  output:
+    winter_fuel_payment: [300]
+    winter_fuel_payment_charge: [300]
+
+- name: 2025 a couple is charged on each partner's own income
+  # Neither is on a relevant benefit and each lives with a person entitled:
+  # reg. 3(2), £100 each. Only the partner with total income over £35,000 is
+  # charged (s.681I(1)(b)); the other keeps £100.
+  period: 2025
+  input:
+    people:
+      partner_1:
+        age: 70
+        total_income: 50_000
+      partner_2:
+        age: 72
+        total_income: 10_000
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [100, 100]
+    winter_fuel_payment_charge: [100, 0]
+    winter_fuel_allowance: 200
+
+- name: 2025 a couple aged 82 and 85 both over £35,000 are each charged £150
+  # Reg. 3(6): over 80, no relevant benefit, living with an entitled person
+  # who has reached 80: £150 each. Both charged in full.
+  period: 2025
+  input:
+    people:
+      partner_1:
+        age: 82
+        total_income: 40_000
+      partner_2:
+        age: 85
+        total_income: 40_000
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [150, 150]
+    winter_fuel_payment_charge: [150, 150]
+    winter_fuel_allowance: 300
+
+- name: 2025 a person charged in full still counts as entitled for the shared amounts
+  # Two pensioners in separate benefit units. The 70-year-old is entitled
+  # under reg. 2 whatever their income, so each lives with a person entitled:
+  # the 70-year-old gets £100 (reg. 3(2)) and the 85-year-old £200 (reg.
+  # 3(5), living with an entitled person under 80), not £300. The charge
+  # recovers the 70-year-old's £100 (total income over £35,000).
+  period: 2025
+  input:
+    people:
+      high_income:
+        age: 70
+        total_income: 50_000
+      aged_85:
+        age: 85
+        total_income: 10_000
+    benunits:
+      unit_1:
+        members: [high_income]
+        pension_credit: 0
+      unit_2:
+        members: [aged_85]
+        pension_credit: 0
+    households:
+      household:
+        members: [high_income, aged_85]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [100, 200]
+    winter_fuel_payment_charge: [100, 0]
+    winter_fuel_allowance: 300
+
+- name: 2025 a lodger's own income is charged, not the Pension Credit recipient's
+  # The Pension Credit recipient: reg. 3(1), £200, not liable (s.681I(4)).
+  # The lodger, aged 72, on no relevant benefit and living with a person
+  # entitled: reg. 3(2), £100, charged (total income £40,000).
+  period: 2025
+  input:
+    people:
+      on_pension_credit:
+        age: 70
+      lodger:
+        age: 72
+        total_income: 40_000
+    benunits:
+      unit_1:
+        members: [on_pension_credit]
+        pension_credit: 1_000
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [on_pension_credit, lodger]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200, 100]
+    winter_fuel_payment_charge: [0, 100]
+    winter_fuel_allowance: 300
+
+- name: 2025 a non-dependant's income-related ESA does not exempt the pensioner
+  # s.681I(4) asks whether P is entitled to a relevant benefit. The son's ESA
+  # is his own award. The pensioner: reg. 3(1), £200, charged in full.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 50_000
+      son:
+        age: 40
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+        pension_credit: 0
+      son_unit:
+        members: [son]
+        esa_income: 4_000
+    households:
+      household:
+        members: [pensioner, son]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200, 0]
+    winter_fuel_payment_charge: [200, 0]
+    winter_fuel_allowance: 200
+
+- name: 2025 a pensioner in a Universal Credit couple is not charged
+  # A couple claims Universal Credit jointly. The 70-year-old is the only
+  # member of pensionable age: reg. 3(1), £200, not liable (s.681I(4) and
+  # (5)(e)) despite total income of £40,000.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 60
+      pensioner:
+        age: 70
+        total_income: 40_000
+    benunits:
+      couple:
+        members: [claimant, pensioner]
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [0, 200]
+    winter_fuel_payment_charge: [0, 0]
+
+- name: 2025 the partner of a Pension Credit claimant is not entitled and so not charged
+  # One payment for the couple, to the claimant who reports the award (reg.
+  # 4(2)(a)). The partner is not entitled to a winter fuel payment, so
+  # s.681I(1)(a) is not met whatever their income; the claimant is on Pension
+  # Credit (s.681I(4)).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        pension_credit_reported: 1_000
+      partner:
+        age: 72
+        total_income: 50_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200, 0]
+    winter_fuel_payment_charge: [0, 0]
+    winter_fuel_allowance: 200
+
+- name: 2025 Northern Ireland pays everyone of pensionable age
+  # NISR 2025/142 reg. 2 has no relevant-benefit condition; reg. 3(1): £200.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 20_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: NORTHERN_IRELAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+    winter_fuel_allowance: 200
+
+- name: 2025 the charge recovers a Northern Ireland payment
+  # s.681I(6)(a) includes payments under NISR 2025/142.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: NORTHERN_IRELAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [200]
+
+- name: 2025 the charge recovers Scotland's Pension Age Winter Heating Payment
+  # SSI 2024/351 reg. 10(5)(a) as substituted by SSI 2025/282: £203.40.
+  # s.681I(6)(a) includes payments under SSI 2024/351.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    winter_fuel_payment: [0]
+    pension_age_winter_heating_payment: [203.40]
+    winter_fuel_payment_charge: [203.40]
+    pawhp: 203.40
+
+- name: 2026 a Scottish couple aged 82 and 85 is charged on each partner's own income
+  # Reg. 10(6)(c) at the SSI 2026/170 amount: £158.35 each. Only the partner
+  # with total income over £35,000 is charged.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      partner_1:
+        age: 82
+        total_income: 40_000
+      partner_2:
+        age: 85
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [158.35, 158.35]
+    winter_fuel_payment_charge: [158.35, 0]
+    pawhp: 316.70
+
+- name: 2025 a Scottish Pension Credit recipient is not charged
+  # Reg. 10(4)(a): £305.10 at 80 or over on a relevant benefit. Not liable
+  # (s.681I(4)).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 82
+        total_income: 40_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [305.10]
+    winter_fuel_payment_charge: [0]
+
+- name: 2024 no charge before the tax year 2025-26
+  # FA 2026 Sch. 10 para. 5: the charge has effect from 2025-26. For the 2024
+  # week a relevant benefit was a condition of entitlement (SI 2024/869 reg.
+  # 2(2)(b)): £200 on Pension Credit, not charged.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 50_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [200]
+    winter_fuel_payment_charge: [0]
+
+- name: 2024 Northern Ireland paid only people on a relevant benefit
+  # NISR 2024/160 reg. 2(2)(b), as SI 2024/869 for England and Wales.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 70
+        total_income: 20_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: NORTHERN_IRELAND
+  output:
+    winter_fuel_payment: [0]
+    winter_fuel_payment_charge: [0]
+
+- name: 2025 the charge is added to income tax
+  # Private pension £50,000, no other income, England. Personal allowance
+  # £12,570; £37,430 at the basic rate of 20% = £7,486 (within the £37,700
+  # basic rate band). The charge, £200, is added at Step 7: £7,686. HBAI net
+  # income counts the payment and deducts the tax: 50,000 + 200 - 7,686 =
+  # £42,514.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 50_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    total_income: [50_000]
+    income_tax_before_winter_fuel_payment_charge: [7_486]
+    winter_fuel_payment_charge: [200]
+    income_tax: [7_686]
+    winter_fuel_allowance: 200
+    household_benefits: 200
+    hbai_household_net_income: 42_514
+
+- name: 2025 the payment is kept at £35,000 of private pension
+  # £22,430 at 20% = £4,486; no charge. HBAI net income: 35,000 + 200 -
+  # 4,486 = £30,714.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 35_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge: [0]
+    income_tax: [4_486]
+    hbai_household_net_income: 30_714
+
+- name: 2025 Scotland's payment is household income
+  # PAWHP counts in household benefits and HBAI income, like the Winter Fuel
+  # Payment it replaced in Scotland. Reg. 10(5)(a): £203.40; no charge.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 20_000
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    winter_fuel_payment_charge: [0]
+    pawhp: 203.40
+    household_benefits: 203.40
+    hbai_benefits: 203.40

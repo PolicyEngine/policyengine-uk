@@ -66,6 +66,9 @@ class council_tax_reduction_applicable_income(Variable):
             add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
         )
         tax = add_for_members(
-            benunit, period, ["income_tax", "national_insurance"], members
+            benunit,
+            period,
+            ["income_tax_before_winter_fuel_payment_charge", "national_insurance"],
+            members,
         )
         return max_(0, increased_income - tax - pension_contributions)

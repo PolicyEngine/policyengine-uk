@@ -1,11 +1,7 @@
-description: Households in England or Wales with pensioners earning under this amount of yearly taxable income are eligible for the Winter Fuel Payment. This stands in for the winter fuel payment charge, which recovers the payment from a person whose own total income exceeds £35,000 and who is not entitled to a relevant benefit.
+description: Deprecated; use gov.hmrc.income_tax.charges.winter_fuel_payment.income_threshold for the winter fuel payment charge. The household income test (use_maximum_taxable_income) pays a person not on a relevant benefit if a member of their household who has reached pensionable age has total income at or under this amount. It has effect only when that test is switched on and a relevant benefit is required (require_benefits).
 values:
   2000-01-01: 0
-  2025-01-01:
-    value: 35_000
-    reference:
-      - title: Finance Act 2026, Sch. 10 para. 1 (ITEPA 2003 s.681I(1)(b), for 2025-26 on)
-        href: https://www.legislation.gov.uk/ukpga/2026/11/schedule/10
+  2025-01-01: 35_000
 metadata:
   unit: currency-GBP
-  label: Winter Fuel Payment maximum taxable income
+  label: Winter Fuel Payment household income test limit (deprecated)

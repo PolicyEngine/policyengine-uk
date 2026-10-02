@@ -35,6 +35,7 @@ class hbai_benefits(Variable):
         "ssmg",
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
+        "pawhp",
         "tax_free_childcare",
         "childcare_grant",
         "parents_learning_allowance",

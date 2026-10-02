@@ -1,14 +1,22 @@
 """The Winter Fuel Payment and the Pension Age Winter Heating Payment follow
-each person's own receipt of a relevant benefit.
+each person's own receipt of a relevant benefit, and the winter fuel payment
+charge follows each person's own total income.
 
 Both schemes entitle and pay a person (SI 2000/729 reg 2; SI 2024/869 regs
-2 to 4; SI 2025/969 regs 2 to 4; SSI 2024/351 regs 5, 9 and 10). A person is
-on a relevant benefit through their own award or, for the claimant and
-partner, their couple's award. Properties:
+2 to 4; SI 2025/969 regs 2 to 4; NISR 2025/142 regs 2 to 4; SSI 2024/351
+regs 5, 9 and 10). A person is on a relevant benefit through their own award
+or, for the claimant and partner, their couple's award. From 2025-26 the
+winter fuel payment charge (ITEPA 2003 s.681I) recovers a person's payment
+through income tax when their own total income exceeds £35,000 and they are
+not entitled to a relevant benefit. Properties:
 
 - the model matches a reference implementation written directly from the
-  regulations, person by person, over households of up to three benefit
-  units, in every country and in the 2023 to 2026 qualifying weeks;
+  regulations and s.681I, person by person, over households of up to three
+  benefit units, in every country and in the 2023 to 2026 qualifying weeks:
+  payments, charges, and income tax with and without the charge;
+- incomes never change anyone's payment, only the charge: entitlement, and
+  so who counts as another entitled person for the shared amounts, comes
+  before the charge;
 - adding a non-dependant under pensionable age, with or without a relevant
   benefit of their own, never changes what anyone else is paid;
 - from the 2025 qualifying week, a household whose pension-age members all
@@ -35,7 +43,8 @@ COUNTRIES = ["ENGLAND", "WALES", "SCOTLAND", "NORTHERN_IRELAND"]
 # Ages either side of pensionable age (66 to 67 over these years) and of 80.
 PENSION_AGES = [67, 70, 79, 80, 85]
 AGES = [40, 60, *PENSION_AGES]
-INCOMES = [5_000, 20_000, 50_000]
+# Either side of the £35,000 charge threshold, and exactly on it.
+INCOMES = [5_000, 20_000, 35_000, 35_001, 50_000]
 AWARD = 1_000
 # The benefit-unit award a couple can be on, and the input that carries it.
 AWARD_INPUTS = {
@@ -93,7 +102,9 @@ PAWHP_AMOUNTS = {
     # SSI 2026/170 reg 15(3).
     2026: (211.15, 316.70, 105.55, 211.15, 158.35),
 }
-INCOME_LIMIT = 35_000
+# ITEPA 2003 s.681I(1)(b) and (5), from the tax year 2025-26.
+CHARGE_THRESHOLD = 35_000
+CHARGE_RELEVANT = {"IS", "JSA", "PC", "ESA", "UC"}
 
 
 @st.composite
@@ -259,23 +270,38 @@ def reference_payments(household, year):
 
     if year <= 2023:
         wfp_resident = True
-        wfp_means = True
     else:
         wfp_resident = country in ("ENGLAND", "WALES", "NORTHERN_IRELAND")
-        if year == 2024:
-            wfp_means = False
-        else:
-            # The model's stand-in for the winter fuel payment charge.
-            wfp_means = country in ("ENGLAND", "WALES") and any(
-                p[0]["age"] >= 67 and p[0]["total_income"] < INCOME_LIMIT
-                for p in people
-            )
+    # Only the 2024 regulations (SI 2024/869 reg 2(2)(b); NISR 2024/160)
+    # made a relevant benefit a condition of entitlement.
+    wfp_means = year != 2024
     wfp = scheme(wfp_resident, WFP_RELEVANT[year], wfp_means, WFP_AMOUNTS)
     if year >= 2024 and country == "SCOTLAND":
         pawhp = scheme(True, PAWHP_RELEVANT[year], year >= 2025, PAWHP_AMOUNTS[year])
     else:
         pawhp = [0.0] * len(people)
     return wfp, pawhp
+
+
+def reference_charges(household, year, payments):
+    """The winter fuel payment charge on each person (ITEPA 2003 s.681I).
+
+    ``payments`` is each person's winter fuel payment of any kind (s.681I(6)
+    (a)). The charge is the whole payment (s.681I(3)) when the person's own
+    total income exceeds £35,000 (s.681I(1)(b)) and they are not entitled to
+    a relevant benefit (s.681I(4) and (5)), from 2025-26.
+    """
+    if year < 2025:
+        return [0.0] * len(payments)
+    units = household["units"]
+    charges = []
+    for (inputs, u, cp), payment in zip(household_people(household), payments):
+        award = units[u]["award"] if cp else inputs.get("own_award")
+        liable = (
+            inputs["total_income"] > CHARGE_THRESHOLD and award not in CHARGE_RELEVANT
+        )
+        charges.append(payment if liable else 0.0)
+    return charges
 
 
 SETTINGS = settings(
@@ -292,14 +318,34 @@ def test_payments_match_reference(year, drawn):
     sim = Simulation(situation=situation(drawn, year))
     wfp = sim.calculate("winter_fuel_payment", year)
     pawhp = sim.calculate("pension_age_winter_heating_payment", year)
+    charge = sim.calculate("winter_fuel_payment_charge", year)
+    income_tax = sim.calculate("income_tax", year)
+    before_charge = sim.calculate("income_tax_before_winter_fuel_payment_charge", year)
     wfa_household = sim.calculate("winter_fuel_allowance", year)
     pawhp_household = sim.calculate("pawhp", year)
     start = 0
     for h, household in enumerate(drawn):
         expected_wfp, expected_pawhp = reference_payments(household, year)
+        expected_charge = reference_charges(
+            household, year, [a + b for a, b in zip(expected_wfp, expected_pawhp)]
+        )
         n = len(expected_wfp)
         got_wfp = wfp[start : start + n]
         got_pawhp = pawhp[start : start + n]
+        got_charge = charge[start : start + n]
+        assert np.allclose(got_charge, expected_charge, atol=0.005), (
+            year,
+            household,
+            got_charge,
+            expected_charge,
+        )
+        # The charge is added to income tax after everything else (ITA 2007
+        # s.23 Step 7).
+        assert np.allclose(
+            income_tax[start : start + n] - before_charge[start : start + n],
+            expected_charge,
+            atol=0.005,
+        )
         assert np.allclose(got_wfp, expected_wfp, atol=0.005), (
             year,
             household,
@@ -400,7 +446,7 @@ def one_unit_households(draw):
     if not any(a["age"] >= 67 for a in adults):
         adults[0]["age"] = draw(st.sampled_from(PENSION_AGES))
     return {
-        "country": draw(st.sampled_from(["ENGLAND", "WALES", "SCOTLAND"])),
+        "country": draw(st.sampled_from(COUNTRIES)),
         "units": [
             {
                 "adults": adults,
@@ -438,3 +484,49 @@ def test_one_benefit_unit_receives_the_full_amount(year, drawn):
         else:
             assert wfa[h] == (300 if any_80 else 200), (year, household)
             assert pawhp[h] == 0
+
+
+def with_incomes(household, income):
+    """The household with every member's total income set to ``income``."""
+    units = [
+        {**u, "adults": [{**a, "total_income": income} for a in u["adults"]]}
+        for u in household["units"]
+    ]
+    other = household["other"]
+    if other is not None:
+        other = {**other, "total_income": income}
+    return {**household, "units": units, "other": other}
+
+
+@SETTINGS
+@given(
+    st.sampled_from([2025, 2026]),
+    st.lists(households(), min_size=1, max_size=6),
+)
+def test_incomes_change_only_the_charge(year, drawn):
+    """The same households with everyone on £5,000 and everyone on £50,000:
+    the payments are identical (entitlement, and so the shared amounts, does
+    not depend on income), nobody on £5,000 is charged, and everyone on
+    £50,000 who is paid and not on a relevant benefit is charged their whole
+    payment."""
+    low = [with_incomes(h, 5_000) for h in drawn]
+    high = [with_incomes(h, 50_000) for h in drawn]
+    sim = Simulation(situation=situation(low + high, year))
+    paid = sim.calculate("winter_fuel_payment", year) + sim.calculate(
+        "pension_age_winter_heating_payment", year
+    )
+    charge = sim.calculate("winter_fuel_payment_charge", year)
+    relevant = np.zeros_like(charge, dtype=bool)
+    for variable in [
+        "is_on_income_support",
+        "is_on_income_based_jsa",
+        "is_on_pension_credit",
+        "is_on_income_related_esa",
+        "is_on_universal_credit",
+    ]:
+        relevant |= sim.calculate(variable, year).astype(bool)
+    n = len(paid) // 2
+    assert np.allclose(paid[:n], paid[n:], atol=0.005), (year, drawn)
+    assert np.all(charge[:n] == 0), (year, drawn)
+    assert np.allclose(charge[n:], np.where(relevant[n:], 0, paid[n:]), atol=0.005)
+    assert np.all(charge <= paid + 0.005)

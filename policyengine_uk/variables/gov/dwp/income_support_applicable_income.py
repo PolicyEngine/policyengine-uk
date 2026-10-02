@@ -30,7 +30,10 @@ class income_support_applicable_income(Variable):
             INCOME_COMPONENTS.append("basic_income")
         income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
         tax = add_for_members(
-            benunit, period, ["income_tax", "national_insurance"], members
+            benunit,
+            period,
+            ["income_tax_before_winter_fuel_payment_charge", "national_insurance"],
+            members,
         )
         income += add_for_members(benunit, period, ["social_security_income"], members)
         income += benunit("income_support_tariff_income", period)

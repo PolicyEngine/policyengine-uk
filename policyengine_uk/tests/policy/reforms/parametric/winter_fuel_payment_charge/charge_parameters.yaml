@@ -1,0 +1,51 @@
+# Reforms to the winter fuel payment charge parameters
+# (gov.hmrc.income_tax.charges.winter_fuel_payment).
+
+- name: A higher income threshold - total income under it is not charged
+  period: 2025
+  input:
+    gov.hmrc.income_tax.charges.winter_fuel_payment.income_threshold: 50_000
+    age: 70
+    country: ENGLAND
+    total_income: 45_000
+    pension_credit: 0
+  output:
+    winter_fuel_payment: 200
+    winter_fuel_payment_charge: 0
+
+- name: A higher income threshold - total income over it is charged
+  period: 2025
+  input:
+    gov.hmrc.income_tax.charges.winter_fuel_payment.income_threshold: 50_000
+    age: 70
+    country: ENGLAND
+    total_income: 50_001
+    pension_credit: 0
+  output:
+    winter_fuel_payment: 200
+    winter_fuel_payment_charge: 200
+
+- name: Repealing the charge leaves the payment with everyone
+  period: 2025
+  input:
+    gov.hmrc.income_tax.charges.winter_fuel_payment.in_effect: false
+    age: 70
+    country: ENGLAND
+    total_income: 50_000
+    pension_credit: 0
+  output:
+    winter_fuel_payment: 200
+    winter_fuel_payment_charge: 0
+
+- name: Charging a universal payment for the 2024 qualifying week
+  period: 2024
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.require_benefits: false
+    gov.hmrc.income_tax.charges.winter_fuel_payment.in_effect: true
+    age: 70
+    country: ENGLAND
+    total_income: 50_000
+    pension_credit: 0
+  output:
+    winter_fuel_payment: 200
+    winter_fuel_payment_charge: 200
