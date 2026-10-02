@@ -38,6 +38,15 @@ class housing_benefit_applicable_income(Variable):
             "statutory_sick_pay",
             "statutory_maternity_pay",
             "ssmg",
+            # Counted by both regimes: HB (SPC) Regs 2006 reg 29(1)(j), which
+            # excepts only the IIDB increases under SSCBA ss.104-105 and Sch 8
+            # (heads (iii)-(v)), and HB Regs 2006 reg 40 with Sch 5, whose
+            # para 9 attendance allowance disregard covers the ss.104-105
+            # increases (reg 2(1)). iidb is the whole reported payment and
+            # cannot separate those increases.
+            "iidb",
+            "sda",
+            "incapacity_benefit",
         ]
         INCOME_COMPONENTS = [
             "employment_income",
