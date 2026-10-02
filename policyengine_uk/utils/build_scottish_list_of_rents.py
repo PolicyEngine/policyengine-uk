@@ -4,9 +4,10 @@ The Scottish rows that came with the file were copies of English BRMAs' lists.
 The Scottish Government released Rent Service Scotland's market evidence, one
 row per rent, under FOI 202200303624. Each worksheet holds the rents collected
 in the twelve months to September of its year, which set the next April's
-determination, so sheet ``Y - 1`` is the list for April ``Y``. This replaces the
-Scottish rows for 2019 and 2020 with sheets 2018 and 2019, keeping only each
-rent, its BRMA and its LHA category, and leaves every other row as it was.
+determination, so sheet ``Y - 1`` is the list for April ``Y``. This replaces all
+Scottish rows with sheets 2018 and 2019 as the lists for 2019 and 2020, keeping
+only each rent, its BRMA and its LHA category, and leaves every other row as it
+was.
 
 Spreadsheet readers are not runtime dependencies, so run the build with them:
 
@@ -48,7 +49,7 @@ def scottish_lists(path: Path) -> pd.DataFrame:
     for year in YEARS:
         sheet = pd.read_excel(path, sheet_name=str(year - 1)).dropna(how="all")
         # Sheet 2019 ends with two rents that name no BRMA; they cannot be placed.
-        assert sheet["BRMA"].isna().sum() <= 2
+        assert sheet["BRMA"].isna().sum() == (2 if year == 2020 else 0)
         sheet = sheet[sheet["BRMA"].notna()]
         assert (sheet["FREQUENCY"] == "Weekly").all()
         assert (
@@ -59,6 +60,7 @@ def scottish_lists(path: Path) -> pd.DataFrame:
         frames.append(
             pd.DataFrame(
                 {
+                    # Rents are whole pennies; rounding only guards the float.
                     "weekly_rent": sheet["NET RENT"].astype(float).round(2),
                     "year": year,
                     "brma": sheet["BRMA"].map(scottish_brma),

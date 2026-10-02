@@ -379,36 +379,36 @@ def test_welsh_and_ni_percentile_ratios_use_the_english_median():
     So a percentile reform scales their published rates by the median English
     ratio for the category, not by a copied list's shape.
     """
-    from policyengine_uk.utils.lha import _percentile_ratios, _sorted_list_of_rents
-
-    _, regions = _sorted_list_of_rents()
-    ratios = _percentile_ratios(0.5)
-    brmas = published_rates().brmas
-    english = [
-        i
-        for i, b in enumerate(brmas)
-        if regions.get(b) not in (None, "WALES", "SCOTLAND", "NORTHERN_IRELAND")
-    ]
-    for b in ("CARDIFF", "BELFAST"):
-        row = ratios[brmas.get_loc(b)]
-        np.testing.assert_allclose(row, np.median(ratios[english], axis=0))
-    assert (ratios >= 1).all()
-
-
-def test_scottish_percentile_ratios_use_scotlands_own_lists():
     from policyengine_uk.utils.lha import (
+        NON_ENGLISH_REGIONS,
         _percentile_ratios,
         _sorted_list_of_rents,
         statutory_percentile,
     )
 
-    lists, _ = _sorted_list_of_rents()
+    lists, regions = _sorted_list_of_rents()
     ratios = _percentile_ratios(0.5)
     brmas = published_rates().brmas
-    for b, c in (("LOTHIAN", "C"), ("GREATER_GLASGOW", "E")):
-        rents = lists[(b, c)]
-        expected = statutory_percentile(rents, 0.5) / statutory_percentile(rents, 0.3)
-        assert ratios[brmas.get_loc(b), "ABCDE".index(c)] == pytest.approx(expected)
+    english = {category: [] for category in "ABCDE"}
+    for (brma, category), rents in lists.items():
+        if regions[brma] not in NON_ENGLISH_REGIONS:
+            english[category].append(
+                statutory_percentile(rents, 0.5) / statutory_percentile(rents, 0.3)
+            )
+    median = [np.median(english[category]) for category in "ABCDE"]
+    for b in ("CARDIFF", "BELFAST"):
+        np.testing.assert_allclose(ratios[brmas.get_loc(b)], median)
+    assert (ratios >= 1).all()
+
+
+def test_scottish_percentile_ratios_use_scotlands_own_lists():
+    """Ratios from Rent Service Scotland's April 2020 lists (FOI 202200303624)."""
+    from policyengine_uk.utils.lha import _percentile_ratios
+
+    ratios = _percentile_ratios(0.5)
+    brmas = published_rates().brmas
+    assert ratios[brmas.get_loc("GREATER_GLASGOW"), 3] == pytest.approx(1.267, abs=5e-4)
+    assert ratios[brmas.get_loc("LOTHIAN"), 2] == pytest.approx(1.091, abs=5e-4)
 
 
 def test_scottish_lists_are_rent_service_scotlands_own():
@@ -416,6 +416,7 @@ def test_scottish_lists_are_rent_service_scotlands_own():
     percentiles and copy no English list, unlike the rows they replaced."""
     from policyengine_uk.utils.lha import (
         LIST_OF_RENTS_PATH,
+        NON_ENGLISH_REGIONS,
         round_half_up,
         statutory_percentile,
     )
@@ -431,7 +432,7 @@ def test_scottish_lists_are_rent_service_scotlands_own():
     english = {
         rents
         for (region, *_), rents in blocks.items()
-        if region not in ("WALES", "SCOTLAND", "NORTHERN_IRELAND")
+        if region not in NON_ENGLISH_REGIONS
     }
     scottish = {k: v for k, v in blocks.items() if k[0] == "SCOTLAND"}
     assert len(scottish) == 2 * 18 * 5

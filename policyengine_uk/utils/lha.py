@@ -131,6 +131,7 @@ def published_rates() -> PublishedRates:
     return PublishedRates(pd.read_csv(PUBLISHED_RATES_PATH))
 
 
+NON_ENGLISH_REGIONS = ("WALES", "SCOTLAND", "NORTHERN_IRELAND")
 # The Welsh and Northern Irish lists in the file are copies of English BRMAs'
 # lists, often of another category, so they do not describe their own areas.
 # The Scottish lists are Rent Service Scotland's own (FOI 202200303624; see
@@ -140,12 +141,12 @@ COPIED_LIST_REGIONS = ("WALES", "NORTHERN_IRELAND")
 
 @lru_cache(maxsize=1)
 def _sorted_list_of_rents() -> tuple[dict, dict]:
-    """The latest list of rents, sorted, keyed by (BRMA, category).
+    """Each region's latest list of rents, sorted, keyed by (BRMA, category).
 
     Returns the lists and each BRMA's region.
     """
     rents = pd.read_csv(LIST_OF_RENTS_PATH)
-    rents = rents[rents.year == rents.year.max()]
+    rents = rents[rents.year == rents.groupby("region").year.transform("max")]
     lists = {
         key: np.sort(group.weekly_rent.to_numpy(dtype=float))
         for key, group in rents.groupby(["brma", "lha_category"])
@@ -194,7 +195,7 @@ def _percentile_ratios(percentile: float) -> np.ndarray:
         if base > 0:
             ratio = statutory_percentile(rents, percentile) / base
             ratios[position, CATEGORIES.index(category)] = ratio
-            if regions[brma] != "SCOTLAND":
+            if regions[brma] not in NON_ENGLISH_REGIONS:
                 english[category].append(ratio)
     for brma in copied:
         position = rates.brmas.get_indexer([brma])[0]
