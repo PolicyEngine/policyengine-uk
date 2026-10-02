@@ -1,0 +1,555 @@
+# Income Support conditions name the claimant and, for some, the partner.
+# SSCBA 1992 s.124(1): a person is entitled to Income Support if
+#   (aa) "he has not attained the qualifying age for state pension credit";
+#   (e) "he falls within a prescribed category of person" (reg 4ZA, Sch 1B;
+#       the model covers para 1, a lone parent of a child under 5; para 2,
+#       a single claimant or lone parent with whom a child is placed; and
+#       para 4, a carer);
+#   (g) "if he is a member of a couple, the other member of the couple is not
+#       entitled to state pension credit"; and
+#   (h) "he is not entitled to an employment and support allowance and, if he
+#       is a member of a couple, the other member of the couple is not entitled
+#       to an income-related employment and support allowance".
+# No new claim for Income Support can be made (UC (Transitional Provisions)
+# Regs 2014 reg 6A(1)). A couple choose which of them claims (Claims and
+# Payments Regs 1987 reg 4(3)), but a partner who takes over an award does so
+# by claiming (reg 4(4)), so the claimant is the partner with the existing
+# award. The model takes that to be the claimant or partner who reports
+# Income Support.
+#
+# An adult who is neither the claimant nor the partner (here given
+# is_claimant_or_partner: false) is named by none of these conditions, so it
+# never changes eligibility. A child placed by a local authority is not a
+# member of the claimant's household (IS Regs 1987 reg 16(4)), so it is not a
+# young child for para 1, but it brings a single claimant within para 2.
+# These cases test the model's bounded gate:
+# caring is is_carer_for_benefits, ESA and Income Support are reported
+# awards, and the means test is out of scope. 2025 is used because the model
+# pays Income Support until 2025-26; state pension age is 66 in 2025.
+
+- name: An excluded member over state pension age does not bar the carer route
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 70
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        income_support_assessable_capital: 0
+  output:
+    is_SP_age: [false, true]
+    income_support_eligible: true
+
+- name: An excluded member's income-related ESA does not bar the carer route
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        esa_income_reported: 5_000
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        income_support_assessable_capital: 0
+        esa_income_assessable_capital: 0
+  output:
+    # The benefit unit's reported award is still paid; it is the excluded
+    # member's own award, not the claimant's or partner's.
+    esa_income: 5_000
+    income_support_eligible: true
+
+- name: An excluded member's contributory ESA does not bar the carer route
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        esa_contrib_reported: 5_000
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: true
+
+- name: An excluded member's reported Income Support is not the claimant's award
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: false
+
+- name: An excluded member's caring does not open the carer route
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        income_support_assessable_capital: 0
+  output:
+    is_carer_for_benefits: [false, true]
+    income_support_eligible: false
+
+- name: A lone parent's route is unchanged by an excluded adult in the benefit unit
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      child:
+        age: 3
+        is_claimant_or_partner: false
+      grandparent:
+        age: 72
+        is_claimant_or_partner: false
+        esa_income_reported: 2_000
+        esa_contrib_reported: 1_000
+    benunits:
+      family:
+        members: [parent, child, grandparent]
+        income_support_assessable_capital: 0
+        esa_income_assessable_capital: 0
+  output:
+    is_lone_parent: true
+    youngest_child_age_for_legacy_benefits: 3
+    income_support_eligible: true
+
+- name: A carer cannot take over the award of a partner who does not care
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    # The partner has the award but is in no prescribed category; the carer
+    # could only claim, and reg 6A(1) bars a new claim.
+    income_support_eligible: false
+
+- name: A child placed with a lone parent brings them within Sch 1B para 2, not para 1
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        is_claimant_or_partner: true
+        is_parent: true
+        income_support_reported: 1_000
+      child:
+        age: 8
+        is_claimant_or_partner: false
+      placed_child:
+        age: 3
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [parent, child, placed_child]
+        income_support_assessable_capital: 0
+  output:
+    # IS Regs 1987 reg 16(4): a child placed by a local authority is not a
+    # member of the claimant's household, so the youngest child is 8 and
+    # para 1 does not apply. Para 2: "A single claimant or a lone parent with
+    # whom a child is placed" by a local authority.
+    is_child_or_young_person_for_legacy_benefits: [false, true, false]
+    youngest_child_age_for_legacy_benefits: 8
+    income_support_eligible: true
+
+- name: A single claimant with only a placed child is within Sch 1B para 2
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      placed_child:
+        age: 10
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [claimant, placed_child]
+        income_support_assessable_capital: 0
+  output:
+    is_lone_parent: false
+    income_support_eligible: true
+
+- name: A placed member aged 15 is a child for Sch 1B para 2, aged 16 is not
+  period: 2025
+  input:
+    people:
+      claimant1:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      placed15:
+        age: 15
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+      claimant2:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      placed16:
+        age: 16
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family1:
+        members: [claimant1, placed15]
+        income_support_assessable_capital: 0
+      family2:
+        members: [claimant2, placed16]
+        income_support_assessable_capital: 0
+  output:
+    # A child is a person under 16 (SSCBA 1992 s.137(1)).
+    income_support_eligible: [true, false]
+
+- name: A couple with a placed child are not within Sch 1B para 2
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+      placed_child:
+        age: 3
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [claimant, partner, placed_child]
+        income_support_assessable_capital: 0
+  output:
+    # Para 2 needs a single claimant or lone parent; neither partner cares.
+    income_support_eligible: false
+
+# s.124(1)(aa) and (g): the claimant's age, and the partner's SPC entitlement.
+
+- name: A mixed-age couple can claim through the younger partner who cares
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 60
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    is_SP_age: [false, true]
+    # SPCA 2002 s.4(1A): a member of a mixed-age couple is not entitled to
+    # State Pension Credit, so s.124(1)(g) does not bar the younger partner.
+    is_pension_credit_eligible: false
+    income_support_eligible: true
+
+- name: A younger carer cannot take over an older partner's award
+  period: 2025
+  input:
+    people:
+      holder:
+        age: 67
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [holder, carer]
+        income_support_assessable_capital: 0
+  output:
+    # The award holder is over state pension age and not a carer; the carer
+    # would have to make a new claim (reg 4(4)), which reg 6A(1) bars.
+    income_support_eligible: false
+
+- name: A carer over state pension age cannot claim, and the younger partner is not a carer
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 70
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 60
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: false
+
+- name: A single carer over state pension age cannot claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 70
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: false
+
+# s.124(1)(h): the claimant has no ESA of either kind; the partner has no
+# income-related ESA.
+
+- name: A single carer entitled to contributory ESA cannot claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        esa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: false
+
+- name: The carer can claim when only the partner has contributory ESA
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 42
+        is_claimant_or_partner: true
+        esa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: true
+
+- name: Neither partner can claim when the carer has contributory ESA
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        esa_contrib_reported: 3_000
+      partner:
+        age: 42
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: false
+
+- name: The partner's income-related ESA bars the carer route
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 42
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+        esa_income_assessable_capital: 0
+  output:
+    esa_income: 3_000
+    income_support_eligible: false
+
+- name: A reported award the ESA capital test screens out does not bar the carer route
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 42
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+        # Above the £16,000 ESA capital limit (ESA Regs 2008 reg 110).
+        esa_income_assessable_capital: 20_000
+  output:
+    esa_income: 0
+    income_support_eligible: true
+
+- name: An award entered directly bars the claim even when an excluded member reports ESA
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        esa_income_reported: 5_000
+    benunits:
+      family:
+        members: [carer, other_adult]
+        income_support_assessable_capital: 0
+        esa_income: 3_000
+  output:
+    income_support_eligible: false
+
+- name: A zero award entered directly overrides the claimant's reported ESA
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        esa_income_reported: 2_000
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+        esa_income: 0
+  output:
+    # The model pays no income-related ESA, so none bars Income Support.
+    income_support_eligible: true
+
+- name: An income-related ESA award entered directly is the claimant's or partner's
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+        esa_income: 3_000
+  output:
+    income_support_eligible: false
+
+# Roles inferred rather than given: a couple flagged as parents, their child
+# and a grandparent. The grandparent is neither claimant nor partner
+# (is_claimant_or_partner), so their age, ESA and caring do not count.
+
+- name: An inferred grandparent does not change a couple's carer route
+  period: 2025
+  input:
+    people:
+      mother:
+        age: 34
+        is_parent: true
+        is_benunit_head: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      father:
+        age: 36
+        is_parent: true
+      child:
+        age: 8
+      grandparent:
+        age: 71
+        esa_income_reported: 2_000
+    benunits:
+      family:
+        members: [mother, father, child, grandparent]
+        income_support_assessable_capital: 0
+        esa_income_assessable_capital: 0
+  output:
+    is_claimant_or_partner: [true, true, false, false]
+    income_support_eligible: true

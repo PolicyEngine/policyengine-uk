@@ -1,0 +1,273 @@
+# Working-age council tax reduction passport: the applicant or partner is on
+# Income Support, income-based JSA or income-related ESA (CTR (Default Scheme)
+# (England) Regs 2012, Schedule; the local schemes follow it). A member who is
+# neither the applicant, the partner nor a child or young person they are
+# responsible for ("other") claims in their own right.
+
+- name: Another member's income-related ESA does not passport the applicant
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    council_tax_reduction_relevant_income_based_benefit: false
+
+- name: The applicant's own income-related ESA passports them
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+
+- name: Another member's income-based JSA does not passport the applicant
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    council_tax_reduction_relevant_income_based_benefit: false
+
+- name: The partner's income-based JSA passports the applicant
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+
+- name: Another member's Income Support report does not passport the applicant
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 4_000
+        receives_carer_benefit: true
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    income_support: 0
+    council_tax_reduction_relevant_income_based_benefit: false
+
+- name: An entered Income Support award passports the applicant
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant]
+        income_support: 1_000
+    households:
+      household:
+        members: [claimant]
+  output:
+    council_tax_reduction_relevant_income_based_benefit: true
+
+# Non-dependant deductions (Merton's working-age scheme, which follows the
+# Default Scheme): no deduction for a non-dependant "who is on" Income Support,
+# income-based JSA or income-related ESA. One deduction is made per non-
+# dependant benefit unit (the higher of its members'); Merton's lowest band is
+# £5.20 a week for a non-dependant not in remunerative work, £270.40 a year.
+# The applicant is the eldest, so their benefit unit holds the household head;
+# the non-dependant benefit unit is a claimant ("nondep") and another adult
+# ("other") who is neither their partner nor their dependant. Universal Credit
+# is entered as 0 for that benefit unit so that its no-earnings exemption does
+# not apply.
+
+- name: Another member's ESA does not exempt a non-dependant from the deduction
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+      nondep:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+      other:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 4_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      nondep_unit:
+        members: [nondep, other]
+        universal_credit: 0
+    households:
+      household:
+        members: [applicant, nondep, other]
+        country: ENGLAND
+        local_authority: MERTON
+  output:
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 270.40, 0]
+
+- name: A non-dependant's own ESA exempts them but not another adult in their benefit unit
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+      nondep:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 4_000
+      other:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      nondep_unit:
+        members: [nondep, other]
+        universal_credit: 0
+    households:
+      household:
+        members: [applicant, nondep, other]
+        country: ENGLAND
+        local_authority: MERTON
+  output:
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 270.40]
+
+- name: A non-dependant couple on ESA pays the partner's deduction
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+      payee:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 4_000
+      partner:
+        age: 29
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      nondep_unit:
+        members: [payee, partner]
+        universal_credit: 0
+    households:
+      household:
+        members: [applicant, payee, partner]
+        country: ENGLAND
+        local_authority: MERTON
+  output:
+    # ESA is payable to the payee only (HB Regs 2006 reg 2(3A), as the
+    # schemes define it), so only they are exempt. One deduction is made for
+    # the couple, the higher of the two (Default Scheme Sch para 30(3)): the
+    # partner's £5.20 a week.
+    is_on_income_related_esa: [false, true, false]
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 270.40]
+
+- name: A non-dependant's own ESA report below the tariff income does not exempt them, whatever another member reports
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+      nondep:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+      lodger:
+        age: 45
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 200
+      other:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 3_000
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      nondep_unit:
+        members: [nondep, lodger, other]
+        universal_credit: 0
+    households:
+      household:
+        members: [applicant, nondep, lodger, other]
+        country: ENGLAND
+        local_authority: MERTON
+        savings: 7_000
+  output:
+    # Tariff income on £7,000 of savings is £208 a year (ESA Regs 2008
+    # reg 118), so the £200 report alone gives no award: that adult is not on
+    # income-related ESA and pays the £5.20 a week deduction, as the
+    # non-dependant claimant does. The adult reporting £3,000 is paid £2,792
+    # and is exempt (Default Scheme Sch para 30(8)(a)).
+    is_on_income_related_esa: [false, false, false, true]
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 270.40, 270.40, 0]

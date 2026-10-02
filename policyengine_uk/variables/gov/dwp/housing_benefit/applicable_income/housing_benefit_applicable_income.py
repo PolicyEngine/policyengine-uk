@@ -18,11 +18,16 @@ class housing_benefit_applicable_income(Variable):
             "is_child_or_young_person_for_legacy_benefits", period
         )
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        # Only the claimant's and partner's income-related awards: their income is
+        # the claimant's (SSCBA s.136(1); HB Regs 2006 reg 25(1)). A member outside
+        # the family who has an award of their own claims in their own right.
+        # Income Support already needs the claimant's or partner's own award
+        # (income_support_eligible).
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",
-            "jsa_income",
-            "esa_income",
+            "claimant_or_partner_jsa_income",
+            "claimant_or_partner_esa_income",
         ]
         PERSONAL_BENEFITS = [
             "carers_allowance",

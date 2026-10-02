@@ -1,0 +1,3 @@
+- Add `esa_includes_support_component`: whether a person's employment and support allowance includes the support component. Datasets and users can supply it; otherwise it is assumed for anyone with an ESA award of their own. Household calculations with ESA outside the support group should set it to false.
+- Add `has_own_esa_award`: whether a person claims ESA themselves (a reported award, or a directly entered income-related award attributed to the claimant who heads the benefit unit).
+- Add `uc_limited_capability_for_work`: limited capability for work, for the Universal Credit work allowance and reduced minimum age.
