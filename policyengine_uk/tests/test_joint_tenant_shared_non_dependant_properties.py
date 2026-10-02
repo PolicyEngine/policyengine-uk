@@ -48,6 +48,9 @@ RESIDENCE = [
     "OTHER_JOINT_OCCUPIERS",
 ]
 income = st.floats(0, 60_000, allow_nan=False, allow_infinity=False)
+# Amounts are float32 in the model, so sums taken in different orders differ
+# by up to about 1e-3 at these magnitudes: compare money to the penny.
+MONEY_TOLERANCE = 0.01
 
 
 @st.composite
@@ -192,7 +195,9 @@ def test_housing_benefit_deductions_are_conserved(population):
     )
     families = calc(sim, "housing_benefit_non_dep_deductions")
     np.testing.assert_allclose(
-        per_household(sim, families), person_per_household(sim, deductions), atol=1e-6
+        per_household(sim, families),
+        person_per_household(sim, deductions),
+        atol=MONEY_TOLERANCE,
     )
     # A family that is not a joint occupier bears none.
     assert np.all(families[(roles == "non_dependant") | (roles == "lodger")] == 0)
@@ -205,14 +210,14 @@ def test_council_tax_reduction_deductions_are_bounded(population):
     deductions = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
     in_household = person_per_household(sim, deductions)
     families = calc(sim, "council_tax_reduction_non_dep_deductions")
-    assert np.all(families >= -1e-9)
-    assert np.all(families <= in_household[benunit_household(sim)] + 1e-6)
+    assert np.all(families >= -MONEY_TOLERANCE)
+    assert np.all(families <= in_household[benunit_household(sim)] + MONEY_TOLERANCE)
     # Where the rent is shared, the joint occupiers' parts never exceed the
     # household's deductions, and no one else bears any.
     shared = has_sharer(sim, roles)
     joint_occupier = (roles == "head") | (roles == "sharer")
     joint_parts = per_household(sim, families * (shared & joint_occupier))
-    assert np.all(joint_parts <= in_household + 1e-6)
+    assert np.all(joint_parts <= in_household + MONEY_TOLERANCE)
     assert np.all(families[shared & ~joint_occupier] == 0)
 
 
@@ -234,7 +239,7 @@ def test_council_tax_reduction_is_unchanged_without_sharers(population):
     np.testing.assert_allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions")[without_sharer],
         previous[without_sharer],
-        atol=1e-6,
+        atol=MONEY_TOLERANCE,
     )
 
 
@@ -250,7 +255,7 @@ def test_shared_default_matches_the_previous_formulas(population):
     np.testing.assert_allclose(
         calc(sim, "housing_benefit_non_dep_deductions"),
         share * person_per_household(sim, hb_individual)[household],
-        atol=1e-6,
+        atol=MONEY_TOLERANCE,
     )
     ctr_individual = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
     own = np.bincount(
@@ -265,7 +270,7 @@ def test_shared_default_matches_the_previous_formulas(population):
     np.testing.assert_allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions")[joint_occupier],
         previous[joint_occupier],
-        atol=1e-6,
+        atol=MONEY_TOLERANCE,
     )
 
 
@@ -291,7 +296,8 @@ def test_shared_counts_as_head_only_for_the_head_and_as_others_only_for_sharers(
     deductions = "housing_benefit_non_dep_deductions"
     assert np.all(calc(head_only, rooms)[sharer] <= calc(shared, rooms)[sharer])
     assert np.all(
-        calc(head_only, deductions)[sharer] <= calc(shared, deductions)[sharer] + 1e-6
+        calc(head_only, deductions)[sharer]
+        <= calc(shared, deductions)[sharer] + MONEY_TOLERANCE
     )
     with_sharer = has_sharer(shared, roles)
     assert np.all(
@@ -300,7 +306,7 @@ def test_shared_counts_as_head_only_for_the_head_and_as_others_only_for_sharers(
     )
     assert np.all(
         calc(others_only, deductions)[head & with_sharer]
-        <= calc(shared, deductions)[head & with_sharer] + 1e-6
+        <= calc(shared, deductions)[head & with_sharer] + MONEY_TOLERANCE
     )
 
 
@@ -320,7 +326,7 @@ def test_residence_is_a_no_op_without_sharers_and_for_universal_credit(populatio
         reference = calc(sims[0][0], variable)[without_sharer]
         for sim, _ in sims[1:]:
             np.testing.assert_allclose(
-                calc(sim, variable)[without_sharer], reference, atol=1e-6
+                calc(sim, variable)[without_sharer], reference, atol=MONEY_TOLERANCE
             )
     for variable in [
         "LHA_allowed_bedrooms",
@@ -329,4 +335,6 @@ def test_residence_is_a_no_op_without_sharers_and_for_universal_credit(populatio
     ]:
         reference = calc(sims[0][0], variable)
         for sim, _ in sims[1:]:
-            np.testing.assert_allclose(calc(sim, variable), reference, atol=1e-6)
+            np.testing.assert_allclose(
+                calc(sim, variable), reference, atol=MONEY_TOLERANCE
+            )
