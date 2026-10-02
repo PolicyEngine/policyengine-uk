@@ -67,3 +67,44 @@
     youngest_child_age_for_legacy_benefits: 10
     income_support_eligible: true
 
+- name: A single adopter with a child placed for adoption is in an Income Support prescribed category
+  period: 2025
+  input:
+    people:
+      adopter:
+        age: 30
+        income_support_reported: true
+      child:
+        age: 3
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [adopter, child]
+  output:
+    # IS Regs 1987 Sch 1B para 2A. The child is not a member of the household
+    # (reg 16(4)(b)-(c)), so the adopter is a single claimant.
+    is_single_person: true
+    income_support_eligible: true
+
+- name: A lone parent with an older child and a young child placed for adoption is in an Income Support prescribed category
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        income_support_reported: true
+      child:
+        age: 10
+      placed_child:
+        age: 2
+        is_placed_for_adoption: true
+    benunits:
+      family:
+        members: [parent, child, placed_child]
+  output:
+    # Para 1 needs a child under 5 in the household, which the placed child
+    # is not (reg 16(4)); para 2A covers a lone parent with whom a child is
+    # placed for adoption.
+    youngest_child_age_for_legacy_benefits: 10
+    income_support_eligible: true
+
