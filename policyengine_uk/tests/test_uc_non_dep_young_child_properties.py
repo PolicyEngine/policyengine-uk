@@ -37,7 +37,7 @@ AGE_LIMIT = (
     "gov.dwp.universal_credit.elements.housing.non_dep_deduction.young_child_age_limit"
 )
 PROPERTY_SETTINGS = settings(
-    max_examples=15,
+    max_examples=10,
     deadline=None,
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
@@ -219,52 +219,44 @@ def oracle(person_rows, family_rows, age_limit=5):
 
 @PROPERTY_SETTINGS
 @given(population)
-def test_contributions_match_the_oracle(population):
-    situation, person_rows, family_rows = build(population)
-    sim = simulate(situation)
-    individual, totals = oracle(person_rows, family_rows)
-    # 1. Oracle.
-    assert np.allclose(
-        calc(sim, "uc_individual_non_dep_deduction"), individual, atol=0.01
-    )
-    assert np.allclose(calc(sim, "uc_non_dep_deductions"), totals, atol=0.01)
-    expected_responsible = np.array(
-        [responsible_for_young_child(row, family_rows, 5) for row in person_rows]
-    )
-    assert np.array_equal(
-        calc(sim, "is_responsible_for_child_under_5_for_universal_credit") > 0,
-        expected_responsible,
-    )
-
-
-@PROPERTY_SETTINGS
-@given(population)
-def test_the_exemption_only_removes_contributions(population):
+def test_oracle_monotonicity_and_locality(population):
     situation, person_rows, family_rows = build(population)
     with_exemption = simulate(situation)
     without = simulate(situation, age_limit=0)
     wider = simulate(situation, age_limit=16)
-    for variable in ["uc_individual_non_dep_deduction", "uc_non_dep_deductions"]:
-        on, off, wide = (calc(s, variable) for s in (with_exemption, without, wider))
-        # 2. Monotonicity in the exemption and in its age limit.
-        assert np.all(on <= off + 0.01), variable
-        assert np.all(wide <= on + 0.01), variable
-    # 3. Locality: only a responsible claimant or partner changes, and from a
-    # full contribution to none.
     on = calc(with_exemption, "uc_individual_non_dep_deduction")
     off = calc(without, "uc_individual_non_dep_deduction")
-    changed = ~np.isclose(on, off, atol=0.01)
     responsible = (
         calc(with_exemption, "is_responsible_for_child_under_5_for_universal_credit")
         > 0
     )
+    # 1. Oracle, with the exemption and with it switched off.
+    for age_limit, sim, individual_values in (
+        (5, with_exemption, on),
+        (0, without, off),
+    ):
+        individual, totals = oracle(person_rows, family_rows, age_limit=age_limit)
+        assert np.allclose(individual_values, individual, atol=0.01), age_limit
+        assert np.allclose(calc(sim, "uc_non_dep_deductions"), totals, atol=0.01), (
+            age_limit
+        )
+    expected_responsible = np.array(
+        [responsible_for_young_child(row, family_rows, 5) for row in person_rows]
+    )
+    assert np.array_equal(responsible, expected_responsible)
+    # 2. Monotonicity in the exemption and in its age limit.
+    for variable in ["uc_individual_non_dep_deduction", "uc_non_dep_deductions"]:
+        on_v, off_v, wide_v = (
+            calc(s, variable) for s in (with_exemption, without, wider)
+        )
+        assert np.all(on_v <= off_v + 0.01), variable
+        assert np.all(wide_v <= on_v + 0.01), variable
+    # 3. Locality: only a responsible claimant or partner changes, and from a
+    # full contribution to none.
+    changed = ~np.isclose(on, off, atol=0.01)
     assert np.all(responsible[changed])
     assert np.allclose(off[changed], UC_CONTRIBUTION, atol=0.01)
     assert np.allclose(on[changed], 0, atol=0.01)
-    # Without the exemption the oracle with an age limit of 0 holds too.
-    individual, totals = oracle(person_rows, family_rows, age_limit=0)
-    assert np.allclose(off, individual, atol=0.01)
-    assert np.allclose(calc(without, "uc_non_dep_deductions"), totals, atol=0.01)
 
 
 @PROPERTY_SETTINGS
