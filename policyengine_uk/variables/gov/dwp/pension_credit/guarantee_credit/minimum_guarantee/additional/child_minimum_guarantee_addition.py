@@ -7,9 +7,17 @@ class child_minimum_guarantee_addition(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    reference = "https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/6",
+        "https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA",
+    )
 
     def formula(benunit, period, parameters):
+        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
+        # SPC Regs 2002 reg 6(6)(d) and Schedule IIA apply from 1 February
+        # 2019 (SI 2018/676 reg 2).
+        if not gc.child.in_effect:
+            return benunit.empty_array()
         person = benunit.members
         is_child_or_qualifying_young_person = person(
             "is_child_or_qualifying_young_person_for_pension_credit", period
@@ -25,7 +33,6 @@ class child_minimum_guarantee_addition(Variable):
         first_child_born_before_2017 = (child_index == 1) & (
             person("birth_year", period) < 2017
         )
-        gc = parameters(period).gov.dwp.pension_credit.guarantee_credit
         standard_disability_benefits = gc.child.disability.eligibility
         severe_disability_benefits = gc.child.disability.severe.eligibility
         is_disabled = add(person, period, standard_disability_benefits) > 0
@@ -52,4 +59,14 @@ class child_minimum_guarantee_addition(Variable):
             )
             * WEEKS_IN_YEAR
         )
-        return benunit.sum(per_child_amount)
+        # Reg 6(6)(d) applies Schedule IIA "except where paragraph (11)
+        # applies", which is "the case of a person who is awarded, or who is
+        # treated as having an award of, a tax credit" (reg 6(11)): child tax
+        # credit or working tax credit (reg 6(17)). The tax credit award then
+        # carries the support for the child. Reg 6(12) and (13) treat an
+        # award as continuing from the start of a tax year until it is
+        # renewed or finalised, and reg 6(14) to (16) end the amount when an
+        # award is made late; on the model's whole-year awards, both affect
+        # only part of a year, and are not modelled.
+        has_tax_credit_award = benunit("has_tax_credit_award", period)
+        return benunit.sum(per_child_amount) * ~has_tax_credit_award
