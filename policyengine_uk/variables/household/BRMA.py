@@ -33,31 +33,71 @@ class brma(Variable):
     documentation = (
         "The Broad Rental Market Area whose Local Housing Allowance rates "
         "apply to the household. If it is not provided, the latest BRMA from "
-        "an earlier year applies when the household's region is the same as "
-        "in that year; otherwise the household is placed in its region's BRMA "
-        "with the most private-rented households (Maidstone if the region is "
+        "an earlier year applies unless the household has changed region "
+        "since; otherwise the household is placed in its region's BRMA with "
+        "the most private-rented households (Maidstone if the region is "
         "unknown)."
     )
     definition_period = YEAR
 
     def formula(household, period, parameters):
+        # An input keeps applying in later years, as policyengine-core's
+        # auto_carry_over_input_variables does for input-only variables,
+        # unless the household has changed region since. Only regions already
+        # known are compared: calculating region for an earlier year here
+        # could cache the wrong value, because core returns region's default
+        # for a year once a later year is known.
+        earlier_periods = [
+            known_period
+            for known_period in household.get_holder("brma").get_known_periods()
+            if known_period.start < period.start
+        ]
+        moved = np.zeros(household.count, dtype=bool)
+        if earlier_periods:
+            latest = max(earlier_periods, key=lambda known_period: known_period.start)
+            # The region in effect in the latest year is the last one known at
+            # or before it, or region's default if none is (core gives the
+            # default then, without storing it). Every region known after it,
+            # up to this year, must match it.
+            region_holder = household.get_holder("region")
+            branch_name = household.simulation.branch_name
+            region_periods = [
+                known_period
+                for known_period in region_holder.get_known_periods()
+                if known_period.start <= period.start
+            ]
+            up_to_latest = [
+                known_period
+                for known_period in region_periods
+                if known_period.start <= latest.start
+            ]
+            if up_to_latest:
+                start_region = region_holder.get_array(
+                    max(up_to_latest, key=lambda known_period: known_period.start),
+                    branch_name,
+                )
+            else:
+                start_region = region_holder.default_array()
+            later_regions = [
+                region_holder.get_array(known_period, branch_name)
+                for known_period in region_periods
+                if known_period.start > latest.start
+            ]
+            known_regions = [
+                np.asarray(known_region)
+                for known_region in [start_region, *later_regions]
+                if known_region is not None
+            ]
+            for known_region in known_regions[1:]:
+                moved |= known_region != known_regions[0]
+            if not moved.any():
+                return household("brma", latest)
         region = household("region", period)
         region_default = select(
             [region == region_value for region_value in REGION_DEFAULT_BRMA],
             list(REGION_DEFAULT_BRMA.values()),
             default=BRMAName.MAIDSTONE,
         )
-        # An input keeps applying in later years, as policyengine-core's
-        # auto_carry_over_input_variables does for input-only variables. A
-        # household whose region differs from that year's gets its new
-        # region's default instead.
-        earlier_periods = [
-            known_period
-            for known_period in household.get_holder("brma").get_known_periods()
-            if known_period.start < period.start
-        ]
         if not earlier_periods:
             return region_default
-        latest = max(earlier_periods, key=lambda known_period: known_period.start)
-        same_region = household("region", latest) == region
-        return where(same_region, household("brma", latest).decode(), region_default)
+        return where(moved, region_default, household("brma", latest).decode())

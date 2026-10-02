@@ -2,24 +2,22 @@
 
 brma (variables/household/BRMA.py) places a household with no BRMA input in
 its region's entry in REGION_DEFAULT_BRMA, unless an earlier year's BRMA
-carries forward. These properties hold for any households, regions by year,
-BRMA inputs and order in which years are calculated:
+carries forward.
 
 1. The table is each region's BRMA with the most private-rented households in
    brma_private_rented_households.csv.gz, a strict maximum, and it covers every
    region but UNKNOWN. A default gives the same LHA rates as inputting it.
-2. Inputs win: in a year with a BRMA input, brma is that input.
-3. Defaults: in a year with no BRMA input in it or before it, brma is the
-   default for that year's region.
-4. Membership: brma is either the default for that year's region or an
-   input from that year or earlier made while the household was in the
-   same region.
-5. Carry forward: if the household's region has not changed since the
-   latest input at or before a year, brma is that input. Where each region
-   occupies one unbroken run of years, 2, 3 and 5 fix brma exactly.
+2. The rule: in a year with a BRMA input, brma is that input. Otherwise, if
+   there is an earlier input and the household's region has been the same in
+   every year from the latest one to this year, brma is that input; if not,
+   brma is the default for this year's region.
 
-Regions are input for every year so that region itself does not depend on
-the order of calculation.
+With region input for every year, the rule holds exactly for any households
+(each with or without BRMA inputs in the same years), regions by year and order
+in which years are calculated. With region input in only some years, it holds
+for years calculated in order, taking each year's region as the latest region
+input at or before it (or London, region's default), and calculating brma never
+changes any year's region.
 """
 
 from pathlib import Path
@@ -140,6 +138,12 @@ def test_input_carries_forward_to_later_years():
     assert brma_for(regions, {2025: "GREATER_GLASGOW"}, 2040) == "GREATER_GLASGOW"
 
 
+def test_input_carries_forward_when_region_was_input_earlier():
+    regions = {2024: "SCOTLAND"}
+    assert brma_for(regions, {2025: "GREATER_GLASGOW"}, 2026) == "GREATER_GLASGOW"
+    assert brma_for(regions, {2025: "GREATER_GLASGOW"}, 2040) == "GREATER_GLASGOW"
+
+
 def test_input_does_not_apply_to_earlier_years():
     regions = {2024: "SCOTLAND", 2025: "SCOTLAND"}
     assert brma_for(regions, {2025: "GREATER_GLASGOW"}, 2024) == "LOTHIAN"
@@ -148,6 +152,70 @@ def test_input_does_not_apply_to_earlier_years():
 def test_household_that_changes_region_gets_the_new_regions_default():
     regions = {2025: "SCOTLAND", 2026: "WALES"}
     assert brma_for(regions, {2025: "GREATER_GLASGOW"}, 2026) == "CARDIFF"
+    # The move counts even when the BRMA's own year has no region known.
+    regions = {2024: "SCOTLAND", 2026: "WALES"}
+    assert brma_for(regions, {2025: "GREATER_GLASGOW"}, 2026) == "CARDIFF"
+
+
+def test_household_that_returns_to_a_region_gets_its_default_in_any_order():
+    regions = {2026: "SCOTLAND", 2027: "WALES", 2028: "SCOTLAND"}
+    brma = {2026: "GREATER_GLASGOW"}
+    assert brma_for(regions, brma, 2028) == "LOTHIAN"
+    situation = {
+        "people": {"adult": {"age": {2026: 40}}},
+        "benunits": {"benunit": {"members": ["adult"]}},
+        "households": {
+            "household": {"members": ["adult"], "region": regions, "brma": brma}
+        },
+    }
+    simulation = Simulation(situation=situation)
+    assert [str(simulation.calculate("brma", year)[0]) for year in (2027, 2028)] == [
+        "CARDIFF",
+        "LOTHIAN",
+    ]
+
+
+def test_calculating_brma_does_not_change_region_or_other_results():
+    # Region input in 2024 only and a BRMA input in 2025: brma for later years
+    # must not calculate 2025's region after a later year's, which core would
+    # answer with region's default (London).
+    def simulation():
+        return Simulation(
+            situation={
+                "people": {"adult": {"age": {2024: 40}, "employment_income": 50_000}},
+                "benunits": {"benunit": {"members": ["adult"]}},
+                "households": {
+                    "household": {
+                        "members": ["adult"],
+                        "region": {2024: "SCOTLAND"},
+                        "brma": {2025: "GREATER_GLASGOW", 2026: "LOTHIAN"},
+                        "tenure_type": {2024: "RENT_PRIVATELY"},
+                        "rent": {2024: 12_000},
+                    }
+                },
+            }
+        )
+
+    fresh = simulation()
+    expected_tax = float(fresh.calculate("income_tax", 2025)[0])
+    tested = simulation()
+    tested.calculate("BRMA_LHA_rate", 2026)
+    assert str(tested.calculate("brma", 2027)[0]) == "LOTHIAN"
+    assert str(tested.calculate("region", 2025)[0]) == "SCOTLAND"
+    assert str(tested.calculate("region", 2026)[0]) == "SCOTLAND"
+    assert float(tested.calculate("income_tax", 2025)[0]) == expected_tax
+
+
+def expected_brma(regions, inputs, year):
+    """The rule, given the region each year resolves to and the BRMA inputs."""
+    if year in inputs:
+        return inputs[year]
+    earlier = [past for past in inputs if past < year]
+    if earlier:
+        latest = max(earlier)
+        if all(regions[between] == regions[year] for between in range(latest, year)):
+            return inputs[latest]
+    return default_brma(regions[year])
 
 
 @st.composite
@@ -172,36 +240,75 @@ def scenarios(draw):
 
 @PROPERTY_SETTINGS
 @given(scenarios())
-def test_brma_properties(scenario):
+def test_brma_follows_the_rule_in_any_order(scenario):
     regions_by_household, brma_inputs, order = scenario
     result = simulate(regions_by_household, brma_inputs, order)
     for index, regions in enumerate(regions_by_household):
         region_in = dict(zip(YEARS, regions))
         inputs = {year: values[index] for year, values in brma_inputs.items()}
-        unbroken_runs = all(
-            regions.index(region) + regions.count(region) - 1
-            == len(regions) - 1 - regions[::-1].index(region)
-            for region in set(regions)
-        )
         for year in YEARS:
-            brma = result[year][index]
-            default = default_brma(region_in[year])
-            earlier_inputs = [past for past in inputs if past <= year]
-            if year in inputs:
-                assert brma == inputs[year]
-            if not earlier_inputs:
-                assert brma == default
-            assert brma == default or any(
-                brma == inputs[past] and region_in[past] == region_in[year]
-                for past in earlier_inputs
-            )
-            if earlier_inputs:
-                latest = max(earlier_inputs)
-                unchanged = all(
-                    region_in[between] == region_in[year]
-                    for between in range(latest, year + 1)
-                )
-                if unchanged:
-                    assert brma == inputs[latest]
-                elif unbroken_runs:
-                    assert brma == default
+            assert result[year][index] == expected_brma(region_in, inputs, year)
+
+
+def build(region_inputs_by_household, brma_inputs):
+    people, benunits, households = {}, {}, {}
+    for index, region_inputs in enumerate(region_inputs_by_household):
+        person, benunit, household = f"p{index}", f"b{index}", f"h{index}"
+        people[person] = {"age": {YEARS[0]: 40}}
+        benunits[benunit] = {"members": [person]}
+        households[household] = {"members": [person]}
+        if region_inputs:
+            households[household]["region"] = region_inputs
+        inputs = {year: values[index] for year, values in brma_inputs.items()}
+        if inputs:
+            households[household]["brma"] = inputs
+    return Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+
+
+@st.composite
+def sparse_scenarios(draw):
+    household_count = draw(st.integers(1, 4))
+    region_years = sorted(draw(st.sets(st.sampled_from(YEARS), max_size=3)))
+    region_inputs_by_household = [
+        {year: draw(st.sampled_from(REGIONS)) for year in region_years}
+        for _ in range(household_count)
+    ]
+    input_years = draw(st.sets(st.sampled_from(YEARS), max_size=3))
+    brma_inputs = {
+        year: [draw(st.sampled_from(BRMAS)) for _ in range(household_count)]
+        for year in sorted(input_years)
+    }
+    return region_inputs_by_household, brma_inputs
+
+
+@PROPERTY_SETTINGS
+@given(sparse_scenarios())
+def test_brma_with_sparse_regions_follows_the_rule_and_keeps_regions(scenario):
+    region_inputs_by_household, brma_inputs = scenario
+    fresh = build(region_inputs_by_household, brma_inputs)
+    fresh_regions = {
+        year: [str(value) for value in fresh.calculate("region", year)]
+        for year in YEARS
+    }
+    tested = build(region_inputs_by_household, brma_inputs)
+    result = {
+        year: [str(value) for value in tested.calculate("brma", year)] for year in YEARS
+    }
+    for year in YEARS:
+        regions_after = [str(value) for value in tested.calculate("region", year)]
+        assert regions_after == fresh_regions[year]
+    for index, region_inputs in enumerate(region_inputs_by_household):
+        # The region in effect each year: the latest input at or before it, or
+        # region's default (London). Core's carry-over can instead give the
+        # default for a year that has a later input; brma follows the inputs.
+        regions = {
+            year: region_inputs[max(past for past in region_inputs if past <= year)]
+            if any(past <= year for past in region_inputs)
+            else "LONDON"
+            for year in YEARS
+        }
+        inputs = {year: values[index] for year, values in brma_inputs.items()}
+        for year in YEARS:
+            assert result[year][index] == expected_brma(regions, inputs, year)
