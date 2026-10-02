@@ -25,17 +25,6 @@ CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
 ]
 
 
-def is_claimant_or_partner(person, period):
-    """The claimant or partner of a benefit unit: its head, or any member who
-    is not a child or qualifying young person (SSCBA 1992 s.142), which is how
-    the Housing Benefit Regulations 2006 (regs 2(1) and 19) and the English and
-    Welsh Council Tax Reduction regulations (reg 2(1)) define the members of a
-    family other than the claimant and partner."""
-    return person("is_benunit_head", period) | ~person(
-        "is_child_or_qualifying_young_person_for_child_benefit", period
-    )
-
-
 def non_dependant_weekly_gross_income(person, period):
     """Normal weekly gross income for the deduction bands. A claimant or
     partner is banded on the couple's joint income (HB reg 74(4); CTR Sch 1
@@ -43,7 +32,7 @@ def non_dependant_weekly_gross_income(person, period):
     Credit, tax credits and child benefit. Anyone else in the benefit unit is a
     separate non-dependant, banded on their own taxable income. Taxable income
     excludes the disregarded disability benefits (HB reg 74(9))."""
-    claimant_or_partner = is_claimant_or_partner(person, period)
+    claimant_or_partner = person("is_claimant_or_partner", period)
     own_income = max_(0, person("total_income", period))
     family_benefits = universal_credit_after_benefit_cap(person.benunit, period) + sum(
         person.benunit(benefit, period) for benefit in FAMILY_GROSS_INCOME_BENEFITS
@@ -111,7 +100,7 @@ def deduction_per_family(benunit, period, deductions, both_members_of_couple):
     """One deduction for the claimant and partner, the higher of theirs (HB reg
     74(3); CTR Sch 1 para 8(3)), or both where both_members_of_couple; plus a
     separate deduction for each other member."""
-    claimant_or_partner = is_claimant_or_partner(benunit.members, period)
+    claimant_or_partner = benunit.members("is_claimant_or_partner", period)
     couple = where(
         both_members_of_couple,
         benunit.sum(deductions * claimant_or_partner),

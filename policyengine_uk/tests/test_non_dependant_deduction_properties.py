@@ -239,7 +239,7 @@ def calculate(sim, year):
             "council_tax_reduction_individual_non_dep_deduction_eligible",
             "council_tax_reduction_individual_non_dep_deduction",
             "is_benunit_head",
-            "is_child_or_qualifying_young_person_for_child_benefit",
+            "is_claimant_or_partner",
             "is_qualifying_young_person_for_child_benefit",
         ],
         benunit=[
@@ -357,11 +357,8 @@ def test_non_dependant_deduction_invariants(population, year):
         r["council_tax_reduction_household_has_pensioner"],
         [1 + len(h["non_dependants"]) for h in population],
     )
-    # Claimant or partner of each person's own family: its head, or a member
-    # who is not an SSCBA s.142 child or qualifying young person.
-    couple = r["is_benunit_head"].astype(bool) | ~r[
-        "is_child_or_qualifying_young_person_for_child_benefit"
-    ].astype(bool)
+    # Claimant or partner of each person's own family (SSCBA s.137 couple).
+    couple = r["is_claimant_or_partner"].astype(bool)
 
     for i, person in enumerate(persons):
         household = population[person["household"]]
