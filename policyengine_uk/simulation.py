@@ -222,6 +222,46 @@ class Simulation(CoreSimulation):
             if variable not in self.input_variables:
                 self.delete_arrays(variable)
 
+    def clone(self, *args, **kwargs) -> "Simulation":
+        """Clone the simulation, with its own record of explicit inputs.
+
+        Core's ``clone`` copies the holders' stored arrays but shares
+        ``_user_input_keys``, the (variable, branch, period) record of values
+        set with ``set_input``. An input set afterwards on the clone (or on a
+        branch, which is a clone) was then recorded against the original's
+        own stored arrays too. Each copy keeps its own record here, matching
+        its own storage. ``entered_directly`` reads that record.
+        """
+        new = super().clone(*args, **kwargs)
+        new._user_input_keys = set(getattr(self, "_user_input_keys", ()))
+        return new
+
+    def delete_arrays(self, variable: str, period=None) -> None:
+        """Delete stored values, and forget that deleted inputs were inputs.
+
+        Core removes the arrays but keeps their ``_user_input_keys`` entries,
+        so a formula result calculated later for the same period would be
+        taken for a user input. The entries for the variable, on the
+        branches whose storage this deletes and in the deleted periods, are
+        dropped with the arrays.
+        """
+        super().delete_arrays(variable, period)
+        keys = getattr(self, "_user_input_keys", None)
+        if not keys:
+            return
+        if period is not None:
+            period = period_(period)
+        branches = set(self._get_visible_branch_names())
+        self._user_input_keys = {
+            key
+            for key in keys
+            if not (
+                key[0] == variable
+                and key[1] in branches
+                and (period is None or period.contains(period_(key[2])))
+            )
+        }
+
     def get_known_variables(self):
         variables = []
         for variable in self.tax_benefit_system.variables:
