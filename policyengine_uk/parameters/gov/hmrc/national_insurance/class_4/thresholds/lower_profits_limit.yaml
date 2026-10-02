@@ -12,6 +12,12 @@ values:
       reference:
         - title: National Insurance Contributions (Increase of Thresholds) Act 2022
           href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
+  2023-04-06:
+    value: 12_570
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s. 15(3)(a), as at 6 April 2023
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2023-04-06
   2024-01-01:
     value: 12_570
     metadata:

@@ -1,10 +1,12 @@
 - name: NI Class 4 - under UPL.
+  # SSCBA 1992 s.15(3) and (3ZA) as at 6 April 2023: 9% of profits between
+  # £12,570 and £50,270. (30,000 - 12,570) x 0.09 = 1,568.70.
   period: 2023
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
     self_employment_income: 30_000
   output:
-    ni_class_4: 1628
+    ni_class_4: 1_568.70
 
 - name: NI Class 4 - 2026 lower profits limit is frozen.
   period: 2026

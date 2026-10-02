@@ -11,17 +11,19 @@ in remunerative work. For every family:
   the conditions only ever bar a claim;
 - caring never ends an ESA award (a carer partner is not treated as in
   remunerative work, ESA Regs reg 43(2)(c)) and never matters for JSA (the
-  JSA regulations have no carer exception);
+  JSA regulations have no exception for carers doing unrelated paid work);
 - when the claimant or partner reports the award, adding a member outside
   the family (a non-dependent adult, with any award and any work) never
   changes either screen.
 
 Adults are employees (pay within the basic rate band), self-employed (a
-profit within the Class 4 upper limit, under state pension age) or employees
-with a self-employment loss, with no other income: the scope the reference
-covers. Roles are given explicitly (is_claimant_or_partner). Each example
-builds many families in one simulation, in separate households and benefit
-units.
+profit within the Class 4 upper limit) or employees with a self-employment
+loss, aged either side of state pension age, where National Insurance stops.
+Some also receive statutory sick, maternity or paternity pay, which is not
+earnings (ESA Regs reg 95(2)(b)); they have no other income. This is the
+scope the reference covers. Roles are given explicitly
+(is_claimant_or_partner). Each example builds many families in one
+simulation, in separate households and benefit units.
 """
 
 import numpy as np
@@ -39,6 +41,16 @@ PAY = [0, 0, 1_040, 1_092, 5_200, 10_166, 10_192, 10_582, 10_608, 15_600]
 # Profits around the limits once reg 99's notional tax and Class 4 come off,
 # and £13,200, which needs half a £5,900 pension premium to fall within them.
 PROFIT = [1_040, 5_200, 10_166, 10_300, 13_200, 15_600]
+# Payments an employer makes for sickness or leave, which are not earnings
+# (reg 95(2)(b)) but which the shared taxable pay and Class 1 bases include.
+STATUTORY_PAY = [
+    None,
+    None,
+    None,
+    "statutory_sick_pay",
+    "statutory_maternity_pay",
+    "statutory_paternity_pay",
+]
 
 
 @st.composite
@@ -77,6 +89,9 @@ def adults(draw, outside_family=False):
     elif kind == "big_loss":
         # A loss larger than the pay.
         adult["self_employment_income"] = -20_000
+    statutory_pay = draw(st.sampled_from(STATUTORY_PAY))
+    if statutory_pay is not None:
+        adult[statutory_pay] = draw(st.sampled_from([1_040, 3_000]))
     if outside_family:
         adult["current_education"] = "NOT_IN_EDUCATION"
     return adult
@@ -150,6 +165,12 @@ def label(units):
         for a in adults_
     ):
         event("pay and profit together")
+    if any(
+        a.get("employment_income", 0) > 0
+        and any(a.get(name, 0) > 0 for name in STATUTORY_PAY if name)
+        for a in adults_
+    ):
+        event("statutory pay beside pay")
 
 
 SETTINGS = settings(

@@ -1,7 +1,9 @@
 - name: NI Class 4 - over UPL has maximum capped.
+  # SSCBA 1992 s.15(3)(a) and (3ZA)(a) as at 6 April 2023: 9% of profits
+  # between £12,570 and £50,270. (50,270 - 12,570) x 0.09 = 3,393.
   period: 2023
-  absolute_error_margin: 1
+  absolute_error_margin: 0.01
   input:
     self_employment_income: 100_000
   output:
-    ni_class_4_main: 3452
+    ni_class_4_main: 3_393

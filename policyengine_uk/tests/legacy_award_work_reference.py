@@ -5,8 +5,9 @@ tests to compare with the model (test_legacy_award_work_properties.py and
 test_income_support_eligibility_properties.py). Each adult is a dict of
 simulation inputs for one year: hours_worked (annual), employment_income,
 self_employment_income, employee_pension_contributions,
-personal_pension_contributions, receives_carer_benefit, care_hours, age and
-the reported awards.
+personal_pension_contributions, statutory_sick_pay, statutory_maternity_pay,
+statutory_paternity_pay, receives_carer_benefit, care_hours, age and the
+reported awards.
 
 - Capital (WRA 2007 Sch 1 para 6(1)(b), ESA Regs reg 110; JSA 1995 s.13(1),
   JSA Regs reg 107): within £16,000, with £1 a week of tariff income for
@@ -14,19 +15,22 @@ the reported awards.
 - ESA claimant (para 6(1)(e), ESA Regs reg 41(1)): paid work is remunerative
   unless it is exempt work: earnings of no more than £20 a week (reg 45(2)),
   or under 16 hours with earnings within the higher limit (reg 45(4)).
-  Pay is net of PAYE on the pay alone, primary Class 1 and half the pension
-  contributions (reg 96(3)). Self-employment is the profit less a notional
-  basic-rate tax on the profit above the personal allowance, notional
-  main-rate Class 4 (and Class 2 before 6 April 2024) and half the personal
-  pension contributions (reg 98(3), reg 99); a loss is not set against pay
-  (reg 98(11)).
+  Pay is net of PAYE and primary Class 1 on the pay alone and half the
+  pension contributions (reg 96(3)). Statutory sick, maternity and
+  paternity pay are not earnings (reg 95(2)(b)): they are ignored, and no
+  tax or Class 1 on them comes off the pay. Self-employment is the profit
+  less a notional basic-rate tax on the profit above the personal allowance,
+  notional main-rate Class 4 (and Class 2 before 6 April 2024) and half the
+  personal pension contributions (reg 98(3), reg 99); a loss is not set
+  against pay (reg 98(11)).
 - ESA partner (para 6(1)(f), reg 42(1)): 24 hours or more, unless a carer
   (reg 43(2)(c)).
-- JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no carer
-  exception. The other member of the couple: 24 hours or more (s.3(1)(e),
-  reg 51(1)(b)). In a joint-claim couple each member is a claimant at 16
-  hours (s.1(2B)(b)), but a member may claim alone when the other works 16 to
-  under 24 hours (reg 3E(1), (2)(g)), so the limit is 24 either way.
+- JSA claimant (s.1(2)(e), reg 51(1)(a)): 16 hours or more, with no
+  exception for carers doing unrelated paid work. The other member of the
+  couple: 24 hours or more (s.3(1)(e), reg 51(1)(b)). In a joint-claim
+  couple each member is a claimant at 16 hours (s.1(2B)(b)), but a member
+  may claim alone when the other works 16 to under 24 hours (reg 3E(1),
+  (2)(g)), so the limit is 24 either way.
 - The claimant is a member who reports the award; when the claimant or
   partner reports one, only they are candidates.
 """
