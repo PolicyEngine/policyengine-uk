@@ -1,11 +1,5 @@
 description: The annualised Energy Price Guarantee level for a typical Great Britain household paying by direct debit.
 values:
-  2018-10-01:
-    value: 0
-    metadata:
-      reference:
-        - title: Energy Price Guarantee up to 30 June 2023
-          href: https://www.gov.uk/government/publications/energy-bills-support/energy-price-guarantee-up-until-30-june-2023
   2022-10-01:
     value: 2_500
     metadata:
@@ -20,14 +14,6 @@ values:
           href: https://assets.publishing.service.gov.uk/media/6411603be90e076ccf66d781/Costing_Document_-_Spring_Budget_2023.pdf#page=27
         - title: Energy Price Guarantee from 1 July 2023
           href: https://www.gov.uk/government/publications/energy-bills-support/energy-bills-support-factsheet-8-september-2022
-  2024-04-01:
-    value: 0
-    metadata:
-      reference:
-        - title: Spring Budget 2023 policy costings, page 27
-          href: https://assets.publishing.service.gov.uk/media/6411603be90e076ccf66d781/Costing_Document_-_Spring_Budget_2023.pdf#page=27
-        - title: New energy price cap level for April to June 2024 starts today
-          href: https://www.ofgem.gov.uk/news/new-energy-price-cap-level-april-june-2024-starts-today
 metadata:
   unit: currency-GBP
   period: year
