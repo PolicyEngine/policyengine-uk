@@ -25,7 +25,12 @@ class uc_earned_income(Variable):
         disregards = add_for_members(
             benunit,
             period,
-            ["uc_work_allowance", "tax", "pension_contributions"],
+            [
+                "uc_work_allowance",
+                "income_tax_before_winter_fuel_payment_charge",
+                "national_insurance",
+                "pension_contributions",
+            ],
             members,
         )
         return max_(0, personal_gross_earned_income - disregards)

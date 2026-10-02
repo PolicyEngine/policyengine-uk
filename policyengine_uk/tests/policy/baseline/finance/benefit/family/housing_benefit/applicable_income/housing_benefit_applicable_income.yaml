@@ -12,7 +12,7 @@
     property_income: 0
     private_pension_income: 0
     # Tax
-    income_tax: 0
+    income_tax_before_winter_fuel_payment_charge: 0
     national_insurance: 0
     # Other 
     tax_credits: 0
@@ -36,7 +36,7 @@
     property_income: 0
     private_pension_income: 0
     # Tax
-    income_tax: 0
+    income_tax_before_winter_fuel_payment_charge: 0
     national_insurance: 0
     # Other 
     tax_credits: 0
@@ -60,7 +60,7 @@
     property_income: 0
     private_pension_income: 0
     # Tax
-    income_tax: 0
+    income_tax_before_winter_fuel_payment_charge: 0
     national_insurance: 0
     # Other 
     tax_credits: 0
@@ -84,7 +84,7 @@
     property_income: 1_000
     private_pension_income: 0
     # Tax
-    income_tax: 0
+    income_tax_before_winter_fuel_payment_charge: 0
     national_insurance: 0
     # Other 
     tax_credits: 1_000
@@ -108,7 +108,7 @@
     property_income: 1_000
     private_pension_income: 0
     # Tax
-    income_tax: 0
+    income_tax_before_winter_fuel_payment_charge: 0
     national_insurance: 0
     # Other 
     tax_credits: 1_000

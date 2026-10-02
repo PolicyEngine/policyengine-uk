@@ -15,7 +15,7 @@
     people:
       claimant:
         age: 17
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -37,14 +37,14 @@
       claimant:
         age: 17
         is_parent: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
         employment_income: 10000
       child:
         age: 1
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -66,7 +66,7 @@
       claimant:
         age: 20
         is_parent: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -74,7 +74,7 @@
       young_person:
         age: 18
         is_in_non_advanced_education: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -96,7 +96,7 @@
       claimant:
         age: 20
         is_parent: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -105,7 +105,7 @@
         age: 17
         is_in_non_advanced_education: false
         is_in_approved_training: false
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -126,7 +126,7 @@
     people:
       claimant:
         age: 30
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -135,7 +135,7 @@
       partner:
         age: 17
         is_claimant_or_partner: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -156,7 +156,7 @@
     people:
       claimant:
         age: 24
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -165,7 +165,7 @@
       partner:
         age: 17
         is_claimant_or_partner: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -186,7 +186,7 @@
     people:
       claimant:
         age: 17
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -195,7 +195,7 @@
       partner:
         age: 17
         is_claimant_or_partner: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -217,21 +217,21 @@
       claimant:
         age: 40
         is_parent: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
         employment_income: 10000
       partner:
         age: 40
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
       young_person:
         age: 19
         is_in_non_advanced_education: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -253,7 +253,7 @@
     people:
       claimant:
         age: 24
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0
@@ -272,7 +272,7 @@
     people:
       claimant:
         age: 25
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         social_security_income: 0
         pension_contributions: 0

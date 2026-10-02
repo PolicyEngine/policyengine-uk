@@ -1,19 +1,28 @@
-description: Whether a relevant benefit is a condition of the Winter Fuel Payment. It was for the 2024 qualifying week. From the 2025 qualifying week the regulations pay everyone of pensionable age, and the winter fuel payment charge (ITEPA 2003 s.681I) recovers the payment from people with total income over £35,000 who are not on a relevant benefit. The model keeps this true from 2025 and lets people who are not on a relevant benefit through the income test in taxable_income_test, which stands in for the charge.
+description: Whether a relevant benefit is a condition of the Winter Fuel Payment. It was for the 2024 qualifying week only. Up to the 2023 week, and from the 2025 week, everyone of pensionable age resident where the payment is made is entitled; from 2025-26 the winter fuel payment charge (gov.hmrc.income_tax.charges.winter_fuel_payment) recovers the payment from people with total income over £35,000 who are not on a relevant benefit.
 values:
-  2000-01-01: false
+  2000-01-01:
+    value: false
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2000, reg. 2 (as in force for the 2023 qualifying week)
+        href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2/2023-09-18
+  # Dated 1 January so that the year's value is the one for its September
+  # qualifying week; SI 2024/869 came into force on 16 September 2024.
   2024-01-01:
     value: true
-    metadata:
-      reference:
-      - title: The Social Fund Winter Fuel Payment Regulations 2024 regulation 2
-        href: https://www.legislation.gov.uk/uksi/2024/869/regulation/2
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2024, reg. 2(2)(b)
+        href: https://www.legislation.gov.uk/uksi/2024/869/regulation/2/made
+      - title: The Social Fund Winter Fuel Payment Regulations (Northern Ireland) 2024, reg. 2(2)(b)
+        href: https://www.legislation.gov.uk/nisr/2024/160/regulation/2/made
+  # SI 2025/969 came into force on 15 September 2025, the first day of the
+  # 2025 qualifying week.
+  2025-01-01:
+    value: false
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2025, reg. 2
+        href: https://www.legislation.gov.uk/uksi/2025/969/regulation/2/made
+      - title: The Social Fund Winter Fuel Payment Regulations (Northern Ireland) 2025, reg. 2
+        href: https://www.legislation.gov.uk/nisr/2025/142/regulation/2
 metadata:
   unit: bool
   label: Winter Fuel Payment means-tested benefits requirement
-  reference:
-    - href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2
-      title: The Social Fund Winter Fuel Payment Regulations 2000
-    - title: The Social Fund Winter Fuel Payment Regulations 2025, reg. 2
-      href: https://www.legislation.gov.uk/uksi/2025/969/regulation/2/made
-    - title: Finance Act 2026, Sch. 10 (ITEPA 2003 s.681I, winter fuel payment charge)
-      href: https://www.legislation.gov.uk/ukpga/2026/11/schedule/10

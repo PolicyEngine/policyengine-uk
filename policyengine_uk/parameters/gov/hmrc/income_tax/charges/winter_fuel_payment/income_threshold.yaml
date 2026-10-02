@@ -1,0 +1,13 @@
+description: A person entitled to a winter fuel payment is liable to the winter fuel payment charge when their total income for the tax year exceeds this amount, unless they are entitled to a relevant benefit in the qualifying week. Total income of exactly this amount is not charged. The Treasury may change the amount by order for later tax years.
+values:
+  2025-01-01:
+    value: 35_000
+    reference:
+      - title: Income Tax (Earnings and Pensions) Act 2003, s. 681I(1)(b), inserted by Finance Act 2026, Sch. 10 para. 1
+        href: https://www.legislation.gov.uk/ukpga/2003/1/section/681I
+      - title: Income Tax (Earnings and Pensions) Act 2003, s. 681J (alteration of income limit by Treasury order)
+        href: https://www.legislation.gov.uk/ukpga/2026/11/schedule/10
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Winter fuel payment charge income threshold

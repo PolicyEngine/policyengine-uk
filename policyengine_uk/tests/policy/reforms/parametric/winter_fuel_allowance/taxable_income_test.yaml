@@ -1,3 +1,10 @@
+# The household income test in
+# gov.dwp.winter_fuel_payment.eligibility.taxable_income_test is deprecated:
+# no regulations set it, and from 2025 the winter fuel payment charge (ITEPA
+# 2003 s.681I, gov.hmrc.income_tax.charges.winter_fuel_payment) recovers the
+# payment instead. The test still works in a reform that requires a relevant
+# benefit (require_benefits), as for the 2024 qualifying week.
+
 - name: 2024 baseline - pensioner without benefits gets no WFA
   period: 2024
   absolute_error_margin: 1
@@ -45,7 +52,10 @@
   output:
     winter_fuel_allowance: 0
 
-- name: Enable income test - pensioner exactly at threshold gets no WFA
+- name: Enable income test - pensioner exactly at threshold gets WFA
+  # The limit is a maximum: total income at the limit passes, as the winter
+  # fuel payment charge reaches only total income exceeding £35,000 (ITEPA
+  # 2003 s.681I(1)(b)).
   period: 2024
   absolute_error_margin: 1
   input:
@@ -59,7 +69,7 @@
     esa_income: 0
     jsa_income: 0
   output:
-    winter_fuel_allowance: 0
+    winter_fuel_allowance: 200
 
 - name: Enable income test - pensioner £1 under threshold gets WFA
   period: 2024
@@ -200,3 +210,72 @@
     total_income: 50000
   output:
     winter_fuel_allowance: 200
+
+- name: 2025 baseline - pensioner without benefits is paid, and the charge recovers it above £35,000
+  # SI 2025/969 reg. 2 pays everyone of pensionable age; ITEPA 2003 s.681I.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    age: 67
+    country: "ENGLAND"
+    total_income: 50000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+    winter_fuel_payment_charge: 200
+
+- name: 2025 the deprecated household income test has no effect while no relevant benefit is required
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 50000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+    winter_fuel_payment_charge: 200
+
+- name: 2025 the deprecated household income test applies when a reform requires a relevant benefit - over the limit
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.require_benefits: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 50000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 0
+    winter_fuel_payment_charge: 0
+
+- name: 2025 the deprecated household income test applies when a reform requires a relevant benefit - under the limit
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.require_benefits: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.use_maximum_taxable_income: true
+    gov.dwp.winter_fuel_payment.eligibility.taxable_income_test.maximum_taxable_income: 20000
+    age: 67
+    country: "ENGLAND"
+    total_income: 15000
+    pension_credit: 0
+    income_support: 0
+    esa_income: 0
+    jsa_income: 0
+  output:
+    winter_fuel_allowance: 200
+    winter_fuel_payment_charge: 0

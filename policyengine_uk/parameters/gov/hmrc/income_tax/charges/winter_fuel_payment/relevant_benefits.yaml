@@ -1,0 +1,15 @@
+description: Benefits that exempt a person from the winter fuel payment charge when they are entitled to one on any day in the qualifying week. The model takes a person to be entitled when their own award, or for a claimant or partner their couple's award, is positive in the year.
+values:
+  2025-01-01:
+    value:
+      - is_on_income_support
+      - is_on_income_based_jsa
+      - is_on_pension_credit
+      - is_on_income_related_esa
+      - is_on_universal_credit
+    reference:
+      - title: Income Tax (Earnings and Pensions) Act 2003, s. 681I(4) and (5)
+        href: https://www.legislation.gov.uk/ukpga/2003/1/section/681I
+metadata:
+  unit: list
+  label: Winter fuel payment charge relevant benefits

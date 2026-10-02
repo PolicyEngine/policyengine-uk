@@ -15,7 +15,7 @@ programs:
     variable: income_tax
     parameter_prefix: gov.hmrc.income_tax
     verified_start_year: 2019
-    notes: Includes Scottish rates via devolved tax bands
+    notes: Includes Scottish rates via devolved tax bands, the high income child benefit charge and, from 2025-26, the winter fuel payment charge
 
   - id: national_insurance
     name: National Insurance
@@ -352,7 +352,7 @@ programs:
     variable: winter_fuel_payment
     parameter_prefix: gov.dwp.winter_fuel_payment
     verified_start_year: 2022
-    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters
+    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters. From winter 2025-26 paid to everyone of pensionable age and recovered by the winter fuel payment charge (income tax)
 
   - id: ssmg
     name: Sure Start Maternity Grant
@@ -593,4 +593,4 @@ programs:
     variable: pension_age_winter_heating_payment
     parameter_prefix: gov.social_security_scotland.pawhp
     verified_start_year: 2024
-    notes: Replaced the Winter Fuel Payment in Scotland from winter 2024-25
+    notes: Replaced the Winter Fuel Payment in Scotland from winter 2024-25. From winter 2025-26 recovered by the winter fuel payment charge (income tax) above £35,000 of total income

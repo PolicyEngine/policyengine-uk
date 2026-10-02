@@ -41,7 +41,11 @@ class pension_credit_income(Variable):
             person("pension_contributions", period) * is_claimant_or_partner
         )
         tax = benunit.sum(
-            add(person, period, ["income_tax", "national_insurance"])
+            add(
+                person,
+                period,
+                ["income_tax_before_winter_fuel_payment_charge", "national_insurance"],
+            )
             * is_claimant_or_partner
         )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction

@@ -26,7 +26,7 @@ class is_benefit_cap_exempt_health_disability(Variable):
         uc_earned = benunit.sum(
             benunit.members("employment_income", period)
             + benunit.members("self_employment_income", period)
-            - benunit.members("income_tax", period)
+            - benunit.members("income_tax_before_winter_fuel_payment_charge", period)
             - benunit.members("national_insurance", period)
         )
         earnings_threshold = 10_152

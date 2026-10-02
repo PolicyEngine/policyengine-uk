@@ -6,7 +6,7 @@
     miscellaneous_income: 100
     uc_work_allowance: 10
     # The claimant's own tax (UC reg 22 counts the claimant's earnings).
-    tax: 1
+    income_tax_before_winter_fuel_payment_charge: 1
   output:
     uc_earned_income: 1100 - 11
 
@@ -18,6 +18,6 @@
     miscellaneous_income: 100
     uc_work_allowance: 2_000
     # The claimant's own tax (UC reg 22 counts the claimant's earnings).
-    tax: 1
+    income_tax_before_winter_fuel_payment_charge: 1
   output:
     uc_earned_income: 0
