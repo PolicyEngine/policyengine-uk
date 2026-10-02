@@ -16,7 +16,8 @@ class council_tax_reduction_claimant_benunit(Variable):
         "owned or rented) as that resident, and families liable for a share "
         "of the household's rent as jointly liable with the head's family. "
         "Other families are treated as not liable, whatever their ages. A "
-        "family claims only if its claimant or partner is aged 18 or over. "
+        "family claims only through a member treated as liable, who must be "
+        "aged 18 or over: see council_tax_reduction_liable_person. "
         "Joint owners in separate families, and dwellings where the owner "
         "rather than a resident is liable, are not identified."
     )
@@ -40,13 +41,8 @@ class council_tax_reduction_claimant_benunit(Variable):
     )
 
     def formula(benunit, period, parameters):
-        # A family liable for a share of the rent is jointly and severally
-        # liable for the council tax with the head's family (s.6(3), s.75(3)).
-        # Only a resident aged 18 or over can be liable (s.6(5), s.99(1)).
-        person = benunit.members
-        adult_claimant = benunit.any(
-            person("is_claimant_or_partner", period) & (person("age", period) >= 18)
+        # The head's family and families liable for a share of the rent claim,
+        # each through a member treated as liable (aged 18 or over).
+        return benunit.any(
+            benunit.members("council_tax_reduction_liable_person", period)
         )
-        head_family = benunit("benunit_contains_household_head", period)
-        sharer = benunit("liable_for_share_of_household_rent", period)
-        return (head_family | sharer) & adult_claimant

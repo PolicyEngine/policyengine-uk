@@ -598,3 +598,81 @@
     council_tax_reduction_claimant_benunit: [true, false]
     council_tax_reduction_joint_liability_share: [1, 1]
     simulated_council_tax_reduction_benunit: [1_800, 0]
+
+- name: A grandparent household head whose family includes a young couple of 17-year-old parents claims
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The young parents are the family's claimant and partner, but the
+    # grandmother is the household head and the only resident aged 18 or
+    # over, so she is the liable person (LGFA 1992 s.75, s.99(1)).
+    is_claimant_or_partner: [false, true, true, false]
+    council_tax_reduction_liable_person: [true, false, false, false]
+    council_tax_reduction_claimant_benunit: [true]
+    council_tax_reduction_joint_liability_share: [1]
+    simulated_council_tax_reduction_benunit: [1_800]
+    council_tax_reduction: 1_800
+
+- name: Adult parents living in a grandparent head's family are not jointly liable with her
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 75
+        is_household_head: true
+      mother:
+        age: 30
+        is_parent: true
+        is_household_head: false
+      father:
+        age: 32
+        is_parent: true
+        is_household_head: false
+      child:
+        age: 4
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, mother, father, child]
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [grandmother, mother, father, child]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Only the head and the head's own partner are liable; the parents are
+    # not the grandmother's partners (LGFA 1992 s.6, s.9).
+    council_tax_reduction_liable_person: [true, false, false, false]
+    council_tax_reduction_claimant_benunit: [true]
+    council_tax_reduction_joint_liability_share: [1]

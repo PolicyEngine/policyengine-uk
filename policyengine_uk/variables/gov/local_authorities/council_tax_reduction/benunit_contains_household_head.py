@@ -25,15 +25,6 @@ class benunit_contains_household_head(Variable):
     )
 
     def formula(benunit, period, parameters):
-        person = benunit.members
-        household = person.household
-        age = person("age", period)
-        flagged = person("is_household_head", period)
-        # get_rank breaks ties in age by order within the household, so
-        # exactly one member has rank 0.
-        rank = where(
-            household.any(flagged),
-            person.get_rank(household, -age, condition=flagged),
-            person.get_rank(household, -age),
+        return benunit.any(
+            benunit.members("council_tax_reduction_household_head", period)
         )
-        return benunit.any(rank == 0)

@@ -15,11 +15,14 @@ guard against regressions rather than check it independently.
 1. One head: exactly one family in each household contains the household
    head. With one or more members flagged, it holds a flagged member; with
    none, it holds a member of the greatest age.
-2. Claimants: a household whose rent is not shared has exactly one claimant
-   family, the head's. A family with no member aged 18 or over never claims
-   (no one under 18 can be liable, LGFA 1992 s.6(5)). Pin: the claimant
-   families are the head's and the sharers, each with a claimant or partner
-   aged 18 or over.
+2. Claimants: a household whose rent is not shared has at most one claimant
+   family, the head's, and the head's family claims whenever the head is
+   18 or over (including a grandparent head whose family's claimant and
+   partner are 17-year-old parents). A family with no member aged 18 or
+   over never claims (no one under 18 can be liable, LGFA 1992 s.6(5)).
+   Every person treated as liable is 18 or over and in the head's family or
+   a sharer family. Pin: a family claims if and only if it has a member
+   treated as liable.
 3. Simulated reductions: no family outside the claimants gets one, and a
    household's total never exceeds its council tax. (Reported reductions,
    used where a scheme is not modelled, are outside this test.)
@@ -79,6 +82,9 @@ def family(draw):
         sharer=draw(st.booleans()),
         # Outside the first family: sometimes a single person aged 15-17.
         minor_age=draw(st.one_of(st.none(), st.none(), st.integers(15, 17))),
+        # In the first family: sometimes a couple of parents aged 16-17 with
+        # a baby, living in the head's family (#1896's parent-couple rule).
+        minor_parents=draw(st.one_of(st.none(), st.none(), st.integers(16, 17))),
     )
 
 
@@ -138,6 +144,16 @@ def build(population, age_override=None):
                 facts["flagged"].append(flagged)
                 facts["age"].append(age)
                 adult_index += 1
+            if f == 0 and fam["minor_parents"] is not None:
+                for i in range(3):
+                    pid = f"h{h}_f{f}_young_{i}"
+                    age = fam["minor_parents"] if i < 2 else 0
+                    people[pid] = {"age": age, "is_parent": i < 2}
+                    if house["head_flags"] != "unset":
+                        people[pid]["is_household_head"] = False
+                    ids.append(pid)
+                    facts["flagged"].append(False)
+                    facts["age"].append(age)
             child_age = fam["child_age"]
             if f > 0 and fam["minor_age"] is not None:
                 child_age = fam["minor_age"]
@@ -226,17 +242,25 @@ def test_claimant_invariants(population):
 
     # 2. Claimants.
     claimants = per_household(claimant, facts)
-    assert np.all(claimants[~shared] == 1)
+    assert np.all(claimants[~shared] == 1)  # every head here is 18 or over
     age = calc(sim, "age")
     claimant_or_partner = calc(sim, "is_claimant_or_partner")
     has_adult = np.zeros(claimant.size, dtype=bool)
     np.logical_or.at(has_adult, facts["benunit"], age >= 18)
     assert not np.any(claimant & ~has_adult)
-    adult_claimant = np.zeros(claimant.size, dtype=bool)
-    np.logical_or.at(
-        adult_claimant, facts["benunit"], claimant_or_partner & (age >= 18)
-    )
-    assert np.array_equal(claimant, (head | sharer) & adult_claimant)
+    liable = calc(sim, "council_tax_reduction_liable_person")
+    head_person = calc(sim, "council_tax_reduction_household_head")
+    in_head_or_sharer = (head | sharer)[facts["benunit"]]
+    assert np.all(age[liable] >= 18)
+    assert np.all(in_head_or_sharer[liable])
+    head_adult = np.zeros(claimant.size, dtype=bool)
+    np.logical_or.at(head_adult, facts["benunit"], head_person & (age >= 18))
+    assert np.all(claimant[head_adult])
+    claimants_not_shared = per_household(claimant, facts)[~shared]
+    assert np.all(claimants_not_shared <= 1)
+    has_liable = np.zeros(claimant.size, dtype=bool)
+    np.logical_or.at(has_liable, facts["benunit"], liable)
+    assert np.array_equal(claimant, has_liable)
 
     # 3. Simulated reductions: none outside claimant families; never above
     # the council tax.
