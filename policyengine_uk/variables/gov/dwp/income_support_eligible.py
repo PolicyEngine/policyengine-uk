@@ -26,14 +26,11 @@ class income_support_eligible(Variable):
         # child is placed by a local authority, such as a foster child; para
         # 2A: or placed for adoption by an adoption agency.
         person = benunit.members
-        placed_child = (
-            person("is_looked_after_child", period)
-            | person("is_placed_for_adoption", period)
+        placed_child = person(
+            "is_child_or_young_person_placed_with_family", period
         ) & person("is_child_for_child_benefit", period)
         single_or_lone_parent = benunit("is_single_person", period) | lone_parent
-        fosters_child = single_or_lone_parent & benunit.any(
-            placed_child & ~person("is_claimant_or_partner", period)
-        )
+        has_placed_child = single_or_lone_parent & benunit.any(placed_child)
         has_carers = add(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_esa_income = benunit("esa_income", period) > 0
@@ -41,7 +38,7 @@ class income_support_eligible(Variable):
         capital = benunit("income_support_assessable_capital", period)
         limit = IS.means_test.capital.limit
         return (
-            (has_carers | lone_parent_with_young_child | fosters_child)
+            (has_carers | lone_parent_with_young_child | has_placed_child)
             & none_SP_age
             & ~has_esa_income
             & already_claiming
