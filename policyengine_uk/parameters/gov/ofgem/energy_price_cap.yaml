@@ -1,29 +1,45 @@
-description: The default tariff energy price for Ofgem's central household (2,900kWh per annum in electricity consumption, 12,000kWh per annum for gas). The Energy Price Cap subsidy reduces household energy bills by the difference between this amount and the subsity target parameter level.
+description: >-
+  Ofgem's annualised energy price cap illustration for a typical dual-fuel
+  household paying by Direct Debit. Ofgem changes the typical consumption
+  values used for this illustration periodically, so values across those
+  changes are not a constant-consumption price index.
 values:
-  2018-10-01: 1_186
-  2019-04-01: 1_305
-  2019-10-01: 1_227
-  2020-04-01: 1_209
-  2020-10-01: 1_121
-  2021-04-01: 1_223
-  2021-10-01: 1_370
-  2022-04-01: 2_100
-  2022-10-01: 3_764
+  2019-01-01: 1_104
+  2019-04-01: 1_217
+  2019-10-01: 1_143
+  2020-04-01: 1_126
+  2020-10-01: 1_042
+  2021-04-01: 1_138
+  2021-10-01: 1_277
+  2022-04-01: 1_971
+  2022-10-01: 3_549
   2023-01-01: 4_279
   2023-04-01: 3_280
-  2023-07-01: 2_362 # Forecast
-  2023-10-01: 2_389
+  2023-07-01: 2_074
+  2023-10-01: 1_834
+  2024-01-01: 1_928
+  2024-04-01: 1_690
+  2024-07-01: 1_568
+  2024-10-01: 1_717
+  2025-01-01: 1_738
   2025-04-01: 1_849
   2025-07-01: 1_720
+  2025-10-01: 1_755
+  2026-01-01: 1_758
   2026-04-01: 1_641
+  2026-07-01: 1_663
+  2026-10-01: 1_723
 metadata:
   unit: currency-GBP
   period: year
-  label: Ofgem energy price level
+  label: Ofgem energy price cap illustration
+  preserve_calendar_dates: true
   reference:
-    - title: Energy data and research | Ofgem
-      href: https://www.ofgem.gov.uk/energy-data-and-research/data-portal/all-available-charts?keyword=price%20cap&sort=relevance
-    - title: Cornwall Insight price cap forecasts
-      href: https://www.cornwall-insight.com/press/cornwall-insight-release-latest-price-cap-predictions/
-    - title: Ofgem price cap forecasts - 2025
-      href: https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap
+    - title: Ofgem Annual Report and Accounts 2021-22
+      href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+    - title: Ofgem Annual Report and Accounts 2022-23
+      href: https://www.ofgem.gov.uk/sites/default/files/2023-07/Ofgem%20ARA%202023.pdf
+    - title: Energy price cap (default tariff) levels
+      href: https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels
+    - title: Energy price cap will rise by 4% from October 2026
+      href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-rise-4-october-2026
