@@ -50,8 +50,22 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         # variable.
         working_age_claimant = benunit.any(claimant_or_partner & ~over_qualifying_age)
         on_universal_credit = benunit("is_uc_entitled", period) & working_age_claimant
+        # Reg 5(1)(b) asks whether the claimant or partner is on one of these
+        # awards. Income Support already needs their own award
+        # (income_support_eligible); income-based JSA and income-related ESA
+        # are read on their reports only, since another member of the benefit
+        # unit claims in their own right.
         on_income_related_benefit = (
-            add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
+            add(
+                benunit,
+                period,
+                [
+                    "income_support",
+                    "claimant_or_partner_jsa_income",
+                    "claimant_or_partner_esa_income",
+                ],
+            )
+            > 0
         )
         return (
             attained_qualifying_age & ~on_universal_credit & ~on_income_related_benefit
