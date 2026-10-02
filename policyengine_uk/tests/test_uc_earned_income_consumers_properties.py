@@ -117,7 +117,11 @@ def situation(units, year, bump=None, earnings_only=False, no_floor=False):
         names = []
         for j, adult in enumerate(unit["adults"]):
             name = f"p{i}_{j}"
-            person = {"would_claim_marriage_allowance": {year: False}}
+            # A family has at most two adults: the claimant and partner.
+            person = {
+                "would_claim_marriage_allowance": {year: False},
+                "is_claimant_or_partner": {year: True},
+            }
             for variable, value in adult.items():
                 if earnings_only and (variable in UNEARNED or variable == "ni_class_3"):
                     continue
