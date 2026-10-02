@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
     has_earned_income,
+    is_award_payee,
     is_claimant_or_partner,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
@@ -21,12 +22,13 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         "Modelled exemptions in the England pensioner, Scottish and Welsh "
         "schemes: a full-time student; a non-dependant on Income Support, "
         "income-based JSA, income-related ESA or State Pension Credit (any "
-        "age); and, from the year each scheme added it, one entitled to "
-        "Universal Credit calculated on no earned income. Wales excludes "
+        "age); an adult for whom someone else is entitled to child benefit "
+        "(LGFA 1992 Sch 1 para 3); and, from the year each scheme added it, "
+        "one entitled to Universal Credit calculated on no earned income. Wales excludes "
         "members of the ESA work-related activity group; with no ESA group "
-        "input, income-related ESA is treated as exempt. Not modelled: persons "
-        "disregarded for council tax discounts (LGFA 1992 Sch 1) other than "
-        "students, youth training allowances, a normal home elsewhere, and "
+        "input, income-related ESA is treated as exempt. Not modelled: other "
+        "persons disregarded for council tax discounts (LGFA 1992 Sch 1), "
+        "youth training allowances, a normal home elsewhere, and "
         "absence in hospital or on armed forces operations."
     )
     definition_period = YEAR
@@ -53,13 +55,24 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
             is_wales_scheme(country),
         ]
         full_time_student = is_full_time_student_non_dep(person, period)
-        # Receipt of a family award belongs to its claimant and partner.
+        # IS, income-based JSA, income-related ESA and SPC count for the person
+        # they are payable to; Universal Credit for both joint claimants.
         claimant_or_partner = is_claimant_or_partner(person, period)
-        on_income_related_benefit = claimant_or_partner & (
-            (person.benunit("income_support", period) > 0)
-            | (person.benunit("jsa_income", period) > 0)
-            | (person.benunit("esa_income", period) > 0)
-            | (person.benunit("pension_credit", period) > 0)
+        on_income_related_benefit = (
+            is_award_payee(person, period, "income_support", "income_support_reported")
+            | is_award_payee(person, period, "jsa_income", "jsa_income_reported")
+            | is_award_payee(person, period, "esa_income", "esa_income_reported")
+            | is_award_payee(
+                person, period, "pension_credit", "pension_credit_reported"
+            )
+        )
+        # LGFA 1992 Sch 1 para 3 (via para 8(8)(b) and equivalents): an adult
+        # for whom another person is entitled to child benefit, that is a
+        # qualifying young person in someone else's family.
+        disregarded_for_child_benefit = (
+            (person("age", period) >= 18)
+            & person("is_qualifying_young_person_for_child_benefit", period)
+            & ~claimant_or_partner
         )
         universal_credit_limb = select(
             schemes,
@@ -81,5 +94,6 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         return (
             full_time_student
             | on_income_related_benefit
+            | disregarded_for_child_benefit
             | universal_credit_without_earned_income
         )
