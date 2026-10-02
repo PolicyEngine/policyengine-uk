@@ -1,0 +1,144 @@
+# The benefits the cap counts.
+#
+# UC Regs 2013 reg 80(1): "the amount of a welfare benefit to be used when
+# determining total entitlement to welfare benefits is the amount to which the
+# single person or couple is entitled". HB Regs 2006 reg 75A: "the total amount
+# of welfare benefits to which— (a) where the claimant is a member of a couple,
+# each member of the couple is or jointly are entitled; or (b) in any other
+# case, the claimant is entitled". Welfare benefits: Welfare Reform Act 2012
+# s.96(10).
+#
+# 2025-26 single cap outside London: 14,753 (UC reg 80A(2)). A non-dependent
+# adult (30, not in education, neither claimant nor partner) claims their own
+# benefits, which the family's cap does not count. Families live in the North
+# East; benefit amounts are set directly.
+
+- name: A non-dependent adult's income-related ESA is not in the family's capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+        esa_includes_support_component: false
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 20_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    is_benefit_cap_exempt: false
+    # 20,000 - 14,753 (the adult's 5,000 is theirs, not the family's)
+    benefit_cap_reduction: 5_247
+    universal_credit: 14_753
+
+- name: A non-dependent adult's contributory ESA, JSA, incapacity benefit and SDA are not in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_contrib_reported: 2_000
+        esa_includes_support_component: false
+        jsa_contrib_reported: 2_000
+        incapacity_benefit_reported: 2_000
+        sda: 2_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_exempt: false
+    # 18,000 - 14,753
+    benefit_cap_reduction: 3_247
+    universal_credit: 14_753
+
+- name: The claimant's own contributory JSA is in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        jsa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [claimant]
+        universal_credit_pre_benefit_cap: 15_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # 15,000 + 3,000 - 14,753
+    benefit_cap_reduction: 3_247
+    universal_credit: 11_753
+
+- name: A non-dependent adult's income-based JSA does not reduce the family's Housing Benefit
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 6_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 9_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    claimant_or_partner_jsa_income: 0
+    # 9,000 is under 14,753
+    benefit_cap_reduction: 0
+    housing_benefit: 9_000
+
+- name: The claimant's own income-based JSA reduces their Housing Benefit
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        jsa_income_reported: 6_000
+    benunits:
+      family:
+        members: [claimant]
+        would_claim_uc: false
+        would_claim_housing_benefit: true
+        housing_benefit_pre_benefit_cap: 9_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    claimant_or_partner_jsa_income: 6_000
+    # 9,000 + 6,000 - 14,753 (HB Regs 2006 reg 75D(1))
+    benefit_cap_reduction: 247
+    housing_benefit: 8_753

@@ -210,6 +210,10 @@
     is_benefit_cap_exempt_other: false
     is_benefit_cap_exempt: false
     benefit_cap: 14_753
+    # Their 7,000 is theirs, not in the family's capped total:
+    # 18,000 - 14,753.
+    benefit_cap_reduction: 3_247
+    universal_credit: 14_753
 
 - name: Income-related ESA that the capital test stops is not received, so it does not lift the cap
   period: 2025

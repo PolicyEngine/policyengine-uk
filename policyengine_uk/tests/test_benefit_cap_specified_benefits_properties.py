@@ -29,8 +29,11 @@ Invariants:
 
 1. Adding a member who is neither the claimant, the partner nor a child or
    young person they are responsible for never changes whether the family is
-   exempt or its cap, whatever disability or carer benefits, ESA, disability
-   flag or caring that member has. (Their age and earnings can: the State
+   exempt, its cap, its cap reduction or its Universal Credit, whatever
+   disability or carer benefits, ESA, JSA, incapacity benefit, SDA,
+   disability flag or caring that member has. The cap counts only the
+   welfare benefits "to which the single person or couple is entitled" (UC
+   Regs 2013 reg 80(1); HB Regs 2006 reg 75A). (Their age and earnings can: the State
    Pension age and earnings exceptions read every member. The draws keep the
    member under State Pension age and without earnings; see #1944, #1907,
    #1999 and #1820.)
@@ -70,7 +73,20 @@ AMOUNTS = (
     + YOUNG_PERSON
     + HOUSING_BENEFIT_YOUNG_PERSON
 )
-CIRCUMSTANCES = AMOUNTS + ["esa_contrib", "esa_income", "caring", "disabled"]
+# Capped welfare benefits that do not lift the cap (WRA 2012 s.96(10)).
+CAPPED_REPORTS = {
+    "jsa_contrib": "jsa_contrib_reported",
+    "jsa_income": "jsa_income_reported",
+    "incapacity_benefit": "incapacity_benefit_reported",
+    "sda": "sda_reported",
+}
+CIRCUMSTANCES = AMOUNTS + [
+    "esa_contrib",
+    "esa_income",
+    "caring",
+    "disabled",
+    *CAPPED_REPORTS,
+]
 
 ROLES = {
     "child": {"current_education": "PRIMARY"},
@@ -95,6 +111,7 @@ def blank(role, age):
             "age": age,
             "esa_contrib_reported": 0,
             "esa_income_reported": 0,
+            **{report: 0 for report in CAPPED_REPORTS.values()},
             "care_hours": 0,
             "is_disabled_for_benefits": False,
             "current_education": "NOT_IN_EDUCATION",
@@ -117,6 +134,8 @@ def set_circumstance(person, circumstance):
         person["esa_contrib_reported"] = 5_000
     elif circumstance == "esa_income":
         person["esa_income_reported"] = 4_000
+    elif circumstance in CAPPED_REPORTS:
+        person[CAPPED_REPORTS[circumstance]] = 2_000
     elif circumstance == "caring":
         person["care_hours"] = 35
     else:
@@ -251,6 +270,15 @@ def reference_cap(members):
     return SINGLE_CAP if claimants == 1 and not dependants else FAMILY_CAP
 
 
+CAPPED_FAMILY = {
+    "universal_credit_pre_benefit_cap": 30_000,
+    "housing_benefit_pre_benefit_cap": 0,
+    "child_tax_credit": 0,
+    "child_benefit": 0,
+    "income_support": 0,
+}
+
+
 SETTINGS = settings(
     max_examples=40,
     deadline=None,
@@ -264,7 +292,12 @@ SETTINGS = settings(
 def test_non_dependent_adults_never_change_the_exemption(drawn):
     without = [(members, wtc) for members, _, wtc in drawn]
     with_other = [(members + [other], wtc) for members, other, wtc in drawn]
-    sim = Simulation(situation=situation(without + with_other))
+    # 30,000 of Universal Credit before the cap; the other family-level
+    # capped benefits are nil, so the capped total is UC plus whatever the
+    # members' own benefits add.
+    sim = Simulation(
+        situation=situation(without + with_other, extra_benunit=CAPPED_FAMILY)
+    )
     k = len(drawn)
     claimant_or_partner = sim.calculate("is_claimant_or_partner", YEAR)
     legacy = sim.calculate("is_child_or_young_person_for_legacy_benefits", YEAR)
@@ -281,6 +314,8 @@ def test_non_dependent_adults_never_change_the_exemption(drawn):
         "is_benefit_cap_exempt_other",
         "is_benefit_cap_exempt",
         "benefit_cap",
+        "benefit_cap_reduction",
+        "universal_credit",
     ]:
         values = sim.calculate(variable, YEAR)
         for i in range(k):
@@ -303,20 +338,9 @@ def test_exemption_matches_regulations(drawn):
 @given(draws())
 def test_exempt_families_have_no_cap_and_others_the_statutory_cap(drawn):
     units = [(members + [other], wtc) for members, other, wtc in drawn]
-    # 30,000 of Universal Credit alone exceeds either cap. The other capped
-    # benefits are set to nil; they only add to the excess.
-    sim = Simulation(
-        situation=situation(
-            units,
-            extra_benunit={
-                "universal_credit_pre_benefit_cap": 30_000,
-                "housing_benefit_pre_benefit_cap": 0,
-                "child_tax_credit": 0,
-                "child_benefit": 0,
-                "income_support": 0,
-            },
-        )
-    )
+    # 30,000 of Universal Credit alone exceeds either cap. The other
+    # family-level capped benefits are set to nil; they only add to the excess.
+    sim = Simulation(situation=situation(units, extra_benunit=CAPPED_FAMILY))
     exempt = sim.calculate("is_benefit_cap_exempt", YEAR)
     cap = sim.calculate("benefit_cap", YEAR)
     reduction = sim.calculate("benefit_cap_reduction", YEAR)
