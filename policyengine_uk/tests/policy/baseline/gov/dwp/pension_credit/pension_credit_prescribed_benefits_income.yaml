@@ -1,0 +1,476 @@
+# Industrial injuries disablement benefit (IIDB), severe disablement allowance
+# (SDA), incapacity benefit (IB) and maternity allowance (MA) in Pension Credit
+# and Housing Benefit income.
+#
+# SPC Regs 2002 reg 15(1): "all social security benefits are prescribed except"
+# a closed list. The list does not name the four benefits; for IIDB it excepts
+# only the increases under SSCBA 1992 ss.104 and 105 (constant attendance and
+# exceptionally severe disablement) and Sch 8 paras 4 and 7(2)(b) (reg
+# 15(1)(c)-(e)). Reg 9 makes WTC, IB, SDA and MA (with contribution-based JSA,
+# contributory ESA and reg 15(5)(d) maintenance) non-qualifying income for
+# Savings Credit; IIDB stays qualifying income. HB (SPC) Regs 2006 reg 29(1)(j)
+# counts the same social security benefits for pension-age Housing Benefit, and
+# HB Regs 2006 reg 40 counts working-age gross income less Sch 5.
+#
+# The awards are ordinary awards with no excepted increase, entered as reported
+# amounts (SDA as a reported award, which the model pays at gov.dwp.sda.maximum).
+# Weekly rates, x 52:
+#   SI 2026/148 Sch 1: IIDB 100% 233.90, 20% 46.78 (Part V); SDA 103.85 plus
+#   the higher age related addition 15.50 (Part III); long-term IB 146.60
+#   (Part I). Art 9: SMP reg 6 rate 194.32, which is the MA standard rate under
+#   SSCBA s.35A(1)(b) from 6 April 2026 (art 1). Art 29: standard minimum
+#   guarantee 238.00 single and 363.25 couple; Savings Credit threshold 208.07
+#   single.
+#   SI 2025/295 Sch 1 Part V: IIDB 20% 45.06; art 29: single standard minimum
+#   guarantee 227.10.
+# MA and IB are rarely paid above State Pension age (the Enhanced FRS has no
+# pension-age recipients); the cases test classification. None of these
+# claimants pays income tax, so tax does not enter any expected value.
+
+- name: Case 1, single pensioner with IIDB at 20 percent.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 1_000
+        iidb_reported: 46.78 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 1,000 + 2,432.56 = 3,432.56.
+    pension_credit_income: 1_000 + 46.78 * 52
+    # 12,376 - 3,432.56 = 8,943.44.
+    guarantee_credit: 238 * 52 - (1_000 + 46.78 * 52)
+
+- name: Case 2, pensioner couple whose partner has IIDB at 100 percent.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 5_000
+      person2:
+        age: 70
+        state_pension: 0
+        iidb_reported: 233.90 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # 5,000 + 12,162.80 = 17,162.80.
+    pension_credit_income: 5_000 + 233.90 * 52
+    # 18,889 - 17,162.80 = 1,726.20.
+    guarantee_credit: 363.25 * 52 - (5_000 + 233.90 * 52)
+
+- name: Case 3, single pensioner with SDA and the higher age related addition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 1_000
+        sda_reported: 1
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # The model pays 119.35 a week, the statutory 103.85 + 15.50.
+    sda: (103.85 + 15.50) * 52
+    # 1,000 + 6,206.20 = 7,206.20.
+    pension_credit_income: 1_000 + (103.85 + 15.50) * 52
+    # 12,376 - 7,206.20 = 5,169.80.
+    guarantee_credit: 238 * 52 - (1_000 + (103.85 + 15.50) * 52)
+
+- name: Case 4, pensioner couple whose partner has SDA.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 5_000
+      person2:
+        age: 70
+        state_pension: 0
+        sda_reported: 1
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # 5,000 + 6,206.20 = 11,206.20.
+    pension_credit_income: 5_000 + (103.85 + 15.50) * 52
+    # 18,889 - 11,206.20 = 7,682.80.
+    guarantee_credit: 363.25 * 52 - (5_000 + (103.85 + 15.50) * 52)
+
+- name: Case 5, single pensioner with long-term incapacity benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 1_000
+        incapacity_benefit_reported: 146.60 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # IB is taxable, but 8,623.20 of income bears no tax in the model.
+    income_tax: 0
+    # 1,000 + 7,623.20 = 8,623.20.
+    pension_credit_income: 1_000 + 146.60 * 52
+    # 12,376 - 8,623.20 = 3,752.80.
+    guarantee_credit: 238 * 52 - (1_000 + 146.60 * 52)
+
+- name: Case 6, pensioner couple whose partner has long-term incapacity benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 5_000
+      person2:
+        age: 70
+        state_pension: 0
+        incapacity_benefit_reported: 146.60 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    income_tax: [0, 0]
+    # 5,000 + 7,623.20 = 12,623.20.
+    pension_credit_income: 5_000 + 146.60 * 52
+    # 18,889 - 12,623.20 = 6,265.80.
+    guarantee_credit: 363.25 * 52 - (5_000 + 146.60 * 52)
+
+- name: Case 7, single pensioner with maternity allowance at the standard rate.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 1_000
+        maternity_allowance_reported: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 1,000 + 10,104.64 = 11,104.64.
+    pension_credit_income: 1_000 + 194.32 * 52
+    # 12,376 - 11,104.64 = 1,271.36.
+    guarantee_credit: 238 * 52 - (1_000 + 194.32 * 52)
+
+- name: Case 8, pensioner couple whose partner has maternity allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 5_000
+      person2:
+        age: 70
+        state_pension: 0
+        maternity_allowance_reported: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # 5,000 + 10,104.64 = 15,104.64.
+    pension_credit_income: 5_000 + 194.32 * 52
+    # 18,889 - 15,104.64 = 3,784.36.
+    guarantee_credit: 363.25 * 52 - (5_000 + 194.32 * 52)
+
+- name: Case 9, single pensioner with IIDB at 20 percent in 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 1_000
+        iidb_reported: 45.06 * 52
+    benunits:
+      benunit:
+        members: [person1]
+        # SI 2025/295 art 29 sets the single standard minimum guarantee at
+        # 227.10; the model's 2025 parameter holds 221.85, so the statutory
+        # amount is supplied to isolate the income rule.
+        minimum_guarantee: 227.10 * 52
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 1,000 + 2,343.12 = 3,343.12.
+    pension_credit_income: 1_000 + 45.06 * 52
+    # 11,809.20 - 3,343.12 = 8,466.08.
+    guarantee_credit: 227.10 * 52 - (1_000 + 45.06 * 52)
+
+- name: Case 10, IIDB is qualifying income for Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        # Aged 80, so State Pension age was reached before the 2016 cutoff.
+        age: 80
+        state_pension: 0
+        private_pension_income: 175.04 * 52
+        iidb_reported: 46.78 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 175.04 + 46.78 = 221.82 a week, 11,534.64 a year.
+    pension_credit_income: (175.04 + 46.78) * 52
+    savings_credit_income: (175.04 + 46.78) * 52
+    # 0.6 x (221.82 - 208.07) = 8.25 a week, 429.00 a year: below the
+    # maximum 0.6 x (238 - 208.07), and income is below the minimum
+    # guarantee, so nothing is withdrawn.
+    savings_credit: 0.6 * (221.82 - 208.07) * 52
+    # (238 - 221.82) x 52 = 841.36.
+    guarantee_credit: (238 - 221.82) * 52
+
+- name: Case 11, an IIDB recipient who reached State Pension age after the cutoff gets no Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 175.04 * 52
+        iidb_reported: 46.78 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    meets_savings_credit_age_requirement: false
+    savings_credit_income: (175.04 + 46.78) * 52
+    savings_credit: 0
+    guarantee_credit: (238 - 221.82) * 52
+
+- name: Case 12, SDA is not qualifying income for Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 6_000
+        sda_reported: 1
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 6,000 + 6,206.20 = 12,206.20.
+    pension_credit_income: 6_000 + (103.85 + 15.50) * 52
+    # Reg 9(d): qualifying income is the 6,000 pension, below the 10,819.64
+    # threshold, so no Savings Credit. Counting SDA as qualifying income
+    # would give 0.6 x (12,206.20 - 10,819.64) = 831.94.
+    savings_credit_income: 6_000
+    is_savings_credit_eligible: false
+    savings_credit: 0
+    # 12,376 - 12,206.20 = 169.80.
+    guarantee_credit: 238 * 52 - (6_000 + (103.85 + 15.50) * 52)
+
+- name: Case 13, incapacity benefit is not qualifying income for Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 4_500
+        incapacity_benefit_reported: 146.60 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 12,123.20 of income bears no tax in the model.
+    income_tax: 0
+    # 4,500 + 7,623.20 = 12,123.20.
+    pension_credit_income: 4_500 + 146.60 * 52
+    # Reg 9(b).
+    savings_credit_income: 4_500
+    savings_credit: 0
+    # 12,376 - 12,123.20 = 252.80.
+    guarantee_credit: 238 * 52 - (4_500 + 146.60 * 52)
+
+- name: Case 14, maternity allowance is not qualifying income for Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 2_000
+        maternity_allowance_reported: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 2,000 + 10,104.64 = 12,104.64.
+    pension_credit_income: 2_000 + 194.32 * 52
+    # Reg 9(e).
+    savings_credit_income: 2_000
+    savings_credit: 0
+    # 12,376 - 12,104.64 = 271.36.
+    guarantee_credit: 238 * 52 - (2_000 + 194.32 * 52)
+
+- name: Case 15, working tax credit is not qualifying income for Savings Credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 0
+        private_pension_income: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        # An illustrative award: reg 9(a) applies to any amount, and working
+        # tax credit rates are not set by the up-rating orders used here.
+        working_tax_credit: 1_000
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # SPCA s.15(1)(b): 10,000 + 1,000 = 11,000.
+    pension_credit_income: 11_000
+    # Reg 9(a): qualifying income is 10,000, below the 10,819.64 threshold.
+    # Counting the tax credit would give 0.6 x (11,000 - 10,819.64) = 108.22.
+    savings_credit_income: 10_000
+    savings_credit: 0
+    # 12,376 - 11,000 = 1,376.
+    guarantee_credit: 1_376
+
+- name: Case 16, pension-age Housing Benefit counts IIDB once Guarantee Credit ends.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 1_000
+        iidb_reported: 233.90 * 52
+    benunits:
+      benunit:
+        members: [person1]
+        # The model applies the HB earnings disregard (HB (SPC) Regs Sch 4)
+        # whether or not there are earnings; there are none here, so it is
+        # set to zero to isolate the income rule.
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    # 1,000 + 12,162.80 = 13,162.80, above the 12,376 minimum guarantee.
+    pension_credit_income: 1_000 + 233.90 * 52
+    guarantee_credit: 0
+    # HB (SPC) Regs reg 29(1)(j): the same 13,162.80.
+    housing_benefit_applicable_income: 1_000 + 233.90 * 52
+
+- name: Case 17, working-age Housing Benefit counts incapacity benefit and SDA.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 45
+        incapacity_benefit_reported: 146.60 * 52
+      person2:
+        age: 45
+        sda_reported: 1
+    benunits:
+      benunit:
+        members: [person1, person2]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+  output:
+    income_tax: [0, 0]
+    # HB Regs 2006 reg 40(1): 7,623.20 + 6,206.20 = 13,829.40.
+    housing_benefit_applicable_income: (146.60 + 103.85 + 15.50) * 52

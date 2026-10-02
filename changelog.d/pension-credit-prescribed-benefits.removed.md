@@ -1,0 +1,1 @@
+- Removed the unused duplicate parameter `gov.dwp.pension_credit.income.savings_credit_excluded_sources`; `gov.dwp.pension_credit.savings_credit.excluded_income` is the list the model reads.
