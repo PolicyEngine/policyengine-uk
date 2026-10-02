@@ -1,10 +1,11 @@
 description: >
   Benefit-unit awards whose receipt qualifies the benefit unit for the higher
   Pension Credit earnings disregard (Sch. VI para. 4(1)(a)(vii), employment
-  and support allowance, from 27 October 2008). The model holds income-related
-  employment and support allowance on the benefit unit, as the claimant's
-  award; contributory employment and support allowance is a person-level
-  benefit in `disability_benefits`.
+  and support allowance, from 27 October 2008). The claimant's or partner's
+  income-related employment and support allowance is held on the benefit unit
+  (claimant_or_partner_esa_income); an award another member of the benefit
+  unit claims in their own right does not count. Contributory employment and
+  support allowance is a person-level benefit in `disability_benefits`.
 metadata:
   label: Pension Credit higher earnings disregard benefit-unit disability benefits
   unit: list
@@ -16,4 +17,4 @@ metadata:
 values:
   2003-10-06: []
   2008-10-27:
-    - esa_income
+    - claimant_or_partner_esa_income

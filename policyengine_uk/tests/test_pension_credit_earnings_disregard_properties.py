@@ -124,9 +124,9 @@ def test_benefit_lists_follow_amending_instruments():
         return set(p.disability_benefits), set(p.disability_benefit_unit_benefits)
 
     person, unit = lists("2008-10-26")
-    assert "esa_contrib" not in person and "esa_income" not in unit
+    assert "esa_contrib" not in person and "claimant_or_partner_esa_income" not in unit
     person, unit = lists("2008-10-27")
-    assert "esa_contrib" in person and "esa_income" in unit
+    assert "esa_contrib" in person and "claimant_or_partner_esa_income" in unit
     person, _ = lists("2013-04-07")
     assert "pip" not in person and "armed_forces_independence_payment" not in person
     person, _ = lists("2013-04-08")

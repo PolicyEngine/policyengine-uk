@@ -1,0 +1,91 @@
+# State Pension Credit Regs 2002 Sch VI para 4(1)(a)(vii): £20 a week of
+# earnings is disregarded if "the claimant or, if he has a partner, his
+# partner" is in receipt of employment and support allowance; otherwise £5 a
+# week for a single claimant and £10 for a couple (para 5), capped at the
+# earnings. "other" is a member who is neither the claimant, the partner nor a
+# child or young person they are responsible for, so their income-related ESA
+# is their own claim and does not raise the claimant's disregard. The
+# claimant's £3,000 of earnings is below the income tax and National Insurance
+# thresholds.
+
+- name: Another member's income-related ESA leaves a single pensioner with the £5 earnings disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 3_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    pension_credit_earnings: 3_000
+    # 5 x 52
+    pension_credit_earnings_disregard: 260
+
+- name: Another member's income-related ESA leaves a couple with the £10 earnings disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 3_000
+      partner:
+        age: 68
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner, other]
+    households:
+      household:
+        members: [claimant, partner, other]
+  output:
+    claimant_or_partner_esa_income: 0
+    pension_credit_earnings: 3_000
+    # 10 x 52
+    pension_credit_earnings_disregard: 520
+
+- name: The partner's income-related ESA gives the couple the £20 earnings disregard
+  # A mixed-age couple: the partner is under state pension age.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 3_000
+      partner:
+        age: 60
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    claimant_or_partner_esa_income: 5_000
+    pension_credit_earnings: 3_000
+    # 20 x 52
+    pension_credit_earnings_disregard: 1_040
