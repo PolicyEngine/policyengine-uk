@@ -76,9 +76,11 @@ Do not knowingly commit unformatted code or known lint failures.
 
 ## Test Expectations
 
-Run focused tests that cover the changed behavior. Use `make test` for broad
-model changes, shared behavior, or changes where a narrower command would miss
-important regressions. See `testing.md` for details.
+Run every new or modified test file before committing or opening the pull
+request. Do not require a full repository test run locally; rely on CI for
+broader regression coverage. Run a broader command only when the user requests
+it or when it is needed to diagnose a failure. See `testing.md` for the focused
+commands.
 
 When tests are skipped because they are slow, data-dependent, or require
 credentials, say so explicitly in the PR description or handoff.
