@@ -1,13 +1,10 @@
 # A household with no BRMA input is placed in its region's BRMA with the most
-# entries in the LHA list of rents (REGION_DEFAULT_BRMA in
-# variables/household/BRMA.py). Each BRMA_LHA_rate below is the model's rate
-# for the same household with that BRMA input explicitly, so the default and
-# the explicit input must agree. A single 40-year-old private renter is in LHA
-# category B (one bedroom).
+# private-rented households (REGION_DEFAULT_BRMA in
+# variables/household/BRMA.py). test_brma_region_default.py checks that the
+# default gives the same LHA rates as inputting that BRMA.
 
 - name: London household without a BRMA gets Inner South East London
   period: 2025
-  absolute_error_margin: 0.01
   input:
     age: 40
     region: LONDON
@@ -15,25 +12,19 @@
     rent: 12_000
   output:
     brma: INNER_SOUTH_EAST_LONDON
-    LHA_category: B
-    BRMA_LHA_rate: 16_750.24
 
-- name: Scottish household without a BRMA gets Aberdeen and Shire
+- name: Scottish household without a BRMA gets Lothian
   period: 2025
-  absolute_error_margin: 0.01
   input:
     age: 40
     region: SCOTLAND
     tenure_type: RENT_PRIVATELY
     rent: 12_000
   output:
-    brma: ABERDEEN_AND_SHIRE
-    LHA_category: B
-    BRMA_LHA_rate: 6_408.48
+    brma: LOTHIAN
 
 - name: Welsh household without a BRMA gets Cardiff
   period: 2025
-  absolute_error_margin: 0.01
   input:
     age: 40
     region: WALES
@@ -41,12 +32,9 @@
     rent: 12_000
   output:
     brma: CARDIFF
-    LHA_category: B
-    BRMA_LHA_rate: 6_918.60
 
 - name: Northern Ireland household without a BRMA gets Belfast
   period: 2025
-  absolute_error_margin: 0.01
   input:
     age: 40
     region: NORTHERN_IRELAND
@@ -54,25 +42,20 @@
     rent: 12_000
   output:
     brma: BELFAST
-    LHA_category: B
-    BRMA_LHA_rate: 5_702.32
 
 - name: An input BRMA overrides the region default
   period: 2025
-  absolute_error_margin: 0.01
   input:
     age: 40
     region: SCOTLAND
-    brma: LOTHIAN
+    brma: GREATER_GLASGOW
     tenure_type: RENT_PRIVATELY
     rent: 12_000
   output:
-    brma: LOTHIAN
-    BRMA_LHA_rate: 8_375.12
+    brma: GREATER_GLASGOW
 
 - name: An input BRMA outside the household's region is still used
   period: 2025
-  absolute_error_margin: 0.01
   input:
     age: 40
     region: LONDON
@@ -81,11 +64,9 @@
     rent: 12_000
   output:
     brma: MAIDSTONE
-    BRMA_LHA_rate: 9_467.64
 
 - name: Unknown region keeps Maidstone
   period: 2025
-  absolute_error_margin: 0.01
   input:
     age: 40
     region: UNKNOWN
@@ -93,7 +74,6 @@
     rent: 12_000
   output:
     brma: MAIDSTONE
-    BRMA_LHA_rate: 9_467.64
 
 - name: Every region without a BRMA gets its default
   period: 2025
@@ -130,14 +110,14 @@
     brma:
       - TYNESIDE
       - CENTRAL_GREATER_MANCHESTER
-      - SHEFFIELD
+      - LEEDS
       - LEICESTER
       - BIRMINGHAM
-      - PETERBOROUGH
+      - CENTRAL_NORFOLK_NORWICH
       - INNER_SOUTH_EAST_LONDON
       - SOUTHAMPTON
       - BRISTOL
       - CARDIFF
-      - ABERDEEN_AND_SHIRE
+      - LOTHIAN
       - BELFAST
       - MAIDSTONE
