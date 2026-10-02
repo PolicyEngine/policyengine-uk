@@ -131,17 +131,18 @@ def published_rates() -> PublishedRates:
     return PublishedRates(pd.read_csv(PUBLISHED_RATES_PATH))
 
 
-DEVOLVED_REGIONS = ("WALES", "SCOTLAND", "NORTHERN_IRELAND")
+# The Welsh and Northern Irish lists in the file are copies of English BRMAs'
+# lists, often of another category, so they do not describe their own areas.
+# The Scottish lists are Rent Service Scotland's own (FOI 202200303624; see
+# ``utils/build_scottish_list_of_rents.py``).
+COPIED_LIST_REGIONS = ("WALES", "NORTHERN_IRELAND")
 
 
 @lru_cache(maxsize=1)
-def _sorted_list_of_rents() -> tuple[dict, set]:
+def _sorted_list_of_rents() -> tuple[dict, dict]:
     """The latest list of rents, sorted, keyed by (BRMA, category).
 
-    Returns the lists and the set of BRMAs outside England. Every Welsh,
-    Scottish and Northern Irish list in the file is a copy of an English
-    BRMA's list, often of another category, so those lists do not describe
-    their own areas.
+    Returns the lists and each BRMA's region.
     """
     rents = pd.read_csv(LIST_OF_RENTS_PATH)
     rents = rents[rents.year == rents.year.max()]
@@ -149,8 +150,8 @@ def _sorted_list_of_rents() -> tuple[dict, set]:
         key: np.sort(group.weekly_rent.to_numpy(dtype=float))
         for key, group in rents.groupby(["brma", "lha_category"])
     }
-    devolved = set(rents.brma[rents.region.isin(DEVOLVED_REGIONS)])
-    return lists, devolved
+    regions = rents.groupby("brma").region.first().to_dict()
+    return lists, regions
 
 
 def statutory_percentile(rents: np.ndarray, percentile: float) -> float:
@@ -175,25 +176,27 @@ def _percentile_ratios(percentile: float) -> np.ndarray:
 
     The published tables give only the 30th percentile, so another percentile
     is reached by scaling it by this ratio from the model's list of rents.
-    Only the English lists describe their own areas (see
-    ``_sorted_list_of_rents``), so BRMAs in Wales, Scotland and Northern
-    Ireland take the median English ratio for the same category. Cells with
-    no list keep a ratio of one.
+    English and Scottish BRMAs use their own lists (April 2020 for both).
+    The Welsh and Northern Irish lists are copies of English ones (see
+    ``_sorted_list_of_rents``), so those BRMAs take the median English ratio
+    for the same category. Cells with no list keep a ratio of one.
     """
     rates = published_rates()
-    lists, devolved = _sorted_list_of_rents()
+    lists, regions = _sorted_list_of_rents()
+    copied = {b for b, r in regions.items() if r in COPIED_LIST_REGIONS}
     ratios = np.ones((len(rates.brmas), len(CATEGORIES)))
     english = {category: [] for category in CATEGORIES}
     for (brma, category), rents in lists.items():
         position = rates.brmas.get_indexer([brma])[0]
-        if position < 0 or category not in CATEGORIES or brma in devolved:
+        if position < 0 or category not in CATEGORIES or brma in copied:
             continue
         base = statutory_percentile(rents, PUBLISHED_PERCENTILE)
         if base > 0:
             ratio = statutory_percentile(rents, percentile) / base
             ratios[position, CATEGORIES.index(category)] = ratio
-            english[category].append(ratio)
-    for brma in devolved:
+            if regions[brma] != "SCOTLAND":
+                english[category].append(ratio)
+    for brma in copied:
         position = rates.brmas.get_indexer([brma])[0]
         if position < 0:
             continue
