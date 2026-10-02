@@ -123,9 +123,9 @@ def family(draw, role):
         ),
         children=draw(st.lists(child, min_size=0, max_size=4)),
         between_placements=draw(st.sampled_from([False, False, False, True])),
-        # The first adult cannot share a bedroom with a partner because of
-        # disability (this matters only where there are two adults).
-        couple_cannot_share=draw(CANNOT_SHARE),
+        # How many adults, from the first, cannot share a bedroom with a
+        # partner because of disability (this matters only for two adults).
+        couple_cannot_share=draw(st.sampled_from([0, 0, 0, 1, 2])),
     )
 
 
@@ -238,11 +238,9 @@ def build(
                 ids.append(pid)
             if fam["between_placements"]:
                 people[ids[0]]["is_approved_foster_parent_without_placement"] = True
-            if fam["couple_cannot_share"]:
-                people[ids[0]]["pip_dl"] = 5_000
-                people[ids[0]]["cannot_reasonably_share_bedroom_due_to_disability"] = (
-                    True
-                )
+            for pid in ids[: fam["couple_cannot_share"]]:
+                people[pid]["pip_dl"] = 5_000
+                people[pid]["cannot_reasonably_share_bedroom_due_to_disability"] = True
             children = list(fam["children"])
             if flagged_child is not None and flagged_child[:2] == (h, f):
                 i = flagged_child[2]
@@ -475,7 +473,7 @@ def with_flags(children):
 def couple_cannot_share(fam):
     """The family is a couple one of whom cannot share a bedroom with the
     other (UC Sch 4 para 12(6A); HB reg 2(1))."""
-    return len(fam["adults"]) == 2 and fam["couple_cannot_share"]
+    return len(fam["adults"]) == 2 and fam["couple_cannot_share"] > 0
 
 
 @PROPERTY_SETTINGS

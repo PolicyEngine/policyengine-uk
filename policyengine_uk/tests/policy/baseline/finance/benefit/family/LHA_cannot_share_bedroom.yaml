@@ -691,6 +691,38 @@
     LHA_cannot_share_bedrooms: [0, 1]
     LHA_allowed_bedrooms: [3, 2]
 
+- name: A non-dependant couple who both cannot share still have two Housing Benefit bedrooms
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 62
+        is_household_head: true
+      son:
+        age: 34
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      son_partner:
+        age: 33
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      renter_family:
+        members: [renter]
+      son_family:
+        members: [son, son_partner]
+    households:
+      home:
+        members: [renter, son, son_partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Reg 13D(3)(za) for each member: one bedroom each, so one more for the
+    # couple, not two.
+    housing_benefit_LHA_cannot_share_bedrooms: [1, 1]
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+
 - name: Housing Benefit room for a disabled child needs one beyond the overnight carer's
   period: 2026
   input:
