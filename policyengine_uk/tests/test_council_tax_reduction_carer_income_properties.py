@@ -11,10 +11,12 @@ reg 27(1)(j) at pension age.
 
 Neither counts the Scottish Carer Supplement, paid with Carer Support Payment
 from 15 March 2026: reg 57(1) is a closed list that leaves it out, and reg
-27(1)(j)(xxib) excepts it. Both instruments deduct income tax only from
-earnings (SSI 2021/249 Part 6 Chapter 3; SSI 2012/319 regs 33 and 36), so in
-law the supplement does not touch Council Tax Reduction at all. The model
-deducts all of a family's income tax from its Council Tax Reduction income, an
+27(1)(j)(xxib) excepts it. Nor does the tax on the supplement count: at
+working age SSI 2021/249 deducts income tax only from earnings (Part 6
+Chapter 3), and at pension age SSI 2012/319 reg 31(12) disregards the tax
+payable on income taken into account, which the supplement is not. So in law
+the supplement does not touch Council Tax Reduction at all. The model deducts
+all of a family's income tax from its Council Tax Reduction income, an
 existing approximation, so there the supplement, which is taxable (SI
 2026/93), reaches that income through the tax charged on it and in no other
 way.

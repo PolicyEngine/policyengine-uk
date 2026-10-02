@@ -23,6 +23,8 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/24",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
     ]
 
     def formula(benunit, period, parameters):
