@@ -9,6 +9,12 @@
 # paras 9 and 12(4), and the English and Welsh council tax reduction rules.
 # The model uses the rate in force on 30 April of the simulation year, so
 # 2025 uses £46.40 and 2026 uses £48.15; the premium is weekly x 52.
+# Two people caring for the same severely disabled person cannot both be
+# entitled to Carer's Allowance (SSCBA s.70(7ZA)) or Carer Support Payment
+# (SSI 2023/302 reg 5(3)), so they satisfy the condition once. Unless supplied,
+# partners are treated as caring for the same person unless both report a
+# Carer's Allowance award; the cases below with two premiums therefore give
+# both partners a reported award.
 
 - name: Carer premium for a single claimant entitled to Carer's Allowance
   period: 2026
@@ -41,21 +47,22 @@
     is_claimant_or_partner: [true, true]
     carer_premium: 48.15 * 52
 
-- name: Carer premium twice when the claimant and partner both care (para 15(7))
+- name: Carer premium twice when the claimant and partner both have Carer's Allowance awards (para 15(7))
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       claimant:
         age: 40
-        receives_carer_benefit: true
+        carers_allowance_reported: 4_000
       partner:
         age: 38
-        receives_carer_benefit: true
+        carers_allowance_reported: 4_000
     benunits:
       family:
         members: [claimant, partner]
   output:
+    partners_care_for_same_severely_disabled_person: false
     carer_premium: 2 * 48.15 * 52
 
 - name: Carer premium twice for two caring partners at the April 2025 rate
@@ -65,10 +72,10 @@
     people:
       claimant:
         age: 40
-        care_hours: 40
+        carers_allowance_reported: 4_000
       partner:
         age: 38
-        care_hours: 35
+        carers_allowance_reported: 4_000
     benunits:
       family:
         members: [claimant, partner]
@@ -143,11 +150,11 @@
       claimant:
         age: 45
         is_parent: true
-        receives_carer_benefit: true
+        carers_allowance_reported: 4_000
       partner:
         age: 44
         is_parent: true
-        care_hours: 35
+        carers_allowance_reported: 4_000
       young_person:
         age: 17
         is_in_non_advanced_education: true
@@ -166,10 +173,10 @@
     people:
       claimant:
         age: 40
-        receives_carer_benefit: true
+        carers_allowance_reported: 4_000
       partner:
         age: 38
-        receives_carer_benefit: true
+        carers_allowance_reported: 4_000
     benunits:
       family:
         members: [claimant, partner]
@@ -189,10 +196,10 @@
     people:
       claimant:
         age: 75
-        receives_carer_benefit: true
+        carers_allowance_reported: 4_000
       partner:
         age: 73
-        receives_carer_benefit: true
+        carers_allowance_reported: 4_000
     benunits:
       family:
         members: [claimant, partner]
@@ -224,7 +231,7 @@
   output:
     carer_premium: 48.15 * 52
 
-- name: Two premiums when the partners care for different people (the default)
+- name: Two premiums when the partners are supplied as caring for different people
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -259,3 +266,66 @@
         members: [claimant, partner]
   output:
     carer_premium: 48.15 * 52
+
+- name: Partners who both care by hours alone are treated as caring for the same person
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    is_carer_for_benefits: [true, true]
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 48.15 * 52
+
+- name: Partners supplied beyond two each count, unless they care for the same person
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a1:
+        age: 50
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      a2:
+        age: 45
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      a3:
+        age: 40
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      b1:
+        age: 50
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      b2:
+        age: 45
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+      b3:
+        age: 40
+        is_claimant_or_partner: true
+        carers_allowance_reported: 4_000
+    benunits:
+      family_a:
+        members: [a1, a2, a3]
+      family_b:
+        members: [b1, b2, b3]
+        partners_care_for_same_severely_disabled_person: true
+    households:
+      household_a:
+        members: [a1, a2, a3]
+      household_b:
+        members: [b1, b2, b3]
+  output:
+    # 3 x 48.15 x 52 and 48.15 x 52.
+    carer_premium: [7_511.40, 2_503.80]
