@@ -201,7 +201,9 @@ def test_disregard_is_the_statutory_weekly_sum_in_every_year(units, year):
 
 def test_parameters_hold_the_statutory_sums_without_uprating():
     for year in range(2013, 2031):
-        p = system.parameters(year).gov.local_authorities
+        # Read in each financial year (30 April, the model's convention for
+        # years; an integer year before 2015 reads 1 January instead).
+        p = system.parameters(f"{year}-04-30").gov.local_authorities
         for nation in NATIONS:
             sums = getattr(
                 p, nation.lower()
