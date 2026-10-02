@@ -43,8 +43,21 @@ class simulated_council_tax_reduction_benunit(Variable):
         liability = benunit.household(
             "council_tax_reduction_maximum_eligible_liability", period
         )
-        applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
-        applicable_income = benunit("council_tax_reduction_applicable_income", period)
+        # Scotland's working-age scheme and the Welsh rules for persons who
+        # are not pensioners have their own applicable amounts and income.
+        devolved_working_age = benunit(
+            "council_tax_reduction_devolved_working_age", period
+        )
+        applicable_amount = where(
+            devolved_working_age,
+            benunit("council_tax_reduction_working_age_applicable_amount", period),
+            benunit("council_tax_reduction_applicable_amount", period),
+        )
+        applicable_income = where(
+            devolved_working_age,
+            benunit("council_tax_reduction_working_age_applicable_income", period),
+            benunit("council_tax_reduction_applicable_income", period),
+        )
         non_dep_deductions = benunit("council_tax_reduction_non_dep_deductions", period)
 
         max_support = select(
@@ -82,7 +95,11 @@ class simulated_council_tax_reduction_benunit(Variable):
             - excess_income * withdrawal_rate
             - non_dep_deductions,
         )
-        capital = benunit("council_tax_reduction_assessable_capital", period)
+        capital = where(
+            devolved_working_age,
+            benunit("council_tax_reduction_working_age_capital", period),
+            benunit("council_tax_reduction_assessable_capital", period),
+        )
         capital_eligible = capital <= capital_limit
         national_ctr = (
             national_scheme
