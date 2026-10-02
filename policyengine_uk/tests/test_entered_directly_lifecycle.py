@@ -2,6 +2,7 @@
 
 income_support_eligible reads income-related ESA and income-based JSA from
 the claimant's and partner's reported awards (SSCBA 1992 s.124(1)(f), (h)),
+through claimant_or_partner_esa_income and claimant_or_partner_jsa_income,
 unless esa_income or jsa_income holds a different award from the one all
 the reported amounts give, which is then taken to be the couple's. The rule
 depends only on the value the simulation reads, so it holds through
@@ -54,7 +55,15 @@ def family(award):
 
 
 def eligible(simulation):
-    simulation.delete_arrays("income_support_eligible")
+    # The gate reads the claimant-or-partner awards, which are calculated and
+    # cached like any other variable. Recalculate them too after changing an
+    # input they depend on.
+    for variable in (
+        "income_support_eligible",
+        "claimant_or_partner_esa_income",
+        "claimant_or_partner_jsa_income",
+    ):
+        simulation.delete_arrays(variable)
     return bool(simulation.calculate("income_support_eligible", YEAR)[0])
 
 

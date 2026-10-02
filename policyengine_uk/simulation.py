@@ -182,7 +182,12 @@ class Simulation(CoreSimulation):
 
         self.tax_benefit_system.reset_parameter_caches()
 
-        # Apply structural reforms based on parameters
+        # Apply structural reforms based on parameters. Core applies a reform
+        # to the tax-benefit system, so reforms that set inputs (such as
+        # disable_simulated_benefits and adjust_budgets) reach the simulation
+        # through it. Core's own constructor sets this link; this one does not
+        # call it, so set it here.
+        self.tax_benefit_system.simulation = self
         structural_reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters,
             period_(self.default_input_period),

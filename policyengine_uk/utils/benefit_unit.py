@@ -1,5 +1,7 @@
 """Benefit-unit aggregation helpers for means tests."""
 
+import numpy as np
+
 
 def add_for_members(benunit, period, variables, members):
     """Sum variables over the benefit-unit members a means test counts.
@@ -22,3 +24,55 @@ def add_for_members(benunit, period, variables, members):
         else:
             total = total + benunit(name, period)
     return total
+
+
+def claimant_or_partner_award(benunit, period, award, reported, award_on_reports):
+    """The claimant's and partner's part of a stored benefit-unit award.
+
+    ``award`` names the stored award (esa_income or jsa_income), which covers
+    every member of the benefit unit, and ``reported`` the person-level
+    reported amount it is built from. ``award_on_reports(benunit, period,
+    amount)`` is the award paid on a reported amount: the benefit's screen
+    and tariff income (income_related_esa_award, income_related_jsa_award).
+
+    Which awards the stored value holds is decided by its value, compared in
+    the precision it is stored in, to within half a penny:
+
+    - equal to the award on everyone's reports (its formula's result), the
+      claimant's and partner's part is the award on their own reports;
+    - otherwise, equal to the plain total of everyone's reports, the
+      claimant's and partner's part is the plain total of their own reports;
+    - anything else (an award entered directly, or a reform that replaces or
+      scales it) is taken to be wholly the claimant's or partner's.
+
+    A stored award of zero or less gives zero. The claimant_or_partner_*
+    variables use this as their formula, and every reader of the claimant's
+    or partner's award, the Income Support gate included, reads those
+    variables. So an award set on them directly (as disable_simulated_benefits
+    does for each year) is read the same way everywhere.
+    """
+    person = benunit.members
+    stored = benunit(award, period)
+    amounts = person(reported, period)
+    reported_total = benunit.sum(amounts)
+    claimant_or_partner_reported = benunit.sum(
+        amounts * person("is_claimant_or_partner", period)
+    )
+    # Compare in the stored precision (float32): the formula's own award must
+    # match the award recomputed here in float64.
+    precision = stored.dtype
+    as_formula = np.isclose(
+        stored,
+        award_on_reports(benunit, period, reported_total).astype(precision),
+        rtol=0,
+        atol=0.005,
+    )
+    as_reported_total = np.isclose(
+        stored, reported_total.astype(precision), rtol=0, atol=0.005
+    )
+    scoped = np.where(
+        as_formula,
+        award_on_reports(benunit, period, claimant_or_partner_reported),
+        np.where(as_reported_total, claimant_or_partner_reported, stored),
+    )
+    return np.where(stored > 0, scoped, 0)
