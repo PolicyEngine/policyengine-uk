@@ -13,22 +13,27 @@ Invariants, for any generated population of families:
    share of 6 April to 5 April falling before the statutory date, counted
    independently here from the two dates (1 before 2026-27, 0 after).
 2. Bounds: 0 <= housing_benefit_payable_share <= 1, and it is 1 for every
-   family with a member over State Pension age.
-3. Abolition: from 2027 no family without a member over State Pension age
-   receives Housing Benefit, in any country or claim mode.
+   family with a member over State Pension age or the protected-accommodation
+   input, in every model year.
+3. Abolition: from 2027 no family without a member over State Pension age or
+   the protected-accommodation input receives Housing Benefit, in any country
+   or claim mode.
 4. Differential against the pre-abolition rule: with working-age awards kept
    payable by a reform, Housing Benefit is what the continuing-award rule paid
    before. Under current law, Housing Benefit before the benefit cap is
    exactly that amount times the country's payable share for a family with no
-   member over State Pension age, and exactly the same amount for every other
-   family (the cap applies afterwards, so the final amount is compared by 5).
+   member over State Pension age or protected-accommodation input, and exactly
+   the same amount for every other family (the cap applies afterwards, so the
+   final amount is compared by 5).
    Mixed populations rarely hold a 2026 working-age continuing award, so a
    targeted test builds only those, for each year and jurisdiction.
 5. Monotonic: the abolition never raises anyone's Housing Benefit and never
-   changes Universal Credit (families on the continuing-award route do not
-   claim it).
-6. Structural (unchanged): no family gets both Housing Benefit and Universal
-   Credit, and Housing Benefit stays within 0 and the rent.
+   changes Universal Credit.
+6. Structural: only protected-accommodation families can get both Housing
+   Benefit and Universal Credit, their UC housing costs element is zero,
+   and Housing Benefit stays within 0 and the rent.
+7. Default: omitting the protected-accommodation input produces the same
+   Housing Benefit and Universal Credit outputs as setting it to False.
 """
 
 import datetime
@@ -95,38 +100,47 @@ def families(draw):
         savings=draw(st.one_of(st.just(0.0), st.floats(0, 20_000))),
         would_claim_uc=draw(st.booleans()),
         hb_reported=draw(st.sampled_from([0.0, 1.0])),
+        in_specified_or_temporary_accommodation=draw(st.booleans()),
     )
 
 
 def situation(units, year, claims_all):
+    years = [year] if isinstance(year, int) else list(year)
+
+    def annual(value):
+        return {year: value for year in years}
+
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         names = []
         for j, (role, age) in enumerate(unit["members"]):
             name = f"p{i}_{j}"
-            person = {"age": {year: age}}
+            person = {"age": annual(age)}
             if role == "claimant":
-                person["employment_income"] = {year: unit["earnings"]}
-                person["is_parent"] = {year: unit["shape"] == "pension_with_dependant"}
+                person["employment_income"] = annual(unit["earnings"])
+                person["is_parent"] = annual(unit["shape"] == "pension_with_dependant")
                 if unit["hb_reported"]:
-                    person["housing_benefit_reported"] = {year: unit["hb_reported"]}
+                    person["housing_benefit_reported"] = annual(unit["hb_reported"])
             if role == "dependant":
-                person["current_education"] = {year: "UPPER_SECONDARY"}
+                person["current_education"] = annual("UPPER_SECONDARY")
             people[name] = person
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
-            "would_claim_uc": {year: unit["would_claim_uc"]},
+            "would_claim_uc": annual(unit["would_claim_uc"]),
+            "in_specified_or_temporary_accommodation": annual(
+                unit["in_specified_or_temporary_accommodation"]
+            ),
             # claims_all_entitled_benefits sums reported benefits across the
             # whole simulation, so set it per family.
-            "claims_all_entitled_benefits": {year: claims_all},
+            "claims_all_entitled_benefits": annual(claims_all),
         }
         households[f"h{i}"] = {
             "members": names,
-            "region": {year: unit["region"]},
-            "rent": {year: unit["rent"]},
-            "tenure_type": {year: unit["tenure"]},
-            "savings": {year: unit["savings"]},
+            "region": annual(unit["region"]),
+            "rent": annual(unit["rent"]),
+            "tenure_type": annual(unit["tenure"]),
+            "savings": annual(unit["savings"]),
         }
     return {"people": people, "benunits": benunits, "households": households}
 
@@ -137,6 +151,7 @@ VARIABLES = [
     "housing_benefit_eligible",
     "housing_benefit_payable_share",
     "universal_credit",
+    "uc_housing_costs_element",
     "benunit_rent",
 ]
 
@@ -156,20 +171,30 @@ def jurisdiction(unit):
     )
 
 
-def check_structural(values):
+def check_structural(values, units):
     hb = values["housing_benefit"]
+    protected = np.array(
+        [unit["in_specified_or_temporary_accommodation"] for unit in units]
+    )
     assert np.all(hb >= 0)
     assert np.all(hb <= values["benunit_rent"] + 0.01)
-    assert not np.any((hb > 0) & (values["universal_credit"] > 0))
+    assert not np.any((hb > 0) & (values["universal_credit"] > 0) & ~protected)
+    assert np.all(values["uc_housing_costs_element"][protected] == 0)
+
+
+@pytest.fixture(scope="module")
+def baseline_tax_benefit_system():
+    """Share immutable baseline parameters across the annual-value checks."""
+    return CountryTaxBenefitSystem()
 
 
 @pytest.mark.parametrize("year", range(2015, 2041))
-def test_payable_share_is_the_day_share_before_the_statutory_date(year):
-    parameter = (
-        CountryTaxBenefitSystem()
-        .parameters(str(year))
-        .gov.dwp.housing_benefit.working_age_awards_payable
-    )
+def test_payable_share_is_the_day_share_before_the_statutory_date(
+    year, baseline_tax_benefit_system
+):
+    parameter = baseline_tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.housing_benefit.working_age_awards_payable
     for name, date in ABOLITION_DATES.items():
         expected = fiscal_year_share_before(date, year)
         assert getattr(parameter, name) == pytest.approx(expected, abs=1e-12)
@@ -183,6 +208,35 @@ def test_day_shares_match_the_hand_counted_days():
     )
 
 
+def test_dated_reform_is_blended_but_year_reform_covers_the_whole_fiscal_year():
+    unit = dict(
+        shape="single_working",
+        members=[("claimant", 40)],
+        region="LONDON",
+        tenure="RENT_FROM_COUNCIL",
+        rent=5_200,
+        earnings=0,
+        savings=0,
+        would_claim_uc=False,
+        hb_reported=1,
+        in_specified_or_temporary_accommodation=False,
+    )
+    parameter = f"{PARAMETER}.great_britain"
+    one_day = Simulation(
+        situation=situation([unit], 2026, claims_all=False),
+        reform={parameter: {"2026-07-01": 1}},
+    )
+    whole_year = Simulation(
+        situation=situation([unit], 2026, claims_all=False),
+        reform={parameter: {"2026": 1}},
+    )
+    # The single-date override adds one payable day to the baseline 86 days.
+    assert one_day.calculate("housing_benefit_payable_share", 2026)[0] == pytest.approx(
+        (86 + 1) / 365
+    )
+    assert whole_year.calculate("housing_benefit_payable_share", 2026)[0] == 1
+
+
 @PROPERTY_SETTINGS
 @given(
     st.lists(families(), min_size=1, max_size=25),
@@ -194,14 +248,17 @@ def test_abolition_matches_the_pre_abolition_rule_scaled_by_the_payable_share(
 ):
     current = calculate(units, year, claims_all)
     kept = calculate(units, year, claims_all, reform=KEEP_WORKING_AGE_AWARDS)
-    check_structural(current)
-    check_structural(kept)
+    check_structural(current, units)
+    check_structural(kept, units)
     share = current["housing_benefit_payable_share"]
     assert np.all((share >= 0) & (share <= 1))
     assert np.all(kept["housing_benefit_payable_share"] == 1)
     pre_cap = "housing_benefit_pre_benefit_cap"
     for i, unit in enumerate(units):
-        if any_over_pension_age(unit):
+        if (
+            any_over_pension_age(unit)
+            or unit["in_specified_or_temporary_accommodation"]
+        ):
             assert share[i] == 1, unit
             expected_share = 1
             assert current["housing_benefit"][i] == pytest.approx(
@@ -238,6 +295,7 @@ def working_age_continuing_awards(draw, region):
         savings=draw(st.one_of(st.just(0.0), st.floats(0, 15_000))),
         would_claim_uc=False,
         hb_reported=1.0,
+        in_specified_or_temporary_accommodation=False,
     )
 
 
@@ -265,3 +323,39 @@ def test_working_age_continuing_award_is_paid_for_the_payable_share(year, region
         current["housing_benefit_eligible"]
         == (kept["housing_benefit_eligible"] & (expected_share > 0))
     )
+
+
+@pytest.mark.parametrize("region", ["LONDON", "NORTHERN_IRELAND"])
+@settings(PROPERTY_SETTINGS, max_examples=5)
+@given(data=st.data())
+def test_protected_working_age_award_is_payable_in_full_in_every_year(region, data):
+    units = data.draw(
+        st.lists(working_age_continuing_awards(region), min_size=1, max_size=8)
+    )
+    for unit in units:
+        unit["in_specified_or_temporary_accommodation"] = True
+    years = range(2015, 2041)
+    sim = Simulation(situation=situation(units, years, claims_all=False))
+    for year in years:
+        share = sim.calculate("housing_benefit_payable_share", year)
+        assert np.all(share == 1), (year, region, units)
+
+
+@settings(PROPERTY_SETTINGS, max_examples=5)
+@given(
+    st.lists(families(), min_size=1, max_size=8),
+    st.sampled_from([2025, 2026, 2027, 2030]),
+    st.booleans(),
+)
+def test_omitted_accommodation_input_matches_explicit_false(units, year, claims_all):
+    for unit in units:
+        unit["in_specified_or_temporary_accommodation"] = False
+    explicit = calculate(units, year, claims_all)
+    omitted = situation(units, year, claims_all)
+    for benunit in omitted["benunits"].values():
+        benunit.pop("in_specified_or_temporary_accommodation")
+    sim = Simulation(situation=omitted)
+    for variable in VARIABLES:
+        np.testing.assert_array_equal(
+            sim.calculate(variable, year), explicit[variable], err_msg=variable
+        )

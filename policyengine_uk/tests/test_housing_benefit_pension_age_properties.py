@@ -1,9 +1,10 @@
 """Property-based tests for who can claim Housing Benefit.
 
-New Housing Benefit claims are barred except where the claimant, and any
-partner, has reached the qualifying age for State Pension Credit (SI 2014/1230
-reg 6A(4)); Universal Credit is not available to them (Welfare Reform Act 2012
-s.4(1)(b)). Other families keep Housing Benefit only while they continue an
+These tests omit the accommodation input, so its default False applies.
+For this route, new Housing Benefit claims are barred except where the
+claimant, and any partner, has reached the qualifying age for State Pension
+Credit (SI 2014/1230 reg 6A(4)); the model approximates this with members aged
+18 or over. Other families keep Housing Benefit only while they continue an
 existing award and do not claim Universal Credit. YEAR is 2026-27, when
 working-age awards are still payable for part of the year, so eligibility
 follows the same rule; test_housing_benefit_working_age_abolition_properties.py
@@ -28,9 +29,10 @@ Invariants, for any generated population of families:
 5. Metamorphic: a wholly pension-age family's Housing Benefit is
    non-increasing in private pension income.
 
-A pensioner with an 18 or 19 year old dependant counts as having a working-age
-adult for Housing Benefit, Pension Credit and Universal Credit alike, so the
-mutual exclusion holds for that shape too.
+The model's HB age approximation counts an 18 or 19 year old dependant among
+members aged 18 or over. UC uses its own claimant definition, so that HB
+approximation does not establish UC eligibility. Accommodation protection and
+the HB/non-housing-UC route are tested in the abolition property file.
 """
 
 import numpy as np

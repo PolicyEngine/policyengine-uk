@@ -7,12 +7,26 @@ class housing_benefit_payable_share(Variable):
     label = "Share of the year Housing Benefit is payable"
     documentation = (
         "Share of the year for which this family's Housing Benefit award stays "
-        "payable. Working-age awards outside specified and temporary "
+        "payable. Unprotected working-age awards outside specified and temporary "
         "accommodation were abolished from 1 July 2026 in Great Britain and "
         "1 October 2026 in Northern Ireland, so for a family with no member "
         "over State Pension age this is the share of the year before that "
-        "date. Families with a member over State Pension age keep their award "
-        "(the pension-age and mixed-age savings), so theirs is 1."
+        "date, unless in_specified_or_temporary_accommodation is True. "
+        "That input preserves a share of 1 in every year. Families with a "
+        "member over State Pension age also have a share of 1 (the model's "
+        "pension-age and protected mixed-age approximation). Other saved "
+        "working-age awards are not modelled: qualifying HB claims during the "
+        "final UC assessment period on reaching pension-credit age, with "
+        "entitlement from reaching that age and the relevant Decisions and "
+        "Appeals Schedule 1 paragraph 26 applying (reg 6A(3); NI reg 4A(3)); "
+        "income-related "
+        "ESA entitlement immediately before abolition with an appointee then, "
+        "or a determination in the preceding six months that one was likely "
+        "needed (art 7(4)(b) and 3A(2)); and the delayed termination for "
+        "claimants excluded from UC immediately before abolition under UC "
+        "reg 19(1)(b) or (c), until the day after the last day of that "
+        "exclusion (art 7(2)). These need award history, decisions or dates "
+        "which no inputs supply."
     )
     definition_period = YEAR
     unit = "/1"
@@ -39,7 +53,11 @@ class housing_benefit_payable_share(Variable):
         # mixed-age couple is saved only if the older member claims under the
         # pension-age regulations and the couple has been entitled since
         # 14 May 2019, which the data cannot show. Specified and temporary
-        # accommodation (reg 6A(2)), prisoners (art. 7(2)) and the income-
-        # related ESA appointee saving (art. 7(4)(b)) have no inputs.
+        # accommodation is supplied explicitly under reg 6A(2) (NI reg 4A(2)).
+        # The other savings described in the variable documentation have no
+        # inputs for their history and date conditions.
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
-        return where(any_over_SP_age, 1, working_age_share)
+        protected_accommodation = benunit(
+            "in_specified_or_temporary_accommodation", period
+        )
+        return where(any_over_SP_age | protected_accommodation, 1, working_age_share)

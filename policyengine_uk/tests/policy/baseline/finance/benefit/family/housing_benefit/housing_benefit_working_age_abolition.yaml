@@ -73,6 +73,7 @@
     benunits:
       benunit:
         members: [claimant]
+        in_specified_or_temporary_accommodation: false
         would_claim_uc: false
         housing_benefit_applicable_income: 0
     households:
@@ -170,6 +171,7 @@
     benunits:
       benunit:
         members: [claimant]
+        in_specified_or_temporary_accommodation: false
         would_claim_uc: false
         housing_benefit_applicable_income: 0
     households:
@@ -307,3 +309,241 @@
   output:
     housing_benefit_eligible: false
     housing_benefit: 0
+
+- name: GB protected working-age continuing award is paid in full after abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: true
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 5_200
+    housing_benefit: 5_200
+
+- name: NI protected working-age continuing award is paid in full after abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: true
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 5_200
+    housing_benefit: 5_200
+
+- name: GB protected accommodation permits a working-age new claim after abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: true
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 5_200
+    housing_benefit: 5_200
+
+- name: NI protected accommodation permits a working-age new claim after abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: true
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 5_200
+    housing_benefit: 5_200
+
+- name: GB unprotected working-age new claim receives no award after abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: false
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 0
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: NI unprotected working-age new claim receives no award after abolition
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: false
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_payable_share: 0
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Protected accommodation still respects the working-age capital limit
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: true
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        housing_benefit_applicable_income: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        savings: 20_000
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: GB protected accommodation receives Housing Benefit alongside non-housing UC
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: true
+        would_claim_uc: true
+        housing_benefit_applicable_income: 0
+        # Fix the non-housing allowance to isolate the rent-cost routing.
+        uc_standard_allowance: 5_000
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: LONDON
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit: 5_200
+    uc_housing_costs_element: 0
+    universal_credit: 5_000
+
+- name: NI protected accommodation receives Housing Benefit alongside non-housing UC
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        in_specified_or_temporary_accommodation: true
+        would_claim_uc: true
+        housing_benefit_applicable_income: 0
+        # Fix the non-housing allowance to isolate the rent-cost routing.
+        uc_standard_allowance: 5_000
+    households:
+      household:
+        members: [claimant]
+        rent: 5_200
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_payable_share: 1
+    housing_benefit_eligible: true
+    housing_benefit: 5_200
+    uc_housing_costs_element: 0
+    universal_credit: 5_000
