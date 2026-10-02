@@ -58,6 +58,7 @@ FAMILY_READERS = [
     "targeted_childcare_entitlement_eligible",
     "would_claim_IS",
     "income_support_eligible",
+    "housing_benefit_pension_age_regulations_apply",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -196,6 +197,68 @@ def test_other_members_awards_never_change_the_readers(drawn):
                 values[starts[i] : starts[i] + n],
                 values[starts[k + i] : starts[k + i] + n],
             ), (variable, drawn[i])
+
+
+# Some readers only bite once the claimant has reached state pension age.
+# The families above are all of working age, so a second property runs every
+# family reader on pension-age families.
+# Whether the property enters is_mixed_age_couple, so that the readers of the
+# couple's award reports are tested on those reports alone.
+ENTER_IS_MIXED_AGE_COUPLE = False
+PENSION_AGE = 68
+
+
+@st.composite
+def pension_age_families(draw):
+    """A claimant over state pension age, with or without a partner of any
+    adult age (so some couples are mixed-age), and no dependants."""
+    adults = []
+    for i in range(1 + draw(st.booleans())):
+        age = draw(st.integers(PENSION_AGE, 85) if i == 0 else st.integers(40, 85))
+        adults.append(
+            {
+                "age": age,
+                "employment_income": draw(st.sampled_from([0, 0, 3_000, 12_000])),
+                "housing_benefit_reported": draw(st.sampled_from([0, 3_000])),
+                **draw(award_reports()),
+            }
+        )
+    household = {
+        "country": draw(st.sampled_from(["ENGLAND", "SCOTLAND", "WALES"])),
+        "savings": draw(st.sampled_from([0, 7_000, 20_000])),
+    }
+    return adults, [], household
+
+
+@SETTINGS
+@given(
+    st.lists(st.tuples(pension_age_families(), other_members()), min_size=1, max_size=6)
+)
+def test_other_members_awards_never_change_the_pension_age_readers(drawn):
+    without = [(*family, None) for family, _ in drawn]
+    with_other = [(*family, other) for family, other in drawn]
+    units = without + with_other
+    inputs = situation(units)
+    if ENTER_IS_MIXED_AGE_COUPLE:
+        for i, (adults, _, _, _) in enumerate(units):
+            pension_age = [a["age"] >= PENSION_AGE for a in adults]
+            inputs["benunits"][f"b{i}"]["is_mixed_age_couple"] = {
+                YEAR: len(adults) == 2 and sum(pension_age) == 1
+            }
+    sim = Simulation(situation=inputs)
+    flags = sim.calculate("is_claimant_or_partner", YEAR)
+    sizes = [len(a) + (o is not None) for a, _, _, o in units]
+    starts = np.cumsum([0] + sizes[:-1])
+    k = len(drawn)
+    for i in range(k):
+        assert not flags[starts[k + i] + sizes[k + i] - 1], drawn[i]
+    for variable in FAMILY_READERS:
+        values = sim.calculate(variable, YEAR)
+        for i in range(k):
+            assert np.isclose(values[i], values[k + i], atol=0.01), (
+                variable,
+                drawn[i],
+            )
 
 
 @SETTINGS
