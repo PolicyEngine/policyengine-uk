@@ -155,16 +155,13 @@ def test_ni_class_2_properties(profits_list):
 
 
 def test_2023_annual_maximum_uses_the_2023_24_class_2_rate():
-    # Regulation 100 of SI 2001/1004 for 2023-24, with Class 2 at the
-    # default £3.45 a week. The Class 4 limits and rates are pinned to their
-    # 2023-24 statutory values (s.15(3) and (3ZA) SSCBA 1992) so the test
-    # exercises Class 2 alone. Profits £60,000; primary Class 1 £3,000.
+    # Regulation 100 of SI 2001/1004 for 2023-24, at default parameters:
+    # Class 2 at £3.45 a week and the 2023-24 Class 4 limits and rates
+    # (s.15(3) and (3ZA) SSCBA 1992). Profits £60,000; primary Class 1 £3,000.
     #   Step 3: 9% x (50,270 - 12,570) + 53 x 3.45 = 3,393 + 182.85
     #   Step 4: 3,575.85 - 179.40 (Class 2) - 3,000 (Class 1) = 396.45
     #   Case 2: 396.45 + 2% x (37,700 - 396.45 / 9%) + 2% x 9,730
     year = 2023
-    all_years = "2000-01-01.2100-12-31"
-    class_4 = "gov.hmrc.national_insurance.class_4"
     sim = Simulation(
         situation={
             "people": {
@@ -178,12 +175,6 @@ def test_2023_annual_maximum_uses_the_2023_24_class_2_rate():
             },
             "benunits": {"benunit": {"members": ["person"]}},
             "households": {"household": {"members": ["person"]}},
-        },
-        reform={
-            f"{class_4}.thresholds.lower_profits_limit": {all_years: 12_570},
-            f"{class_4}.thresholds.upper_profits_limit": {all_years: 50_270},
-            f"{class_4}.rates.main": {all_years: 0.09},
-            f"{class_4}.rates.additional": {all_years: 0.02},
         },
     )
 
