@@ -522,7 +522,7 @@ programs:
     variable: council_tax_reduction
     parameter_prefix: gov.local_authorities
     verified_start_year: 2013
-    notes: First-pass national support for Scotland, Wales, and England pensioner schemes, with reported CTB/CTR retained for unsupported English working-age local schemes.
+    notes: First-pass national support for Scotland, Wales, and England pensioner schemes (including the Pension Credit guarantee credit disregard and savings-credit-only rules), with reported CTB/CTR retained for unsupported English working-age local schemes.
 
   # --- Treasury programs ---
   - id: cost_of_living_support

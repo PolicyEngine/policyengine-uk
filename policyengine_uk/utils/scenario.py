@@ -6,6 +6,28 @@ from policyengine_core.periods import period, instant
 from policyengine_uk.utils.parameters import uk_fiscal_year_period
 
 
+def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
+    """Apply a structural ``Reform`` class to a simulation's own system.
+
+    policyengine-core's ``Reform.__init__`` takes a baseline system and
+    builds a separate reformed system, so a simulation instead runs the
+    class's ``apply`` on its own tax-benefit system, as
+    ``Simulation.apply_reform`` does. Before data load there are no
+    populations or cached values, so only the system changes; afterwards
+    ``Simulation.apply_reform`` also discards cached formula output.
+    """
+    # A modifier cannot know its phase when the Scenario is built, because
+    # ``applied_before_data_load`` is set on the Scenario afterwards, so the
+    # simulation's populations (created by data load) are the phase signal.
+    if getattr(simulation, "populations", None) is None:
+        reform.apply(simulation.tax_benefit_system)
+    else:
+        simulation.apply_reform(reform)
+    # Adding or replacing parameter nodes does not clear the per-node
+    # at-instant caches the way ``Parameter.update`` does.
+    simulation.tax_benefit_system.reset_parameter_caches()
+
+
 class Scenario(BaseModel):
     """Represents a scenario configuration for policy simulations.
 
@@ -91,21 +113,41 @@ class Scenario(BaseModel):
 
         Args:
             reform: Can be:
-                - A Reform class type (will be applied via simulation modifier)
+                - A Reform class, including one built by ``Reform.from_dict``
+                  or ``set_parameter``, applied to the simulation's own
+                  tax-benefit system as ``Simulation.apply_reform`` does
                 - A dict of parameter changes
-                - A tuple (treated as a Reform for backward compatibility)
+                - A tuple of any of these (nested tuples allowed), applied
+                  in order
+
+        A dict keeps this module's reading of its keys, including inside a
+        tuple: a bare-year key such as ``"2026"`` changes that fiscal year
+        only, and a scalar value applies from 2023. ``Reform.from_dict``
+        (and policyengine-core's ``Simulation.apply_reform``, which turns a
+        dict into one) reads a bare year as that year onwards. The two agree
+        for ``"YYYY-MM-DD.YYYY-MM-DD"`` keys.
 
         Returns:
             A new Scenario configured with the reform
 
         Raises:
-            ValueError: If reform type is not supported
+            ValueError: If reform type is not supported, including a Reform
+                instance (whose own state would be lost, since the reform is
+                applied to the simulation's system through its class) and the
+                removed ``(reform_class, *args)`` tuple form
         """
+        if isinstance(reform, Reform):
+            raise ValueError(
+                "Pass the Reform class, not an instance: a simulation applies "
+                "the class to its own tax-benefit system, so an instance's own "
+                "state would be lost."
+            )
+
         if isinstance(reform, type) and issubclass(reform, Reform):
-            # Reform class - create modifier function
+            reform_class = reform
+
             def modifier(simulation: Simulation) -> None:
-                reform_instance = reform()
-                reform_instance.apply(simulation.tax_benefit_system)
+                _apply_reform_class(reform_class, simulation)
 
             return cls(
                 simulation_modifier=modifier,
@@ -155,30 +197,32 @@ class Scenario(BaseModel):
             )
 
         elif isinstance(reform, tuple):
-            # Tuple format (legacy support) - treat as a Reform class
-            # Assuming the tuple contains (reform_class, *args)
+            # A tuple is a sequence of reforms applied in order, matching
+            # policyengine-core's Simulation.apply_reform.
             if (
-                len(reform) > 0
+                len(reform) > 1
                 and isinstance(reform[0], type)
                 and issubclass(reform[0], Reform)
-            ):
-                reform_class = reform[0]
-                reform_args = reform[1:] if len(reform) > 1 else ()
-
-                def modifier(simulation: Simulation) -> None:
-                    reform_instance = reform_class(*reform_args)
-                    reform_instance.apply(simulation.tax_benefit_system)
-
-                return cls(
-                    simulation_modifier=modifier,
+                and not all(
+                    isinstance(item, (dict, tuple))
+                    or (isinstance(item, type) and issubclass(item, Reform))
+                    for item in reform[1:]
                 )
-            else:
-                raise ValueError(f"Invalid tuple format for reform: {reform}")
+            ):
+                raise ValueError(
+                    "Unsupported reform type: the (reform_class, *args) tuple "
+                    "form is no longer supported; a tuple is a sequence of "
+                    "reforms applied in order."
+                )
+            combined = cls()
+            for subreform in reform:
+                combined = combined + cls.from_reform(subreform)
+            return combined
 
         else:
             raise ValueError(
                 f"Unsupported reform type: {type(reform)}. "
-                "Expected Reform class, dict, or tuple."
+                "Expected a Reform class, a dict, or a tuple of these."
             )
 
     def apply(self, simulation: Simulation) -> None:

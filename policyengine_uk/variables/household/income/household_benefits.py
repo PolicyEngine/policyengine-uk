@@ -21,7 +21,6 @@ HOUSEHOLD_BENEFIT_VARIABLES = [
     "dla",
     "iidb",
     "incapacity_benefit",
-    "jsa_contrib",
     "pip",
     "sda",
     "state_pension",
