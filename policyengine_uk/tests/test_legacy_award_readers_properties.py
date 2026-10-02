@@ -58,6 +58,7 @@ FAMILY_READERS = [
     "targeted_childcare_entitlement_eligible",
     "would_claim_IS",
     "income_support_eligible",
+    "council_tax_reduction_working_age_personal_allowance",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
