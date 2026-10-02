@@ -32,7 +32,7 @@ deviation (PolicyEngine/policyengine-uk#1947).
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -179,6 +179,25 @@ def test_uc_is_non_increasing_in_state_pension(units, bump, year):
     units=st.lists(families(), min_size=1, max_size=20),
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(YEARS),
+)
+@example(
+    # A partner just above the personal allowance and a pensioner just above
+    # it too, so a pound of State Pension is taxed while the partner's
+    # earnings reduce UC. Deducting the pensioner's tax from the partner's
+    # earnings (the formula before #1942) breaks pound for pound here.
+    units=[
+        dict(
+            ages=[67, 18],
+            children=[],
+            tenure="RENT_FROM_COUNCIL",
+            rent=12_000.0,
+            savings=0.0,
+            earnings=12_571.0,
+            state_pension=12_571.0,
+        )
+    ],
+    bump=1.0,
+    year=2026,
 )
 def test_uc_falls_pound_for_pound_in_state_pension(units, bump, year):
     # Earnings in the family change nothing: tax on State Pension is never

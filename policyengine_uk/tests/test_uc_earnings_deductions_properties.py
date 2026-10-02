@@ -34,7 +34,7 @@ first. Invariant 4 runs with Marriage Allowance claimed.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -195,6 +195,32 @@ def bumped(draw):
 
 @PROPERTY_SETTINGS
 @given(case=bumped(), year=st.sampled_from(YEARS))
+@example(
+    # An earner just above the personal allowance gains a pound of pension.
+    # Taking earnings as the top slice instead of the bottom one would tax
+    # that pound against earnings.
+    case=(
+        [
+            dict(
+                adults=[
+                    dict(
+                        age=18,
+                        employment_income=12_571.0,
+                        self_employment_income=0.0,
+                        uc_is_in_startup_period=False,
+                        married_couples_allowance=0.0,
+                    )
+                ],
+                children=[],
+                tenure="RENT_FROM_COUNCIL",
+                rent=0.0,
+                region="LONDON",
+            )
+        ],
+        (0, 0, "private_pension_income", 1.0),
+    ),
+    year=2026,
+)
 def test_unearned_income_never_changes_earned_income(case, year):
     units, bump = case
     low = calculate(units, year)
