@@ -17,9 +17,11 @@ class esa_exempt_work_earnings(Variable):
         "record. The model approximates it by PAYE on the pay alone: the "
         "rates on taxable pay less employee pension contributions (net pay "
         "arrangements) and the personal and blind person's allowances, less "
-        "tax reductions such as the married couple's allowance. Tax on other "
-        "income never comes off the pay, and a self-employment loss cannot "
-        "add to it. A second job taxed at the basic rate through PAYE would "
+        "the married couple's allowance reduction up to that tax. Tax on "
+        "other income never comes off the pay, a self-employment loss cannot "
+        "change it, and credits settled through a tax return (such as foreign "
+        "tax credit relief) are not taken off it. A second job taxed at the "
+        "basic rate through PAYE would "
         "leave lower net earnings than this. "
         "Self-employment (reg 98(3) and reg 99): the profit less a notional "
         "income tax at the basic rate (the Scottish basic rate for a Scottish "
@@ -30,7 +32,9 @@ class esa_exempt_work_earnings(Variable):
         "contributions. The model gives personal pension contributions to "
         "self-employment when there is a profit and to employment otherwise. "
         "A loss in one employment is not set against earnings from another "
-        "(reg 98(11)), so a self-employment loss counts as nil. The "
+        "(reg 98(11)), so a self-employment loss counts as nil. The notional "
+        "National Insurance reads the model's Class 2 and Class 4 parameters, "
+        "so it is only as right as they are for each year. The "
         "transferable (marriage) allowance and other reliefs reg 99(1) "
         "allows are not applied. Enter this variable directly for actual net "
         "earnings, for example where PAYE deducted a different amount or the "
@@ -71,8 +75,12 @@ class esa_exempt_work_earnings(Variable):
             rates.scotland.rates.calc(taxed_pay),
             rates.uk.calc(taxed_pay),
         )
-        reductions = add(person, period, income_tax.income_tax_subtractions)
-        tax_on_pay = max_(0, tax_on_pay - reductions)
+        # The married couple's allowance reduction, given through the tax
+        # code, up to the tax on the pay itself. The shared capped_mcad is
+        # capped against the person's whole liability, which other income
+        # and losses move.
+        mca_reduction = person("married_couples_allowance_deduction", period)
+        tax_on_pay = max_(0, tax_on_pay - mca_reduction)
         pension_from_pay = (
             employee_pension + personal_pension - personal_pension_from_profit
         )
