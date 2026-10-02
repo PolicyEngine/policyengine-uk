@@ -249,3 +249,74 @@
     # No income, so Housing Benefit meets the eligible rent: the rent, which
     # is below the two-bedroom rate.
     housing_benefit: 10_400
+
+- name: A qualifying young person no one is responsible for in a non-dependant's family adds no Universal Credit bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+      carer:
+        age: 45
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_looked_after_by_local_authority: true
+    benunits:
+      renter_family:
+        members: [renter]
+      carer_family:
+        members: [carer, young_person]
+    households:
+      home:
+        members: [renter, carer, young_person]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_non_dependant_of_household_head: [false, true, true]
+    is_qualifying_young_person_for_universal_credit: [false, false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false, false]
+    # The renter (para 10(1)(a)) and the carer, a non-dependant who is not a
+    # child ((c)). The young person is no one's responsibility (reg 4(6)), so
+    # is not a non-dependant (para 9(2)(g)): 2 bedrooms, category C.
+    LHA_allowed_bedrooms: [2, 1]
+    LHA_category: [C, B]
+
+- name: A non-dependant couple has two Universal Credit bedrooms but one Housing Benefit bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+      non_dependant_1:
+        age: 30
+      non_dependant_2:
+        age: 28
+    benunits:
+      renter_family:
+        members: [renter]
+      couple:
+        members: [non_dependant_1, non_dependant_2]
+    households:
+      home:
+        members: [renter, non_dependant_1, non_dependant_2]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_claimant_or_partner: [true, true, true]
+    # UC: the renter (para 10(1)(a)) and each non-dependant who is not a
+    # child ((c)): 3 bedrooms, category D. The couple's own category would be
+    # 1 bedroom, and a couple is not a specified renter (para 28): B.
+    LHA_allowed_bedrooms: [3, 1]
+    LHA_category: [D, B]
+    # HB: the claimant ((b)) and the occupier couple ((a)): 2 bedrooms,
+    # category C. An ordinary couple shares a bedroom; only a couple who
+    # cannot share has two ((za); DWP circular HB A3/2017). The couple pay no
+    # rent; their own category would be 1 bedroom: B.
+    housing_benefit_LHA_allowed_bedrooms: [2, 1]
+    housing_benefit_LHA_category: [C, B]

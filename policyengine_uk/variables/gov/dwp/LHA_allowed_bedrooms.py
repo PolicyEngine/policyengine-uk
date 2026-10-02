@@ -46,9 +46,10 @@ class LHA_allowed_bedrooms(Variable):
         "is not the claimant or partner, one for each non-dependant aged 16 or "
         "over, and the children's bedrooms. A qualifying young person the "
         "renter is responsible for has their own bedroom; any other member "
-        "aged 16 or over is a non-dependant and has one too, except a "
-        "qualifying young person no one is responsible for, such as one "
-        "looked after by a local authority. Joint tenants and other sharers "
+        "aged 16 or over is a non-dependant and has one too. A qualifying "
+        "young person no one is responsible for, such as one looked after by "
+        "a local authority, is not a non-dependant and has no bedroom, in "
+        "this family or another. Joint tenants and other sharers "
         "of the rent, boarders and lodgers are not non-dependants, so they "
         "add no bedroom to anyone's entitlement; only the household head's "
         "family has non-dependants from other families (see "
@@ -67,22 +68,27 @@ class LHA_allowed_bedrooms(Variable):
         # A child is a person under 16 (WRA 2012 s.40).
         aged_16_or_over = person("age", period) >= 16
         family_member = aged_16_or_over & ~person("is_claimant_or_partner", period)
-        # UC Regs 2013 Sch 4 para 10(1)(b): a qualifying young person for
-        # whom the renter is responsible (regs 4 and 5).
-        qualifying_young_person = family_member & person(
+        qualifying = person("is_qualifying_young_person_for_universal_credit", period)
+        responsible = person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
         )
+        # UC Regs 2013 Sch 4 para 9(2)(g): a qualifying young person for whom
+        # no one is responsible (reg 4(6), such as one looked after by a local
+        # authority) is not a non-dependant, in this family or another.
+        no_one_responsible = qualifying & ~responsible
+        # Para 10(1)(b): a qualifying young person for whom the renter is
+        # responsible (regs 4 and 5).
+        qualifying_young_person = family_member & responsible
         # Para 10(1)(c) with para 9(2): any other member aged 16 or over is a
-        # non-dependant, unless they are a qualifying young person for whom
-        # no one is responsible (para 9(2)(g); reg 4(6)).
-        family_non_dependant = family_member & ~person(
-            "is_qualifying_young_person_for_universal_credit", period
-        )
+        # non-dependant.
+        family_non_dependant = family_member & ~qualifying
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
         # Para 10(1)(c): a non-dependant from another family who is not a
         # child.
-        non_dependant = aged_16_or_over & person(
-            "is_non_dependant_of_household_head", period
+        non_dependant = (
+            aged_16_or_over
+            & ~no_one_responsible
+            & person("is_non_dependant_of_household_head", period)
         )
         head_family = benunit.any(person("is_household_head", period))
         non_dependants = head_family * benunit.max(person.household.sum(non_dependant))

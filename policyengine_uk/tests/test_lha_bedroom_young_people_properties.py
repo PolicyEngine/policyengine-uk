@@ -10,16 +10,22 @@ Invariants, for any generated population of households:
 2. Exact effect: when the added person is not the claimant or partner, their
    family gains one Housing Benefit bedroom, and one Universal Credit bedroom
    unless they are a qualifying young person no one is responsible for (para
-   9(2)(g)). The household head's family also gains one bedroom under both
-   schemes if the person joins a non-dependant's family, and one Housing
-   Benefit bedroom if they join a boarder's or lodger's family. No other
-   family's bedrooms change.
+   9(2)(g)). If the person joins a non-dependant's family, the household
+   head's family also gains one Housing Benefit bedroom, and one Universal
+   Credit bedroom unless they are a qualifying young person no one is
+   responsible for (para 9(2)(g) applies to the whole extended benefit
+   unit). If they join a boarder's or lodger's family, the household head's
+   family gains one Housing Benefit bedroom. No other family's bedrooms
+   change.
 3. Reference: every family's bedrooms equal an independent count of the size
    criteria: one for the claimant or couple; one for each other member aged
    16 or over (for Universal Credit, except a qualifying young person no one
    is responsible for); for the household head's family, one for each person
-   aged 16 or over in a non-dependant's family (and, for Housing Benefit, in
-   a boarder's or lodger's family); and the fewest rooms that hold the
+   aged 16 or over in a non-dependant's family under Universal Credit (except
+   a qualifying young person no one is responsible for), and under Housing
+   Benefit one for each occupier aged 16 or over in a non-dependant's,
+   boarder's or lodger's family, a couple sharing one (reg 13D(3)(a)); and
+   the fewest rooms that hold the
    family's children under 16 two to a room, where only children of the same
    sex or two children under 10 may share, found by brute force. Children of
    other families are not counted for the household head, matching the model
@@ -206,7 +212,7 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     role = population[target[0]][target[1]]["role"]
     head = keys.index((target[0], 0))
     if role == "non_dependant":
-        expected_uc[head] += 1
+        expected_uc[head] += 0 if unclaimed else 1
         expected_hb[head] += 1
     elif role in ("boarder", "lodger"):
         expected_hb[head] += 1
@@ -238,10 +244,15 @@ def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
         outside_uc = outside_hb = 0
         if fam["role"] == "head":
             for g, other in enumerate(families[1:], start=1):
-                aged_16_or_over = len(other["adults"]) + int(target == (h, g))
+                joins = target == (h, g)
+                adults = len(other["adults"])  # supplied as claimant/partner
                 if other["role"] == "non_dependant":
-                    outside_uc += aged_16_or_over
+                    # UC: each non-dependant who is not a child.
+                    outside_uc += adults
+                    outside_uc += int(joins and not unclaimed[f"h{h}_f{g}_added"])
                 if other["role"] in ("non_dependant", "boarder", "lodger"):
-                    outside_hb += aged_16_or_over
+                    # HB: a couple ((a)) or a single adult ((b)), plus the
+                    # added person ((b)).
+                    outside_hb += 1 + int(joins)
         assert uc[b] == 1 + own_uc + outside_uc + own_children
         assert hb[b] == 1 + own_hb + outside_hb + own_children
