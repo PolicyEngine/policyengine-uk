@@ -110,3 +110,15 @@ def test_esa_and_jsa_remunerative_work_parameters_by_date():
     for year in range(2015, 2031):
         assert dwp.JSA.hours.single(str(year)) == work.claimant_hours(str(year))
         assert dwp.JSA.hours.couple(str(year)) == work.partner_hours(str(year))
+
+
+def test_esa_self_employment_class_2_by_fiscal_year():
+    # Reg 99(3)(a): Class 2 from the small profits threshold, from the lower
+    # profits threshold from 2022-23 (SI 2022/1329), omitted from 2024-25 (SI
+    # 2024/377). Fiscal-year values are read at 30 April.
+    rule = CountryTaxBenefitSystem().parameters.gov.dwp.ESA.income
+    rule = rule.self_employment_class_2
+    assert rule.deducted("2008-10-27") and rule.deducted("2023")
+    assert not rule.deducted("2024") and not rule.deducted("2026")
+    assert not rule.above_lower_profits_threshold("2021")
+    assert rule.above_lower_profits_threshold("2022")

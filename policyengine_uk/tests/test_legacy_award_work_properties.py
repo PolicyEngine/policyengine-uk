@@ -28,7 +28,7 @@ import numpy as np
 from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
-from legacy_award_work_reference import esa_screen, jsa_screen
+from legacy_award_work_reference import esa_screen, esa_weekly_earnings, jsa_screen
 from policyengine_uk import Simulation
 
 # 0, 15, 16, 20, 23, 24 and 40 hours a week.
@@ -43,13 +43,14 @@ PROFIT = [1_040, 5_200, 10_166, 10_300, 13_200, 15_600]
 
 @st.composite
 def adults(draw, outside_family=False):
-    kind = draw(st.sampled_from(["employee", "employee", "self_employed", "loss"]))
+    kind = draw(
+        st.sampled_from(
+            ["employee", "employee", "self_employed", "mixed", "loss", "big_loss"]
+        )
+    )
     min_age = 18 if not outside_family else 20
-    if kind == "self_employed":
-        # Class 4 stops at state pension age.
-        age = draw(st.integers(min_age, 64))
-    else:
-        age = draw(st.one_of(st.integers(min_age, 64), st.integers(70, 90)))
+    # Ages either side of state pension age, where National Insurance stops.
+    age = draw(st.one_of(st.integers(min_age, 64), st.integers(70, 90)))
     pay = 0 if kind == "self_employed" else draw(st.sampled_from(PAY))
     adult = {
         "age": age,
@@ -58,18 +59,24 @@ def adults(draw, outside_family=False):
         "hours_worked": draw(st.sampled_from(HOURS)),
         "employment_income": pay,
         "employee_pension_contributions": (
-            draw(st.sampled_from([0, 0, 520])) if 0 < pay <= 12_570 else 0
+            draw(st.sampled_from([0, 0, 520])) if pay > 0 else 0
         ),
         "receives_carer_benefit": draw(st.booleans()),
         "care_hours": draw(st.sampled_from([0, 0, 35])),
     }
-    if kind == "self_employed":
+    if kind in ("self_employed", "mixed"):
         adult["self_employment_income"] = draw(st.sampled_from(PROFIT))
+    if kind in ("self_employed", "mixed", "employee"):
+        # Personal pension contributions go to the profit when there is one,
+        # and to the pay otherwise.
         adult["personal_pension_contributions"] = draw(
             st.sampled_from([0, 0, 520, 5_900])
         )
-    elif kind == "loss":
+    if kind == "loss":
         adult["self_employment_income"] = -1_000
+    elif kind == "big_loss":
+        # A loss larger than the pay.
+        adult["self_employment_income"] = -20_000
     if outside_family:
         adult["current_education"] = "NOT_IN_EDUCATION"
     return adult
@@ -138,6 +145,11 @@ def label(units):
         event("self-employed")
     if any(a.get("self_employment_income", 0) < 0 for a in adults_):
         event("self-employment loss beside pay")
+    if any(
+        a.get("self_employment_income", 0) > 0 and a.get("employment_income", 0) > 0
+        for a in adults_
+    ):
+        event("pay and profit together")
 
 
 SETTINGS = settings(
@@ -161,10 +173,19 @@ def test_screens_match_a_family_by_family_reading(units, year):
         event("some ESA award passes")
     if jsa.any():
         event("some JSA award passes")
+    earnings = sim.calculate("esa_exempt_work_earnings", year)
     parameters = sim.tax_benefit_system.parameters(year)
+    start = 0
     for i, (couple, children, others, capital) in enumerate(units):
         assert esa[i] == esa_screen(couple, others, capital, parameters), units[i]
         assert jsa[i] == jsa_screen(couple, others, capital, parameters), units[i]
+        members = couple + children + others
+        for j, member in enumerate(members):
+            if member in children:
+                continue
+            expected = esa_weekly_earnings(member, parameters)
+            assert abs(earnings[start + j] - expected) < 0.01, (member, expected)
+        start += len(members)
 
 
 @st.composite
