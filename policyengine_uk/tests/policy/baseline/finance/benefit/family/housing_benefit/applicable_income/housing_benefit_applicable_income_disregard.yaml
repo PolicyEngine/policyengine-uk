@@ -453,6 +453,27 @@
   output:
     housing_benefit_applicable_income_disregard: 1_040 # SI 2006/213 Sch 4 para 12
 
+- name: Pension-age claimant whose partner is on income-related ESA has all earnings disregarded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 50
+        employment_income: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        esa_income: 4_000
+  output:
+    # SI 2006/213 reg 5(1)(b): the working-age Regulations apply to a
+    # claimant over the qualifying age whose partner is on income-related
+    # ESA, and with them Sch 4 para 12. 3,000 is below the tax and NI
+    # thresholds. (With the old age gate: 10 x 52 = 520.)
+    housing_benefit_applicable_income_disregard: 3_000
+
 - name: A child's earnings are not the claimant's earnings
   period: 2026
   absolute_error_margin: 0.01

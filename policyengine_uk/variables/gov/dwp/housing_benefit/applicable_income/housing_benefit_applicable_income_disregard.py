@@ -11,11 +11,12 @@ class housing_benefit_applicable_income_disregard(Variable):
         "capped at net earnings. The additional earnings disregard of £17.10 "
         "is added where a work condition is met and net earnings at least "
         "equal the other disregards, the childcare charges deducted and "
-        "£17.10. A working-age claimant on Income Support, income-based "
-        "Jobseeker's Allowance or income-related Employment and Support "
-        "Allowance has all earnings disregarded. The £20 disregards for "
-        "disabled people, carers and some part-time occupations are not "
-        "modelled."
+        "£17.10. A claimant who, or whose partner, is on Income Support, "
+        "income-based Jobseeker's Allowance or income-related Employment and "
+        "Support Allowance has all earnings disregarded, at any age: the "
+        "working-age Regulations then apply (SI 2006/213 reg 5(1)(b)). The "
+        "£20 disregards for disabled people, carers and some part-time "
+        "occupations are not modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -55,11 +56,12 @@ class housing_benefit_applicable_income_disregard(Variable):
             additional_amount,
             0,
         )
-        # Working age Sch 4 para 12 has no pension-age counterpart. Families
-        # on Universal Credit cannot receive Housing Benefit in the model.
+        # Working age Sch 4 para 12. The working-age Regulations apply at any
+        # age where the claimant or partner is on one of these benefits (SI
+        # 2006/213 reg 5(1)(b); SI 2006/214 reg 5(2)), so there is no age
+        # condition. Families on Universal Credit cannot receive Housing
+        # Benefit in the model.
         on_income_related_benefit = (
             add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
         )
-        pension_age = benunit.any(benunit.members("is_SP_age", period))
-        all_earnings = on_income_related_benefit & ~pension_age
-        return where(all_earnings, net_earnings, standard + additional)
+        return where(on_income_related_benefit, net_earnings, standard + additional)

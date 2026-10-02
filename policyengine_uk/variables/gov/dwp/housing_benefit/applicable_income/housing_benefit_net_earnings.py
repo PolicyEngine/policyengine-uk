@@ -9,7 +9,9 @@ class housing_benefit_net_earnings(Variable):
         "Net earnings of the claimant and partner, from which the Housing "
         "Benefit earnings disregards are taken. For each person: employment "
         "income plus self-employment profit (each floored at zero, as a loss "
-        "in one employment is not set against another), less income tax, "
+        "in one employment is not set against another) plus statutory sick "
+        "and maternity pay (regulation 35(1)(i); pension age regulation "
+        "35(1)(h)), less income tax, "
         "Class 1, 2 and 4 National Insurance, and half of pension "
         "contributions, floored at zero. For an employee the regulations "
         "deduct the income tax deducted from the earnings (regulation 36(3); "
@@ -17,7 +19,8 @@ class housing_benefit_net_earnings(Variable):
         "basic-rate tax on the profit alone less personal reliefs (regulation "
         "39(1); pension age regulation 40(1)). PolicyEngine attributes a "
         "person's income tax to earnings in proportion to their share of the "
-        "person's total income. For employment income that is a lower bound "
+        "person's total income before employment and self-employment losses. "
+        "For employment income that is a lower bound "
         "on the tax on the earnings taxed as the top slice of income; for "
         "self-employment profit alongside other income it can exceed the "
         "notional tax. It is exact for an employee whose earnings are their "
@@ -32,9 +35,11 @@ class housing_benefit_net_earnings(Variable):
     definition_period = YEAR
     unit = GBP
     reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/35",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/36",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/38",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/39",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/35",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/36",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/39",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/40",
@@ -43,17 +48,30 @@ class housing_benefit_net_earnings(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.means_test
         person = benunit.members
-        earnings = max_(person("employment_income", period), 0) + max_(
-            person("self_employment_income", period), 0
+        employment_income = person("employment_income", period)
+        self_employment_income = person("self_employment_income", period)
+        earnings = max_(employment_income, 0) + max_(self_employment_income, 0)
+        # Income tax is attributed by the earnings' share of total income
+        # before any employment or self-employment loss, so that a loss set
+        # against other income for tax does not drop the tax on these
+        # earnings.
+        income_before_losses = (
+            person("total_income", period)
+            + max_(-employment_income, 0)
+            + max_(-self_employment_income, 0)
         )
-        total_income = person("total_income", period)
         earnings_share = np.divide(
             earnings,
-            total_income,
+            income_before_losses,
             out=np.zeros_like(earnings),
-            where=total_income > 0,
+            where=income_before_losses > 0,
         )
         income_tax = person("income_tax", period) * min_(earnings_share, 1)
+        # Statutory sick and maternity pay are earnings (reg 35(1)(i); pension
+        # age reg 35(1)(h)). The model does not tax them.
+        statutory_pay = add(
+            person, period, ["statutory_sick_pay", "statutory_maternity_pay"]
+        )
         national_insurance = add(
             person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
         )
@@ -62,7 +80,11 @@ class housing_benefit_net_earnings(Variable):
             * p.pension_contribution_deduction_rate
         )
         net_earnings = max_(
-            earnings - income_tax - national_insurance - pension_contributions,
+            earnings
+            + statutory_pay
+            - income_tax
+            - national_insurance
+            - pension_contributions,
             0,
         )
         # The claimant and partner; the model's other Housing Benefit

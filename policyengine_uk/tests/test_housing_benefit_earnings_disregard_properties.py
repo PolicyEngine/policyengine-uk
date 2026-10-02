@@ -4,9 +4,10 @@ SI 2006/213 Sch 4 (working age) and SI 2006/214 Sch 4 (pension age) disregard
 £25 a week of a lone parent's net earnings, £10 of a couple's and £5 of anyone
 else's, plus the £17.10 additional earnings disregard where a work condition
 is met and net earnings at least equal the other disregards, the deductible
-childcare charges and £17.10. A working-age claimant on Income Support,
-income-based JSA or income-related ESA has all earnings disregarded (SI
-2006/213 Sch 4 para 12).
+childcare charges and £17.10. A claimant who, or whose partner, is on
+Income Support, income-based JSA or income-related ESA has all earnings
+disregarded (SI 2006/213 Sch 4 para 12), at any age: SI 2006/213 then applies
+whatever the claimant's age (reg 5(1)(b)).
 
 Invariants, for any generated population of families not on those benefits:
 
@@ -35,10 +36,14 @@ Invariants, for any generated population of families not on those benefits:
    disregard is the net earnings) and for families without earnings (the new
    disregard is zero).
 
-Para 12 is tested on its own: with Income Support, a working-age family has
-all its net earnings disregarded, while a pension-age family's disregard is
-unchanged. Leaving Income Support can therefore lower the disregard as
-earnings rise; that is the law, so invariant 3 holds those benefits at zero.
+Para 12 is tested on its own: with Income Support, every family has all its
+net earnings disregarded, at working or pension age. Leaving Income Support can
+therefore lower the disregard as earnings rise; that is the law, so invariant
+3 holds those benefits at zero.
+
+The additional sum's history is tested at each up-rating: £14.50 as made,
+£14.90 from April 2006 (SI 2006/645), £15.45, £16.05, £16.85, then £17.10
+from April 2010, with SI 2020/371's £37.10 for 2020-21.
 """
 
 import numpy as np
@@ -271,14 +276,25 @@ def test_differential_against_the_old_flat_formula(units):
 
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=30))
-def test_income_support_disregards_all_working_age_earnings(units):
-    without = calculate(units)
+def test_income_support_disregards_all_earnings_at_any_age(units):
     with_is = calculate(units, income_support=1_000)
     key = "housing_benefit_applicable_income_disregard"
     for i, unit in enumerate(units):
-        pension_age = any(adult["age"] >= 67 for adult in unit["adults"])
-        if pension_age:
-            assert abs(with_is[key][i] - without[key][i]) < 0.01, unit
-        elif all(adult["age"] <= 60 for adult in unit["adults"]):
-            net = with_is["housing_benefit_net_earnings"][i]
-            assert abs(with_is[key][i] - net) < 0.01, unit
+        net = with_is["housing_benefit_net_earnings"][i]
+        assert abs(with_is[key][i] - net) < 0.01, unit
+
+
+def test_additional_disregard_history():
+    expected = {
+        "2006-03-10": 14.5,
+        "2006-06-01": 14.9,
+        "2007-06-01": 15.45,
+        "2008-06-01": 16.05,
+        "2009-06-01": 16.85,
+        "2010-06-01": 17.1,
+        "2020-06-01": 37.1,
+        "2021-06-01": 17.1,
+    }
+    for instant, amount in expected.items():
+        p = system.parameters(instant).gov.dwp.housing_benefit.means_test
+        assert p.income_disregard.worker == amount, instant
