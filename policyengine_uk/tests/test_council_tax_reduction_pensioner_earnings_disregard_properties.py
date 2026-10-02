@@ -29,6 +29,12 @@ Invariants, for any generated population of families:
    in every nation and year, except England and Wales in 2020, where Housing
    Benefit's additional sum was £37.10 (SI 2020/371 reg 5) and CTR's stayed
    £17.10 (an intended difference, which the test pins).
+6. The Housing Benefit disregard (#1908) is the statutory weekly sum x 52 in
+   every year from 2015 to 2030, at working and pension age: £5, £10 or £25
+   (SI 2006/213 Sch 4 paras 4, 7, 10; SI 2006/214 Sch 4 paras 2, 7), plus
+   £17.10 (£37.10 in 2020, SI 2020/371 reg 5) where a work condition holds,
+   for families with enough earnings and no Income Support, income-based JSA
+   or income-related ESA (whose working-age earnings are all disregarded).
 """
 
 import numpy as np
@@ -95,7 +101,7 @@ def families(draw, age=ADULT_AGE, earnings=EARNINGS, nations=NATIONS):
     )
 
 
-def situation(units, year, earnings_bump=0.0):
+def situation(units, year, earnings_bump=0.0, no_income_related_benefits=False):
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         names = []
@@ -119,6 +125,9 @@ def situation(units, year, earnings_bump=0.0):
             "members": names,
             "claims_all_entitled_benefits": {year: True},
         }
+        if no_income_related_benefits:
+            for benefit in ("income_support", "jsa_income", "esa_income"):
+                benunits[f"b{i}"][benefit] = {year: 0.0}
         households[f"h{i}"] = {
             "members": names,
             "country": {year: unit["nation"]},
@@ -268,3 +277,27 @@ def test_differential_against_the_housing_benefit_pension_age_disregard(units, y
                 assert abs(value - expected) < 0.01, (unit, year)
         else:
             assert abs(ctr[i] - hb[i]) < 0.01, (unit, year)
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        families(earnings=st.floats(20_000, 40_000)),
+        min_size=1,
+        max_size=30,
+    ),
+    st.integers(2015, 2030),
+)
+def test_housing_benefit_disregard_is_the_statutory_weekly_sum_in_every_year(
+    units, year
+):
+    values = calculate(units, year=year, no_income_related_benefits=True)
+    disregard = values["housing_benefit_applicable_income_disregard"]
+    conditions = values[
+        "meets_housing_benefit_additional_earnings_disregard_conditions"
+    ].astype(bool)
+    for i, unit in enumerate(units):
+        weekly = WEEKLY[unit["shape"]]
+        if conditions[i]:
+            weekly += 37.1 if year == 2020 else 17.1
+        assert abs(disregard[i] - weekly * WEEKS) < 0.01, (unit, year)
