@@ -1,3 +1,123 @@
+## [2.106.1] - 2026-10-02
+
+### Fixed
+
+- - Hold the NICs primary threshold, upper earnings limit, secondary threshold and Class 4 lower and upper profits limits at their 2026-27 levels through 2030-31, as announced at Budget 2025, with a reference for each year. CPI uprating resumes in 2031-32; before this change the Class 4 limits were uprated from 2027-28 and the primary threshold and upper earnings limit from 2028-29. Also correct the 2025-26 lower earnings limit to £125 a week (SI 2025/288).
+
+
+## [2.106.0] - 2026-10-02
+
+### Added
+
+- Add `scottish_carer_supplement`, the Scottish Carer Supplement paid with Carer Support Payment from 15 March 2026. `carer_support_payment` is now the Carer Support Payment component only, so totals summed by variable name need both variables.
+
+### Fixed
+
+- Count Carer's Allowance and Carer Support Payment as Pension Credit income (SPC Regs 2002 reg 15(1)), and split the Scottish Carer Supplement out of Carer Support Payment into its own variable so that Pension Credit and Housing Benefit leave it out (SI 2026/246).
+
+
+## [2.105.1] - 2026-10-02
+
+### Fixed
+
+- Apply the Local Housing Allowance cap to the eligible rent before the Housing Benefit taper and non-dependant deductions, as SI 2006/213 regs 12D(2)(a), 70 and 71 (SI 2006/214 regs 12D, 50 and 51 at pension age) require, rather than capping the tapered rent.
+
+
+## [2.105.0] - 2026-10-02
+
+### Added
+
+- Add `pension_credit_reported_capital`, a benefit-unit input that replaces the household proxy in Pension Credit assessable capital when a dataset records the claimant's and partner's own capital (default -1: no change).
+
+
+## [2.104.8] - 2026-10-02
+
+### Fixed
+
+- Hold Northern Ireland households' council tax flat when a dataset is projected forward, instead of growing it by England's council tax forecast: the uprating code looked for the label `NORTHERN IRELAND` (with a space), so Northern Ireland fell through to England. Region labels outside the `Region` enum now raise rather than taking England's growth.
+
+
+## [2.104.7] - 2026-10-02
+
+### Fixed
+
+- Count State Pension as Universal Credit unearned income (retirement pension income, UC Regs 2013 regs 66(1)(a) and 67). Mixed-age couples on UC were having their State Pension ignored.
+
+
+## [2.104.6] - 2026-10-02
+
+### Fixed
+
+- Copy arrays read from the simulation before writing into them in the Universal Credit rebalancing and PIP phase-in scenario modifiers, so the cache changes only through `set_input`. Results are unchanged; a new code-health test fails on in-place writes into cached arrays.
+
+
+## [2.104.5] - 2026-10-02
+
+### Fixed
+
+- Give households with an unknown region the UK-wide private rent index when uprating rent, so datasets containing `Region.UNKNOWN` (such as Survey of Personal Incomes records with an address abroad) can be simulated instead of raising `ParameterNotFoundError`.
+
+
+## [2.104.4] - 2026-10-02
+
+### Fixed
+
+- - `Simulation(reform=...)` and `Microsimulation(reform=...)` accept structural `Reform` classes again, including classes built by `Reform.from_dict` and `set_parameter`, and tuples of reforms applied in order. Every one of these raised `TypeError` since the `Scenario` refactor, because `Scenario.from_reform` instantiated the class without the baseline system that policyengine-core's `Reform.__init__` requires. A reform class is now applied to the simulation's own tax-benefit system the way `Simulation.apply_reform` applies it. A `Reform` instance is rejected with a clear error, since its own state would be lost. Dict reforms are unchanged.
+
+
+## [2.104.3] - 2026-10-02
+
+### Fixed
+
+- - Count contributory JSA once in `household_benefits`. `HOUSEHOLD_BENEFIT_VARIABLES` listed `jsa_contrib` twice, which overstated household benefits, net income and gross income by each household's contributory JSA. Also remove a duplicate `pension_credit` from the means-tested cost-of-living qualifying benefits (no output change), and test that no list of variable names repeats an entry.
+
+
+## [2.104.2] - 2026-10-01
+
+### Fixed
+
+- Disregard the whole income and capital of Pension Credit guarantee credit recipients in the England pensioner, Wales and Scotland council tax reduction schemes, so they get the maximum reduction less non-dependant deductions whatever their income or savings (SI 2012/2885 Sch 1 para 13; WSI 2013/3029 Sch 1 para 7; SSI 2012/319 reg 24). For savings-credit-only recipients, use the Pension Credit assessment of income plus the savings credit paid, and of capital (para 14; para 8; reg 25). Their reduction can fall, because the savings credit counts as income and the capital limit applies to all the capital Pension Credit counts, not only savings.
+
+
+## [2.104.1] - 2026-10-01
+
+### Fixed
+
+- Count contributory Employment and Support Allowance, Maternity Allowance, industrial injuries benefit and (from 19 November 2023) Scottish Carer Support Payment as Universal Credit unearned income, as UC Regs 2013 reg. 66(1)(b)(ii), (viii), (ix) and (iiia) require. Carer Support Payment counts only its carer support payment component (not the Scottish Carer Supplement) and only up to a year of Carer's Allowance.
+
+
+## [2.104.0] - 2026-10-01
+
+### Added
+
+- - Added a capital gains realisation elasticity for gains qualifying for Business Asset Disposal Relief: while `gov.simulation.capital_gains_responses.separate_badr_elasticity` is on, those gains respond with `badr_elasticity` (1.4, the OBR's assumption for BADR gains) and the person's other gains with the main elasticity, both to the same share-weighted rate change. The switch is off by default, so existing results don't move.
+
+### Fixed
+
+- - Fixed marginal tax rates losing precision at large values: `marginal_tax_rate_on_capital_gains`, `marginal_tax_rate`, `marginal_tax_rate_wrt_employer_cost` and the labour supply derivative now add £1,000 or 0.1% of the value, whichever is larger, and divide by the step as stored in float32. A fixed £1,000 step had read the 24% main rate of capital gains tax as 24.8% at £185m of gains and 23.2% at £561m, and anywhere from -2.4% to 48.8% above £1bn, which fed straight into the capital gains realisation response. Below £1m the step is still £1,000, so readings there move only where float32 rounds the £1,000 step, and then by less than 0.01 percentage points.
+
+
+## [2.103.0] - 2026-10-01
+
+### Added
+
+- - Added the Lifetime ISA holdings that microcosm datasets carry (`lifetime_isa_balance`, `has_lifetime_isa`, `household_lifetime_isa_balance`) and the Lifetime ISA withdrawal-charge parameters. Universal Credit, Housing Benefit, Income Support, income-based JSA, income-related ESA and Pension Credit now count a Lifetime ISA at its surrender value (75% of the balance under 60, the whole balance from 60) as capital of the holder's own benefit unit when the holder is its claimant or partner, and not before the Lifetime ISA existed (6 April 2017). Datasets without the columns are unaffected.
+
+
+## [2.102.6] - 2026-09-30
+
+### Fixed
+
+- Charge secondary (employer) Class 1 National Insurance on employees over state pension age. SSCBA 1992 s.6(3) ends only primary (employee) contributions at pensionable age.
+
+
+## [2.102.5] - 2026-09-30
+
+### Fixed
+
+- Let families in which every adult is over State Pension age make new Housing Benefit claims, as SI 2014/1230 reg 6A(4) allows. They no longer need a reported claim, and `would_claim_uc` no longer blocks them because Universal Credit is not available to them. Household calculations previously paid pension-age renters no Housing Benefit, and pension-age families in the Enhanced FRS who report Housing Benefit lost it whenever they drew `would_claim_uc`. Working-age and mixed-age families keep the existing continuing-award rule.
+
+
 ## [2.102.4] - 2026-09-30
 
 ### Changed
