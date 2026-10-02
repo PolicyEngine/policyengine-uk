@@ -1,0 +1,153 @@
+# Welfare Reform Act 2012 s. 19(6): the responsible carer for a child is "a
+# single person who is responsible for the child", or "a person who is a
+# member of a couple where (i) the person or the other member of the couple
+# is responsible for the child, and (ii) the person has been nominated by the
+# couple jointly as responsible for the child". UC Regs 2013 reg. 86(2):
+# "Only one of joint claimants may be nominated", and the nomination "applies
+# to all the children" (reg. 86(3)).
+#
+# The nomination is the couple's choice and data seldom record it. Without
+# an input the model takes the claimant who works fewer hours as the main
+# carer, and the elder where their hours are the same.
+#
+# 2026-27 amounts for a claimant aged 21 or over in England: net floor
+# 20,386.03 for 35 hours (see uc_minimum_income_floor.yaml); 16-hour
+# threshold 12.71 x 16 x 52 = 10,574.72, below the personal allowance.
+
+- name: A claimant with no child is not a responsible carer
+  period: 2026
+  input:
+    age: 30
+  output:
+    uc_is_responsible_carer: false
+
+- name: A lone parent is the responsible carer
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 4
+  output:
+    uc_is_responsible_carer: [true, false]
+
+- name: In a couple the claimant who works fewer hours is the responsible carer by default
+  period: 2026
+  input:
+    people:
+      full_time:
+        age: 35
+        hours_worked: 1_950
+      part_time:
+        age: 30
+        hours_worked: 832
+      child:
+        age: 4
+  output:
+    uc_is_responsible_carer: [false, true, false]
+
+- name: Where a couple work the same hours the elder is the responsible carer by default
+  period: 2026
+  input:
+    people:
+      younger:
+        age: 30
+        hours_worked: 1_820
+      elder:
+        age: 35
+        hours_worked: 1_820
+      child:
+        age: 4
+  output:
+    uc_is_responsible_carer: [false, true, false]
+
+- name: A self-employed partner who works more hours is not the default responsible carer and has the floor
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      self_employed:
+        age: 35
+        self_employment_income: 15_000
+        hours_worked: 2_080
+        would_claim_marriage_allowance: false
+      partner:
+        age: 30
+        self_employment_income: 2_000
+        hours_worked: 520
+        would_claim_marriage_allowance: false
+      child:
+        age: 1
+    households:
+      household:
+        members: [self_employed, partner, child]
+        region: NORTH_EAST
+  output:
+    # 15,000 - (15,000 - 1,000 - 12,570) x 20% - (15,000 - 12,570) x 6%
+    # = 15,000 - 286 - 145.80.
+    uc_individual_earned_income_before_mif: [14_568.20, 2_000, 0]
+    uc_is_responsible_carer: [false, true, false]
+    # The partner is in section 20 (a child aged 1): no floor, and a 16-hour
+    # threshold of 10,574.72 in the couple threshold of 30,960.75. The
+    # couple's 22,386.03 after the floor is below it.
+    uc_mif_applies: [true, false, false]
+    uc_individual_earned_income: [20_386.03, 2_000, 0]
+
+- name: A recorded nomination overrides the default
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      self_employed:
+        age: 35
+        self_employment_income: 15_000
+        hours_worked: 2_080
+        would_claim_marriage_allowance: false
+        uc_is_responsible_carer: true
+      partner:
+        age: 30
+        self_employment_income: 2_000
+        hours_worked: 520
+        would_claim_marriage_allowance: false
+        uc_is_responsible_carer: false
+      child:
+        age: 1
+    households:
+      household:
+        members: [self_employed, partner, child]
+        region: NORTH_EAST
+  output:
+    uc_mif_applies: [false, true, false]
+    # The partner's floor of 20,386.03 less the 3,993.48 by which it and the
+    # nominated carer's 14,568.20 would exceed the couple threshold:
+    # 30,960.75 - 14,568.20.
+    uc_individual_earned_income: [14_568.20, 16_392.55, 0]
+
+- name: A child looked after by a local authority has no responsible carer
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 4
+        is_looked_after_by_local_authority: true
+  output:
+    # UC Regs reg. 4(6)(a).
+    uc_is_responsible_carer: [false, false]
+
+- name: A claimant whose partner cannot be a joint claimant is the responsible carer
+  period: 2026
+  input:
+    people:
+      partner:
+        age: 35
+        uc_is_ineligible_partner: true
+      claimant:
+        age: 30
+        hours_worked: 1_950
+      child:
+        age: 4
+  output:
+    uc_is_responsible_carer: [false, true, false]

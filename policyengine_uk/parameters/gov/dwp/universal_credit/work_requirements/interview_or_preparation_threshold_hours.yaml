@@ -1,0 +1,13 @@
+description: >-
+  Weekly hours that set the individual earnings threshold of a Universal Credit
+  claimant who would otherwise be subject to the work-focused interview
+  requirement only, or to the work preparation requirement.
+values:
+  2013-04-29: 16
+metadata:
+  unit: hour
+  period: week
+  label: Universal Credit individual threshold hours for the interview-only and work preparation groups
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 90(2)(a)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/90

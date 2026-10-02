@@ -90,6 +90,10 @@
   input:
     age: 70
     region: NORTH_EAST
+    # A claimant over State Pension Credit qualifying age is subject to no
+    # work-related requirements and has no threshold; the group is set here
+    # to isolate the deduction.
+    uc_work_related_group_apart_from_earnings: ALL_REQUIREMENTS
   output:
     uc_minimum_income_floor_gross: 23_132.20
     uc_minimum_income_floor_income_tax: 2_112.44
@@ -123,3 +127,158 @@
   output:
     # 7.20 x 35 x 52.
     uc_minimum_income_floor_gross: 13_104
+
+# Individual thresholds by work-related group and expected hours. Reg. 90(2):
+# "(a) 16 hours per week, in the case of a claimant who would otherwise fall
+# within section 20 ... or section 21 ...; or (b) the expected number of hours
+# per week in the case of a claimant who would otherwise fall within section
+# 22". 2026 amounts for a person aged 21 or over: 30 hours 12.71 x 30 x 52 =
+# 19,827.60; 16 hours 12.71 x 16 x 52 = 10,574.72.
+
+- name: Responsible carer of a school-age child has a 30-hour threshold in 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 5
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    uc_expected_hours: [30, 35]
+    # 12.71 x 30 x 52, or 1,652.30 a month.
+    uc_minimum_income_floor_gross: [19_827.60, 0]
+    # (19,827.60 - 12,570) x 20%.
+    uc_minimum_income_floor_income_tax: [1_451.52, 0]
+    # (19,827.60 - 12,570) x 6%.
+    uc_minimum_income_floor_national_insurance: [435.46, 0]
+    # 19,827.60 - 1,451.52 - 435.46, or 1,495.05 a month.
+    uc_minimum_income_floor: [17_940.62, 0]
+
+- name: A claimant in the work-focused interview group has a 16-hour threshold
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 1
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    # 12.71 x 16 x 52, or 881.23 a month: below the personal allowance and
+    # the Class 4 lower profits limit, so the net amount is the same.
+    uc_minimum_income_floor_gross: [10_574.72, 0]
+    uc_minimum_income_floor_income_tax: [0, 0]
+    uc_minimum_income_floor_national_insurance: [0, 0]
+    uc_minimum_income_floor: [10_574.72, 0]
+
+- name: A claimant aged 19 in the work preparation group has a 16-hour threshold at the rate for their age
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 19
+    uc_has_limited_capability_for_work: true
+  output:
+    # 10.85 x 16 x 52.
+    uc_minimum_income_floor_gross: 9_027.20
+
+- name: ADM J2082, Alison, aged 20 with limited capability for work at 5.30 an hour
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 20
+    uc_has_limited_capability_for_work: true
+  output:
+    # "Alison's individual earnings threshold is 5.30 X 16 = 84.80, converted
+    # to a monthly amount - 84.80 x 52 / 12 = 367 per month": 367.47 before
+    # the whole-pound rounding of reg. 6(1A), or 4,409.60 a year.
+    uc_minimum_income_floor_gross: 4_409.60
+
+- name: ADM J2086 example 1, Richard, lone parent of a three-year-old at 7.50 an hour
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      richard:
+        age: 27
+      cassius:
+        age: 3
+  output:
+    uc_expected_hours: [16, 35]
+    # "7.50 x 16 = 120 x 52 / 12 = 520": 6,240 a year.
+    uc_minimum_income_floor_gross: [6_240, 0]
+
+- name: ADM J2086 example 2, Laura, responsible carer of a nine-year-old at 7.05 an hour
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      laura:
+        age: 23
+      son:
+        age: 9
+  output:
+    uc_expected_hours: [25, 35]
+    # "7.05 x 25 = 176.25 x 52 / 12": 763.75 a month (the ADM prints
+    # 763.25, and 763 after rounding down), or 9,165 a year.
+    uc_minimum_income_floor_gross: [9_165, 0]
+
+- name: ADM J2085 example, Louise, expected hours of 30 agreed for her circumstances
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      louise:
+        age: 40
+        uc_expected_hours: 30
+      daughter:
+        age: 15
+  output:
+    # "7.50 x 30 = 225 x 52 / 12 = 975": 11,700 a year. Her daughter is 15,
+    # so the hours are the work coach's (reg. 88(2)(a)) and come in as an
+    # input.
+    uc_minimum_income_floor_gross: [11_700, 0]
+
+- name: A claimant subject to no work-related requirements has no threshold
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    uc_limited_capability_for_WRA: true
+  output:
+    # Reg. 90(2) sets a threshold only for a claimant who would otherwise
+    # fall within section 20, 21 or 22.
+    uc_minimum_income_floor_gross: 0
+    uc_minimum_income_floor: 0
+
+- name: A partner aged 17 who cannot be a joint claimant adds 35 hours at the national living wage
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 19
+        is_uc_claimant: true
+      partner:
+        age: 17
+        is_uc_claimant: true
+        uc_is_ineligible_partner: true
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # Reg. 90(3)(b)(ii): "the amount a person would be paid for 35 hours
+    # per week at the hourly rate specified in regulation 4 of the National
+    # Minimum Wage Regulations", 12.71 whatever the partner's age (the rate
+    # for a 17-year-old is 8.00). The claimant: 10.85 x 35 x 52.
+    uc_minimum_income_floor_gross: [19_747, 23_132.20]
+    uc_minimum_income_floor: [17_880.98, 20_386.03]
