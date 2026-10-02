@@ -31,7 +31,11 @@ Support Payment (Scotland), renting from the council in 2026:
    cliff, so it is excluded.
 3. Metamorphic: setting the Scottish Carer Supplement to zero changes
    Pension Credit income and Housing Benefit applicable income only through
-   income tax: each plus income tax is unchanged.
+   income tax: each plus income tax is unchanged. This is weaker than the
+   law, which disregards tax only on income taken into account (SPC Regs
+   reg 17(10)), so the supplement should leave Pension Credit income
+   unchanged outright. The model deducts all income tax, including the tax on
+   the supplement (#1954), so the invariant adds income tax back.
 
 These compare PolicyEngine's own income measures, so they hold whatever
 carer's benefit the model pays. The model does not yet apply the

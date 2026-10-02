@@ -159,14 +159,13 @@
     savings_credit: 0.6 * (238 - 208.07) * 52
 
 - name: Housing Benefit no longer falls where Guarantee Credit used to end for a couple whose partner receives Carer's Allowance
-  # Before this change, Pension Credit left out the partner's Carer's
-  # Allowance, so Guarantee Credit ran on to a private pension of 9,700 and the
-  # Housing Benefit passport ended at 9,800, when HB counted the allowance:
-  # net income fell by 1,779.24 with the default HB income disregard (2,254.02
-  # with the disregard set to 0, as here). Now Guarantee Credit has ended well
-  # before, and each 100 of private pension adds 100 - 20 tax - 52 HB (65%)
-  # - 16 CTR. The HB income disregard is set to 0 so that the numbers do not
-  # depend on it; the couple has no earnings.
+  # Before #1952, Pension Credit left out the partner's Carer's Allowance, so
+  # Guarantee Credit ran on to a private pension of 9,700 and the Housing
+  # Benefit and Council Tax Reduction passports ended at 9,800, when both
+  # counted the allowance, and net income fell steeply there. Now Guarantee
+  # Credit has ended well before, and each 100 of private pension adds
+  # 100 - 20 tax - 52 HB (65%) - 16 CTR. The HB income disregard is set to 0
+  # so that the numbers do not depend on it; the couple has no earnings.
   period: 2026
   absolute_error_margin: 0.01
   input:
