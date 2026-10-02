@@ -141,8 +141,8 @@
   output:
     is_qualifying_young_person_for_universal_credit: [false, true]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
-    # Not under para 10(1)(b), and not a non-dependant (para 9(2)(g)), so no
-    # bedroom of their own. The carer they are placed with is a foster parent
+    # Not under para 10(1)(b), and not a non-dependant (para 9(2)(c) and (g)),
+    # so no bedroom of their own. The carer they are placed with is a foster parent
     # (reg 2: a person with whom a child is placed under the care planning
     # regulations, which place children under 18), so has one additional
     # bedroom (para 12(4)(a), (9)(b)): 2 bedrooms, category C. The model reads

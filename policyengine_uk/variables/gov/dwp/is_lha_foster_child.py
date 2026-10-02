@@ -28,9 +28,6 @@ class is_lha_foster_child(Variable):
     )
 
     def formula(person, period, parameters):
-        age_limit = parameters(period).gov.dwp.LHA.foster_child_age_limit
-        return (
-            person("is_looked_after_by_local_authority", period)
-            & (person("age", period) < age_limit)
-            & ~person("is_claimant_or_partner", period)
+        return person("is_looked_after_child", period) & ~person(
+            "is_claimant_or_partner", period
         )
