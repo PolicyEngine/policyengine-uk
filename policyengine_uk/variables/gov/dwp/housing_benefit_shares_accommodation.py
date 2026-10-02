@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.consumption.rent.joint_tenant_in_household_head_household import (
+    in_joint_tenants_single_household,
+)
 
 
 class housing_benefit_shares_accommodation(Variable):
@@ -11,7 +14,10 @@ class housing_benefit_shares_accommodation(Variable):
         "the family's own household, its non-dependants or people who pay it "
         "rent still count as exclusive. A boarder or lodger shares the "
         "householder's rooms, and in a household whose rent is shared every "
-        "liable family shares the others' rooms. The household input "
+        "liable family shares the rooms of the liable families outside its "
+        "own household. Joint occupiers who form a single household (see "
+        "joint_tenant_in_household_head_household) do not share rooms with "
+        "each other in this sense. The household input "
         "is_shared_accommodation marks any other case."
     )
     definition_period = YEAR
@@ -27,10 +33,26 @@ class housing_benefit_shares_accommodation(Variable):
             person.household("is_shared_accommodation", period)
         )
         boarder_or_lodger = benunit.any(person("pays_rent_to_householder", period))
-        rent_is_shared = benunit.any(
-            person.household.any(
-                person.benunit("liable_for_share_of_household_rent", period)
-            )
+        in_sharer_family = person.benunit("liable_for_share_of_household_rent", period)
+        rent_is_shared = benunit.any(person.household.any(in_sharer_family))
+        # A joint tenant in the claimant's household is a member of it, so
+        # the families of a single household share rooms with a joint
+        # occupier outside it only: a family sharing the rent that is not in
+        # the household head's household.
+        single = in_joint_tenants_single_household(benunit, period)
+        outside_single_household = (
+            in_sharer_family
+            & ~person.benunit.any(person("is_household_head", period))
+            & ~benunit.project(single)
+        )
+        shares_with_another_household = where(
+            single,
+            benunit.any(person.household.any(outside_single_household)),
+            rent_is_shared,
         )
         liable = benunit("benunit_is_rent_liable", period)
-        return household_input | boarder_or_lodger | (rent_is_shared & liable)
+        return (
+            household_input
+            | boarder_or_lodger
+            | (shares_with_another_household & liable)
+        )

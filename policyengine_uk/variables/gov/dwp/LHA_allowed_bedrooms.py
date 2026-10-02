@@ -40,8 +40,10 @@ def bedrooms_for_children(
     other families of the household who count in the household head's
     family's size criteria, such as a non-dependant's child; they share rooms
     with the head family's own children. ``count_other``, if given, maps a
-    person mask to the number of those people counted for each family, in
-    place of counting them all for the household head's family.
+    person mask to the number of those people counted for each family as
+    occupiers outside it, in place of counting them all for the household
+    head's family; it never counts the family's own members, so
+    ``other_child`` may include them.
     """
     person = benunit.members
     age = person("age", period)

@@ -1,0 +1,535 @@
+# Joint tenants who form a single household.
+#
+# Housing Benefit size criteria (HB Regs 2006 and HB (SPC) Regs 2006 reg
+# 13D(3)) count "occupiers", which reg 13D(12) defines as the persons who
+# occupy the dwelling as their home "except for any joint tenant who is not a
+# member of the claimant's household". So a joint tenant who is a member of
+# the claimant's household is an occupier. DWP:
+# - LHA Guidance Manual (April 2014) para 2.030 lists "joint-tenants who are a
+#   member of the customer's household, for example their partner or children
+#   who are now adults" among occupiers; para 2.031 excludes those who are not
+#   ("household is not defined but should be given its everyday meaning").
+# - Para 2.100: Lee, his partner and their two children under 10 are joint
+#   tenants with Lee's mother and form a single household; "the three bedroom
+#   LHA rate applies to both Lee and his mother because they form a single
+#   household".
+# - Para 2.123 example 3: Andrew, his wife and their three children under 10
+#   are joint tenants with Andrew's father George, in a single household; "The
+#   four bedroom LHA rate ... applies to both Andrew and George".
+# Joint tenants in separate households each count only their own household
+# (para 2.093; HB circular A21/2013 para 25).
+#
+# The input joint_tenant_in_household_head_household marks a family sharing
+# the rent that forms a single household with the household head's family.
+# The families of a single household count each other, and each counts every
+# occupier counted for any of them (boarders and lodgers of the head, and
+# non-dependants residing with any of them), so all get the same size
+# criteria apart from the claimant's own additional bedroom as a qualifying
+# parent or carer (13D(3A)(b)). Non-dependant deductions and the young
+# individual's test still follow non_dependant_normally_resides_with: a joint
+# tenant is never a non-dependant (reg 3(2)(d)).
+#
+# A room shared with "a member of his household" still counts as the
+# claimant's own for 13D(2)(b), so the families of a single household do not
+# lack exclusive use because of each other.
+#
+# Universal Credit has no equivalent: joint tenants who are separately liable
+# (UC Sch 4 para 24(1); ADM F3031) are not in each other's extended benefit
+# unit (para 9), so LHA_allowed_bedrooms is unchanged.
+
+- name: Lee and his mother form a single household and each get the three-bedroom rate (LHA Guidance Manual 2.100)
+  period: 2026
+  input:
+    people:
+      lee:
+        age: 32
+        is_male: true
+        is_household_head: true
+      lee_partner:
+        age: 31
+        is_male: false
+      lee_son:
+        age: 4
+        is_male: true
+      lee_daughter:
+        age: 7
+        is_male: false
+      mother:
+        age: 60
+        is_male: false
+    benunits:
+      lee_family:
+        members: [lee, lee_partner, lee_son, lee_daughter]
+      mother_family:
+        members: [mother]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+    households:
+      home:
+        members: [lee, lee_partner, lee_son, lee_daughter, mother]
+        # £150 a week.
+        rent: 7_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Lee: one bedroom for the couple, one for the two children under 10, one
+    # for his mother. His mother: one for herself, one for the couple (13D(3)(a)),
+    # one for the children.
+    housing_benefit_LHA_allowed_bedrooms: [3, 3]
+    housing_benefit_LHA_additional_bedrooms: [0, 0]
+    housing_benefit_LHA_category: [D, D]
+    housing_benefit_shares_accommodation: [false, false]
+    # Joint tenants are not each other's non-dependants (reg 3(2)(d)).
+    housing_benefit_claimant_has_non_dependant: [false, false]
+    # UC: each joint tenant's own extended benefit unit.
+    LHA_allowed_bedrooms: [2, 1]
+
+- name: The three-bedroom rate applies to both when Lee's mother is the household head
+  period: 2026
+  input:
+    people:
+      mother:
+        age: 60
+        is_male: false
+        is_household_head: true
+      lee:
+        age: 32
+        is_male: true
+      lee_partner:
+        age: 31
+        is_male: false
+      lee_son:
+        age: 4
+        is_male: true
+      lee_daughter:
+        age: 7
+        is_male: false
+    benunits:
+      mother_family:
+        members: [mother]
+      lee_family:
+        members: [lee, lee_partner, lee_son, lee_daughter]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+    households:
+      home:
+        members: [mother, lee, lee_partner, lee_son, lee_daughter]
+        rent: 7_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    housing_benefit_LHA_allowed_bedrooms: [3, 3]
+    housing_benefit_LHA_category: [D, D]
+    housing_benefit_shares_accommodation: [false, false]
+    LHA_allowed_bedrooms: [1, 2]
+
+- name: In separate households Lee and his mother each count only their own (LHA Guidance Manual 2.093)
+  period: 2026
+  input:
+    people:
+      lee:
+        age: 32
+        is_male: true
+        is_household_head: true
+      lee_partner:
+        age: 31
+        is_male: false
+      lee_son:
+        age: 4
+        is_male: true
+      lee_daughter:
+        age: 7
+        is_male: false
+      mother:
+        age: 60
+        is_male: false
+    benunits:
+      lee_family:
+        members: [lee, lee_partner, lee_son, lee_daughter]
+      mother_family:
+        members: [mother]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [lee, lee_partner, lee_son, lee_daughter, mother]
+        rent: 7_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    joint_tenant_in_household_head_household: [false, false]
+    # Each joint tenant's own household: Lee's family two bedrooms; his
+    # mother one, and she shares the dwelling's rooms with a joint tenant
+    # outside her household, so the shared accommodation rate applies
+    # (13D(2)(a)(ii)).
+    housing_benefit_LHA_allowed_bedrooms: [2, 1]
+    housing_benefit_LHA_category: [C, A]
+    housing_benefit_shares_accommodation: [true, true]
+    LHA_allowed_bedrooms: [2, 1]
+
+- name: Andrew and his father George get the four-bedroom rate (LHA Guidance Manual 2.123 example 3)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      andrew:
+        age: 36
+        is_male: true
+        is_household_head: true
+      andrew_wife:
+        age: 35
+        is_male: false
+      child_1:
+        age: 2
+        is_male: true
+      child_2:
+        age: 5
+        is_male: false
+      child_3:
+        age: 8
+        is_male: true
+      george:
+        age: 64
+        is_male: true
+    benunits:
+      andrew_family:
+        members: [andrew, andrew_wife, child_1, child_2, child_3]
+        # The authority apportions £150 of the £200 a week to Andrew and £50
+        # to George.
+        share_of_household_rent: 0.75
+      george_family:
+        members: [george]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+        share_of_household_rent: 0.25
+    households:
+      home:
+        members: [andrew, andrew_wife, child_1, child_2, child_3, george]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # One bedroom for the couple, two for three children under 10, one for
+    # George: four bedrooms for each claim.
+    housing_benefit_LHA_allowed_bedrooms: [4, 4]
+    housing_benefit_LHA_category: [E, E]
+    share_of_household_rent: [0.75, 0.25]
+    LHA_allowed_bedrooms: [3, 1]
+
+- name: A young individual in a single household keeps the shared accommodation rate
+  period: 2026
+  input:
+    people:
+      mother:
+        age: 58
+        is_male: false
+        is_household_head: true
+      son:
+        age: 25
+        is_male: true
+    benunits:
+      mother_family:
+        members: [mother]
+      son_family:
+        members: [son]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+    households:
+      home:
+        members: [mother, son]
+        rent: 7_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Each counts the other in the size criteria, but the son, a single
+    # claimant under 35, has no non-dependant residing with him (his mother
+    # is a joint tenant, reg 3(2)(d)), so 13D(2)(a)(i) gives him the shared
+    # accommodation rate.
+    housing_benefit_LHA_allowed_bedrooms: [2, 2]
+    is_housing_benefit_young_individual: [false, true]
+    housing_benefit_claimant_has_non_dependant: [false, false]
+    housing_benefit_shares_accommodation: [false, false]
+    housing_benefit_LHA_category: [C, A]
+
+- name: A joint tenant outside the single household counts no one and no one counts them
+  period: 2026
+  input:
+    people:
+      head:
+        age: 45
+        is_household_head: true
+      sister:
+        age: 43
+      friend:
+        age: 44
+    benunits:
+      head_family:
+        members: [head]
+      sister_family:
+        members: [sister]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+      friend_family:
+        members: [friend]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, sister, friend]
+        rent: 15_600
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The head and her sister count each other; the friend, a joint tenant in
+    # neither's household, is no one's occupier (13D(12)).
+    housing_benefit_LHA_allowed_bedrooms: [2, 2, 1]
+    # All three share rooms with a joint tenant outside their household.
+    housing_benefit_shares_accommodation: [true, true, true]
+    housing_benefit_LHA_category: [C, C, A]
+
+- name: Two joint tenants both in the head's household count each other and the head
+  period: 2026
+  input:
+    people:
+      head:
+        age: 60
+        is_household_head: true
+      daughter:
+        age: 40
+        is_male: false
+      son:
+        age: 38
+        is_male: true
+    benunits:
+      head_family:
+        members: [head]
+      daughter_family:
+        members: [daughter]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+      son_family:
+        members: [son]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+    households:
+      home:
+        members: [head, daughter, son]
+        rent: 15_600
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    housing_benefit_LHA_allowed_bedrooms: [3, 3, 3]
+    housing_benefit_shares_accommodation: [false, false, false]
+    housing_benefit_LHA_category: [D, D, D]
+    LHA_allowed_bedrooms: [1, 1, 1]
+
+- name: A single household counts the head's lodger and another family's non-dependant for every joint tenant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 60
+        is_male: false
+        is_household_head: true
+      lee:
+        age: 36
+        is_male: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+      kim:
+        age: 30
+        is_male: false
+        household_benefits_individual_non_dep_deduction: 1_000
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      mother_family:
+        members: [mother]
+      lee_family:
+        members: [lee]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+      lodger_family:
+        members: [lodger]
+      kim_family:
+        members: [kim]
+        # Kim, Lee's friend, normally resides with Lee only.
+        non_dependant_normally_resides_with: OTHER_JOINT_OCCUPIERS
+    households:
+      home:
+        members: [mother, lee, lodger, kim]
+        rent: 15_600
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Mother and Lee: themselves, each other, the lodger who pays the mother
+    # and Kim. Every occupier of the single household counts for both. The
+    # lodger's and Kim's own claims count only their own families.
+    housing_benefit_LHA_allowed_bedrooms: [4, 4, 1, 1]
+    housing_benefit_LHA_category: [E, E, A, A]
+    # Kim is Lee's non-dependant only: he bears the whole deduction (HBGM A5
+    # para 5.622; CTR Sch 1 para 8(5)), and only he has a non-dependant
+    # residing with him.
+    housing_benefit_claimant_has_non_dependant: [false, true, false, false]
+    housing_benefit_non_dep_deductions: [0, 1_000, 0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 300, 0, 0]
+
+- name: The same occupiers without a single household count only as before
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 60
+        is_male: false
+        is_household_head: true
+      lee:
+        age: 36
+        is_male: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+      kim:
+        age: 30
+        is_male: false
+        household_benefits_individual_non_dep_deduction: 1_000
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      mother_family:
+        members: [mother]
+      lee_family:
+        members: [lee]
+        liable_for_share_of_household_rent: true
+      lodger_family:
+        members: [lodger]
+      kim_family:
+        members: [kim]
+        non_dependant_normally_resides_with: OTHER_JOINT_OCCUPIERS
+    households:
+      home:
+        members: [mother, lee, lodger, kim]
+        rent: 15_600
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Mother: herself and her lodger. Lee: himself and Kim.
+    housing_benefit_LHA_allowed_bedrooms: [2, 2, 1, 1]
+    housing_benefit_LHA_category: [C, C, A, A]
+    housing_benefit_claimant_has_non_dependant: [false, true, false, false]
+    housing_benefit_non_dep_deductions: [0, 1_000, 0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 300, 0, 0]
+
+- name: A joint tenant in the claimant's household who needs overnight care gives each an additional bedroom
+  period: 2026
+  input:
+    people:
+      lee:
+        age: 32
+        is_male: true
+        is_household_head: true
+      lee_partner:
+        age: 31
+        is_male: false
+      lee_son:
+        age: 4
+        is_male: true
+      lee_daughter:
+        age: 7
+        is_male: false
+      mother:
+        age: 70
+        is_male: false
+        meets_lha_overnight_care_condition: true
+    benunits:
+      lee_family:
+        members: [lee, lee_partner, lee_son, lee_daughter]
+      mother_family:
+        members: [mother]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+    households:
+      home:
+        members: [lee, lee_partner, lee_son, lee_daughter, mother]
+        rent: 7_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Lee: 13D(3A)(a)(iii), an occupier other than the claimant or partner;
+    # his mother: (a)(i), herself.
+    housing_benefit_LHA_additional_bedrooms: [1, 1]
+    housing_benefit_LHA_allowed_bedrooms: [4, 4]
+    housing_benefit_LHA_category: [E, E]
+
+- name: A foster child placed with the head is no one's occupier and the carer's bedroom is the head's alone
+  period: 2026
+  input:
+    people:
+      head:
+        age: 45
+        is_male: false
+        is_household_head: true
+      foster_child:
+        age: 8
+        is_male: true
+        is_looked_after_by_local_authority: true
+      sister:
+        age: 40
+        is_male: false
+    benunits:
+      head_family:
+        members: [head, foster_child]
+      sister_family:
+        members: [sister]
+        liable_for_share_of_household_rent: true
+        joint_tenant_in_household_head_household: true
+    households:
+      home:
+        members: [head, foster_child, sister]
+        rent: 15_600
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The foster child does not occupy the dwelling (reg 21(3); LHA Guidance
+    # Manual para 2.033). The head is a qualifying parent or carer with one
+    # additional bedroom (13D(3A)(b)), which applies to the claimant and
+    # partner only, so not to her sister's claim.
+    is_child_or_young_person_placed_with_family: [false, true, false]
+    housing_benefit_LHA_additional_bedrooms: [1, 0]
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+    housing_benefit_LHA_category: [D, C]
+
+- name: The input has no effect on a family that does not share the rent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      john:
+        age: 30
+        is_household_head: true
+      alex:
+        age: 30
+      peter:
+        age: 30
+        household_benefits_individual_non_dep_deduction: 1_000
+    benunits:
+      john_family:
+        members: [john]
+        joint_tenant_in_household_head_household: true
+      alex_family:
+        members: [alex]
+        liable_for_share_of_household_rent: true
+      peter_family:
+        members: [peter]
+        joint_tenant_in_household_head_household: true
+    households:
+      home:
+        members: [john, alex, peter]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # As in LHA Guidance Manual 2.110: the household head and the
+    # non-dependant are not sharers of the rent, so John and Alex remain in
+    # separate households, each counting Peter.
+    housing_benefit_LHA_allowed_bedrooms: [2, 2, 1]
+    housing_benefit_shares_accommodation: [true, true, false]
+    housing_benefit_non_dep_deductions: [500, 500, 0]
