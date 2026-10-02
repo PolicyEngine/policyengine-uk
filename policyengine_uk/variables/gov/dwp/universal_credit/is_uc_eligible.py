@@ -9,7 +9,11 @@ class is_uc_eligible(Variable):
         "Whether a claimant or partner meets the modelled minimum-age and "
         "pension-age conditions and the benefit unit meets the capital limit. "
         "One qualifying claimant suffices, preserving mixed-age couples under "
-        "regulation 3(2)(a). Dependants cannot satisfy the claimant age test."
+        "regulation 3(2)(a). Dependants cannot satisfy the claimant age test, "
+        "nor can a partner who cannot be a joint claimant: where a member of "
+        "a couple claims as a single person (regulation 3(3)), that member "
+        "must meet the conditions, and the capital tested includes the other "
+        "member's (regulation 18(2))."
     )
     definition_period = YEAR
     reference = (
@@ -21,7 +25,7 @@ class is_uc_eligible(Variable):
     def formula(benunit, period, parameters):
         capital = benunit("uc_assessable_capital", period)
         limit = parameters(period).gov.dwp.universal_credit.means_test.capital.limit
-        claimant = benunit.members("is_uc_claimant", period)
+        claimant = benunit.members("is_uc_single_or_joint_claimant", period)
         meets_minimum_age = benunit.members("meets_uc_minimum_age_condition", period)
         pension_age = benunit.members("is_SP_age", period)
         has_qualifying_claimant = benunit.any(

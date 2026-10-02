@@ -1,0 +1,653 @@
+# A member of a couple who claims Universal Credit as a single person
+# because the other member cannot be a joint claimant (UC Regs 2013 reg. 3(3)).
+#
+# The model reads 2026 at the 2026-27 fiscal year. Amounts per assessment
+# period from the reg. 36 table (as amended from 6 April 2026 by the
+# Universal Credit Act 2025, S.I. 2026/113 and the Social Security Benefits
+# Up-rating Order 2026, S.I. 2026/148) and the reg. 22 table:
+#   standard allowance: single under 25 338.58, single 25 or over 424.90,
+#     joint both under 25 528.34, joint either 25 or over 666.97;
+#   LCWRA element for a claimant other than a pre-2026, severe conditions or
+#     terminally ill claimant 217.26; carer element 209.34;
+#   work allowance: higher 710, lower 427; taper 55% (reg. 22(1)(b)).
+# Benefit cap annual limits (reg. 80A(2)): single claimant outside London
+# with no child 14,753; joint claimants or a single claimant responsible for
+# a child, outside London, 22,020.
+# Earnings stay below the personal allowance and the NI primary threshold
+# (12,570), so no tax or NI is deducted.
+
+- name: Reg. 36(3) - a member of a couple claiming as a single person gets the single 25-or-over standard allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_uc_single_or_joint_claimant: [true, false]
+    uc_member_of_couple_claims_as_single_person: true
+    uc_standard_allowance_claimant_type: SINGLE_OLD
+    # 424.90 x 12
+    uc_standard_allowance: 5_098.80
+    is_uc_eligible: true
+
+- name: Joint claimants of the same ages get the joint standard allowance (control)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_uc_single_or_joint_claimant: [true, true]
+    uc_member_of_couple_claims_as_single_person: false
+    uc_standard_allowance_claimant_type: COUPLE_OLD
+    # 666.97 x 12
+    uc_standard_allowance: 8_003.64
+
+- name: Reg. 36(3) - the single rate follows the claimant's own age, not the partner's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    uc_standard_allowance_claimant_type: SINGLE_YOUNG
+    # 338.58 x 12 (joint claimants with one aged 30 would get 666.97)
+    uc_standard_allowance: 4_062.96
+
+- name: Reg. 3(3)(a) - a 19-year-old whose 17-year-old partner has no reg. 8 circumstance claims as a single person (ADM E2017 example)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      tom:
+        age: 19
+        is_claimant_or_partner: true
+      jane:
+        age: 17
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [tom, jane]
+    households:
+      household:
+        members: [tom, jane]
+        region: NORTH_EAST
+  output:
+    meets_uc_minimum_age_condition: [true, false]
+    uc_is_ineligible_partner: [false, true]
+    is_uc_single_or_joint_claimant: [true, false]
+    uc_standard_allowance_claimant_type: SINGLE_YOUNG
+    # 338.58 x 12
+    uc_standard_allowance: 4_062.96
+
+- name: Reg. 8(1)(c) - a 17-year-old partner with caring responsibilities can be a joint claimant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      tom:
+        age: 19
+        is_claimant_or_partner: true
+      jane:
+        age: 17
+        is_claimant_or_partner: true
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [tom, jane]
+    households:
+      household:
+        members: [tom, jane]
+        region: NORTH_EAST
+  output:
+    uc_is_ineligible_partner: [false, false]
+    uc_standard_allowance_claimant_type: COUPLE_YOUNG
+    # 528.34 x 12
+    uc_standard_allowance: 6_340.08
+
+- name: WRA 2012 s. 4(1)(b) - a claimant over State Pension age cannot claim as a single person
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # The partner is under State Pension age but cannot be a joint claimant,
+    # so the reg. 3(2)(a) mixed-age route is closed.
+    is_uc_eligible: false
+
+- name: A working-age claimant can claim as a single person when the partner over State Pension age cannot be a joint claimant
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 70
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_uc_eligible: true
+
+- name: Reg. 18(2) - the claimant's capital includes the other member's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        lifetime_isa_balance: 8_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        lifetime_isa_balance: 16_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # Surrender values under 60, 75% of the balance (ADM H1659):
+    # 6,000 + 12,000 = 18,000, above the 16,000 limit of reg. 18(1)(a).
+    uc_assessable_capital: 18_000
+    is_uc_eligible: false
+
+- name: Reg. 22(3) - the other member's earnings are deducted as if the couple were joint claimants
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # No child and no limited capability for work: no work allowance
+    # (reg. 22(1)(b)(i)), so 55% of 6,000 is deducted.
+    is_uc_work_allowance_eligible: false
+    uc_earned_income: 6_000
+    uc_income_reduction: 3_300
+    # 5,098.80 - 3,300
+    universal_credit: 1_798.80
+
+- name: Reg. 22(3) - the other member's unearned income is deducted in full
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        private_pension_income: 1_200
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    uc_unearned_income: 1_200
+    uc_income_reduction: 1_200
+    # 5,098.80 - 1,200
+    universal_credit: 3_898.80
+
+- name: Reg. 22(3) - the other member's limited capability for work gives the work allowance joint claimants would have, but no LCWRA element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        uc_limited_capability_for_WRA: true
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # Joint claimants where "one or both have limited capability for work"
+    # have a work allowance (reg. 22(1)(b)(ii)): the higher one, 710 x 12 =
+    # 8,520, with no housing costs element (reg. 22(2)(a)). 6,000 is below it.
+    is_uc_work_allowance_eligible: true
+    uc_work_allowance: 8_520
+    uc_earned_income: 0
+    uc_income_reduction: 0
+    # Reg. 27(1): the element is for "a claimant"; the partner is not one.
+    uc_LCWRA_element: 0
+    # 424.90 x 12
+    universal_credit: 5_098.80
+
+- name: Reg. 27(1) - the claimant's own LCWRA gives the element on a single claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # 217.26 x 12
+    uc_LCWRA_element: 2_607.12
+
+- name: Reg. 29(1) - the other member's caring gives no carer element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    uc_carer_element: 0
+
+- name: Reg. 29(1) - the claimant's caring gives the carer element on a single claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        care_hours: 35
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # 209.34 x 12
+    uc_carer_element: 2_512.08
+
+- name: Reg. 32(1) - the claimant must be in paid work and the other member too
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # Reg. 32(1)(b) applies "whether claiming jointly or as a single person";
+    # the partner is neither in paid work nor (as modelled) excepted.
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(1) - met when the claimant and the other member both work
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        employment_income: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    uc_childcare_work_condition: true
+
+- name: Reg. 80A(2)(d)(ii) - a single claimant responsible for a child has the family cap
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+        is_benefit_cap_exempt: false
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_single_claimant_rate: false
+    benefit_cap: 22_020
+
+- name: Reg. 80A(2)(c) - a single claimant with no child has the single cap
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_benefit_cap_exempt: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_single_claimant_rate: true
+    benefit_cap: 14_753
+
+- name: Reg. 83(1)(g) - the other member's PIP does not lift the cap
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        pip_dl: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_exempt_health_disability: false
+    is_benefit_cap_exempt: false
+
+- name: Reg. 83(1)(g) - joint claimants, either receiving PIP, are not capped (control)
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        pip_dl: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_exempt: true
+
+- name: Reg. 83(1)(g) - the claimant's own PIP lifts the cap on a single claim
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        pip_dl: 4_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_benefit_cap_exempt: true
+
+- name: Reg. 82(1)(a) - the couple's combined earned income, the other member's included, meets the earnings exception
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        employment_income: 11_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # "Couple" in the cap includes a single claimant's partner (reg. 78(2)).
+    # 11,000 a year (916.67 a month) exceeds 16 hours at the national living
+    # wage of 12.71 (NMW Regs 2015 reg. 4 from 1 April 2026):
+    # 12.71 x 16 x 52 / 12 = 881.23 a month.
+    is_benefit_cap_exempt_earnings: true
+
+- name: Sch 4 para 28(2) - a renter under 35 claiming as a single person is a specified renter, whatever the partner's age
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [renter, partner]
+    households:
+      household:
+        members: [renter, partner]
+        tenure_type: RENT_PRIVATELY
+        region: NORTH_EAST
+  output:
+    # The partner is not a non-dependant (para 9(2)(b)).
+    lha_renter_has_non_dependant: false
+    is_lha_shared_accommodation_rate_specified_renter: true
+    LHA_category: A
+
+- name: Sch 4 para 28(2) - a renter aged 35 or over claiming as a single person is not a specified renter
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [renter, partner]
+    households:
+      household:
+        members: [renter, partner]
+        tenure_type: RENT_PRIVATELY
+        region: NORTH_EAST
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B
+
+- name: Sch 4 para 29(5) - only the renter's own disability benefit excepts them from the shared rate
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        pip_dl: 4_000
+    benunits:
+      benunit:
+        members: [renter, partner]
+    households:
+      household:
+        members: [renter, partner]
+        tenure_type: RENT_PRIVATELY
+        region: NORTH_EAST
+  output:
+    is_lha_shared_accommodation_rate_specified_renter: true
+
+- name: A flag on a single person marks no single claim by a member of a couple
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    uc_member_of_couple_claims_as_single_person: false
+    is_uc_single_or_joint_claimant: false
+    is_uc_eligible: false

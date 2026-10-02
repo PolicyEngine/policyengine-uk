@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.uc_work_related_requirements import (
+    other_member_of_single_claim,
+)
+from policyengine_uk.utils.benefit_unit import add_for_members
 
 
 class is_benefit_cap_exempt_other(Variable):
@@ -51,10 +55,17 @@ class is_benefit_cap_exempt_other(Variable):
         qualifying_personal_benefits = add(benunit, period, QUAL_PERSONAL_BENEFITS)
         qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
 
+        # The AFCS and ESA exceptions read "a claimant" (UC Regs 2013
+        # reg. 83(1)(a) and (e)); a partner who cannot be a joint claimant
+        # (reg. 3(3)) is not one.
+        not_a_claimant = other_member_of_single_claim(person, period)
+
         # Check for Armed Forces Compensation Scheme payments
-        afcs = benunit("afcs", period) > 0
+        afcs = add_for_members(benunit, period, ["afcs"], ~not_a_claimant) > 0
 
         # ESA contribution-based with support component
-        esa_support_component = benunit("esa_contrib", period) > 0
+        esa_support_component = (
+            add_for_members(benunit, period, ["esa_contrib"], ~not_a_claimant) > 0
+        )
 
         return has_pensioner | afcs | esa_support_component

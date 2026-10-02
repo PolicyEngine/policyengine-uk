@@ -25,3 +25,17 @@ def claimants(person, period):
     couple but not a claimant: no work-related group or floor applies to them.
     """
     return couple_members(person, period) & ~person("uc_is_ineligible_partner", period)
+
+
+def other_member_of_single_claim(person, period):
+    """The partner of a member of a couple who claims as a single person.
+
+    Under reg. 3(3) the member who can claim does so as a single person. The
+    other member is still in the couple, so their capital and income count
+    (regs. 18(2) and 22(3)), but they are not a claimant for the rules that
+    read "a claimant". A flag on a person with no claimant beside them (a
+    single person, or a couple neither of whom can claim) marks no such claim.
+    """
+    return person("uc_is_ineligible_partner", period) & person.benunit(
+        "uc_member_of_couple_claims_as_single_person", period
+    )

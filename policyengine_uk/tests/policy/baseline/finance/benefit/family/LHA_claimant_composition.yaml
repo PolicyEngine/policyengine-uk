@@ -90,7 +90,7 @@
     # Responsibility for a UC QYP blocks A. Existing bedroom formula = 1: B.
     LHA_category: B
 
-- name: Couple aged 30 and 17 is not a single specified renter
+- name: Renter aged 30 whose partner is 17 claims as a single person and is a specified renter
   period: 2025
   input:
     people:
@@ -109,10 +109,39 @@
   output:
     is_couple: true
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    # The partner is not a non-dependant (UC Sch 4 para 9(2)(b)).
     lha_renter_has_non_dependant: false
+    # The partner is under 18 with no reg. 8 circumstance, so the renter
+    # claims as a single person (UC Regs 2013 reg. 3(3)(a)) and is "a member
+    # of a couple claiming as a single person" under 35 (Sch 4 para 28(2);
+    # ADM F3213): shared accommodation.
+    uc_member_of_couple_claims_as_single_person: true
+    is_lha_shared_accommodation_rate_specified_renter: true
+    LHA_category: A
+
+- name: Couple aged 30 and 17 where the partner is within reg. 8 is not a specified renter
+  period: 2025
+  input:
+    people:
+      renter:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        # Reg. 8(1)(c): caring responsibilities, so the couple claim jointly.
+        care_hours: 35
+    benunits:
+      couple:
+        members: [renter, partner]
+    households:
+      home:
+        members: [renter, partner]
+  output:
+    is_couple: true
+    uc_member_of_couple_claims_as_single_person: false
     is_lha_shared_accommodation_rate_specified_renter: false
-    # A partner establishes neither QYP responsibility nor a non-dependant;
-    # couple room = 1: B under the existing bedroom calculation.
+    # Joint renters have one bedroom (Sch 4 para 10(1)(a)): B.
     LHA_category: B
 
 - name: A 17-year-old claimant in another benefit unit blocks the shared rate
