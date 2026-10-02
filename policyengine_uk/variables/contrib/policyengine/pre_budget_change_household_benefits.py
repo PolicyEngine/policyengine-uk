@@ -15,6 +15,7 @@ PRE_BUDGET_CHANGE_HOUSEHOLD_BENEFIT_VARIABLES = [
     "attendance_allowance",
     "afcs",
     "bsp",
+    "war_widows_pension",
     "carers_allowance",
     "dla",
     "esa_contrib",

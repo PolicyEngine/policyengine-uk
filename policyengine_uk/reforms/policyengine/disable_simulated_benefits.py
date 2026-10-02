@@ -33,6 +33,7 @@ def disable_simulated_benefits(parameters, period):
                     "ssmg",
                     "state_pension",
                     "universal_credit",
+                    "war_widows_pension",
                     "winter_fuel_allowance",
                     "working_tax_credit",
                 ]

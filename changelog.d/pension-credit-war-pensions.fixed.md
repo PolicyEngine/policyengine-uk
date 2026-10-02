@@ -1,0 +1,1 @@
+- Count war disablement pensions, war widow's or widower's pensions and Armed Forces Compensation Scheme payments of the claimant and partner in Pension Credit income, less £10 a week for each person (State Pension Credit Regulations 2002 Sch. IV para. 1). Add a `war_widows_pension` input, counted in the benefit totals alongside `bsp`.
