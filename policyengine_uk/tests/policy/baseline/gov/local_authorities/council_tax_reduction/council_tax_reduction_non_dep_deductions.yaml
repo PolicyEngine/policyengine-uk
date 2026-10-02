@@ -780,7 +780,7 @@
   input:
     people:
       claimant:
-        age: 70
+        age: 90
       son:
         age: 70
         total_income: 9000
@@ -804,8 +804,46 @@
         council_tax: 2_000
         savings: 0
   output:
+    # The claimant is strictly older, so the son is an eligible non-dependant
+    # and the zero comes from the SPC exemption (para 8(8)(a)), not from the
+    # son also counting as the applicant.
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true]
     council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
     council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: The same non-dependant without State Pension Credit pays the lowest amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 90
+      son:
+        age: 70
+        total_income: 9000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
 
 - name: Universal Credit without earned income is exempt
   period: 2026

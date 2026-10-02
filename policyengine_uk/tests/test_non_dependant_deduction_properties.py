@@ -16,14 +16,16 @@ and a non-dependant family of one or two adults:
 2. Bounds: an eligible non-dependant who is not exempt pays between the
    scale's lowest and highest weekly amounts. In English working-age
    households (local schemes) the national CTR deduction is 0.
-3. A non-dependant not in remunerative work (under 16 hours) pays the lowest
-   amount, whatever their income.
+3. A non-dependant not in remunerative work (under 16 hours or, for Housing
+   Benefit, on IS, JSA(IB) or ESA(IR): HB reg 6(6)) pays the lowest amount,
+   whatever their income.
 4. If the claimant or partner is exempt, the claimant family's deductions
    are 0.
 5. Aggregation: a family's deductions are the sum, over the other families in
-   the household, of their higher member's amount (both members' amounts for a
-   Welsh working-age applicant's non-dependant couple with a Universal Credit
-   award), recomputed here from the individual amounts.
+   the household, of their claimant and partner's higher amount (both amounts
+   for a Welsh working-age applicant's non-dependant couple with a Universal
+   Credit award) plus each other member's, recomputed here from the
+   individual amounts.
 6. Monotonicity (metamorphic): raising any non-dependant's income never lowers
    an individual deduction or a family's deductions.
 7. Exhaustive: in every year from 2015 (2019 for Housing Benefit) to 2030,
@@ -36,7 +38,9 @@ and a non-dependant family of one or two adults:
    a State Pension Credit recipient, or under 25 and on Income Support,
    income-based JSA or Universal Credit without earned income. CTR (any age):
    a full-time student, on IS, JSA(IB), ESA(IR) or SPC, or, in a national
-   scheme, on Universal Credit without earned income.
+   scheme, on Universal Credit without earned income. Benefit receipt counts
+   only for the claimant or partner of the award; a self-employed loss counts
+   as nil earnings (UC reg 57(2)).
 """
 
 from pathlib import Path
@@ -89,6 +93,9 @@ BENEFITS = [
     "pension_credit",
     "universal_credit_pre_benefit_cap",
 ]
+# Family benefits counted in gross income, held at zero so the oracle knows
+# each family's gross income.
+OTHER_FAMILY_BENEFITS = ["child_tax_credit", "working_tax_credit", "child_benefit"]
 SYSTEM = CountryTaxBenefitSystem()
 
 
@@ -119,11 +126,30 @@ def households(draw):
             ),
             earnings=draw(st.one_of(st.just(0.0), st.floats(0, 60_000))),
             other_income=draw(st.one_of(st.just(0.0), st.floats(0, 30_000))),
+            self_employment=draw(st.one_of(st.just(0.0), st.floats(-20_000, 20_000))),
             hours=draw(st.sampled_from([0.0, 10.0, 15.9, 16.0, 35.0, 45.0])),
             income_rise=draw(st.one_of(st.just(0.0), st.floats(0, 40_000))),
+            approved_training=False,
         )
         for _ in range(draw(st.integers(1, 2)))
     ]
+    # A dependent young person (SSCBA s.142) in the non-dependant family: in
+    # full-time education (a student) or on approved training (not a student,
+    # so a separate non-dependant with their own deduction).
+    if draw(st.booleans()):
+        training = draw(st.booleans())
+        non_dependants.append(
+            dict(
+                age=draw(st.integers(16, 19)),
+                education="NOT_IN_EDUCATION" if training else "UPPER_SECONDARY",
+                earnings=draw(st.one_of(st.just(0.0), st.floats(0, 20_000))),
+                other_income=0.0,
+                self_employment=0.0,
+                hours=draw(st.sampled_from([0.0, 8.0, 16.0, 35.0])),
+                income_rise=draw(st.one_of(st.just(0.0), st.floats(0, 10_000))),
+                approved_training=training,
+            )
+        )
     return dict(
         country=draw(st.sampled_from(sorted(COUNTRIES))),
         claimant_age=claimant_age,
@@ -146,6 +172,9 @@ def build(population, year, raise_income=False):
             current_education="NOT_IN_EDUCATION",
             total_income=0.0,
             employment_income=0.0,
+            self_employment_income=0.0,
+            is_in_approved_training=False,
+            age_started_or_accepted_current_education_or_training=1_000,
             weekly_hours=0.0,
             is_blind=flag == "is_blind",
             **{
@@ -164,6 +193,10 @@ def build(population, year, raise_income=False):
                 current_education=nd["education"],
                 total_income=nd["earnings"] + other,
                 employment_income=nd["earnings"],
+                self_employment_income=nd["self_employment"],
+                is_in_approved_training=nd["approved_training"],
+                # Young people started at 16; adults' start ages don't matter.
+                age_started_or_accepted_current_education_or_training=16,
                 weekly_hours=nd["hours"],
                 is_blind=False,
                 **{
@@ -177,12 +210,13 @@ def build(population, year, raise_income=False):
         benunits[f"claimant_unit_{h}"] = dict(
             members=[claimant],
             benunit_is_rent_liable=True,
-            **{benefit: 0.0 for benefit in BENEFITS},
+            **{benefit: 0.0 for benefit in BENEFITS + OTHER_FAMILY_BENEFITS},
         )
         benunits[f"non_dependant_unit_{h}"] = dict(
             members=members,
             benunit_is_rent_liable=False,
             **household["benefits"],
+            **{benefit: 0.0 for benefit in OTHER_FAMILY_BENEFITS},
         )
         households_[f"household_{h}"] = dict(
             members=[claimant, *members],
@@ -202,6 +236,8 @@ def calculate(sim, year):
             "council_tax_reduction_non_dep_deduction_exempt",
             "council_tax_reduction_individual_non_dep_deduction_eligible",
             "council_tax_reduction_individual_non_dep_deduction",
+            "is_benunit_head",
+            "is_child_or_qualifying_young_person_for_child_benefit",
         ],
         benunit=[
             "housing_benefit_non_dep_deductions",
@@ -221,14 +257,18 @@ def calculate(sim, year):
     }
 
 
-def aggregate(individual, persons, benunit_count, each_member):
-    """Recompute family deductions from individual amounts (invariant 5)."""
-    by_benunit = {}
+def aggregate(individual, persons, couple, benunit_count, each_member):
+    """Recompute family deductions from individual amounts (invariant 5): the
+    claimant and partner's higher amount (both where each_member), plus each
+    other member's."""
+    couple_amounts, others = {}, {}
     for i, person in enumerate(persons):
-        by_benunit.setdefault(person["benunit"], []).append(individual[i])
+        target = couple_amounts if couple[i] else others
+        target.setdefault(person["benunit"], []).append(individual[i])
     own = np.array(
         [
-            (sum if each_member[b] else max)(by_benunit.get(b, [0.0]))
+            (sum if each_member[b] else max)(couple_amounts.get(b, [0.0]))
+            + sum(others.get(b, []))
             for b in range(benunit_count)
         ]
     )
@@ -265,6 +305,8 @@ def aggregate(individual, persons, benunit_count, each_member):
                     other_income=0.0,
                     hours=35.0,
                     income_rise=0.0,
+                    self_employment=0.0,
+                    approved_training=False,
                 ),
                 dict(
                     age=28,
@@ -273,6 +315,8 @@ def aggregate(individual, persons, benunit_count, each_member):
                     other_income=0.0,
                     hours=0.0,
                     income_rise=5_000.0,
+                    self_employment=0.0,
+                    approved_training=False,
                 ),
             ],
         ),
@@ -290,6 +334,8 @@ def aggregate(individual, persons, benunit_count, each_member):
                         other_income=0.0,
                         hours=0.0,
                         income_rise=0.0,
+                        self_employment=0.0,
+                        approved_training=False,
                     )
                 ],
             )
@@ -308,6 +354,11 @@ def test_non_dependant_deduction_invariants(population, year):
         r["council_tax_reduction_household_has_pensioner"],
         [1 + len(h["non_dependants"]) for h in population],
     )
+    # Claimant or partner of each person's own family: its head, or a member
+    # who is not an SSCBA s.142 child or qualifying young person.
+    couple = r["is_benunit_head"].astype(bool) | ~r[
+        "is_child_or_qualifying_young_person_for_child_benefit"
+    ].astype(bool)
 
     for i, person in enumerate(persons):
         household = population[person["household"]]
@@ -322,21 +373,23 @@ def test_non_dependant_deduction_invariants(population, year):
         if nd is None:
             continue
         # 9. The exemptions, read straight from the inputs.
-        benefits = household["benefits"]
+        # A family award belongs to its claimant and partner; a self-employed
+        # loss counts as nil earnings (UC reg 57(2)).
+        on = {b: bool(couple[i]) and household["benefits"][b] > 0 for b in BENEFITS}
         student = nd["education"] != "NOT_IN_EDUCATION"
-        uc_without_earnings = (
-            benefits["universal_credit_pre_benefit_cap"] > 0 and nd["earnings"] <= 0
+        # Inputs are stored as float32, so a tiny draw can underflow to nil.
+        earned = (
+            max(0.0, float(np.float32(nd["earnings"])))
+            + max(0.0, float(np.float32(nd["self_employment"])))
+            > 0
         )
+        uc_without_earnings = on["universal_credit_pre_benefit_cap"] and not earned
         hb_exempt = (
             student
-            or benefits["pension_credit"] > 0
+            or on["pension_credit"]
             or (
                 nd["age"] < 25
-                and (
-                    benefits["income_support"] > 0
-                    or benefits["jsa_income"] > 0
-                    or uc_without_earnings
-                )
+                and (on["income_support"] or on["jsa_income"] or uc_without_earnings)
             )
         )
         assert bool(r["housing_benefit_non_dep_deduction_exempt"][i]) == hb_exempt
@@ -344,7 +397,7 @@ def test_non_dependant_deduction_invariants(population, year):
         ctr_exempt = (
             student
             or any(
-                benefits[b] > 0
+                on[b]
                 for b in [
                     "income_support",
                     "jsa_income",
@@ -363,7 +416,13 @@ def test_non_dependant_deduction_invariants(population, year):
             and not r["housing_benefit_non_dep_deduction_exempt"][i]
         ):
             assert hb_lowest - 0.01 <= hb_deduction <= hb_top + 0.01
-            if nd["hours"] < hb.remunerative_work_hours:
+            # Reg 6(6): on IS, JSA(IB) or ESA(IR) is not remunerative work.
+            if (
+                nd["hours"] < hb.remunerative_work_hours
+                or on["income_support"]
+                or on["jsa_income"]
+                or on["esa_income"]
+            ):
                 assert hb_deduction == pytest.approx(hb_lowest, abs=0.01)
         # 2-3. Council Tax Reduction bounds and the not-in-work amount.
         country = household["country"]
@@ -387,6 +446,7 @@ def test_non_dependant_deduction_invariants(population, year):
     expected_hb = aggregate(
         r["household_benefits_individual_non_dep_deduction"],
         persons,
+        couple,
         benunit_count,
         [False] * benunit_count,
     )
@@ -406,6 +466,7 @@ def test_non_dependant_deduction_invariants(population, year):
     expected_ctr = aggregate(
         r["council_tax_reduction_individual_non_dep_deduction"],
         persons,
+        couple,
         benunit_count,
         welsh_working_age,
     )

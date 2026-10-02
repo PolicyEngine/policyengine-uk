@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
+    non_dependant_weekly_gross_income,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_england_pensioner_scheme,
     is_scotland_scheme,
@@ -13,12 +16,12 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
     documentation = (
         "The England pensioner, Scottish and Welsh schemes' own weekly scales. "
         "A non-dependant in remunerative work pays the deduction for the band "
-        "containing their normal gross weekly income, counting a couple's "
-        "joint income; bands include their lower edge. A non-dependant not in "
+        "containing their normal gross weekly income (a couple's joint income "
+        "for a claimant or partner of the non-dependant's family); bands "
+        "include their lower edge. A non-dependant not in "
         "remunerative work pays the lowest amount; an exempt non-dependant "
-        "pays nothing. Gross income is taxable total income, so the "
-        "disregarded disability benefits are excluded. English working-age "
-        "local schemes have their own variables."
+        "pays nothing. English working-age local schemes have their own "
+        "variables."
     )
     definition_period = YEAR
     unit = GBP
@@ -47,9 +50,7 @@ class council_tax_reduction_individual_non_dep_deduction(Variable):
             is_scotland_scheme(country),
             is_wales_scheme(country),
         ]
-        income = max_(0, person("total_income", period))
-        counted = person("age", period) >= 18
-        weekly_income = person.benunit.sum(income * counted) / WEEKS_IN_YEAR
+        weekly_income = non_dependant_weekly_gross_income(person, period)
         no_income = np.zeros_like(weekly_income)
         remunerative_work_hours = select(
             schemes,

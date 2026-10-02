@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
+    has_earned_income,
+    is_claimant_or_partner,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
     is_full_time_student_non_dep,
 )
@@ -49,7 +53,9 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
             is_wales_scheme(country),
         ]
         full_time_student = is_full_time_student_non_dep(person, period)
-        on_income_related_benefit = (
+        # Receipt of a family award belongs to its claimant and partner.
+        claimant_or_partner = is_claimant_or_partner(person, period)
+        on_income_related_benefit = claimant_or_partner & (
             (person.benunit("income_support", period) > 0)
             | (person.benunit("jsa_income", period) > 0)
             | (person.benunit("esa_income", period) > 0)
@@ -64,14 +70,13 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
             ],
             default=False,
         )
-        entitled_to_universal_credit = (
+        entitled_to_universal_credit = claimant_or_partner & (
             person.benunit("universal_credit_pre_benefit_cap", period) > 0
         )
-        earned_income = add(
-            person, period, ["employment_income", "self_employment_income"]
-        )
         universal_credit_without_earned_income = (
-            universal_credit_limb & entitled_to_universal_credit & (earned_income <= 0)
+            universal_credit_limb
+            & entitled_to_universal_credit
+            & ~has_earned_income(person, period)
         )
         return (
             full_time_student
