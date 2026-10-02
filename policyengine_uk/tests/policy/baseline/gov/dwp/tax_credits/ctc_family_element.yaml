@@ -1,0 +1,407 @@
+# Child Tax Credit family element: Tax Credits Act 2002 s.9(2)(a) and
+# CTC Regs 2002 (SI 2002/2007) reg 7(2)(a) and (3).
+#
+# Expected values are worked from the law, not from the model:
+# - reg 7(3): the family element is £545 in every tax year from 2003-04 to
+#   2024-25 (as made: £545, or £1,090 where any child is under one; from
+#   6 April 2011, SI 2011/1035 reg 2(2): £545).
+# - reg 7(2)(a), from 6 April 2017 (SI 2017/387 reg 4(b)): included only where
+#   the claimant is responsible for a child or qualifying young person born
+#   before 6 April 2017. The model knows birth years only (period less age), so
+#   a child counts as born before the cutoff when their birth year is 2016 or
+#   earlier.
+# - 2024-25 award, CTC only: individual element £3,455 per child
+#   (reg 7(4)(c), SI 2024/247 reg 3(a)); threshold £19,995 and taper 41%
+#   (SI 2002/2008 reg 8(3) steps 4 and 5, SI 2024/247 reg 4(4)). For income of
+#   £25,000 the reduction is 41% x (25,000 - 19,995) = £2,052.05.
+#
+# Every family claims CTC (reported) and not Universal Credit, has no one in
+# work for 16 hours (so no WTC), and has no disabled child.
+
+- name: 2024-25, one child born 2014 - family element of 545 included
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+    CTC_maximum_rate: 4_000  # 3,455 + 545
+    child_tax_credit: 1_947.95  # 4,000 - 2,052.05
+
+- name: 2024-25, only child born 2019 - no family element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 0
+    CTC_maximum_rate: 3_455
+    child_tax_credit: 1_402.95  # 3,455 - 2,052.05
+
+- name: 2024-25, children born 2015 and 2019 - one child born before the cutoff is enough, and there is one family element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      older_child:
+        age: 9
+      younger_child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, older_child, younger_child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+    CTC_maximum_rate: 7_455  # 2 x 3,455 + 545
+    child_tax_credit: 5_402.95  # 7,455 - 2,052.05
+
+- name: 2024-25, three children born 2018, 2020 and 2022 - no family element, and the child limit gives two individual elements
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+      child_2:
+        age: 4
+      child_3:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 0
+    CTC_child_element: 6_910  # 2 x 3,455 (reg 7(2A))
+    CTC_maximum_rate: 6_910
+    child_tax_credit: 4_857.95  # 6,910 - 2,052.05
+
+- name: 2024-25, a qualifying young person born 2006 counts as born before the cutoff
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, young_person, child]
+        would_claim_uc: false
+  output:
+    is_child_or_qualifying_young_person_for_child_tax_credit: [false, true, true]
+    CTC_family_element: 545
+    CTC_maximum_rate: 7_455  # 2 x 3,455 + 545
+    child_tax_credit: 5_402.95
+
+- name: 2024-25, an older sibling aged 20 is not a qualifying young person, so does not bring the family element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      adult_child:
+        age: 20
+        current_education: UPPER_SECONDARY
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent, adult_child, child]
+        would_claim_uc: false
+  output:
+    is_child_or_qualifying_young_person_for_child_tax_credit: [false, false, true]
+    CTC_family_element: 0
+    CTC_maximum_rate: 3_455
+    child_tax_credit: 1_402.95
+
+- name: 2024-25, joint claim with a child born 2012 - family element included
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent_1:
+        age: 35
+        employment_income: 15_000
+        child_tax_credit_reported: 1_000
+      parent_2:
+        age: 33
+        employment_income: 10_000
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+    child_tax_credit: 1_947.95  # 3,455 + 545 - 41% x (25,000 - 19,995)
+
+- name: 2024-25, a child aged 7 with an entered birth year of 2016 is born before the cutoff
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child:
+        age: 7
+        birth_year: 2016
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+
+- name: 2024-25, a child aged 7 with no birth year has birth year 2017 (period less age), so is not born before the cutoff
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child:
+        age: 7
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 0
+
+- name: 2024-25, a birth year entered for one child only - the other child's birth year is still the period less age
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child_1:
+        age: 6
+        birth_year: 2018
+      child_2:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 0  # birth years 2018 and 2021
+
+- name: 2023-24, the family element is 545, not uprated
+  period: 2023
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+
+- name: 2017-18, the first year of the cutoff - only child born in 2017-18, no family element
+  period: 2017
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      child:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 0
+
+- name: 2017-18, a newborn with a sibling born 2014 - family element included
+  period: 2017
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      older_child:
+        age: 3
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, older_child, baby]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+
+- name: 2016-17, a child under one - 545, as the baby addition ended in 2011 and the cutoff starts in 2017
+  period: 2016
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 1_000
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+        would_claim_uc: false
+  output:
+    CTC_family_element: 545
+
+# Before 2016-17 the model has no individual element or income thresholds, so
+# these cases enter CTC eligibility and test the family element alone. PE-UK
+# converts parameters to fiscal years for 2015 to 2040 only; an earlier YEAR
+# period reads them at 1 January, which falls in the previous tax year. The
+# periods below are chosen so that both tax years have the same law.
+
+- name: 2012 (read at 1 January 2012, in 2011-12), a child under one - 545 (reg 7(3) as substituted by SI 2011/1035)
+  period: 2012
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+        is_CTC_eligible: true
+  output:
+    CTC_family_element: 545
+
+- name: 2010 (read at 1 January 2010, in 2009-10), a child under one - 1,090 (reg 7(3)(a) as made)
+  period: 2010
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+      older_child:
+        age: 4
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, older_child, baby]
+        is_CTC_eligible: true
+  output:
+    CTC_family_element: 1_090
+
+- name: 2010 (read at 1 January 2010, in 2009-10), youngest child aged one - 545 (reg 7(3)(b) as made)
+  period: 2010
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: [parent, child]
+        is_CTC_eligible: true
+  output:
+    CTC_family_element: 545
+
+- name: 2004 (read at 1 January 2004, in 2003-04, the first year of tax credits) - 545
+  period: 2004
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+        is_CTC_eligible: true
+  output:
+    CTC_family_element: 545
+
+- name: 2025-26, tax credits have ended - no Child Tax Credit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 25_000
+        child_tax_credit_reported: 1_000
+      child:
+        age: 11
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+  output:
+    child_tax_credit: 0
+
+- name: 2026-27, the family element amount is not projected after tax credits ended
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [parent, child]
+        is_CTC_eligible: true
+  output:
+    CTC_family_element: 545

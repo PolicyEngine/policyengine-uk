@@ -1,0 +1,21 @@
+description: The Child Tax Credit family element is included only where the claimant is responsible for a child or qualifying young person born before this date, written as a YYYYMMDD number.
+values:
+  # In force from 6 April 2017: Tax Credits Act 2002 s.9(2)(a) as amended by the
+  # Welfare Reform and Work Act 2016 s.13(2)(a), and CTC Regs 2002 reg 7(2)(a) as
+  # amended by SI 2017/387 reg 4(b). Every child or qualifying young person in an
+  # earlier tax year was born before this date, so it changes nothing before
+  # 2017-18.
+  0001-01-01: 20170406
+metadata:
+  unit: date
+  period: year
+  label: CTC family element child date of birth cutoff
+  reference:
+    - title: Tax Credits Act 2002 s. 9(2)(a)
+      href: https://www.legislation.gov.uk/ukpga/2002/21/section/9
+    - title: Welfare Reform and Work Act 2016 s. 13(2)(a)
+      href: https://www.legislation.gov.uk/ukpga/2016/7/section/13
+    - title: The Child Tax Credit Regulations 2002 (SI 2002/2007) reg. 7(2)(a)
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/7
+    - title: The Child Tax Credit (Amendment) Regulations 2017 (SI 2017/387) reg. 4(b)
+      href: https://www.legislation.gov.uk/uksi/2017/387/regulation/4/made

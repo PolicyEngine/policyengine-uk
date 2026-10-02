@@ -1,11 +1,28 @@
 description: Child Tax Credit family element.
 values:
-  2016-04-06:
-    value: 545
+  # £545 a year from the start of tax credits on 6 April 2003 until they ended
+  # on 5 April 2025: CTC Regs 2002 reg 7(3)(b) as made ("in any other case"),
+  # then reg 7(3) as substituted by SI 2011/1035 reg 2(2) from 6 April 2011.
+  # Until 5 April 2011, reg 7(3)(a) set £1,090 where a child was under one
+  # (family_element_baby_addition). Of every amendment to reg 7 recorded by
+  # legislation.gov.uk, only SI 2011/1035 reg 2(2) changed paragraph (3); the
+  # Tax Credits Up-rating Regulations 2004 to 2024 changed only paragraphs (4)
+  # and (5). The amount was never uprated and is not projected.
+  2003-04-06: 545
 metadata:
   period: year
   unit: currency-GBP
-  uprating: gov.benefit_uprating_cpi
+  label: CTC family element
   reference:
-    - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
-    - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27
+    - title: Tax Credits Act 2002 s. 9(2)(a) and (3)
+      href: https://www.legislation.gov.uk/ukpga/2002/21/section/9
+    - title: The Child Tax Credit Regulations 2002 (SI 2002/2007) reg. 7(3), as made
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/7/made
+    - title: The Tax Credits Up-rating Regulations 2011 (SI 2011/1035) reg. 2(2), substituting reg. 7(3)
+      href: https://www.legislation.gov.uk/uksi/2011/1035/regulation/2/made
+    - title: The Child Tax Credit Regulations 2002 reg. 7(3), 2024-25 version
+      href: https://www.legislation.gov.uk/uksi/2002/2007/regulation/7/2024-04-06
+    - title: "Tax credits, Child Benefit and Guardian's Allowance: rates and allowances (HMRC, gov.uk)"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
+    - title: UKMOD country report (EUROMOD)
+      href: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27
