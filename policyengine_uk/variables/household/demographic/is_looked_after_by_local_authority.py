@@ -16,7 +16,12 @@ class is_looked_after_by_local_authority(Variable):
         "criteria, and their carer meets the foster parent condition for an "
         "additional bedroom. Leave it false for a child placed for adoption "
         "(see is_placed_for_adoption) or placed with their own parent, for "
-        "whom Universal Credit treats the carer as responsible (reg 4A)."
+        "whom Universal Credit treats the carer as responsible (reg 4A). "
+        "Under Housing Benefit and the other legacy schemes, a child placed "
+        "with a parent by a local authority under Children Act 1989 s.22C(2) "
+        "is outside the household (HB Regs 2006 reg 21(3)(a)); one flag "
+        "cannot represent both, and the model treats such a child as a "
+        "household member."
     )
     definition_period = YEAR
     default_value = False

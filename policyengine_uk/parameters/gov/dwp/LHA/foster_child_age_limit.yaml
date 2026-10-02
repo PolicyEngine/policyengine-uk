@@ -1,0 +1,13 @@
+description: Age below which a child looked after by a local authority and placed with a renter is a foster child, making the renter a foster parent, in the Universal Credit size criteria.
+values:
+  2013-04-29: 18
+metadata:
+  unit: year
+  label: LHA foster child age limit
+  reference:
+    - title: Universal Credit Regulations 2013 reg 2, "foster parent" (a child placed under the Care Planning, Placement and Case Review (England) Regulations 2010)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2
+    - title: Universal Credit Regulations 2013 Sch 4 para 9(3), "foster child"
+      href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/9
+    - title: Children Act 1989 s.105(1), "child" means a person under the age of eighteen
+      href: https://www.legislation.gov.uk/ukpga/1989/41/section/105

@@ -1,4 +1,4 @@
-description: Disability benefits whose recipients under 35 are excepted from the shared accommodation rate.
+description: Disability benefits whose recipients under 35 are excepted from the shared accommodation rate. The law also lists the Scottish devolved equivalents (child disability payment, adult disability payment, Scottish adult disability living allowance), which the model has no variables for.
 values:
   2013-04-29:
     - attendance_allowance

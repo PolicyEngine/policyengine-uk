@@ -17,8 +17,11 @@ class is_non_dependant_of_household_head(Variable):
         "Council Tax Reduction a non-dependant is the non-dependant of each "
         "joint occupier they normally reside with (see "
         "non_dependant_normally_resides_with): they count in each one's size "
-        "criteria and their deduction is apportioned between them. A non-dependant's own children are non-dependants "
-        "too; a child looked after by a local authority is not (see "
+        "criteria and their deduction is apportioned between them. The flag "
+        "covers every member of such a family, including children. A "
+        "non-dependant's own children are non-dependants too, but a child or "
+        "qualifying young person looked after by a local authority is not "
+        "(UC Sch 4 para 9(2)(g)); the size criteria apply that exclusion (see "
         "LHA_allowed_bedrooms). Carers engaged through a charity are not "
         "identified."
     )
