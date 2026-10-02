@@ -86,6 +86,8 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - corporate_wealth
 - dividend_income
 - gross_financial_wealth
+- household_lifetime_isa_balance
+- lifetime_isa_balance
 - lump_sum_income
 - main_residence_value
 - maintenance_income
@@ -96,6 +98,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - other_investment_income
 - other_residential_property_value
 - owned_land
+- pension_credit_reported_capital
 - pension_income
 - private_pension_wealth
 - private_transfer_income

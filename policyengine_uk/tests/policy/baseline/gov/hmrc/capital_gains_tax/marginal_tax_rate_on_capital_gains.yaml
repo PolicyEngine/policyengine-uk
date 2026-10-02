@@ -1,0 +1,161 @@
+# marginal_tax_rate_on_capital_gains adds £1,000 of gains, or 0.1% of the gains
+# where that is larger, and divides the rise in household net income by the rise
+# in gains as stored. Gains and net income are float32, whose spacing doubles
+# with each power of two (issue #1979). Above £1m a reading is good to a few
+# float32 roundings of the household's income, each at most 6e-5 of the step,
+# hence the 3e-4 margin; the old fixed £1,000 step was 8e-3 off at £185m.
+#
+# One adult on £200k of earnings, so every marginal pound of gains is charged at
+# the 24% main rate above the basic rate band.
+
+- name: Main rate at £185m of gains, which the £1,000 step read as 24.8%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 185_000_000
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at £561m of gains, which the £1,000 step read as 23.2%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 561_000_000
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at £1bn of gains, which the £1,000 step read as 23.2%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 1_000_000_000
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at the largest float32 below 2^28, where the spacing of gains doubles.
+  # The £1,000 step read 24.8%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 268_435_440
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at 2^28 of gains.
+  # The £1,000 step read 24.8%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 268_435_456
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at the smallest float32 above 2^28.
+  # The £1,000 step read 26.4%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 268_435_488
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at the largest float32 below 2^29, where the spacing of gains doubles again.
+  # The £1,000 step read 20.0%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 536_870_880
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at 2^29 of gains.
+  # The £1,000 step read 23.2%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 536_870_912
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Main rate at the smallest float32 above 2^29.
+  # The £1,000 step read 23.2%.
+  period: 2026
+  absolute_error_margin: 0.0003
+  input:
+    employment_income: 200_000
+    capital_gains: 536_870_976
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Below £1m of gains the step is still £1,000, at £100k.
+  period: 2026
+  absolute_error_margin: 0.00001
+  input:
+    employment_income: 200_000
+    capital_gains: 100_000
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Below £1m of gains the step is still £1,000, at £999k.
+  period: 2026
+  absolute_error_margin: 0.00001
+  input:
+    employment_income: 200_000
+    capital_gains: 999_000
+  output:
+    marginal_tax_rate_on_capital_gains: 0.24
+
+- name: Below £1m, half the £1,000 step falls within the annual exempt amount.
+  # Gains rise from 2,500 to 3,500 against a 3,000 AEA: 500 x 0.24 / 1,000.
+  period: 2026
+  absolute_error_margin: 0.00001
+  input:
+    employment_income: 200_000
+    capital_gains: 2_500
+  output:
+    marginal_tax_rate_on_capital_gains: 0.12
+
+- name: Below £1m, a basic rate taxpayer's gains inside the basic rate band.
+  # Taxable income 30,000 - 12,570 = 17,430 leaves 20,270 of the 37,700 band.
+  period: 2026
+  absolute_error_margin: 0.00001
+  input:
+    employment_income: 30_000
+    capital_gains: 10_000
+  output:
+    marginal_tax_rate_on_capital_gains: 0.18
+
+- name: Below £1m, half the £1,000 step falls within the basic rate band.
+  # 22,770 - 3,000 AEA = 19,770 leaves 500 of the 20,270 band: 500 at 18% and
+  # 500 at 24%.
+  period: 2026
+  absolute_error_margin: 0.00001
+  input:
+    employment_income: 30_000
+    capital_gains: 22_770
+  output:
+    marginal_tax_rate_on_capital_gains: 0.21
+
+- name: Above £1m the reading averages the rates over the larger step, here across the relief's lifetime limit.
+  # 999,800 of 10m gains qualify for Business Asset Disposal Relief. The 10,000
+  # step raises them by 0.1% to 1,000,799.80, but the 1m lifetime limit lets
+  # only 200 through at the 18% relief rate; the other 9,800 is charged at 24%:
+  # (200 x 0.18 + 9,800 x 0.24) / 10,000. The rate at the point itself is
+  # 23.4%, the share-weighted rate the £1,000 step read. The gains are given
+  # before any response so that the relief gains scale with the step.
+  period: 2026
+  absolute_error_margin: 0.00001
+  input:
+    employment_income: 200_000
+    capital_gains_before_response: 10_000_000
+    capital_gains_badr: 999_800
+  output:
+    marginal_tax_rate_on_capital_gains: 0.2388
