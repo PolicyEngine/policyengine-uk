@@ -1,3 +1,14 @@
+## [2.106.0] - 2026-10-02
+
+### Added
+
+- Add `scottish_carer_supplement`, the Scottish Carer Supplement paid with Carer Support Payment from 15 March 2026. `carer_support_payment` is now the Carer Support Payment component only, so totals summed by variable name need both variables.
+
+### Fixed
+
+- Count Carer's Allowance and Carer Support Payment as Pension Credit income (SPC Regs 2002 reg 15(1)), and split the Scottish Carer Supplement out of Carer Support Payment into its own variable so that Pension Credit and Housing Benefit leave it out (SI 2026/246).
+
+
 ## [2.105.1] - 2026-10-02
 
 ### Fixed
