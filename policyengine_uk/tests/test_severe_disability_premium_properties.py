@@ -14,11 +14,15 @@ Invariants, for any generated population of households:
 
 1. Range: the premium is 0, the single rate or the double rate, and the double
    rate goes only to a couple who both qualify.
-2. Oracle: the premium equals an independent statement of the rule in which
-   the carer condition is a brute-force assignment of each carer award to a
-   benefit-unit member other than its recipient (the model does not observe
-   who is cared for, so it takes the assignment that covers the most
-   qualifying members).
+2. Oracle: the premium equals a second, separately written implementation
+   of the rule, with its own benefit classification and a carer condition
+   that brute-forces the assignment of each carer award to a benefit-unit
+   member other than its recipient. It is algorithmically independent of the
+   model but not of the model's assumptions: it shares the carer attribution
+   (the model does not observe who is cared for, so both take the assignment
+   that covers the most qualifying members) and the symmetric blind-partner
+   rule (either partner may be the claimant). Agreement shows the model
+   implements those assumptions, not that they match the Regulations.
 3. Metamorphic: adding a household member aged 18 or over, in another benefit
    unit, who receives no qualifying benefit and is not blind, removes the
    premium. The oracle also treats a benefit-unit member aged 18 or 19 who is
@@ -176,7 +180,11 @@ def simulate_before_after(units, changed):
 
 
 def oracle(unit):
-    """The premium by the statutory rule, written independently of the model."""
+    """The premium from a separately written implementation of the rule.
+
+    Independent of the model's code, but it shares the model's carer
+    attribution and symmetric blind-partner assumptions.
+    """
     adults, family = unit["adults"], family_members(unit)
     # Non-dependants: other benefit units in the household, and anyone in the
     # benefit unit who is not the claimant, partner, a child or a qualifying
@@ -248,7 +256,7 @@ def _adult(benefit, blind=False, carer=False):
         ),
     ]
 )
-def test_premium_matches_statutory_oracle_and_range(units):
+def test_premium_matches_independent_oracle_and_range(units):
     premium = simulate(units)["severe_disability_premium"]
     for unit, value in zip(units, premium):
         event(

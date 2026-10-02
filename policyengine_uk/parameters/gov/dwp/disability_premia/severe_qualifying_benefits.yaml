@@ -7,7 +7,16 @@ description: >
   component of personal independence payment at either rate, armed forces
   independence payment, and the Scottish equivalents. The Scottish benefits
   are not separate model variables, and the lists differ slightly between
-  instruments.
+  instruments. The 8 April 2013 date is Great Britain's: S.I. 2013/388 added
+  the PIP daily living component and S.I. 2013/591 added armed forces
+  independence payment. In Northern Ireland the Housing Benefit Regulations
+  (S.R. 2006/405 Sch. 4 para. 14) added armed forces independence payment on
+  24 December 2013 (S.I. 2013/3021) and the PIP daily living component on
+  20 June 2016 (S.R. 2016/228). The model applies the Great Britain list
+  throughout the UK, so for Northern Ireland the list before 20 June 2016 is
+  approximate. The Northern Ireland Income Support Regulations (S.R.
+  1987/459) have no revised text on legislation.gov.uk, and their dates were
+  not checked.
 metadata:
   label: Legacy benefit severe disability premium qualifying benefits
   period: year
@@ -21,6 +30,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6
     - title: The Jobseeker's Allowance Regulations 1996 Sch. 1 para. 15(1)(a), (2)(a), (4)(a)
       href: https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 Sch. 4 para. 14(2)(a)(i)
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/4/paragraph/14
 values:
   2006-03-06:
     - attendance_allowance
