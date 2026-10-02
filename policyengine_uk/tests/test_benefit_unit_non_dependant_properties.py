@@ -9,18 +9,20 @@ population of households:
 1. Oracle: each family's Universal Credit, Housing Benefit and Council Tax
    Reduction non-dependant deductions, and who is eligible for an individual
    deduction, equal an independent calculation from the generated household
-   structure: who is a non-dependant, of whom, and how a non-dependant of
-   several joint occupiers is apportioned (another family's by rent or
-   liability share; a family's own non-dependant is that family's alone).
-2. Conservation: every Housing Benefit non-dependant deduction is borne in
-   full, once, across the household's families; a Council Tax Reduction
-   claiming family bears its own non-dependants in full and another family's
-   in proportion to its joint-liability share; every Universal Credit
-   contribution is borne by exactly one family unless that family's renter
-   is exempt.
-3. Exemptions: a family whose renter is exempt under Sch 4 para 15 has no
-   Universal Credit deductions; no deduction is charged for a non-dependant
-   under 21 (UC) or under 18 (HB, CTR), or for a qualifying young person.
+   structure: who is a non-dependant, of whom, how a non-dependant couple
+   pays one deduction (the higher), and how a non-dependant of several joint
+   occupiers is apportioned (another family's by rent or liability share; a
+   family's own non-dependant is that family's alone).
+2. Conservation: every Housing Benefit non-dependant deduction (a couple's
+   counted once) is borne in full, once, across the household's families
+   unless a claimant is exempt; a Council Tax Reduction claiming family bears
+   its own non-dependants in full and another family's in proportion to its
+   joint-liability share; every Universal Credit contribution is borne by
+   exactly one family unless that family's renter is exempt.
+3. Exemptions: a family whose renter is exempt (UC Sch 4 para 15; HB reg
+   74(6); CTR Sch 1 para 8(6)) has no deductions; no deduction is charged for
+   a non-dependant under 21 (UC) or under 18 (HB, CTR), or for a qualifying
+   young person.
 4. No-op: in households without non-dependants inside a benefit unit, the
    deductions equal the previous formulas, which charged only members of
    other families.
@@ -203,6 +205,23 @@ def calc(sim, variable, map_to=None):
     return np.asarray(sim.calculate(variable, YEAR, map_to=map_to), dtype=float)
 
 
+def counted_once_per_couple(person_rows, amounts):
+    """A couple pays one deduction, the higher (HB reg 74(3); CTR Sch 1 para
+    8(3)): keep the larger amount of each family's adults (its claimant and
+    partner) and zero the other; anyone else counts in full."""
+    counted = np.array(amounts, dtype=float)
+    adults = {}
+    for p, row in enumerate(person_rows):
+        if row["kind"] == "adult":
+            adults.setdefault(row["family"], []).append(p)
+    for members in adults.values():
+        keep = max(members, key=lambda p: (counted[p], -p))
+        for p in members:
+            if p != keep:
+                counted[p] = 0.0
+    return counted
+
+
 def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_share):
     """Expected deductions per family from the generated structure.
 
@@ -212,6 +231,8 @@ def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_sh
     n = len(family_rows)
     exp_uc, exp_hb, exp_ctr = np.zeros(n), np.zeros(n), np.zeros(n)
     expected_uc_individual = np.zeros(len(person_rows))
+    hb = counted_once_per_couple(person_rows, hb)
+    ctr = counted_once_per_couple(person_rows, ctr)
     households = sorted({f["household"] for f in family_rows})
     for h in households:
         fams = [i for i, f in enumerate(family_rows) if f["household"] == h]
@@ -260,6 +281,14 @@ def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_sh
                     exp_ctr[i] += claims[i] * ctr_share[i] * ctr[p]
             elif own_family and role in ("head", "sharer"):
                 exp_ctr[f] += ctr[p]
+        # A claimant or partner on PIP daily living exempts their family from
+        # all HB deductions (reg 74(6)); the household head's applicant
+        # exemption covers the household's CTR (Sch 1 para 8(6)).
+        for i in fams:
+            if family_rows[i]["renter_pip"]:
+                exp_hb[i] = 0.0
+            if family_rows[head]["renter_pip"]:
+                exp_ctr[i] = 0.0
     return exp_uc, exp_hb, exp_ctr, expected_uc_individual
 
 
@@ -311,9 +340,12 @@ def test_deductions_match_the_oracle(population):
 
     # HB: any family's own non-dependants; CTR: only a claiming family's (the
     # household head's or a sharer's), not a boarder's or lodger's.
+    # HB eligibility also excludes an exempt non-dependant (reg 74(7)-(10));
+    # CTR applies its exemptions in the amount.
+    hb_exempt = calc(sim, "housing_benefit_non_dep_deduction_exempt") > 0
     assert np.array_equal(
         calc(sim, "housing_benefit_individual_non_dep_deduction_eligible") > 0,
-        eligible(("head", "sharer", "lodger", "non_dependant")),
+        eligible(("head", "sharer", "lodger", "non_dependant")) & ~hb_exempt,
     )
     assert np.array_equal(
         calc(sim, "council_tax_reduction_individual_non_dep_deduction_eligible") > 0,
@@ -327,16 +359,29 @@ def test_conservation_and_exemptions(population):
     sim, person_rows, family_rows, v = run(population)
     ages = np.array([row["age"] for row in person_rows])
     kinds = np.array([row["kind"] for row in person_rows])
-    # 2. Conservation: HB and CTR deductions are borne once in full.
+    # 2. Conservation: HB and CTR deductions, a couple's once, are borne once
+    # in full where no claimant is exempt.
+    hb_counted = counted_once_per_couple(person_rows, v["hb"])
+    ctr_counted = counted_once_per_couple(person_rows, v["ctr"])
     hb_families = sim.map_result(
         calc(sim, "housing_benefit_non_dep_deductions"), "benunit", "household"
     )
-    hb_people = sim.map_result(v["hb"], "person", "household")
-    assert np.allclose(hb_families, hb_people, atol=0.01)
+    hb_people = sim.map_result(hb_counted, "person", "household")
+    hb_exempt = (
+        sim.map_result(
+            calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt"),
+            "benunit",
+            "household",
+        )
+        > 0
+    )
+    assert np.allclose(hb_families[~hb_exempt], hb_people[~hb_exempt], atol=0.01)
+    assert np.all(hb_families <= hb_people + 0.01)
     # CTR: a claiming family's own non-dependant is borne by it in full;
     # another family's is borne by the claiming families in proportion to
     # their joint-liability shares (which follow the regulations' per-person
-    # wording, so they need not sum to one).
+    # wording, so they need not sum to one); none where the applicant is
+    # exempt.
     claim_shares = sim.map_result(v["claims"] * v["ctr_share"], "benunit", "household")
     ctr_families = sim.map_result(
         calc(sim, "council_tax_reduction_non_dep_deductions"), "benunit", "household"
@@ -347,9 +392,15 @@ def test_conservation_and_exemptions(population):
             for row in person_rows
         ]
     )
-    ctr_own = sim.map_result(v["ctr"] * own_of_claimant, "person", "household")
-    ctr_other = sim.map_result(v["ctr"] * ~own_of_claimant, "person", "household")
-    assert np.allclose(ctr_families, claim_shares * ctr_other + ctr_own, atol=0.01)
+    ctr_own = sim.map_result(ctr_counted * own_of_claimant, "person", "household")
+    ctr_other = sim.map_result(ctr_counted * ~own_of_claimant, "person", "household")
+    ctr_exempt = calc(sim, "council_tax_reduction_household_has_non_dep_exemption") > 0
+    assert np.allclose(
+        ctr_families[~ctr_exempt],
+        (claim_shares * ctr_other + ctr_own)[~ctr_exempt],
+        atol=0.01,
+    )
+    assert np.all(ctr_families[ctr_exempt] == 0)
     # UC: each contribution is borne once, except where the bearer is exempt.
     uc_families = sim.map_result(
         calc(sim, "uc_non_dep_deductions"), "benunit", "household"
@@ -359,6 +410,12 @@ def test_conservation_and_exemptions(population):
     # 3. Exemptions.
     renter_exempt = calc(sim, "uc_non_dep_deductions_renter_exempt") > 0
     assert np.all(calc(sim, "uc_non_dep_deductions")[renter_exempt] == 0)
+    hb_claimant_exempt = (
+        calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt") > 0
+    )
+    assert np.all(
+        calc(sim, "housing_benefit_non_dep_deductions")[hb_claimant_exempt] == 0
+    )
     assert np.all(v["uc"][ages < 21] == 0)
     assert np.all(v["hb"][ages < 18] == 0)
     assert np.all(v["ctr"][ages < 18] == 0)
@@ -377,8 +434,9 @@ def test_conservation_and_exemptions(population):
 def test_no_op_without_non_dependants_in_a_benefit_unit(population):
     every_kind_dependant = {kind: "dependant" for kind in KINDS}
     sim, person_rows, family_rows, v = run(population, every_kind_dependant)
-    # 4. The previous formulas: only members of other families, charged to
-    # the head's family (UC), by rent share (HB) or by claim share (CTR).
+    # 4. The previous formulas: only members of other families (a couple's
+    # higher amount once), charged to the head's family (UC), by rent share
+    # (HB) or by claim share (CTR), with the claimants' exemptions.
     person_household = np.array([row["household"] for row in person_rows])
     family_household = np.array([row["household"] for row in family_rows])
     other = calc(sim, "is_non_dependant_of_household_head") > 0
@@ -398,14 +456,28 @@ def test_no_op_without_non_dependants_in_a_benefit_unit(population):
         np.where(renter_exempt, 0, head_family * other_families(v["uc"])),
         atol=0.01,
     )
+    hb_claimant_exempt = (
+        calc(sim, "housing_benefit_non_dep_deductions_claimant_exempt") > 0
+    )
+    hb_counted = counted_once_per_couple(person_rows, v["hb"])
     assert np.allclose(
         calc(sim, "housing_benefit_non_dep_deductions"),
-        calc(sim, "share_of_household_rent") * other_families(v["hb"]),
+        np.where(
+            hb_claimant_exempt,
+            0,
+            calc(sim, "share_of_household_rent") * other_families(hb_counted),
+        ),
         atol=0.01,
     )
+    ctr_exempt = (
+        calc(sim, "council_tax_reduction_household_has_non_dep_exemption") > 0
+    )[family_household]
+    ctr_counted = counted_once_per_couple(person_rows, v["ctr"])
     assert np.allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions"),
-        v["claims"] * v["ctr_share"] * other_families(v["ctr"]),
+        np.where(
+            ctr_exempt, 0, v["claims"] * v["ctr_share"] * other_families(ctr_counted)
+        ),
         atol=0.01,
     )
 

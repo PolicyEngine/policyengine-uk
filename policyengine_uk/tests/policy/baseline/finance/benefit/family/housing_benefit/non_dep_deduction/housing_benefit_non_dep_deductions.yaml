@@ -97,3 +97,48 @@
   output:
     # Only person 3 is a non-dependant of the head's family: 3.
     housing_benefit_non_dep_deductions: [3, 0, 0]
+
+- name: One deduction for a non-dependant couple, the higher amount
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        household_benefits_individual_non_dep_deduction: 0
+      non_dep_1:
+        household_benefits_individual_non_dep_deduction: 1_060.80
+      non_dep_2:
+        household_benefits_individual_non_dep_deduction: 5_470.40
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      couple:
+        members: [non_dep_1, non_dep_2]
+    households:
+      household:
+        members: [claimant, non_dep_1, non_dep_2]
+  output:
+    # reg 74(3); the couple's own unit has no non-dependants.
+    housing_benefit_non_dep_deductions: [5_470.40, 0]
+
+- name: No deductions where the claimant is exempt
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        household_benefits_individual_non_dep_deduction: 0
+      non_dep:
+        household_benefits_individual_non_dep_deduction: 1_060.80
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        housing_benefit_non_dep_deductions_claimant_exempt: true
+      non_dep_unit:
+        members: [non_dep]
+        housing_benefit_non_dep_deductions_claimant_exempt: false
+    households:
+      household:
+        members: [claimant, non_dep]
+  output:
+    housing_benefit_non_dep_deductions: [0, 0]

@@ -1,0 +1,14 @@
+description: Scotland Council Tax Reduction treats a person working at least this many hours a week as in remunerative work, which puts a non-dependant on the income-banded deduction.
+values:
+  2013-04-01: 16
+metadata:
+  label: Scotland CTR remunerative work hours
+  unit: hour
+  period: week
+  reference:
+    - title: Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012, reg. 6(1)
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/6
+    - title: Council Tax Reduction (Scotland) Regulations 2012, reg. 6(1) (to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/6
+    - title: Council Tax Reduction (Scotland) Regulations 2021, reg. 10(1)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/10

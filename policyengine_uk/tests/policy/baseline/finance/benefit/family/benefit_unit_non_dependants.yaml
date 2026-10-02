@@ -686,3 +686,156 @@
   output:
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, true, true]
     council_tax_reduction_non_dep_deductions: [300, 0]
+
+# With the Housing Benefit and Council Tax Reduction scales and exemptions as
+# legislated (#2004): a non-dependant within the benefit unit is banded on
+# their own income and exempt only on their own circumstances.
+
+# HB reg 74(1)(b): a non-dependant aged 18 or over not in remunerative work
+# pays the lowest amount, £20.40 a week, whatever their income.
+- name: HB, an adult son in the claimant's benefit unit with no income pays the lowest amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    housing_benefit_non_dep_deductions: 1_060.80
+
+# HB reg 74(7)(c); CTR SI 2012/2885 Sch 1 para 8(7)(c).
+- name: HB and CTR, no deduction for a full-time student in the claimant's benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    housing_benefit_non_dep_deductions: 0
+    council_tax_reduction_non_dep_deductions: 0
+
+# HB reg 74(8)(a) exempts a non-dependant under 25 who is on Income Support.
+# The family's Income Support is the parent's award, so the 22-year-old son is
+# not on it and is not exempt.
+- name: HB, a parent's Income Support does not exempt the adult son in their benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 22
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, son]
+        income_support: 3_000
+    households:
+      household:
+        members: [parent, son]
+  output:
+    housing_benefit_non_dep_deduction_exempt: [false, false]
+    housing_benefit_non_dep_deductions: 1_060.80
+
+# HB reg 74(2)-(4): a non-dependant couple pays one deduction, the higher, on
+# their joint income; their adult son is a non-dependant in his own right, on
+# his own income. Father and son each earn £300 a week working full time, so
+# the couple and the son each pay the £279-£365 band's £64.35 (not one £119.85
+# on a £600 family income): £128.70 a week, £6,692.40 a year.
+- name: HB, a non-dependant couple and their adult son pay two deductions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 75
+        is_household_head: true
+        is_claimant_or_partner: true
+      father:
+        age: 55
+        is_claimant_or_partner: true
+        employment_income: 15_600
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+      mother:
+        age: 52
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+      son:
+        age: 23
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      head_unit:
+        members: [head]
+      family:
+        members: [father, mother, son]
+        would_claim_uc: false
+    households:
+      household:
+        members: [head, father, mother, son]
+  output:
+    household_benefits_individual_non_dep_deduction: [0, 3_346.20, 1_060.80, 3_346.20]
+    housing_benefit_non_dep_deductions: [6_692.40, 0]
+
+# SI 2012/2885 Sch 1 para 8(2)(c): £576.92 a week is in the £485-£605 band,
+# £13.30 a week in 2026-27, £691.60 a year.
+- name: CTR, England pensioner scheme charges the working son in the claimant's benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 40
+        is_claimant_or_partner: false
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [pensioner, son]
+    households:
+      household:
+        members: [pensioner, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 691.60]
+    council_tax_reduction_non_dep_deductions: 691.60

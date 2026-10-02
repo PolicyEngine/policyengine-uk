@@ -1,0 +1,84 @@
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
+    has_earned_income,
+)
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    is_full_time_student_non_dep,
+)
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
+    is_england_pensioner_scheme,
+    is_scotland_scheme,
+    is_wales_scheme,
+)
+
+
+class council_tax_reduction_non_dep_deduction_exempt(Variable):
+    value_type = bool
+    entity = Person
+    label = "national Council Tax Reduction makes no non-dependant deduction for this person"
+    documentation = (
+        "Modelled exemptions in the England pensioner, Scottish and Welsh "
+        "schemes: a full-time student; a non-dependant on Income Support, "
+        "income-based JSA, income-related ESA or State Pension Credit (any "
+        "age); and, from the year each scheme added it, one entitled to "
+        "Universal Credit calculated on no earned income. Wales excludes "
+        "members of the ESA work-related activity group; with no ESA group "
+        "input, income-related ESA is treated as exempt. Not modelled: persons "
+        "disregarded for council tax discounts (LGFA 1992 Sch 1) other than "
+        "students, youth training allowances, a normal home elsewhere, and "
+        "absence in hospital or on armed forces operations."
+    )
+    definition_period = YEAR
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/8",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/3",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/5",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/48",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/90",
+    )
+
+    def formula(person, period, parameters):
+        local_authorities = parameters(period).gov.local_authorities
+        england = local_authorities.england.council_tax_reduction.pensioners
+        scotland = local_authorities.scotland.council_tax_reduction
+        wales = local_authorities.wales.council_tax_reduction
+        country = person.household("country", period)
+        has_pensioner = person.household(
+            "council_tax_reduction_household_has_pensioner", period
+        )
+        schemes = [
+            is_england_pensioner_scheme(country, has_pensioner),
+            is_scotland_scheme(country),
+            is_wales_scheme(country),
+        ]
+        full_time_student = is_full_time_student_non_dep(person, period)
+        # Receipt of a family award belongs to its claimant and partner.
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        on_income_related_benefit = claimant_or_partner & (
+            (person.benunit("income_support", period) > 0)
+            | (person.benunit("jsa_income", period) > 0)
+            | (person.benunit("esa_income", period) > 0)
+            | (person.benunit("pension_credit", period) > 0)
+        )
+        universal_credit_limb = select(
+            schemes,
+            [
+                england.non_dep_deduction.exempt_universal_credit_without_earned_income,
+                scotland.non_dep_deduction.exempt_universal_credit_without_earned_income,
+                wales.non_dep_deduction.exempt_universal_credit_without_earned_income,
+            ],
+            default=False,
+        )
+        entitled_to_universal_credit = claimant_or_partner & (
+            person.benunit("universal_credit_pre_benefit_cap", period) > 0
+        )
+        universal_credit_without_earned_income = (
+            universal_credit_limb
+            & entitled_to_universal_credit
+            & ~has_earned_income(person, period)
+        )
+        return (
+            full_time_student
+            | on_income_related_benefit
+            | universal_credit_without_earned_income
+        )

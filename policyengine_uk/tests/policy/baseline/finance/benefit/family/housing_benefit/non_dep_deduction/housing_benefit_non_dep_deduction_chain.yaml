@@ -1,0 +1,90 @@
+# Housing Benefit with a non-dependant, end to end through eligibility,
+# exemption, banding and aggregation. Means-test inputs are fixed so the
+# award is the eligible rent less the non-dependant deductions.
+
+- name: A zero-income full-time student does not reduce the claimant's HB
+  # The counterexample from the PolicyEngine/policyengine-uk#1925 review:
+  # HB Regs 2006 reg 74(7)(c)-(d).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      tenant:
+        age: 40
+        total_income: 0
+      student:
+        age: 20
+        total_income: 0
+        employment_status: STUDENT
+        current_education: TERTIARY
+    benunits:
+      tenant_unit:
+        members: [tenant]
+        benunit_is_rent_liable: true
+        housing_benefit_eligible: true
+        would_claim_housing_benefit: true
+        benunit_rent: 6_000
+        housing_benefit_applicable_amount: 0
+        housing_benefit_applicable_income: 0
+        LHA_eligible: false
+        benefit_cap_reduction: 0
+      student_unit:
+        members: [student]
+        benunit_is_rent_liable: false
+        housing_benefit_eligible: false
+        would_claim_housing_benefit: false
+        benunit_rent: 0
+        housing_benefit_applicable_amount: 0
+        housing_benefit_applicable_income: 0
+        LHA_eligible: false
+        benefit_cap_reduction: 0
+    households:
+      home:
+        members: [tenant, student]
+  output:
+    housing_benefit_non_dep_deduction_exempt: [false, true]
+    household_benefits_individual_non_dep_deduction: [0, 0]
+    housing_benefit_non_dep_deductions: [0, 0]
+    housing_benefit: [6_000, 0]
+
+- name: A zero-income non-student non-dependant pays the lowest deduction
+  # 2026 rather than 2025 so the amount is the same before and after
+  # PolicyEngine/policyengine-uk#1925 (which corrects the 2025-26 rates).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      tenant:
+        age: 40
+        total_income: 0
+      son:
+        age: 30
+        total_income: 0
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      tenant_unit:
+        members: [tenant]
+        benunit_is_rent_liable: true
+        housing_benefit_eligible: true
+        would_claim_housing_benefit: true
+        benunit_rent: 6_000
+        housing_benefit_applicable_amount: 0
+        housing_benefit_applicable_income: 0
+        LHA_eligible: false
+        benefit_cap_reduction: 0
+      son_unit:
+        members: [son]
+        benunit_is_rent_liable: false
+        housing_benefit_eligible: false
+        would_claim_housing_benefit: false
+        benunit_rent: 0
+        housing_benefit_applicable_amount: 0
+        housing_benefit_applicable_income: 0
+        LHA_eligible: false
+        benefit_cap_reduction: 0
+    households:
+      home:
+        members: [tenant, son]
+  output:
+    # reg 74(1)(b): 20.40 a week in 2026-27.
+    housing_benefit_non_dep_deductions: [1_060.80, 0]

@@ -25,4 +25,5 @@ class housing_benefit_individual_non_dep_deduction_eligible(Variable):
             "is_benefit_unit_non_dependant_for_legacy_benefits", period
         )
         age_eligible = person("age", period) >= p.age_threshold
-        return non_dependant & age_eligible
+        exempt = person("housing_benefit_non_dep_deduction_exempt", period)
+        return non_dependant & age_eligible & ~exempt

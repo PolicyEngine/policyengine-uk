@@ -3,6 +3,12 @@
   input:
     is_non_dependant_of_household_head: true
     age: 18
+    # Without this the age-based default puts an 18-year-old in tertiary
+    # education, and full-time students are exempt (reg 74(7)(c)).
+    current_education: NOT_IN_EDUCATION
+    # An 18-year-old with no income is otherwise entitled to UC without
+    # earned income, which exempts them (reg 74(8)(b)).
+    would_claim_uc: false
   output:
     housing_benefit_individual_non_dep_deduction_eligible: true
 
@@ -29,7 +35,9 @@
   input:
     is_non_dependant_of_household_head: false
     is_benefit_unit_non_dependant_for_legacy_benefits: true
+    is_claimant_or_partner: false
     age: 19
+    current_education: NOT_IN_EDUCATION
   output:
     housing_benefit_individual_non_dep_deduction_eligible: true
 
@@ -39,5 +47,14 @@
     is_non_dependant_of_household_head: false
     is_benefit_unit_non_dependant_for_legacy_benefits: true
     age: 17
+  output:
+    housing_benefit_individual_non_dep_deduction_eligible: false
+
+- name: Exempt non-dependant is ineligible
+  period: 2025
+  input:
+    is_non_dependant_of_household_head: true
+    age: 20
+    current_education: TERTIARY
   output:
     housing_benefit_individual_non_dep_deduction_eligible: false
