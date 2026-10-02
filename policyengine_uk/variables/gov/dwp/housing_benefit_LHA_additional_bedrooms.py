@@ -19,7 +19,9 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         "the dwelling for "
         "the carer or the foster child; the model does not observe the "
         "dwelling's bedrooms and assumes there is one. Children and couples "
-        "who cannot share a bedroom because of disability are not modelled."
+        "who cannot share a bedroom because of disability have their own "
+        "bedrooms in the main size criteria (see "
+        "housing_benefit_LHA_cannot_share_bedrooms)."
     )
     definition_period = YEAR
     reference = (

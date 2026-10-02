@@ -26,7 +26,9 @@ def rooms_for_children(boys_under_10, older_boys, girls_under_10, older_girls):
     return over_10_rooms + under_10_rooms
 
 
-def bedrooms_for_children(benunit, period, own_child=None, other_child=None):
+def bedrooms_for_children(
+    benunit, period, own_child=None, other_child=None, cannot_share=None
+):
     """Bedrooms for the children under 16 in the family's size criteria.
 
     Children must share rooms in pairs unless they are opposite-sex and one
@@ -38,6 +40,11 @@ def bedrooms_for_children(benunit, period, own_child=None, other_child=None):
     other families of the household who count in the household head's
     family's size criteria, such as a non-dependant's child; they share rooms
     with the head family's own children.
+
+    ``cannot_share`` marks children who have a bedroom of their own because
+    of disability. Each counted child so marked has their own room and the
+    other children are paired as usual: the fewest rooms in which no marked
+    child shares.
     """
     person = benunit.members
     age = person("age", period)
@@ -47,6 +54,8 @@ def bedrooms_for_children(benunit, period, own_child=None, other_child=None):
     if own_child is None:
         own_child = under_16
     own_child = own_child & under_16
+    if cannot_share is None:
+        cannot_share = np.zeros_like(under_16)
     head_family = benunit.any(person("is_household_head", period))
 
     def count(group):
@@ -56,12 +65,45 @@ def bedrooms_for_children(benunit, period, own_child=None, other_child=None):
         others = person.household.sum(other_child & under_16 & group)
         return own + head_family * benunit.max(others)
 
-    return rooms_for_children(
-        count(under_10 & male),
-        count(~under_10 & male),
-        count(under_10 & ~male),
-        count(~under_10 & ~male),
+    sharing = ~cannot_share
+    return count(cannot_share) + rooms_for_children(
+        count(sharing & under_10 & male),
+        count(sharing & ~under_10 & male),
+        count(sharing & under_10 & ~male),
+        count(sharing & ~under_10 & ~male),
     )
+
+
+def universal_credit_size_criteria_people(benunit, period):
+    """The people who count in a family's Universal Credit size criteria
+    beyond its own members aged 16 or over: ``responsible``, the children and
+    qualifying young persons the renter is responsible for (UC Regs 2013 regs
+    4, 4A and 5); and ``non_dependant``, the household head's non-dependants
+    from other families and their children (Sch 4 para 9(1)(c) and 9(2)).
+    """
+    person = benunit.members
+    # UC Regs 2013 reg 4: a person is responsible for a child or qualifying
+    # young person who normally lives with them, but no one is responsible
+    # for one looked after by a local authority (reg 4(6)(a)), such as a
+    # foster child, unless reg 4A applies (for example a child placed for
+    # adoption).
+    responsible = person(
+        "is_child_or_qualifying_young_person_for_universal_credit", period
+    )
+    no_one_responsible = (
+        person("is_child_for_universal_credit", period)
+        | person("is_qualifying_young_person_for_universal_credit", period)
+    ) & ~responsible
+    # Para 9(1)(c) and 9(2): people of other families in the household who
+    # are non-dependants of the household head's family. Para 9(2)(g)
+    # excludes a child or qualifying young person no one in the extended
+    # benefit unit is responsible for, such as a non-dependant's foster
+    # child; a non-dependant's own child is their responsibility (reg 4(2))
+    # and so is a non-dependant too.
+    non_dependant = (
+        person("is_non_dependant_of_household_head", period) & ~no_one_responsible
+    )
+    return responsible, non_dependant
 
 
 class LHA_allowed_bedrooms(Variable):
@@ -73,8 +115,10 @@ class LHA_allowed_bedrooms(Variable):
         "unit: one bedroom for the renter or couple, one for each member of "
         "the benefit unit aged 16 or over who is not the claimant or partner, "
         "one for each non-dependant aged 16 or over, the children's bedrooms, "
-        "and the additional bedrooms for overnight care and foster parents "
-        "(see LHA_additional_bedrooms). A qualifying young person the renter "
+        "and the additional bedrooms for overnight care, foster parents, and "
+        "children and couples who cannot share a bedroom because of "
+        "disability (see LHA_additional_bedrooms). A qualifying young person "
+        "the renter "
         "is responsible for has their own bedroom; any other member aged 16 "
         "or over is a non-dependant and has one too, except a qualifying "
         "young person no one is responsible for, such as one looked after by "
@@ -104,18 +148,10 @@ class LHA_allowed_bedrooms(Variable):
         # A child is a person under 16 (WRA 2012 s.40).
         aged_16_or_over = person("age", period) >= 16
         family_member = aged_16_or_over & ~person("is_claimant_or_partner", period)
-        # UC Regs 2013 reg 4: a person is responsible for a child or
-        # qualifying young person who normally lives with them, but no one is
-        # responsible for one looked after by a local authority (reg 4(6)(a)),
-        # such as a foster child, unless reg 4A applies (for example a child
-        # placed for adoption).
-        responsible = person(
-            "is_child_or_qualifying_young_person_for_universal_credit", period
+        responsible, non_dependant = universal_credit_size_criteria_people(
+            benunit, period
         )
         qualifying = person("is_qualifying_young_person_for_universal_credit", period)
-        no_one_responsible = (
-            person("is_child_for_universal_credit", period) | qualifying
-        ) & ~responsible
         # UC Regs 2013 Sch 4 para 10(1)(b): a qualifying young person for
         # whom the renter is responsible (regs 4 and 5).
         qualifying_young_person = family_member & responsible
@@ -127,15 +163,8 @@ class LHA_allowed_bedrooms(Variable):
             family_member & ~qualifying & ~person("is_lha_foster_child", period)
         )
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
-        # Para 9(1)(c) and 9(2): people of other families in the household
-        # who are non-dependants of the household head's family. Para 9(2)(g)
-        # excludes a child or qualifying young person no one in the extended
-        # benefit unit is responsible for, such as a non-dependant's foster
-        # child; a non-dependant's own child is their responsibility (reg
-        # 4(2)) and so is a non-dependant too.
-        non_dependant = (
-            person("is_non_dependant_of_household_head", period) & ~no_one_responsible
-        )
+        # Para 9(1)(c) and 9(2): the household head's non-dependants from
+        # other families (see universal_credit_size_criteria_people).
         head_family = benunit.any(person("is_household_head", period))
         # Para 10(1)(c): a non-dependant who is not a child.
         non_dependants = head_family * benunit.max(

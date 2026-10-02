@@ -1,0 +1,10 @@
+description: Whether a couple one of whom cannot share a bedroom with the other because of disability has a bedroom each in the LHA size criteria.
+values:
+  2011-04-01: false
+  2017-04-01: true
+metadata:
+  unit: bool
+  label: LHA bedroom for a member of a couple who cannot share in effect
+  reference:
+    - title: Housing Benefit and Universal Credit (Size Criteria) (Miscellaneous Amendments) Regulations 2017 (SI 2017/213) regs 4, 5 and 6
+      href: https://www.legislation.gov.uk/uksi/2017/213/made
