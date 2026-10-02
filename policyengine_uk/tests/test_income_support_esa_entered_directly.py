@@ -1,10 +1,12 @@
 """Income-related ESA that is not the award on the reported amounts.
 
-income_support_eligible reads the claimant's and partner's reported
-income-related ESA, after the esa_income capital test. When esa_income holds
-anything else (an award entered directly, or a reform that replaces or
-removes it), the reported amounts do not say whose award it is, so the gate
-takes esa_income itself to be the claimant's or partner's. The test is on the
+income_support_eligible reads the claimant's and partner's income-related ESA
+from claimant_or_partner_esa_income: their reported awards after the
+esa_income capital test, or the plain total of their reports where esa_income
+holds the plain total of everyone's. When esa_income holds anything else (an
+award entered directly, or a reform that replaces or removes it), the
+reported amounts do not say whose award it is, so the gate takes esa_income
+itself to be the claimant's or partner's. The test is on the
 value the simulation reads, so it holds however that value got there: set
 before or after the simulation is built, on a clone or a branch, for this year
 or another, deleted and recalculated.
@@ -59,7 +61,15 @@ def family(benunit=None):
 
 
 def eligible(sim):
-    sim.delete_arrays("income_support_eligible")
+    # The gate reads the claimant-or-partner awards, which are calculated and
+    # cached like any other variable. Recalculate them too after changing an
+    # input they depend on.
+    for variable in (
+        "income_support_eligible",
+        "claimant_or_partner_esa_income",
+        "claimant_or_partner_jsa_income",
+    ):
+        sim.delete_arrays(variable)
     return bool(sim.calculate("income_support_eligible", YEAR)[0])
 
 
@@ -142,11 +152,14 @@ def test_abolishing_income_related_esa_removes_the_bar():
 
 
 def test_the_plain_reported_total_is_read_through_the_reports():
-    # disable_simulated_benefits sets esa_income to the plain total of the
-    # reported awards, before the capital test. With £10,000 of capital the
-    # tariff income (£832 a year) extinguishes the partner's own £200, so the
-    # claimant and partner have no income-related ESA; the £3,000 is the
-    # excluded adult's.
+    # An esa_income equal to the plain total of the reported awards, before
+    # the capital test, is read as reported amounts paid in full (as
+    # disable_simulated_benefits pays them): the claimant's and partner's
+    # award is the plain total of their own reports. With £10,000 of capital
+    # the tariff income (£832 a year) would extinguish the partner's own
+    # £200 on the formula's reading, so the formula's award does not bar the
+    # claim. The plain total pays the partner's £200 unscreened, so it does.
+    # Either way the excluded adult's £3,000 is theirs, not the couple's.
     partner = {
         "age": {YEAR: 42},
         "is_claimant_or_partner": {YEAR: True},
@@ -156,8 +169,18 @@ def test_the_plain_reported_total_is_read_through_the_reports():
         {"carer": CARER, "partner": partner, "other_adult": EXCLUDED_ADULT},
         {"esa_income_assessable_capital": {YEAR: 10_000}},
     )
-    sim.set_input("esa_income", YEAR, np.array([3_200.0]))
+    assert sim.calculate("esa_income", YEAR)[0] == 2_368
     assert eligible(sim)
+    sim.set_input("esa_income", YEAR, np.array([3_200.0]))
+    assert not eligible(sim)
+    assert sim.calculate("claimant_or_partner_esa_income", YEAR)[0] == 200
+    # Without the partner's report, the plain total is the excluded adult's.
+    alone = simulation(
+        {"carer": CARER, "other_adult": EXCLUDED_ADULT},
+        {"esa_income_assessable_capital": {YEAR: 10_000}},
+    )
+    alone.set_input("esa_income", YEAR, np.array([3_000.0]))
+    assert eligible(alone)
 
 
 def test_an_award_equal_to_the_reported_amounts_is_read_through_them():

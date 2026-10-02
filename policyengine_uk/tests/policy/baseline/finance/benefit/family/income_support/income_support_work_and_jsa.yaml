@@ -1,0 +1,544 @@
+# Income Support remunerative work and Jobseeker's Allowance conditions.
+# SSCBA 1992 s.124(1): a person is entitled to Income Support if
+#   (c) "he is not engaged in remunerative work and, if he is a member of a
+#       couple, the other member is not so engaged"; and
+#   (f) "he is not entitled to a jobseeker's allowance and, if he is a member
+#       of a couple, the other member of the couple is not, and the couple are
+#       not, entitled to an income-based jobseeker's allowance".
+# IS Regs 1987 reg 5(1): remunerative work is paid work "for not less than 16
+# hours a week"; reg 5(1A) makes that 24 hours for "any partner of the
+# claimant". Reg 6(4)(c): "a person to whom paragraph 4 of Schedule 1B
+# applies" (a carer) "shall not be treated as engaged in remunerative work".
+#
+# The claimant is the claimant or partner who reports the existing award (see
+# income_support_claimant_partner_gates.yaml). Hours are annual hours_worked;
+# the weekly figure is hours_worked / 52, so 832 annual hours is 16 a week.
+# These cases test the model's bounded gate: caring is is_carer_for_benefits,
+# JSA and Income Support are reported awards, and the means test is out of
+# scope. 2025 is used because the model pays Income Support until 2025-26.
+
+# s.124(1)(c): the claimant's remunerative work, 16 hours (reg 5(1)).
+
+- name: A lone parent working 15 hours a week is not in remunerative work
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        income_support_reported: 1_000
+        hours_worked: 780
+      child:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [parent, child]
+        income_support_assessable_capital: 0
+  output:
+    # 780 / 52 = 15 hours, below 16.
+    income_support_remunerative_work_hours: [15, 0]
+    income_support_eligible: true
+
+- name: A lone parent working 16 hours a week is in remunerative work
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        income_support_reported: 1_000
+        hours_worked: 832
+      child:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [parent, child]
+        income_support_assessable_capital: 0
+  output:
+    # 832 / 52 = 16 hours: "not less than 16 hours a week".
+    income_support_remunerative_work_hours: [16, 0]
+    income_support_eligible: false
+
+- name: A carer working 30 hours a week is not treated as in remunerative work
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        hours_worked: 1_560
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+  output:
+    # 30 hours, but reg 6(4)(c): Sch 1B para 4 applies to the carer.
+    income_support_remunerative_work_hours: 30
+    income_support_eligible: true
+
+- name: Hours entered for the remunerative work test replace weekly hours
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        is_parent: true
+        income_support_reported: 1_000
+        hours_worked: 1_560
+        # For example a councillor's duties, which reg 6(1)(j) and reg 5(6)
+        # leave out of the count.
+        income_support_remunerative_work_hours: 0
+      child:
+        age: 3
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [parent, child]
+        income_support_assessable_capital: 0
+  output:
+    weekly_hours: [30, 0]
+    income_support_eligible: true
+
+# s.124(1)(c): the partner's remunerative work, 24 hours (reg 5(1A)).
+
+- name: A partner working 20 hours a week does not bar the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        hours_worked: 1_040
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    # 1,040 / 52 = 20 hours: remunerative work for a claimant (16), but not
+    # for a partner (24).
+    income_support_eligible: true
+
+- name: A partner working 24 hours a week bars the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        hours_worked: 1_248
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    # 1,248 / 52 = 24 hours: the partner is so engaged.
+    income_support_eligible: false
+
+- name: The 24-hour test applies to whichever partner does not have the award
+  period: 2025
+  input:
+    people:
+      worker:
+        age: 40
+        is_claimant_or_partner: true
+        hours_worked: 1_040
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [worker, carer]
+        income_support_assessable_capital: 0
+  output:
+    # The carer, listed second, has the award and is the claimant; the
+    # worker's 20 hours are tested against the partner's 24.
+    income_support_eligible: true
+
+- name: A partner who is a carer is not treated as in remunerative work
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        hours_worked: 2_080
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    # 40 hours, but reg 6(4)(c) applies to any person within Sch 1B para 4.
+    income_support_eligible: true
+
+- name: An excluded member's remunerative work does not bar the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        hours_worked: 2_080
+    benunits:
+      family:
+        members: [carer, other_adult]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: true
+
+# s.124(1)(f): the claimant's JSA of either kind.
+
+- name: The claimant's contribution-based JSA bars the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+  output:
+    jsa_contrib: 3_000
+    income_support_eligible: false
+
+- name: The claimant's income-based JSA bars the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+  output:
+    jsa_income: 3_000
+    income_support_eligible: false
+
+# s.124(1)(f): the partner's income-based JSA, not contribution-based JSA.
+
+- name: The partner's contribution-based JSA does not bar the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    jsa_contrib: [0, 3_000]
+    income_support_eligible: true
+
+- name: The partner's income-based JSA bars the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+  output:
+    jsa_income: 3_000
+    income_support_eligible: false
+
+- name: A reported income-based JSA award that tariff income extinguishes does not bar the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 200
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 10_000
+        jsa_income_assessable_capital: 10_000
+  output:
+    # JSA Regs 1996 reg 116: £1 a week for each £250 over £6,000, so
+    # ceil(4,000 / 250) = 16 a week, 16 x 52 = £832 a year, more than the
+    # £200 reported. No income-based JSA is payable; capital is within the
+    # Income Support limit of £16,000.
+    jsa_income_tariff_income: 832
+    jsa_income: 0
+    income_support_eligible: true
+
+- name: An excluded member's JSA does not bar the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        jsa_income_reported: 3_000
+        jsa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [carer, other_adult]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+  output:
+    # The benefit unit's reported award is still paid; it is the excluded
+    # member's own award, not the claimant's or partner's.
+    jsa_income: 3_000
+    income_support_eligible: true
+
+- name: Income-based JSA entered directly is taken to be the claimant's or partner's
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [carer]
+        income_support_assessable_capital: 0
+        jsa_income: 3_000
+  output:
+    income_support_eligible: false
+
+- name: A zero income-based JSA entered directly overrides the reported amounts
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+        jsa_income: 0
+  output:
+    income_support_eligible: true
+
+# Boundaries and roles.
+
+- name: A partner working 23 hours a week does not bar the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        hours_worked: 1_196
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    # 1,196 / 52 = 23 hours, below the partner's 24.
+    income_support_eligible: true
+
+- name: With inferred roles, a partner working 24 hours bars the claim and an excluded grandparent does not count
+  period: 2025
+  input:
+    people:
+      mother:
+        age: 34
+        is_parent: true
+        is_benunit_head: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      father:
+        age: 36
+        is_parent: true
+        hours_worked: 1_248
+      child:
+        age: 8
+      grandparent:
+        age: 71
+        hours_worked: 2_080
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [mother, father, child, grandparent]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+  output:
+    is_claimant_or_partner: [true, true, false, false]
+    # The father, the other member of the couple, works 24 hours.
+    income_support_eligible: false
+
+- name: With inferred roles and a partner under 24 hours, an excluded grandparent's work and JSA do not bar the claim
+  period: 2025
+  input:
+    people:
+      mother:
+        age: 34
+        is_parent: true
+        is_benunit_head: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      father:
+        age: 36
+        is_parent: true
+        hours_worked: 1_040
+      child:
+        age: 8
+      grandparent:
+        age: 71
+        hours_worked: 2_080
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [mother, father, child, grandparent]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+  output:
+    is_claimant_or_partner: [true, true, false, false]
+    income_support_eligible: true
+
+- name: When both partners care and report Income Support, one without JSA can claim
+  period: 2025
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_contrib_reported: 3_000
+      second:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [first, second]
+        income_support_assessable_capital: 0
+  output:
+    # The second partner meets every claimant condition; the first's
+    # contribution-based JSA bars only the first as claimant (s.124(1)(f)).
+    income_support_eligible: true
+
+- name: When both partners care and report Income Support but both have contribution-based JSA, neither can claim
+  period: 2025
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_contrib_reported: 3_000
+      second:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [first, second]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: false
+
+- name: Income-based JSA entered directly for another year does not apply to this one
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [carer, other_adult]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+        jsa_income:
+          2024: 0
+  output:
+    # Only the excluded adult reports income-based JSA in 2025; the input
+    # entered for 2024 says nothing about 2025.
+    income_support_eligible: true
