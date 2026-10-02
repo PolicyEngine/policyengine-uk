@@ -187,13 +187,19 @@ def qualifying_young_person(p, programme):
     return True
 
 
+def looked_after_child(p):
+    # Only a person under 18 can be looked after by a local authority:
+    # https://www.legislation.gov.uk/ukpga/1989/41/section/105
+    return p["is_looked_after_by_local_authority"] and p["age"] < 18
+
+
 def child_or_young_person(p, programme):
     # Encoded responsibility filters, without their statutory exceptions:
     # https://www.legislation.gov.uk/uksi/2013/376/regulation/4
     # https://www.legislation.gov.uk/uksi/2002/2007/regulation/3
     # https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA
     eligible = statutory_child(p["age"]) or qualifying_young_person(p, programme)
-    if programme != "child_benefit" and p["is_looked_after_by_local_authority"]:
+    if programme != "child_benefit" and looked_after_child(p):
         return False
     return eligible
 
@@ -252,7 +258,7 @@ def legacy_child_or_young_person(p, claimant):
     # https://www.legislation.gov.uk/uksi/2006/213/regulation/21
     return (
         not claimant
-        and not p["is_looked_after_by_local_authority"]
+        and not looked_after_child(p)
         and child_or_young_person(p, "child_benefit")
     )
 
