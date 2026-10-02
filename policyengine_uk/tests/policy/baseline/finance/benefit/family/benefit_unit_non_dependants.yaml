@@ -1023,3 +1023,33 @@
     council_tax_reduction_joint_liability_share: [0.5, 0.5]
     newham_council_tax_reduction_non_dep_deductions: [0, 0]
     newham_council_tax_reduction: [630, 630]
+
+# SI 2012/2885 reg 9(2)(a): the applicant's own family are not its
+# non-dependants, so an individual deduction set for the applicant (here as
+# an input) is never charged to the applicant's own claim.
+- name: CTR, an applicant is never charged a deduction for itself
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 300
+      friend:
+        age: 30
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 200
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [friend]
+    households:
+      household:
+        members: [head, friend]
+        rent: 12_000
+  output:
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_non_dep_deductions: [200, 0]
