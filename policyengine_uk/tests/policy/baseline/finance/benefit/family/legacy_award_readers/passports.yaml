@@ -369,9 +369,9 @@
 
 # Maintenance loans: the "students entitled to benefits" schedule is for a
 # student who could claim benefits themselves (SI 2011/1986 regs 61(2) and
-# 71(1)(h)). The model's proxy reads the student's own income-related ESA, or
-# their couple's; a parent's award does not make a student living in the
-# parent's benefit unit (neither claimant, partner nor dependant) eligible.
+# 71(1)(h)). The model's proxy reads whether income-related ESA is payable to
+# the student; a parent's or partner's award does not make the student
+# eligible.
 
 - name: A parent's income-related ESA does not put a student on the benefits schedule
   period: 2025
@@ -420,7 +420,7 @@
   output:
     maintenance_loan_entitled_to_benefits: [true, true]
 
-- name: A student in a couple on income-related ESA is on the benefits schedule
+- name: A student whose partner is paid income-related ESA is not on the benefits schedule through it
   period: 2025
   input:
     people:
@@ -440,4 +440,4 @@
         members: [student, partner]
         country: ENGLAND
   output:
-    maintenance_loan_entitled_to_benefits: [true, true]
+    maintenance_loan_entitled_to_benefits: [false, true]
