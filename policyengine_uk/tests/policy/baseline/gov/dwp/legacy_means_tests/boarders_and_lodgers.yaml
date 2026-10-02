@@ -281,3 +281,43 @@
     rent_a_room_income_tax: [580, 0]
     legacy_means_test_income_tax: [1_066, 0]
     legacy_benefits_home_letting_income: [9_360, 0]
+
+- name: Tax on counted rent-a-room income shares a tax reduction pro rata
+  # 2026-27. Step 4 tax: private pension (36,000 - 12,570) x 20% = 4,686;
+  # rent-a-room income (10,400 - 7,500) x 20% = 580; savings interest
+  # (3,000 - 1,000 personal savings allowance) x 20% = 400, with no starting
+  # rate for savings because non-savings income exceeds the allowances by more
+  # than £5,000; total 5,666. The married couple's allowance reduction
+  # (11,000 x 10% = 1,100, set as an input) leaves income tax of 4,566. The
+  # tests count the pension and the rent but treat interest as capital: the
+  # capital tax of 400 keeps its share of the reduction,
+  # 1,100 x 400 / 5,666 = 77.66, so 322.34 is not deducted, and the tax
+  # deducted is 4,566 - 322.34 = 4,243.66.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 70
+        is_household_head: true
+        private_pension_income: 36_000
+        savings_interest_income: 3_000
+        married_couples_allowance: 11_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_400
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+  output:
+    rent_a_room_income_tax: [580, 0]
+    savings_income_tax: [400, 0]
+    capped_mcad: [1_100, 0]
+    income_tax: [4_566, 0]
+    legacy_means_test_income_tax: [4_243.66, 0]
