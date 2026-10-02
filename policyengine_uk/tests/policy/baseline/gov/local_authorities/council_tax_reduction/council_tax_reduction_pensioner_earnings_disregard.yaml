@@ -1,0 +1,430 @@
+# Pensioner Council Tax Reduction earnings disregards.
+#
+# SI 2012/2885 (England) Sch 4, WSI 2013/3029 (Wales) Sch 3 and SSI 2012/319
+# (Scotland) Sch 2 disregard from a pension-age applicant's and partner's net
+# earnings £25 a week for a lone parent (para 2), otherwise £5 with no partner
+# or £10 with a partner (para 8), plus £17.10 (para 10) where a work condition
+# is met and net earnings at least equal the other disregards, the deductible
+# childcare charges and £17.10. Scotland read £37.10 for £17.10 from 6 April
+# 2020 to 4 April 2021 (SSI 2020/108 reg 3(a)); England and Wales did not.
+#
+# Every person here is aged 70 (pension age, no employee National Insurance)
+# unless stated, and earns less than the personal allowance, so net earnings
+# equal gross earnings unless stated. Annual figures are weekly x 52.
+
+- name: England pensioner without earnings has no earnings disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 15_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    council_tax_reduction_pensioner_earnings_disregard: 0
+
+- name: England single pensioner earning 1,000 a year has 5 a week disregarded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    housing_benefit_net_earnings: 1_000
+    # 5 x 52.
+    council_tax_reduction_pensioner_earnings_disregard: 260
+
+- name: England single pensioner earning 3 a week has all 3 disregarded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 156
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    # min(260, 3 x 52 = 156).
+    council_tax_reduction_pensioner_earnings_disregard: 156
+
+- name: England pensioner couple has 10 a week disregarded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        employment_income: 2_000
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+        country: ENGLAND
+  output:
+    # 10 x 52.
+    council_tax_reduction_pensioner_earnings_disregard: 520
+
+- name: England pensioner couple earning 3 and 4 a week has both disregarded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        employment_income: 156
+      partner:
+        age: 70
+        employment_income: 208
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+        country: ENGLAND
+  output:
+    # min(520, 156 + 208 = 364).
+    council_tax_reduction_pensioner_earnings_disregard: 364
+
+- name: England pensioner lone parent has 25 a week disregarded, not 25 plus 5
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 70
+        employment_income: 2_000
+        weekly_hours: 10
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+  output:
+    # 25 x 52. Para 8's 5 is not added (as for Housing Benefit, DWP HB
+    # guidance BP2 para P2.159). 10 hours meets no work condition.
+    council_tax_reduction_pensioner_earnings_disregard: 1_300
+
+- name: England pensioner working 30 hours gets the additional 17.10 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    # (5 + 17.10) x 52 = 260 + 889.20; net earnings 10,000 >= 1,149.20.
+    council_tax_reduction_pensioner_earnings_disregard: 1_149.20
+
+- name: England pensioner working 29 hours does not get the additional disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 29
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    council_tax_reduction_pensioner_earnings_disregard: 260
+
+- name: Net earnings exactly equal to the disregards and 17.10 meet the earnings test
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_149.20
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    # Para 10(1): "equal or exceed" 260 + 0 childcare + 889.20 = 1,149.20.
+    council_tax_reduction_pensioner_earnings_disregard: 1_149.20
+
+- name: Net earnings a penny short of the disregards and 17.10 fail the earnings test
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_149.19
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    council_tax_reduction_pensioner_earnings_disregard: 260
+
+- name: England disabled pensioner working 20 hours gets the additional disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 20
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    # Para 10(2)(b)(iv): 16 hours and para 5(1) satisfied. The model gives
+    # 5 + 17.10 = 1,149.20 a year; the law gives the para 5(1) 20 in place of
+    # the 5, so 1,929.20. The 20 disregards are a known limitation.
+    council_tax_reduction_pensioner_earnings_disregard: 1_149.20
+
+- name: England pensioner couple, one working 30 hours, gets 10 plus 17.10
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 30
+      partner:
+        age: 68
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+        country: ENGLAND
+  output:
+    # (10 + 17.10) x 52 = 520 + 889.20.
+    council_tax_reduction_pensioner_earnings_disregard: 1_409.20
+
+- name: Wales pensioner working 30 hours gets 5 plus 17.10
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: WALES
+  output:
+    council_tax_reduction_pensioner_earnings_disregard: 1_149.20
+
+- name: Scotland pensioner working 30 hours gets 5 plus 17.10 in 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pensioner_earnings_disregard: 1_149.20
+
+- name: Scotland pensioner working 30 hours gets 5 plus 37.10 in 2020
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    # SSI 2020/108: (5 + 37.10) x 52 = 260 + 1,929.20.
+    council_tax_reduction_pensioner_earnings_disregard: 2_189.20
+
+- name: Scotland pensioner working 30 hours is back to 5 plus 17.10 in 2021
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pensioner_earnings_disregard: 1_149.20
+
+- name: England pensioner working 30 hours gets 5 plus 17.10 in 2020
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    # No coronavirus increase in the English prescribed requirements.
+    council_tax_reduction_pensioner_earnings_disregard: 1_149.20
+
+- name: Scottish working-age applicant has no pensioner earnings disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      worker:
+        age: 40
+        employment_income: 10_000
+        weekly_hours: 35
+    benunits:
+      benunit:
+        members: [worker]
+    households:
+      household:
+        members: [worker]
+        country: SCOTLAND
+  output:
+    council_tax_reduction_pensioner_earnings_disregard: 0
+
+- name: Northern Ireland pensioner has no Council Tax Reduction earnings disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        employment_income: 1_000
+    benunits:
+      benunit:
+        members: [pensioner]
+    households:
+      household:
+        members: [pensioner]
+        country: NORTHERN_IRELAND
+  output:
+    council_tax_reduction_pensioner_earnings_disregard: 0
+
+- name: England pensioner with State Pension and earnings has 5 a week of earnings disregarded in CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 15_000
+        employment_income: 1_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    # (15,000 + 1,000 - 12,570) x 20%.
+    income_tax: 686
+    guarantee_credit: 0
+    in_receipt_of_savings_credit_only: false
+    # 1,000 - 686 x 1,000 / 16,000.
+    housing_benefit_net_earnings: 957.13
+    council_tax_reduction_pensioner_earnings_disregard: 260
+    # 15,000 + 1,000 - 686 - 260 (main: 15,314).
+    council_tax_reduction_applicable_income: 15_054
+    council_tax_reduction_applicable_amount: 13_312
+    # 2,000 - 20% x (15,054 - 13,312) (main: 1,599.60).
+    council_tax_reduction: 1_651.60
