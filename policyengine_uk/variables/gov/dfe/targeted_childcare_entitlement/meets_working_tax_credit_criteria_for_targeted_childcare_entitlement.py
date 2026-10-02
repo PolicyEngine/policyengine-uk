@@ -14,6 +14,11 @@ class meets_working_tax_credit_criteria_for_targeted_childcare_entitlement(Varia
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dfe.targeted_childcare_entitlement
         working_tax_credit = benunit("working_tax_credit", period) > 0
-        applicable_income = benunit("tax_credits_applicable_income", period)
+        # "an award which is based on an annual income not exceeding £16,190"
+        # (SI 2014/2147 reg 1(2), "eligible child"). The model reads this as
+        # the claim's income before TCA 2002 s.7(2) lifts the income test;
+        # the nil income a passported award is tested on would let any
+        # passported award through, whatever the family's income.
+        income = benunit("tax_credits_current_year_income", period)
 
-        return working_tax_credit & (applicable_income <= p.income_limit.tax_credits)
+        return working_tax_credit & (income <= p.income_limit.tax_credits)

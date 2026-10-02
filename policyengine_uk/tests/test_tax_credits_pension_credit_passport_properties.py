@@ -13,7 +13,9 @@ Properties, for any family:
 1. Differential: the passport holds exactly when an independent simulation,
    with the tax credit income test lifted by input, pays Pension Credit.
    Otherwise the applicable income is what it is with the Pension Credit
-   passport switched off.
+   passport switched off. (This checks the branch against the same rule
+   computed outside the formula, so it catches stale or leaked caches; the
+   rule itself is checked against the law by the YAML cases.)
 2. Consistency: where Pension Credit gives the passport, the simulation's own
    tax credits and Pension Credit equal the passported simulation's. Where it
    does not, they equal the values with the passport switched off.
@@ -22,19 +24,23 @@ Properties, for any family:
    passported working tax credit would be larger than the income-tested one
    and would remove Pension Credit; a family with no working tax credit is
    passported whenever it gets Pension Credit.
-5. The results do not depend on whether Pension Credit or the income test is
-   requested first, and the branch is removed afterwards.
+5. The results do not depend on whether Pension Credit, the income test or
+   household net income is requested first, and the branch is removed
+   afterwards.
 6. In a year with no tax credit awards, the income test is lifted exactly
    when Pension Credit is payable, with no dependency cycle.
+7. The targeted childcare tax credit criteria are met only where the gross
+   (pre-passport) income is within the £16,190 limit.
 """
 
 import numpy as np
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import Simulation
+from policyengine_uk import Microsimulation, Simulation
 from policyengine_uk.variables.gov.dwp.tax_credits_applicable_income import (
     PENSION_CREDIT_PASSPORT_BRANCH,
+    pension_credit_with_passported_tax_credits,
 )
 
 ACTIVE_YEAR = 2024  # 2024-25, the last year of tax credit awards
@@ -63,7 +69,10 @@ def adults(draw, partner):
         "savings_interest_income": draw(st.sampled_from([0, 0, 500])),
         "working_tax_credit_reported": draw(st.sampled_from([0, 1])),
         "child_tax_credit_reported": draw(st.sampled_from([0, 1])),
-        "esa_income_reported": draw(st.sampled_from([0, 0, 0, 0, 3_000])),
+        # Income-related ESA ends at State Pension age.
+        "esa_income_reported": (
+            draw(st.sampled_from([0, 0, 0, 0, 3_000])) if age < 66 else 0
+        ),
     }
 
 
@@ -107,9 +116,19 @@ def situation(families, year, benunit_inputs=None):
     return {"people": people, "benunits": benunits, "households": households}
 
 
+def no_passport_branch_left(sim):
+    """No passport branch remains, at any depth of branching."""
+    for name, branch in sim.branches.items():
+        if name.startswith(PENSION_CREDIT_PASSPORT_BRANCH):
+            return False
+        if not no_passport_branch_left(branch):
+            return False
+    return True
+
+
 def calculate(sim, year, order=OUTPUTS):
     values = {variable: sim.calculate(variable, year) for variable in order}
-    assert PENSION_CREDIT_PASSPORT_BRANCH not in sim.branches
+    assert no_passport_branch_left(sim)
     return values
 
 
@@ -170,13 +189,8 @@ YAML_FAMILIES = [
     # A mixed-age couple: no Pension Credit, no passport.
     (
         [
-            {"age": 70, "state_pension": 6_000, "savings_interest_income": 300},
-            {
-                "age": 40,
-                "employment_income": 2_600,
-                "weekly_hours": 20,
-                "working_tax_credit_reported": 1,
-            },
+            {**_PENSIONER, "state_pension": 6_000},
+            {"age": 40},
         ],
         [],
         {},
@@ -189,7 +203,8 @@ YAML_FAMILIES = [
 @given(FAMILIES)
 @example(YAML_FAMILIES)
 def test_passport_matches_an_independent_passported_simulation(drawn):
-    on = calculate(Simulation(situation=situation(drawn, ACTIVE_YEAR)), ACTIVE_YEAR)
+    sim = Simulation(situation=situation(drawn, ACTIVE_YEAR))
+    on = calculate(sim, ACTIVE_YEAR)
     off = calculate(
         Simulation(situation=situation(drawn, ACTIVE_YEAR), reform=PASSPORT_OFF),
         ACTIVE_YEAR,
@@ -223,6 +238,18 @@ def test_passport_matches_an_independent_passported_simulation(drawn):
         lifted["working_tax_credit"][unpassported_pc]
         > on["working_tax_credit"][unpassported_pc]
     ).all(), drawn
+    # 7. The childcare tax credit criteria test gross income, not the nil
+    # income of a passported award.
+    gross = sim.calculate("tax_credits_current_year_income", ACTIVE_YEAR)
+    limit = sim.tax_benefit_system.parameters(
+        ACTIVE_YEAR
+    ).gov.dfe.targeted_childcare_entitlement.income_limit.tax_credits
+    for criterion in [
+        "meets_child_tax_credit_criteria_for_targeted_childcare_entitlement",
+        "meets_working_tax_credit_criteria_for_targeted_childcare_entitlement",
+    ]:
+        met = sim.calculate(criterion, ACTIVE_YEAR)
+        assert (gross[met] <= limit).all(), (criterion, drawn)
 
 
 @SETTINGS
@@ -237,8 +264,17 @@ def test_results_do_not_depend_on_request_order(drawn):
         ACTIVE_YEAR,
         order=list(reversed(OUTPUTS)),
     )
+    household_first = calculate(
+        Simulation(situation=situation(drawn, ACTIVE_YEAR)),
+        ACTIVE_YEAR,
+        order=["household_net_income"] + OUTPUTS,
+    )
     for variable in OUTPUTS:
         assert np.allclose(forward[variable], backward[variable]), (variable, drawn)
+        assert np.allclose(forward[variable], household_first[variable]), (
+            variable,
+            drawn,
+        )
 
 
 @SETTINGS
@@ -288,9 +324,28 @@ def test_passport_works_in_traced_and_nested_branch_simulations():
         assert np.isclose(sim.calculate("pension_credit", year)[0], 568.80)
         mtr = sim.calculate("marginal_tax_rate", year)[0]
         assert np.isfinite(mtr)
-        assert PENSION_CREDIT_PASSPORT_BRANCH not in sim.branches
-        for branch in sim.branches.values():
-            assert PENSION_CREDIT_PASSPORT_BRANCH not in branch.branches
+        assert no_passport_branch_left(sim)
+
+
+def test_passport_in_a_microsimulation_is_unweighted():
+    """In a microsimulation the branch's Pension Credit is a plain array.
+
+    A top-level calculate on a microsimulation returns a weighted series;
+    reading the branch through its population does not.
+    """
+    year = ACTIVE_YEAR
+    micro = Microsimulation(situation=situation(YAML_FAMILIES, year))
+    plain = Simulation(situation=situation(YAML_FAMILIES, year))
+    for variable in OUTPUTS:
+        assert np.allclose(
+            np.asarray(micro.calculate(variable, year)),
+            plain.calculate(variable, year),
+        ), variable
+    result = pension_credit_with_passported_tax_credits(
+        micro.populations["benunit"], year, micro.tax_benefit_system.parameters
+    )
+    assert type(result) is np.ndarray
+    assert no_passport_branch_left(micro)
 
 
 def test_yaml_families_reach_every_case():

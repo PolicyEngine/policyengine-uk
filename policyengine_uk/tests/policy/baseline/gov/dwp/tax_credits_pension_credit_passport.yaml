@@ -66,6 +66,41 @@
     guarantee_credit: 568.80
     pension_credit: 568.80
 
+- name: The passport in 2018-19, before the mixed-age rule
+  # 2018-19 rates: WTC basic element £1,960; income threshold £6,420;
+  # standard minimum guarantee £163.00 a week (£8,476 a year). A man aged 66
+  # reached pensionable age (65) in 2017, so has no savings credit: SPCA 2002
+  # s.3(1)(a) needs pensionable age "before 6 April 2016".
+  # Tax credit income: (4,000 + 300 - 300) + 2,600 = £6,600. With the test
+  # lifted, WTC is £1,960, and Pension Credit income is 2,340 + 4,000 + 1,960
+  # = £8,300, so Guarantee Credit is 8,476 - 8,300 = £176: the passport holds.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 66
+        gender: MALE
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 4_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    tax_credits_applicable_income: 0
+    tax_credits_current_year_income: 6_600
+    working_tax_credit: 1_960
+    pension_credit: 176
+
 - name: Pension Credit payable only on the income-tested award leaves the income test in place
   # Tax credit income: (6,600 + 300 - 300) + 2,600 = £9,200. With the test lifted, Pension
   # Credit income is £2,340 + £6,600 + £2,435 = £11,375, above the £11,343.80
@@ -206,11 +241,65 @@
     tax_credits_applicable_income: 0
     child_tax_credit: 4_000
 
+- name: The passport does not bring a family under the childcare gross income limit
+  # England's two-year-old offer: a child whose parent is entitled to "child
+  # tax credit where that parent is not also entitled to working tax credit
+  # ... and has an annual gross income not exceeding £16,190", or to "the
+  # guaranteed element of state pension credit" (SI 2014/2147 reg 1(2),
+  # "eligible child", as at 1 September 2024). The previous case's couple,
+  # with a grandchild aged 2: their CTC is passported through the savings
+  # credit, but their gross income is £20,200 and they have no Guarantee
+  # Credit, so the child is not eligible through either route.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 9_000
+        employment_income: 3_000
+        savings_interest_income: 500
+        child_tax_credit_reported: 1
+      grandparent_2:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 8_000
+      grandchild:
+        age: 2
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        pension_credit_earnings: 2_480
+        child_minimum_guarantee_addition: 0
+        CTC_family_element: 545
+        working_tax_credit_run_on: false
+        extended_childcare_entitlement_eligible: false
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+        country: ENGLAND
+  output:
+    guarantee_credit: 0
+    savings_credit: 123.34
+    tax_credits_applicable_income: 0
+    tax_credits_current_year_income: 20_200
+    child_tax_credit: 4_000
+    meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
+    targeted_childcare_entitlement_eligible: false
+
 - name: A mixed-age couple cannot get Pension Credit, so the income test applies
   # SPCA 2002 s.4(1A) (from 15 May 2019): no Pension Credit where the other
   # member of the couple is under the qualifying age. The SI 2019/37 art. 4
   # saving is not modelled here. A couple both over that age with this income
   # would get Guarantee Credit with the passport.
+  # The older partner works 20 hours, which meets the WTC hours condition for
+  # a joint claim with no child: "aged at least 60 and undertakes work for not
+  # less than 16 hours per week" (WTC Regs 2002 reg 4(1), Second condition,
+  # second variation).
   # Tax credit income: (6,000 + 300 - 300) + 2,600 = £8,600. WTC maximum: £2,435 + £2,500
   # = £4,935, less 0.41 x (8,600 - 7,955) = £264.45, so £4,670.55.
   period: 2024
@@ -222,12 +311,12 @@
         is_claimant_or_partner: true
         state_pension: 6_000
         savings_interest_income: 300
-      younger:
-        age: 40
-        is_claimant_or_partner: true
         employment_income: 2_600
         weekly_hours: 20
         working_tax_credit_reported: 1
+      younger:
+        age: 40
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
