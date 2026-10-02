@@ -36,9 +36,15 @@ class council_tax_reduction_working_age_personal_allowance(Variable):
         age = benunit("eldest_claimant_or_partner_age", period)
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
+        # The applicant's or partner's own ESA: contributory ESA on their
+        # records, and income-related ESA on their reports only, since another
+        # member of the benefit unit claims in their own right.
         on_esa = (
             add_for_members(
-                benunit, period, ["esa_contrib", "esa_income"], claimant_or_partner
+                benunit,
+                period,
+                ["esa_contrib", "claimant_or_partner_esa_income"],
+                claimant_or_partner,
             )
             > 0
         )

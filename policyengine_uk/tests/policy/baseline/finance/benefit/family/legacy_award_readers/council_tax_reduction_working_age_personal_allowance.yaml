@@ -1,0 +1,111 @@
+# Scotland and Wales working-age council tax reduction: a single applicant
+# under 25 gets the lower personal allowance unless entitled to main phase
+# employment and support allowance (SSI 2021/249 Sch 1 para 1; WSI 2013/3029
+# Sch 7 para 1). The model takes receipt of ESA by the applicant or partner as
+# the main phase. "other" is a member who is neither the applicant, the
+# partner nor a child or young person they are responsible for, so their
+# income-related ESA is their own claim and leaves the applicant on the lower
+# rate. Weekly rates for 2026 (x 52): Scotland £75.65 under 25 and £95.55 at
+# 25 or over; Wales £80.60 and £101.85.
+
+- name: Scotland, another member's income-related ESA leaves an applicant under 25 on the lower personal allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [applicant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, other]
+        region: SCOTLAND
+        country: SCOTLAND
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    # 75.65 * 52
+    council_tax_reduction_working_age_personal_allowance: 3_933.80
+
+- name: Scotland, the applicant's own income-related ESA gives the higher personal allowance under 25
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [applicant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant]
+        region: SCOTLAND
+        country: SCOTLAND
+  output:
+    claimant_or_partner_esa_income: 5_000
+    # 95.55 * 52
+    council_tax_reduction_working_age_personal_allowance: 4_968.60
+
+- name: Wales, another member's income-related ESA leaves an applicant under 25 on the lower personal allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [applicant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, other]
+        region: WALES
+        country: WALES
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    # 80.60 * 52
+    council_tax_reduction_working_age_personal_allowance: 4_191.20
+
+- name: Wales, the applicant's own income-related ESA gives the higher personal allowance under 25
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 22
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [applicant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant]
+        region: WALES
+        country: WALES
+  output:
+    claimant_or_partner_esa_income: 5_000
+    # 101.85 * 52
+    council_tax_reduction_working_age_personal_allowance: 5_296.20
