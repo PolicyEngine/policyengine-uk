@@ -39,10 +39,11 @@ class is_claimant_or_partner(Variable):
       only when at least 20 years younger. In the Family Resources Survey,
       co-resident adults 20 or more years apart are mostly in separate benefit
       units, while those 16 to 19 years apart are mostly couples. A couple 20
-      or more years apart entered without roles is therefore assessed as a
-      single claimant unless the younger is flagged as a parent; supply
-      `is_claimant_or_partner` for such a couple. Survey datasets can supply
-      it from the survey's own benefit units.
+      or more years apart entered without roles, whose elder is the claimant
+      (the head, or the eldest adult when no adult head is given), is
+      therefore assessed as a single claimant unless the younger is flagged as
+      a parent; supply `is_claimant_or_partner` for such a couple. Survey
+      datasets can supply it from the survey's own benefit units.
     - Flags follow the Family Resources Survey convention: in a benefit unit
       with children, both members of the couple are flagged as parents. When
       relationships are known, supply this variable for everyone (true for

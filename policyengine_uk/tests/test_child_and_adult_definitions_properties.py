@@ -14,12 +14,15 @@ Invariants:
    at least 16 years younger explains the flag; flagging the claimant as a
    parent never adds a partner. On benefit units shaped like the FRS's (one
    or two adults, all flagged as parents when there are dependants) the
-   any-age 20-year gap changes only childless couples 20 or more years apart
-   (intended), and supplied claimant/partner roles are always kept.
+   any-age 20-year gap changes only childless couples whose claimant is 20 or
+   more years older than the other adult (intended), and supplied
+   claimant/partner roles are always kept.
 2. HBAI types partition everyone. Any benefit unit with one head has at most
    two claimants/partners, all of them HBAI adults, and at least one if it
    has an HBAI adult; valid families (one or two adults aged 20+ and
-   dependants) have exactly their adults. Couple/single and
+   dependants) have exactly their adults, except an unflagged couple whose
+   head is 20+ years older than the other adult (the any-age presumption,
+   intended), and always when the roles are supplied. Couple/single and
    couple/lone-parent/single-person partition benefit units. Heads aged 16+
    are claimants or partners, including when explicitly younger than others,
    unless two other members are flagged parents and the head is not.
@@ -217,7 +220,7 @@ def hbai_dependent_child(p, family):
         return True
     return (
         p["age"] < 20
-        and any(member["is_parent"] for member in family)
+        and any(member["is_parent"] and member["age"] >= 16 for member in family)
         and (non_advanced_education(p) or p["is_in_approved_training"])
     )
 
@@ -558,7 +561,16 @@ def test_valid_family_partition_and_adding_a_child_preserves_claimants(
     for family in families:
         old = claimants[old_offset : old_offset + len(family)]
         new = claimants[new_offset : new_offset + len(family)]
-        assert sum(old) == sum(p["age"] >= 20 for p in family)
+        np.testing.assert_array_equal(old, claimants_or_partners(family))
+        # Every adult is selected, except in an unflagged couple whose head
+        # (the claimant) is 20+ years older: the any-age presumption (intended).
+        adults = [p for p in family if p["age"] >= 20]
+        wide_gap = (
+            len(adults) == 2
+            and not adults[0]["is_parent"]
+            and adults[0]["age"] - adults[1]["age"] >= 20
+        )
+        assert sum(old) == len(adults) - wide_gap
         assert sum(old) in (1, 2)
         np.testing.assert_array_equal(new, old)
         assert not claimants[new_offset + len(family)]
@@ -762,9 +774,13 @@ def test_parent_marked_under_16_entrant_preserves_existing_claimants():
         person(20, is_benunit_head=True),
         person(18, current_education="POST_SECONDARY"),
     ]
-    sim = simulate([family, family + [person(0, is_parent=True)]])
+    entrant = family + [person(0, is_parent=True)]
+    sim = simulate([family, entrant])
     actual = sim.calculate("is_claimant_or_partner", YEAR)
     np.testing.assert_array_equal(actual[:2], actual[2:4])
+    # The reference ignores a parent flag under 16, as the model does.
+    expected = claimants_or_partners(family) + claimants_or_partners(entrant)
+    np.testing.assert_array_equal(actual, expected)
 
 
 @st.composite
@@ -903,10 +919,11 @@ def childless_couple_20_years_apart(family):
 @given(frs_shaped_units())
 def test_frs_shaped_units_change_only_for_childless_couples_20_years_apart(families):
     # Differential against the rule without the any-age gap. On FRS-shaped
-    # units the two differ only in childless two-adult units 20 or more years
-    # apart, which carry no flags: there the younger adult is presumed the
-    # claimant's child (intended). Survey datasets supply is_claimant_or_partner,
-    # so the microsimulation does not depend on this presumption.
+    # units the two can differ only in childless two-adult units 20 or more
+    # years apart, which carry no flags: there, if the claimant (the head) is
+    # the elder, the younger adult is presumed their child (intended); a
+    # younger head keeps the couple. Survey datasets supply
+    # is_claimant_or_partner, so the microsimulation does not depend on this.
     sim = simulate(families)
     expected = [c for family in families for c in claimants_or_partners(family)]
     assert_values(sim, "is_claimant_or_partner", expected)
@@ -946,3 +963,20 @@ def test_unflagged_adult_pairs_follow_the_20_year_gap():
     expected = [c for a, b in pairs for c in (True, a - b < 20)]
     np.testing.assert_array_equal(claimants, expected)
     assert expected == [c for f in families for c in claimants_or_partners(f)]
+
+
+def test_wide_gap_couples_by_head_order_and_with_supplied_roles():
+    # An unflagged couple 25 years apart: with the elder as head (the claimant)
+    # the younger is presumed their child; with the younger as head the elder
+    # is the partner. Supplied roles keep the couple either way.
+    elder_head = [person(70, is_benunit_head=True), person(45)]
+    younger_head = [person(45, is_benunit_head=True), person(70)]
+    families = [elder_head, younger_head, elder_head, younger_head]
+    sim = simulate(families)
+    inferred = sim.calculate("is_claimant_or_partner", YEAR)
+    np.testing.assert_array_equal(inferred[:4], [True, False, True, True])
+    assert claimants_or_partners(elder_head) == [True, False]
+    assert claimants_or_partners(younger_head) == [True, True]
+    supplied = simulate(families)
+    supplied.set_input("is_claimant_or_partner", YEAR, [True] * 8)
+    np.testing.assert_array_equal(supplied.calculate("is_couple", YEAR), [True] * 4)

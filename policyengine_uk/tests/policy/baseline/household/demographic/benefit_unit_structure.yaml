@@ -454,6 +454,28 @@
   output:
     is_claimant_or_partner: [true, true, true, false, true, false]
 
+- name: A younger head 20 years below the other adult keeps the couple
+  # The gap is measured below the claimant (the head), so an elder partner is
+  # never presumed the head's child.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 50
+        is_benunit_head: true
+      elder:
+        age: 70
+    benunits:
+      benunit:
+        members: [head, elder]
+    households:
+      household:
+        members: [head, elder]
+  output:
+    is_claimant_or_partner: [true, true]
+    is_couple: true
+
 - name: A flagged partner 25 years younger stays the partner
   period: 2025
   absolute_error_margin: 0
