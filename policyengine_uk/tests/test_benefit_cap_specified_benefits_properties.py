@@ -228,7 +228,11 @@ def reference_exempt(members, working_tax_credit):
         return m.get("esa_includes_support_component", own_esa(m))
 
     def receives_esa_with_support_component(m):
-        receiving = m["esa_contrib_reported"] > 0 or couple_award
+        # The couple's income-related award is payable to the member who
+        # reports it (HB Regs 2006 reg 2(3A)).
+        receiving = m["esa_contrib_reported"] > 0 or (
+            couple_award and m["esa_income_reported"] > 0
+        )
         return receiving and support_component(m)
 
     def lcwra(m):

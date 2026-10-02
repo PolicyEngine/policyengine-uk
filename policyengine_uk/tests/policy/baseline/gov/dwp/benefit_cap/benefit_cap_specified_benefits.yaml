@@ -322,10 +322,11 @@
         members: [claimant, partner]
         region: NORTH_EAST
   output:
-    # The award is the partner's: the claimant has no allowance of their own
-    # (WRA 2007 s.4(4)(b): "the claimant has limited capability for
-    # work-related activity" refers to the person whose allowance it is).
-    is_on_income_related_esa: [true, true]
+    # The award is the partner's, payable to them (HB Regs 2006 reg 2(3A));
+    # the claimant has no allowance of their own (WRA 2007 s.4(4)(b): "the
+    # claimant has limited capability for work-related activity" refers to
+    # the person whose allowance it is).
+    is_on_income_related_esa: [false, true]
     esa_includes_support_component: [false, true]
     is_benefit_cap_exempt_health_disability: true
 
@@ -510,7 +511,8 @@
         members: [claimant, partner]
         region: NORTH_EAST
   output:
-    is_on_income_related_esa: [true, true]
+    # Payable to the claimant who heads the family (HB Regs 2006 reg 2(3A)).
+    is_on_income_related_esa: [true, false]
     has_own_esa_award: [true, false]
     esa_includes_support_component: [true, false]
     is_benefit_cap_exempt_health_disability: true

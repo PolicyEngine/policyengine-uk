@@ -28,8 +28,10 @@ adult) claims in their own right, so:
 - the claimant-or-partner awards are bounded by the benefit-unit awards
   (0 <= claimant_or_partner_esa_income <= esa_income, likewise for JSA) and
   equal them when no other member reports an award;
-- a person is on an award exactly when their couple's award is positive (the
-  claimant and partner) or they report one themselves (anyone else).
+- a person is on an award exactly when they are the payee of their couple's
+  positive award (the claimant or partner who reports it, or the claimant)
+  or, for anyone else, when they report one themselves while the benefit
+  unit's modelled award is positive.
 
 Roles are given explicitly (is_claimant_or_partner), so the properties test
 the readers rather than role inference. The take-up mode is fixed
@@ -265,6 +267,27 @@ def test_claimant_or_partner_awards_match_reference(drawn):
             assert np.isclose(award[i], expected), (variable, units[i])
 
 
+def payee(sim, claimant_or_partner, reports):
+    """The claimant or partner who reports the award, or the claimant (the
+    head, else the eldest of the couple) where neither does."""
+    benunit = sim.calculate("benunit_id", YEAR, map_to="person")
+    head = sim.calculate("is_benunit_head", YEAR) & claimant_or_partner
+    age = sim.calculate("age", YEAR)
+    result = np.zeros(len(benunit), dtype=bool)
+    for unit in np.unique(benunit):
+        members = benunit == unit
+        couple = members & claimant_or_partner
+        reporting = couple & reports
+        if reporting.any():
+            result |= reporting
+        elif (members & head).any():
+            result |= members & head
+        elif couple.any():
+            eldest = np.flatnonzero(couple)[np.argmax(age[couple])]
+            result[eldest] = True
+    return result
+
+
 @SETTINGS
 @given(st.lists(st.tuples(families(), other_members()), min_size=1, max_size=6))
 def test_person_is_on_award_from_couple_or_own_report(drawn):
@@ -287,8 +310,13 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
         ("is_on_income_support", "income_support", "income_support_reported", None),
     ]:
         on = sim.calculate(person_variable, YEAR)
-        couple = sim.calculate(couple_award, YEAR, map_to="person") > 0
         own = sim.calculate(report, YEAR) > 0
+        # Of the claimant and partner, only the payee is on a couple's award:
+        # the one who reports it, or the claimant where neither does
+        # (HB Regs 2006 reg 2(3), (3A): "payable to him").
+        couple = (sim.calculate(couple_award, YEAR, map_to="person") > 0) & payee(
+            sim, claimant_or_partner, own
+        )
         if total_award is not None:
             # Another member's own report counts while the benefit unit's
             # modelled award is positive.
