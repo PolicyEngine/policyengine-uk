@@ -1068,13 +1068,15 @@
     housing_benefit_LHA_additional_bedrooms: [0, 2]
     housing_benefit_LHA_allowed_bedrooms: [2, 3]
 
-- name: A claimant who is looked after gives no foster room
+- name: A looked-after claimant aged 17 gives no foster room
   period: 2026
   input:
     people:
       claimant:
-        age: 19
+        age: 17
         is_household_head: true
+        is_claimant_or_partner: true
+        current_education: UPPER_SECONDARY
         is_looked_after_by_local_authority: true
     benunits:
       family:
@@ -1087,9 +1089,78 @@
         brma: MAIDSTONE
   output:
     # The foster parent condition needs a child placed with the renter, not
-    # the renter's own status (UC reg 2; HB reg 2(1)).
+    # the renter's own status (UC reg 2; HB reg 2(1), reg 21(3)).
     is_lha_foster_child: false
     lha_renter_meets_foster_parent_condition: false
     LHA_additional_bedrooms: 0
+    is_child_or_young_person_placed_with_family: false
     is_housing_benefit_qualifying_parent_or_carer: false
     housing_benefit_LHA_additional_bedrooms: 0
+
+- name: A person aged 18 cannot be looked after, so a single renter of 30 has a qualifying young person's bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 30
+        is_household_head: true
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [renter, young_person]
+    households:
+      home:
+        members: [renter, young_person]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Children Act 1989 ss.22(1) and 105(1): only a person under 18 is looked
+    # after. UC: the renter is responsible for the qualifying young person
+    # (reg 4(2)), who has a bedroom (para 10(1)(b)); not a specified renter
+    # (para 28(3)): 2, C. HB: a member of the household aged 16 or over
+    # (13D(3)(b)): 2, C. No foster or carer room.
+    is_looked_after_child: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_additional_bedrooms: 0
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    is_child_or_young_person_placed_with_family: [false, false]
+    housing_benefit_LHA_additional_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+
+- name: A non-dependant parent and adult son entered as single count one Housing Benefit bedroom each
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+      parent:
+        age: 50
+      son:
+        age: 22
+    benunits:
+      renter_family:
+        members: [renter]
+      parent_family:
+        members: [parent, son]
+        relation_type: SINGLE
+    households:
+      home:
+        members: [renter, parent, son]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Not a couple, so each is "a person who is not a child" (HB reg
+    # 13D(3)(b)): 3. The parent family's own figure follows the model's
+    # inferred claimant and partner (the eldest two adults); it has no rent,
+    # so it is unused.
+    housing_benefit_LHA_allowed_bedrooms: [3, 1]

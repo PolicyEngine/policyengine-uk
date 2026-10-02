@@ -13,5 +13,5 @@ class is_child_or_qualifying_young_person_for_pension_credit(Variable):
             "is_child_for_pension_credit", period
         ) | person("is_qualifying_young_person_for_pension_credit", period)
         return child_or_qualifying_young_person & ~person(
-            "is_looked_after_by_local_authority", period
+            "is_looked_after_child", period
         )

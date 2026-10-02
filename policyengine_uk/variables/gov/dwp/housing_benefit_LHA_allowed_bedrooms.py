@@ -91,7 +91,9 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         # and only where both members are counted, so the halves always pair.
         counted = other_occupier & aged_16_or_over
         claimant_or_partner = counted & person("is_claimant_or_partner", period)
-        couple = person.benunit.sum(claimant_or_partner) == 2
+        couple = (person.benunit.sum(claimant_or_partner) == 2) & person.benunit(
+            "is_couple", period
+        )
         occupier_rooms = counted * where(claimant_or_partner & couple, 0.5, 1)
         other_occupiers = housing_benefit_other_occupiers(
             benunit, period, occupier_rooms

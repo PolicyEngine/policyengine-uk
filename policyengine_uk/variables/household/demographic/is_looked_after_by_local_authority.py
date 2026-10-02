@@ -7,7 +7,8 @@ class is_looked_after_by_local_authority(Variable):
     label = "looked after by a local authority"
     documentation = (
         "Whether this child or young person is looked after by a local "
-        "authority. A looked-after child who lives in the household, such as "
+        "authority. Only a person under 18 can be (see "
+        "is_looked_after_child), so the flag has no effect at 18 or over. A looked-after child who lives in the household, such as "
         "a foster child, is placed with the family whose benefit unit they "
         "are in: no one in it is responsible for them under Universal Credit "
         "(UC Regs 2013 reg 4(6)(a)), they are not a member of the claimant's "

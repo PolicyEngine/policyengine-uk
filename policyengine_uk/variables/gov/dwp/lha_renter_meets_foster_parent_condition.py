@@ -30,7 +30,9 @@ class lha_renter_meets_foster_parent_condition(Variable):
         # (under 18) is placed under the care planning regulations; reg 89(3)
         # and Sch 4 para 12(4)(b): an adopter with whom a child is placed for
         # adoption.
-        age_limit = parameters(period).gov.dwp.LHA.foster_child_age_limit
+        age_limit = parameters(
+            period
+        ).household.demographic.looked_after_child_age_limit
         placed_for_adoption = (
             person("is_placed_for_adoption", period)
             & (person("age", period) < age_limit)

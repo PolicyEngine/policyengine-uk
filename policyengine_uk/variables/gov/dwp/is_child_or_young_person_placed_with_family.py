@@ -21,7 +21,13 @@ class is_child_or_young_person_placed_with_family(Variable):
         "model treats foster placements as within reg 21(3), as the "
         "'qualifying parent or carer' definition presupposes and as the "
         "English pensioner and Welsh council tax reduction rules say "
-        "expressly ('section 22C'; 'section 22C or 23(2)(a)')."
+        "expressly ('section 22C'; 'section 22C or 23(2)(a)'). HB reg "
+        "19(2)(c) excludes from 'young person' anyone to whom the Children "
+        "(Leaving Care) Act 2000 s.6 applies, such as an eligible child aged "
+        "16 or 17 who has been looked after for 13 weeks since age 14; such "
+        "a person is an occupier, not placed. The model has no input for "
+        "that and treats every looked-after qualifying young person as "
+        "placed."
     )
     definition_period = YEAR
     reference = (
@@ -38,7 +44,7 @@ class is_child_or_young_person_placed_with_family(Variable):
     def formula(person, period, parameters):
         # HB Regs 2006 reg 21(3)(a)-(c); IS Regs 1987 reg 16(4); JSA Regs
         # 1996 reg 78(4); ESA Regs 2008 reg 156(5).
-        placed = person("is_looked_after_by_local_authority", period) | person(
+        placed = person("is_looked_after_child", period) | person(
             "is_placed_for_adoption", period
         )
         return (

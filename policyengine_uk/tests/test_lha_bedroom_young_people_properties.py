@@ -265,8 +265,9 @@ def fosters(fam):
 
 
 def in_qualifying_education(p, age_limit_for_entry=19):
-    """Full-time non-advanced education, entered before 19."""
-    return p["current_education"] == "UPPER_SECONDARY" and (
+    """Full-time non-advanced education (any education short of tertiary),
+    entered before 19."""
+    return p["current_education"] not in ("NOT_IN_EDUCATION", "TERTIARY") and (
         p["age"] < age_limit_for_entry
         or p["age_started_or_accepted_current_education_or_training"]
         < age_limit_for_entry
@@ -301,14 +302,15 @@ def child_benefit_qualifying_young_person(p):
 
 def flags(p):
     """The added person's status, from the inputs alone."""
-    looked_after = p.get("is_looked_after_by_local_authority", False)
+    # Only a person under 18 can be looked after (Children Act 1989 s.105).
+    looked_after = p.get("is_looked_after_by_local_authority", False) and p["age"] < 18
     return dict(
         # A qualifying young person no one is responsible for (UC para
         # 9(2)(g); reg 4(6)(a)).
         unclaimed=looked_after and uc_qualifying_young_person(p),
         # The family's foster child: looked after and under 18 (UC reg 2,
         # "foster parent"; para 9(3)).
-        fostered=looked_after and p["age"] < 18,
+        fostered=looked_after,
         # Placed with the family by a local authority (HB reg 21(3)).
         placed=looked_after and child_benefit_qualifying_young_person(p),
         overnight=p.get("has_non_resident_overnight_carer", False),
@@ -396,7 +398,7 @@ def test_a_foster_child_adds_only_the_foster_parents_bedroom(case):
 
 @PROPERTY_SETTINGS
 @given(scenario())
-def test_bedrooms_match_an_independent_count_of_the_size_criteria(case):
+def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
     population, target, person = case
     situation, keys = build(population, (target, person))
     sim, uc, hb = bedrooms(situation)

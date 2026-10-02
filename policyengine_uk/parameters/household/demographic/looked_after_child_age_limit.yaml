@@ -1,0 +1,11 @@
+description: Age below which a person can be a child looked after by a local authority, and so a foster child.
+values:
+  2010-01-01: 18
+metadata:
+  unit: year
+  label: looked-after child age limit
+  reference:
+    - title: Children Act 1989 s.22(1) (a child who is looked after by a local authority) and s.105(1) ("child" means a person under the age of eighteen)
+      href: https://www.legislation.gov.uk/ukpga/1989/41/section/105
+    - title: Universal Credit Regulations 2013 reg 2, "foster parent" and "looked after by a local authority"
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/2
