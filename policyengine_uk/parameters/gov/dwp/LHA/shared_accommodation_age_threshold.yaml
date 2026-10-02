@@ -6,7 +6,9 @@ metadata:
   unit: year
   label: Lha shared accommodation age threshold
   reference:
-    - title: The Housing Benefit Regulations 2006 - Schedule 4 - Paragraph 28
+    - title: Universal Credit Regulations 2013 Sch 4 para 28(2)(a)
       href: https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28
+    - title: Housing Benefit Regulations 2006 reg 2(1) ("young individual")
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/2
     - title: LHA shared accommodation rate guidance
       href: https://www.gov.uk/government/publications/local-housing-allowance-rates-applicable-from-april-2013

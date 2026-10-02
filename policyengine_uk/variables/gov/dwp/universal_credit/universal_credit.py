@@ -11,7 +11,7 @@ class universal_credit(Variable):
 
     def formula(benunit, period, parameters):
         uc_max_entitlement = benunit("universal_credit_pre_benefit_cap", period)
-        benefit_cap_reduction = benunit("benefit_cap_reduction", period)
+        benefit_cap_reduction = benunit("uc_benefit_cap_reduction", period)
         deductions = benunit("uc_deductions", period)
         # A protected minimum floor (zero under current law) caps combined
         # benefit cap reductions and deductions at (1 - floor) x the standard

@@ -4,12 +4,17 @@ from policyengine_uk.model_api import *
 class is_responsible_for_child_or_young_person_for_uc_or_housing_benefit(Variable):
     """Responsible for a child or young person under UC or Housing Benefit rules.
 
-    The benefit cap and the LHA category each serve both Universal Credit and
-    Housing Benefit in this model. UC counts a child or qualifying young person
-    (UC Regs 2013 regs 4-5); Housing Benefit counts a child or young person,
-    whose young-person test follows Child Benefit (HB Regs 2006 regs 2, 19).
-    The family rates apply if either scheme's test is met, so neither scheme's
-    families are moved onto the single rate by the other's narrower definition.
+    The LHA shared accommodation tests read this. UC counts a child or
+    qualifying young person (UC Regs 2013 regs 4-5); Housing Benefit counts a
+    child or young person, whose young-person test follows Child Benefit (HB
+    Regs 2006 regs 2, 19). A member who is a dependant under one scheme only
+    is, under the other, a non-dependant (UC Sch 4 para 9; HB reg 3), which
+    the household composition proxy (lha_renter_has_non_dependant) does not
+    identify. Either way the renter is not limited to the shared
+    accommodation rate (UC Sch 4 para 28(3)-(4); HB reg 13D(2)(a)(i)), so each
+    scheme's test reads responsibility under either scheme. The benefit cap
+    rates, where a non-dependant does not matter, read each scheme's own
+    responsibility test.
 
     UC reg 5(1)(a) also makes every 16-year-old a qualifying young person until
     the 1 September after their 16th birthday, whatever their education. Annual

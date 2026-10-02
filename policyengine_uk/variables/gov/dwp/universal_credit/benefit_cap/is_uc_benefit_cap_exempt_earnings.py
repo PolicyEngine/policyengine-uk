@@ -1,0 +1,32 @@
+from policyengine_uk.model_api import *
+
+
+class is_uc_benefit_cap_exempt_earnings(Variable):
+    value_type = bool
+    entity = BenUnit
+    label = "Exempt from the Universal Credit benefit cap because of earnings"
+    documentation = (
+        "Whether the claimant's earned income, or a couple's combined earned "
+        "income, reaches the earnings threshold (UC Regs 2013 reg. 82(1)(a)). "
+        "For a member of a couple claiming as a single person the couple's "
+        "earnings combine. The grace period (reg. 82(1)(b)) is not modelled. "
+        "Housing Benefit has no earnings exception: its work exception is "
+        "entitlement to working tax credit (HB Regs 2006 reg. 75E)."
+    )
+    definition_period = YEAR
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/82",
+        "https://www.gov.uk/benefit-cap/when-youre-not-affected",
+    )
+
+    def formula(benunit, period, parameters):
+        # Earnings exemption for UC (£846/month = £10,152/year)
+        # Note: Only check earned income, not UC amount itself to avoid circular dependency
+        uc_earned = benunit.sum(
+            benunit.members("employment_income", period)
+            + benunit.members("self_employment_income", period)
+            - benunit.members("income_tax", period)
+            - benunit.members("national_insurance", period)
+        )
+        earnings_threshold = 10_152
+        return uc_earned >= earnings_threshold
