@@ -73,6 +73,11 @@ FLAGS = [
     "is_blind",
 ]
 money = st.floats(0, 40_000, allow_nan=False, allow_infinity=False)
+# Incomes, bills and savings around the means-test thresholds, so awards are
+# often part-withdrawn rather than nil or full in both representations.
+pension = st.one_of(st.sampled_from([0, 5_000, 8_000, 12_000, 20_000]), money)
+council_tax = st.one_of(st.just(1_800), st.floats(0, 4_000, allow_nan=False))
+savings = st.one_of(st.just(0), st.floats(0, 20_000, allow_nan=False))
 head_age = st.one_of(
     st.sampled_from([18, 25, 40, 60, 66, 68, 80]), st.integers(18, 100)
 )
@@ -86,7 +91,7 @@ def households(draw):
         scheme=draw(st.sampled_from(SCHEMES)),
         shape=draw(st.sampled_from(SHAPES)),
         head_age=draw(head_age),
-        head_pension=draw(money),
+        head_pension=draw(pension),
         head_flags=draw(st.fixed_dictionaries({f: st.booleans() for f in FLAGS})),
         partner_age=draw(st.integers(16, 100)),
         parent_age=draw(st.integers(16, 30)),
@@ -95,8 +100,8 @@ def households(draw):
         universal_credit=draw(st.sampled_from([None, None, 5_000])),
         other_family=draw(st.sampled_from([None, "non_dependant", "sharer"])),
         other_age=draw(st.integers(16, 90)),
-        council_tax=draw(st.floats(0, 4_000, allow_nan=False)),
-        savings=draw(st.floats(0, 20_000, allow_nan=False)),
+        council_tax=draw(council_tax),
+        savings=draw(savings),
     )
 
 
@@ -277,14 +282,14 @@ def grandmother_households(draw):
     return dict(
         scheme=draw(st.sampled_from(SCHEMES)),
         head_age=draw(head_age),
-        head_pension=draw(money),
+        head_pension=draw(pension),
         head_flags=draw(st.fixed_dictionaries({f: st.booleans() for f in FLAGS})),
         parent_age=draw(st.integers(16, 17)),
         parent_earnings=draw(st.lists(money, min_size=2, max_size=2)),
         jsa_income=draw(st.sampled_from([None, 3_000])),
         universal_credit=draw(st.sampled_from([None, 5_000])),
-        council_tax=draw(st.floats(0, 4_000, allow_nan=False)),
-        savings=draw(st.floats(0, 20_000, allow_nan=False)),
+        council_tax=draw(council_tax),
+        savings=draw(savings),
     )
 
 

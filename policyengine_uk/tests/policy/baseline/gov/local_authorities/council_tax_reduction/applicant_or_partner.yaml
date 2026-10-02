@@ -441,3 +441,44 @@
     # A working-age couple aged 18 or over: 150.15 * 52, not the pension-age
     # couple rate.
     council_tax_reduction_applicable_amount: [7_807.80]
+
+- name: The young couple's Universal Credit does not remove a grandmother head's tariff income from capital in Kingston upon Thames
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 55
+        is_household_head: true
+        private_pension_income: 5_000
+      young_mother:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        universal_credit: 6_000
+        child_benefit: 1_000
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 1_800
+        savings: 10_000
+  output:
+    council_tax_reduction_head_applies_alone: [true]
+    council_tax_reduction_applicable_income: [5_000]
+    council_tax_reduction_applicable_amount: [4_968.60]
+    # Tariff income ceil((10,000 - 6,000) / 250) = £16 a week, 832 a year,
+    # since she has no award. 1,800 - (5,000 + 832 - 4,968.60) * 20%.
+    kingston_upon_thames_council_tax_reduction: [1_627.32]
