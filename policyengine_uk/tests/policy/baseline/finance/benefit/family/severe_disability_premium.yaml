@@ -1,0 +1,719 @@
+# Legacy benefit severe disability premium: HB Regs 2006 Sch 3 paras 14 and
+# 20(6); IS Regs 1987 Sch 2 paras 13 and 15(5); ESA Regs 2008 Sch 4 paras 6
+# and 11(2); JSA Regs 1996 Sch 1 paras 15 and 20(6).
+# Expected values are the 2026-27 weekly rates times 52, hand-computed from
+# the Schedules' rate tables: single rate 86.05 * 52 = 4474.60; double rate
+# for a couple who both qualify with no carer paid for either
+# 172.10 * 52 = 8949.20.
+
+# Qualifying benefits (para 14(2)(a)(i) and its counterparts).
+
+- name: Attendance Allowance at the lower rate qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    aa_category: LOWER
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+    severe_disability_premium: 4474.60
+
+- name: Attendance Allowance at the higher rate qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    aa_category: HIGHER
+  output:
+    severe_disability_premium: 4474.60
+
+- name: DLA care component at the middle rate qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    dla_sc_category: MIDDLE
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+    severe_disability_premium: 4474.60
+
+- name: DLA care component at the highest rate qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    dla_sc_category: HIGHER
+  output:
+    severe_disability_premium: 4474.60
+
+- name: DLA care component at the lowest rate does not qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    dla_sc_category: LOWER
+  output:
+    receives_severe_disability_premium_qualifying_benefit: false
+    severe_disability_premium: 0
+
+- name: PIP daily living component at the standard rate qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    pip_dl_category: STANDARD
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+    severe_disability_premium: 4474.60
+
+- name: PIP daily living component at the enhanced rate qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    pip_dl_category: ENHANCED
+  output:
+    severe_disability_premium: 4474.60
+
+- name: PIP mobility component alone does not qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    pip_m_category: ENHANCED
+  output:
+    severe_disability_premium: 0
+
+- name: Armed Forces Independence Payment qualifies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    armed_forces_independence_payment: 1_000
+  output:
+    receives_severe_disability_premium_qualifying_benefit: true
+    severe_disability_premium: 4474.60
+
+- name: Other Armed Forces Compensation Scheme payments do not qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    afcs_reported: 1_000
+  output:
+    receives_severe_disability_premium_qualifying_benefit: false
+    severe_disability_premium: 0
+
+- name: The tax credit severe disability flag alone does not qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    is_severely_disabled_for_benefits: true
+  output:
+    severe_disability_premium: 0
+
+- name: No qualifying benefit, no premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+  output:
+    severe_disability_premium: 0
+
+# Couples (para 14(2)(b), (3) and (4); para 20(6)(b)).
+
+- name: Couple who both qualify with no carer get the double rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: STANDARD
+      partner:
+        age: 42
+        dla_sc_category: MIDDLE
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    severe_disability_premium: 8949.20
+
+- name: Couple where only one partner qualifies get nothing
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: ENHANCED
+      partner:
+        age: 42
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    severe_disability_premium: 0
+
+- name: A blind partner who does not qualify is treated as absent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: ENHANCED
+      partner:
+        age: 42
+        is_blind: true
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    # Para 14(3): the claimant is tested as single and gets the single rate.
+    severe_disability_premium: 4474.60
+
+- name: A blind partner who is the qualifying member's carer bars the premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: ENHANCED
+      partner:
+        age: 42
+        is_blind: true
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    severe_disability_premium: 0
+
+- name: Couple who both qualify with a carer paid for one get the single rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: STANDARD
+      partner:
+        age: 42
+        aa_category: LOWER
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    # Para 20(6)(b)(i): a carer's allowance is paid for only one of them.
+    severe_disability_premium: 4474.60
+
+- name: Couple who both qualify with a carer paid for each get nothing
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+      partner:
+        age: 42
+        aa_category: LOWER
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    severe_disability_premium: 0
+
+# The claimant and partner, not every adult in the benefit unit (para 14(2);
+# HB Regs reg 2 "family"). An 18 or 19 year old qualifying young person is a
+# member of the family, neither a partner nor a non-dependant.
+
+- name: A lone parent qualifies alongside an 18-year-old young person
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        pip_dl_category: STANDARD
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+    benunits:
+      family:
+        members: [parent, young_person]
+  output:
+    severe_disability_premium: 4474.60
+
+- name: A qualifying young person does not make a couple both qualify
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        pip_dl_category: STANDARD
+      partner:
+        age: 42
+        is_parent: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        dla_sc_category: MIDDLE
+    benunits:
+      family:
+        members: [claimant, partner, young_person]
+  output:
+    severe_disability_premium: 0
+
+- name: A blind young person is not a partner treated as absent
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        pip_dl_category: STANDARD
+      partner:
+        age: 42
+        is_parent: true
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        is_blind: true
+    benunits:
+      family:
+        members: [claimant, partner, young_person]
+  output:
+    severe_disability_premium: 0
+
+- name: A qualifying young person does not qualify the couple
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        is_blind: true
+      partner:
+        age: 42
+        is_parent: true
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 17
+        pip_dl_category: STANDARD
+    benunits:
+      family:
+        members: [claimant, partner, young_person]
+  output:
+    severe_disability_premium: 0
+
+- name: An 18-year-old in the benefit unit who is not a young person is a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        pip_dl_category: STANDARD
+      adult_child:
+        age: 18
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+    benunits:
+      family:
+        members: [parent, adult_child]
+  output:
+    # Not in education or training, so not a qualifying young person (HB
+    # Regs reg 19; SSCBA s.142): not in the family, so a non-dependant.
+    is_child_or_qualifying_young_person_for_child_benefit: [false, false]
+    has_non_dependant_for_severe_disability_premium: true
+    severe_disability_premium: 0
+
+- name: A 17-year-old single claimant qualifies in their own right
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 17
+    pip_dl_category: STANDARD
+  output:
+    severe_disability_premium: 4474.60
+
+# Carers (para 14(2)(a)(iii)).
+
+- name: A single claimant's own carer benefit is not paid for caring for them
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    pip_dl_category: STANDARD
+    receives_carer_benefit: true
+  output:
+    severe_disability_premium: 4474.60
+
+- name: A carer benefit paid to a young person in the family bars a single claimant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        pip_dl_category: STANDARD
+      child:
+        age: 17
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [parent, child]
+  output:
+    severe_disability_premium: 0
+
+# Non-dependants (para 14(2)(a)(ii) and (2)(b)(iii); para 14(4)).
+
+- name: A non-dependant aged 18 or over bars the premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    has_non_dependant_for_severe_disability_premium: [true, false]
+    severe_disability_premium: [0, 0]
+
+- name: A non-dependant who receives a qualifying benefit is ignored
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+        pip_dl_category: STANDARD
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    # Each is the other's non-dependant, and each is ignored because they
+    # receive a qualifying benefit, so both get the single rate.
+    has_non_dependant_for_severe_disability_premium: [false, false]
+    severe_disability_premium: [4474.60, 4474.60]
+
+- name: A blind non-dependant is ignored
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+        is_blind: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    severe_disability_premium: [4474.60, 0]
+
+- name: A non-dependant aged 17 does not bar the premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      lodger:
+        age: 17
+    benunits:
+      claimant_family:
+        members: [claimant]
+      lodger_family:
+        members: [lodger]
+    households:
+      household:
+        members: [claimant, lodger]
+  output:
+    severe_disability_premium: [4474.60, 0]
+
+- name: A disabled adult living with their parents has non-dependants
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      disabled_adult:
+        age: 30
+        dla_sc_category: HIGHER
+      mother:
+        age: 58
+      father:
+        age: 60
+    benunits:
+      adult_family:
+        members: [disabled_adult]
+      parents:
+        members: [mother, father]
+    households:
+      household:
+        members: [disabled_adult, mother, father]
+  output:
+    # HB/IS reg 3: parents living with the claimant are non-dependants
+    # unless an exclusion applies (for example joint occupiers).
+    severe_disability_premium: [0, 0]
+
+- name: People in other households are not non-dependants
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      neighbour:
+        age: 25
+    benunits:
+      claimant_family:
+        members: [claimant]
+      neighbour_family:
+        members: [neighbour]
+    households:
+      claimant_household:
+        members: [claimant]
+      neighbour_household:
+        members: [neighbour]
+  output:
+    severe_disability_premium: [4474.60, 0]
+
+# Carers in other benefit units (para 14(2)(a)(iii) and (2)(b), with 14(4)).
+# The carer condition is separate from the non-dependant condition: a
+# non-dependant whose presence is ignored under para 14(4) can still be the
+# person who receives a carer benefit for caring for the claimant. Whom each
+# carer benefit is paid for is attributed by
+# is_cared_for_by_carer_benefit_recipient, shared with the Pension Credit
+# severe disability addition.
+
+- name: A non-dependant ignored for receiving a qualifying benefit still bars the premium as the claimant's carer
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    # Each is ignored as the other's non-dependant (para 14(4)(a)). The son's
+    # Carer's Allowance is for caring for the claimant, so the claimant fails
+    # para 14(2)(a)(iii); no one is paid for caring for the son.
+    has_non_dependant_for_severe_disability_premium: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    severe_disability_premium: [0, 4474.60]
+
+- name: A blind non-dependant who receives a carer benefit bars the premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+        is_blind: true
+        receives_carer_benefit: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    # The son is ignored as a non-dependant (para 14(4)(b)) but is the
+    # claimant's carer.
+    has_non_dependant_for_severe_disability_premium: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    severe_disability_premium: [0, 0]
+
+- name: A couple who both qualify get the single rate when an ignored non-dependant is paid for caring for one of them
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      partner:
+        age: 48
+        pip_dl_category: ENHANCED
+      son:
+        age: 25
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, partner, son]
+  output:
+    # One award is for one person: a carer for only one of the couple leaves
+    # the single rate (para 14(2)(b); Sch 3 para 20(6)(b)(i)).
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+    severe_disability_premium: [4474.60, 4474.60]
+
+- name: A non-dependant who receives a carer benefit and has a severely disabled partner is treated as caring for their partner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 30
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+      sons_partner:
+        age: 28
+        pip_dl_category: STANDARD
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son, sons_partner]
+    households:
+      household:
+        members: [claimant, son, sons_partner]
+  output:
+    # A carer cares within their own benefit unit first, so the claimant has
+    # no carer. The son and his partner both qualify with a carer paid for
+    # one of them: the single rate.
+    is_cared_for_by_carer_benefit_recipient: [false, false, true]
+    severe_disability_premium: [4474.60, 4474.60]
+
+- name: One carer's award bars the premium of only one of two other benefit units, the one with the eldest member
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 60
+        pip_dl_category: STANDARD
+      younger:
+        age: 55
+        pip_dl_category: STANDARD
+      carer:
+        age: 30
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      older_family:
+        members: [older]
+      younger_family:
+        members: [younger]
+      carer_family:
+        members: [carer]
+    households:
+      household:
+        members: [older, younger, carer]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+    severe_disability_premium: [0, 4474.60, 4474.60]
+
+- name: The legacy premium and the Pension Credit addition read the same carer attribution
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        aa_category: LOWER
+      working_age:
+        age: 45
+        pip_dl_category: STANDARD
+      carer:
+        age: 40
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      pensioner_family:
+        members: [pensioner]
+      working_age_family:
+        members: [working_age]
+      carer_family:
+        members: [carer]
+    households:
+      household:
+        members: [pensioner, working_age, carer]
+  output:
+    # The one carer benefit is for the pensioner under both rules, so the
+    # working-age claimant keeps the premium and the pensioner loses the
+    # addition.
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+    severe_disability_premium: [0, 4474.60, 4474.60]
+    severe_disability_minimum_guarantee_addition: [0, 4474.60, 4474.60]
+
+# Flow-through to the applicable amounts.
+
+- name: The premium is part of the legacy benefit premiums
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    pip_dl_category: STANDARD
+  output:
+    disability_premium: 0
+    enhanced_disability_premium: 0
+    carer_premium: 0
+    benefits_premiums: 4474.60

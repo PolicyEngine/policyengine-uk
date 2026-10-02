@@ -1,0 +1,1 @@
+The legacy severe disability premium and the Pension Credit severe disability addition now share one attribution of whom each carer benefit is paid for caring for (`is_cared_for_by_carer_benefit_recipient`), so a carer in another benefit unit of the household bars the legacy premium as it already barred the addition, even when that carer is ignored as a non-dependant.

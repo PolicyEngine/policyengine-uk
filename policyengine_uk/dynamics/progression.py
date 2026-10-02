@@ -10,6 +10,8 @@ Reference: https://obr.uk/docs/dlm_uploads/NICS-Cut-Impact-on-Labour-Supply-Note
 import numpy as np
 import pandas as pd
 from policyengine_uk import Simulation
+from policyengine_uk.dynamics.demographics import benunit_age_18_composition
+from policyengine_uk.utils.marginal_rates import marginal_rate_step
 
 
 def calculate_derivative(
@@ -32,7 +34,9 @@ def calculate_derivative(
         input_variable: Variable to change (typically employment_income)
         year: Year for calculation
         count_adults: Number of adults to apply changes to
-        delta: Size of change to apply for derivative calculation (£)
+        delta: Size of change to apply for derivative calculation (£), or
+            0.1% of the input where that is larger, so that float32 rounding
+            stays negligible at any level of the input
 
     Returns:
         Array of marginal rates clipped between 0 and 1
@@ -41,24 +45,30 @@ def calculate_derivative(
     input_variable_values = sim.calculate(input_variable, year).copy()
     adult_index = sim.calculate("adult_index")
     entity_key = sim.tax_benefit_system.variables[input_variable].entity.key
+    step = marginal_rate_step(input_variable_values, delta)
+    stored_step = np.ones_like(np.asarray(input_variable_values))
 
     # Calculate baseline target values
     original_target_values = sim.calculate(target_variable, year, map_to=entity_key)
     new_target_values = original_target_values.copy()
 
-    # Apply delta change to each adult sequentially to calculate marginal effects
+    # Apply the step to each adult sequentially to calculate marginal effects
     for i in range(count_adults):
-        gets_pay_rise = adult_index == i + 1
-        new_input_variable_values = input_variable_values.copy()
-        new_input_variable_values[gets_pay_rise] += delta
+        gets_pay_rise = np.asarray(adult_index == i + 1)
+        new_input_variable_values = input_variable_values + gets_pay_rise * step
         sim.reset_calculations()
         sim.set_input(input_variable, year, new_input_variable_values)
+        # Float32 rounds the higher input, so divide by the rise stored.
+        stored_input_rise = np.asarray(
+            sim.calculate(input_variable, year) - input_variable_values
+        )
+        stored_step[gets_pay_rise] = stored_input_rise[gets_pay_rise]
         new_target_values[gets_pay_rise] = sim.calculate(
             target_variable, year, map_to=entity_key
         )[gets_pay_rise]
 
     # Calculate marginal rate as change in target per unit change in input
-    rel_marginal_wages = (new_target_values - original_target_values) / delta
+    rel_marginal_wages = (new_target_values - original_target_values) / stored_step
 
     # Set non-adult observations to NaN
     rel_marginal_wages[~pd.Series(adult_index).isin(range(1, count_adults + 1))] = (
@@ -203,8 +213,9 @@ def calculate_labour_substitution_elasticities(
     # Get demographic characteristics for elasticity assignment
     gender = sim.calculate("gender")
     is_married = sim.calculate("is_married", map_to="person")
-    has_children = sim.calculate("benunit_count_children", map_to="person") > 0
-    youngest_child_age = sim.calculate("youngest_child_age", map_to="person")
+    composition = benunit_age_18_composition(sim)
+    has_children = composition["count_under_18"].values > 0
+    youngest_child_age = composition["youngest_under_18_age"].values
 
     # Initialize elasticity array
     elasticities = np.zeros(gender.shape, dtype=float)
@@ -273,8 +284,9 @@ def calculate_labour_net_income_elasticities(
     # Get demographic characteristics for elasticity assignment
     gender = sim.calculate("gender")
     is_married = sim.calculate("is_married", map_to="person")
-    has_children = sim.calculate("benunit_count_children", map_to="person") > 0
-    youngest_child_age = sim.calculate("youngest_child_age", map_to="person")
+    composition = benunit_age_18_composition(sim)
+    has_children = composition["count_under_18"].values > 0
+    youngest_child_age = composition["youngest_under_18_age"].values
 
     # Initialize elasticity array
     elasticities = np.zeros(gender.shape, dtype=float)

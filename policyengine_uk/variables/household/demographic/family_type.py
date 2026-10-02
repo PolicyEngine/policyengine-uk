@@ -13,7 +13,12 @@ class family_type(Variable):
     entity = BenUnit
     default_value = FamilyType.SINGLE
     possible_values = FamilyType
-    label = "Family composition"
+    label = "Family composition by age 18 (deprecated)"
+    documentation = (
+        "Deprecated: an age cut-off with no legal basis, kept only for "
+        "downstream compatibility with its original formula. Nothing in "
+        "policyengine-uk uses it. Use relation_type with the programme's own responsibility for a child or young person (for example is_lone_parent for the legacy benefits), or hbai_person_type for HBAI statistics instead."
+    )
     definition_period = YEAR
 
     def formula(benunit, period, parameters):

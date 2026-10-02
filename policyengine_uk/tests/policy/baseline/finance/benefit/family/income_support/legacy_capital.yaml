@@ -1,0 +1,82 @@
+# https://www.legislation.gov.uk/uksi/1987/1967/regulation/23
+# Only claimant and partner contribute capital weights. The equal allocation of
+# household stocks is a PolicyEngine convention, not a statutory allocation rule.
+- name: Income Support capital allocation includes a claimant aged 17
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 17
+      unrelated_claimant:
+        age: 30
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_IS: false
+      unrelated_benunit:
+        members: [unrelated_claimant]
+        would_claim_IS: false
+    households:
+      household:
+        members: [claimant, unrelated_claimant]
+        savings: 18_000
+  output:
+    # Two claimants: each gets 18,000 * 1 / 2 = 9,000.
+    # Previously the under-18 claimant had zero weight: [0, 18,000].
+    income_support_assessable_capital: [9_000, 9_000]
+
+- name: Income Support capital allocation excludes a dependent student aged 19
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+      student:
+        age: 19
+        is_in_non_advanced_education: true
+      unrelated_claimant:
+        age: 30
+    benunits:
+      claimant_benunit:
+        members: [claimant, student]
+        would_claim_IS: false
+      unrelated_benunit:
+        members: [unrelated_claimant]
+        would_claim_IS: false
+    households:
+      household:
+        members: [claimant, student, unrelated_claimant]
+        savings: 18_000
+  output:
+    # The dependent student adds no weight. Each claimant gets 18,000 / 2.
+    # Previously the student's unit got 18,000 * 2 / 3 = 12,000 (other: 6,000).
+    income_support_assessable_capital: [9_000, 9_000]
+
+- name: Income Support claim path recognises a claimant aged 17
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 17
+      unrelated_claimant:
+        age: 30
+    benunits:
+      claimant_benunit:
+        members: [claimant]
+        would_claim_IS: true
+      unrelated_benunit:
+        members: [unrelated_claimant]
+        would_claim_IS: false
+    households:
+      household:
+        members: [claimant, unrelated_claimant]
+        savings: 18_000
+  output:
+    # The model's claim-path convention assigns all 18,000 to the claimant
+    # and zero to the non-claiming unit. Previously the age-18 gate yielded
+    # fallback allocation [0, 18,000] despite this claimant's claim path.
+    income_support_assessable_capital: [18_000, 0]

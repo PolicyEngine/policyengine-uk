@@ -4,7 +4,8 @@ from policyengine_uk.model_api import *
 class is_single(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether this benefit unit contains a single claimant for benefits"
+    label = "Claimant has no partner"
+    documentation = "Whether the claimant is not a member of a couple."
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
