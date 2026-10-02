@@ -3,6 +3,8 @@
 # reg 6(1)): under £192 a week 20.40; not less than £192 46.85; £279 64.35;
 # £365 105.20; £485 119.85; £605 and above 131.45. Not in remunerative work:
 # 20.40 (reg 74(1)(b)). Bands include their lower edge ("not less than").
+# Family benefits (UC, tax credits, child benefit), which count as gross
+# income, are held at zero except where a case tests them.
 
 - name: In remunerative work with no income pays the lowest amount
   period: 2026
@@ -12,6 +14,10 @@
     age: 30
     total_income: 0
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     # reg 74(2)(a) and (1)(b)
     household_benefits_individual_non_dep_deduction: 20.4 * 52
@@ -24,6 +30,10 @@
     age: 30
     total_income: 9983.48
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     # 191.99 a week
     household_benefits_individual_non_dep_deduction: 20.4 * 52
@@ -36,6 +46,10 @@
     age: 30
     total_income: 9984
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 46.85 * 52
 
@@ -47,6 +61,10 @@
     age: 30
     total_income: 14508
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 64.35 * 52
 
@@ -58,6 +76,10 @@
     age: 30
     total_income: 18980
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 105.2 * 52
 
@@ -69,6 +91,10 @@
     age: 30
     total_income: 25220
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 119.85 * 52
 
@@ -80,6 +106,10 @@
     age: 30
     total_income: 31460
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 131.45 * 52
 
@@ -91,6 +121,10 @@
     age: 30
     total_income: 31459.48
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     # 604.99 a week
     household_benefits_individual_non_dep_deduction: 119.85 * 52
@@ -103,6 +137,10 @@
     age: 30
     total_income: 40000
     weekly_hours: 0
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     # reg 74(1)(b): the bands apply only in remunerative work
     household_benefits_individual_non_dep_deduction: 20.4 * 52
@@ -115,6 +153,10 @@
     age: 30
     total_income: 40000
     weekly_hours: 15.9
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 20.4 * 52
 
@@ -126,6 +168,10 @@
     age: 30
     total_income: 40000
     weekly_hours: 16
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 131.45 * 52
 
@@ -137,6 +183,10 @@
     age: 30
     total_income: -5000
     weekly_hours: 35
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
   output:
     household_benefits_individual_non_dep_deduction: 20.4 * 52
 
@@ -158,6 +208,10 @@
     benunits:
       couple:
         members: [worker, partner]
+        universal_credit_pre_benefit_cap: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
     households:
       household:
         members: [worker, partner]
@@ -182,8 +236,80 @@
     benunits:
       family:
         members: [parent, child]
+        universal_credit_pre_benefit_cap: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
     households:
       household:
         members: [parent, child]
   output:
     household_benefits_individual_non_dep_deduction: [1_060.80, 0]
+
+- name: Universal Credit counts towards gross income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 40
+    total_income: 14_040 # 270 a week
+    weekly_hours: 16
+    universal_credit_pre_benefit_cap: 1_040 # 20 a week
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+  output:
+    # reg 74(2): 290 a week gross is in the 279 band (64.35). UC is not among
+    # the reg 74(9) disregards.
+    household_benefits_individual_non_dep_deduction: 64.35 * 52
+
+- name: On income-related ESA, 16 hours is not remunerative work
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    age: 40
+    total_income: 10_574.72 # 203.36 a week (supported permitted work)
+    weekly_hours: 16
+    esa_income: 5_200
+    universal_credit_pre_benefit_cap: 0
+    child_tax_credit: 0
+    working_tax_credit: 0
+    child_benefit: 0
+  output:
+    # reg 6(6): a person on income-related ESA is treated as not in
+    # remunerative work, so pays the reg 74(1)(b) amount.
+    household_benefits_individual_non_dep_deduction: 20.40 * 52
+
+- name: A dependent young person in the family is banded on their own income, not the parent's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        total_income: 9_360 # 180 a week
+        weekly_hours: 16
+        housing_benefit_individual_non_dep_deduction_eligible: true
+      young_person:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+        total_income: 5_200 # 100 a week
+        weekly_hours: 8
+        housing_benefit_individual_non_dep_deduction_eligible: true
+    benunits:
+      family:
+        members: [parent, young_person]
+        universal_credit_pre_benefit_cap: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+    households:
+      household:
+        members: [parent, young_person]
+  output:
+    # reg 74(4) joins only a couple's income. The parent's 180 a week is
+    # under the 192 band (20.40); the young person, under 16 hours, pays 20.40
+    # if not exempt (eligibility is an input here).
+    household_benefits_individual_non_dep_deduction: [1_060.80, 1_060.80]

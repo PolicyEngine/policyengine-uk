@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
+    is_claimant_or_partner,
+)
 
 
 class housing_benefit_non_dep_deductions_claimant_exempt(Variable):
@@ -21,8 +24,7 @@ class housing_benefit_non_dep_deductions_claimant_exempt(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        # Claimant or partner as in council_tax_reduction_household_has_non_dep_exemption.
-        claimant_or_partner = person("is_adult", period)
+        claimant_or_partner = is_claimant_or_partner(person, period)
         qualifying = (
             person("is_blind", period)
             | (person("attendance_allowance", period) > 0)

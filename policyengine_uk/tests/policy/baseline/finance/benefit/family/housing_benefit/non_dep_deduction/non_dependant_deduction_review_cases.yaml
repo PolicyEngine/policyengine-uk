@@ -1,0 +1,167 @@
+# Counterexamples from the independent review of PolicyEngine/policyengine-uk#2007,
+# end to end for Housing Benefit (HB Regs 2006 reg 74) and the England pensioner
+# Council Tax Reduction scheme (SI 2012/2885 Sch 1 para 8), 2026-27 amounts.
+# The claimant family is the rent-liable family with the household's oldest
+# member. Family benefits are held at zero except where a case tests them.
+
+- name: A dependent 18-year-old's PIP does not exempt the claimant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      dependant:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        pip_dl_category: STANDARD
+      lodger_son:
+        age: 40
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant, dependant]
+        benunit_is_rent_liable: true
+      son_unit:
+        members: [lodger_son]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, dependant, lodger_son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # reg 74(6) and para 8(6) protect the claimant or partner, not a young
+    # person in the family (reg 19; SSCBA s.142). The son's 576.92 a week is
+    # in the HB 485 band (119.85) and the CTR 485 band (13.30).
+    housing_benefit_non_dep_deductions_claimant_exempt: [false, false]
+    council_tax_reduction_household_has_non_dep_exemption: false
+    housing_benefit_non_dep_deductions: [6_232.20, 0]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
+
+- name: A 17-year-old claimant's PIP exempts their family
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        pip_dl_category: STANDARD
+      sibling:
+        age: 16
+        employment_income: 20_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      sibling_unit:
+        members: [sibling]
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [claimant, sibling]
+  output:
+    # The benefit unit's head is the claimant whatever their age.
+    housing_benefit_non_dep_deductions_claimant_exempt: [true, false]
+
+- name: A parent non-dependant is banded on their own income, not their young person's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      parent:
+        age: 45
+        employment_income: 9_360 # 180 a week
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+      young_person:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+        employment_income: 5_200 # 100 a week
+        weekly_hours: 8
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      parent_unit:
+        members: [parent, young_person]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, parent, young_person]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # reg 74(4) and para 8(4) join a couple's income only. The parent's 180 a
+    # week is under both lowest bands; the young person is a full-time student
+    # (reg 74(7)(c); para 8(7)(c)).
+    housing_benefit_non_dep_deduction_exempt: [false, false, true]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: A self-employed loss does not cancel wages for the Universal Credit exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      non_dependant:
+        age: 24
+        employment_income: 5_200
+        self_employment_income: -5_200
+        weekly_hours: 8
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 1_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 57(2) step 3: a self-employed loss is nil, so the wages
+    # are earned income and neither exemption applies. Under 16 hours: the
+    # lowest amounts.
+    housing_benefit_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]

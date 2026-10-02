@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit.non_dep_deduction._non_dependants import (
+    charged_to_other_families,
+    deduction_per_family,
+)
 
 
 class housing_benefit_non_dep_deductions(Variable):
@@ -7,8 +11,9 @@ class housing_benefit_non_dep_deductions(Variable):
     label = "non-dependent deductions"
     documentation = (
         "Deductions for the non-dependants in other benefit units of the "
-        "household: one per couple, the higher of the two members' amounts, "
-        "and none if the claimant or partner is exempt."
+        "household: one for each couple, the higher of the two members' "
+        "amounts, and one for each other member; none if the claimant or "
+        "partner is exempt."
     )
     definition_period = YEAR
     unit = GBP
@@ -21,13 +26,12 @@ class housing_benefit_non_dep_deductions(Variable):
         deductions = benunit.members(
             "household_benefits_individual_non_dep_deduction", period
         )
-        deduction_for_benunit = benunit.max(deductions)
-        is_benunit_head = benunit.members("is_benunit_head", period)
-        counted = is_benunit_head * benunit.project(deduction_for_benunit)
-        deductions_in_household = benunit.max(benunit.members.household.sum(counted))
+        deduction_for_benunit = deduction_per_family(benunit, period, deductions, False)
         claimant_exempt = benunit(
             "housing_benefit_non_dep_deductions_claimant_exempt", period
         )
         return where(
-            claimant_exempt, 0, deductions_in_household - deduction_for_benunit
+            claimant_exempt,
+            0,
+            charged_to_other_families(benunit, period, deduction_for_benunit),
         )
