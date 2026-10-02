@@ -24,7 +24,8 @@ class council_tax_reduction_applicable_income(Variable):
         "unearned income it lists, which includes the assumed yield from "
         "capital but not actual rent, interest or dividends. Rent for letting "
         "part of the home counts, less the sub-tenant disregard, except in the "
-        "Scottish working-age scheme, which does not list it."
+        "Scottish scheme for people under pension age from April 2022, which "
+        "does not list it."
     )
     definition_period = YEAR
     unit = GBP
@@ -47,6 +48,15 @@ class council_tax_reduction_applicable_income(Variable):
     ]
 
     def formula(benunit, period, parameters):
+        # Members whose income counts: the claimant and partner and, as the model did
+        # before, the programme's own children or young persons. The regulations count
+        # only the claimant's and partner's (CTR (Prescribed Requirements) (England)
+        # Regs 2012 Sch 1 para 11); dropping dependants' own income is a follow-up.
+        # Anyone else in the benefit unit does not count.
+        person = benunit.members
+        members = person("is_claimant_or_partner", period) | person(
+            "is_child_or_young_person_for_legacy_benefits", period
+        )
         benunit_means_tested_benefits = [
             "child_benefit",
             "income_support",
@@ -70,31 +80,65 @@ class council_tax_reduction_applicable_income(Variable):
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
-        benefits = add(benunit, period, benunit_means_tested_benefits)
-        income = add(benunit, period, income_components)
-        personal_benefit_income = add(benunit, period, personal_benefits)
-        credits = add(benunit, period, ["tax_credits"])
+        benefits = add_for_members(
+            benunit, period, benunit_means_tested_benefits, members
+        )
+        income = add_for_members(benunit, period, income_components, members)
+        personal_benefit_income = add_for_members(
+            benunit, period, personal_benefits, members
+        )
+        credits = add_for_members(benunit, period, ["tax_credits"], members)
         increased_income = income + personal_benefit_income + credits + benefits
-        scotland_working_age = is_scotland_scheme(
-            benunit.household("country", period)
-        ) & ~benunit.household("council_tax_reduction_household_has_pensioner", period)
+        # Rent for letting part of the home counts in every scheme except the
+        # Scottish one for people under pension age from 1 April 2022 (SSI
+        # 2021/249, whose reg 57(1) list has no head for it). That scheme
+        # applies under reg 3(1) to an applicant under pensionable age, or over
+        # it where the applicant or partner has an award of universal credit or
+        # a qualifying income-related benefit.
+        claimant_or_partner_over_pension_age = benunit.any(
+            person("is_SP_age", period) & person("is_claimant_or_partner", period)
+        )
+        on_uc_or_income_related_benefit = (
+            add(
+                benunit,
+                period,
+                ["universal_credit", "income_support", "jsa_income", "esa_income"],
+            )
+            > 0
+        )
+        scotland = is_scotland_scheme(benunit.household("country", period))
+        scottish_working_age_scheme = scotland & (
+            ~claimant_or_partner_over_pension_age | on_uc_or_income_related_benefit
+        )
+        p_scotland = parameters(
+            period
+        ).gov.local_authorities.scotland.council_tax_reduction.means_test
+        counts_home_letting = ~scottish_working_age_scheme | (
+            p_scotland.working_age_counts_home_letting_income
+        )
         increased_income += where(
-            scotland_working_age,
-            0,
+            counts_home_letting,
             benunit("legacy_benefits_home_letting_income", period),
+            0,
         )
 
         if not bi.interactions.include_in_means_tests:
-            increased_income -= add(benunit, period, ["basic_income"])
+            increased_income -= add_for_members(
+                benunit, period, ["basic_income"], members
+            )
 
-        pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
-        tax = add(
-            benunit, period, ["legacy_means_test_income_tax", "national_insurance"]
+        pension_contributions = (
+            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+        )
+        tax = add_for_members(
+            benunit,
+            period,
+            ["legacy_means_test_income_tax", "national_insurance"],
+            members,
         )
         income_under_general_rules = max_(
             0, increased_income - tax - pension_contributions
         )
-
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is
         # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases

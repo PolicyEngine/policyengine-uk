@@ -15,15 +15,20 @@ Invariants, for any generated population of families:
    Universal Credit and tax credits, which have their own income rules, are
    held fixed. Incomes are kept within the basic rate band, where extra
    income from capital cannot change the tax on other income through the
-   personal allowance taper, the High Income Child Benefit Charge or
-   Marriage Allowance.
+   personal allowance taper or the High Income Child Benefit Charge.
+   Marriage Allowance is held at nil: whether a spouse can transfer it
+   depends on their income including income from capital, which is a
+   legitimate way for income from capital to change the tax on counted
+   income.
 2. Bounds: the counted home-letting income is between nil and the rent, and
    equals the rent less £20 a week, floored at nil.
 3. Monotone: more rent from part of the home never lowers a means-test income
    and never raises Income Support, Housing Benefit, Pension Credit or council
    tax reduction.
-4. Tax: legacy_means_test_income_tax is between nil and income tax, and equals
-   income tax when there is no savings, dividend or property income.
+4. Tax: legacy_means_test_income_tax is between nil and both income tax and
+   the tax on counted income before reductions (earned_income_tax), and
+   equals income tax when there is no savings, dividend or property income
+   and no Step 7 charge.
 """
 
 import numpy as np
@@ -119,6 +124,7 @@ def situation(units, year, capital_income_scale=1.0, sublet_extra=0.0):
                     if k == "sublet_income" and j == 0:
                         v = v + sublet_extra
                     person[k] = {year: v}
+                person["marriage_allowance"] = {year: 0.0}
                 if j == 0 and unit["reported"]:
                     person["income_support_reported"] = {year: 1.0}
                     person["housing_benefit_reported"] = {year: 1.0}
@@ -194,6 +200,7 @@ def test_legacy_means_test_income_tax_bounds(units, year):
     variables = [
         "legacy_means_test_income_tax",
         "income_tax",
+        "earned_income_tax",
         "savings_income_tax",
         "dividend_income_tax",
         "property_income_tax",
@@ -202,6 +209,7 @@ def test_legacy_means_test_income_tax_bounds(units, year):
     tax = v["legacy_means_test_income_tax"]
     assert np.all(tax >= 0)
     assert np.all(tax <= v["income_tax"] + 0.01)
+    assert np.all(tax <= v["earned_income_tax"] + 0.01)
     no_capital_tax = (
         v["savings_income_tax"] + v["dividend_income_tax"] + v["property_income_tax"]
     ) == 0

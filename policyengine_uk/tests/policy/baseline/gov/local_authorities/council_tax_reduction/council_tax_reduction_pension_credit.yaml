@@ -239,9 +239,10 @@
         council_tax: 2_000
         savings: 0
   output:
-    # The son's guarantee_credit is calculated as 7,376, but he is not
-    # eligible for Pension Credit, so he is not in receipt of it.
-    guarantee_credit: [3_376, 7_376]
+    # The son is not eligible for Pension Credit, so he has no guarantee
+    # credit (guarantee_credit is defined only for Pension Credit-eligible
+    # benefit units) and is not in receipt of it.
+    guarantee_credit: [3_376, 0]
     in_receipt_of_guarantee_credit: [true, false]
     council_tax_reduction_applicable_income: [0, 5_000]
     # The national schemes' non-dependant deduction currently uses Housing
@@ -277,7 +278,8 @@
         council_tax: 2_000
         savings: 20_000
   output:
-    guarantee_credit: 8_849
+    # Not eligible for Pension Credit, so no guarantee credit.
+    guarantee_credit: 0
     is_pension_credit_eligible: false
     in_receipt_of_guarantee_credit: false
     council_tax_reduction: 0
@@ -332,7 +334,7 @@
     council_tax_reduction_applicable_income: 0
     council_tax_reduction: 2_000
 
-- name: Wales working-age earner with a calculated guarantee credit keeps the taper
+- name: Wales working-age earner, not eligible for Pension Credit, keeps the taper
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -354,7 +356,8 @@
         council_tax: 2_000
         savings: 0
   output:
-    guarantee_credit: 2_376
+    # Working age, so not eligible for Pension Credit: no guarantee credit.
+    guarantee_credit: 0
     in_receipt_of_guarantee_credit: false
     council_tax_reduction_applicable_income: 10_000
     council_tax_reduction: 993.72
@@ -471,7 +474,7 @@
     council_tax_reduction_assessable_capital: 17_000
     council_tax_reduction: 0
 
-- name: The same pensioner not claiming Pension Credit is tested on household savings only
+- name: The same pensioner not claiming Pension Credit is tested on savings and the second property
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -496,13 +499,13 @@
         other_residential_property_value: 7_000
   output:
     in_receipt_of_savings_credit_only: false
-    # Pensioners without Pension Credit are tested on household savings, a
-    # proxy that leaves out the second property the schemes' own capital rules
-    # count (SI 2012/2885 Sch 1 Part 6 Chapter 3). So, unlike the claimant
-    # above, this pensioner keeps CTR: the gap is in the proxy, not the law.
-    council_tax_reduction_assessable_capital: 10_000
+    # SI 2012/2885 Sch 1 para 31(1) counts "the whole of his capital", so the
+    # second property counts as it does for the claimant above: 10,000 +
+    # 7,000 = 17,000, over the 16,000 limit (reg 11(2)). Shares and other
+    # investments are still left out of the proxy (issue 1936).
+    council_tax_reduction_assessable_capital: 17_000
     council_tax_reduction_applicable_income: 13_314
-    council_tax_reduction: 1_999.60
+    council_tax_reduction: 0
 
 - name: Capital of exactly 16,000 is within the limit for a pensioner without Pension Credit
   period: 2026

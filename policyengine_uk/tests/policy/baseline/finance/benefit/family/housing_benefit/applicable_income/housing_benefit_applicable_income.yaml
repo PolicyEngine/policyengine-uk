@@ -71,9 +71,12 @@
     housing_benefit_applicable_income: 2_500
 
 - name: Added tax credits; rent from let property is capital, not income
-  # HB Regs 2006 reg 46(4) treats income derived from capital as capital and
-  # Sch 5 para 17 disregards it, so the £1,000 of property income does not
-  # count: 1,000 child benefit + 2,250 IS + 1,000 tax credits - 1,500 / 2.
+  # An isolated check of the formula's components, not a full assessment: in
+  # law an Income Support recipient's whole income is disregarded (Sch 5
+  # para 4), as is child benefit (para 65). HB Regs 2006 reg 46(4) treats
+  # income derived from capital as capital and Sch 5 para 17 disregards it, so
+  # the £1,000 of property income does not count: 1,000 child benefit + 2,250
+  # IS + 1,000 tax credits - 1,500 / 2.
   period: 2025
   input:
     # Benefits

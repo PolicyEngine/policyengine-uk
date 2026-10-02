@@ -25,7 +25,7 @@ class oxford_council_tax_reduction(Variable):
         universal_credit = benunit("universal_credit", period)
         has_uc_award = universal_credit > 0
 
-        capital = household("savings", period)
+        capital = benunit("council_tax_reduction_assessable_capital", period)
         capital_eligible = capital <= ctr.means_test.capital_limit
         weekly_tariff_income = np.ceil(
             max_(0, capital - ctr.means_test.tariff_income_threshold)

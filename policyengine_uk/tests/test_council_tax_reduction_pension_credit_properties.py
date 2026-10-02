@@ -21,9 +21,9 @@ liability, ND the non-dependant deductions and A the applicable amount:
 3. Savings-credit-only recipients get max(0, L - 0.2 x max(0, PC income + SC -
    A) - ND) when the Pension Credit assessment of capital is within 16,000, and
    nothing otherwise.
-4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
-   max(0, I - A) - ND) when household savings are within 16,000, where I is the
-   income definition on main before this change, recomputed here from its
+4. Differential: everyone else keeps the general formula, max(0, L - 0.2 x
+   max(0, I - A) - ND) when household savings and other property are within
+   16,000, where I is the general income definition, recomputed here from its
    components rather than read from the variable under test.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
@@ -175,7 +175,10 @@ def situation(
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {YEAR: age}}
+            # The generated adults are the claimant and partner (a mixed-age
+            # couple may pair 67 with 18); say so, so the claimant-or-partner
+            # presumption does not apply. It must be set for everyone.
+            person = {"age": {YEAR: age}, "is_claimant_or_partner": {YEAR: True}}
             if age >= 67:
                 person["state_pension"] = {
                     YEAR: max(0.0, unit["state_pension"] + state_pension_change)
@@ -193,7 +196,10 @@ def situation(
             names.append(name)
         for k, child_age in enumerate(unit.get("child_ages", [])):
             name = f"c{i}_{k}"
-            people[name] = {"age": {YEAR: child_age}}
+            people[name] = {
+                "age": {YEAR: child_age},
+                "is_claimant_or_partner": {YEAR: False},
+            }
             names.append(name)
         claim_pc = unit["would_claim_pc"] if would_claim_pc is None else would_claim_pc
         benunit = {
@@ -213,6 +219,8 @@ def situation(
             people[name] = {
                 "age": {YEAR: 40},
                 "employment_income": {YEAR: unit["non_dependant_income"]},
+                # The claimant of their own benefit unit.
+                "is_claimant_or_partner": {YEAR: True},
             }
             benunits[f"n{i}"] = {
                 "members": [name],
@@ -250,13 +258,15 @@ BENUNIT_VARIABLES = [
     "pension_credit_income",
     "pension_credit_assessable_capital",
 ]
-# council_tax_reduction_applicable_income on main before this change (1c5b4d04):
-# these incomes and benefits, less income tax, National Insurance and half of
-# pension contributions, floored at zero.
+# council_tax_reduction_applicable_income outside the Pension Credit routes:
+# these incomes and benefits, less the income tax on them, National Insurance
+# and half of pension contributions, floored at zero. Rent from property,
+# interest and dividends are income from capital and do not count, and nor
+# does the tax on them; rent for part of the home counts less £20 a week.
 MAIN_INCOME_COMPONENTS = [
     "employment_income",
     "self_employment_income",
-    "property_income",
+    "legacy_benefits_home_letting_income",
     "private_pension_income",
     "carers_allowance",
     "esa_contrib",
@@ -273,11 +283,12 @@ MAIN_INCOME_COMPONENTS = [
     "esa_income",
     "universal_credit",
 ]
-MAIN_DEDUCTIONS = ["income_tax", "national_insurance"]
+MAIN_DEDUCTIONS = ["legacy_means_test_income_tax", "national_insurance"]
 HOUSEHOLD_VARIABLES = [
     "council_tax_reduction_maximum_eligible_liability",
     "council_tax_reduction_household_has_pensioner",
     "savings",
+    "other_residential_property_value",
 ]
 
 
@@ -386,8 +397,11 @@ def check_routes(units, values):
                 abs(values["council_tax_reduction_applicable_income"][i] - income)
                 < 0.01
             ), unit
+            capital = (
+                values["savings"][i] + values["other_residential_property_value"][i]
+            )
             expected = tapered(liability, income, applicable_amount, non_dep) * (
-                values["savings"][i] <= CAPITAL_LIMIT
+                capital <= CAPITAL_LIMIT
             )
         assert abs(ctr - expected) < 0.01, (unit, ctr, expected)
 
