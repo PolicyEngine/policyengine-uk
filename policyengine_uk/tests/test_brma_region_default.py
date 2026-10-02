@@ -6,7 +6,7 @@ carries forward. These properties hold for any households, regions by year,
 BRMA inputs and order in which years are calculated:
 
 1. The table is each region's BRMA with the most private-rented households in
-   brma_private_rented_households.csv, a strict maximum, and it covers every
+   brma_private_rented_households.csv.gz, a strict maximum, and it covers every
    region but UNKNOWN. A default gives the same LHA rates as inputting it.
 2. Inputs win: in a year with a BRMA input, brma is that input.
 3. Defaults: in a year with no BRMA input in it or before it, brma is the
@@ -37,7 +37,7 @@ from policyengine_uk.variables.household.demographic.locations import BRMAName
 
 PRIVATE_RENTED_HOUSEHOLDS = pd.read_csv(
     Path(policyengine_uk.__file__).parent
-    / "parameters/gov/dwp/LHA/brma_private_rented_households.csv"
+    / "parameters/gov/dwp/LHA/brma_private_rented_households.csv.gz"
 )
 YEARS = list(range(2024, 2031))
 REGIONS = [region.name for region in Region]

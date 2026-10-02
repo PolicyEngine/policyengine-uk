@@ -5,7 +5,7 @@ from policyengine_uk.variables.household.demographic.geography import Region
 # The BRMA a household is placed in when none is input: the BRMA with the
 # most private-rented households in the region, from the 2021 (England, Wales,
 # Northern Ireland) and 2022 (Scotland) censuses mapped to BRMAs
-# (parameters/gov/dwp/LHA/brma_private_rented_households.csv).
+# (parameters/gov/dwp/LHA/brma_private_rented_households.csv.gz).
 # Microsimulation datasets set brma for every household and do not use this
 # table. test_brma_region_default.py checks it against the CSV.
 REGION_DEFAULT_BRMA = {
