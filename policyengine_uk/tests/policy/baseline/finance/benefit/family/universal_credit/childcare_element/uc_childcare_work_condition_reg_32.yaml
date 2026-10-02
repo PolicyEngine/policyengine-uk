@@ -166,7 +166,7 @@
     # partner meets (a), the head (limited capability for work) meets (b).
     uc_childcare_work_condition: true
 
-- name: Reg. 32(1)(b) - a working partner of a nonworking claimant without an exception
+- name: Reg. 32(1)(b) - a working claimant's nonworking partner without an exception
   period: 2025
   absolute_error_margin: 0.01
   input:
