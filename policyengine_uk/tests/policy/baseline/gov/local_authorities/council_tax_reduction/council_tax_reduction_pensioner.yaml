@@ -187,9 +187,9 @@
     council_tax_benefit: [508.83, 0]
 
 - name: A pensioner whose only younger adult is a qualifying young person stays a pensioner
-  # The model pays this family Universal Credit because is_uc_eligible counts
-  # any working-age adult. Universal Credit needs a claimant or partner under
-  # the qualifying age, so the award does not count against pensioner status.
+  # Universal Credit before the cap is an input here. Universal Credit needs a
+  # claimant or partner under the qualifying age, and the 18-year-old is a
+  # dependant, so the award does not count against pensioner status.
   period: 2026
   input:
     people:
@@ -215,6 +215,44 @@
     council_tax_reduction_pensioner: true
     council_tax_reduction_household_has_pensioner: true
     council_tax_reduction_scheme_supported: true
+
+- name: A pensioner aged 70 with an 18-year-old in education and no is_parent keeps pensioner CTR
+  # is_claimant_or_partner presumes the 18-year-old to be the pensioner's
+  # child (under 20 and at least 16 years younger), so the family has no
+  # claimant or partner under State Pension age. The model gives it no
+  # Universal Credit, it is not capped, and it stays on the national
+  # pensioner scheme.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [pensioner, young_person]
+    households:
+      household:
+        members: [pensioner, young_person]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    is_claimant_or_partner: [true, false]
+    is_uc_eligible: false
+    is_uc_entitled: false
+    housing_benefit_pension_age_regulations_apply: true
+    is_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_scheme_supported: true
+    # The pensioner scheme meets the 2,000 in full.
+    council_tax_benefit: 2_000
 
 - name: A Welsh mixed-age couple on Universal Credit is not a pensioner couple
   # Wales has one national scheme, so the scheme is still simulated.

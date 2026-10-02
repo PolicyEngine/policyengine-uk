@@ -196,10 +196,11 @@
     universal_credit: 22_323
 
 - name: A pensioner whose only younger adult is a qualifying young person is not capped
-  # The model's is_uc_eligible counts any working-age adult, so it pays this
-  # family Universal Credit. In law Universal Credit needs a claimant or
-  # partner under the qualifying age (UC Regs 2013 reg 3(2)(a)); the family
-  # stays under the pension-age Housing Benefit rules, which have no cap.
+  # Universal Credit needs a claimant or partner under the qualifying age (UC
+  # Regs 2013 reg 3(2)(a)), and the model's is_uc_eligible needs one too, so
+  # the award here is an input the family could not hold in law. The
+  # 18-year-old is a dependant, not a partner, so the award does not take the
+  # family out of the pension-age Housing Benefit rules, which have no cap.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -223,19 +224,18 @@
         members: [parent, young_person, child]
         region: LONDON
   output:
-    is_uc_claimant: [true, false, false]
+    is_claimant_or_partner: [true, false, false]
     is_uc_entitled: true
     housing_benefit_pension_age_regulations_apply: true
     is_benefit_cap_exempt_other: true
     benefit_cap_reduction: 0
     universal_credit: 30_000
 
-- name: Without is_parent the young person counts as a claimant, so the award is capped
-  # is_uc_claimant recognises a qualifying young person as a dependant only
-  # when a parent is identified (is_parent), as the FRS datasets do. Without
-  # it the model treats the 18-year-old as a partner under State Pension age,
-  # so the award counts as a working-age Universal Credit award and is
-  # capped. This pins that dependency; see the case above for the dependant.
+- name: Without is_parent the young person is still a dependant, so the award is not capped
+  # is_claimant_or_partner presumes a member under 20 and at least 16 years
+  # younger than the claimant to be their child when relationships are not
+  # given, so the 18-year-old is not a partner under State Pension age and
+  # the result matches the case above.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -258,9 +258,9 @@
         members: [parent, young_person, child]
         region: LONDON
   output:
-    is_uc_claimant: [true, true, false]
-    housing_benefit_pension_age_regulations_apply: false
-    is_benefit_cap_exempt: false
-    # 30,000 + 3,000 - 25,323
-    benefit_cap_reduction: 7_677
-    universal_credit: 22_323
+    is_claimant_or_partner: [true, false, false]
+    housing_benefit_pension_age_regulations_apply: true
+    is_benefit_cap_exempt_other: true
+    is_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    universal_credit: 30_000
