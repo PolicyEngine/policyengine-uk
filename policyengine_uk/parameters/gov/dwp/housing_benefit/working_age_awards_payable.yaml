@@ -6,11 +6,10 @@ description: >-
   housing_benefit_payable_share. Annual formulas read parameters once, at the
   start of the model year, after fiscal-year conversion. Parameters normally
   sample 30 April, but these numeric flags use fiscal_year_blend to take the
-  day-weighted average from 6 April to 5 April. An in-year value applied after
-  that conversion is ignored for that model year. Simulation reform dictionaries
-  are applied before conversion: a date-only key overrides just one day and is
-  blended, while a bare year overrides the whole fiscal year. Use whole-year
-  values or a date range for annual reform scenarios.
+  day-weighted average from 6 April to 5 April. In a Simulation reform
+  dictionary a bare year overrides the whole fiscal year, while a key dated
+  inside the year (for example 2026-07-01) leaves that model year's value
+  unchanged. Use whole-year values or a date range for annual reform scenarios.
 great_britain:
   description: Whether working-age Housing Benefit awards outside specified and temporary accommodation are still payable in Great Britain. Section 33(1)(d) of the Welfare Reform Act 2012 came into force for them on 1 July 2026.
   values:

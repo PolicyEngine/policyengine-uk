@@ -6,21 +6,21 @@ class housing_benefit_eligible(Variable):
     entity = BenUnit
     label = "eligible for the Housing Benefit"
     documentation = (
-        "Whether this family can receive Housing Benefit. A family in which "
-        "every adult has reached the qualifying age for State Pension Credit "
-        "can make a new claim; Universal Credit is not available to it. "
-        "in_specified_or_temporary_accommodation also opens the new-claim "
-        "route at any age, including alongside Universal Credit, and "
-        "preserves existing awards. Other families keep Housing Benefit "
-        "only while they continue an "
-        "existing award (reported Housing Benefit) and do not claim "
-        "Universal Credit. Unprotected working-age awards ended on 1 July 2026 in Great "
-        "Britain and 1 October 2026 in Northern Ireland, so from then only "
-        "families with a member over State Pension age or the accommodation "
-        "input continue one. Other unmodelled statutory savings are listed "
-        "in housing_benefit_payable_share's documentation. Rental, capital "
-        "and take-up rules still apply; accommodation-specific eligible rent "
-        "and benefit-cap rules are not modelled."
+        "Whether this family can receive Housing Benefit. A family whose "
+        "claimant and any partner have reached the qualifying age for State "
+        "Pension Credit can make a new claim; Universal Credit is not "
+        "available to it. in_specified_or_temporary_accommodation also opens "
+        "the new-claim route at any age, including alongside Universal Credit, "
+        "and preserves existing awards. Other families keep Housing Benefit "
+        "only while they continue an existing award (reported Housing "
+        "Benefit) and do not claim Universal Credit. Unprotected working-age "
+        "awards ended on 1 July 2026 in Great Britain and 1 October 2026 in "
+        "Northern Ireland, so from then only families with a member over State "
+        "Pension age or the accommodation input continue one. Other unmodelled "
+        "statutory savings are listed in housing_benefit_payable_share's "
+        "documentation. Rental, capital and take-up rules still apply; "
+        "accommodation-specific eligible rent and benefit-cap rules are not "
+        "modelled."
     )
     definition_period = YEAR
     reference = (
@@ -39,12 +39,14 @@ class housing_benefit_eligible(Variable):
         # Apart from the accommodation exception, new claims are barred
         # except where the claimant, and any partner,
         # has reached the qualifying age for State Pension Credit
-        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)). The current HB
-        # approximation counts members aged 18 or over, so an 18 or 19 year
-        # old dependant prevents this pension-age route.
-        adult = person("age", period) >= 18
-        adult_count = benunit.sum(adult)
-        pension_age = (adult_count > 0) & (benunit.sum(adult & sp_age) == adult_count)
+        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)). This is the
+        # same claimant-and-partner set is_uc_eligible and
+        # is_pension_credit_eligible use, so a pensioner with an 18 or 19 year
+        # old dependant can claim Housing Benefit and not Universal Credit;
+        # change the three together.
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        count = benunit.sum(claimant_or_partner)
+        pension_age = (count > 0) & (benunit.sum(claimant_or_partner & sp_age) == count)
         # Working-age and mixed-age families (since 15 May 2019) claim
         # Universal Credit instead. They keep an existing award until they
         # claim it (reg 8(2A)), so this route also rules out receiving

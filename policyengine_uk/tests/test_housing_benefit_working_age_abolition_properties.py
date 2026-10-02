@@ -208,7 +208,7 @@ def test_day_shares_match_the_hand_counted_days():
     )
 
 
-def test_dated_reform_is_blended_but_year_reform_covers_the_whole_fiscal_year():
+def test_dated_reform_is_ignored_but_year_reform_covers_the_whole_fiscal_year():
     unit = dict(
         shape="single_working",
         members=[("claimant", 40)],
@@ -230,9 +230,10 @@ def test_dated_reform_is_blended_but_year_reform_covers_the_whole_fiscal_year():
         situation=situation([unit], 2026, claims_all=False),
         reform={parameter: {"2026": 1}},
     )
-    # The single-date override adds one payable day to the baseline 86 days.
+    # A key dated inside the year leaves the model year's share at the
+    # baseline 86 days: it is not applied.
     assert one_day.calculate("housing_benefit_payable_share", 2026)[0] == pytest.approx(
-        (86 + 1) / 365
+        86 / 365
     )
     assert whole_year.calculate("housing_benefit_payable_share", 2026)[0] == 1
 
