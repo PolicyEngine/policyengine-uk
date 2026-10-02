@@ -24,10 +24,14 @@ Invariants, for any generated population of households:
    differ only from 19, when UC's qualifying young person ends at the 1
    September after the 19th birthday (reg 5(1)(b)) and Child Benefit's does
    not (Child Benefit (General) Regs 2006 reg 3(4)).
+
+The generator concentrates members' ages around 16 to 20, where the schemes'
+definitions differ, and explicit examples pin the cases that decide each
+invariant.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -41,17 +45,19 @@ PROPERTY_SETTINGS = settings(
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
 EDUCATION = ["NOT_IN_EDUCATION", "UPPER_SECONDARY", "POST_SECONDARY", "TERTIARY"]
+EARNINGS = [0.0, 15_000.0, 30_000.0]
 
 
 @st.composite
 def member(draw):
-    age = draw(st.integers(0, 40))
+    age = draw(st.one_of(st.integers(15, 20), st.integers(0, 40)))
     return dict(
         age=age,
         education=draw(st.sampled_from(EDUCATION)),
         looked_after=age < 18 and draw(st.booleans()),
         placed_for_adoption=age < 18 and draw(st.booleans()),
         started_education_at=draw(st.integers(14, 19)),
+        earnings=draw(st.sampled_from(EARNINGS)),
     )
 
 
@@ -60,20 +66,56 @@ def household(draw):
     return dict(
         # The renter's family holds the household's oldest member, so it is
         # the household head's family.
-        renter_age=draw(st.integers(41, 60)) if draw(st.booleans()) else 40,
-        young_renter_age=draw(st.integers(18, 34)),
-        young=draw(st.booleans()),
-        partner=draw(st.booleans()),
-        members=draw(st.lists(member(), min_size=0, max_size=3)),
+        renter_age=draw(st.one_of(st.integers(18, 34), st.integers(41, 60))),
+        partner=draw(st.sampled_from([False, False, True])),
+        members=draw(st.lists(member(), min_size=0, max_size=2)),
         # Another family: none, a non-dependant family, a joint tenant (liable
         # for a share of the rent) or a lodger.
         other=draw(st.sampled_from([None, "non_dependant", "sharer", "lodger"])),
         other_age=draw(st.integers(18, 39)),
-        other_members=draw(st.lists(member(), min_size=0, max_size=2)),
+        other_earnings=draw(st.sampled_from(EARNINGS)),
+        other_members=draw(st.lists(member(), min_size=0, max_size=1)),
     )
 
 
 population = st.lists(household(), min_size=1, max_size=6)
+
+
+def _member(age, education="NOT_IN_EDUCATION", started=14, earnings=0.0):
+    return dict(
+        age=age,
+        education=education,
+        looked_after=False,
+        placed_for_adoption=False,
+        started_education_at=started,
+        earnings=earnings,
+    )
+
+
+def _house(renter_age, members, other=None, other_age=30, other_members=()):
+    return dict(
+        renter_age=renter_age,
+        partner=False,
+        members=members,
+        other=other,
+        other_age=other_age,
+        other_earnings=30_000.0,
+        other_members=list(other_members),
+    )
+
+
+# A young single renter with a 16-year-old who has left education: a
+# non-dependant under both schemes (invariants 1 and 2).
+SCHOOL_LEAVER = [_house(30, [_member(16)])]
+# A young single renter with a 19-year-old in non-advanced education begun at
+# 18: a UC non-dependant, an HB young person (invariants 1, 2 and 4).
+NINETEEN_IN_EDUCATION = [_house(30, [_member(19, "POST_SECONDARY", 18)])]
+# A non-dependant family with earnings, a joint tenant sharing the rent, and
+# an earning adult son in the head's own family (invariant 3).
+SHARED_HOUSE = [
+    _house(45, [], other="non_dependant", other_age=30),
+    _house(50, [_member(25, earnings=30_000.0)], other="sharer", other_age=28),
+]
 
 
 def build(population):
@@ -81,13 +123,12 @@ def build(population):
     rows = []
     for h, house in enumerate(population):
         names = []
-        renter_age = (
-            house["young_renter_age"] if house["young"] else house["renter_age"]
-        )
+        renter_age = house["renter_age"]
         families = [
             dict(
                 name=f"h{h}_renter",
                 adults=[renter_age] + ([renter_age] if house["partner"] else []),
+                earnings=0.0,
                 members=house["members"],
                 head=True,
                 role=None,
@@ -99,6 +140,7 @@ def build(population):
                 dict(
                     name=f"h{h}_other",
                     adults=[min(house["other_age"], renter_age - 1)],
+                    earnings=house["other_earnings"],
                     members=house["other_members"],
                     head=False,
                     role=house["other"],
@@ -113,6 +155,7 @@ def build(population):
                     "is_claimant_or_partner": True,
                     "is_household_head": fam["head"] and i == 0,
                     "current_education": "NOT_IN_EDUCATION",
+                    "employment_income": fam["earnings"] if i == 0 else 0.0,
                 }
                 if fam["role"] == "lodger":
                     people[pid]["rent_paid_as_lodger"] = 4_000.0 if i == 0 else 0.0
@@ -130,6 +173,7 @@ def build(population):
                     "age_started_or_accepted_current_education_or_training": m[
                         "started_education_at"
                     ],
+                    "employment_income": m["earnings"],
                 }
                 ids.append(pid)
             benunits[fam["name"]] = {"members": ids}
@@ -152,6 +196,8 @@ def calc(sim, variable):
 
 @PROPERTY_SETTINGS
 @given(population)
+@example(SCHOOL_LEAVER)
+@example(NINETEEN_IN_EDUCATION)
 def test_shared_rate_never_depends_on_how_a_member_aged_16_or_over_is_classed(pop):
     sim, people, rows = build(pop)
     specified = calc(sim, "is_lha_shared_accommodation_rate_specified_renter")
@@ -176,6 +222,7 @@ def test_shared_rate_never_depends_on_how_a_member_aged_16_or_over_is_classed(po
 
 @PROPERTY_SETTINGS
 @given(population)
+@example(SHARED_HOUSE)
 def test_a_non_dependant_deduction_implies_a_non_dependant(pop):
     sim, _, rows = build(pop)
     # Invariant 3.
@@ -190,6 +237,7 @@ def test_a_non_dependant_deduction_implies_a_non_dependant(pop):
 
 @PROPERTY_SETTINGS
 @given(population)
+@example(NINETEEN_IN_EDUCATION)
 def test_uc_and_hb_non_dependant_definitions_agree_below_19(pop):
     sim, people, _ = build(pop)
     # Invariant 4.
@@ -198,3 +246,27 @@ def test_uc_and_hb_non_dependant_definitions_agree_below_19(pop):
     for j, (pid, p) in enumerate(people.items()):
         if not p["is_claimant_or_partner"] and p["age"] < 19:
             assert uc[j] == hb[j], pid
+
+
+def test_the_examples_decide_each_invariant():
+    """The explicit examples exercise what each invariant turns on, so a
+    regression in either scheme's definition cannot pass vacuously."""
+    sim, people, rows = build(SCHOOL_LEAVER)
+    assert calc(sim, "universal_credit_renter_has_non_dependant")[0]
+    assert calc(sim, "housing_benefit_claimant_has_non_dependant")[0]
+    assert calc(sim, "is_housing_benefit_young_individual")[0]
+
+    sim, people, rows = build(NINETEEN_IN_EDUCATION)
+    assert calc(sim, "universal_credit_renter_has_non_dependant")[0]
+    assert not calc(
+        sim, "is_responsible_for_child_or_qualifying_young_person_for_universal_credit"
+    )[0]
+    assert not calc(sim, "housing_benefit_claimant_has_non_dependant")[0]
+
+    sim, people, rows = build(SHARED_HOUSE)
+    hb = calc(sim, "housing_benefit_non_dep_deductions")
+    uc = calc(sim, "uc_non_dep_deductions")
+    # Head of the first household: a non-dependant family with earnings.
+    assert hb[0] > 0 and uc[0] > 0
+    # Head of the second household: an earning adult son in their own family.
+    assert hb[2] > 0 and uc[2] > 0
