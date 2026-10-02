@@ -934,3 +934,15 @@ def test_supplied_claimant_and_partner_roles_are_kept(families):
         n_roles = sum(roles[offset : offset + len(family)])
         assert is_couple[i] == (n_roles == 2)
         offset += len(family)
+
+
+def test_unflagged_adult_pairs_follow_the_20_year_gap():
+    # Exhaustive over unflagged two-adult units, both 20 to 90, head the
+    # elder: the younger is the partner exactly when under 20 years younger.
+    pairs = [(a, b) for a in range(20, 91) for b in range(20, a + 1)]
+    families = [[person(a, is_benunit_head=True), person(b)] for a, b in pairs]
+    sim = simulate(families)
+    claimants = sim.calculate("is_claimant_or_partner", YEAR)
+    expected = [c for a, b in pairs for c in (True, a - b < 20)]
+    np.testing.assert_array_equal(claimants, expected)
+    assert expected == [c for f in families for c in claimants_or_partners(f)]
