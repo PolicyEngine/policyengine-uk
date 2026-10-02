@@ -33,30 +33,28 @@ Run lint and formatting before committing:
 make format
 ```
 
-Run every new or modified Python test file:
+Run all tests when the change has broad model risk:
 
 ```bash
-uv run pytest policyengine_uk/tests/path/to/test_file.py -v
+make test
 ```
 
-Run every new or modified policy YAML test file:
+Run a focused Python test:
+
+```bash
+uv run pytest policyengine_uk/tests/path/to/test_file.py::test_name -v
+```
+
+Run a focused policy YAML test:
 
 ```bash
 uv run policyengine-core test policyengine_uk/tests/policy/path/to/test.yaml -c policyengine_uk
 ```
 
-Do not require the full repository test suite before committing or opening a
-pull request. CI provides broader regression coverage. Run `make test`, a
-directory-wide test command, or microsimulation tests only when the user asks
-for them or when diagnosing a failure that cannot be reproduced with the new or
-modified test files.
-
-When a new or modified test file contains several cases, run the whole file so
-unchanged cases in that file also validate the shared setup. Record any test
-command that was not run to completion and why.
-
-Run a new or modified microsimulation test file explicitly:
+Run microsimulation tests explicitly:
 
 ```bash
-uv run pytest policyengine_uk/tests/microsimulation/path/to/test_file.py -v
+make test-microsimulation
 ```
+
+When a command is not run, record why.
