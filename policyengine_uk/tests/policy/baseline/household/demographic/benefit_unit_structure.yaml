@@ -373,8 +373,10 @@
     is_claimant_or_partner: [true, true, false]
 
 # Below a claimant flagged as a parent, a member at least 16 years younger is
-# presumed their child at any age. Without flags, the under-20 limit stays:
-# survey childless couples carry no flags and include large age gaps.
+# presumed their child at any age. Without flags, a member is presumed the
+# claimant's child under 20 at a 16-year gap, or at any age at a 20-year gap:
+# co-resident FRS adults 16-19 years apart are mostly couples, those 20 or more
+# apart mostly not. Survey datasets supply is_claimant_or_partner instead.
 
 - name: A flagged lone parent with an adult son is single
   period: 2025
@@ -397,8 +399,7 @@
     relation_type: SINGLE
     is_couple: false
 
-- name: Without a parent flag, a 25-year gap is still read as a couple
-  # Documented limitation: indistinguishable from a survey childless couple.
+- name: Without flags, a member 25 years younger is presumed the claimant's child
   period: 2025
   absolute_error_margin: 0
   input:
@@ -414,8 +415,114 @@
       household:
         members: [older, younger]
   output:
-    is_claimant_or_partner: [true, true]
+    is_claimant_or_partner: [true, false]
+    relation_type: SINGLE
+    is_couple: false
+
+- name: Without flags, the 20-year gap at any age is a boundary
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head_a:
+        age: 50
+      gap_19:
+        age: 31
+      head_b:
+        age: 50
+      gap_20:
+        age: 30
+      head_c:
+        age: 90
+      gap_20_at_70:
+        age: 70
+    benunits:
+      unit_a:
+        members: [head_a, gap_19]
+      unit_b:
+        members: [head_b, gap_20]
+      unit_c:
+        members: [head_c, gap_20_at_70]
+    households:
+      household_a:
+        members: [head_a, gap_19]
+      household_b:
+        members: [head_b, gap_20]
+      household_c:
+        members: [head_c, gap_20_at_70]
+  output:
+    is_claimant_or_partner: [true, true, true, false, true, false]
+
+- name: A flagged partner 25 years younger stays the partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 60
+        is_parent: true
+      partner:
+        age: 35
+        is_parent: true
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    is_claimant_or_partner: [true, true, false]
     is_couple: true
+
+- name: An unflagged couple 22 years apart with a child is assessed as a lone parent
+  # Known trade-off of the unflagged presumption: calculators that send ages
+  # only cannot tell this couple from a parent living with an adult child.
+  # Supplying is_claimant_or_partner keeps the couple (next case).
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      older:
+        age: 60
+      younger:
+        age: 38
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [older, younger, child]
+    households:
+      household:
+        members: [older, younger, child]
+  output:
+    is_claimant_or_partner: [true, false, false]
+    is_lone_parent: true
+
+- name: Supplied roles keep an unflagged couple 22 years apart
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      older:
+        age: 60
+        is_claimant_or_partner: true
+      younger:
+        age: 38
+        is_claimant_or_partner: true
+      child:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [older, younger, child]
+    households:
+      household:
+        members: [older, younger, child]
+  output:
+    is_couple: true
+    is_lone_parent: false
 
 - name: A flagged parent keeps an unflagged partner close in age, not the adult son
   period: 2025
@@ -493,11 +600,11 @@
   input:
     people:
       head_a:
-        age: 40
+        age: 37
       aged_19:
         age: 19
       head_b:
-        age: 40
+        age: 38
       aged_20:
         age: 20
     benunits:
