@@ -453,6 +453,7 @@ def family(claimant, partner=None, **kw):
         rent=12_000.0,
         region="NORTH_EAST",
         lodger=False,
+        benunit_inputs={},
     )
     values.update(kw)
     return values
@@ -487,6 +488,16 @@ def example_families():
         family(adult_inputs(70), adult_inputs(40)),
         # A single claimant with LCWRA continuing a Housing Benefit award.
         family(adult_inputs(30, uc_limited_capability_for_WRA=True), legacy=True),
+        # A lone parent of five on Housing Benefit and income support whose
+        # excess is more than their Housing Benefit (reg. 75D(2)).
+        family(
+            adult_inputs(30),
+            children=[dict(age=a, in_education=False) for a in (1, 3, 5, 7, 9)],
+            legacy=True,
+            rent=20_000.0,
+            region="LONDON",
+            benunit_inputs=dict(income_support=24_000.0),
+        ),
     ]
 
 
@@ -537,6 +548,8 @@ def situation(population, year=PERIOD):
         }
         if f["childcare"]:
             benunit["uc_childcare_element"] = {year: f["childcare"]}
+        for variable, value in f.get("benunit_inputs", {}).items():
+            benunit[variable] = {year: value}
         benunits[f"b{i}"] = benunit
         household_members = list(members)
         if f["lodger"]:
@@ -785,7 +798,16 @@ def test_maximum_rent_reads_the_housing_benefit_category(population):
 def test_examples_reach_the_cases():
     """Each example changes the result it is there for."""
     v = calculate(EXAMPLE_FAMILIES)
-    uc_family, legacy_family, capped, lone_parent, afip, mixed_age, hb_lcwra = range(7)
+    (
+        uc_family,
+        legacy_family,
+        capped,
+        lone_parent,
+        afip,
+        mixed_age,
+        hb_lcwra,
+        hb_floor,
+    ) = range(8)
     # Reg. 3(3): single for UC, a couple for HB, whatever the legacy claim.
     for i in (uc_family, legacy_family):
         assert v["uc_member_of_couple_claims_as_single_person"][i]
@@ -821,3 +843,14 @@ def test_examples_reach_the_cases():
     assert v["is_uc_benefit_cap_exempt"][hb_lcwra]
     assert not v["is_housing_benefit_benefit_cap_exempt"][hb_lcwra]
     assert v["reference_is_benefit_cap_exempt"][hb_lcwra]
+    # Reg. 75D(2): the excess is more than the Housing Benefit, which keeps
+    # 50 pence a week; the old shared reduction took it all.
+    hb_pre = v["housing_benefit_pre_benefit_cap"][hb_floor]
+    assert hb_pre > 0
+    assert (
+        v["benefit_cap_welfare_benefits"][hb_floor]
+        - v["housing_benefit_benefit_cap"][hb_floor]
+        > hb_pre
+    )
+    assert abs(v["housing_benefit"][hb_floor] - 0.5 * 52) < 0.01
+    assert v["reference_housing_benefit"][hb_floor] == 0
