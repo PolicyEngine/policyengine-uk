@@ -1,0 +1,30 @@
+description: Countries whose residents of pensionable age receive the Winter Fuel Payment. Great Britain until the 2023 qualifying week; England and Wales from the 2024 qualifying week, when Scotland's Pension Age Winter Heating Payment replaced it. Northern Ireland pays its own Winter Fuel Payment under regulations that mirror Great Britain's, which these parameters stand in for.
+values:
+  2000-01-01:
+    value:
+      - ENGLAND
+      - WALES
+      - SCOTLAND
+      - NORTHERN_IRELAND
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2000, reg. 2(1)(a)(i) (ordinarily resident in Great Britain)
+        href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2/2023-09-18
+      - title: The Social Fund Winter Fuel Payment Regulations (Northern Ireland) 2000
+        href: https://www.legislation.gov.uk/nisr/2000/91/contents
+  # Dated 1 January so that the year's value is the one for its September
+  # qualifying week; SI 2024/869 came into force on 16 September 2024.
+  2024-01-01:
+    value:
+      - ENGLAND
+      - WALES
+      - NORTHERN_IRELAND
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2024, reg. 1(2) and 2(2)(a) (England and Wales)
+        href: https://www.legislation.gov.uk/uksi/2024/869/regulation/2/made
+      - title: The Social Fund Winter Fuel Payment Regulations 2025, reg. 1(2) and 2(b) (England and Wales)
+        href: https://www.legislation.gov.uk/uksi/2025/969/regulation/2/made
+      - title: The Social Fund Winter Fuel Payment Regulations (Northern Ireland) 2025, reg. 2(b)
+        href: https://www.legislation.gov.uk/nisr/2025/142/regulation/2
+metadata:
+  unit: list
+  label: Winter Fuel Payment countries
