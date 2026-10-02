@@ -27,9 +27,17 @@ up to two sharer families and at most one non-dependant family:
    pensioner scheme, and only a working-age family by a council's scheme.
 4. Others do not matter: changing the ages and disability benefits of every
    other family that claims leaves a family's pensioner status, exemption,
-   scheme and award unchanged.
-5. Bounds: a family that cannot claim gets no simulated reduction, and the
-   household's reduction never exceeds its council tax.
+   scheme and award unchanged, reported reductions included.
+5. Fallback: a claiming family gets its simulated reduction where its scheme
+   is simulated, and otherwise its reported one, limited to its share of the
+   council tax where it is jointly liable. A family that cannot claim gets
+   its reported reduction only where no claim in its household is simulated.
+6. Bounds: a family that cannot claim gets no simulated reduction; a
+   household with a simulated claim never gets more than its council tax.
+7. The exemption is the applicant's own: in a council's working-age scheme,
+   giving one claiming family an exempting benefit removes the non-dependant
+   deductions from its own reduction and leaves every other claim's
+   deductions and award unchanged.
 """
 
 import numpy as np
@@ -86,6 +94,7 @@ adult_age = st.one_of(
 )
 disability = st.sampled_from([None, *DISABILITY])
 money = st.floats(0, 40_000, allow_nan=False, allow_infinity=False)
+reported = st.one_of(st.just(0.0), st.floats(0, 3_000, allow_nan=False))
 
 
 @st.composite
@@ -105,6 +114,7 @@ def family(draw, role):
     return dict(
         role=role,
         child_age=None if alone else draw(st.one_of(st.none(), st.integers(0, 15))),
+        reported=draw(reported),
         **draw(adults(1 if alone else 2)),
     )
 
@@ -171,6 +181,8 @@ def build(population, alone=False, perturb_others=False):
                     disability_input = house["other_disabilities"][replacement]
                     replacement += 1
                 people[pid] = person(age, disability_input, fam["earnings"][i])
+                if i == 0:
+                    people[pid]["council_tax_benefit_reported"] = fam["reported"]
                 people[pid]["is_household_head"] = (
                     alone or fam["role"] == "head"
                 ) and i == 0
@@ -268,10 +280,35 @@ def test_scheme_follows_own_family(population):
     assert not np.any((local > 0.005) & pensioner)
     assert not np.any((local > 0.005) & ~england)
 
-    # 5. Bounds. (No family has a reported reduction to fall back on here.)
+    # 5. Fallback.
+    benefit = calc(sim, "council_tax_benefit")
+    reported_amount = calc(sim, "council_tax_benefit_reported", map_to="benunit")
+    share = calc(sim, "council_tax_reduction_joint_liability_share")
+    # Index households directly: map_to splits a household value among members.
+    house = facts["house"]
+    bill = calc(sim, "council_tax")[house]
+    simulates = calc(sim, "council_tax_reduction_household_has_simulated_claim")
+    household_simulates = simulates[house].astype(bool)
+    expected = np.where(
+        claimant,
+        np.where(
+            supported,
+            simulated,
+            np.where(
+                share < 1, np.minimum(reported_amount, bill * share), reported_amount
+            ),
+        ),
+        np.where(household_simulates, 0, reported_amount),
+    )
+    np.testing.assert_allclose(benefit, expected, atol=0.01)
+    simulated_claims = np.bincount(house, weights=claimant & supported)
+    assert np.array_equal(simulates.astype(bool), simulated_claims > 0)
+
+    # 6. Bounds.
     assert np.all(simulated[~claimant] == 0)
     household_reduction = calc(sim, "council_tax_reduction")
-    assert np.all(household_reduction <= calc(sim, "council_tax") + 0.01)
+    over = household_reduction > calc(sim, "council_tax") + 0.01
+    assert not np.any(over & simulates)
 
 
 @PROPERTY_SETTINGS
@@ -297,4 +334,105 @@ def test_other_families_do_not_change_a_claim(population):
             calc(after, variable)[target],
             atol=1e-6,
             err_msg=variable,
+        )
+
+
+@st.composite
+def shared_council_homes(draw):
+    """A working-age head and sharer under one council's scheme, with a
+    non-dependant in remunerative work, and an exempting benefit for one of
+    the two claimants."""
+    return dict(
+        local_authority=draw(st.sampled_from(sorted(MODELLED_WORKING_AGE_SCHEMES))),
+        ages=draw(st.lists(st.integers(20, 60), min_size=2, max_size=2)),
+        non_dependant_age=draw(st.integers(20, 60)),
+        non_dependant_earnings=draw(st.floats(10_000, 60_000, allow_nan=False)),
+        council_tax=draw(st.floats(1_000, 4_000, allow_nan=False)),
+        exempt_family=draw(st.sampled_from([0, 1])),
+        disability=draw(st.sampled_from(sorted(DISABILITY))),
+    )
+
+
+def council_situation(homes, with_disability):
+    people, benunits, households = {}, {}, {}
+    for h, home in enumerate(homes):
+        ids = []
+        for f, age in enumerate(home["ages"]):
+            pid = f"h{h}_claimant_{f}"
+            disability_input = (
+                home["disability"]
+                if with_disability and f == home["exempt_family"]
+                else None
+            )
+            people[pid] = person(age, disability_input, 0)
+            people[pid]["is_household_head"] = f == 0
+            benunits[f"h{h}_f{f}"] = {
+                "members": [pid],
+                "liable_for_share_of_household_rent": f == 1,
+                "claims_all_entitled_benefits": True,
+                "would_claim_uc": False,
+            }
+            ids.append(pid)
+        pid = f"h{h}_non_dependant"
+        people[pid] = person(
+            home["non_dependant_age"], None, home["non_dependant_earnings"]
+        )
+        people[pid].update(is_household_head=False, weekly_hours=37.5)
+        benunits[f"h{h}_f2"] = {"members": [pid], "would_claim_uc": False}
+        ids.append(pid)
+        households[f"h{h}"] = dict(
+            members=ids,
+            country="ENGLAND",
+            local_authority=home["local_authority"],
+            council_tax=home["council_tax"],
+            rent=12_000,
+            tenure_type="RENT_PRIVATELY",
+            savings=0,
+        )
+    return {
+        group: {
+            name: {
+                key: value if key == "members" else {YEAR: value}
+                for key, value in entity.items()
+            }
+            for name, entity in entities.items()
+        }
+        for group, entities in (
+            ("people", people),
+            ("benunits", benunits),
+            ("households", households),
+        )
+    }
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(shared_council_homes(), min_size=1, max_size=6))
+def test_exemption_is_the_applicants_own(homes):
+    without = Simulation(situation=council_situation(homes, with_disability=False))
+    with_ = Simulation(situation=council_situation(homes, with_disability=True))
+    # Benefit units run head, sharer, non-dependant in each household.
+    family = np.tile([0, 1, 2], len(homes))
+    exempt_family = np.repeat([home["exempt_family"] for home in homes], 3)
+    exempted = family == exempt_family
+    other = (family < 2) & ~exempted
+    variables = [v + "_non_dep_deductions" for v in LOCAL_SCHEMES]
+
+    def total(sim_, names):
+        return sum(calc(sim_, name) for name in names)
+
+    before_deductions = total(without, variables)
+    after_deductions = total(with_, variables)
+    # 7. The non-dependant is deducted from both claims without the benefit,
+    # so the test is not vacuous.
+    assert np.all(before_deductions[family < 2] > 0)
+    flag = "council_tax_reduction_applicant_has_non_dep_exemption"
+    assert not np.any(calc(without, flag)[family < 2])
+    assert np.array_equal(calc(with_, flag)[family < 2], exempted[family < 2])
+    assert np.all(after_deductions[exempted] == 0)
+    np.testing.assert_allclose(
+        after_deductions[other], before_deductions[other], atol=1e-6
+    )
+    for name in LOCAL_SCHEMES + ["council_tax_benefit"]:
+        np.testing.assert_allclose(
+            calc(with_, name)[other], calc(without, name)[other], atol=1e-6
         )

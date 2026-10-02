@@ -218,6 +218,113 @@
     council_tax_benefit: [300, 900]
     council_tax_reduction: 1_200
 
+- name: A family that cannot claim keeps no reported reduction beside a simulated claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      adult_child:
+        age: 40
+        council_tax_benefit_reported: 1_200
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      child_family:
+        members: [adult_child]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, adult_child]
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    council_tax_reduction_claimant_benunit: [true, false]
+    # The adult child's own scheme (Maidstone's working-age one) is not
+    # simulated, but the household's bill is: the head's pensioner claim
+    # covers all of it. The child's report cannot be added on top.
+    council_tax_reduction_scheme_supported: [true, false]
+    council_tax_reduction_household_has_simulated_claim: true
+    council_tax_benefit: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Where no claim is simulated, every family keeps its reported reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_benefit_reported: 300
+      parent:
+        age: 70
+        council_tax_benefit_reported: 200
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      parent_family:
+        members: [parent]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, parent]
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # The head's working-age scheme is not modelled, so nothing in the
+    # household is simulated; the parent cannot claim but keeps its report.
+    council_tax_reduction_scheme_supported: [false, true]
+    council_tax_reduction_household_has_simulated_claim: false
+    council_tax_benefit: [300, 200]
+    council_tax_reduction: 500
+
+- name: A jointly liable claimant's reported reduction is limited to its share of the bill
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 40
+        council_tax_benefit_reported: 1_500
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # SI 2012/2885 Sch 1 para 7(3)-(4): each of the two is liable for half,
+    # 900, so no scheme could reduce the sharer's bill by more than that.
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    council_tax_reduction_scheme_supported: [true, false]
+    council_tax_benefit: [900, 900]
+    council_tax_reduction: 1_800
+
 - name: Newham, the head's disability exempts only the head's claim from non-dependant deductions
   period: 2026
   absolute_error_margin: 0.01

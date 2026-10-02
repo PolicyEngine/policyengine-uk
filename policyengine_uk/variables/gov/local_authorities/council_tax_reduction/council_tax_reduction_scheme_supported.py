@@ -14,8 +14,8 @@ class council_tax_reduction_scheme_supported(Variable):
         "the Scottish and Welsh schemes, and the working-age schemes of the "
         "English councils it models. The scheme follows the family's own "
         "pensioner status, so families in one household can fall under "
-        "different schemes. A family whose scheme is not simulated keeps its "
-        "reported reduction."
+        "different schemes. A claiming family whose scheme is not simulated "
+        "falls back to its reported reduction (council_tax_benefit)."
     )
     definition_period = YEAR
 
