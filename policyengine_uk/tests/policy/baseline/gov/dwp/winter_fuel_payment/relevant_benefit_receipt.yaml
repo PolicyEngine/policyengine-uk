@@ -187,9 +187,52 @@
         members: [pensioner]
         country: ENGLAND
   output:
-    is_on_tax_credits: [true]
+    tax_credit_award: [500]
+    is_on_winter_fuel_payment_relevant_benefit: [true]
     winter_fuel_payment: [200]
     winter_fuel_allowance: 200
+
+- name: 2024 a tax credit award of £25 is below the £26 minimum
+  # Reg. 2(2)(b)(ii): "not less than £26". No other relevant benefit.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 67
+        total_income: 9_000
+    benunits:
+      unit:
+        members: [pensioner]
+        tax_credits: 25
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    is_on_winter_fuel_payment_relevant_benefit: [false]
+    winter_fuel_payment: [0]
+    winter_fuel_allowance: 0
+
+- name: 2024 a tax credit award of exactly £26 qualifies
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 67
+        total_income: 9_000
+    benunits:
+      unit:
+        members: [pensioner]
+        tax_credits: 26
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    is_on_winter_fuel_payment_relevant_benefit: [true]
+    winter_fuel_payment: [200]
 
 - name: 2025 a non-dependant's income-related ESA does not exempt the pensioner from the income test
   # Under SI 2025/969 the pensioner is entitled (reg. 2) to £200 (reg. 3(1)),
@@ -398,6 +441,69 @@
     winter_fuel_payment_eligible: [false, true]
     winter_fuel_payment: [0, 200]
     winter_fuel_allowance: 200
+
+- name: 2025 the couple's payment goes to the Pension Credit claimant, which sets a lodger's shared amount
+  # Pension Credit is paid to the claimant, aged 70; the partner, aged 85, is
+  # excluded (reg. 4(2)(a)). The claimant: reg. 3(3), £300 (partner aged 80).
+  # The lodger, aged 82 and on no relevant benefit, lives with an entitled
+  # person under 80 and no entitled person aged 80 (the partner is not
+  # entitled): reg. 3(5), £200.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        pension_credit_reported: 1_000
+      partner:
+        age: 85
+      lodger:
+        age: 82
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        pension_credit: 1_000
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_eligible: [true, false, true]
+    winter_fuel_payment: [300, 0, 200]
+    winter_fuel_allowance: 500
+
+- name: 2025 without a reported award, the couple's payment goes to the benefit-unit head
+  # As above, with the award entered on the benefit unit only and the
+  # 70-year-old as head of the benefit unit (the claimant).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_benunit_head: true
+      partner:
+        age: 85
+        is_benunit_head: false
+      lodger:
+        age: 82
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        pension_credit: 1_000
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: ENGLAND
+  output:
+    winter_fuel_payment: [300, 0, 200]
+    winter_fuel_allowance: 500
 
 - name: 2023 Scotland's pensioners get the Winter Fuel Payment, not PAWHP
   # SI 2000/729 reg. 2(1)(a)(i): ordinarily resident in Great Britain. The

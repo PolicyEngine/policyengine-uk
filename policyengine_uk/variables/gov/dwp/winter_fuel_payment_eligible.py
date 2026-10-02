@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.winter_heating import (
     is_excluded_relevant_benefit_partner,
+    reports_relevant_benefit,
 )
 
 
@@ -55,6 +56,10 @@ class winter_fuel_payment_eligible(Variable):
             on_relevant_benefit | (not p.require_benefits) | meets_income_test
         )
         excluded = is_excluded_relevant_benefit_partner(
-            person, period, qualifies, on_relevant_benefit
+            person,
+            period,
+            qualifies,
+            on_relevant_benefit,
+            reports_relevant_benefit(person, period, p),
         )
         return qualifies & meets_means_condition & ~excluded

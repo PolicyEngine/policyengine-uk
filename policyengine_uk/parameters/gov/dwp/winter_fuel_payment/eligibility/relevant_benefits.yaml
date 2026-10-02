@@ -1,4 +1,4 @@
-description: Benefits that count as a relevant benefit for the Winter Fuel Payment. A person on one receives the full amount whoever they live with, and the partner of the person paid is not entitled. For the 2024 qualifying week only, a relevant benefit (or a tax credit award of at least £26) was also a condition of entitlement.
+description: Benefits that count as a relevant benefit for the Winter Fuel Payment, other than tax credits (see minimum_tax_credit_award). A person on one receives the full amount whoever they live with, and the partner of the person paid is not entitled. For the 2024 qualifying week only, a relevant benefit was also a condition of entitlement.
 values:
   2000-01-01:
     value:
@@ -17,7 +17,6 @@ values:
       - is_on_pension_credit
       - is_on_income_related_esa
       - is_on_universal_credit
-      - is_on_tax_credits
     reference:
       - title: The Social Fund Winter Fuel Payment Regulations 2024, reg. 2(2)(b) and 2(4) "relevant benefit"
         href: https://www.legislation.gov.uk/uksi/2024/869/regulation/2/made

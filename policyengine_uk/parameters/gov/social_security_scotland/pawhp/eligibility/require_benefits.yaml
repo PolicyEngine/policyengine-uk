@@ -7,8 +7,8 @@ values:
       - title: The Winter Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI 2024/351), reg. 5(a)(ii) and 7 (as made)
         href: https://www.legislation.gov.uk/ssi/2024/351/regulation/7/made
   # SSI 2025/282 came into force on 11 October 2025 and applies to the
-  # qualifying week in September 2025 (its reg. 17 keeps the 2024 week on
-  # the regulations as made).
+  # qualifying week in September 2025. Its reg. 17 keeps the regulations as
+  # they stood immediately before 11 October 2025 for the 2024 week.
   2025-01-01:
     value: false
     reference:

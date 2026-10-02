@@ -20,25 +20,76 @@ in a household is taken to share it as their mutual home. Residential care,
 long hospital stays and custody are not modelled.
 """
 
-from policyengine_core.model_api import select, where
+from policyengine_core.model_api import add, select, where
+
+# The reported award behind each relevant-benefit receipt variable: the
+# member who reports it is the one the benefit is paid to.
+REPORTED_AWARDS = {
+    "is_on_pension_credit": ["pension_credit_reported"],
+    "is_on_income_support": ["income_support_reported"],
+    "is_on_income_based_jsa": ["jsa_income_reported"],
+    "is_on_income_related_esa": ["esa_income_reported"],
+    "is_on_universal_credit": ["universal_credit_reported"],
+}
+TAX_CREDIT_REPORTS = ["child_tax_credit_reported", "working_tax_credit_reported"]
+
+
+def is_on_relevant_benefit(person, period, eligibility):
+    """Whether a relevant benefit is paid to the person, or to their couple.
+
+    ``eligibility`` is the scheme's eligibility parameter node: the benefits
+    in ``relevant_benefits``, and a tax credit award of at least
+    ``minimum_tax_credit_award`` (infinite when tax credits do not count).
+    """
+    listed = add(person, period, eligibility.relevant_benefits) > 0
+    tax_credits = (
+        person("tax_credit_award", period) >= eligibility.minimum_tax_credit_award
+    )
+    return listed | tax_credits
+
+
+def reports_relevant_benefit(person, period, eligibility):
+    """Whether the person reports a relevant-benefit award of their own."""
+    reports = [
+        report
+        for variable in eligibility.relevant_benefits
+        for report in REPORTED_AWARDS.get(variable, [])
+    ]
+    own_award = add(person, period, reports) > 0 if reports else False
+    tax_credits = (
+        add(person, period, TAX_CREDIT_REPORTS) >= eligibility.minimum_tax_credit_award
+    )
+    return own_award | tax_credits
 
 
 def is_excluded_relevant_benefit_partner(
-    person, period, qualifies, on_relevant_benefit
+    person, period, qualifies, on_relevant_benefit, reports_relevant_benefit
 ):
     """Whether the person is the partner of the person paid for their couple.
 
-    A couple on a relevant benefit receives one payment. The model pays the
-    eldest member of the couple who qualifies (the claimant and partner of a
-    benefit unit whose award is a relevant benefit) and excludes the other;
-    the amount is the same whichever member is paid.
+    A couple on a relevant benefit receives one payment, made to the person
+    the benefit is paid to (the claimant), or to their partner when only the
+    partner qualifies; the partner of the person paid is not entitled. The
+    model takes the claimant to be the member of the couple who reports the
+    award; failing that, the benefit-unit head; failing that, the elder. The
+    choice matters beyond the couple: whether someone else in the household
+    lives with an entitled person aged 80 or over depends on whom the couple's
+    payment is made to (SI 2025/969 reg 3(5) and (6)).
     """
     age = person("age", period)
     couple_member = (
         qualifies & person("is_claimant_or_partner", period) & on_relevant_benefit
     )
+    precedence = where(
+        reports_relevant_benefit,
+        0,
+        where(person("is_benunit_head", period), 1, 2),
+    )
     payee = couple_member & (
-        person.get_rank(person.benunit, -age, condition=couple_member) == 0
+        person.get_rank(
+            person.benunit, precedence * 1_000 - age, condition=couple_member
+        )
+        == 0
     )
     return couple_member & ~payee
 

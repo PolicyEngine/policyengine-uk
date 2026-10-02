@@ -46,6 +46,16 @@ AWARD_INPUTS = {
     "UC": "universal_credit",
     "TC": "tax_credits",
 }
+# The award a claimant reports themselves: the couple's payment is made to
+# them (SI 2025/969 reg 4(2)(a); explanatory memorandum para 5.8).
+REPORTED_INPUTS = {
+    "PC": "pension_credit_reported",
+    "IS": "income_support_reported",
+    "JSA": "jsa_income_reported",
+    "ESA": "esa_income_reported",
+    "UC": "universal_credit_reported",
+    "TC": "working_tax_credit_reported",
+}
 # An award reported by a member who is neither claimant nor partner.
 OWN_AWARD_INPUTS = {
     "PC": "pension_credit_reported",
@@ -98,7 +108,10 @@ def benefit_units(draw):
         for _ in range(size)
     ]
     award = draw(st.sampled_from([None, None, *AWARD_INPUTS]))
-    return {"adults": adults, "award": award}
+    # The benefit-unit head, and the member (if any) who reports the award.
+    head = draw(st.integers(0, size - 1))
+    reporter = draw(st.sampled_from([None, *range(size)])) if award else None
+    return {"adults": adults, "award": award, "head": head, "reporter": reporter}
 
 
 @st.composite
@@ -121,10 +134,19 @@ def households(draw):
 
 
 def household_people(household):
-    """Each person as (inputs, benefit unit index, claimant or partner)."""
+    """Each person as (inputs, benefit unit index, claimant or partner).
+
+    A claimant or partner's inputs carry whether they are the benefit-unit
+    head and whether they report their unit's award.
+    """
     people = []
     for u, unit in enumerate(household["units"]):
-        for adult in unit["adults"]:
+        for a, adult in enumerate(unit["adults"]):
+            adult = {
+                **adult,
+                "head": a == unit.get("head", 0),
+                "reports": a == unit.get("reporter"),
+            }
             people.append((adult, u, True))
         if u == 0 and household["other"] is not None:
             people.append((household["other"], u, False))
@@ -141,11 +163,16 @@ def situation(drawn, year):
                 "age": {year: inputs["age"]},
                 "total_income": {year: inputs["total_income"]},
                 "is_claimant_or_partner": {year: cp},
+                "is_benunit_head": {year: bool(inputs.get("head", False))},
             }
             own = inputs.get("own_award")
             if own is not None:
                 person[OWN_AWARD_INPUTS[own]] = {year: AWARD}
             people[name] = person
+        for name, (inputs, u, cp) in zip(names, members):
+            if cp and inputs.get("reports"):
+                award = household["units"][u]["award"]
+                people[name][REPORTED_INPUTS[award]] = {year: AWARD}
         for u, unit in enumerate(household["units"]):
             benunit = {
                 "members": [n for n, m in zip(names, members) if m[1] == u],
@@ -180,8 +207,9 @@ def reference_payments(household, year):
         on_relevant = [award_of(p) in relevant for p in people]
         qualifies = [resident and p[0]["age"] >= 67 for p in people]
         eligible = [q and (r or means_test) for q, r in zip(qualifies, on_relevant)]
-        # One payment for a couple on a relevant benefit: to the eldest who
-        # qualifies (first listed if the same age); the other is not entitled.
+        # One payment for a couple on a relevant benefit, to the claimant: the
+        # member who reports the award, else the benefit-unit head, else the
+        # elder (first listed if the same age). The other is not entitled.
         for u in range(len(units)):
             couple = [
                 i
@@ -189,7 +217,19 @@ def reference_payments(household, year):
                 if p[1] == u and p[2] and qualifies[i] and on_relevant[i]
             ]
             if couple:
-                payee = max(couple, key=lambda i: (people[i][0]["age"], -i))
+                payee = min(
+                    couple,
+                    key=lambda i: (
+                        0
+                        if people[i][0]["reports"]
+                        and units[people[i][1]]["award"] in relevant
+                        else 1
+                        if people[i][0]["head"]
+                        else 2,
+                        -people[i][0]["age"],
+                        i,
+                    ),
+                )
                 for i in couple:
                     if i != payee:
                         eligible[i] = False
