@@ -2,10 +2,15 @@ description: Housing Benefit increases the earnings disregard by this weekly amo
 values:
   # SI 2006/213 and 2006/214 as made (in force 6 March 2006): £14.50. Each
   # up-rating order substituted the sum from 1 April (for specified
-  # purposes; the first Monday of April otherwise): SI 2007/688 (£15.45),
-  # SI 2008/632 (£16.05), SI 2009/497 (£16.85) and SI 2010/793 (£17.10).
-  # Read from legislation.gov.uk point-in-time versions on 2026-10-01.
+  # purposes; the first Monday of April otherwise): SI 2006/645 (£14.90),
+  # SI 2007/688 (£15.45), SI 2008/632 (£16.05), SI 2009/497 (£16.85) and
+  # SI 2010/793 (£17.10). SI 2006/645 amended the provisions these
+  # Regulations consolidated, so legislation.gov.uk's revised text of SI
+  # 2006/213 and 2006/214 omits £14.90; SI 2007/688 arts 19(9) and 20(9)
+  # replace "£14.90". Read from legislation.gov.uk on 2026-10-01 and
+  # 2026-10-02.
   2006-03-06: 14.5
+  2006-04-01: 14.9
   2007-04-01: 15.45
   2008-04-01: 16.05
   2009-04-01: 16.85
@@ -28,6 +33,8 @@ metadata:
       href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/17
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006, Schedule 5 paragraph 9(1) and (3)(c)
       href: https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/9
+    - title: The Social Security Benefits Up-rating Order 2006, articles 19 and 20
+      href: https://www.legislation.gov.uk/uksi/2006/645/article/19/made
     - title: The Social Security Benefits Up-rating Order 2007, article 19(9) and 20(9)
       href: https://www.legislation.gov.uk/uksi/2007/688/article/19
     - title: The Social Security Benefits Up-rating Order 2008, article 19(10) and 20(10)
