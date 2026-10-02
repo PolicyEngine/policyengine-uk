@@ -25,7 +25,6 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 5_000
-        esa_includes_support_component: false
     benunits:
       family:
         members: [claimant, adult]
@@ -54,7 +53,6 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_contrib_reported: 2_000
-        esa_includes_support_component: false
         jsa_contrib_reported: 2_000
         incapacity_benefit_reported: 2_000
         sda: 2_000
