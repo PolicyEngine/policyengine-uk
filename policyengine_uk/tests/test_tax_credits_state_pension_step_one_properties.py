@@ -110,6 +110,8 @@ def sometimes(amount):
 @st.composite
 def adults(draw):
     earnings = draw(st.sampled_from([0, 0, 2_600, 6_000, 12_000, 25_000]))
+    # Half the adults have no other step-one income, where the change bites.
+    other_step_one = draw(st.booleans())
     return {
         "age": draw(st.integers(25, 90)),
         "state_pension": draw(
@@ -118,7 +120,7 @@ def adults(draw):
                 st.floats(0, 15_000, allow_nan=False, allow_infinity=False),
             )
         ),
-        **{source: draw(small) for source in OTHER_STEP_ONE},
+        **{s: draw(small) if other_step_one else 0 for s in OTHER_STEP_ONE},
         "employment_income": earnings,
         "weekly_hours": draw(st.sampled_from([10, 16, 20, 30])) if earnings else 0,
         "self_employment_income": draw(sometimes(3_000)),
