@@ -1135,17 +1135,20 @@
     housing_benefit_LHA_allowed_bedrooms: 2
     housing_benefit_LHA_category: C
 
-- name: A non-dependant parent and adult son entered as single count one Housing Benefit bedroom each
+- name: A non-dependant parent and adult son count one Housing Benefit bedroom each
   period: 2026
   input:
     people:
       renter:
         age: 60
         is_household_head: true
+        is_claimant_or_partner: true
       parent:
         age: 50
+        is_claimant_or_partner: true
       son:
         age: 22
+        is_claimant_or_partner: false
     benunits:
       renter_family:
         members: [renter]
@@ -1160,7 +1163,41 @@
         brma: MAIDSTONE
   output:
     # Not a couple, so each is "a person who is not a child" (HB reg
-    # 13D(3)(b)): 3. The parent family's own figure follows the model's
-    # inferred claimant and partner (the eldest two adults); it has no rent,
-    # so it is unused.
+    # 13D(3)(b)): the renter's 3. The parent's own size criteria: themself
+    # and the son, 2.
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+
+- name: An explicit single relationship stops the Housing Benefit couple rule
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      adult_1:
+        age: 40
+        is_claimant_or_partner: true
+      adult_2:
+        age: 38
+        is_claimant_or_partner: true
+    benunits:
+      renter_family:
+        members: [renter]
+      other_family:
+        members: [adult_1, adult_2]
+        relation_type: SINGLE
+    households:
+      home:
+        members: [renter, adult_1, adult_2]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # With relation_type SINGLE the family is not a couple (is_couple), so
+    # reg 13D(3)(a) does not merge the two adults into one bedroom for the
+    # renter: 3. (The inputs flag both as claimant or partner, which a
+    # single family cannot have; only the renter's figure is the point, and
+    # the other family's 1 just reflects those inputs.)
+    is_couple: [false, false]
     housing_benefit_LHA_allowed_bedrooms: [3, 1]
