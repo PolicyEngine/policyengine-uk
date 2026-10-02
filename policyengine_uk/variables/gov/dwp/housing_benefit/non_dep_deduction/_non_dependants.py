@@ -87,7 +87,9 @@ def is_award_payee(person, period, award, reported):
     test for being "on" income-based JSA or income-related ESA (HB Regs 2006
     reg 2(3) and (3A)), applied also to Income Support and State Pension
     Credit, which are paid to the claimant. The payee is the member who
-    reports the award, or the benefit unit's head where none does."""
+    reports the award, or the benefit unit's head where none does. Both
+    members of a joint-claim jobseeker's allowance couple are on it (reg
+    2(3)(c)), but the model has no joint-claim input, so only the payee is."""
     has_award = person.benunit(award, period) > 0
     reports = person(reported, period) > 0
     payee = where(

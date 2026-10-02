@@ -135,9 +135,10 @@ def households(draw):
         )
         for _ in range(draw(st.integers(1, 2)))
     ]
-    # A dependent young person (SSCBA s.142) in the non-dependant family: in
-    # full-time education (a student) or on approved training (not a student,
-    # so a separate non-dependant with their own deduction).
+    # A young person aged 16-19 in the non-dependant family: in full-time
+    # education (a student) or on approved training (not a student). Whether
+    # they are the family's claimant or partner is read from the model's
+    # is_claimant_or_partner.
     if draw(st.booleans()):
         training = draw(st.booleans())
         non_dependants.append(
