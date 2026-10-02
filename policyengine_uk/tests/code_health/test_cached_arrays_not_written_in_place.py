@@ -20,7 +20,14 @@ Two guards:
   allowed: core builds a new array for those.
 - A run-time check that makes every cached array read-only as it is stored and
   runs a simulation through ``Simulation.__init__`` (which applies the UC
-  rebalancing modifier) and the PIP phase-in scenario.
+  rebalancing modifier), the PIP phase-in scenario, and the code that branches
+  a simulation (marginal tax rates, labour supply responses and the capital
+  gains realisation response).
+
+Branches raise the stakes: since policyengine-core 3.32.12 a branch shares the
+simulation's cached arrays and copies each one only when it first reads it, so
+a write in place into one of them after branching also reaches any branch that
+has not read it yet.
 """
 
 import ast
@@ -475,3 +482,71 @@ def test_simulation_runs_with_read_only_cache(read_only_cache, scenario):
     # The modifiers ran: the claimant has a health element and PIP.
     assert sim.calculate("uc_LCWRA_element", 2026)[0] > 0
     assert sim.calculate("pip", 2025)[0] > 0
+
+
+def _earning_couple_with_gains() -> dict:
+    members = ["adult_1", "adult_2", "child"]
+    return {
+        "people": {
+            "adult_1": {
+                "age": {year: 45 for year in YEARS},
+                "employment_income": {year: 60_000 for year in YEARS},
+                "capital_gains": {year: 50_000 for year in YEARS},
+            },
+            "adult_2": {
+                "age": {year: 43 for year in YEARS},
+                "employment_income": {year: 18_000 for year in YEARS},
+            },
+            "child": {"age": {year: 7 for year in YEARS}},
+        },
+        "benunits": {"benunit": {"members": members}},
+        "households": {"household": {"members": members}},
+    }
+
+
+BRANCHING_SCENARIOS = {
+    "labour_supply_responses": {
+        "gov.simulation.labour_supply_responses.substitution_elasticity": 0.25,
+        "gov.simulation.labour_supply_responses.income_elasticity": -0.05,
+        "gov.hmrc.income_tax.allowances.personal_allowance.amount": 13_070,
+    },
+    "capital_gains_responses": {
+        "gov.simulation.capital_gains_responses.elasticity": 1.0,
+        "gov.hmrc.cgt.basic_rate": 0.20,
+        "gov.hmrc.cgt.higher_rate": 0.40,
+    },
+}
+
+
+@pytest.mark.parametrize(
+    "case", ["marginal_rates", "labour_supply_responses", "capital_gains_responses"]
+)
+def test_branching_runs_with_read_only_cache(read_only_cache, case):
+    from policyengine_uk import Simulation
+    from policyengine_uk.model_api import Scenario
+
+    if case == "marginal_rates":
+        sim = Simulation(situation=_earning_couple_with_gains())
+        for year in YEARS:
+            sim.calculate("marginal_tax_rate", year)
+            sim.calculate("marginal_tax_rate_on_capital_gains", year)
+        # The branches ran: both earners face a rate, and so do the gains.
+        assert {"adult_1_pay_rise", "adult_2_pay_rise"} <= set(sim.branches)
+        assert (sim.calculate("marginal_tax_rate", 2026)[:2] > 0).all()
+        assert sim.calculate("marginal_tax_rate_on_capital_gains", 2026)[0] > 0
+        return
+    changes = {
+        name: {str(year): value for year in YEARS}
+        for name, value in BRANCHING_SCENARIOS[case].items()
+    }
+    sim = Simulation(
+        situation=_earning_couple_with_gains(),
+        scenario=Scenario(parameter_changes=changes),
+    )
+    for year in YEARS:
+        sim.calculate("household_net_income", year)
+    if case == "labour_supply_responses":
+        assert "lsr_measurement" in sim.branches
+    else:
+        # The measurement branches are deleted; the response shows they ran.
+        assert sim.calculate("capital_gains_behavioural_response", 2026)[0] < 0
