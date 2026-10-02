@@ -52,7 +52,7 @@ PROPERTY_SETTINGS = settings(
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
 # 2020 has the temporary standard allowance uplift; 2025 has Carer Support
-# Payment without the Scottish Carer Supplement, 2026 with it.
+# Payment before the Scottish Carer Supplement starts, 2026 after.
 YEARS = [2020, 2025, 2026]
 CSP_YEARS = [2025, 2026]
 # Contributory ESA is entered as the reported amount, which income tax also

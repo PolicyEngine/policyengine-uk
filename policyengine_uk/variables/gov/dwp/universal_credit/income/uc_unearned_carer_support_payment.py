@@ -12,10 +12,10 @@ class uc_unearned_carer_support_payment(Variable):
         "from 19 November 2023), so it is capped at a year of Carer's "
         "Allowance. From 15 March 2026 reg. 2 limits 'carer support payment' "
         "to the carer support payment component of carer support (S.I. "
-        "2026/246 art. 25), which excludes the Scottish Carer Supplement. The "
-        "component is paid at the Carer's Allowance rate, so for a full year "
-        "of Carer Support Payment the cap also removes the supplement that "
-        "carer_support_payment currently includes."
+        "2026/246 art. 25), which excludes the Scottish Carer Supplement. "
+        "carer_support_payment is that component alone, paid at the Carer's "
+        "Allowance rate, so the cap does not bind on a full year's award; the "
+        "supplement is the separate scottish_carer_supplement."
     )
     definition_period = YEAR
     unit = GBP
