@@ -13,6 +13,8 @@ class ni_class_2(Variable):
 
     def formula(person, period, parameters):
         class_2 = parameters(period).gov.hmrc.national_insurance.class_2
-        profits = person("self_employment_income", period)
+        # SSCBA 1992 s.11(3): "relevant profits" are the profits on which
+        # Class 4 is (or would be) payable, after the Schedule 2 loss reliefs.
+        profits = person("ni_class_4_profits", period)
         over_threshold = profits >= class_2.small_profits_threshold
         return over_threshold * class_2.flat_rate * WEEKS_IN_YEAR

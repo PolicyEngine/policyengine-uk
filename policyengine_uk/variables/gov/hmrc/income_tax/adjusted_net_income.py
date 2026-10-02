@@ -17,8 +17,12 @@ class adjusted_net_income(Variable):
             period
         ).gov.hmrc.income_tax.adjusted_net_income_components
 
-        # Find adjusted net income
-        ani = add(person, period, adjusted_net_income_components)
+        # Find adjusted net income: net income, after trade loss relief
+        # against general income (ITA 2007 s.24(1), s.64), which reduces it
+        # before the Personal Allowance taper and every other ANI test.
+        ani = add(person, period, adjusted_net_income_components) - person(
+            "trade_loss_relief_against_general_income", period
+        )
 
         # For basic income contributions, add basic income
         # Modifying param list directly is mutative, hence two-step process

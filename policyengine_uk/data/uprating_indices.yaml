@@ -108,6 +108,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - sublet_income
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
+- trading_loss
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.ons.population:

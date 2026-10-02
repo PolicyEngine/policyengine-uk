@@ -1,0 +1,113 @@
+# Trade loss relief against general income: ITA 2007 s.64, limited to net
+# income and, from 2013-14, to the greater of £50,000 and 25% of adjusted total
+# income (s.24A). 2026-27 rates: Personal Allowance £12,570, basic rate 20% to
+# £50,270, dividend ordinary rate 10.75%, dividend allowance £500.
+
+- name: No trading loss, no relief
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 40_000
+  output:
+    trade_loss_relief_against_general_income: 0
+    adjusted_net_income: 40_000
+
+- name: A loss within the person's income is relieved in full against their pay
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 40_000
+    trading_loss: 10_000
+  output:
+    trade_loss_relief_against_general_income: 10_000
+    adjusted_net_income: 30_000
+    # (30,000 - 12,570) x 20%: the tax on £30,000 of pay.
+    income_tax: 3_486
+
+- name: Relief is limited to net income and the Personal Allowance is wasted
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 8_000
+    trading_loss: 20_000
+  output:
+    trade_loss_relief_against_general_income: 8_000
+    adjusted_net_income: 0
+    income_tax: 0
+
+- name: The cap is 25% of adjusted total income above £200,000
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 300_000
+    trading_loss: 200_000
+  output:
+    adjusted_total_income: 300_000
+    income_tax_relief_cap: 75_000
+    trade_loss_relief_against_general_income: 75_000
+    adjusted_net_income: 225_000
+
+- name: The cap is never below £50,000
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 150_000
+    trading_loss: 80_000
+  output:
+    income_tax_relief_cap: 50_000
+    trade_loss_relief_against_general_income: 50_000
+
+- name: Pension contributions come out of adjusted total income
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 300_000
+    personal_pension_contributions: 40_000
+    trading_loss: 200_000
+  output:
+    adjusted_total_income: 260_000
+    income_tax_relief_cap: 65_000
+    trade_loss_relief_against_general_income: 65_000
+
+- name: Relief lowers adjusted net income below £100,000 and restores the Personal Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 110_000
+    trading_loss: 20_000
+  output:
+    adjusted_net_income: 90_000
+    personal_allowance: 12_570
+    # 37,700 x 20% + (77,430 - 37,700) x 40%: the tax on £90,000 of pay.
+    income_tax: 23_432
+
+- name: With no non-savings income the relief comes off dividends
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    dividend_income: 60_000
+    trading_loss: 20_000
+  output:
+    trade_loss_relief_against_general_income: 20_000
+    trade_loss_relief_against_savings_and_dividends: 20_000
+    # (40,000 - 12,570 - 500) x 10.75%: the tax on £40,000 of dividends.
+    income_tax: 2_894.98
+
+- name: Relief takes non-savings income first, then savings, then dividends
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 5_000
+    savings_interest_income: 10_000
+    dividend_income: 30_000
+    trading_loss: 20_000
+  output:
+    trade_loss_relief_against_general_income: 20_000
+    trade_loss_relief_against_savings_and_dividends: 15_000
+    # The £15,000 of relief left after the pay, with the Personal
+    # Allowance, takes all £10,000 of savings and £17,570 of dividends.
+    received_allowances_earned_income: 0
+    received_allowances_savings_income: 10_000
+    received_allowances_dividend_income: 17_570
+    # £25,000 of dividends is left: (25,000 - 12,570 - 500) x 10.75%.
+    income_tax: 1_282.48

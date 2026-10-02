@@ -1,0 +1,58 @@
+# SI 2002/2006 reg 3(1) Step 4: a trading loss in the year is subtracted from
+# the income of Steps 1 to 3, so it reduces the claimants' joint income.
+
+- name: A trading loss reduces the claimant's other income
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20_000
+        trading_loss: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    tax_credits_applicable_income: 15_000
+
+- name: One partner's loss reduces the couple's joint income
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20_000
+      partner:
+        age: 38
+        trading_loss: 8_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    tax_credits_applicable_income: 12_000
+
+- name: Income does not go below zero
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 3_000
+        trading_loss: 9_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    tax_credits_applicable_income: 0

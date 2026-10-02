@@ -59,6 +59,8 @@ HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS = [
     "income_tax",
     "national_insurance",
     "student_loan_repayments",
+    # Self-employment losses count as negative income in HBAI.
+    "trading_loss",
     "employee_pension_contributions",
     "personal_pension_contributions",
     "maintenance_expenses",

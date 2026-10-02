@@ -24,4 +24,8 @@ class market_income(Variable):
             "maintenance_income",
         ]
         income = add(person, period, INCOME_VARIABLES)
-        return income - person("maintenance_expenses", period)
+        return (
+            income
+            - person("trading_loss", period)
+            - person("maintenance_expenses", period)
+        )

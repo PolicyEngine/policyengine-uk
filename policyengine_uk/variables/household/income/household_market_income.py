@@ -26,6 +26,9 @@ class household_market_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        total = add(person, period, HOUSEHOLD_MARKET_INCOME_VARIABLES)
+        # Trading losses are negative self-employment income.
+        total = add(person, period, HOUSEHOLD_MARKET_INCOME_VARIABLES) - add(
+            person, period, ["trading_loss"]
+        )
         contrib = parameters(period).gov.contrib.policyengine.economy.gdp_per_capita
         return total * (contrib + 1)
