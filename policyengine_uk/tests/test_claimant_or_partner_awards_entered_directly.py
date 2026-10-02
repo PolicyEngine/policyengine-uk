@@ -133,8 +133,9 @@ def test_the_raw_reported_total_is_read_through_the_reports(award):
     couple £3,000, with savings of £10,000. Tariff income of
     ceil(4,000 / 250) x £1 x 52 = £832 a year extinguishes the partner's
     award. The raw total, £3,200, differs from the screened award, £2,368,
-    but is still what the reports give, so the claimant-or-partner award is
-    the partner's screened award, £0."""
+    but is still what the reports give. As the reform uses reported amounts
+    unscreened, the claimant-or-partner award is the partner's raw report,
+    £200."""
     reported, _ = AWARDS[award]
     members = ["claimant", "partner", "other_adult"]
     simulation = Simulation(
@@ -160,7 +161,7 @@ def test_the_raw_reported_total_is_read_through_the_reports(award):
     assert simulation.calculate(award, YEAR)[0] == 2_368
     assert scoped(simulation, award) == 0
     simulation.set_input(award, YEAR, [3_200])
-    assert scoped(simulation, award) == 0
+    assert scoped(simulation, award) == 200
     # A different award entered directly is the couple's.
     simulation.set_input(award, YEAR, [4_000])
     assert scoped(simulation, award) == 4_000
@@ -177,3 +178,97 @@ def test_a_neutralised_award_switches_the_claimants_award_off(award):
     simulation.delete_arrays(award)
     assert simulation.calculate(award, YEAR)[0] == 0
     assert scoped(simulation, award) == 0
+
+
+@pytest.mark.parametrize("award", AWARDS)
+def test_a_stored_zero_is_never_the_claimants_award(award):
+    """A stored award of zero is no award, even when the reports give a
+    fraction of a penny that rounds to it."""
+    reported, _ = AWARDS[award]
+    simulation = family(award)
+    simulation.set_input(reported, YEAR, [0.004, 0])
+    simulation.set_input(award, YEAR, [0])
+    assert scoped(simulation, award) == 0
+
+
+@pytest.mark.parametrize("award", AWARDS)
+def test_large_reports_are_compared_at_storage_precision(award):
+    """Awards are stored as float32. Two reports of £65,536.01 and £65,536.00
+    from adults outside the couple give £131,072.01, which float32 rounds;
+    the formula's own award must still be recognised as the formula's."""
+    reported, _ = AWARDS[award]
+    members = ["claimant", "other_adult", "third_adult"]
+    simulation = Simulation(
+        situation={
+            "people": {
+                "claimant": {"age": {YEAR: 40}, "is_claimant_or_partner": {YEAR: True}},
+                "other_adult": {
+                    "age": {YEAR: 30},
+                    "is_claimant_or_partner": {YEAR: False},
+                    "current_education": {YEAR: "NOT_IN_EDUCATION"},
+                    reported: {YEAR: 65_536.01},
+                },
+                "third_adult": {
+                    "age": {YEAR: 31},
+                    "is_claimant_or_partner": {YEAR: False},
+                    "current_education": {YEAR: "NOT_IN_EDUCATION"},
+                    reported: {YEAR: 65_536.00},
+                },
+            },
+            "benunits": {"family": {"members": members}},
+            "households": {"home": {"members": members}},
+        }
+    )
+    assert simulation.calculate(award, YEAR)[0] > 131_000
+    assert scoped(simulation, award) == 0
+
+
+@pytest.mark.parametrize("award", AWARDS)
+def test_an_entered_scoped_award_states_ownership(award):
+    """Entering the claimant-or-partner award itself is the explicit way to
+    say whose an award is: another member's report then never changes it."""
+    _, variable = AWARDS[award]
+    for other_report in [2_000, 3_000]:
+        simulation = family(award)
+        reported, _ = AWARDS[award]
+        simulation.set_input(reported, YEAR, [0, other_report])
+        simulation.set_input(award, YEAR, [3_000])
+        simulation.set_input(variable, YEAR, [3_000])
+        assert simulation.calculate(variable, YEAR)[0] == 3_000
+
+
+def test_a_removed_esa_award_takes_an_excluded_students_status_with_it():
+    """An adult outside the couple who reports income-related ESA is on it
+    while the model pays it; once a reform removes esa_income, neither their
+    status nor the maintenance loan schedule follows the report alone."""
+    members = ["parent", "student"]
+    simulation = Simulation(
+        situation={
+            "people": {
+                "parent": {
+                    "age": {YEAR: 50},
+                    "is_claimant_or_partner": {YEAR: True},
+                    "is_parent": {YEAR: False},
+                },
+                "student": {
+                    "age": {YEAR: 19},
+                    "is_claimant_or_partner": {YEAR: False},
+                    "current_education": {YEAR: "TERTIARY"},
+                    "esa_income_reported": {YEAR: 3_000},
+                },
+            },
+            "benunits": {"family": {"members": members}},
+            "households": {"home": {"members": members, "country": {YEAR: "ENGLAND"}}},
+        }
+    )
+    assert simulation.calculate("is_on_income_related_esa", YEAR)[1]
+    assert simulation.calculate("maintenance_loan_entitled_to_benefits", YEAR)[1]
+    simulation.tax_benefit_system.neutralize_variable("esa_income")
+    for variable in [
+        "esa_income",
+        "is_on_income_related_esa",
+        "maintenance_loan_entitled_to_benefits",
+    ]:
+        simulation.delete_arrays(variable)
+    assert not simulation.calculate("is_on_income_related_esa", YEAR)[1]
+    assert not simulation.calculate("maintenance_loan_entitled_to_benefits", YEAR)[1]

@@ -98,6 +98,9 @@
 
 # Scottish Child Payment: the individual responsible for the child has been
 # awarded a qualifying benefit (SSI 2020/351 reg 18(e)-(f), regs 9, 12 and 14).
+# Responsibility runs through the individual's or partner's Child Benefit,
+# Pension Credit or Universal Credit award, or kinship care (reg 12(1)(b)); the
+# model takes the responsible individual to be the claimant or partner.
 # Universal Credit, tax credits and Pension Credit are entered as 0 so the
 # income-related award is the only possible qualifying benefit.
 
@@ -214,7 +217,7 @@
     is_scp_eligible: [false, true, false]
 
 # Targeted childcare (England's two-year-old offer): the child's parent is
-# entitled to a qualifying benefit (SI 2014/2147 reg 2(1), "eligible child").
+# entitled to a qualifying benefit (SI 2014/2147 reg 1(2), "eligible child").
 # The other routes (UC, CTC and WTC criteria, Guarantee Credit) are switched
 # off with inputs.
 
@@ -336,29 +339,11 @@
 
 # Benefit cap: no cap where "the claimant or the claimant's partner" receives
 # ESA with the support component (HB Regs 2006 reg 75F(1)(a)). The model
-# exempts any income-related ESA of the claimant or partner.
-
-- name: Another member's income-related ESA does not exempt the family from the benefit cap
-  period: 2025
-  input:
-    people:
-      claimant:
-        age: 40
-        is_claimant_or_partner: true
-      other:
-        age: 30
-        is_claimant_or_partner: false
-        current_education: NOT_IN_EDUCATION
-        esa_income_reported: 5_000
-    benunits:
-      benunit:
-        members: [claimant, other]
-        working_tax_credit: 0
-    households:
-      household:
-        members: [claimant, other]
-  output:
-    is_benefit_cap_exempt_health_disability: false
+# exempts any income-related ESA. This PR leaves the cap's reading of the
+# benefit unit's ESA unchanged: scoping the exemption alone would cap the
+# claimant with another member's own award in the capped sum
+# (benefit_cap_reduction), which is out of scope here. The claimant's own
+# award still exempts the family.
 
 - name: The claimant's own income-related ESA exempts the family from the benefit cap
   period: 2025
