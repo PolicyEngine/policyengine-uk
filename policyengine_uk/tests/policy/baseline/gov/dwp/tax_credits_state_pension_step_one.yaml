@@ -331,3 +331,36 @@
   output:
     tax_credits_current_year_income: 9_258.80
     child_tax_credit: 4_000
+
+- name: Carer Support Payment is step-two social security income; a small private pension is disregarded
+  # Carer Support Payment is made under regulations under s.28 of the Social
+  # Security (Scotland) Act 2018, so it is social security income (reg
+  # 7(1)(ab), from 15 March 2023): £81.90 x 52 = £4,258.80, with no
+  # disregard. A £200 private pension is step one, within the £300, so nil.
+  # Income: 0 + 4,258.80 = £4,258.80. (With Carer Support Payment in step one
+  # it would be 4,458.80 - 300 = £4,158.80; without it, nil.)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 50
+        is_claimant_or_partner: true
+        carer_support_payment: 4_258.80
+        private_pension_income: 200
+        child_tax_credit_reported: 1
+      child:
+        age: 8
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [carer, child]
+        would_claim_uc: false
+        CTC_family_element: 545
+    households:
+      household:
+        members: [carer, child]
+        country: SCOTLAND
+  output:
+    tax_credits_current_year_income: 4_258.80
+    child_tax_credit: 4_000
