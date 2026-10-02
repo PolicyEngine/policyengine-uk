@@ -111,6 +111,48 @@ WALES = {
 }
 
 
+# Rent Officers Wales's April 2022 and April 2023 tables (and DWP's monthly
+# tables for Wales in those years) restate these April 2020 rates, which they
+# say they hold: (BRMA, category, April 2020 rate, restated rate).
+WELSH_RESTATEMENTS = {
+    "rate": [
+        ("BLAENAU_GWENT", "B", 66.39, 66.74),
+        ("BRECON_AND_RADNOR", "B", 71.86, 71.34),
+        ("BRIDGEND", "E", 156.26, 155.34),
+        ("CAERPHILLY", "B", 79.17, 79.40),
+        ("CARDIFF", "A", 71.11, 71.34),
+        ("MONMOUTHSHIRE", "B", 95.57, 95.51),
+        ("MONMOUTHSHIRE", "E", 179.74, 178.36),
+        ("NEATH_PORT_TALBOT", "B", 79.55, 79.40),
+        ("NEATH_PORT_TALBOT", "E", 121.40, 120.82),
+        ("SOUTH_GWYNEDD", "E", 121.20, 120.82),
+        ("SWANSEA", "E", 166.16, 165.70),
+        ("TAFF_RHONDDA", "E", 137.51, 136.93),
+        ("TORFAEN", "B", 87.31, 87.45),
+        ("VALE_OF_GLAMORGAN", "B", 100.63, 100.00),
+    ],
+    "uc_rate": [
+        ("BLAENAU_GWENT", "B", 288.49, 290.00),
+        ("BRECON_AND_RADNOR", "B", 312.25, 310.00),
+        ("BRIDGEND", "E", 679.00, 675.00),
+        ("CAERPHILLY", "B", 344.00, 345.00),
+        ("CARDIFF", "A", 309.00, 310.00),
+        ("MONMOUTHSHIRE", "B", 415.27, 415.00),
+        ("MONMOUTHSHIRE", "C", 550.02, 550.00),
+        ("MONMOUTHSHIRE", "E", 781.00, 775.00),
+        ("NEATH_PORT_TALBOT", "B", 345.66, 345.00),
+        ("NEATH_PORT_TALBOT", "E", 527.50, 525.00),
+        ("NEWPORT", "E", 749.99, 750.00),
+        ("PEMBROKESHIRE", "E", 625.02, 625.00),
+        ("SOUTH_GWYNEDD", "E", 526.65, 525.00),
+        ("SWANSEA", "E", 722.00, 720.00),
+        ("TAFF_RHONDDA", "E", 597.50, 595.00),
+        ("TORFAEN", "B", 379.38, 380.00),
+        ("VALE_OF_GLAMORGAN", "B", 437.26, 434.52),
+    ],
+}
+
+
 @pytest.mark.parametrize("frozen_year,determined_year", sorted(HELD_TABLES.items()))
 @pytest.mark.parametrize("measure", ["rate", "uc_rate"])
 def test_published_frozen_years_repeat_the_last_determination(
@@ -118,24 +160,29 @@ def test_published_frozen_years_repeat_the_last_determination(
 ):
     """SI 2020/1519, 2021/1380, 2023/6, 2025/5 and 2026/5 hold every rate.
 
-    One known exception: Rent Officers Wales's tables for April 2022 and
-    April 2023 (and DWP's monthly tables for Wales in those years) restate some
-    of the April 2020 rates they say they hold. The model takes them as
-    published (``restatement``); this pins the exception so that any other
-    publisher repeating a held rate differently fails here.
+    The one exception is the Welsh restatements above, pinned cell by cell
+    and amount by amount, so that any other difference fails here.
     """
     rates = wide(measure)
     held = rates.loc[frozen_year].dropna()
     determined = rates.loc[determined_year].loc[held.index]
     differs = (held - determined).abs() > 0.004
-    restated = set(held.index[differs.any(axis=1)])
-    if (frozen_year, determined_year) in ((2022, 2020), (2023, 2020)):
-        assert restated and restated <= WALES
-        # The two restating tables agree with each other.
-        if frozen_year == 2023:
-            pd.testing.assert_frame_equal(held, rates.loc[2022].loc[held.index])
-    else:
-        assert not restated, sorted(restated)
+    rows, columns = np.nonzero(differs.to_numpy())
+    found = sorted(
+        (
+            held.index[i],
+            CATEGORIES[j],
+            round(float(determined.iloc[i, j]), 2),
+            round(float(held.iloc[i, j]), 2),
+        )
+        for i, j in zip(rows, columns)
+    )
+    expected = (
+        sorted(WELSH_RESTATEMENTS[measure])
+        if (frozen_year, determined_year) in ((2022, 2020), (2023, 2020))
+        else []
+    )
+    assert found == expected
 
 
 @pytest.mark.parametrize("year", range(int(TABLE.year.min()), LAST_PUBLISHED_YEAR + 1))
@@ -205,7 +252,7 @@ def reformed_parameters(
                 parameter = node.children[category]
                 parameter.update(
                     period=str(year),
-                    value=round(parameter(str(year)) * maximum_scale, 2),
+                    value=parameter(str(year)) * maximum_scale,
                 )
     return SimpleNamespace(
         gov=SimpleNamespace(
@@ -219,10 +266,27 @@ reform_strategy = st.fixed_dictionaries(
     dict(
         freeze=st.dictionaries(st.integers(2020, 2032), st.booleans(), max_size=6),
         percentile=st.sampled_from([0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.75, 0.9]),
-        maximum_scale=st.sampled_from([0.25, 0.5, 1.0, 1.5]),
+        # Non-round scales give caps in fractions of a penny.
+        maximum_scale=st.sampled_from([0.25, 0.333333, 0.5, 0.7777, 1.0, 1.5]),
         minimum=st.booleans(),
     )
 )
+
+
+def whole_pence(values) -> bool:
+    pence = np.asarray(values) * 100
+    return bool((np.abs(pence - np.round(pence)) < 1e-6).all())
+
+
+def independent_march_2020_floor(universal_credit: bool) -> np.ndarray:
+    """The 31 March 2020 rates, computed here rather than by the model."""
+    rates = published_rates()
+    weekly = rates.at("rate", FIRST_RULES_YEAR)
+    if not universal_credit:
+        return weekly
+    monthly = rates.at("uc_rate", FIRST_RULES_YEAR)
+    converted = np.floor(np.round(weekly * 365 / 84 * 100, 6) + 0.5) / 100
+    return np.where(np.isnan(monthly), converted, monthly)
 
 
 @settings(
@@ -239,13 +303,14 @@ def test_reformed_rates_keep_the_statutory_properties(reform, year, universal_cr
     parameters = reformed_parameters(**reform)
     lha = parameters.gov.dwp.LHA
     measure = "uc_rate" if universal_credit else "rate"
-    rate = lha_rates(parameters, year, universal_credit)["rate"]
+    result = lha_rates(parameters, year, universal_credit)
+    rate, percentile = result["rate"], result["percentile"]
 
     # Defined, positive, whole pence (para 2(10)) and never falling with
     # dwelling size (para 3), in every year, held or not.
     assert np.isfinite(rate).all() and (rate > 0).all()
     assert (np.diff(rate, axis=1) >= 0).all()
-    assert np.allclose(rate * 100, np.round(rate * 100))
+    assert whole_pence(rate)
 
     determined = determination_year(lha, year)
     if determined != year:
@@ -258,15 +323,12 @@ def test_reformed_rates_keep_the_statutory_properties(reform, year, universal_cr
         # Held at a determination the model takes as published.
         return
 
-    # The bounds the schedule puts on the determination itself.
-    result = lha_rates(parameters, determined, universal_credit)
-    rate, percentile = result["rate"], result["percentile"]
+    # The bounds the schedule puts on the rates in force, held years included.
     maxima = lha.maximum_monthly if universal_credit else lha.maximum
     cap = np.array([maxima.children[c](str(determined)) for c in CATEGORIES])
-    minimum = published_rates().at(measure, FIRST_RULES_YEAR) + restatement(
-        measure, FIRST_RULES_YEAR, determined
-    )
-    floor = np.where(np.isnan(minimum), 0, minimum)
+    cap = np.floor(np.round(cap * 100, 6) + 0.5) / 100
+    floor = independent_march_2020_floor(universal_credit)
+    assert not np.isnan(floor).any()
     applies = bool(lha.march_2020_minimum(str(determined)))
     # Never above the larger of the category maximum (raised by para 3 to any
     # smaller category's) and the minimum; never below the minimum while it
@@ -444,3 +506,62 @@ def test_scottish_lists_are_rent_service_scotlands_own():
     )
     # 87 of 90 cells for April 2019 and 86 of 90 for April 2020 to the penny.
     assert exact >= 170
+
+
+def _monthly(year: int, brma: str, category: str, reform=None) -> float:
+    situation = {
+        "people": {"person": {"age": {year: 35}}},
+        "benunits": {
+            "benunit": {
+                "members": ["person"],
+                "LHA_category": {year: category},
+                "benunit_rent": {year: 1_000_000},
+            }
+        },
+        "households": {"household": {"members": ["person"], "brma": {year: brma}}},
+    }
+    annual = SYSTEM_SIMULATION(situation, reform).calculate("uc_LHA_cap", year)
+    return float(annual[0]) / 12
+
+
+def test_northern_ireland_uc_keeps_the_march_2020_minimum():
+    """SR 2016/222 Sch 1 para 6 floors NI's monthly rates too.
+
+    NI's monthly rates were not published before April 2024, so the floor is
+    the April 2020 weekly rate (Belfast shared room, GBP 53.58) converted to
+    a month: GBP 232.82.
+    """
+    reform = {"gov.dwp.LHA.maximum_monthly.A": {"2024": 100}}
+    assert _monthly(2024, "BELFAST", "A", reform) == pytest.approx(232.82, abs=0.001)
+
+
+def test_a_cap_binds_through_a_restated_held_rate():
+    """A reform capping the April 2020 rate holds through Wales's restatement.
+
+    Blaenau Gwent one bedroom: published at GBP 66.39 (April 2020) and GBP
+    66.74 (April 2022). With a GBP 60 maximum in 2020 the held 2022 rate is
+    GBP 60, not GBP 60 plus the 35p restatement.
+    """
+    assert _weekly(2022, "BLAENAU_GWENT", "B") == pytest.approx(66.74, abs=0.001)
+    capped = _weekly(
+        2022, "BLAENAU_GWENT", "B", reform={"gov.dwp.LHA.maximum.B": {"2020": 60}}
+    )
+    assert capped == pytest.approx(60.0, abs=0.001)
+
+
+@pytest.mark.parametrize(
+    "parameter,value,expected,universal_credit",
+    [
+        ("gov.dwp.LHA.maximum.B", 320.005, 320.01, False),
+        ("gov.dwp.LHA.maximum_monthly.B", 1400.005, 1400.01, True),
+    ],
+)
+def test_a_capped_rate_is_rounded_to_the_penny(
+    parameter, value, expected, universal_credit
+):
+    """Sch 3B para 2(10): a half-penny maximum rounds up."""
+    reform = {parameter: {"2024": value}}
+    measure = _monthly if universal_credit else _weekly
+    assert measure(2024, "CENTRAL_LONDON", "B", reform) == pytest.approx(
+        expected, abs=0.001
+    )

@@ -265,8 +265,9 @@ def restatement(measure: str, determined: int, year: int) -> np.ndarray:
     different figures from its April 2020 and April 2021 tables for some
     cells, and DWP's monthly tables follow them. The model takes each table
     as published: this returns the change from the determination to the latest
-    held table by ``year`` (zero almost everywhere), which is added to the
-    held determination whatever reform it is under.
+    held table by ``year`` (zero almost everywhere). It is applied to the held
+    determination's percentile rent, before the maximum, anomalous-rate and
+    minimum rules, so that a reform to those rules still binds.
     """
     rates = published_rates()
     original = rates.at(measure, determined)
@@ -279,15 +280,38 @@ def restatement(measure: str, determined: int, year: int) -> np.ndarray:
     return change
 
 
-def determination(parameters, determined: int, universal_credit: bool = False):
+def march_2020_rates(universal_credit: bool = False) -> np.ndarray:
+    """The rates determined on 31 March 2020, for the minimum (para 3A).
+
+    The April 2020 tables publish those determinations. Northern Ireland's
+    monthly Universal Credit rates were not published before April 2024, so
+    for them the weekly rate is converted as the model converts any weekly
+    percentile (to within about 3p of the Housing Executive's own figure).
+    """
+    rates = published_rates()
+    if not universal_credit:
+        return rates.at("rate", FIRST_RULES_YEAR)
+    monthly = rates.at("uc_rate", FIRST_RULES_YEAR)
+    weekly = rates.at("rate", FIRST_RULES_YEAR)
+    return np.where(
+        np.isnan(monthly), round_half_up(weekly * WEEKLY_TO_MONTHLY), monthly
+    )
+
+
+def determination(
+    parameters,
+    determined: int,
+    universal_credit: bool = False,
+    adjustment: np.ndarray | None = None,
+):
     """The rates determined in ``determined`` for every BRMA and category.
 
-    Returns (percentile, rate) as [BRMA, category] arrays, weekly for Housing
-    Benefit and monthly for Universal Credit.
+    ``adjustment`` is added to the percentile rents before the rules apply
+    (see ``restatement``). Returns (percentile, rate) as [BRMA, category]
+    arrays, weekly for Housing Benefit and monthly for Universal Credit.
     """
     lha = parameters.gov.dwp.LHA
     rates = published_rates()
-    measure = "uc_rate" if universal_credit else "rate"
 
     if determined < FIRST_RULES_YEAR:
         rate, _ = rates.latest("rate", determined)
@@ -330,21 +354,21 @@ def determination(parameters, determined: int, universal_credit: bool = False):
     share = lha.percentile(str(determined))
     if abs(share - PUBLISHED_PERCENTILE) > 1e-9:
         percentile = percentile * _percentile_ratios(float(share))
+    if adjustment is not None:
+        percentile = percentile + adjustment
     percentile = round_half_up(percentile)
 
     maxima = lha.maximum_monthly if universal_credit else lha.maximum
     cap = np.array(
         [maxima.children[category](str(determined)) for category in CATEGORIES]
     )
-    rate = np.minimum(percentile, cap[None, :])
+    # Sch 3B para 2(2) and (10): the lower of the two, in whole pence.
+    rate = round_half_up(np.minimum(percentile, cap[None, :]))
     # Sch 3B para 3: no category below a smaller one.
     rate = np.maximum.accumulate(rate, axis=1)
     if lha.march_2020_minimum(str(determined)):
-        # Sch 3B para 3A: no rate below the one determined on 31 March 2020,
-        # as the latest held table states it.
-        minimum = rates.at(measure, FIRST_RULES_YEAR) + restatement(
-            measure, FIRST_RULES_YEAR, determined
-        )
+        # Sch 3B para 3A: no rate below the one determined on 31 March 2020.
+        minimum = march_2020_rates(universal_credit)
         rate = np.where(np.isnan(minimum), rate, np.maximum(rate, minimum))
     return percentile, rate
 
@@ -367,11 +391,13 @@ def lha_rates(parameters, year: int, universal_credit: bool = False) -> dict:
     """
     lha = parameters.gov.dwp.LHA
     determined = determination_year(lha, year)
-    percentile, rate = determination(parameters, determined, universal_credit)
+    adjustment = None
     if determined != year and determined >= FIRST_RULES_YEAR:
         measure = "uc_rate" if universal_credit else "rate"
-        rate = round_half_up(rate + restatement(measure, determined, year))
-        rate = np.maximum.accumulate(rate, axis=1)
+        adjustment = restatement(measure, determined, year)
+    percentile, rate = determination(
+        parameters, determined, universal_credit, adjustment
+    )
     return dict(brmas=published_rates().brmas, percentile=percentile, rate=rate)
 
 
