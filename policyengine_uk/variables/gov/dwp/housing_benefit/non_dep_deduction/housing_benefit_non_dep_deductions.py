@@ -26,7 +26,6 @@ class housing_benefit_non_dep_deductions(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/74",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/3",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/55",
-        "https://assets.publishing.service.gov.uk/media/5a758238ed915d6faf2b38a2/lha-guidance-manual.pdf#page=33",
         "https://assets.publishing.service.gov.uk/media/5a7ce2b840f0b6629523c64c/hbgm-a5-calculating-benefit.pdf",
     )
 
@@ -44,26 +43,27 @@ class housing_benefit_non_dep_deductions(Variable):
             person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
             & ~other_family
         )
-        # Another family's non-dependants: one deduction for a couple, the
-        # higher (reg 74(3)), and one for each other member, counted once per
-        # family. A non-dependant of more than one joint occupier is
+        # A non-dependant normally resides with each joint occupier (reg 3(1)
+        # and (4)), whichever family they belong to: another family's adult,
+        # a joint occupier's own adult son, or a boarder's or lodger's (reg
+        # 3(2)(e)(i) excludes only the person liable to pay the claimant).
+        # One deduction for a non-dependant couple, the higher (reg 74(3)),
+        # and one for each other non-dependant, counted once per family. One
+        # who is a non-dependant of more than one joint occupier is
         # apportioned between them by their shares of the payments (reg
         # 74(5); SPC reg 55(5)).
         family_amount = deduction_per_family(
-            benunit, period, deductions * other_family, False
+            benunit, period, deductions * (other_family | own_family), False
         )
         counted = person("is_benunit_head", period) * benunit.project(family_amount)
         share = benunit("share_of_household_rent", period)
-        from_other_families = share * benunit.max(person.household.sum(counted))
-        # A member of a joint occupier's own family unit is that occupier's
-        # non-dependant only (LHA Guidance Manual 2.093, example 2: a joint
-        # tenant's sister "is treated as Sarah's non-dependant"), and "if a
-        # person is a non-dependant of only one of the joint occupiers, take
-        # the whole of the deduction from that joint occupier's entitlement"
-        # (HBGM A5 5.622). Their family bears the whole deduction, whatever
-        # its share of the rent; so does a boarder or lodger.
-        from_own_family = benunit.sum(deductions * own_family)
+        from_joint_occupiers = share * benunit.max(person.household.sum(counted))
+        # A boarder or lodger is not a joint occupier with the householder,
+        # so it also bears the whole deduction for a non-dependant in its own
+        # benefit unit. The model charges it for no one else.
+        joint_occupier = share > 0
+        from_own_family = where(joint_occupier, 0, benunit.sum(deductions * own_family))
         claimant_exempt = benunit(
             "housing_benefit_non_dep_deductions_claimant_exempt", period
         )
-        return where(claimant_exempt, 0, from_other_families + from_own_family)
+        return where(claimant_exempt, 0, from_joint_occupiers + from_own_family)
