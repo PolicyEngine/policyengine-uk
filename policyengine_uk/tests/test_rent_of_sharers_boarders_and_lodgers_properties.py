@@ -12,9 +12,11 @@ Invariants, for any generated population of households:
 3. Tenure: a boarder's or lodger's family rents privately, is never in social
    housing, and is LHA-eligible.
 4. Non-dependants: a family liable for rent is never a non-dependant; only
-   the household head's family has Universal Credit non-dependant
-   deductions; a boarder's or lodger's family has no Housing Benefit or
-   Council Tax Reduction non-dependant deductions.
+   the household head's family has Universal Credit deductions for
+   non-dependants in other families; a boarder's or lodger's family has no
+   Housing Benefit or Council Tax Reduction deductions for them. (The
+   generated families have no non-dependants within their own benefit unit,
+   which test_benefit_unit_non_dependant_properties covers.)
 5. Category: the Universal Credit LHA category does not depend on the
    household input is_shared_accommodation; the Housing Benefit category is
    the shared rate for any family entitled to one bedroom that lacks

@@ -4,6 +4,20 @@ from policyengine_uk.variables.household.demographic.highest_education import (
 )
 
 
+def in_other_non_liable_family(person, period):
+    """Whether each person is in a family that is neither the oldest adult's
+    nor liable for the rent. This stands in for SI 2012/2885 reg 9(2)(a) and
+    (d)-(e): such a family is outside the claimant's family, and not jointly
+    liable or paying the claimant. It is a proxy: a family jointly liable for
+    the council tax but paying no rent is wrongly included, which #2009's
+    claimant-family test fixes. The eligibility for a non-dependant deduction
+    and the local schemes' aggregation both use this, so they stay on one
+    definition."""
+    return ~person.benunit("benunit_contains_household_head", period) & ~person.benunit(
+        "benunit_is_rent_liable", period
+    )
+
+
 def is_full_time_student_non_dep(person, period):
     return (person("current_education", period) != EducationType.NOT_IN_EDUCATION) | (
         person("in_HE", period)
@@ -74,7 +88,14 @@ def local_non_dep_deductions(
     individual_deduction_variable,
     one_deduction_for_uc_couples=True,
 ):
-    deductions = benunit.members(individual_deduction_variable, period)
+    # The local schemes still charge only the non-dependants of other
+    # families. Non-dependants within a family's own benefit unit, now
+    # eligible for the national schemes, are left out here until each
+    # council's aggregation is brought into line.
+    person = benunit.members
+    deductions = person(individual_deduction_variable, period) * (
+        in_other_non_liable_family(person, period)
+    )
     deduction_for_benunit = benunit.max(deductions)
     if not one_deduction_for_uc_couples:
         has_uc = benunit("universal_credit", period) > 0

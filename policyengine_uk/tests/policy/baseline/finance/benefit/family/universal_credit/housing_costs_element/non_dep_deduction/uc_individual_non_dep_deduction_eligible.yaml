@@ -4,7 +4,7 @@
   input:
     age: 21
     uc_non_dep_deduction_exempt: false
-    benunit_is_rent_liable: false
+    is_non_dependant_of_household_head: true
   output:
     uc_individual_non_dep_deduction_eligible: true
 
@@ -14,6 +14,40 @@
   input:
     age: 20
     uc_non_dep_deduction_exempt: false
-    benunit_is_rent_liable: false
+    is_non_dependant_of_household_head: true
+  output:
+    uc_individual_non_dep_deduction_eligible: false
+
+- name: Exempt
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 21
+    uc_non_dep_deduction_exempt: true
+    is_non_dependant_of_household_head: true
+  output:
+    uc_individual_non_dep_deduction_eligible: false
+
+# UC Regs 2013 Sch 4 para 9(1)(c): a member of the renter's own benefit unit
+# who is not the claimant, partner or a qualifying young person.
+- name: Non-dependant within the benefit unit
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 25
+    uc_non_dep_deduction_exempt: false
+    is_non_dependant_of_household_head: false
+    is_benefit_unit_non_dependant_for_universal_credit: true
+  output:
+    uc_individual_non_dep_deduction_eligible: true
+
+- name: The renter is not their own non-dependant
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    age: 25
+    uc_non_dep_deduction_exempt: false
+    is_non_dependant_of_household_head: false
+    is_benefit_unit_non_dependant_for_universal_credit: false
   output:
     uc_individual_non_dep_deduction_eligible: false
