@@ -290,6 +290,7 @@
         age: 19
         is_parent: true
         is_household_head: false
+        employment_income: 30_000
       baby:
         age: 0
         is_household_head: false
@@ -308,10 +309,12 @@
         savings: 0
   output:
     council_tax_reduction_head_applies_alone: [true]
+    # The young father's earnings and the couple's award are not hers.
     council_tax_reduction_applicable_income: [0]
     # Single aged 25 or over: 95.55 * 52.
     council_tax_reduction_applicable_amount: [4_968.60]
-    # No excess income: 1,800 * 70%.
+    # No excess income: 1,800 * 70%. On the Universal Credit route the
+    # couple's earnings and award would leave nothing.
     newham_council_tax_reduction: [1_260]
 
 - name: A partner under 18 is not liable, but their income counts in the couple's means test

@@ -30,12 +30,16 @@ head's benefit unit; disability and caring flags; all eight modelled schemes.
    family. Where the head does not apply alone, the applicant and partner
    are exactly the benefit unit's claimant and partner (ordinary families
    are unchanged). Where the head applies alone, the head is the only one.
-5. Differential: a head over State Pension age sharing a benefit unit with
+5. Differential: a head of any age from 18 sharing a benefit unit with
    parents aged 16 or 17 and their baby has the same applicable income,
-   applicable amount, premiums, scheme, exemption and simulated reduction as
-   the same head entered as her own benefit unit, with the young family as
-   another. The two inputs describe the same people, so the law gives the
-   same answer.
+   applicable amount, premiums, passport, scheme, exemption and simulated
+   reduction as the same head entered as her own benefit unit, with the young
+   family as another. The two inputs describe the same people, so the law
+   gives the same answer. Two limits keep the inputs comparable: no one
+   claims Universal Credit or Income Support by take-up (a head inside
+   another couple's benefit unit cannot be given her own award), and the
+   parents are under 18 (older ones would be her non-dependants, which the
+   model charges only when they are in another benefit unit).
 """
 
 import numpy as np
@@ -272,7 +276,7 @@ def _all_names(population, variant):
 def grandmother_households(draw):
     return dict(
         scheme=draw(st.sampled_from(SCHEMES)),
-        head_age=draw(st.integers(68, 100)),
+        head_age=draw(head_age),
         head_pension=draw(money),
         head_flags=draw(st.fixed_dictionaries({f: st.booleans() for f in FLAGS})),
         parent_age=draw(st.integers(16, 17)),
@@ -314,7 +318,9 @@ def add_grandmother_household(people, benunits, homes, name, house, split):
         if house[benefit] is not None
     }
     common = dict(
-        claims_all_entitled_benefits={YEAR: True}, would_claim_uc={YEAR: False}
+        claims_all_entitled_benefits={YEAR: True},
+        would_claim_uc={YEAR: False},
+        would_claim_IS={YEAR: False},
     )
     if split:
         benunits[f"{name}_family"] = dict(members=[head], **common)
