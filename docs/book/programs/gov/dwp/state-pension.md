@@ -62,7 +62,12 @@ birthday on 6 October, the middle of the fiscal year:
 
 Simulations of a household situation take a whole age to be the middle of
 the year of age (six months since the birthday); a fractional age is read as
-the exact age on 6 October. Survey microdata records whole years only, so in
+the exact age on 6 October, overriding `months_since_last_birthday` even
+when another person supplies birthday months. The default implies a birth
+date of 6 April: an entered age of 66 is above State Pension age at the
+6 October check in 2026-27 and below it in 2027-28. Set a fractional age
+or `months_since_last_birthday` to specify a different inferred birth date.
+Survey microdata records whole years only, so in
 simulations built from data, including a region or constituency filtered
 from it, each single year of age and sex is spread evenly over the year by
 weight, and `filter_dataset` carries each person's place into a household it
@@ -77,6 +82,15 @@ exist; that also gives the three days rule (7A) sets. A reform can change the
 age or day of any row, or where a row starts; a new phase-in that needs extra
 rows, such as bringing forward the rise to 68, needs new rows in the
 parameter files.
+
+The removed scalar parameters `gov.dwp.state_pension.age.male` and `.female`
+remain discoverable as migration nodes: updating them, or reading a scalar
+value history for a saved API policy, raises an error naming the birth-date
+scales above. The `male.age` and `male.born_before` children remain available
+for the earlier male cohorts. For example, reform
+`gov.dwp.state_pension.age.age_by_birth_date[14].amount` to change the age
+in months for births from 6 March 1961 until the next bracket; read individual
+eligibility from `is_SP_age` or the individual threshold from `state_pension_age`.
 
 ## Uprating
 

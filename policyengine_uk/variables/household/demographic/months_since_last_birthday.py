@@ -11,7 +11,8 @@ class months_since_last_birthday(Variable):
         "fiscal year (6 October), from 0 up to 12. With age, this places the "
         "date of birth: the person was born age years and this many months "
         "before 6 October. A fractional age is read as the exact age on 6 "
-        "October. For a whole age, simulations of a household situation use 6, "
+        "October, whatever this is set to. For a whole age, simulations of a "
+        "household situation use 6, "
         "the middle of the year of age. Microdata records age only in whole "
         "years, so in simulations built from data each single year of age and "
         "sex is spread evenly over the year: records are ordered by a "
@@ -21,6 +22,9 @@ class months_since_last_birthday(Variable):
     )
     definition_period = YEAR
     unit = "month"
+    # A situation that sets this for some people gives the rest the default
+    # rather than the formula, so the default is the middle of the year too.
+    default_value = 6
 
     def formula(person, period, parameters):
         age = person("age", period)

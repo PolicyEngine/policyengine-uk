@@ -16,7 +16,10 @@ from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
-from policyengine_uk.utils.parameters import uk_fiscal_year_period
+from policyengine_uk.utils.parameters import (
+    check_parameter_not_removed,
+    uk_fiscal_year_period,
+)
 
 # PolicyEngine UK imports
 from policyengine_uk.data.dataset_schema import (
@@ -240,6 +243,7 @@ class Simulation(CoreSimulation):
 
         for parameter in changes:
             canonical_parameter = canonicalize_lsr_parameter_path(parameter)
+            check_parameter_not_removed(canonical_parameter)
             p: Parameter = self.tax_benefit_system.parameters.get_child(
                 canonical_parameter
             )

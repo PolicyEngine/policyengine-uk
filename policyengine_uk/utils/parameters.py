@@ -12,7 +12,7 @@ def backdate_parameters(root: str = None, first_instant: str = "2021-01-01") -> 
     first_instant = str_to_instant(first_instant)
     node = root
     for param in node.get_descendants():
-        if hasattr(param, "values_list"):
+        if isinstance(param, Parameter):
             earliest = param.values_list[-1]
             earliest_value = earliest.value
             earliest_instant = str_to_instant(earliest.instant_str)
@@ -117,4 +117,74 @@ def convert_to_fiscal_year_parameters(parameters):
                     period=f"{year}",
                     value=value,
                 )
+    return parameters
+
+
+_STATE_PENSION_AGE_REPLACEMENT = (
+    "State Pension age now follows the statutory timetable by date of birth "
+    "(Pensions Act 1995 Sch 4 para 1). Change the rows of "
+    "gov.dwp.state_pension.age.age_by_birth_date (the age, in months) or "
+    "gov.dwp.state_pension.age.day_by_birth_date (the day) for the births you "
+    "want to change, for example gov.dwp.state_pension.age.age_by_birth_date[14]"
+    ".amount for people born from 6 March 1961 until the next bracket, or "
+    "gov.dwp.state_pension.age.male.age for men born before 6 December 1953. "
+    "Read a person's State Pension age from the state_pension_age or is_SP_age "
+    "variables."
+)
+
+# Parameters removed from the tree, with what replaces them, so a reform or
+# saved policy that still names one fails with directions instead of a bare
+# lookup error.
+REMOVED_PARAMETERS = {
+    "gov.dwp.state_pension.age.male": _STATE_PENSION_AGE_REPLACEMENT,
+    "gov.dwp.state_pension.age.female": _STATE_PENSION_AGE_REPLACEMENT,
+}
+
+
+def check_parameter_not_removed(path: str) -> None:
+    """Raise a ValueError naming the replacement if path was removed."""
+    if path in REMOVED_PARAMETERS:
+        raise ValueError(
+            f"The parameter {path} has been removed. {REMOVED_PARAMETERS[path]}"
+        )
+
+
+class RemovedParameterNode(ParameterNode):
+    """Keep a removed path discoverable without accepting scalar reforms.
+
+    Male State Pension age still has valid children, so the compatibility
+    node must support normal tree traversal and cloning. API reform code
+    reads values_list before updating; both operations give migration help.
+    """
+
+    @property
+    def values_list(self):
+        check_parameter_not_removed(self.name)
+
+    def update(self, *args, **kwargs):
+        check_parameter_not_removed(self.name)
+
+
+def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
+    age = parameters.gov.dwp.state_pension.age
+    for path, replacement in REMOVED_PARAMETERS.items():
+        name = path.rsplit(".", 1)[1]
+        previous = age.children.get(name)
+        if isinstance(previous, RemovedParameterNode):
+            continue
+        alias = RemovedParameterNode(path, data={})
+        if previous is not None:
+            alias.metadata.update(previous.metadata)
+            for child_name, child in previous.children.items():
+                alias.add_child(child_name, child)
+        alias.description = f"The parameter {path} has been removed. {replacement}"
+        alias.metadata.update(
+            label=f"removed {name} State Pension age parameter",
+            removed=True,
+            economy=False,
+            household=False,
+        )
+        age.children[name] = alias
+        setattr(age, name, alias)
+        alias.parent = age
     return parameters
