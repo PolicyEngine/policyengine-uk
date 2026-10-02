@@ -147,8 +147,9 @@ class income_support_eligible(Variable):
         # s.124(1)(f): neither the claimant nor the other member of a couple
         # is, and the couple are not, entitled to an income-based jobseeker's
         # allowance, read the same way: the award on the claimant's and
-        # partner's reported amounts after the jsa_income capital test, unless
-        # jsa_income holds something the reported amounts do not give.
+        # partner's reported amounts after the screen jsa_income applies
+        # (jsa_income_eligible), unless jsa_income holds something the
+        # reported amounts do not give.
         jsa_income = benunit("jsa_income", period)
         jsa_reported_total = add(benunit, period, ["jsa_income_reported"])
         jsa_award_on_all_reports = income_related_jsa_award(
