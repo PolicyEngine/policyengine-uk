@@ -31,6 +31,6 @@ class council_tax_reduction_pensioner(Variable):
         # elsewhere in the model.
         person = benunit.members
         applicant_or_partner = person(
-            "council_tax_reduction_applicant_or_partner", period
+            "is_council_tax_reduction_applicant_or_partner", period
         )
         return benunit.any(applicant_or_partner & person("is_SP_age", period))
