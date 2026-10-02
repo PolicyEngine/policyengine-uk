@@ -1,3 +1,10 @@
+## [2.104.8] - 2026-10-02
+
+### Fixed
+
+- Hold Northern Ireland households' council tax flat when a dataset is projected forward, instead of growing it by England's council tax forecast: the uprating code looked for the label `NORTHERN IRELAND` (with a space), so Northern Ireland fell through to England. Region labels outside the `Region` enum now raise rather than taking England's growth.
+
+
 ## [2.104.7] - 2026-10-02
 
 ### Fixed
