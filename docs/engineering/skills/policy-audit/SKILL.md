@@ -1,6 +1,6 @@
 ---
 name: audit-policyengine-uk
-description: Audit a variable or grouped parameter in an exact policyengine-uk release, research its program context against official UK government sources, record the result, and open a fully cited issue when the release is incorrect or outdated.
+description: Audit a variable or grouped parameter in an exact policyengine-uk release, research its program context against official UK government sources, record the result, and open both a fully cited issue and a corrective draft pull request when the release is incorrect or outdated.
 ---
 
 # Audit PolicyEngine UK policy rules
@@ -32,6 +32,13 @@ asserts that a rule will remain current until a later date.
 7. Validate and record the review. For a publishable conclusion, read
    [publish-github-issue.md](references/publish-github-issue.md) before opening
    the issue.
+8. After the issue exists, read
+   [implement-and-publish-fix.md](references/implement-and-publish-fix.md),
+   implement the cited correction on a feature branch based on the current
+   default branch, and open a corrective draft pull request.
 
-Do not modify model variables or parameters during this workflow. The output is
-an audit record and, when justified, an issue describing the required changes.
+Keep the exact-release checkout read-only. A request to execute this workflow
+includes both publication outputs for `incorrect_in_release` and
+`superseded_since_release`: a cited issue and a corrective draft pull request.
+Stop after the audit record only when the conclusion is not publishable or the
+user explicitly requests report-only work.
