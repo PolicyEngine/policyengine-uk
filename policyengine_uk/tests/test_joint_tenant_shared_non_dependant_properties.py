@@ -8,9 +8,11 @@ Invariants, for any generated population of households:
    deductions for its non-dependants, whichever joint occupiers each one
    resides with.
 2. Bounds (CTR Sch 1 para 8(5)): each family's Council Tax Reduction part is
-   between zero and the household's deductions, and the parts sum to at most
-   the household's deductions (equal shares per liable person, with a couple
-   bearing one person's part).
+   between zero and the household's deductions; where the rent is shared,
+   the joint occupiers' parts sum to at most the household's deductions
+   (equal shares per liable person, with a couple bearing one person's part)
+   and no other family bears any. Where it is not shared, every family's
+   deductions equal the previous formula (differential).
 3. Differential: with every non-dependant shared (the default), the Housing
    Benefit deductions equal the previous formula (each family's share of the
    rent times the household's deductions) and the Council Tax Reduction
@@ -51,7 +53,7 @@ income = st.floats(0, 60_000, allow_nan=False, allow_infinity=False)
 @st.composite
 def family(draw, max_adults=2):
     return dict(
-        ages=draw(st.lists(st.integers(18, 70), min_size=1, max_size=max_adults)),
+        ages=draw(st.lists(st.integers(18, 90), min_size=1, max_size=max_adults)),
         child_age=draw(st.one_of(st.none(), st.integers(0, 15))),
         income=draw(income),
     )
@@ -205,8 +207,35 @@ def test_council_tax_reduction_deductions_are_bounded(population):
     families = calc(sim, "council_tax_reduction_non_dep_deductions")
     assert np.all(families >= -1e-9)
     assert np.all(families <= in_household[benunit_household(sim)] + 1e-6)
-    assert np.all(per_household(sim, families) <= in_household + 1e-6)
-    assert np.all(families[(roles == "non_dependant") | (roles == "lodger")] == 0)
+    # Where the rent is shared, the joint occupiers' parts never exceed the
+    # household's deductions, and no one else bears any.
+    shared = has_sharer(sim, roles)
+    joint_occupier = (roles == "head") | (roles == "sharer")
+    joint_parts = per_household(sim, families * (shared & joint_occupier))
+    assert np.all(joint_parts <= in_household + 1e-6)
+    assert np.all(families[shared & ~joint_occupier] == 0)
+
+
+@PROPERTY_SETTINGS
+@given(population)
+def test_council_tax_reduction_is_unchanged_without_sharers(population):
+    """Differential: where no family shares the rent, every family's CTR
+    non-dependant deductions equal the previous formula (the deductions of
+    every other family), whoever the oldest adult's claiming family is."""
+    sim, roles = build(population)
+    deductions = calc(sim, "council_tax_reduction_individual_non_dep_deduction")
+    own = np.bincount(
+        sim.populations["benunit"].members_entity_id,
+        weights=deductions,
+        minlength=sim.populations["benunit"].count,
+    )
+    previous = person_per_household(sim, deductions)[benunit_household(sim)] - own
+    without_sharer = ~has_sharer(sim, roles)
+    np.testing.assert_allclose(
+        calc(sim, "council_tax_reduction_non_dep_deductions")[without_sharer],
+        previous[without_sharer],
+        atol=1e-6,
+    )
 
 
 @PROPERTY_SETTINGS

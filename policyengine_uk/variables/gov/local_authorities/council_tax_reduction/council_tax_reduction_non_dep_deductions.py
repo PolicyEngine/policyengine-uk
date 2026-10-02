@@ -1,6 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
-    apportioned_non_dependant_deductions,
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    council_tax_reduction_joint_liability_non_dep_deductions,
 )
 
 
@@ -23,12 +23,6 @@ class council_tax_reduction_non_dep_deductions(Variable):
         deductions = benunit.members(
             "council_tax_reduction_individual_non_dep_deduction", period
         )
-        # A non-dependant of two or more jointly liable people is apportioned
-        # equally between them (SI 2012/2885 Sch 1 para 8(5); WSI 2013/3029
-        # Sch 1 para 3(5) and Sch 6 para 5(5); SSI 2021/249 reg 90(5); SSI
-        # 2012/319 reg 48(5)); one who resides with only one of them is
-        # deducted in full from that one (see
-        # non_dependant_normally_resides_with).
-        return apportioned_non_dependant_deductions(
-            benunit, period, deductions, equally=True
+        return council_tax_reduction_joint_liability_non_dep_deductions(
+            benunit, period, deductions, benunit.sum(deductions)
         )

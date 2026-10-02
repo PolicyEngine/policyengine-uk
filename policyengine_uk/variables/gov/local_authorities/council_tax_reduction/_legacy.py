@@ -13,6 +13,37 @@ def is_full_time_student_non_dep(person, period):
     )
 
 
+def council_tax_reduction_joint_liability_non_dep_deductions(
+    benunit, period, deductions, own
+):
+    """Each family's deductions for the household's non-dependants
+    (``deductions``, one amount per person; ``own``, the family's own amount).
+
+    Where the household's rent is shared, a non-dependant of two or more
+    jointly liable people is apportioned equally between them (SI 2012/2885
+    Sch 1 para 8(5); WSI 2013/3029 Sch 1 para 3(5) and Sch 6 para 5(5); SSI
+    2021/249 reg 90(5); SSI 2012/319 reg 48(5)), and one who resides with
+    only one of them is deducted in full from that one (see
+    non_dependant_normally_resides_with). Otherwise the claimant, the family
+    of the household's oldest adult (see
+    council_tax_reduction_claimant_benunit), has every other family's
+    deductions, as before.
+    """
+    person = benunit.members
+    rent_is_shared = benunit.any(
+        person.household.any(
+            person.benunit("liable_for_share_of_household_rent", period)
+        )
+    )
+    in_household = benunit.max(person.household.sum(deductions))
+    share = benunit("council_tax_reduction_joint_liability_share", period)
+    sole = (in_household - own) * share
+    joint = apportioned_non_dependant_deductions(
+        benunit, period, deductions, equally=True
+    )
+    return where(rent_is_shared, joint, sole)
+
+
 def legacy_council_tax_reduction(
     benunit,
     period,
@@ -88,14 +119,8 @@ def local_non_dep_deductions(
         )
     is_benunit_head = benunit.members("is_benunit_head", period)
     deductions_to_count = is_benunit_head * benunit.project(deduction_for_benunit)
-    # A non-dependant of two or more jointly liable people is apportioned
-    # equally between them (SI 2012/2885 Sch 1 para 8(5)); one who resides
-    # with only one of them is deducted in full from that one. Deductions
-    # are only for families outside every family liable for the household's
-    # rent (council_tax_reduction_individual_non_dep_deduction_eligible), so
-    # a claimant is never charged its own.
-    return apportioned_non_dependant_deductions(
-        benunit, period, deductions_to_count, equally=True
+    return council_tax_reduction_joint_liability_non_dep_deductions(
+        benunit, period, deductions_to_count, deduction_for_benunit
     )
 
 
