@@ -7,10 +7,10 @@ class ni_class_4_losses_carried_forward(Variable):
     label = "Trading losses carried forward for Class 4"
     documentation = (
         "Trading losses not yet deducted from Class 4 profits at the end of "
-        "the year: the year's trading_loss and losses brought forward, less "
-        "those deducted this year. They reduce the Class 4 profits of the "
-        "following years, earliest first (SSCBA 1992 Sch. 2 para. 3(4)(b); "
-        "ITA 2007 ss. 83 and 84)."
+        "the year: the year's own loss (ni_class_4_trading_loss) and losses "
+        "brought forward, less those deducted this year. They reduce the "
+        "Class 4 profits of the following years, earliest first (SSCBA 1992 "
+        "Sch. 2 para. 3(4)(b); ITA 2007 ss. 83 and 84)."
     )
     definition_period = YEAR
     unit = GBP
@@ -26,7 +26,7 @@ class ni_class_4_losses_carried_forward(Variable):
     ]
 
     def formula(person, period, parameters):
-        losses = max_(person("trading_loss", period), 0) + max_(
+        losses = person("ni_class_4_trading_loss", period) + max_(
             person("ni_class_4_losses_brought_forward", period), 0
         )
         return losses - person("ni_class_4_loss_relief", period)

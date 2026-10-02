@@ -9,8 +9,10 @@ class trading_loss(Variable):
         "Trading losses made in the year. self_employment_income holds the "
         "profits of trades that made one, so a loss here alongside a profit "
         "comes from a different trade. Like other inputs, a value carries "
-        "into later years that are not set, so set them to zero for a "
-        "one-off loss."
+        "into later years that are not set, and income tax's loss_relief "
+        "reads it there, so set those years to zero for a one-off loss. "
+        "Class 4 counts a loss only in the year it is set for "
+        "(ni_class_4_trading_loss)."
     )
     reference = dict(
         title="Income Tax Act 2007 s. 64",

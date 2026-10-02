@@ -3,6 +3,8 @@ import pytest
 
 from policyengine_uk import Simulation
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 
 def test_class_4_annual_maximum_applies_case_3_steps():
     year = 2026

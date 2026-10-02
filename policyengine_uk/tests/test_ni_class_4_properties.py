@@ -32,10 +32,13 @@ Comparisons allow float32 rounding: the model stores values as float32.
 from fractions import Fraction
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 CLASS_4 = "gov.hmrc.national_insurance.class_4"
 CLASS_2_FLAT_RATE = "gov.hmrc.national_insurance.class_2.flat_rate"

@@ -12,6 +12,19 @@ if os.environ.get("HUGGING_FACE_TOKEN") and not os.environ.get(
     os.environ["POLICYENGINE_UK_DEFAULT_DATASET"] = DEFAULT_TEST_DATASET_URL
 
 
+@pytest.fixture(scope="module")
+def cloned_uk_tax_benefit_system():
+    """Load model code once, with independent model state per simulation."""
+    import policyengine_uk.simulation as uk_simulation
+
+    tax_benefit_system = uk_simulation.CountryTaxBenefitSystem()
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(
+            uk_simulation, "CountryTaxBenefitSystem", tax_benefit_system.clone
+        )
+        yield
+
+
 def pytest_collection_modifyitems(config, items):
     has_default_dataset = bool(os.environ.get("POLICYENGINE_UK_DEFAULT_DATASET"))
     if has_default_dataset:

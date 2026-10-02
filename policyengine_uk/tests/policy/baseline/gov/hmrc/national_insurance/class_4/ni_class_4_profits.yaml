@@ -164,6 +164,101 @@
     # (30,000 - 12,570) * 6%
     ni_class_4: 1_045.80
 
+- name: A loss entered for one year only is relieved once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Sch. 2 para. 3(4)(b): only the excess of a loss reduces later years'
+    # profits. trading_loss carries 2025's value into 2026 and 2027, which
+    # are not set, but that is the same loss, not a new one each year.
+    self_employment_income:
+      2026: 40_000
+      2027: 40_000
+    trading_loss:
+      2025: 10_000
+  output:
+    ni_class_4_trading_loss:
+      2025: 10_000
+      2026: 0
+      2027: 0
+    ni_class_4_profits_before_losses:
+      2025: 0
+      2026: 40_000
+      2027: 40_000
+    ni_class_4_losses_brought_forward:
+      2026: 10_000
+      2027: 0
+    ni_class_4_loss_relief:
+      2026: 10_000
+      2027: 0
+    ni_class_4_losses_carried_forward:
+      2025: 10_000
+      2026: 0
+      2027: 0
+    ni_class_4_profits:
+      2026: 30_000
+      2027: 40_000
+    # 2026-27 and 2027-28 both have a £12,570 lower profits limit, a £50,270
+    # upper profits limit and a 6% main rate.
+    # (30,000 - 12,570) * 6% and (40,000 - 12,570) * 6%
+    ni_class_4:
+      2026: 1_045.80
+      2027: 1_645.80
+
+- name: An unrelieved loss runs down over the following years
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    # No losses are entered after 2025: each later year deducts what is left.
+    self_employment_income:
+      2025: 0
+      2026: 20_000
+      2027: 20_000
+      2028: 20_000
+    trading_loss:
+      2025: 50_000
+  output:
+    ni_class_4_losses_brought_forward:
+      2026: 50_000
+      2027: 30_000
+      2028: 10_000
+    ni_class_4_profits:
+      2026: 0
+      2027: 0
+      2028: 10_000
+    ni_class_4_losses_carried_forward:
+      2028: 0
+
+- name: A year with no loss entered between two loss years adds no loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income:
+      2024: 0
+      2025: 2_000
+      2026: 20_000
+    trading_loss:
+      2024: 5_000
+      2026: 3_000
+  output:
+    ni_class_4_trading_loss:
+      2024: 5_000
+      2025: 0
+      2026: 3_000
+    # 5,000 from 2024, less 2,000 used in 2025.
+    ni_class_4_losses_brought_forward:
+      2025: 5_000
+      2026: 3_000
+    ni_class_4_loss_relief:
+      2025: 2_000
+      2026: 6_000
+    ni_class_4_profits:
+      2025: 0
+      2026: 14_000
+    # (14,000 - 12,570) * 6%
+    ni_class_4:
+      2026: 85.80
+
 - name: A supplied balance of unrelieved losses is brought forward
   period: 2026
   absolute_error_margin: 0.01
