@@ -244,6 +244,9 @@ SETTINGS = settings(
 # lone parent's family, a direct esa_income beside an added member's ESA), so
 # it runs more examples.
 INVARIANCE_SETTINGS = settings(SETTINGS, max_examples=25)
+# The differential property needs a directly entered award to meet an otherwise
+# eligible family, so it runs as many.
+DIFFERENTIAL_SETTINGS = settings(SETTINGS, max_examples=25)
 
 FAMILIES = st.lists(st.tuples(families(), excluded_members()), min_size=1, max_size=8)
 
@@ -340,7 +343,7 @@ def explained_by_reports(esa_income, reported_total, capital, parameters):
     return abs(esa_income - award) <= 0.005 or abs(esa_income - reported_total) <= 0.005
 
 
-@SETTINGS
+@DIFFERENTIAL_SETTINGS
 @given(FAMILIES, st.data())
 def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     capital_as_savings, esa_income = data.draw(input_settings(len(drawn)))
