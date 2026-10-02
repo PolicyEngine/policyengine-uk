@@ -1,0 +1,14 @@
+description: Weekly amount of a person's war disablement pension, war widow's or widower's pension and Armed Forces Compensation Scheme guaranteed income payment disregarded from income for Pension Credit.
+values:
+  2003-10-06: 10
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Pension Credit war pension disregard
+  reference:
+    - title: State Pension Credit Regulations 2002 Sch. IV para. 1
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV/paragraph/1
+    - title: State Pension Credit Regulations 2002 reg. 17(7)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17
+    - title: State Pension Credit Regulations 2002 reg. 1(1) (in force 6 October 2003)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/1
