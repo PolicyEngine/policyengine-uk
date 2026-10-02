@@ -68,3 +68,121 @@
   output:
     # WTC Regs 2002 reg 17(2) and Sch 2 para 6: 1,705 a year in 2024-25.
     WTC_severely_disabled_element: 1_705
+
+# Armed Forces Compensation Scheme payments other than armed forces
+# independence payment (lump sums, supplementary awards, guaranteed income
+# payments; AFCS Order 2011 art 15(1)) and war disablement pensions are in
+# afcs. They meet no paragraph of CTC reg 8 or WTC reg 17, alone or with a
+# lower award of another benefit.
+
+- name: DLA care component at the middle rate with an AFCS payment is not severe
+  period: 2025
+  input:
+    age: 10
+    dla_sc_category: MIDDLE
+    afcs_reported: 3_000
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: PIP daily living component at the standard rate with an AFCS payment is not severe
+  period: 2025
+  input:
+    age: 17
+    pip_dl_category: STANDARD
+    afcs_reported: 3_000
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: A child with an AFCS payment adds no CTC severely disabled child element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 8
+        afcs_reported: 2_000
+    benunits:
+      benunit:
+        members: [parent, child]
+        is_CTC_eligible: true
+  output:
+    CTC_severely_disabled_child_element: 0
+
+- name: An AFCS payment adds no WTC severe disability element
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 45
+        afcs_reported: 12_000
+    benunits:
+      benunit:
+        members: [adult]
+        is_WTC_eligible: true
+  output:
+    WTC_severely_disabled_element: 0
+
+- name: WTC severe disability element for a claimant on armed forces independence payment
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 45
+        # AFCS Order 2011 art 24A(3): 194.60 a week.
+        armed_forces_independence_payment: 10_119.20
+    benunits:
+      benunit:
+        members: [adult]
+        is_WTC_eligible: true
+  output:
+    # WTC Regs 2002 reg 17(4) and Sch 2 para 6: 1,705 a year in 2024-25.
+    WTC_severely_disabled_element: 1_705
+
+# UC Regs 2013 reg 24(2)(b) gives the higher rate of the disabled child
+# addition for the DLA care component at the highest rate, the PIP daily living
+# component at the enhanced rate (or a Scottish equivalent) or blindness; no
+# armed forces payment is listed. Higher rate 2025-26: 495.87 a month (reg 36
+# table); 495.87 * 12 = 5,950.44.
+
+- name: A qualifying young person with an AFCS payment gets no UC higher disabled child addition
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        is_in_non_advanced_education: true
+        afcs_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_severely_disabled_for_benefits: [false, false]
+    uc_individual_severely_disabled_child_element: [0, 0]
+
+- name: A qualifying young person on the enhanced PIP daily living rate gets the UC higher addition
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        is_in_non_advanced_education: true
+        pip_dl_category: ENHANCED
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_severely_disabled_for_benefits: [false, true]
+    uc_individual_severely_disabled_child_element: [0, 5_950.44]
