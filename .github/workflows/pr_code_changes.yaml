@@ -14,6 +14,13 @@ on:
       - uv.lock
   workflow_dispatch:
 
+# A new push to a pull request supersedes the run on its previous head, so
+# cancel that run instead of letting it hold runners. Manual dispatches are
+# grouped by ref and never cancelled.
+concurrency:
+  group: pr-code-changes-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   Python-Compat:
     name: Install + smoke-import (py${{ matrix.python-version }})
