@@ -15,8 +15,8 @@
 # - couple standard allowance (one over 25): 666.97 a month = 8,003.64 a year;
 # - carer element: 209.34 a month = 2,512.08 a year;
 # - Carer's Allowance and the Carer Support Payment component: 86.45 a week,
-#   so 86.45 x 52 = 4,495.40 a year; Scottish Carer Supplement 11.70 a week,
-#   so Carer Support Payment is (86.45 + 11.70) x 52 = 5,103.80 a year;
+#   so 86.45 x 52 = 4,495.40 a year; the Scottish Carer Supplement is a
+#   separate 11.70 a week, 11.70 x 52 = 608.40 a year;
 # - council rent of 6,240 a year is met in full by the housing costs element.
 # So a couple's maximum amount is 8,003.64 + 6,240 = 14,243.64, or
 # 16,755.72 with the carer element.
@@ -203,10 +203,12 @@
         rent: 6_240
   output:
     carers_allowance: [0, 0]
-    # (86.45 + 11.70) x 52.
-    carer_support_payment: [5_103.80, 0]
-    # Capped at a year of Carer's Allowance, 86.45 x 52, which is also the
-    # carer support payment component without the supplement.
+    # The carer support payment component, 86.45 x 52.
+    carer_support_payment: [4_495.40, 0]
+    # 11.70 x 52. Not unearned income: reg. 66(1) does not list it.
+    scottish_carer_supplement: [608.40, 0]
+    # Capped at a year of Carer's Allowance, 86.45 x 52, which the component
+    # equals.
     uc_unearned_carer_support_payment: [4_495.40, 0]
     uc_unearned_income: 4_495.40
     uc_maximum_amount: 16_755.72
