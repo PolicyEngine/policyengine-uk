@@ -49,3 +49,21 @@
   output:
     winter_fuel_payment: 200
     winter_fuel_payment_charge: 200
+
+- name: Tax credits do not exempt a person from the charge
+  # Charging the 2024 qualifying week's payments: a tax credit award of at
+  # least £26 entitled a person to that payment (SI 2024/869 reg. 2(2)(b)
+  # (ii)), but tax credits are not among the relevant benefits of ITEPA 2003
+  # s.681I(5), so the person is charged.
+  period: 2024
+  input:
+    gov.hmrc.income_tax.charges.winter_fuel_payment.in_effect: true
+    age: 70
+    country: ENGLAND
+    total_income: 50_000
+    pension_credit: 0
+    tax_credits: 1_000
+  output:
+    is_on_winter_fuel_payment_relevant_benefit: true
+    winter_fuel_payment: 200
+    winter_fuel_payment_charge: 200
