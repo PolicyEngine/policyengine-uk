@@ -13,6 +13,8 @@ class LHA_additional_bedrooms(Variable):
         "parent condition (see lha_renter_meets_foster_parent_condition), "
         "however many children are placed. The extended benefit unit "
         "includes the household head's non-dependants and their children. "
+        "Before 1 April 2017 only the renter could meet the overnight care "
+        "condition. "
         "The disabled child and disabled person conditions, for children or "
         "couples who cannot share a bedroom, are not modelled."
     )
@@ -29,15 +31,16 @@ class LHA_additional_bedrooms(Variable):
         responsible = person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
         )
-        child = person("is_child_for_universal_credit", period)
         no_one_responsible = (
-            child | person("is_qualifying_young_person_for_universal_credit", period)
+            person("is_child_for_universal_credit", period)
+            | person("is_qualifying_young_person_for_universal_credit", period)
         ) & ~responsible
         # UC Regs 2013 Sch 4 para 12(A1)(a)-(b): the renter and the members of
         # their extended benefit unit, which excludes a child or qualifying
         # young person no one is responsible for (paras 9(1) and 9(2)(g));
         # (c): a child for whom the renter meets the foster parent condition.
-        own = overnight_care & ~(no_one_responsible & ~child)
+        foster_child = person("is_lha_foster_child", period)
+        own = overnight_care & (~no_one_responsible | foster_child)
         # Para 9(1)(c): the household head's non-dependants from other
         # families, and their children.
         other = (
@@ -47,6 +50,12 @@ class LHA_additional_bedrooms(Variable):
         )
         head_family = benunit.any(person("is_household_head", period))
         others = head_family * benunit.max(person.household.sum(other))
+        # Before 1 April 2017 (SI 2017/213 reg 6) only the renter could meet
+        # the overnight care condition.
+        p = parameters(period).gov.dwp.LHA
+        renter = person("is_claimant_or_partner", period)
+        own = where(p.overnight_care_beyond_claimant, own, overnight_care & renter)
+        others = others * p.overnight_care_beyond_claimant
         # Para 12(9)(a)-(b): one bedroom for each condition met.
         overnight_room = benunit.any(own) | (others > 0)
         foster_room = benunit("lha_renter_meets_foster_parent_condition", period)

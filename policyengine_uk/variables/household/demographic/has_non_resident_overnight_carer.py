@@ -9,9 +9,13 @@ class has_non_resident_overnight_carer(Variable):
         "Whether one or more people who do not live in the home are engaged, "
         "under arrangements made for that purpose, to provide this person "
         "with overnight care and to stay overnight in the home on a regular "
-        "basis. With a qualifying disability benefit, this gives the "
-        "household an additional bedroom in the Universal Credit and Housing "
-        "Benefit size criteria (see meets_lha_overnight_care_condition)."
+        "basis. With a qualifying disability benefit, this can give an "
+        "additional bedroom in the Universal Credit and Housing Benefit size "
+        "criteria (see meets_lha_overnight_care_condition): to the renter "
+        "whose extended benefit unit the person is in, or who fosters them "
+        "(UC), or to the claimant whose dwelling they occupy (HB). A "
+        "lodger's or joint tenant's carer gives the household head's family "
+        "nothing under Universal Credit."
     )
     definition_period = YEAR
     default_value = False

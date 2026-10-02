@@ -121,8 +121,11 @@ class LHA_allowed_bedrooms(Variable):
         qualifying_young_person = family_member & responsible
         # Para 10(1)(c) with para 9(2): any other member aged 16 or over is a
         # non-dependant, unless they are a qualifying young person for whom
-        # no one is responsible (para 9(2)(g); reg 4(6)).
-        family_non_dependant = family_member & ~qualifying
+        # no one is responsible (para 9(2)(g); reg 4(6)) or the renter's
+        # foster child (para 9(2)(c), 9(3); see is_lha_foster_child).
+        family_non_dependant = (
+            family_member & ~qualifying & ~person("is_lha_foster_child", period)
+        )
         family_rooms = benunit.sum(qualifying_young_person | family_non_dependant)
         # Para 9(1)(c) and 9(2): people of other families in the household
         # who are non-dependants of the household head's family. Para 9(2)(g)

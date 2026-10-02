@@ -1,4 +1,4 @@
-description: Disability benefits whose recipients, if non-resident carers regularly stay overnight to care for them, give the household an additional bedroom in the LHA size criteria.
+description: Disability benefits whose recipients, if non-resident carers regularly stay overnight to care for them, give an additional bedroom in the LHA size criteria. The law also lists the Scottish devolved equivalents (child disability payment, adult disability payment, Scottish adult disability living allowance, pension age disability payment), which the model has no variables for.
 values:
   2011-04-01:
     - attendance_allowance

@@ -20,7 +20,8 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "bedroom, such as a young person in full-time education; so do a "
         "householder's boarder or lodger and a non-dependant, but a sharer "
         "of the rent does not. A couple, such as a non-dependant and their "
-        "partner, has one bedroom between them. The children of a non-dependant, boarder or "
+        "partner, has one bedroom between them. The children of a "
+        "non-dependant, boarder or "
         "lodger are occupiers too, and share rooms with the claimant's "
         "children. A child or young person placed with a family in the "
         "household as a foster child or for adoption is not an occupier. A "
@@ -62,13 +63,12 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         other_occupier = ~head_family & ~sharer & occupier
         # Reg 13D(3)(a): a couple, here the claimant and partner of an
         # occupier's family, has one bedroom; (b): every other occupier aged
-        # 16 or over has their own. Each member of a couple counts as half.
-        couple_member = person("is_claimant_or_partner", period) & person.benunit(
-            "is_couple", period
-        )
-        occupier_rooms = (other_occupier & aged_16_or_over) * where(
-            couple_member, 0.5, 1
-        )
+        # 16 or over has their own. Each member of a couple counts as half,
+        # and only where both members are counted, so the halves always pair.
+        counted = other_occupier & aged_16_or_over
+        claimant_or_partner = counted & person("is_claimant_or_partner", period)
+        couple = person.benunit.sum(claimant_or_partner) == 2
+        occupier_rooms = counted * where(claimant_or_partner & couple, 0.5, 1)
         is_head_family = benunit.any(person("is_household_head", period))
         other_occupiers = is_head_family * benunit.max(
             person.household.sum(occupier_rooms)

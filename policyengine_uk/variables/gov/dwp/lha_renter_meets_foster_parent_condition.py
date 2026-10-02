@@ -26,15 +26,19 @@ class lha_renter_meets_foster_parent_condition(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        # UC Regs 2013 reg 2, "foster parent": a person with whom a child is
-        # placed under the care planning regulations; a child here is a
-        # person under 18 looked after by a local authority.
-        placed = (
-            person("is_looked_after_by_local_authority", period)
-            | person("is_placed_for_adoption", period)
-        ) & (person("age", period) < 18)
+        # UC Regs 2013 reg 2, "foster parent": a person with whom a child
+        # (under 18) is placed under the care planning regulations; reg 89(3)
+        # and Sch 4 para 12(4)(b): an adopter with whom a child is placed for
+        # adoption.
+        age_limit = parameters(period).gov.dwp.LHA.foster_child_age_limit
+        placed_for_adoption = (
+            person("is_placed_for_adoption", period)
+            & (person("age", period) < age_limit)
+            & ~claimant_or_partner
+        )
+        placed = person("is_lha_foster_child", period) | placed_for_adoption
         # UC Regs 2013 Sch 4 para 12(4)(a)-(b) and (5).
         between_placements = claimant_or_partner & person(
             "is_approved_foster_parent_without_placement", period
         )
-        return benunit.any((placed & ~claimant_or_partner) | between_placements)
+        return benunit.any(placed | between_placements)
