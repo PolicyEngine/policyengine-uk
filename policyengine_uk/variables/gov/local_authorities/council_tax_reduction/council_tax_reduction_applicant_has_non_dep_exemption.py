@@ -33,7 +33,7 @@ class council_tax_reduction_applicant_has_non_dep_exemption(Variable):
         # benefits "in respect of himself".
         person = benunit.members
         applicant_or_partner = person(
-            "council_tax_reduction_applicant_or_partner", period
+            "is_council_tax_reduction_applicant_or_partner", period
         )
         exempting = (
             person("is_blind", period)

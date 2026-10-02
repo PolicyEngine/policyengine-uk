@@ -603,7 +603,7 @@
     # The grandmother is the liable resident, so she is the applicant; the
     # young parents are the family's claimant and partner but not hers.
     is_claimant_or_partner: [false, true, true, false]
-    council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
     # Her age puts the claim on the pensioner scheme (SI 2012/2885 reg 3).
     council_tax_reduction_pensioner: [true]
     council_tax_reduction_scheme_supported: [true]
@@ -641,6 +641,6 @@
     # Only the head is liable (LGFA 1992 s.6(5)), but para 8(6) asks about
     # "the applicant or his partner".
     council_tax_reduction_liable_person: [true, false]
-    council_tax_reduction_applicant_or_partner: [true, true]
+    is_council_tax_reduction_applicant_or_partner: [true, true]
     council_tax_reduction_applicant_has_non_dep_exemption: [true]
     council_tax_reduction_pensioner: [false]
