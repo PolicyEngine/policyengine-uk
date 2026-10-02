@@ -12,9 +12,10 @@
 # Two people caring for the same severely disabled person cannot both be
 # entitled to Carer's Allowance (SSCBA s.70(7ZA)) or Carer Support Payment
 # (SSI 2023/302 reg 5(3)), so they satisfy the condition once. Unless supplied,
-# partners are treated as caring for the same person unless both report a
-# Carer's Allowance award; the cases below with two premiums therefore give
-# both partners a reported award.
+# partners are treated as caring for the same person unless both have a
+# reported Carer's Allowance or Carer Support Payment award
+# (carers_allowance_reported carries both); the cases below with two premiums
+# therefore give both partners a reported award.
 
 - name: Carer premium for a single claimant entitled to Carer's Allowance
   period: 2026
@@ -329,3 +330,51 @@
   output:
     # 3 x 48.15 x 52 and 48.15 x 52.
     carer_premium: [7_511.40, 2_503.80]
+
+- name: A reported award the person would not claim does not count towards two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance_reported: 4_000
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+        would_claim_carers_allowance: false
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    is_carer_for_benefits: [true, false]
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 48.15 * 52
+
+# The property tests' generator keeps a partner within 15 years of an adult
+# under 20, because the model presumes someone under 20 who is at least 16
+# years younger than the eldest adult to be that adult's child.
+- name: An 18-year-old 15 years younger than the other adult is a partner; 16 years younger is presumed a child
+  period: 2026
+  input:
+    people:
+      a18:
+        age: 18
+      a33:
+        age: 33
+      b18:
+        age: 18
+      b34:
+        age: 34
+    benunits:
+      couple_a:
+        members: [a18, a33]
+      couple_b:
+        members: [b18, b34]
+    households:
+      household_a:
+        members: [a18, a33]
+      household_b:
+        members: [b18, b34]
+  output:
+    is_claimant_or_partner: [true, true, false, true]

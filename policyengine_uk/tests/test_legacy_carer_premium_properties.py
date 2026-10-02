@@ -18,7 +18,7 @@ dependent children or qualifying young persons:
   caring claimants and partners, capped at one when they are treated as
   caring for the same person; it is 0, one amount or two;
 - unless supplied, partners are treated as caring for the same person unless
-  both report a Carer's Allowance award;
+  both are carers with a reported Carer's Allowance award;
 - supplying "same person" never raises the premium and caps it at one amount;
 - caring by the claimant or partner never removes Income Support eligibility
   or lowers the premium, and below pension age it always opens the IS route.
@@ -164,7 +164,7 @@ def test_dependants_caring_never_changes_premium_or_is_eligibility(drawn):
         assert abs(premium[i] - premium[k + i]) < 0.01, units[i]
         assert eligible[i] == eligible[k + i], units[i]
         adult_slice = slice(offsets[i], offsets[i] + n)
-        assert same_person[i] == (reported[adult_slice].sum() < 2), units[i]
+        assert same_person[i] == ((reported & carers)[adult_slice].sum() < 2), units[i]
         qualifying = carers[adult_slice].sum()
         if same_person[i]:
             qualifying = min(qualifying, 1)
