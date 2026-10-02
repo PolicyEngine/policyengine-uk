@@ -26,21 +26,22 @@ and start-up periods, in England, Wales and Scotland:
    are 35, or the lesser number for the responsible carer of a child under
    13, and never more than 35.
 3. Nomination: a benefit unit has one responsible carer if it has a child
-   under 16 and none otherwise; the responsible carer is always a claimant.
-4. The default nomination is the one that gives the couple the higher award:
-   nominating the other member never lowers the couple's combined earned
-   income or raises their Universal Credit. This runs the whole model both
-   ways, so it also checks the functions the default nomination evaluates
-   against the variables that apply them.
+   under 16 and none otherwise, and the responsible carer is always a
+   claimant. Differential against the default rule written from its
+   description: the claimant with the fewest hours of paid work, then the
+   elder, then the first listed.
+4. Whichever member of a couple is nominated, invariants 1 and 2 hold, and
+   the nomination changes nothing in a benefit unit with no child under 13
+   or no claimant the floor could apply to.
 5. Differential against the floor without the scope rules: the same people
    with everyone forced into the all work-related requirements group at 35
    hours (the rule before this change). The scope rules never raise anyone's
    earned income, so they never lower Universal Credit before the benefit
-   cap.
+   cap, under the default nomination or the other one.
 6. Monotone: more earnings never lower a benefit unit's earned income or
-   raise its Universal Credit before the benefit cap, whichever member the
-   default nomination picks. The intended exception is a loss raised to
-   exactly zero, which the model reads as no self-employment.
+   raise its Universal Credit before the benefit cap. The default
+   nomination does not depend on earnings. The intended exception is a loss
+   raised to exactly zero, which the model reads as no self-employment.
 7. A partner who cannot be a joint claimant (reg. 3(3)) never has the floor,
    and adds the same amount to the couple threshold whatever their age.
 
@@ -120,6 +121,7 @@ def families(draw, ineligible_partners=False):
             pension_contributions=draw(pension),
             uc_is_in_startup_period=draw(rarely),
             care_hours=draw(st.sampled_from([0, 0, 0, 20, 35])),
+            hours_worked=draw(st.sampled_from([0, 0, 832, 1_820, 2_080])),
         )
         for circumstance in CIRCUMSTANCES:
             adult[circumstance] = draw(rarely)
@@ -199,6 +201,13 @@ def calculate(units, year, **kwargs):
         values["uc_is_responsible_carer"].astype(float)
     )
     values["claimants_in_unit"] = per_unit(values["is_uc_claimant"].astype(float))
+    values["self_employed_claimants_in_unit"] = per_unit(
+        (
+            values["uc_is_in_gainful_self_employment"].astype(bool)
+            & values["is_uc_claimant"].astype(bool)
+            & ~values["uc_is_in_startup_period"].astype(bool)
+        ).astype(float)
+    )
     return values
 
 
@@ -206,21 +215,8 @@ def calculate(units, year, **kwargs):
 @given(units=populations, year=st.sampled_from(YEARS))
 def test_floor_applies_only_to_the_all_requirements_group(units, year):
     v = calculate(units, year)
-    applies = v["uc_mif_applies"].astype(bool)
-    in_scope = (
-        (v["group"] == "ALL_REQUIREMENTS")
-        & v["uc_is_in_gainful_self_employment"].astype(bool)
-        & ~v["uc_is_in_startup_period"].astype(bool)
-    )
-    np.testing.assert_array_equal(applies, in_scope, err_msg=str(units))
     # Sections 19 to 21, dependants, start-up periods: actual earned income.
-    before = v["uc_individual_earned_income_before_mif"]
-    after = v["uc_individual_earned_income"]
-    np.testing.assert_allclose(
-        after[~applies], before[~applies], atol=0.01, err_msg=str(units)
-    )
-    assert np.all(after >= before - 0.01), units
-    # The group follows the Act for the circumstances the test sets.
+    check_scope(v, units)
     claimant = v["is_uc_claimant"].astype(bool)
     assert np.all(v["group"][~claimant] == "NOT_A_CLAIMANT"), units
     assert np.all(v["group"][claimant] != "NOT_A_CLAIMANT"), units
@@ -270,61 +266,108 @@ def test_one_responsible_carer_where_there_is_a_child(units, year):
         has_child.astype(float),
         err_msg=str(units),
     )
+    # The default rule, from its description: fewest hours of paid work,
+    # then the elder, then the first listed.
     for i, unit in enumerate(units):
-        assert has_child[v["names"].index(f"p{i}_0")] == bool(unit["children"])
+        adults = unit["adults"]
+        expected = min(
+            range(len(adults)),
+            key=lambda j: (adults[j]["hours_worked"], -adults[j]["age"], j),
+        )
+        for j in range(len(adults)):
+            nominated = bool(carer[v["names"].index(f"p{i}_{j}")])
+            assert nominated == (bool(unit["children"]) and j == expected), units
 
 
 def other_nomination(units, v):
-    """Inputs that nominate the other member of every couple with a child."""
-    overrides = {}
+    """Inputs that nominate the other member of every couple with a child.
+
+    An input set for some people sets it for everyone (the rest take the
+    default, False), so every person gets one: their default nomination, or
+    its opposite in a couple with a child.
+    """
+    nominated = v["uc_is_responsible_carer"].astype(bool)
+    overrides = {
+        name: {"uc_is_responsible_carer": bool(value)}
+        for name, value in zip(v["names"], nominated)
+    }
+    flipped = False
     for i, unit in enumerate(units):
         names = [f"p{i}_{j}" for j in range(len(unit["adults"]))]
-        nominated = [
-            bool(v["uc_is_responsible_carer"][v["names"].index(name)]) for name in names
-        ]
-        if len(names) == 2 and any(nominated):
-            for name, is_nominated in zip(names, nominated):
-                overrides[name] = {"uc_is_responsible_carer": not is_nominated}
-    return overrides
+        if len(names) == 2 and unit["children"]:
+            for name in names:
+                overrides[name]["uc_is_responsible_carer"] ^= True
+            flipped = True
+    return overrides if flipped else {}
+
+
+def check_scope(v, units):
+    applies = v["uc_mif_applies"].astype(bool)
+    in_scope = (
+        (v["group"] == "ALL_REQUIREMENTS")
+        & v["uc_is_in_gainful_self_employment"].astype(bool)
+        & ~v["uc_is_in_startup_period"].astype(bool)
+    )
+    np.testing.assert_array_equal(applies, in_scope, err_msg=str(units))
+    before = v["uc_individual_earned_income_before_mif"]
+    after = v["uc_individual_earned_income"]
+    np.testing.assert_allclose(
+        after[~applies], before[~applies], atol=0.01, err_msg=str(units)
+    )
+    assert np.all(after >= before - 0.01), units
 
 
 @PROPERTY_SETTINGS
 @given(units=populations, year=st.sampled_from(YEARS))
-def test_default_nomination_gives_the_couple_the_higher_award(units, year):
+def test_scope_holds_whichever_member_is_nominated(units, year):
     default = calculate(units, year)
     overrides = other_nomination(units, default)
     assume(overrides)
     other = calculate(units, year, overrides=overrides)
-    assert np.all(other["uc_earned_income"] >= default["uc_earned_income"] - 0.01), (
-        units
+    check_scope(other, units)
+    np.testing.assert_array_equal(
+        other["responsible_carers_in_unit"], default["responsible_carers_in_unit"]
     )
-    assert np.all(
-        other["universal_credit_pre_benefit_cap"]
-        <= default["universal_credit_pre_benefit_cap"] + 0.01
-    ), units
+    # The nomination matters only through a child under 13 and a claimant
+    # the floor could apply to.
+    limit = default["parameters"].responsible_carer.expected_hours.child_age_limit
+    matters = (default["person_uc_youngest_child_age"] < limit) & (
+        default["self_employed_claimants_in_unit"] > 0
+    )
+    np.testing.assert_allclose(
+        other["uc_individual_earned_income"][~matters],
+        default["uc_individual_earned_income"][~matters],
+        atol=0.01,
+        err_msg=str(units),
+    )
 
 
-@PROPERTY_SETTINGS
-@given(units=populations, year=st.sampled_from(YEARS))
-def test_scope_rules_never_raise_earned_income(units, year):
-    v = calculate(units, year)
-    # The floor without the scope rules: every claimant in the all
-    # work-related requirements group with 35 expected hours.
-    overrides = {
+def unrestricted(units, year, v):
+    """The floor without the scope rules, as before this change."""
+    forced = {
         name: {
             GROUP: "ALL_REQUIREMENTS" if claimant else "NOT_A_CLAIMANT",
             "uc_expected_hours": 35,
         }
         for name, claimant in zip(v["names"], v["is_uc_claimant"])
     }
-    unrestricted = calculate(units, year, overrides=overrides)
+    return calculate(units, year, overrides=forced)
+
+
+@PROPERTY_SETTINGS
+@given(units=populations, year=st.sampled_from(YEARS), other=st.booleans())
+def test_scope_rules_never_raise_earned_income(units, year, other):
+    v = calculate(units, year)
+    before_change = unrestricted(units, year, v)
+    if other:
+        v = calculate(units, year, overrides=other_nomination(units, v))
     assert np.all(
         v["uc_individual_earned_income"]
-        <= unrestricted["uc_individual_earned_income"] + 0.01
+        <= before_change["uc_individual_earned_income"] + 0.01
     ), units
     assert np.all(
         v["universal_credit_pre_benefit_cap"]
-        >= unrestricted["universal_credit_pre_benefit_cap"] - 0.01
+        >= before_change["universal_credit_pre_benefit_cap"] - 0.01
     ), units
 
 

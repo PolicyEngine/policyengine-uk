@@ -1,12 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import (
-    ALL_REQUIREMENTS,
-    INTERVIEW_ONLY,
-    NO_REQUIREMENTS,
-    WORK_PREPARATION,
-    gross_threshold,
-    threshold_hours,
-)
+from policyengine_uk.utils.uc_work_related_requirements import couple_members
 
 
 class uc_minimum_income_floor_gross(Variable):
@@ -46,23 +39,57 @@ class uc_minimum_income_floor_gross(Variable):
     ]
 
     def formula(person, period, parameters):
+        p = parameters(period)
+        work = p.gov.dwp.universal_credit.work_requirements
+        floor = p.gov.dwp.universal_credit.means_test.minimum_income_floor
+        wage = p.gov.hmrc.minimum_wage.non_apprentice
         group = person("uc_work_related_group_apart_from_earnings", period)
         groups = group.possible_values
-        group_index = select(
+        ineligible_partner = couple_members(person, period) & person(
+            "uc_is_ineligible_partner", period
+        )
+        hours = select(
             [
-                group == groups.NO_REQUIREMENTS,
-                group == groups.INTERVIEW_ONLY,
-                group == groups.WORK_PREPARATION,
+                # Reg. 90(3)(b)(ii): a partner who is not a joint claimant
+                # adds "the amount a person would be paid for 35 hours per
+                # week" to the couple threshold.
+                ineligible_partner,
+                # Reg. 90(2)(b): "the expected number of hours per week in
+                # the case of a claimant who would otherwise fall within
+                # section 22".
                 group == groups.ALL_REQUIREMENTS,
+                # Reg. 90(2)(a): "16 hours per week, in the case of a
+                # claimant who would otherwise fall within section 20 ... or
+                # section 21".
+                (group == groups.INTERVIEW_ONLY) | (group == groups.WORK_PREPARATION),
+                # Reg. 90(2) sets no threshold for a claimant in section 19
+                # for a reason other than earnings; the parameter holds the
+                # hours the model uses for such a partner (none).
+                group == groups.NO_REQUIREMENTS,
             ],
-            [NO_REQUIREMENTS, INTERVIEW_ONLY, WORK_PREPARATION, ALL_REQUIREMENTS],
-            default=-1,
+            [
+                work.default_expected_hours,
+                person("uc_expected_hours", period),
+                work.interview_or_preparation_threshold_hours,
+                floor.no_requirements_partner_hours,
+            ],
+            default=0,
         )
-        hours = threshold_hours(
-            person,
-            period,
-            parameters,
-            group_index,
-            person("uc_expected_hours", period),
+        # Reg. 90(2) uses the rate "a person of the same age as the claimant
+        # would be paid" under NMW Regs reg. 4 or 4A(1)(a) to (c): the rate
+        # for their age, never the apprenticeship rate of reg. 4A(1)(d). Reg.
+        # 90(3)(b)(ii) uses "the hourly rate specified in regulation 4", the
+        # national living wage rate, whatever the partner's age: the scale's
+        # top rate (the adult rate before 1 April 2016).
+        hourly_rate = where(
+            ineligible_partner,
+            wage.calc(np.full(person.count, 200.0)),
+            wage.calc(person("age", period)),
         )
-        return gross_threshold(person, period, parameters, hours)
+        # Reg. 6(1A)(a) disregards fractions of a pound only in amounts
+        # calculated for reg. 90 itself. Floors DWP has issued keep the pence:
+        # 1,642.72 a month for 2025-26 from a threshold of 1,851.85 (12.21 x
+        # 35 x 52 / 12; University of Bath IPR, "Going it alone", 2025,
+        # "information supplied by the DWP"), where a whole-pound threshold
+        # would give 1,642.09. So the threshold here is not rounded.
+        return hourly_rate * hours * WEEKS_IN_YEAR

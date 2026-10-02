@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import expected_hours
 
 
 class uc_expected_hours(Variable):
@@ -30,6 +29,23 @@ class uc_expected_hours(Variable):
     unit = "hour"
 
     def formula(person, period, parameters):
-        return expected_hours(
-            person, period, parameters, person("uc_is_responsible_carer", period)
+        p = parameters(period)
+        hours = p.gov.dwp.universal_credit.work_requirements
+        carer_hours = hours.responsible_carer.expected_hours
+        youngest = person.benunit("uc_youngest_child_age", period)
+        lesser = where(
+            p.gov.dfe.compulsory_school_age.calc(youngest),
+            # Reg. 88(2)(b): a child of compulsory school age under 13.
+            carer_hours.compulsory_school_age,
+            # Reg. 88(2)(aa): a child below compulsory school age.
+            carer_hours.below_compulsory_school_age,
+        )
+        applies = person("uc_is_responsible_carer", period) & (
+            youngest < carer_hours.child_age_limit
+        )
+        # Reg. 88(1): 35 "unless some lesser number of hours applies".
+        return where(
+            applies,
+            min_(lesser, hours.default_expected_hours),
+            hours.default_expected_hours,
         )

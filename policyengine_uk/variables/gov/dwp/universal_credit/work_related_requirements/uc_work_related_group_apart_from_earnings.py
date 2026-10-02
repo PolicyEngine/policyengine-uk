@@ -1,11 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import (
-    ALL_REQUIREMENTS,
-    INTERVIEW_ONLY,
-    NO_REQUIREMENTS,
-    WORK_PREPARATION,
-    work_related_group,
-)
+from policyengine_uk.utils.uc_work_related_requirements import claimants
 
 
 class UCWorkRelatedGroup(Enum):
@@ -49,21 +43,64 @@ class uc_work_related_group_apart_from_earnings(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        group = work_related_group(
-            person, period, parameters, person("uc_is_responsible_carer", period)
+        p = parameters(period).gov.dwp.universal_credit.work_requirements
+        child_age = p.responsible_carer.child_age
+        responsible_carer = person("uc_is_responsible_carer", period)
+        youngest = person.benunit("uc_youngest_child_age", period)
+        no_requirements = (
+            # s. 19(2)(a): limited capability for work and work-related
+            # activity.
+            person("uc_limited_capability_for_WRA", period)
+            # s. 19(2)(b) with reg. 30: regular and substantial caring
+            # responsibilities for a severely disabled person. The same flag
+            # covers the 35-hour carers of reg. 89(1)(b).
+            | person("is_carer_for_benefits", period)
+            # s. 19(2)(c): the responsible carer for a child under the age
+            # of 1.
+            | (responsible_carer & (youngest < child_age.no_requirements))
+            # Reg. 89(1)(a): the qualifying age for State Pension Credit.
+            | person("is_SP_age", period)
+            # Reg. 89(1)(c): 11 weeks before to 15 weeks after confinement.
+            | person("uc_is_in_pregnancy_or_post_confinement_period", period)
+            # Reg. 89(1)(d): an adopter in the 12 months after placement.
+            | person("uc_is_adopter_in_first_year", period)
+            # Reg. 89(1)(da) and (e): students.
+            | person("uc_is_student_with_no_work_related_requirements", period)
+            # Reg. 89(1)(f): the responsible foster parent of a child under 1.
+            | person("uc_is_responsible_foster_parent_of_child_under_one", period)
         )
+        interview_only = (
+            # s. 20(1)(a): the responsible carer for a child aged 1 (before 3
+            # April 2017, aged at least 1 and under the prescribed age).
+            (responsible_carer & (youngest < child_age.interview_only))
+            # Reg. 91(2): foster parents, and friend or family carers in
+            # their first 12 months.
+            | person("uc_is_foster_parent_or_new_friend_or_family_carer", period)
+        )
+        work_preparation = (
+            # s. 21(1)(a): limited capability for work.
+            person("uc_has_limited_capability_for_work", period)
+            # s. 21(1)(aa): the responsible carer for a child aged 2 (from 28
+            # April 2014 to 2 April 2017, reg. 91A: aged 3 or 4).
+            | (responsible_carer & (youngest < child_age.work_preparation))
+        )
+        # The Act tests the groups in order: section 21 covers a claimant
+        # who "does not fall within section 19 or 20", and section 22 one
+        # "not falling within any of sections 19 to 21". The earnings routes
+        # into section 19 (reg. 90) are left out: reg. 62(1)(b) and reg.
+        # 90(2) ask where the claimant would otherwise fall.
         return select(
             [
-                group == NO_REQUIREMENTS,
-                group == INTERVIEW_ONLY,
-                group == WORK_PREPARATION,
-                group == ALL_REQUIREMENTS,
+                ~claimants(person, period),
+                no_requirements,
+                interview_only,
+                work_preparation,
             ],
             [
+                UCWorkRelatedGroup.NOT_A_CLAIMANT,
                 UCWorkRelatedGroup.NO_REQUIREMENTS,
                 UCWorkRelatedGroup.INTERVIEW_ONLY,
                 UCWorkRelatedGroup.WORK_PREPARATION,
-                UCWorkRelatedGroup.ALL_REQUIREMENTS,
             ],
-            default=UCWorkRelatedGroup.NOT_A_CLAIMANT,
+            default=UCWorkRelatedGroup.ALL_REQUIREMENTS,
         )

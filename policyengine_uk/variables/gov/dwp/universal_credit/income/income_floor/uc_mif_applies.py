@@ -1,9 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import (
-    ALL_REQUIREMENTS,
-    claimants,
-    floor_applies,
-)
 
 
 class uc_mif_applies(Variable):
@@ -22,10 +17,11 @@ class uc_mif_applies(Variable):
     def formula(person, period, parameters):
         # Reg. 62(1) applies to a claimant, not a dependant, who (a) is in
         # gainful self-employment and (b) "would, apart from this regulation
-        # or regulation 90, fall within section 22 of the Act". Reg. 62(5)
-        # leaves out start-up periods.
+        # or regulation 90, fall within section 22 of the Act". Only a
+        # claimant has a work-related group.
         group = person("uc_work_related_group_apart_from_earnings", period)
         all_requirements = group == group.possible_values.ALL_REQUIREMENTS
-        return claimants(person, period) & floor_applies(
-            person, period, where(all_requirements, ALL_REQUIREMENTS, -1)
-        )
+        gainfully_self_employed = person("uc_is_in_gainful_self_employment", period)
+        # Reg. 62(5) leaves out assessment periods in a start-up period.
+        in_startup_period = person("uc_is_in_startup_period", period)
+        return all_requirements & gainfully_self_employed & ~in_startup_period

@@ -1,8 +1,5 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import (
-    claimants,
-    combined_earned_income,
-)
+from policyengine_uk.utils.uc_work_related_requirements import claimants
 
 
 class uc_is_responsible_carer(Variable):
@@ -14,13 +11,11 @@ class uc_is_responsible_carer(Variable):
         "their benefit unit: a single claimant who is responsible for a "
         "child, or the member of a couple whom the couple have jointly "
         "nominated. Only one joint claimant can be nominated, and the "
-        "nomination covers all their children. Datasets and households "
-        "should supply the nomination where they know it. Without one, the "
-        "model takes the nomination that leaves the couple the lower "
-        "combined earned income after the minimum income floor, which is the "
-        "nomination that gives them the higher award: the choice is the "
-        "couple's. Where the nomination makes no difference the elder "
-        "claimant is the responsible carer."
+        "nomination covers all their children. The nomination is the "
+        "couple's choice: datasets and households should supply it where "
+        "they know it. Without one, the model takes the claimant who works "
+        "fewer hours as the main carer, and the elder where their hours are "
+        "the same."
     )
     reference = [
         dict(
@@ -39,12 +34,11 @@ class uc_is_responsible_carer(Variable):
         # s. 19(6): a single person who is responsible for the child, or the
         # nominated member of a couple either of whom is responsible for it.
         has_child = person.benunit("uc_youngest_child_age", period) < np.inf
-        rank = person.get_rank(person.benunit, -person("age", period), claimant)
-        elder = claimant & (rank == 0)
-        younger = claimant & (rank == 1)
-        # Reg. 86(2) and (4): the couple choose which of them to nominate.
-        # The floor is the only consequence of the choice in the model.
-        if_elder = combined_earned_income(person, period, parameters, elder)
-        if_younger = combined_earned_income(person, period, parameters, younger)
-        nominate_younger = person.benunit.any(younger) & (if_younger < if_elder)
-        return has_child & where(nominate_younger, younger, elder)
+        # Reg. 86(2): "Only one of joint claimants may be nominated". The
+        # default nomination is the claimant with fewer hours of paid work,
+        # then the elder. A single claimant is the only candidate.
+        hours = person("hours_worked", period)
+        fewest_hours = person.benunit.min(where(claimant, hours, np.inf))
+        candidate = claimant & (hours == fewest_hours)
+        eldest = person.get_rank(person.benunit, -person("age", period), candidate) == 0
+        return has_child & candidate & eldest

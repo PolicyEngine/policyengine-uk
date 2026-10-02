@@ -1,7 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import (
-    income_tax_on_threshold,
-)
 
 
 class uc_minimum_income_floor_income_tax(Variable):
@@ -30,9 +27,15 @@ class uc_minimum_income_floor_income_tax(Variable):
     ]
 
     def formula(person, period, parameters):
-        return income_tax_on_threshold(
-            person,
-            period,
-            parameters,
-            person("uc_minimum_income_floor_gross", period),
+        # Reg. 62(4)(b) deducts "such amount for income tax ... as the
+        # Secretary of State considers appropriate". The model treats the
+        # threshold as the person's only income: only the standard personal
+        # allowance applies, and no other allowance or relief.
+        income_tax = parameters(period).gov.hmrc.income_tax
+        threshold = person("uc_minimum_income_floor_gross", period)
+        taxable = max_(0, threshold - income_tax.allowances.personal_allowance.amount)
+        return where(
+            person("pays_scottish_income_tax", period),
+            income_tax.rates.scotland.rates.calc(taxable),
+            income_tax.rates.uk.calc(taxable),
         )

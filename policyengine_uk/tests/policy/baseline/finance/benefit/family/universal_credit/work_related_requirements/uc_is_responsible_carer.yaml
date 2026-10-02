@@ -7,9 +7,8 @@
 # to all the children" (reg. 86(3)).
 #
 # The nomination is the couple's choice and data seldom record it. Without
-# an input the model takes the nomination that leaves the couple the lower
-# combined earned income after the minimum income floor (the higher award),
-# and the elder claimant where it makes no difference.
+# an input the model takes the claimant who works fewer hours as the main
+# carer, and the elder where their hours are the same.
 #
 # 2026-27 amounts for a claimant aged 21 or over in England: net floor
 # 20,386.03 for 35 hours (see uc_minimum_income_floor.yaml); 16-hour
@@ -33,69 +32,65 @@
   output:
     uc_is_responsible_carer: [true, false]
 
-- name: A couple with no floor at stake default to the elder claimant
+- name: In a couple the claimant who works fewer hours is the responsible carer by default
   period: 2026
   input:
     people:
-      younger:
-        age: 30
-        employment_income: 20_000
-      elder:
+      full_time:
         age: 35
+        hours_worked: 1_950
+      part_time:
+        age: 30
+        hours_worked: 832
       child:
         age: 4
   output:
     uc_is_responsible_carer: [false, true, false]
 
-- name: A couple nominate the self-employed partner the floor would otherwise apply to
+- name: Where a couple work the same hours the elder is the responsible carer by default
   period: 2026
   input:
     people:
+      younger:
+        age: 30
+        hours_worked: 1_820
       elder:
         age: 35
-        employment_income: 12_000
-      self_employed:
-        age: 30
-        self_employment_income: 5_000
+        hours_worked: 1_820
       child:
-        age: 1
+        age: 4
   output:
-    # Nominating the self-employed partner puts them in section 20, so no
-    # floor: combined earned income 17,000. Nominating the elder leaves the
-    # self-employed partner in section 22 with the floor.
     uc_is_responsible_carer: [false, true, false]
-    uc_mif_applies: [false, false, false]
-    uc_individual_earned_income: [12_000, 5_000, 0]
 
-- name: Two self-employed partners default to the nomination that leaves the lower combined earned income
+- name: A self-employed partner who works more hours is not the default responsible carer and has the floor
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
-      elder:
+      self_employed:
         age: 35
         self_employment_income: 15_000
+        hours_worked: 2_080
         would_claim_marriage_allowance: false
-      younger:
+      partner:
         age: 30
         self_employment_income: 2_000
+        hours_worked: 520
         would_claim_marriage_allowance: false
       child:
         age: 1
     households:
       household:
-        members: [elder, younger, child]
+        members: [self_employed, partner, child]
         region: NORTH_EAST
   output:
-    # Elder: 15,000 - (15,000 - 1,000 - 12,570) x 20% - (15,000 - 12,570)
-    # x 6% = 15,000 - 286 - 145.80.
+    # 15,000 - (15,000 - 1,000 - 12,570) x 20% - (15,000 - 12,570) x 6%
+    # = 15,000 - 286 - 145.80.
     uc_individual_earned_income_before_mif: [14_568.20, 2_000, 0]
-    # Couple threshold either way: 20,386.03 + 10,574.72 = 30,960.75.
-    # Nominating the younger: the elder is treated as having 20,386.03 and
-    # the couple has 22,386.03. Nominating the elder: the younger would be
-    # treated as having 30,960.75 - 14,568.20 = 16,392.55 and the couple
-    # would have 30,960.75.
     uc_is_responsible_carer: [false, true, false]
+    # The partner is in section 20 (a child aged 1): no floor, and a 16-hour
+    # threshold of 10,574.72 in the couple threshold of 30,960.75. The
+    # couple's 22,386.03 after the floor is below it.
     uc_mif_applies: [true, false, false]
     uc_individual_earned_income: [20_386.03, 2_000, 0]
 
@@ -104,24 +99,28 @@
   absolute_error_margin: 0.01
   input:
     people:
-      elder:
+      self_employed:
         age: 35
         self_employment_income: 15_000
+        hours_worked: 2_080
         would_claim_marriage_allowance: false
         uc_is_responsible_carer: true
-      younger:
+      partner:
         age: 30
         self_employment_income: 2_000
+        hours_worked: 520
         would_claim_marriage_allowance: false
         uc_is_responsible_carer: false
       child:
         age: 1
     households:
       household:
-        members: [elder, younger, child]
+        members: [self_employed, partner, child]
         region: NORTH_EAST
   output:
     uc_mif_applies: [false, true, false]
+    # The partner's floor of 20,386.03 less the 3,993.48 by which it and the
+    # nominated carer's 14,568.20 would exceed the couple threshold:
     # 30,960.75 - 14,568.20.
     uc_individual_earned_income: [14_568.20, 16_392.55, 0]
 
@@ -147,6 +146,7 @@
         uc_is_ineligible_partner: true
       claimant:
         age: 30
+        hours_worked: 1_950
       child:
         age: 4
   output:

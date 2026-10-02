@@ -277,10 +277,12 @@
       self_employed:
         age: 30
         self_employment_income: 6_000
+        hours_worked: 1_040
         would_claim_marriage_allowance: false
       employee:
         age: 30
         employment_income: 25_000
+        hours_worked: 1_950
         would_claim_marriage_allowance: false
       child_1:
         age: 5
@@ -296,8 +298,9 @@
     uc_is_responsible_carer: [true, false, false, false]
     uc_mif_applies: [true, false, false, false]
     uc_individual_earned_income_before_mif: [6_000, 21_519.60, 0, 0]
-    # The responsible carer's threshold is the 30-hour 17,940.624 and the
-    # partner's the 35-hour 20,386.028, so the couple threshold is
+    # The self-employed partner works fewer hours, so is the responsible
+    # carer by default. Their threshold is the 30-hour 17,940.624 and the
+    # employee's the 35-hour 20,386.028, so the couple threshold is
     # 38,326.652. The self-employed partner is treated as having 17,940.62
     # less the 1,133.57 by which the employee is over their own threshold:
     # 38,326.652 - 21,519.597 = 16,807.06. Before this change both
@@ -585,7 +588,7 @@
     # floor is not reduced.
     uc_individual_earned_income: [20_386.03, 2_400, 0]
 
-- name: Couple with a baby, both self-employed, default nomination
+- name: Couple with a baby, both self-employed, the elder nominated by default
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -610,8 +613,8 @@
     uc_individual_earned_income_before_mif: [14_568.20, 2_000, 0]
     # The responsible carer of a child under 1 is in section 19 and adds
     # nothing to the couple threshold, so the couple threshold is the other
-    # partner's 20,386.03 and the couple is treated as having 20,386.03
-    # whichever is nominated: the elder by default.
+    # partner's 20,386.03. No hours are given, so the elder is the
+    # responsible carer by default.
     uc_is_responsible_carer: [true, false, false]
     uc_mif_applies: [false, true, false]
     # 20,386.03 - 14,568.20.
