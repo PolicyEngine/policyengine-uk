@@ -11,13 +11,18 @@ class uc_non_dep_deduction_exempt(Variable):
         "receiving Pension Credit, the middle or higher rate of the DLA care "
         "component, the PIP daily living component or Attendance Allowance, or "
         "who is entitled to Carer's Allowance (underlying entitlement included, "
-        "so the carer test is is_carer_for_benefits rather than receipt)."
+        "so the carer test is is_carer_for_benefits rather than receipt). "
+        "Pension Credit is awarded to a benefit unit's claimant and partner, "
+        "so another adult in the unit is not receiving it."
     )
     reference = "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/16"
 
     def formula(person, period, parameters):
+        receives_pension_credit = person("is_claimant_or_partner", period) & (
+            person.benunit("pension_credit", period) > 0
+        )
         return (
-            (person.benunit("pension_credit", period) > 0)
+            receives_pension_credit
             | person("dla_sc_middle_plus", period)
             | (person("pip_dl", period) > 0)
             | (person("attendance_allowance", period) > 0)

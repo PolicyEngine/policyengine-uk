@@ -1,0 +1,799 @@
+# Non-dependants within the claimant's own benefit unit.
+#
+# A benefit unit can include someone aged 16 or over who is neither the
+# claimant or partner nor a child or young person the claimant is responsible
+# for, such as an adult son or a 19-year-old who has left education. In law
+# that person is a non-dependant of the renter (UC Regs 2013 Sch 4 para
+# 9(1)(c) and (2); HB Regs 2006 and HB (SPC) Regs 2006 reg 3; CTR SI
+# 2012/2885 reg 9, WSI 2013/3029 reg 9, SSI 2021/249 reg 8), so their family's
+# claim bears a deduction for them, subject to each scheme's exemptions.
+#
+# Amounts for 2026-27:
+# - UC housing cost contribution £96.55 a month (Sch 4 para 14(1)), aged 21
+#   or over (para 16(2)(a)): £1,158.60 a year.
+# - HB non-dependant aged 18 or over not in remunerative work £20.40 a week
+#   (reg 74(1)(b)): £1,060.80 a year. In remunerative work with gross income
+#   of £300 a week: £64.35 (reg 74(2)(c)), £3,346.20 a year. The HB cases
+#   give part-time earners £50 a week for 10 hours, below remunerative work
+#   (16 hours, reg 6) and inside the lowest band.
+
+- name: UC, an adult son in the renter's benefit unit bears a housing cost contribution
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true]
+    uc_individual_non_dep_deduction: [0, 1_158.60]
+    uc_non_dep_deductions: 1_158.60
+
+- name: UC, no contribution for a non-dependant in the benefit unit under 21
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        # Left education: not a qualifying young person.
+        age: 19
+        is_claimant_or_partner: false
+        is_qualifying_young_person_for_universal_credit: false
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true]
+    uc_non_dep_deductions: 0
+
+- name: UC, a qualifying young person the renter is responsible for is not a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 19
+        is_claimant_or_partner: false
+        is_qualifying_young_person_for_universal_credit: true
+    benunits:
+      benunit:
+        members: [parent, daughter]
+    households:
+      household:
+        members: [parent, daughter]
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false]
+    uc_non_dep_deductions: 0
+
+# Sch 4 para 9(2)(g): a qualifying young person for whom no one in the
+# renter's extended benefit unit is responsible is not a non-dependant.
+- name: UC, a qualifying young person looked after by a local authority is not a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      carer:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      young_person:
+        age: 17
+        is_claimant_or_partner: false
+        is_qualifying_young_person_for_universal_credit: true
+        is_looked_after_by_local_authority: true
+    benunits:
+      benunit:
+        members: [carer, young_person]
+    households:
+      household:
+        members: [carer, young_person]
+  output:
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false]
+    uc_non_dep_deductions: 0
+
+# Sch 4 para 15: no contribution for any non-dependant if the renter, or
+# either joint renter of a couple, receives the PIP daily living component.
+- name: UC, no contribution where the renter receives the PIP daily living component
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        pip_dl: 3_000
+      son:
+        age: 25
+        is_claimant_or_partner: false
+      aunt:
+        # A non-dependant in another family.
+        age: 30
+    benunits:
+      benunit_1:
+        members: [parent, son]
+      benunit_2:
+        members: [aunt]
+    households:
+      household:
+        members: [parent, son, aunt]
+  output:
+    uc_non_dep_deductions_renter_exempt: [true, false]
+    uc_non_dep_deductions: [0, 0]
+
+- name: UC, no contribution where the renter's partner is blind
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent_1:
+        age: 52
+        is_household_head: true
+        is_claimant_or_partner: true
+      parent_2:
+        age: 50
+        is_claimant_or_partner: true
+        is_blind: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, son]
+    households:
+      household:
+        members: [parent_1, parent_2, son]
+  output:
+    uc_non_dep_deductions: 0
+
+# Para 15(1)(a) exempts "any renter who is a single person to whom
+# sub-paragraph (2) applies": the renter's own disability, not a child's.
+- name: UC, a disabled child in the renter's family does not exempt the renter
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+      child:
+        age: 10
+        is_claimant_or_partner: false
+        dla_sc_category: MIDDLE
+    benunits:
+      benunit:
+        members: [parent, son, child]
+    households:
+      household:
+        members: [parent, son, child]
+  output:
+    # A child under 16 is never a non-dependant (WRA 2012 s.40).
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true, false]
+    uc_non_dep_deductions_renter_exempt: false
+    uc_non_dep_deductions: 1_158.60
+
+# Sch 4 para 16(2)(d): no contribution for a non-dependant receiving
+# Attendance Allowance.
+- name: UC, no contribution for a non-dependant in the benefit unit receiving Attendance Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        attendance_allowance: 3_000
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    uc_non_dep_deduction_exempt: [false, true]
+    uc_non_dep_deductions: 0
+
+# Pension Credit is the claimant's award: an adult son in a family on Pension
+# Credit is not receiving it, so para 16(2)(b) does not exempt him.
+- name: UC, a family's Pension Credit does not exempt the non-dependant in its benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 70
+        is_claimant_or_partner: true
+      son:
+        age: 40
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, son]
+        pension_credit: 2_000
+  output:
+    uc_non_dep_deduction_exempt: [true, false]
+
+- name: UC, the head's family bears non-dependants in its own benefit unit and in other families
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+      aunt:
+        age: 60
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [parent, son]
+      benunit_2:
+        members: [aunt]
+    households:
+      household:
+        members: [parent, son, aunt]
+  output:
+    uc_non_dep_deductions: [2_317.20, 0]
+
+# A non-dependant family's own adult member is a non-dependant of the
+# household head, counted once, in the head's claim (Sch 4 para 9(2)(f)).
+- name: UC, an adult in a non-dependant family is the household head's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 45
+        is_claimant_or_partner: true
+      grandson:
+        age: 23
+        is_claimant_or_partner: false
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [daughter, grandson]
+    households:
+      household:
+        members: [head, daughter, grandson]
+  output:
+    uc_non_dep_deductions: [2_317.20, 0]
+
+# A sharer of the rent bears the non-dependant in its own benefit unit; the
+# household head's family does not (para 9(2)(f)).
+- name: UC, a sharer of the rent bears the non-dependant in its own benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+      sharer_son:
+        age: 26
+        is_claimant_or_partner: false
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer, sharer_son]
+        liable_for_share_of_household_rent: true
+    households:
+      household:
+        members: [head, sharer, sharer_son]
+        rent: 12_000
+  output:
+    uc_non_dep_deductions: [0, 1_158.60]
+
+- name: UC, the housing costs element nets off the contribution for an adult son
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, son]
+        benunit_tenure_type: RENT_FROM_COUNCIL
+        benunit_rent: 6_000
+    households:
+      household:
+        members: [parent, son]
+  output:
+    # £6,000 - £1,158.60.
+    uc_housing_costs_element: 4_841.40
+
+- name: HB, an adult son in the claimant's benefit unit working part time
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        employment_income: 2_600
+        weekly_hours: 10
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
+    housing_benefit_non_dep_deductions: 1_060.80
+
+- name: HB, an adult daughter in the claimant's benefit unit working full time on £300 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 22
+        is_claimant_or_partner: false
+        employment_income: 15_600
+        weekly_hours: 37.5
+    benunits:
+      benunit:
+        members: [parent, daughter]
+    households:
+      household:
+        members: [parent, daughter]
+  output:
+    housing_benefit_non_dep_deductions: 3_346.20
+
+- name: HB, no deduction for a non-dependant in the benefit unit under 18
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 17
+        is_claimant_or_partner: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
+    housing_benefit_non_dep_deductions: 0
+
+# HB reg 19: a Child Benefit qualifying young person is in the claimant's
+# family, not a non-dependant.
+- name: HB, a young person in the claimant's family is not a non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 19
+        is_claimant_or_partner: false
+        is_child_or_qualifying_young_person_for_child_benefit: true
+    benunits:
+      benunit:
+        members: [parent, daughter]
+    households:
+      household:
+        members: [parent, daughter]
+  output:
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
+    housing_benefit_non_dep_deductions: 0
+
+# A joint tenant's adult son normally resides with both joint tenants (reg
+# 3(1) and (4)) and is in neither's family under reg 3(2)(a), so he is a
+# non-dependant of each, apportioned by their shares of the rent (reg 74(5)).
+- name: HB, joint tenants share the deduction for one tenant's adult son
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        employment_income: 2_600
+        weekly_hours: 10
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [head, son]
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      household:
+        members: [head, son, sharer]
+        rent: 12_000
+  output:
+    share_of_household_rent: [0.5, 0.5]
+    housing_benefit_non_dep_deductions: [530.40, 530.40]
+
+# The same son coded as his own benefit unit gives the same deductions: the
+# result does not depend on how the survey groups him.
+- name: HB, joint tenants share the deduction for an adult son in his own benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 10
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      benunit_3:
+        members: [son]
+    households:
+      household:
+        members: [head, son, sharer]
+        rent: 12_000
+  output:
+    housing_benefit_non_dep_deductions: [530.40, 530.40, 0]
+
+# A lodger's adult son is the lodger's non-dependant, and the householder's
+# too: reg 3(2)(e)(i) excludes only the person liable to pay the householder.
+# The lodger is not a joint occupier with the householder, so reg 74(5) does
+# not apportion him and each bears the whole deduction.
+- name: HB, a lodger's adult son is a non-dependant of the lodger and of the householder
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 45
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 21
+        is_claimant_or_partner: false
+        employment_income: 2_600
+        weekly_hours: 10
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [lodger, lodger_son]
+    households:
+      household:
+        members: [head, lodger, lodger_son]
+        rent: 9_000
+  output:
+    housing_benefit_non_dep_deductions: [1_060.80, 1_060.80]
+
+- name: CTR, the claimant's family bears the non-dependant in its benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_non_dep_deductions: 300
+
+- name: CTR, no deduction for a non-dependant in the benefit unit under 18
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 17
+        is_claimant_or_partner: false
+        is_child_or_qualifying_young_person_for_child_benefit: false
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+    council_tax_reduction_non_dep_deductions: 0
+
+# An applicant's adult son normally resides with both jointly liable people
+# and is in neither's family (SI 2012/2885 reg 9(1), (2)(a)), so the deduction
+# is apportioned equally between them (Sch 1 para 8(5)).
+- name: CTR, jointly liable applicants share the deduction for one applicant's adult son
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        council_tax_reduction_individual_non_dep_deduction: 300
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [head, son]
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      household:
+        members: [head, son, sharer]
+        rent: 12_000
+  output:
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    council_tax_reduction_non_dep_deductions: [150, 150]
+
+# Para 8(5) still apportions a non-dependant from another family between the
+# jointly liable people.
+- name: CTR, jointly liable families share the deduction for another family's adult
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+      friend:
+        age: 30
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      benunit_3:
+        members: [friend]
+    households:
+      household:
+        members: [head, sharer, friend]
+        rent: 12_000
+  output:
+    council_tax_reduction_non_dep_deductions: [150, 150, 0]
+
+# SI 2012/2885 reg 9(2)(e) excludes only the person liable to pay the
+# applicant, so a lodger's adult son who pays nothing himself is the
+# applicant's non-dependant.
+- name: CTR, a lodger's adult son is the applicant's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 45
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 21
+        is_claimant_or_partner: false
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [lodger, lodger_son]
+    households:
+      household:
+        members: [head, lodger, lodger_son]
+        rent: 9_000
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
+    council_tax_reduction_non_dep_deductions: [300, 0]
+
+# Only a family that claims bears deductions; the non-dependant's own family
+# does not.
+- name: CTR, a non-dependant family with an adult member bears no deductions itself
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 45
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 200
+      grandson:
+        age: 23
+        is_claimant_or_partner: false
+        council_tax_reduction_individual_non_dep_deduction: 100
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [daughter, grandson]
+    households:
+      household:
+        members: [head, daughter, grandson]
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true, true]
+    council_tax_reduction_non_dep_deductions: [300, 0]
+
+# The English working-age local schemes reproduce the Default Scheme's para 9
+# and para 30(5): the head's own son normally resides with both jointly liable
+# people, so each bears half his deduction (Newham para 30B: £18.84 a week on
+# £384.62, £979.68 a year). 70% of each half of the £1,800 is £630.
+- name: Local CTR (Newham), jointly liable families share the deduction for the head's own in-unit son
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        employment_income: 20_000
+        weekly_hours: 37.5
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+    benunits:
+      benunit_1:
+        members: [head, son]
+        would_claim_council_tax_reduction: true
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_council_tax_reduction: true
+    households:
+      household:
+        members: [head, son, sharer]
+        rent: 12_000
+        region: LONDON
+        local_authority: NEWHAM
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+  output:
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    newham_council_tax_reduction_non_dep_deductions: [489.84, 489.84]
+    newham_council_tax_reduction: [140.16, 140.16]
+
+# SI 2012/2885 reg 9(2)(a): the applicant's own family are not its
+# non-dependants, so an individual deduction set for the applicant (here as
+# an input) is never charged to the applicant's own claim.
+- name: CTR, an applicant is never charged a deduction for itself
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 300
+      friend:
+        age: 30
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 200
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [friend]
+    households:
+      household:
+        members: [head, friend]
+        rent: 12_000
+  output:
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_non_dep_deductions: [200, 0]

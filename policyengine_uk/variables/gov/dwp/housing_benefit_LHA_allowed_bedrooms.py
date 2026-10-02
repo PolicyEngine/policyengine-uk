@@ -13,25 +13,39 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "couple, one for each other occupier aged 16 or over, and the "
         "children's bedrooms. Occupiers are everyone who lives in the "
         "dwelling as their home except a joint tenant outside the claimant's "
-        "household, so a householder's boarder or lodger adds a bedroom, as "
-        "does a non-dependant, but a sharer of the rent does not. A sharer's, "
-        "boarder's or lodger's own claim counts only their own family."
+        "household. So every member of the benefit unit aged 16 or over who "
+        "is not the claimant or partner adds a bedroom, such as a young "
+        "person in full-time education; so do a householder's boarder or "
+        "lodger and a non-dependant, but a sharer of the rent does not. A "
+        "sharer's, boarder's or lodger's own claim counts only their own "
+        "family."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/13D",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/13D",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/2",
     )
 
     def formula(benunit, period, parameters):
         person = benunit.members
+        # A child is a person under 16 (HB Regs 2006 reg 2(1)).
         aged_16_or_over = person("age", period) >= 16
+        # HB Regs 2006 reg 13D(3)(b): a person who is not a child, here a
+        # member of the benefit unit other than the claimant or partner.
+        family_rooms = benunit.sum(
+            aged_16_or_over & ~person("is_claimant_or_partner", period)
+        )
         head_family = person.benunit.any(person("is_household_head", period))
         sharer = person.benunit("liable_for_share_of_household_rent", period)
-        # HB Regs 2006 reg 13D(3), with "occupiers" as defined in 13D(12).
+        # Reg 13D(3)(b) for occupiers outside the family, as defined in
+        # 13D(12).
         other_occupier = aged_16_or_over & ~head_family & ~sharer
         is_head_family = benunit.any(person("is_household_head", period))
         other_occupiers = is_head_family * benunit.max(
             person.household.sum(other_occupier)
         )
-        return 1 + other_occupiers + bedrooms_for_children(benunit, period)
+        return (
+            1 + family_rooms + other_occupiers + bedrooms_for_children(benunit, period)
+        )

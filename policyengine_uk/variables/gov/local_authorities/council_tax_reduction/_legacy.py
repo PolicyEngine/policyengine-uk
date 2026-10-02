@@ -4,6 +4,17 @@ from policyengine_uk.variables.household.demographic.highest_education import (
 )
 
 
+def in_other_non_liable_family(person, period):
+    """Whether each person is in a family that neither claims Council Tax
+    Reduction for the household nor is liable for the rent: outside every
+    applicant's family, and not jointly liable or paying an applicant (SI
+    2012/2885 reg 9(2)(a), (d)-(e)). The eligibility for a non-dependant
+    deduction uses this, for the national and local schemes alike."""
+    return ~person.benunit(
+        "council_tax_reduction_claimant_benunit", period
+    ) & ~person.benunit("benunit_is_rent_liable", period)
+
+
 def is_full_time_student_non_dep(person, period):
     return (person("current_education", period) != EducationType.NOT_IN_EDUCATION) | (
         person("in_HE", period)
@@ -74,32 +85,47 @@ def local_non_dep_deductions(
     individual_deduction_variable,
     one_deduction_for_uc_couples=True,
 ):
-    deductions = benunit.members(individual_deduction_variable, period)
-    deduction_for_benunit = benunit.max(deductions)
+    # Every eligible person in the household is a non-dependant of each
+    # claiming family: the claimant's own family has only its benefit-unit
+    # non-dependants, and jointly liable sharers are not non-dependants (each
+    # scheme's para 9, the Default Scheme's wording).
+    person = benunit.members
+    deductions = person(individual_deduction_variable, period)
+    # Only one deduction for a couple, the higher (para 30(3) of each scheme;
+    # Oxford para 44), except that Merton's and Kingston upon Thames's
+    # schemes deduct for each member of a couple with a Universal Credit
+    # award. Any other adult in the family is a non-dependant in their own
+    # right.
+    claimant_or_partner = person("is_claimant_or_partner", period)
+    higher_of_couple = (
+        person.get_rank(person.benunit, -deductions, condition=claimant_or_partner) == 0
+    )
+    each_member_deducted = False
     if not one_deduction_for_uc_couples:
-        has_uc = benunit("universal_credit", period) > 0
-        deduction_for_benunit = where(
-            has_uc,
-            benunit.sum(deductions),
-            deduction_for_benunit,
-        )
-    is_benunit_head = benunit.members("is_benunit_head", period)
-    deductions_to_count = is_benunit_head * benunit.project(deduction_for_benunit)
-    deductions_in_household = benunit.max(
-        benunit.members.household.sum(deductions_to_count)
+        each_member_deducted = person.benunit("universal_credit", period) > 0
+    counted_member = where(
+        claimant_or_partner, higher_of_couple | each_member_deducted, True
+    )
+    counted = deductions * counted_member
+    # Members of the applicant's own family are not its non-dependants (para
+    # 9(2)(a)), as in council_tax_reduction_non_dep_deductions.
+    own_family_member = ~person(
+        "is_benefit_unit_non_dependant_for_legacy_benefits", period
+    )
+    non_dependants = benunit.max(person.household.sum(counted)) - benunit.sum(
+        counted * own_family_member
     )
     # A non-dependant of two or more jointly liable people is apportioned
     # equally between them (SI 2012/2885 Sch 1 para 8(5)).
     share = benunit("council_tax_reduction_joint_liability_share", period)
+    claims = benunit("council_tax_reduction_claimant_benunit", period)
     # No deduction from an applicant who, or whose partner, is blind or gets a
     # qualifying disability benefit, whatever other claimants in the household
     # get (the councils' schemes follow SI 2012/2886 Sch para 30(6)).
     applicant_exempt = benunit(
         "council_tax_reduction_applicant_has_non_dep_exemption", period
     )
-    return where(
-        applicant_exempt, 0, (deductions_in_household - deduction_for_benunit) * share
-    )
+    return where(applicant_exempt, 0, claims * share * non_dependants)
 
 
 def normal_gross_income_non_dep_deduction(
@@ -131,26 +157,38 @@ def normal_gross_income_non_dep_deduction(
     ]
     gross_income = add(person, period, gross_income_components)
     earned_income = add(person, period, earned_income_components)
-    weekly_benunit_gross_income = person.benunit.sum(gross_income) / WEEKS_IN_YEAR
-    weekly_benunit_earned_income = person.benunit.sum(earned_income) / WEEKS_IN_YEAR
-    benunit_weekly_hours = person.benunit.max(person("weekly_hours", period))
+    # A couple's joint income (para 30(4) of each scheme; Oxford para 44);
+    # another adult in the family is a non-dependant in their own right, on
+    # their own income.
+    claimant_or_partner = person("is_claimant_or_partner", period)
+    couple_gross_income = person.benunit.sum(gross_income * claimant_or_partner)
+    weekly_gross_income = (
+        where(claimant_or_partner, couple_gross_income, gross_income) / WEEKS_IN_YEAR
+    )
+    # Remunerative work is each person's own (para 10 and para 30(1)(a)). A
+    # couple paying one deduction pays the higher, so the working member's
+    # band on their joint income.
     in_remunerative_work = (
-        benunit_weekly_hours >= ctr.non_dep_deduction.remunerative_work_hours
+        person("weekly_hours", period) >= ctr.non_dep_deduction.remunerative_work_hours
     )
     weekly_deduction = where(
         in_remunerative_work,
-        ctr.non_dep_deduction.amount.calc(weekly_benunit_gross_income),
+        ctr.non_dep_deduction.amount.calc(weekly_gross_income),
         ctr.non_dep_deduction.amount.calc(0),
     )
     full_time_student = is_full_time_student_non_dep(person, period)
-    income_based_benefit = (
+    # Benefit-unit awards are the claimant's and partner's: another adult in
+    # the unit is not on them.
+    income_based_benefit = claimant_or_partner & (
         (person.benunit("income_support", period) > 0)
         | (person.benunit("jsa_income", period) > 0)
         | (person.benunit("esa_income", period) > 0)
         | (person.benunit("pension_credit", period) > 0)
     )
-    has_uc = person.benunit("universal_credit", period) > 0
-    no_earned_income = weekly_benunit_earned_income <= 0
+    has_uc = claimant_or_partner & (person.benunit("universal_credit", period) > 0)
+    # The award is the couple's, so it is calculated on their joint earned
+    # income.
+    no_earned_income = person.benunit.sum(earned_income * claimant_or_partner) <= 0
     exempt = (
         full_time_student
         | (exempt_income_based_benefits & income_based_benefit)
