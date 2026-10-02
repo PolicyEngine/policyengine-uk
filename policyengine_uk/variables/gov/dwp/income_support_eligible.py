@@ -88,8 +88,9 @@ class income_support_eligible(Variable):
         # income-related allowance. An income-related allowance covers the
         # couple, so it bars Income Support whichever of them has it: the
         # award on the claimant's and partner's reported amounts, after the
-        # same capital test as esa_income. When esa_income holds what the
-        # reported amounts give, either after that test (the formula) or as
+        # same screen as esa_income (esa_income_eligible). When esa_income
+        # holds what the reported amounts give, either after that screen (the
+        # formula) or as
         # their plain total (the disable_simulated_benefits reform), the
         # reports say whose award it is. When it holds anything else (an
         # award entered directly, or a reform that replaces or removes it),
