@@ -32,3 +32,14 @@ class gas_consumption(Variable):
     value_type = float
     unit = GBP
     uprating = "gov.economic_assumptions.indices.obr.consumer_price_index"
+
+
+class uses_energy_prepayment_meter(Variable):
+    label = "Uses an energy prepayment meter"
+    documentation = (
+        "Whether the household pays for domestic gas or electricity through "
+        "a prepayment meter."
+    )
+    entity = Household
+    definition_period = YEAR
+    value_type = bool
