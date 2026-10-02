@@ -58,6 +58,7 @@ FAMILY_READERS = [
     "targeted_childcare_entitlement_eligible",
     "would_claim_IS",
     "income_support_eligible",
+    "housing_benefit_applicable_income_disregard",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
