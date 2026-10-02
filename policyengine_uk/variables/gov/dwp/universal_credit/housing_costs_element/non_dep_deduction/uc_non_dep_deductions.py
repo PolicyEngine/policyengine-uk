@@ -23,5 +23,5 @@ class uc_non_dep_deductions(Variable):
         deductions = person("uc_individual_non_dep_deduction", period) * person(
             "is_non_dependant_of_household_head", period
         )
-        head_family = benunit.any(person("is_household_head", period))
+        head_family = benunit("benunit_contains_household_head", period)
         return head_family * benunit.max(person.household.sum(deductions))

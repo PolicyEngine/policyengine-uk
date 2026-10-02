@@ -61,6 +61,6 @@ class LHA_allowed_bedrooms(Variable):
         non_dependant = aged_16_or_over & person(
             "is_non_dependant_of_household_head", period
         )
-        head_family = benunit.any(person("is_household_head", period))
+        head_family = benunit("benunit_contains_household_head", period)
         non_dependants = head_family * benunit.max(person.household.sum(non_dependant))
         return 1 + non_dependants + bedrooms_for_children(benunit, period)

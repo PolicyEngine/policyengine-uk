@@ -26,11 +26,11 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         aged_16_or_over = person("age", period) >= 16
-        head_family = person.benunit.any(person("is_household_head", period))
+        head_family = person.benunit("benunit_contains_household_head", period)
         sharer = person.benunit("liable_for_share_of_household_rent", period)
         # HB Regs 2006 reg 13D(3), with "occupiers" as defined in 13D(12).
         other_occupier = aged_16_or_over & ~head_family & ~sharer
-        is_head_family = benunit.any(person("is_household_head", period))
+        is_head_family = benunit("benunit_contains_household_head", period)
         other_occupiers = is_head_family * benunit.max(
             person.household.sum(other_occupier)
         )
