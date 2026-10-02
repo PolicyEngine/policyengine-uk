@@ -1053,3 +1053,73 @@
   output:
     council_tax_reduction_claimant_benunit: [true, false]
     council_tax_reduction_non_dep_deductions: [200, 0]
+
+# HB reg 74(5) apportions the sharer's son between the joint occupiers; reg
+# 74(6) then removes the deduction from the blind sharer's claim only. The son
+# earns £384.62 a week: £105.20 (reg 74(2)(d)) x 52 = £5,470.40, half each.
+- name: HB, a blind sharer is exempt for its own adult son but the head still bears half
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+        is_blind: true
+      sharer_son:
+        age: 25
+        is_claimant_or_partner: false
+        employment_income: 20_000
+        weekly_hours: 37.5
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer, sharer_son]
+        liable_for_share_of_household_rent: true
+    households:
+      household:
+        members: [head, sharer, sharer_son]
+        rent: 12_000
+        country: SCOTLAND
+  output:
+    household_benefits_individual_non_dep_deduction: [0, 0, 5_470.40]
+    housing_benefit_non_dep_deductions: [2_735.20, 0]
+
+# A lodger on the PIP daily living component is exempt for its own son (reg
+# 74(6)); the householder, who is not exempt, still bears him in full.
+- name: HB, an exempt lodger is not charged for its own adult son but the householder is
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 45
+        is_claimant_or_partner: true
+        pip_dl: 3_000
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 25
+        is_claimant_or_partner: false
+        employment_income: 20_000
+        weekly_hours: 37.5
+    benunits:
+      benunit_1:
+        members: [householder]
+      benunit_2:
+        members: [lodger, lodger_son]
+    households:
+      household:
+        members: [householder, lodger, lodger_son]
+        rent: 9_000
+        country: SCOTLAND
+  output:
+    housing_benefit_non_dep_deductions: [5_470.40, 0]

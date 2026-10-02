@@ -14,10 +14,11 @@ class housing_benefit_non_dep_deductions(Variable):
         "of a family liable for the rent who are not its claimant, partner or "
         "a child or young person. Another family's non-dependants pay one "
         "deduction per couple, the higher of the two members' amounts, and "
-        "one for each other member, apportioned between joint occupiers by "
-        "their shares of the rent. A non-dependant in a family's own benefit "
-        "unit is that family's alone, including a boarder's or lodger's. None "
-        "if the claimant or partner is exempt."
+        "one for each other member. Each non-dependant is apportioned between "
+        "joint occupiers by their shares of the rent, whichever family they "
+        "are in. A boarder or lodger also bears the whole deduction for a "
+        "non-dependant in its own benefit unit. None if the claimant or "
+        "partner is exempt."
     )
     definition_period = YEAR
     unit = GBP

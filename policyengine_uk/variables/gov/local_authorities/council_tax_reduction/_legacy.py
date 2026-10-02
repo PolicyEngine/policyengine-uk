@@ -5,11 +5,14 @@ from policyengine_uk.variables.household.demographic.highest_education import (
 
 
 def in_other_non_liable_family(person, period):
-    """Whether each person is in a family other than the claimant's that is
-    not liable for the rent: all its members aged 18 or over are the
-    claimant's non-dependants (SI 2012/2885 reg 9(2)(a), (d)-(e)). The
-    eligibility for a non-dependant deduction and the local schemes'
-    aggregation both use this, so they stay on one definition."""
+    """Whether each person is in a family that is neither the oldest adult's
+    nor liable for the rent. This stands in for SI 2012/2885 reg 9(2)(a) and
+    (d)-(e): such a family is outside the claimant's family, and not jointly
+    liable or paying the claimant. It is a proxy: a family jointly liable for
+    the council tax but paying no rent is wrongly included, which #2009's
+    claimant-family test fixes. The eligibility for a non-dependant deduction
+    and the local schemes' aggregation both use this, so they stay on one
+    definition."""
     return ~person.benunit("benunit_contains_household_head", period) & ~person.benunit(
         "benunit_is_rent_liable", period
     )
