@@ -13,7 +13,8 @@ class is_on_income_related_esa(Variable):
         "both on it when their award (claimant_or_partner_esa_income) is "
         "positive. Any other member of the benefit unit, such as a "
         "non-dependent adult, claims in their own right and is on it only if "
-        "they report an award themselves."
+        "they report an award themselves while the benefit unit's modelled "
+        "income-related ESA is positive."
     )
     definition_period = YEAR
     reference = (
@@ -23,5 +24,9 @@ class is_on_income_related_esa(Variable):
 
     def formula(person, period, parameters):
         couple_award = person.benunit("claimant_or_partner_esa_income", period) > 0
-        own_award = person("esa_income_reported", period) > 0
+        # Their own report, while the model pays income-related ESA in the
+        # benefit unit (so not once a reform removes or zeroes it).
+        own_award = (person("esa_income_reported", period) > 0) & (
+            person.benunit("esa_income", period) > 0
+        )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

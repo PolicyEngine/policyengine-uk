@@ -98,6 +98,9 @@
 
 # Scottish Child Payment: the individual responsible for the child has been
 # awarded a qualifying benefit (SSI 2020/351 reg 18(e)-(f), regs 9, 12 and 14).
+# Responsibility runs through the individual's or partner's Child Benefit,
+# Pension Credit or Universal Credit award, or kinship care (reg 12(1)(b)); the
+# model takes the responsible individual to be the claimant or partner.
 # Universal Credit, tax credits and Pension Credit are entered as 0 so the
 # income-related award is the only possible qualifying benefit.
 
@@ -214,7 +217,7 @@
     is_scp_eligible: [false, true, false]
 
 # Targeted childcare (England's two-year-old offer): the child's parent is
-# entitled to a qualifying benefit (SI 2014/2147 reg 2(1), "eligible child").
+# entitled to a qualifying benefit (SI 2014/2147 reg 1(2), "eligible child").
 # The other routes (UC, CTC and WTC criteria, Guarantee Credit) are switched
 # off with inputs.
 

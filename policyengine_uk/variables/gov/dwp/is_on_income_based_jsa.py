@@ -13,7 +13,7 @@ class is_on_income_based_jsa(Variable):
         "award (claimant_or_partner_jsa_income) is positive. Any other member "
         "of the benefit unit, such as a non-dependent adult, claims in their "
         "own right and is on it only if they report an award themselves while "
-        "income-based JSA is in payment."
+        "the benefit unit's modelled income-based JSA is positive."
     )
     definition_period = YEAR
     reference = (
@@ -22,7 +22,10 @@ class is_on_income_based_jsa(Variable):
     )
 
     def formula(person, period, parameters):
-        active = parameters(period).gov.dwp.JSA.income.active
         couple_award = person.benunit("claimant_or_partner_jsa_income", period) > 0
-        own_award = active & (person("jsa_income_reported", period) > 0)
+        # Their own report, while the model pays income-based JSA in the
+        # benefit unit (so not once it closes or a reform removes it).
+        own_award = (person("jsa_income_reported", period) > 0) & (
+            person.benunit("jsa_income", period) > 0
+        )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

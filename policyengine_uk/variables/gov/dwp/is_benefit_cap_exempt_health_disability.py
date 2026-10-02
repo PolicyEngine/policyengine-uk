@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.inputs import entered_directly
 
 # HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) name, for each benefit,
 # whose receipt (or entitlement) lifts the cap.
@@ -131,19 +130,18 @@ class is_benefit_cap_exempt_health_disability(Variable):
         # responsibilities (UC Regs 2013 regs 27(1), 29(1)); the model does
         # not have the reg 28 waiting period or regs 29(5)-(6), 30(3). Where
         # reg 29(4) leaves a carer with limited capability only the LCWRA
-        # element, that element exempts. An element entered directly counts
-        # as entered.
-        def element_entered(element):
-            if not entered_directly(benunit, element, period):
-                return False
-            return benunit(element, period) > 0
-
-        lcwra_element = benunit.any(
-            claimant & person("uc_limited_capability_for_WRA", period)
-        ) | element_entered("uc_LCWRA_element")
-        carer_element = benunit.any(
-            claimant & person("is_carer_for_benefits", period)
-        ) | element_entered("uc_carer_element")
+        # element, that element exempts. An element is taken as entered
+        # directly, and so included, when it is positive although no member's
+        # circumstances give it (decided by value, as for esa_income in
+        # claimant_or_partner_esa_income).
+        lcwra = person("uc_limited_capability_for_WRA", period)
+        lcwra_element = benunit.any(claimant & lcwra) | (
+            (benunit("uc_LCWRA_element", period) > 0) & ~benunit.any(lcwra)
+        )
+        carer = person("is_carer_for_benefits", period)
+        carer_element = benunit.any(claimant & carer) | (
+            (benunit("uc_carer_element", period) > 0) & ~benunit.any(carer)
+        )
 
         # HB reg 75E(2): the claimant is, or the couple are jointly, entitled
         # to working tax credit.

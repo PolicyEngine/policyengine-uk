@@ -12,8 +12,7 @@ the child's parent, or the person themselves:
   exemption: CTR (Default Scheme) (England) Regs 2012, Schedule.
 - The tax credit income test: TCA 2002 s.7(2), SI 2002/2008 reg 4.
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
-- The benefit cap: HB Regs 2006 reg 75F(1)(a).
-- Targeted childcare: SI 2014/2147 reg 2(1).
+- Targeted childcare: SI 2014/2147 reg 1(2).
 - Maintenance loans for students entitled to benefits: SI 2011/1986 regs
   61(2) and 71(1)(h).
 
@@ -31,7 +30,9 @@ adult) claims in their own right, so:
   claimant and partner) or they report one themselves (anyone else).
 
 Roles are given explicitly (is_claimant_or_partner), so the properties test
-the readers rather than role inference. Each example builds many families in
+the readers rather than role inference. The take-up mode is fixed
+(claims_all_entitled_benefits false): that flag sums reports across the
+whole simulation, so with it a report anywhere can change would_claim_IS. Each example builds many families in
 one simulation, in separate households and benefit units.
 """
 
@@ -54,7 +55,6 @@ FAMILY_READERS = [
     "council_tax_reduction_applicable_income",
     "council_tax_reduction_relevant_income_based_benefit",
     "tax_credits_applicable_income",
-    "is_benefit_cap_exempt_health_disability",
     "targeted_childcare_entitlement_eligible",
     "would_claim_IS",
     "income_support_eligible",
@@ -143,7 +143,13 @@ def situation(units, year=YEAR):
             people[name] = {k: {year: v} for k, v in inputs.items()}
             people[name]["is_claimant_or_partner"] = {year: claimant_or_partner}
             names.append(name)
-        benunits[f"b{i}"] = {"members": names}
+        # claims_all_entitled_benefits sums reports across the whole
+        # simulation, so fix the take-up mode per benefit unit: the variants
+        # must not share it.
+        benunits[f"b{i}"] = {
+            "members": names,
+            "claims_all_entitled_benefits": {year: False},
+        }
         households[f"h{i}"] = {
             "members": names,
             **{k: {year: v} for k, v in household.items()},
@@ -262,22 +268,28 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
     units = [(*family, other) for family, other in drawn]
     sim = Simulation(situation=situation(units))
     claimant_or_partner = sim.calculate("is_claimant_or_partner", YEAR)
-    for person_variable, couple_award, report in [
+    for person_variable, couple_award, report, total_award in [
         (
             "is_on_income_related_esa",
             "claimant_or_partner_esa_income",
             "esa_income_reported",
+            "esa_income",
         ),
         (
             "is_on_income_based_jsa",
             "claimant_or_partner_jsa_income",
             "jsa_income_reported",
+            "jsa_income",
         ),
-        ("is_on_income_support", "income_support", "income_support_reported"),
+        ("is_on_income_support", "income_support", "income_support_reported", None),
     ]:
         on = sim.calculate(person_variable, YEAR)
         couple = sim.calculate(couple_award, YEAR, map_to="person") > 0
         own = sim.calculate(report, YEAR) > 0
+        if total_award is not None:
+            # Another member's own report counts while the benefit unit's
+            # modelled award is positive.
+            own = own & (sim.calculate(total_award, YEAR, map_to="person") > 0)
         expected = np.where(claimant_or_partner, couple, own)
         assert np.array_equal(on, expected), (person_variable, units)
 

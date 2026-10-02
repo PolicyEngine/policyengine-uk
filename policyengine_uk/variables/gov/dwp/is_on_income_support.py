@@ -15,7 +15,7 @@ class is_on_income_support(Variable):
         "on it when it is positive. Any other member of the benefit unit, "
         "such as a non-dependent adult, claims in their own right and is on "
         "it only if they report an award themselves while Income Support is "
-        "in payment."
+        "in payment and no reform removes it."
     )
     definition_period = YEAR
     reference = (
@@ -25,6 +25,14 @@ class is_on_income_support(Variable):
 
     def formula(person, period, parameters):
         active = parameters(period).gov.dwp.income_support.active
+        removed = person.simulation.tax_benefit_system.get_variable(
+            "income_support"
+        ).is_neutralized
         couple_award = person.benunit("income_support", period) > 0
-        own_award = active & (person("income_support_reported", period) > 0)
+        # Their own report, while Income Support is in payment and no reform
+        # removes it. The model calculates the award only for the claimant
+        # and partner, so it cannot gate another member's own claim.
+        own_award = (
+            active & (not removed) & (person("income_support_reported", period) > 0)
+        )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

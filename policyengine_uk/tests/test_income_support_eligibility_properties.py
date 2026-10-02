@@ -5,20 +5,26 @@ paras (c), (f), (g) and (h), for "the other member of the couple". No new
 claim can be made (UC (Transitional Provisions) Regs 2014 reg 6A(1)) and a
 partner who takes over an award does so by claiming (Claims and Payments
 Regs 1987 reg 4(4)), so the claimant is the partner with the existing award.
-Nobody else in a benefit unit is named, so:
+No adult outside the couple is named, so:
 
-- adding a member who is neither the claimant, the partner nor a child or
-  young person in the family (an adult outside the family, or a child placed
-  by a local authority, IS reg 16(4)) never changes income_support_eligible,
-  whatever that member's age, ESA, Income Support or caring;
+- adding an adult who is neither the claimant, the partner nor a young person
+  in the family never changes income_support_eligible, whatever that adult's
+  age, ESA, Income Support or caring. The declared exception, outside the
+  values drawn here, is an esa_income entered directly that the new adult's
+  report makes equal to what the reports give: it is then read through the
+  reports (test_income_support_esa_entered_directly.py);
 - income_support_eligible equals a family-by-family reading of the model's
   gate: one of the claimant and partner reports Income Support, is under
-  state pension age, is a carer (or a lone parent of a child aged 5 or under,
-  the model's reading of Sch 1B para 1) and has no contributory ESA
+  state pension age, is in a prescribed category the model covers (a carer;
+  a lone parent of a child aged 5 or under, the model's reading of Sch 1B
+  para 1, counting only children in the household, reg 16(4); or a single
+  claimant with a child placed by a local authority, para 2) and has no
+  contributory ESA
   (s.124(1)(aa), (e), (h)); neither has income-related ESA (s.124(1)(h)),
   meaning the award on their reported amounts after the ESA capital test, or
-  an esa_income entered directly; and capital is within the Income Support
-  limit.
+  an esa_income the reported amounts do not explain (one that equals neither
+  the award on everyone's reported amounts nor their plain total); and
+  capital is within the Income Support limit.
 
 The second property is a reference check of the bounded model gate, not of
 legal entitlement: caring, ESA and Income Support are the model's reported
@@ -67,12 +73,21 @@ PRIMED_CLAIMANT = {
 def families(draw):
     """A claimant, an optional partner, up to three dependants and capital.
 
-    Half the families are drawn at random. The rest are primed to sit at the
-    edge of eligibility, where an added member could change the result: a
-    claimant who reports Income Support and cares, or a lone parent who
-    reports it, does not care and has only children over 5.
+    Some families are drawn at random. The rest are primed to sit at the
+    edge of eligibility:
+
+    - carer: a claimant who reports Income Support and cares;
+    - lone_parent: a lone parent who reports it, does not care and has only
+      children over 5;
+    - split_couple: one partner reports Income Support but fails a
+      condition, and the other qualifies but has no award, so the carer
+      cannot take the award over.
+
+    A quarter of families also have a child placed by a local authority.
     """
-    shape = draw(st.sampled_from(["random", "random", "carer", "lone_parent"]))
+    shape = draw(
+        st.sampled_from(["random", "random", "carer", "lone_parent", "split_couple"])
+    )
     n_dependants = draw(st.integers(1 if shape == "lone_parent" else 0, 3))
     dependants = []
     for _ in range(n_dependants):
@@ -89,9 +104,27 @@ def families(draw):
         dependants.append(dependant)
     eldest_dependant = max([d["age"] for d in dependants], default=0)
     adults = [draw(adult_inputs(min_age=max(18, eldest_dependant + 16)))]
-    if shape != "lone_parent" and draw(st.booleans()):
+    if shape == "split_couple" or (shape != "lone_parent" and draw(st.booleans())):
         adults.append(draw(adult_inputs()))
-    if shape == "carer":
+    if shape == "split_couple":
+        failure = draw(st.sampled_from(["over_qualifying_age", "no_category", "esa"]))
+        adults[0].update(
+            PRIMED_CLAIMANT,
+            age=draw(st.integers(max(adults[0]["age"], 66), 90))
+            if failure == "over_qualifying_age"
+            else min(adults[0]["age"], 65),
+            receives_carer_benefit=failure != "no_category",
+            care_hours=0,
+            esa_contrib_reported=3_000 if failure == "esa" else 0,
+        )
+        adults[1].update(
+            age=min(adults[1]["age"], 65),
+            receives_carer_benefit=True,
+            income_support_reported=0,
+            esa_income_reported=0,
+            esa_contrib_reported=0,
+        )
+    elif shape == "carer":
         adults[0].update(
             PRIMED_CLAIMANT, age=min(adults[0]["age"], 65), receives_carer_benefit=True
         )
@@ -102,6 +135,14 @@ def families(draw):
             receives_carer_benefit=False,
             care_hours=0,
         )
+    if draw(st.integers(0, 3)) == 0:
+        dependants.append(
+            {
+                # Up to 17: para 2 covers only a placed child under 16.
+                "age": draw(st.integers(0, 17)),
+                "is_looked_after_by_local_authority": True,
+            }
+        )
     for adult in adults:
         adult["is_parent"] = n_dependants > 0
     capital = draw(st.sampled_from([0, 6_250, 10_000, 20_000]))
@@ -110,22 +151,27 @@ def families(draw):
 
 @st.composite
 def excluded_members(draw):
-    """A member who is neither claimant, partner nor in the family.
+    """An adult who is neither claimant, partner nor in the family.
 
-    Either an adult not in education (so a 16 to 19 year old is not a
-    qualifying young person), or a child placed by a local authority.
+    They are not in education, so a 16 to 19 year old is not a qualifying
+    young person. Most are primed with what barred or opened the claim when
+    every member counted: over state pension age, income-related ESA, an
+    Income Support report, or caring.
     """
-    if draw(st.booleans()):
-        # Mostly 5 or under, the ages that could open the lone-parent route.
-        return {
-            "age": draw(st.one_of(st.integers(0, 5), st.integers(6, 15))),
-            "is_looked_after_by_local_authority": True,
-            "receives_carer_benefit": draw(st.booleans()),
-        }
-    return {
+    adult = {
         **draw(adult_inputs(min_age=16)),
         "current_education": "NOT_IN_EDUCATION",
     }
+    primed = draw(st.sampled_from(["random", "elderly", "esa", "award", "carer"]))
+    if primed == "elderly":
+        adult["age"] = draw(st.integers(66, 90))
+    elif primed == "esa":
+        adult["esa_income_reported"] = 3_000
+    elif primed == "award":
+        adult["income_support_reported"] = 1_000
+    elif primed == "carer":
+        adult["receives_carer_benefit"] = True
+    return adult
 
 
 @st.composite
@@ -137,8 +183,10 @@ def input_settings(draw, n):
     a simulation input and the formula does not run.
     """
     capital_as_savings = draw(st.booleans())
+    # £4,000 is neither a total of the reported amounts drawn here nor such a
+    # total less tariff income, so it is always read as entered directly.
     esa_income = (
-        draw(st.lists(st.sampled_from([0, 3_000]), min_size=n, max_size=n))
+        draw(st.lists(st.sampled_from([0, 4_000, 4_000]), min_size=n, max_size=n))
         if draw(st.booleans())
         else None
     )
@@ -152,8 +200,12 @@ def label(units, capital_as_savings, esa_income):
     )
     event("esa_income entered directly" if esa_income else "esa_income calculated")
     extras = [extra for *_, extra in units if extra is not None]
-    if any(e.get("is_looked_after_by_local_authority") for e in extras):
-        event("placed child added")
+    if any(
+        d.get("is_looked_after_by_local_authority")
+        for _, dependants, *_ in units
+        for d in dependants
+    ):
+        event("family with a placed child")
     if any(
         e.get("income_support_reported") or e.get("esa_income_reported") for e in extras
     ):
@@ -196,6 +248,9 @@ SETTINGS = settings(
 # lone parent's family, a direct esa_income beside an added member's ESA), so
 # it runs more examples.
 INVARIANCE_SETTINGS = settings(SETTINGS, max_examples=25)
+# The differential property needs a directly entered award to meet an otherwise
+# eligible family, so it runs as many.
+DIFFERENTIAL_SETTINGS = settings(SETTINGS, max_examples=25)
 
 FAMILIES = st.lists(st.tuples(families(), excluded_members()), min_size=1, max_size=8)
 
@@ -229,19 +284,26 @@ def reference_eligibility(adults, dependants, capital, esa_income, sp_age, param
     """The model's Income Support gate, read family by family."""
     IS = parameters.gov.dwp.income_support
     ESA = parameters.gov.dwp.ESA.income.capital
-    child_ages = [d["age"] for d in dependants if d["age"] < 16]
+    # A child placed by a local authority is not a member of the household
+    # (reg 16(4)), so not a child for para 1, but brings a single claimant
+    # within para 2.
+    placed = [d for d in dependants if d.get("is_looked_after_by_local_authority")]
+    in_household = [d for d in dependants if d not in placed]
+    child_ages = [d["age"] for d in in_household if d["age"] < 16]
     lone_parent_with_young_child = (
         len(adults) == 1
-        and len(dependants) > 0
+        and len(in_household) > 0
         and min(child_ages, default=math.inf)
         <= IS.eligibility.lone_parent_youngest_child_age_limit
     )
+    # A child is under 16 (SSCBA s.137(1)).
+    single_with_placed_child = len(adults) == 1 and any(d["age"] < 16 for d in placed)
 
     def is_claimant(adult, over_qualifying_age):
         carer = adult["receives_carer_benefit"] or adult["care_hours"] >= 35
         return (
             adult["income_support_reported"] > 0
-            and (carer or lone_parent_with_young_child)
+            and (carer or lone_parent_with_young_child or single_with_placed_child)
             and not over_qualifying_age
             and adult["esa_contrib_reported"] == 0
         )
@@ -267,7 +329,26 @@ def reference_eligibility(adults, dependants, capital, esa_income, sp_age, param
     )
 
 
-@SETTINGS
+def explained_by_reports(esa_income, reported_total, capital, parameters):
+    """Whether an esa_income equals what the reported amounts give: the
+    award after the capital test, or their plain total."""
+    ESA = parameters.gov.dwp.ESA.income.capital
+    tariff = (
+        math.ceil(
+            max(0, capital - ESA.tariff_income.threshold) / ESA.tariff_income.step
+        )
+        * ESA.tariff_income.amount
+        * 52
+    )
+    award = (
+        max(0, reported_total - tariff)
+        if reported_total > 0 and capital <= ESA.limit
+        else 0
+    )
+    return abs(esa_income - award) <= 0.005 or abs(esa_income - reported_total) <= 0.005
+
+
+@DIFFERENTIAL_SETTINGS
 @given(FAMILIES, st.data())
 def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     capital_as_savings, esa_income = data.draw(input_settings(len(drawn)))
@@ -280,11 +361,22 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     parameters = sim.tax_benefit_system.parameters(YEAR)
     start = 0
     for i, (adults, dependants, capital, extra) in enumerate(units):
+        # An esa_income the reported amounts explain is read through them,
+        # like a calculated one.
+        entered = None
+        if esa_income is not None:
+            reported_total = sum(
+                member.get("esa_income_reported", 0) for member in adults + [extra]
+            )
+            if not explained_by_reports(
+                esa_income[i], reported_total, capital, parameters
+            ):
+                entered = esa_income[i]
         expected = reference_eligibility(
             adults,
             dependants,
             capital,
-            None if esa_income is None else esa_income[i],
+            entered,
             sp_age[start : start + len(adults)],
             parameters,
         )
