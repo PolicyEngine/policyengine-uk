@@ -10,12 +10,13 @@ class council_tax_reduction_joint_liability_share(Variable):
         "tax with people other than their partner, the council tax used for "
         "the maximum reduction is divided by the number of people jointly and "
         "severally liable, and a deduction for a non-dependant of two or more "
-        "of them is apportioned equally between them. The model takes the "
-        "claimants and partners of the families that claim (the household "
-        "head's family and any family liable for a share of the rent) as "
-        "those jointly liable for the council tax (residents with the same "
-        "interest, Local Government Finance Act 1992 s.6 and s.75, and their "
-        "partners, s.9 and s.77) and follows the regulations' wording, "
+        "of them is apportioned equally between them. The people jointly "
+        "liable are those the model treats as liable for the council tax "
+        "(council_tax_reduction_liable_person: the household head, the "
+        "head's partner and the claimants and partners of families liable "
+        "for a share of the rent, each aged 18 or over; Local Government "
+        "Finance Act 1992 s.6, s.9, s.75, s.77 and s.77A). The model follows "
+        "the regulations' wording, "
         "dividing by every person liable, the claimant's partner included. "
         "Students are not excluded from the count. Otherwise the share is one."
     )
@@ -23,6 +24,10 @@ class council_tax_reduction_joint_liability_share(Variable):
     unit = "/1"
     reference = (
         "https://www.legislation.gov.uk/ukpga/1992/14/section/6",
+        "https://www.legislation.gov.uk/ukpga/1992/14/section/9",
+        "https://www.legislation.gov.uk/ukpga/1992/14/section/75",
+        "https://www.legislation.gov.uk/ukpga/1992/14/section/77",
+        "https://www.legislation.gov.uk/ukpga/1992/14/section/77A",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/7",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/8",
         "https://www.legislation.gov.uk/wsi/2013/3029",
@@ -33,9 +38,7 @@ class council_tax_reduction_joint_liability_share(Variable):
         # SI 2012/2885 Sch 1 para 7(3)-(4) and para 8(5); the Welsh and
         # Scottish schemes have the same wording.
         person = benunit.members
-        liable = person("is_claimant_or_partner", period) & person.benunit(
-            "council_tax_reduction_claimant_benunit", period
-        )
+        liable = person("council_tax_reduction_liable_person", period)
         liable_people = benunit.max(person.household.sum(liable))
         in_family = benunit.sum(liable)
         jointly_with_others = (in_family > 0) & (liable_people > in_family)
