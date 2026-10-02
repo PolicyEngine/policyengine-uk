@@ -1,0 +1,153 @@
+# Winter heating payments in household income. Scotland's Pension Age Winter
+# Heating Payment (pawhp) replaced the Winter Fuel Payment
+# (winter_fuel_allowance) from the 2024 qualifying week, so it counts in
+# household_benefits, household_net_income, hbai_household_net_income and
+# hbai_benefits exactly as the Winter Fuel Payment does.
+#
+# Each household's other income is pinned: a State Pension entered directly,
+# Pension Credit entered on the benefit unit, and no council tax or TV
+# licence. The margin of 10p covers the expected Stamp Duty Land Tax that
+# household_net_income subtracts (a few pence for these households).
+# Payment amounts: SI 2025/969 reg. 3 (Winter Fuel Payment, 2025); SSI
+# 2024/351 reg. 10 as made (PAWHP, 2024) and as substituted by SSI 2025/282
+# (2025), with the 2026 amounts from SSI 2026/170.
+
+- name: 2025 a Scottish pensioner's PAWHP counts in household and HBAI income
+  # Reg. 10(5)(a): under 80, living alone, £203.40.
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension_reported: 12_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        council_tax: 0
+        tv_licence: 0
+  output:
+    winter_fuel_allowance: 0
+    pawhp: 203.40
+    household_benefits: 12_203.40
+    household_net_income: 12_203.40
+    hbai_benefits: 12_203.40
+    hbai_household_net_income: 12_203.40
+
+- name: 2025 the same pensioner in England has the Winter Fuel Payment counted the same way
+  # SI 2025/969 reg. 3(1): under 80, living alone, £200.
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension_reported: 12_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        council_tax: 0
+        tv_licence: 0
+  output:
+    winter_fuel_allowance: 200
+    pawhp: 0
+    household_benefits: 12_200
+    household_net_income: 12_200
+    hbai_benefits: 12_200
+    hbai_household_net_income: 12_200
+
+- name: 2026 a Scottish couple under 80 not on a relevant benefit has both shared payments counted
+  # Reg. 10(5)(b)(i) at the SSI 2026/170 amount: £105.55 each. Neither
+  # State Pension reaches the personal allowance, so no income tax.
+  period: 2026
+  absolute_error_margin: 0.1
+  input:
+    people:
+      partner_1:
+        age: 70
+        state_pension_reported: 12_000
+      partner_2:
+        age: 72
+        state_pension_reported: 12_000
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+        council_tax: 0
+        tv_licence: 0
+  output:
+    pension_age_winter_heating_payment: [105.55, 105.55]
+    pawhp: 211.10
+    household_benefits: 24_211.10
+    household_net_income: 24_211.10
+    hbai_benefits: 24_211.10
+    hbai_household_net_income: 24_211.10
+
+- name: 2024 a Scottish pensioner on Pension Credit has PAWHP counted with the Pension Credit
+  # Reg. 10(c) as made: under 80 and entitled to a relevant benefit, £200.
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        council_tax: 0
+        tv_licence: 0
+  output:
+    winter_fuel_allowance: 0
+    pawhp: 200
+    cost_of_living_support_payment: 0
+    household_benefits: 11_200
+    household_net_income: 11_200
+    hbai_benefits: 11_200
+    hbai_household_net_income: 11_200
+
+- name: 2023 a Scottish pensioner keeps the Winter Fuel Payment and the pensioner Cost-of-Living Payment
+  # SI 2000/729 covered Great Britain up to the 2023 qualifying week, so the
+  # payment is the Winter Fuel Payment (£200 under 80) and there is no PAWHP.
+  # The £300 Pensioner Cost-of-Living Payment is keyed on the Winter Fuel
+  # Payment, so counting PAWHP as income leaves it unchanged.
+  period: 2023
+  absolute_error_margin: 0.1
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension_reported: 12_000
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+        council_tax: 0
+        tv_licence: 0
+  output:
+    winter_fuel_allowance: 200
+    pawhp: 0
+    cost_of_living_support_payment: 300
