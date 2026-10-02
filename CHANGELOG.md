@@ -1,3 +1,10 @@
+## [2.105.1] - 2026-10-02
+
+### Fixed
+
+- Apply the Local Housing Allowance cap to the eligible rent before the Housing Benefit taper and non-dependant deductions, as SI 2006/213 regs 12D(2)(a), 70 and 71 (SI 2006/214 regs 12D, 50 and 51 at pension age) require, rather than capping the tapered rent.
+
+
 ## [2.105.0] - 2026-10-02
 
 ### Added
