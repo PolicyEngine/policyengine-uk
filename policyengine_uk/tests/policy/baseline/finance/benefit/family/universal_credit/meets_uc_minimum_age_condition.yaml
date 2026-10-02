@@ -1,0 +1,217 @@
+# WRA 2012 s.4(1)(a): standard minimum age = 18.
+# UC Regulations 2013 reg.8(1): reduced minimum age = 16.
+# https://www.legislation.gov.uk/ukpga/2012/5/section/4
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/8
+
+- name: Standard UC minimum age starts at 18
+  period: 2025
+  input:
+    age: [15, 16, 17, 18, 19]
+  output:
+    # No exception applies: age >= 18.
+    meets_uc_minimum_age_condition: [false, false, false, true, true]
+
+- name: LCWRA proxy permits 16 and 17 year old claimants
+  period: 2025
+  input:
+    age: [15, 16, 17, 18]
+    uc_limited_capability_for_WRA: [true, true, true, true]
+    uc_reported_capital: [0, 0, 0, 0]
+  output:
+    # Reg.8(1)(a)-(b) proxy: true only once age >= 16.
+    meets_uc_minimum_age_condition: [false, true, true, true]
+    is_uc_eligible: [false, true, true, true]
+
+- name: Caring hours proxy starts at 35 hours for age 16 and over
+  period: 2025
+  input:
+    age: [15, 16, 16, 17, 17]
+    care_hours: [35, 34, 35, 34, 35]
+    uc_reported_capital: [0, 0, 0, 0, 0]
+  output:
+    # Reg.8(1)(c) proxy: (age >= 16) AND (hours >= 35).
+    meets_uc_minimum_age_condition: [false, false, true, false, true]
+    is_uc_eligible: [false, false, true, false, true]
+
+- name: Receipt of a carer benefit also meets the caring proxy
+  period: 2025
+  input:
+    age: 16
+    care_hours: 0
+    receives_carer_benefit: true
+    uc_reported_capital: 0
+  output:
+    # Reg.8(1)(c) proxy: age >= 16 AND carer benefit receipt.
+    meets_uc_minimum_age_condition: true
+    is_uc_eligible: true
+
+- name: A 16 year old claimant responsible for a child meets the reduced age
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 16
+        is_benunit_head: true
+      child:
+        age: 1
+        is_benunit_head: false
+    benunits:
+      family:
+        members: [claimant, child]
+        uc_reported_capital: 0
+  output:
+    # Reg.8(1)(d): claimant age 16 >= 16 and nonclaimant child age 1 < 16.
+    is_uc_claimant: [true, false]
+    meets_uc_minimum_age_condition: [true, false]
+    is_uc_eligible: true
+
+- name: A 15 year old parent remains below the reduced minimum age
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 15
+        is_uc_claimant: true
+      child:
+        age: 1
+        is_uc_claimant: false
+    benunits:
+      family:
+        members: [claimant, child]
+        uc_reported_capital: 0
+  output:
+    # Even with responsibility, 15 < 16.
+    meets_uc_minimum_age_condition: [false, false]
+    is_uc_eligible: false
+
+- name: Responsibility for a child aged 15 still meets reg 8 paragraph d
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        is_uc_claimant: true
+      child:
+        age: 15
+        is_uc_claimant: false
+    benunits:
+      family:
+        members: [claimant, child]
+        uc_reported_capital: 0
+  output:
+    # Responsibility need not mean biological parenthood: 17 >= 16 and
+    # the nonclaimant aged 15 is still below the child age limit of 16.
+    meets_uc_minimum_age_condition: [true, false]
+    is_uc_eligible: true
+
+- name: Responsibility for a qualifying young person alone is not reg 8 paragraph d
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        is_uc_claimant: true
+      young_person:
+        age: 16
+        is_uc_claimant: false
+        is_in_non_advanced_education: true
+    benunits:
+      family:
+        members: [claimant, young_person]
+        uc_reported_capital: 0
+  output:
+    # Reg.8(1)(d) says child (age < 16), so age 16 does not qualify.
+    meets_uc_minimum_age_condition: [false, false]
+    is_uc_eligible: false
+
+- name: A claimant cannot count another claimant as a dependent child
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        is_uc_claimant: true
+      partner:
+        age: 15
+        is_uc_claimant: true
+    benunits:
+      family:
+        members: [claimant, partner]
+        uc_reported_capital: 0
+  output:
+    # There are zero nonclaimant children; neither claimant meets age 18.
+    meets_uc_minimum_age_condition: [false, false]
+    is_uc_eligible: false
+
+- name: An under 18 claimant cannot gain eligibility from an older dependent student
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        is_benunit_head: true
+        is_parent: true
+      young_person:
+        age: 18
+        is_benunit_head: false
+        is_in_non_advanced_education: true
+    benunits:
+      family:
+        members: [claimant, young_person]
+        uc_reported_capital: 0
+  output:
+    # The claimant is under 18 with no child under 16; the 18-year-old is
+    # not a claimant. Zero claimants satisfy the age conditions.
+    is_uc_claimant: [true, false]
+    meets_uc_minimum_age_condition: [false, true]
+    is_uc_eligible: false
+
+- name: A pension age claimant cannot gain eligibility from an 18 year old dependant
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_parent: true
+        is_benunit_head: true
+      young_person:
+        age: 18
+        is_benunit_head: false
+        is_in_non_advanced_education: true
+    benunits:
+      family:
+        members: [claimant, young_person]
+        uc_reported_capital: 0
+  output:
+    # WRA ss.3-4 apply to claimants: 70 >= SPA; age 18 is a nonclaimant.
+    # Previously the dependent student's age alone made this unit eligible.
+    is_uc_claimant: [true, false]
+    is_uc_eligible: false
+
+- name: Mixed age couple retains eligibility through its younger claimant
+  period: 2025
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 60
+    benunits:
+      couple:
+        members: [older, younger]
+        uc_reported_capital: 0
+  output:
+    # Reg.3(2)(a): one claimant is age 60, between minimum age 18 and SPA.
+    is_uc_claimant: [true, true]
+    is_uc_eligible: true
+
+- name: Reduced minimum age does not bypass the capital limit
+  period: 2025
+  input:
+    age: [16, 17]
+    uc_limited_capability_for_WRA: [true, true]
+    uc_reported_capital: [16_000, 16_001]
+  output:
+    # Both ages >= 16; only 16,000 <= the 16,000 capital limit.
+    meets_uc_minimum_age_condition: [true, true]
+    is_uc_eligible: [true, false]

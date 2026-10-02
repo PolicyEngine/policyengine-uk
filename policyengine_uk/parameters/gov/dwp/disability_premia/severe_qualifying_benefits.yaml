@@ -1,0 +1,32 @@
+description: >
+  Benefits whose receipt makes a claimant or partner severely disabled for the
+  legacy severe disability premium, and whose receipt by a non-dependant means
+  that non-dependant is ignored in the premium's residence condition. The
+  Regulations list attendance allowance (either rate), the care component of
+  disability living allowance at the highest or middle rate, the daily living
+  component of personal independence payment at either rate, armed forces
+  independence payment, and the Scottish equivalents. The Scottish benefits
+  are not separate model variables, and the lists differ slightly between
+  instruments.
+metadata:
+  label: Legacy benefit severe disability premium qualifying benefits
+  period: year
+  unit: list
+  reference:
+    - title: The Housing Benefit Regulations 2006 Sch. 3 para. 14(2)(a)(i)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14
+    - title: The Income Support (General) Regulations 1987 Sch. 2 para. 13(2)(a)(i)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13
+    - title: The Employment and Support Allowance Regulations 2008 Sch. 4 para. 6(2)(a)(i)
+      href: https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6
+    - title: The Jobseeker's Allowance Regulations 1996 Sch. 1 para. 15(1)(a), (2)(a), (4)(a)
+      href: https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15
+values:
+  2006-03-06:
+    - attendance_allowance
+    - dla_sc_middle_plus
+  2013-04-08:
+    - attendance_allowance
+    - dla_sc_middle_plus
+    - pip_dl
+    - armed_forces_independence_payment

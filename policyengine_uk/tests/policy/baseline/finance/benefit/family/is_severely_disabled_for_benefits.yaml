@@ -1,0 +1,70 @@
+# Severe disability conditions of the Child Tax Credit disability element
+# (CTC Regs 2002 reg 8(1)(b), (3)-(5)) and the Working Tax Credit severe
+# disability element (WTC Regs 2002 reg 17(2)-(4)).
+
+- name: DLA care component at the highest rate is severe
+  period: 2026
+  input:
+    dla_sc_category: HIGHER
+  output:
+    is_severely_disabled_for_benefits: true
+
+- name: DLA care component at the middle rate is not severe
+  period: 2026
+  input:
+    dla_sc_category: MIDDLE
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: PIP daily living component at the enhanced rate is severe
+  period: 2026
+  input:
+    pip_dl_category: ENHANCED
+  output:
+    is_severely_disabled_for_benefits: true
+
+- name: PIP daily living component at the standard rate is not severe
+  period: 2026
+  input:
+    pip_dl_category: STANDARD
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: Attendance Allowance at the higher rate is severe (WTC reg 17(2))
+  period: 2026
+  input:
+    aa_category: HIGHER
+  output:
+    is_severely_disabled_for_benefits: true
+
+- name: Attendance Allowance at the lower rate is not severe
+  period: 2026
+  input:
+    aa_category: LOWER
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: Armed Forces Independence Payment is severe
+  period: 2026
+  input:
+    armed_forces_independence_payment: 1_000
+  output:
+    is_severely_disabled_for_benefits: true
+
+- name: Other Armed Forces Compensation Scheme payments are not severe
+  period: 2026
+  input:
+    afcs_reported: 1_000
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: WTC severe disability element for a claimant on higher-rate Attendance Allowance
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    aa_category: HIGHER
+    is_WTC_eligible: true
+  output:
+    # WTC Regs 2002 reg 17(2) and Sch 2 para 6: 1,705 a year in 2024-25.
+    WTC_severely_disabled_element: 1_705
