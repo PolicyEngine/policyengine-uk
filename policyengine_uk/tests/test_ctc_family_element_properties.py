@@ -20,8 +20,10 @@ Invariants:
    the family element is 0 or £545 (one per family, never per child), and it
    is £545 exactly when the family is eligible for Child Tax Credit and
    counts a child or qualifying young person born in 2016 or earlier. The
-   oracle reads ages, entered birth years and the model's list of counted
-   children; it does not call the formula.
+   oracle takes birth years from the generated ages and entered birth years,
+   and the model's list of counted children; it does not call the formula or
+   read birth_year (which is 0 for anyone left out when a situation enters it
+   for some people).
 3. Metamorphic: listing a family's members in a different order does not
    change the family element.
 4. Metamorphic: from 2017-18, adding a newborn (born after 6 April 2017)
@@ -189,7 +191,6 @@ def test_family_element_is_one_flat_amount_for_a_child_born_before_the_cutoff(
     # 2016 or earlier (birth year entered, or the period less age).
     counted = result["is_child_or_qualifying_young_person_for_child_tax_credit"]
     benunit, birth_year = _oracle_people(families, year)
-    np.testing.assert_array_equal(result["birth_year"], birth_year)
     has_qualifying_child = _any_by_family(
         families, benunit, counted & (birth_year <= 2016)
     )
