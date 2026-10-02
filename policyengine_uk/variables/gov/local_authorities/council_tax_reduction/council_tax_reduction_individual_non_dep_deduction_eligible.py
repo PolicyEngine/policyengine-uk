@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    in_other_non_liable_family,
+)
 
 
 class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
@@ -26,9 +29,7 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
     def formula(person, period, parameters):
         # SI 2012/2885 reg 9(2)(a), (c)-(e) and the Welsh and Scottish
         # equivalents; deductions are for non-dependants aged 18 or over.
-        other_family = ~person.benunit(
-            "benunit_contains_household_head", period
-        ) & ~person.benunit("benunit_is_rent_liable", period)
+        other_family = in_other_non_liable_family(person, period)
         # A member of any family's benefit unit who is not in its claimant's
         # family. Reg 9(2)(e) excludes only the person liable to pay the
         # applicant, so a boarder's or lodger's adult son is a non-dependant.
