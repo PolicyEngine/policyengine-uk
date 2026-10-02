@@ -271,3 +271,53 @@
         members: [claimant, other]
   output:
     claimant_or_partner_jsa_income: 2_000
+
+- name: An esa_income entered for an earlier year only does not make another member's award the claimant's
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        esa_income:
+          2024: 1_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+
+- name: A jsa_income entered for an earlier year only does not make another member's award the claimant's
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        jsa_income:
+          2024: 1_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    jsa_income: 4_000
+    claimant_or_partner_jsa_income: 0

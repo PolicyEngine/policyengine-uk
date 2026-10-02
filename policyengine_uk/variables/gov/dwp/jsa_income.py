@@ -25,5 +25,7 @@ class jsa_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
+        if not parameters(period).gov.dwp.JSA.income.active:
+            return benunit.empty_array()
         reported_award = add(benunit, period, ["jsa_income_reported"])
         return income_related_jsa_award(benunit, period, reported_award)

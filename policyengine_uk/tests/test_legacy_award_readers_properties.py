@@ -422,3 +422,70 @@ def test_claimant_and_partner_awards_count_in_full_as_their_income():
     with_other = {"claimant": CLAIMANT, "other": OTHER}
     assert np.isclose(_difference(hb, with_other, other_esa), 0)
     assert np.isclose(_difference(ctr, with_other, other_esa, no_uc), 0)
+
+
+def _claimant_and_other(other_report):
+    people = {
+        "claimant": {"age": {YEAR: 40}, "is_claimant_or_partner": {YEAR: True}},
+        "other": {
+            "age": {YEAR: 30},
+            "is_claimant_or_partner": {YEAR: False},
+            "current_education": {YEAR: "NOT_IN_EDUCATION"},
+            **{k: {YEAR: v} for k, v in other_report.items()},
+        },
+    }
+    return {
+        "people": people,
+        "benunits": {"b": {"members": list(people)}},
+        "households": {"h": {"members": list(people)}},
+    }
+
+
+def test_award_set_after_construction_is_taken_as_entered():
+    """An award set with set_input after the simulation is built is entered
+    directly, so it is the claimant's whatever another member reports."""
+    for variable, scoped, report in [
+        ("esa_income", "claimant_or_partner_esa_income", "esa_income_reported"),
+        ("jsa_income", "claimant_or_partner_jsa_income", "jsa_income_reported"),
+    ]:
+        sim = Simulation(situation=_claimant_and_other({report: 5_000}))
+        sim.set_input(variable, YEAR, np.array([3_000.0]))
+        assert np.isclose(sim.calculate(scoped, YEAR)[0], 3_000), variable
+
+
+def test_award_set_on_a_branch_is_taken_as_entered_on_that_branch():
+    for variable, scoped, report in [
+        ("esa_income", "claimant_or_partner_esa_income", "esa_income_reported"),
+        ("jsa_income", "claimant_or_partner_jsa_income", "jsa_income_reported"),
+    ]:
+        sim = Simulation(situation=_claimant_and_other({report: 5_000}))
+        branch = sim.get_branch("entered")
+        branch.set_input(variable, YEAR, np.array([3_000.0]))
+        assert np.isclose(branch.calculate(scoped, YEAR)[0], 3_000), variable
+        # The main simulation still reads the reports: another member's award
+        # is not the claimant's.
+        assert np.isclose(sim.calculate(scoped, YEAR)[0], 0), variable
+
+
+def test_award_set_after_the_value_is_cached_is_taken_as_entered():
+    for variable, scoped, report in [
+        ("esa_income", "claimant_or_partner_esa_income", "esa_income_reported"),
+        ("jsa_income", "claimant_or_partner_jsa_income", "jsa_income_reported"),
+    ]:
+        sim = Simulation(situation=_claimant_and_other({report: 5_000}))
+        assert np.isclose(sim.calculate(scoped, YEAR)[0], 0), variable
+        sim.set_input(variable, YEAR, np.array([3_000.0]))
+        sim.delete_arrays(scoped)
+        assert np.isclose(sim.calculate(scoped, YEAR)[0], 3_000), variable
+
+
+def test_late_zero_entry_overrides_the_claimants_reports():
+    for variable, scoped, report in [
+        ("esa_income", "claimant_or_partner_esa_income", "esa_income_reported"),
+        ("jsa_income", "claimant_or_partner_jsa_income", "jsa_income_reported"),
+    ]:
+        situation = _claimant_and_other({})
+        situation["people"]["claimant"][report] = {YEAR: 3_000}
+        sim = Simulation(situation=situation)
+        sim.set_input(variable, YEAR, np.array([0.0]))
+        assert np.isclose(sim.calculate(scoped, YEAR)[0], 0), variable

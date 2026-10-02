@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.inputs import entered_directly
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
 
 
@@ -16,7 +17,9 @@ class claimant_or_partner_esa_income(Variable):
         "own right, so their award is left out here; it still counts in "
         "esa_income and so in household income. When esa_income is entered "
         "directly rather than calculated from reported awards, the entered "
-        "award is taken to be the claimant's or partner's."
+        "award is taken to be the claimant's or partner's. Entered directly "
+        "means set as an input for this period (entered_directly), not "
+        "merely for some other year."
     )
     definition_period = YEAR
     unit = GBP
@@ -27,7 +30,7 @@ class claimant_or_partner_esa_income(Variable):
     )
 
     def formula(benunit, period, parameters):
-        if "esa_income" in benunit.simulation.input_variables:
+        if entered_directly(benunit, "esa_income", period):
             return benunit("esa_income", period)
         person = benunit.members
         reported_award = benunit.sum(
