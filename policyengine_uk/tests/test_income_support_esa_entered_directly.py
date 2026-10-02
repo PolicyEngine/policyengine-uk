@@ -166,6 +166,34 @@ def test_an_award_equal_to_the_reported_amounts_is_read_through_them():
     assert eligible(family({"esa_income": {YEAR: 3_000}}))
 
 
+def test_large_reported_awards_match_the_stored_award():
+    # esa_income is stored as float32; £65,536.01 + £65,536.00 is stored as
+    # £131,072.00, a penny below the exact total. The formula's own award must
+    # still be read through the reports.
+    big = {**EXCLUDED_ADULT, "esa_income_reported": {YEAR: 65_536.01}}
+    big_too = {**EXCLUDED_ADULT, "esa_income_reported": {YEAR: 65_536.00}}
+    sim = simulation({"carer": CARER, "a": big, "b": big_too})
+    assert eligible(sim)
+    # disable_simulated_benefits enters the plain total the model computes.
+    raw_total = sim.calculate("esa_income_reported", YEAR, map_to="benunit")
+    sim.set_input("esa_income", YEAR, raw_total)
+    assert eligible(sim)
+
+
+def test_a_report_can_change_how_an_entered_award_is_read():
+    # Intended: the reports explain an entered award only when they give the
+    # same amount. £4,000 entered with no reports bars the claim; once an
+    # excluded adult reports £4,000, the entry is read as theirs.
+    assert not eligible(simulation({"carer": CARER}, {"esa_income": {YEAR: ENTERED}}))
+    four_thousand = {**EXCLUDED_ADULT, "esa_income_reported": {YEAR: ENTERED}}
+    assert eligible(
+        simulation(
+            {"carer": CARER, "other_adult": four_thousand},
+            {"esa_income": {YEAR: ENTERED}},
+        )
+    )
+
+
 def test_a_simulation_with_no_inputs_calculates_the_gate():
     sim = Simulation(
         situation={},

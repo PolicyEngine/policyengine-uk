@@ -35,8 +35,9 @@ report, or to the claimant's own, can change how the entered award is read.
 The generators stay off that boundary. They enter £4,000, which no generated
 total of reports can equal, or £0, whose two readings agree: where £0 is
 what the reports give, they give no award to bar the claim either.
-test_income_support_direct_inputs.py tests the boundary by example, with
-the intended results.
+test_income_support_direct_inputs.py (JSA) and
+test_income_support_esa_entered_directly.py (ESA) test the boundary by
+example, with the intended results.
 
 The second property is a reference check of the bounded model gate, not of
 legal entitlement: caring, work hours, ESA, JSA and Income Support are the
