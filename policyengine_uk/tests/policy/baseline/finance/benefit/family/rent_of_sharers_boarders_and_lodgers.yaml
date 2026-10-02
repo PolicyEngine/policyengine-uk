@@ -245,7 +245,8 @@
         tenure_type: RENT_PRIVATELY
   output:
     # UC Sch 4 para 28(4): no person is a non-dependant of the householder.
-    lha_renter_has_non_dependant: [false, false]
+    universal_credit_renter_has_non_dependant: [false, false]
+    housing_benefit_claimant_has_non_dependant: [false, false]
     is_lha_shared_accommodation_rate_specified_renter: [true, false]
     LHA_category: [A, B]
     # HB reg 13D(2)(a)(i): a young individual with no non-dependant: A.

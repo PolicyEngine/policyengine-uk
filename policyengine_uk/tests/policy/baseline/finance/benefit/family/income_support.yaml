@@ -24,3 +24,46 @@
     child_benefit: 1825
     income_support_eligible: true
     income_support: 0
+
+- name: A single foster carer is in an Income Support prescribed category
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 30
+        income_support_reported: true
+      foster_child:
+        age: 3
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [carer, foster_child]
+  output:
+    # IS Regs 1987 Sch 1B para 2: a single claimant or lone parent with whom
+    # a child is placed by a local authority. The foster child is not a
+    # member of the household (reg 16(4)), so the carer is a single claimant.
+    is_single_person: true
+    income_support_eligible: true
+
+- name: A lone parent with an older child and a young foster child is in an Income Support prescribed category
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        income_support_reported: true
+      child:
+        age: 10
+      foster_child:
+        age: 2
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [parent, child, foster_child]
+  output:
+    # Sch 1B para 1 needs a child under 5 in the household, which the foster
+    # child is not (reg 16(4)); para 2 covers a lone parent with whom a child
+    # is placed.
+    youngest_child_age_for_legacy_benefits: 10
+    income_support_eligible: true
+

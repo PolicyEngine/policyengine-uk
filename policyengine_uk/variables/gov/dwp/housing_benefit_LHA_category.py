@@ -30,7 +30,7 @@ class housing_benefit_LHA_category(Variable):
         # HB Regs 2006 reg 13D(2)(a)(i).
         young_individual = (
             benunit("is_housing_benefit_young_individual", period)
-            & ~benunit("lha_renter_has_non_dependant", period)
+            & ~benunit("housing_benefit_claimant_has_non_dependant", period)
             & ~severe_disability
         )
         # Reg 13D(2)(a)(ii): entitled to one bedroom but neither condition in

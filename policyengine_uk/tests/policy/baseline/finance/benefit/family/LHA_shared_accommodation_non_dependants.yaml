@@ -1,0 +1,337 @@
+# The non-dependant condition of the LHA shared accommodation rate, by scheme.
+#
+# Universal Credit: a specified renter has "no person [who] is a non-dependant
+# in relation to the renter" (UC Regs 2013 Sch 4 para 28(4)), using para 9 and
+# the UC qualifying young person (reg 5). The renter must also not be
+# responsible for a child or qualifying young person (para 28(3)).
+#
+# Housing Benefit: the shared rate applies to "a young individual who has no
+# non-dependant residing with him" (HB Regs 2006 reg 13D(2)(a)(i)), using reg 3
+# and the Child Benefit young person (reg 19). A young individual is a single
+# claimant, so not a lone parent responsible for a child or young person
+# (reg 2(1)).
+#
+# A 16-year-old is a dependant only within each scheme's young person test.
+# Outside it, they are a non-dependant. Either way the renter misses the shared
+# rate, so neither scheme's category depends on placing the 1 September (UC
+# reg 5(1)(a)) or Child Benefit terminal date the annual model cannot see.
+#
+# Bedrooms: everyone aged 16 or over other than the claimant or partner has a
+# bedroom (UC Sch 4 para 10(1)(b)-(c); HB reg 13D(3)(b)), so 1 + 1 = 2: C.
+
+- name: A 16-year-old who has left education is a non-dependant under both schemes
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 33
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 16
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [parent, son]
+    households:
+      home:
+        members: [parent, son]
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
+    # UC: not a qualifying young person, so a non-dependant (para 9(2)).
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    universal_credit_renter_has_non_dependant: true
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: C
+    # HB: not a Child Benefit qualifying young person, so the parent is a
+    # single claimant under 35, but the son is a non-dependant residing with
+    # them: not 13D(2)(a)(i), and 2 bedrooms: C.
+    is_single_person: true
+    is_housing_benefit_young_individual: true
+    housing_benefit_claimant_has_non_dependant: true
+    housing_benefit_LHA_category: C
+
+- name: A 16-year-old in full-time education is a dependant under both schemes
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 33
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 16
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+    benunits:
+      family:
+        members: [parent, son]
+    households:
+      home:
+        members: [parent, son]
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
+    # UC: responsible for a qualifying young person (para 28(3)).
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
+    universal_credit_renter_has_non_dependant: false
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: C
+    # HB: a lone parent, not a single claimant, so not a young individual.
+    is_single_person: false
+    is_housing_benefit_young_individual: false
+    housing_benefit_claimant_has_non_dependant: false
+    housing_benefit_LHA_category: C
+
+- name: A 19-year-old past the UC terminal date is a UC non-dependant but an HB young person
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 34
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: POST_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+    benunits:
+      family:
+        members: [parent, daughter]
+    households:
+      home:
+        members: [parent, daughter]
+  output:
+    # UC reg 5(1)(b): a qualifying young person only up to the 1 September
+    # after the 19th birthday, which has passed: a non-dependant.
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true]
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    universal_credit_renter_has_non_dependant: true
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: C
+    # Child Benefit (General) Regs 2006 reg 3(4): in non-advanced education
+    # begun before 19, so a young person (HB reg 19) in the parent's family:
+    # not a non-dependant (reg 3(2)(a)), but the parent is a lone parent.
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
+    housing_benefit_claimant_has_non_dependant: false
+    is_single_person: false
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_category: C
+
+- name: A looked-after 17-year-old in education placed with a renter is not a non-dependant
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 28
+        is_household_head: true
+        is_claimant_or_partner: true
+      placed:
+        age: 17
+        is_claimant_or_partner: false
+        current_education: POST_SECONDARY
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [renter, placed]
+    households:
+      home:
+        members: [renter, placed]
+  output:
+    # UC: a qualifying young person no one is responsible for (reg 4(6)(a))
+    # is not a non-dependant (Sch 4 para 9(2)(g)). The renter is a foster
+    # parent, so excepted from the shared rate anyway (para 29(9A)).
+    is_child_or_young_person_placed_with_family: [false, true]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false]
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    universal_credit_renter_has_non_dependant: false
+    lha_renter_meets_foster_parent_condition: true
+    is_lha_shared_accommodation_rate_specified_renter: false
+    # HB: a young person placed by a local authority is not a member of the
+    # household (reg 21(3)(a)) and not a non-dependant (reg 3(2)(c)).
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
+    housing_benefit_claimant_has_non_dependant: false
+
+- name: A looked-after 17-year-old who has left education is a UC foster child but an HB non-dependant
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 28
+        is_household_head: true
+        is_claimant_or_partner: true
+      placed:
+        age: 17
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [renter, placed]
+    households:
+      home:
+        members: [renter, placed]
+  output:
+    # UC: not a qualifying young person, but a looked-after person under 18
+    # placed with the renter, so the renter's foster child (para 9(3), with
+    # the foster parent definition in reg 2) and not a non-dependant (para
+    # 9(2)(c)). This is the model's reading; the WRA 2012 s.40 definition of
+    # a child (under 16) would make them a non-dependant. HB: not a young
+    # person (reg 19), so reg 21(3) and reg 3(2)(c) do not apply: a
+    # non-dependant.
+    is_lha_foster_child: [false, true]
+    is_child_or_young_person_placed_with_family: [false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, true]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
+    universal_credit_renter_has_non_dependant: false
+    housing_benefit_claimant_has_non_dependant: true
+
+- name: A foster child under 16 is a non-dependant under neither scheme
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 28
+        is_household_head: true
+        is_claimant_or_partner: true
+      foster_child:
+        age: 9
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [renter, foster_child]
+    households:
+      home:
+        members: [renter, foster_child]
+  output:
+    # UC Sch 4 para 9(2)(c); HB reg 3(2)(c) with reg 21(3)(a).
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
+    universal_credit_renter_has_non_dependant: false
+    housing_benefit_claimant_has_non_dependant: false
+
+- name: A joint tenant's adult son resides with both tenants for HB but counts in one UC claim
+  period: 2026
+  input:
+    people:
+      head:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 22
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+      sharer:
+        age: 28
+        is_claimant_or_partner: true
+    benunits:
+      head_family:
+        members: [head, son]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, son, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # UC: the son is the head's non-dependant and already counted in the
+    # head's claim, so not the sharer's (Sch 4 para 9(2)(f)). The sharer is a
+    # specified renter: A. Head: 1 + son = 2: C.
+    universal_credit_renter_has_non_dependant: [true, false]
+    is_lha_shared_accommodation_rate_specified_renter: [false, true]
+    LHA_category: [C, A]
+    # HB: the son resides with both joint occupiers (reg 3(1), (4); reg
+    # 74(5) apportions his deduction between them), so the sharer is not a
+    # young individual with no non-dependant (13D(2)(a)(i)). The sharer is
+    # entitled to one bedroom and shares the head's rooms, so still the
+    # shared rate under 13D(2)(a)(ii): A. Head: 2 bedrooms: C.
+    housing_benefit_claimant_has_non_dependant: [true, true]
+    housing_benefit_shares_accommodation: [true, true]
+    housing_benefit_LHA_category: [C, A]
+
+- name: A lodger's adult son is the householder's HB non-dependant but counts in the lodger's UC claim
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 30
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 35
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 22
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger, lodger_son]
+    households:
+      home:
+        members: [householder, lodger, lodger_son]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # UC: the lodger is liable on a commercial basis (Sch 4 para 9(2)(d));
+    # the son is a non-dependant in the lodger's claim, so not the
+    # householder's (para 9(2)(f)). The householder is a specified renter: A.
+    universal_credit_renter_has_non_dependant: [false, true]
+    is_lha_shared_accommodation_rate_specified_renter: [true, false]
+    # HB: reg 3(2)(e)(i) excludes only the lodger, who pays the householder,
+    # so the son resides with the householder as a non-dependant (reg 3(1),
+    # (4)), and with the lodger as a member of their benefit unit outside
+    # their family. The householder is a young individual, but not one with
+    # no non-dependant (13D(2)(a)(i)).
+    housing_benefit_claimant_has_non_dependant: [true, true]
+    is_housing_benefit_young_individual: [true, false]
+
+- name: A looked-after 16-year-old school leaver stops a young single HB claimant's shared rate
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_household_head: true
+        is_claimant_or_partner: true
+      placed:
+        age: 16
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        is_looked_after_by_local_authority: true
+    benunits:
+      family:
+        members: [claimant, placed]
+    households:
+      home:
+        members: [claimant, placed]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # HB: not a Child Benefit qualifying young person, so neither in the
+    # claimant's family nor placed under reg 21(3): a non-dependant (reg 3).
+    # The claimant is a young individual with a non-dependant, so not
+    # 13D(2)(a)(i); 2 bedrooms (13D(3)(b)): C. The old 16-year-old rule made
+    # them neither, giving A.
+    is_child_or_young_person_placed_with_family: [false, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
+    housing_benefit_claimant_has_non_dependant: true
+    is_housing_benefit_young_individual: true
+    housing_benefit_LHA_category: C
+    # UC: the renter's foster child (para 9(2)(c)), and the renter meets the
+    # foster parent condition (para 29(9A)): not a specified renter.
+    is_lha_foster_child: [false, true]
+    universal_credit_renter_has_non_dependant: false
+    is_lha_shared_accommodation_rate_specified_renter: false

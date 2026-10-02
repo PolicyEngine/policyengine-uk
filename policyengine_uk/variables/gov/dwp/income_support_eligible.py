@@ -6,7 +6,10 @@ class income_support_eligible(Variable):
     entity = BenUnit
     label = "Whether eligible for Income Support"
     definition_period = YEAR
-    reference = "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B/paragraph/2",
+    )
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
@@ -18,6 +21,16 @@ class income_support_eligible(Variable):
         )
         lone_parent = benunit("is_lone_parent", period)
         lone_parent_with_young_child = lone_parent & youngest_child_5_or_under
+        # Schedule 1B para 2: a single claimant or lone parent with whom a
+        # child is placed by a local authority, such as a foster child.
+        person = benunit.members
+        foster_child = person("is_looked_after_child", period) & person(
+            "is_child_for_child_benefit", period
+        )
+        single_or_lone_parent = benunit("is_single_person", period) | lone_parent
+        fosters_child = single_or_lone_parent & benunit.any(
+            foster_child & ~person("is_claimant_or_partner", period)
+        )
         has_carers = add(benunit, period, ["is_carer_for_benefits"]) > 0
         none_SP_age = ~benunit.any(benunit.members("is_SP_age", period))
         has_esa_income = benunit("esa_income", period) > 0
@@ -25,7 +38,7 @@ class income_support_eligible(Variable):
         capital = benunit("income_support_assessable_capital", period)
         limit = IS.means_test.capital.limit
         return (
-            (has_carers | lone_parent_with_young_child)
+            (has_carers | lone_parent_with_young_child | fosters_child)
             & none_SP_age
             & ~has_esa_income
             & already_claiming

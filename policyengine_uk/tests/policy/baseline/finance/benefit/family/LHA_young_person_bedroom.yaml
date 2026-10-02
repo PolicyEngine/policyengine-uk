@@ -115,7 +115,7 @@
     housing_benefit_LHA_allowed_bedrooms: 2
     housing_benefit_LHA_category: C
 
-- name: A qualifying young person no one is responsible for has no Universal Credit bedroom
+- name: A looked-after qualifying young person has no Universal Credit bedroom of their own
   period: 2026
   input:
     people:
@@ -141,10 +141,25 @@
   output:
     is_qualifying_young_person_for_universal_credit: [false, true]
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
-    # Not under para 10(1)(b), and not a non-dependant (para 9(2)(g)): the
-    # renter's bedroom only.
-    LHA_allowed_bedrooms: 1
-    LHA_category: B
+    # Not under para 10(1)(b), and not a non-dependant (para 9(2)(c) and (g)),
+    # so no bedroom of their own. The carer they are placed with is a foster parent
+    # (reg 2: a person with whom a child is placed under the care planning
+    # regulations, which place children under 18), so has one additional
+    # bedroom (para 12(4)(a), (9)(b)): 2 bedrooms, category C. The model reads
+    # "child" there as under 18 (see is_lha_foster_child; reg 91(2)(b)-(d)
+    # also speak of foster parents of qualifying young persons). Read as under
+    # 16 (WRA 2012 s.40), there would be no foster room and 1 bedroom.
+    LHA_additional_bedrooms: 1
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # HB: a young person placed with the claimant by a local authority does
+    # not occupy the dwelling (HB Regs 2006 reg 21(3)), but the claimant is a
+    # qualifying parent or carer (reg 2(1)) with one additional bedroom (reg
+    # 13D(3A)(b)): 2 bedrooms.
+    is_child_or_young_person_placed_with_family: [false, true]
+    housing_benefit_LHA_additional_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
 
 - name: A qualifying young person cannot share with a younger sibling of the same sex
   period: 2026
