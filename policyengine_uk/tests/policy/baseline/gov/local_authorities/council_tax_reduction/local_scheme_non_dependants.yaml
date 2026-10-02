@@ -64,6 +64,41 @@
     merton_council_tax_reduction_non_dep_deductions: 691.60
     council_tax_reduction: 1_108.40
 
+- name: Merton charges a 19-year-old who has left education in the applicant's benefit unit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      daughter:
+        # Left education, so not a qualifying young person or a student (the
+        # education input otherwise defaults to tertiary at 19).
+        age: 19
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        employment_income: 12_000
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [parent, daughter]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [parent, daughter]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, true]
+    # In remunerative work on £230.77 a week, below £279: £5.20.
+    merton_council_tax_reduction_non_dep_deductions: 270.40
+    council_tax_reduction: 1_529.60
+
 - name: Merton deducts separately for a lone parent and her working son in another family
   period: 2026
   absolute_error_margin: 0.01
