@@ -19,12 +19,12 @@ The law:
   3(1); Scotland SSI 2021/249 reg 3 and SSI 2012/319 reg 12).
 
 Universal Credit needs a claimant or partner under the qualifying age (UC
-Regs 2013 reg 3(2)(a)). The model's is_uc_eligible counts any working-age
-adult, so it can pay Universal Credit to a pensioner whose only younger adult
-is a qualifying young person; such an award does not count as being on
-Universal Credit here. "On Universal Credit" below means an award before the
-cap with a claimant or partner under State Pension age. Legacy income-related
-benefit is set as an input.
+Regs 2013 reg 3(2)(a)). Claimant and partner are is_claimant_or_partner, which
+presumes a member under 20 and at least 16 years younger than the claimant to
+be their child, so a pensioner's qualifying young person is a dependant
+whether or not is_parent is set; the draws cover both. "On Universal Credit"
+below means an award before the cap with a claimant or partner under State
+Pension age. Legacy income-related benefit is set as an input.
 
 Invariants, for every drawn population of families:
 
@@ -144,6 +144,9 @@ def families(draw):
         hb_reported=draw(st.sampled_from([0, 0, 5_000])),
         ctb_reported=draw(st.sampled_from([0, 0, 700])),
         legacy=draw(st.sampled_from([0, 0, 0, 3_000])),
+        # Whether is_parent identifies the adult in a family with a young
+        # person, as the FRS datasets do; household inputs may leave it out.
+        parent_flag=draw(st.booleans()),
     )
 
 
@@ -161,7 +164,7 @@ def situation(units):
                 person["state_pension_reported"] = {PERIOD: unit["state_pension"]}
             else:
                 person["employment_income"] = {PERIOD: unit["earnings"]}
-            if role == "adult" and has_young_person:
+            if role == "adult" and has_young_person and unit["parent_flag"]:
                 person["is_parent"] = {PERIOD: True}
             if j == 0:
                 person["housing_benefit_reported"] = {PERIOD: unit["hb_reported"]}
