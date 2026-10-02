@@ -163,8 +163,10 @@
         region: NORTH_EAST
   output:
     # The partner is under State Pension age but cannot be a joint claimant,
-    # so the reg. 3(2)(a) mixed-age route is closed.
+    # so the reg. 3(2)(a) mixed-age route is closed, and there is no single
+    # claim either.
     is_uc_eligible: false
+    uc_member_of_couple_claims_as_single_person: false
 
 - name: A working-age claimant can claim as a single person when the partner over State Pension age cannot be a joint claimant
   period: 2026
@@ -386,12 +388,14 @@
         age: 30
         is_claimant_or_partner: true
         uc_is_ineligible_partner: true
+      child:
+        age: 3
     benunits:
       benunit:
-        members: [claimant, partner]
+        members: [claimant, partner, child]
     households:
       household:
-        members: [claimant, partner]
+        members: [claimant, partner, child]
         region: NORTH_EAST
   output:
     # Reg. 32(1)(b) applies "whether claiming jointly or as a single person";
@@ -411,12 +415,14 @@
         is_claimant_or_partner: true
         uc_is_ineligible_partner: true
         employment_income: 5_000
+      child:
+        age: 3
     benunits:
       benunit:
-        members: [claimant, partner]
+        members: [claimant, partner, child]
     households:
       household:
-        members: [claimant, partner]
+        members: [claimant, partner, child]
         region: NORTH_EAST
   output:
     uc_childcare_work_condition: true
@@ -558,7 +564,8 @@
     # "Couple" in the cap includes a single claimant's partner (reg. 78(2)).
     # 11,000 a year (916.67 a month) exceeds 16 hours at the national living
     # wage of 12.71 (NMW Regs 2015 reg. 4 from 1 April 2026):
-    # 12.71 x 16 x 52 / 12 = 881.23 a month.
+    # 12.71 x 16 x 52 / 12 = 881.23 a month. The model uses a fixed
+    # 10,152 a year; 11,000 clears both.
     is_benefit_cap_exempt_earnings: true
 
 - name: Sch 4 para 28(2) - a renter under 35 claiming as a single person is a specified renter, whatever the partner's age
@@ -651,3 +658,36 @@
     uc_member_of_couple_claims_as_single_person: false
     is_uc_single_or_joint_claimant: false
     is_uc_eligible: false
+
+- name: A family claiming legacy benefits keeps the couple rules Housing Benefit shares, while the UC award is a single claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      renter:
+        age: 30
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [renter, partner]
+        is_benefit_cap_exempt: false
+    households:
+      household:
+        members: [renter, partner]
+        tenure_type: RENT_PRIVATELY
+        region: NORTH_EAST
+  output:
+    claims_legacy_benefits: true
+    uc_member_of_couple_claims_as_single_person: true
+    # Housing Benefit has no single claim by a member of a couple.
+    is_benefit_cap_single_claimant_rate: false
+    benefit_cap: 22_020
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B
+    # 424.90 x 12
+    uc_standard_allowance: 5_098.80

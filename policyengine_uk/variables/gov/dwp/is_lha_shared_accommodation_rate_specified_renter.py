@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.uc_work_related_requirements import (
-    other_member_of_single_claim,
+    other_member_of_single_claim_in_shared_rules,
+    single_claim_in_rules_shared_with_legacy_benefits,
 )
 
 
@@ -21,8 +22,10 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         "9(2)(b)). Other paragraph 29 exceptions are not modelled. The same "
         "category serves Housing Benefit, whose young-individual definition "
         "(HB regulation 2(1)) has neither the disability exception nor a "
-        "single claim by a member of a couple; the model applies both UC "
-        "rules to Housing Benefit too."
+        "single claim by a member of a couple. The model applies the "
+        "disability exception to Housing Benefit too, and the single-claim "
+        "rule unless the family claims legacy benefits "
+        "(`claims_legacy_benefits`)."
     )
     definition_period = YEAR
     reference = (
@@ -42,10 +45,10 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         # and (b) is not an excepted person". Where a member of a couple
         # claims as a single person (reg. 3(3)), the renter is that member:
         # the other member's age and benefits do not count.
-        claims_as_single_person = benunit(
-            "uc_member_of_couple_claims_as_single_person", period
+        claims_as_single_person = single_claim_in_rules_shared_with_legacy_benefits(
+            benunit, period
         )
-        other_member = other_member_of_single_claim(person, period)
+        other_member = other_member_of_single_claim_in_shared_rules(person, period)
         renter = person("is_claimant_or_partner", period) & ~other_member
         renter_age = benunit.max(where(renter, person("age", period), -np.inf))
         # UC Sch 4 para 29(5): a renter under 35 receiving

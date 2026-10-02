@@ -32,18 +32,29 @@ claimant alone with the children ("solo"). Invariants:
    caring, AFCS and contributory ESA lift no cap (reg. 83(1)), so the health
    and disability exception equals the joint claimants' with those removed.
 6. Regulation 3(3)(a): with the flag left to its formula, a member of a
-   couple under 18 with no regulation 8 circumstance is the ineligible
-   partner, and the other member then claims as a single person.
+   couple under 18 is the ineligible partner exactly when none of the
+   generated regulation 8(1) circumstances applies to them (limited
+   capability for work and work-related activity, 35 hours of caring, or a
+   child under 16 in the family), or they are under 16; the other member
+   then claims as a single person.
 7. A flag that marks no single claim (a single adult, or both members of a
    couple) leaves every rule Housing Benefit shares (the cap rate, the cap
    exceptions, the shared accommodation test) as it was without the flag.
+
+Each property also runs on EXAMPLE_FAMILIES, built so that the cases the
+properties are about occur: an other member with LCWRA, caring, PIP, AFCS
+and contributory ESA; a private renter under 35; a claimant under 25 with an
+older partner; children under and over 16. test_examples_reach_the_cases
+checks that each of those cases changes the result it should.
 
 Marriage Allowance is switched off throughout: a transfer moves tax between
 the partners, which is not what these invariants are about.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+import copy
+
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -64,15 +75,19 @@ rarely = st.integers(0, 4).map(lambda n: n == 0)
 employment = st.one_of(st.just(0.0), st.floats(0, 30_000))
 pension = st.one_of(st.just(0.0), st.floats(0, 5_000))
 pip = st.one_of(st.just(0.0), st.just(0.0), st.floats(1_000, 6_000))
+sometimes_paid = st.one_of(st.just(0.0), st.just(0.0), st.floats(500, 5_000))
 care = st.sampled_from([0, 0, 0, 35])
 
 # Inputs that describe the other member's own disability, caring and
-# benefits: what reg. 83(1) and regs. 27 and 29 ignore for a non-claimant.
-PARTNER_OWN = [
-    "uc_limited_capability_for_WRA",
-    "care_hours",
-    "pip_dl",
-]
+# benefits, with the value that removes each: what reg. 83(1) and regs. 27
+# and 29 ignore for a non-claimant.
+PARTNER_OWN = {
+    "uc_limited_capability_for_WRA": False,
+    "care_hours": 0,
+    "pip_dl": 0.0,
+    "afcs": 0.0,
+    "esa_contrib": 0.0,
+}
 
 
 @st.composite
@@ -84,6 +99,8 @@ def adult(draw, ages):
         uc_limited_capability_for_WRA=draw(rarely),
         care_hours=draw(care),
         pip_dl=draw(pip),
+        afcs=draw(sometimes_paid),
+        esa_contrib=draw(sometimes_paid),
     )
 
 
@@ -100,6 +117,78 @@ def couples(draw):
 
 
 populations = st.lists(couples(), min_size=1, max_size=6)
+
+
+def adult_inputs(age, **inputs):
+    values = dict(
+        age=age,
+        employment_income=0.0,
+        private_pension_income=0.0,
+        uc_limited_capability_for_WRA=False,
+        care_hours=0,
+        pip_dl=0.0,
+        afcs=0.0,
+        esa_contrib=0.0,
+    )
+    values.update(inputs)
+    return values
+
+
+def example_families():
+    """Families in which every case the properties cover occurs."""
+    return [
+        # A claimant under 25, a private renter, with an older other member
+        # who has LCWRA, caring, PIP, AFCS and contributory ESA.
+        dict(
+            claimant=adult_inputs(22, employment_income=6_000.0),
+            partner=adult_inputs(
+                40,
+                uc_limited_capability_for_WRA=True,
+                care_hours=35,
+                pip_dl=4_000.0,
+                afcs=1_000.0,
+                esa_contrib=2_000.0,
+                private_pension_income=1_200.0,
+            ),
+            children=[],
+            rent=9_000.0,
+            tenure="RENT_PRIVATELY",
+            region="NORTH_EAST",
+        ),
+        # A claimant with LCWRA and caring, a child under 16, social rent.
+        dict(
+            claimant=adult_inputs(
+                30, uc_limited_capability_for_WRA=True, care_hours=35
+            ),
+            partner=adult_inputs(30, employment_income=12_000.0),
+            children=[4],
+            rent=6_000.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="LONDON",
+        ),
+        # An other member over State Pension age; children under and over 16.
+        dict(
+            claimant=adult_inputs(45, employment_income=8_000.0),
+            partner=adult_inputs(70, pip_dl=3_000.0),
+            children=[10, 16],
+            rent=12_000.0,
+            tenure="RENT_PRIVATELY",
+            region="WALES",
+        ),
+        # ADM E2017's example: Tom, 19, and Jane, 17, with no regulation 8
+        # circumstance.
+        dict(
+            claimant=adult_inputs(19),
+            partner=adult_inputs(17),
+            children=[],
+            rent=4_000.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="SCOTLAND",
+        ),
+    ]
+
+
+EXAMPLE_FAMILIES = example_families()
 
 
 def situation(families, year, mode):
@@ -126,9 +215,8 @@ def situation(families, year, mode):
                 if mode in ("single", "both"):
                     person["uc_is_ineligible_partner"] = {year: True}
                 elif mode == "stripped":
-                    person["uc_limited_capability_for_WRA"] = {year: False}
-                    person["care_hours"] = {year: 0}
-                    person["pip_dl"] = {year: 0.0}
+                    for variable, removed in PARTNER_OWN.items():
+                        person[variable] = {year: removed}
             if role == "claimant" and mode in ("both", "single_adult_flagged"):
                 person["uc_is_ineligible_partner"] = {year: True}
             if mode in ("joint", "solo", "stripped"):
@@ -202,6 +290,7 @@ def single_amount(families, year, parameters):
 
 @PROPERTY_SETTINGS
 @given(families=populations, year=st.sampled_from(YEARS))
+@example(families=example_families(), year=2026)
 def test_single_standard_allowance_at_the_claimants_own_age(families, year):
     single = calculate(families, year, "single")
     assert np.all(single["uc_member_of_couple_claims_as_single_person"]), families
@@ -216,6 +305,8 @@ def test_single_standard_allowance_at_the_claimants_own_age(families, year):
 
 @PROPERTY_SETTINGS
 @given(families=populations, year=st.sampled_from(YEARS))
+@example(families=example_families(), year=2026)
+@example(families=example_families(), year=2021)
 def test_maximum_amount_is_the_solo_claimants(families, year):
     single = calculate(families, year, "single")
     solo = calculate(families, year, "solo")
@@ -239,6 +330,7 @@ def test_maximum_amount_is_the_solo_claimants(families, year):
 
 @PROPERTY_SETTINGS
 @given(families=populations, year=st.sampled_from(YEARS))
+@example(families=example_families(), year=2026)
 def test_deduction_is_the_joint_claimants(families, year):
     single = calculate(families, year, "single")
     joint = calculate(families, year, "joint")
@@ -270,7 +362,13 @@ def test_deduction_is_the_joint_claimants(families, year):
     year=st.sampled_from([2021, 2026]),
     balances=st.lists(st.floats(0, 30_000), min_size=12, max_size=12),
 )
+@example(
+    families=example_families(),
+    year=2026,
+    balances=[8_000.0, 16_000.0, 0.0, 30_000.0, 2_000.0, 0.0] + [0.0] * 6,
+)
 def test_capital_includes_the_other_members(families, year, balances):
+    families = copy.deepcopy(families)
     for i, family in enumerate(families):
         family["claimant"]["lifetime_isa_balance"] = balances[2 * i]
         family["partner"]["lifetime_isa_balance"] = balances[2 * i + 1]
@@ -290,12 +388,21 @@ def test_capital_includes_the_other_members(families, year, balances):
 
 @PROPERTY_SETTINGS
 @given(families=populations, year=st.sampled_from(YEARS))
+@example(families=example_families(), year=2026)
 def test_benefit_cap_rate_and_exceptions(families, year):
     single = calculate(families, year, "single")
     stripped = calculate(families, year, "stripped")
+    # Reg. 80A(2): the single-claimant limit unless responsible for a child
+    # or qualifying young person. A 16 or 17-year-old is a qualifying young
+    # person only in qualifying education, which the generator leaves
+    # unset, so the oracle is read only for families without one.
     no_children = np.array([not family["children"] for family in families])
+    under_16_only = np.array(
+        [all(age < 16 for age in family["children"]) for family in families]
+    )
     np.testing.assert_array_equal(
-        single["is_benefit_cap_single_claimant_rate"], no_children
+        single["is_benefit_cap_single_claimant_rate"][under_16_only],
+        no_children[under_16_only],
     )
     for variable in [
         "is_benefit_cap_exempt_health_disability",
@@ -312,34 +419,42 @@ def test_benefit_cap_rate_and_exceptions(families, year):
     year=st.sampled_from(YEARS),
     partner_ages=st.lists(st.integers(15, 20), min_size=6, max_size=6),
 )
+@example(families=example_families(), year=2026, partner_ages=[17, 17, 16, 17, 0, 0])
 def test_a_partner_under_18_outside_regulation_8_cannot_claim_jointly(
     families, year, partner_ages
 ):
+    families = copy.deepcopy(families)
     for family, age in zip(families, partner_ages):
         family["partner"]["age"] = age
     sim = Simulation(situation=situation(families, year, "derived"))
-    ineligible = np.asarray(sim.calculate("uc_is_ineligible_partner", year))
-    meets_age = np.asarray(sim.calculate("meets_uc_minimum_age_condition", year))
-    couple_member = np.asarray(sim.calculate("is_claimant_or_partner", year))
-    age = np.asarray(sim.calculate("age", year))
-    np.testing.assert_array_equal(
-        ineligible, couple_member & ~meets_age, err_msg=str(families)
-    )
-    # Section 4(1)(a): no one aged 18 or over is excluded by reg. 3(3)(a).
-    assert not np.any(ineligible & (age >= 18)), families
     claims_as_single = np.asarray(
         sim.calculate("uc_member_of_couple_claims_as_single_person", year)
     )
-    claimants_failing = np.asarray(
-        sim.map_result((couple_member & ~meets_age).astype(float), "person", "benunit")
+    names = list(situation(families, year, "derived")["people"])
+    ineligible = dict(
+        zip(names, np.asarray(sim.calculate("uc_is_ineligible_partner", year)))
     )
-    # The claimant is 18 or over, so a single claim exists exactly when the
-    # partner fails the minimum age.
-    np.testing.assert_array_equal(claims_as_single, claimants_failing == 1)
+    for i, family in enumerate(families):
+        partner = family["partner"]
+        # Reg. 8(1)(a), (c) and (d), as generated: limited capability for work
+        # (the LCWRA flag), 35 hours of caring, responsibility for a child
+        # (under 16, WRA 2012 s. 40). Reg. 3(3)(a): under 18 and outside
+        # reg. 8; the model also takes anyone under 16.
+        regulation_8 = (
+            partner["uc_limited_capability_for_WRA"]
+            or partner["care_hours"] >= 35
+            or any(age < 16 for age in family["children"])
+        )
+        expected = partner["age"] < 16 or (partner["age"] < 18 and not regulation_8)
+        assert ineligible[f"partner{i}"] == expected, family
+        # The claimant is 18 to 64, so never excluded, and can claim.
+        assert not ineligible[f"claimant{i}"], family
+        assert claims_as_single[i] == expected, family
 
 
 @PROPERTY_SETTINGS
 @given(families=populations, year=st.sampled_from(YEARS))
+@example(families=example_families(), year=2026)
 def test_a_flag_marking_no_single_claim_leaves_shared_rules_alone(families, year):
     shared = [
         "is_benefit_cap_single_claimant_rate",
@@ -361,3 +476,31 @@ def test_a_flag_marking_no_single_claim_leaves_shared_rules_alone(families, year
         np.testing.assert_array_equal(
             alone_flagged[variable], solo[variable], err_msg=f"{variable}: {families}"
         )
+
+
+def test_examples_reach_the_cases():
+    """The example families exercise each rule: the single claim changes it."""
+    year = 2026
+    single = calculate(EXAMPLE_FAMILIES, year, "single")
+    joint = calculate(EXAMPLE_FAMILIES, year, "joint")
+    first, second = 0, 1
+    # Reg. 36(3): the claimant under 25 with a partner of 40.
+    assert single["claimant_type"][first] == "SINGLE_YOUNG"
+    assert joint["claimant_type"][first] == "COUPLE_OLD"
+    # Regs. 27(1), 29(1): the other member's LCWRA and caring give nothing;
+    # the claimant's do.
+    assert single["uc_LCWRA_element"][first] == 0 < joint["uc_LCWRA_element"][first]
+    assert single["uc_carer_element"][first] == 0 < joint["uc_carer_element"][first]
+    assert single["uc_LCWRA_element"][second] > 0
+    assert single["uc_carer_element"][second] > 0
+    # Reg. 83(1): the other member's benefits lift the joint claimants' cap
+    # only.
+    assert not single["is_benefit_cap_exempt_health_disability"][first]
+    assert joint["is_benefit_cap_exempt_health_disability"][first]
+    # Reg. 80A(2) and Sch 4 para 28(2): single rate and shared accommodation.
+    assert single["is_benefit_cap_single_claimant_rate"][first]
+    assert not joint["is_benefit_cap_single_claimant_rate"][first]
+    assert single["is_lha_shared_accommodation_rate_specified_renter"][first]
+    assert not joint["is_lha_shared_accommodation_rate_specified_renter"][first]
+    # Reg. 22(3): the other member's LCW gives the work allowance either way.
+    assert single["is_uc_work_allowance_eligible"][first]

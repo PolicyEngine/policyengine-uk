@@ -1,6 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.uc_work_related_requirements import (
-    other_member_of_single_claim,
+    other_member_of_single_claim_in_shared_rules,
 )
 from policyengine_uk.utils.benefit_unit import add_for_members
 
@@ -23,7 +23,7 @@ class is_benefit_cap_exempt_health_disability(Variable):
         # claims Universal Credit as a single person (reg. 3(3)), is not a
         # claimant: their own disability benefits and limited capability do
         # not lift the cap.
-        not_a_claimant = other_member_of_single_claim(person, period)
+        not_a_claimant = other_member_of_single_claim_in_shared_rules(person, period)
 
         # UC-specific exemptions
         # Limited capability for work and work-related activity

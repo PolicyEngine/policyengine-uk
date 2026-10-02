@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.uc_work_related_requirements import (
+    single_claim_in_rules_shared_with_legacy_benefits,
+)
 
 
 class is_benefit_cap_single_claimant_rate(Variable):
@@ -15,7 +18,8 @@ class is_benefit_cap_single_claimant_rate(Variable):
         "claimant: regulation 80A sets the limits by single claimant and "
         "joint claimants (ADM E5007 note 3). The welfare benefits capped are "
         "still the couple's (regulations 78(2) and 79(1)). Housing Benefit "
-        "has no such single claim, but shares this rate in the model."
+        "has no such single claim, so a family claiming legacy benefits "
+        "(`claims_legacy_benefits`) keeps the couple rate."
     )
     definition_period = YEAR
     reference = (
@@ -28,9 +32,9 @@ class is_benefit_cap_single_claimant_rate(Variable):
     )
 
     def formula(benunit, period, parameters):
-        single_claimant = ~benunit("is_couple", period) | benunit(
-            "uc_member_of_couple_claims_as_single_person", period
-        )
+        single_claimant = ~benunit(
+            "is_couple", period
+        ) | single_claim_in_rules_shared_with_legacy_benefits(benunit, period)
         return single_claimant & ~benunit(
             "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
             period,
