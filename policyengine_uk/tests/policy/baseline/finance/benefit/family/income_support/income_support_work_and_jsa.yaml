@@ -388,3 +388,157 @@
         jsa_income: 0
   output:
     income_support_eligible: true
+
+# Boundaries and roles.
+
+- name: A partner working 23 hours a week does not bar the claim
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        hours_worked: 1_196
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    # 1,196 / 52 = 23 hours, below the partner's 24.
+    income_support_eligible: true
+
+- name: With inferred roles, a partner working 24 hours bars the claim and an excluded grandparent does not count
+  period: 2025
+  input:
+    people:
+      mother:
+        age: 34
+        is_parent: true
+        is_benunit_head: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      father:
+        age: 36
+        is_parent: true
+        hours_worked: 1_248
+      child:
+        age: 8
+      grandparent:
+        age: 71
+        hours_worked: 2_080
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [mother, father, child, grandparent]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+  output:
+    is_claimant_or_partner: [true, true, false, false]
+    # The father, the other member of the couple, works 24 hours.
+    income_support_eligible: false
+
+- name: With inferred roles and a partner under 24 hours, an excluded grandparent's work and JSA do not bar the claim
+  period: 2025
+  input:
+    people:
+      mother:
+        age: 34
+        is_parent: true
+        is_benunit_head: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      father:
+        age: 36
+        is_parent: true
+        hours_worked: 1_040
+      child:
+        age: 8
+      grandparent:
+        age: 71
+        hours_worked: 2_080
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [mother, father, child, grandparent]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+  output:
+    is_claimant_or_partner: [true, true, false, false]
+    income_support_eligible: true
+
+- name: When both partners care and report Income Support, one without JSA can claim
+  period: 2025
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_contrib_reported: 3_000
+      second:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+    benunits:
+      family:
+        members: [first, second]
+        income_support_assessable_capital: 0
+  output:
+    # The second partner meets every claimant condition; the first's
+    # contribution-based JSA bars only the first as claimant (s.124(1)(f)).
+    income_support_eligible: true
+
+- name: When both partners care and report Income Support but both have contribution-based JSA, neither can claim
+  period: 2025
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_contrib_reported: 3_000
+      second:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+        jsa_contrib_reported: 3_000
+    benunits:
+      family:
+        members: [first, second]
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: false
+
+- name: Income-based JSA entered directly for another year does not apply to this one
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 30
+        is_claimant_or_partner: false
+        jsa_income_reported: 3_000
+    benunits:
+      family:
+        members: [carer, other_adult]
+        income_support_assessable_capital: 0
+        jsa_income_assessable_capital: 0
+        jsa_income:
+          2024: 0
+  output:
+    # Only the excluded adult reports income-based JSA in 2025; the input
+    # entered for 2024 says nothing about 2025.
+    income_support_eligible: true

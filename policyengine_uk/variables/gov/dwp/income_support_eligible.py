@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.utils.inputs import entered_directly
 from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
 
@@ -129,8 +130,8 @@ class income_support_eligible(Variable):
         # is, and the couple are not, entitled to an income-based jobseeker's
         # allowance. As for ESA: the award on their reported amounts after
         # the same capital test as jsa_income, or a jsa_income entered
-        # directly, taken to be theirs.
-        if "jsa_income" in benunit.simulation.input_variables:
+        # directly for this period, taken to be theirs.
+        if entered_directly(benunit, "jsa_income", period):
             income_based_jsa = benunit("jsa_income", period) > 0
         else:
             reported = benunit.sum(
