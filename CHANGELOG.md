@@ -1,3 +1,42 @@
+## [2.106.1] - 2026-10-02
+
+### Fixed
+
+- - Hold the NICs primary threshold, upper earnings limit, secondary threshold and Class 4 lower and upper profits limits at their 2026-27 levels through 2030-31, as announced at Budget 2025, with a reference for each year. CPI uprating resumes in 2031-32; before this change the Class 4 limits were uprated from 2027-28 and the primary threshold and upper earnings limit from 2028-29. Also correct the 2025-26 lower earnings limit to £125 a week (SI 2025/288).
+
+
+## [2.106.0] - 2026-10-02
+
+### Added
+
+- Add `scottish_carer_supplement`, the Scottish Carer Supplement paid with Carer Support Payment from 15 March 2026. `carer_support_payment` is now the Carer Support Payment component only, so totals summed by variable name need both variables.
+
+### Fixed
+
+- Count Carer's Allowance and Carer Support Payment as Pension Credit income (SPC Regs 2002 reg 15(1)), and split the Scottish Carer Supplement out of Carer Support Payment into its own variable so that Pension Credit and Housing Benefit leave it out (SI 2026/246).
+
+
+## [2.105.1] - 2026-10-02
+
+### Fixed
+
+- Apply the Local Housing Allowance cap to the eligible rent before the Housing Benefit taper and non-dependant deductions, as SI 2006/213 regs 12D(2)(a), 70 and 71 (SI 2006/214 regs 12D, 50 and 51 at pension age) require, rather than capping the tapered rent.
+
+
+## [2.105.0] - 2026-10-02
+
+### Added
+
+- Add `pension_credit_reported_capital`, a benefit-unit input that replaces the household proxy in Pension Credit assessable capital when a dataset records the claimant's and partner's own capital (default -1: no change).
+
+
+## [2.104.8] - 2026-10-02
+
+### Fixed
+
+- Hold Northern Ireland households' council tax flat when a dataset is projected forward, instead of growing it by England's council tax forecast: the uprating code looked for the label `NORTHERN IRELAND` (with a space), so Northern Ireland fell through to England. Region labels outside the `Region` enum now raise rather than taking England's growth.
+
+
 ## [2.104.7] - 2026-10-02
 
 ### Fixed
