@@ -23,3 +23,27 @@
     minimum_guarantee: 12_376
   output:
     savings_credit: 684.216
+
+- name: Case 3, 2025 single claimant uses the corrected coupled rates.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 20_000
+    pension_credit_income: 20_000
+    minimum_guarantee: 20_000
+  output:
+    savings_credit: 899.496
+
+- name: Case 4, 2025 couple uses the corrected coupled rates.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    is_savings_credit_eligible: true
+    relation_type: COUPLE
+    savings_credit_income: 25_000
+    pension_credit_income: 25_000
+    minimum_guarantee: 25_000
+  output:
+    savings_credit: 1_006.512
