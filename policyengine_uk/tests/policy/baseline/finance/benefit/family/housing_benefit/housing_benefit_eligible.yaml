@@ -1,39 +1,47 @@
+# Continuing-award route for a working-age family (age defaults to 40) in
+# 2021, before working-age awards were abolished: a reported award, no
+# Universal Credit claim, and social housing or the Local Housing Allowance.
+
 - name: Social housing eligible
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: true
     housing_benefit_reported: 1
+    would_claim_uc: false
     LHA_eligible: false
   output:
     housing_benefit_eligible: true
 
 - name: LHA eligible
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: false
     housing_benefit_reported: 1
+    would_claim_uc: false
     LHA_eligible: true
   output:
     housing_benefit_eligible: true
 
 - name: Not already enrolled
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: false
     housing_benefit_reported: 0
+    would_claim_uc: false
     LHA_eligible: true
   output:
     housing_benefit_eligible: false
 
 - name: Not eligible
   period: 2021
-  absolute_error_margin: 5
+  absolute_error_margin: 0
   input:
     in_social_housing: false
     housing_benefit_reported: 1
+    would_claim_uc: false
     LHA_eligible: false
   output:
     housing_benefit_eligible: false
