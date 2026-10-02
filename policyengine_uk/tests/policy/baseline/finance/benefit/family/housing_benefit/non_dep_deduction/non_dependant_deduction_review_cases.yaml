@@ -47,6 +47,7 @@
     # in the HB 485 band (119.85) and the CTR 485 band (13.30).
     housing_benefit_non_dep_deductions_claimant_exempt: [false, false]
     council_tax_reduction_household_has_non_dep_exemption: false
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, false]
     housing_benefit_non_dep_deductions: [6_232.20, 0]
     council_tax_reduction_non_dep_deductions: [691.60, 0]
 

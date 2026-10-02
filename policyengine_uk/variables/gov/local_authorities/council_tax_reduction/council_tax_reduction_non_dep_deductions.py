@@ -63,8 +63,11 @@ class council_tax_reduction_non_dep_deductions(Variable):
         counted = person("is_benunit_head", period) * benunit.project(family_amount)
         share = benunit("council_tax_reduction_joint_liability_share", period)
         from_other_families = share * benunit.max(person.household.sum(counted))
-        applicant_exempt = benunit.household(
-            "council_tax_reduction_household_has_non_dep_exemption", period
+        # Each applicant's own exemption (Sch 1 para 8(6)): where families share
+        # the rent and each claims, one family's disability does not exempt
+        # another's claim.
+        applicant_exempt = benunit(
+            "council_tax_reduction_applicant_has_non_dep_exemption", period
         )
         return where(
             applicant_exempt, 0, claims * (from_other_families + from_own_family)

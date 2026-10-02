@@ -281,13 +281,12 @@ def oracle(person_rows, family_rows, uc, hb, ctr, pension_credit, claims, ctr_sh
                     exp_ctr[i] += claims[i] * ctr_share[i] * ctr[p]
             elif own_family and role in ("head", "sharer"):
                 exp_ctr[f] += ctr[p]
-        # A claimant or partner on PIP daily living exempts their family from
-        # all HB deductions (reg 74(6)); the household head's applicant
-        # exemption covers the household's CTR (Sch 1 para 8(6)).
+        # A claimant or partner on PIP daily living exempts their own family
+        # from all HB and CTR deductions (reg 74(6); Sch 1 para 8(6)).
         for i in fams:
             if family_rows[i]["renter_pip"]:
                 exp_hb[i] = 0.0
-            if family_rows[head]["renter_pip"]:
+            if family_rows[i]["renter_pip"]:
                 exp_ctr[i] = 0.0
     return exp_uc, exp_hb, exp_ctr, expected_uc_individual
 
@@ -394,13 +393,21 @@ def test_conservation_and_exemptions(population):
     )
     ctr_own = sim.map_result(ctr_counted * own_of_claimant, "person", "household")
     ctr_other = sim.map_result(ctr_counted * ~own_of_claimant, "person", "household")
-    ctr_exempt = calc(sim, "council_tax_reduction_household_has_non_dep_exemption") > 0
+    ctr_exempt = (
+        sim.map_result(
+            calc(sim, "council_tax_reduction_applicant_has_non_dep_exemption")
+            * v["claims"],
+            "benunit",
+            "household",
+        )
+        > 0
+    )
     assert np.allclose(
         ctr_families[~ctr_exempt],
         (claim_shares * ctr_other + ctr_own)[~ctr_exempt],
         atol=0.01,
     )
-    assert np.all(ctr_families[ctr_exempt] == 0)
+    assert np.all(ctr_families <= claim_shares * ctr_other + ctr_own + 0.01)
     # UC: each contribution is borne once, except where the bearer is exempt.
     uc_families = sim.map_result(
         calc(sim, "uc_non_dep_deductions"), "benunit", "household"
@@ -469,9 +476,7 @@ def test_no_op_without_non_dependants_in_a_benefit_unit(population):
         ),
         atol=0.01,
     )
-    ctr_exempt = (
-        calc(sim, "council_tax_reduction_household_has_non_dep_exemption") > 0
-    )[family_household]
+    ctr_exempt = calc(sim, "council_tax_reduction_applicant_has_non_dep_exemption") > 0
     ctr_counted = counted_once_per_couple(person_rows, v["ctr"])
     assert np.allclose(
         calc(sim, "council_tax_reduction_non_dep_deductions"),

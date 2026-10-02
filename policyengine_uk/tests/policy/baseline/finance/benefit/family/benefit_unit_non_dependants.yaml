@@ -839,3 +839,107 @@
   output:
     council_tax_reduction_individual_non_dep_deduction: [0, 691.60]
     council_tax_reduction_non_dep_deductions: 691.60
+
+# SI 2012/2885 Sch 1 para 8(6): the exemption belongs to each applicant ("the
+# applicant or his partner"). With two jointly liable applicants, one's
+# blindness does not exempt the other's claim.
+- name: CTR, a blind household head does not exempt a jointly liable sharer
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+        is_blind: true
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+      friend:
+        age: 30
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      benunit_3:
+        members: [friend]
+    households:
+      household:
+        members: [head, sharer, friend]
+        rent: 12_000
+        country: SCOTLAND
+  output:
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false, false]
+    council_tax_reduction_non_dep_deductions: [0, 150, 0]
+
+- name: CTR, a blind sharer is exempt but the household head is not
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+        is_blind: true
+      friend:
+        age: 30
+        is_claimant_or_partner: true
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      benunit_3:
+        members: [friend]
+    households:
+      household:
+        members: [head, sharer, friend]
+        rent: 12_000
+        country: SCOTLAND
+  output:
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, true, false]
+    council_tax_reduction_non_dep_deductions: [150, 0, 0]
+
+# The sharer's own adult son is the sharer's non-dependant alone, and the
+# blind sharer is exempt, so no one bears a deduction for him.
+- name: CTR, a blind sharer's own adult son costs no one a deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      sharer:
+        age: 48
+        is_claimant_or_partner: true
+        is_blind: true
+      sharer_son:
+        age: 25
+        is_claimant_or_partner: false
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [sharer, sharer_son]
+        liable_for_share_of_household_rent: true
+    households:
+      household:
+        members: [head, sharer, sharer_son]
+        rent: 12_000
+        country: SCOTLAND
+  output:
+    council_tax_reduction_non_dep_deductions: [0, 0]

@@ -242,6 +242,7 @@ def calculate(sim, year):
             "housing_benefit_non_dep_deductions",
             "housing_benefit_non_dep_deductions_claimant_exempt",
             "council_tax_reduction_non_dep_deductions",
+            "council_tax_reduction_applicant_has_non_dep_exemption",
             "universal_credit_pre_benefit_cap",
         ],
         household=[
@@ -467,10 +468,9 @@ def test_non_dependant_deduction_invariants(population, year):
         benunit_count,
         welsh_working_age,
     )
-    household_exempt = np.repeat(
-        r["council_tax_reduction_household_has_non_dep_exemption"], 2
-    )
-    expected_ctr = np.where(household_exempt, 0, expected_ctr)
+    # Each applicant's own exemption (Sch 1 para 8(6)).
+    applicant_exempt = r["council_tax_reduction_applicant_has_non_dep_exemption"]
+    expected_ctr = np.where(applicant_exempt, 0, expected_ctr)
     np.testing.assert_allclose(
         r["council_tax_reduction_non_dep_deductions"], expected_ctr, atol=0.01
     )
