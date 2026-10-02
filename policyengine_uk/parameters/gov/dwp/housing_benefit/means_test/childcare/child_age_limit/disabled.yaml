@@ -1,0 +1,9 @@
+description: The exclusive annual age limit approximating the first Monday in September following the sixteenth birthday for Housing Benefit childcare charges for a disabled child.
+values:
+  2006-03-06: 17
+metadata:
+  unit: year
+  label: housing benefit childcare disabled child age limit
+  reference:
+    title: Housing Benefit Regulations 2006, regulation 28(6) and (13)
+    href: https://www.legislation.gov.uk/uksi/2006/213/regulation/28
