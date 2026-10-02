@@ -6,14 +6,17 @@ class carer_support_payment(Variable):
     entity = Person
     label = "Carer Support Payment"
     documentation = (
-        "Carer Support Payment replaces Carer's Allowance for "
-        "eligible carers living in Scotland."
+        "The Carer Support Payment component of Carer Support, which replaces "
+        "Carer's Allowance for eligible carers living in Scotland. The "
+        "Scottish Carer Supplement paid with it from 15 March 2026 is a "
+        "separate component: see scottish_carer_supplement."
     )
     definition_period = YEAR
     unit = GBP
     reference = [
         "https://www.mygov.scot/carer-support-payment",
         "https://www.legislation.gov.uk/asp/2018/9/part/4",
+        "https://www.legislation.gov.uk/ssi/2023/302/regulation/3",
     ]
 
     def formula(person, period, parameters):
@@ -27,5 +30,4 @@ class carer_support_payment(Variable):
         eligible = (
             in_scotland & csp_in_effect & (meets_hours | receives_ca) & would_claim
         )
-        weekly_amount = csp.rate + csp.supplement
-        return eligible * weekly_amount * WEEKS_IN_YEAR
+        return eligible * csp.rate * WEEKS_IN_YEAR
