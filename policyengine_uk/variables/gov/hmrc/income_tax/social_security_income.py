@@ -16,4 +16,5 @@ class social_security_income(Variable):
         "esa_contrib_reported",
         "carers_allowance",
         "carer_support_payment",
+        "scottish_carer_supplement",
     ]
