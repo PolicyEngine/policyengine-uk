@@ -1,0 +1,57 @@
+description: >
+  Benefits whose receipt qualifies a claimant or partner for the legacy severe
+  disability premium, or exempts a non-dependant from its residence condition,
+  in Northern Ireland. Attendance allowance at either rate and the disability
+  living allowance care component at the middle or highest rate qualify.
+  Armed forces independence payment was added from 24 December 2013 by
+  S.I. 2013/3021, and the personal independence payment daily living component
+  at either rate from 20 June 2016 by S.R. 2016/228. The amendments cover the
+  Northern Ireland Income Support, Jobseeker's Allowance, Housing Benefit and
+  Employment and Support Allowance regulations. The model applies the list at
+  the annual period's start, without within-year proration. The initial value
+  date follows the shared model baseline, not the commencement of S.R.
+  2006/405 on 20 November 2006. Northern Ireland historical coverage before
+  that commencement has not been verified.
+metadata:
+  label: Northern Ireland legacy severe disability premium qualifying benefits
+  period: year
+  unit: list
+  preserve_calendar_dates: true
+  reference:
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 reg. 1(1)
+      href: https://www.legislation.gov.uk/nisr/2006/405/regulation/1/made
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 Sch. 4 para. 14
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/4/paragraph/14
+    - title: S.I. 2013/3021 art. 1 (commencement)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/1
+    - title: S.I. 2013/3021 art. 14(5)(c) (Income Support)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/14/5/c
+    - title: S.I. 2013/3021 art. 17(7)(c) (Jobseeker's Allowance)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/17/7/c
+    - title: S.I. 2013/3021 art. 26(6)(c) (Housing Benefit)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/26/6/c
+    - title: S.I. 2013/3021 art. 28(5)(b) (Employment and Support Allowance)
+      href: https://www.legislation.gov.uk/uksi/2013/3021/article/28/5/b
+    - title: S.R. 2016/228 reg. 1 (commencement)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/1
+    - title: S.R. 2016/228 reg. 11(5)(c) (Income Support)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/11/5/c
+    - title: S.R. 2016/228 reg. 14(7)(c) (Jobseeker's Allowance)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/14/7/c
+    - title: S.R. 2016/228 reg. 30(7)(c) (Housing Benefit)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/30/7/c
+    - title: S.R. 2016/228 reg. 34(5)(b) (Employment and Support Allowance)
+      href: https://www.legislation.gov.uk/nisr/2016/228/regulation/34/5/b
+values:
+  2006-03-06:
+    - attendance_allowance
+    - dla_sc_middle_plus
+  2013-12-24:
+    - attendance_allowance
+    - dla_sc_middle_plus
+    - armed_forces_independence_payment
+  2016-06-20:
+    - attendance_allowance
+    - dla_sc_middle_plus
+    - pip_dl
+    - armed_forces_independence_payment

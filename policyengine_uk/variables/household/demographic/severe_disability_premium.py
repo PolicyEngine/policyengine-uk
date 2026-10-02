@@ -26,7 +26,7 @@ class severe_disability_premium(Variable):
         "Fraud Act 2001 also counts (HB Regs 2006 Sch 3 para 14(7), IS Regs "
         "1987 Sch 2 para 13(5), ESA Regs 2008 Sch 4 para 6(8), JSA Regs 1996 "
         "Sch 1 para 15(9)); the model has no input for such a restriction, so "
-        "where one applies it pays the premium the law withholds. The "
+        "where one applies it can pay a premium the law withholds. The "
         "Jobseeker's Allowance savings for people protected by the Income "
         "Support (General) Amendment (No. 6) Regulations 1991 (JSA Regs 1996 "
         "Sch 1 para 15(8)) are not modelled; income-based Jobseeker's "

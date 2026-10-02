@@ -44,7 +44,7 @@ import numpy as np
 from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import Simulation
+from policyengine_uk import Simulation, parameters
 
 YEAR = 2026
 WEEKS = 52
@@ -56,6 +56,27 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
+
+
+def test_northern_ireland_commencements_survive_parameter_processing():
+    # Fiscal-year conversion must not erase these midyear commencements.
+    for benefit, before, commencement in (
+        ("armed_forces_independence_payment", "2013-12-23", "2013-12-24"),
+        ("pip_dl", "2016-06-19", "2016-06-20"),
+    ):
+        assert (
+            benefit
+            not in parameters(
+                before
+            ).gov.dwp.disability_premia.severe_qualifying_benefits_northern_ireland
+        )
+        assert (
+            benefit
+            in parameters(
+                commencement
+            ).gov.dwp.disability_premia.severe_qualifying_benefits_northern_ireland
+        )
+
 
 # (inputs, qualifies) for each benefit a person may receive.
 BENEFITS = {

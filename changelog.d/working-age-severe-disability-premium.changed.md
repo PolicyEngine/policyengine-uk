@@ -1,1 +1,1 @@
-The tax credit severe disability flag reads Attendance Allowance from its award category, comparing an amount with the higher rate only when no category is given.
+- Read Attendance Allowance from its dataset award category when supplied, retained an explicitly approximate amount fallback otherwise, and applied Northern Ireland's separate AFIP and PIP commencement dates to the legacy severe disability premium.
