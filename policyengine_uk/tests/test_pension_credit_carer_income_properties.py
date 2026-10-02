@@ -3,12 +3,12 @@
 Pension Credit income left out Carer's Allowance and Carer Support Payment,
 although the State Pension Credit Regulations 2002 reg 15(1) prescribe "all
 social security benefits" as income except those they list, and neither is
-listed. Pension-age Housing Benefit counted both. While Guarantee Credit was
-paid, Housing Benefit was passported to its maximum and hid the difference;
-when Guarantee Credit ended, Housing Benefit was assessed on the carer's
-benefit that Pension Credit had ignored. A pensioner couple whose partner
-received Carer's Allowance lost £1,779.24 of net income when private pension
-rose from £9,700 to £9,800 in 2026.
+listed. Pension-age Housing Benefit and Council Tax Reduction counted both.
+While Guarantee Credit was paid, both were passported to their maximum and hid
+the difference; when Guarantee Credit ended, both were assessed on the carer's
+benefit that Pension Credit had ignored, so a pensioner couple whose partner
+received Carer's Allowance lost well over the £100 rise in their private
+pension at that step.
 
 The Scottish Carer Supplement, paid with Carer Support Payment from 15 March
 2026, is the opposite case: SPC Regs reg 15(1)(ri) excepts it from Pension
@@ -31,11 +31,12 @@ Support Payment (Scotland), renting from the council in 2026:
    cliff, so it is excluded.
 3. Metamorphic: setting the Scottish Carer Supplement to zero changes
    Pension Credit income and Housing Benefit applicable income only through
-   income tax: each plus income tax is unchanged. This is weaker than the
-   law, which disregards tax only on income taken into account (SPC Regs
-   reg 17(10)), so the supplement should leave Pension Credit income
-   unchanged outright. The model deducts all income tax, including the tax on
-   the supplement (#1954), so the invariant adds income tax back.
+   income tax: each plus income tax is unchanged. This encodes the model's
+   current behaviour, not the law's. The law disregards tax only on income
+   taken into account (SPC Regs reg 17(10); HB (SPC) Regs 2006 reg 33(12)),
+   so the supplement should leave both measures unchanged outright, while
+   the model deducts all income tax, including the tax on the supplement
+   (#1954). When that is fixed, assert the measures themselves are unchanged.
 
 These compare PolicyEngine's own income measures, so they hold whatever
 carer's benefit the model pays. The model does not yet apply the
