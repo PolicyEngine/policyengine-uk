@@ -8,8 +8,8 @@ benunit_contains_household_head.
 
 Invariants, for any generated population of households and any flag input
 (one member, several, both members of a couple, everyone, none, or no input
-at all), with families of non-dependants, sharers, boarders and lodgers, and
-ties in age. Invariants marked "pin" restate the formula, so they guard
+at all), with families of non-dependants, sharers, boarders and lodgers,
+families of a child alone, and ties in age. Invariants marked "pin" restate the formula, so they guard
 against regressions rather than check it independently.
 
 1. One head: exactly one member of each household is the head: the eldest
@@ -106,9 +106,16 @@ OUTPUTS = [
 
 @st.composite
 def family(draw):
+    # Sometimes a family of one child under 16 and no adult, so that the
+    # head's family can have no claimant and no one is liable for the rent.
+    children_only = draw(st.sampled_from([False, False, False, True]))
     return dict(
-        ages=draw(st.lists(adult_age, min_size=1, max_size=2)),
-        child_age=draw(st.one_of(st.none(), st.integers(0, 17))),
+        ages=[] if children_only else draw(st.lists(adult_age, min_size=1, max_size=2)),
+        child_age=draw(
+            st.integers(0, 15)
+            if children_only
+            else st.one_of(st.none(), st.integers(0, 17))
+        ),
         earnings=draw(st.lists(money, min_size=2, max_size=2)),
         role=draw(st.sampled_from(ROLES)),
         payment=draw(st.floats(1, 12_000, allow_nan=False)),
