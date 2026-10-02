@@ -5,7 +5,8 @@ class pension_contributions_via_salary_sacrifice_adjusted(Variable):
     label = "Adjusted salary sacrifice pension contributions (capped)"
     documentation = (
         "The actual amount of salary sacrifice pension contributions after "
-        "applying the cap. Contributions above the cap are redirected to "
+        "limiting them to the person's pay and applying the cap. "
+        "Contributions above the cap are redirected to "
         "regular employee pension contributions and subject to NI."
     )
     entity = Person
@@ -15,7 +16,9 @@ class pension_contributions_via_salary_sacrifice_adjusted(Variable):
     reference = "https://policyengine.org/uk/research/salary-sacrifice-cap"
 
     def formula(person, period, parameters):
-        intended_ss = person("pension_contributions_via_salary_sacrifice", period)
+        intended_ss = person(
+            "pension_contributions_via_salary_sacrifice_from_pay", period
+        )
         cap = parameters(
             period
         ).gov.hmrc.national_insurance.salary_sacrifice_pension_cap

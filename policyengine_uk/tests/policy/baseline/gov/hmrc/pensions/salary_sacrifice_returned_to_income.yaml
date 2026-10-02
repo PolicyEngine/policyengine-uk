@@ -1,0 +1,84 @@
+# From 6 April 2029 the salary sacrifice above the £2,000 cap returns to
+# employment income. The sacrifice is limited to the person's pay first, so
+# the cap never gives pay to a person who has none.
+
+- name: No pay and a salary sacrifice input gives no employment income, 2029
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 27_000
+  output:
+    salary_sacrifice_returned_to_income: 0
+    pension_contributions_via_salary_sacrifice_adjusted: 0
+    employment_income: 0
+    salary_sacrifice_pension_ni_employee: 0
+    salary_sacrifice_pension_ni_employer: 0
+    employee_pension_contributions: 0
+
+- name: No pay and a salary sacrifice input gives no employment income, 2030
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    pension_contributions_via_salary_sacrifice: 27_000
+  output:
+    salary_sacrifice_returned_to_income: 0
+    employment_income: 0
+
+- name: Self-employed person with no pay gets no employment income, 2029
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+    pension_contributions_via_salary_sacrifice: 27_000
+  output:
+    salary_sacrifice_returned_to_income: 0
+    employment_income: 0
+
+- name: Pay above the sacrifice returns the excess over the cap, 2029
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: 5_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # 5,000 - 2,000 cap
+    salary_sacrifice_returned_to_income: 3_000
+    pension_contributions_via_salary_sacrifice_adjusted: 2_000
+    employment_income: 43_000
+
+- name: Pay below the sacrifice returns only what the pay supports, 2029
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 10_000
+    pension_contributions_via_salary_sacrifice: 30_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    # min(30,000, 10,000) - 2,000 cap
+    salary_sacrifice_returned_to_income: 8_000
+    pension_contributions_via_salary_sacrifice_adjusted: 2_000
+    employment_income: 18_000
+
+- name: Pay below the cap returns nothing, 2029
+  period: 2029
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 1_500
+    pension_contributions_via_salary_sacrifice: 30_000
+    gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
+  output:
+    salary_sacrifice_returned_to_income: 0
+    pension_contributions_via_salary_sacrifice_adjusted: 1_500
+    employment_income: 1_500
+
+- name: Nothing returns before the cap starts, 2028
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    employment_income_before_lsr: 40_000
+    pension_contributions_via_salary_sacrifice: 5_000
+  output:
+    salary_sacrifice_returned_to_income: 0
+    pension_contributions_via_salary_sacrifice_adjusted: 5_000
+    employment_income: 40_000
