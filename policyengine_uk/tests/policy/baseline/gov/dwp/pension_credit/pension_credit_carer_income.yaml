@@ -158,7 +158,7 @@
     # Credit is the maximum, 60% of (standard minimum guarantee - threshold).
     savings_credit: 0.6 * (238 - 208.07) * 52
 
-- name: Housing Benefit no longer falls where Guarantee Credit used to end for a couple whose partner receives Carer's Allowance
+- name: Housing Benefit and Council Tax Reduction no longer fall where Guarantee Credit used to end for a couple whose partner receives Carer's Allowance
   # Before #1952, Pension Credit left out the partner's Carer's Allowance, so
   # Guarantee Credit ran on to a private pension of 9,700 and the Housing
   # Benefit and Council Tax Reduction passports ended at 9,800, when both

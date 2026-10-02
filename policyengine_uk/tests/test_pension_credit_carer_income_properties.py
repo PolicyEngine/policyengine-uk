@@ -3,12 +3,13 @@
 Pension Credit income left out Carer's Allowance and Carer Support Payment,
 although the State Pension Credit Regulations 2002 reg 15(1) prescribe "all
 social security benefits" as income except those they list, and neither is
-listed. Pension-age Housing Benefit and Council Tax Reduction counted both.
+listed. Pension-age Housing Benefit counted both, and Council Tax Reduction
+counted Carer's Allowance (it does not yet count Carer Support Payment: #1955).
 While Guarantee Credit was paid, both were passported to their maximum and hid
-the difference; when Guarantee Credit ended, both were assessed on the carer's
-benefit that Pension Credit had ignored, so a pensioner couple whose partner
-received Carer's Allowance lost well over the £100 rise in their private
-pension at that step.
+the difference; when Guarantee Credit ended, both were assessed on the
+Carer's Allowance that Pension Credit had ignored, so a pensioner couple whose
+partner received it lost well over the £100 rise in their private pension at
+that step.
 
 The Scottish Carer Supplement, paid with Carer Support Payment from 15 March
 2026, is the opposite case: SPC Regs reg 15(1)(ri) excepts it from Pension
