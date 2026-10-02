@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
     is_payee_of_couple_award,
+    own_report_is_paid,
 )
 
 
@@ -18,8 +19,9 @@ class is_on_income_related_esa(Variable):
         "does, and only while their award (claimant_or_partner_esa_income) "
         "is positive. Any other member of the benefit unit, such as a "
         "non-dependent adult, claims in their own right and is on it only if "
-        "they report an award themselves while the benefit unit's modelled "
-        "income-related ESA is positive."
+        "the award on their own report alone is positive: the report exceeds "
+        "the tariff income from the benefit unit's capital, within the "
+        "capital limit, while the benefit unit's modelled award is positive."
     )
     definition_period = YEAR
     reference = (
@@ -31,9 +33,6 @@ class is_on_income_related_esa(Variable):
         couple_award = (
             person.benunit("claimant_or_partner_esa_income", period) > 0
         ) & (is_payee_of_couple_award(person, period, "esa_income_reported"))
-        # Their own report, while the model pays income-related ESA in the
-        # benefit unit (so not once a reform removes or zeroes it).
-        own_award = (person("esa_income_reported", period) > 0) & (
-            person.benunit("esa_income", period) > 0
-        )
+        # The award on their own report alone, never another member's.
+        own_award = own_report_is_paid(person, period, "esa_income")
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

@@ -367,10 +367,12 @@
   output:
     is_benefit_cap_exempt_health_disability: true
 
-# Maintenance loans: the "students entitled to benefits" schedule is for a
-# student who could claim benefits themselves (SI 2011/1986 regs 61(2) and
-# 71(1)(h)). The model's proxy reads whether income-related ESA is payable to
-# the student; a parent's or partner's award does not make the student
+# Maintenance loans: the "students entitled to benefits" schedule (SI 2011/1986
+# reg 71(1)(h)(iii)) follows the special support grant test in reg 61(2)(b),
+# which follows HB Regs 2006 reg 56(2)(a): a full-time student "who is a
+# person on" income-related ESA, that is, one to whom it "is payable"
+# (reg 2(3A)). The model's proxy reads whether income-related ESA is payable
+# to the student; a parent's or partner's award does not make the student
 # eligible.
 
 - name: A parent's income-related ESA does not put a student on the benefits schedule
@@ -441,3 +443,40 @@
         country: ENGLAND
   output:
     maintenance_loan_entitled_to_benefits: [false, true]
+
+- name: A student's own ESA report below the tariff income is not paid, whatever another member reports
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        is_claimant_or_partner: true
+        is_parent: false
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: TERTIARY
+        esa_income_reported: 200
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, student, other]
+    households:
+      household:
+        members: [parent, student, other]
+        country: ENGLAND
+        savings: 7_000
+  output:
+    # Savings of £7,000 are £1,000 above £6,000: 4 steps of £250, so tariff
+    # income of £4 a week, £208 a year (ESA Regs 2008 reg 118). The student's
+    # £200 alone gives no award; the other adult's £3,000 gives £2,792. The
+    # benefit unit's award on both reports, £2,992, is household income but
+    # does not make the student's report paid.
+    esa_income: [2_992]
+    claimant_or_partner_esa_income: [0]
+    is_on_income_related_esa: [false, false, true]
+    maintenance_loan_entitled_to_benefits: [false, false, true]
