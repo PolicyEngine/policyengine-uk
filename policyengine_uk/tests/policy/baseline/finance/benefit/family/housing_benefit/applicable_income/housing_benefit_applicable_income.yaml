@@ -51,14 +51,14 @@
   input:
     # Benefits
     child_benefit: 1_000
-    income_support: 2_250
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0
     property_income: 0
-    private_pension_income: 0
+    private_pension_income: 2_250
     # Tax
     income_tax: 0
     national_insurance: 0
@@ -75,14 +75,14 @@
   input:
     # Benefits
     child_benefit: 1_000
-    income_support: 2_250
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0
     property_income: 1_000
-    private_pension_income: 0
+    private_pension_income: 2_250
     # Tax
     income_tax: 0
     national_insurance: 0
@@ -99,14 +99,14 @@
   input:
     # Benefits
     child_benefit: 1_000
-    income_support: 2_250
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
     employment_income: 0
     self_employment_income: 0
     property_income: 1_000
-    private_pension_income: 0
+    private_pension_income: 2_250
     # Tax
     income_tax: 0
     national_insurance: 0
