@@ -1,0 +1,1 @@
+- Remove the unused benefit sums from `is_benefit_cap_exempt_earnings` and `is_benefit_cap_exempt_other`; the age exception keeps its result and the armed forces and ESA exceptions move, limited to the claimant and partner, into `is_benefit_cap_exempt_health_disability`.
