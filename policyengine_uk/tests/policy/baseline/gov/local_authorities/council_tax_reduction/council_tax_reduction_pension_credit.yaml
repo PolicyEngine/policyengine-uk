@@ -474,7 +474,7 @@
     council_tax_reduction_assessable_capital: 17_000
     council_tax_reduction: 0
 
-- name: The same pensioner not claiming Pension Credit is tested on household savings only
+- name: The same pensioner not claiming Pension Credit is tested on savings and the second property
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -499,13 +499,13 @@
         other_residential_property_value: 7_000
   output:
     in_receipt_of_savings_credit_only: false
-    # Pensioners without Pension Credit are tested on household savings, a
-    # proxy that leaves out the second property the schemes' own capital rules
-    # count (SI 2012/2885 Sch 1 Part 6 Chapter 3). So, unlike the claimant
-    # above, this pensioner keeps CTR: the gap is in the proxy, not the law.
-    council_tax_reduction_assessable_capital: 10_000
+    # SI 2012/2885 Sch 1 para 31(1) counts "the whole of his capital", so the
+    # second property counts as it does for the claimant above: 10,000 +
+    # 7,000 = 17,000, over the 16,000 limit (reg 11(2)). Shares and other
+    # investments are still left out of the proxy (issue 1936).
+    council_tax_reduction_assessable_capital: 17_000
     council_tax_reduction_applicable_income: 13_314
-    council_tax_reduction: 1_999.60
+    council_tax_reduction: 0
 
 - name: Capital of exactly 16,000 is within the limit for a pensioner without Pension Credit
   period: 2026
