@@ -177,8 +177,9 @@ programs:
     agency: HMRC
     status: complete
     coverage: UK
-    parameter_prefix: gov.hmrc
-    verified_start_year: 2022
+    variable: minimum_wage
+    parameter_prefix: gov.hmrc.minimum_wage
+    verified_start_year: 2015
 
   # --- DWP programs ---
   - id: universal_credit
