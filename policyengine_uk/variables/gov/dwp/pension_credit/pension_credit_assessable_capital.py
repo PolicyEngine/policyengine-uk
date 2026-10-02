@@ -12,7 +12,9 @@ class pension_credit_assessable_capital(Variable):
         "age adults. Person-level sources, such as a Lifetime ISA, count "
         "only for the holder's own benunit, and only when the holder is its "
         "claimant or partner (is_uc_claimant): a dependant's capital is not "
-        "the claimant's."
+        "the claimant's. Where `pension_credit_reported_capital` records the "
+        "benefit unit's own capital (0 or more), it replaces the household "
+        "proxy and the person-level sources."
     )
     definition_period = YEAR
     unit = GBP
@@ -37,8 +39,10 @@ class pension_credit_assessable_capital(Variable):
         household_capital_proxy = (
             household_capital * benunit_pension_age_adults / adult_divisor
         )
-        return where(
-            any_pension_age,
-            max_(0, household_capital_proxy + person_capital),
-            0,
+        reported_capital = benunit("pension_credit_reported_capital", period)
+        assessed_capital = where(
+            reported_capital >= 0,
+            reported_capital,
+            household_capital_proxy + person_capital,
         )
+        return where(any_pension_age, max_(0, assessed_capital), 0)

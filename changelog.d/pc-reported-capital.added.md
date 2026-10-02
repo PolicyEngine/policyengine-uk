@@ -1,0 +1,1 @@
+Add `pension_credit_reported_capital`, a benefit-unit input that replaces the household proxy in Pension Credit assessable capital when a dataset records the claimant's and partner's own capital (default -1: no change).
