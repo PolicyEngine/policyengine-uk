@@ -7,8 +7,10 @@ in remunerative work. For every family:
 
 - esa_income_eligible and jsa_income_eligible equal a family-by-family
   reading of the law (legacy_award_work_reference);
-- more hours or more pay for anyone never makes a family eligible, because
-  the conditions only ever bar a claim;
+- more hours or more pay for anyone never makes a family eligible, in the
+  years tested (2025 and 2026). Before 6 April 2024 reg 99(3)(a) took a
+  fixed Class 2 deduction once profit reached a threshold, so £1 more
+  profit could lower net earnings; that intended cliff is a YAML case;
 - caring never ends an ESA award (a carer partner is not treated as in
   remunerative work, ESA Regs reg 43(2)(c)) and never matters for JSA (the
   JSA regulations have no exception for carers doing unrelated paid work);

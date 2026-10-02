@@ -652,6 +652,37 @@
     esa_income_eligible: false
     esa_income: 0
 
+- name: In 2023-24 £1 over the lower profits threshold brings Class 2 in and the work under the limit
+  # An intended cliff, not a defect: reg 99(3)(a)'s Class 2 is a fixed weekly
+  # amount once profit exceeds the threshold, so £1 more profit than the
+  # case above (£168.65, remunerative) lowers net earnings below £167. More
+  # pay or profit never helps from 6 April 2024, when Class 2 stops; the
+  # monotonicity property tests 2025 and 2026.
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        hours_worked: 780
+        self_employment_income: 12_571
+        personal_pension_contributions: 7_600
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # Tax 20% x £1 = £0.20. Class 4 9% x £1 = £0.09. Class 2 52 x £3.45 =
+    # £179.40. Half the premium, £3,800.
+    # (£12,571 - £0.20 - £0.09 - £179.40 - £3,800) / 52 = £165.22, within £167.
+    esa_exempt_work_earnings: 165.22
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+    esa_income: 5_000
+
 - name: In 2023-24 a profit over the lower profits threshold pays Class 2 at £3.45
   period: 2023
   absolute_error_margin: 0.01
