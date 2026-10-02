@@ -31,6 +31,17 @@ No adult outside the couple is named, so:
   carer is not in remunerative work for Income Support (reg 6(4)(c)) but is
   for JSA, so a carer's own JSA award ends at 16 hours.
 
+The first and third hold for every input except at the value convention's
+boundary. A directly entered esa_income or jsa_income that equals what the
+reported amounts give is read through them, so a change to another member's
+report, or to the claimant's own, can change how the entered award is read.
+The generators stay off that boundary. They enter £4,000, which no generated
+total of reports can equal, or £0, whose two readings agree: where £0 is
+what the reports give, they give no award to bar the claim either.
+test_income_support_direct_inputs.py (JSA) and
+test_income_support_esa_entered_directly.py (ESA) test the boundary by
+example, with the intended results.
+
 The second property is a reference check of the bounded model gate, not of
 legal entitlement: caring, work hours, ESA, JSA and Income Support are the
 model's reported or proxy inputs, it reads state pension age from the model

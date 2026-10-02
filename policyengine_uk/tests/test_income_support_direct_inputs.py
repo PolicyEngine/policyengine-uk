@@ -160,3 +160,93 @@ def test_the_raw_reported_total_is_read_through_the_reports():
     # A different award entered directly is the couple's.
     simulation.set_input("jsa_income", YEAR, [4_000])
     assert not eligible(simulation)
+
+
+def three_person_family(other_adults, benunit_inputs=None, capital=0):
+    """A caring award holder and the given adults, none claimant or partner."""
+    people = {
+        "carer": {
+            "age": {YEAR: 40},
+            "is_claimant_or_partner": {YEAR: True},
+            "receives_carer_benefit": {YEAR: True},
+            "income_support_reported": {YEAR: 1_000},
+        }
+    }
+    for i, report in enumerate(other_adults):
+        people[f"other_{i}"] = {
+            "age": {YEAR: 30},
+            "is_claimant_or_partner": {YEAR: False},
+            "jsa_income_reported": {YEAR: report},
+        }
+    members = list(people)
+    return Simulation(
+        situation={
+            "people": people,
+            "benunits": {
+                "family": {
+                    "members": members,
+                    "income_support_assessable_capital": {YEAR: capital},
+                    "jsa_income_assessable_capital": {YEAR: capital},
+                    **(benunit_inputs or {}),
+                }
+            },
+            "households": {"home": {"members": members}},
+        }
+    )
+
+
+def test_large_reports_are_compared_at_storage_precision():
+    # jsa_income is stored as float32: £65,536.01 + £65,536.00 is kept as
+    # £131,072.00, while the float64 sum of the reports is £131,072.0078. The
+    # formula's own award, and the raw total set as disable_simulated_benefits
+    # sets it (the model's own sum of the reports), must still be read as what
+    # the reports give, so the excluded adults' awards do not count.
+    simulation = three_person_family([65_536.01, 65_536.00])
+    assert simulation.calculate("jsa_income", YEAR)[0] == 131_072
+    assert eligible(simulation)
+    raw_total = simulation.calculate("jsa_income_reported", YEAR, map_to="benunit")
+    simulation.set_input("jsa_income", YEAR, raw_total)
+    assert eligible(simulation)
+
+
+def test_an_excluded_adults_report_can_explain_a_direct_award():
+    # Intended (the value convention): a direct £4,000 that no report
+    # explains is the couple's, and bars the claim. Once an adult outside
+    # the couple reports exactly £4,000, the reports explain it and say it is
+    # that adult's, so it no longer bars the claim.
+    entered = {"jsa_income": {YEAR: 4_000}}
+    assert not eligible(three_person_family([], benunit_inputs=entered))
+    assert eligible(three_person_family([4_000], benunit_inputs=entered))
+
+
+def test_a_claimants_report_can_explain_a_direct_award():
+    # Intended: a direct £200 with £10,000 of capital and no reports is the
+    # claimant's, and bars the claim. If the claimant reports exactly £200,
+    # the raw total explains it, and the claimant's £200 is extinguished by
+    # tariff income of £832 a year, so it no longer bars the claim.
+    claimant_reports = {
+        "age": {YEAR: 40},
+        "is_claimant_or_partner": {YEAR: True},
+        "receives_carer_benefit": {YEAR: True},
+        "income_support_reported": {YEAR: 1_000},
+    }
+
+    def single(report):
+        person = {**claimant_reports, "jsa_income_reported": {YEAR: report}}
+        return Simulation(
+            situation={
+                "people": {"carer": person},
+                "benunits": {
+                    "family": {
+                        "members": ["carer"],
+                        "income_support_assessable_capital": {YEAR: 10_000},
+                        "jsa_income_assessable_capital": {YEAR: 10_000},
+                        "jsa_income": {YEAR: 200},
+                    }
+                },
+                "households": {"home": {"members": ["carer"]}},
+            }
+        )
+
+    assert not eligible(single(0))
+    assert eligible(single(200))
