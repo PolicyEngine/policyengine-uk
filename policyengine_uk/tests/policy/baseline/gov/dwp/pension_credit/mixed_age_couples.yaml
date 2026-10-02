@@ -578,3 +578,60 @@
   output:
     is_mixed_age_couple: true
     has_mixed_age_couple_pension_credit_saving: false
+
+- name: A grandparent's reported Housing Benefit does not supply the couple's saving
+  # The claimant (75, born 1951) is old enough and the couple reports nothing.
+  # Only the grandparent, who is over State Pension age, reports Housing
+  # Benefit, and that is not the couple's award (SI 2019/37 art. 2(2)(a)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 90
+        is_claimant_or_partner: false
+        housing_benefit_reported: 5_000
+      claimant:
+        age: 75
+        is_claimant_or_partner: true
+        state_pension: 9_000
+      partner:
+        age: 60
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [grandparent, claimant, partner]
+    households:
+      household:
+        members: [grandparent, claimant, partner]
+  output:
+    is_mixed_age_couple: true
+    has_mixed_age_couple_pension_credit_saving: false
+
+- name: Before the exclusion, a grandparent's Universal Credit does not move the couple onto it
+  # In model year 2018 a mixed-age couple not reported on Universal Credit
+  # takes the Pension Credit route. Only the couple's own report counts.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 90
+        is_claimant_or_partner: false
+        universal_credit_reported: 3_000
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 7_000
+      partner:
+        age: 55
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [grandparent, claimant, partner]
+    households:
+      household:
+        members: [grandparent, claimant, partner]
+  output:
+    is_mixed_age_couple: true
+    meets_pension_credit_age_conditions: true

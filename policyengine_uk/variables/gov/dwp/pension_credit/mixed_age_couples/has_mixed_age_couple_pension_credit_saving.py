@@ -37,8 +37,7 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
         claimant_or_partner = person("is_claimant_or_partner", period)
 
         def reported(variables):
-            amount = sum(person(variable, period) for variable in variables)
-            return benunit.sum(amount * claimant_or_partner) > 0
+            return add_for_members(benunit, period, variables, claimant_or_partner) > 0
 
         # Art. 2(3): only Housing Benefit under the pension-age regulations
         # (SI 2006/214) carries the saving. They apply to a claimant who has

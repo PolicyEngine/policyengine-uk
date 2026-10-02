@@ -40,7 +40,12 @@ class meets_pension_credit_age_conditions(Variable):
         # Credit or Universal Credit jointly (UC Regs 2013 reg 3(2)(a)); a
         # couple reported on Universal Credit stays on it, and any other takes
         # the Pension Credit route. This is a modelling choice.
-        reports_uc = add(benunit, period, ["universal_credit_reported"]) > 0
+        reports_uc = (
+            add_for_members(
+                benunit, period, ["universal_credit_reported"], claimant_or_partner
+            )
+            > 0
+        )
         before_exclusion = np.logical_not(excluded) & ~reports_uc
         mixed_age_route = benunit("is_mixed_age_couple", period) & (
             before_exclusion | saving
