@@ -66,9 +66,10 @@ class council_tax_reduction_applicable_income(Variable):
 
         pension_contributions = add(benunit, period, ["pension_contributions"]) * 0.5
         tax = add(benunit, period, ["income_tax", "national_insurance"])
-        # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 3; SSI
-        # 2012/319 Sch 2: the pensioner earnings disregards, capped at net
-        # earnings. Zero for working-age families.
+        # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
+        # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
+        # earnings disregards, capped at net earnings. Zero for working-age
+        # families.
         earnings_disregard = benunit(
             "council_tax_reduction_pensioner_earnings_disregard", period
         )

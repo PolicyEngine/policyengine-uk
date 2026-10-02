@@ -16,14 +16,16 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
         "condition is met and net earnings at least equal the other "
         "disregards and the additional amount. The schedules repeat the "
         "Housing Benefit pension-age schedule (SI 2006/214 Sch 4) word for "
-        "word, and net earnings are defined as for Housing Benefit, so the "
-        "Housing Benefit net earnings and work conditions are used. The "
-        "earnings test leaves out childcare charges, which the model does not "
-        "deduct from Council Tax Reduction income. The £20 disregards for "
-        "disabled people, carers and some part-time occupations, and the "
-        "exempt work disregard, are not modelled. Zero for working-age "
-        "families, whose schemes are local in England and have their own "
-        "schedules in Wales and Scotland, and outside Great Britain."
+        "word, and net earnings are defined as for Housing Benefit (SI "
+        "2012/2885 Sch 1 para 19, WSI 2013/3029 Sch 1 para 13, SSI 2012/319 "
+        "reg 33), so the Housing Benefit net earnings and work conditions "
+        "are used. The earnings test leaves out childcare charges, which the "
+        "model does not deduct from Council Tax Reduction income. The £20 "
+        "disregards for disabled people, carers and some part-time "
+        "occupations, and the exempt work disregard, are not modelled. Zero "
+        "for working-age families, whose schemes are local in England and "
+        "have their own schedules in Wales and Scotland, and outside Great "
+        "Britain."
     )
     definition_period = YEAR
     unit = GBP
@@ -31,7 +33,9 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/19",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/13",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/33",
     )
 
     def formula(benunit, period, parameters):
