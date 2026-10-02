@@ -1,0 +1,6 @@
+description: Minimum age gap below the benefit-unit head at which a younger member is presumed to be the head's child rather than their partner, when relationships are not supplied. This is a PolicyEngine modelling presumption, not a statutory rule.
+values:
+  0001-01-01: 16
+metadata:
+  unit: year
+  label: presumed child minimum age gap

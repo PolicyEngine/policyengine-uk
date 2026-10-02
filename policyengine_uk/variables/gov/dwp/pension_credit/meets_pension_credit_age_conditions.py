@@ -24,10 +24,10 @@ class meets_pension_credit_age_conditions(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        adult = person("is_adult", period)
-        adult_count = benunit.sum(adult)
-        all_pension_age = (adult_count > 0) & (
-            benunit.sum(adult & person("is_SP_age", period)) == adult_count
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        count = benunit.sum(claimant_or_partner)
+        all_pension_age = (count > 0) & (
+            benunit.sum(claimant_or_partner & person("is_SP_age", period)) == count
         )
         # Parameters are read at 30 April of the model year
         # (convert_to_fiscal_year_parameters), so model year 2019 (2019-20)

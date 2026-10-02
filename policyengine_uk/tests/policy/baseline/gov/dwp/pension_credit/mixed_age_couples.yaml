@@ -435,9 +435,12 @@
         tenure_type: RENT_FROM_COUNCIL
   output:
     is_child_or_qualifying_young_person_for_pension_credit: [false, true]
+    is_claimant_or_partner: [true, false]
     is_mixed_age_couple: false
     has_mixed_age_couple_pension_credit_saving: false
-    meets_pension_credit_age_conditions: false
+    # The dependant is not a claimant or partner (SPCA 2002 s.17), so the
+    # pensioner alone meets the age conditions.
+    meets_pension_credit_age_conditions: true
 
 - name: A mixed-age couple with an 18 year old dependant in education can keep the saving
   period: 2026

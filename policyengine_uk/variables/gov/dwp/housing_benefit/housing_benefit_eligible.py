@@ -6,8 +6,9 @@ class housing_benefit_eligible(Variable):
     entity = BenUnit
     label = "eligible for the Housing Benefit"
     documentation = (
-        "Whether this family can receive Housing Benefit. A family in which "
-        "every adult has reached the qualifying age for State Pension Credit "
+        "Whether this family can receive Housing Benefit. A family whose "
+        "claimant and any partner have reached the qualifying age for State "
+        "Pension Credit "
         "can make a new claim; Universal Credit is not available to it. Any "
         "other family keeps Housing Benefit only while it continues an "
         "existing award (reported Housing Benefit) and does not claim "
@@ -34,10 +35,10 @@ class housing_benefit_eligible(Variable):
         # SI 2019/37 art. 4 saving (reg 6A(5); NI reg 4A(5)). Before 15 May
         # 2019 mixed-age couples could claim too. These are the Pension
         # Credit age conditions, which also rule out Universal Credit
-        # (is_uc_eligible), so no family on this route receives it. Outside
-        # mixed-age couples every adult in the benefit unit stands in for the
-        # claimant and partner, so a pensioner with an 18 or 19 year old
-        # dependant is routed to Universal Credit.
+        # (is_uc_eligible), so no family on this route receives it. They read
+        # the claimant and partner (is_claimant_or_partner), so a pensioner
+        # with an 18 or 19 year old dependant can claim Housing Benefit and
+        # not Universal Credit.
         pension_age = benunit("meets_pension_credit_age_conditions", period)
         # Working-age families, and mixed-age couples without the saving
         # (since 15 May 2019), claim Universal Credit instead. They keep an

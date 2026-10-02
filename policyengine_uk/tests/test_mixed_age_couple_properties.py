@@ -57,6 +57,8 @@ TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 
 # The three eligibility formulas as they were before the mixed-age couple
 # rules, kept verbatim as the reference for the differential invariant P5.
+# They read the claimant and partner (is_claimant_or_partner), so an 18 or 19
+# year old dependant does not put a pensioner on the Universal Credit route.
 class is_pension_credit_eligible(Variable):
     value_type = bool
     entity = BenUnit
@@ -64,16 +66,17 @@ class is_pension_credit_eligible(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        adult = benunit.members("is_adult", period)
-        adult_count = benunit.sum(adult)
-        all_adults_are_sp_age = (
-            benunit.sum(adult & benunit.members("is_SP_age", period)) == adult_count
+        claimant_or_partner = benunit.members("is_claimant_or_partner", period)
+        claimant_count = benunit.sum(claimant_or_partner)
+        all_claimants_are_sp_age = (
+            benunit.sum(claimant_or_partner & benunit.members("is_SP_age", period))
+            == claimant_count
         )
         is_gc_eligible = benunit("is_guarantee_credit_eligible", period)
         is_sc_eligible = benunit("is_savings_credit_eligible", period)
         return (
-            (adult_count > 0)
-            & all_adults_are_sp_age
+            (claimant_count > 0)
+            & all_claimants_are_sp_age
             & (is_gc_eligible | is_sc_eligible)
         )
 
@@ -87,9 +90,9 @@ class housing_benefit_eligible(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         sp_age = person("is_SP_age", period)
-        adult = person("is_adult", period)
-        adult_count = benunit.sum(adult)
-        pension_age = (adult_count > 0) & (benunit.sum(adult & sp_age) == adult_count)
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        count = benunit.sum(claimant_or_partner)
+        pension_age = (count > 0) & (benunit.sum(claimant_or_partner & sp_age) == count)
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("would_claim_uc", period)
         continuing_award = already_claiming & ~claiming_uc
@@ -119,8 +122,13 @@ class is_uc_eligible(Variable):
     def formula(benunit, period, parameters):
         capital = benunit("uc_assessable_capital", period)
         limit = parameters(period).gov.dwp.universal_credit.means_test.capital.limit
-        has_working_age_adult = benunit.any(benunit.members("is_WA_adult", period))
-        return has_working_age_adult & (capital <= limit)
+        claimant = benunit.members("is_uc_claimant", period)
+        meets_minimum_age = benunit.members("meets_uc_minimum_age_condition", period)
+        pension_age = benunit.members("is_SP_age", period)
+        has_qualifying_claimant = benunit.any(
+            claimant & meets_minimum_age & ~pension_age
+        )
+        return has_qualifying_claimant & (capital <= limit)
 
 
 class before_mixed_age_couple_rules(Reform):
