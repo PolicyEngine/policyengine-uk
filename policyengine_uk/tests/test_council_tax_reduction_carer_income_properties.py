@@ -27,8 +27,9 @@ over State Pension age:
    Reduction income, before income tax and National Insurance and apart from
    the other benefits it counts, by exactly the Carer Support Payment
    component (86.45 a week), not by the component plus the supplement. The
-   reduction itself never rises, and where both awards are partial it falls
-   by 20% of the rise in income.
+   reduction itself never rises. Where both awards are partial and claiming
+   leaves the applicable amount unchanged (a carer by hours, who has the
+   carer premium either way), it falls by 20% of the rise in income.
 2. Invariant to the supplement: setting the Scottish Carer Supplement to zero
    leaves Carer Support Payment and every benefit counted in Council Tax
    Reduction income unchanged, and changes that income only through income

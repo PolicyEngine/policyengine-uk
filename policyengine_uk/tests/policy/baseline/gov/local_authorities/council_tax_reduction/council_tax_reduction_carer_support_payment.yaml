@@ -295,9 +295,13 @@
         council_tax: 2_000
         savings: 0
   output:
-    council_tax_reduction_applicable_income: 9_000 + 6_500 + 86.45 * 52
-    # Guarantee Credit is paid: 21,392.80 - 19,995.40.
+    carer_support_payment: [0, 4_495.4]
+    # Guarantee Credit is paid: 21,392.80 - 19,995.40. Pension Credit income
+    # counts the Carer Support Payment component.
     guarantee_credit: (363.25 + 48.15) * 52 - (9_000 + 6_500 + 86.45 * 52)
+    # A guarantee credit recipient's whole income is disregarded (SSI 2012/319
+    # reg 24), so the Carer Support Payment does not reach the means test.
+    council_tax_reduction_applicable_income: 0
     council_tax_reduction: 2_000
 
 - name: An English pensioner carer's Council Tax Reduction is unchanged
