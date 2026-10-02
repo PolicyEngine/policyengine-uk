@@ -77,7 +77,7 @@
   output:
     is_uc_claimant: true
 
-- name: Case 6, an older member without qualifying education remains an adult fallback.
+- name: Case 6, an adult child without qualifying education is neither a partner nor a UC child.
   period: 2025
   input:
     people:
@@ -90,6 +90,9 @@
       benunit:
         members: [person1, person2]
   output:
-    # The default education input does not establish an older dependent QYP.
+    # The default (higher) education input does not establish a UC qualifying
+    # young person. An 18-year-old 22 years younger than the head is presumed
+    # the parent's child, not their partner, so the parent claims alone
+    # (previously the two were treated as joint claimants).
     is_child_or_qualifying_young_person_for_universal_credit: [false, false]
-    is_uc_claimant: [true, true]
+    is_uc_claimant: [true, false]
