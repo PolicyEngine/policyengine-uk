@@ -8,21 +8,14 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 5
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 3
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 1
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -42,21 +35,14 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 5
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 3
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 1
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -76,26 +62,17 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 8
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 6
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 4
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
       child_4:
         age: 2
-        is_child: true
-        child_index: 4
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -115,31 +92,20 @@
     people:
       parent:
         age: 35
-        is_child: false
       child_1:
         age: 12
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 10
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 7
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
       child_4:
         age: 5
-        is_child: true
-        child_index: 4
         uc_is_child_limit_affected: true
       child_5:
         age: 3
-        is_child: true
-        child_index: 5
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -159,16 +125,11 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 5
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 3
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
     benunits:
       benunit:
@@ -187,21 +148,14 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 5
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 3
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 1
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -220,21 +174,14 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 5
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 3
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 1
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -253,21 +200,14 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 5
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 3
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 1
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -286,24 +226,16 @@
     people:
       parent_1:
         age: 35
-        is_child: false
       parent_2:
         age: 33
-        is_child: false
       child_1:
         age: 8
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 5
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 2
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
     benunits:
       benunit:
@@ -322,21 +254,14 @@
     people:
       parent:
         age: 30
-        is_child: false
       child_1:
         age: 5
-        is_child: true
-        child_index: 1
         uc_is_child_limit_affected: false
       child_2:
         age: 3
-        is_child: true
-        child_index: 2
         uc_is_child_limit_affected: false
       child_3:
         age: 1
-        is_child: true
-        child_index: 3
         uc_is_child_limit_affected: true
     benunits:
       benunit:

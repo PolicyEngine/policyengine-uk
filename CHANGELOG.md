@@ -1,3 +1,38 @@
+## [2.107.0] - 2026-10-02
+
+### Added
+
+- - Added HBAI population variables (`is_hbai_dependent_child`, `is_hbai_adult`, `is_hbai_working_age_adult`, `is_hbai_pensioner`, `hbai_person_type`, and the equivalence-scale child bands) following the HBAI FYE 2025 glossary, `is_claimant_or_partner` for the single adult or couple a benefit unit is formed around, and programme-named child, young person and responsibility variables for Universal Credit, tax credits, the legacy means-tested benefits, the WTC childcare element and student support.
+
+### Changed
+
+- - Deprecated the generic age-18 variables (`is_child`, `is_adult`, `num_children`, `num_adults`, `family_type`, `child_index`, the eldest and youngest child and adult ages, `benunit_count_children`, `benunit_count_adults`, the disabled child and adult counts, `is_WA_adult`, `is_young_child`, `is_older_child`). They keep their formulas for downstream users, but no model rule reads them any more: each programme uses its own legal definition of a child or young person and of the claimant and partner.
+
+### Fixed
+
+- - Fixed benefit-unit structure: a lone parent living with an 18- or 19-year-old still at school is no longer treated as a (married) couple, a couple with such a dependant is no longer treated as single or a lone parent, and a 16- or 17-year-old heading their own benefit unit is a single claimant rather than a couple with themselves as the child. Lone parent, single claimant and couple are now mutually exclusive.
+  - A benefit unit now has at most two claimants or partners: the head (the eldest adult head if more than one is given, or the eldest adult if the head is not an adult) and one partner (a member flagged as a parent if there is one, otherwise the eldest other adult). When the head is not flagged as a parent but two other members are, those two are the couple. Without relationship inputs, a member under 20 and at least 16 years younger than the head is presumed to be the head's child rather than their partner, so a lone parent with an 18-year-old at university stays single and a couple with one stays a couple of two. Datasets and users can supply `is_claimant_or_partner` directly.
+  - Fixed Marriage Allowance and the CPS marriage reforms to transfer allowance and split income only between spouses or civil partners, never from a child in the benefit unit; the Tax-Free Childcare work condition to test the applicant and partner only; the WTC lone parent, couple, disability and childcare elements and eligibility routes to use the tax credit claimant and child definitions; and the DfE schemes (Care to Learn, Childcare Grant, Parents' Learning Allowance, extended childcare income test) to use each scheme's own definition of a child or of the parent and partner.
+  - The HBAI equivalence scale now weights HBAI adults and dependent children, which changes factors only in households with no one aged 18 or over.
+- - Updated legacy benefits to use claimant and partner roles and programme-specific child definitions for legacy benefit allowances, income disregards, capital allocation, disability premiums, Housing Benefit childcare charges, and Council Tax Reduction exemptions.
+  - A child or young person placed with the family by a local authority is no longer counted as a member of the family for the legacy benefits (Income Support Regulations 1987 reg 16(4); Housing Benefit Regulations 2006 reg 21(3)).
+  - Housing Benefit's pension-age route now tests the claimant and any partner (SI 2014/1230 reg 6A(4)), so a pensioner living with an 18- or 19-year-old dependant can make a new Housing Benefit claim.
+- - Replaced age-18 child/adult flags in the LHA shared accommodation rate and the benefit-cap rates with claimant/partner status and responsibility for a child or young person. Because one LHA category and one benefit cap serve both Universal Credit and Housing Benefit, the family rates apply if either scheme's test is met (UC regs 4-5, including the reg 5(1)(a) route for 16-year-olds; HB reg 19), via the new `is_responsible_for_child_or_young_person_for_uc_or_housing_benefit`.
+  - Renters under 35 receiving attendance allowance, the DLA care component at the middle or highest rate, or the PIP daily living component are now excepted from the shared accommodation rate (UC Regulations 2013 Sch 4 para 29(5)). The exception is UC's; the Housing Benefit "young individual" definition (HB Regulations 2006 reg 2(1)) has no disability exception, but the model uses one LHA category for both schemes. The other paragraph 29 exceptions and the conservative LHA non-dependant proxy remain as documented limits.
+- - Universal Credit, Housing Benefit, Income Support, tax credit and Council Tax Reduction means tests now count only the income of the claimant, any partner and the programme's own children or young persons, the members the model already counted. The income of any other member of the benefit unit no longer counts: for example an 18- or 19-year-old who is presumed to be the claimant's child but is neither a partner nor a qualifying young person. The same applies to the hours behind the Housing Benefit worker disregard. The shared helper is `add_for_members`. The regulations count only the claimant's and partner's income (UC Regulations 2013 reg 22; HB Regulations 2006 reg 25; IS Regulations 1987 reg 23; Tax Credits Act 2002 s.7; Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Sch 1 para 11). Dropping dependants' own income as well is left to a follow-up, because some survey records give children adult-level incomes.
+- - Applied Pension Credit age conditions, income assessment and carer and severe disability additions to claimants and partners rather than dependent children and young people, and removed the severe disability addition's child veto.
+  - The Pension Credit severe disability addition now follows SPC Regulations 2002 Sch I para 1(1) and reg 6(5): a claimant with a partner qualifies if both receive a qualifying disability benefit and a carer benefit is paid for at most one of them (double amount when none is paid, single amount when one is), or if one receives it, the other is blind and no carer benefit is paid for the first (single amount). The person cared for is not observed, so each carer benefit paid in the benefit unit is taken to be for a different claimant or partner, and never for its recipient (a qualifying claimant's own Carer's Allowance does not bar them). The household non-dependant residence test and the mixed-age transitional protection remain unmodelled.
+  - Guarantee Credit is now paid only to benefit units eligible for Pension Credit, so it can no longer act as a passport (for example to targeted childcare) for families that do not qualify.
+- - Apply Universal Credit age conditions, childcare work conditions, and household capital allocation to claimants and partners, with documented proxies for the observable minimum-age exceptions from age 16. Rename the capital allocation helper to `household_uc_unreported_claimants`.
+
+
+## [2.106.1] - 2026-10-02
+
+### Fixed
+
+- - Hold the NICs primary threshold, upper earnings limit, secondary threshold and Class 4 lower and upper profits limits at their 2026-27 levels through 2030-31, as announced at Budget 2025, with a reference for each year. CPI uprating resumes in 2031-32; before this change the Class 4 limits were uprated from 2027-28 and the primary threshold and upper earnings limit from 2028-29. Also correct the 2025-26 lower earnings limit to £125 a week (SI 2025/288).
+
+
 ## [2.106.0] - 2026-10-02
 
 ### Added
