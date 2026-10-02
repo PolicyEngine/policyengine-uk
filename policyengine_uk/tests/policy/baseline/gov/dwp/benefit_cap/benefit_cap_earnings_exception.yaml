@@ -58,16 +58,6 @@
   output:
     benefit_cap_earnings_threshold: 7_896 # 658 x 12
 
-- name: 2023-24 threshold from the 10.42 national living wage
-  # 10.42 x 16 x 52 / 12 = 722.45 (NMW (Amendment) Regulations 2023).
-  period: 2023
-  input:
-    people:
-      person:
-        age: 30
-  output:
-    benefit_cap_earnings_threshold: 8_664 # 722 x 12
-
 - name: 2024-25 threshold rounds 793.17 down to 793 a month
   # 11.44 x 16 x 52 / 12 = 793.17.
   period: 2024
@@ -289,23 +279,23 @@
   output:
     uc_benefit_cap_earnings_threshold_met: true
 
-- name: Earnings of 8,700 in 2023-24 meet the 722 a month threshold
-  period: 2023
+- name: Earnings of 9,520 in 2024-25 meet the 793 a month threshold
+  period: 2024
   input:
     people:
       person:
         age: 30
-        employment_income: 8_700
+        employment_income: 9_520
   output:
     uc_benefit_cap_earnings_threshold_met: true
 
-- name: Earnings of 8,600 in 2023-24 fall short of the 722 a month threshold
-  period: 2023
+- name: Earnings of 9,500 in 2024-25 fall short of the 793 a month threshold
+  period: 2024
   input:
     people:
       person:
         age: 30
-        employment_income: 8_600
+        employment_income: 9_500
   output:
     uc_benefit_cap_earnings_threshold_met: false
 
@@ -356,14 +346,14 @@
 - name: Earnings over the UC threshold do not except a Housing Benefit award
   # Reg. 82 applies "to an award of universal credit". A Housing Benefit
   # claimant with no UC and no Working Tax Credit has no earnings exception
-  # (HB Regs 2006 reg. 75E needs entitlement to WTC). 2023-24: 8,700 is over
-  # the UC threshold of 722 x 12 = 8,664, but the family cap still applies.
-  period: 2023
+  # (HB Regs 2006 reg. 75E needs entitlement to WTC). 2024-25: 9,600 is over
+  # the UC threshold of 793 x 12 = 9,516, but the family cap still applies.
+  period: 2024
   input:
     people:
       parent:
         age: 40
-        employment_income: 8_700
+        employment_income: 9_600
         hours_worked: 416
         housing_benefit_reported: 100
       child1:

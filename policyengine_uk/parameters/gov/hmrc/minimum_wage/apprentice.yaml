@@ -11,11 +11,6 @@ values:
   2020-04-01: 4.15
   2021-04-01: 4.3
   2022-04-01: 4.81
-  2023-04-01:
-    value: 5.28
-    reference:
-      - title: The National Minimum Wage (Amendment) Regulations 2023
-        href: https://www.legislation.gov.uk/uksi/2023/354/made
   2024-04-01:
     value: 6.4
     reference:

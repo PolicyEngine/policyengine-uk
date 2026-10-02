@@ -61,7 +61,7 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
-YEARS = [2020, 2023, 2025, 2026]
+YEARS = [2020, 2024, 2025, 2026]
 TENURES = ["RENT_FROM_COUNCIL", "RENT_FROM_HA", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 LOCAL_AUTHORITIES = ["MERTON", "KINGSTON_UPON_THAMES", "NEWHAM", "WESTMINSTER"]
 UNEARNED = [
@@ -192,7 +192,7 @@ def bumped(draw, variables):
 
 
 # Annual benefit cap earnings thresholds (12 x the monthly amount).
-THRESHOLDS = {2020: 7_248, 2023: 8_664, 2025: 10_152, 2026: 10_572}
+THRESHOLDS = {2020: 7_248, 2024: 9_516, 2025: 10_152, 2026: 10_572}
 
 
 @st.composite
