@@ -11,6 +11,9 @@
 # Supplement 11.70 (SSI 2026/170 reg 12(3)); 2025-26 Carer Support Payment
 # 83.30. Pension Credit standard minimum guarantee 238.00, carer addition
 # 48.15.
+# Reg 16(2) works award week by award week. The model nets annual amounts,
+# which gives the same answer only where the overlapping benefit is paid at a
+# constant rate all year, as every case here assumes.
 
 - name: Case 1, State Pension below Carer Support Payment reduces it and the supplement is paid in full.
   period: 2026

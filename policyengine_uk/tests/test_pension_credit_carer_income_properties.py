@@ -34,9 +34,12 @@ Support Payment (Scotland), renting from the council in 2026:
    income tax: each plus income tax is unchanged.
 
 These compare PolicyEngine's own income measures, so they hold whatever
-carer's benefit the model pays. The model does not yet apply the
-overlapping-benefit reduction of Carer's Allowance and Carer Support Payment
-by State Pension (SPC Regs reg 15(4)(a) and (g)).
+carer's benefit the model pays. State Pension overlaps with Carer's Allowance
+and Carer Support Payment and reduces them (Social Security (Overlapping
+Benefits) Regulations 1979 reg 12; Carer Support Payment Regulations 2023 reg
+16(2)), to nil where it is at least as much. So the carer's own State Pension
+is drawn below the carer benefit, which leaves some of it paid; the other
+partner's State Pension is drawn up to £15,000.
 
 Only one member of a couple is drawn as a carer. Two carers in a couple get
 two Pension Credit carer additions (SPC Regs reg 6(8)) but, until the couple
@@ -66,6 +69,10 @@ REGIONS = {
     "WALES": "WALES",
     "SCOTLAND": "SCOTLAND",
 }
+# Below the 2026-27 Carer's Allowance and Carer Support Payment of £86.45 a
+# week (£4,495.40 a year), so the overlapping-benefit reduction leaves some of
+# the carer's benefit payable.
+CARER_STATE_PENSION_MAX = 4_400
 NO_SCOTTISH_CARER_SUPPLEMENT = {
     "gov.social_security_scotland.carer_support_payment.supplement": {
         "2026-01-01.2100-12-31": 0
@@ -91,6 +98,7 @@ def family(draw, countries=tuple(REGIONS)):
     return dict(
         adults=adults,
         carer=draw(st.integers(0, len(adults) - 1)),
+        carer_state_pension=draw(money(CARER_STATE_PENSION_MAX)),
         # The carer qualifies either by caring hours or by a reported award.
         by_hours=draw(st.booleans()),
         country=draw(st.sampled_from(countries)),
@@ -108,13 +116,17 @@ def situation(families):
             names = []
             for j, a in enumerate(fam["adults"]):
                 name = f"p{i}_{k}_{j}"
+                is_carer = j == fam["carer"]
+                state_pension = (
+                    fam["carer_state_pension"] if is_carer else a["state_pension"]
+                )
                 person = {
                     "age": {YEAR: a["age"]},
-                    "state_pension": {YEAR: a["state_pension"]},
+                    "state_pension": {YEAR: state_pension},
                     # All private pension goes to the first adult.
                     "private_pension_income": {YEAR: float(pension) * (j == 0)},
                 }
-                if j == fam["carer"]:
+                if is_carer:
                     if fam["by_hours"]:
                         person["care_hours"] = {YEAR: 35}
                     else:

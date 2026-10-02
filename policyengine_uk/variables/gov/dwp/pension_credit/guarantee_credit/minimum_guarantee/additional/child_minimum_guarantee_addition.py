@@ -11,14 +11,14 @@ class child_minimum_guarantee_addition(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        is_child = person(
+        is_child_or_qualifying_young_person = person(
             "is_child_or_qualifying_young_person_for_pension_credit", period
         )
         child_index = (
             person.get_rank(
                 person.benunit,
                 -person("age", period),
-                condition=is_child,
+                condition=is_child_or_qualifying_young_person,
             )
             + 1
         )
@@ -40,9 +40,9 @@ class child_minimum_guarantee_addition(Variable):
         per_child_amount = (
             select(
                 [
-                    is_child & is_not_disabled,
-                    is_child & is_standard_disabled,
-                    is_child & is_severely_disabled,
+                    is_child_or_qualifying_young_person & is_not_disabled,
+                    is_child_or_qualifying_young_person & is_standard_disabled,
+                    is_child_or_qualifying_young_person & is_severely_disabled,
                 ],
                 [
                     child_addition,

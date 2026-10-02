@@ -7,6 +7,11 @@ class extended_childcare_entitlement_eligible(Variable):
     label = "eligibility for extended childcare entitlement"
     definition_period = YEAR
     defined_for = "would_claim_extended_childcare"
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2022/1134/regulation/14",
+        "https://www.legislation.gov.uk/uksi/2022/1134/regulation/15",
+    )
 
     def formula(benunit, period, parameters):
         # Check if household is in England
@@ -14,12 +19,14 @@ class extended_childcare_entitlement_eligible(Variable):
         countries = country.possible_values
         in_england = country == countries.ENGLAND
 
-        # Check income condition - must be true for all family members (except children)
+        # The income conditions apply to the parent and the parent's partner
+        # (Childcare Act 2016 s.1(2)(d); SI 2022/1134 regs 14, 15 and 18):
+        # the claimant and partner of the benefit unit, not their children.
         person = benunit.members
         person_meets_income_condition = person(
             "extended_childcare_entitlement_meets_income_requirements",
             period,
-        ) | person("is_child", period)
+        ) | ~person("is_claimant_or_partner", period)
         meets_income_condition = benunit.all(person_meets_income_condition)
 
         # Check work condition

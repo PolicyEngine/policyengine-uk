@@ -5,11 +5,27 @@ class tax_free_childcare_work_condition(Variable):
     value_type = bool
     entity = Person
     label = "work conditions for tax-free childcare"
+    documentation = (
+        "The person applying and, if they have one, their partner must be "
+        "in qualifying paid work, unless the partner has a qualifying "
+        "disability or incapacity. Both must be at least 16. Children in the "
+        "family play no part."
+    )
     definition_period = YEAR
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/2014/28/section/3",
+        "https://www.legislation.gov.uk/ukpga/2014/28/section/6",
+        "https://www.legislation.gov.uk/uksi/2015/448/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2015/448/regulation/9",
+    )
 
     def formula(person, period, parameters):
         benunit = person.benunit
-        is_adult = person("is_adult", period)
+        # The person applying and their partner (Childcare Payments Act 2014
+        # s.3(1), s.6; SI 2015/448 reg 3): the claimant or partner, aged 16+.
+        applicant_or_partner = person("is_claimant_or_partner", period) & person(
+            "over_16", period
+        )
 
         treated_as_in_work = person(
             "tax_free_childcare_treated_as_in_work",
@@ -35,14 +51,16 @@ class tax_free_childcare_work_condition(Variable):
         # Build conditions
         # Single adult conditions
         is_single = person.benunit("is_single", period)
-        single_working = is_single & treated_as_in_work
+        single_working = is_single & treated_as_in_work & applicant_or_partner
 
         # Couple conditions
         is_couple = person.benunit("is_couple", period)
-        benunit_has_condition = benunit.any(eligible_based_on_disability & is_adult)
-        benunit_has_worker = benunit.any(treated_as_in_work & is_adult)
+        benunit_has_condition = benunit.any(
+            eligible_based_on_disability & applicant_or_partner
+        )
+        benunit_has_worker = benunit.any(treated_as_in_work & applicant_or_partner)
         couple_both_working = is_couple & benunit.all(
-            treated_as_in_work | ~person("is_parent", period)
+            treated_as_in_work | ~applicant_or_partner
         )
         couple_one_working_one_disabled = (
             is_couple & benunit_has_worker & benunit_has_condition
