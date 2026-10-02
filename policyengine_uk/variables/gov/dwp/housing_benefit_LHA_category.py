@@ -8,7 +8,8 @@ class housing_benefit_LHA_category(Variable):
     label = "LHA category of dwelling (Housing Benefit)"
     documentation = (
         "The Housing Benefit category of dwelling. The shared accommodation "
-        "rate applies to a young individual with no non-dependant, and to a "
+        "rate applies to a young individual with no non-dependant residing "
+        "with them (see housing_benefit_claimant_has_non_dependant), and to a "
         "claimant entitled to one bedroom who lacks exclusive use of "
         "self-contained accommodation, unless the severe disability premium "
         "applies. Otherwise the category follows the number of bedrooms in "
@@ -30,7 +31,7 @@ class housing_benefit_LHA_category(Variable):
         # HB Regs 2006 reg 13D(2)(a)(i).
         young_individual = (
             benunit("is_housing_benefit_young_individual", period)
-            & ~benunit("lha_renter_has_non_dependant", period)
+            & ~benunit("housing_benefit_claimant_has_non_dependant", period)
             & ~severe_disability
         )
         # Reg 13D(2)(a)(ii): entitled to one bedroom but neither condition in

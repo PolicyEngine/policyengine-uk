@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
+    apportioned_non_dependant_deductions,
+)
 from policyengine_uk.variables.household.demographic.highest_education import (
     EducationType,
 )
@@ -85,13 +88,15 @@ def local_non_dep_deductions(
         )
     is_benunit_head = benunit.members("is_benunit_head", period)
     deductions_to_count = is_benunit_head * benunit.project(deduction_for_benunit)
-    deductions_in_household = benunit.max(
-        benunit.members.household.sum(deductions_to_count)
-    )
     # A non-dependant of two or more jointly liable people is apportioned
-    # equally between them (SI 2012/2885 Sch 1 para 8(5)).
-    share = benunit("council_tax_reduction_joint_liability_share", period)
-    return (deductions_in_household - deduction_for_benunit) * share
+    # equally between them (SI 2012/2885 Sch 1 para 8(5)); one who resides
+    # with only one of them is deducted in full from that one. Deductions
+    # are only for families outside every family liable for the household's
+    # rent (council_tax_reduction_individual_non_dep_deduction_eligible), so
+    # a claimant is never charged its own.
+    return apportioned_non_dependant_deductions(
+        benunit, period, deductions_to_count, equally=True
+    )
 
 
 def normal_gross_income_non_dep_deduction(

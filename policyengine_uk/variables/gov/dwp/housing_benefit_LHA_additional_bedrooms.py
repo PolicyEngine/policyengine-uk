@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.housing_benefit_LHA_allowed_bedrooms import (
+    housing_benefit_other_occupiers,
+)
 
 
 class housing_benefit_LHA_additional_bedrooms(Variable):
@@ -11,10 +14,12 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         "meets_lha_overnight_care_condition), and one if the claimant or "
         "partner is a qualifying parent or carer (see "
         "is_housing_benefit_qualifying_parent_or_carer): two if both. "
-        "Occupiers outside the family count for the household head's family: "
-        "non-dependants, boarders and lodgers and their children, but not a "
-        "sharer of the rent or a child placed with them as a foster child or "
-        "for adoption. The definitions require a bedroom in the dwelling for "
+        "Occupiers outside the family count as in "
+        "housing_benefit_LHA_allowed_bedrooms: boarders and lodgers and their "
+        "children for the household head's family, and non-dependants and "
+        "their children for each joint occupier they normally reside with, "
+        "but not a sharer of the rent or a child placed with them as a foster "
+        "child or for adoption. The definitions require a bedroom in the dwelling for "
         "the carer or the foster child; the model does not observe the "
         "dwelling's bedrooms and assumes there is one. Children and couples "
         "who cannot share a bedroom because of disability are not modelled."
@@ -37,8 +42,7 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         sharer = person.benunit("liable_for_share_of_household_rent", period)
         placed = person("is_child_or_young_person_placed_with_family", period)
         other = overnight_care & ~head_family & ~sharer & ~placed
-        is_head_family = benunit.any(person("is_household_head", period))
-        others = is_head_family * benunit.max(person.household.sum(other))
+        others = housing_benefit_other_occupiers(benunit, period, other)
         # Reg 13D(3A)(a)(i)-(iv): the claimant, partner, other members of the
         # family, and a child or young person for whom the claimant or
         # partner is a qualifying parent or carer.
