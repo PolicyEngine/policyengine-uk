@@ -1,0 +1,570 @@
+# Income-related ESA remunerative work conditions.
+# Welfare Reform Act 2007 Sch 1 para 6(1): the claimant
+#   (e) "is not engaged in remunerative work";
+#   (f) "is not a member of a couple the other member of which is engaged in
+#       remunerative work".
+# ESA Regs 2008 reg 41(1): for the claimant, remunerative work is "any work
+# which a claimant does for which payment is made or which is done in
+# expectation of payment, other than work listed in paragraph (2) of
+# regulation 40", which includes exempt work (reg 40(2)(f), reg 45):
+#   reg 45(2): "Work for which the earnings in any week do not exceed £20.00";
+#   reg 45(4): "Work which is done for less than 16 hours a week, for which
+#       earnings in any week do not exceed 16 x National Minimum Wage",
+#       rounded up to the next 50p (reg 45(9A)): £195.50 in 2025-26 (16 x
+#       £12.21 = £195.36) and £203.50 in 2026-27 (16 x £12.71 = £203.36).
+# Earnings are net: less income tax, National Insurance and half the
+# claimant's pension contributions (DMG 41189; regs 96(3), 98(4)).
+# Reg 42(1): for the partner, remunerative work is paid work "for not less
+# than 24 hours a week"; reg 43(2)(c): a partner who would satisfy IS Regs
+# Sch 1B para 4 (a carer) is not treated as engaged in it.
+#
+# Hours are annual hours_worked; the weekly figure is hours_worked / 52, so
+# 780 is 15 hours, 832 is 16, 1,196 is 23 and 1,248 is 24. Earnings are annual
+# employment_income; 1,040 is £20 a week and 10,166 is £195.50. No tax or
+# National Insurance is due below £12,570 a year. Capital is nil.
+
+# Para 6(1)(e): the claimant's own work.
+
+- name: A claimant with no paid work keeps the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_exempt_work_earnings: 0
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+    esa_income: 5_000
+
+- name: Earnings of £20 a week are exempt work whatever the hours (reg 45(2))
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 30 hours a week for £20 a week.
+        hours_worked: 1_560
+        employment_income: 1_040
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_income_remunerative_work_hours: 30
+    esa_exempt_work_earnings: 20
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+    esa_income: 5_000
+
+- name: Earnings over £20 a week at 16 hours are remunerative work
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 16 hours a week for £21 a week: not under 16 hours, so not
+        # permitted work, and over the £20 lower limit.
+        hours_worked: 832
+        employment_income: 1_092
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_income_remunerative_work_hours: 16
+    esa_exempt_work_earnings: 21
+    esa_income_claimant_remunerative_work: true
+    esa_income_eligible: false
+    esa_income: 0
+
+- name: Under 16 hours within the higher limit is permitted work (reg 45(4))
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 15 hours a week for exactly £195.50 a week, the 2025-26 limit.
+        hours_worked: 780
+        employment_income: 10_166
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_exempt_work_earnings: 195.5
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+    esa_income: 5_000
+
+- name: Under 16 hours above the higher limit is remunerative work
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 15 hours a week for £196 a week, over £195.50.
+        hours_worked: 780
+        employment_income: 10_192
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_exempt_work_earnings: 196
+    esa_income_claimant_remunerative_work: true
+    esa_income_eligible: false
+    esa_income: 0
+
+- name: The 2026-27 higher limit is £203.50
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 15 hours a week for £196 a week: over the 2025-26 limit, within
+        # 2026-27's.
+        hours_worked: 780
+        employment_income: 10_192
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_exempt_work_earnings: 196
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+
+- name: Earnings over the 2026-27 higher limit are remunerative work
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 15 hours a week for £204 a week, over £203.50.
+        hours_worked: 780
+        employment_income: 10_608
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_exempt_work_earnings: 204
+    esa_income_claimant_remunerative_work: true
+    esa_income_eligible: false
+
+- name: Half the claimant's pension contributions come off earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 15 hours a week for £200 a week gross, paying £10 a week into a
+        # pension: £200 - £5 = £195 a week, within £195.50.
+        hours_worked: 780
+        employment_income: 10_400
+        employee_pension_contributions: 520
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_exempt_work_earnings: 195
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+
+- name: Without the pension contributions the same pay is over the limit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        hours_worked: 780
+        employment_income: 10_400
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_exempt_work_earnings: 200
+    esa_income_claimant_remunerative_work: true
+    esa_income_eligible: false
+
+- name: Income tax comes off earnings as the lowest slice of non-savings income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        hours_worked: 520
+        employment_income: 13_000
+        private_pension_income: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # The personal allowance (£12,570) goes against earnings first, so tax on
+    # earnings is 20% x (£13,000 - £12,570) = £86; tax on the pension is not
+    # deducted. Class 1 NI: 8% x (£13,000 - 52 x £241.73) = £34.40.
+    # (£13,000 - £86 - £34.40) / 52 = £247.68.
+    esa_exempt_work_earnings: 247.68
+    esa_income_claimant_remunerative_work: true
+    esa_income_eligible: false
+
+- name: A carer claimant is not taken out of remunerative work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        receives_carer_benefit: true
+        # 16 hours a week for £100 a week.
+        hours_worked: 832
+        employment_income: 5_200
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    is_carer_for_benefits: true
+    esa_income_claimant_remunerative_work: true
+    esa_income_eligible: false
+
+- name: A claimant's remunerative work entered directly (supervised work)
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        # 20 hours a week for £100 a week of supervised work within the
+        # higher limit, which reg 45(3) exempts whatever the hours.
+        hours_worked: 1_040
+        employment_income: 5_200
+        esa_income_claimant_remunerative_work: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_income_eligible: true
+    esa_income: 5_000
+
+# Para 6(1)(f): the partner's work, 24 hours (reg 42(1)).
+
+- name: A partner working 23 hours a week does not end the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        hours_worked: 1_196
+        employment_income: 15_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    esa_income_remunerative_work_hours: [0, 23]
+    esa_income_eligible: true
+    esa_income: 5_000
+
+- name: A partner working 24 hours a week ends the award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        # The partner's test is hours alone: any earnings, including none.
+        hours_worked: 1_248
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    esa_income_remunerative_work_hours: [0, 24]
+    esa_income_eligible: false
+    esa_income: 0
+
+- name: A carer partner working 40 hours is not in remunerative work (reg 43(2)(c))
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        hours_worked: 2_080
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    esa_income_eligible: true
+    esa_income: 5_000
+
+- name: A partner's hours entered directly (a reg 43(1) employment)
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        # 30 hours a week, all as a part-time firefighter (reg 43(1)(e)(i)),
+        # which do not count (reg 42(6)).
+        hours_worked: 1_560
+        esa_income_remunerative_work_hours: 0
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    esa_income_eligible: true
+
+- name: The partner's own earnings above the limit are not the claimant's test
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        # 20 hours a week for £300 a week: remunerative work were the partner
+        # the claimant, but under the partner's 24 hours.
+        hours_worked: 1_040
+        employment_income: 15_600
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    esa_income_claimant_remunerative_work: [false, true]
+    esa_income_eligible: true
+
+- name: When both report the award, one of them passing as claimant is enough
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      second:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        # 20 hours a week for £100 a week: remunerative as claimant, under 24
+        # hours as partner. The first member is the claimant.
+        hours_worked: 1_040
+        employment_income: 5_200
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+  output:
+    esa_income_eligible: true
+
+- name: When both report the award and neither can be the claimant, it ends
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      second:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        # 30 hours a week for £300 a week: remunerative as claimant, and over
+        # 24 hours as the first member's partner.
+        hours_worked: 1_560
+        employment_income: 15_600
+    benunits:
+      couple:
+        members: [first, second]
+    households:
+      household:
+        members: [first, second]
+  output:
+    esa_income_eligible: false
+    esa_income: 0
+
+# Members outside the family.
+
+- name: A non-dependent adult's own award is tested on their own work alone
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 50
+        is_claimant_or_partner: true
+        hours_worked: 2_080
+        employment_income: 30_000
+      lodger:
+        age: 30
+        is_claimant_or_partner: false
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [head, lodger]
+    households:
+      household:
+        members: [head, lodger]
+  output:
+    # The head is not the lodger's partner, so the head's 40 hours do not
+    # count against the lodger's award.
+    esa_income_eligible: true
+    esa_income: 5_000
+
+- name: A non-dependent adult's award does not rescue the claimant's
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 50
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        # 16 hours a week for £100 a week: remunerative work.
+        hours_worked: 832
+        employment_income: 5_200
+      lodger:
+        age: 30
+        is_claimant_or_partner: false
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, lodger]
+    households:
+      household:
+        members: [claimant, lodger]
+  output:
+    esa_income_eligible: false
+
+# The Income Support gate reads the screened award (s.124(1)(h)).
+
+- name: A partner's ESA lost to remunerative work no longer bars Income Support
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      carer:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+        # 20 hours a week for £100 a week: remunerative work for the ESA
+        # claimant, but under the Income Support partner's 24 hours.
+        hours_worked: 1_040
+        employment_income: 5_200
+    benunits:
+      couple:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+    households:
+      household:
+        members: [carer, partner]
+  output:
+    esa_income_eligible: false
+    esa_income: 0
+    # Without the work test the partner's award would count as income-related
+    # ESA of the other member of the couple and bar the claim.
+    income_support_eligible: true

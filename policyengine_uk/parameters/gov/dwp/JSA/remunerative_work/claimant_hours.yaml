@@ -1,0 +1,16 @@
+description: Jobseeker's Allowance treats a claimant, including each member of a joint-claim couple, as engaged in remunerative work at this many weekly hours of paid work or more.
+values:
+  1996-10-07:
+    value: 16
+    reference:
+      - title: Jobseeker's Allowance Regulations 1996 reg. 51(1)(a) (as made)
+        href: https://www.legislation.gov.uk/uksi/1996/207/regulation/51/1996-10-07
+metadata:
+  unit: hour
+  period: week
+  label: JSA claimant remunerative work hours
+  reference:
+    - title: Jobseekers Act 1995 s. 1(2)(e)
+      href: https://www.legislation.gov.uk/ukpga/1995/18/section/1
+    - title: Jobseeker's Allowance Regulations 1996 reg. 51(1)(a)
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/51

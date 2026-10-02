@@ -1,0 +1,23 @@
+description: A couple without children is a joint-claim couple for income-based Jobseeker's Allowance if at least one member is 18 or over and was born after a date in this year (19 March 1976, then 28 October 1957, then 28 October 1947). The model compares birth years, so it treats a member born later in this year as born before the date.
+values:
+  2001-03-19:
+    value: 1976
+    reference:
+      - title: Jobseeker's Allowance Regulations 1996 reg. 3A(1) (born after 19 March 1976)
+        href: https://www.legislation.gov.uk/uksi/1996/207/regulation/3A/2001-03-19
+  2002-10-28:
+    value: 1957
+    reference:
+      - title: Jobseeker's Allowance (Joint Claims) Amendment Regulations 2002 (SI 2002/1701) reg. 2(a) (born after 28 October 1957)
+        href: https://www.legislation.gov.uk/uksi/1996/207/regulation/3A/2002-10-28
+  2008-02-25:
+    value: 1947
+    reference:
+      - title: Jobseeker's Allowance (Joint Claims) Amendment Regulations 2008 (SI 2008/13) reg. 2(2) (born after 28 October 1947)
+        href: https://www.legislation.gov.uk/uksi/1996/207/regulation/3A/2008-02-25
+metadata:
+  unit: year
+  label: Income-based JSA joint claim birth year cutoff
+  reference:
+    - title: Jobseeker's Allowance Regulations 1996 reg. 3A(1)
+      href: https://www.legislation.gov.uk/uksi/1996/207/regulation/3A

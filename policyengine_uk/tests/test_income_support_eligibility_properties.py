@@ -10,7 +10,12 @@ Nobody else in a benefit unit is named, so:
 - adding a member who is neither the claimant, the partner nor a child or
   young person in the family (an adult outside the family, or a child placed
   by a local authority, IS reg 16(4)) never changes income_support_eligible,
-  whatever that member's age, ESA, JSA, Income Support, caring or work;
+  whatever that member's age, ESA, JSA, Income Support, caring or work. One
+  route is held fixed: a couple caring for a placed child are not a
+  joint-claim couple for income-based JSA (JSA Regs 1996 reg 3A(1), reg
+  78(4)(a)), which changes the partner's remunerative work limit for that
+  award, so the property enters each couple's joint-claim status
+  (is_jsa_joint_claim_couple) as it is without the added member;
 - income_support_eligible equals a family-by-family reading of the model's
   gate: one of the claimant and partner reports Income Support, is under
   state pension age, is a carer (or a lone parent of a child aged 5 or under,
@@ -19,11 +24,14 @@ Nobody else in a benefit unit is named, so:
   of the couple who is a non-carer working 24 hours or more (s.124(1)(aa),
   (c), (e), (f), (h); IS Regs 1987 regs 5(1), 5(1A) and 6(4)(c)); neither
   has income-related ESA or income-based JSA (s.124(1)(h), (f)), meaning the
-  award on their reported amounts after that benefit's capital test, or an
-  esa_income or jsa_income entered directly; and capital is within the
-  Income Support limit;
+  award on their reported amounts after that benefit's capital and work
+  tests (legacy_award_work_reference), or an esa_income or jsa_income
+  entered directly; and capital is within the Income Support limit;
 - raising any claimant's or partner's hours or JSA never makes a family
-  eligible, because (c) and (f) only ever bar a claim.
+  eligible, because (c) and (f) only ever bar a claim, except where the work
+  ends an income-related ESA or income-based JSA award that barred it: a
+  carer is not in remunerative work for Income Support (reg 6(4)(c)) but is
+  for JSA, so a carer's own JSA award ends at 16 hours.
 
 The second property is a reference check of the bounded model gate, not of
 legal entitlement: caring, work hours, ESA, JSA and Income Support are the
@@ -44,7 +52,9 @@ import numpy as np
 from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
+from legacy_award_work_reference import esa_screen, jsa_joint_claim, jsa_screen
 from policyengine_uk import Simulation
+from policyengine_uk.system import system
 
 YEAR = 2025
 
@@ -199,7 +209,7 @@ def label(units, capital_as_savings, esa_income, jsa_income):
         event("added member works or reports income-based JSA")
 
 
-def situation(units, capital_as_savings, esa_income, jsa_income):
+def situation(units, capital_as_savings, esa_income, jsa_income, joint_claim=None):
     label(units, capital_as_savings, esa_income, jsa_income)
     people, benunits, households = {}, {}, {}
     for i, (adults, dependants, capital, extra) in enumerate(units):
@@ -224,6 +234,8 @@ def situation(units, capital_as_savings, esa_income, jsa_income):
             benunits[f"b{i}"]["esa_income"] = {YEAR: esa_income[i % len(esa_income)]}
         if jsa_income is not None:
             benunits[f"b{i}"]["jsa_income"] = {YEAR: jsa_income[i % len(jsa_income)]}
+        if joint_claim is not None:
+            benunits[f"b{i}"]["is_jsa_joint_claim_couple"] = {YEAR: joint_claim[i]}
     return {"people": people, "benunits": benunits, "households": households}
 
 
@@ -248,9 +260,18 @@ def test_excluded_member_never_changes_is_eligibility(drawn, data):
     capital_as_savings, esa_income, jsa_income = data.draw(input_settings(len(drawn)))
     without = [(*family, None) for family, _ in drawn]
     with_extra = [(*family, extra) for family, extra in drawn]
+    parameters = system.parameters(YEAR)
+    joint_claim = [
+        jsa_joint_claim(adults, bool(dependants), YEAR, parameters)
+        for adults, dependants, _ in [family for family, _ in drawn]
+    ]
     sim = Simulation(
         situation=situation(
-            without + with_extra, capital_as_savings, esa_income, jsa_income
+            without + with_extra,
+            capital_as_savings,
+            esa_income,
+            jsa_income,
+            joint_claim * 2,
         )
     )
     eligible = sim.calculate("income_support_eligible", YEAR)
@@ -287,7 +308,7 @@ def income_related_award(reported, capital, rules):
 
 
 def reference_eligibility(
-    adults, dependants, capital, esa_income, jsa_income, sp_age, parameters
+    adults, dependants, capital, esa_income, jsa_income, sp_age, parameters, extra
 ):
     """The model's Income Support gate, read family by family."""
     IS = parameters.gov.dwp.income_support
@@ -320,6 +341,8 @@ def reference_eligibility(
             and not any(works(other, WORK.partner_hours) for other in others)
         )
 
+    # The awards on the claimant's and partner's reports. Members outside the
+    # family are not candidates when either of them reports one.
     if esa_income is not None:
         income_related_esa = esa_income > 0
     else:
@@ -327,12 +350,21 @@ def reference_eligibility(
             sum(a["esa_income_reported"] for a in adults),
             capital,
             parameters.gov.dwp.ESA.income.capital,
-        )
+        ) and esa_screen(adults, [], capital, parameters)
     if jsa_income is not None:
         income_based_jsa = jsa_income > 0
     else:
-        income_based_jsa = JSA.active and income_related_award(
-            sum(a["jsa_income_reported"] for a in adults), capital, JSA.capital
+        # A child placed with the couple ends a joint claim (reg 3A(1)).
+        family_has_child = bool(dependants) or bool(
+            extra and extra.get("is_looked_after_by_local_authority")
+        )
+        joint_claim = jsa_joint_claim(adults, family_has_child, YEAR, parameters)
+        income_based_jsa = (
+            JSA.active
+            and income_related_award(
+                sum(a["jsa_income_reported"] for a in adults), capital, JSA.capital
+            )
+            and jsa_screen(adults, [], capital, joint_claim, parameters)
         )
     return (
         any(is_claimant(i) for i in range(len(adults)))
@@ -365,6 +397,7 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
             None if jsa_income is None else jsa_income[i],
             sp_age[start : start + len(adults)],
             parameters,
+            extra,
         )
         assert eligible[i] == expected, units[i]
         start += len(adults) + len(dependants) + 1
@@ -385,7 +418,8 @@ def more_work_or_jsa(draw, adults):
 @given(st.lists(families(), min_size=1, max_size=8), st.data())
 def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
     """(c) and (f) only ever bar a claim: raising any claimant's or partner's
-    hours or JSA cannot turn an ineligible family eligible."""
+    hours or JSA cannot turn an ineligible family eligible, unless the work
+    ends an income-related ESA or income-based JSA award that barred it."""
     capital_as_savings, esa_income, jsa_income = data.draw(input_settings(len(drawn)))
     jsa_income = None if jsa_income is None else jsa_income * 2
     more = [
@@ -406,5 +440,19 @@ def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
         event("some family eligible before")
     if (eligible[: len(drawn)] & ~eligible[len(drawn) :]).any():
         event("more work or JSA removed eligibility")
-    for i in range(len(drawn)):
-        assert not (eligible[len(drawn) + i] and not eligible[i]), (drawn[i], more[i])
+    n = len(drawn)
+    lost_award = np.zeros(n, dtype=bool)
+    for variable, direct in [
+        ("esa_income_eligible", esa_income),
+        ("jsa_income_eligible", jsa_income),
+    ]:
+        if direct is None:
+            screen = sim.calculate(variable, YEAR)
+            lost_award |= screen[:n] & ~screen[n:]
+    if (eligible[n:] & ~eligible[:n] & lost_award).any():
+        event("more work ended an award that barred Income Support")
+    for i in range(n):
+        assert lost_award[i] or not (eligible[n + i] and not eligible[i]), (
+            drawn[i],
+            more[i],
+        )
