@@ -1,3 +1,38 @@
+## [2.104.7] - 2026-10-02
+
+### Fixed
+
+- Count State Pension as Universal Credit unearned income (retirement pension income, UC Regs 2013 regs 66(1)(a) and 67). Mixed-age couples on UC were having their State Pension ignored.
+
+
+## [2.104.6] - 2026-10-02
+
+### Fixed
+
+- Copy arrays read from the simulation before writing into them in the Universal Credit rebalancing and PIP phase-in scenario modifiers, so the cache changes only through `set_input`. Results are unchanged; a new code-health test fails on in-place writes into cached arrays.
+
+
+## [2.104.5] - 2026-10-02
+
+### Fixed
+
+- Give households with an unknown region the UK-wide private rent index when uprating rent, so datasets containing `Region.UNKNOWN` (such as Survey of Personal Incomes records with an address abroad) can be simulated instead of raising `ParameterNotFoundError`.
+
+
+## [2.104.4] - 2026-10-02
+
+### Fixed
+
+- - `Simulation(reform=...)` and `Microsimulation(reform=...)` accept structural `Reform` classes again, including classes built by `Reform.from_dict` and `set_parameter`, and tuples of reforms applied in order. Every one of these raised `TypeError` since the `Scenario` refactor, because `Scenario.from_reform` instantiated the class without the baseline system that policyengine-core's `Reform.__init__` requires. A reform class is now applied to the simulation's own tax-benefit system the way `Simulation.apply_reform` applies it. A `Reform` instance is rejected with a clear error, since its own state would be lost. Dict reforms are unchanged.
+
+
+## [2.104.3] - 2026-10-02
+
+### Fixed
+
+- - Count contributory JSA once in `household_benefits`. `HOUSEHOLD_BENEFIT_VARIABLES` listed `jsa_contrib` twice, which overstated household benefits, net income and gross income by each household's contributory JSA. Also remove a duplicate `pension_credit` from the means-tested cost-of-living qualifying benefits (no output change), and test that no list of variable names repeats an entry.
+
+
 ## [2.104.2] - 2026-10-01
 
 ### Fixed
