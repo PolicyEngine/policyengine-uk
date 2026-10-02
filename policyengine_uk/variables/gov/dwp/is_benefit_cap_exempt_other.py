@@ -54,7 +54,7 @@ class is_benefit_cap_exempt_other(Variable):
         # Check for Armed Forces Compensation Scheme payments
         afcs = benunit("afcs", period) > 0
 
-        # ESA contribution-based with support component
-        esa_support_component = benunit("esa_contrib", period) > 0
-
-        return has_pensioner | afcs | esa_support_component
+        # The ESA support component exception is in
+        # is_benefit_cap_exempt_health_disability, limited to the claimant and
+        # partner.
+        return has_pensioner | afcs

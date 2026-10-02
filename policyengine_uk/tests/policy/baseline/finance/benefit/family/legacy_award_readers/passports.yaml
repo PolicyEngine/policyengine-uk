@@ -335,8 +335,7 @@
     targeted_childcare_entitlement_eligible: true
 
 # Benefit cap: no cap where "the claimant or the claimant's partner" receives
-# ESA with the support component (HB Regs 2006 reg 75F(1)(a)). The model
-# exempts any income-related ESA of the claimant or partner.
+# ESA with the support component (HB Regs 2006 reg 75F(1)(a)).
 
 - name: Another member's income-related ESA does not exempt the family from the benefit cap
   period: 2025
@@ -350,6 +349,7 @@
         is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
         esa_income_reported: 5_000
+        esa_includes_support_component: true
     benunits:
       benunit:
         members: [claimant, other]
@@ -360,7 +360,7 @@
   output:
     is_benefit_cap_exempt_health_disability: false
 
-- name: The claimant's own income-related ESA exempts the family from the benefit cap
+- name: The claimant's own income-related ESA with the support component exempts the family from the benefit cap
   period: 2025
   input:
     people:
@@ -368,6 +368,7 @@
         age: 40
         is_claimant_or_partner: true
         esa_income_reported: 5_000
+        esa_includes_support_component: true
       other:
         age: 30
         is_claimant_or_partner: false

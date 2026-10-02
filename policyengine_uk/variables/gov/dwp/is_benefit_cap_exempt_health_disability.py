@@ -43,10 +43,8 @@ class is_benefit_cap_exempt_health_disability(Variable):
             "iidb",  # Industrial injuries disability benefit
         ]
 
-        # ESA and Working Tax Credit. HB Regs 2006 reg 75F(1)(a) exempts a
-        # claimant or partner receiving ESA, so only their income-related award.
+        # Working Tax Credit
         QUAL_BENUNIT_BENEFITS = [
-            "claimant_or_partner_esa_income",  # Income-based ESA
             "working_tax_credit",  # If getting WTC, likely working enough
         ]
 
@@ -56,8 +54,18 @@ class is_benefit_cap_exempt_health_disability(Variable):
         # Check for Armed Forces Compensation Scheme payments
         afcs = benunit("afcs", period) > 0
 
-        # ESA contribution-based with support component
-        esa_support_component = benunit("esa_contrib", period) > 0
+        # HB Regs 2006 reg 75F(1)(a), UC Regs 2013 reg 83(1)(a): "the claimant
+        # or the claimant's partner is receiving an employment and support
+        # allowance ... which includes a support component". Contributory and
+        # income-related allowances both carry it; another member's allowance
+        # does not count.
+        claimant = person("is_claimant_or_partner", period)
+        receiving_esa = (person("esa_contrib", period) > 0) | person(
+            "is_on_income_related_esa", period
+        )
+        esa_support_component = benunit.any(
+            claimant & receiving_esa & person("esa_includes_support_component", period)
+        )
 
         return (
             has_lcwra
