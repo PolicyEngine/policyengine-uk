@@ -9,7 +9,10 @@ No adult outside the couple is named, so:
 
 - adding an adult who is neither the claimant, the partner nor a young person
   in the family never changes income_support_eligible, whatever that adult's
-  age, ESA, Income Support or caring;
+  age, ESA, Income Support or caring. The declared exception, outside the
+  values drawn here, is an esa_income entered directly that the new adult's
+  report makes equal to what the reports give: it is then read through the
+  reports (test_income_support_esa_entered_directly.py);
 - income_support_eligible equals a family-by-family reading of the model's
   gate: one of the claimant and partner reports Income Support, is under
   state pension age, is in a prescribed category the model covers (a carer;

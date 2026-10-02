@@ -21,7 +21,11 @@ class income_support_eligible(Variable):
         "claimant nor the partner may be entitled to income-related ESA. An "
         "adult in the benefit unit who is neither the claimant nor the "
         "partner (such as a non-dependent adult) does not affect "
-        "eligibility."
+        "eligibility, with one declared exception: an esa_income entered "
+        "directly is read through the reported awards when it equals what "
+        "they give (the award after esa_income_eligible, or their plain "
+        "total, to within half a penny), so another member's report can "
+        "change how such an entry is read."
     )
     definition_period = YEAR
     reference = (
@@ -104,9 +108,12 @@ class income_support_eligible(Variable):
             period,
             benunit.sum(person("esa_income_reported", period) * claimant_or_partner),
         )
+        # Compare in the precision esa_income is stored in (float32), so the
+        # formula's own award always matches the award recomputed here.
+        stored = esa_income.dtype
         as_reported = np.isclose(
-            esa_income, award_on_all_reports, rtol=0, atol=0.005
-        ) | np.isclose(esa_income, reported_total, rtol=0, atol=0.005)
+            esa_income, award_on_all_reports.astype(stored), rtol=0, atol=0.005
+        ) | np.isclose(esa_income, reported_total.astype(stored), rtol=0, atol=0.005)
         income_related_esa = where(
             as_reported, award_on_claimant_or_partner_reports > 0, esa_income > 0
         )
