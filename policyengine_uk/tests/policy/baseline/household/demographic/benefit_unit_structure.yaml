@@ -486,3 +486,110 @@
         members: [grandparent, daughter, grandchild]
   output:
     is_claimant_or_partner: [true, false, false]
+
+- name: Without flags the under-20 limit still applies at the boundary
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head_a:
+        age: 40
+      aged_19:
+        age: 19
+      head_b:
+        age: 40
+      aged_20:
+        age: 20
+    benunits:
+      unit_a:
+        members: [head_a, aged_19]
+      unit_b:
+        members: [head_b, aged_20]
+    households:
+      household_a:
+        members: [head_a, aged_19]
+      household_b:
+        members: [head_b, aged_20]
+  output:
+    is_claimant_or_partner: [true, false, true, true]
+
+- name: Flagging only one partner of a large-gap couple assesses a lone parent
+  # Known trade-off of the presumption: the unflagged partner, 18 years
+  # younger, is presumed the flagged claimant's child, so their earnings drop
+  # out of the UC means test.
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      claimant:
+        age: 60
+        is_parent: true
+      partner:
+        age: 42
+        employment_income: 50_000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    is_claimant_or_partner: [true, false, false]
+    is_lone_parent: true
+    uc_earned_income: 0
+
+- name: Flagging both partners keeps the large-gap couple
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      claimant:
+        age: 60
+        is_parent: true
+      partner:
+        age: 42
+        is_parent: true
+        employment_income: 50_000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    is_claimant_or_partner: [true, true, false]
+    is_couple: true
+    uc_earned_income: 31_563.60
+    universal_credit: 0
+
+- name: Supplying claimant and partner roles keeps the large-gap couple
+  period: 2025
+  absolute_error_margin: 1
+  input:
+    people:
+      claimant:
+        age: 60
+        is_parent: true
+        is_claimant_or_partner: true
+      partner:
+        age: 42
+        employment_income: 50_000
+        is_claimant_or_partner: true
+      child:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    is_couple: true
+    is_lone_parent: false
+    uc_earned_income: 31_563.60
+    universal_credit: 0

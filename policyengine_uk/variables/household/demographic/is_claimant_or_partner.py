@@ -24,13 +24,20 @@ class is_claimant_or_partner(Variable):
       years younger than the claimant is presumed to be their child if they
       are under 20 or the claimant is flagged as a parent (a PolicyEngine
       presumption for households entered without relationships). So a lone
-      parent flagged `is_parent` who lives with an adult son or daughter is
-      single, and the son or daughter is a non-dependant.
+      parent flagged `is_parent` who lives with an unflagged adult son or
+      daughter is single, and the son or daughter is neither claimant nor
+      partner.
     - Without any parent flag, a member aged 20 or over is never presumed a
       child. Survey benefit units carry no flags for childless couples, and
       those include large age gaps, so the model cannot tell such a couple
-      from a parent and adult child. To enter a parent living with an adult
-      child, flag the parent with `is_parent` or supply this variable.
+      from a parent and adult child.
+    - Flags follow the Family Resources Survey convention: in a benefit unit
+      with children, both members of the couple are flagged as parents. If
+      only the claimant of a couple with children is flagged, a partner 16 or
+      more years younger is presumed to be their child, and the couple is
+      assessed as a lone parent. When relationships are known, supply this
+      variable for everyone (true for the claimant and any partner, false for
+      everyone else) rather than relying on the presumption.
     - If the claimant is not flagged as a parent but two or more other members
       are, the two eldest of those are the claimant and partner instead (for
       example parents living in a grandparent's benefit unit).
