@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.inputs import entered_directly
 from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
 from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
@@ -13,18 +12,20 @@ class income_support_eligible(Variable):
         "some of them, the claimant's partner. No new claims for Income "
         "Support can be made, and a partner who takes over an award makes a "
         "new claim, so the claimant is the one of the claimant and partner "
-        "who has the existing award (income_support_reported). They must be "
-        "under the qualifying age for State Pension Credit, fall within a "
-        "prescribed category (a carer, or a lone parent of a young child), "
-        "not be engaged in remunerative work (16 hours a week or more, unless "
-        "a carer) and not be entitled to Employment and Support Allowance or "
+        "who has the existing award. The model takes that to be whichever of "
+        "them reports Income Support (income_support_reported); if both do, "
+        "either can be the claimant. The claimant must be under the "
+        "qualifying age for State Pension Credit, fall within a prescribed "
+        "category the model covers (a carer, a lone parent of a young child, "
+        "or a single claimant with a child placed by a local authority), not "
+        "be engaged in remunerative work (16 hours a week or more, unless a "
+        "carer) and not be entitled to Employment and Support Allowance or "
         "Jobseeker's Allowance. The partner must not be engaged in "
         "remunerative work (24 hours a week or more, unless a carer). Neither "
         "the claimant nor the partner may be entitled to income-related ESA "
-        "or income-based JSA. "
-        "A member of the benefit unit who is neither the claimant, the "
-        "partner nor a child or young person in the family (such as a "
-        "non-dependent adult) does not affect eligibility."
+        "or income-based JSA. An adult in the benefit unit who is neither the "
+        "claimant nor the partner (such as a non-dependent adult) does not "
+        "affect eligibility."
     )
     definition_period = YEAR
     reference = (
@@ -53,10 +54,14 @@ class income_support_eligible(Variable):
             person("income_support_reported", period) > 0
         )
         # s.124(1)(e), reg 4ZA and Sch 1B: the claimant falls within a
-        # prescribed category. Para 1 is a lone parent responsible for a child
-        # under 5; Schedule 1B para 1 says "under 5", and the model retains
-        # the existing inclusive comparison pending a separate decision on
-        # the annual-age model. Para 4 is a carer.
+        # prescribed category. The model covers three of them. Para 1 is a
+        # lone parent responsible for a child under 5; Schedule 1B para 1
+        # says "under 5", and the model retains the existing inclusive
+        # comparison pending a separate decision on the annual-age model.
+        # Para 2 is "a single claimant or a lone parent with whom a child is
+        # placed" by a local authority or voluntary organisation; the model's
+        # proxy is a member flagged is_looked_after_by_local_authority. Para 4
+        # is a carer.
         youngest_child_5_or_under = (
             benunit("youngest_child_age_for_legacy_benefits", period)
             <= IS.eligibility.lone_parent_youngest_child_age_limit
@@ -64,8 +69,11 @@ class income_support_eligible(Variable):
         lone_parent_with_young_child = (
             benunit("is_lone_parent", period) & youngest_child_5_or_under
         )
+        single_with_placed_child = benunit("is_single", period) & benunit.any(
+            person("is_looked_after_by_local_authority", period) & ~claimant_or_partner
+        )
         prescribed_category = person("is_carer_for_benefits", period) | benunit.project(
-            lone_parent_with_young_child
+            lone_parent_with_young_child | single_with_placed_child
         )
         # s.124(1)(aa): the claimant has not attained the qualifying age for
         # State Pension Credit, which is state pension age (SPCA 2002 s.1(6)).
@@ -115,29 +123,50 @@ class income_support_eligible(Variable):
         # income-related allowance. An income-related allowance covers the
         # couple, so it bars Income Support whichever of them has it: the
         # award on the claimant's and partner's reported amounts, after the
-        # same capital test as esa_income. When esa_income is entered
-        # directly for this period (an input, not the formula), the reported
-        # amounts do not say whose award it is, and it is taken to be the
-        # claimant's or partner's.
-        if entered_directly(benunit, "esa_income", period):
-            income_related_esa = benunit("esa_income", period) > 0
-        else:
-            reported = benunit.sum(
-                person("esa_income_reported", period) * claimant_or_partner
-            )
-            income_related_esa = income_related_esa_award(benunit, period, reported) > 0
+        # same capital test as esa_income. When esa_income holds what the
+        # reported amounts give, either after that test (the formula) or as
+        # their plain total (the disable_simulated_benefits reform), the
+        # reports say whose award it is. When it holds anything else (an
+        # award entered directly, or a reform that replaces or removes it),
+        # they do not, and it is taken to be the claimant's or partner's. An
+        # entered award equal to either amount is read through the reports.
+        esa_income = benunit("esa_income", period)
+        reported_total = add(benunit, period, ["esa_income_reported"])
+        award_on_all_reports = income_related_esa_award(benunit, period, reported_total)
+        award_on_claimant_or_partner_reports = income_related_esa_award(
+            benunit,
+            period,
+            benunit.sum(person("esa_income_reported", period) * claimant_or_partner),
+        )
+        as_reported = np.isclose(
+            esa_income, award_on_all_reports, rtol=0, atol=0.005
+        ) | np.isclose(esa_income, reported_total, rtol=0, atol=0.005)
+        income_related_esa = where(
+            as_reported, award_on_claimant_or_partner_reports > 0, esa_income > 0
+        )
         # s.124(1)(f): neither the claimant nor the other member of a couple
         # is, and the couple are not, entitled to an income-based jobseeker's
-        # allowance. As for ESA: the award on their reported amounts after
-        # the same capital test as jsa_income, or a jsa_income entered
-        # directly for this period, taken to be theirs.
-        if entered_directly(benunit, "jsa_income", period):
-            income_based_jsa = benunit("jsa_income", period) > 0
-        else:
-            reported = benunit.sum(
-                person("jsa_income_reported", period) * claimant_or_partner
-            )
-            income_based_jsa = income_related_jsa_award(benunit, period, reported) > 0
+        # allowance, read the same way: the award on the claimant's and
+        # partner's reported amounts after the jsa_income capital test, unless
+        # jsa_income holds something the reported amounts do not give.
+        jsa_income = benunit("jsa_income", period)
+        jsa_reported_total = add(benunit, period, ["jsa_income_reported"])
+        jsa_award_on_all_reports = income_related_jsa_award(
+            benunit, period, jsa_reported_total
+        )
+        jsa_award_on_claimant_or_partner_reports = income_related_jsa_award(
+            benunit,
+            period,
+            benunit.sum(person("jsa_income_reported", period) * claimant_or_partner),
+        )
+        jsa_as_reported = np.isclose(
+            jsa_income, jsa_award_on_all_reports, rtol=0, atol=0.005
+        ) | np.isclose(jsa_income, jsa_reported_total, rtol=0, atol=0.005)
+        income_based_jsa = where(
+            jsa_as_reported,
+            jsa_award_on_claimant_or_partner_reports > 0,
+            jsa_income > 0,
+        )
         capital = benunit("income_support_assessable_capital", period)
         return (
             benunit.any(claimant)

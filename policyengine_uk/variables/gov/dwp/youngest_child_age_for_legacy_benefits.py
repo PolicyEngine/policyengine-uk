@@ -8,11 +8,13 @@ class youngest_child_age_for_legacy_benefits(Variable):
     documentation = (
         "Youngest child under 16 in the family for the legacy means-tested "
         "benefits (is_child_or_young_person_for_legacy_benefits). This "
-        "excludes the claimant and partner, and a child placed with the family "
-        "by a local authority, who is not a member of the claimant's household "
-        "(IS Regs 1987 reg 16(4)). SSCBA sections 137(1) and 142(1) use the "
-        "same child age definition. Infinity if the benefit unit contains no "
-        "such child."
+        "excludes the claimant and partner, and a child flagged "
+        "is_looked_after_by_local_authority: the model's proxy for a child "
+        "placed with the family by a local authority, or living away in its "
+        "care, who is not treated as a member of the claimant's household "
+        "(IS Regs 1987 reg 16(4)-(6)). SSCBA sections 137(1) and 142(1) use "
+        "the same child age definition. Infinity if the benefit unit contains "
+        "no such child."
     )
     definition_period = YEAR
     unit = "year"

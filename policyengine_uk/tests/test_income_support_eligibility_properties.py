@@ -5,28 +5,26 @@ paras (c), (f), (g) and (h), for "the other member of the couple". No new
 claim can be made (UC (Transitional Provisions) Regs 2014 reg 6A(1)) and a
 partner who takes over an award does so by claiming (Claims and Payments
 Regs 1987 reg 4(4)), so the claimant is the partner with the existing award.
-Nobody else in a benefit unit is named, so:
+No adult outside the couple is named, so:
 
-- adding a member who is neither the claimant, the partner nor a child or
-  young person in the family (an adult outside the family, or a child placed
-  by a local authority, IS reg 16(4)) never changes income_support_eligible,
-  whatever that member's age, ESA, JSA, Income Support, caring or work. One
-  route is held fixed: a couple caring for a placed child are not a
-  joint-claim couple for income-based JSA (JSA Regs 1996 reg 3A(1), reg
-  78(4)(a)), which changes the partner's remunerative work limit for that
-  award, so the property enters each couple's joint-claim status
-  (is_jsa_joint_claim_couple) as it is without the added member;
+- adding an adult who is neither the claimant, the partner nor a young person
+  in the family never changes income_support_eligible, whatever that adult's
+  age, ESA, JSA, Income Support, caring or work;
 - income_support_eligible equals a family-by-family reading of the model's
   gate: one of the claimant and partner reports Income Support, is under
-  state pension age, is a carer (or a lone parent of a child aged 5 or under,
-  the model's reading of Sch 1B para 1), has no contributory ESA or JSA, is
-  not a non-carer working 16 hours a week or more, and has no other member
-  of the couple who is a non-carer working 24 hours or more (s.124(1)(aa),
-  (c), (e), (f), (h); IS Regs 1987 regs 5(1), 5(1A) and 6(4)(c)); neither
-  has income-related ESA or income-based JSA (s.124(1)(h), (f)), meaning the
-  award on their reported amounts after that benefit's capital and work
-  tests (legacy_award_work_reference), or an esa_income or jsa_income
-  entered directly; and capital is within the Income Support limit;
+  state pension age, is in a prescribed category the model covers (a carer;
+  a lone parent of a child aged 5 or under, the model's reading of Sch 1B
+  para 1, counting only children in the household, reg 16(4); or a single
+  claimant with a child placed by a local authority, para 2), has no
+  contributory ESA or JSA, is not a non-carer working 16 hours a week or
+  more, and has no other member of the couple who is a non-carer working 24
+  hours or more (s.124(1)(aa), (c), (e), (f), (h); IS Regs 1987 regs 5(1),
+  5(1A) and 6(4)(c)); neither has income-related ESA or income-based JSA
+  (s.124(1)(h), (f)), meaning the award on their reported amounts after that
+  benefit's capital and remunerative work tests (legacy_award_work_reference),
+  or an esa_income or jsa_income the reported amounts do not explain (one
+  that equals neither the award on everyone's reported amounts nor their
+  plain total); and capital is within the Income Support limit;
 - raising any claimant's or partner's hours or JSA never makes a family
   eligible, because (c) and (f) only ever bar a claim, except where the work
   ends an income-related ESA or income-based JSA award that barred it: a
@@ -54,7 +52,6 @@ from hypothesis import strategies as st
 
 from legacy_award_work_reference import esa_screen, jsa_joint_claim, jsa_screen
 from policyengine_uk import Simulation
-from policyengine_uk.system import system
 
 YEAR = 2025
 
@@ -105,12 +102,21 @@ PRIMED_CLAIMANT = {
 def families(draw):
     """A claimant, an optional partner, up to three dependants and capital.
 
-    Half the families are drawn at random. The rest are primed to sit at the
-    edge of eligibility, where an added member could change the result: a
-    claimant who reports Income Support and cares, or a lone parent who
-    reports it, does not care and has only children over 5.
+    Some families are drawn at random. The rest are primed to sit at the
+    edge of eligibility:
+
+    - carer: a claimant who reports Income Support and cares;
+    - lone_parent: a lone parent who reports it, does not care and has only
+      children over 5;
+    - split_couple: one partner reports Income Support but fails a
+      condition, and the other qualifies but has no award, so the carer
+      cannot take the award over.
+
+    A quarter of families also have a child placed by a local authority.
     """
-    shape = draw(st.sampled_from(["random", "random", "carer", "lone_parent"]))
+    shape = draw(
+        st.sampled_from(["random", "random", "carer", "lone_parent", "split_couple"])
+    )
     n_dependants = draw(st.integers(1 if shape == "lone_parent" else 0, 3))
     dependants = []
     for _ in range(n_dependants):
@@ -127,9 +133,27 @@ def families(draw):
         dependants.append(dependant)
     eldest_dependant = max([d["age"] for d in dependants], default=0)
     adults = [draw(adult_inputs(min_age=max(18, eldest_dependant + 16)))]
-    if shape != "lone_parent" and draw(st.booleans()):
+    if shape == "split_couple" or (shape != "lone_parent" and draw(st.booleans())):
         adults.append(draw(adult_inputs()))
-    if shape == "carer":
+    if shape == "split_couple":
+        failure = draw(st.sampled_from(["over_qualifying_age", "no_category", "esa"]))
+        adults[0].update(
+            PRIMED_CLAIMANT,
+            age=draw(st.integers(max(adults[0]["age"], 66), 90))
+            if failure == "over_qualifying_age"
+            else min(adults[0]["age"], 65),
+            receives_carer_benefit=failure != "no_category",
+            care_hours=0,
+            esa_contrib_reported=3_000 if failure == "esa" else 0,
+        )
+        adults[1].update(
+            age=min(adults[1]["age"], 65),
+            receives_carer_benefit=True,
+            income_support_reported=0,
+            esa_income_reported=0,
+            esa_contrib_reported=0,
+        )
+    elif shape == "carer":
         adults[0].update(
             PRIMED_CLAIMANT, age=min(adults[0]["age"], 65), receives_carer_benefit=True
         )
@@ -140,6 +164,13 @@ def families(draw):
             receives_carer_benefit=False,
             care_hours=0,
         )
+    if draw(st.integers(0, 3)) == 0:
+        dependants.append(
+            {
+                "age": draw(st.integers(0, 15)),
+                "is_looked_after_by_local_authority": True,
+            }
+        )
     for adult in adults:
         adult["is_parent"] = n_dependants > 0
     capital = draw(st.sampled_from([0, 6_250, 10_000, 20_000]))
@@ -148,29 +179,40 @@ def families(draw):
 
 @st.composite
 def excluded_members(draw):
-    """A member who is neither claimant, partner nor in the family.
+    """An adult who is neither claimant, partner nor in the family.
 
-    Either an adult not in education (so a 16 to 19 year old is not a
-    qualifying young person), or a child placed by a local authority.
+    They are not in education, so a 16 to 19 year old is not a qualifying
+    young person. Most are primed with what barred or opened the claim when
+    every member counted: over state pension age, income-related ESA, an
+    Income Support report, or caring.
     """
-    if draw(st.booleans()):
-        # Mostly 5 or under, the ages that could open the lone-parent route.
-        return {
-            "age": draw(st.one_of(st.integers(0, 5), st.integers(6, 15))),
-            "is_looked_after_by_local_authority": True,
-            "receives_carer_benefit": draw(st.booleans()),
-        }
-    return {
+    adult = {
         **draw(adult_inputs(min_age=16)),
         "current_education": "NOT_IN_EDUCATION",
     }
+    primed = draw(st.sampled_from(["random", "elderly", "esa", "award", "carer"]))
+    if primed == "elderly":
+        adult["age"] = draw(st.integers(66, 90))
+    elif primed == "esa":
+        adult["esa_income_reported"] = 3_000
+    elif primed == "award":
+        adult["income_support_reported"] = 1_000
+    elif primed == "carer":
+        adult["receives_carer_benefit"] = True
+    return adult
 
 
 @st.composite
 def direct_award(draw, n):
-    """An award entered directly for each of n families (half the time), or None."""
+    """An award entered directly for each of n families (half the time), or None.
+
+    £4,000 is neither a total of the reported amounts drawn here nor such a
+    total less tariff income, so it is always read as entered directly.
+    """
     if draw(st.booleans()):
-        return draw(st.lists(st.sampled_from([0, 3_000]), min_size=n, max_size=n))
+        return draw(
+            st.lists(st.sampled_from([0, 4_000, 4_000]), min_size=n, max_size=n)
+        )
     return None
 
 
@@ -199,8 +241,12 @@ def label(units, capital_as_savings, esa_income, jsa_income):
     if any(a["jsa_contrib_reported"] or a["jsa_income_reported"] for a in adults):
         event("claimant or partner reports JSA")
     extras = [extra for *_, extra in units if extra is not None]
-    if any(e.get("is_looked_after_by_local_authority") for e in extras):
-        event("placed child added")
+    if any(
+        d.get("is_looked_after_by_local_authority")
+        for _, dependants, *_ in units
+        for d in dependants
+    ):
+        event("family with a placed child")
     if any(
         e.get("income_support_reported") or e.get("esa_income_reported") for e in extras
     ):
@@ -209,7 +255,7 @@ def label(units, capital_as_savings, esa_income, jsa_income):
         event("added member works or reports income-based JSA")
 
 
-def situation(units, capital_as_savings, esa_income, jsa_income, joint_claim=None):
+def situation(units, capital_as_savings, esa_income, jsa_income):
     label(units, capital_as_savings, esa_income, jsa_income)
     people, benunits, households = {}, {}, {}
     for i, (adults, dependants, capital, extra) in enumerate(units):
@@ -234,8 +280,6 @@ def situation(units, capital_as_savings, esa_income, jsa_income, joint_claim=Non
             benunits[f"b{i}"]["esa_income"] = {YEAR: esa_income[i % len(esa_income)]}
         if jsa_income is not None:
             benunits[f"b{i}"]["jsa_income"] = {YEAR: jsa_income[i % len(jsa_income)]}
-        if joint_claim is not None:
-            benunits[f"b{i}"]["is_jsa_joint_claim_couple"] = {YEAR: joint_claim[i]}
     return {"people": people, "benunits": benunits, "households": households}
 
 
@@ -260,18 +304,9 @@ def test_excluded_member_never_changes_is_eligibility(drawn, data):
     capital_as_savings, esa_income, jsa_income = data.draw(input_settings(len(drawn)))
     without = [(*family, None) for family, _ in drawn]
     with_extra = [(*family, extra) for family, extra in drawn]
-    parameters = system.parameters(YEAR)
-    joint_claim = [
-        jsa_joint_claim(adults, bool(dependants), YEAR, parameters)
-        for adults, dependants, _ in [family for family, _ in drawn]
-    ]
     sim = Simulation(
         situation=situation(
-            without + with_extra,
-            capital_as_savings,
-            esa_income,
-            jsa_income,
-            joint_claim * 2,
+            without + with_extra, capital_as_savings, esa_income, jsa_income
         )
     )
     eligible = sim.calculate("income_support_eligible", YEAR)
@@ -308,19 +343,25 @@ def income_related_award(reported, capital, rules):
 
 
 def reference_eligibility(
-    adults, dependants, capital, esa_income, jsa_income, sp_age, parameters, extra
+    adults, dependants, capital, esa_income, jsa_income, sp_age, parameters
 ):
     """The model's Income Support gate, read family by family."""
     IS = parameters.gov.dwp.income_support
     WORK = IS.eligibility.remunerative_work
     JSA = parameters.gov.dwp.JSA.income
-    child_ages = [d["age"] for d in dependants if d["age"] < 16]
+    # A child placed by a local authority is not a member of the household
+    # (reg 16(4)), so not a child for para 1, but brings a single claimant
+    # within para 2.
+    placed = [d for d in dependants if d.get("is_looked_after_by_local_authority")]
+    in_household = [d for d in dependants if d not in placed]
+    child_ages = [d["age"] for d in in_household if d["age"] < 16]
     lone_parent_with_young_child = (
         len(adults) == 1
-        and len(dependants) > 0
+        and len(in_household) > 0
         and min(child_ages, default=math.inf)
         <= IS.eligibility.lone_parent_youngest_child_age_limit
     )
+    single_with_placed_child = len(adults) == 1 and len(placed) > 0
 
     def carer(adult):
         return adult["receives_carer_benefit"] or adult["care_hours"] >= 35
@@ -333,7 +374,9 @@ def reference_eligibility(
         adult, others = adults[i], adults[:i] + adults[i + 1 :]
         return (
             adult["income_support_reported"] > 0
-            and (carer(adult) or lone_parent_with_young_child)
+            and (
+                carer(adult) or lone_parent_with_young_child or single_with_placed_child
+            )
             and not sp_age[i]
             and adult["esa_contrib_reported"] == 0
             and adult["jsa_contrib_reported"] == 0
@@ -341,8 +384,9 @@ def reference_eligibility(
             and not any(works(other, WORK.partner_hours) for other in others)
         )
 
-    # The awards on the claimant's and partner's reports. Members outside the
-    # family are not candidates when either of them reports one.
+    # The awards on the claimant's and partner's reports, after the capital
+    # and remunerative work tests. Members outside the family are not
+    # candidates when either of them reports one.
     if esa_income is not None:
         income_related_esa = esa_income > 0
     else:
@@ -354,11 +398,9 @@ def reference_eligibility(
     if jsa_income is not None:
         income_based_jsa = jsa_income > 0
     else:
-        # A child placed with the couple ends a joint claim (reg 3A(1)).
-        family_has_child = bool(dependants) or bool(
-            extra and extra.get("is_looked_after_by_local_authority")
-        )
-        joint_claim = jsa_joint_claim(adults, family_has_child, YEAR, parameters)
+        # A child placed with the couple ends a joint claim (JSA Regs 1996
+        # reg 3A(1) with reg 78(4)(a)), so every dependant counts here.
+        joint_claim = jsa_joint_claim(adults, bool(dependants), YEAR, parameters)
         income_based_jsa = (
             JSA.active
             and income_related_award(
@@ -372,6 +414,29 @@ def reference_eligibility(
         and not income_based_jsa
         and capital <= IS.means_test.capital.limit
     )
+
+
+def explained_by_reports(
+    esa_income, reported_total, capital, parameters, rules=None, screen=True
+):
+    """Whether an esa_income (or, with the JSA capital rules, a jsa_income)
+    equals what the reported amounts give: the award after the capital and
+    remunerative work tests (screen: whether the reports pass the work test),
+    or their plain total. Income-based JSA is active in YEAR."""
+    ESA = rules if rules is not None else parameters.gov.dwp.ESA.income.capital
+    tariff = (
+        math.ceil(
+            max(0, capital - ESA.tariff_income.threshold) / ESA.tariff_income.step
+        )
+        * ESA.tariff_income.amount
+        * 52
+    )
+    award = (
+        max(0, reported_total - tariff)
+        if reported_total > 0 and capital <= ESA.limit and screen
+        else 0
+    )
+    return abs(esa_income - award) <= 0.005 or abs(esa_income - reported_total) <= 0.005
 
 
 @SETTINGS
@@ -389,15 +454,46 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     parameters = sim.tax_benefit_system.parameters(YEAR)
     start = 0
     for i, (adults, dependants, capital, extra) in enumerate(units):
+        # An esa_income or jsa_income the reported amounts explain is read
+        # through them, like a calculated one.
+        entered_esa = entered_jsa = None
+        # The award on everyone's reports, which the value rule compares
+        # with, applies the work tests to the whole benefit unit.
+        others = [extra] if extra is not None else []
+        if esa_income is not None:
+            reported_total = sum(
+                member.get("esa_income_reported", 0) for member in adults + [extra]
+            )
+            if not explained_by_reports(
+                esa_income[i],
+                reported_total,
+                capital,
+                parameters,
+                screen=esa_screen(adults, others, capital, parameters),
+            ):
+                entered_esa = esa_income[i]
+        if jsa_income is not None:
+            reported_total = sum(
+                member.get("jsa_income_reported", 0) for member in adults + [extra]
+            )
+            joint_claim = jsa_joint_claim(adults, bool(dependants), YEAR, parameters)
+            if not explained_by_reports(
+                jsa_income[i],
+                reported_total,
+                capital,
+                parameters,
+                parameters.gov.dwp.JSA.income.capital,
+                screen=jsa_screen(adults, others, capital, joint_claim, parameters),
+            ):
+                entered_jsa = jsa_income[i]
         expected = reference_eligibility(
             adults,
             dependants,
             capital,
-            None if esa_income is None else esa_income[i],
-            None if jsa_income is None else jsa_income[i],
+            entered_esa,
+            entered_jsa,
             sp_age[start : start + len(adults)],
             parameters,
-            extra,
         )
         assert eligible[i] == expected, units[i]
         start += len(adults) + len(dependants) + 1
@@ -441,6 +537,8 @@ def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
     if (eligible[: len(drawn)] & ~eligible[len(drawn) :]).any():
         event("more work or JSA removed eligibility")
     n = len(drawn)
+    # An award entered directly is the same on both sides; one calculated
+    # from reports can end when the work test fails.
     lost_award = np.zeros(n, dtype=bool)
     for variable, direct in [
         ("esa_income_eligible", esa_income),
