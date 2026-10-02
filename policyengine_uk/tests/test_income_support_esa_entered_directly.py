@@ -194,6 +194,41 @@ def test_a_report_can_change_how_an_entered_award_is_read():
     )
 
 
+def test_a_zero_award_never_bars_the_claim():
+    # £10.01 + £41.99 sums a little above £52 in stored precision, so after
+    # £52 of tariff income (capital £6,250) the formula leaves a sub-penny
+    # residual. Entering zero, or abolishing income-related ESA, pays no ESA,
+    # so neither may bar Income Support.
+    partner = {
+        "age": {YEAR: 42},
+        "is_claimant_or_partner": {YEAR: True},
+        "esa_income_reported": {YEAR: 41.99},
+    }
+    carer = {**CARER, "esa_income_reported": {YEAR: 10.01}}
+    capital = {"esa_income_assessable_capital": {YEAR: 6_250}}
+    entered_zero = simulation(
+        {"carer": carer, "partner": partner}, {**capital, "esa_income": {YEAR: 0}}
+    )
+    assert entered_zero.calculate("esa_income", YEAR)[0] == 0
+    assert eligible(entered_zero)
+    abolished = simulation({"carer": carer, "partner": partner}, capital)
+    abolished.tax_benefit_system.neutralize_variable("esa_income")
+    assert eligible(abolished)
+
+
+def test_the_tolerance_is_half_a_penny():
+    # An entered £100 is read through an excluded adult's report of £100.004
+    # (within half a penny) but not £100.006, which leaves it the couple's.
+    def with_report(amount):
+        reporter = {**EXCLUDED_ADULT, "esa_income_reported": {YEAR: amount}}
+        return simulation(
+            {"carer": CARER, "other_adult": reporter}, {"esa_income": {YEAR: 100}}
+        )
+
+    assert eligible(with_report(100.004))
+    assert not eligible(with_report(100.006))
+
+
 def test_a_simulation_with_no_inputs_calculates_the_gate():
     sim = Simulation(
         situation={},

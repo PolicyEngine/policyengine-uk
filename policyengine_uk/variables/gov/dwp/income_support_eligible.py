@@ -21,11 +21,14 @@ class income_support_eligible(Variable):
         "claimant nor the partner may be entitled to income-related ESA. An "
         "adult in the benefit unit who is neither the claimant nor the "
         "partner (such as a non-dependent adult) does not affect "
-        "eligibility, with one declared exception: an esa_income entered "
-        "directly is read through the reported awards when it equals what "
-        "they give (the award after esa_income_eligible, or their plain "
-        "total, to within half a penny), so another member's report can "
-        "change how such an entry is read."
+        "eligibility, with a declared exception for a stored esa_income "
+        "that is not the formula's own result. Whether entered directly or "
+        "replaced by a reform (including one that scales it), such a value "
+        "is read through the reported awards when it equals what they give "
+        "(the award after esa_income_eligible, or their plain total, to "
+        "within half a penny after rounding to the precision it is stored "
+        "in), and is otherwise taken to be the claimant's or partner's. So "
+        "another member's report can change how such a value is read."
     )
     definition_period = YEAR
     reference = (
@@ -57,9 +60,11 @@ class income_support_eligible(Variable):
         # says "under 5", and the model retains the existing inclusive
         # comparison pending a separate decision on the annual-age model.
         # Para 2 is "a single claimant or a lone parent with whom a child is
-        # placed" by a local authority or voluntary organisation; the model's
-        # proxy is a member flagged is_looked_after_by_local_authority. Para 4
-        # is a carer.
+        # placed" by a local authority or voluntary organisation. A child is
+        # under 16 (SSCBA s.137(1)). The model's proxy is a member under 16
+        # flagged is_looked_after_by_local_authority; the flag also marks a
+        # child living away in a local authority's care, whom para 2 does not
+        # cover, and the model cannot tell the two apart. Para 4 is a carer.
         youngest_child_5_or_under = (
             benunit("youngest_child_age_for_legacy_benefits", period)
             <= IS.eligibility.lone_parent_youngest_child_age_limit
@@ -67,8 +72,13 @@ class income_support_eligible(Variable):
         lone_parent_with_young_child = (
             benunit("is_lone_parent", period) & youngest_child_5_or_under
         )
+        placed_child = (
+            person("is_looked_after_by_local_authority", period)
+            & person("is_child_for_child_benefit", period)
+            & ~claimant_or_partner
+        )
         single_with_placed_child = benunit("is_single", period) & benunit.any(
-            person("is_looked_after_by_local_authority", period) & ~claimant_or_partner
+            placed_child
         )
         prescribed_category = person("is_carer_for_benefits", period) | benunit.project(
             lone_parent_with_young_child | single_with_placed_child
@@ -96,10 +106,12 @@ class income_support_eligible(Variable):
         # holds what the reported amounts give, either after that screen (the
         # formula) or as their plain total (the disable_simulated_benefits
         # reform), the reports say whose award it is. When it holds anything
-        # else (an award entered directly, or a reform that replaces or
-        # removes it), they do not, and it is taken to be the claimant's or
-        # partner's. An entered award equal to either amount is read through
-        # the reports.
+        # else (an award entered directly, or a reform that replaces, scales
+        # or removes it), they do not, and it is taken to be the claimant's
+        # or partner's. A stored value equal to either amount, to within half
+        # a penny after rounding to its stored precision, is read through the
+        # reports. Either way, no income-related ESA is paid when esa_income
+        # is zero, so a zero never bars the claim.
         esa_income = benunit("esa_income", period)
         reported_total = add(benunit, period, ["esa_income_reported"])
         award_on_all_reports = income_related_esa_award(benunit, period, reported_total)
@@ -114,8 +126,8 @@ class income_support_eligible(Variable):
         as_reported = np.isclose(
             esa_income, award_on_all_reports.astype(stored), rtol=0, atol=0.005
         ) | np.isclose(esa_income, reported_total.astype(stored), rtol=0, atol=0.005)
-        income_related_esa = where(
-            as_reported, award_on_claimant_or_partner_reports > 0, esa_income > 0
+        income_related_esa = (esa_income > 0) & (
+            ~as_reported | (award_on_claimant_or_partner_reports > 0)
         )
         capital = benunit("income_support_assessable_capital", period)
         return (

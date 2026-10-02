@@ -226,6 +226,37 @@
     is_lone_parent: false
     income_support_eligible: true
 
+- name: A placed member aged 15 is a child for Sch 1B para 2, aged 16 is not
+  period: 2025
+  input:
+    people:
+      claimant1:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      placed15:
+        age: 15
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+      claimant2:
+        age: 40
+        is_claimant_or_partner: true
+        income_support_reported: 1_000
+      placed16:
+        age: 16
+        is_claimant_or_partner: false
+        is_looked_after_by_local_authority: true
+    benunits:
+      family1:
+        members: [claimant1, placed15]
+        income_support_assessable_capital: 0
+      family2:
+        members: [claimant2, placed16]
+        income_support_assessable_capital: 0
+  output:
+    # A child is a person under 16 (SSCBA 1992 s.137(1)).
+    income_support_eligible: [true, false]
+
 - name: A couple with a placed child are not within Sch 1B para 2
   period: 2025
   input:
