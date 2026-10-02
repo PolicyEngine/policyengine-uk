@@ -1,9 +1,116 @@
-- name: Energy price cap freeze for the last quarter in 2022.
+- name: Case 1, Energy Price Guarantee reform applies throughout 2022.
   period: 2022
   absolute_error_margin: 10
   input:
     gov.ofgem.energy_price_cap: 5_000
     gov.ofgem.energy_price_guarantee: 2_500
+    gov.ofgem.energy_price_guarantee_in_effect: true
     domestic_energy_consumption: 1_000
   output:
     epg_subsidy: 500
+
+- name: Case 2, Energy Price Guarantee is inactive before October 2022.
+  period: 2022-09
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0
+
+- name: Case 3, Energy Price Guarantee starts in October 2022.
+  period: 2022-10
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 50
+
+- name: Case 4, Energy Price Guarantee remains available in March 2024.
+  period: 2024-03
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 40
+
+- name: Case 5, Energy Price Guarantee ends in April 2024.
+  period: 2024-04
+  input:
+    gov.ofgem.energy_price_cap: 5_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0
+
+- name: Case 6, Great Britain prepayment discount applies from July 2023.
+  period: 2023-07
+  input:
+    country:
+      2023: ENGLAND
+    uses_energy_prepayment_meter:
+      2023: true
+    gov.ofgem.energy_price_cap: 2_000
+    gov.ofgem.energy_price_guarantee: 3_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 21 / 12
+
+- name: Case 7, other payment methods receive no discount from July 2023.
+  period: 2023-07
+  input:
+    country:
+      2023: ENGLAND
+    uses_energy_prepayment_meter:
+      2023: false
+    gov.ofgem.energy_price_cap: 2_000
+    gov.ofgem.energy_price_guarantee: 3_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0
+
+- name: Case 8, Northern Ireland does not receive the prepayment discount.
+  period: 2023-10
+  input:
+    country:
+      2023: NORTHERN_IRELAND
+    uses_energy_prepayment_meter:
+      2023: true
+    gov.ofgem.energy_price_cap: 2_000
+    gov.ofgem.energy_price_guarantee: 3_000
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0
+
+- name: Case 9, Great Britain prepayment discount continues in March 2024.
+  period: 2024-03
+  input:
+    country:
+      2024: WALES
+    uses_energy_prepayment_meter:
+      2024: true
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 40 / 12
+
+- name: Case 10, prepayment support ends in April 2024.
+  period: 2024-04
+  input:
+    country:
+      2024: SCOTLAND
+    uses_energy_prepayment_meter:
+      2024: true
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0
+
+- name: Case 11, general and prepayment discounts apply together.
+  period: 2023-07
+  input:
+    country:
+      2023: ENGLAND
+    uses_energy_prepayment_meter:
+      2023: true
+    gov.ofgem.energy_price_cap: 5_000
+    gov.ofgem.energy_price_guarantee: 2_500
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 50 + 21 / 12
