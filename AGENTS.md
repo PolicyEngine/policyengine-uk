@@ -35,6 +35,9 @@ interactions with upstream dataset materializers, read
 When changing public behavior, documentation, metadata surfaces, or generated
 documentation, read `docs/engineering/skills/documentation-review.md`.
 
+When auditing a released variable or parameter against official policy sources,
+read `docs/engineering/skills/policy-audit/SKILL.md`.
+
 ## Non-Negotiable PR Requirements
 
 Every pull request must include a Towncrier changelog fragment under

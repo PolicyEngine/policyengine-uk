@@ -27,8 +27,12 @@ dependencies = [
     "policyengine-core>=3.32.9",
     "microdf-python>=1.2.1",
     "pydantic>=2.11.7",
+    "pyyaml>=6.0",
     "tables>=3.10.2",
 ]
+
+[project.scripts]
+policy-audit = "policy_audit.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/PolicyEngine/policyengine-uk"
@@ -43,13 +47,14 @@ build-backend = "hatchling.build"
 [tool.hatch.build]
 include = [
     "policyengine_uk/**/*",
+    "policy_audit/**/*",
     "CHANGELOG.md",
     "LICENSE",
     "README.md",
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["policyengine_uk"]
+packages = ["policyengine_uk", "policy_audit"]
 
 [project.optional-dependencies]
 dev = [

@@ -19,3 +19,6 @@ materialization behavior, read `docs/engineering/skills/dataset-sources.md`.
 
 For documentation-sensitive changes, read
 `docs/engineering/skills/documentation-review.md`.
+
+For release-specific variable or parameter audits against official policy
+sources, read `docs/engineering/skills/policy-audit/SKILL.md`.

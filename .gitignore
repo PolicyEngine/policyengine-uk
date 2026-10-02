@@ -66,6 +66,9 @@ env.bak/
 venv.bak/
 .env*
 
+# Local policy audit worktrees and review state
+.policy-audit/
+
 # Coverage / testing
 htmlcov/
 .tox/

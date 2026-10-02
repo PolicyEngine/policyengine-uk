@@ -30,6 +30,9 @@ upstream materialized dataset paths, read
 When changing public behavior, metadata, docs, or generated docs, read
 `docs/engineering/skills/documentation-review.md`.
 
+When auditing a released variable or parameter against official policy sources,
+read `docs/engineering/skills/policy-audit/SKILL.md`.
+
 ## Safety Boundaries
 
 Do not fabricate policy sources, validation metrics, or performance claims. If a

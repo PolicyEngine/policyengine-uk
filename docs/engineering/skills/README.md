@@ -21,6 +21,8 @@ Current skills:
   fragments, draft PR expectations, and pre-commit lint/format rules.
 - `model-structure.md`: UK variables, parameters, reforms, enums, program
   registry metadata, and refactoring recovery lessons.
+- `policy-audit/SKILL.md`: release-specific variable and grouped-parameter
+  audits using official sources, bounded program context, and cited issues.
 - `testing.md`: UK test layout, focused test selection, slow microsimulation
   boundaries, and expected commands.
 

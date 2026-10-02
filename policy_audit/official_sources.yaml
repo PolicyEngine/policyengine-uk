@@ -1,0 +1,20 @@
+# Only sources issued by UK public authorities belong here. Additions require review.
+domains:
+  - gov.uk
+  - www.gov.uk
+  - legislation.gov.uk
+  - www.legislation.gov.uk
+  - gov.scot
+  - www.gov.scot
+  - gov.wales
+  - www.gov.wales
+  - nidirect.gov.uk
+  - www.nidirect.gov.uk
+  - revenue.scot
+  - www.revenue.scot
+  - socialsecurity.gov.scot
+  - www.socialsecurity.gov.scot
+
+# Local authorities use many individual hosts beneath the government domain.
+domain_suffixes:
+  - .gov.uk
