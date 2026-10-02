@@ -1,0 +1,285 @@
+# Statutory sick, maternity and paternity pay as Pension Credit earnings.
+# SPC Regs 2002 reg 17A(2)(h) and (i): "earnings" of an employed earner
+# include "statutory sick pay and statutory maternity pay payable by the
+# employer under the 1992 Act" and "statutory paternity pay payable under
+# Part 12ZA of the 1992 Act". Reg 15(1)(o) to (q) except them from the social
+# security benefits prescribed as income, so they count only as earnings, and
+# the Schedule VI earnings disregard (reg 17(9)) applies to them.
+# HB (SPC) Regs 2006 reg 35(1)(h) and (i) and HB Regs 2006 reg 35(1)(i) make
+# the same payments earnings for Housing Benefit.
+#
+# 2026-27 weekly rates, SI 2026/148:
+# - statutory sick pay 123.25 (art 8; SSCBA 1992 s.157(1), the lower of 123.25
+#   and 80% of normal weekly earnings: these cases take the 123.25 limb);
+# - statutory maternity pay 194.32 (art 9; SMP (General) Regs 1986 reg 6);
+# - statutory paternity pay 194.32 (art 10(1)(a); SPP and SAP (Weekly Rates)
+#   Regs 2002 reg 2(a));
+# - standard minimum guarantee 238.00 single, 363.25 couple, carer addition
+#   48.15 (art 29(2)); child addition 81.07 for an eldest child born before
+#   6 April 2017 (art 29(6); Sch IIA para 10); carer's allowance 86.45 (Sch 1).
+# Annual amounts are 52 times the weekly rate.
+# Earnings disregards (Sch VI): 5 single (para 5(a)), 10 couple (para 5(b)),
+# 20 for a carer (para 3), once per claim (para 4A).
+# No case has income tax or National Insurance: every person's taxable income
+# is below the 12,570 personal allowance (ITA 2007 s.35(1)), and every weekly
+# earnings figure is below the 242 primary threshold for 2026-27 (SS
+# (Contributions) Regs 2001 reg 10(c)).
+
+- name: Case 1, a single pensioner's statutory sick pay is Pension Credit earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        statutory_sick_pay: 123.25 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 123.25 * 52 = 6,409.
+    pension_credit_earnings: 123.25 * 52
+    # Sch VI para 5(a): 5 * 52 = 260, below net earnings of 6,409.
+    pension_credit_earnings_disregard: 5 * 52
+    # 6,409 - 260 = 6,149.
+    pension_credit_income: (123.25 - 5) * 52
+    # 238 * 52 - 6,149 = 12,376 - 6,149 = 6,227.
+    guarantee_credit: (238 - 123.25 + 5) * 52
+
+- name: Case 2, a partner's statutory paternity pay is Pension Credit earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+      person2:
+        age: 68
+        state_pension: 0
+        statutory_paternity_pay: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # 194.32 * 52 = 10,104.64.
+    pension_credit_earnings: 194.32 * 52
+    # Sch VI para 5(b): 10 * 52 = 520.
+    pension_credit_earnings_disregard: 10 * 52
+    # 10,104.64 - 520 = 9,584.64.
+    pension_credit_income: (194.32 - 10) * 52
+    # 363.25 * 52 - 9,584.64 = 18,889 - 9,584.64 = 9,304.36.
+    guarantee_credit: (363.25 - 194.32 + 10) * 52
+
+- name: Case 3, the earnings disregard applies once to employment income and statutory sick pay together.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        employment_income: 3 * 52
+        statutory_sick_pay: 123.25 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 156 + 6,409 = 6,565.
+    pension_credit_earnings: (3 + 123.25) * 52
+    # One 5 * 52 = 260 disregard on the total, more than the 156 of employment
+    # income alone (reg 17(9) disregards it "in calculating the claimant's
+    # earnings", which include the statutory sick pay).
+    pension_credit_earnings_disregard: 5 * 52
+    # 6,565 - 260 = 6,305.
+    pension_credit_income: (3 + 123.25 - 5) * 52
+    # 12,376 - 6,305 = 6,071.
+    guarantee_credit: (238 - 3 - 123.25 + 5) * 52
+
+- name: Case 4, a couple's statutory sick pay shares one ten pound disregard.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        statutory_sick_pay: 123.25 * 52
+      person2:
+        age: 70
+        state_pension: 0
+        statutory_sick_pay: 123.25 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # 2 * 6,409 = 12,818.
+    pension_credit_earnings: 2 * 123.25 * 52
+    # Sch VI paras 4A and 5(b): one 10 * 52 = 520 for the couple.
+    pension_credit_earnings_disregard: 10 * 52
+    # 12,818 - 520 = 12,298.
+    pension_credit_income: (2 * 123.25 - 10) * 52
+    # 18,889 - 12,298 = 6,591.
+    guarantee_credit: (363.25 - 2 * 123.25 + 10) * 52
+
+- name: Case 5, a dependant's statutory sick pay is not the couple's earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        employment_income: 4 * 52
+      person2:
+        age: 70
+        state_pension: 0
+      person3:
+        age: 17
+        statutory_sick_pay: 123.25 * 52
+    benunits:
+      benunit:
+        members: [person1, person2, person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        country: ENGLAND
+  output:
+    # Only the claimant's and partner's earnings count (SPCA 2002 s.5):
+    # 4 * 52 = 208, not 208 + 6,409.
+    pension_credit_earnings: 4 * 52
+    # Sch VI para 5(b) 520, capped at the couple's net earnings of 208. Counting
+    # the dependant's statutory sick pay would make it 520.
+    pension_credit_earnings_disregard: 4 * 52
+    pension_credit_income: 0
+    # Couple 363.25 plus 81.07 for the eldest child, born before 6 April 2017
+    # (Sch IIA para 10): 444.32 * 52 = 23,104.64.
+    guarantee_credit: (363.25 + 81.07) * 52
+
+- name: Case 6, a carer's twenty pound disregard applies to statutory sick pay.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        care_hours: 35
+        statutory_sick_pay: 123.25 * 52
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    pension_credit_earnings: 123.25 * 52
+    # Sch VI para 3: 20 * 52 = 1,040.
+    pension_credit_earnings_disregard: 20 * 52
+    # 6,409 - 1,040 + carer's allowance 86.45 * 52 = 5,369 + 4,495.40
+    # = 9,864.40. Taxable income 6,409 + 4,495.40 = 10,904.40 is below the
+    # personal allowance.
+    pension_credit_income: (123.25 - 20 + 86.45) * 52
+    # (238 + 48.15) * 52 - 9,864.40 = 14,879.80 - 9,864.40 = 5,015.40.
+    guarantee_credit: (238 + 48.15 - 123.25 + 20 - 86.45) * 52
+
+- name: Case 7, a younger partner's statutory maternity pay is Pension Credit earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+      person2:
+        age: 35
+        statutory_maternity_pay: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # 194.32 * 52 = 10,104.64.
+    pension_credit_earnings: 194.32 * 52
+    pension_credit_earnings_disregard: 10 * 52
+    # 10,104.64 - 520 = 9,584.64. Guarantee Credit is not asserted: the model
+    # pays no Pension Credit to a mixed-age couple.
+    pension_credit_income: (194.32 - 10) * 52
+
+- name: Case 8, pension-age Housing Benefit counts statutory paternity pay as earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension: 0
+        private_pension_income: 12_000
+      person2:
+        age: 70
+        state_pension: 0
+        statutory_paternity_pay: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1, person2]
+        # HB (SPC) Regs 2006 Sch 4 para 7(b): 10 a week for a couple. Set
+        # here because the model's Housing Benefit earnings disregard is not
+        # yet the statutory amount.
+        housing_benefit_applicable_income_disregard: 10 * 52
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    pension_credit_earnings: 194.32 * 52
+    pension_credit_earnings_disregard: 10 * 52
+    # 12,000 + 10,104.64 - 520 = 21,584.64.
+    pension_credit_income: 12_000 + (194.32 - 10) * 52
+    # 21,584.64 exceeds the 18,889 couple minimum guarantee.
+    guarantee_credit: 0
+    # HB (SPC) Regs 2006 reg 35(1)(i): 12,000 + 10,104.64 - 520 = 21,584.64.
+    housing_benefit_applicable_income: 12_000 + (194.32 - 10) * 52
+
+- name: Case 9, working-age Housing Benefit counts statutory paternity pay as earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 30
+        statutory_paternity_pay: 194.32 * 52
+    benunits:
+      benunit:
+        members: [person1]
+        # HB Regs 2006 Sch 4 para 10: 5 a week where none of paras 3 to 9
+        # applies (a single person who is not a lone parent, carer or
+        # disabled, in no listed employment).
+        housing_benefit_applicable_income_disregard: 5 * 52
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # HB Regs 2006 reg 35(1)(i): 10,104.64 - 260 = 9,844.64.
+    housing_benefit_applicable_income: (194.32 - 5) * 52

@@ -36,6 +36,9 @@ class housing_benefit_applicable_income(Variable):
             "state_pension",
             "maternity_allowance",
             "statutory_sick_pay",
+            # Earnings of an employed earner in both Housing Benefit schemes:
+            # HB Regs 2006 reg 35(1)(i); HB (SPC) Regs 2006 reg 35(1)(i).
+            "statutory_paternity_pay",
             "statutory_maternity_pay",
             "ssmg",
         ]

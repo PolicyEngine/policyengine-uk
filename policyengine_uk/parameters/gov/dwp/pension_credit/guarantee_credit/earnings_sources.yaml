@@ -1,13 +1,26 @@
-description: The DWP considers these sources of income as income for Pension Credit.
+description: >-
+  Pension Credit counts these sources as earnings of the claimant and partner.
+  Statutory sick, maternity and paternity pay are earnings of an employed earner
+  (reg. 17A(2)(h) and (i)), not social security benefits (reg. 15(1)(o) to (q)).
+  Statutory adoption, shared parental, parental bereavement and neonatal care
+  pay are earnings too (reg. 17A(2)(j), (ib), (ic) and (id)) but have no
+  variables, so they are not counted. Employment income must exclude any
+  statutory payment entered separately.
 metadata:
   label: Pension Credit earnings sources
   reference:
-  - title: State Pension Credit Act 2002
+  - title: The State Pension Credit Regulations 2002 reg. 17A(2) (earnings of an employed earner)
     href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A
-  - title: State Pension Credit Act 2002
+  - title: The State Pension Credit Regulations 2002 reg. 17B (earnings of a self-employed earner)
     href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B
+  - title: The State Pension Credit Regulations 2002 reg. 15(1)(o) to (r) (statutory payments excepted from social security benefits)
+    href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/15
   unit: list
 values:
   2002-01-01:
   - employment_income
   - self_employment_income
+  # Reg. 17A(2)(h) and (i), in force from 6 October 2003.
+  - statutory_sick_pay
+  - statutory_maternity_pay
+  - statutory_paternity_pay
