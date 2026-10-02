@@ -1,5 +1,7 @@
-description: Share of eligible Housing Benefit recipients that participate. By definition,
-  this is 100%, because only current claimants are eligible (no new claims).
+description: Share of eligible Housing Benefit recipients that participate. Not used by
+  the model, which takes Housing Benefit take-up from reported claims in survey data and
+  assumes full take-up in household calculations. Pension-age families can make new
+  claims; working-age families only continue existing awards.
 metadata:
   economy: false
   label: Housing benefit take-up rate
