@@ -35,7 +35,8 @@ population of households:
    other adult banded on their own earnings and hours, the benefit-receipt
    exemptions only for a claimant or partner on the award (none in Oxford),
    and the pool charged to each claiming family by its share, less its own
-   claimant, partner and children. Every other council's variables are zero.
+   claimant, partner and children, unless that family's own applicant or
+   partner is exempt. Every other council's variables are zero.
 7. Local independence: an adult in a benefit unit who is not its claimant or
    partner changes no one else's local deduction through their earnings.
 """
@@ -600,13 +601,7 @@ def local_oracle(person_rows, family_rows, benefits, claims, ctr_share):
         eligible = row["age"] >= 18 and (
             family["role"] == "non_dependant" or row["kind"] == "non_dependant"
         )
-        head = next(
-            i
-            for i, other in enumerate(family_rows)
-            if other["household"] == family["household"]
-        )
-        applicant_exempt = family_rows[head]["renter_pip"]
-        if not eligible or applicant_exempt or row["student"]:
+        if not eligible or row["student"]:
             continue
         couple = [
             other
@@ -666,7 +661,10 @@ def local_oracle(person_rows, family_rows, benefits, claims, ctr_share):
             and person_rows[p]["kind"] != "non_dependant"
         ]
         pool = sum(counted[p] for p in in_household) - sum(counted[p] for p in own)
-        totals[f] = claims[f] * ctr_share[f] * pool
+        # Para 30(6): no deduction from a claiming family whose own applicant
+        # or partner is exempt (#2015), whatever the other claimants get.
+        applicant_exempt = family["renter_pip"]
+        totals[f] = 0 if applicant_exempt else claims[f] * ctr_share[f] * pool
     return individual, totals
 
 
