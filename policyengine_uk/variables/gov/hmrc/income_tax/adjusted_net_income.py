@@ -13,18 +13,12 @@ class adjusted_net_income(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        adjusted_net_income_components = parameters(
-            period
-        ).gov.hmrc.income_tax.adjusted_net_income_components
-
-        # Find adjusted net income
-        ani = add(person, period, adjusted_net_income_components)
-
-        # For basic income contributions, add basic income
-        # Modifying param list directly is mutative, hence two-step process
-        if parameters(
-            period
-        ).gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income:
-            ani += person("basic_income", period)
-
-        return max_(0, ani)
+        # Net income after trade loss relief against general income
+        # (ITA 2007 s.24(1), s.64), which reduces it before the Personal
+        # Allowance taper and every other adjusted net income test. Includes
+        # basic income where a reform makes it taxable.
+        return max_(
+            0,
+            person("net_income_before_trade_loss_relief", period)
+            - person("trade_loss_relief_against_general_income", period),
+        )

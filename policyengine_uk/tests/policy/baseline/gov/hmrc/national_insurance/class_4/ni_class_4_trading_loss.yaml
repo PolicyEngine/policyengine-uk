@@ -1,0 +1,59 @@
+# SSCBA 1992 Sch 2 para 3: the trade loss reliefs of ITA 2007 ss.64 and 83
+# reduce Class 4 profits, and para 3(4)(a) applies a loss relieved against
+# general income to the profits of any of the person's trades. 2026-27: main
+# rate 6% between £12,570 and £50,270.
+
+- name: A loss in one trade reduces another trade's Class 4 profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+    trading_loss: 10_000
+  output:
+    ni_class_4_profits: 20_000
+    ni_class_4: 445.8
+
+- name: Relief set against pay for Income Tax still reduces Class 4 profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 50_000
+    self_employment_income: 20_000
+    trading_loss: 15_000
+  output:
+    trade_loss_relief_against_general_income: 15_000
+    ni_class_4_profits: 5_000
+    ni_class_4: 0
+
+- name: Losses brought forward reduce Class 4 profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 20_000
+    loss_relief: 5_000
+  output:
+    ni_class_4_profits: 15_000
+    ni_class_4: 145.8
+
+- name: A loss with no profits pays no Class 4 and never goes below zero
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 40_000
+    trading_loss: 10_000
+  output:
+    ni_class_4_profits: 0
+    ni_class_4: 0
+
+- name: Class 4 carries forward a loss Income Tax set against other income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 50_000
+    ni_class_4_losses_brought_forward: 20_000
+  output:
+    ni_class_4_profits: 30_000
+    # (30,000 - 12,570) x 6%.
+    ni_class_4: 1_045.8
+    # Income Tax is unaffected: £50,000 less the £12,570 Personal Allowance at 20%.
+    income_tax: 7_486

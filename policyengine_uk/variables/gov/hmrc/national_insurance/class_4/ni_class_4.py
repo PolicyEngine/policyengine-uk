@@ -13,8 +13,9 @@ class ni_class_4(Variable):
     def formula(person, period, parameters):
         class_4 = parameters(period).gov.hmrc.national_insurance.class_4
         # Schedule 2 para 2: Class 4 is charged on the full trading profits;
-        # Class 1 contributions are not a deduction.
-        profits = person("self_employment_income", period)
+        # Class 1 contributions are not a deduction. Trade losses do reduce
+        # them (para 3), through ni_class_4_profits.
+        profits = person("ni_class_4_profits", period)
         add_rate_income = max_(
             profits - class_4.thresholds.upper_profits_limit,
             0,

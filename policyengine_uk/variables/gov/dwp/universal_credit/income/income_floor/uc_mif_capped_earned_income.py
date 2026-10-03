@@ -18,7 +18,9 @@ class uc_mif_capped_earned_income(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             INCOME_COMPONENTS.append("basic_income")
-        personal_gross_earned_income = add(person, period, INCOME_COMPONENTS)
+        personal_gross_earned_income = add(person, period, INCOME_COMPONENTS) - person(
+            "uc_trading_losses_set_against_profits", period
+        )
         floor = where(
             person("uc_mif_applies", period),
             person("uc_minimum_income_floor", period),

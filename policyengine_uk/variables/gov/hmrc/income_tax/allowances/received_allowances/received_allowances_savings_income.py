@@ -14,7 +14,13 @@ class received_allowances_savings_income(Variable):
         received_allowances_earned_income = person(
             "received_allowances_earned_income", period
         )
-        remaining_allowance = all_allowances - received_allowances_earned_income
+        # Trade loss relief beyond non-savings income comes off savings income
+        # next, then dividends (ITA 2007 s.25(2)).
+        remaining_allowance = (
+            all_allowances
+            + person("trade_loss_relief_against_savings_and_dividends", period)
+            - received_allowances_earned_income
+        )
 
         savings_income = person("taxable_savings_interest_income", period)
 

@@ -26,6 +26,9 @@ class is_benefit_cap_exempt_earnings(Variable):
         uc_earned = benunit.sum(
             benunit.members("employment_income", period)
             + benunit.members("self_employment_income", period)
+            # Reg 82 reads earned income as UC calculates it: a trading loss
+            # nets against other trades' profits (reg 57(2)).
+            - benunit.members("uc_trading_losses_set_against_profits", period)
             - benunit.members("income_tax", period)
             - benunit.members("national_insurance", period)
         )
