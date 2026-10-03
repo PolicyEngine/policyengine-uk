@@ -21,7 +21,7 @@ def calculate_derivative(
     year: int = 2025,
     count_adults: int = 2,
     delta: float = 1_000,
-) -> np.ndarray:
+) -> pd.Series:
     """Calculate the marginal rate of change of target variable with respect to input variable.
 
     This function computes numerical derivatives by applying small changes to the input
@@ -39,17 +39,22 @@ def calculate_derivative(
             stays negligible at any level of the input
 
     Returns:
-        Array of marginal rates clipped between 0 and 1
+        Series of marginal retention rates, rounded to 4 decimal places, with
+        NaN for people outside the first count_adults adults
     """
-    # Get baseline values for input variable and identify adults
-    input_variable_values = sim.calculate(input_variable, year).copy()
-    adult_index = sim.calculate("adult_index")
+    # Get baseline values for input variable and identify adults. Work on plain
+    # arrays: boolean-mask assignment into weighted MicroSeries fails with
+    # recent microdf and pandas releases.
+    input_variable_values = np.array(sim.calculate(input_variable, year))
+    adult_index = np.asarray(sim.calculate("adult_index", year))
     entity_key = sim.tax_benefit_system.variables[input_variable].entity.key
     step = marginal_rate_step(input_variable_values, delta)
     stored_step = np.ones_like(np.asarray(input_variable_values))
 
     # Calculate baseline target values
-    original_target_values = sim.calculate(target_variable, year, map_to=entity_key)
+    original_target_values = np.array(
+        sim.calculate(target_variable, year, map_to=entity_key)
+    )
     new_target_values = original_target_values.copy()
 
     # Apply the step to each adult sequentially to calculate marginal effects
@@ -59,27 +64,26 @@ def calculate_derivative(
         sim.reset_calculations()
         sim.set_input(input_variable, year, new_input_variable_values)
         # Float32 rounds the higher input, so divide by the rise stored.
-        stored_input_rise = np.asarray(
-            sim.calculate(input_variable, year) - input_variable_values
+        stored_input_rise = (
+            np.asarray(sim.calculate(input_variable, year)) - input_variable_values
         )
         stored_step[gets_pay_rise] = stored_input_rise[gets_pay_rise]
-        new_target_values[gets_pay_rise] = sim.calculate(
-            target_variable, year, map_to=entity_key
+        new_target_values[gets_pay_rise] = np.asarray(
+            sim.calculate(target_variable, year, map_to=entity_key)
         )[gets_pay_rise]
 
     # Calculate marginal rate as change in target per unit change in input
-    rel_marginal_wages = (new_target_values - original_target_values) / stored_step
+    rel_marginal_wages = pd.Series(
+        (new_target_values - original_target_values) / stored_step
+    )
 
     # Set non-adult observations to NaN
-    rel_marginal_wages[~pd.Series(adult_index).isin(range(1, count_adults + 1))] = (
-        np.nan
-    )
+    rel_marginal_wages[~np.isin(adult_index, range(1, count_adults + 1))] = np.nan
 
     # Reset simulation to original state
     sim.reset_calculations()
     sim.set_input(input_variable, year, input_variable_values)
 
-    # Clip to ensure rates are between 0 and 1 (0% to 100% retention)
     return rel_marginal_wages.round(4)
 
 
@@ -195,6 +199,7 @@ def calculate_derivative_change(
 
 def calculate_labour_substitution_elasticities(
     sim: Simulation,
+    year: int = None,
 ) -> np.ndarray:
     """Calculate labour supply substitution elasticities by demographic group.
 
@@ -206,14 +211,15 @@ def calculate_labour_substitution_elasticities(
 
     Args:
         sim: PolicyEngine simulation object
+        year: Year for calculation (the simulation's default period if None)
 
     Returns:
         Array of substitution elasticities for each person
     """
     # Get demographic characteristics for elasticity assignment
-    gender = sim.calculate("gender")
-    is_married = sim.calculate("is_married", map_to="person")
-    composition = benunit_age_18_composition(sim)
+    gender = sim.calculate("gender", year)
+    is_married = sim.calculate("is_married", year, map_to="person")
+    composition = benunit_age_18_composition(sim, year)
     has_children = composition["count_under_18"].values > 0
     youngest_child_age = composition["youngest_under_18_age"].values
 
@@ -265,6 +271,7 @@ def calculate_labour_substitution_elasticities(
 
 def calculate_labour_net_income_elasticities(
     sim: Simulation,
+    year: int = None,
 ) -> np.ndarray:
     """Calculate labour supply income elasticities by demographic group.
 
@@ -277,14 +284,15 @@ def calculate_labour_net_income_elasticities(
 
     Args:
         sim: PolicyEngine simulation object
+        year: Year for calculation (the simulation's default period if None)
 
     Returns:
         Array of income elasticities for each person (typically negative)
     """
     # Get demographic characteristics for elasticity assignment
-    gender = sim.calculate("gender")
-    is_married = sim.calculate("is_married", map_to="person")
-    composition = benunit_age_18_composition(sim)
+    gender = sim.calculate("gender", year)
+    is_married = sim.calculate("is_married", year, map_to="person")
+    composition = benunit_age_18_composition(sim, year)
     has_children = composition["count_under_18"].values > 0
     youngest_child_age = composition["youngest_under_18_age"].values
 
