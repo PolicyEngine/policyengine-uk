@@ -907,12 +907,12 @@ def survey_roles(family):
     return [p["is_parent"] or not flagged for p in family]
 
 
-def childless_couple_20_years_apart(family):
-    return (
-        len(family) == 2
-        and all(survey_roles(family))
-        and abs(family[0]["age"] - family[1]["age"]) >= 20
-    )
+def childless_couple_split_by_any_age_gap(family):
+    # A childless two-adult unit whose head (the claimant) is 20+ years older.
+    if len(family) != 2 or not all(survey_roles(family)):
+        return False
+    head, other = sorted(family, key=lambda p: not p["is_benunit_head"])
+    return head["age"] - other["age"] >= 20
 
 
 @PROPERTY_SETTINGS
@@ -922,13 +922,14 @@ def test_frs_shaped_units_change_only_for_childless_couples_20_years_apart(famil
     # units the two can differ only in childless two-adult units 20 or more
     # years apart, which carry no flags: there, if the claimant (the head) is
     # the elder, the younger adult is presumed their child (intended); a
-    # younger head keeps the couple. Survey datasets supply
-    # is_claimant_or_partner, so the microsimulation does not depend on this.
+    # younger head keeps the couple. A dataset that carries
+    # is_claimant_or_partner (policyengine-uk-data#524's enhanced FRS) does not
+    # depend on this; datasets without the role do.
     sim = simulate(families)
     expected = [c for family in families for c in claimants_or_partners(family)]
     assert_values(sim, "is_claimant_or_partner", expected)
     for family in families:
-        if not childless_couple_20_years_apart(family):
+        if not childless_couple_split_by_any_age_gap(family):
             assert claimants_or_partners(family) == claimants_or_partners(
                 family, any_age_gap=None
             )
@@ -937,8 +938,8 @@ def test_frs_shaped_units_change_only_for_childless_couples_20_years_apart(famil
 @PROPERTY_SETTINGS
 @given(frs_shaped_units())
 def test_supplied_claimant_and_partner_roles_are_kept(families):
-    # policyengine-uk-data supplies is_claimant_or_partner from the FRS adult
-    # table: the head and any partner, whatever their ages and gap. Supplied
+    # policyengine-uk-data#524 supplies is_claimant_or_partner from the FRS
+    # adult table: the head and any partner, whatever their ages and gap. Supplied
     # roles override the presumption, so the FRS couples it would split stay
     # couples, and every unit keeps one claimant and at most one partner.
     roles = [role for family in families for role in survey_roles(family)]
@@ -971,12 +972,12 @@ def test_wide_gap_couples_by_head_order_and_with_supplied_roles():
     # is the partner. Supplied roles keep the couple either way.
     elder_head = [person(70, is_benunit_head=True), person(45)]
     younger_head = [person(45, is_benunit_head=True), person(70)]
-    families = [elder_head, younger_head, elder_head, younger_head]
+    families = [elder_head, younger_head]
     sim = simulate(families)
     inferred = sim.calculate("is_claimant_or_partner", YEAR)
-    np.testing.assert_array_equal(inferred[:4], [True, False, True, True])
+    np.testing.assert_array_equal(inferred, [True, False, True, True])
     assert claimants_or_partners(elder_head) == [True, False]
     assert claimants_or_partners(younger_head) == [True, True]
     supplied = simulate(families)
-    supplied.set_input("is_claimant_or_partner", YEAR, [True] * 8)
-    np.testing.assert_array_equal(supplied.calculate("is_couple", YEAR), [True] * 4)
+    supplied.set_input("is_claimant_or_partner", YEAR, [True] * 4)
+    np.testing.assert_array_equal(supplied.calculate("is_couple", YEAR), [True] * 2)

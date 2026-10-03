@@ -377,7 +377,7 @@
 # years younger already explains the flag. Without flags, a member is presumed
 # the claimant's child under 20 at a 16-year gap, or at any age at a 20-year
 # gap: co-resident FRS adults 16-19 years apart are mostly couples, those 20 or
-# more apart mostly not. Survey datasets supply is_claimant_or_partner instead.
+# more apart mostly not. Datasets and users can supply is_claimant_or_partner instead.
 
 - name: A flagged lone parent with an adult son is single
   period: 2025
