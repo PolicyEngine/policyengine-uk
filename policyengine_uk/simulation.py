@@ -30,6 +30,10 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.supplied_inputs import (
+    SUPPLIED_INPUT_VARIABLES,
+    drop_missing_supplied_inputs,
+)
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_lsr_parameter_path,
@@ -236,23 +240,12 @@ class Simulation(CoreSimulation):
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
-        # policyengine-core 3.32.9: Simulation.delete_arrays and
+        # policyengine-core's Simulation.delete_arrays and
         # holders/holder.py::Holder.delete_arrays remove storage, but retain
         # provenance keys. Drop those keys before carry-over can refill storage.
         # Inspect storage after core's deletion to honour period containment
         # and the current branch, ancestor branches and default branch.
-        input_keys = getattr(self, "_user_input_keys", None)
-        if input_keys:
-            branch_names = set(self._get_visible_branch_names())
-            holder = self.get_holder(variable)
-            deleted_keys = {
-                (name, branch_name, input_period)
-                for name, branch_name, input_period in input_keys
-                if name == variable
-                and branch_name in branch_names
-                and holder._get_array_from_storage(input_period, branch_name) is None
-            }
-            input_keys.difference_update(deleted_keys)
+        drop_missing_supplied_inputs(self, variable)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
@@ -650,6 +643,12 @@ class Simulation(CoreSimulation):
             period = self.default_calculation_period
 
         period = period_(period)
+
+        if variable_name in SUPPLIED_INPUT_VARIABLES:
+            # A value deleted straight from the holder leaves its input record
+            # behind. Forget it before the engine can refill the period with a
+            # carried-over value that the record would pass off as supplied.
+            drop_missing_supplied_inputs(self, variable_name)
 
         return super().calculate(
             variable_name, period, map_to=map_to, decode_enums=decode_enums

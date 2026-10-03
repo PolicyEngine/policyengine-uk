@@ -8,12 +8,38 @@ inputs. A holder's known periods include both. policyengine-core records each
 ``Simulation._user_input_keys``. UK simulations isolate this provenance on
 cloning and remove keys when deleting arrays; the helpers also require a
 stored value, so missing arrays do not count as supplied inputs.
+
+``Holder.delete_arrays`` removes a stored value without removing its record
+(policyengine-core#559). The engine could then carry an earlier value into the
+empty period, and the stale record would pass it off as supplied. So
+``Simulation.calculate`` forgets the records of a variable in
+``SUPPLIED_INPUT_VARIABLES`` whose stored value is gone before the engine can
+refill it, and the helpers only answer for those variables.
 """
 
 from typing import List, Optional
 
 import numpy as np
 from policyengine_core.periods import Period
+
+
+# Variables that formulas ask about through the helpers below.
+SUPPLIED_INPUT_VARIABLES = frozenset(
+    {
+        "ni_class_4_losses_brought_forward",
+        "ni_class_4_trading_loss",
+        "trading_loss",
+    }
+)
+
+
+def _check_registered(variable_name: str) -> None:
+    if variable_name not in SUPPLIED_INPUT_VARIABLES:
+        raise ValueError(
+            f"{variable_name} is not in SUPPLIED_INPUT_VARIABLES, so "
+            "Simulation.calculate does not keep its input records in step "
+            "with storage. Add it there before asking whether it was supplied."
+        )
 
 
 def _visible_branch_names(simulation) -> List[str]:
@@ -28,9 +54,29 @@ def _visible_branch_names(simulation) -> List[str]:
     return names
 
 
+def drop_missing_supplied_inputs(simulation, variable_name: str) -> None:
+    """Forget each record of ``variable_name`` as an input, on this branch
+    or one it was made from, whose stored value has been deleted."""
+    input_keys = getattr(simulation, "_user_input_keys", None)
+    if not input_keys:
+        return
+    branch_names = set(_visible_branch_names(simulation))
+    holder = simulation.get_holder(variable_name)
+    input_keys.difference_update(
+        {
+            (name, branch_name, period)
+            for name, branch_name, period in input_keys
+            if name == variable_name
+            and branch_name in branch_names
+            and holder._get_array_from_storage(period, branch_name) is None
+        }
+    )
+
+
 def supplied_input_periods(population, variable_name: str) -> List[Period]:
     """Periods for which ``variable_name`` was supplied as an input, on this
     branch or one it was made from, earliest first."""
+    _check_registered(variable_name)
     simulation = population.simulation
     branch_names = set(_visible_branch_names(simulation))
     input_keys = getattr(simulation, "_user_input_keys", None) or ()
@@ -54,6 +100,7 @@ def supplied_input(
     input, on this branch or the nearest one it was made from; otherwise
     None. A value the engine carried over from an earlier period, or cached
     after a calculation, is not an input."""
+    _check_registered(variable_name)
     simulation = population.simulation
     input_keys = getattr(simulation, "_user_input_keys", None) or ()
     holder = population.get_holder(variable_name)
@@ -61,8 +108,8 @@ def supplied_input(
         if (variable_name, branch_name, period) in input_keys:
             # Read the stored input itself: Holder.get_array would fall back
             # to other branches' values, including cached calculations.
-            # Core 3.32.9's Holder.delete_arrays leaves provenance keys behind;
-            # a missing stored array must be ignored even if its key remains.
+            # Holder.delete_arrays leaves provenance keys behind; a missing
+            # stored array must be ignored even if its key remains.
             value = holder._get_array_from_storage(period, branch_name)
             if value is not None:
                 # A neutralized variable reads as its default, as it does

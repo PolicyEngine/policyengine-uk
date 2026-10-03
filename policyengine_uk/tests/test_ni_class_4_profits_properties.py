@@ -51,7 +51,11 @@ from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
 
 from policyengine_uk import Simulation
-from policyengine_uk.utils.supplied_inputs import supplied_input, supplied_input_periods
+from policyengine_uk.utils.supplied_inputs import (
+    SUPPLIED_INPUT_VARIABLES,
+    supplied_input,
+    supplied_input_periods,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -755,6 +759,49 @@ def test_supplied_input_helpers_ignore_missing_stored_arrays():
     population.get_holder("trading_loss").delete_arrays(period_(2026))
     assert supplied_input(population, "trading_loss", period_(2026)) is None
     assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
+
+
+@pytest.mark.parametrize("on_branch", [False, True])
+@pytest.mark.parametrize("deleted_loss", [5_000.0, 10_000.0])
+def test_class_4_does_not_count_a_loss_deleted_from_its_holder(on_branch, deleted_loss):
+    original = single_person(
+        {
+            "age": {2025: 40},
+            "self_employment_income": {2026: 40_000, 2027: 40_000},
+            "trading_loss": {2025: 10_000},
+        }
+    )
+    sim = original.get_branch("deleted_loss") if on_branch else original
+    sim.set_input("trading_loss", 2026, np.array([deleted_loss]))
+    # Holder.delete_arrays removes the stored value but not core's record of
+    # it. The engine then carries the 2025 loss into 2026; with the stale
+    # record that 10,000 would count as a second loss (profits of 20,000 and
+    # contributions of 445.80), also when the deleted loss was 10,000 too.
+    sim.get_holder("trading_loss").delete_arrays(period_(2026), sim.branch_name)
+    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    population = sim.get_variable_population("trading_loss")
+    assert supplied_input(population, "trading_loss", period_(2026)) is None
+    assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
+    observed = (
+        float(sim.calculate("ni_class_4_profits", 2026)[0]),
+        round(float(sim.calculate("ni_class_4", 2026)[0]), 2),
+    )
+    assert observed == (30_000, 1_045.80)
+    assert sim.calculate("ni_class_4_profits", 2027)[0] == 40_000
+    if on_branch:
+        assert original.calculate("ni_class_4_profits", 2026)[0] == 30_000
+
+
+def test_supplied_input_helpers_refuse_an_unregistered_variable():
+    sim = single_person({"employment_income": {2026: 20_000}})
+    population = sim.get_variable_population("employment_income")
+    # Simulation.calculate keeps input records in step with storage only for
+    # SUPPLIED_INPUT_VARIABLES, so the helpers answer for no other variable.
+    assert "employment_income" not in SUPPLIED_INPUT_VARIABLES
+    with pytest.raises(ValueError, match="SUPPLIED_INPUT_VARIABLES"):
+        supplied_input(population, "employment_income", period_(2026))
+    with pytest.raises(ValueError, match="SUPPLIED_INPUT_VARIABLES"):
+        supplied_input_periods(population, "employment_income")
 
 
 class neutralize_trading_loss(Reform):
