@@ -288,11 +288,11 @@ abroad.
 
 | £bn | 2024-25 | 2025-26 | 2026-27 | 2027-28 | 2028-29 | 2029-30 | 2030-31 |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Model State Pension | 119.0 | 124.8 | 129.6 | 130.9 | 132.9 | 136.9 | 140.9 |
+| Model State Pension | 119.0 | 124.8 | 129.6 | 131.6 | 133.6 | 137.5 | 141.6 |
 | OBR March 2026 EFO, State Pension | 138.0 | 146.2 | 154.2 | 158.9 | 164.0 | 172.2 | 180.7 |
 | DWP Spring Forecast 2026, State Pension | 136.6 | 146.1 | 154.2 | 158.9 | 164.0 | 172.2 | 180.7 |
 | of which paid abroad | 5.3 | 5.6 | 5.9 | 6.1 | 6.2 | 6.4 | 6.6 |
-| Model minus DWP less paid abroad | -12.2 | -15.6 | -18.6 | -21.9 | -24.8 | -28.9 | -33.1 |
+| Model minus DWP less paid abroad | -12.2 | -15.6 | -18.6 | -21.3 | -24.2 | -28.3 | -32.5 |
 
 The model also includes Northern Ireland, which DWP's figures do not, so the
 like-for-like gap is larger by Northern Ireland's State Pension.
@@ -322,7 +322,7 @@ tracked in [#1929](https://github.com/PolicyEngine/policyengine-uk/issues/1929):
   to 67, while DWP's caseload less those paid abroad rises 4.8%.
 - **Awards.** Each record keeps its reported amount, uprated by the flat
   rate, including records whose cohort moves from basic to new State
-  Pension. The model's State Pension per recipient grows 16.4% over those
+  Pension. The model's State Pension per recipient grows 17.0% over those
   years. DWP's spending per recipient, less those paid abroad, grows 18.3%,
   as its new State Pension spending grows from £56.1bn to £102.4bn and its
   basic State Pension spending falls from £66.7bn to £57.8bn.
@@ -331,7 +331,7 @@ Until the fix for [#1921](https://github.com/PolicyEngine/policyengine-uk/issues
 `additional_state_pension` paid the band between the flat rates twice for
 records moving from basic to new State Pension cohorts (see Components
 above): £0.8bn in 2025-26, rising to £6.8bn in 2030-31. That made the
-model's State Pension per recipient grow 21.2%, faster than DWP's, and hid
+model's State Pension per recipient grow 21.8%, faster than DWP's, and hid
 part of the widening.
 
 ### What's been fixed
