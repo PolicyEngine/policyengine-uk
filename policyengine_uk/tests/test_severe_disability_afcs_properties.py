@@ -22,8 +22,11 @@ Invariants, for any generated population of families:
 2. Metamorphic: changing every person's AFCS payment (to zero or another
    amount) changes neither the severe disability test nor the amounts that read
    it: the UC higher rate disabled child addition, the CTC severely disabled
-   child element, the WTC severe disability element and the severe disability
-   premium.
+   child element and the WTC severe disability element. The legacy severe
+   disability premium, which reads its own qualifying-benefit list
+   (receives_severe_disability_premium_qualifying_benefit) rather than this
+   flag, is checked the same way as an independent case: its list also names
+   armed forces independence payment and no other AFCS payment.
 3. Monotone: adding armed forces independence payment to a person never turns
    the severe disability test off, and turns it on.
 """
@@ -67,9 +70,11 @@ def people(draw, ages):
 def families(draw):
     return dict(
         adults=draw(st.lists(people(st.integers(25, 60)), min_size=1, max_size=2)),
-        # 16 to 19 year olds are in non-advanced education, so qualifying young
-        # persons; younger ones are children.
-        dependants=draw(st.lists(people(st.integers(0, 19)), max_size=2)),
+        # 16 to 18 year olds are in non-advanced education, so qualifying young
+        # persons for both UC and CTC; younger ones are children. A 19-year-old
+        # would also need their course to have started before 19, so none is
+        # drawn.
+        dependants=draw(st.lists(people(st.integers(0, 18)), max_size=2)),
     )
 
 

@@ -112,8 +112,10 @@
 # Armed Forces Compensation Scheme payments other than armed forces
 # independence payment (lump sums, supplementary awards, guaranteed income
 # payments; AFCS Order 2011 art 15(1)) and war disablement pensions are in
-# afcs. They meet no paragraph of CTC reg 8 or WTC reg 17, alone or with a
-# lower award of another benefit.
+# afcs. They meet none of the severe disability paragraphs (CTC reg 8(3)-(6);
+# WTC reg 17(2)-(6)), alone or next to an award that is not severe. A DLA care
+# award at the middle rate or a PIP daily living award at the standard rate
+# still makes a child disabled under CTC reg 8(2), but not severely disabled.
 
 - name: DLA care component at the middle rate with an AFCS payment is not severe
   period: 2025
@@ -173,8 +175,9 @@
     people:
       adult:
         age: 45
-        # AFCS Order 2011 art 24A(3): 194.60 a week.
-        armed_forces_independence_payment: 10_119.20
+        # AFCS Order 2011 art 24A(3), as amended by SI 2024/347 art 4: 184.30
+        # a week in 2024-25; 184.30 * 52 = 9,583.60.
+        armed_forces_independence_payment: 9_583.60
     benunits:
       benunit:
         members: [adult]
