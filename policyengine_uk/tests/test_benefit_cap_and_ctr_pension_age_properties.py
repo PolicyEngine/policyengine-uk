@@ -322,8 +322,11 @@ def test_a_pension_age_partner_never_exempts_a_uc_award(couples):
             names = [f"p{i}_a", f"p{i}_b"] + [
                 f"p{i}_c{k}" for k in range(c["children"])
             ]
-            people[names[0]] = {"age": {PERIOD: older}}
-            people[names[1]] = {"age": {PERIOD: c["working_age"]}}
+            # The two adults are the couple whatever their age gap, so the
+            # roles are supplied rather than left to the age presumption.
+            couple = {"is_claimant_or_partner": {PERIOD: True}}
+            people[names[0]] = {"age": {PERIOD: older}, **couple}
+            people[names[1]] = {"age": {PERIOD: c["working_age"]}, **couple}
             for k, name in enumerate(names[2:]):
                 people[name] = {"age": {PERIOD: 2 + 3 * k}}
             benunits[f"b{i}"] = {
