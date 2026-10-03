@@ -1,3 +1,24 @@
+## [2.109.4] - 2026-10-03
+
+### Fixed
+
+- - Date the Pension Credit exclusion of mixed-age couples (State Pension Credit Act 2002 s.4(1A)) from 15 May 2019, and model the SI 2019/37 article 4 saving. Before the change, mixed-age couples could claim Pension Credit and pension-age Housing Benefit, and now take that route rather than Universal Credit. Afterwards, a couple entitled to Pension Credit or pension-age Housing Benefit on 14 May 2019 keeps them while it stays entitled. The saving is a new input, `has_mixed_age_couple_pension_credit_saving`, which by default is inferred from reported Pension Credit or pension-age Housing Benefit without reported Universal Credit, where the older member was born by 1954. A family on the Pension Credit route is no longer eligible for Universal Credit.
+
+
+## [2.109.3] - 2026-10-03
+
+### Fixed
+
+- - Pension Credit assessable capital now reads `is_claimant_or_partner` rather than the Universal Credit claimant flag to decide whose person-level capital counts, and the legacy and Pension Credit person-level capital parameter descriptions name that flag. The Lifetime ISA tests now set it on families the age presumption would otherwise treat as couples, and pin that Pension Credit ignores the Universal Credit flag.
+
+
+## [2.109.2] - 2026-10-03
+
+### Changed
+
+- Since 2.106.0, `carer_support_payment` means the Carer Support Payment component only, as "carer support payment" does in the reserved-benefit regulations since SI 2026/246. The Scottish Carer Supplement is the separate `scottish_carer_supplement`; code that summed `carer_support_payment` for the total paid to a Scottish carer must add both.
+
+
 ## [2.109.1] - 2026-10-03
 
 ### Fixed
