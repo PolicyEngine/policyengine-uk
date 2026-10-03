@@ -1,3 +1,15 @@
+## [2.109.0] - 2026-10-03
+
+### Added
+
+- Add an optional State Pension earnings-path guarantee (`gov.dwp.state_pension.triple_lock.earnings_path_guarantee`), so reforms that keep the pension in line with earnings over time, such as one reading of the plan announced in September 2026, can be modelled as parameter changes. Off under current law.
+
+### Changed
+
+- Computed the State Pension triple lock from September CPI and May-July AWE total pay growth used in each uprating review, followed by OBR September CPI and Q2 earnings forecasts and then calendar-year growth, with macro scenarios moving those forecasts and `active: false` leaving non-negative earnings growth; April 2027's 3.9% rise and projected £250.71 new State Pension weekly rate use the 15 September 2026 first earnings estimate and stay provisional until the October labour market release, the vintage the review uses.
+- Changed `yoy_growth.triple_lock` to use the previous year's September CPI and May-July AWE inputs rounded to 0.1 percentage points before taking the maximum of the included elements and configured floor, including CPI forecast gaps for observation years 2026–2030 and earnings forecast gaps for 2027–2030, with April 2027 determined by the provisional 3.9% earnings input; `triple_lock.outturn` is null from 2012, the generated uprating series runs through April 2074 and follows rounded lagged calendar-year earnings from April 2035 under the stored baseline, and basic and new State Pension levels are about 0.48% higher in 2027–2034 than under the previous baseline, with a growing gap thereafter and the 2027-onward changes provisional until the October 2026 labour market release.
+
+
 ## [2.108.0] - 2026-10-02
 
 ### Fixed
