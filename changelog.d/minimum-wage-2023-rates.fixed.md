@@ -1,0 +1,1 @@
+Added the 1 April 2023 National Minimum Wage and National Living Wage rates (S.I. 2023/354); 2023 had used the April 2022 rates, for example £9.50 instead of £10.42 for workers aged 23 or over. Every minimum wage rate now cites the statutory instrument that set it.
