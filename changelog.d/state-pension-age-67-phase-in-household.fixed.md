@@ -1,0 +1,1 @@
+- Household calculations default an unspecified birthday position to six months before 6 October, implying a 6 April birth date and making an entered age of 66 above State Pension age at that check in 2026-27 and below it in 2027-28, while fractional ages or `months_since_last_birthday` can specify a different inferred birth date even when other people supply birthday months.

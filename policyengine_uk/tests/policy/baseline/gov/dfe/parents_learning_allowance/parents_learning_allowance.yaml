@@ -9,7 +9,6 @@
         parents_learning_allowance_household_income: 0
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -32,7 +31,6 @@
         parents_learning_allowance_household_income: 18_957.97
       child:
         age: 7
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -55,7 +53,6 @@
         parents_learning_allowance_household_income: 18_957.98
       child:
         age: 3
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -78,7 +75,6 @@
         current_education: TERTIARY
       child:
         age: 2
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -105,7 +101,6 @@
         parents_learning_allowance_household_income: 10_000
       child:
         age: 5
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -129,7 +124,6 @@
         parents_learning_allowance_household_income: 0
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -152,7 +146,6 @@
         parents_learning_allowance_household_income: 0
       child:
         age: 1
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -163,3 +156,30 @@
   output:
     parents_learning_allowance_eligible: [false, false]
     parents_learning_allowance: [0, 0]
+
+# A dependent child has no age limit for Parents' Learning Allowance
+# (Education (Student Support) Regulations 2011 regs 42 and 46): a student whose
+# only dependant is an 18-year-old still at school has a dependent child.
+- name: Parents' Learning Allowance counts an 18-year-old dependant at school
+  period: 2025
+  input:
+    people:
+      student:
+        age: 40
+        is_parent: true
+        parents_learning_allowance_course_eligible: true
+        parents_learning_allowance_household_income: 0
+      teenager:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: ["student", "teenager"]
+    households:
+      household:
+        members: ["student", "teenager"]
+        country: ENGLAND
+  output:
+    parents_learning_allowance_dependent_children: 1
+    parents_learning_allowance_eligible: [true, false]
+    parents_learning_allowance: [2_024, 0]
