@@ -451,3 +451,117 @@
     # bedroom self-contained: B. The householder's size criteria count the
     # lodger as an occupier (13D(12)): 2 bedrooms: C.
     housing_benefit_LHA_category: [C, B]
+
+- name: A blind partner without a qualifying benefit does not block the severe disability conditions
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_household_head: true
+        pip_dl: 3_988.40
+      partner:
+        age: 30
+        is_blind: true
+      joint_tenant:
+        age: 25
+    benunits:
+      couple:
+        members: [claimant, partner]
+      joint_tenant_family:
+        members: [joint_tenant]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [claimant, partner, joint_tenant]
+        rent: 13_500
+        tenure_type: RENT_PRIVATELY
+  output:
+    # The couple owes two thirds of the rent and shares the home.
+    benunit_rent: [9_000, 4_500]
+    housing_benefit_shares_accommodation: [true, true]
+    # Sch 3 para 14(3): the blind partner has no qualifying benefit, so is
+    # treated as not being the claimant's partner; the claimant has PIP daily
+    # living and no non-dependant (the joint tenant is not one), so para
+    # 14(2)(a) applies and reg 13D(2)(a)(ii) keeps the couple off the shared
+    # rate: one bedroom, B. The joint tenant, aged 25, gets the shared rate.
+    housing_benefit_severe_disability_premium_applies: [true, false]
+    housing_benefit_LHA_category: [B, A]
+
+- name: A couple with neither a qualifying benefit for the partner nor blindness does not meet them
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_household_head: true
+        pip_dl: 3_988.40
+      partner:
+        age: 30
+      blind_adult_son:
+        age: 19
+        is_blind: true
+        is_claimant_or_partner: false
+    benunits:
+      couple:
+        members: [claimant, partner]
+      son_family:
+        members: [blind_adult_son]
+    households:
+      home:
+        members: [claimant, partner, blind_adult_son]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Para 14(2)(b)(ii): the partner receives no qualifying benefit and is
+    # not blind, so the couple does not qualify.
+    housing_benefit_severe_disability_premium_applies: [false, false]
+
+- name: A blind non-dependant is disregarded in the severe disability conditions
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        pip_dl: 3_988.40
+      blind_brother:
+        age: 45
+        is_blind: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      brother_family:
+        members: [blind_brother]
+    households:
+      home:
+        members: [claimant, blind_brother]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Para 14(4)(b): no account is taken of a non-dependant who is blind.
+    housing_benefit_severe_disability_premium_applies: [true, false]
+
+- name: A sighted non-dependant without a qualifying benefit rules the conditions out
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        pip_dl: 3_988.40
+      brother:
+        age: 45
+    benunits:
+      claimant_family:
+        members: [claimant]
+      brother_family:
+        members: [brother]
+    households:
+      home:
+        members: [claimant, brother]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Para 14(2)(a)(ii): a non-dependant aged 18 or over resides with them.
+    housing_benefit_severe_disability_premium_applies: [false, false]

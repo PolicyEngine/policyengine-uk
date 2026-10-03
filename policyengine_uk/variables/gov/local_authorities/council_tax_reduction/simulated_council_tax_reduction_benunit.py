@@ -30,9 +30,9 @@ class simulated_council_tax_reduction_benunit(Variable):
         wales_ctr = local_authority_parameters.wales.council_tax_reduction
 
         country = benunit.household("country", period)
-        has_pensioner = benunit.household(
-            "council_tax_reduction_household_has_pensioner", period
-        )
+        # Each claim's scheme follows the applicant's own family where
+        # families claim on their shares (SI 2012/2885 reg 3).
+        has_pensioner = benunit("council_tax_reduction_claim_pensioner", period)
         england_pensioners = is_england_pensioner_scheme(country, has_pensioner)
         scotland = is_scotland_scheme(country)
         wales = is_wales_scheme(country)

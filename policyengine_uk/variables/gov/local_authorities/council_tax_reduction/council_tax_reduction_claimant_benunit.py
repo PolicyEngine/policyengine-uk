@@ -22,10 +22,8 @@ class council_tax_reduction_claimant_benunit(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        rent_is_shared = benunit.any(
-            person.household.any(
-                person.benunit("liable_for_share_of_household_rent", period)
-            )
+        rent_is_shared = benunit.household(
+            "council_tax_reduction_claims_are_joint", period
         )
         # A full-time student is excluded from entitlement (Default Scheme
         # Sch para 75(1)); the model takes a person in higher education as
