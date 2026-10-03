@@ -1,0 +1,299 @@
+# Universal Credit claims when a legacy benefit closes (managed migration).
+# Tax credits closed from 6 April 2025 (PE year 2025) and Income Support and
+# income-based JSA from 1 April 2026 (PE year 2026). Once one of a working-age
+# family's reported legacy benefits has closed, all its legacy awards end
+# (SI 2014/1230 regs 8 and 46) and it claims Universal Credit when
+# would_claim_uc_at_legacy_closure is true.
+
+- name: Before tax credits close, a tax credit and Housing Benefit family keeps both awards
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 3_000
+        housing_benefit_reported: 4_000
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: false
+    claims_universal_credit: false
+    housing_benefit_eligible: true
+    universal_credit: 0
+
+- name: Once tax credits close, the family claims Universal Credit and its Housing Benefit ends
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 3_000
+        housing_benefit_reported: 4_000
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: true
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: A family that does not claim at the closure loses its Housing Benefit and gets no Universal Credit
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        child_tax_credit_reported: 3_000
+        housing_benefit_reported: 4_000
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    universal_credit: 0
+
+- name: Housing Benefit alone has not closed, so a Housing Benefit family keeps its award
+  period: 2027
+  input:
+    people:
+      adult:
+        age: 40
+        housing_benefit_reported: 4_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [adult]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: false
+    claims_universal_credit: false
+    housing_benefit_eligible: true
+    universal_credit: 0
+
+- name: Income-related ESA continues before tax credits close
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 3_000
+        esa_income_reported: 5_000
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+  output:
+    legacy_benefits_closed: false
+    esa_income_eligible: true
+
+- name: Income-related ESA ends with the tax credit closure
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        child_tax_credit_reported: 3_000
+        esa_income_reported: 5_000
+      child:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: true
+    esa_income_eligible: false
+    esa_income: 0
+
+- name: Income Support and Housing Benefit continue in 2025-26
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 25
+        income_support_reported: 5_000
+        housing_benefit_reported: 4_000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: false
+    claims_universal_credit: false
+    housing_benefit_eligible: true
+
+- name: Once Income Support closes, the family claims Universal Credit and its Housing Benefit ends
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 25
+        income_support_reported: 5_000
+        housing_benefit_reported: 4_000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: true
+    housing_benefit_eligible: false
+    income_support: 0
+
+- name: Income Support ends with the tax credit closure for a family on both
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 25
+        income_support_reported: 5_000
+        child_tax_credit_reported: 3_000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+  output:
+    legacy_benefits_closed: true
+    income_support: 0
+
+- name: Income-based JSA continues before its closure
+  period: 2025
+  input:
+    people:
+      adult:
+        age: 40
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+  output:
+    legacy_benefits_closed: false
+    jsa_income_eligible: true
+
+- name: Income-based JSA closure moves the family
+  period: 2026
+  input:
+    people:
+      adult:
+        age: 40
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [adult]
+  output:
+    legacy_benefits_closed: true
+    claims_universal_credit: false
+    jsa_income_eligible: false
+    universal_credit: 0
+
+- name: A pension-age family is not moved to Universal Credit when tax credits close
+  period: 2025
+  input:
+    people:
+      grandparent:
+        age: 70
+        child_tax_credit_reported: 3_000
+        housing_benefit_reported: 4_000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [grandparent, child]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [grandparent, child]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    legacy_benefits_closed: false
+    claims_universal_credit: false
+    housing_benefit_eligible: true
+
+- name: A family that already claims Universal Credit claims it in every year
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: true
+        would_claim_uc_at_legacy_closure: false
+    households:
+      household:
+        members: [adult]
+  output:
+    legacy_benefits_closed: false
+    claims_universal_credit: true

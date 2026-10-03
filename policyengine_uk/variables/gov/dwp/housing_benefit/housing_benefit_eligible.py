@@ -11,8 +11,10 @@ class housing_benefit_eligible(Variable):
         "Pension Credit "
         "can make a new claim; Universal Credit is not available to it. Any "
         "other family keeps Housing Benefit only while it continues an "
-        "existing award (reported Housing Benefit) and does not claim "
-        "Universal Credit. Claims for specified or temporary accommodation "
+        "existing award (reported Housing Benefit), does not claim "
+        "Universal Credit and has not been moved off a closed legacy benefit "
+        "(legacy_benefits_closed). Claims for specified or temporary "
+        "accommodation "
         "are not modelled."
     )
     definition_period = YEAR
@@ -20,6 +22,7 @@ class housing_benefit_eligible(Variable):
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/6A",
         "https://www.legislation.gov.uk/ukpga/2002/16/section/4",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
+        "https://www.legislation.gov.uk/uksi/2014/1230/regulation/46",
         "https://www.legislation.gov.uk/uksi/2019/37/article/4",
         "https://www.legislation.gov.uk/ukpga/2012/5/section/4",
         "https://www.legislation.gov.uk/nisr/2016/226/regulation/4A",
@@ -47,8 +50,12 @@ class housing_benefit_eligible(Variable):
         # specified or temporary accommodation ended on 1 July 2026 in Great
         # Britain (SI 2025/1148 art. 7); that is not modelled.
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
-        claiming_uc = benunit("would_claim_uc", period)
-        continuing_award = already_claiming & ~claiming_uc
+        claiming_uc = benunit("claims_universal_credit", period)
+        # Once another of the family's legacy benefits has closed, DWP's
+        # migration notice ends this award even if the family does not claim
+        # Universal Credit (reg 46(1)(a), (2)).
+        migrated = benunit("legacy_benefits_closed", period)
+        continuing_award = already_claiming & ~claiming_uc & ~migrated
         social = benunit.any(person("in_social_housing", period))
         lha_eligible = benunit("LHA_eligible", period)
         any_over_SP_age = benunit.any(sp_age)
