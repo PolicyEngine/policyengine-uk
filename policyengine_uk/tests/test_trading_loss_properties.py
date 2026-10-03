@@ -42,7 +42,7 @@ Comparisons allow float32 rounding: the model stores values as float32.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
@@ -152,7 +152,56 @@ def calculate(situation, variables, year=YEAR):
     return {v: np.asarray(sim.calculate(v, year), dtype=float) for v in variables}
 
 
+def taxpayer(**inputs):
+    """A taxpayer with every taxpayers() field, zero unless given."""
+    base = {
+        "age": 40,
+        "employment_income": 0.0,
+        "private_pension_income": 0.0,
+        "savings_interest_income": 0.0,
+        "dividend_income": 0.0,
+        "property_income": 0.0,
+        "self_employment_income": 0.0,
+        "personal_pension_contributions": 0.0,
+        "trading_loss": 0.0,
+        "state_pension": 0.0,
+    }
+    return {**base, **inputs}
+
+
+# Cases every run checks, alongside the generated ones: relief limited by net
+# income, the 25% and £50,000 caps, contributions above relevant earnings,
+# no relief from age 75, profits and a loss together, and income spilling
+# into savings and dividends.
+PINNED_TAXPAYERS = [
+    taxpayer(employment_income=20_000, trading_loss=50_000),
+    taxpayer(employment_income=400_000, trading_loss=300_000),
+    taxpayer(employment_income=150_000, trading_loss=80_000),
+    taxpayer(
+        dividend_income=300_000,
+        personal_pension_contributions=40_000,
+        trading_loss=200_000,
+    ),
+    taxpayer(
+        age=78,
+        employment_income=300_000,
+        personal_pension_contributions=40_000,
+        trading_loss=100_000,
+    ),
+    taxpayer(self_employment_income=30_000, trading_loss=10_000),
+    taxpayer(
+        employment_income=5_000,
+        savings_interest_income=10_000,
+        dividend_income=30_000,
+        trading_loss=20_000,
+    ),
+    taxpayer(employment_income=110_000, trading_loss=20_000),
+]
+PINNED_REGIONS = ["LONDON"] * 8 + ["SCOTLAND"] * 8
+
+
 @PROPERTY_SETTINGS
+@example(PINNED_TAXPAYERS, PINNED_REGIONS)
 @given(
     st.lists(taxpayers(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
@@ -228,7 +277,48 @@ def reduced(person):
     return {**person, **out, "trading_loss": 0.0}, relief
 
 
+PINNED_PORTFOLIOS = [
+    {
+        "age": 40,
+        "employment_income": 5_000.0,
+        "private_pension_income": 0.0,
+        "savings_interest_income": 10_000.0,
+        "dividend_income": 30_000.0,
+        "trading_loss": 20_000.0,
+        "state_pension": 0.0,
+    },
+    {
+        "age": 40,
+        "employment_income": 0.0,
+        "private_pension_income": 0.0,
+        "savings_interest_income": 0.0,
+        "dividend_income": 60_000.0,
+        "trading_loss": 20_000.0,
+        "state_pension": 0.0,
+    },
+    {
+        "age": 40,
+        "employment_income": 300_000.0,
+        "private_pension_income": 0.0,
+        "savings_interest_income": 0.0,
+        "dividend_income": 0.0,
+        "trading_loss": 200_000.0,
+        "state_pension": 0.0,
+    },
+    {
+        "age": 40,
+        "employment_income": 8_000.0,
+        "private_pension_income": 12_000.0,
+        "savings_interest_income": 2_000.0,
+        "dividend_income": 0.0,
+        "trading_loss": 15_000.0,
+        "state_pension": 0.0,
+    },
+] * 2
+
+
 @PROPERTY_SETTINGS
+@example(PINNED_PORTFOLIOS, PINNED_REGIONS)
 @given(
     st.lists(portfolio_holders(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
@@ -249,6 +339,7 @@ def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
 
 
 @PROPERTY_SETTINGS
+@example(PINNED_TAXPAYERS, PINNED_REGIONS, 0.5)
 @given(
     st.lists(taxpayers(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
@@ -330,7 +421,61 @@ def family_situation(units, overrides=None, benunit_overrides=None):
     return situation
 
 
+def adult(**inputs):
+    base = {
+        "age": 40,
+        "employment_income": 0.0,
+        "self_employment_income": 0.0,
+        "private_pension_income": 0.0,
+        "savings_interest_income": 0.0,
+        "trading_loss": 0.0,
+        "hours_worked": 35.0,
+    }
+    return {**base, **inputs}
+
+
+def home(rent, region="LONDON"):
+    return {
+        "rent": rent,
+        "council_tax": 2_000.0,
+        "tenure_type": "RENT_PRIVATELY",
+        "region": region,
+    }
+
+
+# Families every run checks: profits and another trade's loss under the
+# benefit cap, a loss beside pay only, a child's loss, and a loss-making
+# couple with pay.
+PINNED_FAMILIES = [
+    (
+        [adult(self_employment_income=12_000.0, trading_loss=5_000.0)]
+        + [{"age": a, "trading_loss": 0.0} for a in (1, 4, 7, 10)],
+        home(24_000.0),
+    ),
+    (
+        [adult(employment_income=15_000.0, trading_loss=10_000.0)],
+        home(9_000.0, "NORTH_EAST"),
+    ),
+    (
+        [adult(employment_income=20_000.0), {"age": 12, "trading_loss": 4_000.0}],
+        home(8_000.0, "WALES"),
+    ),
+    (
+        [
+            adult(
+                employment_income=12_000.0,
+                self_employment_income=3_000.0,
+                trading_loss=8_000.0,
+            ),
+            adult(age=38, employment_income=9_000.0, trading_loss=2_000.0),
+        ],
+        home(11_000.0, "SCOTLAND"),
+    ),
+]
+
+
 @PROPERTY_SETTINGS
+@example(PINNED_FAMILIES)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
@@ -389,6 +534,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
 
 
 @PROPERTY_SETTINGS
+@example(PINNED_FAMILIES)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_tax_credit_income_falls_by_the_claimants_losses(units):
     year = 2024
@@ -427,6 +573,7 @@ def test_tax_credit_income_falls_by_the_claimants_losses(units):
 
 
 @PROPERTY_SETTINGS
+@example(PINNED_FAMILIES)
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_household_income_moves_only_through_its_channels(units):
     without = [
@@ -469,6 +616,7 @@ def test_household_income_moves_only_through_its_channels(units):
 
 
 @PROPERTY_SETTINGS
+@example(PINNED_TAXPAYERS, PINNED_REGIONS, [5_000.0] * 16)
 @given(
     st.lists(taxpayers(), min_size=8, max_size=16),
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
