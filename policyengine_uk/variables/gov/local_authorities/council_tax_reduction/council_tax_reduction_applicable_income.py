@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_scotland_scheme,
+    is_wales_scheme,
 )
 
 
@@ -113,9 +114,18 @@ class council_tax_reduction_applicable_income(Variable):
         p_scotland = parameters(
             period
         ).gov.local_authorities.scotland.council_tax_reduction.means_test
-        counts_home_letting = ~scottish_working_age_scheme | (
-            p_scotland.working_age_counts_home_letting_income
-        )
+        # Wales: for an applicant with an award of universal credit (who is
+        # never a pensioner, WSI 2013/3029 reg 3), income is the Secretary of
+        # State's universal credit assessment (Sch 6 para 9), which has no
+        # rent from part of the home. That route is otherwise not modelled
+        # here (#1966); this keeps such rent out of it.
+        wales_universal_credit_route = is_wales_scheme(
+            benunit.household("country", period)
+        ) & (add(benunit, period, ["universal_credit"]) > 0)
+        counts_home_letting = (
+            ~scottish_working_age_scheme
+            | p_scotland.working_age_counts_home_letting_income
+        ) & ~wales_universal_credit_route
         increased_income += where(
             counts_home_letting,
             benunit("legacy_benefits_home_letting_income", period),
@@ -135,6 +145,14 @@ class council_tax_reduction_applicable_income(Variable):
             period,
             ["legacy_means_test_income_tax", "national_insurance"],
             members,
+        )
+        # Where the rent is not counted, neither is the tax on it.
+        tax -= where(
+            counts_home_letting,
+            0,
+            add_for_members(
+                benunit, period, ["rent_a_room_income_tax_after_reductions"], members
+            ),
         )
         income_under_general_rules = max_(
             0, increased_income - tax - pension_contributions

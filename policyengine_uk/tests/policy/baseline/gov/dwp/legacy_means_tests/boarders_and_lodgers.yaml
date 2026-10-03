@@ -321,3 +321,64 @@
     capped_mcad: [1_100, 0]
     income_tax: [4_566, 0]
     legacy_means_test_income_tax: [4_243.66, 0]
+
+- name: UC does not deduct the tax on rent it does not count
+  # 2026-27, England. Earnings 20,000: tax (20,000 - 12,570) x 20% = 1,486,
+  # NI 7,430 x 8% = 594.40. Lodger rent 10,000 gives taxable rent-a-room income
+  # 2,500 and tax 500, so income tax is 1,986. UC counts neither the rent
+  # (reg 66(1)) nor its tax (reg 55(5)(b)): earned income
+  # 20,000 - 1,486 - 594.40 = 17,919.60, as without the lodger.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 20_000
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 10_000
+    benunits:
+      householder_unit:
+        members: [householder]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: NORTH_WEST
+  output:
+    income_tax: [1_986, 0]
+    rent_a_room_income_tax_after_reductions: [500, 0]
+    uc_earned_income: [17_919.60, 0]
+
+- name: Welsh CTR for a UC recipient does not add rent from a lodger
+  # WSI 2013/3029 Sch 6 para 9: with a UC award, income is the UC assessment,
+  # which excludes this rent. Here UC (5,000, set as an input) is the only
+  # income, so CTR applicable income is 5,000, not 5,000 + 4,160.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_unit:
+        members: [householder]
+        universal_credit: 5_000
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        region: WALES
+  output:
+    legacy_benefits_home_letting_income: [4_160, 0]
+    council_tax_reduction_applicable_income: [5_000, 0]

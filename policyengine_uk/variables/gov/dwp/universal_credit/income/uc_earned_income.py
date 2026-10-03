@@ -28,4 +28,11 @@ class uc_earned_income(Variable):
             ["uc_work_allowance", "tax", "pension_contributions"],
             members,
         )
+        # UC does not count rent from boarders, lodgers or sub-tenants (reg
+        # 66(1)), so the tax on it is not tax in respect of any employment
+        # (reg 55(5)(b)) and is not deducted. The rest of `tax` is wider than
+        # reg 55(5)(b) allows; that is #1942.
+        disregards -= add_for_members(
+            benunit, period, ["rent_a_room_income_tax_after_reductions"], members
+        )
         return max_(0, personal_gross_earned_income - disregards)

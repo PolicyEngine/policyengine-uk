@@ -10,7 +10,11 @@ class pays_rent_to_householder(Variable):
         "household head, pays the household head rent for board and lodging "
         "or for lodging. Such a person is liable to make payments on a "
         "commercial basis for their occupation, so is not a non-dependant of "
-        "the householder."
+        "the householder. The model takes every such payment to be commercial "
+        "and the payer not to be a close relative living there, whom the "
+        "rules keep as a non-dependant (HB reg 3(3) with reg 9(1); CTR reg "
+        "9(3)). The Family Resources Survey asks about this rent only for "
+        "people not related to the household reference person."
     )
     definition_period = YEAR
     reference = [

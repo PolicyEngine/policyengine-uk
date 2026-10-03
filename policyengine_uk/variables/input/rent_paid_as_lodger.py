@@ -10,7 +10,7 @@ class rent_paid_as_lodger(Variable):
         "the householder's home, where this person lives as a member of the "
         "household outside the householder's benefit unit. The Family "
         "Resources Survey records it on the payer (CVPAY where CONVBL is not "
-        "1)."
+        "1). Annual amount; the weekly means-test rules divide it by 52."
     )
     definition_period = YEAR
     unit = GBP

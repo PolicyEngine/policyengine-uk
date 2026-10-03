@@ -9,8 +9,10 @@ Invariants, for any generated household:
 
 1. Conservation: the rent the head receives equals the rent paid by members
    outside the head's benefit unit, and nobody else receives any.
-2. Rent-a-room bounds: 0 <= relief <= receipts, the limit is the basic amount
-   or half of it, and taxable rent-a-room income = max(0, receipts - limit).
+2. Rent-a-room bounds: 0 <= relief <= receipts; the limit is half the basic
+   amount exactly when the person and someone else in the household both
+   have receipts, and the basic amount otherwise; taxable rent-a-room income
+   = max(0, receipts - limit).
 3. Disregards: the counted home-letting income is between nil and the rent
    received, and equals the statutory closed form (boarders: half the excess
    over £20 a week each; lodgers: the excess over £20 a week, per person at
@@ -23,7 +25,11 @@ Invariants, for any generated household:
    board and lodging than when paid for lodging only.
 6. Universal Credit unearned income and household market income do not depend
    on the rent paid between members of the household.
-7. Tax: legacy_means_test_income_tax is between nil and income tax.
+7. Where a programme does not count this rent, it does not deduct the tax on
+   it either: UC earned income, and council tax reduction income under the
+   Scottish working-age scheme and the Welsh universal credit route, do not
+   change when the rent changes.
+8. Tax: legacy_means_test_income_tax is between nil and income tax.
 """
 
 import numpy as np
@@ -67,6 +73,7 @@ def households(draw):
         head_unit=head_unit,
         payers=payers,
         sublet=draw(st.one_of(st.just(0.0), st.floats(0, 8_000))),
+        partner_sublet=draw(st.one_of(st.just(0.0), st.floats(100, 8_000))),
         tenure=draw(st.sampled_from(["RENT_PRIVATELY", "OWNED_OUTRIGHT"])),
         region=draw(st.sampled_from(["NORTH_WEST", "LONDON", "WALES", "SCOTLAND"])),
     )
@@ -81,7 +88,7 @@ def situation(h, year, scale=1.0, as_kind=None):
             "age": {year: attrs["age"]},
             "employment_income": {year: attrs["employment_income"]},
             "is_household_head": {year: i == 0},
-            "sublet_income": {year: h["sublet"] if i == 0 else 0.0},
+            "sublet_income": {year: h["sublet"] if i == 0 else h["partner_sublet"]},
         }
         names.append(name)
     benunits["head_unit"] = {"members": list(names)}
@@ -118,6 +125,10 @@ def calculate(h, year, variables, **kwargs):
     return {v: np.asarray(sim.calculate(v, year), dtype=float) for v in variables}
 
 
+def per_week(annual):
+    return annual / WEEKS
+
+
 def payments(h, kind=None):
     return [
         [
@@ -152,7 +163,11 @@ def test_rent_a_room_bounds(h, year):
         ],
     )
     receipts, limit = v["rent_a_room_receipts"], v["rent_a_room_limit"]
-    assert np.all(np.isin(limit, [BASIC_AMOUNT, BASIC_AMOUNT / 2]))
+    receives = receipts > 0
+    shared = receives & (receives.sum() - receives > 0)
+    np.testing.assert_allclose(
+        limit, np.where(shared, BASIC_AMOUNT / 2, BASIC_AMOUNT), atol=0.01
+    )
     assert np.all(v["rent_a_room_relief"] >= 0)
     assert np.all(v["rent_a_room_relief"] <= receipts + 0.01)
     np.testing.assert_allclose(
@@ -168,22 +183,26 @@ def test_home_letting_income_closed_form(h, year):
     pension_age = bool(
         np.asarray(sim.calculate("is_SP_age", year))[: len(h["head_unit"])].any()
     )
-    weekly = lambda x: x / WEEKS
     board = sum(
-        0.5 * max(0, weekly(x) - DISREGARD)
+        0.5 * max(0, per_week(x) - DISREGARD)
         for unit in payments(h, "rent_paid_as_boarder")
         for x in unit
     )
     lodgers = payments(h, "rent_paid_as_lodger")
     if pension_age:
-        lodging = sum(max(0, weekly(x) - DISREGARD) for unit in lodgers for x in unit)
+        lodging = sum(max(0, per_week(x) - DISREGARD) for unit in lodgers for x in unit)
     else:
-        lodging = sum(max(0, weekly(sum(unit)) - DISREGARD) for unit in lodgers)
-    sublet = max(0, weekly(h["sublet"]) - DISREGARD)
+        lodging = sum(max(0, per_week(sum(unit)) - DISREGARD) for unit in lodgers)
+    sublet_received = h["sublet"] + (
+        h["partner_sublet"] if len(h["head_unit"]) > 1 else 0.0
+    )
+    # #1995 sums the claimant's and partner's sublet income before one
+    # disregard (one occupier assumed).
+    sublet = max(0, per_week(sublet_received) - DISREGARD)
     expected = (board + lodging + sublet) * WEEKS
     np.testing.assert_allclose(counted[0], expected, rtol=1e-6, atol=0.01)
     assert np.all(counted[1:] == 0)
-    received = sum(sum(unit) for unit in payments(h)) + h["sublet"]
+    received = sum(sum(unit) for unit in payments(h)) + sublet_received
     assert 0 <= counted[0] <= received + 0.01
 
 
@@ -233,3 +252,32 @@ def test_legacy_means_test_income_tax_bounds(h, year):
     v = calculate(h, year, ["legacy_means_test_income_tax", "income_tax"])
     assert np.all(v["legacy_means_test_income_tax"] >= 0)
     assert np.all(v["legacy_means_test_income_tax"] <= v["income_tax"] + 0.01)
+
+
+@PROPERTY_SETTINGS
+@given(households(), st.sampled_from(YEARS), st.floats(0.3, 0.9))
+def test_programmes_that_exclude_the_rent_ignore_its_tax(h, year, scale):
+    # Both runs keep every payment positive, so non-dependant status is fixed.
+    variables = [
+        "uc_earned_income",
+        "council_tax_reduction_applicable_income",
+        "universal_credit",
+        "is_SP_age",
+    ]
+    full = calculate(h, year, variables)
+    part = calculate(h, year, variables, scale=scale)
+    np.testing.assert_allclose(
+        full["uc_earned_income"], part["uc_earned_income"], atol=0.01
+    )
+    head_unit = 0
+    working_age = not full["is_SP_age"][: len(h["head_unit"])].any()
+    on_uc = full["universal_credit"][head_unit] > 0
+    excluded = (h["region"] == "SCOTLAND" and (working_age or on_uc)) or (
+        h["region"] == "WALES" and on_uc
+    )
+    if excluded and (part["universal_credit"][head_unit] > 0) == on_uc:
+        np.testing.assert_allclose(
+            full["council_tax_reduction_applicable_income"][head_unit],
+            part["council_tax_reduction_applicable_income"][head_unit],
+            atol=0.01,
+        )
