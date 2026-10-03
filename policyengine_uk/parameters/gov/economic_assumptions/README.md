@@ -58,6 +58,29 @@ new Fiscal Risks and Sustainability report. The convergence path itself
 is conservative interpolation and is not load-bearing for short-horizon
 analysis.
 
+## Statutory uprating inputs
+
+[`statutory_uprating_inputs/`](./statutory_uprating_inputs/) holds the two
+published statistics that set the April uprating of the State Pension:
+September CPI (ONS D7G7) and May-July average weekly earnings total pay
+growth (ONS KAC3). They are keyed to their observation month, not to
+1 January, and carry `preserve_calendar_dates`.
+
+Each series holds published figures and then a null. From there,
+[`create_statutory_uprating_inputs.py`](./create_statutory_uprating_inputs.py)
+fills in calendar-year growth from `yoy_growth.obr` plus `forecast_gap`, the
+OBR's statutory-basis forecast minus the calendar-year growth stored here, so
+the baseline input equals the OBR's figure.
+The gap is zero after the EFO horizon, so the forecasts fall back to
+calendar-year growth. A scenario that edits calendar-year growth therefore
+moves them, and a scenario can also set them directly.
+
+After each release, add the new published figure in place of the null and
+move the null one year on: September CPI in October, May-July earnings in
+September. Then replace May-July earnings with the October release's figure,
+which the review uses: the April 2025 and April 2026 rises used October's
+4.1% and 4.8%, where September's first estimates were 4.0% and 4.7%.
+
 ## Refreshing after a new EFO
 
 1. Replace the 2025-2030 block in each series with values from the new EFO
@@ -68,5 +91,10 @@ analysis.
    to regenerate the cumulative `indices/` parameters that uprating depends
    on.
 4. Update the EFO reference in each series' `metadata.reference`.
+5. Regenerate `statutory_uprating_inputs/forecast_gap/` from the same EFO.
+   `policyengine_uk/utils/import_obr_forecasts.py` does this when it updates
+   `yoy_growth.yaml`; pass the receipts tables with `--receipts-file` or
+   `--receipts-url` so September CPI uses the OBR's September forecast. If
+   you edit `yoy_growth.yaml` by hand instead, rerun it with `--gaps-only`.
 
 [rpi-cpi]: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/

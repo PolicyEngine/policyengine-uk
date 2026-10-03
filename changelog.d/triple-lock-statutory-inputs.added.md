@@ -1,0 +1,1 @@
+Add an optional State Pension earnings-path guarantee (`gov.dwp.state_pension.triple_lock.earnings_path_guarantee`), so reforms that keep the pension in line with earnings over time, such as one reading of the plan announced in September 2026, can be modelled as parameter changes. Off under current law.
