@@ -9,7 +9,12 @@ class pension_credit_assessable_capital(Variable):
         "Pension Credit capital counted from the configured capital sources, "
         "split only across pension-age adults in the household so pensioner "
         "couples pool capital together without dilution by unrelated working-"
-        "age adults."
+        "age adults. Person-level sources, such as a Lifetime ISA, count "
+        "only for the holder's own benunit, and only when the holder is its "
+        "claimant or partner (is_claimant_or_partner): a dependant's capital "
+        "is not the claimant's. Where `pension_credit_reported_capital` records "
+        "the benefit unit's own capital (0 or more), it replaces the "
+        "household proxy and the person-level sources."
     )
     definition_period = YEAR
     unit = GBP
@@ -20,11 +25,17 @@ class pension_credit_assessable_capital(Variable):
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
         household_capital = sum(household(source, period) for source in p.sources)
-        # Pension-age adults: those who have attained the qualifying age for
-        # State Pension Credit (State Pension Credit Act 2002 s.1(6)).
-        pension_age = person("has_attained_state_pension_credit_qualifying_age", period)
-        any_pension_age = benunit.any(pension_age)
-        benunit_pension_age_adults = benunit.sum(pension_age)
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        person_capital = sum(
+            benunit.sum(person(source, period) * claimant_or_partner)
+            for source in p.person_sources
+        )
+        any_pension_age = benunit.any(
+            person("has_attained_state_pension_credit_qualifying_age", period)
+        )
+        benunit_pension_age_adults = benunit.sum(
+            person("has_attained_state_pension_credit_qualifying_age", period)
+        )
         household_pension_age_adults = benunit.max(
             person.household.sum(
                 person.household.members(
@@ -36,4 +47,10 @@ class pension_credit_assessable_capital(Variable):
         household_capital_proxy = (
             household_capital * benunit_pension_age_adults / adult_divisor
         )
-        return where(any_pension_age, max_(0, household_capital_proxy), 0)
+        reported_capital = benunit("pension_credit_reported_capital", period)
+        assessed_capital = where(
+            reported_capital >= 0,
+            reported_capital,
+            household_capital_proxy + person_capital,
+        )
+        return where(any_pension_age, max_(0, assessed_capital), 0)

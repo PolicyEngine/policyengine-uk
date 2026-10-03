@@ -1,0 +1,69 @@
+# household_benefits sums HOUSEHOLD_BENEFIT_VARIABLES with add(), which adds
+# every entry, so a name listed twice is counted twice. "jsa_contrib" was
+# listed twice, which counted contributory (new style) JSA twice in
+# household_benefits and in the net and gross income measures built on it.
+# These cases leave contributory JSA as the only benefit (Universal Credit is
+# not claimed), so household_benefits must equal it exactly.
+
+- name: Contributory JSA counts once in household benefits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      jobseeker:
+        age: 40
+        jsa_contrib_reported: 4_000
+    benunits:
+      benunit:
+        members: [jobseeker]
+        would_claim_uc: false
+    households:
+      household:
+        members: [jobseeker]
+  output:
+    jsa_contrib: 4_000
+    household_benefits: 4_000
+    household_gross_income: 4_000
+
+- name: Both partners' contributory JSA each count once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      partner_1:
+        age: 40
+        jsa_contrib_reported: 2_000
+      partner_2:
+        age: 38
+        jsa_contrib_reported: 3_000
+    benunits:
+      benunit:
+        members: [partner_1, partner_2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [partner_1, partner_2]
+  output:
+    jsa_contrib: [2_000, 3_000]
+    household_benefits: 5_000
+    household_gross_income: 5_000
+
+- name: The benefit uprating reform uprates contributory JSA once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.benefit_uprating.all: 0.1
+    people:
+      jobseeker:
+        age: 40
+        jsa_contrib_reported: 4_000
+    benunits:
+      benunit:
+        members: [jobseeker]
+        would_claim_uc: false
+    households:
+      household:
+        members: [jobseeker]
+  output:
+    # 4,000 plus 10% of it.
+    household_benefits: 4_400

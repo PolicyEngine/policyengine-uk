@@ -8,13 +8,14 @@ class housing_benefit_applicable_amount(Variable):
     definition_period = YEAR
     unit = GBP
     defined_for = "housing_benefit_eligible"
+    reference = "https://www.legislation.gov.uk/uksi/2006/213/schedule/3"
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.allowances
         any_over_qualifying_age = benunit.any(
             benunit.members("has_attained_state_pension_credit_qualifying_age", period)
         )
-        eldest_age = benunit("eldest_adult_age", period)
+        eldest_age = benunit("eldest_claimant_or_partner_age", period)
         older_age_threshold = p.age_threshold.older
         younger_age_threshold = p.age_threshold.younger
         u_18 = eldest_age < younger_age_threshold
