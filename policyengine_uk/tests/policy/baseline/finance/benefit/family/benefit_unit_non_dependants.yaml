@@ -726,10 +726,11 @@
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, true, true]
     council_tax_reduction_non_dep_deductions: [300, 0]
 
-# The English working-age local schemes keep their own aggregation, which
-# charges only other families' non-dependants. Widening the shared
-# eligibility must not make a jointly liable sharer bear the head's own son.
-- name: Local CTR (Newham), a jointly liable sharer does not bear the head's own in-unit son
+# The English working-age local schemes reproduce the Default Scheme's para 9
+# and para 30(5): the head's own son normally resides with both jointly liable
+# people, so each bears half his deduction (Newham para 30B: £18.84 a week on
+# £384.62, £979.68 a year). 70% of each half of the £1,800 is £630.
+- name: Local CTR (Newham), jointly liable families share the deduction for the head's own in-unit son
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -764,8 +765,8 @@
         council_tax: 1_800
   output:
     council_tax_reduction_joint_liability_share: [0.5, 0.5]
-    newham_council_tax_reduction_non_dep_deductions: [0, 0]
-    newham_council_tax_reduction: [630, 630]
+    newham_council_tax_reduction_non_dep_deductions: [489.84, 489.84]
+    newham_council_tax_reduction: [140.16, 140.16]
 
 # SI 2012/2885 reg 9(2)(a): the applicant's own family are not its
 # non-dependants, so an individual deduction set for the applicant (here as

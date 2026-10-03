@@ -27,6 +27,17 @@ population of households:
 5. Bedrooms: every Universal Credit non-dependant within a benefit unit has a
    bedroom in the size criteria (para 10(1)(c)), so the deduction and the
    bedroom use one definition.
+6. Local schemes: in Merton, Kingston upon Thames, Newham, Westminster and
+   Oxford, each non-dependant's deduction and each claiming family's total
+   equal an independent calculation from the council's scale: a couple banded
+   on joint earnings and deducted once at the higher amount (each member in
+   Merton and Kingston upon Thames when the couple has Universal Credit), any
+   other adult banded on their own earnings and hours, the benefit-receipt
+   exemptions only for a claimant or partner on the award (none in Oxford),
+   and the pool charged to each claiming family by its share, less its own
+   claimant, partner and children. Every other council's variables are zero.
+7. Local independence: an adult in a benefit unit who is not its claimant or
+   partner changes no one else's local deduction through their earnings.
 """
 
 import numpy as np
@@ -426,3 +437,365 @@ def test_every_non_dependant_in_a_benefit_unit_has_a_bedroom(population):
     # A non-dependant has a bedroom as a responsible qualifying young person
     # would, so the count is the same either way.
     assert np.array_equal(rooms, rooms_as_dependants)
+
+
+# 6-7. The English working-age local schemes. Each council's weekly scale for
+# 2026-27 (the parameters' first values, which also apply in 2025): Merton
+# para 30, Kingston upon Thames para 30A, Newham para 30B, Westminster
+# Appendix A and Oxford para 43.
+LOCAL_SCHEMES = {
+    "MERTON": dict(
+        name="merton",
+        thresholds=[0, 279, 485, 605],
+        amounts=[5.20, 10.60, 13.30, 15.95],
+        benefit_exemptions=True,
+        each_uc_couple_member=True,
+    ),
+    "KINGSTON_UPON_THAMES": dict(
+        name="kingston_upon_thames",
+        thresholds=[0, 279, 485, 605],
+        amounts=[5.64, 11.50, 14.43, 17.31],
+        benefit_exemptions=True,
+        each_uc_couple_member=True,
+    ),
+    "NEWHAM": dict(
+        name="newham",
+        thresholds=[0, 183, 316, 394],
+        amounts=[7.54, 14.96, 18.84, 22.61],
+        benefit_exemptions=True,
+        each_uc_couple_member=False,
+    ),
+    "WESTMINSTER": dict(
+        name="westminster",
+        thresholds=[0, 279, 485, 605],
+        amounts=[5.20, 10.60, 13.30, 15.95],
+        benefit_exemptions=True,
+        each_uc_couple_member=False,
+    ),
+    "OXFORD": dict(
+        name="oxford",
+        thresholds=[0, 279, 485, 605],
+        amounts=[5.20, 10.60, 13.30, 15.95],
+        benefit_exemptions=False,
+        each_uc_couple_member=False,
+    ),
+}
+EARNINGS = [0, 2_600, 15_600, 30_000]
+HOURS = [0, 10, 37.5]
+
+
+@st.composite
+def local_family(draw, role):
+    # Working-age adults; the head's family has the household's oldest
+    # member, below State Pension age, and every extra member is at most 60.
+    adult_age = st.integers(61, 65) if role == "head" else st.integers(25, 59)
+    n = draw(st.integers(1, 2))
+
+    def adults(strategy):
+        return draw(st.lists(strategy, min_size=n, max_size=n))
+
+    return dict(
+        role=role,
+        adult_ages=adults(adult_age),
+        adult_earnings=adults(st.sampled_from(EARNINGS)),
+        adult_hours=adults(st.sampled_from(HOURS)),
+        extras=draw(st.lists(extra_member(), min_size=0, max_size=2)),
+        extra_students=draw(st.lists(st.booleans(), min_size=2, max_size=2)),
+        child=draw(st.booleans()),
+        renter_pip=draw(st.booleans()),
+        payment=draw(st.floats(1_000, 10_000, allow_nan=False)),
+        would_claim_uc=draw(st.booleans()),
+    )
+
+
+@st.composite
+def local_household(draw):
+    head = draw(local_family("head"))
+    others = [
+        draw(local_family(draw(st.sampled_from(ROLES))))
+        for _ in range(draw(st.integers(0, 2)))
+    ]
+    return dict(
+        families=[head] + others,
+        rent=draw(st.floats(3_000, 20_000, allow_nan=False)),
+        tenure=draw(st.sampled_from(["RENT_FROM_COUNCIL", "RENT_PRIVATELY"])),
+        local_authority=draw(st.sampled_from(sorted(LOCAL_SCHEMES))),
+    )
+
+
+local_population = st.lists(local_household(), min_size=1, max_size=5)
+
+
+def build_local(population, zero_extra_earnings=False):
+    """build(), plus each adult's earnings and hours, each person's education
+    (an extra member may be a full-time student), each family's Universal
+    Credit claim and each household's council in England."""
+    situation, person_rows, family_rows = build(population)
+    people = list(situation["people"].values())
+    row_iter = iter(zip(people, person_rows))
+    for h, house in enumerate(population):
+        situation["households"][f"h{h}"].update(
+            country="ENGLAND", local_authority=house["local_authority"]
+        )
+        for f, fam in enumerate(house["families"]):
+            situation["benunits"][f"h{h}_f{f}"]["would_claim_uc"] = fam[
+                "would_claim_uc"
+            ]
+            members = (
+                [("adult", i) for i in range(len(fam["adult_ages"]))]
+                + [("extra", i) for i in range(len(fam["extras"]))]
+                + ([("child", 0)] if fam["child"] else [])
+            )
+            for kind, i in members:
+                person, row = next(row_iter)
+                if kind == "adult":
+                    earnings = fam["adult_earnings"][i]
+                    hours = fam["adult_hours"][i]
+                    student = False
+                elif kind == "extra":
+                    earnings = person["employment_income"]
+                    if zero_extra_earnings:
+                        earnings = 0.0
+                    hours = person["weekly_hours"]
+                    student = fam["extra_students"][i]
+                else:
+                    earnings, hours, student = 0.0, 0.0, False
+                person.update(
+                    employment_income=float(earnings),
+                    weekly_hours=float(hours),
+                    current_education="TERTIARY" if student else "NOT_IN_EDUCATION",
+                )
+                row.update(
+                    earnings=float(earnings),
+                    hours=float(hours),
+                    student=student,
+                    claimant_or_partner=kind == "adult",
+                    local_authority=house["local_authority"],
+                )
+    return situation, person_rows, family_rows
+
+
+def weekly_scale(scheme, weekly_income):
+    amounts = [
+        amount
+        for threshold, amount in zip(scheme["thresholds"], scheme["amounts"])
+        if weekly_income >= threshold
+    ]
+    return amounts[-1]
+
+
+def local_oracle(person_rows, family_rows, benefits, claims, ctr_share):
+    """Each person's deduction under their council's scheme and each family's
+    total, from the generated structure and the families' benefit awards."""
+    n_people, n_families = len(person_rows), len(family_rows)
+    individual = np.zeros(n_people)
+    counted = np.zeros(n_people)
+    for p, row in enumerate(person_rows):
+        f = row["family"]
+        family = family_rows[f]
+        scheme = LOCAL_SCHEMES[row["local_authority"]]
+        # Reg 9: a member of a family not liable for the rent, or an adult in
+        # any family's benefit unit who is not its claimant, partner, child or
+        # young person; aged 18 or over.
+        eligible = row["age"] >= 18 and (
+            family["role"] == "non_dependant" or row["kind"] == "non_dependant"
+        )
+        head = next(
+            i
+            for i, other in enumerate(family_rows)
+            if other["household"] == family["household"]
+        )
+        applicant_exempt = family_rows[head]["renter_pip"]
+        if not eligible or applicant_exempt or row["student"]:
+            continue
+        couple = [
+            other
+            for other in person_rows
+            if other["family"] == f and other["claimant_or_partner"]
+        ]
+        if row["claimant_or_partner"]:
+            income = sum(member["earnings"] for member in couple)
+        else:
+            income = row["earnings"]
+        weekly = (
+            weekly_scale(scheme, income / 52)
+            if row["hours"] >= 16
+            else scheme["amounts"][0]
+        )
+        exempt = False
+        if scheme["benefit_exemptions"] and row["claimant_or_partner"]:
+            award = benefits[f]
+            on_income_related = any(
+                award[b] > 0
+                for b in (
+                    "income_support",
+                    "jsa_income",
+                    "esa_income",
+                    "pension_credit",
+                )
+            )
+            couple_earned = sum(member["earnings"] for member in couple)
+            exempt = on_income_related or (
+                award["universal_credit"] > 0 and couple_earned <= 0
+            )
+        individual[p] = 0 if exempt else weekly * 52
+    # One deduction for a couple, the higher, or each member's in Merton and
+    # Kingston upon Thames where the couple has Universal Credit; any other
+    # member separately.
+    for f, family in enumerate(family_rows):
+        members = [p for p, row in enumerate(person_rows) if row["family"] == f]
+        couple = [p for p in members if person_rows[p]["claimant_or_partner"]]
+        scheme = LOCAL_SCHEMES[person_rows[members[0]]["local_authority"]]
+        each = scheme["each_uc_couple_member"] and benefits[f]["universal_credit"] > 0
+        for p in members:
+            if p not in couple or each:
+                counted[p] = individual[p]
+        if couple and not each:
+            counted[couple[0]] = max(individual[p] for p in couple)
+    totals = np.zeros(n_families)
+    for f, family in enumerate(family_rows):
+        in_household = [
+            p
+            for p, row in enumerate(person_rows)
+            if family_rows[row["family"]]["household"] == family["household"]
+        ]
+        own = [
+            p
+            for p in in_household
+            if person_rows[p]["family"] == f
+            and person_rows[p]["kind"] != "non_dependant"
+        ]
+        pool = sum(counted[p] for p in in_household) - sum(counted[p] for p in own)
+        totals[f] = claims[f] * ctr_share[f] * pool
+    return individual, totals
+
+
+def run_local(population, zero_extra_earnings=False):
+    situation, person_rows, family_rows = build_local(population, zero_extra_earnings)
+    sim = Simulation(situation=situation)
+    awards = {
+        b: calc(sim, b)
+        for b in (
+            "income_support",
+            "jsa_income",
+            "esa_income",
+            "pension_credit",
+            "universal_credit",
+        )
+    }
+    benefits = [{b: awards[b][f] for b in awards} for f in range(len(family_rows))]
+    return sim, person_rows, family_rows, benefits
+
+
+def legal_claims_and_shares(family_rows):
+    """Who claims and each claim's share, from the generated structure alone.
+    Where a family shares the rent, every family liable for it (the head's
+    and each sharer's) is jointly and severally liable for the council tax and
+    claims, each person liable bearing an equal share of the tax and of each
+    shared non-dependant's deduction (para 29(3)-(4), 30(5)); otherwise the
+    head's family claims alone, in full."""
+    n = len(family_rows)
+    claims, shares = np.zeros(n), np.ones(n)
+    for h in {family["household"] for family in family_rows}:
+        families = [i for i, f in enumerate(family_rows) if f["household"] == h]
+        liable = [i for i in families if family_rows[i]["role"] in ("head", "sharer")]
+        shared = any(family_rows[i]["role"] == "sharer" for i in families)
+        liable_people = sum(family_rows[i]["n_liable"] for i in liable)
+        for i in families:
+            if shared:
+                claims[i] = i in liable
+                shares[i] = 1 / liable_people if i in liable else 1
+            else:
+                claims[i] = family_rows[i]["role"] == "head"
+    return claims, shares
+
+
+@PROPERTY_SETTINGS
+@given(local_population)
+def test_local_scheme_deductions_match_the_oracle(population):
+    sim, person_rows, family_rows, benefits = run_local(population)
+    claims, ctr_share = legal_claims_and_shares(family_rows)
+    # The claims and shares the totals use are the scheme's, not the model's.
+    assert np.array_equal(calc(sim, "council_tax_reduction_claimant_benunit"), claims)
+    assert np.allclose(
+        calc(sim, "council_tax_reduction_joint_liability_share"), ctr_share
+    )
+    individual, totals = local_oracle(
+        person_rows, family_rows, benefits, claims, ctr_share
+    )
+    person_council = np.array([row["local_authority"] for row in person_rows])
+    family_council = np.array(
+        [
+            person_council[[r["family"] for r in person_rows].index(f)]
+            for f in range(len(family_rows))
+        ]
+    )
+    for council, scheme in LOCAL_SCHEMES.items():
+        name = scheme["name"]
+        # 6. Each council's variables follow its own scheme and are zero
+        # elsewhere.
+        assert np.allclose(
+            calc(sim, f"{name}_council_tax_reduction_individual_non_dep_deduction"),
+            np.where(person_council == council, individual, 0),
+            atol=0.01,
+        ), name
+        assert np.allclose(
+            calc(sim, f"{name}_council_tax_reduction_non_dep_deductions"),
+            np.where(family_council == council, totals, 0),
+            atol=0.01,
+        ), name
+
+
+def with_an_earning_adult_beside_its_claimant(population):
+    """Each household plus a family not liable for the rent whose claimant
+    works 37.5 hours without earnings beside a 22-year-old earning £30,000,
+    and an applicant with no exemption, so the property always binds."""
+    family = dict(
+        role="non_dependant",
+        adult_ages=[40],
+        adult_earnings=[0],
+        adult_hours=[37.5],
+        extras=[
+            dict(
+                kind="non_dependant",
+                age=22,
+                earnings=30_000,
+                hours=37.5,
+                attendance_allowance=False,
+            )
+        ],
+        extra_students=[False, False],
+        child=False,
+        renter_pip=False,
+        payment=1_000.0,
+        would_claim_uc=False,
+    )
+    return [
+        dict(
+            house,
+            families=[dict(house["families"][0], renter_pip=False)]
+            + house["families"][1:]
+            + [family],
+        )
+        for house in population
+    ]
+
+
+@PROPERTY_SETTINGS
+@given(local_population)
+def test_local_scheme_in_unit_earnings_affect_only_their_own_deduction(population):
+    population = with_an_earning_adult_beside_its_claimant(population)
+    sim, person_rows, *_ = run_local(population)
+    without, *_ = run_local(population, zero_extra_earnings=True)
+    # 7. Zeroing the earnings of members who are not a claimant or partner
+    # leaves every claimant's and partner's deduction unchanged.
+    claimant_or_partner = np.array([row["claimant_or_partner"] for row in person_rows])
+    for scheme in LOCAL_SCHEMES.values():
+        variable = (
+            f"{scheme['name']}_council_tax_reduction_individual_non_dep_deduction"
+        )
+        assert np.allclose(
+            calc(sim, variable)[claimant_or_partner],
+            calc(without, variable)[claimant_or_partner],
+            atol=0.01,
+        ), variable
