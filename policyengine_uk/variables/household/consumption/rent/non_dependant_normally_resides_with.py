@@ -47,6 +47,17 @@ class non_dependant_normally_resides_with(Variable):
     )
 
 
+def rent_shared_with_another_family(benunit, period):
+    """Whether a family other than the household head's shares the
+    household's rent (liable_for_share_of_household_rent). The head's family
+    is always liable, so the flag on the head's own family means nothing."""
+    person = benunit.members
+    in_sharer_family = person.benunit(
+        "liable_for_share_of_household_rent", period
+    ) & ~person.benunit.any(person("is_household_head", period))
+    return benunit.any(person.household.any(in_sharer_family))
+
+
 def _joint_occupiers_by_residence(benunit, period):
     """Pairs of (residence value, whether each family is one of the joint
     occupiers a non-dependant with that value normally resides with)."""
@@ -54,10 +65,7 @@ def _joint_occupiers_by_residence(benunit, period):
     values = NonDependantResidence
     head_family = benunit.any(person("is_household_head", period))
     sharer = benunit("liable_for_share_of_household_rent", period) & ~head_family
-    in_sharer_family = person.benunit(
-        "liable_for_share_of_household_rent", period
-    ) & ~person.benunit.any(person("is_household_head", period))
-    rent_is_shared = benunit.any(person.household.any(in_sharer_family))
+    rent_is_shared = rent_shared_with_another_family(benunit, period)
     return (
         (values.EVERY_JOINT_OCCUPIER, head_family | sharer),
         (values.HOUSEHOLD_HEAD_FAMILY, head_family),
@@ -123,11 +131,21 @@ def apportioned_non_dependant_deductions(
     theirs where those shares sum to zero; with ``equally`` true (Council Tax
     Reduction, SI 2012/2885 Sch 1 para 8(5)), each part is one over the
     number of people liable among them, and the whole where only the family
-    is liable.
+    is liable. A family that is a non-dependant's only host, a couple
+    included, bears the whole deduction: the model cannot tell whether both
+    partners are named tenants liable under LGFA 1992 s.6 (when the literal
+    para 8(5) would split it between them) or liable only as spouses (s.9).
+
+    Where no family other than the household head's shares the rent, every
+    residence value means the head's family alone, which takes
+    ``every_joint_occupier_part``.
     """
     person = benunit.members
     residence = person.benunit("non_dependant_normally_resides_with", period)
     source = deductions * _outside_joint_occupiers(benunit, period)
+    # Without another family sharing the rent, every value means the
+    # household head's family alone, so each takes the caller's part.
+    rent_is_shared = rent_shared_with_another_family(benunit, period)
     liable = person("is_liable_for_household_rent", period)
     liable_in_family = benunit.sum(liable)
     share = benunit("share_of_household_rent", period)
@@ -155,6 +173,7 @@ def apportioned_non_dependant_deductions(
                 / where(share_of_joint_occupiers > 0, share_of_joint_occupiers, 1),
                 liable_in_family / max_(liable_in_joint_occupiers, 1),
             )
+        part = where(rent_is_shared, part, every_joint_occupier_part)
         pool = benunit.max(person.household.sum(source * (residence == value)))
         total = total + joint_occupier * part * pool
     return total

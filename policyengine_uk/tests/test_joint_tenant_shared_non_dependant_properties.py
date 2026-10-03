@@ -8,19 +8,23 @@ Invariants, for any generated population of households:
    deductions for its non-dependants, whichever joint occupiers each one
    resides with.
 2. Bounds (CTR Sch 1 para 8(5)): each family's Council Tax Reduction part is
-   between zero and the household's deductions; where the rent is shared,
-   the joint occupiers' parts sum to at most the household's deductions
-   (equal shares per liable person, with a couple bearing one person's part)
-   and no other family bears any. Where it is not shared, every family's
-   deductions equal the previous formula (differential).
+   between zero and the household's deductions; where another family shares
+   the rent, the joint occupiers' parts sum to at most the household's
+   deductions (a non-dependant of several jointly liable families is split
+   equally per liable person, each family bearing one person's part; one of
+   a single family, a couple included, is that family's whole deduction)
+   and no other family bears any. Where no other family shares the rent,
+   every family's deductions equal the previous formula (differential).
 3. Differential: with every non-dependant shared (the default), the Housing
    Benefit deductions equal the previous formula (each family's share of the
    rent, computed or supplied, times the household's deductions) and the
    Council Tax Reduction deductions equal the previous formula (the
    deductions outside the family times
-   council_tax_reduction_joint_liability_share), wherever the rent is
-   positive. With no rent a sharer is not rent-liable, and the previous
-   formulas wrongly counted its members as non-dependants.
+   council_tax_reduction_joint_liability_share) in every household where the
+   previous formulas classified the joint occupiers correctly: where every
+   joint-occupier family has rent of its own. The previous rent-based flags
+   counted a joint occupier with no rent of its own (no household rent, or a
+   supplied zero share) as a non-dependant; that is the intended correction.
 4. Attribution: a shared non-dependant counts in the household head's
    family's size criteria exactly as when they are the head family's only,
    and in a sharer's exactly as when they are the other joint occupiers'
@@ -82,7 +86,14 @@ def households(draw):
         # Supplied rent-share weights for the head and up to two sharers
         # (normalised over the families liable for the rent), or None.
         share_weights=draw(
-            st.one_of(st.none(), st.lists(st.floats(0.05, 1), min_size=3, max_size=3))
+            st.one_of(
+                st.none(),
+                st.lists(
+                    st.one_of(st.just(0.0), st.floats(0.05, 1)),
+                    min_size=3,
+                    max_size=3,
+                ),
+            )
         ),
     )
 
@@ -123,7 +134,7 @@ def build(population, residence_override=None):
 
         weights = house["share_weights"]
         shares = [None] * (1 + len(house["sharers"]))
-        if weights is not None:
+        if weights is not None and sum(weights[: len(shares)]) > 0:
             used = weights[: len(shares)]
             shares = [w / sum(used) for w in used]
         elif supplied:
@@ -307,9 +318,11 @@ def test_shared_default_matches_the_previous_formulas(population):
         sim, "council_tax_reduction_joint_liability_share"
     )
     joint_occupier = (roles == "head") | (roles == "sharer")
-    # With no rent, a sharer is not rent-liable, so the previous formulas
-    # counted its own members as non-dependants; that case is excluded.
-    positive_rent = np.array([house["rent"] > 0 for house in population])[household]
+    # The previous formulas classified a joint occupier with no rent of its
+    # own (no household rent, or a supplied zero share) as a non-dependant;
+    # compare only households where every joint occupier has rent.
+    rentless = joint_occupier & (calc(sim, "benunit_rent") <= 0)
+    positive_rent = per_household(sim, rentless.astype(float))[household] == 0
     hb = calc(sim, "housing_benefit_non_dep_deductions")
     np.testing.assert_allclose(
         hb[positive_rent], previous_hb[positive_rent], atol=MONEY_TOLERANCE

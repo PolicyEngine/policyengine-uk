@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
     apportioned_non_dependant_deductions,
+    rent_shared_with_another_family,
 )
 from policyengine_uk.variables.household.demographic.highest_education import (
     EducationType,
@@ -19,22 +20,23 @@ def council_tax_reduction_joint_liability_non_dep_deductions(
     """Each family's deductions for the household's non-dependants
     (``deductions``, one amount per person; ``own``, the family's own amount).
 
-    Where the household's rent is shared, a non-dependant of two or more
-    jointly liable people is apportioned equally between them (SI 2012/2885
-    Sch 1 para 8(5); WSI 2013/3029 Sch 1 para 3(5) and Sch 6 para 5(5); SSI
-    2021/249 reg 90(5); SSI 2012/319 reg 48(5)), and one who resides with
-    only one of them is deducted in full from that one (see
-    non_dependant_normally_resides_with). Otherwise the claimant, the family
+    Where a family other than the household head's shares the rent, a
+    non-dependant of two or more jointly liable families is apportioned
+    equally between their liable people (SI 2012/2885 Sch 1 para 8(5); WSI
+    2013/3029 Sch 1 para 3(5) and Sch 6 para 5(5); SSI 2021/249 reg 90(5);
+    SSI 2012/319 reg 48(5)), each family bearing one person's part as for
+    the council tax itself (council_tax_reduction_joint_liability_share).
+    One who resides with only one of them is deducted in full from that
+    family, a couple included: the model cannot tell whether both partners
+    are named tenants liable under LGFA 1992 s.6 (when the literal para 8(5)
+    would split it between them) or liable only as spouses (s.9). See
+    non_dependant_normally_resides_with. Otherwise the claimant, the family
     of the household's oldest adult (see
     council_tax_reduction_claimant_benunit), has every other family's
     deductions, as before.
     """
     person = benunit.members
-    rent_is_shared = benunit.any(
-        person.household.any(
-            person.benunit("liable_for_share_of_household_rent", period)
-        )
-    )
+    rent_is_shared = rent_shared_with_another_family(benunit, period)
     in_household = benunit.max(person.household.sum(deductions))
     share = benunit("council_tax_reduction_joint_liability_share", period)
     sole = (in_household - own) * share

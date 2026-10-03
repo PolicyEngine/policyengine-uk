@@ -629,3 +629,69 @@
     # para 8(5) would split it between the two of them; the model cannot
     # tell how a couple is liable.
     council_tax_reduction_non_dep_deductions: [300, 0, 0]
+
+- name: A sharer flag on the household head's own family shares the rent with no one
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_reduction_individual_non_dep_deduction: 0
+        merton_council_tax_reduction_individual_non_dep_deduction: 0
+      adult_1:
+        age: 40
+        council_tax_reduction_individual_non_dep_deduction: 300
+        merton_council_tax_reduction_individual_non_dep_deduction: 300
+      adult_2:
+        age: 40
+        council_tax_reduction_individual_non_dep_deduction: 200
+        merton_council_tax_reduction_individual_non_dep_deduction: 200
+    benunits:
+      head_family:
+        members: [head]
+        liable_for_share_of_household_rent: true
+      family_1:
+        members: [adult_1]
+      family_2:
+        members: [adult_2]
+    households:
+      home:
+        members: [head, adult_1, adult_2]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+  output:
+    # The head's family is always liable; the flag matters only for other
+    # families, so this is the no-sharer case and the previous formula holds.
+    council_tax_reduction_non_dep_deductions: [500, 200, 300]
+    merton_council_tax_reduction_non_dep_deductions: [500, 200, 300]
+
+- name: Without sharers every residence value takes the supplied rent share
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      daughter:
+        age: 22
+        household_benefits_individual_non_dep_deduction: 1_000
+    benunits:
+      head_family:
+        members: [head]
+        share_of_household_rent: 0.6
+      daughter_family:
+        members: [daughter]
+        share_of_household_rent: 0
+        non_dependant_normally_resides_with: HOUSEHOLD_HEAD_FAMILY
+    households:
+      home:
+        members: [head, daughter]
+        rent: 20_800
+        tenure_type: RENT_PRIVATELY
+  output:
+    # As for the default value: the household head's family's supplied
+    # share of the rent times the deduction.
+    housing_benefit_non_dep_deductions: [600, 0]
