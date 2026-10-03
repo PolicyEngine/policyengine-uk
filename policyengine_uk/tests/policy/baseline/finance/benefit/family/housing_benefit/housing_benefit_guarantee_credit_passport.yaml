@@ -1,0 +1,339 @@
+# Guarantee Credit passport: "In the case of a claimant who is in receipt, or
+# whose partner is in receipt, of a guarantee credit, the whole of his capital
+# and income shall be disregarded." (SI 2006/214 reg 26; NI: SR 2006/406
+# reg 24.) The passport follows the guarantee credit actually paid, not one
+# computed for a family that does not claim Pension Credit or that
+# PolicyEngine does not treat as eligible for it.
+#
+# 2026 parameters: Pension Credit standard minimum guarantee 12,376 a year
+# single and 18,889 couple; Pension Credit and pension-age Housing Benefit
+# both count £1 a week for each £500 (or part) of capital over £10,000;
+# Housing Benefit capital limit £16,000; aged personal allowance £256.00 a
+# week single (13,312) and £383.35 couple (19,934.20); taper 65%.
+#
+# Robustness to the other two Housing Benefit means-test fixes: the tenants
+# rent from the council, so the Local Housing Allowance order (fix 3) cannot
+# apply; cases whose expected Housing Benefit depends on applicable income set
+# housing_benefit_applicable_income_disregard to 0 (the value fix 2 gives a
+# family with no earnings), and the other cases do not depend on it.
+
+- name: Case 1, pensioner not claiming Pension Credit has capital over 16,000 counted.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    # Computed guarantee credit 12,376 - (10,000 + 20 x 52 = 1,040) = 1,336,
+    # but none is paid, so there is no passport.
+    guarantee_credit: 1_336
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 20_000
+    # (20,000 - 10,000) / 500 = 20 steps; 20 x 52 = 1,040.
+    housing_benefit_tariff_income: 1_040
+    # 20,000 is over the 16,000 limit.
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Case 2, the same pensioner claiming Pension Credit is passported.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    guarantee_credit: 1_336
+    pension_credit: 1_336
+    in_receipt_of_guarantee_credit: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_eligible: true
+    # No income counted, so the full eligible rent.
+    housing_benefit: 6_240
+
+- name: Case 3, pensioner couple not receiving a guarantee credit is tapered on tariff income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 72
+        state_pension_reported: 9_800
+      person2:
+        age: 68
+        state_pension_reported: 9_800
+    benunits:
+      benunit:
+        members: [person1, person2]
+        # The guarantee credit and Pension Credit eligibility are set so the
+        # case tests only whether it is paid. Each state pension is below the
+        # personal allowance, so no income tax.
+        guarantee_credit: 500
+        is_pension_credit_eligible: true
+        would_claim_pc: false
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1, person2]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 15_000
+  output:
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 15_000
+    # (15,000 - 10,000) / 500 = 10 steps; 10 x 52 = 520.
+    housing_benefit_tariff_income: 520
+    # 9,800 x 2 + 520 = 20,120.
+    housing_benefit_applicable_income: 20_120
+    housing_benefit_applicable_amount: 19_934.20
+    # Without the tariff income, 19,600 is below the applicable amount.
+    # 7,800 - 0.65 x (20,120 - 19,934.20) = 7,800 - 120.77 = 7,679.23.
+    housing_benefit: 7_679.23
+
+- name: Case 4, the same couple receiving the guarantee credit has income and capital disregarded.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 72
+        state_pension_reported: 9_800
+      person2:
+        age: 68
+        state_pension_reported: 9_800
+    benunits:
+      benunit:
+        members: [person1, person2]
+        guarantee_credit: 500
+        is_pension_credit_eligible: true
+        would_claim_pc: true
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1, person2]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 15_000
+  output:
+    # A person reaching State Pension age after April 2016 gets no Savings
+    # Credit, so Pension Credit is the guarantee credit of 500.
+    pension_credit: 500
+    in_receipt_of_guarantee_credit: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit: 7_800
+
+- name: Case 5, mixed-age couple with a continuing award is not passported, because PolicyEngine does not model the SI 2019/37 art 4 saving.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+        housing_benefit_reported: 1
+      person2:
+        age: 60
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_uc: false
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    # PolicyEngine's is_pension_credit_eligible omits the SI 2019/37 art 4
+    # saving, so it pays this couple no Pension Credit and there is no
+    # passport. In law a mixed-age couple saved under art 4(1)(b) (entitled
+    # to Housing Benefit as that couple on 14 May 2019, and to Pension Credit
+    # or Housing Benefit ever since, which the continuing award here may
+    # stand for) is not excluded by SPCA 2002 s.4(1A). It may then be
+    # entitled to a guarantee credit (18,889 - (10,000 + 1,040) = 7,849 on
+    # the 2026 parameters), and reg 26 would disregard its capital. This
+    # case pins the model, not the law, until that saving is modelled. The
+    # computed guarantee credit is not asserted, so the case does not depend
+    # on whether one is computed for a family PolicyEngine treats as
+    # ineligible.
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 20_000
+    housing_benefit_tariff_income: 1_040
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Case 6, Savings Credit only does not passport Housing Benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 90
+        state_pension_reported: 11_440
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    # Pension Credit income 11,440 + 1,040 = 12,480 exceeds 12,376, so no
+    # guarantee credit. Savings Credit (threshold 10,819.64): maximum
+    # 0.6 x (12,376 - 10,819.64) = 933.816, less 0.4 x (12,480 - 12,376)
+    # = 41.60, = 892.216.
+    guarantee_credit: 0
+    savings_credit: 892.22
+    pension_credit: 892.22
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 20_000
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Case 7, guarantee credit recipient couple with capital over 16,000 keeps Housing Benefit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 72
+        state_pension_reported: 5_000
+      person2:
+        age: 68
+        state_pension_reported: 5_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 30_000
+  output:
+    # (30,000 - 10,000) / 500 = 40 steps; 40 x 52 = 2,080.
+    # 18,889 - (10,000 + 2,080) = 6,809.
+    guarantee_credit: 6_809
+    pension_credit: 6_809
+    in_receipt_of_guarantee_credit: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_eligible: true
+    housing_benefit: 7_800
+
+- name: Case 8, Northern Ireland pensioner not claiming Pension Credit has capital counted.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+        region: NORTHERN_IRELAND
+  output:
+    guarantee_credit: 1_336
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 20_000
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Case 9, pensioner not claiming Pension Credit with capital of exactly 16,000 is within the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 16_000
+  output:
+    # (16,000 - 10,000) / 500 = 12 steps; 12 x 52 = 624. Computed guarantee
+    # credit 12,376 - (10,000 + 624) = 1,752, not paid.
+    guarantee_credit: 1_752
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 16_000
+    housing_benefit_tariff_income: 624
+    # The limit bites only where capital "exceeds" 16,000.
+    housing_benefit_eligible: true
+    # Applicable income is at most 10,000 + 624 = 10,624, below 13,312, so
+    # no taper whatever the earnings disregard.
+    housing_benefit: 6_240
+
+- name: Case 10, the same pensioner with capital just over 16,000 is not eligible.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 16_000.01
+  output:
+    in_receipt_of_guarantee_credit: false
+    housing_benefit_assessable_capital: 16_000.01
+    housing_benefit_eligible: false
+    housing_benefit: 0

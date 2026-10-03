@@ -45,9 +45,16 @@ class housing_benefit_assessable_capital(Variable):
             / claimant_partner_divisor,
             0,
         )
-        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
+        # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
+        # reg 24) disregards the whole of the capital and income of a
+        # claimant "in receipt, or whose partner is in receipt, of a
+        # guarantee credit". By reg 2(5) (NI: reg 2(5)), that includes a
+        # person who would be in receipt but for SPC Regs 2002 reg 13 (NI:
+        # SPC Regs (NI) 2003 reg 13), the small-amounts rule, which
+        # PolicyEngine does not model.
+        passported = any_over_SP_age & benunit("in_receipt_of_guarantee_credit", period)
         return where(
-            guarantee_credit,
+            passported,
             0,
             max_(0, household_capital_proxy + person_capital),
         )
