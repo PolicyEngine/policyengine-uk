@@ -46,6 +46,14 @@ and add `verified_end_year` when verified coverage has a defined end. Change the
 verified year fields only after confirming that parameters and tests cover the
 stated years.
 
+## Axiom parity
+
+Every policy change here must also be correct in [rulespec-uk](https://github.com/TheAxiomFoundation/rulespec-uk). That covers a new programme, a parameter or threshold update, an eligibility rule and a bug fix. The shared guide, [Mirror policy changes in Axiom](https://github.com/PolicyEngine/.github/blob/main/CONTRIBUTING.md#mirror-policy-changes-in-axiom), defines the `axiom:` line your PR description needs and what a `queued` issue must contain. UK specifics:
+
+- National modules live under `uk/`, and council schemes such as council tax reduction live under `uk-<council>/`. Search `main` there before opening a new issue.
+- An `encoded-correct` claim names the module and a companion case in its `.test.yaml` that exercises the same situation as your YAML test.
+- Label `queued` issues `pe-parity`. Reuse your YAML test's externally sourced expected values (legislation.gov.uk, gov.uk guidance, official calculators) as the companion tests; don't copy values computed by policyengine-uk.
+
 ## Repo-specific anti-patterns
 
 - **Don't change HF upload destinations** in the `policyengine-uk-data` upload pipeline without explicit authorisation — the private/public split exists to respect the UK Data Service licence.

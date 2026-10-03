@@ -54,6 +54,22 @@ unless the user or maintainer explicitly asks. The type controls the inferred
 version bump: `breaking` is major, `added` and `removed` are minor, and other
 types are patch.
 
+## Required Axiom Line
+
+Every PR that adds, updates or fixes policy (programmes, parameters, eligibility
+rules, bug fixes) must also leave the same provision correct in
+[rulespec-uk](https://github.com/TheAxiomFoundation/rulespec-uk). State which of
+these applies in one line of the PR description:
+
+```text
+axiom: <legal id> encoded-correct | <rulespec-uk PR> encoded | <rulespec-uk issue> queued | n/a: <reason>
+```
+
+A `queued` rulespec-uk issue must be dispatch-ready and labelled `pe-parity`.
+It needs the module path and corpus citation, the verbatim law, the required
+outputs, and companion tests from the same external source as the PR's YAML
+tests. Never hand-write RuleSpec. See `.github/CONTRIBUTING.md` ("Axiom parity").
+
 ## Required Lint And Format
 
 Run lint and formatting before committing. The default command is:
