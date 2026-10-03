@@ -21,8 +21,11 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         "Modelled exemptions in the England pensioner, Scottish and Welsh "
         "schemes: a full-time student; a non-dependant on Income Support, "
         "income-based JSA, income-related ESA or State Pension Credit (any "
-        "age); an adult for whom someone else is entitled to child benefit "
-        "(LGFA 1992 Sch 1 para 3); and, from the year each scheme added it, "
+        "age), and in Scotland's working-age scheme from April 2022 one whose "
+        "partner is on Income Support, income-based JSA or income-related ESA "
+        "and who is not on Universal Credit; an adult for whom someone else is "
+        "entitled to child benefit (LGFA 1992 Sch 1 para 3); and, from the year "
+        "each scheme added it, "
         "one entitled to Universal Credit calculated on no earned income. Wales excludes "
         "members of the ESA work-related activity group; with no ESA group "
         "input, income-related ESA is treated as exempt. Not modelled: other "
@@ -37,6 +40,8 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/5",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/48",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/90",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/4",
+        "https://www.legislation.gov.uk/ukpga/1992/14/schedule/1/paragraph/3",
     )
 
     def formula(person, period, parameters):
@@ -57,20 +62,46 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         # IS, income-based JSA, income-related ESA and SPC count for the person
         # they are payable to; Universal Credit for both joint claimants.
         claimant_or_partner = person("is_claimant_or_partner", period)
-        on_income_related_benefit = (
+        on_legacy_income_related_benefit = (
             is_award_payee(person, period, "income_support", "income_support_reported")
             | is_award_payee(person, period, "jsa_income", "jsa_income_reported")
             | is_award_payee(person, period, "esa_income", "esa_income_reported")
-            | is_award_payee(
-                person, period, "pension_credit", "pension_credit_reported"
-            )
+        )
+        on_pension_credit = is_award_payee(
+            person, period, "pension_credit", "pension_credit_reported"
+        )
+        entitled_to_universal_credit = claimant_or_partner & (
+            person.benunit("universal_credit_pre_benefit_cap", period) > 0
+        )
+        # SSI 2021/249 reg 90(8)(a): a "qualifying income-related benefit
+        # claimant", defined in reg 4(1) as one "who is, or who has a partner
+        # who is," on IS, income-based JSA or income-related ESA "and is not on
+        # universal credit". Read for the non-dependant, as the definition's
+        # "applicant" would leave the limb no application.
+        couple_on_legacy_income_related_benefit = claimant_or_partner & (
+            person.benunit.any(on_legacy_income_related_benefit & claimant_or_partner)
+        )
+        partner_rule = (
+            is_scotland_scheme(country)
+            & ~has_pensioner
+            & scotland.non_dep_deduction.working_age_exempt_partner_of_income_related_benefit_claimant
+        )
+        qualifying_income_related_benefit_claimant = where(
+            partner_rule,
+            (on_legacy_income_related_benefit | couple_on_legacy_income_related_benefit)
+            & ~entitled_to_universal_credit,
+            on_legacy_income_related_benefit,
         )
         # LGFA 1992 Sch 1 para 3 (via para 8(8)(b) and equivalents): an adult
-        # for whom another person is entitled to child benefit, that is a
-        # qualifying young person in someone else's family.
+        # "in respect of whom another person is entitled to child benefit".
+        # Entitlement needs a claim (SSAA 1992 s.1(1)); an election not to be
+        # paid keeps it (s.13A), so the opt-out flag is not read.
+        entitled_to_child_benefit_for = (
+            add(person, period, ["child_benefit_respective_amount"]) > 0
+        ) & person.benunit("would_claim_child_benefit", period)
         disregarded_for_child_benefit = (
             (person("age", period) >= 18)
-            & person("is_qualifying_young_person_for_child_benefit", period)
+            & entitled_to_child_benefit_for
             & ~claimant_or_partner
         )
         universal_credit_limb = select(
@@ -82,9 +113,6 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
             ],
             default=False,
         )
-        entitled_to_universal_credit = claimant_or_partner & (
-            person.benunit("universal_credit_pre_benefit_cap", period) > 0
-        )
         universal_credit_without_earned_income = (
             universal_credit_limb
             & entitled_to_universal_credit
@@ -92,7 +120,8 @@ class council_tax_reduction_non_dep_deduction_exempt(Variable):
         )
         return (
             full_time_student
-            | on_income_related_benefit
+            | qualifying_income_related_benefit_claimant
+            | on_pension_credit
             | disregarded_for_child_benefit
             | universal_credit_without_earned_income
         )

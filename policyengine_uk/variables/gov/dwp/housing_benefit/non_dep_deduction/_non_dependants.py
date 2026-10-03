@@ -4,10 +4,35 @@ non-dependant deductions."""
 from policyengine_uk.model_api import *
 
 # Family benefits counted in a couple's gross income, besides Universal Credit.
+# None is taxable, so total_income leaves them out.
 FAMILY_GROSS_INCOME_BENEFITS = [
     "child_tax_credit",
     "working_tax_credit",
     "child_benefit",
+    "income_support",
+    "jsa_income",
+    "esa_income",
+    "pension_credit",
+]
+
+# A person's gross income outside total_income: statutory payments, which are
+# earnings (HB Regs 2006 reg 35(1)(i); UC Regs 2013 reg 55(4)) the model
+# keeps apart from employment income, and Maternity Allowance, which is
+# untaxed.
+PERSONAL_GROSS_INCOME_OUTSIDE_TOTAL_INCOME = [
+    "statutory_sick_pay",
+    "statutory_maternity_pay",
+    "statutory_paternity_pay",
+    "maternity_allowance",
+]
+
+# Statutory payments treated as employed earnings (UC Regs 2013 reg 55(4)).
+# Statutory adoption, shared parental, parental bereavement and neonatal care
+# pay have no input.
+STATUTORY_PAY_EARNINGS = [
+    "statutory_sick_pay",
+    "statutory_maternity_pay",
+    "statutory_paternity_pay",
 ]
 
 # Benefits the benefit cap counts, other than Housing Benefit (benefit_cap_reduction).
@@ -28,12 +53,17 @@ CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
 def non_dependant_weekly_gross_income(person, period):
     """Normal weekly gross income for the deduction bands. A claimant or
     partner is banded on the couple's joint income (HB reg 74(4); CTR Sch 1
-    para 8(4)): each member's taxable income plus the family's Universal
-    Credit, tax credits and child benefit. Anyone else in the benefit unit is a
-    separate non-dependant, banded on their own taxable income. Taxable income
-    excludes the disregarded disability benefits (HB reg 74(9))."""
+    para 8(4)): each member's own income plus the family's Universal Credit,
+    tax credits, child benefit, Income Support, income-based JSA,
+    income-related ESA and Pension Credit. Anyone else in the benefit unit is a
+    separate non-dependant, banded on their own income. A person's own income
+    is their taxable income plus statutory sick, maternity and paternity pay
+    and Maternity Allowance. It leaves out the disability benefits HB reg
+    74(9) disregards, which are untaxed."""
     claimant_or_partner = person("is_claimant_or_partner", period)
-    own_income = max_(0, person("total_income", period))
+    own_income = max_(0, person("total_income", period)) + add(
+        person, period, PERSONAL_GROSS_INCOME_OUTSIDE_TOTAL_INCOME
+    )
     family_benefits = universal_credit_after_benefit_cap(person.benunit, period) + sum(
         person.benunit(benefit, period) for benefit in FAMILY_GROSS_INCOME_BENEFITS
     )
@@ -49,30 +79,37 @@ def universal_credit_after_benefit_cap(benunit, period):
     reg 81), for a family that is not liable for rent. universal_credit itself
     depends on Housing Benefit through the cap, so the cap is applied here to
     the capped benefits other than Housing Benefit, which such a family does
-    not receive."""
+    not receive. The award is reduced by the excess minus the childcare costs
+    element, and not at all where that element is greater than the excess
+    (reg 81(1)-(2))."""
     capped = sum(
         benunit(benefit, period) for benefit in CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT
     )
-    reduction = max_(0, capped - benunit("benefit_cap", period))
+    excess = max_(0, capped - benunit("benefit_cap", period))
+    reduction = max_(0, excess - benunit("uc_childcare_element", period))
     return max_(0, benunit("universal_credit_pre_benefit_cap", period) - reduction)
 
 
 def has_earned_income(person, period):
     """Whether the person has earned income (UC Regs 2013 reg 52): employed
-    earnings, including statutory sick and maternity pay and less relievable
-    pension contributions (reg 55(4)-(5)); self-employed earnings, a loss
-    counting as nil (reg 57(2)) and the minimum income floor applying where
-    the Universal Credit model applies it (reg 62); and other paid work."""
-    employed = max_(
+    earnings, including statutory sick, maternity and paternity pay and less
+    relievable pension contributions (reg 55(4)-(5)); self-employed earnings,
+    a loss counting as nil and less any relievable pension contributions not
+    already deducted from employed earnings (reg 57(2), steps 3-4), with the
+    minimum income floor applying where the Universal Credit model applies it
+    (reg 62); and other paid work."""
+    pension_contributions = person("pension_contributions", period)
+    employed_gross = add(person, period, ["employment_income", *STATUTORY_PAY_EARNINGS])
+    has_employed_earnings = employed_gross > 0
+    employed = max_(0, employed_gross - pension_contributions)
+    # Contributions are deducted from employed earnings where there are any
+    # (reg 55(5)(a)), and otherwise from self-employed earnings (reg 57(2),
+    # step 4).
+    self_employed = max_(
         0,
-        add(
-            person,
-            period,
-            ["employment_income", "statutory_sick_pay", "statutory_maternity_pay"],
-        )
-        - person("pension_contributions", period),
+        max_(0, person("self_employment_income", period))
+        - where(has_employed_earnings, 0, pension_contributions),
     )
-    self_employed = max_(0, person("self_employment_income", period))
     self_employed = where(
         person("uc_mif_applies", period),
         max_(self_employed, person("uc_minimum_income_floor", period)),
