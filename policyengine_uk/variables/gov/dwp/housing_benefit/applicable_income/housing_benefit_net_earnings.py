@@ -19,7 +19,8 @@ class housing_benefit_net_earnings(Variable):
         "basic-rate tax on the profit alone less personal reliefs (regulation "
         "39(1); pension age regulation 40(1)). PolicyEngine attributes a "
         "person's income tax to earnings in proportion to their share of the "
-        "person's total income before employment and self-employment losses. "
+        "person's total income plus statutory pay, before any negative income "
+        "component. "
         "For employment income that is a lower bound "
         "on the tax on the earnings taxed as the top slice of income; for "
         "self-employment profit alongside other income it can exceed the "
@@ -55,15 +56,13 @@ class housing_benefit_net_earnings(Variable):
             max_(employment_income, 0) + max_(self_employment_income, 0) + statutory_pay
         )
         # Income tax is attributed by the earnings' share of total income,
-        # with statutory pay added and before any employment or
-        # self-employment loss, so that a loss set against other income for
-        # tax does not drop the tax on these earnings.
-        income_before_losses = (
-            person("total_income", period)
-            + statutory_pay
-            + max_(-employment_income, 0)
-            + max_(-self_employment_income, 0)
-        )
+        # with statutory pay added and before any negative component (a
+        # loss), so that a loss set against other income does not drop or
+        # inflate the share of tax on these earnings.
+        income_before_losses = person("total_income", period) + statutory_pay
+        system = person.simulation.tax_benefit_system
+        for component in system.get_variable("total_income").adds:
+            income_before_losses += max_(-person(component, period), 0)
         earnings_share = np.divide(
             earnings,
             income_before_losses,
