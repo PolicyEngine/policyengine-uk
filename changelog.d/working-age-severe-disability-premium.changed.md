@@ -1,0 +1,1 @@
+- Read Attendance Allowance from its dataset award category when supplied, retained an explicitly approximate amount fallback otherwise, and applied Northern Ireland's separate AFIP and PIP commencement dates to the legacy severe disability premium.
