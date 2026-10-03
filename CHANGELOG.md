@@ -1,3 +1,10 @@
+## [2.109.6] - 2026-10-03
+
+### Fixed
+
+- - Encode petrol and diesel fuel duty as its dated statutory schedule (52.95p to 31 December 2026, 55.95p from 1 January 2027, 57.95p from 1 March 2027 under SI 2026/164 as amended by SI 2026/555), day-weighted across each model year, with April RPI uprating from 2027 forecast from the OBR March 2026 RPI series. Model year 2027 is now 59.77p a litre rather than a calendar-year average of 59.25p. Move LPG and natural gas rate steps to 1 January and 1 March 2027, and drop the 2012 petrol and diesel rate that was never charged.
+
+
 ## [2.109.5] - 2026-10-03
 
 ### Changed
