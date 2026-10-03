@@ -89,7 +89,7 @@ def add_months_to_yyyymmdd(dates, months) -> np.ndarray:
     target = 12 * year + month - 1 + months
     first_of_month = (target - _MONTHS_BEFORE_1970).astype("datetime64[M]")
     days_in_month = (
-        (first_of_month + 1).astype("datetime64[D]")
+        (first_of_month + np.timedelta64(1, "M")).astype("datetime64[D]")
         - first_of_month.astype("datetime64[D]")
     ).astype(np.int64)
     return (
@@ -105,13 +105,19 @@ _LATEST_MONTHS_SINCE_BIRTHDAY = 12 - 1e-4
 
 
 def exact_age_in_months(age, months_since_last_birthday) -> np.ndarray:
-    """Exact age in months from a whole age and the months since the last
-    birthday, in float64: at around 24,000 months, float32 is only good to an
-    hour."""
-    whole_years = np.floor(np.asarray(age, dtype=np.float64))
-    months = np.clip(
+    """Exact age in months, in float64: at around 24,000 months, float32 is
+    only good to an hour.
+
+    A fractional age is the exact age. A whole age adds the months since the
+    last birthday, which stop about four minutes short of 12 so the exact age
+    never rounds onto the next birthday.
+    """
+    age = np.asarray(age, dtype=np.float64)
+    whole_years = np.floor(age)
+    fraction = age - whole_years
+    months = np.where(
+        fraction > 0,
+        12 * fraction,
         np.asarray(months_since_last_birthday, dtype=np.float64),
-        0,
-        _LATEST_MONTHS_SINCE_BIRTHDAY,
     )
-    return 12 * whole_years + months
+    return 12 * whole_years + np.clip(months, 0, _LATEST_MONTHS_SINCE_BIRTHDAY)

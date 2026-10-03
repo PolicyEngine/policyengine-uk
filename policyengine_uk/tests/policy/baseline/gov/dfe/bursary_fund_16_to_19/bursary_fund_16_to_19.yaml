@@ -134,7 +134,6 @@
         pip_dl_category: STANDARD
       sibling:
         age: 10
-        is_child: true
     benunits:
       benunit:
         members: ["parent", "student", "sibling"]

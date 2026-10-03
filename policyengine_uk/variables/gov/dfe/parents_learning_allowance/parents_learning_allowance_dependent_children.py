@@ -6,10 +6,11 @@ class parents_learning_allowance_dependent_children(Variable):
     entity = BenUnit
     label = "Dependent children for Parents' Learning Allowance"
     documentation = (
-        "Number of children in the student's benefit unit counted as dependent children for the first-pass "
-        "Parents' Learning Allowance model."
+        "Number of dependent children of the student (Education (Student "
+        "Support) Regulations 2011 regs 42 and 46). The law sets no age limit."
     )
     definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/uksi/2011/1986/regulation/46"
 
     def formula(benunit, period, parameters):
-        return benunit.sum(benunit.members("is_child", period))
+        return add(benunit, period, ["is_dependent_child_for_student_support"])

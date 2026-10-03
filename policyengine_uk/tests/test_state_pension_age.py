@@ -14,12 +14,24 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.system import system
 from policyengine_uk.utils.stochastic import splitmix64_uniform, stratified_uniform
+
+
+@pytest.fixture(scope="module", autouse=True)
+def reuse_country_model():
+    # Keep the real simulation constructors and independent parameter trees,
+    # without importing every variable again for each synthetic household.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(
+            "policyengine_uk.simulation.CountryTaxBenefitSystem", system.clone
+        )
+        yield
+
 
 STATUTE = (
     Path(__file__).parent / "fixtures" / "pensions_act_1995_schedule_4_paragraph_1.txt"
@@ -137,6 +149,22 @@ def situation(people: dict) -> dict:
         "benunits": {"benunit": {"members": list(people)}},
         "households": {"household": {"members": list(people)}},
     }
+
+
+@lru_cache(maxsize=1)
+def situation_template():
+    return Simulation(situation=situation({"template": {}}))
+
+
+def property_simulation(people: dict):
+    # These properties never reform parameters or variable definitions. Share
+    # that model and rebuild the populations instead of repeatedly importing
+    # every variable and retaining thousands of generated modules in sys.modules.
+    sim = situation_template().clone(clone_tax_benefit_system=False)
+    sim.build_from_situation(situation(people))
+    sim.input_variables = sim.get_known_variables()
+    sim.calculated_periods = []
+    return sim
 
 
 class TestParametersMatchStatute:
@@ -373,13 +401,18 @@ def test_extracted_household_keeps_its_birthday():
         )
 
 
-def test_single_household_uses_the_middle_of_the_year_of_age():
-    sim = Simulation(situation=situation({"person": {"age": {2027: 66}}}))
-    assert sim.calculate("months_since_last_birthday", 2027)[0] == 6
-    assert not sim.calculate("is_SP_age", 2027)[0]
+@pytest.mark.parametrize("year, expected", [(2026, True), (2027, False), (2028, False)])
+def test_single_household_uses_the_middle_of_the_year_of_age(year, expected):
+    sim = Simulation(situation=situation({"person": {"age": {year: 66}}}))
+    assert sim.calculate("months_since_last_birthday", year)[0] == 6
+    assert sim.calculate("is_SP_age", year)[0] == expected
 
 
-@settings(max_examples=40, deadline=None)
+@settings(
+    max_examples=40,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
 @given(
     births=st.lists(
         st.dates(min_value=date(1935, 1, 1), max_value=date(1995, 12, 31)),
@@ -404,7 +437,7 @@ def test_state_pension_age_properties(births, male, year):
             "months_since_last_birthday": {year: age_in_months - 12 * age},
             "is_male": {year: male},
         }
-    sim = Simulation(situation=situation(people))
+    sim = property_simulation(people)
     spa = sim.calculate("state_pension_age", year)
     since = sim.calculate("months_since_state_pension_age", year)
     status = sim.calculate("is_SP_age", year)
@@ -428,7 +461,11 @@ def legal_age(birth: date, on: date) -> int:
     return on.year - birth.year - ((on.month, on.day) < (birth.month, birth.day))
 
 
-@settings(max_examples=60, deadline=None)
+@settings(
+    max_examples=60,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
 @given(
     cases=st.lists(
         st.tuples(
@@ -446,15 +483,17 @@ def test_any_birthday_position_follows_the_statute(cases):
     a day: the day of birth the model uses gives the person that legal age on
     6 October (a person attains an age at the start of the anniversary), and
     their status is the statute's for that day."""
-    for year, age, months, male in cases:
-        people = {
-            "p": {
-                "age": {year: age},
-                "months_since_last_birthday": {year: months},
-                "is_male": {year: male},
-            }
+    people = {
+        f"p{i}": {
+            "age": {year: age},
+            "months_since_last_birthday": {year: months},
+            "is_male": {year: male},
         }
-        sim = Simulation(situation=situation(people))
+        for i, (year, age, months, male) in enumerate(cases)
+    }
+    sim = property_simulation(people)
+    statuses = {year: sim.calculate("is_SP_age", year) for year, *_ in cases}
+    for i, (year, age, months, male) in enumerate(cases):
         mid_year = date(year, 10, 6)
         # The model caps months since the last birthday about four minutes
         # short of 12, so the exact age never rounds onto the next birthday.
@@ -462,7 +501,7 @@ def test_any_birthday_position_follows_the_statute(cases):
         birth = birth_day_from_grid(grid_months(mid_year) - 12 * age - months)
         assert legal_age(birth, mid_year) == age, (year, age, months, birth)
         expected = reference_attainment_day(birth, male) <= mid_year
-        assert sim.calculate("is_SP_age", year)[0] == expected, (year, age, months)
+        assert statuses[year][i] == expected, (year, age, months)
 
 
 @settings(max_examples=100, deadline=None)
@@ -490,3 +529,27 @@ def test_stratified_uniform_properties(n, strata_count, seed):
         for x in np.linspace(0, 1, 21):
             below = w[positions[cell] < x].sum()
             assert abs(below - x) <= w.max() / 2 + 1e-9
+
+
+@pytest.mark.parametrize("fractional_birthday_months", [None, 0])
+def test_people_a_situation_leaves_out_keep_their_place_in_the_year(
+    fractional_birthday_months,
+):
+    """When a situation sets months_since_last_birthday for one person only,
+    the others get the middle of the year of age, and a fractional age is
+    still the exact age."""
+    people = {
+        "set": {"age": {2027: 70}, "months_since_last_birthday": {2027: 3}},
+        "whole": {"age": {2027: 66}},
+        "fraction": {"age": {2027: 66.9}},
+    }
+    if fractional_birthday_months is not None:
+        people["fraction"]["months_since_last_birthday"] = {
+            2027: fractional_birthday_months
+        }
+    sim = Simulation(situation=situation(people))
+    months = sim.calculate("months_since_last_birthday", 2027)
+    assert list(months[:2]) == [3, 6]
+    # 66.9 on 6 October 2027: born about 12 November 1960, so State Pension
+    # age is 66 years and 8 months (table 3), attained in July 2027.
+    assert list(sim.calculate("is_SP_age", 2027)) == [True, False, True]

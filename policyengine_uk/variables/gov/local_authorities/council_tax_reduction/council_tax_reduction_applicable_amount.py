@@ -8,11 +8,15 @@ class council_tax_reduction_applicable_amount(Variable):
     label = "applicable Council Tax Reduction amount"
     definition_period = YEAR
     unit = GBP
+    reference = (
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7",
+        "https://www.legislation.gov.uk/ssi/2021/249/schedule/1",
+    )
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.allowances
         any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
-        eldest_age = benunit("eldest_adult_age", period)
+        eldest_age = benunit("eldest_claimant_or_partner_age", period)
         older_age_threshold = p.age_threshold.older
         younger_age_threshold = p.age_threshold.younger
         u_18 = eldest_age < younger_age_threshold
