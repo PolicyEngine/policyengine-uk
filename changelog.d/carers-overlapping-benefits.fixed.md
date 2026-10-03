@@ -1,0 +1,1 @@
+- Reduced Carer's Allowance and Carer Support Payment by overlapping benefits, required claimant or partner entitlement for Pension Credit carer additions and carer premiums, and required payment for the Universal Credit non-dependant carer exemption.
