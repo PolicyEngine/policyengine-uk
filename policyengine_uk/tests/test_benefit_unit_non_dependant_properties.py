@@ -682,15 +682,42 @@ def run_local(population, zero_extra_earnings=False):
         )
     }
     benefits = [{b: awards[b][f] for b in awards} for f in range(len(family_rows))]
-    claims = calc(sim, "council_tax_reduction_claimant_benunit")
-    ctr_share = calc(sim, "council_tax_reduction_joint_liability_share")
-    return sim, person_rows, family_rows, benefits, claims, ctr_share
+    return sim, person_rows, family_rows, benefits
+
+
+def legal_claims_and_shares(family_rows):
+    """Who claims and each claim's share, from the generated structure alone.
+    Where a family shares the rent, every family liable for it (the head's
+    and each sharer's) is jointly and severally liable for the council tax and
+    claims, each person liable bearing an equal share of the tax and of each
+    shared non-dependant's deduction (para 29(3)-(4), 30(5)); otherwise the
+    head's family claims alone, in full."""
+    n = len(family_rows)
+    claims, shares = np.zeros(n), np.ones(n)
+    for h in {family["household"] for family in family_rows}:
+        families = [i for i, f in enumerate(family_rows) if f["household"] == h]
+        liable = [i for i in families if family_rows[i]["role"] in ("head", "sharer")]
+        shared = any(family_rows[i]["role"] == "sharer" for i in families)
+        liable_people = sum(family_rows[i]["n_liable"] for i in liable)
+        for i in families:
+            if shared:
+                claims[i] = i in liable
+                shares[i] = 1 / liable_people if i in liable else 1
+            else:
+                claims[i] = family_rows[i]["role"] == "head"
+    return claims, shares
 
 
 @PROPERTY_SETTINGS
 @given(local_population)
 def test_local_scheme_deductions_match_the_oracle(population):
-    sim, person_rows, family_rows, benefits, claims, ctr_share = run_local(population)
+    sim, person_rows, family_rows, benefits = run_local(population)
+    claims, ctr_share = legal_claims_and_shares(family_rows)
+    # The claims and shares the totals use are the scheme's, not the model's.
+    assert np.array_equal(calc(sim, "council_tax_reduction_claimant_benunit"), claims)
+    assert np.allclose(
+        calc(sim, "council_tax_reduction_joint_liability_share"), ctr_share
+    )
     individual, totals = local_oracle(
         person_rows, family_rows, benefits, claims, ctr_share
     )
