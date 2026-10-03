@@ -1,3 +1,14 @@
+## [2.111.0] - 2026-10-03
+
+### Added
+
+- - Add `uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period` (reg 32(1)(a)) and `uc_is_temporarily_absent_from_claimant_household` (reg 32(1)(b)(iii)) inputs, and `uc_childcare_treated_as_in_paid_work` and `uc_unable_to_provide_childcare` for the Universal Credit childcare work condition.
+
+### Fixed
+
+- - Apply the Universal Credit childcare work condition's partner exceptions and treated-as-working rules (UC Regs 2013 reg 32). A couple now meets it when one member is in paid work and the other is in paid work or unable to provide childcare because of limited capability for work, caring for a severely disabled person or temporary absence. A claimant receiving statutory sick, maternity or paternity pay or maternity allowance is treated as in paid work.
+
+
 ## [2.110.0] - 2026-10-03
 
 ### Added
