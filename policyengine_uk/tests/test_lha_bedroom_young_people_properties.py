@@ -81,6 +81,11 @@ Invariants, for any generated population of households:
    Benefit bedrooms lie between the count if everyone could share and the
    count with them unreported, and exceed the dwelling's bedrooms only
    where the count if everyone could share already does.
+8. Couples: flagging one or both members of another family's couple as
+   unable to share gives the couple's own claim exactly one more bedroom
+   under each scheme, and the household head's family exactly one more
+   Housing Benefit bedroom (none under UC) if the couple are occupiers it
+   counts; no other family changes.
 """
 
 from itertools import combinations
@@ -641,3 +646,47 @@ def test_housing_benefit_rooms_never_exceed_the_dwelling_beyond_the_base(case):
     assert np.all(able <= hb) and np.all(hb <= hb_free)
     reported_beds = beds > 0
     assert np.all(hb[reported_beds] <= np.maximum(able, beds)[reported_beds])
+
+
+@st.composite
+def couple_scenario(draw):
+    """A population with a couple from another family (a sharer's,
+    boarder's, lodger's or non-dependant's) in one household, and how many
+    of the couple's members to flag as unable to share a bedroom."""
+    population = draw(st.lists(household(), min_size=1, max_size=3))
+    h = draw(st.integers(0, len(population) - 1))
+    couple = draw(st.sampled_from(ROLES).flatmap(family))
+    couple["adults"] = draw(
+        st.lists(st.tuples(st.integers(20, 85), OVERNIGHT), min_size=2, max_size=2)
+    )
+    couple["couple_cannot_share"] = 0
+    population[h] = population[h] + [couple]
+    return population, (h, len(population[h]) - 1), draw(st.sampled_from([1, 2]))
+
+
+@PROPERTY_SETTINGS
+@given(couple_scenario())
+def test_a_couple_who_cannot_share_adds_one_bedroom_however_many_qualify(case):
+    population, (h, f), members = case
+    before, keys = build(population)
+    population[h][f]["couple_cannot_share"] = members
+    after, _ = build(population)
+    _, uc_before, hb_before = bedrooms(before)
+    _, uc_after, hb_after = bedrooms(after)
+    # 8. Flagging one or both members of a couple from another family, with
+    # a qualifying benefit, gives the couple's own claim one more bedroom
+    # under each scheme (UC para 12(6A), (9)(d); HB reg 13D(3)(za)-(zb)),
+    # and the household head's family one more HB bedroom if the couple are
+    # occupiers it counts (a non-dependant's, boarder's or lodger's family,
+    # 13D(12)), but no more UC bedroom (the disabled person condition is the
+    # renter's own). No other family changes. The dwelling's bedrooms are
+    # unreported.
+    role = population[h][f]["role"]
+    expected_uc = np.zeros(len(keys))
+    expected_hb = np.zeros(len(keys))
+    own = keys.index((h, f))
+    expected_uc[own] = expected_hb[own] = 1
+    if role in ("non_dependant", "boarder", "lodger"):
+        expected_hb[keys.index((h, 0))] = 1
+    assert np.array_equal(uc_after - uc_before, expected_uc)
+    assert np.array_equal(hb_after - hb_before, expected_hb)
