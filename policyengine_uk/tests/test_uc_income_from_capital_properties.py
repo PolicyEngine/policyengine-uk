@@ -115,7 +115,10 @@ def situation(units, year, income_scale=1.0, capital_bump=None):
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {year: age}}
+            # The generated adults are the claimant and partner, as the FRS
+            # would record them; without this an adult under 20 who is 16 or
+            # more years younger is presumed to be the other's child.
+            person = {"age": {year: age}, "is_claimant_or_partner": {year: True}}
             if j == 0:
                 person["employment_income"] = {year: unit["earnings"]}
                 person["private_pension_income"] = {
@@ -128,7 +131,7 @@ def situation(units, year, income_scale=1.0, capital_bump=None):
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunit = {"members": names}
         reported = unit["reported_capital"]
