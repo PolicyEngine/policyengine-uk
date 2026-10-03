@@ -47,13 +47,14 @@ import numpy as np
 import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.supplied_inputs import supplied_input, supplied_input_periods
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
-ALLOWANCE = 1_000
 CASES = 24  # Each case is simulated twice: as drawn, and varied.
 PEOPLE = 2 * CASES
 PROPERTY_SETTINGS = settings(
@@ -103,21 +104,29 @@ def exact(x):
     return Fraction(float(x))
 
 
-def reference_profits_before_losses(profit, receipts, capital_allowances):
+def reference_allowance(simulation, year):
+    return exact(
+        simulation.tax_benefit_system.parameters(
+            f"{year}-01-01"
+        ).gov.hmrc.income_tax.allowances.trading_allowance
+    )
+
+
+def reference_profits_before_losses(profit, receipts, capital_allowances, allowance):
     """ITTOIA 2005 Part 2 Chapter 2 profits, after capital allowances and
     the trading allowance, before loss relief."""
     if receipts > 0 and receipts >= profit:
-        if receipts <= ALLOWANCE:
+        if receipts <= allowance:
             # s. 783AF: the trade's profits are nil.
             return Fraction(0)
         # The better of actual deductions and the allowance (s. 783AI);
         # capital allowances are a deduction (CAA 2001 s. 247) that the
         # allowance replaces, so the two never stack.
         actual_deductions = receipts - profit + capital_allowances
-        return max(Fraction(0), receipts - max(actual_deductions, ALLOWANCE))
+        return max(Fraction(0), receipts - max(actual_deductions, allowance))
     # Receipts unknown: a profit within the allowance is taken to come from
     # receipts within it; a larger one already reflects the better deduction.
-    if profit <= ALLOWANCE:
+    if profit <= allowance:
         return Fraction(0)
     return max(Fraction(0), profit - capital_allowances)
 
@@ -237,6 +246,7 @@ def run(simulation, drawn, vary):
     return {
         period: dict(
             # Stored (float32) inputs, not the float64 draws.
+            allowance=reference_allowance(sim, period),
             profit=calculate("self_employment_income", period),
             receipts=calculate("self_employment_gross_receipts", period),
             capital_allowances=calculate("capital_allowances", period),
@@ -266,6 +276,7 @@ def reference(values, i):
             exact(v["profit"][i]),
             exact(v["receipts"][i]),
             exact(v["capital_allowances"][i]),
+            v["allowance"],
         )
         for v in years
     ]
@@ -454,6 +465,7 @@ def test_losses_carry_forward_over_many_years(years, opening_balance, random):
                     exact(sim.calculate("self_employment_income", period)[0]),
                     Fraction(0),
                     Fraction(0),
+                    reference_allowance(sim, period),
                 ),
                 exact(sim.calculate("trading_loss", period)[0]),
             )
@@ -519,6 +531,40 @@ def single_person(person):
     )
 
 
+def test_pre_allowance_profits_exhaust_the_loss_in_the_historical_reference():
+    sim = single_person(
+        {
+            "self_employment_income": {2015: 500, 2016: 500},
+            "trading_loss": {2015: 1_000, 2016: 0},
+        }
+    )
+    periods = (2015, 2016)
+    profits = [
+        reference_profits_before_losses(
+            Fraction(500),
+            Fraction(0),
+            Fraction(0),
+            reference_allowance(sim, period),
+        )
+        for period in periods
+    ]
+    assert profits == [500, 500]
+    expected = reference_losses(zip(profits, (Fraction(1_000), Fraction(0))))
+    assert [year["relief"] for year in expected] == [500, 500]
+    assert [year["carried_forward"] for year in expected] == [500, 0]
+    for period, reference_year in zip(periods, expected):
+        assert sim.calculate("ni_class_4_profits_before_losses", period)[0] == 500
+        for name, reference_name in [
+            ("losses_brought_forward", "brought_forward"),
+            ("loss_relief", "relief"),
+            ("losses_carried_forward", "carried_forward"),
+            ("profits", "profits"),
+        ]:
+            assert sim.calculate(f"ni_class_4_{name}", period)[0] == float(
+                reference_year[reference_name]
+            )
+
+
 @settings(
     max_examples=20,
     deadline=None,
@@ -570,7 +616,10 @@ def test_a_loss_entered_for_some_years_is_relieved_once(years, random):
         [
             (
                 reference_profits_before_losses(
-                    exact(np.float32(profit)), Fraction(0), Fraction(0)
+                    exact(np.float32(profit)),
+                    Fraction(0),
+                    Fraction(0),
+                    reference_allowance(sim, period),
                 ),
                 stored_losses.get(period, Fraction(0)),
             )
@@ -646,6 +695,66 @@ def test_class_4_counts_only_supplied_losses_on_branches():
     assert branch.calculate("ni_class_4_profits", 2027)[0] == 40_000
     # The branch's input does not reach the simulation it was made from.
     assert sim.calculate("ni_class_4_trading_loss", 2026)[0] == 0
+
+
+def test_class_4_counts_only_supplied_losses_on_plain_clones():
+    sim = single_person(
+        {
+            "age": {2025: 40},
+            "self_employment_income": {2026: 40_000, 2027: 40_000},
+            "trading_loss": {2025: 10_000},
+        }
+    )
+    clone = sim.clone()
+    clone.set_input("trading_loss", 2026, np.array([5_000.0]))
+    # Warm the original's carry-over cache after the clone records its input.
+    # A shared provenance set would count this cached 10,000 as a new loss.
+    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    observed = (
+        float(sim.calculate("ni_class_4_profits", 2026)[0]),
+        round(float(sim.calculate("ni_class_4", 2026)[0]), 2),
+    )
+    assert observed == (30_000, 1_045.80)
+    assert clone.calculate("ni_class_4_profits", 2026)[0] == 25_000
+    for simulation in (sim, clone):
+        assert simulation.calculate("ni_class_4_profits", 2027)[0] == 40_000
+    assert clone._user_input_keys is not sim._user_input_keys
+    assert clone._user_input_contexts is not sim._user_input_contexts
+
+
+@pytest.mark.parametrize("on_branch", [False, True])
+def test_class_4_does_not_count_a_deleted_loss_after_recalculation(on_branch):
+    original = single_person(
+        {
+            "age": {2025: 40},
+            "self_employment_income": {2026: 40_000, 2027: 40_000},
+            "trading_loss": {2025: 10_000},
+        }
+    )
+    sim = original.get_branch("deleted_loss") if on_branch else original
+    sim.set_input("trading_loss", 2026, np.array([5_000.0]))
+    sim.delete_arrays("trading_loss", 2026)
+    # Deletion leaves the earlier loss available for engine carry-over, but
+    # that replacement cache must not retain the deleted input's provenance.
+    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    observed = (
+        float(sim.calculate("ni_class_4_profits", 2026)[0]),
+        round(float(sim.calculate("ni_class_4", 2026)[0]), 2),
+    )
+    assert observed == (30_000, 1_045.80)
+    assert sim.calculate("ni_class_4_profits", 2027)[0] == 40_000
+    if on_branch:
+        assert original.calculate("ni_class_4_profits", 2026)[0] == 30_000
+
+
+def test_supplied_input_helpers_ignore_missing_stored_arrays():
+    sim = single_person({"trading_loss": {2025: 10_000, 2026: 5_000}})
+    population = sim.get_variable_population("trading_loss")
+    # Direct holder deletion leaves core's provenance keys behind. Neither
+    # helper may identify the missing stored value as an effective input.
+    population.get_holder("trading_loss").delete_arrays(period_(2026))
+    assert supplied_input(population, "trading_loss", period_(2026)) is None
+    assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
 
 
 class neutralize_trading_loss(Reform):

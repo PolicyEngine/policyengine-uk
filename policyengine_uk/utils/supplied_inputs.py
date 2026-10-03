@@ -5,8 +5,9 @@ not set for a period may inherit a previously known value
 (``auto_carry_over_input_variables``), and calculated values are cached next to
 inputs. A holder's known periods include both. policyengine-core records each
 (variable, branch, period) that ``set_input`` fills in
-``Simulation._user_input_keys``, and nothing else adds to it, so it is
-independent of what has been calculated before.
+``Simulation._user_input_keys``. UK simulations isolate this provenance on
+cloning and remove keys when deleting arrays; the helpers also require a
+stored value, so missing arrays do not count as supplied inputs.
 """
 
 from typing import List, Optional
@@ -33,11 +34,14 @@ def supplied_input_periods(population, variable_name: str) -> List[Period]:
     simulation = population.simulation
     branch_names = set(_visible_branch_names(simulation))
     input_keys = getattr(simulation, "_user_input_keys", None) or ()
+    holder = population.get_holder(variable_name)
     return sorted(
         {
             period
             for name, branch_name, period in input_keys
-            if name == variable_name and branch_name in branch_names
+            if name == variable_name
+            and branch_name in branch_names
+            and holder._get_array_from_storage(period, branch_name) is not None
         },
         key=lambda period: period.start,
     )
@@ -57,6 +61,8 @@ def supplied_input(
         if (variable_name, branch_name, period) in input_keys:
             # Read the stored input itself: Holder.get_array would fall back
             # to other branches' values, including cached calculations.
+            # Core 3.32.9's Holder.delete_arrays leaves provenance keys behind;
+            # a missing stored array must be ignored even if its key remains.
             value = holder._get_array_from_storage(period, branch_name)
             if value is not None:
                 # A neutralized variable reads as its default, as it does

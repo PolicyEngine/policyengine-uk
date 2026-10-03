@@ -9,7 +9,7 @@ import pandas as pd
 # PolicyEngine core imports
 from policyengine_core.data import Dataset
 from policyengine_core.enums import Enum as CoreEnum
-from policyengine_core.periods import period as period_
+from policyengine_core.periods import Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
@@ -218,6 +218,41 @@ class Simulation(CoreSimulation):
                 scenario.simulation_modifier(self)
             if scenario.parameter_changes is not None:
                 self.apply_parameter_changes(scenario.parameter_changes)
+
+    def clone(
+        self,
+        debug: bool = False,
+        trace: bool = False,
+        clone_tax_benefit_system: bool = True,
+    ) -> "Simulation":
+        clone = super().clone(debug, trace, clone_tax_benefit_system)
+        # policyengine-core 3.32.9: simulations/simulation.py::Simulation.clone
+        # shallow-copies __dict__, while holders/holder.py::Holder.clone copies
+        # value storage. Holder.set_input's provenance and context must belong
+        # to the same simulation as that storage, including for plain clones.
+        clone._user_input_keys = set(getattr(self, "_user_input_keys", ()))
+        clone._user_input_contexts = list(getattr(self, "_user_input_contexts", ()))
+        return clone
+
+    def delete_arrays(self, variable: str, period: Period = None) -> None:
+        super().delete_arrays(variable, period)
+        # policyengine-core 3.32.9: Simulation.delete_arrays and
+        # holders/holder.py::Holder.delete_arrays remove storage, but retain
+        # provenance keys. Drop those keys before carry-over can refill storage.
+        # Inspect storage after core's deletion to honour period containment
+        # and the current branch, ancestor branches and default branch.
+        input_keys = getattr(self, "_user_input_keys", None)
+        if input_keys:
+            branch_names = set(self._get_visible_branch_names())
+            holder = self.get_holder(variable)
+            deleted_keys = {
+                (name, branch_name, input_period)
+                for name, branch_name, input_period in input_keys
+                if name == variable
+                and branch_name in branch_names
+                and holder._get_array_from_storage(input_period, branch_name) is None
+            }
+            input_keys.difference_update(deleted_keys)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
