@@ -1,0 +1,646 @@
+# Where families share the rent, each jointly liable family claims Council Tax
+# Reduction on its own share, and its claim follows its own circumstances:
+# - the scheme: a "pensioner" is defined per person and partner (SI 2012/2885
+#   reg 3; SI 2012/2886 Sch para 3; SI 2013/3029 reg 3; SSI 2021/249 reg 3;
+#   SSI 2012/319 reg 12), so a working-age family takes the working-age rules
+#   even if the household head's family is pension-age, and the reverse;
+# - the non-dependant exemption: no deduction if "the applicant or [their]
+#   partner" is blind or gets a listed disability benefit (SI 2012/2885 Sch 1
+#   para 8(6); SI 2012/2886 Sch para 30(6); SI 2013/3029 Sch 1 para 3(6) and
+#   Sch 6 para 5(6); SSI 2021/249 reg 90(6); SSI 2012/319 reg 48(6)).
+# Each family here claims half of a 1,800 bill: 900.
+
+- name: Oxford, pension-age head and working-age sharer each claim under their own scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 40
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        # 500 a week.
+        council_tax_reduction_applicable_income: 26_000
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: OXFORD
+  output:
+    council_tax_reduction_claimant_benunit: [true, true]
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    council_tax_reduction_pensioner: [true, false]
+    council_tax_reduction_scheme_supported: [true, true]
+    # Oxford's working-age scheme: 500 a week is in the 75% band, 900 x 75%.
+    oxford_council_tax_reduction: [0, 675]
+    # The head takes the English pensioner scheme: no income, 900.
+    simulated_council_tax_reduction_benunit: [900, 675]
+    council_tax_benefit: [900, 675]
+    council_tax_reduction: 1_575
+
+- name: Oxford, working-age head and pension-age sharer each claim under their own scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 70
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 26_000
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 15_000
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: OXFORD
+  output:
+    council_tax_reduction_pensioner: [false, true]
+    council_tax_reduction_scheme_supported: [true, true]
+    oxford_council_tax_reduction: [675, 0]
+    # The sharer takes the English pensioner scheme, not Oxford's income
+    # bands (which would give 100% at 288 a week): the single pension-age
+    # applicable amount is 13,312 a year (256.00 a week x 52), so
+    # 900 - 20% x (15,000 - 13,312) = 562.40.
+    council_tax_reduction_applicable_amount: [4_968.60, 13_312]
+    simulated_council_tax_reduction_benunit: [675, 562.40]
+    council_tax_reduction: 1_237.40
+
+- name: Merton, a non-dependant of both claimants is deducted under each claimant's own scheme
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 40
+      adult_son:
+        age: 25
+        employment_income: 30_000
+        weekly_hours: 37.5
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      son_family:
+        members: [adult_son]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer, adult_son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MERTON
+  output:
+    council_tax_reduction_pensioner: [true, false, false]
+    council_tax_reduction_joint_liability_share: [0.5, 0.5, 1]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
+    # The son's gross 576.92 a week is in Merton's 485-605 band: 13.30 a week
+    # (691.60 a year), whatever the head's age.
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 691.60]
+    # The son is a non-dependant of both: each claim bears half of him.
+    merton_council_tax_reduction_non_dep_deductions: [345.80, 345.80, 0]
+    # The sharer's claim is under Merton's working-age scheme:
+    # 900 - 345.80 = 554.20. The head's is under the pensioner scheme, with
+    # the national non-dependant amounts.
+    merton_council_tax_reduction: [0, 554.20, 0]
+
+- name: An unmodelled council's working-age sharer keeps its reported reduction beside a pension-age head
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 40
+        council_tax_benefit_reported: 300
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    council_tax_reduction_pensioner: [true, false]
+    # Maidstone's working-age scheme is not modelled; the pensioner scheme is.
+    council_tax_reduction_scheme_supported: [true, false]
+    simulated_council_tax_reduction_benunit: [900, 0]
+    council_tax_benefit: [900, 300]
+    council_tax_reduction: 1_200
+
+- name: An unmodelled council's working-age head keeps its reported reduction beside a pension-age sharer
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_benefit_reported: 300
+      sharer:
+        age: 70
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    council_tax_reduction_pensioner: [false, true]
+    council_tax_reduction_scheme_supported: [false, true]
+    simulated_council_tax_reduction_benunit: [0, 900]
+    council_tax_benefit: [300, 900]
+    council_tax_reduction: 1_200
+
+- name: A family that cannot claim keeps no reported reduction beside a simulated claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      adult_child:
+        age: 40
+        council_tax_benefit_reported: 1_200
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      child_family:
+        members: [adult_child]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, adult_child]
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    council_tax_reduction_claimant_benunit: [true, false]
+    # The adult child's own scheme (Maidstone's working-age one) is not
+    # simulated, but the household's bill is: the head's pensioner claim
+    # covers all of it. The child's report cannot be added on top.
+    council_tax_reduction_scheme_supported: [true, false]
+    council_tax_reduction_household_has_simulated_claim: true
+    council_tax_benefit: [1_800, 0]
+    council_tax_reduction: 1_800
+
+- name: Where no claim is simulated, every family keeps its reported reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_benefit_reported: 300
+      parent:
+        age: 70
+        council_tax_benefit_reported: 200
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      parent_family:
+        members: [parent]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, parent]
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # The head's working-age scheme is not modelled, so nothing in the
+    # household is simulated; the parent cannot claim but keeps its report.
+    council_tax_reduction_scheme_supported: [false, true]
+    council_tax_reduction_household_has_simulated_claim: false
+    council_tax_benefit: [300, 200]
+    council_tax_reduction: 500
+
+- name: A jointly liable claimant's reported reduction is limited to its share of the bill
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 40
+        council_tax_benefit_reported: 1_500
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # SI 2012/2885 Sch 1 para 7(3)-(4): each of the two is liable for half,
+    # 900, so no scheme could reduce the sharer's bill by more than that.
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    council_tax_reduction_scheme_supported: [true, false]
+    council_tax_benefit: [900, 900]
+    council_tax_reduction: 1_800
+
+- name: Newham, the head's disability exempts only the head's claim from non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        pip_dl: 3_000
+      sharer:
+        age: 35
+      adult_son:
+        age: 25
+        employment_income: 30_000
+        weekly_hours: 37.5
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      son_family:
+        members: [adult_son]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer, adult_son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: NEWHAM
+  output:
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false, false]
+    council_tax_reduction_pensioner: [false, false, false]
+    # The son's gross 576.92 a week is in Newham's top band, 22.61 a week
+    # (1,175.72 a year); the sharer bears half, the head none.
+    newham_council_tax_reduction_individual_non_dep_deduction: [0, 0, 1_175.72]
+    newham_council_tax_reduction_non_dep_deductions: [0, 587.86, 0]
+
+- name: Newham, the sharer's disability exempts only the sharer's claim from non-dependant deductions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 35
+        pip_dl: 3_000
+      adult_son:
+        age: 25
+        employment_income: 30_000
+        weekly_hours: 37.5
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      son_family:
+        members: [adult_son]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer, adult_son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: NEWHAM
+  output:
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, true, false]
+    newham_council_tax_reduction_non_dep_deductions: [587.86, 0, 0]
+
+- name: Wales, pension-age head and working-age sharer are each assessed on their own family
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+        attendance_allowance: 4_000
+      sharer:
+        age: 40
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 15_000
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 8_000
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    council_tax_reduction_pensioner: [true, false]
+    council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
+    # Each family's own applicable amount: pension-age 256.00 a week, the
+    # working-age single 25 or over 95.55 a week.
+    council_tax_reduction_applicable_amount: [13_312, 4_968.60]
+    # 900 - 20% x (15,000 - 13,312) = 562.40;
+    # 900 - 20% x (8,000 - 4,968.60) = 293.72.
+    simulated_council_tax_reduction_benunit: [562.40, 293.72]
+    council_tax_reduction: 856.12
+
+- name: Wales, working-age head and pension-age sharer are each assessed on their own family
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 70
+        attendance_allowance: 4_000
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 8_000
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 15_000
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    council_tax_reduction_pensioner: [false, true]
+    council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, true]
+    council_tax_reduction_applicable_amount: [4_968.60, 13_312]
+    simulated_council_tax_reduction_benunit: [293.72, 562.40]
+    council_tax_reduction: 856.12
+
+- name: Scotland, pension-age head and working-age sharer are each assessed on their own family
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 40
+        pip_dl: 3_000
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 15_000
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 8_000
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    council_tax_reduction_pensioner: [true, false]
+    council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, true]
+    council_tax_reduction_applicable_amount: [13_312, 4_968.60]
+    simulated_council_tax_reduction_benunit: [562.40, 293.72]
+    council_tax_reduction: 856.12
+
+- name: Scotland, working-age head and pension-age sharer are each assessed on their own family
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        pip_dl: 3_000
+      sharer:
+        age: 70
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 8_000
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 15_000
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+  output:
+    council_tax_reduction_pensioner: [false, true]
+    council_tax_reduction_scheme_supported: [true, true]
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
+    council_tax_reduction_applicable_amount: [4_968.60, 13_312]
+    simulated_council_tax_reduction_benunit: [293.72, 562.40]
+    council_tax_reduction: 856.12
+
+- name: A pension-age household head applies as a pensioner although her family's claimant and partner are young parents
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+        pip_dl: 3_000
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The grandmother is the liable resident, so she is the applicant; the
+    # young parents are the family's claimant and partner but not hers.
+    is_claimant_or_partner: [false, true, true, false]
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    # Her age puts the claim on the pensioner scheme (SI 2012/2885 reg 3).
+    council_tax_reduction_pensioner: [true]
+    council_tax_reduction_scheme_supported: [true]
+    # The young mother's PIP is not the applicant's or her partner's
+    # (Sch 1 para 8(6)).
+    council_tax_reduction_applicant_has_non_dep_exemption: [false]
+    simulated_council_tax_reduction_benunit: [1_800]
+
+- name: An applicant's partner under 18 still counts for the applicant's exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 19
+        is_household_head: true
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_household_head: false
+        is_claimant_or_partner: true
+        pip_dl: 3_000
+    benunits:
+      couple:
+        members: [head, partner]
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, partner]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Only the head is liable (LGFA 1992 s.6(5)), but para 8(6) asks about
+    # "the applicant or his partner".
+    council_tax_reduction_liable_person: [true, false]
+    is_council_tax_reduction_applicant_or_partner: [true, true]
+    council_tax_reduction_applicant_has_non_dep_exemption: [true]
+    council_tax_reduction_pensioner: [false]

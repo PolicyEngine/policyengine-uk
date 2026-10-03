@@ -131,7 +131,7 @@
         council_tax: 1_800
         savings: 0
   output:
-    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_pensioner: [true]
     # Her pension less income tax of (20,000 - 12,570) * 20% = 1,486. The
     # young mother's earnings are not hers.
     council_tax_reduction_applicable_income: [18_514]
@@ -266,10 +266,10 @@
         council_tax: 1_800
         savings: 0
   output:
-    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_pensioner: [false, false]
     # The exemption is the applicant's or partner's (SI 2012/2885 Sch 1 para
     # 8(6); the Merton scheme follows it).
-    council_tax_reduction_household_has_non_dep_exemption: true
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false, false, true]
     merton_council_tax_reduction_non_dep_deductions: [0, 0]
     merton_council_tax_reduction: [1_800, 0]
@@ -437,7 +437,7 @@
     # and partner, so they are the applicant and partner.
     council_tax_reduction_head_applies_alone: [false]
     is_council_tax_reduction_applicant_or_partner: [false, true, true, false]
-    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_pensioner: [false]
     # A working-age couple aged 18 or over: 150.15 * 52, not the pension-age
     # couple rate.
     council_tax_reduction_applicable_amount: [7_807.80]
@@ -482,3 +482,66 @@
     # Tariff income ceil((10,000 - 6,000) / 250) = £16 a week, 832 a year,
     # since she has no award. 1,800 - (5,000 + 832 - 4,968.60) * 20%.
     kingston_upon_thames_council_tax_reduction: [1_627.32]
+
+- name: A blind grandmother head's exemption does not exempt a sharer's claim from a non-dependant deduction in Merton
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 60
+        is_household_head: true
+        is_blind: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+      sharer:
+        age: 40
+        is_household_head: false
+      son:
+        age: 30
+        is_household_head: false
+        employment_income: 30_000
+        weekly_hours: 40
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      son_family:
+        members: [son]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby, sharer, son]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_liable_person: [true, false, false, false, true, false]
+    council_tax_reduction_joint_liability_share: [0.5, 0.5, 1]
+    # The grandmother applies alone and is blind, so her claim has no
+    # deduction. The sharer is neither her nor her partner, so the sharer's
+    # claim bears half the son's deduction: Merton charges £13.30 a week for
+    # gross weekly income of £485 or more in remunerative work (30,000 / 52 =
+    # 576.92), 13.30 * 52 / 2 = 345.80 (Merton scheme para 30(5)-(6)).
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false, false]
+    merton_council_tax_reduction_non_dep_deductions: [0, 345.80, 0]
+    # Each claim covers half the £1,800; neither has income above its
+    # allowance.
+    merton_council_tax_reduction: [900, 554.20, 0]

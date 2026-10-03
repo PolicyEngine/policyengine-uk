@@ -350,6 +350,8 @@ DIFFERENTIAL_VARIABLES = [
     "council_tax_reduction_applicable_amount",
     "council_tax_reduction_premiums",
     "council_tax_reduction_relevant_income_based_benefit",
+    "council_tax_reduction_pensioner",
+    "council_tax_reduction_applicant_has_non_dep_exemption",
     "simulated_council_tax_reduction_benunit",
 ]
 
@@ -379,8 +381,6 @@ def test_head_applying_alone_matches_her_own_benefit_unit(population):
         ), variable
     household_ids = list(sim.populations["household"].ids)
     for variable in [
-        "council_tax_reduction_household_has_pensioner",
-        "council_tax_reduction_household_has_non_dep_exemption",
         "council_tax_reduction",
     ]:
         values = sim.calculate(variable, YEAR)
