@@ -84,6 +84,9 @@
       benunit:
         members: [person]
         would_claim_uc: false
+        # Does not claim Universal Credit when the award is abolished, so the
+        # award continues until then.
+        would_claim_uc_at_legacy_closure: false
         # Working age, so no Pension Credit; set so that no form of the
         # Guarantee Credit passport can apply.
         guarantee_credit: 0

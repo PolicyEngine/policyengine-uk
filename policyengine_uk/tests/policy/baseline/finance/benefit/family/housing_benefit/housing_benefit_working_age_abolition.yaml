@@ -23,6 +23,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -47,6 +48,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -75,6 +77,7 @@
         members: [claimant]
         in_specified_or_temporary_accommodation: false
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -100,6 +103,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -123,6 +127,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -146,6 +151,7 @@
       benunit:
         members: [claimant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -173,6 +179,7 @@
         members: [claimant]
         in_specified_or_temporary_accommodation: false
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -199,6 +206,7 @@
       benunit:
         members: [claimant, partner]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -225,6 +233,7 @@
       benunit:
         members: [older, younger]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -253,6 +262,7 @@
       benunit:
         members: [claimant, dependant]
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -323,6 +333,7 @@
         members: [claimant]
         in_specified_or_temporary_accommodation: true
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -349,6 +360,7 @@
         members: [claimant]
         in_specified_or_temporary_accommodation: true
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -375,6 +387,7 @@
         in_specified_or_temporary_accommodation: true
         claims_all_entitled_benefits: true
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -401,6 +414,7 @@
         in_specified_or_temporary_accommodation: true
         claims_all_entitled_benefits: true
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -427,6 +441,7 @@
         in_specified_or_temporary_accommodation: false
         claims_all_entitled_benefits: true
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -452,6 +467,7 @@
         in_specified_or_temporary_accommodation: false
         claims_all_entitled_benefits: true
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
@@ -477,6 +493,7 @@
         in_specified_or_temporary_accommodation: true
         claims_all_entitled_benefits: true
         would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
         housing_benefit_applicable_income: 0
     households:
       household:
