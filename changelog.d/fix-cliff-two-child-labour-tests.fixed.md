@@ -1,0 +1,4 @@
+- `cliff_evaluated` no longer flags people under 18. It now flags exactly the adults whose marginal tax rate is simulated.
+- The Universal Credit two-child limit age exemption reform (`gov.contrib.two_child_limit.age_exemption.universal_credit`) now lifts the limit for exempt families. It no longer switches the higher first-child amount on or off.
+- `Simulation.apply_dynamics` now works under pandas 3. It gives zero rather than NaN FTE responses for people without employment income, and no longer changes employment income for people it excludes from labour supply responses. It now reads exclusions and elasticities in the year the dynamics apply to.
+- Replaced `policyengine_uk/tests/behavioral_responses/test_labour_supply_responses.yaml`, which never ran, with tests in `test_behavioral_responses.py` that run without survey data.
