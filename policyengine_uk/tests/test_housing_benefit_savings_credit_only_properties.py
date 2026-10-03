@@ -41,8 +41,7 @@ or earnings, with private pension on a £250 grid:
    credit, otherwise pensions less income tax plus tariff income less the
    earnings disregard.
 
-Carers are not drawn because Pension Credit income in the model leaves out
-Carer's Allowance, which Housing Benefit counts.
+Carers are not drawn.
 """
 
 import numpy as np
