@@ -1,3 +1,18 @@
+## [2.109.8] - 2026-10-03
+
+### Changed
+
+- Require policyengine-core 3.32.12 or later, whose simulation branches copy cached arrays only when they first read them, so marginal tax rates and labour supply responses use less memory with unchanged results.
+
+### Fixed
+
+- - `cliff_evaluated` no longer flags people under 18. It now flags exactly the adults whose marginal tax rate is simulated.
+  - The Universal Credit two-child limit age exemption reform (`gov.contrib.two_child_limit.age_exemption.universal_credit`) now lifts the limit for exempt families. It no longer switches the higher first-child amount on or off.
+  - `Simulation.apply_dynamics` now works under pandas 3. It gives zero rather than NaN FTE responses for people without employment income, and no longer changes employment income for people it excludes from labour supply responses. It now reads exclusions and elasticities in the year the dynamics apply to.
+  - Replaced `policyengine_uk/tests/behavioral_responses/test_labour_supply_responses.yaml`, which never ran, with tests in `test_behavioral_responses.py` that run without survey data.
+- Added the 1 April 2023 National Minimum Wage and National Living Wage rates (S.I. 2023/354); 2023 had used the April 2022 rates, for example £9.50 instead of £10.42 for workers aged 23 or over. Every minimum wage rate now cites the statutory instrument that set it.
+
+
 ## [2.109.7] - 2026-10-03
 
 ### Changed
