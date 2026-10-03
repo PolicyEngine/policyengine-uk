@@ -7,8 +7,9 @@ description: >
   S.I. 2013/3021, and the personal independence payment daily living component
   at either rate from 20 June 2016 by S.R. 2016/228. The amendments cover the
   Northern Ireland Income Support, Jobseeker's Allowance, Housing Benefit and
-  Employment and Support Allowance regulations. The model applies the list at
-  the annual period's start, without within-year proration. The initial value
+  Employment and Support Allowance regulations. Like other parameters, the model
+  reads the list as at 30 April of each year from 2015 and at 1 January before
+  that, and does not prorate a change made during a year. The initial value
   date follows the shared model baseline, not the commencement of S.R.
   2006/405 on 20 November 2006. Northern Ireland historical coverage before
   that commencement has not been verified.
@@ -16,7 +17,6 @@ metadata:
   label: Northern Ireland legacy severe disability premium qualifying benefits
   period: year
   unit: list
-  preserve_calendar_dates: true
   reference:
     - title: The Housing Benefit Regulations (Northern Ireland) 2006 reg. 1(1)
       href: https://www.legislation.gov.uk/nisr/2006/405/regulation/1/made

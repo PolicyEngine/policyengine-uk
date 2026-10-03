@@ -36,7 +36,7 @@ class severe_disability_premium(Variable):
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14",
-        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/20",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/part/4",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/15",
         "https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6",

@@ -12,8 +12,9 @@ description: >
   independence payment. This list applies in Great Britain; the
   severe_qualifying_benefits_northern_ireland parameter holds Northern
   Ireland's separate commencement dates. The model selects the list using
-  household country and applies the list at the annual period's start,
-  without within-year proration.
+  household country. Like other parameters, it reads the list as at 30 April
+  of each year from 2015 and at 1 January before that, and does not prorate a
+  change made during a year.
 metadata:
   label: Legacy benefit severe disability premium qualifying benefits
   period: year

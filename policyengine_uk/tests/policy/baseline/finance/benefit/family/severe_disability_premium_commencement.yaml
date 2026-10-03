@@ -6,7 +6,7 @@
 # Pre-2015 cases supply receipt amounts directly because the AA and PIP rate
 # parameters begin in 2015; they test qualifying lists, not historical rates.
 
-- name: GB PIP and AFIP do not qualify in the January 2013 snapshot
+- name: GB PIP and AFIP do not qualify in model year 2013
   period: 2013
   input:
     country: ENGLAND
@@ -16,7 +16,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: false
 
-- name: GB PIP qualifies in the January 2014 snapshot
+- name: GB PIP qualifies in model year 2014
   period: 2014
   input:
     country: ENGLAND
@@ -25,7 +25,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: true
 
-- name: GB AFIP qualifies in the January 2014 snapshot
+- name: GB AFIP qualifies in model year 2014
   period: 2014
   input:
     country: ENGLAND
@@ -35,7 +35,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: true
 
-- name: NI PIP and AFIP do not qualify in the January 2013 snapshot
+- name: NI PIP and AFIP do not qualify in model year 2013
   period: 2013
   input:
     country: NORTHERN_IRELAND
@@ -45,7 +45,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: false
 
-- name: NI PIP does not use the GB January 2014 snapshot
+- name: NI PIP does not qualify in model year 2014, unlike GB
   period: 2014
   input:
     country: NORTHERN_IRELAND
@@ -54,7 +54,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: false
 
-- name: NI AFIP qualifies in the January 2014 snapshot
+- name: NI AFIP qualifies in model year 2014
   period: 2014
   input:
     country: NORTHERN_IRELAND
@@ -64,7 +64,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: true
 
-- name: NI AFIP remains qualifying in the January 2017 snapshot
+- name: NI AFIP remains qualifying in model year 2017
   period: 2017
   input:
     country: NORTHERN_IRELAND
@@ -72,7 +72,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: true
 
-- name: NI PIP does not qualify in the January 2016 snapshot
+- name: NI PIP does not qualify in model year 2016
   period: 2016
   input:
     country: NORTHERN_IRELAND
@@ -80,7 +80,7 @@
   output:
     receives_severe_disability_premium_qualifying_benefit: false
 
-- name: NI PIP qualifies in the January 2017 snapshot
+- name: NI PIP qualifies in model year 2017
   period: 2017
   input:
     country: NORTHERN_IRELAND

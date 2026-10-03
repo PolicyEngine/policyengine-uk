@@ -25,8 +25,9 @@ class receives_severe_disability_premium_qualifying_benefit(Variable):
         "Household country selects the qualifying-benefit list: Northern "
         "Ireland adds armed forces independence payment from 24 December "
         "2013 and PIP daily living from 20 June 2016; Great Britain adds "
-        "both from 8 April 2013. The model uses the list at the annual "
-        "period's start without within-year proration. The initial parameter "
+        "both from 8 April 2013. The model reads each list as at 30 April "
+        "of the year from 2015 and at 1 January before that, without "
+        "within-year proration. The initial parameter "
         "value date preserves the shared model baseline; Northern Ireland "
         "historical coverage before 20 November 2006 has not been verified."
     )

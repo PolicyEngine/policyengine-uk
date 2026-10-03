@@ -58,24 +58,26 @@ PROPERTY_SETTINGS = settings(
 )
 
 
-def test_northern_ireland_commencements_survive_parameter_processing():
-    # Fiscal-year conversion must not erase these midyear commencements.
-    for benefit, before, commencement in (
-        ("armed_forces_independence_payment", "2013-12-23", "2013-12-24"),
-        ("pip_dl", "2016-06-19", "2016-06-20"),
+def _qualifying_list(year, name):
+    return getattr(parameters(str(year)).gov.dwp.disability_premia, name)
+
+
+def test_northern_ireland_commencements_by_model_year():
+    # The model reads the list as at 1 January before 2015 and 30 April from
+    # 2015, so AFIP (24 December 2013) first qualifies in 2014 and PIP daily
+    # living (20 June 2016) in 2017. The Great Britain list adds both from
+    # 8 April 2013, so from 2014.
+    ni = "severe_qualifying_benefits_northern_ireland"
+    for benefit, last_year_without, first_year_with in (
+        ("armed_forces_independence_payment", 2013, 2014),
+        ("pip_dl", 2016, 2017),
     ):
-        assert (
-            benefit
-            not in parameters(
-                before
-            ).gov.dwp.disability_premia.severe_qualifying_benefits_northern_ireland
-        )
-        assert (
-            benefit
-            in parameters(
-                commencement
-            ).gov.dwp.disability_premia.severe_qualifying_benefits_northern_ireland
-        )
+        assert benefit not in _qualifying_list(last_year_without, ni)
+        assert benefit in _qualifying_list(first_year_with, ni)
+    for benefit in ("armed_forces_independence_payment", "pip_dl"):
+        gb = "severe_qualifying_benefits"
+        assert benefit not in _qualifying_list(2013, gb)
+        assert benefit in _qualifying_list(2014, gb)
 
 
 # (inputs, qualifies) for each benefit a person may receive.
