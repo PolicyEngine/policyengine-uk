@@ -7,7 +7,14 @@ description: >
   component of personal independence payment at either rate, armed forces
   independence payment, and the Scottish equivalents. The Scottish benefits
   are not separate model variables, and the lists differ slightly between
-  instruments.
+  instruments. The 8 April 2013 date is Great Britain's: S.I. 2013/388 added
+  the PIP daily living component and S.I. 2013/591 added armed forces
+  independence payment. This list applies in Great Britain; the
+  severe_qualifying_benefits_northern_ireland parameter holds Northern
+  Ireland's separate commencement dates. The model selects the list using
+  household country. Like other parameters, it reads the list as at 30 April
+  of each year from 2015 and at 1 January before that, and does not prorate a
+  change made during a year.
 metadata:
   label: Legacy benefit severe disability premium qualifying benefits
   period: year
@@ -21,6 +28,10 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6
     - title: The Jobseeker's Allowance Regulations 1996 Sch. 1 para. 15(1)(a), (2)(a), (4)(a)
       href: https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15
+    - title: The Personal Independence Payment (Supplementary Provisions and Consequential Amendments) Regulations 2013 reg. 2
+      href: https://www.legislation.gov.uk/uksi/2013/388/regulation/2
+    - title: "The Armed Forces and Reserve Forces Compensation Scheme (Consequential Provisions: Subordinate Legislation) Order 2013 art. 2"
+      href: https://www.legislation.gov.uk/uksi/2013/591/article/2
 values:
   2006-03-06:
     - attendance_allowance
