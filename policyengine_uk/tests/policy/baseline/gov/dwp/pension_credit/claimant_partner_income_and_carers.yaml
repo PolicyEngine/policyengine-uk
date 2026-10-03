@@ -142,7 +142,7 @@
         income_tax: 100
         national_insurance: 0
         pension_contributions: 200
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
       partner:
         age: 75
         private_pension_income: 2_000
@@ -151,7 +151,7 @@
         income_tax: 50
         national_insurance: 25
         pension_contributions: 100
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
     benunits:
       benunit:
         members: [claimant, partner]
@@ -174,11 +174,11 @@
       claimant:
         age: 75
         is_parent: true
-        is_carer_for_benefits: false
+        is_entitled_to_carer_benefit: false
       young_person:
         age: 18
         is_in_non_advanced_education: true
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
     benunits:
       benunit:
         members: [claimant, young_person]
