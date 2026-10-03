@@ -35,7 +35,7 @@
     pension_age_severe_disability_premium: 86.05 * 52
     benefits_premiums: 86.05 * 52
     # The claimant reached pension age before 1 April 2021, so the older
-    # allowance applies. HB income 16,548.80 is below the applicable amount,
+    # allowance applies. HB income 16,914 is below the applicable amount,
     # (256.00 + 86.05) * 52 = 17,786.60, so HB and CTR are at their maximum.
     housing_benefit: 6_240
     council_tax_benefit: 2_000
