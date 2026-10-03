@@ -19,7 +19,7 @@ Two guards:
   functions. Writes into projections (``person.benunit("x", period)``) are
   allowed: core builds a new array for those.
 - A run-time check that makes every cached array read-only as it is stored and
-  runs a simulation through ``Simulation.__init__`` (which applies the UC
+  as it is read, and runs a simulation through ``Simulation.__init__`` (which applies the UC
   rebalancing modifier), the PIP phase-in scenario, and the code that branches
   a simulation (marginal tax rates, labour supply responses and the capital
   gains realisation response).
@@ -458,15 +458,30 @@ def _uc_and_pip_claimant() -> dict:
 
 @pytest.fixture
 def read_only_cache(monkeypatch):
-    """Make every array read-only as the simulation stores it."""
+    """Make every cached array read-only as it is stored and as it is read.
+
+    Freezing on ``put`` alone misses arrays that reach a storage without it:
+    the copy a branch makes the first time it reads an array it shares, and
+    the copies ``Simulation.clone()`` makes. A branch's own branches (the
+    labour supply measurement under the ``baseline`` branch) read those, so
+    a write into them after branching would otherwise go unnoticed.
+    """
     original_put = InMemoryStorage.put
+    original_get = InMemoryStorage.get
 
     def put(self, value, period, branch_name="default"):
         if isinstance(value, np.ndarray):
             value.flags.writeable = False
         return original_put(self, value, period, branch_name)
 
+    def get(self, period, branch_name="default"):
+        value = original_get(self, period, branch_name)
+        if isinstance(value, np.ndarray):
+            value.flags.writeable = False
+        return value
+
     monkeypatch.setattr(InMemoryStorage, "put", put)
+    monkeypatch.setattr(InMemoryStorage, "get", get)
 
 
 @pytest.mark.parametrize("scenario", [None, "reform_pip_phase_in"])
