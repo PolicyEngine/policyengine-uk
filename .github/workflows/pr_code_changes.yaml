@@ -55,6 +55,11 @@ jobs:
       # queued for hours; the parameter tree and every test result are
       # identical on both.
       runs-on: ubuntu-24.04-arm
+      # The whole job takes about 18 minutes (YAML tests 2, pytest 15, the
+      # rest under 1). More than three times that means a run is hung or
+      # the suite needs attention, so fail it rather than wait for the
+      # 6-hour GitHub limit.
+      timeout-minutes: 60
       permissions:
         contents: "read"
         id-token: "write"
