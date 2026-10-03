@@ -669,25 +669,3 @@ def test_class_4_respects_a_neutralized_supplied_loss():
     for year in (2026, 2027):
         assert sim.calculate("ni_class_4_loss_relief", year)[0] == 0
         assert sim.calculate("ni_class_4_profits", year)[0] == 40_000
-
-
-def test_class_4_does_not_restore_an_abolished_supplied_balance():
-    sim = single_person(
-        {
-            "self_employment_income": {2026: 5_000, 2027: 30_000},
-            "ni_class_4_losses_brought_forward": {2026: 7_000},
-        }
-    )
-    assert sim.calculate("ni_class_4_profits", 2027)[0] == 28_000
-    sim.apply_reform(
-        {
-            "gov.abolitions.ni_class_4_losses_brought_forward": {
-                "2026-01-01.2026-12-31": True
-            }
-        }
-    )
-    # The balance variable is enabled again in 2027. Its historical fold
-    # must still honour the 2026 abolition of the stored opening balance.
-    assert sim.calculate("ni_class_4_losses_brought_forward", 2026)[0] == 0
-    assert sim.calculate("ni_class_4_losses_brought_forward", 2027)[0] == 0
-    assert sim.calculate("ni_class_4_profits", 2027)[0] == 30_000

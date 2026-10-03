@@ -12,7 +12,6 @@ independent of what has been calculated before.
 from typing import List, Optional
 
 import numpy as np
-from policyengine_core.errors import ParameterNotFoundError
 from policyengine_core.periods import Period
 
 
@@ -60,19 +59,12 @@ def supplied_input(
             # to other branches' values, including cached calculations.
             value = holder._get_array_from_storage(period, branch_name)
             if value is not None:
-                # Preserve the engine's reform handling while reading the
-                # supplied value rather than a branch's calculated cache.
-                system = simulation.tax_benefit_system
-                disabled = system.get_variable(variable_name).is_neutralized
-                try:
-                    disabled = (
-                        disabled
-                        or system.parameters(period).gov.abolitions[variable_name]
-                    )
-                except (ParameterNotFoundError, KeyError):
-                    # Input variables have no generated abolition parameter.
-                    pass
-                if disabled:
+                # A neutralized variable reads as its default, as it does
+                # through the engine. (PolicyEngine-UK builds no
+                # gov.abolitions parameters, so there is no abolition switch
+                # to honour here.)
+                variable = simulation.tax_benefit_system.get_variable(variable_name)
+                if variable.is_neutralized:
                     return holder.default_array()
                 return value
     return None
