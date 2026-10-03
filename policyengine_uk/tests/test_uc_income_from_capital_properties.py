@@ -27,7 +27,11 @@ Invariants, for any generated population of families:
 Invariant 2's award clause runs with Marriage Allowance switched off. The
 model books it on the recipient as the transferor's unused personal allowance
 (PolicyEngine/policyengine-uk#1947), so capital income that uses up one
-partner's allowance raises the other partner's tax on earnings.
+partner's allowance raises the other partner's tax on earnings. The clause
+also compares only families whose personal allowances the income leaves
+unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
+s. 35), which raises the tax a person pays on their earnings and so changes
+the deduction from them (see test_uc_earnings_deductions_properties.py).
 """
 
 import numpy as np
@@ -167,6 +171,9 @@ def listed_sources(sim, year):
 def calculate(units, year, **kwargs):
     sim = Simulation(situation=situation(units, year, **kwargs))
     values = {v: np.asarray(sim.calculate(v, year)) for v in UC_VARIABLES}
+    values["personal_allowances"] = np.asarray(
+        sim.calculate("personal_allowance", year, map_to="benunit")
+    )
     sources = listed_sources(sim, year)
     # No actual income from capital is on the list in any year.
     assert not set(CAPITAL_INCOME) & set(sources), sources
@@ -235,9 +242,17 @@ def test_interest_dividends_and_rent_do_not_enter_the_means_test(units, scale, y
 def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, year):
     base = calculate(units, year, marriage_allowance=False)
     scaled = calculate(units, year, income_scale=scale, marriage_allowance=False)
+    # Only one adult receives the capital income, so the unit's summed
+    # personal allowances are unchanged exactly when that adult's is.
+    unchanged = np.isclose(
+        scaled["personal_allowances"], base["personal_allowances"], atol=0.01
+    )
     for variable in UC_VARIABLES:
         np.testing.assert_allclose(
-            scaled[variable], base[variable], atol=0.01, err_msg=f"{variable}: {units}"
+            scaled[variable][unchanged],
+            base[variable][unchanged],
+            atol=0.01,
+            err_msg=f"{variable}: {units}",
         )
 
 
