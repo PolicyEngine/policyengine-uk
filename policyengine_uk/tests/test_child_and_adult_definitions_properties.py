@@ -12,13 +12,17 @@ Invariants:
    An unflagged member at least 16 years younger than a claimant flagged as
    a parent is never their partner, at any age, unless a member under 20 and
    at least 16 years younger explains the flag; flagging the claimant as a
-   parent never adds a partner; and benefit units shaped like the FRS's
-   (one or two adults, all flagged as parents when there are dependants)
-   keep the earlier under-20 presumption exactly.
+   parent never adds a partner. On benefit units shaped like the FRS's (one
+   or two adults, all flagged as parents when there are dependants) the
+   any-age 20-year gap changes only childless couples whose claimant is 20 or
+   more years older than the other adult (intended), and supplied
+   claimant/partner roles are always kept.
 2. HBAI types partition everyone. Any benefit unit with one head has at most
    two claimants/partners, all of them HBAI adults, and at least one if it
    has an HBAI adult; valid families (one or two adults aged 20+ and
-   dependants) have exactly their adults. Couple/single and
+   dependants) have exactly their adults, except an unflagged couple whose
+   head is 20+ years older than the other adult (the any-age presumption,
+   intended), and always when the roles are supplied. Couple/single and
    couple/lone-parent/single-person partition benefit units. Heads aged 16+
    are claimants or partners, including when explicitly younger than others,
    unless two other members are flagged parents and the head is not.
@@ -32,8 +36,10 @@ Invariants:
    the added child carries a parent marker (an identified parent must be aged
    16 or over; the minimised counterexample that found this is kept as a
    regression test). It does not hold below a flagged claimant whose flag
-   nothing explains: a flagged 50 with a 25-year-old is single, and adding a
-   12-year-old explains the flag and makes them a couple.
+   nothing explains, for a member 16 to 19 years younger: a flagged 38 with a
+   20-year-old is single, and adding a 12-year-old explains the flag and
+   makes them a couple. A member 20 or more years younger stays the
+   claimant's child either way (the any-age gap).
    Before/after families share one Simulation to avoid repeated
    model construction, but occupy distinct households and benefit units.
 
@@ -219,21 +225,21 @@ def hbai_dependent_child(p, family):
         return True
     return (
         p["age"] < 20
-        and any(member["is_parent"] for member in family)
+        and any(member["is_parent"] and member["age"] >= 16 for member in family)
         and (non_advanced_education(p) or p["is_in_approved_training"])
     )
 
 
-def claimants_or_partners(family, flagged_parent_lifts_age_limit=True):
+def claimants_or_partners(family, any_age_gap=20):
     # is_claimant_or_partner's documented rule. The claimant is the head if an
     # HBAI adult, else the eldest HBAI adult. The partner is the eldest other
     # flagged parent, else the eldest other adult not presumed the claimant's
     # child: at least 16 years younger and either under 20 or below a claimant
-    # flagged as a parent whose flag no such under-20 member explains. If the
-    # claimant is not a flagged parent but two or
-    # more others are, the two eldest of those are the couple instead. Age ties
-    # go to the earlier member. flagged_parent_lifts_age_limit=False is the
-    # earlier rule (under 20 only), kept for the FRS-shape differential test.
+    # flagged as a parent whose flag no such under-20 member explains, or at
+    # least 20 years younger at any age. If the claimant is not a flagged
+    # parent but two or more others are, the two eldest of those are the
+    # couple instead. Age ties go to the earlier member. any_age_gap=None is
+    # the rule without the any-age gap, kept for the differential test.
     n = len(family)
     adult = [not hbai_dependent_child(p, family) for p in family]
     ages = [p["age"] for p in family]
@@ -249,14 +255,16 @@ def claimants_or_partners(family, flagged_parent_lifts_age_limit=True):
         couple = sorted(other_parents, key=lambda i: (-ages[i], i))[:2]
         return [i in couple for i in range(n)]
     young_child = any(ages[j] < 20 and ages[claimant] - ages[j] >= 16 for j in range(n))
-    no_age_limit = (
-        flagged_parent_lifts_age_limit and parent[claimant] and not young_child
-    )
+    flag_unexplained = parent[claimant] and not young_child
+
+    def presumed_child(i):
+        gap = ages[claimant] - ages[i]
+        if any_age_gap is not None and gap >= any_age_gap:
+            return True
+        return (ages[i] < 20 or flag_unexplained) and gap >= 16
+
     pool = other_parents or [
-        i
-        for i in adults
-        if i != claimant
-        and not ((ages[i] < 20 or no_age_limit) and ages[claimant] - ages[i] >= 16)
+        i for i in adults if i != claimant and not presumed_child(i)
     ]
     partner = max(pool, key=lambda i: (ages[i], -i)) if pool else None
     return [i == claimant or i == partner for i in range(n)]
@@ -558,7 +566,16 @@ def test_valid_family_partition_and_adding_a_child_preserves_claimants(
     for family in families:
         old = claimants[old_offset : old_offset + len(family)]
         new = claimants[new_offset : new_offset + len(family)]
-        assert sum(old) == sum(p["age"] >= 20 for p in family)
+        np.testing.assert_array_equal(old, claimants_or_partners(family))
+        # Every adult is selected, except in an unflagged couple whose head
+        # (the claimant) is 20+ years older: the any-age presumption (intended).
+        adults = [p for p in family if p["age"] >= 20]
+        wide_gap = (
+            len(adults) == 2
+            and not adults[0]["is_parent"]
+            and adults[0]["age"] - adults[1]["age"] >= 20
+        )
+        assert sum(old) == len(adults) - wide_gap
         assert sum(old) in (1, 2)
         np.testing.assert_array_equal(new, old)
         assert not claimants[new_offset + len(family)]
@@ -762,9 +779,13 @@ def test_parent_marked_under_16_entrant_preserves_existing_claimants():
         person(20, is_benunit_head=True),
         person(18, current_education="POST_SECONDARY"),
     ]
-    sim = simulate([family, family + [person(0, is_parent=True)]])
+    entrant = family + [person(0, is_parent=True)]
+    sim = simulate([family, entrant])
     actual = sim.calculate("is_claimant_or_partner", YEAR)
     np.testing.assert_array_equal(actual[:2], actual[2:4])
+    # The reference ignores a parent flag under 16, as the model does.
+    expected = claimants_or_partners(family) + claimants_or_partners(entrant)
+    np.testing.assert_array_equal(actual, expected)
 
 
 @st.composite
@@ -884,16 +905,84 @@ def frs_shaped_units(draw):
     return families
 
 
+def survey_roles(family):
+    # The FRS adult table: everyone in a unit without dependants (nobody is
+    # flagged), otherwise the adults flagged as parents.
+    flagged = any(p["is_parent"] for p in family)
+    return [p["is_parent"] or not flagged for p in family]
+
+
+def childless_couple_split_by_any_age_gap(family):
+    # A childless two-adult unit whose head (the claimant) is 20+ years older.
+    if len(family) != 2 or not all(survey_roles(family)):
+        return False
+    head, other = sorted(family, key=lambda p: not p["is_benunit_head"])
+    return head["age"] - other["age"] >= 20
+
+
 @PROPERTY_SETTINGS
 @given(frs_shaped_units())
-def test_frs_shaped_units_keep_the_under_20_presumption(families):
-    # Differential: on FRS-shaped units the rule equals the earlier, age-limited
-    # one, so the change cannot move the enhanced FRS microsimulation.
+def test_frs_shaped_units_change_only_for_childless_couples_20_years_apart(families):
+    # Differential against the rule without the any-age gap. On FRS-shaped
+    # units the two can differ only in childless two-adult units 20 or more
+    # years apart, which carry no flags: there, if the claimant (the head) is
+    # the elder, the younger adult is presumed their child (intended); a
+    # younger head keeps the couple. A dataset that carries
+    # is_claimant_or_partner (policyengine-uk-data#524's enhanced FRS) does not
+    # depend on this; datasets without the role do.
     sim = simulate(families)
-    expected = [
-        c
-        for family in families
-        for c in claimants_or_partners(family, flagged_parent_lifts_age_limit=False)
-    ]
+    expected = [c for family in families for c in claimants_or_partners(family)]
     assert_values(sim, "is_claimant_or_partner", expected)
+    for family in families:
+        if not childless_couple_split_by_any_age_gap(family):
+            assert claimants_or_partners(family) == claimants_or_partners(
+                family, any_age_gap=None
+            )
+
+
+@PROPERTY_SETTINGS
+@given(frs_shaped_units())
+def test_supplied_claimant_and_partner_roles_are_kept(families):
+    # policyengine-uk-data#524 supplies is_claimant_or_partner from the FRS
+    # adult table: the head and any partner, whatever their ages and gap. Supplied
+    # roles override the presumption, so the FRS couples it would split stay
+    # couples, and every unit keeps one claimant and at most one partner.
+    roles = [role for family in families for role in survey_roles(family)]
+    sim = simulate(families)
+    sim.set_input("is_claimant_or_partner", YEAR, roles)
+    assert_values(sim, "is_claimant_or_partner", roles)
+    is_couple = sim.calculate("is_couple", YEAR)
+    offset = 0
+    for i, family in enumerate(families):
+        n_roles = sum(roles[offset : offset + len(family)])
+        assert is_couple[i] == (n_roles == 2)
+        offset += len(family)
+
+
+def test_unflagged_adult_pairs_follow_the_20_year_gap():
+    # Exhaustive over unflagged two-adult units, both 20 to 90, head the
+    # elder: the younger is the partner exactly when under 20 years younger.
+    pairs = [(a, b) for a in range(20, 91) for b in range(20, a + 1)]
+    families = [[person(a, is_benunit_head=True), person(b)] for a, b in pairs]
+    sim = simulate(families)
+    claimants = sim.calculate("is_claimant_or_partner", YEAR)
+    expected = [c for a, b in pairs for c in (True, a - b < 20)]
+    np.testing.assert_array_equal(claimants, expected)
     assert expected == [c for f in families for c in claimants_or_partners(f)]
+
+
+def test_wide_gap_couples_by_head_order_and_with_supplied_roles():
+    # An unflagged couple 25 years apart: with the elder as head (the claimant)
+    # the younger is presumed their child; with the younger as head the elder
+    # is the partner. Supplied roles keep the couple either way.
+    elder_head = [person(70, is_benunit_head=True), person(45)]
+    younger_head = [person(45, is_benunit_head=True), person(70)]
+    families = [elder_head, younger_head]
+    sim = simulate(families)
+    inferred = sim.calculate("is_claimant_or_partner", YEAR)
+    np.testing.assert_array_equal(inferred, [True, False, True, True])
+    assert claimants_or_partners(elder_head) == [True, False]
+    assert claimants_or_partners(younger_head) == [True, True]
+    supplied = simulate(families)
+    supplied.set_input("is_claimant_or_partner", YEAR, [True] * 4)
+    np.testing.assert_array_equal(supplied.calculate("is_couple", YEAR), [True] * 2)

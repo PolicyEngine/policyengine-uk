@@ -77,9 +77,15 @@ def simulate(people, units, household, overrides=None):
             "members": unit["members"],
             "pension_credit_reported_capital": {year: value},
         }
+    # Every unit is a single adult or a couple whatever the age gap, so the
+    # roles are supplied rather than left to the age presumption (which reads
+    # a member 20+ years younger as the claimant's child).
     situation = {
         "people": {
-            name: {k: {year: v} for k, v in person.items()}
+            name: {
+                **{k: {year: v} for k, v in person.items()},
+                "is_claimant_or_partner": {year: True},
+            }
             for name, person in people.items()
         },
         "benunits": benunits,

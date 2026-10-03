@@ -142,6 +142,9 @@ def situation(families):
                     "state_pension": {YEAR: state_pension},
                     # All private pension goes to the first adult.
                     "private_pension_income": {YEAR: float(pension) * (j == 0)},
+                    # The adults are the claimant and partner whatever their
+                    # age gap, so the roles are supplied rather than presumed.
+                    "is_claimant_or_partner": {YEAR: True},
                 }
                 if is_carer:
                     if fam["by_hours"]:

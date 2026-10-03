@@ -158,6 +158,9 @@ def cases(draw):
         people["dependant"] = {"age": 18, "current_education": "UPPER_SECONDARY"}
         people["older"]["is_parent"] = True
     for name, person in people.items():
+        # The older and younger members are the couple whatever their age gap,
+        # so the roles are supplied rather than left to the age presumption.
+        person["is_claimant_or_partner"] = name != "dependant"
         if name == "dependant":
             continue
         if person["age"] >= 67:
