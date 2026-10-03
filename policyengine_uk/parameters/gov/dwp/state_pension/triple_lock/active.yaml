@@ -1,6 +1,10 @@
-description: The triple lock is active if this value is true.
+description: Whether the triple lock applies to the April uprating of the State Pension; without it, the pension rises by the statutory minimum, earnings growth, and not at all when earnings fall.
 values:
   2010-01-01: true
 metadata:
+  documentation: Changes take effect through Scenario(parameter_changes=...), which rebuilds the uprating rates; a reform dictionary changes this parameter but not the rates.
   unit: bool
   label: Triple lock
+  reference:
+    - title: Social Security Administration Act 1992, section 150A
+      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150A

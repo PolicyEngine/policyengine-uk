@@ -1,0 +1,192 @@
+# Universal Credit awards with interest, dividends and rent, hand-computed from
+# the UC Regs 2013 (and the UC Regs (NI) 2016, which are the same here).
+#
+# - Reg. 66(1): unearned income is income "falling within the following
+#   descriptions"; none covers actual interest, dividends or rent. Reg.
+#   66(1)(m) reaches only ITTOIA 2005 Part 5 income (interest and dividends
+#   are Part 4, property income Part 3). DWP ADM H5002: "If a type of income
+#   is not listed above, it does not affect the claimant's award."
+# - Reg. 72(1): capital above £6,000 yields £4.35 a month for each £250 or
+#   part of £250 (reg. 66(1)(k)). Reg. 72(3): actual income derived from that
+#   capital, "for example rental, interest or dividends", is capital.
+# - Reg. 22(1): award = maximum amount - 55% of earned income - all unearned
+#   income.
+#
+# 2026 rates (gov.dwp.universal_credit.standard_allowance, 2026-27): single
+# claimant 25 or over £424.90 a month, so 12 x 424.90 = £5,098.80 a year;
+# joint claimants, one or both 25 or over, £666.97 a month, so £8,003.64.
+# Every case below has income under the personal allowance, so no income tax
+# or National Insurance, and no housing, child or disability element.
+#
+# Property is valued under reg. 49(1): its market value less 10% for the
+# expenses of sale and less any debt secured on it. So "£10,000 of let
+# property" below, with no mortgage, is £9,000 of assessable capital.
+
+- name: Savings interest, dividends and rent below £6,000 of capital leave the award unchanged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 200
+        dividend_income: 300
+        property_income: 1_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 5_000
+  output:
+    # No tariff income (capital is not above £6,000) and no unearned income.
+    uc_tariff_income: 0
+    uc_unearned_income: 0
+    uc_maximum_amount: 5_098.80
+    universal_credit: 5_098.80
+
+- name: Rent and interest are not counted on top of tariff income from a let property
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 500
+        property_income: 4_800
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 0
+        other_residential_property_value: 10_000
+  output:
+    # £10,000 of let property is 90% x 10,000 = £9,000 of capital (reg.
+    # 49(1)(a)). Tariff income: (9,000 - 6,000) / 250 = 12 steps x £4.35 =
+    # £52.20 a month, £626.40 a year. UC = 5,098.80 - 626.40 = £4,472.40.
+    uc_tariff_income: 626.40
+    uc_unearned_income: 626.40
+    universal_credit: 4_472.40
+
+- name: Northern Ireland treats rent and interest from capital the same way
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 500
+        property_income: 4_800
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: NORTHERN_IRELAND
+        savings: 0
+        other_residential_property_value: 10_000
+  output:
+    # UC Regs (NI) 2016 regs. 49(1), 66(1) and 72 match the GB text on these
+    # points, so the property is £9,000 of capital here too.
+    uc_tariff_income: 626.40
+    uc_unearned_income: 626.40
+    universal_credit: 4_472.40
+
+- name: Rent from a lodger in the home does not reduce the award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        property_income: 3_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        tenure_type: OWNED_OUTRIGHT
+        main_residence_value: 200_000
+  output:
+    # The home is disregarded capital (Sch. 10 para. 1) and rent from a
+    # sub-tenant or boarder is not income (ADM H5112).
+    uc_tariff_income: 0
+    uc_unearned_income: 0
+    universal_credit: 5_098.80
+
+- name: A partner's dividends do not reduce a working couple's award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 10_000
+      partner:
+        age: 32
+        dividend_income: 2_000
+    benunits:
+      benunit:
+        members: [person, partner]
+    households:
+      household:
+        members: [person, partner]
+        savings: 3_000
+  output:
+    # No work allowance (no child, no limited capability for work), so the
+    # earnings reduction is 55% x 10,000 = 5,500. UC = 8,003.64 - 5,500 =
+    # £2,503.64. The dividends do not appear anywhere in the calculation.
+    uc_earned_income: 10_000
+    uc_unearned_income: 0
+    uc_maximum_amount: 8_003.64
+    universal_credit: 2_503.64
+
+# The two cases below pin monotonicity at the tariff threshold. Before this
+# fix, £1 more savings switched interest out of unearned income and raised the
+# award from £2,098.80 to £5,046.60.
+- name: Interest does not reduce the award with savings of £6,000
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 3_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_000
+  output:
+    uc_tariff_income: 0
+    uc_unearned_income: 0
+    universal_credit: 5_098.80
+
+- name: One more pound of savings lowers the award by the tariff income only
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 3_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 6_001
+  output:
+    # £1 over £6,000 is an incomplete £250 step: £4.35 x 12 = £52.20.
+    # UC = 5,098.80 - 52.20 = £5,046.60.
+    uc_tariff_income: 52.20
+    uc_unearned_income: 52.20
+    universal_credit: 5_046.60

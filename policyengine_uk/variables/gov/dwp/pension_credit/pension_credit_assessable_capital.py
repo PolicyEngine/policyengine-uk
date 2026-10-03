@@ -11,7 +11,12 @@ class pension_credit_assessable_capital(Variable):
         "each valued at market value less 10% where a sale would incur "
         "expenses and less any debt secured on it (reg. 19), split only across pension-age adults in the household so pensioner "
         "couples pool capital together without dilution by unrelated working-"
-        "age adults."
+        "age adults. Person-level sources, such as a Lifetime ISA, count "
+        "only for the holder's own benunit, and only when the holder is its "
+        "claimant or partner (is_claimant_or_partner): a dependant's capital "
+        "is not the claimant's. Where `pension_credit_reported_capital` records "
+        "the benefit unit's own capital (0 or more), it replaces the "
+        "household proxy and the person-level sources."
     )
     definition_period = YEAR
     unit = GBP
@@ -24,6 +29,11 @@ class pension_credit_assessable_capital(Variable):
         household_capital = valued_capital(
             lambda variable: household(variable, period), p.sources, p.sale_expenses
         )
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        person_capital = sum(
+            benunit.sum(person(source, period) * claimant_or_partner)
+            for source in p.person_sources
+        )
         any_pension_age = benunit.any(person("is_SP_age", period))
         benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
         household_pension_age_adults = benunit.max(
@@ -33,4 +43,10 @@ class pension_credit_assessable_capital(Variable):
         household_capital_proxy = (
             household_capital * benunit_pension_age_adults / adult_divisor
         )
-        return where(any_pension_age, max_(0, household_capital_proxy), 0)
+        reported_capital = benunit("pension_credit_reported_capital", period)
+        assessed_capital = where(
+            reported_capital >= 0,
+            reported_capital,
+            household_capital_proxy + person_capital,
+        )
+        return where(any_pension_age, max_(0, assessed_capital), 0)

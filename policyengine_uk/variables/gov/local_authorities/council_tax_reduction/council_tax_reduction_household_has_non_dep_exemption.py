@@ -6,11 +6,14 @@ class council_tax_reduction_household_has_non_dep_exemption(Variable):
     entity = Household
     label = "CTR household has a non-dependant deduction exemption"
     definition_period = YEAR
+    reference = "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/8"
 
     def formula(household, period, parameters):
         person = household.members
         claimant_benunit = person.benunit("benunit_contains_household_head", period)
-        claimant_or_partner = claimant_benunit & person("is_adult", period)
+        claimant_or_partner = claimant_benunit & person(
+            "is_claimant_or_partner", period
+        )
         is_blind = person("is_blind", period) & claimant_or_partner
         attendance_allowance = (
             person("attendance_allowance", period) > 0

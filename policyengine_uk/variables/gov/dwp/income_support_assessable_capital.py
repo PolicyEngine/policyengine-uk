@@ -11,12 +11,18 @@ class income_support_assessable_capital(Variable):
         "capital test, valued at market value less 10% where a sale would incur "
         "expenses and less any debt secured on it (reg. 49). Because the dataset only stores these stocks at household "
         "level, the model allocates full household capital to any benunit on the "
-        "IS claim path and only falls back to an adult-share proxy when nobody in "
-        "the household is on that path."
+        "IS claim path and only falls back to a claimant-and-partner share when "
+        "nobody in the household is on that path. This allocation is a "
+        "PolicyEngine convention; the data cannot identify ownership of capital. "
+        "Person-level sources, such as a Lifetime ISA, count only for the "
+        "holder's own benunit, and only when the holder is its claimant or "
+        "partner (is_claimant_or_partner): a dependant's capital is not the "
+        "claimant's."
     )
     definition_period = YEAR
     unit = GBP
     quantity_type = STOCK
+    reference = "https://www.legislation.gov.uk/uksi/1987/1967/regulation/23"
 
     def formula(benunit, period, parameters):
         IS = parameters(period).gov.dwp.income_support
@@ -27,23 +33,37 @@ class income_support_assessable_capital(Variable):
         # The data model stores these capital stocks at household level. For the
         # live Income Support path, avoid diluting capital across separate claims:
         # any benunit on the IS claim path gets the full observed household total.
-        # If nobody in the household is on that path, fall back to an all-adults
-        # proxy so direct inspection still returns a usable value.
+        # If nobody in the household is on that path, use claimant/partner
+        # weights. Regulation 23 excludes children's and young persons' capital;
+        # the household allocation itself is a modelling convention.
         household_capital = valued_capital(
             lambda variable: benunit.max(person.household(variable, period)),
             sources,
             IS.means_test.capital.sale_expenses,
         )
-        benunit_adults = add(benunit, period, ["is_adult"])
-        household_claiming_adults = benunit.max(
+        benunit_claimants_and_partners = add(
+            benunit, period, ["is_claimant_or_partner"]
+        )
+        household_claiming_members = benunit.max(
             person.household.sum(
-                person("is_adult", period) & person.benunit("would_claim_IS", period)
+                person("is_claimant_or_partner", period)
+                & person.benunit("would_claim_IS", period)
             )
         )
-        household_adults = benunit.max(
-            person.household.sum(person.household.members("is_adult", period))
+        household_claimants_and_partners = benunit.max(
+            person.household.sum(person("is_claimant_or_partner", period))
         )
-        fallback_divisor = max_(1, household_adults)
+        fallback_divisor = max_(1, household_claimants_and_partners)
         claiming_proxy = where(would_claim_is, household_capital, 0)
-        fallback_proxy = household_capital * benunit_adults / fallback_divisor
-        return where(household_claiming_adults > 0, claiming_proxy, fallback_proxy)
+        fallback_proxy = (
+            household_capital * benunit_claimants_and_partners / fallback_divisor
+        )
+        claimant_or_partner = person("is_claimant_or_partner", period)
+        person_capital = sum(
+            benunit.sum(person(source, period) * claimant_or_partner)
+            for source in IS.means_test.capital.person_sources
+        )
+        household_share = where(
+            household_claiming_members > 0, claiming_proxy, fallback_proxy
+        )
+        return household_share + person_capital
