@@ -1,3 +1,62 @@
+## [2.109.5] - 2026-10-03
+
+### Changed
+
+- Run the CI Test job on Linux arm64 with four pytest-xdist workers (pytest-xdist is now a dev dependency), cancel superseded pull request runs, and time the job out after 60 minutes.
+
+
+## [2.109.4] - 2026-10-03
+
+### Fixed
+
+- - Date the Pension Credit exclusion of mixed-age couples (State Pension Credit Act 2002 s.4(1A)) from 15 May 2019, and model the SI 2019/37 article 4 saving. Before the change, mixed-age couples could claim Pension Credit and pension-age Housing Benefit, and now take that route rather than Universal Credit. Afterwards, a couple entitled to Pension Credit or pension-age Housing Benefit on 14 May 2019 keeps them while it stays entitled. The saving is a new input, `has_mixed_age_couple_pension_credit_saving`, which by default is inferred from reported Pension Credit or pension-age Housing Benefit without reported Universal Credit, where the older member was born by 1954. A family on the Pension Credit route is no longer eligible for Universal Credit.
+
+
+## [2.109.3] - 2026-10-03
+
+### Fixed
+
+- - Pension Credit assessable capital now reads `is_claimant_or_partner` rather than the Universal Credit claimant flag to decide whose person-level capital counts, and the legacy and Pension Credit person-level capital parameter descriptions name that flag. The Lifetime ISA tests now set it on families the age presumption would otherwise treat as couples, and pin that Pension Credit ignores the Universal Credit flag.
+
+
+## [2.109.2] - 2026-10-03
+
+### Changed
+
+- Since 2.106.0, `carer_support_payment` means the Carer Support Payment component only, as "carer support payment" does in the reserved-benefit regulations since SI 2026/246. The Scottish Carer Supplement is the separate `scottish_carer_supplement`; code that summed `carer_support_payment` for the total paid to a Scottish carer must add both.
+
+
+## [2.109.1] - 2026-10-03
+
+### Fixed
+
+- Stop exempting mixed-age couples on Universal Credit from the benefit cap (UC Regs 2013 regs 79, 82 and 83 have no age exception), and stop treating them as pensioners for Council Tax Reduction (SI 2012/2885 reg 3, WSI 2013/3029 reg 3, SSI 2021/249 reg 3). The cap's age exemption now follows which Housing Benefit regulations apply (HB Regs 2006 reg 5), through the new `housing_benefit_pension_age_regulations_apply`; the CTR pensioner test is the new `council_tax_reduction_pensioner`. Both read the claimant and partner (`is_claimant_or_partner`), and a Universal Credit award counts only where one of them is under State Pension age, so a pensioner whose only younger member is an 18- or 19-year-old dependant keeps pensioner treatment, with or without `is_parent`. CTR amounts change only in England, where such couples move to the local working-age scheme; in Wales and Scotland CTR changes only through the capped Universal Credit counted as income. Outside the five English councils the model simulates (Newham, Merton, Kingston upon Thames, Westminster and Oxford), the working-age scheme uses reported CTR, so a household calculation for a mixed-age couple on Universal Credit in the rest of England now shows CTR of £0 unless a reported amount is entered.
+
+
+## [2.109.0] - 2026-10-03
+
+### Added
+
+- Add an optional State Pension earnings-path guarantee (`gov.dwp.state_pension.triple_lock.earnings_path_guarantee`), so reforms that keep the pension in line with earnings over time, such as one reading of the plan announced in September 2026, can be modelled as parameter changes. Off under current law.
+
+### Changed
+
+- Computed the State Pension triple lock from September CPI and May-July AWE total pay growth used in each uprating review, followed by OBR September CPI and Q2 earnings forecasts and then calendar-year growth, with macro scenarios moving those forecasts and `active: false` leaving non-negative earnings growth; April 2027's 3.9% rise and projected £250.71 new State Pension weekly rate use the 15 September 2026 first earnings estimate and stay provisional until the October labour market release, the vintage the review uses.
+- Changed `yoy_growth.triple_lock` to use the previous year's September CPI and May-July AWE inputs rounded to 0.1 percentage points before taking the maximum of the included elements and configured floor, including CPI forecast gaps for observation years 2026–2030 and earnings forecast gaps for 2027–2030, with April 2027 determined by the provisional 3.9% earnings input; `triple_lock.outturn` is null from 2012, the generated uprating series runs through April 2074 and follows rounded lagged calendar-year earnings from April 2035 under the stored baseline, and basic and new State Pension levels are about 0.48% higher in 2027–2034 than under the previous baseline, with a growing gap thereafter and the 2027-onward changes provisional until the October 2026 labour market release.
+
+
+## [2.108.0] - 2026-10-02
+
+### Fixed
+
+- Universal Credit no longer counts actual savings interest, dividends or rent as unearned income: regulation 66(1) of the Universal Credit Regulations 2013 lists no description that covers them, so capital counts only through its assumed yield (tariff income).
+- - Stopped the trading allowance being deducted on top of expenses already netted out of self-employment profit (ITTOIA 2005 Part 6A). It now gives full relief only where profit is within the allowance, and partial relief when the new optional `self_employment_gross_receipts` input shows that expenses and capital allowances fall short of it. The allowance now starts in 2017-18.
+
+### Removed
+
+- Removed the `gov.dwp.universal_credit.means_test.income_definitions.capital_derived` parameter, which gated the removal of interest, dividends and rent from Universal Credit unearned income.
+
+
 ## [2.107.0] - 2026-10-02
 
 ### Added

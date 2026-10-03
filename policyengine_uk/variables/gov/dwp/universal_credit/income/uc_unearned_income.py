@@ -5,8 +5,15 @@ class uc_unearned_income(Variable):
     value_type = float
     entity = BenUnit
     label = "Universal Credit unearned income"
+    documentation = (
+        "Income falling within the descriptions in regulation 66(1) of the "
+        "Universal Credit Regulations 2013. Capital counts only through its "
+        "assumed yield (uc_tariff_income, regulation 72(1)); actual interest, "
+        "dividends and rent are not unearned income at any capital level."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/66"
 
     def formula(benunit, period, parameters):
         # Members whose income counts: the claimant and partner and, as the model did
@@ -18,20 +25,4 @@ class uc_unearned_income(Variable):
             "is_child_or_qualifying_young_person_for_universal_credit", period
         )
         p = parameters(period).gov.dwp.universal_credit.means_test
-        household = benunit.household
-        total = add_for_members(benunit, period, p.income_definitions.unearned, members)
-        tariff_income_applies = benunit("uc_tariff_income", period) > 0
-        reported_capital = benunit("uc_reported_capital", period)
-        has_reported_capital = reported_capital >= 0
-        property_capital = household(
-            "other_residential_property_value", period
-        ) + household("non_residential_property_value", period)
-        capital_derived_income = (
-            ((household("savings", period) > 0) | has_reported_capital)
-            * add_for_members(benunit, period, ["savings_interest_income"], members)
-            + ((household("corporate_wealth", period) > 0) | has_reported_capital)
-            * add_for_members(benunit, period, ["dividend_income"], members)
-            + ((property_capital > 0) | has_reported_capital)
-            * add_for_members(benunit, period, ["property_income"], members)
-        )
-        return total - tariff_income_applies * capital_derived_income
+        return add_for_members(benunit, period, p.income_definitions.unearned, members)
