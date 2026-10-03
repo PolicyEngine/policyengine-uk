@@ -13,7 +13,9 @@ class legacy_means_test_income_tax(Variable):
         "council tax reduction schemes' equivalents), and they treat savings "
         "interest, dividends and property income as capital, not income. So this "
         "is the tax calculated on the person's other income (earned_income_tax, "
-        "which covers earnings, pensions and taxable benefits) at Step 4 of "
+        "which covers earnings, pensions and taxable benefits, plus the tax on "
+        "rent-a-room income above the limit: rent from boarders, lodgers and "
+        "sub-tenants in the home is income the tests count) at Step 4 of "
         "Income Tax Act 2007 s.23, less that income's share of the Step 6 tax "
         "reductions (the married couple's allowance and other tax credits). "
         "Neither tax law nor the benefit regulations say which income a "
@@ -41,11 +43,17 @@ class legacy_means_test_income_tax(Variable):
         p = parameters(period).gov.hmrc.income_tax
         # Step 4 tax on the income the means tests count, and on the income
         # they treat as capital.
-        counted = person("earned_income_tax", period)
-        capital = add(
-            person,
-            period,
-            ["savings_income_tax", "dividend_income_tax", "property_income_tax"],
+        # Tax on rent-a-room income sits inside property income tax, but the
+        # tests count that rent, so its tax moves from capital to counted.
+        rent_a_room_tax = person("rent_a_room_income_tax", period)
+        counted = person("earned_income_tax", period) + rent_a_room_tax
+        capital = (
+            add(
+                person,
+                period,
+                ["savings_income_tax", "dividend_income_tax", "property_income_tax"],
+            )
+            - rent_a_room_tax
         )
         before_reductions = counted + capital
         # Step 7 charges: everything income tax adds beyond the Step 4 tax.

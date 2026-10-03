@@ -1,0 +1,58 @@
+# A boarder or lodger is liable to pay the householder on a commercial basis
+# for their occupation, so is not a non-dependant: UC Regs 2013 Sch 4 para
+# 9(2)(d); HB Regs 2006 reg 3(2)(e)(i); CTR (England) prescribed requirements
+# reg 9(2)(e). An unrelated adult in the household who pays nothing remains a
+# non-dependant.
+
+- name: An adult lodger is not a non-dependant
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      lodger:
+        age: 30
+        is_household_head: false
+        rent_paid_as_lodger: 4_000
+    benunits:
+      householder_unit:
+        members: [householder]
+        benunit_rent: 9_000
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [householder, lodger]
+        tenure_type: RENT_PRIVATELY
+  output:
+    pays_rent_to_householder: [false, true]
+    uc_individual_non_dep_deduction_eligible: [false, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+
+- name: The same adult paying nothing is a non-dependant
+  period: 2026
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+      adult:
+        age: 30
+        is_household_head: false
+    benunits:
+      householder_unit:
+        members: [householder]
+        benunit_rent: 9_000
+      adult_unit:
+        members: [adult]
+    households:
+      household:
+        members: [householder, adult]
+        tenure_type: RENT_PRIVATELY
+  output:
+    pays_rent_to_householder: [false, false]
+    uc_individual_non_dep_deduction_eligible: [false, true]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]

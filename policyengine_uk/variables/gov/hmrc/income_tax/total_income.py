@@ -18,6 +18,7 @@ class total_income(Variable):
         "social_security_income",
         "self_employment_income",
         "property_income",
+        "taxable_rent_a_room_income",
         "savings_interest_income",
         "dividend_income",
         "miscellaneous_income",

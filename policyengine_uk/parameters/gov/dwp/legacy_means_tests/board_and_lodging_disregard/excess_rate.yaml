@@ -1,0 +1,22 @@
+description: >
+  Share of the weekly board and lodging payments above the board and lodging
+  disregard amount that is also disregarded, for each person provided with
+  board and lodging accommodation in the claimant's home.
+metadata:
+  label: Legacy benefits board and lodging disregard rate on the excess
+  unit: /1
+  reference:
+    - title: The Income Support (General) Regulations 1987 Schedule 9 para. 20(b)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/paragraph/20
+    - title: The Income Support (General) Amendment Regulations 1990 reg. 22(c)
+      href: https://www.legislation.gov.uk/uksi/1990/547/made
+    - title: The Housing Benefit Regulations 2006 Schedule 5 para. 42(1)(b)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/42
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 5 para. 9(b)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/9
+    - title: The State Pension Credit Regulations 2002 Schedule IV para. 8(1)(b)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV/paragraph/8
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 5 para. 9(b)
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/9
+values:
+  1990-04-09: 0.5
