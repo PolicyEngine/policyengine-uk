@@ -16,7 +16,11 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
         "including a boarder's or lodger's adult son. Someone jointly and "
         "severally liable for the council tax with the claimant (a joint "
         "tenant or other sharer of the rent) and a boarder or lodger who pays "
-        "the claimant are not non-dependants."
+        "the claimant are not non-dependants. Those exclusions belong to the "
+        "person, whatever family they are in: the household head (the person "
+        "liable for the council tax), anyone liable for the household's rent "
+        "and anyone who pays rent as a boarder or lodger is nobody's "
+        "non-dependant."
     )
     definition_period = YEAR
     reference = (
@@ -34,4 +38,20 @@ class council_tax_reduction_individual_non_dep_deduction_eligible(Variable):
         # family. Reg 9(2)(e) excludes only the person liable to pay the
         # applicant, so a boarder's or lodger's adult son is a non-dependant.
         in_unit = person("is_benefit_unit_non_dependant_for_legacy_benefits", period)
-        return (person("age", period) >= 18) & (other_family | in_unit)
+        # Reg 9(2)(d)-(e) exclude the person, not their family: the liable
+        # person (LGFA 1992 s.6) and any joint occupier are jointly and
+        # severally liable with an applicant, and a boarder or lodger pays on
+        # a commercial basis. So an applicant is never their own
+        # non-dependant, even where the benefit unit's claimant and partner
+        # are other members of it.
+        personally_excluded = (
+            person("is_household_head", period)
+            | person("is_liable_for_household_rent", period)
+            | (person("rent_paid_as_lodger", period) > 0)
+            | (person("rent_paid_as_boarder", period) > 0)
+        )
+        return (
+            (person("age", period) >= 18)
+            & (other_family | in_unit)
+            & ~personally_excluded
+        )

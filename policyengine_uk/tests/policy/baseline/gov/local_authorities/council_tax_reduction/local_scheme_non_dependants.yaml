@@ -708,3 +708,153 @@
     # only.
     oxford_council_tax_reduction_individual_non_dep_deduction: [0, 270.40, 691.60]
     council_tax_reduction: 838
+
+# Para 9(2)(d)-(e) exclude the person, whatever family they are in: someone who
+# pays the householder as a boarder or lodger, someone jointly liable for the
+# council tax, and the liable person (the household head) are nobody's
+# non-dependants.
+
+- name: Merton makes no deduction for an adult son who himself pays as a lodger
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 40
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_000
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        rent_paid_as_lodger: 3_000
+        employment_income: 30_000
+        weekly_hours: 37.5
+    benunits:
+      applicant_family:
+        members: [applicant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      lodging_family:
+        members: [lodger, son]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, lodger, son]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false]
+    merton_council_tax_reduction_non_dep_deductions: [0, 0]
+    council_tax_reduction: 1_800
+
+- name: Merton charges a lodger's adult son who does not pay the householder himself
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 40
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 3_000
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        employment_income: 30_000
+        weekly_hours: 37.5
+    benunits:
+      applicant_family:
+        members: [applicant]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      lodging_family:
+        members: [lodger, son]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, lodger, son]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Para 9(2)(e) excludes only the person liable to pay the applicant.
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
+    merton_council_tax_reduction_non_dep_deductions: [691.60, 0]
+    council_tax_reduction: 1_108.40
+
+- name: Merton makes no deduction for an adult son who is himself a joint tenant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        is_liable_for_household_rent: true
+        employment_income: 30_000
+        weekly_hours: 37.5
+    benunits:
+      benunit:
+        members: [parent, son]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [parent, son]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Para 9(2)(d): jointly and severally liable with the applicant.
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+    merton_council_tax_reduction_non_dep_deductions: 0
+
+- name: Merton never charges the applicant as their own non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 45
+        is_household_head: true
+      young_mother:
+        age: 17
+        is_parent: true
+      young_father:
+        age: 17
+        is_parent: true
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [applicant, young_mother, young_father, baby]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The inference makes the young parents the benefit unit's couple, so
+    # the household head is not its claimant or partner; he is still the
+    # person liable for the council tax, and everyone else is under 18.
+    is_claimant_or_partner: [false, true, true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false, false]
+    merton_council_tax_reduction_non_dep_deductions: 0
