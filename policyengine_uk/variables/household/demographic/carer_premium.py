@@ -52,9 +52,11 @@ class carer_premium(Variable):
         # schedules and Welsh working-age council tax reduction (WSI 2013/3029
         # Sch 7 para 14) use the same condition and amount; Scottish
         # working-age council tax reduction (SSI 2021/249 Sch 1 paras 5-6)
-        # tests caring responsibilities, which include receiving either
-        # allowance or being entitled to one reduced to nil by the overlapping
-        # benefits rules, and pays each partner who qualifies.
+        # tests caring responsibilities and pays each partner who qualifies.
+        # Para 6(1) defines those as (a) receiving either allowance, (b) being
+        # entitled to one reduced to nil by the overlapping benefits rules, or
+        # (c) a Universal Credit award with the carer element; the model
+        # applies (a) and (b) but not (c) (#2124).
         claimant_or_partner = benunit.members("is_claimant_or_partner", period)
         entitled = benunit.members("is_entitled_to_carer_benefit", period)
         qualifying_carers = benunit.sum(claimant_or_partner & entitled)

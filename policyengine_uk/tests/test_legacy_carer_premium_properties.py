@@ -21,7 +21,8 @@ dependent children or qualifying young persons:
   at one when they are treated as caring for the same person; it is 0, one
   amount or two;
 - unless supplied, partners are treated as caring for the same person unless
-  both are entitled with a reported Carer's Allowance award;
+  both are entitled with a reported Carer's Allowance award (these families
+  supply no allowance amounts directly, the model's other kind of award);
 - supplying "same person" never raises the premium and caps it at one amount;
 - caring by the claimant or partner never removes Income Support eligibility
   or lowers the premium, and below pension age it always opens the IS route.

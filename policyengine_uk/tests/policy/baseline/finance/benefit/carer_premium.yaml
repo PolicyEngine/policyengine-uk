@@ -17,9 +17,10 @@
 # entitled to Carer's Allowance (SSCBA s.70(7ZA)) or Carer Support Payment
 # (SSI 2023/302 reg 5(3)), so they satisfy the condition once. Unless supplied,
 # partners are treated as caring for the same person unless both are entitled
-# with a reported Carer's Allowance or Carer Support Payment award
-# (carers_allowance_reported carries both); the cases below with two premiums
-# therefore give both partners a reported award.
+# with an award: a reported Carer's Allowance or Carer Support Payment award
+# (carers_allowance_reported carries both), or a carer benefit in payment that
+# caring hours do not explain, which was supplied directly. Most cases below
+# with two premiums therefore give both partners a reported award.
 
 - name: Carer premium for a single claimant entitled to Carer's Allowance
   period: 2026
@@ -429,6 +430,71 @@
         partners_care_for_same_severely_disabled_person: false
   output:
     carer_premium: 2 * 48.15 * 52
+
+- name: Carer's Allowance supplied directly for both partners counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance: 4_000
+      partner:
+        age: 38
+        carers_allowance: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: Carer Support Payment supplied directly for both partners in Scotland counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carer_support_payment: 4_000
+      partner:
+        age: 38
+        carer_support_payment: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+  output:
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: A carer benefit paid to someone who cares the qualifying hours is not read as a supplied award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance: 4_000
+        care_hours: 35
+      partner:
+        age: 38
+        carers_allowance_reported: 4_000
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    # The hours could explain the claimant's allowance, so only the partner's
+    # reported award counts, and the default treats them as caring for the
+    # same person.
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: true
+    carer_premium: 48.15 * 52
 
 - name: A reported award its holder would not claim does not lift the same-person cap, even with caring hours
   period: 2026
