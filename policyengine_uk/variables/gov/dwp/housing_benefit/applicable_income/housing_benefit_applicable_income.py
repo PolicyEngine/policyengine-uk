@@ -26,6 +26,10 @@ class housing_benefit_applicable_income(Variable):
         ]
         PERSONAL_BENEFITS = [
             "carers_allowance",
+            # The Carer Support Payment component only: the Scottish Carer
+            # Supplement is disregarded (HB Regs 2006 Sch 5 para 75; HB (SPC)
+            # Regs 2006 reg 29(1)(j)(xviiha)), so scottish_carer_supplement is
+            # not listed.
             "carer_support_payment",
             "esa_contrib",
             "jsa_contrib",
