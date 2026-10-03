@@ -725,3 +725,42 @@
     council_tax_reduction_scheme_supported: [false]
     council_tax_benefit: [400]
     council_tax_reduction: 400
+
+- name: A jointly liable claimant keeps its whole report where the simulated claim beside it pays nothing
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_benefit_reported: 1_500
+      sharer:
+        age: 70
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        # Too much income for any reduction.
+        council_tax_reduction_applicable_income: 40_000
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # The sharer's pensioner claim is simulated but pays nothing, so no
+    # simulated reduction competes for the bill and the head's report stands.
+    council_tax_reduction_scheme_supported: [false, true]
+    council_tax_reduction_household_has_simulated_claim: true
+    simulated_council_tax_reduction_benunit: [0, 0]
+    council_tax_benefit: [1_500, 0]
+    council_tax_reduction: 1_500
