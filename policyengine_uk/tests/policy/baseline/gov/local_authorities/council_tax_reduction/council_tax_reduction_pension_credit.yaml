@@ -13,12 +13,14 @@
 # central path in 2039-40, where the State Pension figures below come from.
 
 - name: England guarantee credit recipient with income above the applicable amount gets maximum CTR
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       pensioner:
-        age: 70
+        age: 72
         state_pension: 18_712
     benunits:
       benunit:
@@ -73,12 +75,14 @@
     council_tax_reduction: 2_000
 
 - name: Entitled to guarantee credit but not claiming Pension Credit keeps the taper
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       pensioner:
-        age: 70
+        age: 72
         state_pension: 18_712
     benunits:
       benunit:
@@ -103,12 +107,14 @@
     council_tax_reduction: 1_165.68
 
 - name: England pensioner without Pension Credit keeps the taper
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       pensioner:
-        age: 70
+        age: 72
         state_pension: 18_712
     benunits:
       benunit:
@@ -508,12 +514,14 @@
     council_tax_reduction: 1_999.60
 
 - name: Capital of exactly 16,000 is within the limit for a pensioner without Pension Credit
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       pensioner:
-        age: 70
+        age: 72
         state_pension: 13_000
     benunits:
       benunit:

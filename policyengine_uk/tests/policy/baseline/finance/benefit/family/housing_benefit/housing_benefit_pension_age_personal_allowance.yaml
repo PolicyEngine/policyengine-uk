@@ -260,6 +260,10 @@
     housing_benefit_attained_pension_age_before_cutoff: true
 
 - name: Private renter aged 70 with a £30,000 State Pension is assessed at the lower rate
+  # The reported household. Income is 30,000 less 3,486 income tax; with no
+  # earnings there is no earnings disregard. At the lower rate,
+  # 9,000 - 0.65 x (26,514 - 238 x 52) is below zero. The higher rate would
+  # give 9,000 - 0.65 x (26,514 - 256 x 52) = 418.70.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -278,4 +282,29 @@
   output:
     housing_benefit_attained_pension_age_before_cutoff: false
     housing_benefit_applicable_amount: 238 * 52
-    housing_benefit: 47.68  # 656.08 at the higher rate: 0.65 x (256 - 238) x 52 = 608.40 more
+    housing_benefit_applicable_income: 26_514
+    housing_benefit: 0
+
+- name: A council tenant aged 70 with the same income and £12,000 rent gets 608.40 a year less than at the higher rate
+  # A council tenancy, so the Local Housing Allowance does not cap the rent.
+  # 12,000 - 0.65 x (26,514 - 238 x 52) = 2,810.30; at the higher rate it would
+  # be 3,418.70, so the lower rate costs 0.65 x (256 - 238) x 52 = 608.40.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 30_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 12_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 238 * 52
+    housing_benefit: 2_810.30
