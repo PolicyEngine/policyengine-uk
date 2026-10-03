@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.dates import birth_day
 
 
 class has_mixed_age_couple_pension_credit_saving(Variable):
@@ -66,11 +67,11 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
         receives_uc = reported(["universal_credit_reported"])
         # Art. 4(1) needs the couple to have been a mixed-age couple on
         # 14 May 2019, so its older member had reached the qualifying age by
-        # then.
+        # then: born on or before 5 February 1954.
         older_member_qualified = benunit.any(
             claimant_or_partner
             & person("is_SP_age", period)
-            & (person("birth_year", period) <= p.saving_latest_birth_year)
+            & (birth_day(person, period) <= p.saving_latest_birth_date)
         )
         return (
             benunit("is_mixed_age_couple", period)

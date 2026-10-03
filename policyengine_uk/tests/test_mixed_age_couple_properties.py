@@ -25,8 +25,8 @@ P7  In model years 2018 and 2019 every mixed-age couple not reported on
     Universal Credit meets the Pension Credit age conditions, whatever the
     saving input; one reported on UC meets them only with the saving.
 P8  The default saving is never set where the older member was born after
-    1954 (so had not reached the qualifying age by 14 May 2019), or where
-    the couple reports Universal Credit.
+    5 February 1954 (so had not reached the qualifying age by 14 May 2019),
+    or where the couple reports Universal Credit.
 """
 
 import json
@@ -270,5 +270,7 @@ def test_mixed_age_couple_invariants(case):
         assert default["age_conditions"] == (not on_uc), context
     older = case["people"]["older"]
     if default["saving"]:  # P8
-        assert case["year"] - older["age"] <= 1954, context
+        # A whole age places the birth on 6 April of year - age, which is on
+        # or before 5 February 1954 only if year - age is 1953 or earlier.
+        assert case["year"] - older["age"] <= 1953, context
         assert older["universal_credit_reported"] == 0, context
