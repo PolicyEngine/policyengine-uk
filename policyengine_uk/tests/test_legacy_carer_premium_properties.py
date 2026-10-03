@@ -15,10 +15,13 @@ dependent children or qualifying young persons:
 
 - a dependant's caring never changes carer_premium or income_support_eligible;
 - carer_premium is the per-person amount, weekly x 52, times the number of
-  caring claimants and partners, capped at one when they are treated as
-  caring for the same person; it is 0, one amount or two;
+  claimants and partners entitled to a carer benefit
+  (is_entitled_to_carer_benefit, which keeps an allowance reduced to nil by
+  an overlapping benefit and excludes caring hours without a claim), capped
+  at one when they are treated as caring for the same person; it is 0, one
+  amount or two;
 - unless supplied, partners are treated as caring for the same person unless
-  both are carers with a reported Carer's Allowance award;
+  both are entitled with a reported Carer's Allowance award;
 - supplying "same person" never raises the premium and caps it at one amount;
 - caring by the claimant or partner never removes Income Support eligibility
   or lowers the premium, and below pension age it always opens the IS route.
@@ -41,16 +44,24 @@ from policyengine_uk import Simulation
 YEAR = 2026
 WEEKS = 52
 AWARD = 4_000
+CA_HOURS = 35
 
 
 @st.composite
 def carer_inputs(draw):
-    # Either route to is_carer_for_benefits through the model's Carer's
-    # Allowance: a reported award, or the qualifying hours of care.
+    # Either route to Carer's Allowance entitlement in the model: a reported
+    # award, or the qualifying hours of care, each only for someone who would
+    # claim. Hours without a claim still make a carer for benefits.
     return {
         "carers_allowance_reported": draw(st.sampled_from([0, AWARD])),
         "care_hours": draw(st.sampled_from([0, 20, 34, 35, 50])),
+        "would_claim_carers_allowance": draw(st.booleans()),
     }
+
+
+# Above the Carer's Allowance rate, so an overlapping incapacity benefit
+# reduces the allowance to nil and leaves the entitlement.
+OVERLAPPING = st.sampled_from([0, 5_000])
 
 
 @st.composite
@@ -74,6 +85,7 @@ def families(draw):
         "age": head_age,
         "is_parent": has_parent_flag,
         "income_support_reported": 1_000,
+        "incapacity_benefit_reported": draw(OVERLAPPING),
         **draw(carer_inputs()),
     }
     family = [head]
@@ -85,6 +97,7 @@ def families(draw):
             {
                 "age": draw(st.integers(max(18, head_age - 15), oldest_partner)),
                 "is_parent": has_parent_flag,
+                "incapacity_benefit_reported": draw(OVERLAPPING),
                 **draw(carer_inputs()),
             }
         )
@@ -113,7 +126,11 @@ def situation(units, same_person=None):
 
 
 NOT_CARING = {"carers_allowance_reported": 0, "care_hours": 0}
-CARING = {"carers_allowance_reported": AWARD, "care_hours": 35}
+CARING = {
+    "carers_allowance_reported": AWARD,
+    "care_hours": 35,
+    "would_claim_carers_allowance": True,
+}
 
 SETTINGS = settings(
     max_examples=15,
@@ -147,8 +164,7 @@ def test_dependants_caring_never_changes_premium_or_is_eligibility(drawn):
     ]
     sim = Simulation(situation=situation(units + without))
     flags = sim.calculate("is_claimant_or_partner", YEAR)
-    carers = sim.calculate("is_carer_for_benefits", YEAR)
-    reported = sim.calculate("carers_allowance_reported", YEAR) > 0
+    entitled = sim.calculate("is_entitled_to_carer_benefit", YEAR)
     offsets = np.cumsum([0] + [len(f) for f in units + without])
     for i, n in enumerate(adults):
         # The generator's construction, checked against the model: the first
@@ -164,8 +180,23 @@ def test_dependants_caring_never_changes_premium_or_is_eligibility(drawn):
         assert abs(premium[i] - premium[k + i]) < 0.01, units[i]
         assert eligible[i] == eligible[k + i], units[i]
         adult_slice = slice(offsets[i], offsets[i] + n)
-        assert same_person[i] == ((reported & carers)[adult_slice].sum() < 2), units[i]
-        qualifying = carers[adult_slice].sum()
+        # Entitlement from the inputs (England, the default country): a
+        # reported award or the qualifying hours, for someone who would claim.
+        claims = [
+            member.get("would_claim_carers_allowance", True)
+            and (
+                member["carers_allowance_reported"] > 0
+                or member["care_hours"] >= CA_HOURS
+            )
+            for member in units[i][:n]
+        ]
+        assert list(entitled[adult_slice]) == claims, units[i]
+        awards = sum(
+            claim and member["carers_allowance_reported"] > 0
+            for claim, member in zip(claims, units[i][:n])
+        )
+        assert same_person[i] == (awards < 2), units[i]
+        qualifying = sum(claims)
         if same_person[i]:
             qualifying = min(qualifying, 1)
         assert abs(premium[i] - qualifying * amount * WEEKS) < 0.01, units[i]
