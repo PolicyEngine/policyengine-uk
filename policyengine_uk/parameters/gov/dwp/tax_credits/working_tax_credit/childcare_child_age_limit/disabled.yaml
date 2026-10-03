@@ -1,0 +1,9 @@
+description: Annual age below which a disabled child's childcare charges count for the Working Tax Credit childcare element, approximating the week containing the 1 September after the child's 16th birthday.
+values:
+  2003-04-06: 17
+metadata:
+  unit: year
+  label: WTC childcare disabled child age limit
+  reference:
+    - title: Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg 14(3)-(4)
+      href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/14

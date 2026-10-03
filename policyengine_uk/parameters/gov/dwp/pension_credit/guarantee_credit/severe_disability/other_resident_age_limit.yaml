@@ -1,0 +1,11 @@
+description: Age from which another person normally residing with the claimant stops the Pension Credit severe disability addition, unless the person is one whose presence is ignored.
+values:
+  2002-01-01: 18
+metadata:
+  unit: year
+  label: Pension Credit severe disability other resident age limit
+  reference:
+    - title: The State Pension Credit Regulations 2002 sch. I para. 1(1)(a)(ii), (b)(ii) and (c)(iii)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/I/paragraph/1
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 sch. 3 para. 6(2)(a)(ii) and (b)(iii)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/6

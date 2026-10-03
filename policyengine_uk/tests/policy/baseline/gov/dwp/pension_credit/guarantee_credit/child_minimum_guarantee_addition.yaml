@@ -16,6 +16,29 @@
     child_minimum_guarantee_addition: 7_854.6
     minimum_guarantee: 20_230.6
 
+- name: An eldest qualifying young person receives the higher child amount ahead of a younger child.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 81
+        is_parent: true
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+      child:
+        age: 6
+    benunits:
+      benunit:
+        members: [claimant, young_person, child]
+  output:
+    # Sch IIA para 10: eldest QYP gets 81.07, younger child 69.98 per week.
+    # (81.07 + 69.98) * 52 = 7,854.60; single guarantee = 238 * 52.
+    child_minimum_guarantee_addition: 7_854.60
+    minimum_guarantee: 20_230.60
+
 # Sch IIA para 10: the eldest child or qualifying young person gets 81.07 a week
 # instead of 69.98 if born before 6 April 2017. 81.07 * 52 = 4,215.64 and
 # 69.98 * 52 = 3,638.96.

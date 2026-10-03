@@ -1,0 +1,1 @@
+Gave the generated adults in the Universal Credit capital-income and State Pension property tests explicit claimant-or-partner roles, so an adult under 20 is no longer presumed to be the other adult's child.

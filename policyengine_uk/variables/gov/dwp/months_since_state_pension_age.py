@@ -10,7 +10,9 @@ class months_since_state_pension_age(Variable):
         "Months between the day this person attains State Pension age and the "
         "middle of the fiscal year (6 October); negative if they attain it "
         "later. Exact age is measured from the same instant of birth as "
-        "state_pension_age."
+        "state_pension_age: date_of_birth where given, otherwise a whole age "
+        "plus months_since_last_birthday, or a fractional age as the exact "
+        "age."
     )
     definition_period = YEAR
     unit = "month"

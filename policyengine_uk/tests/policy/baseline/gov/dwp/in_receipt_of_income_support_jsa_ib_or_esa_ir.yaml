@@ -1,0 +1,92 @@
+# Receipt of Income Support, income-based JSA or income-related ESA: a
+# positive amount of any of them, held for the benefit unit.
+
+- name: No income-related benefit
+  period: 2025
+  input:
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+
+- name: Income Support alone
+  period: 2025
+  input:
+    income_support: 0.01
+    jsa_income: 0
+    esa_income: 0
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+
+- name: Income-based JSA alone
+  period: 2025
+  input:
+    income_support: 0
+    jsa_income: 1_000
+    esa_income: 0
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+
+- name: Income-related ESA alone
+  period: 2025
+  input:
+    income_support: 0
+    jsa_income: 0
+    esa_income: 1_000
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+
+- name: Contributory JSA and ESA are not receipt
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        jsa_contrib: 2_000
+        esa_contrib: 2_000
+    benunits:
+      benunit:
+        members: [claimant]
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+
+- name: A reported income-based JSA award screened out by the capital test is not receipt
+  # jsa_income is nil above the £16,000 capital limit, so nothing is paid.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        savings: 20_000
+  output:
+    jsa_income: 0
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+
+- name: A reported income-based JSA award within the capital limit is receipt
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        savings: 1_000
+  output:
+    jsa_income: 3_000
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
