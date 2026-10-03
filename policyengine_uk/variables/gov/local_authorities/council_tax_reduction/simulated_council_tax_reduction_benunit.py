@@ -82,7 +82,8 @@ class simulated_council_tax_reduction_benunit(Variable):
             - excess_income * withdrawal_rate
             - non_dep_deductions,
         )
-        capital_eligible = benunit.household("savings", period) <= capital_limit
+        capital = benunit("council_tax_reduction_assessable_capital", period)
+        capital_eligible = capital <= capital_limit
         national_ctr = (
             national_scheme
             * is_household_head_benunit

@@ -52,7 +52,9 @@ class attends_private_school(Variable):
 
         person = household.members
 
-        is_child = person("is_child", period)
+        # No law governs this imputation. The attendance rates apply to
+        # everyone under 18, so the pool is an explicit age band.
+        under_18 = person("age_under_18", period)
 
         taxes = household.sum(
             person("income_tax", period) + person("national_insurance", period)
@@ -96,7 +98,7 @@ class attends_private_school(Variable):
         p_attends_private_school = (
             _rate_by_percentile[percentile]
             * STUDENT_POPULATION_ADJUSTMENT_FACTOR
-            * is_child
+            * under_18
         )
 
         # Use pre-generated random draw from dataset instead of calling random()
