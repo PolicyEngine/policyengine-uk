@@ -7,10 +7,13 @@ class council_tax_benefit(Variable):
     label = "Council Tax Benefit"
     documentation = (
         "A family that claims gets the simulated reduction where the model "
-        "simulates its own scheme, and its reported reduction otherwise. A "
-        "claimant jointly liable with others can get at most its own share "
-        "of the council tax, so its reported reduction is limited to that "
-        "share. A family that cannot claim keeps a reported reduction only "
+        "simulates its own scheme, and its reported reduction otherwise. "
+        "Where another claim in the household is simulated on its share of "
+        "the council tax, a jointly liable claimant's reported reduction is "
+        "limited to its own share, so the two cannot together exceed the "
+        "bill; the share is the one the simulated claims use. Where no claim "
+        "in the household is simulated, reported reductions are kept as "
+        "reported. A family that cannot claim keeps a reported reduction only "
         "where no claim in its household is simulated."
     )
     definition_period = YEAR
@@ -27,17 +30,24 @@ class council_tax_benefit(Variable):
         reported = benunit("council_tax_benefit_reported", period)
         claimant = benunit("council_tax_reduction_claimant_benunit", period)
         share = benunit("council_tax_reduction_joint_liability_share", period)
+        household_simulates = benunit.household(
+            "council_tax_reduction_household_has_simulated_claim", period
+        )
         # SI 2012/2885 Sch 1 para 7(3)-(4): a jointly liable claimant's
-        # maximum reduction is on its share of the council tax.
+        # maximum reduction is on its share of the council tax. Applied only
+        # beside a simulated claim, which uses the same share; reports are
+        # otherwise kept, since the share does not yet exclude the students
+        # para 7(5) leaves out.
         share_of_liability = (
             benunit.household(
                 "council_tax_reduction_maximum_eligible_liability", period
             )
             * share
         )
-        reported_claim = where(share < 1, min_(reported, share_of_liability), reported)
-        household_simulates = benunit.household(
-            "council_tax_reduction_household_has_simulated_claim", period
+        reported_claim = where(
+            household_simulates & (share < 1),
+            min_(reported, share_of_liability),
+            reported,
         )
         not_claiming = where(household_simulates, 0, reported)
         return where(

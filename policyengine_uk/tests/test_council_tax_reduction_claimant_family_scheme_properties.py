@@ -30,11 +30,15 @@ not):
    pensioner scheme, and only a working-age family by a council's scheme.
 4. Others do not matter: changing the ages and disability benefits of every
    other family that claims leaves a family's pensioner status, exemption,
-   scheme and award unchanged, reported reductions included.
+   scheme and simulated award unchanged. Its council_tax_benefit is unchanged
+   too, unless it falls back to a reported reduction and whether another
+   claim in its household is simulated changes (property 5's reconciliation).
 5. Fallback: a claiming family gets its simulated reduction where its scheme
-   is simulated, and otherwise its reported one, limited to its share of the
-   council tax where it is jointly liable. A family that cannot claim gets
-   its reported reduction only where no claim in its household is simulated.
+   is simulated, and otherwise its reported one. Beside a simulated claim in
+   its household, a jointly liable claimant's reported reduction is limited
+   to its share of the council tax; otherwise it is kept as reported. A
+   family that cannot claim gets its reported reduction only where no claim
+   in its household is simulated.
 6. Bounds: a family that cannot claim gets no simulated reduction; a
    household with a simulated claim never gets more than its council tax.
 7. The exemption is the applicant's own: in a council's working-age scheme,
@@ -298,7 +302,9 @@ def test_scheme_follows_own_family(population):
             supported,
             simulated,
             np.where(
-                share < 1, np.minimum(reported_amount, bill * share), reported_amount
+                household_simulates & (share < 1),
+                np.minimum(reported_amount, bill * share),
+                reported_amount,
             ),
         ),
         np.where(household_simulates, 0, reported_amount),
@@ -330,7 +336,6 @@ def test_other_families_do_not_change_a_claim(population):
     for variable in (
         "council_tax_reduction_joint_liability_share",
         "simulated_council_tax_reduction_benunit",
-        "council_tax_benefit",
     ):
         np.testing.assert_allclose(
             calc(before, variable)[target],
@@ -338,6 +343,21 @@ def test_other_families_do_not_change_a_claim(population):
             atol=1e-6,
             err_msg=variable,
         )
+    # A reported fallback is reconciled against the household's simulated
+    # claims (property 5); compare it wherever that reconciliation is the same.
+    house = facts["house"]
+    simulates = "council_tax_reduction_household_has_simulated_claim"
+    same_reconciliation = (
+        calc(before, simulates)[house] == calc(after, simulates)[house]
+    )
+    supported = calc(before, "council_tax_reduction_scheme_supported").astype(bool)
+    compare = target & (supported | same_reconciliation)
+    np.testing.assert_allclose(
+        calc(before, "council_tax_benefit")[compare],
+        calc(after, "council_tax_benefit")[compare],
+        atol=1e-6,
+        err_msg="council_tax_benefit",
+    )
 
 
 @st.composite

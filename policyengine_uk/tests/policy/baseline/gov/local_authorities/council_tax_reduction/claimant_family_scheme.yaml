@@ -288,7 +288,7 @@
     council_tax_benefit: [300, 200]
     council_tax_reduction: 500
 
-- name: A jointly liable claimant's reported reduction is limited to its share of the bill
+- name: Beside a simulated claim, a jointly liable claimant's reported reduction is limited to its share of the bill
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -644,3 +644,84 @@
     is_council_tax_reduction_applicant_or_partner: [true, true]
     council_tax_reduction_applicant_has_non_dep_exemption: [true]
     council_tax_reduction_pensioner: [false]
+
+- name: Where no claim is simulated, a jointly liable claimant keeps its whole reported reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_benefit_reported: 1_200
+      sharer:
+        age: 35
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    council_tax_reduction_household_has_simulated_claim: false
+    # Nothing is simulated to reconcile with, so the report stands as on the
+    # base. The model's share is not used here: it does not yet leave out the
+    # students that SI 2012/2885 Sch 1 para 7(5) excludes from the divisor.
+    council_tax_benefit: [1_200, 0]
+    council_tax_reduction: 1_200
+
+- name: A pension-age grandmother in the applicants' family does not make their claim a pensioner's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 40
+        is_household_head: true
+        is_parent: true
+        is_claimant_or_partner: true
+        council_tax_benefit_reported: 400
+      father:
+        age: 42
+        is_household_head: false
+        is_parent: true
+        is_claimant_or_partner: true
+      grandmother:
+        age: 80
+        is_household_head: false
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [mother, father, grandmother]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [mother, father, grandmother]
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # Intended change: the base put the claim on the pensioner scheme because
+    # any member of the head's family was over State Pension age (£1,800
+    # simulated). A "pensioner" is the applicant or partner (SI 2012/2885
+    # reg 3(1)), here the working-age parents, so the claim falls under
+    # Maidstone's unmodelled working-age scheme and keeps its report.
+    is_council_tax_reduction_applicant_or_partner: [true, true, false]
+    council_tax_reduction_pensioner: [false]
+    council_tax_reduction_scheme_supported: [false]
+    council_tax_benefit: [400]
+    council_tax_reduction: 400
