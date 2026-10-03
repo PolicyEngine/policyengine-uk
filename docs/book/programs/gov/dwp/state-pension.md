@@ -96,7 +96,11 @@ Other programmes test State Pension age in two ways:
   beginning of the tax year (6 April) is excepted (Social Security
   (Contributions) Regulations 2001 reg 91(a)), so `ni_class_4_liable` needs
   `months_since_state_pension_age` below 6. Someone who reaches it on 6 April
-  itself is read as over it at the beginning of that year. Class 1 employee
+  itself is read as over it at the beginning of that year. With default
+  whole-number ages in a household situation, the inferred birthday is
+  6 April. Entering an integer State Pension age therefore makes this
+  boundary reading determine the Class 4 result; fractional ages and explicit
+  birthday-month inputs can place the birthday on another day. Class 1 employee
   contributions stop at State Pension age itself (SSCBA 1992 s.6(3)), which
   the annual model reads as `is_SP_age`.
 

@@ -12,6 +12,7 @@ April), so someone who reaches it during a year is liable for that whole year.
 """
 
 from datetime import date, timedelta
+from functools import lru_cache
 
 import numpy as np
 import pytest
@@ -20,6 +21,7 @@ from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import WEEKS_IN_YEAR
+from policyengine_uk.system import system
 from policyengine_uk.tests.test_state_pension_age import (
     YEARS,
     differential_simulation,
@@ -27,6 +29,18 @@ from policyengine_uk.tests.test_state_pension_age import (
     grid_months_to_date,
     reference_attainment_day,
 )
+
+
+@pytest.fixture(scope="module", autouse=True)
+def reuse_country_model():
+    # Keep the real simulation constructors and independent parameter trees,
+    # without importing every variable again for each synthetic household.
+    with pytest.MonkeyPatch.context() as patch:
+        patch.setattr(
+            "policyengine_uk.simulation.CountryTaxBenefitSystem", system.clone
+        )
+        yield
+
 
 # Men born before this date have a pensionable age of 65 (Sch 4 para 1 rule
 # (1)); for everyone else pensionable age and the qualifying age coincide.
@@ -49,6 +63,22 @@ def one_person_units(people: dict) -> dict:
         "benunits": {f"b_{name}": {"members": [name]} for name in people},
         "households": {f"h_{name}": {"members": [name]} for name in people},
     }
+
+
+@lru_cache(maxsize=1)
+def one_person_units_template():
+    return Simulation(situation=one_person_units({"template": {}}))
+
+
+def property_simulation(people: dict):
+    # These properties never reform parameters or variable definitions. Share
+    # that model and rebuild the populations instead of repeatedly importing
+    # every variable and retaining generated modules in sys.modules.
+    sim = one_person_units_template().clone(clone_tax_benefit_system=False)
+    sim.build_from_situation(one_person_units(people))
+    sim.input_variables = sim.get_known_variables()
+    sim.calculated_periods = []
+    return sim
 
 
 @pytest.mark.parametrize("year", YEARS)
@@ -143,7 +173,7 @@ def assert_consumers_follow_the_qualifying_age(births, male, year):
             "months_since_last_birthday": {year: age_in_months - 12 * age},
             "is_male": {year: male},
         }
-    sim = Simulation(situation=one_person_units(people))
+    sim = property_simulation(people)
     attained = sim.calculate("has_attained_state_pension_credit_qualifying_age", year)
     expected = np.array(
         [reference_qualifying_day(b) <= date(year, 10, 6) for b in births]
@@ -234,7 +264,7 @@ def test_class_4_liability_properties(births, male, year):
             "is_male": {y: male for y in (year, year + 1)},
             "self_employment_income": {y: 60_000 for y in (year, year + 1)},
         }
-    sim = Simulation(situation=one_person_units(people))
+    sim = property_simulation(people)
     liable = sim.calculate("ni_class_4_liable", year)
     liable_next = sim.calculate("ni_class_4_liable", year + 1)
     since = sim.calculate("months_since_state_pension_age", year)

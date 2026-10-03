@@ -15,8 +15,9 @@ class state_pension_credit_qualifying_age(Variable):
         "pensionable age of a woman born on the same day. It differs from the "
         "person's own State Pension age only for men born before 6 December "
         "1953, whose pensionable age is 65. Universal Credit, Housing Benefit, "
-        "Council Tax Reduction, Income Support and Winter Fuel Payment use this "
-        "age as well as Pension Credit. The date of birth comes from age and "
+        "Council Tax Reduction, Income Support and Winter Fuel Payment before "
+        "September 2024 use this age as well as Pension Credit. The date of "
+        "birth comes from age and "
         "months_since_last_birthday."
     )
     definition_period = YEAR

@@ -6,7 +6,8 @@
 # Universal Credit (Welfare Reform Act 2012 s.4(1)(b), (4)), Housing Benefit
 # (SI 2006/213 and 2006/214 reg 5; SI 2014/1230 reg 6A(4)), Council Tax
 # Reduction (SI 2012/2885 reg 3), Income Support (SSCBA 1992 s.124(1)(aa)) and
-# Winter Fuel Payment (SI 2000/729 reg 2(1)(b)) use the qualifying age.
+# Winter Fuel Payment before September 2024 (SI 2000/729 reg 2(1)(b)) use
+# the qualifying age.
 #
 # age and months_since_last_birthday place the date of birth: the person was
 # born that many years and months before 6 October of the fiscal year.
@@ -297,7 +298,8 @@
   # age, so they can claim Pension Credit, not Universal Credit. (State
   # Pension Credit Act 2002 s.4(1A), which excludes a couple where the other
   # member "has not attained the qualifying age", came into force on 15 May
-  # 2019; the model applies it in every year, and it is met here either way.)
+  # 2019. Both members meet the shared age condition, before and after that
+  # exclusion; they are not a mixed-age couple under SI 2019/37 art. 2.)
   period: 2017
   input:
     people:
@@ -318,6 +320,8 @@
   output:
     has_attained_state_pension_credit_qualifying_age: [true, true]
     is_SP_age: [false, true]
+    is_mixed_age_couple: false
+    meets_pension_credit_age_conditions: true
     is_pension_credit_eligible: true
     is_uc_eligible: false
 
