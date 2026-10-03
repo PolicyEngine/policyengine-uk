@@ -1,3 +1,10 @@
+## [2.109.3] - 2026-10-03
+
+### Fixed
+
+- - Pension Credit assessable capital now reads `is_claimant_or_partner` rather than the Universal Credit claimant flag to decide whose person-level capital counts, and the legacy and Pension Credit person-level capital parameter descriptions name that flag. The Lifetime ISA tests now set it on families the age presumption would otherwise treat as couples, and pin that Pension Credit ignores the Universal Credit flag.
+
+
 ## [2.109.2] - 2026-10-03
 
 ### Changed
