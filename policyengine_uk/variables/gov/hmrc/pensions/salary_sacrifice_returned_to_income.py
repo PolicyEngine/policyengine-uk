@@ -12,6 +12,10 @@ class salary_sacrifice_returned_to_income(Variable):
         "The full excess is redirected - the employer cost increase is handled via "
         "the broad-base haircut (salary_sacrifice_broad_base_haircut) which reduces "
         "ALL workers' employment income by ~0.16%, not just affected workers."
+        "\n\n"
+        "Only people with pay have a salary sacrifice "
+        "(pension_contributions_via_salary_sacrifice_from_pay), so nothing is "
+        "returned to a person without pay."
     )
     entity = Person
     definition_period = YEAR
@@ -20,7 +24,9 @@ class salary_sacrifice_returned_to_income(Variable):
     reference = "https://policyengine.org/uk/research/uk-salary-sacrifice-cap"
 
     def formula(person, period, parameters):
-        intended_ss = person("pension_contributions_via_salary_sacrifice", period)
+        intended_ss = person(
+            "pension_contributions_via_salary_sacrifice_from_pay", period
+        )
         cap = parameters(
             period
         ).gov.hmrc.national_insurance.salary_sacrifice_pension_cap

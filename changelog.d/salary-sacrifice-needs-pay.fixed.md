@@ -1,0 +1,1 @@
+- Counted salary sacrifice pension contributions only for people with pay, so from 2029 the excess over the £2,000 cap no longer gives employment income to people without a job.

@@ -1,8 +1,12 @@
+# The salary sacrifice is limited to employment_income_before_lsr, the pay it
+# comes out of. This runner does not copy an employment_income input there
+# (policyengine_uk.Simulation does), so each case sets both.
 - name: No employer NI charge when salary sacrifice below £2,000 cap
   period: 2025
   absolute_error_margin: 0.01
   input:
     employment_income: 40_000
+    employment_income_before_lsr: 40_000
     pension_contributions_via_salary_sacrifice: 1_500
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
@@ -14,6 +18,7 @@
   absolute_error_margin: 0.01
   input:
     employment_income: 45_000
+    employment_income_before_lsr: 45_000
     pension_contributions_via_salary_sacrifice: 2_250
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
@@ -26,6 +31,7 @@
   absolute_error_margin: 0.01
   input:
     employment_income: 125_000
+    employment_income_before_lsr: 125_000
     pension_contributions_via_salary_sacrifice: 25_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
@@ -38,6 +44,7 @@
   absolute_error_margin: 0.01
   input:
     employment_income: 80_000
+    employment_income_before_lsr: 80_000
     pension_contributions_via_salary_sacrifice: 15_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
@@ -50,6 +57,7 @@
   absolute_error_margin: 0.01
   input:
     employment_income: 60_000
+    employment_income_before_lsr: 60_000
     pension_contributions_via_salary_sacrifice: 2_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
@@ -61,6 +69,7 @@
   absolute_error_margin: 0.01
   input:
     employment_income: 35_000
+    employment_income_before_lsr: 35_000
     pension_contributions_via_salary_sacrifice: 2_100
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
@@ -73,6 +82,7 @@
   absolute_error_margin: 0.01
   input:
     employment_income: 30_000
+    employment_income_before_lsr: 30_000
     pension_contributions_via_salary_sacrifice: 5_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
@@ -85,6 +95,7 @@
   absolute_error_margin: 0.01
   input:
     employment_income: 45_000
+    employment_income_before_lsr: 45_000
     pension_contributions_via_salary_sacrifice: 3_000
     gov.hmrc.national_insurance.salary_sacrifice_pension_cap: 2_000
     gov.contrib.behavioral_responses.salary_sacrifice_broad_base_haircut_rate: 0
