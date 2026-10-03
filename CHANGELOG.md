@@ -1,3 +1,30 @@
+## [2.112.0] - 2026-10-03
+
+### Added
+
+- Add `months_since_last_birthday`, which places a person's date of birth within their year of age, and `months_since_state_pension_age`.
+
+### Changed
+
+- - Read Attendance Allowance from its dataset award category when supplied, retained an explicitly approximate amount fallback otherwise, and applied Northern Ireland's separate AFIP and PIP commencement dates to the legacy severe disability premium.
+
+### Fixed
+
+- - Apply the pensioner Council Tax Reduction earnings disregards in England (SI 2012/2885 Sch 4), Wales (WSI 2013/3029 Sch 3) and Scotland (SSI 2012/319 Sch 2). A pension-age family's net earnings are now reduced by £25 a week for a lone parent, £10 for a couple and £5 otherwise, capped at net earnings, plus the £17.10 additional earnings disregard where a work condition is met and net earnings cover it (£37.10 in Scotland from 6 April 2020 to 4 April 2021). These sums are fixed in law and are not uprated. Before, pensioner CTR disregarded no earnings.
+- - Uprate Northern Ireland domestic rates when projecting datasets, by the growth in the combined regional and district rate poundage (Department of Finance poundages to 2026-27, weighted by council domestic rates paid; 4.33% a year from 2027-28). Previously every projected year kept the data year's bills.
+- Gave the generated adults in the Universal Credit capital-income and State Pension property tests explicit claimant-or-partner roles, so an adult under 20 is no longer presumed to be the other adult's child.
+- The legacy benefit severe disability premium now qualifies on the benefits the Regulations list (Attendance Allowance, the DLA care component at the middle or highest rate, the PIP daily living component at either rate, and Armed Forces Independence Payment), pays a couple only when both partners qualify or the other partner is blind, pays the single rate when a carer benefit is paid for one partner, and is barred by a non-dependant aged 18 or over or by a carer benefit paid for the claimant. The tax credit severe disability flag now counts higher-rate Attendance Allowance and Armed Forces Independence Payment instead of all Armed Forces Compensation Scheme payments.
+- Set State Pension age from each person's date of birth under Pensions Act 1995 Schedule 4 paragraph 1, including the rise from 66 to 67 for people born on or after 6 April 1960 (Pensions Act 2014 s.26): 66-year-olds move below State Pension age through 2026-27 and 2027-28, and are all below it from 2028-29. The Savings Credit age test, the split between basic and new State Pension, and additional State Pension now follow each person's own State Pension age.
+- - Removed NumPy's generic-timedelta deprecation warning from State Pension date arithmetic without changing calculated dates.
+- - Household calculations default an unspecified birthday position to six months before 6 October, implying a 6 April birth date and making an entered age of 66 above State Pension age at that check in 2026-27 and below it in 2027-28, while fractional ages or `months_since_last_birthday` can specify a different inferred birth date even when other people supply birthday months.
+- - Added replacement guidance for reforms, structural reforms, nested scenarios and saved API policies using the removed male and female State Pension age parameters, rejecting obsolete simulation changes before resetting existing policy.
+- - A member at least 16 years younger than a claimant flagged as a parent is now presumed to be their child at any age, unless a member under 20 and at least 16 years younger already explains the flag. So a flagged lone parent living only with an adult son or daughter is no longer inferred as a couple. Without any parent flag the under-20 limit stays, because survey childless couples carry no flags.
+
+### Removed
+
+- Remove `gov.dwp.state_pension.age.male` and `gov.dwp.state_pension.age.female`, a single State Pension age for each year. The statutory timetable by date of birth replaces them: `gov.dwp.state_pension.age.age_by_birth_date` (the age, in months) and `day_by_birth_date` (the day), with `male.age` and `male.born_before` for men born before 6 December 1953. A reform to State Pension age now changes those rows, for example the ages for births from a given date; code that read a State Pension age should read `state_pension_age` or `is_SP_age`.
+
+
 ## [2.111.2] - 2026-10-03
 
 ### Fixed
