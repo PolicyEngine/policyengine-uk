@@ -383,9 +383,10 @@
       household:
         members: [claimant, partner]
   output:
-    # The claimant meets (a) with the offer. The partner, a joint claimant
-    # receiving maternity allowance, is treated as in paid work (32(2)(b)),
-    # so meets (b). Neither member meets both limbs alone.
+    # The claimant meets only (a), with the offer. The partner, a joint
+    # claimant receiving maternity allowance, is treated as in paid work
+    # (32(2)(b), WRA 2012 s. 40), so meets (b). Taking the partner as the
+    # claimant instead fails, because an offer does not meet (b).
     uc_childcare_treated_as_in_paid_work: [false, true]
     uc_childcare_work_condition: true
 
