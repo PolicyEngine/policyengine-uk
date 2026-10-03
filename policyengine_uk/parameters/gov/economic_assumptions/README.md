@@ -19,10 +19,12 @@ generated from it by
 | `road_fuel_volume`      | Petrol + diesel road-fuel clearances                     | HMRC Hydrocarbon Oils + OBR fuel-duty forecast |
 | `petrol_spending_litre_proxy` | Spending growth that preserves road-fuel litres    | HMRC + OBR              |
 | `diesel_spending_litre_proxy` | Same, for diesel                                   | HMRC + OBR              |
+| `finance_ni.domestic_rates` | Average Northern Ireland domestic rates bill (regional plus district poundage) | DoF rate poundages, LPS rates paid, NI draft Budget 2026-29 |
 
 ## Time horizons
 
-Three horizons are stitched together for each series:
+Three horizons are stitched together for each OBR and ONS series (not
+`finance_ni.domestic_rates`, which has its own method, below):
 
 1. **Outturn** (history through 2024): ONS published data, copied from OBR
    detailed forecast tables.
@@ -87,14 +89,42 @@ which the review uses: the April 2025 and April 2026 rises used October's
    detailed forecast tables (note the EFO release month in the header comment).
 2. Recompute the 2031-2073 convergence path so the first long-run year
    continues smoothly from the new last forecast year (no jump).
-3. Run `python policyengine_uk/parameters/gov/economic_assumptions/create_economic_assumption_indices.py`
-   to regenerate the cumulative `indices/` parameters that uprating depends
-   on.
+3. Nothing needs regenerating: `create_economic_assumption_indices` rebuilds
+   the cumulative `indices` parameters from these series whenever the
+   tax-benefit system processes its parameters (`tax_benefit_system.py`).
 4. Update the EFO reference in each series' `metadata.reference`.
 5. Regenerate `statutory_uprating_inputs/forecast_gap/` from the same EFO.
    `policyengine_uk/utils/import_obr_forecasts.py` does this when it updates
    `yoy_growth.yaml`; pass the receipts tables with `--receipts-file` or
    `--receipts-url` so September CPI uses the OBR's September forecast. If
    you edit `yoy_growth.yaml` by hand instead, rerun it with `--gaps-only`.
+
+The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
+publish a Northern Ireland domestic rates bill series (see below).
+
+## Northern Ireland domestic rates
+
+`finance_ni.domestic_rates` is the growth in the average Northern Ireland
+domestic rates bill: the combined regional and district domestic poundage
+across the 11 councils, each council weighted by its domestic rates paid in
+the previous year. It is a national average, so it does not reproduce any one
+council's bill or changes in reliefs. The comments in
+[`yoy_growth.yaml`](./yoy_growth.yaml) give the derivation and
+`policyengine_uk/tests/test_domestic_rates_uprating.py` recomputes it from the
+published figures. To refresh it each spring:
+
+1. Add the new year's domestic district and regional poundages for every
+   council from the Department of Finance
+   [rate poundages](https://www.finance-ni.gov.uk/articles/rate-poundages)
+   tables, and the latest year of Land & Property Services' domestic rates
+   collected by district council, to the tables in that test. The years it
+   checks follow from those tables: published years must match the
+   recomputed growth, and later years must equal the last published year's.
+2. Set the new year's value to the recomputed growth, rounded to 4 decimals,
+   and the projected years after it to the same value (or change the
+   projection rule and its test together).
+3. Revisit that projection against the regional rate Order and any agreed
+   Northern Ireland Budget, and keep it labelled as an assumption. Run the
+   test file.
 
 [rpi-cpi]: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/

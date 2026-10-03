@@ -37,6 +37,7 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
     add_lsr_deprecation_aliases,
 )
 from policyengine_uk.utils.parameters import (
+    add_removed_parameter_aliases,
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
@@ -80,6 +81,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """Reset parameters by reloading from the parameters directory."""
         self._parameters_at_instant_cache = {}
         self.load_parameters(self.parameters_dir)
+        self.parameters = add_removed_parameter_aliases(self.parameters)
 
     def process_parameters(self) -> None:
         """Process and transform parameters with UK-specific adjustments.

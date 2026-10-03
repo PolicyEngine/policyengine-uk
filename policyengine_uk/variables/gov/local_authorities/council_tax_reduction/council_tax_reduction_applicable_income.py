@@ -11,8 +11,10 @@ class council_tax_reduction_applicable_income(Variable):
         "whose partner, is in receipt of Pension Credit guarantee credit, and "
         "use the Secretary of State's Pension Credit assessment of income, plus "
         "the savings credit payable, where the award is savings credit only. "
-        "The other adjustments those provisions allow (childcare charges, lone "
-        "parent and maintenance disregards, and the rest) are not modelled."
+        "Otherwise a pension-age family's net earnings are reduced by the "
+        "pensioner earnings disregards. The other adjustments those "
+        "provisions allow (childcare charges, the £20 earnings disregards, "
+        "maintenance disregards and the rest) are not modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -25,6 +27,9 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
     ]
 
     def formula(benunit, period, parameters):
@@ -97,8 +102,15 @@ class council_tax_reduction_applicable_income(Variable):
         tax = add_for_members(
             benunit, period, ["income_tax", "national_insurance"], members
         )
+        # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
+        # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
+        # earnings disregards, capped at net earnings. Zero for working-age
+        # families.
+        earnings_disregard = benunit(
+            "council_tax_reduction_pensioner_earnings_disregard", period
+        )
         income_under_general_rules = max_(
-            0, increased_income - tax - pension_contributions
+            0, increased_income - tax - pension_contributions - earnings_disregard
         )
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is

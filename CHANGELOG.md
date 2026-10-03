@@ -1,3 +1,28 @@
+## [2.111.2] - 2026-10-03
+
+### Fixed
+
+- - Apply the State Pension Credit severe disability addition's residence and carer conditions (SPC Regs 2002 Sch I paras 1-2 and reg 6(5)): no other resident aged 18 or over, ignoring qualifying-benefit recipients, blind people and qualifying young persons; and a carer benefit reduces or removes the addition only when it is paid for caring for a qualifying claimant or partner, so a claimant's own Carer's Allowance no longer removes it. Pension-age Housing Benefit and Council Tax Reduction follow once their severe disability premium reads this variable.
+
+
+## [2.111.1] - 2026-10-03
+
+### Fixed
+
+- - Take the Housing Benefit earnings disregards from net earnings only, as SI 2006/213 and SI 2006/214 Schedule 4 require. The £5, £10 and £25 weekly disregards are now capped at the claimant's and partner's net earnings instead of being deducted from any income, including the State Pension, and they are no longer uprated with CPI. The additional earnings disregard is £17.10 (it was £37.10, uprated), and it now needs its work conditions (one person aged at least 25 working 30 hours, or 16 hours for lone parents, couples with a child and disabled workers) and net earnings covering the other disregards, childcare charges and £17.10. A working-age claimant on Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance has all earnings disregarded.
+
+
+## [2.111.0] - 2026-10-03
+
+### Added
+
+- - Add `uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period` (reg 32(1)(a)) and `uc_is_temporarily_absent_from_claimant_household` (reg 32(1)(b)(iii)) inputs, and `uc_childcare_treated_as_in_paid_work` and `uc_unable_to_provide_childcare` for the Universal Credit childcare work condition.
+
+### Fixed
+
+- - Apply the Universal Credit childcare work condition's partner exceptions and treated-as-working rules (UC Regs 2013 reg 32). A couple now meets it when one member is in paid work and the other is in paid work or unable to provide childcare because of limited capability for work, caring for a severely disabled person or temporary absence. A claimant receiving statutory sick, maternity or paternity pay or maternity allowance is treated as in paid work.
+
+
 ## [2.110.0] - 2026-10-03
 
 ### Added
