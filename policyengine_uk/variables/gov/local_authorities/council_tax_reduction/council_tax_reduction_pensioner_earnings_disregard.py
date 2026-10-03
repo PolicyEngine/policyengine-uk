@@ -23,9 +23,10 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
         "model does not deduct from Council Tax Reduction income. The £20 "
         "disregards for disabled people, carers and some part-time "
         "occupations, and the exempt work disregard, are not modelled. Zero "
-        "for working-age families, whose schemes are local in England and "
-        "have their own schedules in Wales and Scotland, and outside Great "
-        "Britain."
+        "for families that are not the schemes' pensioners "
+        "(council_tax_reduction_pensioner), whose schemes are local in "
+        "England and have their own schedules in Wales and Scotland, and "
+        "outside Great Britain."
     )
     definition_period = YEAR
     unit = GBP
@@ -36,6 +37,7 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/13",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/33",
+        "https://www.legislation.gov.uk/uksi/2012/2885/regulation/3",
     )
 
     def formula(benunit, period, parameters):
@@ -79,6 +81,10 @@ class council_tax_reduction_pensioner_earnings_disregard(Variable):
             additional_amount,
             0,
         )
-        pension_age = benunit.any(benunit.members("is_SP_age", period))
+        # The pensioner schedules apply to the schemes' pensioners: the
+        # qualifying age for State Pension Credit, and no income-related
+        # benefit or Universal Credit award (SI 2012/2885 reg 3; WSI
+        # 2013/3029 reg 3; SSI 2012/319 reg 12).
+        pensioner = benunit("council_tax_reduction_pensioner", period)
         in_great_britain = in_england | in_wales | in_scotland
-        return where(pension_age & in_great_britain, standard + additional, 0)
+        return where(pensioner & in_great_britain, standard + additional, 0)

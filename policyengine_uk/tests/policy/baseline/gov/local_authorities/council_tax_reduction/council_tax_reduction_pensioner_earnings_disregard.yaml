@@ -376,6 +376,30 @@
   output:
     council_tax_reduction_pensioner_earnings_disregard: 0
 
+- name: A pension-age claimant whose partner is on income-related ESA is not a CTR pensioner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 1_000
+      partner:
+        age: 50
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        esa_income: 4_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    # SI 2012/2885 reg 3(2): not a pensioner where the applicant or partner
+    # is on income-related ESA, so the pensioner schedule does not apply.
+    council_tax_reduction_pensioner: false
+    council_tax_reduction_pensioner_earnings_disregard: 0
+
 - name: Northern Ireland pensioner has no Council Tax Reduction earnings disregard
   period: 2026
   absolute_error_margin: 0.01
