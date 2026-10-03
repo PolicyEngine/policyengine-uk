@@ -16,9 +16,16 @@ award after the benefit's screen. The variables, and now the limbs, read the
 plain total of their reports, the reports paid in full, as the reform that
 stores plain totals pays them. That case is checked against its own
 expectation.
+
+The replaced code also ignored a claimant-or-partner award entered directly
+(review r3c on #2027). It worked the couple's award out from esa_income and
+everyone's reports, so an adult outside the couple could decide whether the
+entered award barred the claim. The last tests enter the claimant's and
+partner's award and check that it alone decides its limb.
 """
 
 import numpy as np
+import pytest
 from hypothesis import event, given
 from hypothesis import strategies as st
 from policyengine_core.periods import period as as_period
@@ -422,3 +429,122 @@ def test_the_switched_gate_matches_the_replaced_code(drawn, data):
         situation=property_situation(units, capital_as_savings, esa_income, jsa_income)
     )
     assert not compare(sim).any()
+
+
+# What the adult outside the couple reports in the entered-award cases. With
+# £3,000 of the award stored for the benefit unit, a report of £3,000 is what
+# the reports give, so the replaced code read the stored award through them
+# and took it to be the outside adult's; £2,000 and £5,000 are not, so it
+# took the stored award to be the couple's. Neither reading looked at the
+# claimant-or-partner award entered beside it.
+OUTSIDE_REPORTS = [2_000, 3_000, 5_000]
+
+
+def entered_directly(award, scoped):
+    """A carer otherwise eligible for Income Support and an adult outside the
+    couple who reports each of OUTSIDE_REPORTS of the award, one family each.
+    £3,000 of the award is entered for the benefit unit and `scoped` as the
+    claimant's and partner's."""
+    reported, _, variable = LIMBS[award]
+    families = [
+        ([CARER, {**OTHER_ADULT, reported: other}], 0) for other in OUTSIDE_REPORTS
+    ]
+    n = len(families)
+    sim = simulation(families, {award: [3_000] * n, variable: [scoped] * n})
+    # Income-based JSA closed on 1 April 2026; the cases need a year in which
+    # it still pays awards.
+    assert sim.tax_benefit_system.parameters(YEAR).gov.dwp.JSA.income.active
+    assert sim.calculate(award, YEAR).tolist() == [3_000] * n
+    assert sim.calculate(variable, YEAR).tolist() == [scoped] * n
+    return sim
+
+
+@pytest.mark.parametrize("award", LIMBS)
+def test_an_entered_claimant_or_partner_award_bars_the_claim(award):
+    # The couple are on the income-related award (s.124(1)(h) for ESA, (f)
+    # for JSA), so Income Support is barred whatever the outside adult
+    # reports. The replaced code let the claim through where that report was
+    # £3,000; #2013's gate, which had no JSA limb, let every JSA case through.
+    sim = entered_directly(award, 3_000)
+    assert sim.calculate("income_support_eligible", YEAR).tolist() == [False] * 3
+    assert sim.calculate("income_support", YEAR).tolist() == [0] * 3
+
+
+@pytest.mark.parametrize("award", LIMBS)
+def test_an_entered_zero_claimant_or_partner_award_never_bars_the_claim(award):
+    # The £3,000 stored for the benefit unit is all the outside adult's, so it
+    # never bars the claim. The replaced code barred it where that adult's
+    # report was not £3,000.
+    sim = entered_directly(award, 0)
+    assert sim.calculate("income_support_eligible", YEAR).tolist() == [True] * 3
+    assert (sim.calculate("income_support", YEAR) > 0).all()
+
+
+@st.composite
+def entered_awards(draw, n):
+    """What is entered for each of n families. esa_income and jsa_income are
+    calculated, or entered for every family as £0, £3,000 (what an outside
+    adult's report can give) or £4,000. The claimant-or-partner awards are
+    always entered, for every family."""
+    entries = {}
+    for award, (_, _, variable) in LIMBS.items():
+        if draw(st.booleans()):
+            entries[award] = draw(
+                st.lists(st.sampled_from([0, 3_000, 4_000]), min_size=n, max_size=n)
+            )
+        entries[variable] = draw(
+            st.lists(st.sampled_from([0, 0, 3_000, 4_000]), min_size=n, max_size=n)
+        )
+    return entries
+
+
+@DIFFERENTIAL_SETTINGS
+@given(FAMILIES, st.data())
+def test_an_entered_claimant_or_partner_award_alone_decides_its_limb(drawn, data):
+    # Families from the eligibility properties, each with an adult outside
+    # the couple, in three copies:
+    # - as drawn, with the claimant-or-partner awards entered;
+    # - the same, with the outside adult's ESA and JSA reports redrawn;
+    # - as drawn, with the claimant-or-partner awards entered as zero.
+    # The outside adult's reports never change the gate, and an entered award
+    # bars the claim exactly when it is positive (s.124(1)(f), (h)).
+    k = len(drawn)
+    capital_as_savings = data.draw(st.booleans())
+    entries = data.draw(entered_awards(k))
+    outside = st.sampled_from([0, 2_000, 3_000, 5_000])
+    redrawn = data.draw(st.lists(st.tuples(outside, outside), min_size=k, max_size=k))
+    as_drawn = [(*family, extra) for family, extra in drawn]
+    moved = [
+        (*family, {**extra, "esa_income_reported": esa, "jsa_income_reported": jsa})
+        for (family, extra), (esa, jsa) in zip(drawn, redrawn)
+    ]
+    situation = property_situation(
+        as_drawn + moved + as_drawn,
+        capital_as_savings,
+        entries.get("esa_income"),
+        entries.get("jsa_income"),
+    )
+    variables = [variable for _, _, variable in LIMBS.values()]
+    for i in range(3 * k):
+        for variable in variables:
+            value = entries[variable][i % k] if i < 2 * k else 0
+            situation["benunits"][f"b{i}"][variable] = {YEAR: value}
+    sim = Simulation(situation=situation)
+    for variable in variables:
+        expected = entries[variable] * 2 + [0] * k
+        assert sim.calculate(variable, YEAR).tolist() == expected, variable
+    eligible = sim.calculate("income_support_eligible", YEAR)
+    entered, redrawn_eligible, unbarred = (
+        eligible[:k],
+        eligible[k : 2 * k],
+        eligible[2 * k :],
+    )
+    np.testing.assert_array_equal(redrawn_eligible, entered)
+    barred = np.zeros(k, dtype=bool)
+    for variable in variables:
+        barred |= np.array(entries[variable]) > 0
+    np.testing.assert_array_equal(entered, unbarred & ~barred)
+    if (unbarred & barred).any():
+        event("an entered award bars an otherwise eligible family")
+    if (unbarred & ~barred).any():
+        event("an entered zero leaves a family eligible")
