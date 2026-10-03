@@ -1,15 +1,15 @@
-"""Property-based tests: a salary sacrifice is limited to the pay behind it.
+"""Property-based tests: only people with pay have a salary sacrifice.
 
 From 6 April 2029 the salary sacrifice above the £2,000 cap returns to
-employment income (salary_sacrifice_returned_to_income). The sacrifice is
-first limited to the person's pay
-(pension_contributions_via_salary_sacrifice_from_pay), so an input sacrifice
-with no pay behind it cannot create pay.
+employment income (salary_sacrifice_returned_to_income). Only people with pay
+have a salary sacrifice (pension_contributions_via_salary_sacrifice_from_pay),
+so an input sacrifice with no pay behind it cannot create pay. A sacrifice
+above the pay that remains (a whole bonus, say) is kept in full.
 
 Invariants, for any generated pay and salary sacrifice, in a year before the
 cap (2028) and two years under it (2029, 2030):
 
-1. Bounds: the sacrifice from pay equals min(max(sacrifice, 0), max(pay, 0)).
+1. Definition: the sacrifice from pay is max(sacrifice, 0) with pay, else 0.
 2. Conservation: the capped sacrifice plus the amount returned to income
    equals the sacrifice from pay.
 3. No pay, no gain: a person without pay has no employment income, nothing
@@ -18,8 +18,8 @@ cap (2028) and two years under it (2029, 2030):
 4. Nothing is returned before the cap starts.
 5. Accounting: employment income equals pay plus the amount returned plus
    the broad-base haircut.
-6. Unchanged within pay: when the sacrifice is within pay, the amount
-   returned is the sacrifice above the cap, as before the limit.
+6. Unchanged with pay: for a person with pay, the amount returned is the
+   sacrifice above the cap, as before this condition.
 7. Monotonicity: the amount returned never falls when the sacrifice or the
    pay rises.
 
@@ -84,11 +84,13 @@ def _cap(simulation, year):
 
 @PROPERTY_SETTINGS
 @given(people)
-def test_salary_sacrifice_is_limited_to_pay(rows):
+def test_only_people_with_pay_have_a_salary_sacrifice(rows):
     pays = np.array([row[0] for row in rows])
     sacrifices = np.array([row[1] for row in rows])
     simulation = _simulate(pays, sacrifices)
     for year in YEARS:
+        # The pay the model stores (float32: tiny draws round to zero).
+        pays = _values(simulation, "employment_income_before_lsr", year)
         from_pay = _values(
             simulation, "pension_contributions_via_salary_sacrifice_from_pay", year
         )
@@ -100,9 +102,9 @@ def test_salary_sacrifice_is_limited_to_pay(rows):
         haircut = _values(simulation, "salary_sacrifice_broad_base_haircut", year)
         cap = _cap(simulation, year)
 
-        # 1. Bounds.
+        # 1. Definition.
         np.testing.assert_allclose(
-            from_pay, np.minimum(sacrifices, pays), rtol=1e-6, atol=1e-2
+            from_pay, np.where(pays > 0, sacrifices, 0), rtol=1e-6, atol=1e-2
         )
         assert np.all(returned >= 0)
         # 2. Conservation.
@@ -123,12 +125,12 @@ def test_salary_sacrifice_is_limited_to_pay(rows):
         np.testing.assert_allclose(
             employment_income, pays + returned + haircut, rtol=1e-6, atol=1e-2
         )
-        # 6. Unchanged within pay.
-        within = sacrifices <= pays
+        # 6. Unchanged with pay.
+        paid = pays > 0
         if not np.isinf(cap):
             np.testing.assert_allclose(
-                returned[within],
-                np.maximum(sacrifices[within] - cap, 0),
+                returned[paid],
+                np.maximum(sacrifices[paid] - cap, 0),
                 rtol=1e-6,
                 atol=1e-2,
             )
@@ -157,3 +159,18 @@ def test_returned_income_never_falls_with_sacrifice_or_pay(rows):
         )
         assert np.all(larger_sacrifice >= base - 1e-2)
         assert np.all(larger_pay >= base - 1e-2)
+
+
+def test_pay_set_after_construction_keeps_the_sacrifice():
+    """Branches that reset employment_income keep the pay the sacrifice needs.
+
+    The marginal tax rate branches and the participation response set
+    employment_income on a simulation built with pay; the original pay stays
+    in employment_income_before_lsr, so the sacrifice is still recognised.
+    """
+    simulation = _simulate(np.array([30_000.0]), np.array([6_000.0]))
+    simulation.set_input("employment_income", 2030, np.array([0.0]))
+    assert _values(
+        simulation, "pension_contributions_via_salary_sacrifice_from_pay", 2030
+    ) == [6_000]
+    assert _values(simulation, "salary_sacrifice_returned_to_income", 2030) == [4_000]

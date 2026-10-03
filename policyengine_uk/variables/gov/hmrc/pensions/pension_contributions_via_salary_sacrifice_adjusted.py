@@ -5,7 +5,7 @@ class pension_contributions_via_salary_sacrifice_adjusted(Variable):
     label = "Adjusted salary sacrifice pension contributions (capped)"
     documentation = (
         "The actual amount of salary sacrifice pension contributions after "
-        "limiting them to the person's pay and applying the cap. "
+        "counting them only for people with pay and applying the cap. "
         "Contributions above the cap are redirected to "
         "regular employee pension contributions and subject to NI."
     )

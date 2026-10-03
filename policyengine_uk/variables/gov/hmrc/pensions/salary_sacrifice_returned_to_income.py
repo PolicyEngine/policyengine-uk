@@ -13,7 +13,7 @@ class salary_sacrifice_returned_to_income(Variable):
         "the broad-base haircut (salary_sacrifice_broad_base_haircut) which reduces "
         "ALL workers' employment income by ~0.16%, not just affected workers."
         "\n\n"
-        "The salary sacrifice is limited to the person's pay "
+        "Only people with pay have a salary sacrifice "
         "(pension_contributions_via_salary_sacrifice_from_pay), so nothing is "
         "returned to a person without pay."
     )

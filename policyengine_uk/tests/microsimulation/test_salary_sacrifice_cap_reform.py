@@ -222,9 +222,10 @@ def test_full_excess_redirected(reform_simulation):
     The broad-base haircut reduces ALL workers' employment income,
     but the full excess above cap is redirected to regular pension contributions.
     """
-    # Get weighted totals using map_to for proper aggregation
+    # Get weighted totals using map_to for proper aggregation. Only people
+    # with pay have a salary sacrifice, so the excess is measured on that.
     ss_contributions = reform_simulation.calculate(
-        "pension_contributions_via_salary_sacrifice",
+        "pension_contributions_via_salary_sacrifice_from_pay",
         POLICY_YEAR,
         map_to="person",
     )
