@@ -1,3 +1,14 @@
+## [2.109.7] - 2026-10-03
+
+### Changed
+
+- - Tighten the Housing Benefit passport tests: hold Guarantee Credit at nil in the contributory-benefit property control, and base the applicable-income arithmetic fixtures on earnings and working tax credit rather than Child Benefit.
+
+### Fixed
+
+- - Disregard the whole income and capital of a Housing Benefit claimant in receipt of Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance, as SI 2006/213 Schedule 5 paragraph 4 and Schedule 6 paragraph 5 (Northern Ireland: SR 2006/405 Schedule 6 paragraph 4 and Schedule 7 paragraph 5) require, so they get maximum Housing Benefit. These benefits were counted as income and tapered. The passport has no age condition, so it covers mixed-age couples whose younger member is on one of these benefits (SI 2006/213 regulation 5(1)(b)). Adds `in_receipt_of_income_support_jsa_ib_or_esa_ir`.
+
+
 ## [2.109.6] - 2026-10-03
 
 ### Fixed
