@@ -7,17 +7,17 @@ class carer_premium(Variable):
     label = "Carer premium"
     documentation = (
         "The legacy benefits' carer premium: one amount for each claimant or "
-        "partner who qualifies. The model treats a person as qualifying when "
-        "is_carer_for_benefits holds (a carer benefit, or at least the Carer's "
-        "Allowance qualifying hours of care), its proxy for entitlement to "
-        "Carer's Allowance or Carer Support Payment. A child or young person "
-        "in the family who cares does not qualify the family. A couple who "
-        "both qualify get the amount twice if they care for different people, "
-        "and once if they care for the same severely disabled person "
+        "partner entitled to Carer's Allowance or Carer Support Payment "
+        "(is_entitled_to_carer_benefit), including an entitlement reduced to "
+        "nil by an overlapping benefit. Caring hours alone, without a claim, "
+        "do not qualify, and a child or young person in the family who cares "
+        "does not qualify the family. A couple who are both entitled get the "
+        "amount twice if they care for different people, and once if they "
+        "care for the same severely disabled person "
         "(partners_care_for_same_severely_disabled_person, which by default "
-        "treats them as caring for the same person unless both have a "
-        "reported Carer's Allowance or Carer Support Payment award). Members "
-        "flagged as claimant or partner "
+        "treats them as caring for the same person unless both are entitled "
+        "with a reported Carer's Allowance or Carer Support Payment award). "
+        "Members flagged as claimant or partner "
         "beyond two (for example the partners of a polygamous marriage, "
         "supplied as inputs) each count, except that caring for the same "
         "person caps the benefit unit at one amount. The premium enters the "
@@ -51,11 +51,13 @@ class carer_premium(Variable):
         # the English, Welsh and Scottish pension-age council tax reduction
         # schedules and Welsh working-age council tax reduction (WSI 2013/3029
         # Sch 7 para 14) use the same condition and amount; Scottish
-        # working-age council tax reduction (SSI 2021/249 Sch 1 para 5) tests
-        # caring responsibilities and pays each partner who qualifies.
+        # working-age council tax reduction (SSI 2021/249 Sch 1 paras 5-6)
+        # tests caring responsibilities, which include receiving either
+        # allowance or being entitled to one reduced to nil by the overlapping
+        # benefits rules, and pays each partner who qualifies.
         claimant_or_partner = benunit.members("is_claimant_or_partner", period)
-        carer = benunit.members("is_carer_for_benefits", period)
-        qualifying_carers = benunit.sum(claimant_or_partner & carer)
+        entitled = benunit.members("is_entitled_to_carer_benefit", period)
+        qualifying_carers = benunit.sum(claimant_or_partner & entitled)
         # Two people caring for the same severely disabled person cannot both
         # be entitled to Carer's Allowance (SSCBA s.70(7ZA)) or Carer Support
         # Payment (SSI 2023/302 reg 5(3)); SSI 2021/249 Sch 1 para 5(3)-(4)
