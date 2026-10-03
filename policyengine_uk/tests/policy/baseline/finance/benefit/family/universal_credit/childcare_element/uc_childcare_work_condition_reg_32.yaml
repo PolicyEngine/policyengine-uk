@@ -365,6 +365,30 @@
     uc_childcare_work_condition: true
     uc_childcare_element: 4_250
 
+- name: Reg. 32(1)(a)-(b) - a claimant with an offer of paid work and a partner on maternity allowance
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+      partner:
+        age: 34
+        maternity_allowance_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # The claimant meets (a) with the offer. The partner, a joint claimant
+    # receiving maternity allowance, is treated as in paid work (32(2)(b)),
+    # so meets (b). Neither member meets both limbs alone.
+    uc_childcare_treated_as_in_paid_work: [false, true]
+    uc_childcare_work_condition: true
+
 - name: Reg. 32(1)(a) - a single claimant with an offer of paid work
   period: 2025
   absolute_error_margin: 0

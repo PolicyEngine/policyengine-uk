@@ -210,7 +210,9 @@ def member_with(routes, payment, care_hours, work_source):
         payment=payment if "payment" in routes else None,
         offer="offer" in routes,
         lcw="lcw" in routes,
-        care_hours=care_hours if "carer" in routes else 0,
+        # A non-carer cares for just under the minimum, so the threshold, not
+        # the absence of any care, separates the two.
+        care_hours=care_hours if "carer" in routes else MIN_CARE_HOURS - 1,
         absent="absent" in routes,
     )
 
@@ -218,9 +220,13 @@ def member_with(routes, payment, care_hours, work_source):
 def test_condition_matches_the_reference_for_every_combination_of_routes():
     # Exhaustive over route sets: every single claimant's set of routes with
     # every listed payment and every kind of work, and every pair of route
-    # sets for a couple, the payment, the kind of work and the caring hours
-    # cycling across pairs. Every family has a dependant: idle in half of
-    # them, otherwise with a cycling set of routes of its own.
+    # sets for a couple, the payment and the kind of work cycling across
+    # pairs. A carer in a couple cares for exactly the minimum hours if the
+    # first member and 50 if the second; a non-carer for one hour under the
+    # minimum. Where one member has only an offer of work and the other only
+    # a payment, every payment is tried, since that is where a payment alone
+    # decides limb (b). Every family has a dependant: idle in half of them,
+    # otherwise with a cycling set of routes of its own.
     sets = route_sets()
 
     def dependant(k):
@@ -257,7 +263,21 @@ def test_condition_matches_the_reference_for_every_combination_of_routes():
         for i, first in enumerate(sets)
         for j, second in enumerate(sets)
     ]
-    units = [dict(unit, **dependant(k)) for k, unit in enumerate(singles + couples)]
+    offer_only, payment_only = {"offer"}, {"payment"}
+    offer_with_payment = [
+        dict(
+            adults=[
+                member_with(offer_only, None, MIN_CARE_HOURS, "employment"),
+                member_with(payment_only, payment, 50, "employment"),
+            ][::order]
+        )
+        for payment in PAYMENTS[1:]
+        for order in (1, -1)
+    ]
+    units = [
+        dict(unit, **dependant(k))
+        for k, unit in enumerate(singles + couples + offer_with_payment)
+    ]
     met = calculate(units)["uc_childcare_work_condition"]
     expected = np.array([reference(unit) for unit in units])
     mismatches = [unit for unit, m, e in zip(units, met, expected) if m != e]
