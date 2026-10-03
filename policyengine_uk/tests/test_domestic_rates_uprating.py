@@ -92,10 +92,7 @@ def test_domestic_rates_growth_holds_last_published_growth(year):
     assert DOMESTIC_RATES_GROWTH(year) == DOMESTIC_RATES_GROWTH(LAST_PUBLISHED_YEAR)
 
 
-# A dataset with an unknown-region household cannot be projected forward until
-# rent uprating handles Region.UNKNOWN (#1985), so the tests use the twelve
-# known regions.
-KNOWN_REGIONS = [region.name for region in Region if region.name != "UNKNOWN"]
+REGIONS = [region.name for region in Region]
 
 
 def _dataset(regions, domestic_rates, base_year=2023):
@@ -127,8 +124,8 @@ def _dataset(regions, domestic_rates, base_year=2023):
 
 def _northern_ireland_only(amount):
     return _dataset(
-        KNOWN_REGIONS,
-        [amount if region == "NORTHERN_IRELAND" else 0.0 for region in KNOWN_REGIONS],
+        REGIONS,
+        [amount if region == "NORTHERN_IRELAND" else 0.0 for region in REGIONS],
     )
 
 
@@ -143,7 +140,7 @@ def test_extended_dataset_uprates_northern_ireland_domestic_rates():
     extended = extend_single_year_dataset(
         _northern_ireland_only(1_000.0), parameters, end_year=2030
     )
-    northern_ireland = KNOWN_REGIONS.index("NORTHERN_IRELAND")
+    northern_ireland = REGIONS.index("NORTHERN_IRELAND")
 
     for year in range(2024, 2031):
         domestic_rates = extended[year].household["domestic_rates"].to_numpy()
@@ -164,7 +161,7 @@ def test_microsimulation_uprates_northern_ireland_domestic_rates():
 
     for year in (2026, 2030):
         domestic_rates = dict(
-            zip(KNOWN_REGIONS, sim.calculate("domestic_rates", year).values)
+            zip(REGIONS, sim.calculate("domestic_rates", year).values)
         )
         assert domestic_rates["NORTHERN_IRELAND"] == pytest.approx(
             _compounded(1_000.0, year)
@@ -177,9 +174,7 @@ def test_no_economic_assumptions_holds_domestic_rates_flat():
         dataset=_northern_ireland_only(1_000.0), scenario=no_economic_assumptions
     )
 
-    domestic_rates = dict(
-        zip(KNOWN_REGIONS, sim.calculate("domestic_rates", 2030).values)
-    )
+    domestic_rates = dict(zip(REGIONS, sim.calculate("domestic_rates", 2030).values))
     assert domestic_rates["NORTHERN_IRELAND"] == pytest.approx(1_000.0)
 
 
@@ -187,7 +182,7 @@ def test_no_economic_assumptions_holds_domestic_rates_flat():
 @given(
     households=st.lists(
         st.tuples(
-            st.sampled_from(KNOWN_REGIONS),
+            st.sampled_from(REGIONS),
             st.floats(0, 10_000, allow_nan=False),
         ),
         min_size=1,
