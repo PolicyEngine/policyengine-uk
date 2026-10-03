@@ -9,17 +9,19 @@ metadata:
   unit: program
   label: Tax-Free Childcare caring or incapacity benefits
 values:
+  # Reg 13(1)(b): "paid or entitled to", so an allowance reduced to nil by an
+  # overlapping benefit still counts.
   2015-01-01:
     - incapacity_benefit  # 13(1)(b)(i) and (iii): incapacity benefit and long-term incapacity benefit
     - sda  # 13(1)(b)(ii): severe disablement allowance
-    - carers_allowance  # 13(1)(b)(iv): carer's allowance
+    - carers_allowance_pre_overlap  # 13(1)(b)(iv): entitlement to carer's allowance before overlapping benefits
+    - receives_carers_allowance  # 13(1)(b)(iv): carer's allowance supplied as received
     - esa_contrib  # 13(1)(b)(v): contributory employment and support allowance
     - receives_limited_capability_for_work_credits  # 13(1)(b)(vi): credits for incapacity or limited capability for work
   # SI 2022/1148 reg 2(6)(b) inserted 13(1)(b)(vii) from 1 December 2022.
   2022-12-01:
     - incapacity_benefit
     - sda
-    - carers_allowance
+    - is_entitled_to_carer_benefit  # 13(1)(b)(iv) and (vii): carer's allowance, or carer's assistance under the Social Security (Scotland) Act 2018 s.28
     - esa_contrib
     - receives_limited_capability_for_work_credits
-    - carer_support_payment  # 13(1)(b)(vii): carer's assistance under the Social Security (Scotland) Act 2018 s.28
