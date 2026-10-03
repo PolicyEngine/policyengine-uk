@@ -604,3 +604,75 @@
     # 7,500 x 20% = 1,500, less 20% x 1,250 = 250.
     marriage_allowance_transferable_amount: [1_250, 1_250]
     income_tax: [1_250, 0]
+# Marriage Allowance is an election between spouses or civil partners (ITA 2007
+# s.55B, s.55C(1)(a)): the claimant and partner of a married benefit unit, never
+# a child in it, whatever the child's age.
+- name: An 18-year-old dependant's unused allowance does not transfer to a parent
+  # p2 earns 60,000, so p2 cannot gain and cannot elect (higher rate even with
+  # the allowance cut, s. 55C(1)(c)); p1 pays basic rate, so electing would
+  # cost p1 as much as it could save. The 18-year-old is not a spouse.
+  # Before #1896 the 18-year-old's unused allowance counted as a "partner's"
+  # and p1 got 1,260 (a 252 tax cut).
+  period: 2025
+  input:
+    people:
+      p1:
+        age: 45
+        is_parent: true
+        employment_income: 30_000
+      p2:
+        age: 45
+        is_parent: true
+        employment_income: 60_000
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunit:
+      members: [p1, p2, student]
+      is_married: true
+  output:
+    is_marriage_allowance_spouse: [true, true, false]
+    marriage_allowance: [0, 0, 0]
+    marital_status: [MARRIED, MARRIED, SINGLE]
+
+- name: A lone parent with a 19-year-old at school is not married
+  # With an identified parent, the 19-year-old in non-advanced education is a
+  # dependant, so the benefit unit has no couple and no Marriage Allowance.
+  # Previously two members aged 18+ made the unit "married" by default and the
+  # parent got 1,260 transferred from the 19-year-old.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        employment_income: 40_000
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        employment_income: 1_000
+    benunit:
+      members: [parent, student]
+  output:
+    is_married: false
+    marriage_allowance: [0, 0]
+
+- name: Parents do not receive Marriage Allowance from an 18-year-old's allowance
+  # Default inputs (no relationship or education flags). The couple are the
+  # spouses; their 18-year-old is neither. Each parent earns 40,000, so both
+  # use their full personal allowance and neither has one to transfer.
+  period: 2025
+  input:
+    people:
+      parent_1:
+        age: 42
+        employment_income: 40_000
+      parent_2:
+        age: 40
+        employment_income: 40_000
+      student:
+        age: 18
+    benunit:
+      members: [parent_1, parent_2, student]
+  output:
+    marriage_allowance: [0, 0, 0]

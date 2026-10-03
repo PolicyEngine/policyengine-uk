@@ -119,3 +119,97 @@
   output:
     household_equivalisation_bhc: 1.07
     household_equivalisation_ahc: 0.98
+
+# HBAI classifies people as adults or dependent children (HBAI FYE 2025
+# glossary), not by an age-18 cut-off. The two differ numerically only in
+# households with no one aged 18 or over, because the scale gives other adults
+# and children aged 14+ the same weight (0.33 BHC, 0.42 AHC).
+
+- name: Equivalisation factor — 17-year-old living alone is a single adult
+  # First adult only: 0.67 BHC, 0.58 AHC (previously 0.67 + 0.33 for a
+  # "child aged 14+", with no adult).
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      young_person:
+        age: 17
+    benunits:
+      benunit:
+        members: [young_person]
+    households:
+      household:
+        members: [young_person]
+  output:
+    household_equivalisation_bhc: 0.67
+    household_equivalisation_ahc: 0.58
+
+- name: Equivalisation factor — 17-year-old lone parent with a baby
+  # BHC 0.67 + 0.20 = 0.87; AHC 0.58 + 0.20 = 0.78.
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      parent:
+        age: 17
+        is_parent: true
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+    households:
+      household:
+        members: [parent, baby]
+  output:
+    household_equivalisation_bhc: 0.87
+    household_equivalisation_ahc: 0.78
+
+- name: Equivalisation factor — two 17-year-olds sharing a household
+  # Each heads their own benefit unit, so both are adults: BHC 0.67 + 0.33 =
+  # 1.00; AHC 0.58 + 0.42 = 1.00.
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      sharer_1:
+        age: 17
+      sharer_2:
+        age: 17
+    benunits:
+      benunit_1:
+        members: [sharer_1]
+      benunit_2:
+        members: [sharer_2]
+    households:
+      household:
+        members: [sharer_1, sharer_2]
+  output:
+    household_equivalisation_bhc: 1.00
+    household_equivalisation_ahc: 1.00
+
+- name: Equivalisation factor — couple with an 18-year-old dependant at school
+  # The 18-year-old is an HBAI dependent child aged 14+: BHC 0.67 + 0.33 + 0.33
+  # = 1.33; AHC 0.58 + 0.42 + 0.42 = 1.42 (unchanged from the age-18 split).
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      parent_1:
+        age: 45
+        is_parent: true
+      parent_2:
+        age: 45
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+    households:
+      household:
+        members: [parent_1, parent_2, student]
+  output:
+    household_equivalisation_bhc: 1.33
+    household_equivalisation_ahc: 1.42

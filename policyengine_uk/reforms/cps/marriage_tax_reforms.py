@@ -17,13 +17,17 @@ def create_expanded_ma_reform(
         value_type = bool
 
         def formula(person, period):
-            # There is a child who either meets the age condition or the education condition
+            # The couple has a child (a benefit-unit member other than the
+            # couple) under the age limit, or meeting the education condition.
             benunit = person.benunit
+            is_couple_child = ~person("is_claimant_or_partner", period)
             if max_child_age is not None:
-                child_meets_age_condition = person("age", period) <= max_child_age
+                child_meets_age_condition = is_couple_child & (
+                    person("age", period) < max_child_age
+                )
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
-                child_meets_education_condition = np.isin(
+                child_meets_education_condition = is_couple_child & np.isin(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )
@@ -95,13 +99,17 @@ def create_marriage_neutral_income_tax_reform(
         value_type = bool
 
         def formula(person, period):
-            # There is a child who either meets the age condition or the education condition
+            # The couple has a child (a benefit-unit member other than the
+            # couple) under the age limit, or meeting the education condition.
             benunit = person.benunit
+            is_couple_child = ~person("is_claimant_or_partner", period)
             if max_child_age is not None:
-                child_meets_age_condition = person("age", period) <= max_child_age
+                child_meets_age_condition = is_couple_child & (
+                    person("age", period) < max_child_age
+                )
                 return benunit.any(child_meets_age_condition)
             if child_education_levels is not None:
-                child_meets_education_condition = np.isin(
+                child_meets_education_condition = is_couple_child & np.isin(
                     person("education_level", period).decode_to_str(),
                     child_education_levels,
                 )
@@ -142,9 +150,11 @@ def create_marriage_neutral_income_tax_reform(
 
         def formula(person, period, parameters):
             income = person("unadjusted_net_income", period)
-            is_adult = person("is_adult", period)
-            total_income = person.benunit.sum(is_adult * income)
-            has_spouse = person.benunit("is_married", period) & is_adult
+            # Split between the spouses or civil partners only, never their
+            # children.
+            couple_member = person("is_claimant_or_partner", period)
+            total_income = person.benunit.sum(couple_member * income)
+            has_spouse = person.benunit("is_married", period) & couple_member
 
             originally_split_income_branch = person.simulation.get_branch(
                 "originally_split_income", clone_system=True

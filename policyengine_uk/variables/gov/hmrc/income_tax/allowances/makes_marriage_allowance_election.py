@@ -35,8 +35,8 @@ def tax_position(simulation, name, period, relinquished):
 
     The branch holds the election off, so no one gains a reduction, and cuts
     each person's personal allowance by ``relinquished`` (ITA 2007 s. 55B(6)).
-    The branch is dropped afterwards, and its copied arrays freed, so a later
-    period starts from a fresh copy of the simulation.
+    The branch shares the simulation's cached arrays until it writes, and is
+    dropped afterwards so a later period starts from a fresh branch.
     """
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"
@@ -52,9 +52,6 @@ def tax_position(simulation, name, period, relinquished):
         return {variable: population(variable, period) for variable in BRANCH_OUTPUTS}
     finally:
         del simulation.branches[name]
-        for population in branch.populations.values():
-            for holder in population._holders.values():
-                holder._memory_storage._arrays.clear()
 
 
 class makes_marriage_allowance_election(Variable):

@@ -180,3 +180,35 @@
     makes_marriage_allowance_election: [false, false]
     marriage_allowance: [0, 0]
     income_tax: [11_432, 0]
+- name: Marriage-neutral income tax — a dependant's income stays out of the couple's split
+  # Only the spouses' incomes are pooled: (60,000 + 10,000) / 2 = 35,000 each,
+  # which lowers their combined tax. The 19-year-old dependant at school keeps
+  # their own 8,000. Previously the dependant counted as a third adult, which
+  # blocked the split.
+  period: 2024
+  absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.marriage_neutral_it_reform
+  input:
+    people:
+      high_earner:
+        age: 45
+        is_parent: true
+        employment_income: 60_000
+      low_earner:
+        age: 45
+        is_parent: true
+        employment_income: 10_000
+      student:
+        age: 19
+        current_education: UPPER_SECONDARY
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [high_earner, low_earner, student]
+        is_married: true
+    households:
+      household:
+        members: [high_earner, low_earner, student]
+  output:
+    adjusted_net_income: [35_000, 35_000, 8_000]
