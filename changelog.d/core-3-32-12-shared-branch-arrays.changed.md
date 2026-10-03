@@ -1,0 +1,1 @@
+Require policyengine-core 3.32.12 or later, whose simulation branches copy cached arrays only when they first read them, so marginal tax rates and labour supply responses use less memory with unchanged results.
