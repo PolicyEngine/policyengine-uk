@@ -116,11 +116,17 @@ def situation(units, year, earnings_bump=0.0, no_income_related_benefits=False):
                 "weekly_hours": {year: adult["weekly_hours"]},
                 "is_disabled_for_benefits": {year: adult["disabled"]},
                 "state_pension": {year: adult["state_pension"]},
+                # The adults are the claimant and partner whatever their age
+                # gap, so the roles are supplied rather than presumed.
+                "is_claimant_or_partner": {year: True},
             }
             names.append(name)
         for k, child_age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: child_age}}
+            people[name] = {
+                "age": {year: child_age},
+                "is_claimant_or_partner": {year: False},
+            }
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
