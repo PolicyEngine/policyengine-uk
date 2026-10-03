@@ -17,8 +17,8 @@ class housing_benefit_applicable_income(Variable):
         members = person("is_claimant_or_partner", period) | person(
             "is_child_or_young_person_for_legacy_benefits", period
         )
-        any_over_qualifying_age = benunit.any(
-            benunit.members("has_attained_state_pension_credit_qualifying_age", period)
+        pension_age_regulations = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
         )
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
@@ -83,7 +83,9 @@ class housing_benefit_applicable_income(Variable):
             - disregard
             - childcare_element,
         )
-        guarantee_credit = any_over_qualifying_age & (
+        # Pension HB reg 26 disregards "the whole of his capital and income"
+        # for guarantee-credit recipients within that regulation set.
+        guarantee_credit = pension_age_regulations & (
             benunit("guarantee_credit", period) > 0
         )
         return where(guarantee_credit, 0, applicable_income)

@@ -8,28 +8,35 @@ class housing_benefit_tariff_income(Variable):
     documentation = "Weekly Housing Benefit tariff income from capital annualised to the model period."
     definition_period = YEAR
     unit = GBP
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/52",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/26",
+    )
 
     def formula(benunit, period, parameters):
         capital = benunit("housing_benefit_assessable_capital", period)
-        any_over_qualifying_age = benunit.any(
-            benunit.members("has_attained_state_pension_credit_qualifying_age", period)
+        # The pension tariff applies "For the purposes of these Regulations"
+        # (SI 2006/214 reg 29(2)); SI 2006/213 reg 52 supplies the working tariff.
+        pension_age_regulations = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
         )
-        guarantee_credit = any_over_qualifying_age & (
+        guarantee_credit = pension_age_regulations & (
             benunit("guarantee_credit", period) > 0
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         threshold = where(
-            any_over_qualifying_age,
+            pension_age_regulations,
             p.pension_age.tariff_income.threshold,
             p.working_age.tariff_income.threshold,
         )
         step = where(
-            any_over_qualifying_age,
+            pension_age_regulations,
             p.pension_age.tariff_income.step,
             p.working_age.tariff_income.step,
         )
         amount = where(
-            any_over_qualifying_age,
+            pension_age_regulations,
             p.pension_age.tariff_income.amount,
             p.working_age.tariff_income.amount,
         )

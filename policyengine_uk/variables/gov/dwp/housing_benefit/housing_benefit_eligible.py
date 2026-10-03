@@ -27,9 +27,6 @@ class housing_benefit_eligible(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        qualifying_age = person(
-            "has_attained_state_pension_credit_qualifying_age", period
-        )
         # New claims are barred except where the claimant, and any partner,
         # has reached the qualifying age for State Pension Credit
         # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)), or the claim
@@ -53,11 +50,13 @@ class housing_benefit_eligible(Variable):
         continuing_award = already_claiming & ~claiming_uc
         social = benunit.any(person("in_social_housing", period))
         lha_eligible = benunit("LHA_eligible", period)
-        any_over_qualifying_age = benunit.any(qualifying_age)
+        pension_age_regulations = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
+        )
         capital = benunit("housing_benefit_assessable_capital", period)
         hb_capital = parameters(period).gov.dwp.housing_benefit.means_test.capital
         limit = where(
-            any_over_qualifying_age,
+            pension_age_regulations,
             hb_capital.pension_age.limit,
             hb_capital.working_age.limit,
         )

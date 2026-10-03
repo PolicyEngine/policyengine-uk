@@ -1,0 +1,153 @@
+# HB Regs 2006 reg 5 and HB (SPC) Regs 2006 reg 5 route a claimant on
+# income-based JSA to the working-age regulations even after the qualifying
+# age. CTR SI 2012/2885 reg 3 applies the same exclusion to its pensioner test.
+# These tests preserve the model's existing historical allowance parameters:
+# 73.10 * 52 = 3,801.20 and 181 * 52 = 9,412, without asserting that the
+# shared pension-age allowance parameter reproduces every statutory age band.
+
+- name: Qualifying-age claimant on income-based JSA uses working-age HB and CTR allowances
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [claimant]
+        jsa_income: 100
+        income_support: 0
+        esa_income: 0
+        guarantee_credit: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_attained_state_pension_credit_qualifying_age: true
+    is_SP_age: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    council_tax_reduction_pensioner: false
+    benefits_premiums: 0
+    housing_benefit_applicable_amount: 3_801.20
+    council_tax_reduction_applicable_amount: 3_801.20
+
+- name: Qualifying-age claimant without excluded benefits retains pension-age HB and CTR allowances
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [claimant]
+        jsa_income: 0
+        income_support: 0
+        esa_income: 0
+        guarantee_credit: 0
+    households:
+      household:
+        members: [claimant]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    has_attained_state_pension_credit_qualifying_age: true
+    is_SP_age: false
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    council_tax_reduction_pensioner: true
+    benefits_premiums: 0
+    housing_benefit_applicable_amount: 9_412
+    council_tax_reduction_applicable_amount: 9_412
+
+- name: Synthetic component routing does not apply the pension-age guarantee-credit passport under working-age flags
+  # This fixes the scheme flags and income components to test their consumers;
+  # it does not assert lawful receipt of these benefits together. HB (SPC)
+  # reg 26 disregards all income and capital only within that scheme. Working
+  # HB reg 52 gives (12,000 - 6,000) / 250 * 52 = 1,248 tariff income here.
+  # The separate working-age capital passports are outside this component test.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+        employment_income: 1_000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: false
+        council_tax_reduction_pensioner: false
+        guarantee_credit: 1_000
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        tax_credits: 0
+        benefits_premiums: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      household:
+        members: [claimant]
+        savings: 12_000
+  output:
+    has_attained_state_pension_credit_qualifying_age: true
+    housing_benefit_applicable_amount: 3_801.20
+    council_tax_reduction_applicable_amount: 3_801.20
+    housing_benefit_assessable_capital: 12_000
+    housing_benefit_tariff_income: 1_248
+    housing_benefit_applicable_income: 2_248
+
+- name: Synthetic component routing applies the guarantee-credit passport under pension-age flags
+  # The same controlled components now fall under the pension-age scheme.
+  # HB (SPC) reg 26: "the whole of his capital and income shall be disregarded".
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+        employment_income: 1_000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        housing_benefit_pension_age_regulations_apply: true
+        council_tax_reduction_pensioner: true
+        guarantee_credit: 1_000
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        tax_credits: 0
+        benefits_premiums: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      household:
+        members: [claimant]
+        savings: 12_000
+  output:
+    has_attained_state_pension_credit_qualifying_age: true
+    housing_benefit_applicable_amount: 9_412
+    council_tax_reduction_applicable_amount: 9_412
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
