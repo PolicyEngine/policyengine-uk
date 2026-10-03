@@ -204,8 +204,8 @@
   # = £866.64, so £123.34.
   # CTC: £545 + £3,455 = £4,000, not 4,000 - 0.41 x 205 = £3,915.95.
   # SPC Regs 2002 reg 6(6)(d) and (11) give no Schedule IIA child amount to
-  # a person awarded a tax credit, and the CTC family element has been £545
-  # since 2011-12; both are entered because the model applies neither.
+  # a person awarded a tax credit. The CTC family element has been £545 since
+  # 2011-12; it is entered because the model CPI-uprates it.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -229,7 +229,6 @@
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
         pension_credit_earnings: 2_480  # 3,000 - 10 x 52
-        child_minimum_guarantee_addition: 0
         CTC_family_element: 545
     households:
       household:
@@ -276,7 +275,6 @@
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
         pension_credit_earnings: 2_480
-        child_minimum_guarantee_addition: 0
         CTC_family_element: 0
         working_tax_credit_run_on: false
         extended_childcare_entitlement_eligible: false

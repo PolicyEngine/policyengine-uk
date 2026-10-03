@@ -142,8 +142,8 @@ FAMILIES = st.lists(families(), min_size=1, max_size=6)
 
 # The YAML cases, run on every invocation: random draws seldom raise CTC or
 # hit the third row. Pension Credit earnings are net of SPC Regs Sch VI
-# para 5; the CTC family element and the Sch IIA child amount are entered at
-# their statutory values (see the YAML file).
+# para 5; the CTC family element is entered at its statutory value (see the
+# YAML file).
 _PENSIONER = {
     "age": 70,
     "employment_income": 2_600,
@@ -181,7 +181,6 @@ YAML_FAMILIES = [
         [{"age": 10}],
         {
             "pension_credit_earnings": 2_480,
-            "child_minimum_guarantee_addition": 0,
             "CTC_family_element": 545,
         },
         {"savings": 10_000},
