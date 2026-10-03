@@ -480,6 +480,90 @@
   output:
     housing_benefit_applicable_income_disregard: 1_040 # Sch 4 para 12
 
+- name: Mixed-age couple under the pension-age Regulations has no para 18 amount
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension_reported: 15_000
+      partner:
+        age: 55
+        is_claimant_or_partner: true
+        employment_income: 10_400 # £200 a week
+        weekly_hours: 10
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        in_specified_or_temporary_accommodation: true
+  output:
+    # The claimant has reached the qualifying age and neither is on
+    # Universal Credit or an income-related benefit, so SI 2006/214 applies
+    # (reg 5), which has no para 18.
+    is_uc_entitled: false
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_disregard: 520 # SI 2006/214 Sch 4 para 7(b): £10 × 52
+
+- name: Statutory maternity pay alone makes the claimant an employed earner
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        statutory_maternity_pay: 5_200 # £100 a week, earnings under reg 35(1)(i)
+    benunits:
+      benunit:
+        members: [person]
+        in_specified_or_temporary_accommodation: true
+  output:
+    housing_benefit_net_earnings: 5_200
+    housing_benefit_specified_or_temporary_accommodation_disregard: 4_041.96
+    housing_benefit_applicable_income_disregard: 4_301.96 # (£5 + £77.73) × 52
+
+- name: A self-employment loss is still self-employment, but leaves no earnings to disregard
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        self_employment_income: -2_000
+    benunits:
+      benunit:
+        members: [person]
+        in_specified_or_temporary_accommodation: true
+  output:
+    housing_benefit_net_earnings: 0
+    # Para 18(1)(b) is met, so the full amount applies...
+    housing_benefit_specified_or_temporary_accommodation_disregard: 4_041.96
+    # ...but it comes off net earnings, which are nil.
+    housing_benefit_applicable_income_disregard: 0
+
+- name: Pension-age claimant on Income Support falls under the working-age Regulations, where para 12 takes all earnings
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        employment_income: 1_040 # £20 a week
+    benunits:
+      benunit:
+        members: [person]
+        income_support: 3_000
+        in_specified_or_temporary_accommodation: true
+  output:
+    # SI 2006/213 reg 5(1)(b): the working-age Regulations apply at any age
+    # to a claimant on Income Support, so para 18 is in scope...
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 4_041.96
+    # ...but para 12 disregards all earnings anyway.
+    housing_benefit_applicable_income_disregard: 1_040
+
 # The £17.10 additional earnings disregard (para 17) and its earnings test,
 # which from 5 October 2026 counts the para 18 amount (para 17(3)(a)).
 

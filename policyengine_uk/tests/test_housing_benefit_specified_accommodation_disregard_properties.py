@@ -29,9 +29,14 @@ income-based JSA or income-related ESA:
    never raises applicable income. This holds because every para 18 amount
    exceeds the £17.10 it can take away through para 17(3)(a); it is a
    property of the amounts, not a rule of law.
-5. Differential: the model agrees with an independent reference written from
-   the statutory text, with the para 18(2) amounts hard-coded from the
-   instrument rather than read from the parameters.
+5. Differential: the model agrees with a reference written from the
+   statutory text. The reference is independent for the para 18 bands and
+   gates (amounts hard-coded from the instrument, ages, family type, earner
+   and pension-age status from the generated inputs) and for how paras 4, 7,
+   10, 17 and 18 combine. It takes net earnings, deductible childcare and
+   the para 17(2) work condition from the model, which other tests cover.
+   Explicit examples pin the age boundaries (couples aged 17/17, 17/18 and
+   24/25; single claimants and lone parents aged 24 and 25).
 6. Scope: families whose claimant and partner are all over State Pension
    age, and families in the accommodation with no earner (para 18(1)(b)),
    get no para 18 amount; a working-age family in the accommodation with an
@@ -48,7 +53,7 @@ from pathlib import Path
 
 import numpy as np
 import yaml
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -285,8 +290,41 @@ def test_the_input_never_lowers_the_disregard(units):
         assert on[income][i] <= off[income][i] + 0.01, unit
 
 
+def boundary_family(shape, ages, children=()):
+    return dict(
+        shape=shape,
+        pension_age=False,
+        accommodation=True,
+        adults=[
+            dict(
+                age=age,
+                employment_income=10_400.0 if j == 0 else 0.0,
+                self_employment_income=0.0,
+                weekly_hours=30.0,
+                disabled=False,
+            )
+            for j, age in enumerate(ages)
+        ],
+        children=list(children),
+        childcare=0.0,
+    )
+
+
+BOUNDARY_FAMILIES = [
+    boundary_family("couple", (17, 17)),
+    boundary_family("couple", (17, 18)),
+    boundary_family("couple", (24, 25)),
+    boundary_family("couple_with_children", (17, 17), (1,)),
+    boundary_family("single", (24,)),
+    boundary_family("single", (25,)),
+    boundary_family("lone_parent", (24,), (3, 5)),
+    boundary_family("lone_parent", (25,), (3, 5)),
+]
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=40))
+@example(units=BOUNDARY_FAMILIES)
 def test_differential_against_the_statutory_reference(units):
     values = calculate(units)
     for i, unit in enumerate(units):

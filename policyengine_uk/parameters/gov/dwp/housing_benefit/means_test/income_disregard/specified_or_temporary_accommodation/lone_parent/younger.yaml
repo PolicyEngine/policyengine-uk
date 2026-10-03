@@ -6,7 +6,9 @@ values:
   # Neither instrument uprates the sums. The model reads each fiscal year at
   # 30 April, so 2026 (2026-27) has no paragraph 18 disregard although it
   # applied from 5 October 2026 (183 of the year's 365 days); 2027 onwards
-  # has the full amounts.
+  # has the full amounts. fiscal_year_blend is not used: half of an amount
+  # for the whole year is not the full amount for half the year, because
+  # the disregard is capped at net earnings and counts in the £17.10 test.
   2006-03-06: 0
   2026-10-05: 61.41
 metadata:
