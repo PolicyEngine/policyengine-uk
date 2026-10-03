@@ -1,0 +1,13 @@
+description: Fixed monthly earned income at or above which a Universal Credit award is excepted from the benefit cap. The regulations set a sum of money until 1 April 2017 and a number of hours at the national living wage rate since, so this is zero from that date.
+values:
+  2013-04-29: 430
+  2017-04-01: 0
+metadata:
+  unit: currency-GBP
+  period: month
+  label: Universal Credit benefit cap earnings exception fixed monthly amount
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 82(1)(a), as made
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/82/made
+    - title: The Universal Credit (Benefit Cap Earnings Exception) Amendment Regulations 2017 reg. 2(3)(a)
+      href: https://www.legislation.gov.uk/uksi/2017/138/regulation/2/made

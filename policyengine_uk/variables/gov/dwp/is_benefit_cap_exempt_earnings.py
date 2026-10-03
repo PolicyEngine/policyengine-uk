@@ -4,57 +4,33 @@ from policyengine_uk.model_api import *
 class is_benefit_cap_exempt_earnings(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether exempt from the benefits cap for non-health/disability reasons"
+    label = "Whether excepted from the benefit cap because of earnings"
+    documentation = (
+        "The Universal Credit earnings exception: the benefit cap does not "
+        "apply to an award of Universal Credit where the claimant's earned "
+        "income, or a couple's combined earned income, reaches the pay for "
+        "16 hours a week at the national living wage. It does not apply to "
+        "Housing Benefit, whose cap has its own exceptions (HB Regs 2006 "
+        "regs. 75E and 75F; entitlement to Working Tax Credit is in "
+        "is_benefit_cap_exempt_health_disability). The nine-month grace "
+        "period is not modelled."
+    )
     definition_period = YEAR
-    reference = "https://www.gov.uk/benefit-cap/when-youre-not-affected"
+    reference = [
+        dict(
+            title="Universal Credit Regulations 2013 reg. 82(1)(a)",
+            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/82",
+        ),
+        dict(
+            title="Housing Benefit Regulations 2006 reg. 75E",
+            href="https://www.legislation.gov.uk/uksi/2006/213/regulation/75E",
+        ),
+    ]
 
     def formula(benunit, period, parameters):
-        # Check if anyone in benefit unit is over state pension age
-        person = benunit.members
-        over_pension_age = person("is_SP_age", period)
-        has_pensioner = benunit.any(over_pension_age)
-
-        # UC-specific exemptions
-        # Limited capability for work and work-related activity
-        has_lcwra = benunit.any(person("uc_limited_capability_for_WRA", period))
-
-        # Carer element in UC indicates caring for someone with disability
-        gets_uc_carer_element = benunit("uc_carer_element", period) > 0
-
-        # Earnings exemption for UC (£846/month = £10,152/year)
-        # Note: Only check earned income, not UC amount itself to avoid circular dependency
-        uc_earned = benunit.sum(
-            benunit.members("employment_income", period)
-            + benunit.members("self_employment_income", period)
-            - benunit.members("income_tax", period)
-            - benunit.members("national_insurance", period)
-        )
-        earnings_threshold = 10_152
-        meets_earnings_test = uc_earned >= earnings_threshold
-
-        # Disability and carer benefits that exempt from cap
-        QUAL_PERSONAL_BENEFITS = [
-            "attendance_allowance",
-            "carers_allowance",
-            "dla",  # Disability Living Allowance (includes components)
-            "pip_dl",  # PIP daily living component
-            "pip_m",  # PIP mobility component
-            "iidb",  # Industrial injuries disability benefit
-        ]
-
-        # ESA and Working Tax Credit
-        QUAL_BENUNIT_BENEFITS = [
-            "esa_income",  # Income-based ESA
-            "working_tax_credit",  # If getting WTC, likely working enough
-        ]
-
-        qualifying_personal_benefits = add(benunit, period, QUAL_PERSONAL_BENEFITS)
-        qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
-
-        # Check for Armed Forces Compensation Scheme payments
-        afcs = benunit("afcs", period) > 0
-
-        # ESA contribution-based with support component
-        esa_support_component = benunit("esa_contrib", period) > 0
-
-        return meets_earnings_test
+        # Reg. 82(1): "The benefit cap does not apply to an award of
+        # universal credit ...". The award before the cap is read, since the
+        # award after it depends on this exception.
+        has_uc_award = benunit("universal_credit_pre_benefit_cap", period) > 0
+        threshold_met = benunit("uc_benefit_cap_earnings_threshold_met", period)
+        return has_uc_award & threshold_met

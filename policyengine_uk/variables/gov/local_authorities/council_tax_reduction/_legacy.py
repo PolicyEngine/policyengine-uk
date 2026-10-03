@@ -25,8 +25,18 @@ def legacy_council_tax_reduction(
     universal_credit = benunit("universal_credit", period)
     has_uc_award = universal_credit > 0
     uc_applicable_amount = benunit("uc_maximum_amount", period)
+    # The schemes use "the calculation or estimate of the amount of the
+    # income of the applicant ... made by the Secretary of State for the
+    # purpose of determining the award of universal credit", plus the award
+    # (Default Scheme 2013 para. 37(1) and (3)(a); Kingston upon Thames and
+    # Merton reproduce it, Newham refers to the same calculation, and
+    # Westminster's scheme is based on the Default Scheme). That income is
+    # earned income after tax, National Insurance and pension contributions
+    # and unearned income. The work allowance and taper are steps in the
+    # award (UC Regs 2013 reg. 22), not in the income, so the work allowance
+    # is not deducted here.
     uc_applicable_income = (
-        benunit("uc_earned_income", period)
+        benunit("uc_earned_income_before_work_allowance", period)
         + benunit("uc_unearned_income", period)
         + universal_credit
     )
