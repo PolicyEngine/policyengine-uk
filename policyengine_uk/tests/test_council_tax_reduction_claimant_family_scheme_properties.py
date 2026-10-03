@@ -30,13 +30,19 @@ not):
    pensioner scheme, and only a working-age family by a council's scheme.
 4. Others do not matter: changing the ages and disability benefits of every
    other family that claims leaves a family's pensioner status, exemption,
-   scheme and award unchanged, reported reductions included.
+   scheme and simulated award unchanged. Its council_tax_benefit is unchanged
+   too, unless it falls back to a reported reduction and whether a simulated
+   claim in its household pays something changes (property 5's
+   reconciliation).
 5. Fallback: a claiming family gets its simulated reduction where its scheme
-   is simulated, and otherwise its reported one, limited to its share of the
-   council tax where it is jointly liable. A family that cannot claim gets
-   its reported reduction only where no claim in its household is simulated.
+   is simulated, and otherwise its reported one. Beside a simulated claim
+   that pays something, a jointly liable claimant's reported reduction is
+   limited to its share of the council tax; otherwise it is kept as reported. A
+   family that cannot claim gets its reported reduction only where no claim
+   in its household is simulated.
 6. Bounds: a family that cannot claim gets no simulated reduction; a
-   household with a simulated claim never gets more than its council tax.
+   household whose simulated claims pay something never gets more than its
+   council tax.
 7. The exemption is the applicant's own: in a council's working-age scheme,
    giving one claiming family an exempting benefit removes the non-dependant
    deductions from its own reduction and leaves every other claim's
@@ -292,13 +298,17 @@ def test_scheme_follows_own_family(population):
     bill = calc(sim, "council_tax")[house]
     simulates = calc(sim, "council_tax_reduction_household_has_simulated_claim")
     household_simulates = simulates[house].astype(bool)
+    paid = np.bincount(house, weights=(claimant & supported) * simulated)
+    household_pays = paid[house] > 0
     expected = np.where(
         claimant,
         np.where(
             supported,
             simulated,
             np.where(
-                share < 1, np.minimum(reported_amount, bill * share), reported_amount
+                household_pays & (share < 1),
+                np.minimum(reported_amount, bill * share),
+                reported_amount,
             ),
         ),
         np.where(household_simulates, 0, reported_amount),
@@ -311,7 +321,7 @@ def test_scheme_follows_own_family(population):
     assert np.all(simulated[~claimant] == 0)
     household_reduction = calc(sim, "council_tax_reduction")
     over = household_reduction > calc(sim, "council_tax") + 0.01
-    assert not np.any(over & simulates)
+    assert not np.any(over & (paid > 0))
 
 
 @PROPERTY_SETTINGS
@@ -330,7 +340,6 @@ def test_other_families_do_not_change_a_claim(population):
     for variable in (
         "council_tax_reduction_joint_liability_share",
         "simulated_council_tax_reduction_benunit",
-        "council_tax_benefit",
     ):
         np.testing.assert_allclose(
             calc(before, variable)[target],
@@ -338,6 +347,26 @@ def test_other_families_do_not_change_a_claim(population):
             atol=1e-6,
             err_msg=variable,
         )
+    # A reported fallback is reconciled against the household's paid
+    # simulated claims (property 5); compare it wherever that is the same.
+    house = facts["house"]
+    supported = calc(before, "council_tax_reduction_scheme_supported").astype(bool)
+
+    def household_pays(sim_):
+        claims = calc(sim_, "council_tax_reduction_claimant_benunit").astype(bool)
+        supported_ = calc(sim_, "council_tax_reduction_scheme_supported").astype(bool)
+        simulated = calc(sim_, "simulated_council_tax_reduction_benunit")
+        paid = np.bincount(house, weights=(claims & supported_) * simulated)
+        return paid[house] > 0
+
+    same_reconciliation = household_pays(before) == household_pays(after)
+    compare = target & (supported | same_reconciliation)
+    np.testing.assert_allclose(
+        calc(before, "council_tax_benefit")[compare],
+        calc(after, "council_tax_benefit")[compare],
+        atol=1e-6,
+        err_msg="council_tax_benefit",
+    )
 
 
 @st.composite
