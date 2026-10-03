@@ -36,8 +36,10 @@ Invariants:
    the added child carries a parent marker (an identified parent must be aged
    16 or over; the minimised counterexample that found this is kept as a
    regression test). It does not hold below a flagged claimant whose flag
-   nothing explains: a flagged 50 with a 25-year-old is single, and adding a
-   12-year-old explains the flag and makes them a couple.
+   nothing explains, for a member 16 to 19 years younger: a flagged 38 with a
+   20-year-old is single, and adding a 12-year-old explains the flag and
+   makes them a couple. A member 20 or more years younger stays the
+   claimant's child either way (the any-age gap).
    Before/after families share one Simulation to avoid repeated
    model construction, but occupy distinct households and benefit units.
 
