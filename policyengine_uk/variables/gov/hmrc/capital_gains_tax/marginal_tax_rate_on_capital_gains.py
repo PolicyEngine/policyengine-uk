@@ -1,7 +1,10 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
 from policyengine_uk.utils.capital_gains import RESPONSE_VARIABLES
-from policyengine_uk.utils.marginal_rates import marginal_rate_step
+from policyengine_uk.utils.marginal_rates import (
+    clear_branch_for_recalculation,
+    marginal_rate_step,
+)
 
 
 class marginal_tax_rate_on_capital_gains(Variable):
@@ -31,13 +34,7 @@ class marginal_tax_rate_on_capital_gains(Variable):
         for adult_index in [1, 2]:
             alt_simulation = simulation.get_branch(f"adult_{adult_index}_cg_rise")
             mask = adult_index_values == adult_index
-            for variable in simulation.tax_benefit_system.variables:
-                variable_data = simulation.tax_benefit_system.variables[variable]
-                if (
-                    variable not in simulation.input_variables
-                    and not variable_data.is_input_variable()
-                ):
-                    alt_simulation.delete_arrays(variable)
+            clear_branch_for_recalculation(simulation, alt_simulation, period)
             # Hold the realisation response at this simulation's values, so the
             # branch reads its schedule split instead of measuring it again.
             for response in RESPONSE_VARIABLES:

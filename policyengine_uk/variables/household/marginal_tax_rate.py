@@ -1,6 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_core.variables import Variable
-from policyengine_uk.utils.marginal_rates import marginal_rate_step
+from policyengine_uk.utils.marginal_rates import (
+    clear_branch_for_recalculation,
+    marginal_rate_step,
+)
 
 
 class marginal_tax_rate(Variable):
@@ -28,13 +31,7 @@ class marginal_tax_rate(Variable):
         for adult_index in range(1, 1 + adult_count):
             alt_simulation = simulation.get_branch(f"adult_{adult_index}_pay_rise")
             mask = adult_index_values == adult_index
-            for variable in simulation.tax_benefit_system.variables:
-                variable_data = simulation.tax_benefit_system.variables[variable]
-                if (
-                    variable not in simulation.input_variables
-                    and not variable_data.is_input_variable()
-                ):
-                    alt_simulation.delete_arrays(variable)
+            clear_branch_for_recalculation(simulation, alt_simulation, period)
             alt_simulation.set_input(
                 "employment_income",
                 period,

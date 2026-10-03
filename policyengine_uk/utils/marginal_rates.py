@@ -10,6 +10,8 @@ in net income alike (issue #1979).
 
 import numpy as np
 
+from policyengine_uk.utils.inputs import variables_with_input
+
 # Float32 rounds a value by at most 2^-24 of itself, so a step of 0.1% of the
 # value keeps each rounding below 6e-5 of the step at any size.
 RELATIVE_STEP = 1e-3
@@ -29,3 +31,27 @@ def marginal_rate_step(values, minimum: float) -> np.ndarray:
     """
     values = np.abs(np.asarray(values, dtype=np.float64))
     return np.maximum(minimum, RELATIVE_STEP * values)
+
+
+def clear_branch_for_recalculation(simulation, branch, period) -> None:
+    """Delete from ``branch`` every value that a changed input could change,
+    so that the branch recalculates it for ``period``.
+
+    Variables without a formula keep their values, and so do variables
+    entered for ``period``. A variable entered only for other periods (a
+    dataset column, for years past the data) keeps those entries but loses
+    its value for ``period``. Every other variable loses all its values.
+    Whether a variable was entered is read from the inputs, not from
+    ``simulation.input_variables``, which lists every variable stored at load
+    for any period: keeping such a variable's ``period`` value let the branch
+    read the value this simulation had calculated before the branch existed,
+    so the result depended on calculation order.
+    """
+    entered = variables_with_input(simulation, period)
+    for name, variable in simulation.tax_benefit_system.variables.items():
+        if variable.is_input_variable() or name in entered:
+            continue
+        if name in simulation.input_variables:
+            branch.delete_arrays(name, period)
+        else:
+            branch.delete_arrays(name)

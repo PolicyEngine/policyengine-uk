@@ -1,6 +1,6 @@
 """Which periods of a variable hold entered values rather than calculated ones."""
 
-from typing import List, Optional
+from typing import List, Optional, Set
 
 from policyengine_core.periods import Period
 
@@ -15,6 +15,15 @@ def _readable_branches(simulation) -> List[str]:
         branch = getattr(branch, "parent_branch", None)
     names.append("default")
     return list(dict.fromkeys(names))
+
+
+def _readable_input_keys(simulation):
+    """(variable name, period) for each ``set_input`` entry this simulation
+    (branch) reads, from core's record (``Simulation._user_input_keys``)."""
+    readable = _readable_branches(simulation)
+    for name, branch_name, period in getattr(simulation, "_user_input_keys", ()):
+        if branch_name in readable:
+            yield name, period
 
 
 def input_periods(simulation, variable_name: str) -> List[Period]:
@@ -35,13 +44,10 @@ def input_periods(simulation, variable_name: str) -> List[Period]:
     """
     holder = simulation.get_holder(variable_name)
     definition_period = holder.variable.definition_period
-    readable = _readable_branches(simulation)
     periods = {
         period
-        for name, branch_name, period in getattr(simulation, "_user_input_keys", ())
-        if name == variable_name
-        and branch_name in readable
-        and period.unit == definition_period
+        for name, period in _readable_input_keys(simulation)
+        if name == variable_name and period.unit == definition_period
     }
     return sorted(
         (
@@ -51,6 +57,22 @@ def input_periods(simulation, variable_name: str) -> List[Period]:
         ),
         key=lambda period: period.start,
     )
+
+
+def variables_with_input(simulation, period: Period) -> Set[str]:
+    """The variables holding an entered value (see ``input_periods``) for a
+    period that overlaps ``period``: the period itself, one inside it (a month
+    of a year) or one containing it."""
+    names = set()
+    for name, input_period in _readable_input_keys(simulation):
+        if name in names:
+            continue
+        if not (period.contains(input_period) or input_period.contains(period)):
+            continue
+        holder = simulation.get_holder(name)
+        if holder.get_array(input_period, simulation.branch_name) is not None:
+            names.add(name)
+    return names
 
 
 def latest_input_period_before(

@@ -1,6 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_core.variables import Variable
-from policyengine_uk.utils.marginal_rates import marginal_rate_step
+from policyengine_uk.utils.marginal_rates import (
+    clear_branch_for_recalculation,
+    marginal_rate_step,
+)
 
 
 class marginal_tax_rate_wrt_employer_cost(Variable):
@@ -34,13 +37,7 @@ class marginal_tax_rate_wrt_employer_cost(Variable):
                 f"adult_{adult_index}_employer_cost_mtr"
             )
             mask = adult_index_values == adult_index
-            for variable in simulation.tax_benefit_system.variables:
-                variable_data = simulation.tax_benefit_system.variables[variable]
-                if (
-                    variable not in simulation.input_variables
-                    and not variable_data.is_input_variable()
-                ):
-                    alt_simulation.delete_arrays(variable)
+            clear_branch_for_recalculation(simulation, alt_simulation, period)
             alt_simulation.set_input(
                 "employment_income",
                 period,
