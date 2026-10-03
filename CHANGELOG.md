@@ -1,3 +1,10 @@
+## [2.111.2] - 2026-10-03
+
+### Fixed
+
+- - Apply the State Pension Credit severe disability addition's residence and carer conditions (SPC Regs 2002 Sch I paras 1-2 and reg 6(5)): no other resident aged 18 or over, ignoring qualifying-benefit recipients, blind people and qualifying young persons; and a carer benefit reduces or removes the addition only when it is paid for caring for a qualifying claimant or partner, so a claimant's own Carer's Allowance no longer removes it. Pension-age Housing Benefit and Council Tax Reduction follow once their severe disability premium reads this variable.
+
+
 ## [2.111.1] - 2026-10-03
 
 ### Fixed
