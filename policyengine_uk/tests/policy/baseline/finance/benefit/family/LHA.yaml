@@ -1,3 +1,6 @@
+# With no region input the household is in London (region's default), so
+# brma defaults to London's BRMA rather than Maidstone, which it used for
+# every region before brma had a formula. Maidstone's rate here was 9,771.
 - name: BRMA default value
   period: 2020
   absolute_error_margin: 20
@@ -5,8 +8,8 @@
     age: 18
     LHA_category: C
   output:
-    brma: MAIDSTONE
-    BRMA_LHA_rate: 9_771
+    brma: INNER_SOUTH_EAST_LONDON
+    BRMA_LHA_rate: 16_155
 - name: BRMA inputs
   period: 2020
   absolute_error_margin: 0
