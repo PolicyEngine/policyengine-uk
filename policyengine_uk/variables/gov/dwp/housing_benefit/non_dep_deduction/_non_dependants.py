@@ -35,7 +35,8 @@ STATUTORY_PAY_EARNINGS = [
     "statutory_paternity_pay",
 ]
 
-# Benefits the benefit cap counts, other than Housing Benefit (benefit_cap_reduction).
+# Benefits the benefit cap counts (Welfare Reform Act 2012 s.96(10)), other than
+# Housing Benefit. Bereavement allowance and the widow's benefits have no input.
 CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
     "child_benefit",
     "child_tax_credit",
@@ -47,6 +48,7 @@ CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT = [
     "incapacity_benefit",
     "esa_contrib",
     "sda",
+    "maternity_allowance",
 ]
 
 
@@ -57,11 +59,19 @@ def non_dependant_weekly_gross_income(person, period):
     tax credits, child benefit, Income Support, income-based JSA,
     income-related ESA and Pension Credit. Anyone else in the benefit unit is a
     separate non-dependant, banded on their own income. A person's own income
-    is their taxable income plus statutory sick, maternity and paternity pay
-    and Maternity Allowance. It leaves out the disability benefits HB reg
+    is their taxable income, with any self-employment or property loss added
+    back, plus statutory sick, maternity and paternity pay and Maternity
+    Allowance. It leaves out the disability benefits HB reg
     74(9) disregards, which are untaxed."""
     claimant_or_partner = person("is_claimant_or_partner", period)
-    own_income = max_(0, person("total_income", period)) + add(
+    # Gross income: a self-employment or property loss does not reduce other
+    # income, as it does in taxable income. DWP HB guidance A5.551 takes a
+    # self-employed non-dependant's gross income as "their total income with no
+    # deductions for business expenses"; the model has profit, not turnover.
+    losses = max_(0, -person("self_employment_income", period)) + max_(
+        0, -person("property_income", period)
+    )
+    own_income = max_(0, person("total_income", period) + losses) + add(
         person, period, PERSONAL_GROSS_INCOME_OUTSIDE_TOTAL_INCOME
     )
     family_benefits = universal_credit_after_benefit_cap(person.benunit, period) + sum(
@@ -82,9 +92,7 @@ def universal_credit_after_benefit_cap(benunit, period):
     not receive. The award is reduced by the excess minus the childcare costs
     element, and not at all where that element is greater than the excess
     (reg 81(1)-(2))."""
-    capped = sum(
-        benunit(benefit, period) for benefit in CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT
-    )
+    capped = add(benunit, period, CAPPED_BENEFITS_EXCEPT_HOUSING_BENEFIT)
     excess = max_(0, capped - benunit("benefit_cap", period))
     reduction = max_(0, excess - benunit("uc_childcare_element", period))
     return max_(0, benunit("universal_credit_pre_benefit_cap", period) - reduction)

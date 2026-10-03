@@ -1008,3 +1008,168 @@
     # work, pays the lowest amount (5.20).
     council_tax_reduction_non_dep_deduction_exempt: [false, false, false]
     council_tax_reduction_non_dep_deductions: [540.80, 0]
+
+# Round 4 of the independent review.
+
+- name: Maternity Allowance counts towards the benefit cap on a non-dependant's Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      worker:
+        age: 20
+        employment_income: 9_200
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        maternity_allowance: 6_000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      child_1:
+        age: 16
+        is_claimant_or_partner: false
+      child_2:
+        age: 15
+        is_claimant_or_partner: false
+      child_3:
+        age: 13
+        is_claimant_or_partner: false
+      child_4:
+        age: 11
+        is_claimant_or_partner: false
+      child_5:
+        age: 0
+        is_claimant_or_partner: false
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      family_unit:
+        members: [worker, partner, child_1, child_2, child_3, child_4, child_5]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 14_000
+        uc_childcare_element: 0
+        child_benefit: 5_129.80
+        benefit_cap: 22_020
+        child_tax_credit: 0
+        working_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, worker, partner, child_1, child_2, child_3, child_4, child_5]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # Welfare Reform Act 2012 s.96(10)(i): Maternity Allowance is a capped
+    # benefit. Capped benefits are 25,129.80, 3,109.80 over the cap, so UC
+    # is 10,890.20 (UC reg 81). Joint gross income is 9,200 wages + 6,000 MA
+    # + 10,890.20 UC + 5,129.80 child benefit = 600.38 a week: the HB 485
+    # band (119.85) and the CTR 485 band (13.30).
+    housing_benefit_non_dep_deductions: [6_232.20, 0]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
+
+- name: A self-employment loss does not cancel a non-dependant's gross wages
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      lodger:
+        age: 30
+        employment_income: 15_600
+        self_employment_income: -10_400
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      lodger_unit:
+        members: [lodger]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, lodger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # HB reg 74(2) and SI 2006/214 reg 55(2): "normal gross weekly income".
+    # Taxable income nets the 10,400 loss against the 15,600 wages; gross
+    # income does not (DWP HB guidance A5.551), so the lodger is banded on
+    # 300 a week: the HB 279 band (64.35) and the CTR 279 band (10.60).
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: Scotland's partner rule does not cover a couple on Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+        is_claimant_or_partner: true
+      recipient:
+        age: 35
+        income_support_reported: 5_000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 34
+        employment_income: 5_200
+        weekly_hours: 10
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant]
+        benunit_is_rent_liable: true
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 0
+      couple_unit:
+        members: [recipient, partner]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 1_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 5_000
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [applicant, recipient, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    # SSI 2021/249 reg 4(1): a qualifying income-related benefit claimant "is
+    # not on universal credit". Here the couple is, so the partner rule does
+    # not apply. The recipient is exempt as on UC without earned income (reg
+    # 90(8)(c)); the partner has wages, so is charged the lowest amount (5.55,
+    # under 16 hours), the couple's one deduction.
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_non_dep_deductions: [288.60, 0]
