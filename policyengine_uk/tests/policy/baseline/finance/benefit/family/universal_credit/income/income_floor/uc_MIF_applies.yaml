@@ -185,7 +185,7 @@
   output:
     uc_mif_applies: [false, false]
 
-- name: Lone parent of a child aged 3 (section 22)
+- name: Lone parent of a child aged 3 (section 22), in the start-up period that begins on the move
   period: 2026
   absolute_error_margin: 0
   input:
@@ -195,6 +195,21 @@
         self_employment_income: 3_000
       child:
         age: 3
+  output:
+    # Reg. 63(1): DWP first finds the claimant gainfully self-employed after
+    # the move into section 22, and a start-up period runs for 12 months.
+    uc_mif_applies: [false, false]
+
+- name: Lone parent of a child aged 4 (section 22)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 4
   output:
     uc_mif_applies: [true, false]
 

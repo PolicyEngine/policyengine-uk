@@ -287,7 +287,9 @@
       child_1:
         age: 5
       child_2:
-        age: 3
+        # 4, not 3: with a child of 3 the responsible carer would be in the
+        # start-up period that begins on entering section 22.
+        age: 4
     households:
       household:
         members: [self_employed, employee, child_1, child_2]

@@ -1,0 +1,299 @@
+# UC Regs 2013 reg. 63(1): a start-up period "is a period of 12 months and
+# applies from the beginning of the assessment period in which the Secretary
+# of State determines that a claimant is in gainful self-employment where (a)
+# regulation 62 (minimum income floor) has not previously applied to the
+# claimant in relation to the trade ... (whether in relation to the current
+# award or a previous award)". Reg. 62(5): no floor in a start-up period.
+#
+# DWP, Self-employed and gainfully self-employed: Guidance V22.0: claimants
+# in the Work Preparation, Work Focused Interview only or No Work-related
+# Requirements regimes "cannot be found gainfully self-employed" (p. 3);
+# those who move into the Intensive Work Search regime "(for example, due to
+# a change in their youngest child's age)" have a Gateway Interview, and "If
+# the claimant is found to be gainfully self-employed, either the Start-up
+# Period or the Minimum Income Floor will be applied" (p. 11).
+#
+# Until 22 September 2020 reg. 63(1)(a) required a trade begun in the 12
+# months before the decision. Parameters for a year are read at 30 April, so
+# the route applies from 2021.
+
+- name: Lone parent whose youngest child is 3 is in a start-up period
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 3
+  output:
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, NOT_A_CLAIMANT]
+    uc_is_in_startup_period_on_entering_all_requirements_group: [true, false]
+    uc_mif_applies: [false, false]
+
+- name: Child aged 2, the responsible carer is still in the work preparation group
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 2
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [false, false]
+
+- name: Child aged 4, the start-up period has ended and the floor applies
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 4
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [true, false]
+
+- name: An older sibling does not change the youngest child's age
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 35
+        self_employment_income: 3_000
+      older:
+        age: 9
+      youngest:
+        age: 3
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [true, false, false]
+    uc_mif_applies: [false, false, false]
+
+- name: Barred where the floor or an earlier start-up period has applied before
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+        uc_startup_period_barred_by_earlier_floor_or_startup: true
+      child:
+        age: 3
+  output:
+    # Reg. 63(1)(a) and (2). DWP guidance V22.0 p. 4: a floor applied before
+    # is removed on the move into a lower regime, and the guidance's p. 11
+    # applies "either the Start-up Period or the Minimum Income Floor" after
+    # the move back.
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [true, false]
+
+- name: Limited capability for work keeps the claimant out of the all work-related requirements group
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+        uc_has_limited_capability_for_work: true
+      child:
+        age: 3
+  output:
+    uc_work_related_group_apart_from_earnings: [WORK_PREPARATION, NOT_A_CLAIMANT]
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [false, false]
+
+- name: Limited capability for work and work-related activity
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+        uc_limited_capability_for_WRA: true
+      child:
+        age: 3
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [false, false]
+
+- name: A responsible carer over State Pension Credit qualifying age
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      grandparent:
+        age: 70
+        self_employment_income: 3_000
+      child:
+        age: 3
+  output:
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, NOT_A_CLAIMANT]
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+
+- name: No start-up period without gainful self-employment
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 10_000
+      child:
+        age: 3
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [false, false]
+
+- name: A trader who breaks even and is found gainfully self-employed
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        uc_is_in_gainful_self_employment: true
+      child:
+        age: 3
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [true, false]
+    uc_mif_applies: [false, false]
+
+- name: Couple, both self-employed, only the responsible carer moves into the group
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      carer:
+        age: 30
+        self_employment_income: 3_000
+        hours_worked: 832
+      partner:
+        age: 32
+        self_employment_income: 3_000
+        hours_worked: 1_820
+      child:
+        age: 3
+  output:
+    # The partner who works fewer hours is the responsible carer by default.
+    # The other partner was already in the all work-related requirements
+    # group, so their gainful self-employment was decided before.
+    uc_is_responsible_carer: [true, false, false]
+    uc_is_in_startup_period_on_entering_all_requirements_group: [true, false, false]
+    uc_mif_applies: [false, true, false]
+
+- name: Couple who nominate the other partner as the responsible carer
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      carer:
+        age: 30
+        self_employment_income: 3_000
+        uc_is_responsible_carer: false
+      partner:
+        age: 32
+        self_employment_income: 3_000
+        uc_is_responsible_carer: true
+      child:
+        age: 3
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, true, false]
+    uc_mif_applies: [true, false, false]
+
+- name: A start-up period from the data applies alongside this one
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+        uc_is_in_startup_period: true
+      child:
+        age: 4
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [false, false]
+
+- name: Before 23 September 2020 an established trade had no start-up period on the move
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 3
+  output:
+    # Reg. 63(1)(a) as made: "the claimant has begun to carry on the trade
+    # ... in the 12 months preceding the beginning of that assessment
+    # period". A new trade is uc_is_in_startup_period.
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, NOT_A_CLAIMANT]
+    uc_is_in_startup_period_on_entering_all_requirements_group: [false, false]
+    uc_mif_applies: [true, false]
+
+- name: From 2021 an established trade has a start-up period on the move
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 3
+  output:
+    uc_is_in_startup_period_on_entering_all_requirements_group: [true, false]
+    uc_mif_applies: [false, false]
+
+- name: Universal Credit in the start-up period, lone parent of a three-year-old
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 6_000
+      child:
+        age: 3
+  output:
+    uc_individual_earned_income_before_mif: [6_000, 0]
+    uc_individual_earned_income: [6_000, 0]
+    # 6,000 is below the work allowance without housing costs, 710 x 12.
+    uc_earned_income: 0
+    # 424.90 x 12 + 303.94 x 12.
+    uc_maximum_amount: 8_746.08
+    universal_credit: 8_746.08
+
+- name: Universal Credit after the start-up period, lone parent of a four-year-old
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 6_000
+      child:
+        age: 4
+  output:
+    uc_individual_earned_income_before_mif: [6_000, 0]
+    # The floor at 30 expected hours: 12.71 x 30 x 52 = 19,827.60, less
+    # income tax (19,827.60 - 12,570) x 20% = 1,451.52 and Class 4 National
+    # Insurance (19,827.60 - 12,570) x 6% = 435.46.
+    uc_individual_earned_income: [17_940.62, 0]
+    # Less the work allowance of 710 x 12 = 8,520.
+    uc_earned_income: 9_420.62
+    uc_maximum_amount: 8_746.08
+    # 8,746.08 - 0.55 x 9,420.62.
+    universal_credit: 3_564.74
