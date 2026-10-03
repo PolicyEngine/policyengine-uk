@@ -1,126 +1,372 @@
-- name: Lone parent working - eligible
+# Each parent and partner must meet SI 2022/1134 reg 14(3)/15(3): qualifying
+# paid work, meaning expected income over three months of at least
+# 16 hours x minimum wage x 13 weeks (reg 18), and adjusted net income of no
+# more than £100,000. Or they must meet reg 14(4)/15(4) instead: limited
+# capability for work or a specified benefit (reg 11A), with a partner who meets
+# reg 14(3)/15(3).
+#
+# These tests set minimum_wage to £10, so the reg 18 threshold is
+# 10 x 16 x 13 = £2,080 a quarter, or £8,320 a year. The £20,000 earners below
+# have £5,000 a quarter and adjusted net income of £20,000, so they meet
+# reg 14(3)/15(3).
+- name: Lone parent working - meets the condition
   period: 2025
   input:
     people:
       parent:
         age: 35
-        in_work: true
         is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       child:
         age: 4
-        is_parent: false
     benunits:
       benunit:
         members: [parent, child]
-        family_type: LONE_PARENT
   output:
-    extended_childcare_entitlement_work_condition: [1, 0]
+    extended_childcare_entitlement_work_condition: [true, false]
 
-- name: Couple with children both working - eligible
+- name: Couple with children both working - both meet the condition
   period: 2025
   input:
     people:
       parent1:
         age: 40
-        in_work: true
         is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       parent2:
         age: 38
-        in_work: true
         is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       child:
         age: 4
-        is_parent: false
     benunits:
       benunit:
         members: [parent1, parent2, child]
-        family_type: COUPLE_WITH_CHILDREN
   output:
-    extended_childcare_entitlement_work_condition: [1, 1, 0]
+    extended_childcare_entitlement_work_condition: [true, true, false]
 
-- name: Couple with children, one working one with carer element - eligible
+# Reg 15(4)(c) and 11A(1)(a): the partner on Carer's Allowance has no earnings,
+# so fails the reg 18 minimum income, but needs neither the work nor the income
+# condition because the other parent meets reg 14(3).
+- name: One parent working, the other on Carer's Allowance - both meet the condition
   period: 2025
   input:
     people:
       parent1:
         age: 40
-        in_work: true
         is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       parent2:
         age: 38
-        in_work: false
         is_parent: true
+        carers_allowance: 4_000
+        minimum_wage: 10
       child:
         age: 4
-        is_parent: false
     benunits:
       benunit:
         members: [parent1, parent2, child]
-        family_type: COUPLE_WITH_CHILDREN
-        uc_carer_element: 100
   output:
-    extended_childcare_entitlement_work_condition: [1, 1, 0]
+    extended_childcare_entitlement_work_condition: [true, true, false]
 
-- name: Couple with children, one working one with Carer's Allowance - eligible
+# Reg 11A(1)(c): the Universal Credit carer element, meaning an award of
+# Universal Credit that includes it (reg 14(5)(a) as made). It belongs to the
+# carer.
+- name: One parent working, the other the carer on a UC award with the carer element - both meet the condition
   period: 2025
   input:
     people:
       parent1:
         age: 40
-        in_work: true
         is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       parent2:
         age: 38
-        in_work: false
         is_parent: true
-        carers_allowance: 1
+        is_carer_for_benefits: true
+        minimum_wage: 10
       child:
         age: 4
-        is_parent: false
     benunits:
       benunit:
         members: [parent1, parent2, child]
-        family_type: COUPLE_WITH_CHILDREN
+        universal_credit: 3_000
+        uc_carer_element: 2_400
   output:
-    extended_childcare_entitlement_work_condition: [1, 1, 0]
+    receives_uc_carer_element: [false, true, false]
+    extended_childcare_entitlement_work_condition: [true, true, false]
 
-- name: Couple with children one working one not - ineligible
+# The earner is the carer, so the carer element does not make the non-working
+# partner a person entitled to a specified benefit.
+- name: The earner is the carer on the UC award - the non-working partner does not meet the condition
   period: 2025
   input:
     people:
       parent1:
         age: 40
-        in_work: true
         is_parent: true
+        is_carer_for_benefits: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       parent2:
         age: 38
-        in_work: false
         is_parent: true
+        minimum_wage: 10
       child:
         age: 4
-        is_parent: false
     benunits:
       benunit:
         members: [parent1, parent2, child]
-        family_type: COUPLE_WITH_CHILDREN
+        universal_credit: 3_000
+        uc_carer_element: 2_400
   output:
-    extended_childcare_entitlement_work_condition: [0, 0, 0]
+    receives_uc_carer_element: [true, false, false]
+    extended_childcare_entitlement_work_condition: [true, false, false]
 
-- name: Couple without children both working - ineligible
+# Without a Universal Credit award there is no carer element to be entitled to.
+- name: A carer with no UC award - does not meet the condition through the carer element
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        is_carer_for_benefits: true
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        universal_credit: 0
+        uc_carer_element: 2_400
+  output:
+    receives_uc_carer_element: [false, false, false]
+    extended_childcare_entitlement_work_condition: [true, false, false]
+
+# Reg 11A(1)(e): employment and support allowance under WRA 2007 s.1, which
+# includes income-related ESA.
+- name: One parent working, the family has income-related ESA in 2025 - both meet the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        esa_income: 3_000
+  output:
+    extended_childcare_entitlement_work_condition: [true, true, false]
+
+# Before 1 December 2022, SI 2016/1257 reg 9(1)(b)(v) listed only
+# contributory ESA.
+- name: One parent working, the family has income-related ESA in 2022 - the other does not meet the condition
+  period: 2022
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        esa_income: 3_000
+  output:
+    extended_childcare_entitlement_work_condition: [true, false, false]
+
+# Reg 15(4)(a)-(b): limited capability for work, or for work and work-related
+# activity.
+- name: One parent working, the other with limited capability for work - both meet the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        uc_limited_capability_for_WRA: true
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, true, false]
+
+# Personal Independence Payment is not a specified benefit (reg 11A).
+- name: One parent working, the other on PIP only - the other does not meet the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        pip: 5_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, false, false]
+
+- name: One parent working, the other neither working nor on a specified benefit
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, false, false]
+
+# Reg 14(4)/15(4) need the other member of the couple to meet reg 14(3)/15(3).
+- name: Both parents on Carer's Allowance, neither working - neither meets the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        carers_allowance: 4_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        carers_allowance: 4_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [false, false, false]
+
+# Reg 14(4)(a): a parent can rely on a specified benefit only if they have a
+# partner.
+- name: Lone parent on Carer's Allowance, not working - does not meet the condition
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        is_parent: true
+        carers_allowance: 4_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    extended_childcare_entitlement_work_condition: [false, false]
+
+# The earner's adjusted net income of £120,000 exceeds the reg 14(3)(c)(i)
+# limit, so the earner fails reg 14(3), and the carer has no partner meeting it.
+- name: Earner above the income limit, partner on Carer's Allowance - neither meets the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 120_000
+        adjusted_net_income: 120_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        carers_allowance: 4_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [false, false, false]
+
+# The condition applies to the claimant and partner whether or not they have a
+# young child; the young child condition is in extended_childcare_entitlement_eligible.
+- name: Couple without children both working - both meet the condition
   period: 2025
   input:
     people:
       person1:
         age: 40
-        in_work: true
-        is_parent: false
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       person2:
         age: 38
-        in_work: true
-        is_parent: false
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
     benunits:
       benunit:
         members: [person1, person2]
-        family_type: COUPLE_NO_CHILDREN
   output:
-    extended_childcare_entitlement_work_condition: [0, 0]
+    extended_childcare_entitlement_work_condition: [true, true]
