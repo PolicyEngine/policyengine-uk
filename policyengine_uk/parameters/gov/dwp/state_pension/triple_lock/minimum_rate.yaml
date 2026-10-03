@@ -12,3 +12,5 @@ metadata:
     The triple lock is a policy commitment introduced by the Coalition Government
     in 2010, not enshrined in primary legislation. The 2.5% minimum is one of three
     components ensuring pensions increase by the highest of earnings, inflation, or 2.5%.
+    Changes take effect through Scenario(parameter_changes=...), which rebuilds the
+    uprating rates; a reform dictionary changes this parameter but not the rates.
