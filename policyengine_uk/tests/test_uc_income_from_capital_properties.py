@@ -32,6 +32,11 @@ also compares only families whose personal allowances the income leaves
 unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
 s. 35), which raises the tax a person pays on their earnings and so changes
 the deduction from them (see test_uc_earnings_deductions_properties.py).
+The award after the benefit cap is compared only where the cap exemption is
+also unchanged: the model's earnings exception to the cap still nets tax on
+all of a person's income off their earnings
+(PolicyEngine/policyengine-uk#1986), so capital income can switch the cap on.
+A strict xfail pins that case.
 """
 
 import numpy as np
@@ -82,6 +87,7 @@ UC_VARIABLES = [
     "uc_maximum_amount",
     "uc_assessable_capital",
     "is_uc_eligible",
+    "is_benefit_cap_exempt",
 ]
 
 
@@ -247,10 +253,18 @@ def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, yea
     unchanged = np.isclose(
         scaled["personal_allowances"], base["personal_allowances"], atol=0.01
     )
+    # The cap's earnings exception can change with the income (#1986), so
+    # the capped award is compared only where the exemption is the same.
+    same_cap = unchanged & (
+        scaled["is_benefit_cap_exempt"] == base["is_benefit_cap_exempt"]
+    )
     for variable in UC_VARIABLES:
+        if variable == "is_benefit_cap_exempt":
+            continue
+        compared = same_cap if variable == "universal_credit" else unchanged
         np.testing.assert_allclose(
-            scaled[variable][unchanged],
-            base[variable][unchanged],
+            scaled[variable][compared],
+            base[variable][compared],
             atol=0.01,
             err_msg=f"{variable}: {units}",
         )
@@ -307,3 +321,45 @@ def test_tax_on_dividends_does_not_raise_a_working_familys_award():
     )
     values = calculate([unit], 2026)
     assert values["uc_earned_income"][0] == pytest.approx(10_000, abs=0.01)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "PolicyEngine/policyengine-uk#1986: the benefit cap earnings exception "
+        "nets tax on all of a person's income off their earnings"
+    ),
+)
+def test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception():
+    # 2026: single claimant aged 30 in London, council rent 20,000, earning
+    # 11,000 with no tax or NI on it. Without dividends the model applies no
+    # cap, because the earnings meet its exception test. 10,000 of dividends
+    # is taxed, but that tax is not in respect of the employment (reg.
+    # 55(5)(b)), so earned income, and the exception that rests on it (reg.
+    # 82(1)(a)), should not change.
+    unit = dict(
+        ages=[30],
+        children=[],
+        tenure="RENT_FROM_COUNCIL",
+        region="LONDON",
+        rent=20_000.0,
+        capital={source: 0.0 for source in CAPITAL_SOURCES},
+        main_residence_value=0.0,
+        reported_capital=-1.0,
+        earnings=11_000.0,
+        private_pension_income=0.0,
+        capital_income={
+            "savings_interest_income": 0.0,
+            "dividend_income": 10_000.0,
+            "property_income": 0.0,
+        },
+        recipient=0,
+    )
+    with_dividends = calculate([unit], 2026, marriage_allowance=False)
+    without = calculate([unit], 2026, income_scale=0.0, marriage_allowance=False)
+    assert with_dividends["uc_earned_income"][0] == pytest.approx(
+        without["uc_earned_income"][0], abs=0.01
+    )
+    assert with_dividends["universal_credit"][0] == pytest.approx(
+        without["universal_credit"][0], abs=0.01
+    )

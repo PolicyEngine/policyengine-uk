@@ -5,7 +5,8 @@
 # Pension, property, savings and dividends is not deducted, and one partner's
 # tax never reduces the other's earnings. Earnings are taken as the lowest
 # slice of the person's non-savings income, after their allowances; savings
-# and dividends sit above all non-savings income (ITA 2007 s. 16).
+# and dividends sit above it, as ITA 2007 s. 16 ranks them for income tax
+# (apart from the items s. 1012 ranks higher, which the model does not have).
 #
 # Hand calculations use the 2026-27 rates:
 # - personal allowance 12,570; basic rate 20% on the first 37,700 of taxable
