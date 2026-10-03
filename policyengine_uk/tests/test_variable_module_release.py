@@ -4,13 +4,16 @@ policyengine-core registers each system's variable modules in sys.modules
 under the system's id and never removes them. The conftest's
 ``release_dead_variable_modules`` drops those of systems that no longer exist,
 which keeps a long test process's memory flat. If core stops leaking the
-modules (PolicyEngine/policyengine-core#520), the precondition below fails
-and the workaround can go.
+modules (PolicyEngine/policyengine-core#520), the first test skips with a
+note to remove the workaround, rather than failing every PR after a core
+upgrade.
 """
 
 import gc
 import sys
 from pathlib import Path
+
+import pytest
 
 from policyengine_uk import Simulation
 
@@ -41,10 +44,12 @@ def test_dead_systems_modules_are_released_and_live_ones_kept(request):
     dropped_owner = str(id(dropped.tax_benefit_system))
     expected = dropped.calculate("income_tax", 2026)
 
-    assert _modules_of(dropped_owner), (
-        "policyengine-core no longer registers variable modules under the "
-        "system's id; the conftest workaround may no longer be needed"
-    )
+    if not _modules_of(dropped_owner):
+        pytest.skip(
+            "policyengine-core no longer registers variable modules under the "
+            "system's id (policyengine-core#520 fixed?); remove "
+            "release_dead_variable_modules from conftest.py and this test"
+        )
     del dropped
     gc.collect()
 

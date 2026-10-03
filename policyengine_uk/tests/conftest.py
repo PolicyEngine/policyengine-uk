@@ -36,10 +36,10 @@ def pytest_collection_modifyitems(config, items):
 # a module named "<id(system)>_<path hash>_<file name>" and registers it in
 # sys.modules, where it stays after the system is garbage collected. Every
 # Simulation builds its own system, so each one leaves about 1,000 modules
-# (roughly 10 MB) behind, and the property tests build hundreds: one test
-# process grew to 15.7 GB on a 16 GB CI runner. After each test, drop the
-# modules of systems that no longer exist; live systems keep theirs. Remove
-# this once policyengine-core stops leaking them
+# (roughly 10 MB) behind, and the property tests build hundreds: running the
+# suite serially used 15.8 GB of a 16 GB CI runner. After each test, drop
+# the modules of systems that no longer exist; live systems keep theirs.
+# Remove this once policyengine-core stops leaking them
 # (PolicyEngine/policyengine-core#520).
 _VARIABLE_MODULE_NAME = re.compile(r"(\d+)_-?\d+_")
 
