@@ -9,7 +9,8 @@ class months_since_state_pension_age(Variable):
     documentation = (
         "Months between the day this person attains State Pension age and the "
         "middle of the fiscal year (6 October); negative if they attain it "
-        "later. Exact age is age plus months_since_last_birthday."
+        "later. A whole age adds months_since_last_birthday; a fractional age "
+        "is the exact age and overrides those months."
     )
     definition_period = YEAR
     unit = "month"
