@@ -19,7 +19,8 @@
 # partners are treated as caring for the same person unless both are entitled
 # with an award: a reported Carer's Allowance or Carer Support Payment award
 # (carers_allowance_reported carries both), or a carer benefit in payment that
-# caring hours do not explain, which was supplied directly. Most cases below
+# caring hours do not explain (fewer than 35 a week, or no claim), which was
+# supplied directly. Most cases below
 # with two premiums therefore give both partners a reported award.
 
 - name: Carer premium for a single claimant entitled to Carer's Allowance
@@ -469,6 +470,32 @@
         members: [claimant, partner]
         country: SCOTLAND
   output:
+    is_entitled_to_carer_benefit: [true, true]
+    partners_care_for_same_severely_disabled_person: false
+    carer_premium: 2 * 48.15 * 52
+
+- name: A carer benefit supplied for partners who care the hours but would not claim counts as two awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        carers_allowance: 4_000
+        care_hours: 35
+        would_claim_carers_allowance: false
+      partner:
+        age: 38
+        carers_allowance: 4_000
+        care_hours: 35
+        would_claim_carers_allowance: false
+    benunits:
+      family:
+        members: [claimant, partner]
+  output:
+    # Without a claim the hours give no allowance, so the amounts were
+    # supplied: two awards.
+    carers_allowance_pre_overlap: [0, 0]
     is_entitled_to_carer_benefit: [true, true]
     partners_care_for_same_severely_disabled_person: false
     carer_premium: 2 * 48.15 * 52
