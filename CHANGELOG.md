@@ -1,3 +1,14 @@
+## [2.110.0] - 2026-10-03
+
+### Added
+
+- Add `carers_allowance_pre_overlap`, `carer_support_payment_pre_overlap`, their `*_overlapping_benefits` totals, `overlapping_state_pension` and `is_entitled_to_carer_benefit`. `carers_allowance` and `carer_support_payment` are now the amounts payable after the overlapping-benefit reduction.
+
+### Fixed
+
+- - Reduced Carer's Allowance and Carer Support Payment by overlapping benefits, required claimant or partner entitlement for Pension Credit carer additions and carer premiums, and required payment for the Universal Credit non-dependant carer exemption.
+
+
 ## [2.109.8] - 2026-10-03
 
 ### Changed
