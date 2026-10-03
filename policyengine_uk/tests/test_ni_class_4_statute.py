@@ -14,10 +14,10 @@ primary Class 1 contributions >= 0:
    where primary Class 1 or, before 2024-25, Class 2 contributions are
    payable. Regulation 100's percentages are the year's Class 4 rates: 9% and
    2%, but 9.73% and 2.73% in 2022-23 (Health and Social Care Levy (Repeal)
-   Act 2022 Sch para 6(2)) and 6% and 2% from 2024-25 (National Insurance
-   Contributions (Reduction in Rates) Act 2024 s 2(3)). Before 2024-25 Step
-   Three adds 53 weekly Class 2 contributions and Step Four subtracts the
-   Class 2 paid.
+   Act 2022 Sch para 6(2)); from 2024-25, 6% and 100/6 in Steps Two and Five
+   (National Insurance Contributions (Reduction in Rates) Act 2024 s 2(3))
+   with Steps Eight and Nine still at 2%. Before 2024-25 Step Three adds 53
+   weekly Class 2 contributions and Step Four subtracts the Class 2 paid.
 3. Bounds: 0 <= ni_class_4 <= the s.15(3) amount.
 4. ni_class_4_main is the main-rate band of s.15(3)(a) alone.
 
