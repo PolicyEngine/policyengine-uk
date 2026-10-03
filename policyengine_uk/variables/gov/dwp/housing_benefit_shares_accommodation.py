@@ -33,18 +33,19 @@ class housing_benefit_shares_accommodation(Variable):
             person.household("is_shared_accommodation", period)
         )
         boarder_or_lodger = benunit.any(person("pays_rent_to_householder", period))
-        in_sharer_family = person.benunit("liable_for_share_of_household_rent", period)
+        # A family sharing the rent with the household head's family. The
+        # head's family is always liable for the rent, so the input on it
+        # alone does not make the rent shared.
+        in_sharer_family = person.benunit(
+            "liable_for_share_of_household_rent", period
+        ) & ~person.benunit.any(person("is_household_head", period))
         rent_is_shared = benunit.any(person.household.any(in_sharer_family))
         # A joint tenant in the claimant's household is a member of it, so
         # the families of a single household share rooms with a joint
         # occupier outside it only: a family sharing the rent that is not in
         # the household head's household.
         single = in_joint_tenants_single_household(benunit, period)
-        outside_single_household = (
-            in_sharer_family
-            & ~person.benunit.any(person("is_household_head", period))
-            & ~benunit.project(single)
-        )
+        outside_single_household = in_sharer_family & ~benunit.project(single)
         shares_with_another_household = where(
             single,
             benunit.any(person.household.any(outside_single_household)),

@@ -34,13 +34,16 @@ def in_joint_tenants_single_household(benunit, period):
     more joint occupiers: the household head's family and every family
     sharing the rent that forms a single household with it
     (joint_tenant_in_household_head_household), where there is at least one
-    such family."""
+    such family. In a household with no household head the input has no
+    effect."""
     person = benunit.members
     in_head_family = person.benunit.any(person("is_household_head", period))
+    has_head = person.household.any(in_head_family)
     in_joining_family = (
         person.benunit("joint_tenant_in_household_head_household", period)
         & person.benunit("liable_for_share_of_household_rent", period)
         & ~in_head_family
+        & has_head
     )
     head_family = benunit.any(in_head_family)
     someone_joins = benunit.any(person.household.any(in_joining_family))

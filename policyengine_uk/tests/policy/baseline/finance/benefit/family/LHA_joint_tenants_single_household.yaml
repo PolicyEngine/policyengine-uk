@@ -533,3 +533,28 @@
     housing_benefit_LHA_allowed_bedrooms: [2, 2, 1]
     housing_benefit_shares_accommodation: [true, true, false]
     housing_benefit_non_dep_deductions: [500, 500, 0]
+
+- name: The household head's own family marked as sharing the rent does not lack exclusive use
+  period: 2026
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+    benunits:
+      head_family:
+        members: [head]
+        # The head's family is always liable for the rent; the input on it
+        # alone does not make the rent shared.
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head]
+        rent: 7_800
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    housing_benefit_shares_accommodation: false
+    housing_benefit_LHA_allowed_bedrooms: 1
+    # One bedroom with exclusive use, aged 40: the one-bedroom rate.
+    housing_benefit_LHA_category: B

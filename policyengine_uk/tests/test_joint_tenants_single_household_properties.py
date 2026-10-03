@@ -413,3 +413,52 @@ def test_universal_credit_deductions_and_non_dependants_do_not_depend_on_the_inp
         "is_housing_benefit_young_individual",
     ]:
         assert_same(joined, apart, variable)
+
+
+def test_the_input_has_no_effect_without_a_household_head():
+    """A single household needs the household head's family, so where no one
+    is the household head the input changes nothing, even on a family that
+    shares the rent and with a lodger present."""
+
+    def situation(joins):
+        people = {
+            name: {
+                "age": {YEAR: age},
+                "is_household_head": {YEAR: False},
+                **extra,
+            }
+            for name, age, extra in [
+                ("older", 60, {}),
+                ("sharer", 40, {}),
+                ("lodger", 35, {"rent_paid_as_lodger": {YEAR: 4_000}}),
+            ]
+        }
+        benunits = {
+            "older_family": {"members": ["older"]},
+            "sharer_family": {
+                "members": ["sharer"],
+                "liable_for_share_of_household_rent": {YEAR: True},
+                "joint_tenant_in_household_head_household": {YEAR: joins},
+            },
+            "lodger_family": {"members": ["lodger"]},
+        }
+        households = {
+            "home": {
+                "members": list(people),
+                "rent": {YEAR: 15_600},
+                "tenure_type": {YEAR: "RENT_PRIVATELY"},
+                "brma": {YEAR: "MAIDSTONE"},
+            }
+        }
+        return Simulation(
+            situation={"people": people, "benunits": benunits, "households": households}
+        )
+
+    joined, apart = situation(True), situation(False)
+    for variable in [
+        "housing_benefit_LHA_allowed_bedrooms",
+        "housing_benefit_LHA_additional_bedrooms",
+        "housing_benefit_LHA_category",
+        "housing_benefit_shares_accommodation",
+    ]:
+        assert_same(joined, apart, variable)
