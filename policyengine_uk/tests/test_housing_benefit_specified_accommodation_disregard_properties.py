@@ -32,8 +32,10 @@ income-based JSA or income-related ESA:
 5. Differential: the model agrees with an independent reference written from
    the statutory text, with the para 18(2) amounts hard-coded from the
    instrument rather than read from the parameters.
-6. Pension age: families whose claimant and partner are all over State
-   Pension age get no para 18 amount.
+6. Scope: families whose claimant and partner are all over State Pension
+   age, and families in the accommodation with no earner (para 18(1)(b)),
+   get no para 18 amount; a working-age family in the accommodation with an
+   earner gets exactly the statutory amount.
 7. Para 12: on Income Support, every family has all its net earnings
    disregarded, with or without the input.
 8. Dates: no para 18 amount in any year to 2026 (the model reads 2026-27 at
@@ -98,28 +100,32 @@ SELF_EMPLOYMENT = st.one_of(st.just(0.0), st.floats(0, 12_000, allow_nan=False))
 
 
 @st.composite
-def adults(draw, age):
+def adults(draw, age, earns=True):
     return dict(
         age=draw(age),
-        employment_income=draw(EARNINGS),
-        self_employment_income=draw(SELF_EMPLOYMENT),
+        employment_income=draw(EARNINGS) if earns else 0.0,
+        self_employment_income=draw(SELF_EMPLOYMENT) if earns else 0.0,
         weekly_hours=draw(HOURS),
         disabled=draw(st.booleans()),
     )
 
 
 @st.composite
-def families(draw, pension_age=None, accommodation=None):
+def families(draw, pension_age=None, accommodation=None, earners=None):
     shape = draw(st.sampled_from(sorted(SHAPES)))
     n_adults, n_children = SHAPES[shape]
     if pension_age is None:
         pension_age = draw(st.booleans())
     age = PENSION_AGE if pension_age else WORKING_AGE
+    # Families without any earnings are drawn often, so that para 18(1)(b)
+    # is exercised on both sides.
+    if earners is None:
+        earners = draw(st.booleans())
     return dict(
         shape=shape,
         pension_age=pension_age,
         accommodation=(draw(st.booleans()) if accommodation is None else accommodation),
-        adults=[draw(adults(age)) for _ in range(n_adults)],
+        adults=[draw(adults(age, earners)) for _ in range(n_adults)],
         children=[draw(st.integers(0, 15)) for _ in range(n_children)],
         childcare=(
             draw(st.one_of(st.just(0.0), st.floats(0, 10_000))) if n_children else 0.0
@@ -307,6 +313,39 @@ def test_differential_against_the_statutory_reference(units):
         )
         total = values["housing_benefit_applicable_income_disregard"][i]
         assert abs(total - expected) < 0.02, (unit, total, expected)
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        families(pension_age=False, accommodation=True, earners=False),
+        min_size=1,
+        max_size=40,
+    )
+)
+def test_no_earner_has_no_para_18_amount(units):
+    # Para 18(1)(b): neither the claimant nor the partner is an earner.
+    values = calculate(units)
+    para_18 = values["housing_benefit_specified_or_temporary_accommodation_disregard"]
+    assert (para_18 == 0).all()
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(
+        families(pension_age=False, accommodation=True, earners=True),
+        min_size=1,
+        max_size=40,
+    )
+)
+def test_working_age_earner_in_the_accommodation_has_the_statutory_amount(units):
+    values = calculate(units)
+    para_18 = values["housing_benefit_specified_or_temporary_accommodation_disregard"]
+    for i, unit in enumerate(units):
+        if not has_earner(unit):
+            continue  # every drawn income was zero
+        assert para_18[i] > 0, unit
+        assert abs(para_18[i] - reference_para_18_weekly(unit) * WEEKS) < 0.01, unit
 
 
 @PROPERTY_SETTINGS
