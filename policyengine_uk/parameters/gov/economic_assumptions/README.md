@@ -66,9 +66,9 @@ analysis.
    detailed forecast tables (note the EFO release month in the header comment).
 2. Recompute the 2031-2073 convergence path so the first long-run year
    continues smoothly from the new last forecast year (no jump).
-3. Run `python policyengine_uk/parameters/gov/economic_assumptions/create_economic_assumption_indices.py`
-   to regenerate the cumulative `indices/` parameters that uprating depends
-   on.
+3. Nothing needs regenerating: `create_economic_assumption_indices` rebuilds
+   the cumulative `indices` parameters from these series whenever the
+   tax-benefit system processes its parameters (`tax_benefit_system.py`).
 4. Update the EFO reference in each series' `metadata.reference`.
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
@@ -89,11 +89,14 @@ published figures. To refresh it each spring:
    council from the Department of Finance
    [rate poundages](https://www.finance-ni.gov.uk/articles/rate-poundages)
    tables, and the latest year of Land & Property Services' domestic rates
-   collected by district council, to the test's tables, and extend the
-   years it checks.
-2. Set the new year's value to the recomputed growth, rounded to 4 decimals.
-3. Revisit the projection that follows the last published year against the
-   regional rate Order and any agreed Northern Ireland Budget, and keep it
-   labelled as an assumption.
+   collected by district council, to the tables in that test. The years it
+   checks follow from those tables: published years must match the
+   recomputed growth, and later years must equal the last published year's.
+2. Set the new year's value to the recomputed growth, rounded to 4 decimals,
+   and the projected years after it to the same value (or change the
+   projection rule and its test together).
+3. Revisit that projection against the regional rate Order and any agreed
+   Northern Ireland Budget, and keep it labelled as an assumption. Run the
+   test file.
 
 [rpi-cpi]: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/

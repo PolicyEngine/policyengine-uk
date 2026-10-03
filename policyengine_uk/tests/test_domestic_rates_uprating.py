@@ -46,7 +46,7 @@ DISTRICT_RATES = {
     "Mid Ulster": (0.003267, 0.003373, 0.003373, 0.003505, 0.003761, 0.003983, 0.004188, 0.00433),
     "Newry, Mourne and Down": (0.003893, 0.004004, 0.004067, 0.004146, 0.004395, 0.004676, 0.004862, 0.004999),
 }  # fmt: skip
-PAID_YEARS = list(range(2020, 2026))
+PAID_FROM = 2020  # first fiscal year in DOMESTIC_RATES_PAID
 DOMESTIC_RATES_PAID = {
     "Antrim and Newtownabbey": (51877954, 53609226, 54941178, 59598012, 62740303, 67083237),
     "Ards and North Down": (77169538, 80000514, 81880418, 88782827, 93831109, 99315112),
@@ -66,11 +66,11 @@ def _bill_growth(year):
     # Growth in the combined (regional plus district) domestic poundage,
     # weighting each council by its domestic rates paid the year before.
     # 2019-20 payments are not published, so 2020-21's stand in.
-    weight_year = max(year - 1, PAID_YEARS[0])
+    weight_year = max(year - 1, PAID_FROM)
     growth = 0.0
     total_weight = 0.0
     for council, district in DISTRICT_RATES.items():
-        weight = DOMESTIC_RATES_PAID[council][PAID_YEARS.index(weight_year)]
+        weight = DOMESTIC_RATES_PAID[council][weight_year - PAID_FROM]
         now = district[POUNDAGE_YEARS.index(year)] + REGIONAL_RATE[year]
         before = district[POUNDAGE_YEARS.index(year - 1)] + REGIONAL_RATE[year - 1]
         growth += weight * now / before
@@ -78,14 +78,18 @@ def _bill_growth(year):
     return growth / total_weight - 1
 
 
-@pytest.mark.parametrize("year", range(2020, 2027))
+# The checked years follow the tables, so a refresh only adds a year's data.
+LAST_PUBLISHED_YEAR = POUNDAGE_YEARS[-1]
+
+
+@pytest.mark.parametrize("year", POUNDAGE_YEARS[1:])
 def test_domestic_rates_growth_matches_published_poundages(year):
     assert DOMESTIC_RATES_GROWTH(year) == round(_bill_growth(year), 4)
 
 
-@pytest.mark.parametrize("year", range(2027, 2031))
-def test_domestic_rates_growth_holds_2026_27_after_published_poundages(year):
-    assert DOMESTIC_RATES_GROWTH(year) == DOMESTIC_RATES_GROWTH(2026)
+@pytest.mark.parametrize("year", range(LAST_PUBLISHED_YEAR + 1, 2031))
+def test_domestic_rates_growth_holds_last_published_growth(year):
+    assert DOMESTIC_RATES_GROWTH(year) == DOMESTIC_RATES_GROWTH(LAST_PUBLISHED_YEAR)
 
 
 # A dataset with an unknown-region household cannot be projected forward until

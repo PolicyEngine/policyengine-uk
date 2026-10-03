@@ -1253,7 +1253,8 @@ finance_ni:
       # was found, so district growth is assumed to stay at its 2026-27
       # rate. Regional 5% plus district 3.58% gives 4.34% to 4.36% a year as
       # the regional share drifts up, within 0.03pp of the value held.
-      # 2029-30 onward extrapolates beyond the draft Budget period.
+      # 2029-30 onward extrapolates beyond the draft Budget's resource
+      # period (to 2028-29).
       2027-01-01: 0.0433
       2028-01-01: 0.0433
       2029-01-01: 0.0433
