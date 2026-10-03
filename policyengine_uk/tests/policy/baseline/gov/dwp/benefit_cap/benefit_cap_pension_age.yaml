@@ -21,8 +21,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
       child_1:
         age: 4
       child_2:
@@ -54,8 +56,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
         employment_income: 20_000
       child_1:
         age: 4
@@ -118,8 +122,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
         jsa_income_reported: 4_000
     benunits:
       benunit:

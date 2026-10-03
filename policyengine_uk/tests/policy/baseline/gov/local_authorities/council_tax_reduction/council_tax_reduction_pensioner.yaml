@@ -19,9 +19,11 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
         council_tax_benefit_reported: 700
       younger:
         age: 50
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -130,8 +132,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -161,8 +165,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
       son:
         age: 30
         employment_income: 30_000
@@ -261,8 +267,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -285,8 +293,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
     benunits:
       benunit:
         members: [older, younger]
@@ -318,8 +328,10 @@
     people:
       older:
         age: 70
+        is_claimant_or_partner: true
       younger:
         age: 50
+        is_claimant_or_partner: true
       child:
         age: 9
     benunits:
