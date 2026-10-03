@@ -432,7 +432,7 @@ def test_no_op_without_sharers_boarders_or_lodgers(population):
         np.where(
             supported,
             calc(sim, "simulated_council_tax_reduction_benunit"),
-            calc(sim, "council_tax_benefit_reported"),
+            calc(sim, "council_tax_benefit_reported", "benunit"),
         ),
         atol=0.01,
     )
