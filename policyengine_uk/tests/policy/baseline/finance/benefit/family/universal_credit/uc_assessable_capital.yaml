@@ -1,0 +1,165 @@
+# WRA 2012 s.5 assesses the claimant's or joint claimants' capital;
+# UC Regulations 2013 reg.18(2) includes a single claimant's partner's capital.
+# https://www.legislation.gov.uk/ukpga/2012/5/section/5
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/18
+# Allocating unreported household capital by claimant/partner count is a
+# PolicyEngine convention, not a statutory allocation rule.
+
+- name: A qualifying young person does not increase their parents' capital share.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        is_benunit_head: true
+        is_parent: true
+      partner:
+        age: 39
+        is_benunit_head: false
+        is_parent: true
+      qualifying_young_person:
+        age: 18
+        is_benunit_head: false
+        is_in_non_advanced_education: true
+      other_claimant:
+        age: 25
+        is_benunit_head: true
+    benunits:
+      parents:
+        members: [parent, partner, qualifying_young_person]
+      other:
+        members: [other_claimant]
+    households:
+      household:
+        members: [parent, partner, qualifying_young_person, other_claimant]
+        savings: 36_000
+  output:
+    is_uc_claimant: [true, true, false, true]
+    household_uc_unreported_claimants: 3
+    # Previously 36,000 * 3/4 = 27,000 and 36,000 * 1/4 = 9,000.
+    # Claimant weights give 36,000 * 2/3 = 24,000 and 36,000 / 3 = 12,000.
+    uc_assessable_capital: [24_000, 12_000]
+
+- name: An under-18 claimant receives the full capital proxy in their household.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        is_benunit_head: true
+        is_parent: true
+      child:
+        age: 1
+        is_benunit_head: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+    households:
+      household:
+        members: [claimant, child]
+        savings: 20_000
+  output:
+    is_uc_claimant: [true, false]
+    household_uc_unreported_claimants: 1
+    # Previously zero; the claimant now receives 20,000 * 1/1 = 20,000.
+    uc_assessable_capital: 20_000
+
+- name: Under-18 and older claimants receive equal unreported capital shares.
+  period: 2025
+  input:
+    people:
+      young_claimant:
+        age: 16
+        is_benunit_head: true
+      older_claimant:
+        age: 30
+        is_benunit_head: true
+    benunits:
+      young:
+        members: [young_claimant]
+      older:
+        members: [older_claimant]
+    households:
+      household:
+        members: [young_claimant, older_claimant]
+        savings: 36_000
+  output:
+    household_uc_unreported_claimants: 2
+    # Previously [0, 36,000]; each now receives 36,000 * 1/2 = 18,000.
+    uc_assessable_capital: [18_000, 18_000]
+
+- name: Reported capital leaves a residual split between unreported claimants.
+  period: 2025
+  input:
+    people:
+      reported_parent:
+        age: 40
+        is_benunit_head: true
+        is_parent: true
+      qualifying_young_person:
+        age: 19
+        is_benunit_head: false
+        is_in_non_advanced_education: true
+      young_claimant:
+        age: 17
+        is_benunit_head: true
+      older_claimant:
+        age: 30
+        is_benunit_head: true
+      partner:
+        age: 31
+        is_benunit_head: false
+    benunits:
+      reported:
+        members: [reported_parent, qualifying_young_person]
+        uc_reported_capital: 8_000
+      young:
+        members: [young_claimant]
+      couple:
+        members: [older_claimant, partner]
+    households:
+      household:
+        members: [reported_parent, qualifying_young_person, young_claimant, older_claimant, partner]
+        savings: 32_000
+  output:
+    household_uc_reported_capital: 8_000
+    household_uc_unreported_claimants: 3
+    # 32,000 - 8,000 = 24,000 residual. Shares are 24,000 / 3 = 8,000
+    # and 24,000 * 2/3 = 16,000. Previously [8,000, 0, 24,000].
+    uc_assessable_capital: [8_000, 8_000, 16_000]
+
+- name: An explicit zero capital report excludes that unit from the proxy.
+  period: 2025
+  input:
+    people:
+      reported_claimant:
+        age: 40
+        is_benunit_head: true
+      unreported_claimant:
+        age: 30
+        is_benunit_head: true
+    benunits:
+      reported:
+        members: [reported_claimant]
+        uc_reported_capital: 0
+      unreported:
+        members: [unreported_claimant]
+    households:
+      household:
+        members: [reported_claimant, unreported_claimant]
+        savings: 12_000
+  output:
+    household_uc_unreported_claimants: 1
+    # 12,000 - 0 = 12,000 residual, allocated entirely to the unreported unit.
+    uc_assessable_capital: [0, 12_000]
+
+- name: A situation with no claimant roles has a zero proxy without division by zero.
+  period: 2025
+  input:
+    age: 17
+    is_uc_claimant: false
+    savings: 12_000
+  output:
+    household_uc_unreported_claimants: 0
+    # No claimant weights means no allocation: guarded zero instead of 0/0.
+    uc_assessable_capital: 0
