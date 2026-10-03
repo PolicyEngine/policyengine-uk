@@ -1,0 +1,646 @@
+# Benefit-unit structure: the claimant and partner, couples, and the HBAI
+# population groups.
+#
+# HBAI FYE 2025 glossary: a dependent child is under 16, or 16-19 and not
+# partnered, living with parents or a responsible adult, and in full-time
+# non-advanced education or unwaged government training. Everyone else is an
+# adult; pensioners are adults at or above State Pension age (66 in 2025).
+# Benefit units are a single adult or a couple plus dependent children, so the
+# claimant and partner are the benefit unit's HBAI adults.
+
+- name: Lone parent with an 18-year-old at school is a lone parent, not a couple
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, student, child]
+    households:
+      household:
+        members: [parent, student, child]
+  output:
+    is_hbai_dependent_child: [false, true, true]
+    is_claimant_or_partner: [true, false, false]
+    hbai_person_type: [WORKING_AGE_ADULT, CHILD, CHILD]
+    relation_type: SINGLE
+    is_couple: false
+    is_lone_parent: true
+    is_single_person: false
+    is_married: false
+    marital_status: [SINGLE, SINGLE, SINGLE]
+    eldest_claimant_or_partner_age: 40
+    youngest_claimant_or_partner_age: 40
+    # The deprecated shims keep their age-18 answers.
+    is_adult: [true, true, false]
+    family_type: COUPLE_WITH_CHILDREN
+
+- name: Without an identified parent an 18-year-old at school stays an adult
+  # "Living with parents" needs an identified parent; otherwise the model
+  # cannot tell a dependant from a partner and keeps the adult treatment.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 24
+      other:
+        age: 19
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [head, other]
+    households:
+      household:
+        members: [head, other]
+  output:
+    is_hbai_dependent_child: [false, false]
+    is_claimant_or_partner: [true, true]
+    relation_type: COUPLE
+
+- name: A 17-year-old living alone is a single adult, not their own child
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      young_person:
+        age: 17
+    benunits:
+      benunit:
+        members: [young_person]
+    households:
+      household:
+        members: [young_person]
+  output:
+    is_hbai_dependent_child: false
+    is_hbai_adult: true
+    is_claimant_or_partner: true
+    hbai_person_type: WORKING_AGE_ADULT
+    relation_type: SINGLE
+    is_couple: false
+    is_single_person: true
+    is_lone_parent: false
+    # Deprecated shims: no one aged 18+, and the claimant counts as a child.
+    num_adults: 0
+    family_type: LONE_PARENT
+
+- name: A 17-year-old lone parent with a baby
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 17
+        is_parent: true
+      baby:
+        age: 0
+    benunits:
+      benunit:
+        members: [parent, baby]
+    households:
+      household:
+        members: [parent, baby]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_lone_parent: true
+    is_couple: false
+    youngest_claimant_or_partner_age: 17
+
+- name: A couple with an 18-year-old at school stays a couple with a young person
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 40
+        is_parent: true
+      parent_2:
+        age: 40
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+    households:
+      household:
+        members: [parent_1, parent_2, student]
+  output:
+    is_claimant_or_partner: [true, true, false]
+    relation_type: COUPLE
+    is_couple: true
+    is_single_person: false
+    is_lone_parent: false
+    is_married: true
+    marital_status: [MARRIED, MARRIED, SINGLE]
+    # Deprecated shim: three members aged 18+ are not "two adults".
+    family_type: SINGLE
+
+- name: A 16- or 17-year-old non-head, non-parent keeps the dependant treatment
+  # Flagged assumption: the FRS puts non-dependent 16- and 17-year-olds in their
+  # own benefit unit, so a non-head in that age group is treated as a dependant
+  # whatever their education inputs.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+      teenager:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, teenager]
+    households:
+      household:
+        members: [parent, teenager]
+  output:
+    is_hbai_dependent_child: [false, true]
+    is_claimant_or_partner: [true, false]
+
+- name: A 19-year-old in higher education is an adult
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      student:
+        age: 19
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [parent, student]
+    households:
+      household:
+        members: [parent, student]
+  output:
+    is_hbai_dependent_child: [false, false]
+    hbai_person_type: [WORKING_AGE_ADULT, WORKING_AGE_ADULT]
+
+- name: HBAI pensioners are adults at or above State Pension age
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_parent: true
+      young_pensioner:
+        age: 66
+      grandchild:
+        age: 18
+        current_education: POST_SECONDARY
+    benunits:
+      benunit:
+        members: [pensioner, young_pensioner, grandchild]
+    households:
+      household:
+        members: [pensioner, young_pensioner, grandchild]
+  output:
+    is_hbai_pensioner: [true, true, false]
+    is_hbai_working_age_adult: [false, false, false]
+    hbai_person_type: [PENSIONER, PENSIONER, CHILD]
+
+- name: HBAI equivalence-scale child bands
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child_13:
+        age: 13
+      child_14:
+        age: 14
+      student_18:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, child_13, child_14, student_18]
+    households:
+      household:
+        members: [parent, child_13, child_14, student_18]
+  output:
+    is_hbai_child_under_14: [false, true, false, false]
+    is_hbai_child_aged_14_or_over: [false, false, true, true]
+
+# A benefit unit has one claimant or a couple, never more. Without relationship
+# inputs, a member under 20 who is at least 16 years younger than the head is
+# presumed the head's child, not their partner (a PolicyEngine presumption);
+# any adults beyond a couple are neither claimant nor partner.
+
+- name: A couple with an 18-year-old in higher education stays a couple of two
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 42
+      parent_2:
+        age: 40
+      student:
+        age: 18
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+    households:
+      household:
+        members: [parent_1, parent_2, student]
+  output:
+    is_hbai_adult: [true, true, true]
+    is_claimant_or_partner: [true, true, false]
+    is_couple: true
+    marital_status: [MARRIED, MARRIED, SINGLE]
+
+- name: A lone parent with an 18-year-old in higher education is single
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+      student:
+        age: 18
+      toddler:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, student, toddler]
+    households:
+      household:
+        members: [parent, student, toddler]
+  output:
+    is_claimant_or_partner: [true, false, false]
+    is_couple: false
+
+- name: A partner close in age is still a partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 40
+      partner:
+        age: 22
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+  output:
+    # 22 is not under 20, so no presumption applies.
+    is_claimant_or_partner: [true, true]
+    is_couple: true
+
+- name: Three unrelated adults form one couple plus a non-dependant
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      eldest:
+        age: 50
+      second:
+        age: 48
+      third:
+        age: 45
+    benunits:
+      benunit:
+        members: [eldest, second, third]
+    households:
+      household:
+        members: [eldest, second, third]
+  output:
+    is_claimant_or_partner: [true, true, false]
+
+- name: A supplied claimant-or-partner flag overrides the presumption
+  # Supplying the flag replaces the formula for everyone, so set it for both.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 45
+        is_claimant_or_partner: true
+      partner:
+        age: 19
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+  output:
+    is_couple: true
+
+- name: With two explicit heads, the eldest adult head is the claimant
+  # Malformed input: two members flagged as head. The eldest is the claimant,
+  # the other adult head becomes the partner, and the 24-year-old is neither.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head_1:
+        age: 45
+        is_benunit_head: true
+      head_2:
+        age: 43
+        is_benunit_head: true
+      other:
+        age: 24
+    benunits:
+      benunit:
+        members: [head_1, head_2, other]
+    households:
+      household:
+        members: [head_1, head_2, other]
+  output:
+    is_claimant_or_partner: [true, true, false]
+
+# Below a claimant flagged as a parent, a member at least 16 years younger is
+# presumed their child at any age, unless a member under 20 and at least 16
+# years younger already explains the flag. Without flags, the under-20 limit
+# stays: survey childless couples carry no flags and include large age gaps.
+
+- name: A flagged lone parent with an adult son is single
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 50
+        is_parent: true
+      son:
+        age: 25
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+  output:
+    is_claimant_or_partner: [true, false]
+    relation_type: SINGLE
+    is_couple: false
+
+- name: Without a parent flag, a 25-year gap is still read as a couple
+  # Documented limitation: indistinguishable from a survey childless couple.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      older:
+        age: 50
+      younger:
+        age: 25
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+  output:
+    is_claimant_or_partner: [true, true]
+    is_couple: true
+
+- name: A flagged parent keeps an unflagged partner close in age, not the adult son
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 50
+        is_parent: true
+      partner:
+        age: 48
+      son:
+        age: 25
+    benunits:
+      benunit:
+        members: [parent, partner, son]
+    households:
+      household:
+        members: [parent, partner, son]
+  output:
+    is_claimant_or_partner: [true, true, false]
+
+- name: The 16-year gap below a flagged parent is a boundary
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_a:
+        age: 50
+        is_parent: true
+      gap_16:
+        age: 34
+      parent_b:
+        age: 50
+        is_parent: true
+      gap_15:
+        age: 35
+    benunits:
+      unit_a:
+        members: [parent_a, gap_16]
+      unit_b:
+        members: [parent_b, gap_15]
+    households:
+      household_a:
+        members: [parent_a, gap_16]
+      household_b:
+        members: [parent_b, gap_15]
+  output:
+    is_claimant_or_partner: [true, false, true, true]
+
+- name: A flagged grandparent's daughter is read as a partner when a grandchild explains the flag
+  # Documented limitation, as before this rule: the grandchild under 20
+  # explains the grandparent's parent flag, so the under-20 limit stays and the
+  # 45-year-old is the partner. Supply is_claimant_or_partner for such homes.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_parent: true
+      daughter:
+        age: 45
+      grandchild:
+        age: 10
+    benunits:
+      benunit:
+        members: [grandparent, daughter, grandchild]
+    households:
+      household:
+        members: [grandparent, daughter, grandchild]
+  output:
+    is_claimant_or_partner: [true, true, false]
+
+- name: Without flags the under-20 limit still applies at the boundary
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head_a:
+        age: 40
+      aged_19:
+        age: 19
+      head_b:
+        age: 40
+      aged_20:
+        age: 20
+    benunits:
+      unit_a:
+        members: [head_a, aged_19]
+      unit_b:
+        members: [head_b, aged_20]
+    households:
+      household_a:
+        members: [head_a, aged_19]
+      household_b:
+        members: [head_b, aged_20]
+  output:
+    is_claimant_or_partner: [true, false, true, true]
+
+- name: A young child explains a lone flag, so a large-gap partner stays the partner
+  # Only the 60-year-old is flagged, but the 10-year-old explains the flag, so
+  # the under-20 limit stays and the 42-year-old partner keeps their place.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        is_parent: true
+      partner:
+        age: 42
+        employment_income: 50_000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    is_claimant_or_partner: [true, true, false]
+    is_couple: true
+    is_lone_parent: false
+    uc_earned_income: 31_563.60
+    universal_credit: 0
+
+- name: Flagging both partners keeps the large-gap couple
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        is_parent: true
+      partner:
+        age: 42
+        is_parent: true
+        employment_income: 50_000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    is_claimant_or_partner: [true, true, false]
+    is_couple: true
+    uc_earned_income: 31_563.60
+    universal_credit: 0
+
+- name: Supplying claimant and partner roles keeps the large-gap couple
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        is_parent: true
+        is_claimant_or_partner: true
+      partner:
+        age: 42
+        employment_income: 50_000
+        is_claimant_or_partner: true
+      child:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    is_couple: true
+    is_lone_parent: false
+    uc_earned_income: 31_563.60
+    universal_credit: 0
+
+- name: A flagged lone parent with an adult child and a younger child is read as a couple
+  # Documented limitation, as before this rule: the 12-year-old explains the
+  # parent flag, so the 25-year-old (not under 20) is read as the partner.
+  # Supply is_claimant_or_partner to enter this household.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 50
+        is_parent: true
+      adult_child:
+        age: 25
+      child:
+        age: 12
+    benunits:
+      benunit:
+        members: [parent, adult_child, child]
+    households:
+      household:
+        members: [parent, adult_child, child]
+  output:
+    is_claimant_or_partner: [true, true, false]
+
+- name: An unexplained parent flag on one of a childless large-gap pair makes them single
+  # Trade-off: with no child under 20 to explain it, the flag on the
+  # 60-year-old marks the 42-year-old as their adult child, not their partner.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      older:
+        age: 60
+        is_parent: true
+      younger:
+        age: 42
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_couple: false
