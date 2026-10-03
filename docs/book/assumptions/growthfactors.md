@@ -20,7 +20,7 @@ We apply CPI to these variables:
 
 `domestic_energy_consumption`, `electricity_consumption` and `gas_consumption` are deliberately excluded. The data build calibrates them to NEED mean kWh and converts to pounds at Ofgem Q2 2026 unit rates, so the stored values already carry FY26/27 price levels; uprating them from the dataset's data year would re-apply price changes that are already included. See PolicyEngine/policyengine-uk#1867.
 
-- Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_maternity_pay`, `statutory_paternity_pay`, `statutory_sick_pay`, `state_pension`
+- Other variables– `afcs_reported`, `bsp_reported`, `childcare_expenses`, `free_school_fruit_veg`, `free_school_meals`, `free_school_milk`, `maintenance_expenses`, `statutory_adoption_pay`, `statutory_maternity_pay`, `statutory_neonatal_care_pay`, `statutory_parental_bereavement_pay`, `statutory_paternity_pay`, `statutory_shared_parental_pay`, `statutory_sick_pay`, `state_pension`
 
 ## Road fuel volume
 

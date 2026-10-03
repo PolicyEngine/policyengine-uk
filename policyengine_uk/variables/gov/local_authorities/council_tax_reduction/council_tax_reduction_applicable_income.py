@@ -23,6 +23,11 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/24",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/18",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/12",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/14",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/32",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/50",
     ]
 
     def formula(benunit, period, parameters):
@@ -48,8 +53,17 @@ class council_tax_reduction_applicable_income(Variable):
             "jsa_contrib",
             "state_pension",
             "maternity_allowance",
+            # Earnings of employed earners list all seven statutory payments:
+            # SI 2012/2885 Sch 1 para 18(1)(h) to (l); WSI 2013/3029 Sch 1
+            # para 12(1)(h) to (jc) and Sch 6 para 14(1)(j); SSI 2012/319
+            # reg 32(1)(h) to (j); SSI 2021/249 reg 50(2)(j).
             "statutory_sick_pay",
             "statutory_maternity_pay",
+            "statutory_paternity_pay",
+            "statutory_adoption_pay",
+            "statutory_shared_parental_pay",
+            "statutory_parental_bereavement_pay",
+            "statutory_neonatal_care_pay",
             "ssmg",
         ]
         income_components = [

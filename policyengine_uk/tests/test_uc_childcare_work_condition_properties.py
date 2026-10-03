@@ -7,8 +7,9 @@ in paid work or is unable to provide childcare because they (i) have limited
 capability for work, (ii) have regular and substantial caring
 responsibilities for a severely disabled person, or (iii) are temporarily
 absent from the claimant's household. Reg. 32(2)(b) treats a claimant
-receiving statutory sick, maternity or paternity pay or maternity allowance
-as in paid work. Each joint claimant is a claimant (WRA 2012 s. 40).
+receiving statutory sick, maternity, paternity, adoption, shared parental,
+parental bereavement or neonatal care pay or maternity allowance as in paid
+work. Each joint claimant is a claimant (WRA 2012 s. 40).
 
 Invariants, for any generated population of single claimants and couples,
 each with a dependant child or young person. Workers are generated with
@@ -47,14 +48,19 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
-# Reg. 32(2)(b) payments the model has variables for.
+# Reg. 32(2)(b) payments, all of which the model has variables for.
 PAYMENTS = [
     None,
     "statutory_sick_pay",
     "statutory_maternity_pay",
     "statutory_paternity_pay",
+    "statutory_adoption_pay",
+    "statutory_shared_parental_pay",
+    "statutory_parental_bereavement_pay",
+    "statutory_neonatal_care_pay",
     "maternity_allowance_reported",
 ]
+N_PAYMENTS = len(PAYMENTS) - 1
 CARE_HOURS = [0, 20, 34, 35, 50]
 # The routes into the in_work proxy: positive earnings of either kind, or
 # positive hours.
@@ -232,7 +238,9 @@ def test_condition_matches_the_reference_for_every_combination_of_routes():
     def dependant(k):
         routes = set() if k % 2 == 0 else sets[(5 * k + 3) % len(sets)]
         return dict(
-            dependant=member_with(routes, PAYMENTS[1 + k % 4], 50, WORK_SOURCES[k % 3]),
+            dependant=member_with(
+                routes, PAYMENTS[1 + k % N_PAYMENTS], 50, WORK_SOURCES[k % 3]
+            ),
             dependant_age=[3, 17, 18][k % 3],
             childcare=[0.0, 5_000.0][k % 2],
         )
@@ -248,13 +256,13 @@ def test_condition_matches_the_reference_for_every_combination_of_routes():
             adults=[
                 member_with(
                     first,
-                    PAYMENTS[1 + (i + j) % 4],
+                    PAYMENTS[1 + (i + j) % N_PAYMENTS],
                     MIN_CARE_HOURS,
                     WORK_SOURCES[(i + j) % 3],
                 ),
                 member_with(
                     second,
-                    PAYMENTS[1 + (i + 2 * j) % 4],
+                    PAYMENTS[1 + (i + 2 * j) % N_PAYMENTS],
                     50,
                     WORK_SOURCES[(i + 2 * j + 1) % 3],
                 ),

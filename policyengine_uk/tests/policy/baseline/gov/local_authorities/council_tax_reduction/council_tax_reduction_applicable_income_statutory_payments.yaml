@@ -1,0 +1,62 @@
+# Each Council Tax Reduction scheme the model follows counts all seven
+# statutory payments as earnings of an employed earner:
+# - England, pensioners: SI 2012/2885 Sch 1 para 18(1)(h) to (l)
+#   https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/18
+# - Wales, pensioners: SI 2013/3029 Sch 1 para 12(1)(h) to (jc); others:
+#   Sch 6 para 14(1)(j)
+#   https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/12
+#   https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/14
+# - Scotland, pension age: SSI 2012/319 reg 32(1)(h) to (j); working age:
+#   SSI 2021/249 reg 50(2)(j)
+#   https://www.legislation.gov.uk/ssi/2012/319/regulation/32
+#   https://www.legislation.gov.uk/ssi/2021/249/regulation/50
+# SSI 2021/249 reg 50(2): employed earnings "include— ... (j) any statutory
+# sick pay, statutory maternity pay, statutory paternity pay, statutory
+# neonatal care pay, statutory shared parental pay, statutory parental
+# bereavement pay or statutory adoption pay, or a corresponding payment under
+# any enactment having effect in Northern Ireland,"
+
+- name: CTR counts statutory paternity, adoption, shared parental, parental bereavement and neonatal care pay, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 30
+        statutory_paternity_pay: 400
+        statutory_adoption_pay: 6_000
+        statutory_shared_parental_pay: 3_000
+        statutory_parental_bereavement_pay: 400
+        statutory_neonatal_care_pay: 1_500
+    benunits:
+      benunit:
+        members: [applicant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant]
+        country: SCOTLAND
+  output:
+    # 11,300, below the personal allowance and the primary threshold.
+    council_tax_reduction_applicable_income: 11_300
+
+- name: CTR counts statutory neonatal care pay net of its tax and NI, Wales, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 30
+        employment_income: 15_000
+        statutory_neonatal_care_pay: 1_000
+    benunits:
+      benunit:
+        members: [applicant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant]
+        country: WALES
+  output:
+    # 16,000 - 686 income tax - 274.40 primary Class 1 (as in the HB case)
+    council_tax_reduction_applicable_income: 15_039.60

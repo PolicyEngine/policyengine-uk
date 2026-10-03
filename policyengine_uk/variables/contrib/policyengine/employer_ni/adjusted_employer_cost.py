@@ -17,6 +17,10 @@ class adjusted_employer_cost(Variable):
                 "statutory_sick_pay",
                 "statutory_maternity_pay",
                 "statutory_paternity_pay",
+                "statutory_adoption_pay",
+                "statutory_shared_parental_pay",
+                "statutory_parental_bereavement_pay",
+                "statutory_neonatal_care_pay",
             ],
         )
         employer_pension_contributions = person(

@@ -1,0 +1,1 @@
+- Tax statutory paternity pay (ITEPA 2003 s.660 Table A) and count it as Housing Benefit and Council Tax Reduction earnings and in household income, as statutory sick and maternity pay already were.

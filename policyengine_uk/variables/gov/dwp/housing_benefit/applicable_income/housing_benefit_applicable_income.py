@@ -7,6 +7,16 @@ class housing_benefit_applicable_income(Variable):
     label = "relevant income for Housing Benefit means test"
     definition_period = YEAR
     unit = GBP
+    reference = [
+        dict(
+            title="Housing Benefit Regulations 2006 reg. 35(1)(i)",
+            href="https://www.legislation.gov.uk/uksi/2006/213/regulation/35",
+        ),
+        dict(
+            title="Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 35(1)",
+            href="https://www.legislation.gov.uk/uksi/2006/214/regulation/35",
+        ),
+    ]
 
     def formula(benunit, period, parameters):
         # Members whose income counts: the claimant and partner and, as the model did
@@ -35,8 +45,16 @@ class housing_benefit_applicable_income(Variable):
             "jsa_contrib",
             "state_pension",
             "maternity_allowance",
+            # Earnings of employed earners: HB Regs 2006 reg 35(1)(i) and HB
+            # (SPC) Regs 2006 reg 35(1)(h) to (jc) list all seven statutory
+            # payments.
             "statutory_sick_pay",
             "statutory_maternity_pay",
+            "statutory_paternity_pay",
+            "statutory_adoption_pay",
+            "statutory_shared_parental_pay",
+            "statutory_parental_bereavement_pay",
+            "statutory_neonatal_care_pay",
             "ssmg",
         ]
         INCOME_COMPONENTS = [

@@ -7,3 +7,59 @@
     statutory_paternity_pay: 8
   output:
     ni_class_1_income: 15
+
+# SSCBA 1992 s.4(1): "For the purposes of section 3 above there shall be
+# treated as remuneration derived from employed earner's employment— (a) any
+# sum paid to or for the benefit of a person in satisfaction (whether in whole
+# or in part) of any entitlement of that person to— (i) statutory sick pay; or
+# (ii) statutory maternity pay; (iii) ... statutory paternity pay; (iv) ...
+# (v) statutory adoption pay; ... (vi) statutory shared parental pay; ...
+# (vii) statutory parental bereavement pay; or (viii) statutory neonatal care
+# pay; ..."
+# https://www.legislation.gov.uk/ukpga/1992/4/section/4
+
+- name: NI Class 1 income counts all seven statutory payments in s.4(1)(a)
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    employment_income: 1
+    statutory_sick_pay: 2
+    statutory_maternity_pay: 4
+    statutory_paternity_pay: 8
+    statutory_adoption_pay: 16
+    statutory_shared_parental_pay: 32
+    statutory_parental_bereavement_pay: 64
+    statutory_neonatal_care_pay: 128
+  output:
+    ni_class_1_income: 255
+
+- name: Primary and secondary Class 1 on earnings plus statutory adoption pay, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    employment_income: 20_000
+    statutory_adoption_pay: 5_000
+  output:
+    ni_class_1_income: 25_000
+    # 8% x (25,000 - 241.73 x 52) = 8% x 12,430.04
+    ni_class_1_employee_primary: 994.40
+    # 15% x (25,000 - 96 x 52) = 15% x 20,008
+    ni_class_1_employer: 3_001.20
+
+- name: Primary and secondary Class 1 on statutory payments alone, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    statutory_paternity_pay: 400
+    statutory_adoption_pay: 6_000
+    statutory_shared_parental_pay: 6_000
+    statutory_parental_bereavement_pay: 400
+    statutory_neonatal_care_pay: 2_000
+  output:
+    ni_class_1_income: 14_800
+    # 8% x (14,800 - 12,569.96) = 8% x 2,230.04
+    ni_class_1_employee_primary: 178.40
+    # 15% x (14,800 - 4,992) = 15% x 9,808
+    ni_class_1_employer: 1_471.20

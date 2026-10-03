@@ -7,14 +7,13 @@ class uc_childcare_treated_as_in_paid_work(Variable):
     label = "Treated as in paid work for the Universal Credit childcare work condition"
     documentation = (
         "Regulation 32(2)(b): a claimant receiving statutory sick pay, "
-        "statutory maternity pay, statutory paternity pay or maternity "
-        "allowance is treated as in paid work for the work condition. The "
-        "regulation also lists statutory adoption pay, statutory shared "
-        "parental pay, statutory parental bereavement pay and statutory "
-        "neonatal care pay, which the model has no variables for. Regulation "
-        "32(2)(a), ceasing paid work in the current or previous assessment "
-        "period, is covered only as the annual in_work proxy covers it: hours "
-        "or earnings at any point in the year count as paid work."
+        "statutory maternity pay, statutory paternity pay, statutory adoption "
+        "pay, statutory shared parental pay, statutory parental bereavement "
+        "pay, statutory neonatal care pay or maternity allowance is treated as "
+        "in paid work for the work condition. Regulation 32(2)(a), ceasing "
+        "paid work in the current or previous assessment period, is covered "
+        "only as the annual in_work proxy covers it: hours or earnings at any "
+        "point in the year count as paid work."
     )
     definition_period = YEAR
     reference = [
@@ -33,6 +32,10 @@ class uc_childcare_treated_as_in_paid_work(Variable):
             "statutory_sick_pay",
             "statutory_maternity_pay",
             "statutory_paternity_pay",
+            "statutory_adoption_pay",
+            "statutory_shared_parental_pay",
+            "statutory_parental_bereavement_pay",
+            "statutory_neonatal_care_pay",
             "maternity_allowance",
         ]
         receives = [person(payment, period) > 0 for payment in statutory_payments]

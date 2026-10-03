@@ -64,8 +64,12 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - sda_reported
 - state_pension
 - state_pension_reported
+- statutory_adoption_pay
 - statutory_maternity_pay
+- statutory_neonatal_care_pay
+- statutory_parental_bereavement_pay
 - statutory_paternity_pay
+- statutory_shared_parental_pay
 - statutory_sick_pay
 - transport_consumption
 - universal_credit_reported

@@ -70,3 +70,54 @@
     tax_free_childcare_on_shared_parental_leave: false
   output:
     tax_free_childcare_treated_as_in_work: false
+
+# SI 2015/448 reg 12(1): this regulation applies for any period during which
+# a person— ... (i) is paid statutory adoption pay under Part 12ZB ... (l) is
+# absent from work during a period of shared parental leave ... (o) is paid
+# statutory parental bereavement pay under Part 12ZD ... (q) in relation to
+# England, Wales and Scotland only, is paid statutory neonatal care pay under
+# Part 12ZE of the Social Security Contributions and Benefits Act 1992.
+# https://www.legislation.gov.uk/uksi/2015/448/regulation/12
+# Reg 12(1) lists shared parental leave, not statutory shared parental pay.
+
+- name: Person paid statutory adoption pay is treated as in work (reg 12(1)(i))
+  period: 2025
+  input:
+    age: 30
+    statutory_adoption_pay: 6_000
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person paid statutory parental bereavement pay is treated as in work (reg 12(1)(o))
+  period: 2025
+  input:
+    age: 30
+    statutory_parental_bereavement_pay: 400
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Person paid statutory neonatal care pay is treated as in work (reg 12(1)(q))
+  period: 2025
+  input:
+    age: 30
+    statutory_neonatal_care_pay: 1_500
+  output:
+    tax_free_childcare_treated_as_in_work: true
+
+- name: Statutory shared parental pay alone is not listed in reg 12(1)
+  period: 2025
+  input:
+    age: 30
+    statutory_shared_parental_pay: 3_000
+    tax_free_childcare_on_shared_parental_leave: false
+  output:
+    tax_free_childcare_treated_as_in_work: false
+
+- name: Shared parental leave meets reg 12(1)(l) whatever the pay
+  period: 2025
+  input:
+    age: 30
+    statutory_shared_parental_pay: 3_000
+    tax_free_childcare_on_shared_parental_leave: true
+  output:
+    tax_free_childcare_treated_as_in_work: true

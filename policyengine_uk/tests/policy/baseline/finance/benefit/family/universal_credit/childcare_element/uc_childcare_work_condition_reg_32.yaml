@@ -9,9 +9,12 @@
 #      for work, (ii) has regular and substantial caring responsibilities for
 #      a severely disabled person, or (iii) is temporarily absent from the
 #      claimant's household."
-# Reg. 32(2)(b): a claimant receiving statutory sick pay, statutory maternity
-# pay, statutory paternity pay, ... or a maternity allowance is treated as in
-# paid work. ADM ch. F7, F7011-F7015, agrees:
+# Reg. 32(2): "a claimant is to be treated as being in paid work if— ...
+#  (b) the claimant is receiving statutory sick pay, statutory maternity pay,
+#      ... statutory paternity pay, ... statutory adoption pay, statutory
+#      shared parental pay, statutory parental bereavement pay, statutory
+#      neonatal care pay or a maternity allowance."
+# ADM ch. F7, F7011-F7015, agrees:
 # https://assets.publishing.service.gov.uk/media/696a076c7b7f37aa8e4022d9/adm-ch-f7.pdf
 #
 # Where an element amount is checked, it is reg. 34 for one child in 2025-26:
@@ -283,6 +286,58 @@
     uc_childcare_treated_as_in_paid_work: true
     uc_childcare_work_condition: true
 
+- name: Reg. 32(2)(b) - a single claimant receiving statutory adoption pay
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        statutory_adoption_pay: 6_000
+  output:
+    in_work: false
+    uc_childcare_treated_as_in_paid_work: true
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - a single claimant receiving statutory shared parental pay
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        statutory_shared_parental_pay: 3_000
+  output:
+    in_work: false
+    uc_childcare_treated_as_in_paid_work: true
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - a single claimant receiving statutory parental bereavement pay
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        statutory_parental_bereavement_pay: 400
+  output:
+    in_work: false
+    uc_childcare_treated_as_in_paid_work: true
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - a single claimant receiving statutory neonatal care pay
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        statutory_neonatal_care_pay: 1_500
+  output:
+    in_work: false
+    uc_childcare_treated_as_in_paid_work: true
+    uc_childcare_work_condition: true
+
 - name: Reg. 32(2)(b) - a single claimant receiving maternity allowance
   period: 2025
   absolute_error_margin: 0
@@ -389,6 +444,37 @@
     # claimant instead fails, because an offer does not meet (b).
     uc_childcare_treated_as_in_paid_work: [false, true]
     uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(a)-(b) - a claimant with an offer of paid work and a partner on statutory neonatal care pay
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        is_parent: true
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+      partner:
+        age: 34
+        statutory_neonatal_care_pay: 1_500
+      child:
+        age: 0
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    # The claimant meets (a) with the offer; the partner, a joint claimant
+    # receiving statutory neonatal care pay, is treated as in paid work
+    # (32(2)(b)), so meets (b). The element is reg. 34 for one child:
+    # min(5,000 * 85%, 1,031.88 * 12) = 4,250.
+    in_work: [false, false, false]
+    uc_childcare_treated_as_in_paid_work: [false, true, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
 
 - name: Reg. 32(1)(a) - a single claimant with an offer of paid work
   period: 2025

@@ -1,0 +1,79 @@
+# HB Regs 2006 reg 35(1): "earnings" ... "includes— ... (i) any statutory
+# sick pay, statutory maternity pay, statutory paternity pay, statutory
+# adoption pay, statutory shared parental pay, statutory parental bereavement
+# pay, statutory neonatal care pay or a corresponding payment under any
+# enactment having effect in Northern Ireland;"
+# https://www.legislation.gov.uk/uksi/2006/213/regulation/35
+# HB (SPC) Regs 2006 reg 35(1)(h) to (jc) list the same seven payments.
+# https://www.legislation.gov.uk/uksi/2006/214/regulation/35
+#
+# The earnings disregards are pinned at zero so that the cases test what
+# counts as income, not the disregards.
+
+- name: HB counts statutory adoption pay as earnings, net of its tax and NI, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        employment_income: 10_000
+        statutory_adoption_pay: 6_000
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    # 16,000 - income tax 20% x (16,000 - 12,570) = 686
+    #        - primary Class 1 8% x (16,000 - 12,569.96) = 274.40
+    housing_benefit_applicable_income: 15_039.60
+
+- name: HB counts statutory paternity, shared parental, parental bereavement and neonatal care pay, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        statutory_paternity_pay: 400
+        statutory_shared_parental_pay: 3_000
+        statutory_parental_bereavement_pay: 400
+        statutory_neonatal_care_pay: 1_500
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    # Below the personal allowance and the primary threshold: no tax or NI.
+    housing_benefit_applicable_income: 5_300
+
+- name: HB (SPC) counts statutory parental bereavement pay of a pension-age claimant, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 67
+        employment_income: 10_000
+        private_pension_income: 5_000
+        statutory_parental_bereavement_pay: 400
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    # Income of 15,400 is above the 2025-26 standard minimum guarantee
+    # (227.10 x 52 = 11,809.20), so there is no guarantee credit passport.
+    # 15,400 - income tax 20% x (15,400 - 12,570) = 566; no NI over State
+    # Pension age.
+    guarantee_credit: 0
+    housing_benefit_applicable_income: 14_834

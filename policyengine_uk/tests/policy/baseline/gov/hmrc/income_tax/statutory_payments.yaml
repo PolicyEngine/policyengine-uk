@@ -1,0 +1,50 @@
+# ITEPA 2003 s.660(1) Table A lists, as taxable UK social security benefits,
+# statutory paternity pay, statutory adoption pay, statutory maternity pay,
+# statutory shared parental pay, statutory parental bereavement pay, statutory
+# neonatal care pay and statutory sick pay, and s.658(5) charges "the amount of
+# the benefit that falls to be charged to tax": the whole payment.
+# https://www.legislation.gov.uk/ukpga/2003/1/section/660
+# https://www.legislation.gov.uk/ukpga/2003/1/section/658
+# 2025-26: personal allowance £12,570, basic rate 20%.
+
+- name: Statutory paternity pay is taxable (Table A), 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    employment_income: 20_000
+    statutory_paternity_pay: 3_000
+  output:
+    employment_benefits: 3_000
+    taxable_employment_income: 23_000
+    # 20% x (23,000 - 12,570)
+    income_tax: 2_086
+
+- name: Statutory adoption, shared parental, parental bereavement and neonatal care pay are taxable, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    statutory_adoption_pay: 6_000
+    statutory_shared_parental_pay: 4_000
+    statutory_parental_bereavement_pay: 400
+    statutory_neonatal_care_pay: 3_000
+  output:
+    employment_benefits: 13_400
+    taxable_employment_income: 13_400
+    # 20% x (13,400 - 12,570)
+    income_tax: 166
+
+- name: All seven Table A statutory payments are employment benefits
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    statutory_sick_pay: 1
+    statutory_maternity_pay: 2
+    statutory_paternity_pay: 4
+    statutory_adoption_pay: 8
+    statutory_shared_parental_pay: 16
+    statutory_parental_bereavement_pay: 32
+    statutory_neonatal_care_pay: 64
+  output:
+    employment_benefits: 127

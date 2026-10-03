@@ -67,3 +67,26 @@
   output:
     # 4,000 plus 10% of it.
     household_benefits: 4_400
+
+- name: Statutory paternity, adoption, shared parental, parental bereavement and neonatal care pay count in household benefits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        statutory_paternity_pay: 400
+        statutory_adoption_pay: 6_000
+        statutory_shared_parental_pay: 3_000
+        statutory_parental_bereavement_pay: 400
+        statutory_neonatal_care_pay: 1_500
+    benunits:
+      benunit:
+        members: [parent]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent]
+  output:
+    household_benefits: 11_300
+    hbai_benefits: 11_300
