@@ -1,11 +1,11 @@
 description: >
   Person-level model variables counted as Housing Benefit capital of the
   person's own benefit unit. They are summed over the benefit unit's claimant
-  and partner (`is_uc_claimant`), so they need none of the household proxy
-  that the household `sources` use, and a dependant's holding is left out:
-  regulation 45 says the capital of a child or young person in the claimant's
-  family is not the claimant's. `lifetime_isa_countable_capital` is a
-  Lifetime ISA at its surrender value: regulation 47 (regulation 45 of the
+  and partner (`is_claimant_or_partner`), so they need none of the household
+  proxy that the household `sources` use, and a dependant's holding is left
+  out: regulation 45 says the capital of a child or young person in the
+  claimant's family is not the claimant's. `lifetime_isa_countable_capital` is
+  a Lifetime ISA at its surrender value: regulation 47 (regulation 45 of the
   pension-age regulations) values capital at its current market or surrender
   value, in the words of the DWP benefits' regulations, for which DWP guidance
   counts a Lifetime ISA at 75% of its value under 60 and in full from 60.
