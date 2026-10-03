@@ -12,7 +12,9 @@ class adjusted_total_income(Variable):
         "relief the model deducts from trading profits) added back. Steps 3 "
         "and 4 deduct the pension contributions given relief (FA 2004 "
         "ss.192-194): the person's own contributions up to the greater of "
-        "their relevant UK earnings and the basic amount (s.190), none from "
+        "their relevant UK earnings (s.189(2): taxable employment income, "
+        "including benefits and statutory pay, and trading profits) and the "
+        "basic amount (s.190), none from "
         "age 75 (s.188(3)(a)). The annual allowance limits tax-relieved "
         "saving through a charge, not the relief itself, so it is not applied "
         "here. Step 2 adds back payroll giving, which the model does not have."
@@ -48,8 +50,11 @@ class adjusted_total_income(Variable):
             person("net_income_before_trade_loss_relief", period)
             + losses_brought_forward_deducted
         )
-        relevant_earnings = max_(
-            0, add(person, period, ["employment_income", "self_employment_income"])
+        # Relevant UK earnings (FA 2004 s.189(2)): employment income chargeable
+        # to tax, including taxable benefits and statutory payments, and
+        # trading profits chargeable to tax.
+        relevant_earnings = (
+            person("taxable_employment_income", period) + profits_before_carry_forward
         )
         relief_limit = max_(
             p.income_tax.reliefs.pension_contribution.basic_amount, relevant_earnings

@@ -34,3 +34,39 @@
     uc_is_in_startup_period: true
   output:
     uc_mif_capped_earned_income: 20_000
+
+- name: The benefit cap earnings test nets trades too (reg 82 with reg 57(2))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        self_employment_income: 12_000
+        trading_loss: 5_000
+        uc_is_in_startup_period: true
+        income_tax: 0
+        national_insurance: 0
+      child_1:
+        age: 1
+      child_2:
+        age: 4
+      child_3:
+        age: 7
+      child_4:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3, child_4]
+    households:
+      household:
+        members: [parent, child_1, child_2, child_3, child_4]
+        region: LONDON
+        rent: 24_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    uc_trading_losses_set_against_profits: [5_000, 0, 0, 0, 0]
+    # £7,000 of earnings, below the reg 82 threshold, so the cap applies,
+    # exactly as for £7,000 of profits and no loss.
+    is_benefit_cap_exempt_earnings: false
+    universal_credit: 21_124

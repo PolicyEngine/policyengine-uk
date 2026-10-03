@@ -176,3 +176,17 @@
     adjusted_total_income: 296_400
     income_tax_relief_cap: 74_100
     trade_loss_relief_against_general_income: 74_100
+
+- name: Statutory Maternity Pay is relevant UK earnings for pension relief
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 10_000
+    statutory_maternity_pay: 30_000
+    dividend_income: 300_000
+    personal_pension_contributions: 40_000
+    trading_loss: 100_000
+  output:
+    # £40,000 of relevant UK earnings covers the £40,000 contribution.
+    adjusted_total_income: 300_000
+    income_tax_relief_cap: 75_000

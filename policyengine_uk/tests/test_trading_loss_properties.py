@@ -23,8 +23,8 @@ Invariants, for any people and incomes:
    income: with Income Tax and NI held at the values the loss gives, every
    means-tested benefit and means-test income is what it is without the loss,
    except that UC sets it against the person's other trades' profits (UC Regs
-   2013 reg 57(2)), so UC equals the same family with those profits cut by
-   the loss. (The model's means tests deduct the year's Income Tax liability,
+   2013 reg 57(2)), so UC, its benefit cap earnings test and the capped
+   award equal the same family with those profits cut by the loss. (The model's means tests deduct the year's Income Tax liability,
    so otherwise the loss reaches them only through that tax.)
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
@@ -53,7 +53,7 @@ from policyengine_uk.variables.household.income.hbai_household_net_income import
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
-    max_examples=6,
+    max_examples=3,
     deadline=None,
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
@@ -72,7 +72,12 @@ MEANS_TESTED = [
     "council_tax_reduction_applicable_income",
     "pension_credit_income",
 ]
-UC_TESTS = ["uc_earned_income", "universal_credit_pre_benefit_cap"]
+UC_TESTS = [
+    "uc_earned_income",
+    "universal_credit_pre_benefit_cap",
+    "is_benefit_cap_exempt_earnings",
+    "universal_credit",
+]
 # HBAI components the loss may move: the loss itself, taxes, and benefits
 # that are means-tested or passported from a means-tested benefit.
 HBAI_CHANNELS = {
@@ -149,8 +154,8 @@ def calculate(situation, variables, year=YEAR):
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(taxpayers(), min_size=1, max_size=8),
-    st.lists(st.sampled_from(REGIONS), min_size=8, max_size=8),
+    st.lists(taxpayers(), min_size=8, max_size=16),
+    st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
 )
 def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
     without = [{**p, "trading_loss": 0.0} for p in people]
@@ -158,9 +163,19 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
         single_people(people, regions),
         ["trade_loss_relief_against_general_income", "adjusted_net_income"],
     )
-    b = calculate(single_people(without, regions), ["adjusted_net_income"])
+    b = calculate(
+        single_people(without, regions),
+        [
+            "adjusted_net_income",
+            "taxable_employment_income",
+            "taxable_self_employment_income",
+        ],
+    )
     for i, person in enumerate(people):
-        earnings = person["employment_income"] + person["self_employment_income"]
+        # Relevant UK earnings (FA 2004 s.189(2)): taxable pay and profits.
+        earnings = (
+            b["taxable_employment_income"][i] + b["taxable_self_employment_income"][i]
+        )
         relieved = (person["age"] < 75) * min(
             person["personal_pension_contributions"], max(3_600.0, earnings)
         )
@@ -215,8 +230,8 @@ def reduced(person):
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(portfolio_holders(), min_size=1, max_size=8),
-    st.lists(st.sampled_from(REGIONS), min_size=8, max_size=8),
+    st.lists(portfolio_holders(), min_size=8, max_size=16),
+    st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
 )
 def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
     twins = [reduced(p)[0] for p in people]
@@ -235,8 +250,8 @@ def test_relief_taxes_like_income_cut_in_section_25_order(people, regions):
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(taxpayers(), min_size=1, max_size=8),
-    st.lists(st.sampled_from(REGIONS), min_size=8, max_size=8),
+    st.lists(taxpayers(), min_size=8, max_size=16),
+    st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
     st.floats(0, 1),
 )
 def test_income_tax_falls_with_the_loss_by_at_most_the_relief(people, regions, share):
@@ -316,7 +331,7 @@ def family_situation(units, overrides=None, benunit_overrides=None):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=1, max_size=4))
+@given(st.lists(families(), min_size=4, max_size=10))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
 
@@ -330,6 +345,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     profits = values(with_loss, "self_employment_income")
     mif = np.asarray(with_loss.calculate("uc_mif_applies", YEAR))
     uc = values(with_loss, "universal_credit")
+    hb = values(with_loss, "housing_benefit")
 
     def held(k, **extra):
         return {
@@ -362,6 +378,9 @@ def test_means_tests_see_the_loss_only_through_tax(units):
                 )
                 for k, name in enumerate(names)
             },
+            # The cap counts Housing Benefit, which reads profits before any
+            # loss: hold it at the with-loss value.
+            {b: {"housing_benefit": float(hb[k])} for k, b in enumerate(benunits)},
         )
     )
     for variable in UC_TESTS:
@@ -370,7 +389,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=1, max_size=4))
+@given(st.lists(families(), min_size=4, max_size=10))
 def test_tax_credit_income_falls_by_the_claimants_losses(units):
     year = 2024
     without = [
@@ -408,7 +427,7 @@ def test_tax_credit_income_falls_by_the_claimants_losses(units):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=1, max_size=4))
+@given(st.lists(families(), min_size=4, max_size=10))
 def test_household_income_moves_only_through_its_channels(units):
     without = [
         ([{**p, "trading_loss": 0.0} if "trading_loss" in p else p for p in people], h)
@@ -451,9 +470,9 @@ def test_household_income_moves_only_through_its_channels(units):
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(taxpayers(), min_size=1, max_size=8),
-    st.lists(st.sampled_from(REGIONS), min_size=8, max_size=8),
-    st.lists(money(20_000), min_size=8, max_size=8),
+    st.lists(taxpayers(), min_size=8, max_size=16),
+    st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
+    st.lists(money(20_000), min_size=16, max_size=16),
 )
 def test_class_4_profits_net_of_the_relief(people, regions, brought_forward):
     people = [{**p, "loss_relief": b} for p, b in zip(people, brought_forward)]
