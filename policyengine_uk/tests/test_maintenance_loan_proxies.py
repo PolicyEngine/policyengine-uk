@@ -270,14 +270,26 @@ PRIOR_CALCULATIONS = (
 )
 
 
+PROXY_YEARS = range(2023, 2029)
+
+
 def proxy_situation(student_inputs, tenure):
+    """PARENTAL_HOUSEHOLD with every input other than the ones under test
+    entered for every year, so that no value relies on core's auto-carry-over
+    (in policyengine-core 3.32.9 that depends on calculation order itself),
+    and no education input for the parent, so the student's education years
+    are only the ones drawn."""
     situation = deepcopy(PARENTAL_HOUSEHOLD)
-    student = situation["people"]["student"]
-    student["age"] = {year: 20 for year in range(2023, 2029)}
-    del student["current_education"]
-    student.update(student_inputs)
+    for person in situation["people"].values():
+        person.pop("current_education")
+        for name, values in person.items():
+            person[name] = {year: values[2025] for year in PROXY_YEARS}
+    situation["people"]["student"].update(student_inputs)
+    household = situation["households"]["household"]
+    for name in ("country", "region"):
+        household[name] = {year: household[name][2025] for year in PROXY_YEARS}
     if tenure is not None:
-        situation["households"]["household"]["tenure_type"] = tenure
+        household["tenure_type"] = tenure
     return situation
 
 
@@ -296,13 +308,18 @@ def proxy_situation(student_inputs, tenure):
             ),
         },
     ),
+    # No tenure, or one for every year: a tenure entered for some years only
+    # reaches the others through core's auto-carry-over, which is order
+    # dependent in policyengine-core 3.32.9 (a later calculated year hides
+    # the input). test_an_entered_tenure_carries_forward_as_evidence covers
+    # an earlier entry.
     tenure=st.one_of(
         st.none(),
-        st.dictionaries(
-            st.sampled_from(range(2024, 2027)),
-            st.sampled_from(["RENT_PRIVATELY", "OWNED_OUTRIGHT"]),
-            min_size=1,
-            max_size=2,
+        st.fixed_dictionaries(
+            {
+                year: st.sampled_from(["RENT_PRIVATELY", "OWNED_OUTRIGHT"])
+                for year in PROXY_YEARS
+            }
         ),
     ),
     first=st.lists(

@@ -58,14 +58,20 @@ def age_band(age: float) -> str:
     return "NOT_IN_EDUCATION"
 
 
-def expected_enrolment(year, ages, entered):
-    """Invariant 2 for one person: ``ages`` maps year to age, ``entered``
-    maps year to an entered enrolment."""
-    if year in entered:
-        return entered[year]
-    earlier = [y for y in entered if y < year]
+def expected_enrolment(year, ages, entered, entered_years):
+    """Invariant 2 for one person: ``ages`` maps year to age and ``entered``
+    to the enrolment entered for them. Inputs are whole arrays, so in any
+    year someone was given an enrolment (``entered_years``) everyone else
+    holds the default as an entered value."""
+
+    def value(input_year):
+        return entered.get(input_year, "NOT_IN_EDUCATION")
+
+    if year in entered_years:
+        return value(year)
+    earlier = [y for y in entered_years if y < year]
     if earlier:
-        return entered[max(earlier)]
+        return value(max(earlier))
     return age_band(ages[year])
 
 
@@ -105,6 +111,13 @@ def small_dataset():
             {
                 "household_id": [1, 2, 3],
                 "region": ["LONDON", "NORTH_WEST", "WALES"],
+                "tenure_type": [
+                    "RENT_PRIVATELY",
+                    "OWNED_OUTRIGHT",
+                    "RENT_FROM_COUNCIL",
+                ],
+                "council_tax": [1_500.0, 1_200.0, 1_300.0],
+                "rent": [12_000.0, 0.0, 6_000.0],
                 "household_weight": [1.0, 1.0, 1.0],
             }
         ),
@@ -225,5 +238,9 @@ def test_enrolment_is_order_independent_and_matches_the_reference(case):
     # Invariant 1, bitwise.
     assert np.array_equal(fresh, after)
     # Invariant 2.
-    expected = [expected_enrolment(target, ages, entered) for ages, entered in people]
+    entered_years = {year for _, entered in people for year in entered}
+    expected = [
+        expected_enrolment(target, ages, entered, entered_years)
+        for ages, entered in people
+    ]
     assert list(fresh) == expected
