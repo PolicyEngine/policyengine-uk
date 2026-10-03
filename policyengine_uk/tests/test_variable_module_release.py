@@ -6,7 +6,8 @@ under the system's id and never removes them. The conftest's
 which keeps a long test process's memory flat. If core stops leaking the
 modules (PolicyEngine/policyengine-core#520), the first test skips with a
 note to remove the workaround, rather than failing every PR after a core
-upgrade.
+upgrade. If core keeps leaking but names the modules differently, it fails,
+because the release would then silently do nothing.
 """
 
 import gc
@@ -44,12 +45,18 @@ def test_dead_systems_modules_are_released_and_live_ones_kept(request):
     dropped_owner = str(id(dropped.tax_benefit_system))
     expected = dropped.calculate("income_tax", 2026)
 
-    if not _modules_of(dropped_owner):
+    # The module core loaded the income_tax variable from, for this system.
+    module = type(dropped.tax_benefit_system.variables["income_tax"]).__module__
+    if module not in sys.modules:
         pytest.skip(
-            "policyengine-core no longer registers variable modules under the "
-            "system's id (policyengine-core#520 fixed?); remove "
+            "policyengine-core no longer keeps variable modules in sys.modules "
+            "(policyengine-core#520 fixed?); remove "
             "release_dead_variable_modules from conftest.py and this test"
         )
+    # Core still keeps them, so the conftest pattern must still recognise them,
+    # or the release would silently do nothing.
+    assert module.startswith(dropped_owner + "_"), module
+    assert _conftest(request)._VARIABLE_MODULE_NAME.match(module), module
     del dropped
     gc.collect()
 

@@ -37,7 +37,7 @@ def pytest_collection_modifyitems(config, items):
 # sys.modules, where it stays after the system is garbage collected. Every
 # Simulation builds its own system, so each one leaves about 1,000 modules
 # (roughly 10 MB) behind, and the property tests build hundreds: running the
-# suite serially used 15.8 GB of a 16 GB CI runner. After each test, drop
+# suite serially used 99% of a 16 GB CI runner's memory. After each test, drop
 # the modules of systems that no longer exist; live systems keep theirs.
 # Remove this once policyengine-core stops leaking them
 # (PolicyEngine/policyengine-core#520).
@@ -66,8 +66,8 @@ def release_dead_variable_modules(max_owners: int = 8) -> int:
     for owner, names in owners.items():
         if owner not in live:
             for name in names:
-                sys.modules.pop(name, None)
-            released += len(names)
+                if sys.modules.pop(name, None) is not None:
+                    released += 1
     return released
 
 
