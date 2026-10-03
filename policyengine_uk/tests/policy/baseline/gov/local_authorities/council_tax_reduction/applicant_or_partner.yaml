@@ -1,0 +1,547 @@
+# The Council Tax Reduction means test covers the applicant's own income and
+# their partner's (SSI 2012/319 regs 14, 21, 23 and 26; SI 2012/2885 Sch 1
+# para 11; WSI 2013/3029 Sch 1 para 5 and Sch 6 para 7; SSI 2021/249 reg 36).
+# The applicant is the person liable for the council tax. Where that is a
+# household head who is not the benefit unit's claimant or partner (here a
+# grandmother sharing a benefit unit with a young couple and their baby), the
+# means test is the head's own, as a single person; the benefit unit's
+# benefits belong to the couple. None of these cases sets applicable income.
+#
+# Rates for 2026 (parameters): pension-age single personal allowance
+# £256/week, working-age single aged 25 or over £95.55/week, couple aged 18
+# or over £150.15/week, disability premium (single) £44.85/week, severe
+# disability premium (single) £86.05/week; 52 weeks. Scotland, Wales and the
+# English pensioner scheme: maximum reduction 100%, withdrawal 20%. Newham:
+# maximum 70%, withdrawal 25%. Personal allowance £12,570, basic rate 20%.
+
+- name: A grandmother head with a young couple in her benefit unit and no income of her own gets the full reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_claimant_or_partner: [false, true, true, false]
+    council_tax_reduction_liable_person: [true, false, false, false]
+    council_tax_reduction_head_applies_alone: [true]
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    # The couple's Child Benefit for the baby is theirs, not hers.
+    council_tax_reduction_applicable_income: [0]
+    # A single pensioner: 256 * 52.
+    council_tax_reduction_applicable_amount: [13_312]
+    simulated_council_tax_reduction_benunit: [1_800]
+    council_tax_reduction: 1_800
+
+- name: The same grandmother with a £100,000 private pension gets no reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+        private_pension_income: 100_000
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    council_tax_reduction_applicable_amount: [13_312]
+    # Her pension after tax is far above £13,312, and 20% of the excess is
+    # more than the £1,800 council tax.
+    simulated_council_tax_reduction_benunit: [0]
+    council_tax_reduction: 0
+
+- name: In England a grandmother head's own £20,000 pension is withdrawn at 20% above her allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+        private_pension_income: 20_000
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+        employment_income: 10_000
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: [true]
+    # Her pension less income tax of (20,000 - 12,570) * 20% = 1,486. The
+    # young mother's earnings are not hers.
+    council_tax_reduction_applicable_income: [18_514]
+    council_tax_reduction_applicable_amount: [13_312]
+    # 1,800 - (18,514 - 13,312) * 20%.
+    simulated_council_tax_reduction_benunit: [759.60]
+
+- name: The young couple's income-based Jobseeker's Allowance does not passport the grandmother head
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+        private_pension_income: 20_000
+      young_mother:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        jsa_income: 4_000
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_claimant_or_partner: [false, true, true, false]
+    council_tax_reduction_liable_person: [true, false, false, false]
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    council_tax_reduction_relevant_income_based_benefit: [false]
+    # Neither the couple's JSA nor their Child Benefit is her income.
+    council_tax_reduction_applicable_income: [18_514]
+    simulated_council_tax_reduction_benunit: [759.60]
+
+- name: A head who applies alone is a single person, with premiums on her own disability only
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 60
+        is_household_head: true
+        is_disabled_for_benefits: true
+        is_severely_disabled_for_benefits: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+        is_disabled_for_benefits: true
+        is_carer_for_benefits: true
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Disability (44.85) and severe disability (86.05) premiums at the single
+    # rate: (44.85 + 86.05) * 52. The young mother's disability and caring
+    # do not give the grandmother a premium.
+    council_tax_reduction_premiums: [6_806.80]
+    # Single aged 25 or over, 95.55 * 52 = 4,968.60, plus the premiums.
+    council_tax_reduction_applicable_amount: [11_775.40]
+
+- name: A blind grandmother head who applies alone has no non-dependant deduction in Merton
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 60
+        is_household_head: true
+        is_blind: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+      son:
+        age: 30
+        is_household_head: false
+        employment_income: 30_000
+        weekly_hours: 40
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      son:
+        members: [son]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby, son]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: [false, false]
+    # The exemption is the applicant's or partner's (SI 2012/2885 Sch 1 para
+    # 8(6); the Merton scheme follows it).
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false, false, true]
+    merton_council_tax_reduction_non_dep_deductions: [0, 0]
+    merton_council_tax_reduction: [1_800, 0]
+
+- name: The young couple's Universal Credit does not put a grandmother head on Newham's Universal Credit route
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 55
+        is_household_head: true
+      young_mother:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 19
+        is_parent: true
+        is_household_head: false
+        employment_income: 30_000
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        universal_credit: 6_000
+        child_benefit: 1_000
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: NEWHAM
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_head_applies_alone: [true]
+    # The young father's earnings and the couple's award are not hers.
+    council_tax_reduction_applicable_income: [0]
+    # Single aged 25 or over: 95.55 * 52.
+    council_tax_reduction_applicable_amount: [4_968.60]
+    # No excess income: 1,800 * 70%. On the Universal Credit route the
+    # couple's earnings and award would leave nothing.
+    newham_council_tax_reduction: [1_260]
+
+- name: A partner under 18 is not liable, but their income counts in the couple's means test
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 19
+        is_household_head: true
+        is_benunit_head: false
+      partner:
+        # The benefit unit's head, so the HBAI fallback does not read the
+        # 17-year-old as a dependent child.
+        age: 17
+        is_household_head: false
+        is_benunit_head: true
+        employment_income: 10_000
+    benunits:
+      couple:
+        members: [head, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        # The model would otherwise pay Child Benefit for the 17-year-old
+        # partner. SI 2006/223 reg 12 bars it while a qualifying young person
+        # lives with a partner as a couple, unless that partner is in
+        # education or training; that is a separate issue.
+        child_benefit: 0
+    households:
+      home:
+        members: [head, partner]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_claimant_or_partner: [true, true]
+    council_tax_reduction_liable_person: [true, false]
+    council_tax_reduction_head_applies_alone: [false]
+    is_council_tax_reduction_applicant_or_partner: [true, true]
+    # Below the personal allowance and the National Insurance threshold.
+    council_tax_reduction_applicable_income: [10_000]
+    # Couple aged 18 or over: 150.15 * 52 = 7,807.80.
+    council_tax_reduction_applicable_amount: [7_807.80]
+    # 1,800 - (10,000 - 7,807.80) * 20%.
+    simulated_council_tax_reduction_benunit: [1_361.56]
+
+- name: A head under 18 with an adult partner claims through the partner, and the head's income counts
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 17
+        is_household_head: true
+        is_benunit_head: true
+        employment_income: 10_000
+      partner:
+        age: 18
+        is_household_head: false
+        is_benunit_head: false
+    benunits:
+      couple:
+        members: [head, partner]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        # The model would otherwise pay Child Benefit for the 17-year-old
+        # partner. SI 2006/223 reg 12 bars it while a qualifying young person
+        # lives with a partner as a couple, unless that partner is in
+        # education or training; that is a separate issue.
+        child_benefit: 0
+    households:
+      home:
+        members: [head, partner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_claimant_or_partner: [true, true]
+    council_tax_reduction_liable_person: [false, true]
+    is_council_tax_reduction_applicant_or_partner: [true, true]
+    council_tax_reduction_applicable_income: [10_000]
+    council_tax_reduction_applicable_amount: [7_807.80]
+    simulated_council_tax_reduction_benunit: [1_361.56]
+
+- name: A pensioner who is not the applicant or partner does not make a young couple's claim a pensioner's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 70
+        is_household_head: false
+      mother:
+        age: 19
+        is_parent: true
+        is_household_head: true
+      father:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, mother, father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, mother, father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The mother is the head and the couple are the benefit unit's claimant
+    # and partner, so they are the applicant and partner.
+    council_tax_reduction_head_applies_alone: [false]
+    is_council_tax_reduction_applicant_or_partner: [false, true, true, false]
+    council_tax_reduction_pensioner: [false]
+    # A working-age couple aged 18 or over: 150.15 * 52, not the pension-age
+    # couple rate.
+    council_tax_reduction_applicable_amount: [7_807.80]
+
+- name: The young couple's Universal Credit does not remove a grandmother head's tariff income from capital in Kingston upon Thames
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 55
+        is_household_head: true
+        private_pension_income: 5_000
+      young_mother:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        universal_credit: 6_000
+        child_benefit: 1_000
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: KINGSTON_UPON_THAMES
+        council_tax: 1_800
+        savings: 10_000
+  output:
+    council_tax_reduction_head_applies_alone: [true]
+    council_tax_reduction_applicable_income: [5_000]
+    council_tax_reduction_applicable_amount: [4_968.60]
+    # Tariff income ceil((10,000 - 6,000) / 250) = £16 a week, 832 a year,
+    # since she has no award. 1,800 - (5,000 + 832 - 4,968.60) * 20%.
+    kingston_upon_thames_council_tax_reduction: [1_627.32]
+
+- name: A blind grandmother head's exemption does not exempt a sharer's claim from a non-dependant deduction in Merton
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 60
+        is_household_head: true
+        is_blind: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+      sharer:
+        age: 40
+        is_household_head: false
+      son:
+        age: 30
+        is_household_head: false
+        employment_income: 30_000
+        weekly_hours: 40
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+      son_family:
+        members: [son]
+        claims_all_entitled_benefits: false
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby, sharer, son]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_liable_person: [true, false, false, false, true, false]
+    council_tax_reduction_joint_liability_share: [0.5, 0.5, 1]
+    # The grandmother applies alone and is blind, so her claim has no
+    # deduction. The sharer is neither her nor her partner, so the sharer's
+    # claim bears half the son's deduction: Merton charges £13.30 a week for
+    # gross weekly income of £485 or more in remunerative work (30,000 / 52 =
+    # 576.92), 13.30 * 52 / 2 = 345.80 (Merton scheme para 30(5)-(6)).
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false, false]
+    merton_council_tax_reduction_non_dep_deductions: [0, 345.80, 0]
+    # Each claim covers half the £1,800; neither has income above its
+    # allowance.
+    merton_council_tax_reduction: [900, 554.20, 0]
