@@ -7,10 +7,15 @@ class claims_universal_credit(Variable):
     label = "Claims Universal Credit"
     documentation = (
         "Whether this family claims Universal Credit: it would claim it "
-        "anyway (would_claim_uc), or its legacy benefits have closed "
-        "(legacy_benefits_closed) and it would claim when that happens "
-        "(would_claim_uc_at_legacy_closure). Universal Credit is paid only "
-        "to claiming families, and a claim ends any legacy award."
+        "anyway (would_claim_uc), or it claims when DWP moves it off its "
+        "legacy benefits (claims_uc_at_legacy_closure). Universal Credit is "
+        "paid only to claiming families. A claim ends the family's Housing "
+        "Benefit continuing award and Child Tax Credit. Once DWP moves a "
+        "family off legacy benefits (legacy_benefits_closed) all its legacy "
+        "awards end; for other claimants the overlap of Universal Credit "
+        "with Working Tax Credit, Income Support, income-related ESA and "
+        "income-based JSA is not modelled, nor is Housing Benefit for "
+        "specified or temporary accommodation."
     )
     definition_period = YEAR
     reference = (
@@ -19,7 +24,6 @@ class claims_universal_credit(Variable):
     )
 
     def formula(benunit, period, parameters):
-        claims_at_closure = benunit("legacy_benefits_closed", period) & benunit(
-            "would_claim_uc_at_legacy_closure", period
+        return benunit("would_claim_uc", period) | benunit(
+            "claims_uc_at_legacy_closure", period
         )
-        return benunit("would_claim_uc", period) | claims_at_closure
