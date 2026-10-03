@@ -44,3 +44,16 @@
   output:
     ni_class_4_profits: 0
     ni_class_4: 0
+
+- name: Class 4 carries forward a loss Income Tax set against other income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 50_000
+    ni_class_4_losses_brought_forward: 20_000
+  output:
+    ni_class_4_profits: 30_000
+    # (30,000 - 12,570) x 6%.
+    ni_class_4: 1_045.8
+    # Income Tax is unaffected: £50,000 less the £12,570 Personal Allowance at 20%.
+    income_tax: 7_486

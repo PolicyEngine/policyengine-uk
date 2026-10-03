@@ -30,10 +30,7 @@ class trade_loss_relief_against_general_income(Variable):
     ]
 
     def formula(person, period, parameters):
-        components = parameters(
-            period
-        ).gov.hmrc.income_tax.adjusted_net_income_components
-        net_income = max_(0, add(person, period, components))
+        net_income = max_(0, person("net_income_before_trade_loss_relief", period))
         return min_(
             person("trading_loss", period),
             min_(person("income_tax_relief_cap", period), net_income),

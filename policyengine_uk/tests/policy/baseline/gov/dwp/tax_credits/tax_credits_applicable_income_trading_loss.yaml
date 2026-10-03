@@ -56,3 +56,23 @@
         members: [claimant]
   output:
     tax_credits_applicable_income: 0
+
+- name: A child's trading loss does not reduce the claimants' income
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 20_000
+      child:
+        age: 15
+        trading_loss: 5_000
+    benunits:
+      benunit:
+        members: [claimant, child]
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    tax_credits_applicable_income: 20_000

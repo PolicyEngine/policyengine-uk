@@ -39,10 +39,12 @@ class tax_credits_applicable_income(Variable):
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
         income += add_for_members(benunit, period, STEP_2_COMPONENTS, members)
-        # Step 4: a trading loss in the year is subtracted from the total of
-        # the other steps, so one partner's loss reduces the joint income.
+        # Step 4: the claimants' trading loss in the year is subtracted from
+        # the total of the other steps, so one partner's loss reduces the
+        # joint income. A child's loss is not the claimants'.
+        claimants = person("is_claimant_or_partner", period)
         income = max_(
-            0, income - add_for_members(benunit, period, ["trading_loss"], members)
+            0, income - add_for_members(benunit, period, ["trading_loss"], claimants)
         )
         EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
         on_exempt_benefits = (

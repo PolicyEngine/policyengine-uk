@@ -8,12 +8,13 @@ class trade_loss_relief_against_savings_and_dividends(Variable):
     documentation = (
         "The part of trade loss relief against general income left after "
         "non-savings income is used up; it joins the allowances applied to "
-        "savings income and then to dividends. From 2027-28 ITA 2007 s.25(3A) "
-        "requires reliefs to come off income other than property, savings and "
-        "dividend income first. Before then s.25(2) asks for the order giving "
-        "the greatest reduction in liability, which the model takes to be the "
-        "same order, as it does for the Personal Allowance: non-savings income "
-        "(property last), then savings, then dividends."
+        "savings income and then to dividends. ITA 2007 s.25(2) deducts "
+        "reliefs and allowances in the order giving the greatest reduction in "
+        "liability, and from 2027-28 s.25(3A) puts income other than property, "
+        "savings and dividends first. The model uses its fixed allowance order "
+        "(non-savings income, property last, then savings, then dividends), "
+        "which can overcharge where savings are taxed at 0%; that is model-wide "
+        "and tracked in #2106."
     )
     definition_period = YEAR
     unit = GBP
@@ -23,11 +24,8 @@ class trade_loss_relief_against_savings_and_dividends(Variable):
     )
 
     def formula(person, period, parameters):
-        components = parameters(
-            period
-        ).gov.hmrc.income_tax.adjusted_net_income_components
         non_savings_income = (
-            add(person, period, components)
+            person("net_income_before_trade_loss_relief", period)
             - person("taxable_savings_interest_income", period)
             - person("taxable_dividend_income", period)
         )

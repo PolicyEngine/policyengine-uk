@@ -111,3 +111,68 @@
     received_allowances_dividend_income: 17_570
     # £25,000 of dividends is left: (25,000 - 12,570 - 500) x 10.75%.
     income_tax: 1_282.48
+
+- name: Adjusted total income is total income after employment expenses
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    employment_income: 300_000
+    employment_expenses: 100_000
+    trading_loss: 100_000
+  output:
+    adjusted_total_income: 200_000
+    income_tax_relief_cap: 50_000
+    trade_loss_relief_against_general_income: 50_000
+
+- name: Contributions from age 75 get no relief, so they stay in adjusted total income
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 76
+    employment_income: 300_000
+    personal_pension_contributions: 40_000
+    trading_loss: 100_000
+    state_pension: 0
+  output:
+    adjusted_total_income: 300_000
+    income_tax_relief_cap: 75_000
+    trade_loss_relief_against_general_income: 75_000
+
+- name: Losses brought forward are added back to total income
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 250_000
+    loss_relief: 50_000
+    trading_loss: 100_000
+  output:
+    # Step 1 total income is the £250,000 of profits: s.83 relief is a Step 2
+    # deduction, made inside taxable self-employment income in the model.
+    adjusted_total_income: 250_000
+    income_tax_relief_cap: 62_500
+
+- name: Taxable basic income is general income the relief can be set against
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.ubi_center.basic_income.interactions.include_in_taxable_income: true
+    basic_income: 20_000
+    trading_loss: 20_000
+  output:
+    net_income_before_trade_loss_relief: 20_000
+    trade_loss_relief_against_general_income: 20_000
+    adjusted_net_income: 0
+    income_tax: 0
+
+- name: Only contributions up to relevant UK earnings, or £3,600, come out of adjusted total income
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    dividend_income: 300_000
+    personal_pension_contributions: 40_000
+    trading_loss: 200_000
+  output:
+    # No relevant UK earnings, so relief is on £3,600 at most (FA 2004 s.190).
+    adjusted_total_income: 296_400
+    income_tax_relief_cap: 74_100
+    trade_loss_relief_against_general_income: 74_100

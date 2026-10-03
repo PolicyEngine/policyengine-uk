@@ -1,0 +1,36 @@
+# UC Regs 2013 reg 57(2): Steps 1-2 add the profit or loss of each trade and
+# Step 3 makes a negative total nil, so one trade's loss reduces another
+# trade's profits but never employed earnings.
+
+- name: A loss in one trade reduces another trade's profits for UC
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    self_employment_income: 30_000
+    trading_loss: 10_000
+    uc_is_in_startup_period: true
+  output:
+    uc_mif_capped_earned_income: 20_000
+
+- name: A loss never reduces employed earnings for UC
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 20_000
+    trading_loss: 10_000
+  output:
+    uc_mif_capped_earned_income: 20_000
+
+- name: Self-employed earnings for UC are never below nil
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    employment_income: 20_000
+    self_employment_income: 5_000
+    trading_loss: 10_000
+    uc_is_in_startup_period: true
+  output:
+    uc_mif_capped_earned_income: 20_000

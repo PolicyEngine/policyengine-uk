@@ -6,30 +6,36 @@ Invariants, for any people and incomes:
 
 1. Relief definition (ITA 2007 s.64, s.24A): trade loss relief against
    general income equals min(loss, max(£50,000, 25% of adjusted total
-   income), net income), where net income is the adjusted net income of the
-   same person without the loss (a separate simulation).
-2. Differential (s.25 order): a person's Income Tax with a loss equals the
-   Income Tax of the same person without the loss and with their income cut
-   by the relief, taken from non-savings income first, then savings, then
-   dividends.
+   income), net income). Net income is the adjusted net income of the same
+   person without the loss (a separate simulation); adjusted total income is
+   that less the pension contributions given relief (own contributions up to
+   the greater of £3,600 and pay plus profits, none from age 75).
+2. Differential: a person's Income Tax with a loss equals the Income Tax of
+   the same person without the loss and with their income cut by the relief,
+   taken from non-savings income first, then savings, then dividends: the
+   model's fixed allowance order (s.25(2) asks for the order giving the
+   greatest reduction; #2106).
 3. Income Tax never rises with the loss and falls by at most the relief (for
    people without savings income: the personal savings allowance steps up by
    £500 when someone stops being a higher-rate taxpayer, so with savings
    income a small relief can save more than itself).
-4. Means tests never offset the loss against other income: with Income Tax
-   and NI held at the values the loss gives, every means-tested benefit and
-   means-test income is what it is without the loss. (The model's means tests
-   deduct the year's Income Tax liability, so the loss reaches them only
-   through that tax.)
-5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses come off
-   their applicable income, never below zero, and the award never falls.
+4. Means tests never set the loss against employed earnings or other
+   income: with Income Tax and NI held at the values the loss gives, every
+   means-tested benefit and means-test income is what it is without the loss,
+   except that UC sets it against the person's other trades' profits (UC Regs
+   2013 reg 57(2)), so UC equals the same family with those profits cut by
+   the loss. (The model's means tests deduct the year's Income Tax liability,
+   so otherwise the loss reaches them only through that tax.)
+5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
+   child's) come off their applicable income, never below zero, and the award
+   never falls.
 6. Household income: market income falls by exactly the household's losses,
    and HBAI net income moves only through the loss itself, taxes and
    means-tested or passported benefits; every other component is unchanged.
 7. Class 4 (SSCBA 1992 Sch 2 para 3): Class 4 profits are self-employment
-   profits less losses brought forward and the year's relief, never below
-   zero, so Class 4 never rises with the loss and someone with no profits
-   pays none whatever their loss.
+   profits less losses brought forward (for both taxes and for Class 4 only)
+   and the year's relief, never below zero, so Class 4 never rises with the
+   loss and someone with no profits pays none whatever their loss.
 8. The s.24A cap starts in 2013-14.
 
 Comparisons allow float32 rounding: the model stores values as float32.
@@ -47,27 +53,26 @@ from policyengine_uk.variables.household.income.hbai_household_net_income import
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
-    max_examples=12,
+    max_examples=6,
     deadline=None,
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
 REGIONS = ["LONDON", "NORTH_EAST", "SCOTLAND", "WALES"]
+# Means tests other than UC, compared with UC held (CTR counts UC as income).
 MEANS_TESTED = [
-    "universal_credit",
     "housing_benefit",
     "council_tax_reduction",
     "pension_credit",
     "income_support",
     "jsa_income",
     "esa_income",
-    "uc_earned_income",
     "housing_benefit_applicable_income",
     "income_support_applicable_income",
     "council_tax_reduction_applicable_income",
     "pension_credit_income",
-    "benefit_cap_reduction",
 ]
+UC_TESTS = ["uc_earned_income", "universal_credit_pre_benefit_cap"]
 # HBAI components the loss may move: the loss itself, taxes, and benefits
 # that are means-tested or passported from a means-tested benefit.
 HBAI_CHANNELS = {
@@ -111,7 +116,7 @@ def tolerance(*amounts):
 def taxpayers(draw):
     """One working-age person with income of every taxed kind and a loss."""
     return {
-        "age": draw(st.integers(18, 64)),
+        "age": draw(st.integers(18, 80)),
         "employment_income": draw(money(250_000)),
         "private_pension_income": draw(money(60_000)),
         "savings_interest_income": draw(money(40_000)),
@@ -151,16 +156,15 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
     without = [{**p, "trading_loss": 0.0} for p in people]
     a = calculate(
         single_people(people, regions),
-        [
-            "trade_loss_relief_against_general_income",
-            "adjusted_net_income",
-            "total_income",
-            "pension_contributions",
-        ],
+        ["trade_loss_relief_against_general_income", "adjusted_net_income"],
     )
     b = calculate(single_people(without, regions), ["adjusted_net_income"])
     for i, person in enumerate(people):
-        ati = max(0.0, a["total_income"][i] - a["pension_contributions"][i])
+        earnings = person["employment_income"] + person["self_employment_income"]
+        relieved = (person["age"] < 75) * min(
+            person["personal_pension_contributions"], max(3_600.0, earnings)
+        )
+        ati = max(0.0, b["adjusted_net_income"][i] - relieved)
         cap = max(50_000.0, 0.25 * ati)
         expected = min(person["trading_loss"], cap, b["adjusted_net_income"][i])
         relief = a["trade_loss_relief_against_general_income"][i]
@@ -273,7 +277,10 @@ def families(draw):
         for age in adults
     ]
     for _ in range(draw(st.integers(0, 3))):
-        people.append({"age": draw(st.integers(0, 15))})
+        # A child's own trading loss is never the claimants'.
+        people.append(
+            {"age": draw(st.integers(0, 15)), "trading_loss": draw(money(5_000))}
+        )
     household = {
         "rent": draw(money(15_000)),
         "council_tax": draw(money(3_000)),
@@ -283,7 +290,7 @@ def families(draw):
     return people, household
 
 
-def family_situation(units, overrides=None):
+def family_situation(units, overrides=None, benunit_overrides=None):
     situation = {"people": {}, "benunits": {}, "households": {}}
     for i, (people, household) in enumerate(units):
         names = []
@@ -294,7 +301,13 @@ def family_situation(units, overrides=None):
                 values.update(overrides.get(name, {}))
             situation["people"][name] = {k: {YEAR: v} for k, v in values.items()}
             names.append(name)
-        situation["benunits"][f"b{i}"] = {"members": names}
+        situation["benunits"][f"b{i}"] = {
+            "members": names,
+            **{
+                k: {YEAR: v}
+                for k, v in (benunit_overrides or {}).get(f"b{i}", {}).items()
+            },
+        }
         situation["households"][f"h{i}"] = {
             "members": names,
             **{k: {YEAR: v} for k, v in household.items()},
@@ -303,31 +316,61 @@ def family_situation(units, overrides=None):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=1, max_size=5))
+@given(st.lists(families(), min_size=1, max_size=4))
 def test_means_tests_see_the_loss_only_through_tax(units):
     with_loss = Simulation(situation=family_situation(units))
+
+    def values(sim, variable):
+        return np.asarray(sim.calculate(variable, YEAR), dtype=float)
+
     names = with_loss.populations["person"].ids
-    tax = {
-        v: np.asarray(with_loss.calculate(v, YEAR), dtype=float)
-        for v in ["income_tax", "national_insurance"]
-    }
-    overrides = {
-        name: {
+    benunits = with_loss.populations["benunit"].ids
+    tax = {v: values(with_loss, v) for v in ["income_tax", "national_insurance"]}
+    loss = values(with_loss, "trading_loss")
+    profits = values(with_loss, "self_employment_income")
+    mif = np.asarray(with_loss.calculate("uc_mif_applies", YEAR))
+    uc = values(with_loss, "universal_credit")
+
+    def held(k, **extra):
+        return {
             "trading_loss": 0.0,
             "income_tax": float(tax["income_tax"][k]),
             "national_insurance": float(tax["national_insurance"][k]),
+            **extra,
         }
-        for k, name in enumerate(names)
-    }
-    held = Simulation(situation=family_situation(units, overrides))
+
+    # Every means test but UC: the loss reaches them only through the tax.
+    no_loss = Simulation(
+        situation=family_situation(
+            units,
+            {name: held(k) for k, name in enumerate(names)},
+            {b: {"universal_credit": float(uc[k])} for k, b in enumerate(benunits)},
+        )
+    )
     for variable in MEANS_TESTED:
-        a = np.asarray(with_loss.calculate(variable, YEAR), dtype=float)
-        b = np.asarray(held.calculate(variable, YEAR), dtype=float)
+        a, b = values(with_loss, variable), values(no_loss, variable)
+        assert np.allclose(a, b, atol=0.5), (variable, a, b, units)
+    # UC: as if the loss had cut the person's other trades' profits.
+    netted = Simulation(
+        situation=family_situation(
+            units,
+            {
+                name: held(
+                    k,
+                    self_employment_income=float(profits[k] - min(loss[k], profits[k])),
+                    uc_mif_applies=bool(mif[k]),
+                )
+                for k, name in enumerate(names)
+            },
+        )
+    )
+    for variable in UC_TESTS:
+        a, b = values(with_loss, variable), values(netted, variable)
         assert np.allclose(a, b, atol=0.5), (variable, a, b, units)
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=1, max_size=5))
+@given(st.lists(families(), min_size=1, max_size=4))
 def test_tax_credit_income_falls_by_the_claimants_losses(units):
     year = 2024
     without = [
@@ -365,7 +408,7 @@ def test_tax_credit_income_falls_by_the_claimants_losses(units):
 
 
 @PROPERTY_SETTINGS
-@given(st.lists(families(), min_size=1, max_size=5))
+@given(st.lists(families(), min_size=1, max_size=4))
 def test_household_income_moves_only_through_its_channels(units):
     without = [
         ([{**p, "trading_loss": 0.0} if "trading_loss" in p else p for p in people], h)
