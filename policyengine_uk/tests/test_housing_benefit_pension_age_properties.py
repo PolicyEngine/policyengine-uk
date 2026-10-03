@@ -126,6 +126,10 @@ def situation(units, claims_all=None, flip_would_claim_uc=False, pension_bump=0.
         benunit = {
             "members": names,
             "would_claim_uc": {YEAR: unit["would_claim_uc"] ^ flip_would_claim_uc},
+            # Working-age awards are abolished during 2026; these families do
+            # not claim Universal Credit at the abolition, so a continuing
+            # award runs until then.
+            "would_claim_uc_at_legacy_closure": {YEAR: False},
         }
         # claims_all_entitled_benefits sums reported benefits across the whole
         # simulation, so set it per family whenever any family reports one.

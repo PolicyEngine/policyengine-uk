@@ -128,6 +128,12 @@ def situation(units, year, claims_all):
         benunits[f"b{i}"] = {
             "members": names,
             "would_claim_uc": annual(unit["would_claim_uc"]),
+            # These properties are about the award of a family that does not
+            # claim Universal Credit when its award is abolished; the claim
+            # itself is tested in test_uc_legacy_closure_properties.py.
+            "would_claim_uc_at_legacy_closure": annual(
+                unit.get("claims_at_closure", False)
+            ),
             "in_specified_or_temporary_accommodation": annual(
                 unit["in_specified_or_temporary_accommodation"]
             ),
@@ -360,3 +366,36 @@ def test_omitted_accommodation_input_matches_explicit_false(units, year, claims_
         np.testing.assert_array_equal(
             sim.calculate(variable, year), explicit[variable], err_msg=variable
         )
+
+
+@pytest.mark.parametrize("year", [2025, 2026, 2027])
+@pytest.mark.parametrize("region", ["LONDON", "NORTHERN_IRELAND"])
+@settings(PROPERTY_SETTINGS, max_examples=5)
+@given(data=st.data())
+def test_a_family_claiming_at_the_abolition_moves_to_universal_credit(
+    year, region, data
+):
+    # From the abolition year a working-age family that claims Universal
+    # Credit when its award is abolished gets no Housing Benefit and the
+    # Universal Credit it would get on any claim; before then nothing changes.
+    units = data.draw(
+        st.lists(working_age_continuing_awards(region), min_size=1, max_size=8)
+    )
+    for unit in units:
+        unit["claims_at_closure"] = True
+    claiming = calculate(units, year, claims_all=False)
+    for unit in units:
+        unit["claims_at_closure"] = False
+    staying = calculate(units, year, claims_all=False)
+    for unit in units:
+        unit["would_claim_uc"] = True
+    anyway = calculate(units, year, claims_all=False)
+    if year < 2026:
+        for v in VARIABLES:
+            assert np.allclose(claiming[v], staying[v], atol=0.01), v
+        return
+    assert np.all(claiming["housing_benefit"] == 0)
+    assert np.allclose(
+        claiming["universal_credit"], anyway["universal_credit"], atol=0.01
+    )
+    assert np.all(staying["universal_credit"] == 0)

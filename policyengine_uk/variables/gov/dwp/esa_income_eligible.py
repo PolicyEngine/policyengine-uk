@@ -21,7 +21,11 @@ class esa_income_eligible(Variable):
         # 2012 s. 33(1)) into force for the claimant (see SI 2025/1148
         # art. 3A(3)), and a family that does not claim loses the award at the
         # notice's deadline (SI 2014/1230 reg 46(1)(a)).
-        closed = benunit("legacy_benefits_closed", period) | benunit(
-            "claims_uc_at_legacy_closure", period
+        # A family that claims Universal Credit when its Housing Benefit is
+        # abolished ends this award by that claim too. A family already
+        # claiming Universal Credit is left to the overlap rules (#1914).
+        closed = benunit("legacy_benefits_closed", period) | (
+            benunit("claims_uc_at_legacy_closure", period)
+            & ~benunit("would_claim_uc", period)
         )
         return reported_award & ~closed & (capital <= ESA.capital.limit)
