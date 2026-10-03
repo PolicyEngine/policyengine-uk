@@ -118,10 +118,9 @@ def situation(
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            # The generated adults are the claimant and partner; say so, so the
-            # claimant-or-partner presumption (a member under 20 and much
-            # younger is the head's child) does not turn a 67-and-18 couple
-            # into a parent and child. Children get False below.
+            # The generated adults are the claimant and partner (a mixed-age
+            # couple can include an 18- or 19-year-old partner), as the FRS
+            # would record them.
             person = {
                 "age": {year: age},
                 "state_pension": {year: 0.0},

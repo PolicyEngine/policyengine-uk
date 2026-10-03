@@ -1,5 +1,8 @@
 import typing
 
+import numpy as np
+import pandas as pd
+
 if typing.TYPE_CHECKING:
     from policyengine_uk import Microsimulation
     from policyengine_uk.data import UKSingleYearDataset
@@ -33,9 +36,19 @@ def filter_dataset(
     """
     dataset: UKSingleYearDataset = sim.dataset[year]
     new_dataset = dataset.copy()
-    new_dataset.person = new_dataset.person[
-        new_dataset.person.person_household_id == household_id
-    ]
+    person = new_dataset.person
+    if "months_since_last_birthday" not in person.columns:
+        # Birthdays are spread over the year across the whole population, so
+        # carry each person's place across rather than recompute it for one
+        # household.
+        months = pd.Series(
+            np.asarray(sim.calculate("months_since_last_birthday", year)),
+            index=np.asarray(sim.calculate("person_id", year)),
+        )
+        person = person.assign(
+            months_since_last_birthday=months.loc[person.person_id].values
+        )
+    new_dataset.person = person[person.person_household_id == household_id]
     new_dataset.household = new_dataset.household[
         new_dataset.household.household_id == household_id
     ]

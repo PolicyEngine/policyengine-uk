@@ -24,11 +24,10 @@ Invariants, for any generated population of families:
    the award, before or after the benefit cap, and never lowers tariff
    income.
 
-Invariant 2's award clause runs with Marriage Allowance switched off. The
-model books it on the recipient as the transferor's unused personal allowance
-(PolicyEngine/policyengine-uk#1947), so capital income that uses up one
-partner's allowance raises the other partner's tax on earnings. The clause
-also compares only families whose personal allowances the income leaves
+Invariant 2's award clause holds each couple's Marriage Allowance election
+at its choice in the base run: capital income can change whether the couple
+elects, and so the gaining partner's tax on earnings
+(PolicyEngine/policyengine-uk#1947). The clause also compares only families whose personal allowances the income leaves
 unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
 s. 35), which raises the tax a person pays on their earnings and so changes
 the deduction from them (see test_uc_earnings_deductions_properties.py).
@@ -89,6 +88,7 @@ UC_VARIABLES = [
     "is_uc_eligible",
     "is_benefit_cap_exempt",
 ]
+ELECTION = "makes_marriage_allowance_election"
 
 
 @st.composite
@@ -112,27 +112,23 @@ def families(draw):
     )
 
 
-def situation(
-    units, year, income_scale=1.0, capital_bump=None, marriage_allowance=True
-):
+def situation(units, year, income_scale=1.0, capital_bump=None, election=None):
     """Build one simulation holding every family.
 
     ``income_scale`` multiplies each family's interest, dividends and rent;
     ``capital_bump`` is an optional (source, amount) added to every family's
-    capital. With ``marriage_allowance=False`` no one claims Marriage
-    Allowance.
+    capital. ``election``, one value per person in order, fixes who makes a
+    Marriage Allowance election.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            # The generated adults are the claimant and partner; say so, so the
-            # claimant-or-partner presumption (a member under 20 and much
-            # younger is the head's child) does not apply. Children get False.
+            # The generated adults are the claimant and partner, as the FRS
+            # would record them; without this an adult under 20 who is 16 or
+            # more years younger is presumed to be the other's child.
             person = {"age": {year: age}, "is_claimant_or_partner": {year: True}}
-            if not marriage_allowance:
-                person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
                 person["employment_income"] = {year: unit["earnings"]}
                 person["private_pension_income"] = {
@@ -164,6 +160,9 @@ def situation(
             "main_residence_value": {year: unit["main_residence_value"]},
             **{source: {year: value} for source, value in stocks.items()},
         }
+    if election is not None:
+        for person, elects in zip(people.values(), election):
+            person[ELECTION] = {year: bool(elects)}
     return {"people": people, "benunits": benunits, "households": households}
 
 
@@ -177,6 +176,7 @@ def listed_sources(sim, year):
 def calculate(units, year, **kwargs):
     sim = Simulation(situation=situation(units, year, **kwargs))
     values = {v: np.asarray(sim.calculate(v, year)) for v in UC_VARIABLES}
+    values[ELECTION] = np.asarray(sim.calculate(ELECTION, year))
     values["personal_allowances"] = np.asarray(
         sim.calculate("personal_allowance", year, map_to="benunit")
     )
@@ -246,8 +246,8 @@ def test_interest_dividends_and_rent_do_not_enter_the_means_test(units, scale, y
     year=st.sampled_from(YEARS),
 )
 def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, year):
-    base = calculate(units, year, marriage_allowance=False)
-    scaled = calculate(units, year, income_scale=scale, marriage_allowance=False)
+    base = calculate(units, year)
+    scaled = calculate(units, year, income_scale=scale, election=base[ELECTION])
     # Only one adult receives the capital income, so the unit's summed
     # personal allowances are unchanged exactly when that adult's is.
     unchanged = np.isclose(
@@ -355,8 +355,8 @@ def test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception():
         },
         recipient=0,
     )
-    with_dividends = calculate([unit], 2026, marriage_allowance=False)
-    without = calculate([unit], 2026, income_scale=0.0, marriage_allowance=False)
+    with_dividends = calculate([unit], 2026)
+    without = calculate([unit], 2026, income_scale=0.0)
     assert with_dividends["uc_earned_income"][0] == pytest.approx(
         without["uc_earned_income"][0], abs=0.01
     )
