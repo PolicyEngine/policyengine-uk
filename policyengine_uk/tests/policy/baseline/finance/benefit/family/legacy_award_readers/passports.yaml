@@ -1,0 +1,539 @@
+# Passports that the law ties to the claimant, the partner, the parent or the
+# student. "other" is a member who is neither the claimant, the partner nor a
+# child or young person they are responsible for, so an award they report is
+# their own claim.
+
+# Tax credits: no income test while "the person, or either of the persons"
+# claiming is entitled to Income Support, income-based JSA or income-related
+# ESA (TCA 2002 s.7(2); SI 2002/2008 reg 4). Otherwise the claimant's earnings
+# of £10,000 are the applicable income (the £300 disregard only applies to
+# step-one income, of which there is none).
+
+- name: Another member's income-related ESA leaves the tax credit income test in place
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    tax_credits_applicable_income: 10_000
+
+- name: The claimant's own income-related ESA lifts the tax credit income test
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 10_000
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    tax_credits_applicable_income: 0
+
+- name: Another member's income-based JSA leaves the tax credit income test in place
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    tax_credits_applicable_income: 10_000
+
+- name: The partner's income-based JSA lifts the tax credit income test
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    tax_credits_applicable_income: 0
+
+# Scottish Child Payment: the individual responsible for the child has been
+# awarded a qualifying benefit (SSI 2020/351 reg 18(e)-(f), regs 9, 12 and 14).
+# Responsibility runs through the individual's or partner's Child Benefit,
+# Pension Credit or Universal Credit award, or kinship care (reg 12(1)(b)); the
+# model takes the responsible individual to be the claimant or partner.
+# Universal Credit, tax credits and Pension Credit are entered as 0 so the
+# income-related award is the only possible qualifying benefit.
+
+- name: Another member's income-related ESA does not qualify the child for Scottish Child Payment
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 3
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        universal_credit: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [parent, child, other]
+        region: SCOTLAND
+  output:
+    is_scp_eligible: [false, false, false]
+
+- name: The parent's own income-related ESA qualifies the child for Scottish Child Payment
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      child:
+        age: 3
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        universal_credit: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [parent, child, other]
+        region: SCOTLAND
+  output:
+    is_scp_eligible: [false, true, false]
+
+- name: Another member's income-based JSA does not qualify the child for Scottish Child Payment
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 3
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        universal_credit: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [parent, child, other]
+        region: SCOTLAND
+  output:
+    is_scp_eligible: [false, false, false]
+
+- name: The parent's own income-based JSA qualifies the child for Scottish Child Payment
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 4_000
+      child:
+        age: 3
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        universal_credit: 0
+        child_tax_credit: 0
+        working_tax_credit: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [parent, child, other]
+        region: SCOTLAND
+  output:
+    is_scp_eligible: [false, true, false]
+
+# Targeted childcare (England's two-year-old offer): the child's parent is
+# entitled to a qualifying benefit (SI 2014/2147 reg 1(2), "eligible child").
+# The other routes (UC, CTC and WTC criteria, Guarantee Credit) are switched
+# off with inputs.
+
+- name: Another member's income-related ESA does not qualify the family for targeted childcare
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 2
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
+        working_tax_credit_run_on: false
+        extended_childcare_entitlement_eligible: false
+    households:
+      household:
+        members: [parent, child, other]
+        country: ENGLAND
+  output:
+    targeted_childcare_entitlement_eligible: false
+
+- name: The parent's own income-related ESA qualifies the family for targeted childcare
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      child:
+        age: 2
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
+        working_tax_credit_run_on: false
+        extended_childcare_entitlement_eligible: false
+    households:
+      household:
+        members: [parent, child, other]
+        country: ENGLAND
+  output:
+    targeted_childcare_entitlement_eligible: true
+
+- name: Another member's income-based JSA does not qualify the family for targeted childcare
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+      child:
+        age: 2
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
+        working_tax_credit_run_on: false
+        extended_childcare_entitlement_eligible: false
+    households:
+      household:
+        members: [parent, child, other]
+        country: ENGLAND
+  output:
+    targeted_childcare_entitlement_eligible: false
+
+- name: The parent's own income-based JSA qualifies the family for targeted childcare
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        jsa_income_reported: 4_000
+      child:
+        age: 2
+      other:
+        age: 20
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, child, other]
+        guarantee_credit: 0
+        meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+        meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
+        working_tax_credit_run_on: false
+        extended_childcare_entitlement_eligible: false
+    households:
+      household:
+        members: [parent, child, other]
+        country: ENGLAND
+  output:
+    targeted_childcare_entitlement_eligible: true
+
+# Benefit cap: no cap where "the claimant or the claimant's partner" receives
+# ESA with the support component (HB Regs 2006 reg 75F(1)(a)). The model
+# exempts any income-related ESA. This PR leaves the cap's reading of the
+# benefit unit's ESA unchanged: scoping the exemption alone would cap the
+# claimant with another member's own award in the capped sum
+# (benefit_cap_reduction), which is out of scope here. The claimant's own
+# award still exempts the family.
+
+- name: The claimant's own income-related ESA exempts the family from the benefit cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [claimant, other]
+        working_tax_credit: 0
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    is_benefit_cap_exempt_health_disability: true
+
+# Maintenance loans: the "students entitled to benefits" schedule (SI 2011/1986
+# reg 71(1)(h)(iii)) follows the special support grant test in reg 61(2)(b),
+# which follows HB Regs 2006 reg 56(2)(a): a full-time student "who is a
+# person on" income-related ESA, that is, one to whom it "is payable"
+# (reg 2(3A)). The model's proxy reads whether income-related ESA is payable
+# to the student; a parent's or partner's award does not make the student
+# eligible.
+
+- name: A parent's income-related ESA does not put a student on the benefits schedule
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        is_claimant_or_partner: true
+        is_parent: true
+        esa_income_reported: 5_000
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [parent, student]
+    households:
+      household:
+        members: [parent, student]
+        country: ENGLAND
+  output:
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    maintenance_loan_entitled_to_benefits: [true, false]
+
+- name: A student's own income-related ESA puts them on the benefits schedule
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        is_claimant_or_partner: true
+        is_parent: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: TERTIARY
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [parent, student]
+    households:
+      household:
+        members: [parent, student]
+        country: ENGLAND
+  output:
+    maintenance_loan_entitled_to_benefits: [true, true]
+
+- name: A student whose partner is paid income-related ESA is not on the benefits schedule through it
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: TERTIARY
+      partner:
+        age: 23
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [student, partner]
+    households:
+      household:
+        members: [student, partner]
+        country: ENGLAND
+  output:
+    maintenance_loan_entitled_to_benefits: [false, true]
+
+- name: A student whose partner receives PIP qualifies through the disability premium
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: TERTIARY
+      partner:
+        age: 23
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        pip_dl: 2_000
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [student, partner]
+    households:
+      household:
+        members: [student, partner]
+        country: ENGLAND
+  output:
+    # ESA is payable to the partner, not the student (reg 2(3A)). But the
+    # partner is under State Pension Credit age and receives PIP, so the
+    # couple's applicable amount includes the disability premium (HB Regs 2006
+    # Sch 3 paras 12(b)(ii) and 13(1)(a)(i)), and reg 56(2)(c) lifts the
+    # student exclusion for the student too.
+    is_on_income_related_esa: [false, true]
+    maintenance_loan_entitled_to_benefits: [true, true]
+
+- name: A parent's disability premium does not put a dependent student on the benefits schedule
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        is_claimant_or_partner: true
+        is_parent: false
+        pip_dl: 2_000
+        is_disabled_for_benefits: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [parent, student]
+    households:
+      household:
+        members: [parent, student]
+        country: ENGLAND
+  output:
+    # The disability premium is in the parent's applicable amount, not the
+    # student's: reg 56(2)(c) asks about the student's own applicable amount
+    # as a claimant.
+    maintenance_loan_entitled_to_benefits: [true, false]
+
+- name: A student's own ESA report below the tariff income is not paid, whatever another member reports
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        is_claimant_or_partner: true
+        is_parent: false
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: TERTIARY
+        esa_income_reported: 200
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [parent, student, other]
+    households:
+      household:
+        members: [parent, student, other]
+        country: ENGLAND
+        savings: 7_000
+  output:
+    # Savings of £7,000 are £1,000 above £6,000: 4 steps of £250, so tariff
+    # income of £4 a week, £208 a year (ESA Regs 2008 reg 118). The student's
+    # £200 alone gives no award; the other adult's £3,000 gives £2,792. The
+    # benefit unit's award on both reports, £2,992, is household income but
+    # does not make the student's report paid.
+    esa_income: [2_992]
+    claimant_or_partner_esa_income: [0]
+    is_on_income_related_esa: [false, false, true]
+    maintenance_loan_entitled_to_benefits: [false, false, true]
