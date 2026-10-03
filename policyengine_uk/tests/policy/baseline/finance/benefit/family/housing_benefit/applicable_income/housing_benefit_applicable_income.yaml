@@ -47,15 +47,17 @@
     housing_benefit_applicable_income: 1_000
 
 - name: Pension contributions halved
+  # SI 2006/213 reg 36(3)(b): half of the pension contributions come off
+  # earnings. 3,250 - 1,500 / 2 = 2,500.
   period: 2025
   input:
     # Benefits
-    child_benefit: 1_000
-    income_support: 2_250
+    child_benefit: 0
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
-    employment_income: 0
+    employment_income: 3_250
     self_employment_income: 0
     property_income: 0
     private_pension_income: 0
@@ -71,23 +73,25 @@
     housing_benefit_applicable_income: 2_500
 
 - name: Added Tax and income
+  # Earnings plus working tax credit, which counts in full where Sch 5
+  # para 56 does not apply. 3,250 + 2,000 - 1,500 / 2 = 4,500.
   period: 2025
   input:
     # Benefits
-    child_benefit: 1_000
-    income_support: 2_250
+    child_benefit: 0
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
-    employment_income: 0
+    employment_income: 3_250
     self_employment_income: 0
-    property_income: 1_000
+    property_income: 0
     private_pension_income: 0
     # Tax
     income_tax: 0
     national_insurance: 0
     # Other 
-    tax_credits: 1_000
+    tax_credits: 2_000
     pension_contributions: 1_500
     housing_benefit_applicable_income_disregard: 0
     housing_benefit_applicable_income_childcare_element: 0
@@ -95,23 +99,24 @@
     housing_benefit_applicable_income: 4_500
 
 - name: Pension contributions capped at 0
+  # Applicable income is floored at nil: 3,250 - 100,000 / 2 < 0.
   period: 2025
   input:
     # Benefits
-    child_benefit: 1_000
-    income_support: 2_250
+    child_benefit: 0
+    income_support: 0
     jsa_income: 0
     esa_income: 0
     # Income
-    employment_income: 0
+    employment_income: 3_250
     self_employment_income: 0
-    property_income: 1_000
+    property_income: 0
     private_pension_income: 0
     # Tax
     income_tax: 0
     national_insurance: 0
     # Other 
-    tax_credits: 1_000
+    tax_credits: 0
     pension_contributions: 100_000
     housing_benefit_applicable_income_disregard: 0
     housing_benefit_applicable_income_childcare_element: 0
