@@ -12,6 +12,7 @@ import pandas as pd
 from policyengine_uk import Simulation
 import warnings
 
+from policyengine_uk.dynamics.demographics import benunit_age_18_composition
 from policyengine_uk.model_api import WEEKS_IN_YEAR
 
 # Weekly hours treated as full time when putting non-workers on a comparable
@@ -38,13 +39,14 @@ def calculate_participation_elasticities(
     # Get demographic characteristics
     gender = sim.calculate("gender")
     is_married = sim.calculate("is_married", map_to="person")
-    has_children = sim.calculate("benunit_count_children", map_to="person") > 0
-    youngest_child_age = sim.calculate("youngest_child_age", map_to="person")
+    composition = benunit_age_18_composition(sim)
+    has_children = composition["count_under_18"].values > 0
+    youngest_child_age = composition["youngest_under_18_age"].values
     is_single = ~is_married
 
     # Get partner employment status for married individuals
     is_household_head = sim.calculate("is_household_head", map_to="person")
-    benunit_count_adults = sim.calculate("benunit_count_adults", map_to="person")
+    benunit_count_adults = composition["count_aged_18_or_over"].values
     employment_income = sim.calculate("employment_income")
     benunit_id = sim.calculate("benunit_id", map_to="person")
     adult_index = sim.calculate("adult_index")
@@ -53,14 +55,16 @@ def calculate_participation_elasticities(
     df = pd.DataFrame(
         {
             "benunit_id": benunit_id,
-            "is_adult": adult_index > 0,
+            "is_aged_18_or_over": adult_index > 0,
             "employed": employment_income > 0,
-            "benunit_count_adults": benunit_count_adults,
+            "count_aged_18_or_over": benunit_count_adults,
         }
     )
 
     # Calculate total employed adults per benunit
-    benunit_employed = df[df["is_adult"]].groupby("benunit_id")["employed"].sum()
+    benunit_employed = (
+        df[df["is_aged_18_or_over"]].groupby("benunit_id")["employed"].sum()
+    )
 
     # Map back to individuals
     employed_adults_in_benunit = df["benunit_id"].map(benunit_employed).fillna(0)

@@ -1,3 +1,5 @@
+import pytest
+
 from policyengine_uk import Simulation
 
 
@@ -43,7 +45,10 @@ def test_scottish_carers_move_to_csp_in_2025():
     assert sim.calculate("carer_support_payment", YEAR_2025)[0] > 0
 
 
-def test_csp_counts_for_pension_credit_carer_additions_and_blocks_severe_disability():
+def test_csp_counts_for_pension_credit_carer_additions():
+    # A person's own carer benefit does not bar their severe disability
+    # addition: SPC Regs 2002 Sch I para 1(1)(a)(iii) bars it only where a
+    # carer benefit is paid to someone "in respect of caring for him".
     sim = Simulation(
         situation=_situation(
             YEAR_2025,
@@ -51,17 +56,73 @@ def test_csp_counts_for_pension_credit_carer_additions_and_blocks_severe_disabil
         )
     )
     parameters = sim.tax_benefit_system.parameters(str(YEAR_2025))
+    guarantee_credit = parameters.gov.dwp.pension_credit.guarantee_credit
 
-    expected_carer_addition = (
-        float(parameters.gov.dwp.pension_credit.guarantee_credit.carer.addition) * 52
+    expected_carer_addition = float(guarantee_credit.carer.addition) * 52
+    expected_severe_disability_addition = (
+        float(guarantee_credit.severe_disability.addition) * 52
     )
 
     assert sim.calculate("carer_minimum_guarantee_addition", YEAR_2025)[0] == (
         expected_carer_addition
     )
-    assert (
-        sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[0] == 0
+    assert sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[
+        0
+    ] == pytest.approx(expected_severe_disability_addition)
+
+
+def _couple_situation(year: int, claimant: dict, partner: dict):
+    return {
+        "people": {
+            "claimant": {"age": {year: 35}, **claimant},
+            "partner": {"age": {year: 35}, **partner},
+        },
+        "benunits": {"benunit": {"members": ["claimant", "partner"]}},
+        "households": {
+            "household": {
+                "members": ["claimant", "partner"],
+                "country": {year: "SCOTLAND"},
+            }
+        },
+    }
+
+
+def test_partner_csp_for_caring_gives_couple_severe_disability_single_rate_or_nil():
+    # Sch I para 1(1)(b): a couple qualifies only if both partners get a
+    # qualifying benefit; reg 6(5) then pays the single amount where a carer
+    # benefit is paid for one of them. Where only one partner qualifies and the
+    # other is not blind, para 1(1)(c) gives nothing.
+    both_qualify = _couple_situation(
+        YEAR_2025,
+        claimant={"attendance_allowance": {YEAR_2025: 1}},
+        partner={
+            "attendance_allowance": {YEAR_2025: 1},
+            "care_hours": {YEAR_2025: 40},
+        },
     )
+    one_qualifies = _couple_situation(
+        YEAR_2025,
+        claimant={"attendance_allowance": {YEAR_2025: 1}},
+        partner={"care_hours": {YEAR_2025: 40}},
+    )
+    sim = Simulation(situation=both_qualify)
+    parameters = sim.tax_benefit_system.parameters(str(YEAR_2025))
+    single_amount = (
+        float(
+            parameters.gov.dwp.pension_credit.guarantee_credit.severe_disability.addition
+        )
+        * 52
+    )
+    assert sim.calculate("carer_support_payment", YEAR_2025)[1] > 0
+    assert sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[
+        0
+    ] == pytest.approx(single_amount)
+
+    sim = Simulation(situation=one_qualifies)
+    assert sim.calculate("carer_support_payment", YEAR_2025)[1] > 0
+    assert sim.calculate("severe_disability_minimum_guarantee_addition", YEAR_2025)[
+        0
+    ] == pytest.approx(0)
 
 
 def test_csp_counts_for_uc_non_dep_exemption_and_housing_benefit_income():
