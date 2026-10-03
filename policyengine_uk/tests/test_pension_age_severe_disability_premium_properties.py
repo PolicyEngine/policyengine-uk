@@ -27,8 +27,10 @@ younger claimants:
    free TV licence for over-75s on Pension Credit is a genuine statutory
    cliff, so it is excluded.
 3. Schedule: over State Pension age the premium is a whole number (0, 1 or
-   2) of weekly severe disability rates, equals the Pension Credit severe
-   disability addition, and is the only premium besides the carer premium;
+   2) of weekly severe disability rates, equals severe_disability_premium
+   and, for these households in 2026, the separately calculated Pension
+   Credit severe disability addition, and is the only premium besides the
+   carer premium;
    below State Pension age it is zero and benefits_premiums is the sum of the
    four legacy premiums, so working-age applicable amounts are unchanged.
 
@@ -219,10 +221,14 @@ def test_premiums_follow_the_pension_age_and_working_age_schedules(adults, age):
         weekly_rate = float(
             simulation.tax_benefit_system.parameters(
                 YEAR
-            ).gov.dwp.pension_credit.guarantee_credit.severe_disability.addition
+            ).gov.dwp.disability_premia.severe_single
         )
         rates = premium / (weekly_rate * 52)
         assert min(abs(rates - k) for k in (0, 1, 2)) < 1e-6, rates
+        assert abs(premium - get("severe_disability_premium")) < 0.005
+        # A cross-check, not the definition: with no other residents the
+        # Pension Credit addition has the same conditions and, in 2026, the
+        # same amounts, but its own parameter and residence test.
         assert (
             abs(premium - get("severe_disability_minimum_guarantee_addition")) < 0.005
         )

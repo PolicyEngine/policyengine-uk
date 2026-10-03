@@ -26,8 +26,7 @@ class benefits_premiums(Variable):
         "Premiums in the Housing Benefit, Council Tax Reduction and Income "
         "Support applicable amounts. A family with a member over State "
         "Pension age uses the pension-age schedules: the severe disability "
-        "premium, shared with the Pension Credit severe disability addition, "
-        "and the carer premium. Those schedules have no adult disability or "
+        "premium and the carer premium. Those schedules have no adult disability or "
         "enhanced disability premium."
     )
     definition_period = YEAR
@@ -35,7 +34,11 @@ class benefits_premiums(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/3",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/2",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/1",
+        "https://www.legislation.gov.uk/wsi/2013/3035/schedule/2",
+        "https://www.legislation.gov.uk/nisr/2006/406/schedule/3",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3",
+        "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2",
     )
 
     def formula(benunit, period, parameters):

@@ -1,5 +1,11 @@
 # HB(SPC) Regs 2006 Sch 3 para 6, with the non-dependant definition in
 # reg 3: these cases assert final awards without a Guarantee Credit passport.
+# The final HB and CTR awards include the model's current income rules,
+# including three known defects outside this PR: a flat, CPI-uprated couple
+# earnings disregard applied to pensions (#1908), no Savings Credit in HB
+# income for a savings-credit-only claimant (#2112), and no non-dependant
+# deduction exemption for a claimant on Attendance Allowance (#2007). The
+# premium and applicable-amount assertions do not depend on them.
 
 - name: One qualifying pensioner and a non-blind partner get no HB or CTR severe premium
   period: 2026
