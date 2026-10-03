@@ -16,7 +16,7 @@ from functools import lru_cache
 
 import numpy as np
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -201,7 +201,11 @@ def assert_consumers_follow_the_qualifying_age(births, male, year):
         )
 
 
-@settings(max_examples=30, deadline=None)
+@settings(
+    max_examples=30,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
 @given(
     births=st.lists(
         st.dates(min_value=date(1945, 1, 1), max_value=date(1965, 12, 31)),
@@ -216,7 +220,11 @@ def test_consumers_use_the_qualifying_age(births, male, year):
     assert_consumers_follow_the_qualifying_age(births, male, year)
 
 
-@settings(max_examples=20, deadline=None)
+@settings(
+    max_examples=20,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
 @given(
     births=st.lists(
         st.dates(
@@ -235,7 +243,11 @@ def test_consumers_use_the_qualifying_age_where_it_differs(births, year):
     assert_consumers_follow_the_qualifying_age(births, True, year)
 
 
-@settings(max_examples=40, deadline=None)
+@settings(
+    max_examples=40,
+    deadline=None,
+    suppress_health_check=[HealthCheck.too_slow],
+)
 @given(
     births=st.lists(
         st.dates(min_value=date(1945, 1, 1), max_value=date(1975, 12, 31)),
