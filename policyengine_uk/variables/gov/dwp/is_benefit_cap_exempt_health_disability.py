@@ -43,10 +43,9 @@ class is_benefit_cap_exempt_health_disability(Variable):
             "iidb",  # Industrial injuries disability benefit
         ]
 
-        # ESA and Working Tax Credit. HB Regs 2006 reg 75F(1)(a) exempts a
-        # claimant or partner receiving ESA, so only their income-related award.
+        # ESA and Working Tax Credit
         QUAL_BENUNIT_BENEFITS = [
-            "claimant_or_partner_esa_income",  # Income-based ESA
+            "esa_income",  # Income-based ESA
             "working_tax_credit",  # If getting WTC, likely working enough
         ]
 
