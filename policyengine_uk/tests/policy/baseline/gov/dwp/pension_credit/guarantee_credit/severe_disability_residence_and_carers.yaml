@@ -4,7 +4,8 @@
 # (para 1(1)(a)(iii), (b)(ii) and (c)(iv)). 2026-27 weekly rates: one rate
 # 86.05 (4,474.60 a year), two rates 172.10 (8,949.20 a year).
 # Carer benefits are attributed as documented on
-# num_severe_disability_addition_qualifiers_cared_for.
+# is_cared_for_by_carer_benefit_recipient, which the legacy severe disability
+# premium shares.
 
 - name: A single claimant on Attendance Allowance who lives alone gets one rate
   period: 2026
@@ -212,7 +213,7 @@
         country: ENGLAND
   output:
     receives_carer_benefit: true
-    num_severe_disability_addition_qualifiers_cared_for: 0
+    is_cared_for_by_carer_benefit_recipient: false
     severe_disability_minimum_guarantee_addition: 4_474.60
 
 - name: Carer's Allowance paid to another household member stops a single claimant's addition
@@ -241,7 +242,7 @@
         members: [claimant, daughter]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 0]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
     severe_disability_minimum_guarantee_addition: [0, 4_474.60]
 
 - name: A couple who both qualify get one rate when the claimant receives Carer's Allowance
@@ -267,7 +268,7 @@
         members: [claimant, partner]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: 1
+    is_cared_for_by_carer_benefit_recipient: [false, true]
     severe_disability_minimum_guarantee_addition: 4_474.60
 
 - name: A couple who both qualify get one rate when another household member receives Carer's Allowance
@@ -296,7 +297,7 @@
         members: [claimant, partner, daughter]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 0]
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
     severe_disability_minimum_guarantee_addition: [4_474.60, 4_474.60]
 
 - name: A couple get nothing when carer benefits are paid for both partners
@@ -329,7 +330,7 @@
         members: [claimant, partner, daughter]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [2, 0]
+    is_cared_for_by_carer_benefit_recipient: [true, true, false]
     severe_disability_minimum_guarantee_addition: [0, 4_474.60]
 
 - name: A qualifying partner's own Carer's Allowance does not stop the blind-partner route
@@ -356,7 +357,7 @@
         members: [claimant, partner]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: 0
+    is_cared_for_by_carer_benefit_recipient: [false, false]
     severe_disability_minimum_guarantee_addition: 4_474.60
 
 - name: The blind-partner route also needs no other adult resident
@@ -649,7 +650,7 @@
         members: [younger, elder, carer]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [0, 1, 0]
+    is_cared_for_by_carer_benefit_recipient: [false, true, false]
     severe_disability_minimum_guarantee_addition: [4_474.60, 0, 0]
 
 - name: Two carers in the household cover two benefit units
@@ -685,7 +686,7 @@
         members: [younger, elder, carer_1, carer_2]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 1, 0, 0]
+    is_cared_for_by_carer_benefit_recipient: [true, true, false, false]
     severe_disability_minimum_guarantee_addition: [0, 0, 0, 0]
 
 - name: Two single pensioners who each receive Carer's Allowance care for each other
@@ -713,7 +714,7 @@
         members: [first, second]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 1]
+    is_cared_for_by_carer_benefit_recipient: [true, true]
     severe_disability_minimum_guarantee_addition: [0, 0]
 
 - name: A resident who has just attained 18 and is not a qualifying young person counts
@@ -772,6 +773,7 @@
         members: [first, second, third]
         country: ENGLAND
   output:
+    is_cared_for_by_carer_benefit_recipient: [true, true, true]
     severe_disability_minimum_guarantee_addition: 0
 
 - name: A carer whose own disabled child qualifies is treated as caring for the child
@@ -804,7 +806,7 @@
         members: [grandmother, daughter, child]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [0, 0]
+    is_cared_for_by_carer_benefit_recipient: [false, false, true]
     severe_disability_minimum_guarantee_addition: [4_474.60, 4_474.60]
 
 - name: A second carer in a pensioner's unit is attributed to a pensioner in another unit
@@ -839,7 +841,7 @@
         members: [first, carer_1, carer_2, second]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 1]
+    is_cared_for_by_carer_benefit_recipient: [true, false, false, true]
     severe_disability_minimum_guarantee_addition: [0, 0]
 
 - name: When two benefit units' eldest members are the same age, the one whose eldest member comes first in person order takes a carer
@@ -869,7 +871,7 @@
         members: [listed_first, listed_second, carer]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 0, 0]
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
     severe_disability_minimum_guarantee_addition: [0, 4_474.60, 0]
 
 - name: A carer who is the only qualifying member of their own unit cares for someone in another unit
@@ -903,7 +905,7 @@
         members: [grandmother, father, daughter]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 0]
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
     severe_disability_minimum_guarantee_addition: [0, 0]
 
 - name: The two young carers cover both pensioners when each is in their own unit too
@@ -941,5 +943,5 @@
         members: [first, carer_1, carer_2, second]
         country: ENGLAND
   output:
-    num_severe_disability_addition_qualifiers_cared_for: [1, 0, 0, 1]
+    is_cared_for_by_carer_benefit_recipient: [true, false, false, true]
     severe_disability_minimum_guarantee_addition: [0, 0, 0, 0]
