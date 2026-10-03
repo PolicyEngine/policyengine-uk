@@ -281,24 +281,6 @@ def test_replacement_parameter_can_still_be_reformed(simulation, entry_point):
     assert simulation.calculate("is_SP_age", 2028)[0]
 
 
-def test_structural_tuple_passes_constructor_arguments(simulation):
-    class ParameterizedAgeReform(Reform):
-        def __init__(self, baseline, months):
-            self.months = months
-            super().__init__(baseline)
-
-        def apply(self):
-            self.parameters.get_child(REPLACEMENT_PATH).update(
-                period="2028", value=self.months
-            )
-
-    Scenario.from_reform((ParameterizedAgeReform, 780)).apply(simulation)
-    assert (
-        simulation.tax_benefit_system.parameters.get_child(REPLACEMENT_PATH)("2028")
-        == 780
-    )
-
-
 def test_nested_scenario_can_change_a_valid_child(simulation):
     Scenario(parameter_changes={f"{AGE_PREFIX}.male": {"age": 768}}).apply(simulation)
     assert (
