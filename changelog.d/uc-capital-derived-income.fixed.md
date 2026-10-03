@@ -1,1 +1,0 @@
-Universal Credit no longer counts actual savings interest, dividends or rent as unearned income: regulation 66(1) of the Universal Credit Regulations 2013 lists no description that covers them, so capital counts only through its assumed yield (tariff income).
