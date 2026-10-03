@@ -1,3 +1,10 @@
+## [2.109.2] - 2026-10-03
+
+### Changed
+
+- Since 2.106.0, `carer_support_payment` means the Carer Support Payment component only, as "carer support payment" does in the reserved-benefit regulations since SI 2026/246. The Scottish Carer Supplement is the separate `scottish_carer_supplement`; code that summed `carer_support_payment` for the total paid to a Scottish carer must add both.
+
+
 ## [2.109.1] - 2026-10-03
 
 ### Fixed
