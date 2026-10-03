@@ -11,12 +11,19 @@ class uc_unable_to_provide_childcare(Variable):
         "unable to provide childcare because they (i) have limited capability "
         "for work, (ii) have regular and substantial caring responsibilities "
         "for a severely disabled person, or (iii) are temporarily absent from "
-        "the claimant's household. Limb (i) uses the model's limited "
-        "capability proxy, uc_limited_capability_for_WRA (it defaults to "
-        "is_disabled_for_benefits); limited capability for work and "
-        "work-related activity includes limited capability for work. Limb "
-        "(ii) uses is_carer_for_benefits, the regulation 30 test. Limb (iii) "
-        "is the input uc_is_temporarily_absent_from_claimant_household."
+        "the claimant's household. Each limb is an approximation. Limb (i) "
+        "reads uc_limited_capability_for_WRA, which defaults to "
+        "is_disabled_for_benefits (disability benefit receipt in survey "
+        "data), not an observed work capability assessment; limited "
+        "capability for work and work-related activity includes limited "
+        "capability for work. Limb (ii), defined in regulation 30, reads "
+        "is_carer_for_benefits: receipt of Carer's Allowance or Carer Support "
+        "Payment, or at least the Carer's Allowance qualifying hours of care "
+        "a week. Its hours branch does not check that the person cared for "
+        "is severely disabled (a Carer's Allowance condition, SSCBA 1992 "
+        "s. 70(1)-(2), that regulation 30(1)(a) imports) or exclude a carer "
+        "paid for the caring (regulation 30(3)). Limb (iii) is the input "
+        "uc_is_temporarily_absent_from_claimant_household."
     )
     definition_period = YEAR
     reference = [
@@ -27,6 +34,10 @@ class uc_unable_to_provide_childcare(Variable):
         dict(
             title="Universal Credit Regulations 2013 reg. 30",
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/30",
+        ),
+        dict(
+            title="Social Security Contributions and Benefits Act 1992 s. 70",
+            href="https://www.legislation.gov.uk/ukpga/1992/4/section/70",
         ),
         dict(
             title="Advice for Decision Making ch. F7, para. F7013",

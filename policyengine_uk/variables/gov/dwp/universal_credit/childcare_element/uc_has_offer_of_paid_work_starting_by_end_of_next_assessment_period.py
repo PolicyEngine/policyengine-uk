@@ -1,7 +1,7 @@
 from policyengine_uk.model_api import *
 
 
-class uc_has_offer_of_paid_work(Variable):
+class uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period(Variable):
     value_type = bool
     entity = Person
     label = "Has an offer of paid work due to start before the end of the next Universal Credit assessment period"

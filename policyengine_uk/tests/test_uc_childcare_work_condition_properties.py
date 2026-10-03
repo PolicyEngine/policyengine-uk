@@ -11,7 +11,12 @@ receiving statutory sick, maternity or paternity pay or maternity allowance
 as in paid work. Each joint claimant is a claimant (WRA 2012 s. 40).
 
 Invariants, for any generated population of single claimants and couples,
-each with a dependant child or young person:
+each with a dependant child or young person. Workers are generated with
+employment income, self-employment income or hours alone, the three routes
+into the in_work proxy. The reference applies the model's approximations for
+the exceptions, not the full legal tests: limited capability for work is the
+uc_limited_capability_for_WRA input, and caring is at least the Carer's
+Allowance minimum hours of care (the hours branch of is_carer_for_benefits).
 
 1. Differential: the condition equals a reference transcribed from reg. 32 in
    its pairwise form, (a)(A) and (b)(B), or (a)(B) and (b)(A).
@@ -51,6 +56,9 @@ PAYMENTS = [
     "maternity_allowance_reported",
 ]
 CARE_HOURS = [0, 20, 34, 35, 50]
+# The routes into the in_work proxy: positive earnings of either kind, or
+# positive hours.
+WORK_SOURCES = ["employment", "self_employment", "hours"]
 # Attributes that can only add a route to the condition.
 WIDENING = ["works", "payment", "offer", "lcw", "carer", "absent"]
 
@@ -65,7 +73,7 @@ def members(draw):
         h for h in CARE_HOURS if (h >= MIN_CARE_HOURS) == ("carer" in routes)
     ]
     return dict(
-        works="works" in routes,
+        works=draw(st.sampled_from(WORK_SOURCES)) if "works" in routes else None,
         payment=draw(st.sampled_from(payments)),
         offer="offer" in routes,
         lcw="lcw" in routes,
@@ -89,9 +97,14 @@ def person_inputs(member, age, claimant_or_partner):
     inputs = {
         "age": age,
         "is_claimant_or_partner": claimant_or_partner,
-        "employment_income": 12_000.0 if member["works"] else 0.0,
-        "hours_worked": 0.0,
-        "uc_has_offer_of_paid_work": member["offer"],
+        "employment_income": 12_000.0 if member["works"] == "employment" else 0.0,
+        "self_employment_income": (
+            12_000.0 if member["works"] == "self_employment" else 0.0
+        ),
+        "hours_worked": 1_000.0 if member["works"] == "hours" else 0.0,
+        "uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period": member[
+            "offer"
+        ],
         "uc_limited_capability_for_WRA": member["lcw"],
         "care_hours": float(member["care_hours"]),
         "uc_is_temporarily_absent_from_claimant_household": member["absent"],
@@ -141,13 +154,13 @@ MIN_CARE_HOURS = min_care_hours()
 
 def meets_claimant_limb(member):
     # Reg. 32(1)(a) with reg. 32(2)(b).
-    return member["works"] or member["payment"] is not None or member["offer"]
+    return bool(member["works"]) or member["payment"] is not None or member["offer"]
 
 
 def meets_other_member_limb(member):
     # Reg. 32(1)(b); joint claimants also have reg. 32(2)(b).
     unable = member["lcw"] or member["care_hours"] >= MIN_CARE_HOURS or member["absent"]
-    return member["works"] or member["payment"] is not None or unable
+    return bool(member["works"]) or member["payment"] is not None or bool(unable)
 
 
 def reference(unit):
@@ -167,7 +180,7 @@ def with_member(unit, index, **changes):
 
 
 WIDEN = {
-    "works": dict(works=True),
+    "works": dict(works="hours"),
     "payment": dict(payment="statutory_sick_pay"),
     "offer": dict(offer=True),
     "lcw": dict(lcw=True),
@@ -191,9 +204,9 @@ def route_sets():
     ]
 
 
-def member_with(routes, payment, care_hours):
+def member_with(routes, payment, care_hours, work_source):
     return dict(
-        works="works" in routes,
+        works=work_source if "works" in routes else None,
         payment=payment if "payment" in routes else None,
         offer="offer" in routes,
         lcw="lcw" in routes,
@@ -203,27 +216,49 @@ def member_with(routes, payment, care_hours):
 
 
 def test_condition_matches_the_reference_for_every_combination_of_routes():
-    # Exhaustive: every single claimant's set of routes with every listed
-    # payment, and every pair of route sets for a couple, the payment and the
-    # caring hours cycling across pairs.
+    # Exhaustive over route sets: every single claimant's set of routes with
+    # every listed payment and every kind of work, and every pair of route
+    # sets for a couple, the payment, the kind of work and the caring hours
+    # cycling across pairs. Every family has a dependant: idle in half of
+    # them, otherwise with a cycling set of routes of its own.
     sets = route_sets()
+
+    def dependant(k):
+        routes = set() if k % 2 == 0 else sets[(5 * k + 3) % len(sets)]
+        return dict(
+            dependant=member_with(routes, PAYMENTS[1 + k % 4], 50, WORK_SOURCES[k % 3]),
+            dependant_age=[3, 17, 18][k % 3],
+            childcare=[0.0, 5_000.0][k % 2],
+        )
+
     singles = [
-        dict(adults=[member_with(routes, payment, MIN_CARE_HOURS)])
+        dict(adults=[member_with(routes, payment, MIN_CARE_HOURS, source)])
         for routes in sets
         for payment in PAYMENTS[1:]
+        for source in WORK_SOURCES
     ]
     couples = [
         dict(
             adults=[
-                member_with(first, PAYMENTS[1 + (i + j) % 4], MIN_CARE_HOURS),
-                member_with(second, PAYMENTS[1 + (i + 2 * j) % 4], 50),
+                member_with(
+                    first,
+                    PAYMENTS[1 + (i + j) % 4],
+                    MIN_CARE_HOURS,
+                    WORK_SOURCES[(i + j) % 3],
+                ),
+                member_with(
+                    second,
+                    PAYMENTS[1 + (i + 2 * j) % 4],
+                    50,
+                    WORK_SOURCES[(i + 2 * j + 1) % 3],
+                ),
             ]
         )
         for i, first in enumerate(sets)
         for j, second in enumerate(sets)
     ]
-    units = singles + couples
-    met = calculate(units, with_dependants=False)["uc_childcare_work_condition"]
+    units = [dict(unit, **dependant(k)) for k, unit in enumerate(singles + couples)]
+    met = calculate(units)["uc_childcare_work_condition"]
     expected = np.array([reference(unit) for unit in units])
     mismatches = [unit for unit, m, e in zip(units, met, expected) if m != e]
     assert not mismatches, mismatches[:5]
@@ -254,7 +289,13 @@ def test_adding_an_exception_or_work_never_removes_the_condition(cases):
 @given(st.lists(families(), min_size=1, max_size=30))
 def test_a_couple_both_in_paid_work_always_meets_the_condition(units):
     couples = [
-        dict(unit, adults=[dict(adult, works=True) for adult in unit["adults"]])
+        dict(
+            unit,
+            adults=[
+                dict(adult, works=adult["works"] or "self_employment")
+                for adult in unit["adults"]
+            ],
+        )
         for unit in units
         if len(unit["adults"]) == 2
     ]
@@ -269,7 +310,7 @@ def test_no_exception_meets_the_condition_without_limb_a(units):
         dict(
             unit,
             adults=[
-                dict(adult, works=False, payment=None, offer=False)
+                dict(adult, works=None, payment=None, offer=False)
                 for adult in unit["adults"]
             ],
         )
