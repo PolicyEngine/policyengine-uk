@@ -1,4 +1,4 @@
-.PHONY: docs
+.PHONY: docs test test-yaml test-python
 
 all: install
 	pip install build
@@ -14,9 +14,15 @@ format:
 	ruff format .
 	ruff check .
 
-test:
+test: test-yaml test-python
+
+test-yaml:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
-	pytest policyengine_uk/tests/ --cov=policyengine_uk --cov-report=xml --maxfail=0 -v
+
+# CI passes PYTEST_ARGS="-n 4 --dist worksteal" (pytest-xdist) to spread the
+# tests over the runner's four cores. Without it this runs serially, as before.
+test-python:
+	pytest policyengine_uk/tests/ --cov=policyengine_uk --cov-report=xml --maxfail=0 -v $(PYTEST_ARGS)
 
 test-all:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
