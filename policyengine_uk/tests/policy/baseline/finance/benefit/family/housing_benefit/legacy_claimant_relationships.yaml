@@ -9,6 +9,10 @@
     people:
       person0:
         age: 40
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
         weekly_hours: 0
         is_claimant_or_partner: true
         is_parent: true
@@ -40,6 +44,10 @@
     people:
       person0:
         age: 40
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
         weekly_hours: 0
         is_claimant_or_partner: true
         is_parent: true
@@ -75,6 +83,10 @@
     people:
       person0:
         age: 17
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
         weekly_hours: 0
         is_claimant_or_partner: true
     benunits:
@@ -101,6 +113,10 @@
     people:
       person0:
         age: 30
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
         weekly_hours: 0
         is_claimant_or_partner: true
       person1:
@@ -131,6 +147,10 @@
     people:
       person0:
         age: 17
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
         weekly_hours: 0
         is_claimant_or_partner: true
         is_parent: true
@@ -161,6 +181,10 @@
     people:
       person0:
         age: 17
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
         weekly_hours: 0
         is_claimant_or_partner: true
       person1:

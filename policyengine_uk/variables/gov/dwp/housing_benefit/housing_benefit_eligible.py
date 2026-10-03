@@ -25,6 +25,7 @@ class housing_benefit_eligible(Variable):
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/6A",
+        "https://www.legislation.gov.uk/ukpga/2002/16/section/4",
         "https://www.legislation.gov.uk/uksi/2014/1230/regulation/8",
         "https://www.legislation.gov.uk/uksi/2019/37/article/4",
         "https://www.legislation.gov.uk/uksi/2025/1148/article/7",
@@ -39,24 +40,25 @@ class housing_benefit_eligible(Variable):
         # Apart from the accommodation exception, new claims are barred
         # except where the claimant, and any partner,
         # has reached the qualifying age for State Pension Credit
-        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)). This is the
-        # same claimant-and-partner set is_uc_eligible and
-        # is_pension_credit_eligible use, so a pensioner with an 18 or 19 year
-        # old dependant can claim Housing Benefit and not Universal Credit;
-        # change the three together.
-        claimant_or_partner = person("is_claimant_or_partner", period)
-        count = benunit.sum(claimant_or_partner)
-        pension_age = (count > 0) & (benunit.sum(claimant_or_partner & sp_age) == count)
-        # Working-age and mixed-age families (since 15 May 2019) claim
-        # Universal Credit instead. They keep an existing award until they
-        # claim it (reg 8(2A)), so this route also rules out receiving
-        # Universal Credit. For mixed-age couples the reported award stands
-        # in for the SI 2019/37 art. 4 saving (reg 6A(5)). Working-age awards
-        # outside specified or temporary accommodation were abolished from
-        # 1 July 2026 in Great Britain (SI 2025/1148 art. 7) and 1 October
-        # 2026 in Northern Ireland (SR 2025/176 art. 7); a family with no
-        # member over State Pension age continues one only for the part of
-        # the year before that date (housing_benefit_payable_share).
+        # (SI 2014/1230 reg 6A(4); NI: SR 2016/226 reg 4A(4)), or the claim
+        # is made by the older member of a mixed-age couple that keeps the
+        # SI 2019/37 art. 4 saving (reg 6A(5); NI reg 4A(5)). Before 15 May
+        # 2019 mixed-age couples could claim too. These are the Pension
+        # Credit age conditions, which also rule out Universal Credit
+        # (is_uc_eligible), so no family on this route receives it. They read
+        # the claimant and partner (is_claimant_or_partner), so a pensioner
+        # with an 18 or 19 year old dependant can claim Housing Benefit and
+        # not Universal Credit.
+        pension_age = benunit("meets_pension_credit_age_conditions", period)
+        # Working-age families, and mixed-age couples without the saving
+        # (since 15 May 2019), claim Universal Credit instead. They keep an
+        # existing award until they claim it (reg 8(2A)), so this route also
+        # rules out receiving Universal Credit. Working-age awards outside
+        # specified or temporary accommodation were abolished from 1 July
+        # 2026 in Great Britain (SI 2025/1148 art. 7) and 1 October 2026 in
+        # Northern Ireland (SR 2025/176 art. 7); a family with no member over
+        # State Pension age continues one only for the part of the year
+        # before that date (housing_benefit_payable_share).
         already_claiming = add(benunit, period, ["housing_benefit_reported"]) > 0
         claiming_uc = benunit("would_claim_uc", period)
         still_payable = benunit("housing_benefit_payable_share", period) > 0
