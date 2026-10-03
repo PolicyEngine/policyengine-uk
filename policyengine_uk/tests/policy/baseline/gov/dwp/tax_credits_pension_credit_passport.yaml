@@ -1,0 +1,397 @@
+# State Pension Credit lifts the tax credit income test.
+#
+# TCA 2002 s.7(2): the income test "does not apply ... for so long as the
+# person, or either of the persons, is entitled to any social security benefit
+# prescribed". SI 2002/2008 reg 4(1)(d) prescribes "state pension credit within
+# the meaning of the State Pension Credit Act 2002", which is the guarantee
+# credit, the savings credit or both (SPCA 2002 s.1(3)).
+#
+# Working tax credit is Pension Credit income (SPCA 2002 s.15(1)(b)). The
+# passport holds when Pension Credit is payable with the passported award
+# counted; when Pension Credit is payable only on the income-tested award,
+# lifting the test would end it, and the income test stays.
+#
+# 2024-25 rates:
+# - WTC basic element £2,435, couple element £2,500 (WTC Regs 2002 Sch 2).
+# - Income threshold £7,955, or £19,995 for a claim with no WTC entitlement;
+#   withdrawal rate 41% (SI 2002/2008 regs 3 and 7, as uprated).
+# - CTC child element £3,455; family element £545 (CTC Regs 2002 reg 7).
+# - Standard minimum guarantee £218.15 a week single, £332.95 couple; savings
+#   credit threshold £301.22 couple (SPC Regs 2002 regs 6 and 7, as uprated).
+#   WEEKS_IN_YEAR is 52.
+#
+# Tax credit income (SI 2002/2006 reg 3): State Pension is step-one pension
+# income (reg 5(1)(a); ITEPA 2003 s.577) and savings interest step-one
+# investment income (reg 10); step one counts only its excess over £300.
+# Earnings are step two. Each pensioner has £300 of interest on £10,000 of
+# savings, so step one's excess is the State Pension. (The model counts State
+# Pension in step two, which gives the same total once the interest uses the
+# £300.) £10,000 of capital gives no Pension Credit tariff income (SPC Regs
+# 2002 reg 15(6)), and savings interest is not Pension Credit income.
+#
+# Pension Credit earnings are entered net of the SPC Regs 2002 Sch VI para 5
+# disregard (£5 a week single, £10 a couple), which the model does not apply.
+# No case has income tax: each person's income is within the personal
+# allowance.
+
+- name: Guarantee Credit lifts the income test, with the maximum WTC counted as its income
+  # Tax credit income: (6,000 + 300 - 300) + 2,600 = £8,600.
+  # Lifting the test pays the maximum WTC, £2,435. Pension Credit income is
+  # then £2,340 + £6,000 + £2,435 = £10,775 against a guarantee of
+  # 218.15 x 52 = £11,343.80, so Guarantee Credit is £568.80 and the
+  # passport holds.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 6_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340  # 2,600 - 5 x 52
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    tax_credits_applicable_income: 0
+    working_tax_credit: 2_435
+    guarantee_credit: 568.80
+    pension_credit: 568.80
+
+- name: The passport in 2018-19, before the mixed-age rule
+  # 2018-19 rates: WTC basic element £1,960; income threshold £6,420;
+  # standard minimum guarantee £163.00 a week (£8,476 a year). A man aged 66
+  # reached pensionable age (65) in 2017, so has no savings credit: SPCA 2002
+  # s.3(1)(a) needs pensionable age "before 6 April 2016".
+  # Tax credit income: (4,000 + 300 - 300) + 2,600 = £6,600. With the test
+  # lifted, WTC is £1,960, and Pension Credit income is 2,340 + 4,000 + 1,960
+  # = £8,300, so Guarantee Credit is 8,476 - 8,300 = £176: the passport holds.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 66
+        gender: MALE
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 4_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    tax_credits_applicable_income: 0
+    tax_credits_current_year_income: 6_600
+    working_tax_credit: 1_960
+    pension_credit: 176
+
+- name: Pension Credit payable only on the income-tested award leaves the income test in place
+  # Tax credit income: (6,600 + 300 - 300) + 2,600 = £9,200. With the test lifted, Pension
+  # Credit income is £2,340 + £6,600 + £2,435 = £11,375, above the £11,343.80
+  # guarantee, so no Pension Credit would be payable and the test applies.
+  # WTC: 2,435 - 0.41 x (9,200 - 7,955) = £1,924.55. Pension Credit on that
+  # award: 11,343.80 - (2,340 + 6,600 + 1,924.55) = £479.25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 6_600
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    tax_credits_applicable_income: 9_200
+    working_tax_credit: 1_924.55
+    pension_credit: 479.25
+
+- name: A pensioner with no Pension Credit keeps the income test
+  # Tax credit income: (9,500 + 300 - 300) + 2,600 = £12,100. Pension Credit income is at
+  # least £2,340 + £9,500 = £11,840, above the guarantee.
+  # WTC: 2,435 - 0.41 x (12,100 - 7,955) = £735.55.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 9_500
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    tax_credits_applicable_income: 12_100
+    working_tax_credit: 735.55
+    pension_credit: 0
+
+- name: Pension Credit that is not claimed does not lift the income test
+  # The first case's household without a Pension Credit claim: there is no
+  # entitlement without a claim (SSAA 1992 s.1(1)).
+  # WTC: 2,435 - 0.41 x (8,600 - 7,955) = £2,170.55.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 6_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+        would_claim_pc: false
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    tax_credits_applicable_income: 8_600
+    working_tax_credit: 2_170.55
+    pension_credit: 0
+
+- name: Savings Credit alone lifts the income test for Child Tax Credit
+  # A couple aged 80 (State Pension age before 6 April 2016, so Savings Credit
+  # applies) responsible for a grandchild, claiming CTC only.
+  # Tax credit income: step one, State Pension £9,000 + £8,000 and savings
+  # interest £500, less £300, = £17,200; step two, earnings £3,000; total
+  # £20,200, above the £19,995 threshold.
+  # Pension Credit income: £17,000 + (3,000 - 10 x 52) = £19,480 (no income
+  # tax; capital of £10,000 gives no tariff income). Guarantee Credit: none
+  # (above 332.95 x 52 = £17,313.40). Savings Credit: maximum
+  # 0.6 x (332.95 - 301.22) x 52 = £989.98, less 0.4 x (19,480 - 17,313.40)
+  # = £866.64, so £123.34.
+  # CTC: £545 + £3,455 = £4,000, not 4,000 - 0.41 x 205 = £3,915.95.
+  # SPC Regs 2002 reg 6(6)(d) and (11) give no Schedule IIA child amount to
+  # a person awarded a tax credit, and the CTC family element has been £545
+  # since 2011-12; both are entered because the model applies neither.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 9_000
+        employment_income: 3_000
+        savings_interest_income: 500
+        child_tax_credit_reported: 1
+      grandparent_2:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 8_000
+      grandchild:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        pension_credit_earnings: 2_480  # 3,000 - 10 x 52
+        child_minimum_guarantee_addition: 0
+        CTC_family_element: 545
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+  output:
+    guarantee_credit: 0
+    savings_credit: 123.34
+    tax_credits_applicable_income: 0
+    child_tax_credit: 4_000
+
+- name: The passport does not bring a family under the childcare gross income limit
+  # England's two-year-old offer: a child whose parent is entitled to "child
+  # tax credit where that parent is not also entitled to working tax credit
+  # ... and has an annual gross income not exceeding £16,190", or to "the
+  # guaranteed element of state pension credit" (SI 2014/2147 reg 1(2),
+  # "eligible child", as at 1 September 2024). The previous case's couple,
+  # with a grandchild aged 2: their CTC is passported through the savings
+  # credit, but their gross income is £20,200 and they have no Guarantee
+  # Credit, so the child is not eligible through either route.
+  # CTC: the family element needs a child "born before 6th April 2017" (CTC
+  # Regs 2002 reg 7(2)(a)), so it is nil here (entered, as the model pays
+  # it); the individual element is £3,455 (reg 7(4)(c)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent_1:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 9_000
+        employment_income: 3_000
+        savings_interest_income: 500
+        child_tax_credit_reported: 1
+      grandparent_2:
+        age: 80
+        is_claimant_or_partner: true
+        state_pension: 8_000
+      grandchild:
+        age: 2
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent_1, grandparent_2, grandchild]
+        would_claim_uc: false
+        pension_credit_earnings: 2_480
+        child_minimum_guarantee_addition: 0
+        CTC_family_element: 0
+        working_tax_credit_run_on: false
+        extended_childcare_entitlement_eligible: false
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 10_000
+        country: ENGLAND
+  output:
+    guarantee_credit: 0
+    savings_credit: 123.34
+    tax_credits_applicable_income: 0
+    tax_credits_current_year_income: 20_200
+    child_tax_credit: 3_455
+    meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
+    targeted_childcare_entitlement_eligible: false
+
+- name: A mixed-age couple cannot get Pension Credit, so the income test applies
+  # SPCA 2002 s.4(1A) (from 15 May 2019): no Pension Credit where the other
+  # member of the couple is under the qualifying age. The SI 2019/37 art. 4
+  # saving is not modelled here. A couple both over that age with this income
+  # would get Guarantee Credit with the passport.
+  # The older partner works 20 hours, which meets the WTC hours condition for
+  # a joint claim with no child: "aged at least 60 and undertakes work for not
+  # less than 16 hours per week" (WTC Regs 2002 reg 4(1), Second condition,
+  # second variation).
+  # Tax credit income: (6,000 + 300 - 300) + 2,600 = £8,600. WTC maximum: £2,435 + £2,500
+  # = £4,935, less 0.41 x (8,600 - 7,955) = £264.45, so £4,670.55.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 6_000
+        savings_interest_income: 300
+        employment_income: 2_600
+        weekly_hours: 20
+        working_tax_credit_reported: 1
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [older, younger]
+        savings: 10_000
+  output:
+    pension_credit: 0
+    tax_credits_applicable_income: 8_600
+    working_tax_credit: 4_670.55
+
+- name: With no tax credit awards in payment, Pension Credit still lifts the income test
+  # Tax credits ended on 5 April 2025, so no award is paid in 2025-26 and
+  # working tax credit is nil either way. The standard minimum guarantee for
+  # a single claimant is £227.10 a week (SPC Regs 2002 reg 6(1)(b), as
+  # substituted by SI 2025/295 art. 29(2)(b)); it is entered because the
+  # model's 2025-26 value differs (#1937). Guarantee Credit:
+  # 227.10 x 52 - (2,340 + 6,000) = 11,809.20 - 8,340 = £3,469.20.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 71
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 6_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+        standard_minimum_guarantee: 11_809.20
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    working_tax_credit: 0
+    pension_credit: 3_469.20
+    tax_credits_applicable_income: 0
+
+- name: Without the Pension Credit passport, the first case is income-tested
+  # The first case's household with gov.dwp.tax_credits.means_test
+  # .pension_credit_passport switched off: WTC £2,170.55, and Pension Credit
+  # 11,343.80 - (2,340 + 6,000 + 2,170.55) = £833.25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.tax_credits.means_test.pension_credit_passport: false
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+        employment_income: 2_600
+        weekly_hours: 20
+        state_pension: 6_000
+        savings_interest_income: 300
+        working_tax_credit_reported: 1
+    benunits:
+      benunit:
+        members: [pensioner]
+        pension_credit_earnings: 2_340
+    households:
+      household:
+        members: [pensioner]
+        savings: 10_000
+  output:
+    tax_credits_applicable_income: 8_600
+    working_tax_credit: 2_170.55
+    pension_credit: 833.25
