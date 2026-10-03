@@ -161,7 +161,12 @@
   # for no child or qualifying young person, but the 19-year-old is a
   # non-dependant (Sch 4 para 9), so the parent is not a specified renter
   # (para 28(4)). For HB the parent is a lone parent, not a single claimant,
-  # so not a young individual (reg 2(1)). One bedroom either way: B.
+  # so not a young individual (reg 2(1)). Each scheme gives the parent a
+  # bedroom and the 19-year-old, "a non-dependant who is not a child" (UC
+  # Sch 4 para 10(1)) or "a person who is not a child" (HB reg 13D(3)(b)),
+  # another: two bedrooms, C. The model's bedroom count does not yet give
+  # benefit-unit members over 16 their own room (PE-UK #2010), so the test
+  # supplies it.
   period: 2025
   input:
     people:
@@ -176,6 +181,7 @@
     benunits:
       benunit:
         members: [parent, student]
+        LHA_allowed_bedrooms: 2
     households:
       household:
         members: [parent, student]
@@ -184,5 +190,5 @@
     is_responsible_for_child_or_young_person_for_legacy_benefits: true
     is_lha_shared_accommodation_rate_specified_renter: false
     is_housing_benefit_young_individual: false
-    LHA_category: B
-    housing_benefit_LHA_category: B
+    LHA_category: C
+    housing_benefit_LHA_category: C

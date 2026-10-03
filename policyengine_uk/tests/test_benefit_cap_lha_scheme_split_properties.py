@@ -8,9 +8,12 @@ the cap and its reduction (``benefit_cap``, ``benefit_cap_reduction``) and
 the shared accommodation test behind ``LHA_category``. A Universal Credit
 claim by a member of a couple as a single person (UC Regs 2013 reg. 3(3))
 followed the Universal Credit rule unless the family claimed legacy
-benefits. ``REFERENCE`` re-adds those formulas, verbatim from the parent
-commit, under ``reference_`` names, so one simulation computes the old and
-the new values for the same families.
+benefits. ``REFERENCE`` re-adds those formulas from the parent commit
+under ``reference_`` names, so one simulation computes the old and the new
+values for the same families. They are verbatim except for the names they
+read, the inlined stopgap helpers and the earnings exception's dead code.
+The reference awards read the current ``uc_deductions``, which these
+single-household simulations leave at nil.
 
 Invariants, each over generated families and the explicit examples:
 
@@ -19,11 +22,13 @@ Invariants, each over generated families and the explicit examples:
    claimed under for a reg. 3(3) single claim (legacy: Housing Benefit;
    otherwise Universal Credit), and otherwise the family rate whenever
    either scheme gave it (the old test took responsibility under either).
-2. Exceptions. With nobody at State Pension age: where the schemes agree,
-   the old exception is theirs; with no reg. 3(3) single claim, the old
-   exception is exactly the union of the two schemes' (it listed both
-   schemes' grounds). The age cases are intended changes (the UC cap has
-   no age exception; HB Regs 2006 reg. 5) and are left to the YAML tests.
+2. Exceptions. With nobody at State Pension age and no armed forces
+   independence payment: where the schemes agree, the old exception is
+   theirs; with no reg. 3(3) single claim, the old exception is exactly the
+   union of the two schemes' (it listed both schemes' grounds). The age and
+   AFIP cases are intended changes (the UC cap has no age exception; HB
+   Regs 2006 reg. 5; AFIP lifts both caps under UC reg. 83(1)(c) with reg. 2
+   and HB reg. 75F(1)(ea)) and are pinned in the YAML tests and examples.
 3. LHA category. Without armed forces independence payment (added to the
    exceptions of both schemes here), the old category is the new category
    of the scheme the family claims under (legacy: Housing Benefit,
@@ -328,12 +333,22 @@ class reference_universal_credit(Variable):
     definition_period = YEAR
 
     def formula(benunit, period, parameters):
-        return max_(
-            benunit("universal_credit_pre_benefit_cap", period)
-            - benunit("reference_benefit_cap_reduction", period)
-            - benunit("uc_deductions", period),
-            0,
+        # The parent's formula, reading the old shared reduction. Deductions
+        # are the current uc_deductions, which read the UC reduction; the
+        # single-household simulations here have none (uc_has_deduction).
+        uc_max_entitlement = benunit("universal_credit_pre_benefit_cap", period)
+        benefit_cap_reduction = benunit("reference_benefit_cap_reduction", period)
+        deductions = benunit("uc_deductions", period)
+        floor_rate = parameters(
+            period
+        ).gov.dwp.universal_credit.deductions.protected_floor
+        total_reductions = benefit_cap_reduction + deductions
+        max_reductions = where(
+            floor_rate > 0,
+            (1 - floor_rate) * benunit("uc_standard_allowance", period),
+            np.inf,
         )
+        return max_(uc_max_entitlement - min_(total_reductions, max_reductions), 0)
 
 
 class reference_housing_benefit(Variable):
@@ -670,7 +685,11 @@ def test_exceptions_are_the_old_exception_where_the_schemes_agree(population):
         v["is_housing_benefit_benefit_cap_exempt"].astype(bool),
         v["reference_is_benefit_cap_exempt"].astype(bool),
     )
-    working_age = ~v["anyone_sp_age"]
+    # Intended changes, pinned in YAML instead: the UC cap has no age
+    # exception and HB reg 5 sets the pension-age one; armed forces
+    # independence payment now lifts both caps (UC reg 83(1)(c) with reg 2;
+    # HB reg 75F(1)(ea)).
+    working_age = ~v["anyone_sp_age"] & ~v["afip"]
     single_claim = v["uc_member_of_couple_claims_as_single_person"].astype(bool)
     legacy = v["claims_legacy_benefits"].astype(bool)
     # The old exception listed both schemes' grounds.
@@ -827,9 +846,13 @@ def test_examples_reach_the_cases():
     assert v["is_uc_benefit_cap_single_claimant_rate"][lone_parent]
     assert not v["is_housing_benefit_benefit_cap_single_claimant_rate"][lone_parent]
     assert not v["reference_is_benefit_cap_single_claimant_rate"][lone_parent]
-    # AFIP: excepted from both shared rates, but not under the old list.
+    # AFIP: excepted from both shared rates, and lifts both caps, which the
+    # old lists did not do.
     assert v["LHA_category"][afip] == v["housing_benefit_LHA_category"][afip] == "B"
     assert v["reference_LHA_category"][afip] == "A"
+    assert v["is_uc_benefit_cap_exempt"][afip]
+    assert v["is_housing_benefit_benefit_cap_exempt"][afip]
+    assert not v["reference_is_benefit_cap_exempt"][afip]
     # The mixed-age couple on UC: the UC cap has no age exception, and with
     # the younger member on UC the HB Regs 2006 apply (reg. 5(1)(b)); the old
     # shared cap exempted any family with a pensioner.

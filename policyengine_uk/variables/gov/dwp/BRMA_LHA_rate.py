@@ -14,18 +14,24 @@ class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
     label = "LHA rate"
-    documentation = "Local Housing Allowance rate, capped at the national maximum"
+    documentation = (
+        "Local Housing Allowance rate for the Universal Credit category "
+        "(LHA_category), capped at the weekly national maximum. Housing "
+        "Benefit reads its own category's rate: housing_benefit_LHA_rate."
+    )
     definition_period = YEAR
     unit = GBP
     reference = "https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B"
 
     def formula(benunit, period, parameters):
-        """The published Housing Benefit rate.
+        """The weekly-capped rate for the Universal Credit category.
 
         Rates are the lower of the Broad Rental Market Area percentile and the
         weekly national maximum for the category (Rent Officers (Housing
-        Benefit Functions) Order 1997, Schedule 3B). Universal Credit has its
-        own monthly maximum: see ``uc_LHA_cap``.
+        Benefit Functions) Order 1997, Schedule 3B). Universal Credit applies
+        its own monthly maximum from 2020 (``uc_LHA_cap``), and uses this
+        weekly figure before then; Housing Benefit's rate for its own category
+        is ``housing_benefit_LHA_rate``.
         """
         rate = benunit("uncapped_BRMA_LHA_rate", period)
         maximum = category_maximum(benunit, period, "maximum")
