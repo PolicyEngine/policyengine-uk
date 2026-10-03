@@ -1,0 +1,27 @@
+description: >
+  Share of the current market or surrender value deducted from council tax
+  reduction capital where there would be expenses attributable to sale. It is
+  a flat 10% whatever the actual costs. The amount of any encumbrance secured
+  on the asset is also deducted, but the data cannot identify debt secured on
+  property other than the home, so that deduction is not modelled.
+values:
+  2013-04-01: 0.1
+metadata:
+  label: Council tax reduction capital sale expense deduction
+  period: year
+  unit: /1
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 1 para. 32
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/32
+    - title: The Council Tax Reduction Schemes (Default Scheme) (England) Regulations 2012, Schedule para. 65
+      href: https://www.legislation.gov.uk/uksi/2012/2886/schedule/paragraph/65
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 1 para. 26
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/26
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 28
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/28
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 42
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/42
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 46 (persons under pension age, to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/46
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 70
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/70

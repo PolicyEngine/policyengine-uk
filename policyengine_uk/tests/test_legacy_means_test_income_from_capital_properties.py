@@ -29,6 +29,12 @@ Invariants, for any generated population of families:
    the tax on counted income before reductions (earned_income_tax), and
    equals income tax when there is no savings, dividend or property income
    and no Step 7 charge.
+5. Tariff: the council tax reduction tariff income that replaces the actual
+   income from capital is never negative, never more than the yield at the
+   16,000 capital limit (40 steps of 250 at 4.35 a month, 2,088 a year), nil
+   outside the national schemes (Northern Ireland, and English people under
+   pension age, whose local schemes set their own), and never falls when
+   savings rise while the family stays on the same route.
 """
 
 import numpy as np
@@ -104,7 +110,9 @@ def families(draw):
 populations = st.lists(families(), min_size=1, max_size=4)
 
 
-def situation(units, year, capital_income_scale=1.0, sublet_extra=0.0):
+def situation(
+    units, year, capital_income_scale=1.0, sublet_extra=0.0, savings_extra=0.0
+):
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         names = []
@@ -143,7 +151,7 @@ def situation(units, year, capital_income_scale=1.0, sublet_extra=0.0):
             "region": {year: unit["region"]},
             "tenure_type": {year: unit["tenure"]},
             "rent": {year: unit["rent"]},
-            "savings": {year: unit["savings"]},
+            "savings": {year: unit["savings"] + savings_extra},
             "council_tax": {year: 1_500.0},
         }
     return {"people": people, "benunits": benunits, "households": households}
@@ -222,4 +230,45 @@ def test_legacy_means_test_income_tax_bounds(units, year):
     )
     np.testing.assert_allclose(
         without["legacy_means_test_income_tax"], without["income_tax"], atol=0.01
+    )
+
+
+MAXIMUM_TARIFF_INCOME = 40 * 4.35 * 12
+ENGLISH_REGIONS = {"NORTH_EAST", "LONDON"}
+
+
+@PROPERTY_SETTINGS
+@given(populations, st.sampled_from(YEARS), st.floats(1, 20_000))
+def test_council_tax_reduction_tariff_income_is_bounded_and_monotone(
+    units, year, extra
+):
+    variables = [
+        "council_tax_reduction_tariff_income",
+        "council_tax_reduction_pensioner",
+        "in_receipt_of_guarantee_credit",
+        "in_receipt_of_savings_credit_only",
+    ]
+    base = calculate(units, year, variables)
+    more = calculate(units, year, variables, savings_extra=extra)
+    tariff = base["council_tax_reduction_tariff_income"]
+    assert np.all(tariff >= 0)
+    assert np.all(tariff <= MAXIMUM_TARIFF_INCOME + 0.01)
+    region = np.array([unit["region"] for unit in units])
+    pensioner = base["council_tax_reduction_pensioner"].astype(bool)
+    outside_national_schemes = (region == "NORTHERN_IRELAND") | (
+        np.isin(region, list(ENGLISH_REGIONS)) & ~pensioner
+    )
+    assert np.all(tariff[outside_national_schemes] == 0)
+
+    def route(values):
+        return (
+            values["council_tax_reduction_pensioner"].astype(int) * 4
+            + values["in_receipt_of_guarantee_credit"].astype(int) * 2
+            + values["in_receipt_of_savings_credit_only"].astype(int)
+        )
+
+    same_route = route(base) == route(more)
+    assert np.all(
+        more["council_tax_reduction_tariff_income"][same_route]
+        >= tariff[same_route] - 0.01
     )

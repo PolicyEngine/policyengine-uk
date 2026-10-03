@@ -13,7 +13,9 @@ class council_tax_reduction_pensioner(Variable):
         "Employment and Support Allowance, or has an award of Universal Credit. "
         "A mixed-age couple on Universal Credit is therefore not a pensioner in "
         "England, Wales or Scotland. The model routes English schemes on this "
-        "test; the Welsh and Scottish formulas do not yet use it."
+        "test, and uses it to choose the pensioner or working-age tariff "
+        "income and the Scottish income rules; the Welsh and Scottish award "
+        "formulas do not otherwise use it yet."
     )
     definition_period = YEAR
     reference = (

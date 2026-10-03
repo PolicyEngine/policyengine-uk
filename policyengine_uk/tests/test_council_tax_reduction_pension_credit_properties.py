@@ -22,9 +22,18 @@ liability, ND the non-dependant deductions and A the applicable amount:
    A) - ND) when the Pension Credit assessment of capital is within 16,000, and
    nothing otherwise.
 4. Differential: everyone else keeps the general formula, max(0, L - 0.2 x
-   max(0, I - A) - ND) when household savings and other property are within
-   16,000, where I is the general income definition, recomputed here from its
-   components rather than read from the variable under test.
+   max(0, I - A) - ND) when capital C is within 16,000, where I is the
+   general income definition plus tariff income on C, both recomputed here
+   from their components and the regulations rather than read from the
+   variables under test. C is household savings plus other property at 90%
+   of its value (SI 2012/2885 Sch 1 para 32(a)), or, for a Welsh Universal
+   Credit recipient, the Universal Credit assessment of capital (WSI
+   2013/3029 Sch 6 para 9(6)). Tariff income is 1 a week per 500, or part,
+   over 10,000 for pensioners (Sch 1 para 37); for people under pension age
+   in Wales and Scotland 1 a week per 250, or part, over 6,000 (WSI
+   2013/3029 Sch 6 para 33; SSI 2021/249 reg 63(1)(b)), or with Universal
+   Credit 4.35 a month (UC Regs 2013 reg 72; SSI 2021/249 reg 63(1)(a)), and
+   nil on Income Support or income-based JSA or ESA.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
 6. Metamorphic: nor when its savings change.
@@ -81,6 +90,7 @@ state_pension = st.one_of(
 guarantees = st.one_of(st.none(), st.floats(240, 450))
 CAPITAL_LIMIT = 16_000
 WITHDRAWAL_RATE = 0.2
+SALE_EXPENSES = 0.1
 
 
 @st.composite
@@ -257,6 +267,10 @@ BENUNIT_VARIABLES = [
     "savings_credit",
     "pension_credit_income",
     "pension_credit_assessable_capital",
+    "council_tax_reduction_pensioner",
+    "council_tax_reduction_relevant_income_based_benefit",
+    "universal_credit",
+    "uc_assessable_capital",
 ]
 # council_tax_reduction_applicable_income outside the Pension Credit routes:
 # these incomes and benefits, less the income tax on them, National Insurance
@@ -336,6 +350,30 @@ def calculate(units, guarantee=None, **kwargs):
     return values
 
 
+def expected_capital(unit, values, i):
+    if unit["country"] == "WALES" and values["universal_credit"][i] > 0:
+        return values["uc_assessable_capital"][i]
+    return (
+        values["savings"][i]
+        + (1 - SALE_EXPENSES) * values["other_residential_property_value"][i]
+    )
+
+
+def expected_tariff_income(unit, values, i, capital):
+    def steps(threshold, step):
+        return np.ceil(max(0.0, min(capital, CAPITAL_LIMIT) - threshold) / step)
+
+    if values["council_tax_reduction_pensioner"][i]:
+        return steps(10_000, 500) * 52
+    if unit["country"] == "ENGLAND":
+        return 0.0
+    if values["universal_credit"][i] > 0:
+        return steps(6_000, 250) * 4.35 * 12
+    if values["council_tax_reduction_relevant_income_based_benefit"][i]:
+        return 0.0
+    return steps(6_000, 250) * 52
+
+
 def tapered(liability, income, applicable_amount, non_dep):
     excess = max(0.0, income - applicable_amount)
     return max(0.0, liability - WITHDRAWAL_RATE * excess - non_dep)
@@ -392,14 +430,14 @@ def check_routes(units, values):
                 values["pension_credit_assessable_capital"][i] <= CAPITAL_LIMIT
             )
         else:
-            income = values["income_under_main_definition"][i]
+            capital = expected_capital(unit, values, i)
+            income = values["income_under_main_definition"][i] + expected_tariff_income(
+                unit, values, i, capital
+            )
             assert (
                 abs(values["council_tax_reduction_applicable_income"][i] - income)
                 < 0.01
             ), unit
-            capital = (
-                values["savings"][i] + values["other_residential_property_value"][i]
-            )
             expected = tapered(liability, income, applicable_amount, non_dep) * (
                 capital <= CAPITAL_LIMIT
             )

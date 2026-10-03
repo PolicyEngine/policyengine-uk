@@ -16,16 +16,20 @@ class council_tax_reduction_applicable_income(Variable):
         "the savings credit payable, where the award is savings credit only. "
         "The other adjustments those provisions allow (childcare charges, lone "
         "parent and maintenance disregards, and the rest) are not modelled. "
-        "No scheme counts income derived from capital, such as rent from property, interest and "
-        "dividends, as income, so it is not listed and tax on it is not "
-        "deducted. The pensioner schemes disregard any actual income from "
-        "capital; the Welsh working-age scheme and the English default scheme "
-        "treat it as capital; the Scottish working-age scheme counts only the "
-        "unearned income it lists, which includes the assumed yield from "
-        "capital but not actual rent, interest or dividends. Rent for letting "
-        "part of the home counts, less the sub-tenant disregard, except in the "
-        "Scottish scheme for people under pension age from April 2022, which "
-        "does not list it."
+        "No scheme counts income derived from capital, such as rent from "
+        "property, interest and dividends, as income, so it is not listed and "
+        "tax on it is not deducted. The pensioner schemes disregard any actual "
+        "income from capital; the Welsh working-age scheme and the English "
+        "default scheme treat it as capital; the Scottish working-age scheme "
+        "counts only the unearned income it lists, which includes the assumed "
+        "yield from capital but not actual rent, interest or dividends. "
+        "Instead, the national schemes (England for pensioners, Wales and "
+        "Scotland) count the tariff income they treat capital as yielding "
+        "(council_tax_reduction_tariff_income); the English local schemes for "
+        "people under pension age add their own. Rent for letting part of the "
+        "home counts, less the sub-tenant disregard, except in the Scottish "
+        "scheme for people under pension age from April 2022, which does not "
+        "list it."
     )
     definition_period = YEAR
     unit = GBP
@@ -43,6 +47,7 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/4",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/3",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/3",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/63",
     ]
@@ -92,23 +97,16 @@ class council_tax_reduction_applicable_income(Variable):
         # Rent for letting part of the home counts in every scheme except the
         # Scottish one for people under pension age from 1 April 2022 (SSI
         # 2021/249, whose reg 57(1) list has no head for it). That scheme
-        # applies under reg 3(1) to an applicant under pensionable age, or over
-        # it where the applicant or partner has an award of universal credit or
-        # a qualifying income-related benefit.
-        claimant_or_partner_over_pension_age = benunit.any(
-            person("is_SP_age", period) & person("is_claimant_or_partner", period)
-        )
-        on_uc_or_income_related_benefit = (
-            add(
-                benunit,
-                period,
-                ["universal_credit", "income_support", "jsa_income", "esa_income"],
-            )
-            > 0
-        )
+        # applies under reg 3(1) to everyone the pension-age scheme does not
+        # cover: an applicant under pensionable age, or over it where the
+        # applicant or partner has a qualifying income-related benefit or an
+        # award of universal credit (council_tax_reduction_pensioner). An award
+        # held only by people over pensionable age does not count (reg 3(2));
+        # the selector stands this in by requiring a younger claimant or
+        # partner, as Universal Credit itself does (UC Regs 2013 reg 3(2)(a)).
         scotland = is_scotland_scheme(benunit.household("country", period))
-        scottish_working_age_scheme = scotland & (
-            ~claimant_or_partner_over_pension_age | on_uc_or_income_related_benefit
+        scottish_working_age_scheme = scotland & ~benunit(
+            "council_tax_reduction_pensioner", period
         )
         p_scotland = parameters(
             period
@@ -136,9 +134,12 @@ class council_tax_reduction_applicable_income(Variable):
             ["legacy_means_test_income_tax", "national_insurance"],
             members,
         )
+        # The national schemes also treat capital as yielding a tariff income
+        # (council_tax_reduction_tariff_income); the English local schemes for
+        # people under pension age add their own.
         income_under_general_rules = max_(
             0, increased_income - tax - pension_contributions
-        )
+        ) + benunit("council_tax_reduction_tariff_income", period)
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is
         # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases

@@ -1,0 +1,29 @@
+description: >
+  Council tax reduction capital sources whose sale would incur expenses, so
+  that they are valued at 90% of market value. Real property always has costs
+  of sale (R(IS) 21/93, as DMG 29622 applies it to the identically worded
+  Income Support rule), so `owned_land`, `other_residential_property_value`
+  and `non_residential_property_value` are listed. `savings` is not: a bank or
+  building society account is valued at its balance, and the costs of
+  withdrawing money are not costs of sale (HBGM BW1 Annex F and BP1 F2.03,
+  on the same words in the Housing Benefit regulations).
+metadata:
+  label: Council tax reduction capital sources with sale expenses
+  period: year
+  unit: list
+  reference:
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 1 para. 32(a)
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/32
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Schedule 6 para. 28(a)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/28
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 70(1)(a)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/70
+    - title: Decision Makers' Guide chapter 29, para. 29622 (real property, R(IS) 21/93)
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=124
+    - title: Housing Benefit Guidance Manual BW1, Annex F
+      href: https://assets.publishing.service.gov.uk/media/5a749328ed915d0e8e3994c0/hbgm-bw1-assessment-of-capital.pdf#page=93
+values:
+  2013-04-01:
+    - owned_land
+    - other_residential_property_value
+    - non_residential_property_value
