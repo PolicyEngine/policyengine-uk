@@ -1,0 +1,315 @@
+# Expected values are hand-computed from SPC Regs 2002 Sch VI (paras 1, 3, 4,
+# 4A and 5): weekly amounts times 52 weeks, capped at the earnings.
+
+- name: A single claimant with earnings has 5 pounds a week disregarded (para 5(a)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 5 * 52
+
+- name: A couple with earnings has 10 pounds a week disregarded (para 5(b)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    pension_credit_earnings_disregard: 10 * 52
+
+- name: A claimant on attendance allowance has 20 pounds a week disregarded (para 4(1)(a)(iii)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        attendance_allowance: 3000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A partner's personal independence payment qualifies the couple (para 4(1)(a)(viii)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      partner:
+        age: 70
+        pip_dl: 3000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A carer satisfying Sch I para 4 has 20 pounds a week disregarded (para 3).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        is_carer_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A lone parent has 20 pounds a week disregarded (para 1).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, child]
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: A claimant certified blind has 20 pounds a week disregarded (para 4(1)(b)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        is_blind: true
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: 20 pounds is the most disregarded when both partners qualify (para 4A).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        attendance_allowance: 3000
+      partner:
+        age: 70
+        employment_income: 2000
+        dla_sc: 3000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: The disregard never exceeds the earnings.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 100
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 100
+
+- name: Self-employed earnings get the same disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        self_employment_income: 2000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 5 * 52
+
+- name: Without earnings there is nothing to disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 3000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 0
+
+- name: A dependant child's disability benefit does not qualify a couple for the higher disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+      partner:
+        age: 70
+      child:
+        age: 10
+        dla_sc: 3000
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    pension_credit_earnings_disregard: 10 * 52
+
+- name: Income-related ESA, a benefit-unit award, qualifies for the higher disregard.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+    benunits:
+      benunit:
+        members: [claimant]
+        esa_income: 1000
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52
+
+- name: The disregard comes off Pension Credit income and raises the guarantee credit.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2000
+        state_pension: 9000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # minimum guarantee 218.15 a week in 2024-25 (SI 2024/242)
+    pension_credit_income: 9_000 + 2_000 - 5 * 52
+    guarantee_credit: 218.15 * 52 - (9_000 + 2_000 - 5 * 52)
+
+- name: A taxpayer's disregard is capped at net earnings, so earnings below the disregard leave Pension Credit income unchanged (reg 17(9), 17(10)).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 3_000
+        attendance_allowance: 3_000
+        employment_income: 1_040
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # Income tax (16,040 - 12,570) x 20% = 694. Tax on the earnings is the
+    # lesser of 694 and 20% x 1,040 = 208, so net earnings are 832; the 20
+    # pound (attendance allowance) disregard of 1,040 is capped at 832.
+    pension_credit_earnings_disregard: 832
+    # 16,040 - 694 - 832, the same as with no earnings (next case).
+    pension_credit_income: 14_514
+
+- name: The same claimant with no earnings has the same Pension Credit income.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 3_000
+        attendance_allowance: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # 15,000 - (15,000 - 12,570) x 20%
+    pension_credit_earnings_disregard: 0
+    pension_credit_income: 14_514
+
+- name: A dependant's caring does not qualify a couple for the higher disregard (Sch I para 4 is the claimant's or partner's).
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        employment_income: 2_000
+      partner:
+        age: 70
+      child:
+        age: 17
+        is_carer_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    pension_credit_earnings_disregard: 10 * 52

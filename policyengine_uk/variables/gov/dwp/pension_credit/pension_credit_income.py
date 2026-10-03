@@ -46,4 +46,6 @@ class pension_credit_income(Variable):
         )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
         deductions = tax + pension_contributions * pen_con_deduction_rate
-        return max_(0, total - deductions)
+        # Schedule VI earnings disregards (reg. 17(9)).
+        earnings_disregard = benunit("pension_credit_earnings_disregard", period)
+        return max_(0, total - deductions - earnings_disregard)
