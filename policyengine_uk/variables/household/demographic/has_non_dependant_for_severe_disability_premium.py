@@ -18,7 +18,16 @@ class has_non_dependant_for_severe_disability_premium(Variable):
         "(age_started_or_accepted_current_education_or_training; unknown "
         "counts as not met). The Regulations' exclusion of young people who "
         "claim benefits themselves (HB Regs reg 19(2), IS Regs reg 14(2)) is "
-        "approximated by receives_benefits_in_own_right. The model cannot "
+        "approximated by receives_benefits_in_own_right. Their exclusion of "
+        "a young person to whom section 6 of the Children (Leaving Care) Act "
+        "2000 applies (HB Regs reg 19(2)(c), IS Regs reg 14(2)(c)) is not "
+        "modelled. The people in section 6(2)(a) to (bb) are children aged 16 "
+        "or 17, below the non-dependant age, so for them the omission cannot "
+        "change the premium; the people prescribed under section 6(4) "
+        "(looked after in Scotland) are also under 18 (S.I. 2004/747 reg "
+        "2(2)(a)). The care-leaver bursary and current local-authority care "
+        "inputs do not identify the historical care status needed for "
+        "section 6. The model cannot "
         "identify the other people the "
         "Regulations exclude from the definition (for example joint "
         "occupiers, commercial lodgers or landlords, and carers engaged by a "
@@ -32,7 +41,10 @@ class has_non_dependant_for_severe_disability_premium(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/19",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14",
         "https://www.legislation.gov.uk/uksi/1987/1967/regulation/3",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/14",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13",
+        "https://www.legislation.gov.uk/ukpga/2000/35/section/6",
+        "https://www.legislation.gov.uk/uksi/2004/747/regulation/2",
     )
 
     def formula(benunit, period, parameters):

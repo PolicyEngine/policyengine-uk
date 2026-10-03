@@ -14,11 +14,15 @@ Invariants, for any generated population of households:
 
 1. Range: the premium is 0, the single rate or the double rate, and the double
    rate goes only to a couple who both qualify.
-2. Oracle: the premium equals an independent statement of the rule in which
-   the carer condition is a brute-force assignment of each carer award to a
-   benefit-unit member other than its recipient (the model does not observe
-   who is cared for, so it takes the assignment that covers the most
-   qualifying members).
+2. Oracle: the premium equals a second, separately written implementation
+   of the rule, with its own benefit classification and a carer condition
+   that brute-forces the assignment of each carer award to a benefit-unit
+   member other than its recipient. It is algorithmically independent of the
+   model but not of the model's assumptions: it shares the carer attribution
+   (the model does not observe who is cared for, so both take the assignment
+   that covers the most qualifying members) and the symmetric blind-partner
+   rule (either partner may be the claimant). Agreement shows the model
+   implements those assumptions, not that they match the Regulations.
 3. Metamorphic: adding a household member aged 18 or over, in another benefit
    unit, who receives no qualifying benefit and is not blind, removes the
    premium. The oracle also treats a benefit-unit member aged 18 or 19 who is
@@ -40,7 +44,7 @@ import numpy as np
 from hypothesis import HealthCheck, event, example, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import Simulation
+from policyengine_uk import Simulation, parameters
 
 YEAR = 2026
 WEEKS = 52
@@ -52,6 +56,29 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
+
+
+def _qualifying_list(year, name):
+    return getattr(parameters(str(year)).gov.dwp.disability_premia, name)
+
+
+def test_northern_ireland_commencements_by_model_year():
+    # The model reads the list as at 1 January before 2015 and 30 April from
+    # 2015, so AFIP (24 December 2013) first qualifies in 2014 and PIP daily
+    # living (20 June 2016) in 2017. The Great Britain list adds both from
+    # 8 April 2013, so from 2014.
+    ni = "severe_qualifying_benefits_northern_ireland"
+    for benefit, last_year_without, first_year_with in (
+        ("armed_forces_independence_payment", 2013, 2014),
+        ("pip_dl", 2016, 2017),
+    ):
+        assert benefit not in _qualifying_list(last_year_without, ni)
+        assert benefit in _qualifying_list(first_year_with, ni)
+    for benefit in ("armed_forces_independence_payment", "pip_dl"):
+        gb = "severe_qualifying_benefits"
+        assert benefit not in _qualifying_list(2013, gb)
+        assert benefit in _qualifying_list(2014, gb)
+
 
 # (inputs, qualifies) for each benefit a person may receive.
 BENEFITS = {
@@ -176,7 +203,11 @@ def simulate_before_after(units, changed):
 
 
 def oracle(unit):
-    """The premium by the statutory rule, written independently of the model."""
+    """The premium from a separately written implementation of the rule.
+
+    Independent of the model's code, but it shares the model's carer
+    attribution and symmetric blind-partner assumptions.
+    """
     adults, family = unit["adults"], family_members(unit)
     # Non-dependants: other benefit units in the household, and anyone in the
     # benefit unit who is not the claimant, partner, a child or a qualifying
@@ -248,7 +279,7 @@ def _adult(benefit, blind=False, carer=False):
         ),
     ]
 )
-def test_premium_matches_statutory_oracle_and_range(units):
+def test_premium_matches_independent_oracle_and_range(units):
     premium = simulate(units)["severe_disability_premium"]
     for unit, value in zip(units, premium):
         event(

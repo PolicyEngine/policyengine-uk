@@ -20,16 +20,29 @@ class severe_disability_premium(Variable):
         "when no carer benefit is paid for either of them, the single rate "
         "when one is paid for only one of them, and nothing when carers are "
         "paid for both. The law also counts a Universal Credit award with the "
-        "carer element, which the model does not."
+        "carer element, which the model does not. Not modelled: a carer's "
+        "allowance or carer element that would be paid but for a loss of "
+        "benefit restriction under section 6B or 7 of the Social Security "
+        "Fraud Act 2001 also counts (HB Regs 2006 Sch 3 para 14(7), IS Regs "
+        "1987 Sch 2 para 13(5), ESA Regs 2008 Sch 4 para 6(8), JSA Regs 1996 "
+        "Sch 1 para 15(9)); the model has no input for such a restriction, so "
+        "where one applies it can pay a premium the law withholds. The "
+        "Jobseeker's Allowance savings for people protected by the Income "
+        "Support (General) Amendment (No. 6) Regulations 1991 (JSA Regs 1996 "
+        "Sch 1 para 15(8)) are not modelled; income-based Jobseeker's "
+        "Allowance is a reported amount in the model, so this changes no "
+        "modelled payment."
     )
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/14",
-        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/20",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/part/4",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/13",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/15",
         "https://www.legislation.gov.uk/uksi/2008/794/schedule/4/paragraph/6",
         "https://www.legislation.gov.uk/uksi/1996/207/schedule/1/paragraph/15",
+        "https://www.legislation.gov.uk/ukpga/2001/11/section/6B",
+        "https://www.legislation.gov.uk/ukpga/2001/11/section/7",
     )
     unit = GBP
 

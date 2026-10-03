@@ -69,6 +69,46 @@
     # WTC Regs 2002 reg 17(2) and Sch 2 para 6: 1,705 a year in 2024-25.
     WTC_severely_disabled_element: 1_705
 
+# Attendance Allowance is read from its award category. Only when no category
+# is given is an amount compared with the annual higher rate less GBP 10 a
+# week: an approximation, since WTC reg 17(2) has no tolerance.
+- name: The Attendance Allowance category decides over an amount entered with it
+  period: 2026
+  input:
+    aa_category: LOWER
+    attendance_allowance: 5_959.20
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: Attendance Allowance amount with no category, at the 2024 threshold, is severe
+  period: 2024
+  input:
+    # 108.55 x 52 - 10 x 52 = 5,124.60.
+    attendance_allowance: 5_124.60
+  output:
+    is_severely_disabled_for_benefits: true
+
+- name: Attendance Allowance amount with no category, just below the 2024 threshold, is not severe
+  period: 2024
+  input:
+    attendance_allowance: 5_124.59
+  output:
+    is_severely_disabled_for_benefits: false
+
+- name: Attendance Allowance amount with no category, at the 2026 threshold, is severe
+  period: 2026
+  input:
+    # 114.60 x 52 - 10 x 52 = 5,439.20.
+    attendance_allowance: 5_439.20
+  output:
+    is_severely_disabled_for_benefits: true
+
+- name: Attendance Allowance amount with no category, just below the 2026 threshold, is not severe
+  period: 2026
+  input:
+    attendance_allowance: 5_439.19
+  output:
+    is_severely_disabled_for_benefits: false
 # Armed Forces Compensation Scheme payments other than armed forces
 # independence payment (lump sums, supplementary awards, guaranteed income
 # payments; AFCS Order 2011 art 15(1)) and war disablement pensions are in
