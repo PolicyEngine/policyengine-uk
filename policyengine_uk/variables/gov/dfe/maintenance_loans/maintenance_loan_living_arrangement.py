@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.inputs import has_input_by
 from policyengine_uk.variables.household.demographic.geography import Region
 import numpy as np
 
@@ -28,11 +29,9 @@ class maintenance_loan_living_arrangement(Variable):
         is_household_head = person("is_household_head", period)
         is_couple = person.benunit("is_couple", period)
         is_parent = person("is_parent", period)
-        tenure_holder = person.household.get_holder("tenure_type")
-        has_explicit_tenure = (
-            tenure_holder.get_array(period) is not None
-            or tenure_holder.get_array(period.last_year) is not None
-        )
+        # Only an entered tenure (for this year or carried forward from an
+        # earlier one) shows renting; the default tenure is not evidence.
+        has_explicit_tenure = has_input_by(person.simulation, "tenure_type", period)
         is_renting = (
             person.benunit("benunit_is_renting", period)
             if has_explicit_tenure

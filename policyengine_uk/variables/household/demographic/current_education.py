@@ -2,7 +2,7 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.household.demographic.highest_education import (
     EducationType,
 )
-import pandas as pd
+from policyengine_uk.utils.inputs import latest_input_period_before
 
 
 class current_education(Variable):
@@ -14,16 +14,23 @@ class current_education(Variable):
     documentation = (
         "Which stage of education the person is currently enrolled in (or "
         "NOT_IN_EDUCATION if none). This is enrolment status, not attainment "
-        "— see `highest_education` for the highest completed stage."
+        "— see `highest_education` for the highest completed stage. A year "
+        "with no input keeps the latest earlier input; with none, it is "
+        "imputed from age."
     )
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        if (
-            person.get_holder("current_education").get_array(period.last_year)
-            is not None
-        ):
-            return person("current_education", period.last_year)
+        # Enrolment entered for an earlier year carries forward: datasets give
+        # one for each year they cover, and later years keep the latest. Only
+        # without an entered value is it imputed from age. Values calculated
+        # for earlier years are not used, so the result does not depend on
+        # which years were calculated first.
+        latest = latest_input_period_before(
+            person.simulation, "current_education", period
+        )
+        if latest is not None:
+            return person("current_education", latest)
         age = person("age", period)
         return np.select(
             [
