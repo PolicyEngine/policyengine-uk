@@ -36,8 +36,13 @@
   output:
     esa_income: 5_000
     claimant_or_partner_esa_income: 0
-    is_benefit_cap_exempt: false
-    # 20,000 - 14,753 (the adult's 5,000 is theirs, not the family's)
+    benefit_cap_welfare_benefits: 20_000
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    # UC reg 81: max(20,000 - 14,753 - 0 childcare, 0) = 5,247.
+    # The adult's 5,000 is theirs, not the family's; there is no HB award.
+    uc_benefit_cap_reduction: 5_247
+    housing_benefit_benefit_cap_reduction: 0
     benefit_cap_reduction: 5_247
     universal_credit: 14_753
 
@@ -65,8 +70,12 @@
         members: [claimant, adult]
         region: NORTH_EAST
   output:
-    is_benefit_cap_exempt: false
-    # 18,000 - 14,753
+    benefit_cap_welfare_benefits: 18_000
+    is_uc_benefit_cap_exempt: false
+    is_housing_benefit_benefit_cap_exempt: false
+    # UC reg 81: max(18,000 - 14,753 - 0 childcare, 0) = 3,247.
+    uc_benefit_cap_reduction: 3_247
+    housing_benefit_benefit_cap_reduction: 0
     benefit_cap_reduction: 3_247
     universal_credit: 14_753
 
@@ -86,7 +95,10 @@
         members: [claimant]
         region: NORTH_EAST
   output:
-    # 15,000 + 3,000 - 14,753
+    benefit_cap_welfare_benefits: 18_000
+    # UC reg 81: max(15,000 + 3,000 - 14,753 - 0 childcare, 0) = 3,247.
+    uc_benefit_cap_reduction: 3_247
+    housing_benefit_benefit_cap_reduction: 0
     benefit_cap_reduction: 3_247
     universal_credit: 11_753
 
@@ -114,7 +126,11 @@
         region: NORTH_EAST
   output:
     claimant_or_partner_jsa_income: 0
-    # 9,000 is under 14,753
+    benefit_cap_welfare_benefits: 9_000
+    # HB reg 75D: min(max(9,000 - 14,753, 0), 9,000 - 0.50 * 52) = 0.
+    # No UC award: UC reg 78(1) gives no UC reduction.
+    uc_benefit_cap_reduction: 0
+    housing_benefit_benefit_cap_reduction: 0
     benefit_cap_reduction: 0
     housing_benefit: 9_000
 
@@ -137,6 +153,10 @@
         region: NORTH_EAST
   output:
     claimant_or_partner_jsa_income: 6_000
-    # 9,000 + 6,000 - 14,753 (HB Regs 2006 reg 75D(1))
+    benefit_cap_welfare_benefits: 15_000
+    # HB reg 75D: min(9,000 + 6,000 - 14,753, 9,000 - 0.50 * 52) = 247.
+    # HB left = 9,000 - 247 = 8,753, above the reg 75 minimum of 26/year.
+    uc_benefit_cap_reduction: 0
+    housing_benefit_benefit_cap_reduction: 247
     benefit_cap_reduction: 247
     housing_benefit: 8_753

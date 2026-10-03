@@ -168,21 +168,32 @@
         age: 30
         is_benunit_head: true
         is_parent: true
+        is_claimant_or_partner: true
       young_person:
         age: 16
         is_benunit_head: false
+        is_claimant_or_partner: false
         current_education: NOT_IN_EDUCATION
     benunits:
       family:
         members: [claimant, young_person]
-        is_benefit_cap_exempt: false
+        is_uc_benefit_cap_exempt: false
+        is_housing_benefit_benefit_cap_exempt: false
     households:
       home:
         members: [claimant, young_person]
         region: SOUTH_EAST
   output:
+    is_claimant_or_partner: [true, false]
     is_responsible_for_child_or_young_person_for_uc_or_housing_benefit: true
-    benefit_cap: 22_020
+    # UC reg 5(1)(a): "up to, but not including, the 1st September following
+    # their 16th birthday";
+    # HB reg 19 uses Child Benefit's school-leaver terminal dates. Annual ages
+    # cannot place either date, so both schemes give the family rate here.
+    is_uc_benefit_cap_single_claimant_rate: false
+    is_housing_benefit_benefit_cap_single_claimant_rate: false
+    uc_benefit_cap: 22_020
+    housing_benefit_benefit_cap: 22_020
 
 - name: A looked-after foster child does not give the claimant the family cap.
   period: 2025

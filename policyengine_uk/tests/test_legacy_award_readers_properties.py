@@ -12,8 +12,8 @@ the child's parent, or the person themselves:
   exemption: CTR (Default Scheme) (England) Regs 2012, Schedule.
 - The tax credit income test: TCA 2002 s.7(2), SI 2002/2008 reg 4.
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
-- The benefit cap exemption: HB Regs 2006 reg 75F(1)(a); UC Regs 2013 reg
-  83(1)(a).
+- The specified-benefit cap exemptions, tested separately for each scheme:
+  HB Regs 2006 reg 75F(1)(a); UC Regs 2013 reg 83(1)(a).
 - Targeted childcare: SI 2014/2147 reg 1(2).
 - Maintenance loans for students entitled to benefits: SI 2011/1986 reg
   71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a).
@@ -47,6 +47,7 @@ from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 
+
 YEAR = 2025
 # Merton's working-age council tax reduction scheme has parameters from
 # April 2026, so the non-dependant property runs in 2027 (income-related ESA
@@ -60,7 +61,8 @@ FAMILY_READERS = [
     "council_tax_reduction_applicable_income",
     "council_tax_reduction_relevant_income_based_benefit",
     "tax_credits_applicable_income",
-    "is_benefit_cap_exempt_health_disability",
+    "is_uc_benefit_cap_exempt_specified_benefit",
+    "is_housing_benefit_benefit_cap_exempt_specified_benefit",
     "targeted_childcare_entitlement_eligible",
     "would_claim_IS",
     "income_support_eligible",

@@ -337,8 +337,9 @@
   output:
     targeted_childcare_entitlement_eligible: true
 
-# Benefit cap: no cap where "the claimant or the claimant's partner" receives
-# ESA with the support component (HB Regs 2006 reg 75F(1)(a)).
+# Benefit cap: HB reg 75F(1)(a) names "the claimant or the claimant's partner";
+# UC reg 83(1)(a) names "the claimant" receiving ESA with the support component.
+# These examples have a single claimant, so both schemes have the same result.
 
 - name: Another member's income-related ESA does not exempt the family from the benefit cap
   period: 2025
@@ -361,7 +362,8 @@
       household:
         members: [claimant, other]
   output:
-    is_benefit_cap_exempt_health_disability: false
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
 
 - name: The claimant's own income-related ESA with the support component exempts the family from the benefit cap
   period: 2025
@@ -384,7 +386,8 @@
       household:
         members: [claimant, other]
   output:
-    is_benefit_cap_exempt_health_disability: true
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
 
 # Maintenance loans: the "students entitled to benefits" schedule (SI 2011/1986
 # reg 71(1)(h)(iii)) follows the special support grant test in reg 61(2)(b),

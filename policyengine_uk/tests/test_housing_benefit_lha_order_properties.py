@@ -231,7 +231,9 @@ def test_bounds_closed_form_and_differential(population):
     # LHA tenants are exactly the private renters here.
     assert np.array_equal(lha, tenures == "RENT_PRIVATELY")
     assert np.allclose(
-        values["LHA_cap"], np.minimum(rent, values["housing_benefit_LHA_rate"]), atol=TOLERANCE
+        values["LHA_cap"],
+        np.minimum(rent, values["housing_benefit_LHA_rate"]),
+        atol=TOLERANCE,
     )
 
     # 1. Bounds.
