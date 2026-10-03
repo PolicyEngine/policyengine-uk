@@ -61,6 +61,19 @@
     is_housing_benefit_benefit_cap_exempt_specified_benefit: true
     is_housing_benefit_benefit_cap_exempt: true
 
+- name: UC reg 83(1)(c) with reg 2, and HB reg 75F(1)(ea) - armed forces independence payment lifts both caps
+  period: 2025
+  input:
+    age: 30
+    region: NORTH_EAST
+    armed_forces_independence_payment: 6_000
+    working_tax_credit: 0
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
+
 - name: UC reg 82(1)(a) - earnings lift the UC cap; HB has no earnings exception
   period: 2025
   input:

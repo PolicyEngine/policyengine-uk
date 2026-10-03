@@ -6,10 +6,12 @@ from policyengine_uk.utils.uc_work_related_requirements import (
 # Benefits whose receipt by "a claimant" (or, for some, a child or qualifying
 # young person the claimant is responsible for) lifts the cap: industrial
 # injuries benefit (UC Regs 2013 reg. 83(1)(b)), attendance allowance (c),
+# which reg. 2 defines to include armed forces independence payment,
 # disability living allowance (f), personal independence payment (g), carer's
 # allowance (i) and carer support payment (ia).
 SPECIFIED_PERSONAL_BENEFITS = [
     "attendance_allowance",
+    "armed_forces_independence_payment",
     "carers_allowance",
     "carer_support_payment",
     "dla",
@@ -27,8 +29,9 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         "Whether the award includes the LCWRA or carer element, or a "
         "claimant receives a benefit listed in UC Regs 2013 reg. 83(1): "
         "employment and support allowance with the support component, "
-        "industrial injuries benefit, attendance allowance, a war pension or "
-        "armed forces compensation, disability living allowance, personal "
+        "industrial injuries benefit, attendance allowance (including armed "
+        "forces independence payment, reg. 2), a war pension or armed forces "
+        "compensation, disability living allowance, personal "
         "independence payment, carer's allowance or carer support payment. "
         "A partner who cannot be a joint claimant, so that the other member "
         "claims as a single person (reg. 3(3)), is not a claimant: their own "

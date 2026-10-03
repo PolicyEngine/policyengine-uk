@@ -3,10 +3,11 @@ from policyengine_uk.model_api import *
 # Benefits whose receipt (or entitlement) by the claimant or partner, or for
 # some a child or young person, lifts the cap: industrial injuries benefit
 # (HB Regs 2006 reg. 75F(1)(b)), attendance allowance (c), disability living
-# allowance (e), personal independence payment (ea), carer's allowance (h)
-# and carer support payment (ha).
+# allowance (e), personal independence payment and armed forces independence
+# payment (ea), carer's allowance (h) and carer support payment (ha).
 SPECIFIED_PERSONAL_BENEFITS = [
     "attendance_allowance",
+    "armed_forces_independence_payment",
     "carers_allowance",
     "carer_support_payment",
     "dla",
@@ -26,8 +27,8 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "2006 reg. 75F(1): employment and support allowance with the support "
         "component, industrial injuries benefit, attendance allowance, a war "
         "pension or armed forces compensation, disability living allowance, "
-        "personal independence payment, carer's allowance or carer support "
-        "payment. Housing Benefit has no claim by a member of a couple as a "
+        "personal independence payment, armed forces independence payment, "
+        "carer's allowance or carer support payment. Housing Benefit has no claim by a member of a couple as a "
         "single person, so the partner's benefits always count. The Universal "
         "Credit LCWRA and carer elements are not Housing Benefit exceptions. "
         "Regulation 75F(1)(g) (a claimant receiving Universal Credit) never "

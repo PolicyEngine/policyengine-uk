@@ -11,7 +11,10 @@ class uc_benefit_cap_reduction(Variable):
         "the Universal Credit cap, minus the childcare costs element, and "
         "nothing where the childcare costs element is greater than the "
         "excess (UC Regs 2013 reg. 81). The cap reduces an award of Universal "
-        "Credit (reg. 78(1)), so there is no reduction without one."
+        "Credit (reg. 78(1)), so there is no reduction without one. This is the "
+        "amount reg. 81 takes off, which can exceed the award before the cap; "
+        "universal_credit floors the award at nil, so the amount actually "
+        "removed is the smaller of the two."
     )
     definition_period = YEAR
     unit = GBP
