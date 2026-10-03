@@ -1,7 +1,7 @@
 # Carer Support Payment in Council Tax Reduction income.
 # Scottish carers receive Carer Support Payment (CSP) in place of Carer's
 # Allowance (CA); the model moves them in 2025. Scottish Council Tax Reduction
-# counts the CSP component in full:
+# counts the CSP component, with no cap at the CA amount:
 # - working age: Council Tax Reduction (Scotland) Regulations 2021 (SSI
 #   2021/249) reg 57(1)(b)(iva), a closed list of unearned income;
 # - pension age: Council Tax Reduction (State Pension Credit) (Scotland)
@@ -20,9 +20,11 @@
 # Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
 # carer premium 48.15, personal allowance 95.55 (single, 25 or over), 256.00
 # (single, pension age) and 383.35 (couple, pension age). 2025: CSP 83.30, no
-# supplement, carer premium 46.38, personal allowance 92.04. 2024: CA 81.90,
-# carer premium 45.60, personal allowance 90.50. Reduction is withdrawn at 20%
-# of income above the applicable amount. Council tax is 2,000 throughout.
+# supplement, and the model's carer premium 46.38 and personal allowance 92.04
+# (the statutory 2025-26 amounts were 46.40 and 92.05; see #2110). 2024: CA
+# 81.90, carer premium 45.60, personal allowance 90.50. Reduction is withdrawn
+# at 20% of income above the applicable amount. Council tax is 2,000
+# throughout.
 # The working-age cases take no Universal Credit, so the award does not turn
 # on how Universal Credit treats CSP.
 

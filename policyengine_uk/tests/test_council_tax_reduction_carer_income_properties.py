@@ -28,14 +28,15 @@ over State Pension age:
 1. Counts the component: claiming Carer Support Payment raises Council Tax
    Reduction income, before income tax and National Insurance and apart from
    the other benefits it counts, by exactly the Carer Support Payment
-   component (86.45 a week), not by the component plus the supplement. The
-   reduction itself never rises. Where both awards are partial and claiming
-   leaves the applicable amount unchanged (a carer by hours, who has the
-   carer premium either way), it falls by 20% of the rise in income.
+   component (86.45 a week), not by the component plus the supplement. For a
+   carer who qualifies by caring hours, and so has the carer premium either
+   way, the reduction itself never rises, and where both awards are partial
+   it falls by 20% of the rise in income.
 2. Invariant to the supplement: setting the Scottish Carer Supplement to zero
-   leaves Carer Support Payment and every benefit counted in Council Tax
-   Reduction income unchanged, and changes that income only through income
-   tax: income plus income tax is unchanged. The supplement never lowers the
+   leaves Carer Support Payment and the other benefits counted in Council
+   Tax Reduction income (Child Benefit, the income-related benefits,
+   Universal Credit and tax credits) unchanged, and changes that income only
+   through income tax: income plus income tax is unchanged. The supplement never lowers the
    reduction, and where both awards are partial it raises it by 20% of the
    tax on the supplement.
 3. Differential: Council Tax Reduction and Housing Benefit assess the same
@@ -262,6 +263,9 @@ def test_council_tax_reduction_income_counts_the_carer_support_payment_component
         # both runs follow the general rules.
         general = g["general_rules"][i, :, 0] & g["general_rules"][i, :, 1]
         compared = (income[i, :, 0] > 0) & (income[i, :, 1] > 0) & general
+        # At the top of the pension grid every family follows the general
+        # rules with positive income, so the comparison is never empty.
+        assert compared.any(), fam
         rise = g["income_before_tax"][i, :, 0] - g["income_before_tax"][i, :, 1]
         assert np.allclose(rise[compared], CARER_SUPPORT_PAYMENT, atol=0.05), (
             fam,
@@ -305,6 +309,7 @@ def test_council_tax_reduction_income_ignores_the_scottish_carer_supplement(
         # both runs follow the general rules.
         general = g["general_rules"][i] & without["general_rules"][i]
         compared = (income > 0) & (income_without > 0) & general
+        assert compared.any(), fam
         assert np.allclose(
             (income + g["income_tax"][i])[compared],
             (income_without + without["income_tax"][i])[compared],
@@ -344,6 +349,7 @@ def test_council_tax_reduction_and_housing_benefit_assess_the_same_carer_income(
         compared = (
             ~passported & g["general_rules"][i] & (hb_income > 0) & (ctr_income > 0)
         )
+        assert compared.any(), fam
         hb_before_adjustments = (
             hb_income
             + g["housing_benefit_applicable_income_disregard"][i]

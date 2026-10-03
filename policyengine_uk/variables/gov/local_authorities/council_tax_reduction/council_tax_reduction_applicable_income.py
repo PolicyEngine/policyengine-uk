@@ -47,7 +47,8 @@ class council_tax_reduction_applicable_income(Variable):
         personal_benefits = [
             "carers_allowance",
             # Scottish carers receive Carer Support Payment in place of Carer's
-            # Allowance. Scottish Council Tax Reduction counts it in full:
+            # Allowance. Scottish Council Tax Reduction counts it, with no cap at
+            # the Carer's Allowance amount:
             # SSI 2021/249 reg 57(1)(b)(iva) at working age and SSI 2012/319
             # reg 27(1)(j) at pension age. Neither counts the Scottish Carer
             # Supplement (reg 57(1) does not list it; reg 27(1)(j)(xxib)
