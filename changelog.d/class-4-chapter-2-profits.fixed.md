@@ -1,0 +1,3 @@
+- Counted a trading loss for Class 4 NICs only in the year it is entered for, so a one-off `trading_loss` is relieved once and only its unrelieved part reduces later years' profits (new `ni_class_4_trading_loss`).
+- Isolated supplied-input provenance between simulation clones and removed it for deleted inputs, preventing Class 4 from relieving cached carry-over losses again.
+- Corrected the Class 4 property-test reference to use each year's trading allowance parameter, including the zero allowance in historical years.

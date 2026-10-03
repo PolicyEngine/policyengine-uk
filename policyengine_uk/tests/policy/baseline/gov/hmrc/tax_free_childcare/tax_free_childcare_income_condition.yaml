@@ -150,3 +150,29 @@
   output:
     tax_free_childcare_regarded_as_in_paid_work: [false, true]
     tax_free_childcare_meets_income_requirements: [true, false]
+# 2023-24 thresholds use the 1 April 2023 rates (S.I. 2023/354): 16 hours x 13
+# weeks at £10.42 (23 or over) is £2,167.36, and at £10.18 (21 or 22) is
+# £2,117.44. The April 2022 rates gave £1,976 and £1,909.44.
+- name: 2023-24 expected income between the 2022-23 and 2023-24 thresholds, age 30 - ineligible
+  period: 2023
+  input:
+    age: 30
+    tax_free_childcare_expected_declaration_period_income: 2_100
+  output:
+    tax_free_childcare_meets_income_requirements: false
+
+- name: 2023-24 expected income above the 2023-24 threshold, age 30 - eligible
+  period: 2023
+  input:
+    age: 30
+    tax_free_childcare_expected_declaration_period_income: 2_200
+  output:
+    tax_free_childcare_meets_income_requirements: true
+
+- name: 2023-24 expected income between the 2022-23 and 2023-24 thresholds, age 22 - ineligible
+  period: 2023
+  input:
+    age: 22
+    tax_free_childcare_expected_declaration_period_income: 2_000
+  output:
+    tax_free_childcare_meets_income_requirements: false

@@ -78,12 +78,16 @@
     uc_income_reduction: 9_000
     # 14,243.64 - 9,000. Before this fix the award was 14,243.64.
     universal_credit: 5_243.64
-    # The pension-age CTR income is State Pension plus UC:
-    # 9,000 + 5,243.64 = 14,243.64, below the applicable amount of
-    # 383.35 x 52 = 19,934.20, so council tax is met in full. Before this fix
-    # the inflated UC gave an income of 23,243.64 and CTR of
-    # 1,500 - 20% x (23,243.64 - 19,934.20) = 838.11.
-    council_tax_benefit: 1_500
+    # A couple with an award of Universal Credit is not a pensioner for
+    # Council Tax Reduction, though one member is over the qualifying age
+    # (SI 2012/2885 reg 3(1)(a)(ii)(bb)), so it claims under the council's
+    # working-age scheme, not the national pensioner scheme. The household is
+    # in England (region defaults to London) and in Maidstone (the default
+    # local authority), whose scheme the model does not simulate, so it keeps
+    # reported Council Tax Reduction: none here. The pensioner scheme would
+    # have met the 1,500 in full.
+    council_tax_reduction_pensioner: false
+    council_tax_benefit: 0
 
 - name: Same couple with the same amount of private pension instead gets the same UC
   period: 2026

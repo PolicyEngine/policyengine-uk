@@ -3,6 +3,8 @@ import pytest
 
 from policyengine_uk import Simulation
 
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
 
 def test_class_4_annual_maximum_applies_case_3_steps():
     year = 2026
@@ -149,12 +151,15 @@ def test_class_2_counts_towards_annual_maximum_only_before_april_2024(year, expe
     # applies and Step Four is negative (Case 3), capping Class 4 at
     # 2% x 100 + 2% x 900 = £20. From then SI 2024/377 removes Class 2
     # from regulation 100, so without Class 1 the maximum does not apply.
+    # Receipts of £3,000 put expenses above the £1,000 trading allowance,
+    # so the whole £1,000 profit is chargeable.
     sim = Simulation(
         situation={
             "people": {
                 "person": {
                     "age": {year: 40},
                     "self_employment_income": {year: 1_000},
+                    "self_employment_gross_receipts": {year: 3_000},
                     "ni_class_2": {year: 182},
                 }
             },
