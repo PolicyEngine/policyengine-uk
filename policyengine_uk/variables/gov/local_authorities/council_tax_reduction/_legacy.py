@@ -54,7 +54,7 @@ def legacy_council_tax_reduction(
     capital = where(
         has_uc_award,
         benunit("uc_assessable_capital", period),
-        benunit.household("savings", period),
+        benunit("council_tax_reduction_assessable_capital", period),
     )
     capital_eligible = capital <= ctr.means_test.capital_limit
     return (

@@ -474,7 +474,7 @@
     council_tax_reduction_assessable_capital: 17_000
     council_tax_reduction: 0
 
-- name: The same pensioner not claiming Pension Credit is tested on household savings only
+- name: The same pensioner not claiming Pension Credit is tested on savings and the second property
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -499,13 +499,17 @@
         other_residential_property_value: 7_000
   output:
     in_receipt_of_savings_credit_only: false
-    # Pensioners without Pension Credit are tested on household savings, a
-    # proxy that leaves out the second property the schemes' own capital rules
-    # count (SI 2012/2885 Sch 1 Part 6 Chapter 3). So, unlike the claimant
-    # above, this pensioner keeps CTR: the gap is in the proxy, not the law.
-    council_tax_reduction_assessable_capital: 10_000
-    council_tax_reduction_applicable_income: 13_314
-    council_tax_reduction: 1_999.60
+    # SI 2012/2885 Sch 1 para 31(1) counts "the whole of his capital", so the
+    # second property counts as it does for the claimant above, valued less
+    # 10% for the expenses of sale (para 32(a)): 10,000 + 7,000 x 0.9 =
+    # 16,300, over the 16,000 limit (reg 11(2)). Shares and other investments
+    # are still left out of the proxy (issue 1936).
+    council_tax_reduction_assessable_capital: 16_300
+    # 13,500 - 186 tax ((13,500 - 12,570) x 20%) = 13,314, plus tariff income
+    # (Sch 1 para 37) on capital up to 16,000: 12 x 52 = 624.
+    council_tax_reduction_tariff_income: 624
+    council_tax_reduction_applicable_income: 13_938
+    council_tax_reduction: 0
 
 - name: Capital of exactly 16,000 is within the limit for a pensioner without Pension Credit
   period: 2026
@@ -529,12 +533,16 @@
         savings: 16_000
   output:
     # The limit excludes capital that "exceeds" 16,000 (SI 2012/2885 reg 11(2)).
-    # The award pins the model's current value: it has no pensioner tariff
-    # income from capital (Sch 1 para 37, 624 a year here), a known gap
-    # (#1933), so this is not the full legal amount.
+    # Tariff income (Sch 1 para 37): (16,000 - 10,000) / 500 = 12 a week, 624
+    # a year. Income 13,000 - 86 tax ((13,000 - 12,570) x 20%) + 624 =
+    # 13,538. The award, 2,000 - 0.2 x (13,538 - 13,312) = 1,954.80, uses the
+    # model's applicable amount of 256 a week; the 238 a week allowance for
+    # people reaching pensionable age from April 2021 is a known gap (#1933).
     in_receipt_of_guarantee_credit: false
     council_tax_reduction_assessable_capital: 16_000
-    council_tax_reduction: 2_000
+    council_tax_reduction_tariff_income: 624
+    council_tax_reduction_applicable_income: 13_538
+    council_tax_reduction: 1_954.80
 
 - name: Capital just over 16,000 excludes a pensioner without Pension Credit
   period: 2026

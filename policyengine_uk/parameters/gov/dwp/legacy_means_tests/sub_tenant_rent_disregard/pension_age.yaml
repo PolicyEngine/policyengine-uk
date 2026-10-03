@@ -1,0 +1,27 @@
+description: >
+  Weekly amount disregarded from the rent a claimant over the qualifying age
+  for State Pension Credit receives from a person who occupies part of a
+  property the claimant lives in, under an agreement to pay rent; rent below
+  this amount is disregarded in full. Pension Credit and pension-age Housing
+  Benefit use it, and the pensioner council tax reduction schemes in England,
+  Wales and Scotland copy it. Before Pension Credit began on 6 October 2003
+  there was no separate pension-age amount; Income Support, including for
+  claimants over 60, disregarded £4 (Schedule 9 paragraph 19 as made).
+metadata:
+  label: Legacy benefits pension-age sub-tenant rent disregard
+  period: week
+  unit: currency-GBP
+  reference:
+    - title: The State Pension Credit Regulations 2002 Schedule IV para. 9
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV/paragraph/9
+    - title: The Income Support (General) Regulations 1987 Schedule 9 para. 19 (as made)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/9/made
+    - title: The State Pension Credit Regulations 2002 Schedule IV para. 9 (as made)
+      href: https://www.legislation.gov.uk/uksi/2002/1792/schedule/IV/made
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 5 para. 10
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/5/paragraph/10
+    - title: The Council Tax Reduction Schemes (Prescribed Requirements) (England) Regulations 2012 Schedule 5 para. 10
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/5/paragraph/10
+values:
+  1988-04-11: 4
+  2003-10-06: 20

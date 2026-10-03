@@ -59,7 +59,12 @@
     pension_credit_deemed_income: 52
     pension_credit_income: 52
 
-- name: Case 4, property income and non-main-home capital count for Pension Credit.
+- name: Case 4, rent from a let property is not Pension Credit income; the property counts through deemed income.
+  # SPC Regs 2002 Sch IV para 18 disregards any actual income from capital, so
+  # the £10,476 of rent does not count. Deemed income (reg 15(6)): capital
+  # 55,825 - 10,000 = 45,825, ceil(45,825 / 500) = 92, so £92 a week, 4,784 a
+  # year. Guarantee credit = (238 - 92) x 52 = 7,592. Savings credit is nil, as
+  # qualifying income (£92 a week) is below the savings credit threshold.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -78,8 +83,10 @@
   output:
     pension_credit_assessable_capital: 55_825
     pension_credit_deemed_income: 4_784
-    pension_credit_income: 15_260
-    pension_credit: 0
+    pension_credit_income: 4_784
+    guarantee_credit: 7_592
+    savings_credit: 0
+    pension_credit: 7_592
 
 - name: Case 5, 2026 Pension Credit uses tariff income with the published guarantee rate.
   period: 2026

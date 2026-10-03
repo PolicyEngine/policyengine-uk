@@ -1,0 +1,984 @@
+# Income derived from capital in the legacy means tests.
+#
+# Income Support, Housing Benefit, Pension Credit and council tax reduction
+# treat rent, interest and dividends as capital, not income (IS Regs 1987 reg
+# 48(4) and Sch 9 para 22; HB Regs 2006 reg 46(4) and Sch 5 para 17; HB (SPC)
+# Regs 2006 Sch 5 para 22; SPC Regs 2002 Sch IV para 18; CTR equivalents), and
+# disregard tax only on income they take into account (IS Sch 9 para 1; HB Sch 5
+# para 1; HB (SPC) reg 33(12); SPC reg 17(10)(a)). Rent for letting part of the
+# home stays income less £20 a week per occupier (IS Sch 9 para 19; HB Sch 5
+# para 22; HB (SPC) Sch 5 para 10; SPC Sch IV para 9).
+#
+# Tax figures: personal allowance £12,570; basic rate 20%; property allowance
+# £1,000; personal savings allowance £1,000 for a basic-rate taxpayer;
+# dividend allowance £500; dividend ordinary rate 8.75% in 2025-26 and 10.75%
+# in 2026-27 (the model's rate); employee NI 8% above £12,570.
+
+- name: Income Support, lone parent with earnings and rent from a let property
+  # Earnings 10,000 use 10,000 of the personal allowance, so the remaining
+  # 2,570 goes against taxable rent of 5,200 - 1,000 = 4,200. Tax on rent:
+  # (4,200 - 2,570) x 20% = 326. Tax on earnings and NI: nil.
+  # Main counted the rent and deducted its tax: 10,000 + 5,200 - 326 - 1,040.
+  # The law counts neither: 10,000 - 1,040 (the £20 lone parent disregard).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 10_000
+        property_income: 5_200
+        income_support_reported: 1
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    income_tax: [326, 0]
+    property_income_tax: [326, 0]
+    legacy_means_test_income_tax: [0, 0]
+    income_support_applicable_income: 8_960
+
+- name: Working-age Housing Benefit counts earnings net of the tax on them only
+  # Earnings 14,000: tax (14,000 - 12,570) x 20% = 286; NI (14,000 - 12,570)
+  # x 8% = 114.40. Rent 6,000: tax (6,000 - 1,000) x 20% = 1,000. Interest 500
+  # is within the personal savings allowance. Dividends 1,000: (1,000 - 500) x
+  # 8.75% = 43.75. Income tax 1,329.75, of which 286 is on counted income.
+  # Applicable income: 14,000 - 286 - 114.40 - 260 (the £5 weekly disregard,
+  # set as an input here) = 13,339.60.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 14_000
+        property_income: 6_000
+        savings_interest_income: 500
+        dividend_income: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person]
+  output:
+    income_tax: 1_329.75
+    property_income_tax: 1_000
+    dividend_income_tax: 43.75
+    savings_income_tax: 0
+    legacy_means_test_income_tax: 286
+    national_insurance: 114.40
+    housing_benefit_applicable_income: 13_339.60
+
+- name: Pension-age Housing Benefit counts rent from part of the home less £20 a week, not rent from other property
+  # State Pension 12,000 and private pension 2,000 use the personal allowance
+  # and leave 1,430 taxable: tax 286. Rent from other property 3,000: taxable
+  # 2,000, tax 400, not deducted. Sub-tenant rent 5,200 (£100 a week): HB (SPC)
+  # reg 29(1)(v) less Sch 5 para 10's £20, so 80 x 52 = 4,160.
+  # Applicable income: 14,000 + 4,160 - 286 = 17,874 (no earnings disregard,
+  # set to 0). Pension Credit income is the same 17,874, above the £238 x 52 =
+  # 12,376 guarantee, so there is no guarantee credit passport.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 2_000
+        property_income: 3_000
+        sublet_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person]
+  output:
+    income_tax: 686
+    legacy_means_test_income_tax: 286
+    legacy_benefits_home_letting_income: 4_160
+    pension_credit_income: 17_874
+    guarantee_credit: 0
+    housing_benefit_applicable_income: 17_874
+
+- name: Pension Credit ignores rent from a let property
+  # SPC Sch IV para 18. Rent 4,000: taxable 3,000, of which 3,000 - (12,570 -
+  # 10,000) = 430 is taxed: 86, not deducted. Income 10,000 (State Pension).
+  # Guarantee credit (238 - 10,000 / 52) x 52 = 12,376 - 10,000 = 2,376.
+  # Savings credit: qualifying income 10,000 is below the threshold of
+  # 208.07 x 52 = 10,819.64, so nil. Main counted the rent less its tax:
+  # 13,914, which paid no guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 80
+        state_pension: 10_000
+        property_income: 4_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+  output:
+    income_tax: 86
+    legacy_means_test_income_tax: 0
+    pension_credit_income: 10_000
+    guarantee_credit: 2_376
+    savings_credit: 0
+    pension_credit: 2_376
+
+- name: Pension Credit does not deduct tax on dividends
+  # State Pension 12,000 leaves 570 of the personal allowance for dividends
+  # 3,000: taxable 2,430 - 500 allowance = 1,930, at 10.75% = 207.475. That tax
+  # is on income Pension Credit does not count, so it is not deducted.
+  # Deemed income on savings 20,000: ceil((20,000 - 10,000) / 500) = £20 a week,
+  # 1,040 a year. Income 12,000 + 1,040 = 13,040, above 12,376: no guarantee
+  # credit. Savings credit: threshold 10,819.64; maximum 0.6 x (12,376 -
+  # 10,819.64) = 933.816; phase-in 0.6 x (13,040 - 10,819.64) = 1,332.22,
+  # capped at 933.816; less 0.4 x (13,040 - 12,376) = 265.60; 668.216.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 80
+        state_pension: 12_000
+        dividend_income: 3_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        savings: 20_000
+  output:
+    dividend_income_tax: 207.475
+    legacy_means_test_income_tax: 0
+    pension_credit_deemed_income: 1_040
+    pension_credit_income: 13_040
+    guarantee_credit: 0
+    savings_credit: 668.216
+    pension_credit: 668.216
+
+- name: English pensioner council tax reduction counts sub-tenant rent less £20, not other rent
+  # SI 2012/2885 Sch 1 para 16(1)(v) and Sch 5 para 10 for the sub-tenant rent:
+  # 2,600 / 52 = £50 a week, less £20 = 30 x 52 = 1,560. Sch 5 para 23
+  # disregards actual income from capital, so the other rent 4,000 and its tax
+  # 486 ((15,000 - 12,570) x 20%) are left out: 12,000 + 1,560 = 13,560.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension: 12_000
+        property_income: 4_000
+        sublet_income: 2_600
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: NORTH_EAST
+  output:
+    income_tax: 486
+    legacy_means_test_income_tax: 0
+    council_tax_reduction_applicable_income: 13_560
+
+- name: Scottish working-age council tax reduction counts neither rent from property nor sub-tenant rent
+  # SSI 2021/249 reg 57(1) lists unearned income in full; it includes the
+  # assumed yield from capital (reg 63) but no head for actual rent or rent
+  # from part of the home. Earnings 12,000 are below the personal allowance
+  # and the NI threshold, so applicable income is 12,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        property_income: 3_000
+        sublet_income: 2_600
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SCOTLAND
+  output:
+    legacy_means_test_income_tax: 0
+    council_tax_reduction_applicable_income: 12_000
+
+- name: Welsh working-age council tax reduction counts sub-tenant rent less £20, not other rent
+  # WSI 2013/3029 Sch 6 para 27(5) treats income derived from capital as
+  # capital; Sch 9 para 26 disregards £20 a week of sub-tenant rent:
+  # 12,000 + (50 - 20) x 52 = 13,560.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 12_000
+        property_income: 3_000
+        sublet_income: 2_600
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: WALES
+  output:
+    legacy_means_test_income_tax: 0
+    council_tax_reduction_applicable_income: 13_560
+
+- name: Sub-tenant rent below £20 a week is disregarded in full
+  # 1,000 / 52 = 19.23 a week.
+  period: 2026
+  input:
+    age: 40
+    sublet_income: 1_000
+  output:
+    legacy_benefits_home_letting_income: 0
+
+- name: Working-age sub-tenant disregard was £4 before April 2008
+  # IS Sch 9 para 19 before SI 2007/2618: £4 (the extra heating amount is not
+  # modelled). (100 - 4) x 52 = 4,992.
+  period: 2007
+  input:
+    age: 40
+    sublet_income: 5_200
+  output:
+    legacy_benefits_home_letting_income: 4_992
+
+- name: Working-age sub-tenant disregard is £20 from April 2008
+  period: 2009
+  input:
+    age: 40
+    sublet_income: 5_200
+  output:
+    legacy_benefits_home_letting_income: 4_160
+
+- name: Pension-age sub-tenant disregard was already £20 before 2008
+  # SPC Sch IV para 9 as made.
+  period: 2007
+  input:
+    age: 70
+    sublet_income: 5_200
+  output:
+    legacy_benefits_home_letting_income: 4_160
+
+- name: A couple's sub-tenant rent is treated as from one occupier
+  # The data give no count of occupiers, so the model assumes one:
+  # (2 x 2,600) / 52 = £100 a week, less £20 = 4,160.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        sublet_income: 2_600
+      partner:
+        age: 40
+        sublet_income: 2_600
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    legacy_benefits_home_letting_income: 4_160
+
+- name: A dependant's sublet rent is not the claimant's
+  # legacy_benefits_home_letting_income counts the claimant's and partner's
+  # rent only.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        sublet_income: 5_200
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+  output:
+    legacy_benefits_home_letting_income: 0
+
+- name: Before Pension Credit, the £4 disregard applied at every age
+  # IS Regs 1987 Sch 9 para 19 as made; the pension-age £20 starts with
+  # Pension Credit on 6 October 2003. (100 - 4) x 52 = 4,992.
+  period: 2002
+  input:
+    age: 70
+    sublet_income: 5_200
+  output:
+    legacy_benefits_home_letting_income: 4_992
+
+- name: Tax reductions are shared between counted income and income from capital
+  # ITA 2007 s.23: Step 4 tax is 286 on earnings ((14,000 - 12,570) x 20%) and
+  # 1,000 on rent ((6,000 - 1,000) x 20%), 1,286 in all; Step 6 deducts a
+  # 1,000 tax reduction. other_tax_credits records no source, so the model
+  # shares it in proportion to the Step 4 tax (a stated convention: a credit
+  # for foreign tax on the rent would relieve only the rent, TIOPA 2010
+  # s.18(2)): the rent's share is 1,000 x 1,000 / 1,286 = 777.60, leaving
+  # 222.40 of tax on rent. Income tax 286 less 222.40 = 63.60 is tax on the earnings,
+  # and HB applicable income is 14,000 - 63.60 - 114.40 (NI) - 260 = 13,562.00.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 14_000
+        property_income: 6_000
+        other_tax_credits: 1_000
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person]
+  output:
+    income_tax: 286
+    legacy_means_test_income_tax: 63.605
+    housing_benefit_applicable_income: 13_561.995
+
+- name: Step 7 charges are not tax on counted income
+  # The High Income Child Benefit Charge is added at Step 7 of ITA 2007 s.23
+  # (s.30(1)); it is not tax calculated on any income the means tests count.
+  # Earnings 20,000: (20,000 - 12,570) x 20% = 1,486. Income tax with a 500
+  # charge is 1,986; 1,486 is deducted.
+  period: 2025
+  input:
+    age: 40
+    employment_income: 20_000
+    CB_HITC: 500
+  output:
+    income_tax: 1_986
+    legacy_means_test_income_tax: 1_486
+
+- name: Tax on counted income is floored at nil when reductions exceed the Step 4 tax
+  # Step 4 tax is 286 on earnings and 1,000 on rent; Step 6 reductions of
+  # 2,000 exceed it, so income tax is nil even with a 500 Step 7 charge
+  # (1,786 - 2,000 < 0). The rent's share of the reductions (1,000 of the
+  # 1,286 used) removes its tax, and the charge is not tax on counted income:
+  # 0 - 0 - 500 is floored at nil.
+  period: 2025
+  input:
+    age: 40
+    employment_income: 14_000
+    property_income: 6_000
+    other_tax_credits: 2_000
+    CB_HITC: 500
+  output:
+    earned_income_tax: 286
+    property_income_tax: 1_000
+    income_tax: 0
+    legacy_means_test_income_tax: 0
+
+- name: Working-age Housing Benefit award with rent from a let property
+  # A continuing award (2025-26). Earnings 10,000 use 10,000 of the personal
+  # allowance; taxable rent 5,000 - 1,000 = 4,000, of which 4,000 - 2,570 =
+  # 1,430 is taxed: 286, all on rent, so none is deducted. NI is nil below
+  # 12,570. Applicable income: 10,000 - 260 (the £5 disregard, as an input) =
+  # 9,740. With the single 25-or-over personal allowance of £92.05 a week
+  # (4,786.60, an input here), HB = 6,000 - 65% x (9,740 - 4,786.60) =
+  # 6,000 - 3,219.71 = 2,780.29. Counting the rent would leave nothing.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 10_000
+        property_income: 5_000
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+        housing_benefit_applicable_income_disregard: 260
+        housing_benefit_applicable_amount: 4_786.60
+    households:
+      household:
+        members: [person]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_000
+        region: NORTH_EAST
+  output:
+    property_income_tax: 286
+    legacy_means_test_income_tax: 0
+    housing_benefit_applicable_income: 9_740
+    housing_benefit: 2_780.29
+
+- name: An English pensioner with a let property worth more than £16,000 gets no council tax reduction
+  # The rent no longer counts as income, but the property counts as capital:
+  # SI 2012/2885 Sch 1 para 31(1) ("the whole of his capital") and reg 11(2)
+  # (no reduction above 16,000). It is valued less 10% for the expenses of
+  # sale (para 32(a)): 100,000 x 0.9 = 90,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 14_000
+        property_income: 7_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 100_000
+  output:
+    council_tax_reduction_assessable_capital: 90_000
+    council_tax_reduction: 0
+
+- name: A Welsh working-age applicant with a let property worth more than £16,000 gets no council tax reduction
+  # WSI 2013/3029 reg 30: no reduction where capital exceeds 16,000. The
+  # property is valued less 10% for the expenses of sale (Sch 6 para 28(a)):
+  # 45,000. Tariff income (Sch 6 para 33) counts capital up to 16,000:
+  # (16,000 - 6,000) / 250 = 40 a week, 2,080 a year, so income is 9,000 +
+  # 2,080 = 11,080.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 9_000
+        property_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      household:
+        members: [person]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_000
+        council_tax: 1_500
+        other_residential_property_value: 50_000
+  output:
+    council_tax_reduction_assessable_capital: 45_000
+    council_tax_reduction_tariff_income: 2_080
+    council_tax_reduction_applicable_income: 11_080
+    council_tax_reduction: 0
+
+- name: A Scottish mixed-age couple on Universal Credit is under the working-age scheme
+  # SSI 2021/249 reg 3(1)(b)(ii): it applies where the applicant has reached
+  # pensionable age but the applicant or partner has an award of UC. Its reg
+  # 57(1) has no head for sub-tenant rent, so only the UC (1,000, an input)
+  # counts here.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        sublet_income: 5_200
+      partner:
+        age: 40
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        universal_credit: 1_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    legacy_benefits_home_letting_income: 4_160
+    council_tax_reduction_applicable_income: 1_000
+
+- name: Before April 2022 the Scottish working-age scheme counted sub-tenant rent less £20
+  # SSI 2012/303 Sch 4 para 25 (as at 1 April 2021): (100 - 20) x 52 = 4,160.
+  period: 2021
+  input:
+    people:
+      person:
+        age: 40
+        sublet_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        universal_credit: 0
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    council_tax_reduction_applicable_income: 4_160
+
+- name: From April 2022 the Scottish working-age scheme does not count sub-tenant rent
+  # SSI 2021/249, in force 1 April 2022 (reg 1); reg 57(1) has no head for it.
+  period: 2023
+  input:
+    people:
+      person:
+        age: 40
+        sublet_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        universal_credit: 0
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    council_tax_reduction_applicable_income: 0
+
+- name: Welsh working-age tariff income on a let property below the capital limit
+  # The rent no longer counts, but the property counts as capital at 90% of
+  # its value (WSI 2013/3029 Sch 6 para 28(a)): 9,000. Sch 6 para 33 treats it
+  # as a weekly income of 1 for each 250, or part of 250, over 6,000: 12 a
+  # week, 624 a year. Earnings 9,000 are below the personal allowance and the
+  # NI threshold. Income 9,000 + 624 = 9,624. With the applicable amount
+  # supplied as 6,000, CTR = 1,500 - 20% x (9,624 - 6,000) = 775.20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 9_000
+        property_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_000
+        council_tax: 1_500
+        other_residential_property_value: 10_000
+  output:
+    council_tax_reduction_assessable_capital: 9_000
+    council_tax_reduction_tariff_income: 624
+    council_tax_reduction_applicable_income: 9_624
+    council_tax_reduction: 775.20
+
+- name: Scottish working-age assumed yield on a let property below the capital limit
+  # SSI 2021/249 reg 70(1)(a) values the property less 10%: 9,000. Reg
+  # 63(1)(b): a weekly income of 1 for each 250 over 6,000 and 1 for any part
+  # of 250: 12 a week, 624 a year; reg 63(3) treats the actual rent as
+  # capital. CTR = 1,500 - 20% x (9,624 - 6,000) = 775.20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 9_000
+        property_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_000
+        council_tax: 1_500
+        other_residential_property_value: 10_000
+  output:
+    council_tax_reduction_assessable_capital: 9_000
+    council_tax_reduction_tariff_income: 624
+    council_tax_reduction_applicable_income: 9_624
+    council_tax_reduction: 775.20
+
+- name: An English pensioner's let property valued less sale expenses stays within the limit
+  # A 17,000 property is valued at 15,300 (SI 2012/2885 Sch 1 para 32(a)), so
+  # the 16,000 limit (reg 11(2)) does not exclude the pensioner. Tariff income
+  # (Sch 1 para 37): 5,300 / 500 = 10.6, so 11 a week, 572 a year. Pension
+  # 14,000 less its tax 286 ((14,000 - 12,570) x 20%) + 572 = 14,286; the rent
+  # and its tax (400) do not count (Sch 5 para 23). With the 238 a week
+  # allowance (12,376) supplied as the applicable amount, CTR = 2,000 - 20% x
+  # (14,286 - 12,376) = 1,618.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 14_000
+        property_income: 3_000
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+        would_claim_pc: false
+        council_tax_reduction_applicable_amount: 12_376
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 17_000
+  output:
+    legacy_means_test_income_tax: 286
+    council_tax_reduction_assessable_capital: 15_300
+    council_tax_reduction_tariff_income: 572
+    council_tax_reduction_applicable_income: 14_286
+    council_tax_reduction: 1_618
+
+- name: Welsh and Scottish pensioner tariff income is 1 a week per 500 over 10,000
+  # WSI 2013/3029 Sch 1 para 31 and SSI 2012/319 reg 27(2): savings 12,600
+  # are 2,600 over 10,000, 5.2 steps of 500, so 6 a week, 312 a year.
+  period: 2026
+  input:
+    people:
+      welsh_pensioner:
+        age: 75
+        private_pension_income: 12_000
+      scottish_pensioner:
+        age: 75
+        private_pension_income: 12_000
+    benunits:
+      welsh:
+        members: [welsh_pensioner]
+        would_claim_pc: false
+      scottish:
+        members: [scottish_pensioner]
+        would_claim_pc: false
+    households:
+      welsh_household:
+        members: [welsh_pensioner]
+        country: WALES
+        local_authority: CARDIFF
+        savings: 12_600
+      scottish_household:
+        members: [scottish_pensioner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        savings: 12_600
+  output:
+    council_tax_reduction_pensioner: [true, true]
+    council_tax_reduction_tariff_income: [312, 312]
+    council_tax_reduction_applicable_income: [12_312, 12_312]
+
+- name: A savings credit recipient's council tax reduction income does not fall when more sub-tenant rent ends the savings credit
+  # Before: 3,130.54 of sub-tenant rent counts 2,090.54 (less 20 a week).
+  # Pension Credit income is 10,000 + 2,000 + 2,090.54 + 520 deemed income
+  # (savings 15,000: 10 steps of 500 over 10,000) = 14,610.54. Savings credit
+  # = 60% x (238 - 208.07) x 52 - 40% x (14,610.54 - 238 x 52) = 933.816 -
+  # 893.816 = 40.00, so the award is savings credit only and council tax
+  # reduction counts 14,610.54 + 40 = 14,650.54 (SI 2012/2885 Sch 1 para 14).
+  # CTR = 2,000 - 20% x (14,650.54 - 13,312) = 1,732.29.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 10_000
+        private_pension_income: 2_000
+        sublet_income: 3_130.54
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 15_000
+  output:
+    pension_credit_income: 14_610.54
+    savings_credit: 40
+    in_receipt_of_savings_credit_only: true
+    council_tax_reduction_tariff_income: 0
+    council_tax_reduction_applicable_income: 14_650.54
+    council_tax_reduction: 1_732.29
+
+- name: The same pensioner with 200 more sub-tenant rent is assessed under the general rules with tariff income
+  # 3,330.54 counts 2,290.54. Pension Credit income 14,810.54 leaves a savings
+  # credit of 933.816 - 40% x (14,810.54 - 12,376) < 0, so nil. Under the
+  # general rules: 12,000 + 2,290.54, no tax (12,000 is under the personal
+  # allowance), plus tariff income on 15,000 (Sch 1 para 37): 10 a week, 520
+  # a year = 14,810.54, more than the 14,650.54 counted before. CTR = 2,000 -
+  # 20% x (14,810.54 - 13,312) = 1,700.29.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 10_000
+        private_pension_income: 2_000
+        sublet_income: 3_330.54
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 15_000
+  output:
+    savings_credit: 0
+    in_receipt_of_savings_credit_only: false
+    council_tax_reduction_tariff_income: 520
+    council_tax_reduction_applicable_income: 14_810.54
+    council_tax_reduction: 1_700.29
+
+- name: Oxford tests a Universal Credit recipient on the Universal Credit assessment of capital
+  # The household's let property is worth 20,000 (18,000 after sale
+  # expenses), but the claimant's Universal Credit capital is 15,000 (a
+  # reported assessment). Oxford's Appendix 6 ignores capital already taken
+  # into account for Universal Credit, so the 16,000 limit (paragraph 28)
+  # does not exclude the claimant. UC: 424.90 - 36 x 4.35 (assumed yield on
+  # 9,000 over 6,000) = 268.30 a month, 3,219.60 a year, 61.92 a week: band 1,
+  # 100% of 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: true
+        uc_reported_capital: 15_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: OXFORD
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    universal_credit: 3_219.60
+    council_tax_reduction_assessable_capital: 15_000
+    oxford_council_tax_reduction: 2_000
+
+- name: Oxford ignores the capital of an Income Support recipient
+  # Appendix 6 also ignores capital already taken into account for Income
+  # Support, so the household's 18,000 of property (after sale expenses) does
+  # not exclude the claimant; Income Support recipients' income is nil for the
+  # bands, so the award is 100% of 2,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+        income_support: 4_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+        local_authority: OXFORD
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 18_000
+    oxford_council_tax_reduction: 2_000
+
+- name: Wales uses the Secretary of State's capital for a Universal Credit recipient
+  # WSI 2013/3029 Sch 6 para 9(6): with a UC award the authority uses the
+  # Secretary of State's calculation of capital, 15,000 here (a reported
+  # assessment), not the household's 18,000 of property after sale expenses.
+  # The income includes the UC assumed yield (UC Regs 2013 reg 72): 36 x 4.35
+  # x 12 = 1,879.20. Income 3,219.60 (UC, an input) + 1,879.20 = 5,098.80 is
+  # below the applicable amount (6,000, an input), so CTR is the full 1,500.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        universal_credit: 3_219.60
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: WALES
+        local_authority: CARDIFF
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_500
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 15_000
+    council_tax_reduction_tariff_income: 1_879.20
+    council_tax_reduction_applicable_income: 5_098.80
+    council_tax_reduction: 1_500
+
+- name: From April 2022 Scotland calculates a Universal Credit recipient's capital itself
+  # SSI 2021/249 regs 66 to 70 have no rule taking capital from the
+  # Universal Credit assessment, so the household's property counts: 18,000
+  # after sale expenses, over the 16,000 limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        universal_credit: 3_219.60
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_500
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 18_000
+    council_tax_reduction: 0
+
+- name: Before April 2022 Scotland used the Universal Credit assessment of capital
+  # SSI 2012/303 reg 26(6) (reg 26(4) as made): the Secretary of State's
+  # capital, 15,000. Income 3,219.60 + 1,879.20 assumed yield = 5,098.80,
+  # below the applicable amount, so CTR is the full 1,500.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        claims_all_entitled_benefits: true
+        universal_credit: 3_219.60
+        uc_reported_capital: 15_000
+        council_tax_reduction_applicable_amount: 6_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_500
+        other_residential_property_value: 20_000
+  output:
+    council_tax_reduction_assessable_capital: 15_000
+    council_tax_reduction_tariff_income: 1_879.20
+    council_tax_reduction: 1_500
+
+- name: A Welsh Income Support recipient has no tariff income
+  # WSI 2013/3029 Sch 10 para 8 disregards the whole capital of an applicant
+  # on Income Support, so it yields no tariff income.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+        income_support: 4_000
+    households:
+      household:
+        members: [person]
+        country: WALES
+        local_authority: CARDIFF
+        savings: 10_000
+  output:
+    council_tax_reduction_tariff_income: 0
+
+- name: A Scottish couple whose joint Universal Credit award is held only by people over pension age is under the pension-age scheme
+  # SSI 2021/249 reg 3(2): the working-age scheme does not apply where the
+  # award is held only by people over pensionable age. Universal Credit
+  # itself needs a claimant under that age (UC Regs 2013 reg 3(2)(a)), so the
+  # model treats such an award as not selecting the working-age scheme. SSI
+  # 2012/319 counts the sub-tenant rent less 20 a week: (100 - 20) x 52 =
+  # 4,160, plus the UC (1,000, an input) as the model counts it: 5,160. The
+  # couple do not claim Pension Credit, whose guarantee credit would
+  # otherwise disregard their whole income.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 71
+        sublet_income: 5_200
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        universal_credit: 1_000
+        would_claim_pc: false
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    council_tax_reduction_pensioner: true
+    council_tax_reduction_applicable_income: 5_160

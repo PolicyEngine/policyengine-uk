@@ -24,7 +24,7 @@ class westminster_council_tax_reduction(Variable):
             household("council_tax_reduction_household_has_pensioner", period),
         )
         has_uc_award = benunit("universal_credit", period) > 0
-        capital = household("savings", period)
+        capital = benunit("council_tax_reduction_assessable_capital", period)
         weekly_tariff_income = np.ceil(
             max_(0, capital - ctr.means_test.tariff_income_threshold)
             / ctr.means_test.tariff_income_step

@@ -40,8 +40,10 @@ class pension_credit_income(Variable):
         pension_contributions = benunit.sum(
             person("pension_contributions", period) * is_claimant_or_partner
         )
+        # Reg 17(10)(a) disregards tax only on income taken into account, and
+        # Schedule IV paragraph 18 disregards actual income from capital.
         tax = benunit.sum(
-            add(person, period, ["income_tax", "national_insurance"])
+            add(person, period, ["legacy_means_test_income_tax", "national_insurance"])
             * is_claimant_or_partner
         )
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
