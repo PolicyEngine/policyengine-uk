@@ -102,7 +102,13 @@ def situation(units, year, income_variable="state_pension", pension_bump=0.0):
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {year: age}, "state_pension": {year: 0.0}}
+            # The adults are the couple whatever their age gap, so the roles
+            # are supplied rather than left to the age presumption.
+            person = {
+                "age": {year: age},
+                "state_pension": {year: 0.0},
+                "is_claimant_or_partner": {year: True},
+            }
             if j == 0:
                 amount = unit["state_pension"] + pension_bump
                 person[income_variable] = {year: amount}
@@ -112,7 +118,7 @@ def situation(units, year, income_variable="state_pension", pension_bump=0.0):
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
         households[f"h{i}"] = {
