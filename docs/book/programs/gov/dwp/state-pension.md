@@ -30,7 +30,53 @@ Three variables under `gov/dwp/`:
 
 The flag-up split (`state_pension_type`) is settled by [PR #1618](https://github.com/PolicyEngine/policyengine-uk/pull/1618):
 classification is based on whether the person reaches State Pension age
-before or on/after 6 April 2016.
+before or on/after 6 April 2016. No component is paid before State
+Pension age.
+
+## State Pension age
+
+State Pension age depends on date of birth. Pensions Act 1995 Schedule 4
+paragraph 1 sets it for each birth period, either as an age or as the day
+on which it is attained, and the Pensions Act 2014 s.26 raises it from 66
+to 67 for people born on or after 6 April 1960: 66 years and 1 to 11
+months for births from 6 April 1960 to 5 March 1961, and 67 from 6 March
+1961. The parameters under `gov/dwp/state_pension/age/` encode that
+timetable row by row:
+
+- `age_by_birth_date` — the age, in months, by date of birth (women, and
+  men born on or after 6 December 1953);
+- `day_by_birth_date` — the day, where the statute sets a day instead;
+- `male/age` and `male/born_before` — rule (1): men born before 6
+  December 1953 attain it at 65.
+
+A person attains State Pension age on the later of the two. The model
+places each person's date of birth with `age` and
+`months_since_last_birthday`, which counts months since their last
+birthday on 6 October, the middle of the fiscal year:
+
+- `state_pension_age` is the person's own State Pension age;
+- `months_since_state_pension_age` is how long before 6 October they
+  attained it (negative if later);
+- `is_SP_age` is whether they have attained it by 6 October, so are over
+  it for most of the year.
+
+Simulations of a household situation take a whole age to be the middle of
+the year of age (six months since the birthday); a fractional age is read as
+the exact age on 6 October. Survey microdata records whole years only, so in
+simulations built from data, including a region or constituency filtered
+from it, each single year of age and sex is spread evenly over the year by
+weight, and `filter_dataset` carries each person's place into a household it
+extracts. The weighted share of each age over State Pension age then matches
+the statute: three quarters of 66-year-olds in 2026-27, a quarter in 2027-28
+and none from 2028-29.
+
+A person attains an age at the start of the anniversary of their birth
+(Family Law Reform Act 1969 s.9(1)), and an age of "N years and M months" on
+the same day of the month, or the month's last day where that day does not
+exist; that also gives the three days rule (7A) sets. A reform can change the
+age or day of any row, or where a row starts; a new phase-in that needs extra
+rows, such as bringing forward the rise to 68, needs new rows in the
+parameter files.
 
 ## Uprating
 
