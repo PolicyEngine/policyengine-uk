@@ -38,11 +38,13 @@ class simulated_council_tax_reduction_benunit(Variable):
         wales = is_wales_scheme(country)
         national_scheme = england_pensioners | scotland | wales
 
-        is_household_head_benunit = benunit("benunit_contains_household_head", period)
+        is_household_head_benunit = benunit(
+            "council_tax_reduction_claimant_benunit", period
+        )
         would_claim = benunit("would_claim_council_tax_reduction", period)
         liability = benunit.household(
             "council_tax_reduction_maximum_eligible_liability", period
-        )
+        ) * benunit("council_tax_reduction_joint_liability_share", period)
         applicable_amount = benunit("council_tax_reduction_applicable_amount", period)
         applicable_income = benunit("council_tax_reduction_applicable_income", period)
         non_dep_deductions = benunit("council_tax_reduction_non_dep_deductions", period)

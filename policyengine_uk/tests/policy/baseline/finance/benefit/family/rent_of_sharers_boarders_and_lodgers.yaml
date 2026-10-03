@@ -1,0 +1,453 @@
+# Rent liability, tenure and LHA category of families other than the
+# household head's: joint tenants and other sharers of the rent, boarders and
+# lodgers.
+# UC Regs 2013 (SI 2013/376) Sch 1 para 2, Sch 4 paras 9, 10, 20, 24, 25, 27-29.
+# HB Regs 2006 (SI 2006/213) regs 3, 12, 12B, 13, 13C, 13D, Sch 1 para 2.
+
+- name: The household head carries the rent of a couple liable for it
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 38
+    benunits:
+      family:
+        members: [head, partner]
+    households:
+      home:
+        members: [head, partner]
+        rent: 12_000
+  output:
+    # The family's share (the whole rent) sits on the household head.
+    share_of_household_rent: 1
+    personal_rent: [12_000, 0]
+    benunit_rent: 12_000
+
+- name: Sharers split the household's rent per person liable
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer_1:
+        age: 30
+      sharer_1_partner:
+        age: 31
+      sharer_2:
+        age: 45
+    benunits:
+      head_family:
+        members: [head]
+      couple:
+        members: [sharer_1, sharer_1_partner]
+        liable_for_share_of_household_rent: true
+      single:
+        members: [sharer_2]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, sharer_1, sharer_1_partner, sharer_2]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # UC Sch 4 para 24(4): A / B x C with A = 20,000 and B = 4 people liable,
+    # so 5,000 for a single person and 10,000 for the couple (C = 2).
+    is_liable_for_household_rent: [true, true, true, true]
+    benunit_rent: [5_000, 10_000, 5_000]
+    benunit_tenure_type: [RENT_PRIVATELY, RENT_PRIVATELY, RENT_PRIVATELY]
+    # Joint tenants are not non-dependants (para 9(2)(d)): no deductions.
+    uc_non_dep_deductions: [0, 0, 0]
+    housing_benefit_non_dep_deductions: [0, 0, 0]
+
+- name: A family not marked as a sharer has no share of the rent
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+      adult_son:
+        age: 25
+    benunits:
+      parent:
+        members: [head]
+      son:
+        members: [adult_son]
+    households:
+      home:
+        members: [head, adult_son]
+        rent: 9_000
+  output:
+    benunit_rent: [9_000, 0]
+    benunit_is_rent_liable: [true, false]
+    is_non_dependant_of_household_head: [false, true]
+
+- name: A lodger in a council home rents privately from the householder
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        rent: 6_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    # The householder is liable to the council for the whole rent and the
+    # lodger to the householder for 5,200 (a licence: UC Sch 1 para 2(b)).
+    benunit_rent: [6_000, 5_200]
+    # A householder is not a provider of social housing (UC Sch 4 para 20).
+    benunit_tenure_type: [RENT_FROM_COUNCIL, RENT_PRIVATELY]
+    in_social_housing: [true, false]
+    LHA_eligible: [false, true]
+
+- name: A lodger in an owner-occupied home is a private renter
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+        uncapped_BRMA_LHA_rate: 6_000
+    households:
+      home:
+        members: [householder, lodger]
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    benunit_rent: [0, 5_200]
+    benunit_tenure_type: [OWNED_OUTRIGHT, RENT_PRIVATELY]
+    # UC: single, 40 >= 35, 1 bedroom: B. Cap = min(rent 5,200, rate 6,000).
+    LHA_category: B
+    uc_LHA_cap: [0, 5_200]
+    uc_housing_costs_element: [0, 5_200]
+
+- name: The householder's non-dependant is not deducted from a lodger's UC
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 55
+        is_household_head: true
+      adult_daughter:
+        age: 30
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+        uncapped_BRMA_LHA_rate: 12_000
+      daughter:
+        members: [adult_daughter]
+      lodger_family:
+        members: [lodger]
+        uncapped_BRMA_LHA_rate: 6_000
+    households:
+      home:
+        members: [householder, adult_daughter, lodger]
+        rent: 10_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # The daughter is the householder's non-dependant; the lodger is no one's
+    # (UC Sch 4 para 9(2)(d)), and the householder's household is not the
+    # lodger's (para 9(2)(e)).
+    is_non_dependant_of_household_head: [false, true, false]
+    # One housing cost contribution, £93.02 a month for 2025-26 (Sch 4 para
+    # 14): 93.02 x 12 = 1,116.24.
+    uc_non_dep_deductions: [1_116.24, 0, 0]
+    # Householder: min(10,000, 12,000) - 1,116.24 = 8,883.76. The lodger's
+    # element is not reduced: min(5,200, 6,000) = 5,200.
+    uc_housing_costs_element: [8_883.76, 0, 5_200]
+    # UC bedrooms: householder 1 + daughter 1 = 2 (the lodger adds none).
+    LHA_allowed_bedrooms: [2, 1, 1]
+
+- name: A lodger adds a bedroom to the householder's HB size criteria but not UC
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 40
+        is_household_head: true
+      lodger:
+        age: 40
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        rent: 12_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # UC: the lodger is not a non-dependant (Sch 4 para 9(2)(d)), so the
+    # householder is entitled to 1 bedroom: B.
+    LHA_allowed_bedrooms: [1, 1]
+    LHA_category: [B, B]
+    # HB: the lodger occupies the dwelling and is not a joint tenant, so is
+    # an "occupier" (reg 13D(12)): 1 + 1 = 2 bedrooms: C. The lodger's own
+    # claim counts only the lodger: 1 bedroom, shares the householder's rooms
+    # (reg 13D(2)(a)(ii)): A.
+    housing_benefit_LHA_allowed_bedrooms: [2, 1]
+    housing_benefit_shares_accommodation: [false, true]
+    housing_benefit_LHA_category: [C, A]
+
+- name: A lodger does not stop a householder under 35 being a specified renter
+  period: 2025
+  input:
+    people:
+      householder:
+        age: 30
+        is_household_head: true
+      lodger:
+        age: 45
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # UC Sch 4 para 28(4): no person is a non-dependant of the householder.
+    lha_renter_has_non_dependant: [false, false]
+    is_lha_shared_accommodation_rate_specified_renter: [true, false]
+    LHA_category: [A, B]
+    # HB reg 13D(2)(a)(i): a young individual with no non-dependant: A.
+    housing_benefit_LHA_category: [A, A]
+
+- name: A sharer aged 40 gets the UC one-bedroom rate and the HB shared rate
+  period: 2025
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 40
+    benunits:
+      head_family:
+        members: [head]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # UC: entitlement only (Sch 4 para 25(2)(b)): 1 bedroom, not a specified
+    # renter (40 >= 35): B for both.
+    LHA_category: [B, B]
+    # HB: each is entitled to one bedroom and shares rooms with someone who
+    # is neither household, non-dependant nor paying rent to them (reg
+    # 13D(2)(b)), so the shared rate (13D(2)(a)(ii)): A for both.
+    housing_benefit_shares_accommodation: [true, true]
+    housing_benefit_LHA_category: [A, A]
+
+- name: The severe disability premium keeps a sharer off the HB shared rate
+  period: 2025
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer:
+        age: 40
+        pip_dl: 3_000
+    benunits:
+      head_family:
+        members: [head]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # The sharer receives the PIP daily living component and has no
+    # non-dependant, so Sch 3 para 14(2)(a) applies; reg 13D(2)(a)(ii)
+    # excludes them, so 13D(2)(c): 1 bedroom: B.
+    housing_benefit_severe_disability_premium_applies: [false, true]
+    housing_benefit_LHA_category: [A, B]
+
+- name: The household input for shared accommodation affects Housing Benefit only
+  period: 2025
+  input:
+    people:
+      person:
+        age: 50
+    benunits:
+      family:
+        members: [person]
+    households:
+      home:
+        members: [person]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        is_shared_accommodation: true
+  output:
+    LHA_category: B
+    housing_benefit_LHA_category: A
+
+- name: A non-dependant counts in a sharer's UC claim when the head cannot claim UC
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      cotenant:
+        age: 30
+      non_dependant:
+        age: 24
+        employment_income: 20_000
+    benunits:
+      head_family:
+        members: [head]
+      cotenant_family:
+        members: [cotenant]
+        liable_for_share_of_household_rent: true
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      home:
+        members: [head, cotenant, non_dependant]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The pensioner head is not eligible for UC, so no other UC claim has
+    # treated the non-dependant as one (UC Sch 4 para 9(2)(f)): they count
+    # in the co-tenant's claim. Bedrooms 1 + 1 = 2: C. Core rent 18,000 / 2
+    # = 9,000, below the Maidstone two-bedroom rate (11,892.40); less one
+    # contribution of 93.02 x 12 = 1,116.24: 7,883.76.
+    uc_non_dependants_counted: [false, true, false]
+    LHA_allowed_bedrooms: [1, 2, 1]
+    LHA_category: [B, C, A]
+    uc_non_dep_deductions: [0, 1_116.24, 0]
+    uc_housing_costs_element: [9_000, 7_883.76, 0]
+
+- name: A single PIP recipient living alone keeps the HB one-bedroom rate
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 28
+        pip_dl: 3_988.40
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Sch 3 para 14(2)(a): PIP daily living and no non-dependant, so the
+    # young-individual shared rate does not apply (reg 13D(2)(a)(i)); not
+    # sharing: one bedroom self-contained (13D(2)(b)): B. UC: excepted under
+    # Sch 4 para 29(5): B.
+    housing_benefit_severe_disability_premium_applies: true
+    housing_benefit_LHA_category: B
+    LHA_category: B
+
+- name: A lodger couple adds one HB bedroom, a non-dependant's child another
+  period: 2025
+  input:
+    people:
+      head:
+        age: 72
+        is_household_head: true
+      lodger_1:
+        age: 40
+        rent_paid_as_lodger: 3_000
+      lodger_2:
+        age: 42
+      daughter:
+        age: 40
+      grandchild:
+        age: 5
+    benunits:
+      head_family:
+        members: [head]
+      lodgers:
+        members: [lodger_1, lodger_2]
+      daughter_family:
+        members: [daughter, grandchild]
+    households:
+      home:
+        members: [head, lodger_1, lodger_2, daughter, grandchild]
+        rent: 15_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Reg 13D(3): head 1; the lodger couple 1 (a couple); the daughter 1;
+    # the grandchild 1 (a child): 4 bedrooms for the head: E. The lodgers'
+    # own claim counts only themselves: 1 bedroom, shared: A.
+    housing_benefit_LHA_allowed_bedrooms: [4, 1, 2]
+    housing_benefit_LHA_category: [E, A, C]
+
+- name: A lodger with exclusive use of two rooms can rebut the shared presumption
+  period: 2025
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      lodger:
+        age: 70
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+        housing_benefit_shares_accommodation: false
+    households:
+      home:
+        members: [householder, lodger]
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    # Reg 13D(2)(b)(i): the lodger has exclusive use of two rooms: one
+    # bedroom self-contained: B. The householder's size criteria count the
+    # lodger as an occupier (13D(12)): 2 bedrooms: C.
+    housing_benefit_LHA_category: [C, B]
