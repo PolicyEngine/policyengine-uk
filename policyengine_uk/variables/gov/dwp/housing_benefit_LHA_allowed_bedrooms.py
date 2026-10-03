@@ -2,30 +2,61 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
     bedrooms_for_children,
 )
+from policyengine_uk.variables.household.consumption.rent.joint_tenant_in_household_head_household import (
+    in_joint_tenants_single_household,
+)
 from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
     non_dependants_residing_with,
+    non_dependants_residing_with_any,
 )
 
 
-def housing_benefit_other_occupiers(benunit, period, other_occupier):
-    """For each family, the sum of ``other_occupier`` (a count or weight for
-    each occupier outside every family liable for the household's rent, zero
-    for anyone else) over the people who occupy its dwelling (HB Regs 2006
-    reg 13D(12)). A boarder or lodger, who
-    pays the householder, counts for the household head's family. A
-    non-dependant counts for each joint occupier they normally reside with
-    (LHA Guidance Manual paras 2.093 and 2.110; see
-    non_dependant_normally_resides_with)."""
+def housing_benefit_other_occupiers(benunit, period, occupier):
+    """For each family, the sum of ``occupier`` (a count or weight for each
+    person who occupies the dwelling as their home, zero for anyone else)
+    over the people outside the family who are occupiers of its dwelling in
+    its size criteria (HB Regs 2006 reg 13D(12)):
+
+    - A family sharing the rent does not count another, because a joint
+      tenant outside the claimant's household is not an occupier.
+    - A boarder or lodger, who pays the householder, counts for the household
+      head's family.
+    - A non-dependant counts for each joint occupier they normally reside
+      with (LHA Guidance Manual paras 2.093 and 2.110; see
+      non_dependant_normally_resides_with).
+    - Joint occupiers who form a single household (see
+      joint_tenant_in_household_head_household) count each other's members,
+      as members of the claimant's household (para 2.100), and each counts
+      every occupier counted for any of them, so all have the same
+      occupiers.
+    """
     person = benunit.members
-    boarder_or_lodger = person("pays_rent_to_householder", period)
-    head_family = benunit.any(person("is_household_head", period))
-    of_householder = head_family * benunit.max(
-        person.household.sum(other_occupier * boarder_or_lodger)
+    in_head_family = person.benunit.any(person("is_household_head", period))
+    in_sharer_family = person.benunit("liable_for_share_of_household_rent", period)
+    outside_joint_occupiers = ~in_head_family & ~in_sharer_family
+    pays_householder = person("pays_rent_to_householder", period)
+    head_family = benunit.any(in_head_family)
+    boarders_and_lodgers = benunit.max(
+        person.household.sum(occupier * outside_joint_occupiers * pays_householder)
     )
-    non_dependants = non_dependants_residing_with(
-        benunit, period, other_occupier * ~boarder_or_lodger
+    non_dependant = occupier * ~pays_householder
+    separate = head_family * boarders_and_lodgers + non_dependants_residing_with(
+        benunit, period, non_dependant
     )
-    return of_householder + non_dependants
+    single = in_joint_tenants_single_household(benunit, period)
+    # The other families of the single household: its members' total less
+    # the family's own.
+    joint_tenants = benunit.max(
+        person.household.sum(occupier * benunit.project(single))
+    ) - benunit.sum(occupier)
+    # The household head's family is in the single household, so its
+    # boarders and lodgers count for every family in it.
+    shared = (
+        joint_tenants
+        + boarders_and_lodgers
+        + non_dependants_residing_with_any(benunit, period, non_dependant, single)
+    )
+    return where(single, shared, separate)
 
 
 class housing_benefit_LHA_allowed_bedrooms(Variable):
@@ -43,7 +74,8 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "unit aged 16 or over who is not the claimant or partner adds a "
         "bedroom, such as a young person in full-time education; so do a "
         "householder's boarder or lodger and a non-dependant, but a sharer "
-        "of the rent does not. A couple, such as a non-dependant and their "
+        "of the rent does not, unless it forms a single household with the "
+        "household head's family. A couple, such as a non-dependant and their "
         "partner, has one bedroom between them. The children of a "
         "non-dependant, boarder or "
         "lodger are occupiers too, and share rooms with the claimant's "
@@ -53,8 +85,11 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "for each joint occupier they normally reside with, by default every "
         "one (see non_dependant_normally_resides_with), while a boarder or "
         "lodger, who pays the household head, counts for the head's family "
-        "only. A boarder's or lodger's own claim counts only their own "
-        "family."
+        "only. Joint occupiers who form a single household (see "
+        "joint_tenant_in_household_head_household) count each other's "
+        "families, and each counts every occupier counted for any of them, "
+        "so all have the same occupiers. A boarder's or lodger's own claim "
+        "counts only their own family."
     )
     definition_period = YEAR
     reference = (
@@ -83,17 +118,16 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         family_rooms = benunit.sum(
             aged_16_or_over & ~person("is_claimant_or_partner", period) & occupier
         )
-        head_family = person.benunit.any(person("is_household_head", period))
-        sharer = person.benunit("liable_for_share_of_household_rent", period)
-        # Reg 13D(3) for occupiers outside the family, as defined in 13D(12):
-        # everyone in a non-dependant's, boarder's or lodger's family,
-        # including their children.
-        other_occupier = ~head_family & ~sharer & occupier
-        # Reg 13D(3)(a): a couple, here the claimant and partner of an
-        # occupier's family, has one bedroom; (b): every other occupier aged
-        # 16 or over has their own. Each member of a couple counts as half,
-        # and only where both members are counted, so the halves always pair.
-        counted = other_occupier & aged_16_or_over
+        # Reg 13D(3) for occupiers outside the family, as defined in 13D(12)
+        # (see housing_benefit_other_occupiers): everyone in a
+        # non-dependant's, boarder's or lodger's family, including their
+        # children, and the families of joint tenants in the claimant's
+        # household. Reg 13D(3)(a): a couple, here the claimant and partner
+        # of an occupier's family, has one bedroom; (b): every other occupier
+        # aged 16 or over has their own. Each member of a couple counts as
+        # half, and only where both members are counted, so the halves always
+        # pair.
+        counted = occupier & aged_16_or_over
         claimant_or_partner = counted & person("is_claimant_or_partner", period)
         couple = (person.benunit.sum(claimant_or_partner) == 2) & person.benunit(
             "is_couple", period
@@ -108,7 +142,7 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
             benunit,
             period,
             own_child=occupier,
-            other_child=other_occupier,
+            other_child=occupier,
             count_other=lambda mask: housing_benefit_other_occupiers(
                 benunit, period, mask
             ),

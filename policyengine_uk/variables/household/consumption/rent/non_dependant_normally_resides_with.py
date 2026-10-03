@@ -29,10 +29,15 @@ class non_dependant_normally_resides_with(Variable):
         "deduction. The default is every joint occupier. With more than one "
         "family sharing the rent with the household head's family, the third "
         "value covers all of those families together. Where no family shares "
-        "the rent, every value means the household head's family. Universal "
-        "Credit does not use this input: a non-dependant counts in one Universal "
-        "Credit claim only, which the model gives to the household head's "
-        "family (see is_non_dependant_of_household_head)."
+        "the rent, every value means the household head's family. Where joint "
+        "occupiers form a single household (see "
+        "joint_tenant_in_household_head_household), the size criteria of each "
+        "count a non-dependant of any of them, but this input still decides "
+        "who bears the deduction and whether a young individual has a "
+        "non-dependant. Universal Credit does not use this input: a "
+        "non-dependant counts in one Universal Credit claim only, which the "
+        "model gives to the household head's family (see "
+        "is_non_dependant_of_household_head)."
     )
     definition_period = YEAR
     reference = (
@@ -100,6 +105,24 @@ def non_dependants_residing_with(benunit, period, non_dependant):
     for value, joint_occupier in _joint_occupiers_by_residence(benunit, period):
         in_household = benunit.max(person.household.sum(source * (residence == value)))
         count = count + joint_occupier * in_household
+    return count
+
+
+def non_dependants_residing_with_any(benunit, period, non_dependant, families):
+    """For each family, the sum of ``non_dependant`` (as in
+    non_dependants_residing_with) over the household's people who normally
+    reside with at least one of the families marked by ``families``."""
+    person = benunit.members
+    residence = person.benunit("non_dependant_normally_resides_with", period)
+    source = non_dependant * _outside_joint_occupiers(benunit, period)
+    count = 0
+    for value, joint_occupier in _joint_occupiers_by_residence(benunit, period):
+        marked = joint_occupier & families
+        resides_with_one = (
+            _household_total_over_families(benunit, period, 1, marked) > 0
+        )
+        in_household = benunit.max(person.household.sum(source * (residence == value)))
+        count = count + resides_with_one * in_household
     return count
 
 

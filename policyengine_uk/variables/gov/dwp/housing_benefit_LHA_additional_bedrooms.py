@@ -18,8 +18,11 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         "housing_benefit_LHA_allowed_bedrooms: boarders and lodgers and their "
         "children for the household head's family, and non-dependants and "
         "their children for each joint occupier they normally reside with, "
-        "but not a sharer of the rent or a child placed with them as a foster "
-        "child or for adoption. Before 1 April 2017 only the claimant and "
+        "but not a sharer of the rent outside the claimant's household or a "
+        "child placed with them as a foster child or for adoption. Joint "
+        "occupiers who form a single household count each other's families "
+        "and every occupier counted for any of them. Before 1 April 2017 only "
+        "the claimant and "
         "partner counted for overnight care. The definitions require a "
         "bedroom in the dwelling for "
         "the carer or the foster child; the model does not observe the "
@@ -39,17 +42,17 @@ class housing_benefit_LHA_additional_bedrooms(Variable):
         # HB Regs 2006 reg 13D(3A)(a)(iii): "a person ... who occupies the
         # claimant's dwelling as their home". (iii) does not use the defined
         # term "occupiers", but the model applies 13D(12)'s exclusion of a
-        # joint tenant outside the claimant's household and, following DWP,
+        # joint tenant outside the claimant's household (so a joint tenant in
+        # the claimant's household counts) and, following DWP,
         # of a child placed with another family as a foster child or for
         # adoption (see housing_benefit_LHA_allowed_bedrooms). A3/2017 frames
         # the 2017 extension as a room for carers of a disabled child or
         # non-dependant, and A21/2013 para 25 bases private-sector joint
         # tenants' size criteria on each tenant's own household.
-        head_family = person.benunit.any(person("is_household_head", period))
-        sharer = person.benunit("liable_for_share_of_household_rent", period)
         placed = person("is_child_or_young_person_placed_with_family", period)
-        other = overnight_care & ~head_family & ~sharer & ~placed
-        others = housing_benefit_other_occupiers(benunit, period, other)
+        others = housing_benefit_other_occupiers(
+            benunit, period, overnight_care & ~placed
+        )
         # Reg 13D(3A)(a)(i)-(iv): the claimant, partner, other members of the
         # family, and a child or young person for whom the claimant or
         # partner is a qualifying parent or carer. Before 1 April 2017 (SI
