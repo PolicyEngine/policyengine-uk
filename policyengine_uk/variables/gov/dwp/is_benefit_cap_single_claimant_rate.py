@@ -18,8 +18,9 @@ class is_benefit_cap_single_claimant_rate(Variable):
         "claimant: regulation 80A sets the limits by single claimant and "
         "joint claimants (ADM E5007 note 3). The welfare benefits capped are "
         "still the couple's (regulations 78(2) and 79(1)). Housing Benefit "
-        "has no such single claim, so a family claiming legacy benefits "
-        "(`claims_legacy_benefits`) keeps the couple rate."
+        "has no such single claim, so a family that stays on legacy "
+        "benefits (reports one and would not claim Universal Credit) keeps "
+        "the couple rate."
     )
     definition_period = YEAR
     reference = (

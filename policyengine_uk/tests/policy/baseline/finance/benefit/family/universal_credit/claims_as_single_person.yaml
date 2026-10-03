@@ -659,7 +659,7 @@
     is_uc_single_or_joint_claimant: false
     is_uc_eligible: false
 
-- name: A family claiming legacy benefits keeps the couple rules Housing Benefit shares, while the UC award is a single claim
+- name: A family that reports Housing Benefit but claims UC gets the UC single-claim rules in the cap and LHA
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -672,10 +672,11 @@
         age: 30
         is_claimant_or_partner: true
         uc_is_ineligible_partner: true
+        pip_dl: 4_000
     benunits:
       benunit:
         members: [renter, partner]
-        is_benefit_cap_exempt: false
+        would_claim_uc: true
     households:
       household:
         members: [renter, partner]
@@ -684,10 +685,47 @@
   output:
     claims_legacy_benefits: true
     uc_member_of_couple_claims_as_single_person: true
-    # Housing Benefit has no single claim by a member of a couple.
-    is_benefit_cap_single_claimant_rate: false
-    benefit_cap: 22_020
-    is_lha_shared_accommodation_rate_specified_renter: false
-    LHA_category: B
+    # Calculated on UC, so reg. 80A(2)(c), reg. 83(1) and Sch 4 para 28(2)
+    # apply: the single cap, no exception for the other member's PIP, and
+    # shared accommodation.
+    is_benefit_cap_single_claimant_rate: true
+    is_benefit_cap_exempt: false
+    benefit_cap: 14_753
+    is_lha_shared_accommodation_rate_specified_renter: true
+    LHA_category: A
     # 424.90 x 12
     uc_standard_allowance: 5_098.80
+
+- name: A family that stays on legacy benefits keeps the couple rules Housing Benefit shares
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      renter:
+        age: 30
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        pip_dl: 4_000
+    benunits:
+      benunit:
+        members: [renter, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [renter, partner]
+        tenure_type: RENT_PRIVATELY
+        region: NORTH_EAST
+  output:
+    claims_legacy_benefits: true
+    # Housing Benefit has no single claim by a member of a couple: the couple
+    # rate (HB reg. 75CA), the partner's PIP lifts the cap (HB reg.
+    # 75F(1)(ea), "the claimant or the claimant's partner"), and a couple is
+    # not a young individual (HB reg. 2(1)).
+    is_benefit_cap_single_claimant_rate: false
+    is_benefit_cap_exempt: true
+    is_lha_shared_accommodation_rate_specified_renter: false
+    LHA_category: B

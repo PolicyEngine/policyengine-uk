@@ -24,8 +24,8 @@ class is_lha_shared_accommodation_rate_specified_renter(Variable):
         "(HB regulation 2(1)) has neither the disability exception nor a "
         "single claim by a member of a couple. The model applies the "
         "disability exception to Housing Benefit too, and the single-claim "
-        "rule unless the family claims legacy benefits "
-        "(`claims_legacy_benefits`)."
+        "rule unless the family stays on legacy benefits (reports one and "
+        "would not claim Universal Credit)."
     )
     definition_period = YEAR
     reference = (
