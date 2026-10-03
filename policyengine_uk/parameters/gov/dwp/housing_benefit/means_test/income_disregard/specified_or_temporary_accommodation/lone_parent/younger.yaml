@@ -1,0 +1,24 @@
+description: Housing Benefit disregards this much of the weekly net earnings of a lone parent under the older age threshold, where the claimant lives in specified or temporary accommodation and the claimant or partner is an employed or self-employed earner.
+values:
+  # Schedule 4 paragraph 18 (NI: Schedule 5 paragraph 18) has effect from 5
+  # October 2026: SI 2026/753 reg. 2(4), as substituted by SI 2026/978 reg.
+  # 2(2), and NI SR 2026/157 reg. 2(4). There was no such disregard before.
+  # Neither instrument uprates the sums. The model reads each fiscal year at
+  # 30 April, so 2026 (2026-27) has no paragraph 18 disregard although it
+  # applied from 5 October 2026 (183 of the year's 365 days); 2027 onwards
+  # has the full amounts.
+  2006-03-06: 0
+  2026-10-05: 61.41
+metadata:
+  period: week
+  unit: currency-GBP
+  label: Housing benefit specified or temporary accommodation earnings disregard, lone parent under 25
+  reference:
+    - title: The Housing Benefit Regulations 2006, Schedule 4 paragraph 18(2)(b)(i)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4
+    - title: The Housing Benefit (Earned Income Disregards) (Amendment) Regulations 2026, regulation 2(4) as substituted by the Housing Benefit (Earned Income Disregards) (Amendment) (No. 2) Regulations 2026, regulation 2(2)
+      href: https://www.legislation.gov.uk/uksi/2026/978/regulation/2
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 5 paragraph 18(2)(b)(i)
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5
+    - title: The Housing Benefit (Earned Income Disregards) (Amendment) Regulations (Northern Ireland) 2026, regulation 2(4)
+      href: https://www.legislation.gov.uk/nisr/2026/157/regulation/2
