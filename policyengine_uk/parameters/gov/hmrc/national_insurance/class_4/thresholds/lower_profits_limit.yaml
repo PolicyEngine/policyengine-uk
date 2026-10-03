@@ -4,24 +4,60 @@ description: The Lower Profits Limit is the threshold at which self-employed ear
 # keeping it until April 2031. CPI uprating from 2031-32 is a modelling
 # assumption.
 values:
-  2015-04-06: 8_060
-  2017-04-06: 8_164
-  2018-04-06: 8_424
-  2019-04-06: 8_632
-  2020-04-06: 9_500
-  2021-04-06: 9_568
+  2015-04-06:
+    value: 8_060
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Re-rating and National Insurance Funds Payments) Order 2015 art 3(a)
+          href: https://www.legislation.gov.uk/uksi/2015/588/article/3/made
+        - title: Social Security Contributions and Benefits Act 1992 s 15(3)(a) (as at 6 April 2016, unchanged for 2016-17)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2016-04-06
+  2017-04-06:
+    value: 8_164
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2017 reg 5(a)
+          href: https://www.legislation.gov.uk/uksi/2017/415/regulation/5/made
+  2018-04-06:
+    value: 8_424
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2018 reg 5(a)
+          href: https://www.legislation.gov.uk/uksi/2018/337/regulation/5/made
+  2019-04-06:
+    value: 8_632
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2019 reg 5(a)
+          href: https://www.legislation.gov.uk/uksi/2019/262/regulation/5/made
+  2020-04-06:
+    value: 9_500
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2020 reg 5
+          href: https://www.legislation.gov.uk/uksi/2020/299/regulation/5/made
+  2021-04-06:
+    value: 9_568
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2021 reg 5(1)
+          href: https://www.legislation.gov.uk/uksi/2021/157/regulation/5/made
+  # SI 2022/232 reg 5 first set £9,880 for 2022-23; the 2022 Act replaced it
+  # with £11,908 for the whole year.
   2022-04-06:
     value: 11_908
     metadata:
       reference:
-        - title: National Insurance Contributions (Increase of Thresholds) Act 2022
+        - title: National Insurance Contributions (Increase of Thresholds) Act 2022 s 2(1) and (2)
           href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
-  2024-01-01:
+  2023-04-06:
     value: 12_570
     metadata:
       reference:
-        - title: National Insurance Contributions (Increase of Thresholds) Act 2022
+        - title: National Insurance Contributions (Increase of Thresholds) Act 2022 s 2(3) and (4)
           href: https://www.legislation.gov.uk/ukpga/2022/16/section/2/enacted
+        - title: Social Security Contributions and Benefits Act 1992 s 15(3)(a) (as at 6 April 2023)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2023-04-06
   2026-04-06:
     value: 12_570
     metadata:

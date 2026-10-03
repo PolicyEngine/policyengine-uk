@@ -28,7 +28,7 @@ Annual benefit uprating applied 4.1% increases to state pensions and 1.7% to wor
 
 ### Autumn Statement 2023
 
-The government announced further National Insurance cuts, reducing the [employee main rate from 10% to 8%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L22-L27) and the [self-employed Class 4 rate from 9% to 6%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/rates/main.yaml#L16-L21) in fiscal year 2024-25. [Class 2 National Insurance contributions were abolished](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_2/flat_rate.yaml#L14-L19) for self-employed people, with the flat rate set to £0 in fiscal year 2024-25.
+The government announced further National Insurance cuts, reducing the [employee main rate from 10% to 8%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L22-L27) and the [self-employed Class 4 rate from 9% to 6%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/rates/main.yaml#L26-L33) in fiscal year 2024-25. [Class 2 National Insurance contributions were abolished](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_2/flat_rate.yaml#L51-L56) for self-employed people, with the flat rate set to £0 in fiscal year 2024-25.
 
 ### Capital gains tax changes (Autumn Budget 2024)
 
