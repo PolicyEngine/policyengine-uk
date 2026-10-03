@@ -16,21 +16,24 @@ Invariants, for any generated population of families:
    d lowers the award before the benefit cap by exactly min(d, award).
 3. Equivalence: UC with State Pension x equals UC with the same x of private
    pension income received by the same person instead (both are retirement
-   pension income, taxed the same way). With no earnings in the family, it
-   also equals UC with x of property income (held without property capital,
-   so it is not treated as capital yield under reg. 72).
+   pension income, taxed the same way).
+4. Property income is outside reg. 66(1)'s list of unearned income, at any
+   capital level. With no earnings, replacing State Pension x with ordinary
+   property income leaves the award equal to the no-income case, while
+   State Pension reduces the pre-cap award by min(x, award). Any tariff
+   income from capital remains the same in all three cases.
 
-Invariants 2 and 3 are restricted to families without earnings because the
+Invariants 2 and 4 are restricted to families without earnings because the
 model deducts the whole benefit unit's income tax from its earnings
 (PolicyEngine/policyengine-uk#1942), so tax on State Pension reduces earned
 income. Reg. 55(5)(b) and reg. 57 step 3 allow only tax paid in respect of
 the employment or trade. The strict xfail below pins that case and will flip
-when #1942 is fixed; widen invariants 2 and 3 to all families then.
+when #1942 is fixed; widen invariants 2 and 4 to all families then.
 """
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -205,11 +208,37 @@ def test_state_pension_counts_like_private_pension(units, year):
     units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
     year=st.sampled_from(YEARS),
 )
-def test_state_pension_counts_like_property_income(units, year):
-    assert_same(
-        calculate(units, year),
-        calculate(units, year, income_variable="property_income"),
-        str(units),
+@example(
+    units=[
+        dict(
+            ages=[70, 60],
+            children=[],
+            tenure="RENT_FROM_COUNCIL",
+            rent=6_240.0,
+            savings=0.0,
+            earnings=0.0,
+            state_pension=9_000.0,
+        )
+    ],
+    year=2026,
+)
+def test_property_income_is_excluded_while_state_pension_counts(units, year):
+    pension = calculate(units, year)
+    property_income = calculate(units, year, income_variable="property_income")
+    without_income = calculate([{**unit, "state_pension": 0.0} for unit in units], year)
+    assert_same(property_income, without_income, str(units))
+    pensions = np.array([unit["state_pension"] for unit in units])
+    np.testing.assert_allclose(
+        pension["uc_unearned_income"] - property_income["uc_unearned_income"],
+        pensions,
+        atol=0.01,
+        err_msg=str(units),
+    )
+    np.testing.assert_allclose(
+        pension["universal_credit_pre_benefit_cap"],
+        np.maximum(0, property_income["universal_credit_pre_benefit_cap"] - pensions),
+        atol=0.01,
+        err_msg=str(units),
     )
 
 

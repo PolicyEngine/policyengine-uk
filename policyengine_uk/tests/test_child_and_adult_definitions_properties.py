@@ -31,10 +31,13 @@ Invariants:
    age_under_18 has the same membership as the shims for school-attendance
    inputs and household adult age/capital-gains ranks (modelling conventions,
    not statutory adult definitions).
-4. Adding an under-16 dependant leaves existing claimant/partner membership
-   unchanged, even when the added child carries a parent marker (an
-   identified parent must be aged 16 or over; the minimised counterexample
-   that found this is kept as a regression test).
+4. In valid families and in units with no flagged parent, adding an under-16
+   dependant leaves existing claimant/partner membership unchanged, even when
+   the added child carries a parent marker (an identified parent must be aged
+   16 or over; the minimised counterexample that found this is kept as a
+   regression test). It does not hold below a flagged claimant whose flag
+   nothing explains: a flagged 50 with a 25-year-old is single, and adding a
+   12-year-old explains the flag and makes them a couple.
    Before/after families share one Simulation to avoid repeated
    model construction, but occupy distinct households and benefit units.
 

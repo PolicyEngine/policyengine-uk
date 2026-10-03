@@ -52,8 +52,8 @@ class is_claimant_or_partner(Variable):
     - If the claimant is not flagged as a parent but two or more other members
       are, the two eldest of those are the claimant and partner instead (for
       example parents living in a grandparent's benefit unit).
-    - If the claimant is not flagged as a parent and exactly one other member
-      is, that member is the partner whatever the age gap (for example an
+    - If the claimant is not flagged as a parent and exactly one other HBAI
+      adult is, that adult is the partner whatever the age gap (for example an
       unflagged grandparent head with a flagged daughter is read as a couple).
       Supply this variable for such households.
     - Any further adults are neither claimant nor partner.
