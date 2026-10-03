@@ -1,0 +1,564 @@
+# Universal Credit Regulations 2013 reg. 32, the childcare work condition:
+# https://www.legislation.gov.uk/uksi/2013/376/regulation/32
+# "(1) The work condition is met in respect of an assessment period if—
+#  (a) the claimant is in paid work or has an offer of paid work that is due
+#      to start before the end of the next assessment period; and
+#  (b) if the claimant is a member of a couple (whether claiming jointly or as
+#      a single person), the other member is either in paid work or is unable
+#      to provide childcare because that person— (i) has limited capability
+#      for work, (ii) has regular and substantial caring responsibilities for
+#      a severely disabled person, or (iii) is temporarily absent from the
+#      claimant's household."
+# Reg. 32(2)(b): a claimant receiving statutory sick pay, statutory maternity
+# pay, statutory paternity pay, ... or a maternity allowance is treated as in
+# paid work. ADM ch. F7, F7011-F7015, agrees:
+# https://assets.publishing.service.gov.uk/media/696a076c7b7f37aa8e4022d9/adm-ch-f7.pdf
+#
+# Where an element amount is checked, it is reg. 34 for one child in 2025-26:
+# min(5,000 * 85%, 1,031.88 * 12) = 4,250.
+
+- name: Reg. 32(1)(b)(i) - a working claimant's partner with limited capability for work
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        is_parent: true
+        employment_income: 15_000
+      partner:
+        age: 34
+        uc_limited_capability_for_WRA: true
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    # (a) the claimant works; (b) the partner does not, but has limited
+    # capability for work, so is unable to provide childcare.
+    uc_unable_to_provide_childcare: [false, true, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: Reg. 32(1)(b)(i) - the limited capability proxy follows is_disabled_for_benefits
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_000
+      partner:
+        age: 34
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # uc_limited_capability_for_WRA defaults to is_disabled_for_benefits.
+    uc_limited_capability_for_WRA: [false, true]
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(b)(ii) - ADM F7013 example, a partner caring full time for her disabled mother
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      ben:
+        age: 40
+        is_parent: true
+        employment_income: 9_000
+      sara:
+        age: 38
+        care_hours: 40
+      pauline:
+        age: 4
+        childcare_expenses: 5_000
+      mother:
+        age: 70
+        aa_category: HIGHER
+    benunits:
+      benunit:
+        members: [ben, sara, pauline]
+      mothers_benunit:
+        members: [mother]
+    households:
+      household:
+        members: [ben, sara, pauline, mother]
+  output:
+    # Ben works two days a week. Sara provides full-time care for her mother,
+    # who lives with them and receives the higher rate of attendance
+    # allowance, so is a "severely disabled person" (SSCBA 1992 s. 70(2)).
+    # Sara meets the Carer's Allowance conditions that reg. 30(1)(a)
+    # imports, so "both Ben and Sara satisfy the paid work test" (ADM F7013).
+    # The model's is_carer_for_benefits reads only Sara's 40 care hours; it
+    # does not check her mother's attendance allowance.
+    is_carer_for_benefits: [false, true, false, false]
+    uc_childcare_work_condition: [true, false]
+    uc_childcare_element: [4_250, 0]
+
+- name: Reg. 32(1)(b)(ii) - a partner receiving Carer's Allowance
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_000
+      partner:
+        age: 34
+        receives_carers_allowance: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # Reg. 30(1)(a): satisfies the conditions for Carer's Allowance.
+    uc_unable_to_provide_childcare: [false, true]
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(b)(iii) - a partner temporarily absent from the claimant's household
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        is_parent: true
+        employment_income: 15_000
+      partner:
+        age: 34
+        uc_is_temporarily_absent_from_claimant_household: true
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    uc_unable_to_provide_childcare: [false, true, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: Reg. 32(1)(b) - either joint claimant can be the one in paid work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      head:
+        age: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 34
+        employment_income: 15_000
+    benunits:
+      benunit:
+        members: [head, partner]
+    households:
+      household:
+        members: [head, partner]
+  output:
+    # Each joint claimant is "the claimant" (WRA 2012 s. 40): the working
+    # partner meets (a), the head (limited capability for work) meets (b).
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(b) - a working claimant's nonworking partner without an exception
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        is_parent: true
+        employment_income: 15_000
+      partner:
+        age: 34
+      child:
+        age: 3
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    uc_unable_to_provide_childcare: [false, false, false]
+    uc_childcare_work_condition: false
+    uc_childcare_element: 0
+
+- name: Reg. 32(1)(a) - the exceptions do not replace the claimant's own paid work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 34
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # Neither member is in paid work, so neither meets (a): ADM F7013 applies
+    # "where only one of the couple is in paid work".
+    uc_unable_to_provide_childcare: [true, true]
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(1)(a) - a nonworking single claimant with limited capability for work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_limited_capability_for_WRA: true
+  output:
+    # Limb (b) and its exceptions apply only to the other member of a couple.
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(2)(b) - a single claimant receiving statutory maternity pay
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        statutory_maternity_pay: 6_000
+      child:
+        age: 0
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [claimant, child]
+    households:
+      household:
+        members: [claimant, child]
+  output:
+    in_work: [false, false]
+    uc_childcare_treated_as_in_paid_work: [true, false]
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: Reg. 32(2)(b) - a single claimant receiving statutory sick pay
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        statutory_sick_pay: 1_500
+  output:
+    uc_childcare_treated_as_in_paid_work: true
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - a single claimant receiving statutory paternity pay
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        statutory_paternity_pay: 400
+  output:
+    uc_childcare_treated_as_in_paid_work: true
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - a single claimant receiving maternity allowance
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        maternity_allowance_reported: 5_000
+  output:
+    uc_childcare_treated_as_in_paid_work: true
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - a claimant on statutory sick pay with a partner with limited capability for work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        statutory_sick_pay: 1_500
+      partner:
+        age: 34
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # The claimant is treated as in paid work (32(2)(b)) and the partner is
+    # unable to provide childcare (32(1)(b)(i)).
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - joint claimants both treated as in paid work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        statutory_sick_pay: 1_500
+      partner:
+        age: 34
+        statutory_maternity_pay: 6_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # Reg. 32(2) treats "a claimant" as in paid work, and each joint claimant
+    # is a claimant (WRA 2012 s. 40), so each is treated as in paid work.
+    uc_childcare_treated_as_in_paid_work: [true, true]
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2)(b) - a partner on statutory maternity pay with a working claimant
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        is_parent: true
+        employment_income: 15_000
+      partner:
+        age: 34
+        statutory_maternity_pay: 6_000
+      child:
+        age: 0
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+  output:
+    uc_childcare_work_condition: true
+    uc_childcare_element: 4_250
+
+- name: Reg. 32(1)(a)-(b) - a claimant with an offer of paid work and a partner on maternity allowance
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+      partner:
+        age: 34
+        maternity_allowance_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # The claimant meets only (a), with the offer. The partner, a joint
+    # claimant receiving maternity allowance, is treated as in paid work
+    # (32(2)(b), WRA 2012 s. 40), so meets (b). Taking the partner as the
+    # claimant instead fails, because an offer does not meet (b).
+    uc_childcare_treated_as_in_paid_work: [false, true]
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(a) - a single claimant with an offer of paid work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+  output:
+    # ADM F7011 example 1: Colin has secured a job due to start before the
+    # end of the next assessment period.
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(a) - a claimant with an offer of paid work and a working partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+      partner:
+        age: 34
+        employment_income: 15_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # The claimant meets (a) with the offer; the partner meets (b) by working.
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(a) - a claimant with an offer of paid work and a partner with limited capability for work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+      partner:
+        age: 34
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(a) - a claimant with an offer of paid work and a nonworking partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+      partner:
+        age: 34
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(1)(b) - an offer of paid work does not meet the other member's limb
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+      partner:
+        age: 34
+        uc_has_offer_of_paid_work_starting_by_end_of_next_assessment_period: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # Whichever member is taken as the claimant meets (a) with an offer, but
+    # (b) requires the other member to be "in paid work" or unable to provide
+    # childcare; an offer is neither.
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(1) - three flagged claimants, one in paid work and two unable to provide childcare
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      second:
+        age: 39
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: true
+      third:
+        age: 38
+        is_claimant_or_partner: true
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [first, second, third]
+    households:
+      household:
+        members: [first, second, third]
+  output:
+    # A couple has two members, so three flagged claimants are a data error,
+    # not a legal claim. The formula generalises reg. 32(1) as: some claimant
+    # meets limb (a) and every other claimant meets limb (b).
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1) - three flagged claimants, one of whom neither works nor meets an exception
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      second:
+        age: 39
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: true
+      third:
+        age: 38
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [first, second, third]
+    households:
+      household:
+        members: [first, second, third]
+  output:
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(1)(a) - self-employment is paid work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        self_employment_income: 8_000
+      partner:
+        age: 34
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # Reg. 2: paid work is "work done for payment or in expectation of
+    # payment"; the in_work proxy counts self-employment earnings.
+    in_work: [true, false]
+    uc_childcare_work_condition: true

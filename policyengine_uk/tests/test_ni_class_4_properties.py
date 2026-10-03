@@ -6,8 +6,10 @@ Invariants, for any thresholds 0 <= LPL < UPL, rates >= 0, and profits >= 0:
    apply (no primary Class 1, nor Class 2 before April 2024) or its maximum
    is at least the s.15(3) amount, ni_class_4 equals
    main * clamp(p - LPL, 0, UPL - LPL) + additional * max(p - UPL, 0),
-   where p is the full self-employment profit: Class 1 contributions are not
-   deducted (SSCBA 1992 Sch 2 para 2).
+   where p is ni_class_4_profits. With no capital allowances, receipts or
+   losses, p is the full self-employment profit, or nil within the trading
+   allowance: Class 1 contributions are not deducted (SSCBA 1992 Sch 2
+   para 2). test_ni_class_4_profits_properties.py covers the other reliefs.
 2. Differential: for everyone, ni_class_4 equals an exact-rational
    implementation of s.15(3) SSCBA 1992 capped by the literal regulation 100
    steps (with the Case 1 comparison done exactly). The one exception is a
@@ -33,10 +35,13 @@ Comparisons allow float32 rounding: the model stores values as float32.
 from fractions import Fraction
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 CLASS_4 = "gov.hmrc.national_insurance.class_4"
 CLASS_2_FLAT_RATE = "gov.hmrc.national_insurance.class_2.flat_rate"
@@ -143,6 +148,7 @@ def simulate(policy, people):
         variable: sim.calculate(variable, year)
         for variable in [
             "ni_class_4",
+            "ni_class_4_profits",
             "self_employment_income",
             "ni_class_1_employee",
             "ni_class_1_employee_primary",
@@ -155,6 +161,9 @@ def simulate(policy, people):
     assert ni.class_4.rates.main == policy["main_rate"]
     assert ni.class_4.rates.additional == policy["additional_rate"]
     values["class_2_flat_rate"] = ni.class_2.flat_rate
+    values["trading_allowance"] = sim.tax_benefit_system.parameters(
+        f"{year}-01-01"
+    ).gov.hmrc.income_tax.allowances.trading_allowance
     values["year"] = year
     return values
 
@@ -179,7 +188,7 @@ def reference_class_4(policy, values, i):
     lpl, upl = exact(policy["lpl"]), exact(policy["upl"])
     main_rate = exact(policy["main_rate"])
     additional_rate = exact(policy["additional_rate"])
-    profits = exact(values["self_employment_income"][i])
+    profits = exact(values["ni_class_4_profits"][i])
     employee_ni = exact(values["ni_class_1_employee"][i])
     class_1 = exact(values["ni_class_1_employee_primary"][i])
     class_2 = exact(values["ni_class_2"][i])
@@ -220,8 +229,13 @@ def test_class_4_matches_statute_and_exact_regulation_100(population):
     lpl, upl = policy["lpl"], policy["upl"]
     for i in range(len(people)):
         model = float(values["ni_class_4"][i])
-        profits = float(values["self_employment_income"][i])
+        profits = float(values["ni_class_4_profits"][i])
+        self_employment_income = float(values["self_employment_income"][i])
         tol = tolerance(profits, upl, model)
+
+        # Receipts unknown: a profit within the trading allowance is nil.
+        within_allowance = self_employment_income <= values["trading_allowance"]
+        assert profits == (0 if within_allowance else self_employment_income)
 
         reference, reference_pre_maximum, maximum = reference_class_4(policy, values, i)
         assert abs(model - float(reference)) <= tol, (i, model, float(reference))

@@ -5,25 +5,24 @@ class uc_unearned_income(Variable):
     value_type = float
     entity = BenUnit
     label = "Universal Credit unearned income"
+    documentation = (
+        "Income falling within the descriptions in regulation 66(1) of the "
+        "Universal Credit Regulations 2013. Capital counts only through its "
+        "assumed yield (uc_tariff_income, regulation 72(1)); actual interest, "
+        "dividends and rent are not unearned income at any capital level."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/66"
 
     def formula(benunit, period, parameters):
-        p = parameters(period).gov.dwp.universal_credit.means_test
-        household = benunit.household
-        total = add(benunit, period, p.income_definitions.unearned)
-        tariff_income_applies = benunit("uc_tariff_income", period) > 0
-        reported_capital = benunit("uc_reported_capital", period)
-        has_reported_capital = reported_capital >= 0
-        property_capital = household(
-            "other_residential_property_value", period
-        ) + household("non_residential_property_value", period)
-        capital_derived_income = (
-            ((household("savings", period) > 0) | has_reported_capital)
-            * benunit("savings_interest_income", period)
-            + ((household("corporate_wealth", period) > 0) | has_reported_capital)
-            * benunit("dividend_income", period)
-            + ((property_capital > 0) | has_reported_capital)
-            * benunit("property_income", period)
+        # Members whose income counts: the claimant and partner and, as the model did
+        # before, the programme's own children or young persons. The regulations count
+        # only the claimant's and partner's (UC Regs 2013 reg 22); dropping dependants'
+        # own income is a follow-up. Anyone else in the benefit unit does not count.
+        person = benunit.members
+        members = person("is_claimant_or_partner", period) | person(
+            "is_child_or_qualifying_young_person_for_universal_credit", period
         )
-        return total - tariff_income_applies * capital_derived_income
+        p = parameters(period).gov.dwp.universal_credit.means_test
+        return add_for_members(benunit, period, p.income_definitions.unearned, members)

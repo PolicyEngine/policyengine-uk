@@ -8,7 +8,7 @@ metadata:
   label: Extended childcare entitlement disability criteria
 values:
   2015-09-01:
-    - carers_allowance  # 11A(1)(a): Carer's allowance under Section 70 of Social Security Contributions and Benefits Act 1992
+    - is_entitled_to_carer_benefit  # 11A(1)(a)-(b): Carer's allowance under Section 70 of Social Security Contributions and Benefits Act 1992, or Scottish carer's assistance; regs 14(4) and 15 ask whether a person is entitled to it, so an allowance reduced to nil by an overlapping benefit still counts
     - uc_carer_element  # 11A(1)(c): Universal Credit carer element under Regulation 29 of the Universal Credit Regulations 2013
     - esa_contrib  # 11A(1)(e): Employment and support allowance under Welfare Reform Act 2007
     - incapacity_benefit  # 11A(1)(g): Long-term or short-term incapacity benefit under Social Security Contributions and Benefits Act

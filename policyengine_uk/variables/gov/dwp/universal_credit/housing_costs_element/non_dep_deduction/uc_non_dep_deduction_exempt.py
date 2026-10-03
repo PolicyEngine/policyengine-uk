@@ -10,8 +10,9 @@ class uc_non_dep_deduction_exempt(Variable):
         "No housing costs contribution is deducted for a non-dependant who is "
         "receiving Pension Credit, the middle or higher rate of the DLA care "
         "component, the PIP daily living component or Attendance Allowance, or "
-        "who is entitled to Carer's Allowance (underlying entitlement included, "
-        "so the carer test is is_carer_for_benefits rather than receipt)."
+        "who receives Carer's Allowance or Carer Support Payment. Underlying "
+        "entitlement reduced to nil by overlapping benefits does not qualify "
+        "for the carer exemption."
     )
     reference = "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/16"
 
@@ -21,5 +22,5 @@ class uc_non_dep_deduction_exempt(Variable):
             | person("dla_sc_middle_plus", period)
             | (person("pip_dl", period) > 0)
             | (person("attendance_allowance", period) > 0)
-            | person("is_carer_for_benefits", period)
+            | person("receives_carer_benefit", period)
         )
