@@ -36,7 +36,7 @@ class benefits_premiums(Variable):
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/2",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/1",
         "https://www.legislation.gov.uk/wsi/2013/3035/schedule/2",
-        "https://www.legislation.gov.uk/nisr/2006/406/schedule/3",
+        "https://www.legislation.gov.uk/nisr/2006/406/schedule/4",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3",
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/2",
     )
