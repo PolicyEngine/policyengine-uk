@@ -1,0 +1,1350 @@
+# National Council Tax Reduction schemes' own non-dependant deductions:
+# England pensioners SI 2012/2885 Sch 1 para 8; Wales WSI 2013/3029 Sch 1
+# para 3 and Sch 6 para 5; Scotland SSI 2012/319 reg 48 and SSI 2021/249
+# reg 90. 2026-27 weekly sums, with bands including their lower edge:
+#   England: under 279 5.20; 279 10.60; 485 13.30; 605 and above 15.95.
+#   Wales: under 279 6.70; 279 13.35; 485 16.80; 605 and above 20.05.
+#   Scotland: under 286 5.55; 286 10.95; 497 13.90; 614 and above 16.55.
+# A non-dependant not in remunerative work (under 16 hours) pays the lowest.
+# The applicant is the benefit unit with the household's oldest member, so
+# working-age applicants here are 60.
+
+- name: England in remunerative work with no income pays the lowest amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 0
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 270.40]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: England just below 279 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 14507.48
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 278.99 a week
+    council_tax_reduction_individual_non_dep_deduction: [0, 270.40]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: England exactly 279 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 14508
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 551.20]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: England exactly 485 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 25220
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 691.60]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
+
+- name: England just below 605 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 31459.48
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 604.99 a week
+    council_tax_reduction_individual_non_dep_deduction: [0, 691.60]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
+
+- name: England exactly 605 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 31460
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 829.40]
+    council_tax_reduction_non_dep_deductions: [829.40, 0]
+
+- name: England not in remunerative work pays the lowest amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 40000
+        weekly_hours: 15.9
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 270.40]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: England 2025-26 top amount
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 30004
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 798.20]
+    council_tax_reduction_non_dep_deductions: [798.20, 0]
+
+- name: Scotland pensioner claimant, below 286 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 14871.48
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # 285.99 a week
+    council_tax_reduction_individual_non_dep_deduction: [0, 288.60]
+    council_tax_reduction_non_dep_deductions: [288.60, 0]
+
+- name: Scotland pensioner claimant, exactly 286 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 14872
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 569.40]
+    council_tax_reduction_non_dep_deductions: [569.40, 0]
+
+- name: Scotland working-age claimant, exactly 497 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 25844
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 722.80]
+    council_tax_reduction_non_dep_deductions: [722.80, 0]
+
+- name: Scotland working-age claimant, exactly 614 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 31928
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 860.60]
+    council_tax_reduction_non_dep_deductions: [860.60, 0]
+
+- name: Scotland 2025-26 lowest amount
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 40000
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 278.20]
+    council_tax_reduction_non_dep_deductions: [278.20, 0]
+
+- name: Wales pensioner claimant, not in remunerative work
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 40000
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 348.40]
+    council_tax_reduction_non_dep_deductions: [348.40, 0]
+
+- name: Wales pensioner claimant, exactly 279 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 14508
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 694.20]
+    council_tax_reduction_non_dep_deductions: [694.20, 0]
+
+- name: Wales working-age claimant, exactly 485 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 25220
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 873.60]
+    council_tax_reduction_non_dep_deductions: [873.60, 0]
+
+- name: Wales working-age claimant, exactly 605 a week
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 31460
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 1_042.60]
+    council_tax_reduction_non_dep_deductions: [1_042.60, 0]
+
+- name: Wales 2025-26 lowest amount
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 325.00]
+    council_tax_reduction_non_dep_deductions: [325.00, 0]
+
+- name: English working-age households have no national deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 36400
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Unsupported English working-age local schemes keep reported CTB.
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: A full-time student is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 20
+        current_education: TERTIARY
+        total_income: 20000
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # SI 2012/2885 Sch 1 para 8(7)(c)
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: A 40-year-old on Income Support is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 1000
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # para 8(8)(a)
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: A 40-year-old on income-based JSA is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 1000
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: A 40-year-old on income-related ESA is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 1000
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: A non-dependant on State Pension Credit is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 90
+      son:
+        age: 70
+        total_income: 9000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # The claimant is strictly older, so the son is an eligible non-dependant
+    # and the zero comes from the SPC exemption (para 8(8)(a)), not from the
+    # son also counting as the applicant.
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true]
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: The same non-dependant without State Pension Credit pays the lowest amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 90
+      son:
+        age: 70
+        total_income: 9000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: Universal Credit without earned income is exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # para 8(8)(c)
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: Universal Credit with earned income is not exempt
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        employment_income: 2000
+        weekly_hours: 10
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 270.40]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: Scotland Income Support exemption applies at working age too
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 1000
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # SSI 2021/249 reg 90(8)(a)
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: "England: no Universal Credit exemption in 2014-15"
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Parameters before 2015 are read at 1 January (PE-UK converts to fiscal
+    # years from 2015), so only the exemption is asserted here.
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+
+- name: "England: Universal Credit exemption from 2015-16"
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # inserted by SI 2014/3312
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: "Wales: no Universal Credit exemption in 2014-15"
+  period: 2014
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Parameters before 2015 are read at 1 January (PE-UK converts to fiscal
+    # years from 2015), so only the exemption is asserted here.
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+
+- name: "Wales: Universal Credit exemption from 2015-16"
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    # added by WSI 2015/44
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: "Scotland: no Universal Credit exemption in 2015-16"
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    council_tax_reduction_individual_non_dep_deduction: [0, 200.20]
+    council_tax_reduction_non_dep_deductions: [200.20, 0]
+
+- name: "Scotland: Universal Credit exemption from 2016-17"
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        total_income: 0
+        weekly_hours: 0
+        age: 40
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+        council_tax: 2_000
+        savings: 0
+  output:
+    # inserted by SSI 2016/81
+    council_tax_reduction_individual_non_dep_deduction: [0, 0.00]
+    council_tax_reduction_non_dep_deductions: [0.00, 0]
+
+- name: No deduction where the applicant is blind
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_blind: True
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 36400
+        weekly_hours: 35
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # para 8(6)(a); the son's own amount is 15.95 a week, but none is deducted.
+    council_tax_reduction_individual_non_dep_deduction: [0, 829.40]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+
+- name: "England: one deduction for a non-dependant couple, on their joint income"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        total_income: 15600
+        weekly_hours: 35
+      partner:
+        age: 38
+        current_education: NOT_IN_EDUCATION
+        total_income: 0
+        weekly_hours: 0
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son, partner]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, son, partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 2_000
+        savings: 0
+  output:
+    # para 8(3)-(4): joint 300 a week is in the 279 band (10.60); the partner
+    # not in remunerative work would pay 5.20; only the higher is deducted.
+    council_tax_reduction_individual_non_dep_deduction: [0, 551.20, 270.40]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: "Wales working age: both members of a couple on Universal Credit are deducted"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+      son:
+        employment_income: 15600
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 35
+      partner:
+        age: 38
+        current_education: NOT_IN_EDUCATION
+        employment_income: 1000
+        weekly_hours: 0
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son, partner]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son, partner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    # WSI 2013/3029 Sch 6 para 5(3): one deduction per couple "other than where
+    # there is an award of universal credit". Joint 319.23 a week: 13.35 and 6.70.
+    council_tax_reduction_individual_non_dep_deduction: [0, 694.20, 348.40]
+    council_tax_reduction_non_dep_deductions: [1_042.60, 0]
+
+- name: "Wales pensioner: one deduction for a couple on Universal Credit"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      son:
+        employment_income: 15600
+        age: 40
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 35
+      partner:
+        age: 38
+        current_education: NOT_IN_EDUCATION
+        employment_income: 1000
+        weekly_hours: 0
+    benunits:
+      claimant_unit:
+        members: [claimant]
+      son_unit:
+        members: [son, partner]
+        would_claim_uc: false
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, son, partner]
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 2_000
+        savings: 0
+  output:
+    # Sch 1 para 3(3) has no Universal Credit exception.
+    council_tax_reduction_individual_non_dep_deduction: [0, 694.20, 348.40]
+    council_tax_reduction_non_dep_deductions: [694.20, 0]
+
+- name: A Pension Credit pensioner living with a working son (issue 1934)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 9_000
+      son:
+        age: 40
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+      son_benunit:
+        members: [son]
+        would_claim_uc: false
+    households:
+      household:
+        members: [pensioner, son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+  output:
+    in_receipt_of_guarantee_credit: [true, false]
+    # 30,000 / 52 = 576.92 a week, in the 485 band: 13.30 a week, 691.60 a
+    # year. On the Housing Benefit scale it was 119.85 a week, which took the
+    # whole 2,000.
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
+    council_tax_reduction: 1_308.40

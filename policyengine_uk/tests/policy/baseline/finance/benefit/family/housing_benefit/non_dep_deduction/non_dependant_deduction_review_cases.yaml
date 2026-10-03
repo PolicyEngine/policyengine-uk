@@ -1,0 +1,1175 @@
+# Counterexamples from the independent review of PolicyEngine/policyengine-uk#2007,
+# end to end for Housing Benefit (HB Regs 2006 reg 74) and the England pensioner
+# Council Tax Reduction scheme (SI 2012/2885 Sch 1 para 8), 2026-27 amounts.
+# The claimant family is the rent-liable family with the household's oldest
+# member. Family benefits are held at zero except where a case tests them.
+
+- name: A dependent 18-year-old's PIP does not exempt the claimant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      dependant:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        pip_dl_category: STANDARD
+      lodger_son:
+        age: 40
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant, dependant]
+        benunit_is_rent_liable: true
+      son_unit:
+        members: [lodger_son]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, dependant, lodger_son]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # reg 74(6) and para 8(6) protect the claimant or partner, not a young
+    # person in the family (reg 19; SSCBA s.142). The son's 576.92 a week is
+    # in the HB 485 band (119.85) and the CTR 485 band (13.30).
+    housing_benefit_non_dep_deductions_claimant_exempt: [false, false]
+    council_tax_reduction_household_has_non_dep_exemption: false
+    housing_benefit_non_dep_deductions: [6_232.20, 0]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
+
+- name: A 17-year-old claimant's PIP exempts their family
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        pip_dl_category: STANDARD
+      sibling:
+        age: 16
+        employment_income: 20_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      sibling_unit:
+        members: [sibling]
+        benunit_is_rent_liable: false
+    households:
+      household:
+        members: [claimant, sibling]
+  output:
+    # The benefit unit's head is the claimant whatever their age.
+    housing_benefit_non_dep_deductions_claimant_exempt: [true, false]
+
+- name: A parent non-dependant is banded on their own income, not their young person's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      parent:
+        age: 45
+        employment_income: 9_360 # 180 a week
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+      young_person:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 18
+        employment_income: 5_200 # 100 a week
+        weekly_hours: 8
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      parent_unit:
+        members: [parent, young_person]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, parent, young_person]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # reg 74(4) and para 8(4) join a couple's income only. The parent's 180 a
+    # week is under both lowest bands; the young person is a full-time student
+    # (reg 74(7)(c); para 8(7)(c)).
+    housing_benefit_non_dep_deduction_exempt: [false, false, true]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: A self-employed loss does not cancel wages for the Universal Credit exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      non_dependant:
+        age: 24
+        employment_income: 5_200
+        self_employment_income: -5_200
+        weekly_hours: 8
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 1_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 57(2) step 3: a self-employed loss is nil, so the wages
+    # are earned income and neither exemption applies. Under 16 hours: the
+    # lowest amounts.
+    housing_benefit_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+# Round 2 of the independent review.
+
+- name: Statutory maternity pay is earned income for the Universal Credit exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      non_dependant:
+        age: 22
+        statutory_maternity_pay: 8000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 2000
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 55(4)(b): SMP is employed earnings, so the award is not
+    # calculated on no earned income. Not in remunerative work: the lowest amounts.
+    housing_benefit_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: Wages fully paid into a pension leave no earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      non_dependant:
+        age: 24
+        employment_income: 6240
+        employee_pension_contributions: 6240
+        weekly_hours: 8
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 55(5)(a): relievable pension contributions are deducted
+    # from employed earnings, leaving none (HB reg 74(8)(b); CTR para 8(8)(c)).
+    housing_benefit_non_dep_deduction_exempt: [false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true]
+    housing_benefit_non_dep_deductions: [0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+
+- name: The minimum income floor counts as earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      non_dependant:
+        age: 24
+        self_employment_income: 0
+        uc_mif_applies: true
+        uc_minimum_income_floor: 20000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 1000
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 62(2): a person to whom the floor applies is treated as
+    # having earned income equal to it.
+    housing_benefit_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: Income-related ESA is payable to the recipient, not the working partner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      recipient:
+        age: 45
+        esa_income_reported: 2600
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+      partner:
+        age: 40
+        employment_income: 10920
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [recipient, partner]
+        benunit_is_rent_liable: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 2600
+        pension_credit: 0
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, recipient, partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # HB Regs 2006 reg 2(3A): only the recipient is on ESA(IR), so only they are
+    # out of remunerative work (reg 6(6)) and exempt from CTR (para 8(8)(a)). The
+    # partner is banded on the couple's 260 a week (210 wages plus 50 ESA), in
+    # the HB 192 band (46.85) and under the CTR 279 band (5.20); one deduction
+    # for the couple, the higher.
+    housing_benefit_non_dep_deductions: [2_436.20, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: Gross income counts Universal Credit after the benefit cap
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      non_dependant:
+        age: 40
+        employment_income: 52 # 1 a week, so not exempt as UC without earnings
+        total_income: 52
+        weekly_hours: 35
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [non_dependant]
+        benunit_is_rent_liable: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 30000
+        benefit_cap: 20000
+    households:
+      household:
+        members: [claimant, non_dependant]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 81: the cap reduces the award to 20,000; with 1 a week of
+    # wages, 385.62 a week,
+    # in the HB 365 band (105.20) and the CTR 279 band (10.60). Before the cap it
+    # would be 577.92 a week.
+    housing_benefit_non_dep_deductions: [5_470.40, 0]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: A young person for whom child benefit is paid is disregarded for CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+      parent:
+        age: 45
+        employment_income: 10400
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+      young_person:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+        is_in_approved_training: true
+        age_started_or_accepted_current_education_or_training: 16
+        weekly_hours: 0
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [parent, young_person]
+        benunit_is_rent_liable: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 1406.6
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, parent, young_person]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # CTR para 8(8)(b) and LGFA 1992 Sch 1 para 3: the 19-year-old on approved
+    # training is disregarded, so only the parent is deducted: 227.05 a week with
+    # the child benefit, under 279 (5.20). HB has no such exemption: the parent
+    # (192 band, 46.85) plus the young person, not in remunerative work (20.40).
+    council_tax_reduction_non_dep_deduction_exempt: [false, false, true]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+    housing_benefit_non_dep_deduction_exempt: [false, false, false]
+    housing_benefit_non_dep_deductions: [3_497.00, 0]
+
+# Round 3: partners are the SSCBA s.137 couple (is_claimant_or_partner), not
+# whoever is not a child benefit child or qualifying young person.
+
+- name: A blind 16-year-old partner exempts a Welsh 19-year-old applicant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 16
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        is_blind: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 18
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant, partner]
+        benunit_is_rent_liable: true
+      lodger_unit:
+        members: [lodger]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [applicant, partner, lodger]
+        country: WALES
+        local_authority: CARDIFF
+  output:
+    # HB reg 74(6)(a) and WSI 2013/3029 Sch 6 para 5(6)(a): the claimant's
+    # partner is blind, so no deduction for the lodger (576.92 a week, which
+    # would otherwise be 119.85 HB and 16.80 CTR a week).
+    housing_benefit_non_dep_deductions_claimant_exempt: [true, false]
+    council_tax_reduction_household_has_non_dep_exemption: true
+    housing_benefit_non_dep_deductions: [0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+
+- name: A non-dependant couple with a partner at school is banded on joint income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      older_partner:
+        age: 20
+        employment_income: 9_360
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      younger_partner:
+        age: 18
+        employment_income: 8_320
+        weekly_hours: 10
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      couple_unit:
+        members: [older_partner, younger_partner]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, older_partner, younger_partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # HB reg 74(3)-(4) and CTR Sch 1 para 8(3)-(4): one deduction for the
+    # couple, banded on their joint 340 a week because the older partner is in
+    # remunerative work: 64.35 HB (279 band) and 10.60 CTR (279 band).
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: A 17-year-old partner's PIP exempts a Merton applicant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 16
+        pip_dl_category: STANDARD
+        is_claimant_or_partner: true
+      lodger:
+        age: 40
+        employment_income: 30_000
+        weekly_hours: 37.5
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant, partner]
+        would_claim_uc: false
+        claims_all_entitled_benefits: true
+      lodger_unit:
+        members: [lodger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [applicant, partner, lodger]
+        country: ENGLAND
+        local_authority: MERTON
+        council_tax: 1_800
+        savings: 0
+  output:
+    # Merton scheme para 30(6): no deduction where the applicant or partner
+    # gets the daily living component of PIP.
+    council_tax_reduction_household_has_non_dep_exemption: true
+    merton_council_tax_reduction_non_dep_deductions: [0, 0]
+
+# Round 3 of the independent review: gross and earned income, the Scottish
+# working-age scheme, the benefit cap's childcare protection, and child
+# benefit entitlement.
+
+- name: Statutory maternity pay counts towards a non-dependant couple's gross income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      worker:
+        age: 30
+        employment_income: 13_520
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 28
+        statutory_maternity_pay: 1_560
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      couple_unit:
+        members: [worker, partner]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, worker, partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # HB Regs 2006 reg 35(1)(i): statutory maternity pay is earnings. The
+    # couple's joint gross income is 260 wages plus 30 SMP, 290 a week (reg
+    # 74(4); CTR para 8(4)): the HB 279 band (64.35) and the CTR 279 band
+    # (10.60). Without the SMP, 260 would be a band lower in each.
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: A couple's income-related ESA counts towards their joint gross income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      recipient:
+        age: 45
+        esa_income_reported: 5_200
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 40
+        employment_income: 9_360
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      couple_unit:
+        members: [recipient, partner]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 5_200
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, recipient, partner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # The partner works 16 hours and is banded on the couple's 180 wages plus
+    # 100 ESA(IR), 280 a week: the HB 279 band (64.35) and the CTR 279 band
+    # (10.60). The recipient is out of remunerative work (reg 6(6)) and exempt
+    # from CTR (para 8(8)(a)); one deduction for the couple, the higher.
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: Statutory paternity pay is earned income for the Universal Credit exemption
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      lodger:
+        age: 24
+        statutory_paternity_pay: 300
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      lodger_unit:
+        members: [lodger]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 2_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, lodger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 55(4)(c): statutory paternity pay is employed earnings,
+    # so the award is not calculated on no earned income and neither
+    # exemption applies (HB reg 74(8)(b); CTR para 8(8)(c)). Out of
+    # remunerative work, the lodger pays the lowest amounts, 20.40 and 5.20.
+    housing_benefit_non_dep_deduction_exempt: [false, false]
+    council_tax_reduction_non_dep_deduction_exempt: [false, false]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+    council_tax_reduction_non_dep_deductions: [270.40, 0]
+
+- name: Pension contributions are deducted from self-employed earnings in the start-up period
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      lodger:
+        age: 24
+        self_employment_income: 6_000
+        pension_contributions: 6_000
+        uc_is_in_startup_period: true
+        weekly_hours: 10
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      lodger_unit:
+        members: [lodger]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 2_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, lodger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 57(2), step 4: with no employed earnings, the 6,000 of
+    # relievable pension contributions comes off the 6,000 profit, leaving nil.
+    # The minimum income floor does not apply in the start-up period (reg
+    # 62(5)), so the award is on no earned income: exempt under HB reg
+    # 74(8)(b) (aged under 25) and CTR para 8(8)(c).
+    housing_benefit_non_dep_deduction_exempt: [false, true]
+    council_tax_reduction_non_dep_deduction_exempt: [false, true]
+    housing_benefit_non_dep_deductions: [0, 0]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+
+- name: Scotland's working-age scheme exempts the partner of an Income Support claimant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+        is_claimant_or_partner: true
+      recipient:
+        age: 35
+        income_support_reported: 5_000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 34
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant]
+        benunit_is_rent_liable: true
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 0
+      couple_unit:
+        members: [recipient, partner]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 5_000
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [applicant, recipient, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    # SSI 2021/249 reg 90(8)(a) with reg 4(1): the partner "has a partner who
+    # is" on Income Support and is not on Universal Credit, so both are exempt
+    # from CTR. Housing Benefit has no such rule (reg 74(8)(a) is for the
+    # person on IS, and only under 25): both are out of remunerative work, and
+    # the couple pays one lowest amount, 20.40 a week.
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, true]
+    council_tax_reduction_non_dep_deductions: [0, 0]
+    housing_benefit_non_dep_deductions: [1_060.80, 0]
+
+- name: Before April 2022 Scotland exempted only the Income Support claimant
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+        is_claimant_or_partner: true
+      recipient:
+        age: 35
+        income_support_reported: 5_000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 34
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant]
+        benunit_is_rent_liable: true
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 0
+      couple_unit:
+        members: [recipient, partner]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 5_000
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [applicant, recipient, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    # SSI 2012/303 reg 67(8)(a): only a non-dependant "who is on income
+    # support" is exempt. The partner, out of remunerative work, pays the
+    # lowest 2021-22 amount, 4.30 a week.
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_non_dep_deductions: [223.60, 0]
+
+- name: Scotland's pension-age scheme exempts only the Income Support claimant
+  period: 2026
+  input:
+    people:
+      applicant:
+        age: 80
+        is_claimant_or_partner: true
+      recipient:
+        age: 35
+        income_support_reported: 5_000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 34
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant]
+        benunit_is_rent_liable: true
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 0
+      couple_unit:
+        members: [recipient, partner]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        income_support: 5_000
+        pension_credit: 0
+    households:
+      household:
+        members: [applicant, recipient, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    # SSI 2012/319 reg 48(8)(a): a non-dependant "who is on income support".
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+
+- name: The benefit cap does not reduce Universal Credit when childcare costs exceed the excess
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      guardian:
+        age: 20
+        employment_income: 9_360
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      older_child:
+        age: 4
+        is_claimant_or_partner: false
+      younger_child:
+        age: 2
+        is_claimant_or_partner: false
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      guardian_unit:
+        members: [guardian, older_child, younger_child]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 22_000
+        uc_childcare_element: 12_000
+        child_benefit: 2_500
+        benefit_cap: 22_020
+        child_tax_credit: 0
+        working_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, guardian, older_child, younger_child]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # UC Regs 2013 reg 81(1)-(2): the excess over the cap is 2,480, less than
+    # the 12,000 childcare costs element, so the award is not reduced. Gross
+    # income is 180 wages plus 22,000 UC and 2,500 child benefit, 651.15 a
+    # week: the top bands, 131.45 HB and 15.95 CTR.
+    housing_benefit_non_dep_deductions: [6_835.40, 0]
+    council_tax_reduction_non_dep_deductions: [829.40, 0]
+
+- name: A young person no one claims child benefit for is not disregarded for CTR
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      parent:
+        age: 45
+        employment_income: 10_400
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      young_person:
+        age: 19
+        current_education: NOT_IN_EDUCATION
+        is_in_approved_training: true
+        age_started_or_accepted_current_education_or_training: 16
+        weekly_hours: 0
+        is_claimant_or_partner: false
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      non_dependant_unit:
+        members: [parent, young_person]
+        benunit_is_rent_liable: false
+        would_claim_child_benefit: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, parent, young_person]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # LGFA 1992 Sch 1 para 3 needs another person to be "entitled to child
+    # benefit" for the young person, and entitlement needs a claim (SSAA 1992
+    # s.1(1)). With no claim, both are charged: the parent's 200 a week is
+    # under the CTR 279 band (5.20), and the young person, out of remunerative
+    # work, pays the lowest amount (5.20).
+    council_tax_reduction_non_dep_deduction_exempt: [false, false, false]
+    council_tax_reduction_non_dep_deductions: [540.80, 0]
+
+# Round 4 of the independent review.
+
+- name: Maternity Allowance counts towards the benefit cap on a non-dependant's Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      worker:
+        age: 20
+        employment_income: 9_200
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        maternity_allowance: 6_000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      child_1:
+        age: 16
+        is_claimant_or_partner: false
+      child_2:
+        age: 15
+        is_claimant_or_partner: false
+      child_3:
+        age: 13
+        is_claimant_or_partner: false
+      child_4:
+        age: 11
+        is_claimant_or_partner: false
+      child_5:
+        age: 0
+        is_claimant_or_partner: false
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      family_unit:
+        members: [worker, partner, child_1, child_2, child_3, child_4, child_5]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 14_000
+        uc_childcare_element: 0
+        child_benefit: 5_129.80
+        benefit_cap: 22_020
+        child_tax_credit: 0
+        working_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, worker, partner, child_1, child_2, child_3, child_4, child_5]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # Welfare Reform Act 2012 s.96(10)(i): Maternity Allowance is a capped
+    # benefit. Capped benefits are 25,129.80, 3,109.80 over the cap, so UC
+    # is 10,890.20 (UC reg 81). Joint gross income is 9,200 wages + 6,000 MA
+    # + 10,890.20 UC + 5,129.80 child benefit = 600.38 a week: the HB 485
+    # band (119.85) and the CTR 485 band (13.30).
+    housing_benefit_non_dep_deductions: [6_232.20, 0]
+    council_tax_reduction_non_dep_deductions: [691.60, 0]
+
+- name: A self-employment loss does not cancel a non-dependant's gross wages
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        is_claimant_or_partner: true
+      lodger:
+        age: 30
+        employment_income: 15_600
+        self_employment_income: -10_400
+        weekly_hours: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant]
+        benunit_is_rent_liable: true
+      lodger_unit:
+        members: [lodger]
+        benunit_is_rent_liable: false
+        would_claim_uc: false
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, lodger]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    # HB reg 74(2) and SI 2006/214 reg 55(2): "normal gross weekly income".
+    # Taxable income nets the 10,400 loss against the 15,600 wages; gross
+    # income does not (DWP HB guidance A5.551), so the lodger is banded on
+    # 300 a week: the HB 279 band (64.35) and the CTR 279 band (10.60).
+    housing_benefit_non_dep_deductions: [3_346.20, 0]
+    council_tax_reduction_non_dep_deductions: [551.20, 0]
+
+- name: Scotland's partner rule does not cover a couple on Universal Credit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+        is_claimant_or_partner: true
+      recipient:
+        age: 35
+        income_support_reported: 5_000
+        weekly_hours: 0
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+      partner:
+        age: 34
+        employment_income: 5_200
+        weekly_hours: 10
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      applicant_unit:
+        members: [applicant]
+        benunit_is_rent_liable: true
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+        universal_credit_pre_benefit_cap: 0
+      couple_unit:
+        members: [recipient, partner]
+        benunit_is_rent_liable: false
+        universal_credit_pre_benefit_cap: 1_000
+        child_tax_credit: 0
+        working_tax_credit: 0
+        child_benefit: 0
+        income_support: 5_000
+        jsa_income: 0
+        esa_income: 0
+        pension_credit: 0
+    households:
+      household:
+        members: [applicant, recipient, partner]
+        country: SCOTLAND
+        local_authority: GLASGOW_CITY
+  output:
+    # SSI 2021/249 reg 4(1): a qualifying income-related benefit claimant "is
+    # not on universal credit". Here the couple is, so the partner rule does
+    # not apply. The recipient is exempt as on UC without earned income (reg
+    # 90(8)(c)); the partner has wages, so is charged the lowest amount (5.55,
+    # under 16 hours), the couple's one deduction.
+    council_tax_reduction_non_dep_deduction_exempt: [false, true, false]
+    council_tax_reduction_non_dep_deductions: [288.60, 0]
