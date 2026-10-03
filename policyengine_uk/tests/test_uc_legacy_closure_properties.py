@@ -213,3 +213,51 @@ def test_a_closure_claim_pays_the_universal_credit_of_any_claim(units):
                         abs(at_closure[year][benefit][i] - anyway[year][benefit][i])
                         < 0.01
                     ), (year, benefit, unit)
+
+
+@st.composite
+def paid_legacy_families(draw):
+    """Working-age families on tax credits and one other legacy award they
+    are paid in 2024: no earnings or savings, and for Income Support a lone
+    parent with a child under 5."""
+    other = draw(
+        st.sampled_from(
+            ["income_support_reported", "esa_income_reported", "jsa_income_reported"]
+        )
+    )
+    members = [("claimant", draw(st.integers(18, 60)))]
+    members.append(("child", draw(st.integers(0, 4))))
+    reported = {name: 0.0 for name in LEGACY}
+    reported["child_tax_credit_reported"] = draw(st.sampled_from([2_000.0, 6_000.0]))
+    reported[other] = draw(st.sampled_from([2_000.0, 6_000.0]))
+    reported["housing_benefit_reported"] = draw(st.sampled_from([0.0, 3_000.0]))
+    return dict(
+        shape="lone_parent",
+        members=members,
+        reported=reported,
+        tenure="RENT_FROM_COUNCIL",
+        rent=draw(st.floats(1_000, 8_000)),
+        earnings=0.0,
+        savings=0.0,
+        would_claim_uc=False,
+        claims_at_closure=draw(st.booleans()),
+        other=other,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(paid_legacy_families(), min_size=1, max_size=25))
+def test_the_tax_credit_closure_ends_awards_paid_the_year_before(units):
+    values = calculate(units)
+    benefit = {
+        "income_support_reported": "income_support",
+        "esa_income_reported": "esa_income",
+        "jsa_income_reported": "jsa_income",
+    }
+    for i, unit in enumerate(units):
+        other = benefit[unit["other"]]
+        # The generator only makes families paid the award before 2025.
+        assert values[2024][other][i] > 0, unit
+        assert values[2025]["legacy_benefits_closed"][i], unit
+        assert values[2025][other][i] == 0, unit
+        assert values[2025]["housing_benefit"][i] == 0, unit
