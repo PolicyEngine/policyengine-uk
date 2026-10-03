@@ -40,8 +40,9 @@ class is_scp_eligible(Variable):
         ) & qb.income_support
         # SSI 2020/351 reg 18(e)-(f): the individual responsible for the child
         # (through their own or their partner's Child Benefit, Pension Credit or
-        # Universal Credit award, regs 9 and 12) has been awarded the benefit.
-        # That is the claimant or partner, not another member of the benefit unit.
+        # Universal Credit award, or as a kinship carer: regs 9, 11 and 12) has
+        # been awarded the benefit. The model takes that individual to be the
+        # claimant or partner, not another member of the benefit unit.
         receives_jsa_income = (
             benunit("claimant_or_partner_jsa_income", period) > 0
         ) & qb.jsa_income
