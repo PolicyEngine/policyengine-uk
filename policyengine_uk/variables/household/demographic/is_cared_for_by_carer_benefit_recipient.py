@@ -44,10 +44,11 @@ class is_cared_for_by_carer_benefit_recipient(Variable):
         "Credit non-dependant deduction exemption reads Pension Credit. Such a "
         "carer living in the household already bars both the premium and the "
         "addition through their residence conditions unless their presence "
-        "is ignored. Receipt is receives_carer_benefit, so it inherits "
-        "carers_allowance, which does not apply the overlapping-benefit rule "
-        "that stops Carer's Allowance being paid alongside a higher State "
-        "Pension."
+        "is ignored. Receipt is receives_carer_benefit: a positive Carer's "
+        "Allowance or Carer Support Payment after the overlapping-benefit "
+        "adjustment. A carer whose award an overlapping benefit, such as a "
+        "higher State Pension, reduces to nil is entitled but not in receipt, "
+        "so is not attributed."
     )
     definition_period = YEAR
     reference = (
