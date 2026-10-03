@@ -1,3 +1,10 @@
+## [2.109.5] - 2026-10-03
+
+### Changed
+
+- Run the CI Test job on Linux arm64 with four pytest-xdist workers (pytest-xdist is now a dev dependency), cancel superseded pull request runs, and time the job out after 60 minutes.
+
+
 ## [2.109.4] - 2026-10-03
 
 ### Fixed
