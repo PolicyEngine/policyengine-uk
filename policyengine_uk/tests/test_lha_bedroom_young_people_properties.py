@@ -353,8 +353,14 @@ def test_exact_effect_of_adding_a_person_aged_16_to_19(case):
     head = keys.index((target[0], 0))
     if fam["role"] == "non_dependant":
         expected_uc[head] += 0 if added["unclaimed"] else 1
-    if fam["role"] in ("non_dependant", "boarder", "lodger"):
+    if fam["role"] in ("boarder", "lodger"):
         expected_hb[head] += 0 if added["placed"] else 1
+    if fam["role"] == "non_dependant":
+        # HB: a non-dependant resides with every joint occupier by default
+        # (non_dependant_normally_resides_with; LHA Guidance Manual 2.110).
+        for g, other in enumerate(population[target[0]]):
+            if other["role"] in ("head", "sharer"):
+                expected_hb[keys.index((target[0], g))] += 0 if added["placed"] else 1
     assert np.array_equal(uc_after - uc_before, expected_uc)
     assert np.array_equal(hb_after - hb_before, expected_hb)
 
@@ -424,10 +430,21 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
             hb_overnight = True
         uc_foster = fosters(fam) or (is_target and added["fostered"])
         hb_carer = fosters(fam) or (is_target and added["placed"])
-        if fam["role"] == "head":
-            for g, other in enumerate(families[1:], start=1):
+        if fam["role"] in ("head", "sharer"):
+            # HB: boarders and lodgers occupy the household head's dwelling;
+            # a non-dependant resides with every joint occupier by default
+            # (non_dependant_normally_resides_with; LHA Guidance Manual
+            # 2.110). UC counts non-dependants for the head's family only.
+            hb_roles = (
+                ("non_dependant", "boarder", "lodger")
+                if fam["role"] == "head"
+                else ("non_dependant",)
+            )
+            for g, other in enumerate(families):
+                if g == f:
+                    continue
                 joins = target == (h, g)
-                if other["role"] == "non_dependant":
+                if fam["role"] == "head" and other["role"] == "non_dependant":
                     uc_rooms += len(other["adults"]) + int(
                         joins and not added["unclaimed"]
                     )
@@ -438,7 +455,7 @@ def test_bedrooms_match_a_reference_count_of_the_size_criteria(case):
                     uc_overnight |= (
                         joins and added["overnight"] and not added["unclaimed"]
                     )
-                if other["role"] in ("non_dependant", "boarder", "lodger"):
+                if other["role"] in hb_roles:
                     # HB reg 13D(3)(a): the family's claimant or couple
                     # has one bedroom.
                     hb_rooms += 1 + int(joins and not added["placed"])

@@ -2,6 +2,30 @@ from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.LHA_allowed_bedrooms import (
     bedrooms_for_children,
 )
+from policyengine_uk.variables.household.consumption.rent.non_dependant_normally_resides_with import (
+    non_dependants_residing_with,
+)
+
+
+def housing_benefit_other_occupiers(benunit, period, other_occupier):
+    """For each family, the sum of ``other_occupier`` (a count or weight for
+    each occupier outside every family liable for the household's rent, zero
+    for anyone else) over the people who occupy its dwelling (HB Regs 2006
+    reg 13D(12)). A boarder or lodger, who
+    pays the householder, counts for the household head's family. A
+    non-dependant counts for each joint occupier they normally reside with
+    (LHA Guidance Manual paras 2.093 and 2.110; see
+    non_dependant_normally_resides_with)."""
+    person = benunit.members
+    boarder_or_lodger = person("pays_rent_to_householder", period)
+    head_family = benunit.any(person("is_household_head", period))
+    of_householder = head_family * benunit.max(
+        person.household.sum(other_occupier * boarder_or_lodger)
+    )
+    non_dependants = non_dependants_residing_with(
+        benunit, period, other_occupier * ~boarder_or_lodger
+    )
+    return of_householder + non_dependants
 
 
 class housing_benefit_LHA_allowed_bedrooms(Variable):
@@ -24,8 +48,12 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
         "non-dependant, boarder or "
         "lodger are occupiers too, and share rooms with the claimant's "
         "children. A child or young person placed with a family in the "
-        "household as a foster child or for adoption is not an occupier. A "
-        "sharer's, boarder's or lodger's own claim counts only their own "
+        "household as a foster child or for adoption is not an occupier. "
+        "Where the rent is shared, a non-dependant and their children count "
+        "for each joint occupier they normally reside with, by default every "
+        "one (see non_dependant_normally_resides_with), while a boarder or "
+        "lodger, who pays the household head, counts for the head's family "
+        "only. A boarder's or lodger's own claim counts only their own "
         "family."
     )
     definition_period = YEAR
@@ -71,9 +99,8 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
             "is_couple", period
         )
         occupier_rooms = counted * where(claimant_or_partner & couple, 0.5, 1)
-        is_head_family = benunit.any(person("is_household_head", period))
-        other_occupiers = is_head_family * benunit.max(
-            person.household.sum(occupier_rooms)
+        other_occupiers = housing_benefit_other_occupiers(
+            benunit, period, occupier_rooms
         )
         # Reg 13D(3)(c)-(e): the occupiers' children, the claimant's own and
         # other families', share rooms with each other.
@@ -82,6 +109,9 @@ class housing_benefit_LHA_allowed_bedrooms(Variable):
             period,
             own_child=occupier,
             other_child=other_occupier,
+            count_other=lambda mask: housing_benefit_other_occupiers(
+                benunit, period, mask
+            ),
         )
         # Reg 13D(3A) and (3B): additional bedrooms.
         additional = benunit("housing_benefit_LHA_additional_bedrooms", period)
