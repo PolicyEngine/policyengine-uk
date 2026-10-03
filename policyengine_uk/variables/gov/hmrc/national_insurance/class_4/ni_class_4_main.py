@@ -12,7 +12,7 @@ class ni_class_4_main(Variable):
 
     def formula(person, period, parameters):
         class_4 = parameters(period).gov.hmrc.national_insurance.class_4
-        profits = person("self_employment_income", period)
+        profits = person("ni_class_4_profits", period)
         add_rate_income = max_(
             profits - class_4.thresholds.upper_profits_limit,
             0,

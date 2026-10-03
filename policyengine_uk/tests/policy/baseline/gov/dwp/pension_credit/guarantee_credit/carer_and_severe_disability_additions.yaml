@@ -1,4 +1,4 @@
-- name: Carer addition for a claimant with underlying entitlement and no Carer's Allowance award
+- name: No carer addition without a claim even when the caring hours condition is met
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -18,7 +18,8 @@
   output:
     carers_allowance: 0
     is_carer_for_benefits: true
-    carer_minimum_guarantee_addition: 46.37 * 52
+    is_entitled_to_carer_benefit: false
+    carer_minimum_guarantee_addition: 0
 
 - name: Carer addition for a claimant receiving Carer's Allowance
   period: 2025
@@ -59,7 +60,7 @@
   output:
     carer_minimum_guarantee_addition: 0
 
-- name: Severe disability addition is withheld only by a carer benefit in payment, not by underlying entitlement
+- name: Severe disability addition is not withheld by a non-claiming carer
   period: 2021
   absolute_error_margin: 0.01
   input:
