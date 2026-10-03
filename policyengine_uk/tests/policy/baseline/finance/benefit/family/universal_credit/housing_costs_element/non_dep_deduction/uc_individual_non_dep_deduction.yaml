@@ -11,7 +11,7 @@
         members: person
         benunit_rent: 0
   output:
-    uc_individual_non_dep_deduction: 75.53 * 12
+    uc_individual_non_dep_deduction: 75.15 * 12
 
 - name: Exempt, no deduction
   period: 2020

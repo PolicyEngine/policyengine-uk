@@ -18,7 +18,7 @@
     country: ENGLAND
   output:
     carer_support_payment: 0
-    carers_allowance: 4331.08
+    carers_allowance: 4331.6  # 83.30 a week in 2025-26
 
 - name: Non-carer in Scotland gets neither
   period: 2025

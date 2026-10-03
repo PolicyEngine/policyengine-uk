@@ -1,17 +1,37 @@
 description: Carer premium for two qualifying carers for legacy benefits.
 values:
-  2010-01-01: 37.5
-  2023-04-01: 42.75
+  # 2015-16 to 2026-27: twice the carer premium in DWP Benefit and pension rates
+  # (gov.uk), as both members of the couple satisfy the condition.
+  2015-04-01: 69.2
+  2017-04-01: 69.9
+  2018-04-01: 72
+  2019-04-01: 73.7
+  2020-04-01: 75
+  2021-04-01: 75.4
+  2022-04-01: 77.7
+  2023-04-01: 85.5
   2024-04-01: 
-    value: 45.6
+    value: 91.2
     reference:
       - title: Benefits Uprating 2024/25 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
-  2025-04-01: 46.38
-  2026-04-01: 48.15
+  2025-04-01: 92.8
+  2026-04-01: 96.3
 metadata:
   period: week
   label: Legacy benefit carer premium (two carers)
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
-  reference: https://www.mariecurie.org.uk/help/support/benefits-entitlements/carers/premium
+  reference:
+    - title: Carer premium (Marie Curie guidance)
+      href: https://www.mariecurie.org.uk/help/support/benefits-entitlements/carers/premium
+    - title: "The Housing Benefit Regulations 2006 (SI 2006/213), Schedule 3, Part 4: the carer premium is paid in respect of each person who satisfies the condition in paragraph 17"
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
