@@ -26,7 +26,8 @@ def pension_credit_with_passported_tax_credits(benunit, period, parameters):
     then consistent, the passport is taken.)
 
     "Entitled" is read as payable: at income exactly equal to the minimum
-    guarantee, a nil guarantee credit gives no passport.
+    guarantee, where no savings credit is payable, a nil guarantee credit
+    gives no passport.
 
     In years with no tax credit awards, working tax credit is nil whether or
     not the test applies, so Pension Credit is read directly.

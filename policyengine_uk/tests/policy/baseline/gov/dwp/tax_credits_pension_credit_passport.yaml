@@ -249,6 +249,9 @@
   # with a grandchild aged 2: their CTC is passported through the savings
   # credit, but their gross income is £20,200 and they have no Guarantee
   # Credit, so the child is not eligible through either route.
+  # CTC: the family element needs a child "born before 6th April 2017" (CTC
+  # Regs 2002 reg 7(2)(a)), so it is nil here (entered, as the model pays
+  # it); the individual element is £3,455 (reg 7(4)(c)).
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -272,7 +275,7 @@
         members: [grandparent_1, grandparent_2, grandchild]
         would_claim_uc: false
         pension_credit_earnings: 2_480
-        CTC_family_element: 545
+        CTC_family_element: 0
         working_tax_credit_run_on: false
         extended_childcare_entitlement_eligible: false
     households:
@@ -285,7 +288,7 @@
     savings_credit: 123.34
     tax_credits_applicable_income: 0
     tax_credits_current_year_income: 20_200
-    child_tax_credit: 4_000
+    child_tax_credit: 3_455
     meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
     targeted_childcare_entitlement_eligible: false
 
@@ -330,8 +333,11 @@
 
 - name: With no tax credit awards in payment, Pension Credit still lifts the income test
   # Tax credits ended on 5 April 2025, so no award is paid in 2025-26 and
-  # working tax credit is nil either way. Guarantee Credit:
-  # 221.85 x 52 - (2,340 + 6,000) = £3,196.20.
+  # working tax credit is nil either way. The standard minimum guarantee for
+  # a single claimant is £227.10 a week (SPC Regs 2002 reg 6(1)(b), as
+  # substituted by SI 2025/295 art. 29(2)(b)); it is entered because the
+  # model's 2025-26 value differs (#1937). Guarantee Credit:
+  # 227.10 x 52 - (2,340 + 6,000) = 11,809.20 - 8,340 = £3,469.20.
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -348,13 +354,14 @@
       benunit:
         members: [pensioner]
         pension_credit_earnings: 2_340
+        standard_minimum_guarantee: 11_809.20
     households:
       household:
         members: [pensioner]
         savings: 10_000
   output:
     working_tax_credit: 0
-    pension_credit: 3_196.20
+    pension_credit: 3_469.20
     tax_credits_applicable_income: 0
 
 - name: Without the Pension Credit passport, the first case is income-tested
