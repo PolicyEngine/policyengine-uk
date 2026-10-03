@@ -1,0 +1,927 @@
+# Bedrooms for children and couples who cannot share a bedroom because of
+# disability in the LHA size criteria.
+#
+# Universal Credit (UC Regs 2013 Sch 4 para 12): the disabled child condition
+# (12(6)) is met where the renter, or another member of their extended
+# benefit unit, is responsible for a child who would otherwise be expected to
+# share a bedroom, receives the DLA (or CDP) care component at the middle or
+# highest rate, and is not reasonably able to share a room with another child
+# because of their disability. The renter then has as many additional
+# bedrooms as are necessary for each such child to have their own (12(8)).
+# The disabled person condition (12(6A)) is met where the renter would
+# otherwise share a bedroom with a joint renter, receives a qualifying
+# disability benefit and cannot reasonably share with the joint renter; it
+# gives one additional bedroom (12(9)(d)). From 4 December 2013 (children)
+# and 1 April 2017 (couples); attendance allowance counted only at the
+# higher rate until 27 January 2025 (SI 2025/3).
+#
+# Housing Benefit (HB Regs 2006 and HB (SPC) Regs 2006 reg 13D(3)): the
+# categories are, in order, (za) a member of a couple who cannot share a
+# bedroom, (zb) a member of a couple who can share a bedroom (the partner of
+# one who cannot), (a) a couple, (b) a person who is not a child, (ba) a child
+# who cannot share a bedroom, (c) two children of the same sex, (d) two
+# children under 10, (e) a child; "but the claimant is only entitled to a
+# bedroom in respect of a child who cannot share a bedroom or a member of a
+# couple who cannot share a bedroom if there is a bedroom in the dwelling
+# occupied as the home that is additional to those to which the claimant
+# would be entitled if the child or the member of the couple were able to
+# share a bedroom" (as amended by SI 2017/213 regs 4(4) and 5(3)).
+# Definitions in reg 2(1). The model reads the dwelling's bedrooms from
+# num_bedrooms and assumes the bedroom exists where that is not reported (0).
+#
+# Examples from the DWP Advice for Decision Making chapter F3 (F3135-F3138)
+# and HB circular A21/2013 Annex 2. The cannot-share judgement is the input
+# cannot_reasonably_share_bedroom_due_to_disability.
+
+- name: ADM F3135 example 1, two disabled sisters who would share each have a room
+  period: 2026
+  input:
+    people:
+      joanne:
+        age: 40
+        is_household_head: true
+      kevin:
+        age: 42
+      daughter_10:
+        age: 10
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      daughter_8:
+        age: 8
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      son_13:
+        age: 13
+        is_male: true
+    benunits:
+      family:
+        members: [joanne, kevin, daughter_10, daughter_8, son_13]
+    households:
+      home:
+        members: [joanne, kevin, daughter_10, daughter_8, son_13]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_child_who_cannot_share_bedroom: [false, false, true, true, false]
+    # The couple, the son and the two girls who would otherwise share: the
+    # girls each have their own room, one additional bedroom (para 12(8)).
+    LHA_cannot_share_bedrooms: 1
+    LHA_additional_bedrooms: 1
+    LHA_allowed_bedrooms: 4
+    LHA_category: E
+    # HB reg 13D(3)(ba): each girl is a child who cannot share.
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 4
+
+- name: ADM F3135 example 2, a disabled boy who need not share gets no extra room
+  period: 2026
+  input:
+    people:
+      ankush:
+        age: 40
+        is_household_head: true
+      rita:
+        age: 38
+      son_7:
+        age: 7
+        is_male: true
+      son_9:
+        age: 9
+        is_male: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      son_11:
+        age: 11
+        is_male: true
+    benunits:
+      family:
+        members: [ankush, rita, son_7, son_9, son_11]
+    households:
+      home:
+        members: [ankush, rita, son_7, son_9, son_11]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The 7- and 11-year-olds share and the 9-year-old has his own room, as
+    # he would anyway: 3 bedrooms, none additional.
+    LHA_cannot_share_bedrooms: 0
+    LHA_allowed_bedrooms: 3
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: ADM F3135 example 3, a child the decision maker finds able to share gets no room
+  period: 2026
+  input:
+    people:
+      carol:
+        age: 35
+        is_household_head: true
+      jason:
+        age: 36
+      daughter_5:
+        age: 5
+        is_male: false
+      daughter_7:
+        age: 7
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: false
+    benunits:
+      family:
+        members: [carol, jason, daughter_5, daughter_7]
+    households:
+      home:
+        members: [carol, jason, daughter_5, daughter_7]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_child_who_cannot_share_bedroom: [false, false, false, false]
+    LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: ADM F3136, a couple able to share a bedroom gets no extra room
+  period: 2026
+  input:
+    people:
+      david:
+        age: 60
+        is_household_head: true
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: false
+      kathy:
+        age: 58
+    benunits:
+      couple:
+        members: [david, kathy]
+    households:
+      home:
+        members: [david, kathy]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    LHA_allowed_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 1
+
+- name: A member of a couple who cannot share with the other has a second bedroom
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 60
+        is_household_head: true
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 58
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_member_of_couple_who_cannot_share_bedroom: [true, false]
+    # UC para 12(6A) and (9)(d): one additional bedroom.
+    LHA_cannot_share_bedrooms: 1
+    LHA_allowed_bedrooms: 2
+    LHA_category: C
+    # HB reg 13D(3)(za) and (zb): one bedroom for each member.
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+
+- name: Both members of a couple unable to share have one additional bedroom between them
+  period: 2026
+  input:
+    people:
+      tony:
+        age: 50
+        is_household_head: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      mike:
+        age: 52
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      couple:
+        members: [tony, mike]
+    households:
+      home:
+        members: [tony, mike]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC para 12(9)(d): one bedroom if one or both joint renters satisfy the
+    # condition. HB (za): one bedroom each.
+    LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: ADM F3138, the disabled person and overnight care conditions each give a bedroom
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 50
+        is_household_head: true
+        dla_sc_middle_plus: true
+        has_non_resident_overnight_carer: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 52
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC para 12(9)(a) and (d).
+    LHA_additional_bedrooms: 2
+    LHA_allowed_bedrooms: 3
+    # HB reg 13D(3)(za)-(zb) and (3A)(a).
+    housing_benefit_LHA_additional_bedrooms: 1
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A21/2013 Annex 2 example 1, a disabled only child needs no extra room
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      child:
+        age: 6
+        is_male: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, child]
+    households:
+      home:
+        members: [claimant, partner, child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 3
+  output:
+    LHA_cannot_share_bedrooms: 0
+    LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: A21/2013 Annex 2 example 2, two disabled daughters each have a room
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 45
+        is_household_head: true
+      partner:
+        age: 45
+      daughter_11:
+        age: 11
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      daughter_13:
+        age: 13
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, daughter_11, daughter_13]
+    households:
+      home:
+        members: [claimant, partner, daughter_11, daughter_13]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 3
+  output:
+    LHA_allowed_bedrooms: 3
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A21/2013 Annex 2 example 3, the non-disabled brothers share
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 45
+        is_household_head: true
+      partner:
+        age: 45
+      son_7:
+        age: 7
+        is_male: true
+      son_9:
+        age: 9
+        is_male: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      son_15:
+        age: 15
+        is_male: true
+    benunits:
+      family:
+        members: [claimant, partner, son_7, son_9, son_15]
+    households:
+      home:
+        members: [claimant, partner, son_7, son_9, son_15]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 4
+  output:
+    # The couple, the disabled son, and the sons aged 7 and 15 together.
+    LHA_cannot_share_bedrooms: 0
+    LHA_allowed_bedrooms: 3
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A21/2013 Annex 2 example 4, no Housing Benefit room beyond the dwelling's bedrooms
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      son_7:
+        age: 7
+        is_male: true
+      son_9:
+        age: 9
+        is_male: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, son_7, son_9]
+    households:
+      home:
+        members: [claimant, partner, son_7, son_9]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 2
+  output:
+    # HB: the boys would share if able to, so the claimant would be entitled
+    # to 2 bedrooms, and the dwelling has no third (reg 13D(3), closing
+    # words): the two-bedroom rate.
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_category: C
+    # UC has no such condition.
+    LHA_cannot_share_bedrooms: 1
+    LHA_allowed_bedrooms: 3
+    LHA_category: D
+
+- name: The same family in a three-bedroom dwelling has the Housing Benefit room
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      son_7:
+        age: 7
+        is_male: true
+      son_9:
+        age: 9
+        is_male: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, son_7, son_9]
+    households:
+      home:
+        members: [claimant, partner, son_7, son_9]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 3
+  output:
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A21/2013 Annex 2 example 5, five bedrooms in the criteria but the four-bedroom rate
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      son_12:
+        age: 12
+        is_male: true
+      daughter_9:
+        age: 9
+        is_male: false
+      daughter_3:
+        age: 3
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      daughter_4:
+        age: 4
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, son_12, daughter_9, daughter_3, daughter_4]
+    households:
+      home:
+        members: [claimant, partner, son_12, daughter_9, daughter_3, daughter_4]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 5
+  output:
+    # Able to share: the couple, the son, and the three girls in two rooms
+    # (4). Otherwise: the couple, the son, the 9-year-old, and each disabled
+    # daughter (5).
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 5
+    housing_benefit_LHA_category: E
+    LHA_allowed_bedrooms: 5
+    LHA_category: E
+
+- name: A21/2013 Annex 2 example 6, a disabled boy who would share with his brother
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      son_12:
+        age: 12
+        is_male: true
+      son_10:
+        age: 10
+        is_male: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, son_12, son_10]
+    households:
+      home:
+        members: [claimant, partner, son_12, son_10]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 4
+  output:
+    housing_benefit_LHA_allowed_bedrooms: 3
+    housing_benefit_LHA_category: D
+    LHA_allowed_bedrooms: 3
+
+- name: Two disabled girls who could each be alone but not both have a room each
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 40
+        is_household_head: true
+      daughter_12:
+        age: 12
+        is_male: false
+      daughter_8:
+        age: 8
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      daughter_6:
+        age: 6
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [renter, daughter_12, daughter_8, daughter_6]
+    households:
+      home:
+        members: [renter, daughter_12, daughter_8, daughter_6]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Without the condition the girls need 2 rooms, and either disabled girl
+    # could be the one alone. With it, no disabled girl shares: 3 rooms
+    # (UC para 12(8), each such child has their own bedroom; HB reg
+    # 13D(3)(ba) for each).
+    LHA_cannot_share_bedrooms: 1
+    LHA_allowed_bedrooms: 4
+    housing_benefit_LHA_cannot_share_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 4
+
+- name: A non-dependant's disabled child who would share with the renter's child
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 48
+        is_household_head: true
+        is_male: false
+      daughter_9:
+        age: 9
+        is_male: false
+      older_daughter:
+        age: 26
+        is_male: false
+      granddaughter:
+        age: 8
+        is_male: false
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      renter_family:
+        members: [renter, daughter_9]
+      daughter_family:
+        members: [older_daughter, granddaughter]
+    households:
+      home:
+        members: [renter, daughter_9, older_daughter, granddaughter]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The granddaughter is in the renter's extended benefit unit and her
+    # mother is responsible for her (UC para 12(6), "another member of their
+    # extended benefit unit"); in HB she is an occupier (13D(3)(ba)). The
+    # girls would share; instead each has a room. The daughter's own claim
+    # counts only her own child, who would not share.
+    LHA_cannot_share_bedrooms: [1, 0]
+    LHA_allowed_bedrooms: [4, 2]
+    housing_benefit_LHA_cannot_share_bedrooms: [1, 0]
+    housing_benefit_LHA_allowed_bedrooms: [4, 2]
+
+- name: A disabled foster child gives only the foster parent's bedroom
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 45
+        is_household_head: true
+      daughter_8:
+        age: 8
+        is_male: false
+      foster_child:
+        age: 7
+        is_male: false
+        is_looked_after_by_local_authority: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [renter, daughter_8, foster_child]
+    households:
+      home:
+        members: [renter, daughter_8, foster_child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # No one is responsible for a looked-after child (UC reg 4(6)(a)) and
+    # she does not occupy the dwelling (HB reg 21(3)), so she is in neither
+    # size criteria; the renter has the foster parent's bedroom.
+    is_child_who_cannot_share_bedroom: [false, false, true]
+    LHA_cannot_share_bedrooms: 0
+    LHA_allowed_bedrooms: 3
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A disabled child placed for adoption counts in Universal Credit only
+  period: 2026
+  input:
+    people:
+      adopter:
+        age: 45
+        is_household_head: true
+      son_8:
+        age: 8
+        is_male: true
+      placed_child:
+        age: 6
+        is_male: true
+        is_placed_for_adoption: true
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [adopter, son_8, placed_child]
+    households:
+      home:
+        members: [adopter, son_8, placed_child]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC: the adopter is responsible for the child (reg 4A(1)(c)); the boys
+    # would share, so the disabled child condition adds a room, and the
+    # foster parent condition another (para 12(4)(b)).
+    LHA_cannot_share_bedrooms: 1
+    LHA_allowed_bedrooms: 4
+    # HB: a child placed for adoption does not occupy the dwelling (reg
+    # 21(3)); the adopter is a qualifying parent or carer.
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 3
+
+- name: A non-dependant couple who cannot share have two Housing Benefit bedrooms
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 62
+        is_household_head: true
+      son:
+        age: 34
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      son_partner:
+        age: 33
+    benunits:
+      renter_family:
+        members: [renter]
+      son_family:
+        members: [son, son_partner]
+    households:
+      home:
+        members: [renter, son, son_partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # HB reg 13D(3)(za)-(zb): any couple of occupiers, not only the
+    # claimant's, has a bedroom each where a member cannot share.
+    housing_benefit_LHA_cannot_share_bedrooms: [1, 1]
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+    # UC: each non-dependant already has a bedroom (para 10(1)(c); ADM F3112
+    # note 1), and the disabled person condition is the renter's (12(6A));
+    # the son's own claim gets it as a renter.
+    LHA_cannot_share_bedrooms: [0, 1]
+    LHA_allowed_bedrooms: [3, 2]
+
+- name: A non-dependant couple who both cannot share still have two Housing Benefit bedrooms
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 62
+        is_household_head: true
+      son:
+        age: 34
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      son_partner:
+        age: 33
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      renter_family:
+        members: [renter]
+      son_family:
+        members: [son, son_partner]
+    households:
+      home:
+        members: [renter, son, son_partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # Reg 13D(3)(za) for each member: one bedroom each, so one more for the
+    # couple, not two.
+    housing_benefit_LHA_cannot_share_bedrooms: [1, 1]
+    housing_benefit_LHA_allowed_bedrooms: [3, 2]
+
+- name: Housing Benefit room for a disabled child needs one beyond the overnight carer's
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      son_7:
+        age: 7
+        is_male: true
+      son_9:
+        age: 9
+        is_male: true
+        dla_sc_middle_plus: true
+        has_non_resident_overnight_carer: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, son_7, son_9]
+    households:
+      home:
+        members: [claimant, partner, son_7, son_9]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+        num_bedrooms: 3
+  output:
+    # Able to share: the couple, the boys, and the overnight carer (3). The
+    # dwelling has no fourth bedroom.
+    housing_benefit_LHA_additional_bedrooms: 1
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_allowed_bedrooms: 3
+    LHA_allowed_bedrooms: 4
+
+- name: Lower-rate attendance allowance qualified a couple member only from 27 January 2025
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        aa_category: LOWER
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 68
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # UC para 12(6A)(a)(ii) and HB reg 2(1) read "attendance allowance at the
+    # higher rate" until SI 2025/3.
+    is_member_of_couple_who_cannot_share_bedroom: [false, false]
+    LHA_allowed_bedrooms: 1
+    housing_benefit_LHA_allowed_bedrooms: 1
+
+- name: Lower-rate attendance allowance qualifies a couple member from 2026
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        aa_category: LOWER
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 68
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_member_of_couple_who_cannot_share_bedroom: [true, false]
+    LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: Higher-rate attendance allowance qualified a couple member before 2025
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        aa_category: HIGHER
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 68
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_member_of_couple_who_cannot_share_bedroom: [true, false]
+    LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: No couple bedroom before 1 April 2017
+  period: 2016
+  input:
+    people:
+      claimant:
+        age: 60
+        is_household_head: true
+        pip_dl: 5_000
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 58
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      home:
+        members: [claimant, partner]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_member_of_couple_who_cannot_share_bedroom: [false, false]
+    LHA_cannot_share_bedrooms: 0
+    housing_benefit_LHA_cannot_share_bedrooms: 0
+
+- name: The cannot-share judgement needs a qualifying disability benefit
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      partner:
+        age: 40
+      son_7:
+        age: 7
+        is_male: true
+      son_9:
+        age: 9
+        is_male: true
+        dla_sc_middle_plus: false
+        cannot_reasonably_share_bedroom_due_to_disability: true
+    benunits:
+      family:
+        members: [claimant, partner, son_7, son_9]
+    households:
+      home:
+        members: [claimant, partner, son_7, son_9]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    is_child_who_cannot_share_bedroom: [false, false, false, false]
+    is_member_of_couple_who_cannot_share_bedroom: [false, false, false, false]
+    LHA_allowed_bedrooms: 2
+    housing_benefit_LHA_allowed_bedrooms: 2
+
+- name: A person aged 16 or over is not a child who cannot share
+  period: 2026
+  input:
+    people:
+      renter:
+        age: 45
+        is_household_head: true
+      son_16:
+        age: 16
+        is_male: true
+        current_education: UPPER_SECONDARY
+        dla_sc_middle_plus: true
+        cannot_reasonably_share_bedroom_due_to_disability: true
+      son_8:
+        age: 8
+        is_male: true
+    benunits:
+      family:
+        members: [renter, son_16, son_8]
+    households:
+      home:
+        members: [renter, son_16, son_8]
+        rent: 10_400
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The 16-year-old has his own bedroom as a qualifying young person (UC
+    # para 10(1)(b)) or a person who is not a child (HB 13D(3)(b)).
+    is_child_who_cannot_share_bedroom: [false, false, false]
+    LHA_allowed_bedrooms: 3
+    housing_benefit_LHA_allowed_bedrooms: 3
