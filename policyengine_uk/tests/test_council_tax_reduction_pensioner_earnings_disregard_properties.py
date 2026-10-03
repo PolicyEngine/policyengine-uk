@@ -6,14 +6,15 @@ earnings £25 a week for a lone parent, £10 for a couple and £5 for anyone
 else, plus £17.10 where a work condition is met and net earnings at least
 equal the other disregards, the deductible childcare charges and £17.10.
 Scotland read £37.10 for £17.10 from 6 April 2020 to 4 April 2021 (SSI
-2020/108). The schedules repeat the Housing Benefit pension-age schedule (SI
-2006/214 Sch 4) word for word.
+2020/108). The sums and the work conditions the model applies correspond to
+the Housing Benefit pension-age schedule (SI 2006/214 Sch 4).
 
 Invariants, for any generated population of families:
 
 1. Bounds: 0 <= disregard <= min(net earnings, (£25 + £37.10) x 52); no
-   earnings, no disregard; zero for a family with no member over State
-   Pension age, and zero in Northern Ireland.
+   earnings, no disregard; zero for a family that is not one of the schemes'
+   pensioners (whatever its ages), and zero in Northern Ireland or where the
+   country is unknown.
 2. The statutory sums: in every year from 2015 (the first year the model
    simulates) to 2030 and in each nation, a pension-age family with enough
    earnings and no work condition has exactly its weekly sum x 52
@@ -160,20 +161,27 @@ def working_age(unit):
 
 @PROPERTY_SETTINGS
 @given(
-    st.lists(families(nations=NATIONS + ["NORTHERN_IRELAND"]), min_size=1, max_size=30)
+    st.lists(
+        families(nations=NATIONS + ["NORTHERN_IRELAND", "UNKNOWN"]),
+        min_size=1,
+        max_size=30,
+    )
 )
 def test_disregard_is_bounded_and_only_for_pension_age_families_in_great_britain(
     units,
 ):
-    values = calculate(units)
+    values = calculate(units, variables=VARIABLES + ["council_tax_reduction_pensioner"])
     disregard = values["council_tax_reduction_pensioner_earnings_disregard"]
     net = values["housing_benefit_net_earnings"]
+    pensioner = values["council_tax_reduction_pensioner"].astype(bool)
     for i, unit in enumerate(units):
         assert disregard[i] >= 0, unit
         assert disregard[i] <= min(net[i], MAX_ANNUAL) + 0.01, unit
         if gross_earnings(unit) == 0:
             assert disregard[i] == 0, unit
-        if working_age(unit) or unit["nation"] == "NORTHERN_IRELAND":
+        if working_age(unit):
+            assert not pensioner[i], unit
+        if not pensioner[i] or unit["nation"] in ("NORTHERN_IRELAND", "UNKNOWN"):
             assert disregard[i] == 0, unit
 
 

@@ -23,8 +23,10 @@ liability, ND the non-dependant deductions and A the applicable amount:
    nothing otherwise.
 4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
    max(0, I - A) - ND) when household savings are within 16,000, where I is the
-   income definition on main before this change, recomputed here from its
-   components rather than read from the variable under test.
+   income definition on main before this change less the schemes' pensioner
+   earnings disregard, both recomputed here (the income from its components,
+   the disregard from the statutory sums) rather than read from the variables
+   under test.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
 6. Metamorphic: nor when its savings change.
