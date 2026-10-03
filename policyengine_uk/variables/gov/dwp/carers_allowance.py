@@ -10,7 +10,11 @@ class carers_allowance(Variable):
         "the allowance is reduced by any other personal benefit that overlaps "
         "with it, such as State Pension, and only the balance is paid. The "
         "comparison is made on annual amounts, which equals the weekly rule "
-        "when the overlapping benefit is paid at a constant rate all year."
+        "when the overlapping benefit is paid at a constant rate all year. "
+        "Where the overlapping benefit is above the carer rate in some weeks "
+        "and lower or absent in others, for example when it is paid for part "
+        "of the year, the annual comparison pays less than the weekly rule "
+        "would; annual inputs carry no dates to do better."
     )
     definition_period = YEAR
     unit = GBP
