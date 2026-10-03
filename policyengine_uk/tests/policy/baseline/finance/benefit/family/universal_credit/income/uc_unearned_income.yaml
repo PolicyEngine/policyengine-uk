@@ -1,4 +1,14 @@
-- name: All sources summed
+# UC Regs 2013 reg. 66(1) lists the descriptions of unearned income, and income
+# outside them is not taken into account (DWP ADM H5002, H5112). Actual
+# interest, dividends and rent fall in none of them: reg. 66(1)(m) reaches only
+# ITTOIA 2005 Part 5 income, while interest and dividends are Part 4 and
+# property income is Part 3. Capital counts through its assumed yield instead
+# (reg. 72(1), reg. 66(1)(k)): £4.35 a month for each £250, or part of £250,
+# above £6,000. Where capital is treated as yielding income, reg. 72(3) treats
+# the actual income derived from it, "for example rental, interest or
+# dividends", as capital.
+
+- name: Listed sources are summed and interest and dividends are not
   period: 2020
   absolute_error_margin: 0
   input:
@@ -8,7 +18,8 @@
     savings_interest_income: 10
     dividend_income: 1
   output:
-    uc_unearned_income: 11_111
+    # Reg. 66(1)(b)(iii) carer's allowance + (b)(i) JSA + (a) private pension.
+    uc_unearned_income: 11_100
 
 - name: Tariff income is exposed in unearned income
   period: 2025
@@ -27,7 +38,7 @@
   output:
     uc_unearned_income: 4.35 * 12
 
-- name: Savings interest is folded into capital when tariff income applies
+- name: Savings interest is not unearned income when tariff income applies
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -46,7 +57,7 @@
     uc_tariff_income: 4.35 * 12
     uc_unearned_income: 4.35 * 12
 
-- name: Dividend income is folded into capital when tariff income applies
+- name: Dividend income is not unearned income when tariff income applies
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -66,7 +77,7 @@
     uc_tariff_income: 4.35 * 12
     uc_unearned_income: 4.35 * 12
 
-- name: Property income is folded into capital when tariff income applies
+- name: Rent from residential property is not unearned income when tariff income applies
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -86,7 +97,7 @@
     uc_tariff_income: 4.35 * 12
     uc_unearned_income: 4.35 * 12
 
-- name: Non-residential property income is folded into capital when tariff income applies
+- name: Rent from non-residential property is not unearned income when tariff income applies
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -106,7 +117,7 @@
     uc_tariff_income: 4.35 * 12
     uc_unearned_income: 4.35 * 12
 
-- name: Dividend income stays in unearned income without corporate wealth
+- name: Dividend income is not unearned income without share capital in the data
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -122,10 +133,12 @@
         members: person
         savings: 6_001
   output:
+    # No reg. 66(1) description covers dividends, whether or not the data
+    # records the shares that pay them.
     uc_tariff_income: 4.35 * 12
-    uc_unearned_income: 120 + 4.35 * 12
+    uc_unearned_income: 4.35 * 12
 
-- name: Property income stays in unearned income without countable property capital
+- name: Rent is not unearned income without property capital in the data
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -142,9 +155,9 @@
         savings: 6_001
   output:
     uc_tariff_income: 4.35 * 12
-    uc_unearned_income: 120 + 4.35 * 12
+    uc_unearned_income: 4.35 * 12
 
-- name: Main residence value alone does not suppress property income
+- name: Rent from letting part of the home is not unearned income
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -161,8 +174,58 @@
         savings: 6_001
         main_residence_value: 1_000_000
   output:
+    # The home is disregarded capital (Sch. 10 para. 1), so it yields no
+    # tariff income, and rent from a sub-tenant or boarder is not income
+    # either (ADM H5112, example of a room let at £60 a week).
     uc_tariff_income: 4.35 * 12
-    uc_unearned_income: 120 + 4.35 * 12
+    uc_unearned_income: 4.35 * 12
+
+- name: Interest, dividends and rent are not unearned income below the tariff threshold
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 200
+        dividend_income: 300
+        property_income: 1_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 5_000
+  output:
+    # Capital of £6,000 or less yields nothing (reg. 72(1); ADM H1764), and
+    # the actual income it pays is outside reg. 66(1).
+    uc_tariff_income: 0
+    uc_unearned_income: 0
+
+- name: Interest is not added to tariff income when the data records no savings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        savings_interest_income: 500
+        property_income: 4_800
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 0
+        other_residential_property_value: 10_000
+  output:
+    # Tariff income on £10,000 of capital in let property (taken as entered;
+    # reg. 49 valuation is #1960): (10,000 - 6,000) / 250 = 16 steps x £4.35
+    # x 12 = £835.20. Neither the rent nor the interest is added on top of it.
+    uc_tariff_income: 835.20
+    uc_unearned_income: 835.20
 
 - name: Reported capital drives tariff income for multi-benunit households
   period: 2025
@@ -188,7 +251,7 @@
     uc_tariff_income: [52.2, 0]
     uc_unearned_income: [52.2, 0]
 
-- name: Reported capital suppresses dividend income without household asset detail
+- name: Dividend income is not unearned income with reported capital
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -208,7 +271,7 @@
     uc_tariff_income: 52.2
     uc_unearned_income: 52.2
 
-- name: Reported capital suppresses property income without household asset detail
+- name: Rent is not unearned income with reported capital
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -228,7 +291,7 @@
     uc_tariff_income: 52.2
     uc_unearned_income: 52.2
 
-- name: Dividend income stays unearned when only disregarded pension wealth is held
+- name: Dividend income is not unearned income when only disregarded pension wealth is held
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -246,8 +309,7 @@
         private_pension_wealth: 150_000
   output:
     # Pension wealth is disregarded capital (UC Regs 2013 Sch 10 para 10), so
-    # the dividend gate keys on corporate_wealth alone: with no share-like
-    # holdings the dividends are not folded into capital and stay unearned.
+    # it adds no tariff income, and the dividends are outside reg. 66(1).
     uc_assessable_capital: 6_001
     uc_tariff_income: 4.35 * 12
-    uc_unearned_income: 4.35 * 12 + 120
+    uc_unearned_income: 4.35 * 12
