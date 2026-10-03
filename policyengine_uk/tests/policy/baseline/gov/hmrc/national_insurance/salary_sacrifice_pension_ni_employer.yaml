@@ -1,6 +1,7 @@
-# The salary sacrifice is limited to employment_income_before_lsr, the pay it
-# comes out of. This runner does not copy an employment_income input there
-# (policyengine_uk.Simulation does), so each case sets both.
+# Salary sacrifice counts only for people with pay
+# (employment_income_before_lsr > 0). This runner does not copy an
+# employment_income input there (policyengine_uk.Simulation does), so each
+# case sets both.
 - name: No employer NI charge when salary sacrifice below £2,000 cap
   period: 2025
   absolute_error_margin: 0.01

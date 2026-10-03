@@ -87,10 +87,13 @@ def _cap(simulation, year):
 def test_only_people_with_pay_have_a_salary_sacrifice(rows):
     pays = np.array([row[0] for row in rows])
     sacrifices = np.array([row[1] for row in rows])
-    simulation = _simulate(pays, sacrifices)
+    drawn_pays = pays
+    simulation = _simulate(drawn_pays, sacrifices)
     for year in YEARS:
-        # The pay the model stores (float32: tiny draws round to zero).
+        # The pay the model stores (float32: tiny draws round to zero). It
+        # must be the pay put in: Simulation moves employment_income there.
         pays = _values(simulation, "employment_income_before_lsr", year)
+        np.testing.assert_allclose(pays, drawn_pays, rtol=1e-6, atol=1e-2)
         from_pay = _values(
             simulation, "pension_contributions_via_salary_sacrifice_from_pay", year
         )
