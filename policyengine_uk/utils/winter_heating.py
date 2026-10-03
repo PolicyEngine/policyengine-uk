@@ -4,7 +4,7 @@ Winter Heating Payment.
 Both schemes entitle and pay a person, and set the amount from that person's
 own circumstances:
 
-- a person to whom a relevant benefit is paid receives the full amount, the
+- a person on a relevant benefit receives the full amount, the
   higher amount if they or their partner have reached 80 (SI 2000/729 reg
   2(1)(i) and 2(3); SI 2024/869 reg 3; SI 2025/969 reg 3(1), (3) and (4);
   SSI 2024/351 reg 10, as made and as substituted by SSI 2025/282);
@@ -14,6 +14,24 @@ own circumstances:
 - anyone else receives a shared amount when they live with another person
   entitled to a payment (SI 2000/729 reg 2(1)(ii) and 2(2)(b); SI 2025/969
   reg 3(2), (5) and (6); SSI 2024/351 reg 10(5) and (6) as substituted).
+
+Who is "on" a relevant benefit differs between the instruments:
+
+- SI 2000/729, SI 2025/969 and NISR 2025/142 ask whether the benefit "has
+  been, or falls to be, paid to" the person. Income Support, income-based
+  JSA, income-related ESA and Pension Credit are paid to one member of a
+  couple (is_on_income_support and the other readers name that member);
+  Universal Credit and tax credits are joint awards, so both members are on
+  them.
+- SI 2024/869 reg 2(5), NISR 2024/160 reg 2(5) and SSI 2024/351 (reg 7(2) as
+  made, reg 10(8) as substituted by SSI 2025/282, reg 2A from April 2026)
+  treat a member of a couple as entitled when the other member is.
+
+Each scheme's eligibility node says which applies (partner_receipt_counts).
+Either way a couple on a relevant benefit receives one payment, to the member
+the benefit is paid to, or to the other member when only the other has
+reached pensionable age (SI 2000/729 reg 3(1)(a)(i); SI 2024/869 reg
+4(1)(a)(i); SI 2025/969 reg 4(2)(a); SSI 2024/351 reg 9(d)).
 
 Benefit units model couples and households model living together: everyone
 in a household is taken to share it as their mutual home. Residential care,
@@ -34,17 +52,34 @@ REPORTED_AWARDS = {
 TAX_CREDIT_REPORTS = ["child_tax_credit_reported", "working_tax_credit_reported"]
 
 
+def couple_receipt(person, period, receipt):
+    """The receipt of the person's couple: for the claimant and the partner,
+    whether either of them is on a relevant benefit; for anyone else, their
+    own receipt."""
+    claimant_or_partner = person("is_claimant_or_partner", period)
+    couple = person.benunit.any(claimant_or_partner & receipt)
+    return where(claimant_or_partner, couple, receipt)
+
+
 def is_on_relevant_benefit(person, period, eligibility):
-    """Whether a relevant benefit is paid to the person, or to their couple.
+    """Whether the person is on a relevant benefit for the scheme.
 
     ``eligibility`` is the scheme's eligibility parameter node: the benefits
-    in ``relevant_benefits``, and a tax credit award of at least
-    ``minimum_tax_credit_award`` (infinite when tax credits do not count).
+    in ``relevant_benefits``, a tax credit award of at least
+    ``minimum_tax_credit_award`` (infinite when tax credits do not count),
+    and ``partner_receipt_counts``: whether a member of a couple is on a
+    relevant benefit when the other member is. Without it, the person is on
+    one only if it is paid to them.
     """
     listed = add(person, period, eligibility.relevant_benefits) > 0
     award = person("tax_credit_award", period)
     tax_credits = (award > 0) & (award >= eligibility.minimum_tax_credit_award)
-    return listed | tax_credits
+    paid = listed | tax_credits
+    return where(
+        eligibility.partner_receipt_counts,
+        couple_receipt(person, period, paid),
+        paid,
+    )
 
 
 def reports_relevant_benefit(person, period, eligibility):
@@ -67,15 +102,20 @@ def is_excluded_relevant_benefit_partner(
 
     A couple on a relevant benefit receives one payment, made to the person
     the benefit is paid to (the claimant), or to their partner when only the
-    partner qualifies; the partner of the person paid is not entitled. The
-    model takes the claimant to be the member of the couple who reports the
-    award; failing that, the benefit-unit head; failing that, the elder. The
-    choice matters beyond the couple: whether someone else in the household
-    lives with an entitled person aged 80 or over depends on whom the couple's
-    payment is made to (SI 2000/729 reg 2(2)(b); SI 2025/969 reg 3(5) and (6);
-    SSI 2024/351 reg 10(6) as substituted by SSI 2025/282).
+    partner qualifies; the partner of the person paid is not entitled. Under
+    SI 2000/729 reg 3(1)(a)(i) and SI 2025/969 reg 4(2)(a) the partner is
+    excluded when the person the benefit is paid to has reached pensionable
+    age, so the couple's receipt decides this whichever instrument applies.
+    The model takes the claimant to be the member of the couple who reports
+    the award; failing that, the benefit-unit head; failing that, the elder,
+    as the legacy award readers do. The choice matters beyond the couple:
+    whether someone else in the household lives with an entitled person aged
+    80 or over depends on whom the couple's payment is made to (SI 2000/729
+    reg 2(2)(b); SI 2025/969 reg 3(5) and (6); SSI 2024/351 reg 10(6) as
+    substituted by SSI 2025/282).
     """
     age = person("age", period)
+    on_relevant_benefit = couple_receipt(person, period, on_relevant_benefit)
     couple_member = (
         qualifies & person("is_claimant_or_partner", period) & on_relevant_benefit
     )

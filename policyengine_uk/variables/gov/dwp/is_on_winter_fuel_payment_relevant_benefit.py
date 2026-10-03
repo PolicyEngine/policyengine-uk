@@ -7,17 +7,18 @@ class is_on_winter_fuel_payment_relevant_benefit(Variable):
     entity = Person
     label = "on a relevant benefit for the Winter Fuel Payment"
     documentation = (
-        "Whether a relevant benefit for the Winter Fuel Payment is paid to "
-        "this person. The relevant benefits are listed by period in "
+        "Whether this person is on a relevant benefit for the Winter Fuel "
+        "Payment. The relevant benefits are listed by period in "
         "gov.dwp.winter_fuel_payment.eligibility.relevant_benefits; for the "
         "2024 qualifying week a tax credit award of at least £26 also counts "
-        "(minimum_tax_credit_award). A couple's award covers both partners, "
-        "so the claimant and the partner are on it when their benefit unit's "
-        "award is positive (SI 2024/869 reg 2(5) says so expressly; under SI "
-        "2000/729 and SI 2025/969 the couple receives one payment either "
-        "way). Any other member of the benefit unit, such as a non-dependent "
-        "adult, is on it only through their own award: their relevant benefit "
-        "never counts for anyone else in the household."
+        "(minimum_tax_credit_award). Under SI 2000/729 and SI 2025/969 the "
+        "person is on one when it is paid to them: Income Support, "
+        "income-based JSA, income-related ESA and Pension Credit are paid to "
+        "one member of a couple, while Universal Credit and tax credits are "
+        "joint awards. For the 2024 qualifying week a member of a couple is "
+        "also on one when the other member is (SI 2024/869 reg 2(5); "
+        "partner_receipt_counts). A non-dependant's relevant benefit never "
+        "counts for anyone else in the household."
     )
     definition_period = YEAR
     reference = (

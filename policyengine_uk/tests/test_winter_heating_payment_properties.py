@@ -2,9 +2,17 @@
 each person's own receipt of a relevant benefit.
 
 Both schemes entitle and pay a person (SI 2000/729 reg 2; SI 2024/869 regs
-2 to 4; SI 2025/969 regs 2 to 4; SSI 2024/351 regs 5, 9 and 10). A person is
-on a relevant benefit through their own award or, for the claimant and
-partner, their couple's award. Properties:
+2 to 4; SI 2025/969 regs 2 to 4; SSI 2024/351 regs 5, 9 and 10). Whether a
+person is on a relevant benefit depends on the instrument:
+
+- "paid to" the person (SI 2000/729, SI 2025/969): Income Support,
+  income-based JSA, income-related ESA and Pension Credit are paid to one
+  member of a couple, the one who reports the award or else the benefit-unit
+  head; Universal Credit and tax credits are joint awards, paid to both;
+- through the couple (SI 2024/869 reg 2(5); SSI 2024/351 reg 7(2), 10(8) and
+  2A): a member of a couple is on one when the other member is.
+
+Either way a couple on one receives a single payment. Properties:
 
 - the model matches a reference implementation written directly from the
   regulations, person by person, over households of up to three benefit
@@ -56,12 +64,21 @@ REPORTED_INPUTS = {
     "UC": "universal_credit_reported",
     "TC": "working_tax_credit_reported",
 }
-# An award reported by a member who is neither claimant nor partner.
+# An award reported by a member who is neither claimant nor partner. (An
+# outside member's own income-related ESA or income-based JSA counts only if
+# the award on their report is paid after the benefit unit's capital and
+# eligibility screens, which the legacy award tests cover; the YAML tests
+# cover the winter payments' side of it.)
 OWN_AWARD_INPUTS = {
     "PC": "pension_credit_reported",
-    "ESA": "esa_income_reported",
     "UC": "universal_credit_reported",
 }
+# Inputs for an award an outside member reports. The non-dependant property
+# also draws income-related ESA: whether or not it is paid, it must never
+# change anyone else's payment.
+OWN_REPORT_INPUTS = {**OWN_AWARD_INPUTS, "ESA": "esa_income_reported"}
+# Awards paid jointly to both members of a couple.
+JOINT_AWARDS = {"UC", "TC"}
 
 # Relevant benefits by scheme and qualifying week, as listed in the
 # regulations (not read from the model's parameters).
@@ -167,7 +184,7 @@ def situation(drawn, year):
             }
             own = inputs.get("own_award")
             if own is not None:
-                person[OWN_AWARD_INPUTS[own]] = {year: AWARD}
+                person[OWN_REPORT_INPUTS[own]] = {year: AWARD}
             people[name] = person
         for name, (inputs, u, cp) in zip(names, members):
             if cp and inputs.get("reports"):
@@ -202,23 +219,50 @@ def reference_payments(household, year):
             return units[u]["award"]
         return inputs.get("own_award")
 
-    def scheme(resident, relevant, means_test, amounts):
+    def is_payee(i):
+        """Whether the couple's award is paid to this claimant or partner:
+        the member who reports it, else the benefit-unit head."""
+        inputs, u, _ = people[i]
+        reporter = units[u].get("reporter")
+        if reporter is not None:
+            return bool(inputs["reports"])
+        return bool(inputs["head"])
+
+    def paid(relevant):
+        """Whether a relevant benefit is paid to each person."""
+        return [
+            award_of(p) in relevant
+            and (not p[2] or award_of(p) in JOINT_AWARDS or is_payee(i))
+            for i, p in enumerate(people)
+        ]
+
+    def through_couple(receipt):
+        """Each claimant or partner is on one when either of them is."""
+        return [
+            any(receipt[j] for j, q in enumerate(people) if q[1] == p[1] and q[2])
+            if p[2]
+            else receipt[i]
+            for i, p in enumerate(people)
+        ]
+
+    def scheme(resident, relevant, means_test, amounts, partner_counts):
         lower, higher, shared, shared_80_with_under_80, shared_80_with_80 = amounts
-        on_relevant = [award_of(p) in relevant for p in people]
+        couple = through_couple(paid(relevant))
+        on_relevant = couple if partner_counts else paid(relevant)
         qualifies = [resident and p[0]["age"] >= 67 for p in people]
         eligible = [q and (r or means_test) for q, r in zip(qualifies, on_relevant)]
         # One payment for a couple on a relevant benefit, to the claimant: the
         # member who reports the award, else the benefit-unit head, else the
         # elder (first listed if the same age). The other is not entitled.
         for u in range(len(units)):
-            couple = [
+            members = [
                 i
                 for i, p in enumerate(people)
-                if p[1] == u and p[2] and qualifies[i] and on_relevant[i]
+                if p[1] == u and p[2] and qualifies[i] and couple[i]
             ]
-            if couple:
+            if members:
                 payee = min(
-                    couple,
+                    members,
                     key=lambda i: (
                         0
                         if people[i][0]["reports"]
@@ -230,7 +274,7 @@ def reference_payments(household, year):
                         i,
                     ),
                 )
-                for i in couple:
+                for i in members:
                     if i != payee:
                         eligible[i] = False
         payments = []
@@ -270,9 +314,12 @@ def reference_payments(household, year):
                 p[0]["age"] >= 67 and p[0]["total_income"] < INCOME_LIMIT
                 for p in people
             )
-    wfp = scheme(wfp_resident, WFP_RELEVANT[year], wfp_means, WFP_AMOUNTS)
+    # Only SI 2024/869 (reg 2(5)) counts the other member's benefit.
+    wfp = scheme(wfp_resident, WFP_RELEVANT[year], wfp_means, WFP_AMOUNTS, year == 2024)
     if year >= 2024 and country == "SCOTLAND":
-        pawhp = scheme(True, PAWHP_RELEVANT[year], year >= 2025, PAWHP_AMOUNTS[year])
+        pawhp = scheme(
+            True, PAWHP_RELEVANT[year], year >= 2025, PAWHP_AMOUNTS[year], True
+        )
     else:
         pawhp = [0.0] * len(people)
     return wfp, pawhp

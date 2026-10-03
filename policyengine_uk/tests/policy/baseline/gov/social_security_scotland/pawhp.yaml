@@ -473,6 +473,80 @@
     pension_age_winter_heating_payment: [0, 316.70]
     pawhp: 316.70
 
+- name: 2025 the partner of an income-related ESA claimant under pensionable age is treated as entitled
+  # Reg. 10(8) as substituted by SSI 2025/282: the partner is treated as
+  # entitled to a relevant benefit, so reg. 10(2) and (4)(b): £203.40, even
+  # beside an entitled lodger. The lodger, under 80, on no relevant benefit
+  # and living with another entitled individual: reg. 10(5)(b), £101.70.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        is_benunit_head: true
+      partner:
+        age: 72
+        is_benunit_head: false
+      lodger:
+        age: 75
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        esa_income: 1_000
+        pension_credit: 0
+        universal_credit: 0
+        income_support: 0
+        jsa_income: 0
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: SCOTLAND
+  output:
+    is_on_pawhp_relevant_benefit: [true, true, false]
+    pension_age_winter_heating_payment: [0, 203.40, 101.70]
+    pawhp: 305.10
+
+- name: 2024 the partner of an income-related ESA claimant under pensionable age is entitled through the couple
+  # Reg. 7(2) as made counts the claimant's ESA for the partner: reg. 10(c)
+  # as made, £200. The lodger is on no relevant benefit: nothing.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 60
+        is_benunit_head: true
+      partner:
+        age: 72
+        is_benunit_head: false
+      lodger:
+        age: 75
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        esa_income: 1_000
+        pension_credit: 0
+        universal_credit: 0
+        income_support: 0
+        jsa_income: 0
+        tax_credits: 0
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+        tax_credits: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [0, 200, 0]
+    pawhp: 200
+
 - name: The Winter Fuel Payment is not paid in Scotland from 2024
   # SI 2024/869 and SI 2025/969 extend to England and Wales only.
   period: 2025

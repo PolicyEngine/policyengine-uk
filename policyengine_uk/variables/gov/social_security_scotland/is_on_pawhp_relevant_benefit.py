@@ -14,10 +14,9 @@ class is_on_pawhp_relevant_benefit(Variable):
         "counts (minimum_tax_credit_award). A member of a couple is treated "
         "as entitled when the other member is (SSI 2024/351 reg 7(2) as made, "
         "reg 10(8) as substituted by SSI 2025/282, and reg 2A from April "
-        "2026), so the claimant and the partner are on it when their benefit "
-        "unit's award is positive. Any other member of the benefit unit, such "
-        "as a non-dependent adult, is on it only through their own award: "
-        "their relevant benefit never counts for anyone else in the household."
+        "2026; partner_receipt_counts), so the claimant and the partner are "
+        "on it when either of them is. A non-dependant's relevant benefit "
+        "never counts for anyone else in the household."
     )
     definition_period = YEAR
     reference = (
