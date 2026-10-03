@@ -112,6 +112,15 @@ def families(draw):
                 "employment_income": draw(st.sampled_from([0, 0, 8_000, 20_000])),
                 "is_parent": bool(dependants),
                 "receives_carer_benefit": draw(st.booleans()),
+                # A disabled claimant or partner gives the family the
+                # disability premium, which can put a student partner on the
+                # maintenance-loan benefits schedule (HB Regs 2006 reg
+                # 56(2)(c)).
+                **draw(
+                    st.sampled_from(
+                        [{}, {"is_disabled_for_benefits": True, "pip_dl": 2_000}]
+                    )
+                ),
                 "care_hours": draw(st.sampled_from([0, 35])),
                 "current_education": draw(
                     st.sampled_from(["NOT_IN_EDUCATION", "TERTIARY"])
