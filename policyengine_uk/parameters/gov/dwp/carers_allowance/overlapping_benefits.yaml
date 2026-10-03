@@ -1,0 +1,35 @@
+description: The Department for Work and Pensions reduces Carer's Allowance by these overlapping personal benefits.
+metadata:
+  economy: false
+  label: Carer's Allowance overlapping benefits
+  period: year
+  unit: list
+  propagate_metadata_to_children: true
+  reference:
+    - title: The Social Security (Overlapping Benefits) Regulations 1979 reg. 4
+      href: https://www.legislation.gov.uk/uksi/1979/597/regulation/4
+    - title: The Social Security (Overlapping Benefits) Regulations 1979 reg. 12
+      href: https://www.legislation.gov.uk/uksi/1979/597/regulation/12
+    - title: The Employment and Support Allowance (Consequential Provisions) (No. 2) Regulations 2008 reg. 51(3)
+      href: https://www.legislation.gov.uk/uksi/2008/1554/regulation/51
+    - title: The Pensions Act 2014 (Consequential, Supplementary and Incidental Amendments) Order 2015 art. 4(3)
+      href: https://www.legislation.gov.uk/uksi/2015/1985/article/4/made
+values:
+  # Reg. 4(1)(a) covers personal benefits under SSCBA 1992 Parts II and III,
+  # the Welfare Reform Act 2007 Part 1 (from 27 October 2008), the Pensions
+  # Act 2014 Part 1 (from 6 April 2016) and the Jobseekers Act 1995. Reg. 12
+  # reduces Carer's Allowance by any of them except additional pension and
+  # graduated retirement benefit. Industrial injuries benefits are outside
+  # reg. 4(1)(a), and Schedule 1 adjusts Carer's Allowance only by
+  # unemployability supplement, death benefits paid to a surviving spouse and
+  # training allowance, so war disablement pensions and AFCS payments do not
+  # reduce it. Benefits the model does not hold (widow's benefits,
+  # bereavement allowance, unemployability supplement, training allowance)
+  # are not listed.
+  2008-10-27:
+    - overlapping_state_pension
+    - incapacity_benefit
+    - sda
+    - maternity_allowance
+    - jsa_contrib
+    - esa_contrib
