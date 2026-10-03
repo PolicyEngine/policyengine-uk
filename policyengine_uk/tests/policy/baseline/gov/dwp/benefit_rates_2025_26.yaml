@@ -38,12 +38,12 @@
   input:
     people:
       person:
+        age: 30
         is_SP_age: false
     benunits:
       benunit:
         members: [person]
         housing_benefit_eligible: true
-        eldest_adult_age: 30
         is_single_person: true
         is_couple: false
         is_lone_parent: false
@@ -57,12 +57,12 @@
   input:
     people:
       person:
+        age: 22
         is_SP_age: false
     benunits:
       benunit:
         members: [person]
         housing_benefit_eligible: true
-        eldest_adult_age: 22
         is_single_person: true
         is_couple: false
         is_lone_parent: false
@@ -76,14 +76,15 @@
   input:
     people:
       person:
+        age: 30
         is_SP_age: false
       partner:
+        age: 30
         is_SP_age: false
     benunits:
       benunit:
         members: [person, partner]
         housing_benefit_eligible: true
-        eldest_adult_age: 30
         is_single_person: false
         is_couple: true
         is_lone_parent: false
@@ -103,7 +104,6 @@
       benunit:
         members: [person]
         housing_benefit_eligible: true
-        eldest_adult_age: 80
         is_single_person: true
         is_couple: false
         is_lone_parent: false
@@ -126,7 +126,6 @@
       benunit:
         members: [person, partner]
         housing_benefit_eligible: true
-        eldest_adult_age: 80
         is_single_person: false
         is_couple: true
         is_lone_parent: false
@@ -186,12 +185,12 @@
         members: [a]
         is_single: true
         is_couple: false
-        num_disabled_adults: 1
+        num_disabled_claimants_or_partners_for_legacy_benefits: 1
       couple:
         members: [b, c]
         is_single: false
         is_couple: true
-        num_disabled_adults: 1
+        num_disabled_claimants_or_partners_for_legacy_benefits: 1
   output:
     disability_premium: [2_246.40, 3_205.80]  # 43.20 and 61.65 a week
 
@@ -202,17 +201,18 @@
     people:
       a:
         age: 40
+        is_entitled_to_carer_benefit: true
       b:
         age: 40
+        is_entitled_to_carer_benefit: true
       c:
         age: 40
+        is_entitled_to_carer_benefit: true
     benunits:
       one:
         members: [a]
-        num_carers: 1
       two:
         members: [b, c]
-        num_carers: 2
   output:
     carer_premium: [2_412.80, 4_825.60]  # 46.40 and 2 x 46.40 a week
 

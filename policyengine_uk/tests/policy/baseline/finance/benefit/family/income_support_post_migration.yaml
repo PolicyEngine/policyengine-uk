@@ -8,7 +8,6 @@
         income_support_reported: 3000
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -30,7 +29,6 @@
         income_support_reported: 3000
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]
@@ -52,7 +50,6 @@
         income_support_reported: 3000
       c1:
         age: 4
-        is_child: true
     benunits:
       b1:
         members: [p1, c1]

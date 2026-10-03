@@ -99,7 +99,7 @@
     esa_income_eligible: false
     esa_income: 0
 
-- name: Income-related ESA allocates household capital by adult share when nobody reports the award
+- name: Income-related ESA allocates household capital by claimant and partner share when nobody reports the award
   period: 2026
   absolute_error_margin: 0
   input:
@@ -178,7 +178,6 @@
         income_support_reported: 1
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: [claimant, child]
