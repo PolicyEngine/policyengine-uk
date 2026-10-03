@@ -51,4 +51,7 @@ class additional_state_pension(Variable):
             max_for_type_period / max_for_type_data,
             1,
         )
-        return amount_in_data_year * uprating * WEEKS_IN_YEAR
+        # No State Pension is paid before State Pension age; the data-year
+        # type above only splits the reported amount into its components.
+        is_sp_age = person("is_SP_age", period)
+        return is_sp_age * amount_in_data_year * uprating * WEEKS_IN_YEAR

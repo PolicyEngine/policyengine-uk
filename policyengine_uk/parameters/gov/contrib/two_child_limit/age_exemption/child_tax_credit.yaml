@@ -1,4 +1,4 @@
-description: Parents of children under this age are exempt from the two-child limit under the Child Tax Credit.
+description: A benefit unit with any member under this age is exempt from the Child Tax Credit two-child limit (zero disables the exemption).
 values:
   2000-01-01: 0
 metadata:
