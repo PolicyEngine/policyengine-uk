@@ -105,8 +105,10 @@ def situation(units, year, income_variable="state_pension", pension_bump=0.0):
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            # The adults are the couple whatever their age gap, so the roles
-            # are supplied rather than left to the age presumption.
+            # The generated adults are the claimant and partner whatever
+            # their ages (a mixed-age couple can include an 18- or 19-year-old
+            # partner, or one 20 or more years younger), as the FRS would
+            # record them.
             person = {
                 "age": {year: age},
                 "state_pension": {year: 0.0},
