@@ -707,13 +707,16 @@
 # Flow-through to the applicable amounts.
 
 - name: The premium is part of the legacy benefit premiums
+  # Isolates the severe premium. PIP also qualifies for the disability premium
+  # (HB Regs 2006 Sch 3 para 13(1)(a)(i)), but its flag is_disabled_for_benefits
+  # is an input with no formula (the Enhanced FRS supplies it), so it is set
+  # false here rather than left to its default.
   period: 2026
   absolute_error_margin: 0.01
   input:
     age: 40
     pip_dl_category: STANDARD
+    is_disabled_for_benefits: false
   output:
-    disability_premium: 0
-    enhanced_disability_premium: 0
     carer_premium: 0
     benefits_premiums: 4474.60
