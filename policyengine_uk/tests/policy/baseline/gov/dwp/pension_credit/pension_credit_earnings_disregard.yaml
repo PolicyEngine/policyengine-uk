@@ -78,7 +78,7 @@
       claimant:
         age: 70
         employment_income: 2000
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
     benunits:
       benunit:
         members: [claimant]
@@ -304,7 +304,7 @@
         age: 70
       child:
         age: 17
-        is_carer_for_benefits: true
+        is_entitled_to_carer_benefit: true
     benunits:
       benunit:
         members: [claimant, partner, child]
@@ -313,3 +313,95 @@
         members: [claimant, partner, child]
   output:
     pension_credit_earnings_disregard: 10 * 52
+
+- name: A Scottish taxpayer's tax on earnings is their top slice on the Scottish schedule, so Pension Credit income does not fall with earnings.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 16_000
+        attendance_allowance: 5_000
+        employment_income: 1_040
+      partner:
+        age: 70
+        attendance_allowance: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+  output:
+    # The 1,040 of earnings add 210.89 of income tax (they cross into the
+    # Scottish intermediate band), so net earnings are 829.11 and the 20 pound
+    # disregard of 1,040 is capped there; income is as with no earnings (next).
+    income_tax: [3_016.62, 0]
+    pension_credit_earnings_disregard: 829.11
+    pension_credit_income: 25_194.27
+
+- name: The same Scottish couple with no earnings has the same Pension Credit income.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 12_000
+        private_pension_income: 16_000
+        attendance_allowance: 5_000
+      partner:
+        age: 70
+        attendance_allowance: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: SCOTLAND
+  output:
+    income_tax: [2_805.73, 0]
+    pension_credit_earnings_disregard: 0
+    pension_credit_income: 25_194.27
+
+- name: Caring hours without entitlement to carer's allowance do not qualify for the 20 pound disregard (Sch VI para 3 needs Sch I para 4).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 9_000
+        employment_income: 2_000
+        care_hours: 40
+        is_entitled_to_carer_benefit: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 5 * 52
+
+- name: Entitlement to carer's allowance qualifies for the 20 pound disregard.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        state_pension: 9_000
+        employment_income: 2_000
+        care_hours: 40
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    pension_credit_earnings_disregard: 20 * 52

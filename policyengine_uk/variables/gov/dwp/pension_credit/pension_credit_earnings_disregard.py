@@ -15,10 +15,13 @@ class pension_credit_earnings_disregard(Variable):
         "sums 'in calculating the claimant's earnings', which are net of income "
         "tax and National Insurance (reg. 17(10)) and of half of pension "
         "contributions (reg. 17A(4A)), so the disregard never exceeds the "
-        "claimant's and partner's net earnings. Income tax on earnings is taken "
-        "as the lesser of the person's income tax and the basic rate on their "
-        "earnings, the tax deducted where the personal allowance goes against "
-        "pension income first. Not modelled: the employment-specific 20 pound "
+        "claimant's and partner's net earnings. Income tax on earnings is the "
+        "tax on them as the top slice of the person's taxable non-savings "
+        "income, on the person's own rate schedule (Scottish or rest of UK), "
+        "capped at their income tax: the tax deducted from the earnings where "
+        "the personal allowance goes against pension income first (DMG "
+        "86038-86039), so earning more never raises Pension Credit. Not "
+        "modelled: the employment-specific 20 pound "
         "disregards of paras. 2 to 2B (part-time firefighters, auxiliary "
         "coastguards, lifeboat crew, reserve forces) and the transitional "
         "protections of para. 4(2) to (4)."
@@ -52,9 +55,10 @@ class pension_credit_earnings_disregard(Variable):
             benunit.any(claimant_or_partner & on_disability_benefit)
             | unit_on_disability_benefit
         )
-        # Sch. I para. 4: a claimant or partner entitled to carer's allowance.
+        # Sch. I para. 4: a claimant or partner entitled to carer's allowance
+        # (the carer addition's own test), not caring hours alone.
         carer = benunit.any(
-            claimant_or_partner & person("is_carer_for_benefits", period)
+            claimant_or_partner & person("is_entitled_to_carer_benefit", period)
         )
         lone_parent = benunit("is_lone_parent", period)
         relation_type = benunit("relation_type", period)
@@ -69,8 +73,18 @@ class pension_credit_earnings_disregard(Variable):
         national_insurance = add(
             person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
         )
-        basic_rate = parameters(period).gov.hmrc.income_tax.rates.uk.rates[0]
-        income_tax_on_earnings = min_(person("income_tax", period), basic_rate * gross)
+        # Tax on the earnings as the top slice of taxable non-savings income.
+        rates = parameters(period).gov.hmrc.income_tax.rates
+        taxable = person("earned_taxable_income", period)
+        below_earnings = max_(0, taxable - min_(gross, taxable))
+        scottish = person("pays_scottish_income_tax", period)
+        top_slice_tax = where(
+            scottish,
+            rates.scotland.rates.calc(taxable)
+            - rates.scotland.rates.calc(below_earnings),
+            rates.uk.calc(taxable) - rates.uk.calc(below_earnings),
+        )
+        income_tax_on_earnings = min_(person("income_tax", period), top_slice_tax)
         pension_contributions = (
             person("pension_contributions", period)
             * pc.income.pension_contributions_deduction

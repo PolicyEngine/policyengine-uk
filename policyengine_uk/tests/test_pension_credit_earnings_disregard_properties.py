@@ -1,13 +1,15 @@
 """Properties of the Pension Credit earnings disregards (SPC Regs 2002 Sch VI).
 
-Invariants, over generated benefit units (England, so the basic rate is 20%):
+Invariants, over generated benefit units in England and Scotland:
 
 1. Statute: the disregard equals min(net earnings, 52 x w). Net earnings are
    the claimant's and partner's gross earnings less earnings NI, half of
-   pension contributions and income tax on the earnings (the lesser of their
-   income tax and 20% of their earnings), recomputed here from the inputs and
-   the model's tax and NI. w is 20 if the unit is a lone-parent family, or a
-   claimant or partner is a carer (an input here), receives a listed
+   pension contributions and income tax on the earnings. The tax on a
+   person's earnings is measured independently, as the fall in their income
+   tax when the simulation is rerun without their earnings (the earnings as
+   the top slice, on their own Scottish or rest-of-UK schedule). w is 20 if
+   the unit is a lone-parent family, or a claimant or partner is entitled to
+   carer's allowance (an input here), receives a listed
    disability benefit or is blind; otherwise 5 single, 10 couple. A dependent
    child's DLA or caring never qualifies.
 2. Bounds: 0 <= disregard <= min(gross earnings, 20 x 52).
@@ -47,6 +49,7 @@ DISABILITY = [
 
 @st.composite
 def units(draw):
+    country = draw(st.sampled_from(["ENGLAND", "SCOTLAND"]))
     couple = draw(st.booleans())
     child = draw(st.booleans())
     people = {}
@@ -59,7 +62,11 @@ def units(draw):
             "state_pension": draw(st.integers(min_value=0, max_value=12_000)),
             "private_pension_income": draw(st.sampled_from([0, 2_000, 6_000])),
             "is_blind": draw(st.sampled_from([False, False, False, True])),
-            "is_carer_for_benefits": draw(st.sampled_from([False, False, False, True])),
+            "is_entitled_to_carer_benefit": draw(
+                st.sampled_from([False, False, False, True])
+            ),
+            "care_hours": draw(st.sampled_from([0, 0, 40])),
+            "personal_pension_contributions": draw(st.sampled_from([0, 0, 300])),
         }
         benefit = draw(st.sampled_from([None, None] + DISABILITY))
         if benefit:
@@ -70,12 +77,13 @@ def units(draw):
         people["child"] = {
             "age": 10,
             "dla_sc": draw(st.sampled_from([0, 2_000])),
-            "is_carer_for_benefits": draw(st.booleans()),
+            "is_entitled_to_carer_benefit": draw(st.booleans()),
         }
-    return people
+    return {"people": people, "country": country}
 
 
-def simulate(people):
+def simulate(case):
+    people = case["people"]
     members = list(people)
     dated = {
         name: {k: {str(YEAR): v} for k, v in person.items()}
@@ -85,9 +93,18 @@ def simulate(people):
         situation={
             "people": dated,
             "benunits": {"b": {"members": members}},
-            "households": {"h": {"members": members}},
+            "households": {
+                "h": {"members": members, "country": {str(YEAR): case["country"]}}
+            },
         }
     )
+
+
+def without_earnings(case, name):
+    people = {n: dict(p) for n, p in case["people"].items()}
+    people[name]["employment_income"] = 0
+    people[name]["self_employment_income"] = 0
+    return {"people": people, "country": case["country"]}
 
 
 def unit_value(sim, variable):
@@ -100,8 +117,9 @@ def person_values(sim, variable):
 
 @SETTINGS
 @given(units())
-def test_statute_bounds_differential_and_monotonicity(people):
-    sim = simulate(people)
+def test_statute_bounds_differential_and_monotonicity(case):
+    people = case["people"]
+    sim = simulate(case)
     names = list(people)
     adults = [n != "child" for n in names]
     gross = np.array(
@@ -117,7 +135,12 @@ def test_statute_bounds_differential_and_monotonicity(people):
         person_values(sim, v)
         for v in ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
     )
-    tax_on_earnings = np.minimum(person_values(sim, "income_tax"), 0.2 * gross)
+    income_tax = person_values(sim, "income_tax")
+    tax_on_earnings = np.zeros(len(names))
+    for i, name in enumerate(names):
+        if gross[i] > 0:
+            rerun = person_values(simulate(without_earnings(case, name)), "income_tax")
+            tax_on_earnings[i] = max(0.0, income_tax[i] - rerun[i])
     contributions = 0.5 * person_values(sim, "pension_contributions")
     net = np.maximum(0, gross - ni - tax_on_earnings - contributions)
     net_earnings = float(net[adults].sum())
@@ -128,7 +151,7 @@ def test_statute_bounds_differential_and_monotonicity(people):
         p.get("is_blind") or any(p.get(b, 0) > 0 for b in DISABILITY)
         for p in adult_people
     )
-    carer = any(p.get("is_carer_for_benefits") for p in adult_people)
+    carer = any(p.get("is_entitled_to_carer_benefit") for p in adult_people)
     lone_parent = "child" in people and not couple
     weekly = 20 if (disabled or carer or lone_parent) else (10 if couple else 5)
     expected = min(net_earnings, weekly * WEEKS_IN_YEAR)
@@ -157,11 +180,14 @@ def test_statute_bounds_differential_and_monotonicity(people):
 
 @SETTINGS
 @given(units(), st.sampled_from([1, 50, 260, 1_040, 5_000]))
-def test_earning_more_never_raises_pension_credit(people, extra):
-    more = {name: dict(person) for name, person in people.items()}
+def test_earning_more_never_raises_pension_credit(case, extra):
+    more = {name: dict(person) for name, person in case["people"].items()}
     more["claimant"]["employment_income"] += extra
-    before = unit_value(simulate(people), "pension_credit_entitlement")
-    after = unit_value(simulate(more), "pension_credit_entitlement")
+    before = unit_value(simulate(case), "pension_credit_entitlement")
+    after = unit_value(
+        simulate({"people": more, "country": case["country"]}),
+        "pension_credit_entitlement",
+    )
     assert after <= before + 0.01
 
 
