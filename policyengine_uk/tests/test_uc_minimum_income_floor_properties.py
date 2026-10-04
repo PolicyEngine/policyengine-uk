@@ -66,7 +66,10 @@ YEARS = [2020, 2026, 2027]
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 REGIONS = ["LONDON", "NORTH_EAST", "WALES", "SCOTLAND"]
 WORKING_AGE = st.integers(18, 64)
-PENSION_AGE = st.integers(67, 80)
+# From 65, so the draws include people who reach State Pension age during
+# the tax year: Class 4 stays due for that year (SI 2001/1004 reg. 91(a)),
+# but primary Class 1 and Class 2 stop.
+PENSION_AGE = st.integers(65, 80)
 # The last shape has an adult child in the parents' benefit unit. The model
 # flags at most two claimants (is_claimant_or_partner), here the parents; the
 # couple is the two eldest claimants. The YAML tests flag a third by input.
