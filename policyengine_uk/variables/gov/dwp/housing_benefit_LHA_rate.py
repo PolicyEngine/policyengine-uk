@@ -22,12 +22,12 @@ class housing_benefit_LHA_rate(Variable):
     def formula(benunit, period, parameters):
         """The determined Housing Benefit rate for the HB category.
 
-        The same determination as ``BRMA_LHA_rate`` (the lower of the BRMA
-        percentile rent and the weekly national maximum, the anomalous-rate
-        rule and, from April 2024, the 31 March 2020 minimum: Rent Officers
-        (Housing Benefit Functions) Order 1997, Schedule 3B paragraphs 2, 3
-        and 3A), read for the category in HB Regulations 2006 reg 13D rather
-        than the Universal Credit one.
+        The weekly determination that ``BRMA_LHA_rate`` reads (the lower of
+        the BRMA percentile rent and the weekly national maximum, the
+        anomalous-rate rule and, from April 2024, the 31 March 2020 minimum:
+        Rent Officers (Housing Benefit Functions) Order 1997, Schedule 3B
+        paragraphs 2, 3 and 3A), read for the category in HB Regulations 2006
+        reg 13D rather than the Universal Credit one.
         """
         return (
             benunit_lha(

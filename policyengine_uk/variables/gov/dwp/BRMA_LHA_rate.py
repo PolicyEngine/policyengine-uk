@@ -5,10 +5,14 @@ from policyengine_uk.utils.lha import benunit_lha
 class BRMA_LHA_rate(Variable):
     value_type = float
     entity = BenUnit
-    label = "LHA rate"
+    label = "LHA rate (weekly determination, Universal Credit category)"
     documentation = (
-        "Weekly Housing Benefit Local Housing Allowance for the benefit unit's "
-        "Broad Rental Market Area and LHA category, annualised over 52 weeks"
+        "The weekly Local Housing Allowance determined for the benefit unit's "
+        "Broad Rental Market Area, read for its Universal Credit category "
+        "(LHA_category) and annualised over 52 weeks. Housing Benefit reads "
+        "the same weekly determination for its own category: see "
+        "housing_benefit_LHA_rate. Universal Credit uses the monthly "
+        "determination: see uc_LHA_cap."
     )
     definition_period = YEAR
     unit = GBP
@@ -18,7 +22,7 @@ class BRMA_LHA_rate(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        """The determined Housing Benefit rate.
+        """The weekly determination, read for the Universal Credit category.
 
         The lower of the BRMA percentile rent and the weekly national maximum,
         raised to the rate of any smaller category and, from April 2024, to the
