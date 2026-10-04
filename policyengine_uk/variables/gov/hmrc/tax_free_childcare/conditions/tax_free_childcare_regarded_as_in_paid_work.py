@@ -15,8 +15,9 @@ class tax_free_childcare_regarded_as_in_paid_work(Variable):
         "count as in qualifying paid work while they are paid a reg 13(1)(b) "
         "benefit or allowance, or entitled to a reg 13(1)(b) credit (reg "
         "13(3)); entitlement to an allowance reduced to nil by an overlapping "
-        "benefit, and carer's leave, do not have that effect. A lone parent cannot qualify this way. The partner's own "
-        "minimum income is tested by the income condition."
+        "benefit, and carer's leave, do not have that effect. A lone parent "
+        "cannot qualify this way. The partner's own minimum income is tested "
+        "by the income condition."
     )
     definition_period = YEAR
     reference = "https://www.legislation.gov.uk/uksi/2015/448/regulation/13"

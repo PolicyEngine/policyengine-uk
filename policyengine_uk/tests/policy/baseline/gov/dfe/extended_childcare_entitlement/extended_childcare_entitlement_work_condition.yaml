@@ -472,3 +472,65 @@
         members: [parent1, parent2, child]
   output:
     extended_childcare_entitlement_work_condition: [true, true, false]
+
+# SI 2016/1257 reg 9(3) covers "a benefit or an allowance, or [...] a credit".
+# The reg 9(1)(b)(viii) determination of limited capability for work and
+# work-related activity is none of these, so a working partner with that
+# determination still counts as the partner in qualifying paid work.
+- name: 2022, working partner with limited capability for work - the partner on contributory ESA meets the condition
+  period: 2022
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        uc_limited_capability_for_WRA: true
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        esa_contrib: 4_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, true, false]
+
+# Reg 9(3) says "paid or entitled to", unlike Tax-Free Childcare reg 13(3).
+# The working partner provides 35 hours of care and their Carer's Allowance is
+# overlapped to nil by maternity allowance: entitled but not paid, so still
+# excluded.
+- name: 2022, working partner entitled to Carer's Allowance overlapped to nil - the partner on contributory ESA does not meet the condition
+  period: 2022
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        care_hours: 35
+        maternity_allowance_reported: 5_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        esa_contrib: 4_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+    households:
+      household:
+        members: [parent1, parent2, child]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 0, 0]
+    extended_childcare_entitlement_work_condition: [true, false, false]

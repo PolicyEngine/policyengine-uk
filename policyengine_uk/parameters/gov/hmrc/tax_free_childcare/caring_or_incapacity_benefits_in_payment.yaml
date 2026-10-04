@@ -17,6 +17,7 @@ values:
     - incapacity_benefit  # 13(1)(b)(i) and (iii)
     - sda  # 13(1)(b)(ii)
     - carers_allowance  # 13(1)(b)(iv): the amount payable after overlapping benefits
+    - receives_carers_allowance  # 13(1)(b)(iv): carer's allowance supplied as received
     - esa_contrib  # 13(1)(b)(v)
     - receives_limited_capability_for_work_credits  # 13(1)(b)(vi): entitled to a credit
   # SI 2022/1148 reg 2(6)(b) inserted 13(1)(b)(vii) from 1 December 2022.
@@ -27,3 +28,4 @@ values:
     - esa_contrib
     - receives_limited_capability_for_work_credits
     - carer_support_payment  # 13(1)(b)(vii): the amount payable after overlapping benefits
+    - receives_carer_benefit  # 13(1)(b)(iv) and (vii): a carer benefit supplied as received

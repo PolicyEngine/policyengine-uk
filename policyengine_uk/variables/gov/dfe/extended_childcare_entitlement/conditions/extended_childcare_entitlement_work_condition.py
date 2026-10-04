@@ -46,7 +46,9 @@ class extended_childcare_entitlement_work_condition(Variable):
         # work for the other's reg 9 route.
         exclusion_criteria = list(p.exemption.partner_exclusion_criteria)
         partner_excluded = (
-            add(person, period, exclusion_criteria) > 0 if exclusion_criteria else False
+            add(person, period, exclusion_criteria) > 0
+            if exclusion_criteria
+            else np.zeros_like(meets_work_and_income_conditions, dtype=bool)
         )
         counts_as_working_partner = meets_work_and_income_conditions & ~partner_excluded
 

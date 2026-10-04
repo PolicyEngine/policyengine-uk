@@ -605,3 +605,22 @@
     carers_allowance: [0, 0]
     tax_free_childcare_regarded_as_in_paid_work: [false, true]
     tax_free_childcare_work_condition: true
+
+# Reg 13(3): a working partner supplied as receiving Carer's Allowance, with no
+# amount, is paid it, so the spouse on contributory ESA cannot use reg 13.
+- name: Working partner supplied as receiving Carer's Allowance excludes the other under reg 13(3)
+  period: 2025
+  input:
+    people:
+      worker:
+        in_work: true
+        receives_carers_allowance: true
+      spouse:
+        in_work: false
+        esa_contrib: 4_000
+    benunits:
+      benunit:
+        members: [worker, spouse]
+  output:
+    tax_free_childcare_regarded_as_in_paid_work: [false, false]
+    tax_free_childcare_work_condition: false
