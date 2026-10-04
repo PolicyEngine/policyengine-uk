@@ -6,7 +6,7 @@ metadata:
   period: year
   label: Universal Credit child limit and higher first child element cutoff date of birth
   reference:
-    - title: The Universal Credit Regulations 2013 reg. 24A(3) (as in force from 6 April 2017 to 5 April 2026)
+    - title: The Universal Credit Regulations 2013 reg. 24A(3) (born before 6 April 2017, as worded from 1 February 2019 until revoked from 6 April 2026; from 6 April 2017 to 31 January 2019 it pointed to UC (Transitional Provisions) Regs 2014 reg 40, which also required continuous entitlement since the interim period, a condition not modelled)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/24A/2025-04-06
     - title: The Universal Credit (Transitional Provisions) Regulations 2014 reg. 43 (saving of the higher first child element)
       href: https://www.legislation.gov.uk/uksi/2014/1230/regulation/43

@@ -294,6 +294,7 @@ def test_a_date_of_birth_input_matches_the_same_birthday_by_age(births, year):
         (20170229, 8),  # 29 February 2017 does not exist
         (20170340, 8),  # nor does 40 March
         (2017, 8),  # a birth year, not a date
+        (-20170405, 8),  # 0 means not given; a negative number is no date
     ],
 )
 def test_an_invalid_date_of_birth_is_rejected(date_of_birth, age):

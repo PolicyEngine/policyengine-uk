@@ -145,6 +145,11 @@ def birth_instant(person, period) -> np.ndarray:
         person("months_since_last_birthday", period),
     )
     given = np.asarray(person("date_of_birth", period), dtype=np.int64)
+    if (given < 0).any():
+        raise ValueError(
+            "date_of_birth must be a calendar date written as YYYYMMDD, such "
+            f"as 20170405, or 0 for not given; got {sorted(set(given[given < 0].tolist()))[:5]}."
+        )
     use_given = (given > 0) & (given != grid_months_to_yyyymmdd(from_age))
     # Any valid date stands in where the input is not used.
     safe_given = np.where(use_given, given, 19700106)
