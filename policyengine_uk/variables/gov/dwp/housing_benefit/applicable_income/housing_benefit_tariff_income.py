@@ -47,6 +47,10 @@ class housing_benefit_tariff_income(Variable):
         # Pension Credit is savings credit only, Housing Benefit's tariff
         # income rule does not apply; the Secretary of State's assessment of
         # income already counts Pension Credit deemed income from capital.
-        savings_credit_only = benunit("in_receipt_of_savings_credit_only", period)
+        # That regulation is in the pension-age regulations, so it applies only
+        # where they do.
+        savings_credit_only = pension_age_regulations & benunit(
+            "in_receipt_of_savings_credit_only", period
+        )
         tariff_income = where(savings_credit_only, 0, tariff_income)
         return where(guarantee_credit, 0, tariff_income)

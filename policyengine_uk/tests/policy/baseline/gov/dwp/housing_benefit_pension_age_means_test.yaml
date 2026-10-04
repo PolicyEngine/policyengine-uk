@@ -151,3 +151,30 @@
     housing_benefit_assessable_capital: 0
     housing_benefit_tariff_income: 0
     housing_benefit_applicable_income: 0
+
+- name: Synthetic component routing keeps the working-age tariff income for savings-credit-only status under working-age flags
+  # This fixes the scheme flags and savings-credit-only status to test their
+  # consumer; it does not assert a lawful award. HB (SPC) reg 27(5) lifts the
+  # tariff income rule only within the pension-age regulations. Working HB
+  # reg 52 gives (12,000 - 6,000) / 250 * 52 = 1,248 tariff income here.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_pension_age_regulations_apply: false
+        in_receipt_of_savings_credit_only: true
+        guarantee_credit: 0
+    households:
+      household:
+        members: [claimant]
+        savings: 12_000
+  output:
+    housing_benefit_assessable_capital: 12_000
+    housing_benefit_tariff_income: 1_248
