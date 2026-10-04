@@ -1,0 +1,1 @@
+- CI now installs dependencies from uv.lock, so a new release of policyengine-core or another dependency cannot change what pull requests are tested against; the Python 3.11–3.14 smoke-import jobs still install the newest releases.
