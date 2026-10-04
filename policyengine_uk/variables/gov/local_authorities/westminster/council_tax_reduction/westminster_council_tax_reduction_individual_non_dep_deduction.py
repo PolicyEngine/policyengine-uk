@@ -1,6 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
     normal_gross_income_non_dep_deduction,
+    single_claim_is_pensioner,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_westminster_working_age,
@@ -21,7 +22,7 @@ class westminster_council_tax_reduction_individual_non_dep_deduction(Variable):
         working_age = is_westminster_working_age(
             household("local_authority", period),
             household("country", period),
-            household("council_tax_reduction_household_has_pensioner", period),
+            single_claim_is_pensioner(household, period),
         )
         return normal_gross_income_non_dep_deduction(
             person,
