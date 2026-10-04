@@ -1,0 +1,1 @@
+- Let the read-only cache test helper pass through keyword arguments that policyengine-core 3.32.16 adds to `InMemoryStorage.put`, so the code-health tests run on the latest core.

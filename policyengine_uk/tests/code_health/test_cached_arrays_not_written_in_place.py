@@ -469,13 +469,15 @@ def read_only_cache(monkeypatch):
     original_put = InMemoryStorage.put
     original_get = InMemoryStorage.get
 
-    def put(self, value, period, branch_name="default"):
+    # Pass through keyword arguments newer policyengine-core releases add
+    # (3.32.16 passes ``derived`` to ``put``).
+    def put(self, value, period, branch_name="default", **kwargs):
         if isinstance(value, np.ndarray):
             value.flags.writeable = False
-        return original_put(self, value, period, branch_name)
+        return original_put(self, value, period, branch_name, **kwargs)
 
-    def get(self, period, branch_name="default"):
-        value = original_get(self, period, branch_name)
+    def get(self, period, branch_name="default", **kwargs):
+        value = original_get(self, period, branch_name, **kwargs)
         if isinstance(value, np.ndarray):
             value.flags.writeable = False
         return value
