@@ -9,18 +9,54 @@
     carer_premium: 37.5 * 52
 
 - name: Two carers in a benefit unit receive the couple rate
+  # The couple rate equals the single rate here because the couple parameter
+  # holds the single rate; #2001 pays the premium per qualifying person.
   period: 2020
   absolute_error_margin: 0
   input:
-    num_carers: 2
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        is_entitled_to_carer_benefit: true
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
   output:
     carer_premium: 37.5 * 52
 
 - name: Three carers in a benefit unit stay at the couple rate (regression for #420)
+  # Only the claimant and partner count, so a third carer in the unit adds
+  # nothing.
   period: 2020
   absolute_error_margin: 0
   input:
-    num_carers: 3
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        is_entitled_to_carer_benefit: true
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_entitled_to_carer_benefit: true
+      adult_child:
+        age: 20
+        is_claimant_or_partner: false
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant, partner, adult_child]
+    households:
+      household:
+        members: [claimant, partner, adult_child]
   output:
     carer_premium: 37.5 * 52
 

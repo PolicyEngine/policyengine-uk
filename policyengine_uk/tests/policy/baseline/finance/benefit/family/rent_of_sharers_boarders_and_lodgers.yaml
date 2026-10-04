@@ -290,21 +290,23 @@
         is_household_head: true
       sharer:
         age: 40
+        pip_dl: 3_000
     benunits:
       head_family:
         members: [head]
       sharer_family:
         members: [sharer]
         liable_for_share_of_household_rent: true
-        severe_disability_premium: 3_000
     households:
       home:
         members: [head, sharer]
         rent: 18_000
         tenure_type: RENT_PRIVATELY
   output:
-    # Reg 13D(2)(a)(ii) excludes a claimant to whom Sch 3 para 14 applies,
-    # so 13D(2)(c): 1 bedroom: B.
+    # The sharer receives the PIP daily living component and has no
+    # non-dependant, so Sch 3 para 14(2)(a) applies; reg 13D(2)(a)(ii)
+    # excludes them, so 13D(2)(c): 1 bedroom: B.
+    housing_benefit_severe_disability_premium_applies: [false, true]
     housing_benefit_LHA_category: [A, B]
 
 - name: The household input for shared accommodation affects Housing Benefit only
@@ -325,3 +327,241 @@
   output:
     LHA_category: B
     housing_benefit_LHA_category: A
+
+- name: A non-dependant counts in a sharer's UC claim when the head cannot claim UC
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      cotenant:
+        age: 30
+      non_dependant:
+        age: 24
+        employment_income: 20_000
+    benunits:
+      head_family:
+        members: [head]
+      cotenant_family:
+        members: [cotenant]
+        liable_for_share_of_household_rent: true
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      home:
+        members: [head, cotenant, non_dependant]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    # The pensioner head is not eligible for UC, so no other UC claim has
+    # treated the non-dependant as one (UC Sch 4 para 9(2)(f)): they count
+    # in the co-tenant's claim. Bedrooms 1 + 1 = 2: C. Core rent 18,000 / 2
+    # = 9,000, below the Maidstone two-bedroom rate (11,892.40); less one
+    # contribution of 93.02 x 12 = 1,116.24: 7,883.76.
+    uc_non_dependants_counted: [false, true, false]
+    LHA_allowed_bedrooms: [1, 2, 1]
+    LHA_category: [B, C, A]
+    uc_non_dep_deductions: [0, 1_116.24, 0]
+    uc_housing_costs_element: [9_000, 7_883.76, 0]
+
+- name: A single PIP recipient living alone keeps the HB one-bedroom rate
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 28
+        pip_dl: 3_988.40
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Sch 3 para 14(2)(a): PIP daily living and no non-dependant, so the
+    # young-individual shared rate does not apply (reg 13D(2)(a)(i)); not
+    # sharing: one bedroom self-contained (13D(2)(b)): B. UC: excepted under
+    # Sch 4 para 29(5): B.
+    housing_benefit_severe_disability_premium_applies: true
+    housing_benefit_LHA_category: B
+    LHA_category: B
+
+- name: A lodger couple adds one HB bedroom, a non-dependant's child another
+  period: 2025
+  input:
+    people:
+      head:
+        age: 72
+        is_household_head: true
+      lodger_1:
+        age: 40
+        rent_paid_as_lodger: 3_000
+      lodger_2:
+        age: 42
+      daughter:
+        age: 40
+      grandchild:
+        age: 5
+    benunits:
+      head_family:
+        members: [head]
+      lodgers:
+        members: [lodger_1, lodger_2]
+      daughter_family:
+        members: [daughter, grandchild]
+    households:
+      home:
+        members: [head, lodger_1, lodger_2, daughter, grandchild]
+        rent: 15_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Reg 13D(3): head 1; the lodger couple 1 (a couple); the daughter 1;
+    # the grandchild 1 (a child): 4 bedrooms for the head: E. The lodgers'
+    # own claim counts only themselves: 1 bedroom, shared: A.
+    housing_benefit_LHA_allowed_bedrooms: [4, 1, 2]
+    housing_benefit_LHA_category: [E, A, C]
+
+- name: A lodger with exclusive use of two rooms can rebut the shared presumption
+  period: 2025
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      lodger:
+        age: 70
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+      lodger_family:
+        members: [lodger]
+        housing_benefit_shares_accommodation: false
+    households:
+      home:
+        members: [householder, lodger]
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    # Reg 13D(2)(b)(i): the lodger has exclusive use of two rooms: one
+    # bedroom self-contained: B. The householder's size criteria count the
+    # lodger as an occupier (13D(12)): 2 bedrooms: C.
+    housing_benefit_LHA_category: [C, B]
+
+- name: A blind partner without a qualifying benefit does not block the severe disability conditions
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_household_head: true
+        pip_dl: 3_988.40
+      partner:
+        age: 30
+        is_blind: true
+      joint_tenant:
+        age: 25
+    benunits:
+      couple:
+        members: [claimant, partner]
+      joint_tenant_family:
+        members: [joint_tenant]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [claimant, partner, joint_tenant]
+        rent: 13_500
+        tenure_type: RENT_PRIVATELY
+  output:
+    # The couple owes two thirds of the rent and shares the home.
+    benunit_rent: [9_000, 4_500]
+    housing_benefit_shares_accommodation: [true, true]
+    # Sch 3 para 14(3): the blind partner has no qualifying benefit, so is
+    # treated as not being the claimant's partner; the claimant has PIP daily
+    # living and no non-dependant (the joint tenant is not one), so para
+    # 14(2)(a) applies and reg 13D(2)(a)(ii) keeps the couple off the shared
+    # rate: one bedroom, B. The joint tenant, aged 25, gets the shared rate.
+    housing_benefit_severe_disability_premium_applies: [true, false]
+    housing_benefit_LHA_category: [B, A]
+
+- name: A couple with neither a qualifying benefit for the partner nor blindness does not meet them
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_household_head: true
+        pip_dl: 3_988.40
+      partner:
+        age: 30
+      blind_adult_son:
+        age: 19
+        is_blind: true
+        is_claimant_or_partner: false
+    benunits:
+      couple:
+        members: [claimant, partner]
+      son_family:
+        members: [blind_adult_son]
+    households:
+      home:
+        members: [claimant, partner, blind_adult_son]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Para 14(2)(b)(ii): the partner receives no qualifying benefit and is
+    # not blind, so the couple does not qualify.
+    housing_benefit_severe_disability_premium_applies: [false, false]
+
+- name: A blind non-dependant is disregarded in the severe disability conditions
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        pip_dl: 3_988.40
+      blind_brother:
+        age: 45
+        is_blind: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      brother_family:
+        members: [blind_brother]
+    households:
+      home:
+        members: [claimant, blind_brother]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Para 14(4)(b): no account is taken of a non-dependant who is blind.
+    housing_benefit_severe_disability_premium_applies: [true, false]
+
+- name: A sighted non-dependant without a qualifying benefit rules the conditions out
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+        pip_dl: 3_988.40
+      brother:
+        age: 45
+    benunits:
+      claimant_family:
+        members: [claimant]
+      brother_family:
+        members: [brother]
+    households:
+      home:
+        members: [claimant, brother]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    # Para 14(2)(a)(ii): a non-dependant aged 18 or over resides with them.
+    housing_benefit_severe_disability_premium_applies: [false, false]

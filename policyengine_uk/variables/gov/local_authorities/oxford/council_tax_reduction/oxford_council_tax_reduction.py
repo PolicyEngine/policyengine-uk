@@ -18,7 +18,7 @@ class oxford_council_tax_reduction(Variable):
         working_age = is_oxford_working_age(
             household("local_authority", period),
             household("country", period),
-            household("council_tax_reduction_household_has_pensioner", period),
+            benunit("council_tax_reduction_claim_pensioner", period),
         )
         is_household_head_benunit = benunit(
             "council_tax_reduction_claimant_benunit", period
