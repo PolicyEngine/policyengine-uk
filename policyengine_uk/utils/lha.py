@@ -420,10 +420,16 @@ def benunit_lha(
 ):
     """Look up an LHA measure for each benefit unit's BRMA and category.
 
-    ``category_variable`` names the category of accommodation: the Universal
-    Credit one by default, or ``housing_benefit_LHA_category``. Rent officers
-    determine one rate per BRMA and category, so the two benefits read the
-    same table; they differ only in which category applies to the renter.
+    ``universal_credit`` picks the determination: the weekly one under the
+    Rent Officers (Housing Benefit Functions) Order 1997, or the monthly one
+    under the Rent Officers (Universal Credit Functions) Order 2013.
+    ``category_variable`` names the category of accommodation to read it
+    for: the Universal Credit one by default, or
+    ``housing_benefit_LHA_category``. Each determination has one rate per
+    BRMA and category, so the benefits differ only in which determination
+    and which category they read: Housing Benefit the weekly table through
+    its own category (``housing_benefit_LHA_rate``), Universal Credit the
+    monthly table through ``LHA_category`` (``uc_LHA_cap``).
     """
     parameters = benunit.simulation.tax_benefit_system.parameters
     table = lha_rates(parameters, period.start.year, universal_credit)
