@@ -511,8 +511,8 @@
         members: [first, second, third]
   output:
     # A couple has two members, so three flagged claimants are a data error,
-    # not a legal claim. The formula generalises reg. 32(1) as: some claimant
-    # meets limb (a) and every other claimant meets limb (b).
+    # not a legal claim. The two eldest are the claimants
+    # (is_uc_assessed_claimant): one meets limb (a) and the other limb (b).
     uc_childcare_work_condition: true
 
 - name: Reg. 32(1) - three flagged claimants; the youngest neither works nor meets an exception
