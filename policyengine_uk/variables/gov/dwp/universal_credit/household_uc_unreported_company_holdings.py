@@ -8,9 +8,9 @@ class household_uc_unreported_company_holdings(Variable):
     documentation = (
         "The disregarded holdings (uc_company_holding_disregard) of people in "
         "benunits without reported UC capital. They are taken out of the "
-        "household's capital before it is shared among those benunits, so the "
-        "whole holding is removed from the household pool and no benunit "
-        "counts any part of it."
+        "household's capital before it is shared among those benunits' "
+        "claimants and partners, so no benunit counts any part of a "
+        "disregarded holding."
     )
     definition_period = YEAR
     unit = GBP
