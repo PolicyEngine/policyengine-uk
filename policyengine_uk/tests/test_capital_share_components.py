@@ -1,10 +1,10 @@
-"""Itemising corporate_wealth never changes a household's capital total.
+"""The means-test capital sources itemise corporate_wealth.
 
-The means-test capital sources list corporate_wealth's components and
-unitemised_corporate_wealth (the part a dataset does not itemise) instead of
-corporate_wealth. With no valuation rule that tells the components apart, every
-programme's assessable capital must equal what it is when the same holdings are
-entered as one unitemised corporate_wealth.
+The lists name corporate_wealth's components and unitemised_corporate_wealth
+(the part a dataset does not itemise) instead of corporate_wealth. Since the
+sale-expense lists tell the components apart, itemising changes capital by
+exactly rate x (trusts + ISA): that, conservation at a zero rate and the other
+valuation invariants are in test_capital_valuation_properties.py.
 """
 
 import pytest
@@ -86,25 +86,3 @@ def test_unitemised_corporate_wealth_is_the_floored_remainder(
         "unitemised_corporate_wealth", YEAR
     )[0]
     assert residual == max(0, corporate_wealth - sum(components))
-
-
-@pytest.mark.parametrize("variable", SOURCE_LISTS)
-@settings(max_examples=15, deadline=None)
-@given(
-    savings=amount,
-    corporate_wealth=amount,
-    components=st.tuples(amount, amount, amount),
-)
-def test_itemising_never_changes_capital(
-    variable, savings, corporate_wealth, components
-):
-    """Split holdings count exactly as max(corporate_wealth, their sum) does."""
-    itemised = {"savings": savings, "corporate_wealth": corporate_wealth}
-    itemised.update(dict(zip(COMPONENTS, components)))
-    unitemised = {
-        "savings": savings,
-        "corporate_wealth": max(corporate_wealth, sum(components)),
-    }
-    assert _capital(variable, itemised) == pytest.approx(
-        _capital(variable, unitemised), abs=1e-2
-    )

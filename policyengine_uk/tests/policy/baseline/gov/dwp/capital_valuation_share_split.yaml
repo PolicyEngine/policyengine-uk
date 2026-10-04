@@ -1,0 +1,260 @@
+# corporate_wealth itemised into directly_held_shares, unit_and_investment_trusts
+# and stocks_and_shares_isa, with unitemised_corporate_wealth carrying whatever
+# is not itemised (max(0, corporate_wealth - the three components)).
+# Capital is valued at market value less 10% where a sale would incur expenses
+# (UC Regs 2013 reg. 49(1); HB Regs 2006 reg. 47; IS Regs 1987 reg. 49; JSA
+# Regs 1996 reg. 111; ESA Regs 2008 reg. 113; SPC Regs 2002 reg. 19). Shares
+# take the 10% (ADM H1665; DMG 29671, 52671, 84763; HBGM W1.513). Unit trusts
+# have no costs of sale (ADM H1673-H1674; DMG 29680-29681, 52680-52681,
+# 84771-84772; HBGM W1.530-W1.531), and the survey bucket of unit and
+# investment trusts is treated the same. An ISA is valued at what the person
+# would get by withdrawing it, with no 10% (ADM H1656; DMG 29662, 52662,
+# 84748). Expected values are worked by hand from those rules.
+
+- name: UC unsplit corporate_wealth keeps the flat 10% treatment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # No components, so the residual is all 12,000 of corporate_wealth:
+        # 5,000 + 90% of 12,000 = 15,800, the same as before the split.
+        savings: 5_000
+        corporate_wealth: 12_000
+  output:
+    unitemised_corporate_wealth: 12_000
+    uc_assessable_capital: 15_800
+    is_uc_eligible: true
+    # 9,800 above 6,000 is 40 steps of 250 (rounded up): 40 * 4.35 * 12.
+    uc_tariff_income: 2_088
+
+- name: UC split of the same total exempts trusts and ISAs and crosses the limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Residual max(0, 12,000 - (4,000 + 3,000 + 5,000)) = 0. Capital is
+        # 5,000 + 90% of 4,000 + 3,000 + 5,000 = 16,600, above the 16,000
+        # limit; unsplit, the same household held 15,800 and qualified.
+        savings: 5_000
+        corporate_wealth: 12_000
+        directly_held_shares: 4_000
+        unit_and_investment_trusts: 3_000
+        stocks_and_shares_isa: 5_000
+  output:
+    unitemised_corporate_wealth: 0
+    uc_assessable_capital: 16_600
+    is_uc_eligible: false
+
+- name: UC counts the components when corporate_wealth is not given
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Residual max(0, 0 - 15,600) = 0. Capital is
+        # 1,000 + 90% of 10,000 + 2,600 + 3,000 = 15,600.
+        savings: 1_000
+        directly_held_shares: 10_000
+        unit_and_investment_trusts: 2_600
+        stocks_and_shares_isa: 3_000
+  output:
+    unitemised_corporate_wealth: 0
+    uc_assessable_capital: 15_600
+    is_uc_eligible: true
+    # 9,600 above 6,000 is 39 steps of 250 (38.4 rounded up): 39 * 4.35 * 12.
+    uc_tariff_income: 2_035.8
+
+- name: UC partial split values the unitemised residual less 10%
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Only the ISA is itemised: residual 12,000 - 5,000 = 7,000. Share-like
+        # capital is 90% of 7,000 + 5,000 = 11,300; with savings 15,300
+        # (unsplit it would be 4,000 + 10,800 = 14,800).
+        savings: 4_000
+        corporate_wealth: 12_000
+        stocks_and_shares_isa: 5_000
+  output:
+    unitemised_corporate_wealth: 7_000
+    uc_assessable_capital: 15_300
+    # 9,300 above 6,000 is 38 steps of 250 (37.2 rounded up): 38 * 4.35 * 12.
+    uc_tariff_income: 1_983.6
+
+- name: UC components exceeding corporate_wealth leave a nil residual
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # The components (7,000) exceed corporate_wealth (5,000), so the
+        # residual is max(0, -2,000) = 0, not a negative offset. Capital is
+        # 1,000 + 90% of 4,000 + 3,000 = 7,600.
+        savings: 1_000
+        corporate_wealth: 5_000
+        directly_held_shares: 4_000
+        unit_and_investment_trusts: 3_000
+  output:
+    unitemised_corporate_wealth: 0
+    uc_assessable_capital: 7_600
+    # 1,600 above 6,000 is 7 steps of 250 (6.4 rounded up): 7 * 4.35 * 12.
+    uc_tariff_income: 365.4
+
+- name: Housing Benefit split exempts trusts and ISAs
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        in_social_housing: true
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: person
+        would_claim_uc: false
+    households:
+      household:
+        members: person
+        # Residual 0. 1,100 + 90% of 5,000 + 4,000 + 6,000 = 15,600 (HBGM
+        # W1.513, W1.530); unsplit it would be 1,100 + 13,500 = 14,600.
+        savings: 1_100
+        corporate_wealth: 15_000
+        directly_held_shares: 5_000
+        unit_and_investment_trusts: 4_000
+        stocks_and_shares_isa: 6_000
+  output:
+    unitemised_corporate_wealth: 0
+    housing_benefit_assessable_capital: 15_600
+    # 9,600 above 6,000 is 39 steps of 250 (38.4 rounded up) at 1 a week.
+    housing_benefit_tariff_income: 2_028
+    housing_benefit_eligible: true
+
+- name: Income Support split exempts unit trusts
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Residual 0. 90% of 6,000 + 4,000 = 9,400 (DMG 29671, 29681);
+        # unsplit it would be 9,000.
+        corporate_wealth: 10_000
+        directly_held_shares: 6_000
+        unit_and_investment_trusts: 4_000
+  output:
+    income_support_assessable_capital: 9_400
+
+- name: Income-based JSA split exempts stocks and shares ISAs
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Residual 0. 2,000 + 90% of 3,000 + 6,000 = 10,700 (DMG 29662,
+        # 29671); unsplit it would be 2,000 + 8,100 = 10,100.
+        savings: 2_000
+        corporate_wealth: 9_000
+        directly_held_shares: 3_000
+        stocks_and_shares_isa: 6_000
+  output:
+    jsa_income_assessable_capital: 10_700
+
+- name: Income-related ESA split exempts trusts and ISAs
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Residual 0. 3,000 + 90% of 2,000 + 3,000 + 5,000 = 12,800 (DMG
+        # 52662, 52671, 52681); unsplit it would be 3,000 + 9,000 = 12,000.
+        savings: 3_000
+        corporate_wealth: 10_000
+        directly_held_shares: 2_000
+        unit_and_investment_trusts: 3_000
+        stocks_and_shares_isa: 5_000
+  output:
+    esa_income_assessable_capital: 12_800
+
+- name: Pension Credit split exempts trusts and ISAs
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        # Residual 0. 2,100 + 90% of 10,000 + 8,000 + 12,000 = 31,100 (DMG
+        # 84748, 84763, 84772); unsplit it would be 2,100 + 27,000 = 29,100.
+        savings: 2_100
+        corporate_wealth: 30_000
+        directly_held_shares: 10_000
+        unit_and_investment_trusts: 8_000
+        stocks_and_shares_isa: 12_000
+  output:
+    pension_credit_assessable_capital: 31_100
+    # 21,100 above 10,000 is 43 steps of 500 (42.2 rounded up) at 1 a week.
+    pension_credit_deemed_income: 2_236

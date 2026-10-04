@@ -1,0 +1,1 @@
+- Apply the 10% sale-expense deduction to directly held shares only, so unit and investment trusts (ADM H1673-H1674) and stocks and shares ISAs (ADM H1656) count at full value in every means test; datasets that do not itemise `corporate_wealth` keep its previous treatment.
