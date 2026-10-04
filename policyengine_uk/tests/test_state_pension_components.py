@@ -16,7 +16,7 @@ the period by construction, so these cases build simulations from data.
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import given, settings
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Microsimulation
@@ -206,6 +206,15 @@ def test_new_in_data_year_and_basic_in_period_is_paid_in_full():
     assert total[1] == pytest.approx(uprated_reported(sim, 2030, "NEW", 230), abs=0.01)
 
 
+# Each example builds a microsimulation, so examples are slow to generate.
+PROPERTY_SETTINGS = settings(
+    max_examples=10,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+
+
 PEOPLE = st.lists(
     st.fixed_dictionaries(
         {
@@ -271,7 +280,7 @@ def assert_components_add_up(sim, people: list, years) -> None:
         assert np.all(new <= rates["NEW"] * WEEKS_IN_YEAR * (1 + 1e-6))
 
 
-@settings(max_examples=25, deadline=None)
+@PROPERTY_SETTINGS
 @given(people=PEOPLE)
 def test_components_add_up_to_uprated_reported_amount(people):
     """Data projected with ages held fixed, every year from 2024-25 to 2030-31."""
@@ -279,7 +288,7 @@ def test_components_add_up_to_uprated_reported_amount(people):
     assert_components_add_up(sim, people, YEARS)
 
 
-@settings(max_examples=25, deadline=None)
+@PROPERTY_SETTINGS
 @given(
     people=PEOPLE,
     period=st.integers(min_value=DATA_YEAR + 1, max_value=2030),

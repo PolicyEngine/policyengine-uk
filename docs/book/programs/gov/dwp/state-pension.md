@@ -25,8 +25,9 @@ Three variables under `gov/dwp/`:
     accrual that exceeds the new flat rate, folded into NSP under
     current law but tracked separately in PolicyEngine so the reform
     surface stays clean.
-  - Both are computed as `max(reported - flat_max_for_type, 0)` per week,
-    multiplied by `WEEKS_IN_YEAR`.
+  - Both are the reported weekly amount above the type's full rate in the
+    data year, `max(reported - flat_max_for_type, 0)`, uprated as described
+    below and multiplied by `WEEKS_IN_YEAR`.
 
 All three split the amount a person reported in the data year (the
 dataset's first year) by the person's `state_pension_type` in the year
@@ -56,8 +57,8 @@ below).
 
 The flag-up split (`state_pension_type`) is settled by [PR #1618](https://github.com/PolicyEngine/policyengine-uk/pull/1618):
 classification is based on whether the person reaches State Pension age
-before or on/after 6 April 2016. No component is paid before State
-Pension age.
+before or on/after 6 April 2016. A computed `state_pension_type` is `NONE`
+below State Pension age, so no component is paid there.
 
 ## State Pension age
 
@@ -298,9 +299,10 @@ The model also includes Northern Ireland, which DWP's figures do not, so the
 like-for-like gap is larger by Northern Ireland's State Pension.
 
 **The data year.** In 2024-25 the model has 11.36m State Pension recipients
-averaging £201.6 a week. The FRS's own grossed figures are 11.53m recipients
-averaging £212 a week, and DWP's administrative figures are 11.88m and £212
-(FRS methodology tables M.6a and M.6b). The FRS's grossed estimate for the
+averaging £201.6 a week, for the UK. The FRS's own grossed figures for Great
+Britain are 11.53m recipients averaging £212 a week, and DWP's administrative
+figures are 11.88m and £212 (FRS methodology tables M.6a and M.6b, which
+cover Great Britain). The FRS's grossed estimate for the
 UK, with benefit amounts linked to DWP records, is £130.6bn, against
 £135.1bn from administrative data. So most of the model's £16bn shortfall
 against administrative data for the UK arises in building the enhanced FRS,
