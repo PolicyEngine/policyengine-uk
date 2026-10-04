@@ -1,3 +1,14 @@
+## [2.112.1] - 2026-10-03
+
+### Fixed
+
+- The legacy severe disability premium and the Pension Credit severe disability addition now share one attribution of whom each carer benefit is paid for caring for (`is_cared_for_by_carer_benefit_recipient`), so a carer in another benefit unit of the household bars the legacy premium as it already barred the addition, even when that carer is ignored as a non-dependant.
+- - Counted a trading loss for Class 4 NICs only in the year it is entered for, so a one-off `trading_loss` is relieved once and only its unrelieved part reduces later years' profits (new `ni_class_4_trading_loss`).
+  - Isolated supplied-input provenance between simulation clones and removed it for deleted inputs, preventing Class 4 from relieving cached carry-over losses again.
+  - Corrected the Class 4 property-test reference to use each year's trading allowance parameter, including the zero allowance in historical years.
+- - Charged Class 4 NICs on the profits chargeable under ITTOIA 2005 Part 2 Chapter 2, after capital allowances and the trading allowance, less trading losses under SSCBA 1992 Sch. 2 para. 3 (new `ni_class_4_profits`). Losses reduce only trade profits for Class 4 and carry forward until used.
+
+
 ## [2.112.0] - 2026-10-03
 
 ### Added
