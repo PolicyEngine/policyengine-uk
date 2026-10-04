@@ -96,13 +96,21 @@ PENSION_AGE = st.integers(67, 90)
 HOURS = st.one_of(
     st.sampled_from([0.0, 15.0, 16.0, 29.0, 30.0]), st.floats(0, 50, allow_nan=False)
 )
+
+
+def pounds(low, high):
+    # Whole pennies: the model stores money as float32, where a tiny positive
+    # float would round to zero and so stop counting as earnings.
+    return st.integers(round(low * 100), round(high * 100)).map(lambda p: p / 100)
+
+
 EARNINGS = st.one_of(
     st.just(0.0),
-    st.floats(0, 3_000, allow_nan=False),
-    st.floats(0, 12_000, allow_nan=False),
-    st.floats(0, 60_000, allow_nan=False),
+    pounds(0, 3_000),
+    pounds(0, 12_000),
+    pounds(0, 60_000),
 )
-SELF_EMPLOYMENT = st.one_of(st.just(0.0), st.floats(0, 12_000, allow_nan=False))
+SELF_EMPLOYMENT = st.one_of(st.just(0.0), pounds(0, 12_000))
 
 
 @st.composite
@@ -134,7 +142,7 @@ def families(draw, pension_age=None, accommodation=None, earners=None):
         adults=[draw(adults(age, earners)) for _ in range(n_adults)],
         children=[draw(st.integers(0, 15)) for _ in range(n_children)],
         childcare=(
-            draw(st.one_of(st.just(0.0), st.floats(0, 10_000))) if n_children else 0.0
+            draw(st.one_of(st.just(0.0), pounds(0, 10_000))) if n_children else 0.0
         ),
     )
 
