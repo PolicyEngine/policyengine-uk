@@ -22,6 +22,10 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # Installs the package with the newest dependency releases on PyPI,
+  # ignoring uv.lock, on every supported Python, so an upstream release that
+  # breaks installation or import shows up here first. Lint and Test below
+  # install from uv.lock.
   Python-Compat:
     name: Install + smoke-import (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
@@ -47,8 +51,10 @@ jobs:
         - uses: actions/checkout@v6
         - name: Install uv
           uses: astral-sh/setup-uv@v8.1.0
+        - name: Install locked dependencies
+          run: uv sync --locked --extra dev
         - name: Check formatting
-          run: uvx ruff format --check .
+          run: uv run --no-sync ruff format --check .
   Test:
       # Linux arm64 keeps the CPU architecture of the macOS runners this job
       # used to run on. GitHub-hosted macOS runners are scarce, so PR runs
@@ -78,12 +84,12 @@ jobs:
               workload_identity_provider: "projects/322898545428/locations/global/workloadIdentityPools/policyengine-research-id-pool/providers/prod-github-provider"
               service_account: "policyengine-research@policyengine-research.iam.gserviceaccount.com"
 
-          - name: Install package
-            run: uv pip install -e .[dev] --system
-          - name: Install policyengine
-            run: uv pip install policyengine --system
-          - name: UV sync
-            run: uv sync --extra dev
+          # Install exactly what uv.lock pins into .venv and run everything from
+          # it, so a new release of policyengine-core or any other dependency
+          # cannot change what this job tests until the lock is updated.
+          # --locked fails if pyproject.toml changed without `uv lock`.
+          - name: Install locked dependencies
+            run: uv sync --locked --extra dev
           - name: Run tests with coverage
             run: |
               # Only export token if non-empty (avoids 'Bearer ' error for Dependabot PRs)
@@ -92,7 +98,7 @@ jobs:
               fi
               # Four pytest-xdist workers, one per core; together they peak at
               # about 9 GB of the runner's 16 GB.
-              make test PYTEST_ARGS="-n 4 --dist worksteal"
+              uv run --no-sync make test PYTEST_ARGS="-n 4 --dist worksteal"
             env:
               HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
           - name: Upload coverage to Codecov
@@ -102,4 +108,4 @@ jobs:
               fail_ci_if_error: false
               verbose: true
           - name: Test documentation builds
-            run: make documentation
+            run: uv run --no-sync make documentation

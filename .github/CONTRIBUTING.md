@@ -6,6 +6,7 @@ See the [shared PolicyEngine contribution guide](https://github.com/PolicyEngine
 
 ```bash
 make install           # install development dependencies with pip
+uv sync --locked --extra dev  # install exactly what CI tests against (uv.lock)
 make format            # format (required — CI enforces)
 make test              # full test suite
 uv run policyengine-core test policyengine_uk/tests/path/to/test.yaml -c policyengine_uk
