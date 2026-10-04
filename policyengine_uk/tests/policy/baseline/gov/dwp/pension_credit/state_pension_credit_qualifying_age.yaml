@@ -1,0 +1,638 @@
+# The qualifying age for State Pension Credit (State Pension Credit Act 2002
+# s.1(6)): a woman's pensionable age, and for a man the pensionable age of a
+# woman born on the same day. Men born before 6 December 1953 have a
+# pensionable age of 65 (Pensions Act 1995 Sch 4 para 1 rule (1)) but reach the
+# qualifying age on the day in table 1 for a woman with their date of birth.
+# Universal Credit (Welfare Reform Act 2012 s.4(1)(b), (4)), Housing Benefit
+# (SI 2006/213 and 2006/214 reg 5; SI 2014/1230 reg 6A(4)), Council Tax
+# Reduction (SI 2012/2885 reg 3), Income Support (SSCBA 1992 s.124(1)(aa)) and
+# Winter Fuel Payment before September 2024 (SI 2000/729 reg 2(1)(b)) use
+# the qualifying age.
+#
+# age and months_since_last_birthday place the date of birth: the person was
+# born that many years and months before 6 October of the fiscal year.
+# Expected days come from table 1 of Sch 4 para 1.
+
+- name: Case 1, man born 6 April 1952 reached the qualifying age in 2014 but not State Pension age in 2016-17.
+  # Born 6 April 1952: table 1 puts a woman born 6 April to 5 May 1952 at
+  # pensionable age on 6 May 2014, age 62 years and 1 month. His own
+  # pensionable age is 65, on 6 April 2017, after 6 October 2016.
+  period: 2016
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 62.083
+    has_attained_state_pension_credit_qualifying_age: true
+    state_pension_age: 65
+    is_SP_age: false
+    is_pension_credit_eligible: true
+    is_uc_eligible: false
+    council_tax_reduction_household_has_pensioner: true
+    is_benefit_cap_exempt_other: true
+    # SI 2000/729 reg 2(1)(i): 200 for a person under 80 not in residential care.
+    winter_fuel_allowance: 200
+
+- name: Case 2, a woman born the same day has the same qualifying age and State Pension age.
+  period: 2016
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: false
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 62.083
+    has_attained_state_pension_credit_qualifying_age: true
+    state_pension_age: 62.083
+    is_SP_age: true
+    is_pension_credit_eligible: true
+
+- name: Case 3, man born 6 April 1952 already had the qualifying age in 2015-16.
+  period: 2015
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 63
+        months_since_last_birthday: 6
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 62.083
+    has_attained_state_pension_credit_qualifying_age: true
+    is_SP_age: false
+    is_pension_credit_eligible: true
+    is_uc_eligible: false
+
+- name: Case 4, man born 6 April 1950 is over both ages in 2015-16.
+  # A woman born 6 April to 5 May 1950 reaches pensionable age on 6 May 2010
+  # (age 60 years and 1 month); he reaches 65 on 6 April 2015.
+  period: 2015
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 65
+        months_since_last_birthday: 6
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 60.083
+    has_attained_state_pension_credit_qualifying_age: true
+    state_pension_age: 65
+    is_SP_age: true
+
+- name: Case 5, man born 6 June 1953 reached the qualifying age in March 2017.
+  # Table 1: a woman born 6 June to 5 July 1953 reaches pensionable age on 6
+  # March 2017 (63 years and 9 months), before 6 October 2017. His own
+  # pensionable age, 65, is on 6 June 2018.
+  period: 2017
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 63.75
+    has_attained_state_pension_credit_qualifying_age: true
+    state_pension_age: 65
+    is_SP_age: false
+    is_pension_credit_eligible: true
+    is_uc_eligible: false
+    winter_fuel_allowance: 200
+
+- name: Case 6, man born 6 September 1953 is under both ages in 2017-18.
+  # Table 1: a woman born 6 September to 5 October 1953 reaches pensionable
+  # age on 6 March 2018 (64 years and 6 months), after 6 October 2017.
+  period: 2017
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 64.5
+    has_attained_state_pension_credit_qualifying_age: false
+    is_SP_age: false
+    is_pension_credit_eligible: false
+    is_uc_eligible: true
+    council_tax_reduction_household_has_pensioner: false
+    is_benefit_cap_exempt_other: false
+    winter_fuel_allowance: 0
+
+- name: Case 7, the same man is over both ages in 2018-19.
+  # Qualifying age on 6 March 2018; pensionable age (65) on 6 September 2018.
+  period: 2018
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 65
+        months_since_last_birthday: 1
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 64.5
+    has_attained_state_pension_credit_qualifying_age: true
+    state_pension_age: 65
+    is_SP_age: true
+
+- name: Case 8, man born 6 December 1953 follows the common timetable, so both ages agree.
+  # Rule (1) covers men born before 6 December 1953 only. Table 2 puts
+  # everyone born 6 December 1953 to 5 January 1954 at pensionable age on 6
+  # March 2019 (65 years and 3 months).
+  period: 2018
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 10
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    state_pension_credit_qualifying_age: 65.25
+    state_pension_age: 65.25
+    has_attained_state_pension_credit_qualifying_age: false
+    is_SP_age: false
+
+- name: Case 9, a man over the qualifying age can make a new Housing Benefit claim.
+  # SI 2014/1230 reg 6A(4): a single person who has reached the qualifying age
+  # for State Pension Credit may claim Housing Benefit without an existing
+  # award. Born 6 April 1952, he reached it on 6 May 2014.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+        housing_benefit_reported: 0
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_eligible: true
+
+- name: Case 10, a man under the qualifying age needs an existing award to keep Housing Benefit.
+  # Born 6 September 1953: qualifying age on 6 March 2018.
+  period: 2017
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+        housing_benefit_reported: 0
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_eligible: false
+
+- name: Case 11, Income Support stops at the qualifying age, not at the man's pensionable age.
+  # SSCBA 1992 s.124(1)(aa). A carer born 6 April 1952 with an existing award.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    income_support_eligible: false
+
+- name: Case 12, the same carer is eligible for Income Support below the qualifying age.
+  # Born 6 September 1953: under the qualifying age on 6 October 2017.
+  period: 2017
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    income_support_eligible: true
+
+- name: Case 13, a couple both born 6 June 1953 is not a mixed-age couple in 2017-18.
+  # She reached pensionable age, and he the qualifying age, on 6 March 2017;
+  # his own pensionable age is 6 June 2018. Both have attained the qualifying
+  # age, so they can claim Pension Credit, not Universal Credit. (State
+  # Pension Credit Act 2002 s.4(1A), which excludes a couple where the other
+  # member "has not attained the qualifying age", came into force on 15 May
+  # 2019. Both members meet the shared age condition, before and after that
+  # exclusion; they are not a mixed-age couple under SI 2019/37 art. 2.)
+  period: 2017
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+      person2:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    has_attained_state_pension_credit_qualifying_age: [true, true]
+    is_SP_age: [false, true]
+    is_mixed_age_couple: false
+    meets_pension_credit_age_conditions: true
+    is_pension_credit_eligible: true
+    is_uc_eligible: false
+
+- name: Case 14, the pension-age Housing Benefit and CTR personal allowance applies from the qualifying age.
+  # Born 6 April 1952, over the qualifying age in 2016-17, so the pension-age
+  # regulations (SI 2006/214) apply. The model's single pension-age rate for
+  # 2016-17 is 181 a week: 181 x 52 = 9,412. No premiums apply.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    benefits_premiums: 0
+    housing_benefit_applicable_amount: 9_412
+    council_tax_reduction_applicable_amount: 9_412
+
+- name: Case 15, below the qualifying age the working-age allowance for a single person aged 25 or over applies.
+  # Born 6 September 1953, under the qualifying age in 2017-18: 73.10 a week,
+  # 73.10 x 52 = 3,801.20.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+  output:
+    benefits_premiums: 0
+    council_tax_reduction_applicable_amount: 3_801.20
+
+- name: Case 16, Housing Benefit tariff income uses the pension-age rule from the qualifying age.
+  # Born 6 April 1952, over the qualifying age in 2016-17, with 16,000 of
+  # savings and a 15,000 private pension (so no guarantee credit). Pension-age
+  # tariff income is 1 a week for each 500, or part, above 10,000:
+  # ceil(6,000 / 500) = 12 a week, 12 x 52 = 624.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+        private_pension_income: 15_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 16_000
+  output:
+    guarantee_credit: 0
+    housing_benefit_assessable_capital: 16_000
+    housing_benefit_tariff_income: 624
+
+- name: Case 17, below the qualifying age Housing Benefit tariff income uses the working-age rule.
+  # Born 6 September 1953, under the qualifying age in 2017-18. Working-age
+  # tariff income is 1 a week for each 250, or part, above 6,000:
+  # ceil(10,000 / 250) = 40 a week, 40 x 52 = 2,080.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+        private_pension_income: 15_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 16_000
+  output:
+    housing_benefit_assessable_capital: 16_000
+    housing_benefit_tariff_income: 2_080
+
+- name: Case 18, guarantee credit from the qualifying age means Housing Benefit counts no income or capital.
+  # Born 6 April 1952, over the qualifying age in 2016-17, with a 3,000
+  # private pension, well below the standard minimum guarantee, and 5,000 of
+  # savings, so guarantee credit is payable. The model then counts no income
+  # or capital for pension-age Housing Benefit.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+        private_pension_income: 3_000
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 5_000
+  output:
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+
+- name: Case 19, Pension Credit counts household capital for adults over the qualifying age.
+  # Born 6 April 1952, over the qualifying age in 2016-17. The household's
+  # 20,000 of savings is split over its adults who have attained the
+  # qualifying age; he is the only one.
+  period: 2016
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 6
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 20_000
+  output:
+    pension_credit_assessable_capital: 20_000
+
+- name: Case 20, Pension Credit counts no capital below the qualifying age.
+  # Born 6 September 1953, under the qualifying age in 2017-18.
+  period: 2017
+  input:
+    people:
+      person1:
+        age: 64
+        months_since_last_birthday: 1
+        is_male: true
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 20_000
+  output:
+    pension_credit_assessable_capital: 0
+
+- name: Case 21, a mixed-age couple can claim Income Support through the younger partner.
+  # SSCBA 1992 s.124(1)(aa) restricts the claimant, and either member of a
+  # couple can claim. She is a carer under the qualifying age with an
+  # existing award; he was born 6 June 1953 and reached the qualifying age on
+  # 6 March 2017, though his own pensionable age is 6 June 2018. They have not
+  # claimed Pension Credit.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: false
+    households:
+      household:
+        members: [carer, man]
+  output:
+    has_attained_state_pension_credit_qualifying_age: [false, true]
+    pension_credit: 0
+    income_support_eligible: true
+
+- name: Case 22, the same couple cannot have Income Support while on Pension Credit.
+  # s.124(1)(g): the other member of the couple is not entitled to State
+  # Pension Credit. Before 15 May 2019 the older member could claim it for the
+  # couple; the model treats a couple that meets the Pension Credit age
+  # conditions and would claim it as on Pension Credit.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: true
+    households:
+      household:
+        members: [carer, man]
+  output:
+    meets_pension_credit_age_conditions: true
+    pension_credit: 12_649
+    income_support_eligible: false
+
+- name: Case 23, a mixed-age couple after May 2019 can keep Income Support through the younger partner.
+  # Pension Credit needs both members over the qualifying age from 15 May 2019
+  # (SPCA 2002 s.4(1A)) unless the SI 2019/37 saving applies, which these
+  # inputs do not give.
+  period: 2026
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+  output:
+    pension_credit: 0
+    income_support_eligible: true
+
+- name: Case 24, the claimant must meet both the age and the carer conditions.
+  # SSCBA 1992 s.124(1)(aa) and (e), IS Regs 1987 Sch 1B para 4: the younger
+  # partner is under the qualifying age but is not a carer, and the older
+  # partner is a carer but over the qualifying age, so neither can claim.
+  period: 2026
+  input:
+    people:
+      younger:
+        age: 50
+        income_support_reported: 1_000
+      older:
+        age: 70
+        is_carer_for_benefits: true
+    benunits:
+      benunit:
+        members: [younger, older]
+    households:
+      household:
+        members: [younger, older]
+  output:
+    income_support_eligible: false
+
+- name: Case 25, a couple that would claim Pension Credit is treated as on it even when its income is too high.
+  # The s.124(1)(g) bar reads the Pension Credit age conditions and take-up,
+  # not the Pension Credit means test (see income_support_eligible). Here
+  # Pension Credit is nil, yet Income Support is barred.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+        private_pension_income: 30_000
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: true
+    households:
+      household:
+        members: [carer, man]
+  output:
+    pension_credit: 0
+    income_support_eligible: false
+
+- name: Case 26, the same couple without a Pension Credit claim is eligible for Income Support, but it is nil at that income.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+        private_pension_income: 30_000
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: false
+    households:
+      household:
+        members: [carer, man]
+  output:
+    income_support_eligible: true
+    income_support: 0

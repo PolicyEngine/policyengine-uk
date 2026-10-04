@@ -32,10 +32,11 @@ cap, and a third to have working claimants paying for childcare:
    claimants' combined earnings less the reg. 22 work allowance (£710 a
    month, or £427 with the housing costs element, where they are responsible
    for a child or qualifying young person), and unearned income equals the
-   claimants' private pensions plus either their savings interest or, with
-   capital over £6,000, the reg. 72 tariff income of £4.35 a month for each
-   £250 or part. The amounts are written here from the regulations, not read
-   from the model.
+   claimants' private pensions (reg. 66(1)(a)) plus, with capital over
+   £6,000, the reg. 72 tariff income of £4.35 a month for each £250 or part.
+   Savings interest is not reg. 66(1) income for anyone, claimant or not.
+   The amounts are written here from the regulations, not read from the
+   model.
 4. There are at most two assessed claimants however many members are flagged
    as claimants, they are flagged claimants, and they are every flagged
    member when two or fewer are flagged.
@@ -375,15 +376,15 @@ def test_income_matches_regulations_22_and_72(units):
             work_allowance = monthly * 12
         earnings = sum(c["employment_income"] for c in unit["claimants"])
         expected_earned = max(0, earnings - work_allowance)
+        # Retirement pension income is unearned income (reg. 66(1)(a));
+        # savings interest is in no reg. 66(1) description, so capital counts
+        # only through its tariff income (reg. 72(1)).
         pensions = sum(c["private_pension_income"] for c in unit["claimants"])
-        interest = sum(c["savings_interest_income"] for c in unit["claimants"])
         excess = unit["savings"] - TARIFF_LOWER_LIMIT
+        tariff = 0.0
         if excess > 0:
-            # Tariff income replaces the capital's actual yield (reg. 72(3)).
-            steps = np.ceil(excess / TARIFF_STEP)
-            expected_unearned = pensions + steps * TARIFF_INCOME_PER_STEP * 12
-        else:
-            expected_unearned = pensions + interest
+            tariff = np.ceil(excess / TARIFF_STEP) * TARIFF_INCOME_PER_STEP * 12
+        expected_unearned = pensions + tariff
         np.testing.assert_allclose(
             earned[i], expected_earned, atol=0.5, err_msg=str(unit)
         )

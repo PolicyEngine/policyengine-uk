@@ -40,10 +40,10 @@ class is_uc_assessed_claimant(Variable):
     def formula(person, period, parameters):
         # A claim is made by a single person or jointly by the two members of
         # a couple (WRA 2012 s. 2(1)), and "claimant" means a single claimant
-        # or each of joint claimants (s. 40), so there are at most two. Where
-        # the data flag more (an adult child in the parents' benefit unit),
-        # the two eldest are the claimants; members of the same age rank in
-        # the order they are listed.
+        # or each of joint claimants (s. 40), so there are at most two.
+        # is_uc_claimant flags at most two unless inputs flag more; then the
+        # two eldest are the claimants, and members of the same age rank in
+        # the order the people are entered.
         claimant = person("is_uc_claimant", period)
         age = person("age", period)
         rank = person.get_rank(person.benunit, -age, condition=claimant)

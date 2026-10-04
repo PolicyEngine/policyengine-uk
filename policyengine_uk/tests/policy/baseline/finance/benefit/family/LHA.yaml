@@ -1,12 +1,13 @@
 - name: BRMA default value
   period: 2020
-  absolute_error_margin: 20
+  absolute_error_margin: 0.01
   input:
     age: 18
     LHA_category: C
   output:
     brma: MAIDSTONE
-    BRMA_LHA_rate: 9_771
+    # VOA, LHA April 2020 (amended), Table 4: Maidstone two bedrooms, GBP 187.56 a week.
+    BRMA_LHA_rate: 9_753.12
 - name: BRMA inputs
   period: 2020
   absolute_error_margin: 0
@@ -16,11 +17,12 @@
     brma: GUILDFORD
 - name: BRMA and category
   period: 2020
-  absolute_error_margin: 20
+  absolute_error_margin: 0.01
   input:
     brma: GUILDFORD
     LHA_category: C
   output:
     brma: GUILDFORD
     LHA_category: C
-    BRMA_LHA_rate: 13_164
+    # VOA, LHA April 2020 (amended), Table 4: Guildford two bedrooms, GBP 253.15 a week.
+    BRMA_LHA_rate: 13_163.80

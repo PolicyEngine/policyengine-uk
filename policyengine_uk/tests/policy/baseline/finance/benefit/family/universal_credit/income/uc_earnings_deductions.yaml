@@ -5,12 +5,14 @@
 # Pension, property, savings and dividends is not deducted, and one partner's
 # tax never reduces the other's earnings. Earnings are taken as the lowest
 # slice of the person's non-savings income, after their allowances; savings
-# and dividends sit above all non-savings income (ITA 2007 s. 16).
+# and dividends sit above it, as ITA 2007 s. 16 ranks them for income tax
+# (apart from the items s. 1012 ranks higher, which the model does not have).
 #
 # Hand calculations use the 2026-27 rates:
 # - personal allowance 12,570; basic rate 20% on the first 37,700 of taxable
 #   income; dividend allowance 500, dividend ordinary rate 10.75%; property
-#   allowance 1,000; trading allowance 1,000;
+#   allowance 1,000; trading allowance 1,000 (only for a trade profit within
+#   it when gross receipts are not given, ITTOIA 2005 s. 783AI);
 # - primary Class 1 NI 8% above the primary threshold of 241.73 a week
 #   (12,569.96 a year); Class 4 NI 6% above the lower profits limit of 12,570;
 #   Class 2 NI nil;
@@ -48,12 +50,14 @@
     uc_individual_earned_income: [17_919.60, 0]
     # Less the work allowance of 427 x 12 = 5,124.
     uc_earned_income: 12_795.60
-    uc_unearned_income: 5_000
+    # Rent from property is not UC unearned income (reg. 66(1) is a closed
+    # list).
+    uc_unearned_income: 0
     # 424.90 x 12 + 303.94 x 12 + 9,600 = 5,098.80 + 3,647.28 + 9,600.
     uc_maximum_amount: 18_346.08
-    # 18,346.08 - (0.55 x 12,795.60 + 5,000). Deducting all of the tax, as
-    # before this fix, gave 6,748.50: 0.55 x 800 = 440 too much.
-    universal_credit: 6_308.50
+    # 18,346.08 - 0.55 x 12,795.60. Deducting all of the tax, as before this
+    # fix, gave 11,748.50: 0.55 x 800 = 440 too much.
+    universal_credit: 11_308.50
 
 - name: Mixed-age couple, the pensioner's tax on State Pension does not reduce the partner's earnings
   period: 2026
@@ -105,23 +109,24 @@
     tenure_type: RENT_FROM_COUNCIL
     rent: 12_000
   output:
-    # Trade: taxable profit 18,000 - 1,000 trading allowance = 17,000; it
-    # takes the personal allowance first, (17,000 - 12,570) x 20% = 886.
-    # Pension: 4,000 x 20% = 800. Dividends: (3,000 - 500) x 10.75% =
-    # 268.75. Neither is deducted.
-    income_tax: 1_954.75
-    uc_income_tax_on_earnings: 886
+    # Trade: a profit of 18,000 is above the trading allowance, so no
+    # allowance applies without gross receipts. It takes the personal
+    # allowance first: (18,000 - 12,570) x 20% = 1,086. Pension: 4,000 x 20%
+    # = 800. Dividends: (3,000 - 500) x 10.75% = 268.75. Neither is deducted.
+    income_tax: 2_154.75
+    uc_income_tax_on_earnings: 1_086
     # Class 4: (18,000 - 12,570) x 6%.
     uc_national_insurance_on_earnings: 325.80
-    # 18,000 - 886 - 325.80, with no work allowance.
-    uc_earned_income: 16_788.20
-    uc_unearned_income: 7_000
+    # 18,000 - 1,086 - 325.80, with no work allowance.
+    uc_earned_income: 16_588.20
+    # The pension counts; dividends are not UC unearned income.
+    uc_unearned_income: 4_000
     # 424.90 x 12 + 12,000.
     uc_maximum_amount: 17_098.80
-    # 17,098.80 - (0.55 x 16,788.20 + 7,000). Deducting all of the tax and
-    # NI, as before this fix, gave 1,453.10: 0.55 x 1,068.75 = 587.81 too
+    # 17,098.80 - (0.55 x 16,588.20 + 4,000). Deducting all of the tax and
+    # NI, as before this fix, gave 4,563.10: 0.55 x 1,068.75 = 587.81 too
     # much.
-    universal_credit: 865.29
+    universal_credit: 3_975.29
 
 - name: Scottish taxpayer, earnings sit below pension income in the Scottish bands
   period: 2026
@@ -247,4 +252,118 @@
     # Property: (5,000 - 1,000) x 22% = 880.
     property_income_tax: 880
     income_tax: 2_366
+    uc_income_tax_on_earnings: 1_486
+
+- name: A tax reduction comes off the tax on earnings first
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # Married couple's allowance reduction: 10% x 11,000 = 1,100.
+    capped_mcad: [1_100, 0]
+    # (20,000 - 12,570) x 20% = 1,486, less 1,100.
+    income_tax: [386, 0]
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: Pension income does not change the tax on earnings when a reduction applies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        private_pension_income: 5_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # 1,486 on earnings + 5,000 x 20% on the pension - 1,100.
+    income_tax: [1_386, 0]
+    # The reduction still comes off the earnings slice: 1,486 - 1,100.
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: The pension annual allowance charge is not deducted, even with a tax reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        employer_pension_contributions: 65_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # Contributions of 65,000 exceed the 60,000 annual allowance by 5,000,
+    # charged at the basic rate: 1,000.
+    personal_pension_contributions_tax: [1_000, 0]
+    income_tax: [1_386, 0]
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: Pension contributions paid after 75 are not relievable, so are not deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 76
+    employment_income: 15_000
+    employee_pension_contributions: 1_000
+  output:
+    # No relief after 75 (FA 2004 s. 188(3)(a)): (15,000 - 12,570) x 20%.
+    uc_income_tax_on_earnings: 486
+    # Over State Pension age, so no Class 1 NI.
+    uc_national_insurance_on_earnings: 0
+    # 15,000 - 486, with the 1,000 of contributions not deducted.
+    uc_individual_earned_income: 14_514
+
+- name: A reform exempting pensions from income tax leaves the tax on earnings unchanged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.earned_taxable_income_exclusions:
+      - taxable_savings_interest_income
+      - taxable_dividend_income
+      - taxable_property_income
+      - received_allowances_earned_income
+      - marriage_allowance
+      - taxable_pension_income
+    age: 40
+    employment_income: 20_000
+    private_pension_income: 10_000
+  output:
+    # The pension is outside the taxed base, so it is not above earnings
+    # either: (20,000 - 12,570) x 20%.
+    income_tax: 1_486
     uc_income_tax_on_earnings: 1_486

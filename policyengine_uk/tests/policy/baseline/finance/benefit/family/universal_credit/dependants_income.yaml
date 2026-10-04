@@ -130,7 +130,7 @@
   output:
     uc_childcare_work_condition: false
 
-- name: An adult child flagged as a third claimant neither meets nor blocks the childcare work condition
+- name: An adult child flagged as a third claimant by the data neither meets nor blocks the childcare work condition
   # Both members of the couple work, so reg. 32(1) is met whether or not
   # their adult child does.
   period: 2026
@@ -138,13 +138,16 @@
   input:
     people:
       parent_1:
+        is_claimant_or_partner: true
         age: 50
         employment_income: 15_000
       parent_2:
+        is_claimant_or_partner: true
         age: 48
         employment_income: 15_000
       adult_child:
         age: 25
+        is_claimant_or_partner: true
       child:
         age: 3
         childcare_expenses: 5_000

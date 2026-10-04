@@ -10,8 +10,10 @@ couple the floor applies only while the couple's combined earned income is
 below the couple threshold, and is reduced by any amount by which it and the
 partner's earned income would exceed that threshold (reg. 62(3)).
 
-Invariants, for any generated population of single people, couples and
-mixed-age couples with employment, self-employment, pension contributions and
+Invariants, for any generated population of single people, couples,
+couples with an older partner aged 65 to 80 (mixed-age once past State
+Pension age) and couples with an adult child in their benefit unit, with
+employment, self-employment profits and losses, pension contributions and
 start-up periods, in England, Wales and Scotland:
 
 1. The floor never lowers anyone's earned income, and changes it only for
@@ -48,7 +50,7 @@ lawful, non-monotonicity.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -65,11 +67,22 @@ YEARS = [2020, 2026, 2027]
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 REGIONS = ["LONDON", "NORTH_EAST", "WALES", "SCOTLAND"]
 WORKING_AGE = st.integers(18, 64)
-PENSION_AGE = st.integers(67, 80)
+# From 65, so the draws include people who reach State Pension age during
+# the tax year: Class 4 stays due for that year (SI 2001/1004 reg. 91(a)),
+# but primary Class 1 and Class 2 stop.
+PENSION_AGE = st.integers(65, 80)
+# The last shape has an adult child in the parents' benefit unit. The model
+# flags at most two claimants (is_claimant_or_partner), here the parents; the
+# couple is the two eldest claimants. The YAML tests flag a third by input.
 SHAPES = {
     "single": [WORKING_AGE],
     "couple": [WORKING_AGE, WORKING_AGE],
     "mixed_age": [PENSION_AGE, WORKING_AGE],
+    "couple_with_adult_child": [
+        st.integers(40, 64),
+        st.integers(40, 64),
+        st.integers(18, 24),
+    ],
 }
 # Profits and pay straddle the floor (about 16,000-23,000 gross).
 # Profits and losses: a trading loss is nil self-employed earnings.
@@ -154,7 +167,16 @@ def calculate(units, year, reform=None, **kwargs):
     for v in BENUNIT_VARIABLES:
         values[v] = np.asarray(sim.calculate(v, year))
         values[f"person_{v}"] = np.asarray(sim.calculate(v, year, map_to="person"))
-    claimant = values["is_uc_claimant"].astype(bool)
+    # The couple: at most the two eldest claimants of each benefit unit.
+    flagged = values["is_uc_claimant"].astype(bool)
+    unit = np.asarray(sim.populations["benunit"].members_entity_id)
+    claimant = np.zeros(len(flagged), dtype=bool)
+    for u in np.unique(unit):
+        members = np.flatnonzero((unit == u) & flagged)
+        eldest = members[np.argsort(-values["age"][members], kind="stable")][:2]
+        claimant[eldest] = True
+    values["in_couple"] = claimant
+    values["floor_can_apply"] = values["uc_mif_applies"].astype(bool) & claimant
     before = values["uc_individual_earned_income_before_mif"]
     after = values["uc_individual_earned_income"]
     threshold = values["uc_minimum_income_floor"]
@@ -208,7 +230,7 @@ def test_floor_never_lowers_earned_income(units, year):
     before = v["uc_individual_earned_income_before_mif"]
     after = v["uc_individual_earned_income"]
     assert np.all(after >= before - 0.01), units
-    unaffected = ~v["uc_mif_applies"].astype(bool)
+    unaffected = ~v["floor_can_apply"]
     np.testing.assert_allclose(
         after[unaffected], before[unaffected], atol=0.01, err_msg=str(units)
     )
@@ -218,7 +240,7 @@ def test_floor_never_lowers_earned_income(units, year):
 @given(units=populations, year=st.sampled_from(YEARS))
 def test_floor_holds_for_singles_and_couples(units, year):
     v = calculate(units, year)
-    applies = v["uc_mif_applies"].astype(bool)
+    applies = v["floor_can_apply"]
     before = v["uc_individual_earned_income_before_mif"]
     after = v["uc_individual_earned_income"]
     threshold = v["uc_minimum_income_floor"]
@@ -254,12 +276,10 @@ def test_matches_closed_form_of_regulation_62(units, year):
     v = calculate(units, year)
     before = v["uc_individual_earned_income_before_mif"]
     threshold = v["uc_minimum_income_floor"]
-    claimant = v["is_uc_claimant"].astype(bool)
+    claimant = v["in_couple"]
     partner = v["claimant_before_sum"] - before * claimant
     floor = threshold - np.maximum(0, threshold + partner - v["couple_threshold"])
-    expected = np.where(
-        v["uc_mif_applies"].astype(bool), np.maximum(before, floor), before
-    )
+    expected = np.where(v["floor_can_apply"], np.maximum(before, floor), before)
     np.testing.assert_allclose(
         v["uc_individual_earned_income"], expected, atol=0.01, err_msg=str(units)
     )
@@ -271,12 +291,43 @@ SELF_EMPLOYED_NI = (
 )
 
 
+# A 66-year-old in 2026 reaches State Pension age (66 and 1 month) after 6
+# April: Class 4 stays due for the year, primary Class 1 and Class 2 do not.
+# The generated draws reach this case only by chance.
+SPA_DURING_2026 = [
+    dict(
+        adults=[
+            dict(
+                age=66,
+                self_employment_income=5_000.0,
+                employment_income=0.0,
+                pension_contributions=0.0,
+                uc_is_in_startup_period=False,
+            ),
+            dict(
+                age=40,
+                self_employment_income=0.0,
+                employment_income=15_000.0,
+                pension_contributions=0.0,
+                uc_is_in_startup_period=False,
+            ),
+        ],
+        children=[],
+        tenure="RENT_FROM_COUNCIL",
+        rent=9_600.0,
+        region="NORTH_EAST",
+    )
+]
+
+
 @PROPERTY_SETTINGS
 @given(
     units=populations,
     year=st.sampled_from(YEARS),
     self_employed=st.booleans(),
 )
+@example(units=SPA_DURING_2026, year=2026, self_employed=True)
+@example(units=SPA_DURING_2026, year=2026, self_employed=False)
 def test_notional_deductions_equal_tax_on_threshold_as_only_income(
     units, year, self_employed
 ):

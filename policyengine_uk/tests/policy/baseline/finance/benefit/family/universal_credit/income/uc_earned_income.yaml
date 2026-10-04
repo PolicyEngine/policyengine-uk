@@ -5,6 +5,7 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 10
+    # The claimant's own tax on these earnings.
     uc_income_tax_on_earnings: 1
   output:
     uc_individual_earned_income: 1_100 - 1
@@ -17,6 +18,7 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 2_000
+    # The claimant's own tax on these earnings.
     uc_income_tax_on_earnings: 1
   output:
     uc_earned_income: 0
@@ -129,7 +131,7 @@
     uc_earned_income: 10_000 + 5_000 - 710 * 12
     universal_credit: (666.97 + 351.88) * 12 - 0.55 * (15_000 - 710 * 12)
 
-- name: An adult child flagged as a third claimant does not add earned income
+- name: An adult child flagged as a third claimant by the data does not add earned income
   # Joint claimants with no child or qualifying young person and no limited
   # capability for work have no work allowance (reg. 22(1)(b)(i)).
   period: 2026
@@ -137,12 +139,15 @@
   input:
     people:
       parent_1:
+        is_claimant_or_partner: true
         age: 50
         employment_income: 10_000
       parent_2:
+        is_claimant_or_partner: true
         age: 48
       adult_child:
         age: 25
+        is_claimant_or_partner: true
         employment_income: 11_000
     benunits:
       benunit:
