@@ -1,3 +1,10 @@
+## [2.113.4] - 2026-10-04
+
+### Changed
+
+- - Documented that policy changes must be mirrored in Axiom RuleSpec (rulespec-uk), and added a pull request template with the required `axiom:` line.
+
+
 ## [2.113.3] - 2026-10-04
 
 ### Fixed
