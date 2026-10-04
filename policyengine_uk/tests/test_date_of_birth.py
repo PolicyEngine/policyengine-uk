@@ -268,7 +268,7 @@ def births_and_year(draw):
 # wrong birth instant changes has_attained_state_pension_credit_qualifying_age
 # but a uniform draw rarely lands: a woman born 10 December 1952 (qualifying
 # age 62 years and about 9 months, reached in 2015-16) and a man born 10
-# November 1960 (66 years and 7 months, reached in 2027-28).
+# November 1960 (66 years and 8 months, reached on 10 July 2027).
 @example(case=([(date(1952, 12, 10), False)], 2015))
 @example(case=([(date(1960, 11, 10), True)], 2027))
 def test_a_date_of_birth_input_matches_the_same_birthday_by_age(case):
