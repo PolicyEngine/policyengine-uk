@@ -45,8 +45,9 @@ income-based JSA or income-related ESA:
    disregarded, with or without the input.
 8. Dates: no para 18 amount in any year to 2026 (the model reads 2026-27 at
    30 April 2026, before 5 October), the same amounts in every year from
-   2027 to 2035 (nothing uprates them), and the parameter files start on 5
-   October 2026.
+   2027 to 2035 (nothing uprates them). Each amount file's first non-zero
+   value takes effect on 5 October 2026, with zero before; the two age
+   thresholds start on that date.
 """
 
 from pathlib import Path
@@ -290,7 +291,7 @@ def test_the_input_never_lowers_the_disregard(units):
         assert on[income][i] <= off[income][i] + 0.01, unit
 
 
-def boundary_family(shape, ages, children=()):
+def boundary_family(shape, ages, children=(), earnings=10_400.0, hours=30.0):
     return dict(
         shape=shape,
         pension_age=False,
@@ -298,9 +299,9 @@ def boundary_family(shape, ages, children=()):
         adults=[
             dict(
                 age=age,
-                employment_income=10_400.0 if j == 0 else 0.0,
+                employment_income=earnings if j == 0 else 0.0,
                 self_employment_income=0.0,
-                weekly_hours=30.0,
+                weekly_hours=hours,
                 disabled=False,
             )
             for j, age in enumerate(ages)
@@ -319,6 +320,14 @@ BOUNDARY_FAMILIES = [
     boundary_family("single", (25,)),
     boundary_family("lone_parent", (24,), (3, 5)),
     boundary_family("lone_parent", (25,), (3, 5)),
+    # Inside the para 17(3)(a) window: the work condition is met and net
+    # earnings cover the £17.10 test without para 18 but not with it.
+    # Single, 30 hours: £5,148 is between (£5 + £17.10) x 52 = £1,149.20 and
+    # (£5 + £77.73 + £17.10) x 52 = £5,191.16.
+    boundary_family("single", (30,), earnings=5_148.0),
+    # Lone parent, 16 hours: £6,000 is between £2,189.20 and
+    # (£25 + £77.73 + £17.10) x 52 = £6,231.16.
+    boundary_family("lone_parent", (30,), (5,), earnings=6_000.0, hours=16.0),
 ]
 
 
