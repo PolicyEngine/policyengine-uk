@@ -1,3 +1,10 @@
+## [2.117.2] - 2026-10-04
+
+### Fixed
+
+- Give Council Tax Reduction to the household head's family, the liable resident, instead of the oldest adult's, so families tied for oldest no longer both get a full award.
+
+
 ## [2.117.1] - 2026-10-04
 
 ### Fixed
