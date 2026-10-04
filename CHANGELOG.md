@@ -1,3 +1,39 @@
+## [2.113.6] - 2026-10-04
+
+### Changed
+
+- Document what `pension_credit_reported_capital` must contain (countable capital after the Schedule V disregards and reg. 19 valuation) and what it replaces, and restate its monotonicity property around the savings credit's intended exception.
+
+
+## [2.113.5] - 2026-10-04
+
+### Fixed
+
+- - Corrected pension-age Housing Benefit and Council Tax Reduction premiums by removing adult disability and adult enhanced disability premiums absent from their statutory schedules and applying the severe disability premium's qualifying-benefit, couple, Housing Benefit non-dependant and shared carer-attribution conditions. The carer condition does not yet count Universal Credit carer-element awards (#2120).
+
+
+## [2.113.4] - 2026-10-04
+
+### Changed
+
+- - Documented that policy changes must be mirrored in Axiom RuleSpec (rulespec-uk), and added a pull request template with the required `axiom:` line.
+
+
+## [2.113.3] - 2026-10-04
+
+### Fixed
+
+- Split additional State Pension by each person's State Pension type in the year simulated, as basic and new State Pension already are, instead of their type in the data year. Survey ages are held fixed across projected years, so records that were on the basic State Pension in the data year stand for new State Pension cohorts later, and the part of their reported State Pension between the two flat rates was paid twice. Basic, new and additional State Pension now add up to the reported amount uprated by the flat rate.
+- Council Tax Reduction income now counts Carer Support Payment, which Scottish carers receive in place of Carer's Allowance (Council Tax Reduction (Scotland) Regulations 2021 reg 57(1)(b)(iva); Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg 27(1)(j)). The Scottish Carer Supplement stays out.
+
+
+## [2.113.2] - 2026-10-04
+
+### Fixed
+
+- Deduct from each person's Universal Credit earnings only their own income tax and National Insurance on that employment or self-employment (UC Regs 2013 reg. 55(5)(b), reg. 57(2) step 3), not the whole benefit unit's tax on all income, so tax on pensions, State Pension, property, savings and dividends, the High Income Child Benefit Charge and voluntary Class 3 contributions no longer reduce earned income.
+
+
 ## [2.113.1] - 2026-10-04
 
 ### Changed
