@@ -1,0 +1,31 @@
+description: Weekly amount ineligible for meals, fewer than three meals a day, for the claimant and each family member aged 16 or over.
+values:
+  2008-04-01: 14.35
+  2009-04-01: 15.25
+  2010-04-01: 15.50
+  2011-04-01: 16.00
+  2012-04-01: 16.85
+  2013-04-01: 17.20
+  2014-04-01: 17.65
+  2015-04-01: 17.85
+  2017-04-01: 18.05
+  2019-04-01: 19.05
+  2020-04-01: 19.35
+  2021-04-01: 19.45
+  2022-04-01: 20.05
+  2023-04-01: 22.10
+  2024-04-01: 23.60
+  2025-04-01: 24.00
+  2026-04-01: 24.90
+metadata:
+  unit: currency-GBP
+  period: week
+  label: housing benefit meals deduction, fewer than three meals a day, aged 16 or over
+  reference:
+    - title: Housing Benefit Regulations 2006 Sch 1 para 2(3)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/1/paragraph/2
+    - title: Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Sch 1 para 2(3)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/1/paragraph/2
+    - title: Social Security Benefits Up-rating Order 2026 (S.I. 2026/148) art. 23(4)
+      href: https://www.legislation.gov.uk/uksi/2026/148/article/23
+  note: Amounts from 2008 to 2025 are the point-in-time texts of Sch 1 para 2 on legislation.gov.uk, set by each year's up-rating order (S.I. 2008/632, S.I. 2009/497, S.I. 2010/793, S.I. 2011/821, S.I. 2012/780, S.I. 2013/574, S.I. 2014/516, S.I. 2015/457, S.I. 2017/260, S.I. 2019/480, S.I. 2020/234, S.I. 2021/162, S.I. 2022/292, S.I. 2023/316, S.I. 2024/242, S.I. 2025/295, S.I. 2026/148).
