@@ -32,9 +32,10 @@ also with a dependent young person aged 16 to 19 in non-advanced education:
 3. Receipt: in the unreformed model the Guarantee Credit route is open
    exactly when pension_credit and guarantee_credit are both positive. It
    implies would_claim_pc and that the claimant and any partner are over
-   State Pension age; a dependent young person's age does not matter. That is
-   stricter than the law for a mixed-age couple saved by SI 2019/37 art 4,
-   which is_pension_credit_eligible omits (known departure).
+   State Pension age; a dependent young person's age does not matter. No
+   generated family reports Pension Credit or pension-age Housing Benefit, so
+   the model infers no SI 2019/37 art 4 saving for a generated mixed-age
+   couple. A saved mixed-age couple is in receipt (YAML Case 14).
 4. Differential against main: the fix never adds eligibility, and removes it
    exactly where a guarantee credit is computed, no Pension Credit is paid,
    and no other route is open (intended: the eligible non-claimant).

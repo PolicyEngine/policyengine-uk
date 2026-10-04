@@ -10,15 +10,13 @@ class in_receipt_of_guarantee_credit(Variable):
         "positive. A Guarantee Credit computed for a family that does not "
         "claim Pension Credit, or that the model does not treat as eligible "
         "for it (for example a working-age family), is not received, and "
-        "nor is one under a reform that stops Pension Credit being paid. The "
-        "model's Pension Credit eligibility omits the SI 2019/37 article 4 "
-        "saving, so a member of a mixed-age couple it saves (entitled to "
-        "Pension Credit or Housing Benefit as that couple on 14 May 2019, "
-        "until a later day when entitled to neither as that couple, with "
-        "Universal Credit days after managed migration disregarded) is not "
-        "treated as in receipt. Under the Pension Credit freeze the baseline "
-        "receipt is kept while Pension Credit is still paid, because the "
-        "frozen award is the baseline award."
+        "nor is one under a reform that stops Pension Credit being paid. A "
+        "mixed-age couple that keeps Pension Credit under the SI 2019/37 "
+        "article 4 saving is eligible (meets_pension_credit_age_conditions), "
+        "so it is in receipt when it claims, is paid Pension Credit and its "
+        "Guarantee Credit is positive. Under the Pension Credit freeze the "
+        "baseline receipt is kept while Pension Credit is still paid, because "
+        "the frozen award is the baseline award."
     )
     entity = BenUnit
     definition_period = YEAR

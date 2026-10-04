@@ -48,7 +48,7 @@
     pension_credit: 0
     in_receipt_of_guarantee_credit: false
 
-- name: Case 3, mixed-age couple receives no guarantee credit, because PolicyEngine does not model the SI 2019/37 art 4 saving.
+- name: Case 3, mixed-age couple without the SI 2019/37 art 4 saving receives no guarantee credit.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -66,11 +66,13 @@
       household:
         members: [person1, person2]
   output:
-    # PolicyEngine's is_pension_credit_eligible omits the SI 2019/37 art 4
-    # saving, so no Pension Credit is paid. In law a mixed-age couple saved
-    # by art 4 may be entitled to it. The computed guarantee credit is not
-    # asserted, so the case does not depend on whether it is computed for a
-    # family PolicyEngine treats as ineligible.
+    # From 15 May 2019 SPCA s.4(1A) excludes a mixed-age couple unless
+    # SI 2019/37 art 4 saves it. This couple reports neither Pension Credit
+    # nor pension-age Housing Benefit, so PolicyEngine infers no saving and
+    # pays no Pension Credit. The computed guarantee credit is not asserted,
+    # so the case does not depend on whether it is computed for a family
+    # PolicyEngine treats as ineligible.
+    has_mixed_age_couple_pension_credit_saving: false
     is_pension_credit_eligible: false
     pension_credit: 0
     in_receipt_of_guarantee_credit: false

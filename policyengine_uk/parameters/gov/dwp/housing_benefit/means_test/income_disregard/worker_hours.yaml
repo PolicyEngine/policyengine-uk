@@ -1,11 +1,17 @@
-description: Filers can receive an additional income disregard amount if the meet the following averge weekly work hour quota under the Housing Benefit.
+description: Housing Benefit gives the additional earnings disregard to a claimant or partner aged at least the worker age who works on average at least this many hours a week.
 values:
-  2015-04-01: 30
+  2006-03-06: 30
 metadata:
   period: week
   unit: hour
   label: Housing benefit worker element hours requirement
   economy: false
-  reference: 
-    - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 17 (4)
-      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=242
+  reference:
+    - title: The Housing Benefit Regulations 2006, Schedule 4 paragraph 17(2)(b)(i) and (4)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/17
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, Schedule 4 paragraph 9(2)(b)(i) and (4)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/9
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 5 paragraph 17(2)(b)(i) and (4)
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/17
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006, Schedule 5 paragraph 9(2)(b)(i) and (4)
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/9
