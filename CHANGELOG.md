@@ -1,3 +1,10 @@
+## [2.116.1] - 2026-10-04
+
+### Changed
+
+- Document which Local Housing Allowance category and determination Housing Benefit and Universal Credit each read, and drop Universal Credit test inputs that the published rates no longer use.
+
+
 ## [2.116.0] - 2026-10-04
 
 ### Added
