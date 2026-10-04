@@ -14,6 +14,12 @@ uv run pytest policyengine_uk/tests/path/to/test_file.py::test_name -v
 
 The package supports Python 3.11–3.14. Default branch: `main`.
 
+## Dependencies
+
+Lint, Test and the docs build install exactly what `uv.lock` pins. If you change dependencies in `pyproject.toml`, run `uv lock` and commit `uv.lock`; CI's `uv sync --locked` fails otherwise.
+
+Every Monday, `.github/workflows/weekly-uv-lock.yaml` runs `uv lock --upgrade` on `main` and opens a pull request with the result, or refreshes the one already open. That is how CI moves to new dependency releases. Merge it when its CI passes. If a new release breaks a test, push the fix to that pull request's branch; the workflow then stops refreshing it. To take one release sooner, run `uv lock --upgrade-package <name>` in your own pull request.
+
 ## Writing variables and reforms
 
 Four types of files usually change together:
