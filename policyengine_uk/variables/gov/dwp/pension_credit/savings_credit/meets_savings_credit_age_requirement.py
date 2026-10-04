@@ -1,5 +1,8 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.dates import exact_age_in_months
+from policyengine_uk.utils.dates import (
+    MONTHS_FROM_TAX_YEAR_START_TO_MID_YEAR,
+    exact_age_in_months,
+)
 
 
 class meets_savings_credit_age_requirement(Variable):
@@ -17,7 +20,10 @@ class meets_savings_credit_age_requirement(Variable):
         # State Pension Credit Act 2002 s.3(1)(a): the claimant "has attained
         # pensionable age before 6 April 2016 and has attained the age of 65".
         p = parameters(period).gov.dwp.pension_credit.savings_credit
-        months_from_cutoff_to_mid_year = 12 * (period.start.year - p.cutoff_year) + 6
+        months_from_cutoff_to_mid_year = (
+            12 * (period.start.year - p.cutoff_year)
+            + MONTHS_FROM_TAX_YEAR_START_TO_MID_YEAR
+        )
         reached_before_cutoff = (
             person("months_since_state_pension_age", period)
             > months_from_cutoff_to_mid_year

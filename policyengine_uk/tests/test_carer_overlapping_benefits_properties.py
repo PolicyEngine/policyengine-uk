@@ -37,12 +37,14 @@ component or as a reported amount, and with other overlapping benefits:
    for a pensioner below the personal allowance, Pension Credit income is
    State Pension plus private pension plus the payable carer benefit.
 
-The test takes these conventions from the model, not from the law:
-- State Pension age in 2026 is 66 for both genders. The model's annual
-  approximation places the old/new cutoff at 75 for men and 74 for women:
-  the 2016 pension ages (65 and 64) plus the ten elapsed years. The reference
-  computes the type from these thresholds without reading the model's
-  calculated state_pension_type.
+The reference uses the statutory pension cutoff and these model conventions:
+- Whole ages with the default six months since the last birthday infer
+  6 April birthdays. At 6 October 2026, pensionable age has been attained
+  from age 66; the old State Pension starts at 76 for men and 74 for women.
+  Pensions Act 2014 s. 1(2) requires attainment before 6 April 2016: a man
+  aged 75 was born on 6 April 1951 and attains pensionable age on that
+  cutoff day, so has a new State Pension. The reference computes the type
+  independently of the model's calculated state_pension_type.
 - A State Pension supplied directly, with no components, overlaps in full.
 - A reported old State Pension is split at the full basic rate, and the
   excess is treated as additional pension, which does not overlap. Basic
@@ -77,10 +79,14 @@ OTHER_OVERLAPPING = [
     "incapacity_benefit_reported",
     "maternity_allowance_reported",
 ]
-# From state_pension/age/{male,female}.yaml and the 2016 activation in
-# state_pension/new_state_pension/active.yaml; annual model conventions.
+# Whole ages with the six-month default imply 6 April birthdays. These are
+# the attainment and old-pension thresholds at 6 October 2026, independently
+# of the model's calculated type. Pensions Act 2014 s.1(2) says "before
+# 6 April 2016": men aged 75 attain on that date, whereas those aged 76
+# attained on 6 April 2015. Women born on 6 April 1952 attained on 6 May 2014;
+# those born on 6 April 1953 attained on 6 July 2016 (1995 Act Sch 4 table 1).
 STATE_PENSION_AGE = 66
-OLD_STATE_PENSION_AGE = {"MALE": 65 + YEAR - 2016, "FEMALE": 64 + YEAR - 2016}
+OLD_STATE_PENSION_AGE = {"MALE": 76, "FEMALE": 74}
 
 
 class CarerOverlapSimulation(Simulation):
@@ -291,10 +297,13 @@ def pinned(age, country, mode, pension, additional=0.0, gender="MALE"):
         pinned(80, "SCOTLAND", "components", 2_000, 5_000, "FEMALE"),
         pinned(68, "ENGLAND", "components", 2_000, 1_000, "FEMALE"),
         pinned(68, "SCOTLAND", "components", 2_000, 1_000),
-        # The same age belongs to different systems for men and women in
-        # the model's annual pension-age approximation.
+        # The same inferred birthday belongs to different systems for men
+        # and women under the statutory timetable.
         pinned(74, "ENGLAND", "components", 2_000, 5_000),
         pinned(74, "SCOTLAND", "components", 2_000, 5_000, "FEMALE"),
+        # Attainment on 6 April 2016 means new pension; before it means old.
+        pinned(75, "ENGLAND", "components", 2_000, 5_000),
+        pinned(76, "ENGLAND", "components", 2_000, 5_000),
         pinned(66, "WALES", "components", 2_000, 1_000),
     ]
 )
@@ -308,7 +317,7 @@ def test_overlap_bounds_and_reference(people):
     ref_ca_pre, ref_csp_pre, ref_overlap = reference(people, sim)
 
     # Components are assigned using age and gender, independently of the
-    # model's calculated type. Check the model's annual thresholds as well.
+    # model's calculated type. Check the default-birthday reference as well.
     pension_type = sim.calculate("state_pension_type", YEAR)
     if hasattr(pension_type, "decode_to_str"):
         pension_type = pension_type.decode_to_str()

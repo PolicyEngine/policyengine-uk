@@ -1,0 +1,467 @@
+# Council Tax Reduction where the household's rent, and so its council tax,
+# is shared: each jointly and severally liable family claims on the council
+# tax divided by the number of people jointly liable, and a non-dependant of
+# two or more of them is apportioned equally between them. Joint tenants are
+# not non-dependants.
+# England pensioners SI 2012/2885 reg 9(2)(d), Sch 1 paras 7(3)-(4) and 8(5);
+# Wales SI 2013/3029 reg 9(2)(d), Sch 1 para 2(3)-(5), Sch 6 para 4(3)-(5).
+
+- name: Three sharers and a non-dependant in Wales
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      sharer_1:
+        age: 30
+      sharer_2:
+        age: 45
+      adult_son:
+        age: 22
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      head_family:
+        members: [head]
+        council_tax_reduction_applicable_income: 0
+      sharer_1_family:
+        members: [sharer_1]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+      sharer_2_family:
+        members: [sharer_2]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+      son_family:
+        members: [adult_son]
+    households:
+      home:
+        members: [head, sharer_1, sharer_2, adult_son]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        country: WALES
+        region: WALES
+  output:
+    council_tax_reduction_claimant_benunit: [true, true, true, false]
+    council_tax_reduction_joint_liability_share: [0.333333, 0.333333, 0.333333, 1]
+    # Joint tenants are not non-dependants; the adult son is.
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false, true]
+    # The son's 300 is apportioned equally: 100 each.
+    council_tax_reduction_non_dep_deductions: [100, 100, 100, 0]
+    # 1,800 / 3 x 100% - 100 = 500 each; the son is not liable and cannot claim.
+    simulated_council_tax_reduction_benunit: [500, 500, 500, 0]
+    council_tax_reduction: 1_500
+
+- name: A couple sharing with one other person claims a third of the council tax
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      sharer:
+        age: 30
+    benunits:
+      couple:
+        members: [head, partner]
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [head, partner, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        country: WALES
+        region: WALES
+  output:
+    # The regulations divide by every person jointly liable (three), with no
+    # multiplier for the claimant's partner; the partner-only exception does
+    # not apply because a third person is liable.
+    council_tax_reduction_joint_liability_share: [0.333333, 0.333333]
+    simulated_council_tax_reduction_benunit: [600, 600]
+
+- name: A couple liable only with each other claims the whole council tax
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      partner:
+        age: 40
+      adult_son:
+        age: 22
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      couple:
+        members: [head, partner]
+        council_tax_reduction_applicable_income: 0
+      son_family:
+        members: [adult_son]
+    households:
+      home:
+        members: [head, partner, adult_son]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        country: WALES
+        region: WALES
+  output:
+    # No one outside the couple is jointly liable: no division (para (4)).
+    council_tax_reduction_joint_liability_share: [1, 1]
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_non_dep_deductions: [300, 0]
+    simulated_council_tax_reduction_benunit: [1_500, 0]
+
+- name: A lodger is not a non-dependant of the householder
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 50
+        is_household_head: true
+      lodger:
+        age: 30
+        rent_paid_as_lodger: 5_200
+    benunits:
+      householder_family:
+        members: [householder]
+        council_tax_reduction_applicable_income: 0
+      lodger_family:
+        members: [lodger]
+    households:
+      home:
+        members: [householder, lodger]
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 1_800
+        country: WALES
+        region: WALES
+  output:
+    # SI 2013/3029 reg 9(2)(e): liable to make payments on a commercial basis
+    # to the applicant. A lodger is not jointly liable for council tax, so
+    # the householder claims the whole bill.
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+    council_tax_reduction_joint_liability_share: [1, 1]
+    simulated_council_tax_reduction_benunit: [1_800, 0]
+
+- name: An older parent who is not liable stays the claimant where no rent is shared
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        employment_income: 30_000
+      father:
+        age: 72
+        state_pension: 6_000
+    benunits:
+      head_family:
+        members: [head]
+      father_family:
+        members: [father]
+    households:
+      home:
+        members: [head, father]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        country: ENGLAND
+        region: LONDON
+  output:
+    # No sharer: the oldest adult's family claims, as before, and the
+    # rent-paying head is the father's non-dependant, as before.
+    council_tax_reduction_claimant_benunit: [false, true]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [true, false]
+    simulated_council_tax_reduction_benunit: [0, 0]
+
+- name: A non-liable resident is a non-dependant of the sharers however old
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+      cotenant:
+        age: 35
+      father:
+        age: 72
+        council_tax_reduction_individual_non_dep_deduction: 300
+    benunits:
+      head_family:
+        members: [head]
+        council_tax_reduction_applicable_income: 0
+      cotenant_family:
+        members: [cotenant]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+      father_family:
+        members: [father]
+    households:
+      home:
+        members: [head, cotenant, father]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        country: WALES
+        region: WALES
+  output:
+    council_tax_reduction_claimant_benunit: [true, true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
+    # 300 apportioned equally between the two liable persons: 150 each.
+    council_tax_reduction_non_dep_deductions: [150, 150, 0]
+    # 1,800 / 2 - 150 = 750 each.
+    simulated_council_tax_reduction_benunit: [750, 750, 0]
+
+- name: An excluded student sharer is not counted and does not claim
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 72
+        is_household_head: true
+      student:
+        age: 25
+        in_HE: true
+    benunits:
+      head_family:
+        members: [head]
+        council_tax_reduction_applicable_income: 0
+      student_family:
+        members: [student]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, student]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        country: WALES
+        region: WALES
+  output:
+    # Sch 1 para 7(5) (Wales Sch 1 para 2(5)): the student is left out of
+    # the count, so the pensioner's share is 1; a full-time student is
+    # excluded from entitlement (Default Scheme Sch para 75(1)).
+    council_tax_reduction_joint_liability_share: [1, 0.5]
+    council_tax_reduction_claimant_benunit: [true, false]
+    simulated_council_tax_reduction_benunit: [1_800, 0]
+
+- name: A working-age sharer does not claim under a pensioner co-tenant's scheme
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 70
+        is_household_head: true
+      sharer:
+        age: 40
+    benunits:
+      head_family:
+        members: [head]
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [head, sharer]
+        rent: 15_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+  output:
+    # SI 2012/2885 reg 3: each applicant is a pensioner on their own and
+    # their partner's circumstances. The pensioner claims on half the bill
+    # under the pension-age scheme. The sharer falls under Maidstone's
+    # working-age scheme, which the model does not simulate, so keeps the
+    # reported reduction (none here).
+    council_tax_reduction_claims_are_joint: true
+    council_tax_reduction_claim_pensioner: [true, false]
+    council_tax_reduction_claim_scheme_supported: [true, false]
+    simulated_council_tax_reduction_benunit: [1_000, 0]
+    council_tax_benefit: [1_000, 0]
+
+- name: A pensioner sharer keeps the pension-age scheme beside a mixed-age couple on Universal Credit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 72
+        is_household_head: true
+        state_pension: 9_000
+      partner:
+        age: 55
+      sharer:
+        age: 68
+        state_pension: 9_000
+    benunits:
+      couple:
+        members: [head, partner]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, partner, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        brma: MAIDSTONE
+  output:
+    # The couple has a Universal Credit award with a working-age member, so
+    # is not a pensioner (reg 3(1)(a)(ii)); the single sharer over pension
+    # age is, on her own circumstances. Three people are jointly liable:
+    # 2,000 / 3 = 666.67 for her claim. The couple falls under the
+    # working-age scheme, which is not simulated in Maidstone.
+    council_tax_reduction_pensioner: [false, true]
+    council_tax_reduction_claim_pensioner: [false, true]
+    council_tax_reduction_joint_liability_share: [0.333333, 0.333333]
+    simulated_council_tax_reduction_benunit: [0, 666.67]
+    council_tax_benefit: [0, 666.67]
+
+- name: The same households in the other order give the pensioner the same claim
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 68
+        is_household_head: true
+        state_pension: 9_000
+      sharer:
+        age: 72
+        is_household_head: false
+        state_pension: 9_000
+      sharer_partner:
+        age: 55
+        is_household_head: false
+    benunits:
+      head_family:
+        members: [head]
+      couple:
+        members: [sharer, sharer_partner]
+        liable_for_share_of_household_rent: true
+    households:
+      home:
+        members: [head, sharer, sharer_partner]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        brma: MAIDSTONE
+  output:
+    # The household's oldest person is in the mixed-age couple, whose
+    # Universal Credit award makes it working-age; that does not carry over
+    # to the single pensioner's claim.
+    council_tax_reduction_pensioner: [true, false]
+    council_tax_reduction_claim_pensioner: [true, false]
+    simulated_council_tax_reduction_benunit: [666.67, 0]
+    council_tax_benefit: [666.67, 0]
+
+- name: A sharer on PIP is exempt from non-dependant deductions; the other sharer is not
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 45
+        is_household_head: true
+      sharer:
+        age: 35
+        pip_dl: 3_988.40
+      non_dependant:
+        age: 25
+        employment_income: 20_000
+    benunits:
+      head_family:
+        members: [head]
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      home:
+        members: [head, sharer, non_dependant]
+        rent: 15_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: OXFORD
+  output:
+    # Oxford's scheme exempts an applicant who, or whose partner, gets the
+    # PIP daily living component (as SI 2012/2886 Sch para 30(6)); the
+    # exemption is the applicant's own. The non-dependant's 270.40 is
+    # apportioned between the two jointly liable people: 135.20 each, and
+    # nothing from the exempt sharer.
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, true, false]
+    oxford_council_tax_reduction_non_dep_deductions: [135.20, 0, 0]
+    # 2,000 / 2 = 1,000 each, less the head's 135.20.
+    oxford_council_tax_reduction: [864.80, 1_000, 0]
+    council_tax_benefit: [864.80, 1_000, 0]
+
+- name: The head's PIP does not exempt the other sharer's claim
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 45
+        is_household_head: true
+        pip_dl: 3_988.40
+      sharer:
+        age: 35
+      non_dependant:
+        age: 25
+        employment_income: 20_000
+    benunits:
+      head_family:
+        members: [head]
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      home:
+        members: [head, sharer, non_dependant]
+        rent: 15_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 2_000
+        country: ENGLAND
+        region: SOUTH_EAST
+        local_authority: OXFORD
+  output:
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false, false]
+    oxford_council_tax_reduction_non_dep_deductions: [0, 135.20, 0]
+    oxford_council_tax_reduction: [1_000, 864.80, 0]
+    council_tax_benefit: [1_000, 864.80, 0]
