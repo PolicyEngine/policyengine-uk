@@ -304,14 +304,13 @@
     council_tax_reduction_scheme_supported: true
 
 - name: In Wales the cap reaches Council Tax Reduction through Universal Credit income
-  # The model's Welsh formula does not route on pensioner status, but it
-  # counts Universal Credit as income. Capping a mixed-age couple's award
-  # (cap 22,020 outside London; 30,000 + 3,000 - 22,020 = 10,980) lowers that
-  # income and so raises the reduction. Without the cap Universal Credit of
-  # 30,000 would take income far above the applicable amount. 1,582.84 is the
-  # model's pension-age formula, not the law: the Welsh route for Universal
-  # Credit applicants (WSI 2013/3029 Sch 6 paras 3 and 9) would give this
-  # family the maximum reduction, which the model does not yet implement.
+  # A mixed-age couple on Universal Credit is not a CTR pensioner, so the
+  # Welsh route for Universal Credit applicants applies (WSI 2013/3029 Sch 6
+  # paras 3 and 9): the applicable amount is the UC maximum amount (30,000)
+  # and income is the Secretary of State's income (nil) plus the award after
+  # the cap (cap 22,020 outside London; 30,000 + 3,000 - 22,020 = 10,980 off,
+  # leaving 19,020). Income is below the applicable amount, so the family gets
+  # the maximum reduction.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -325,6 +324,7 @@
     benunits:
       benunit:
         members: [older, younger, child]
+        uc_maximum_amount: 30_000
         universal_credit_pre_benefit_cap: 30_000
         child_benefit: 3_000
         uc_deductions: 0
@@ -339,5 +339,7 @@
   output:
     benefit_cap_reduction: 10_980
     universal_credit: 19_020
-    council_tax_reduction_applicable_income: 22_020
-    council_tax_benefit: 1_582.84
+    council_tax_reduction_devolved_working_age: true
+    council_tax_reduction_working_age_applicable_amount: 30_000
+    council_tax_reduction_working_age_applicable_income: 19_020
+    council_tax_benefit: 2_000

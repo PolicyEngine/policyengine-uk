@@ -611,7 +611,9 @@
 
 - name: Scotland, the £17.10 needs employed earnings from April 2022
   # Sch 3 para 15(1): a self-employed lone parent gets only the £25 disregard
-  # (1,300 a year). Applicable amount (95.55 + 109.85) x 52 = 10,680.80.
+  # (1,300 a year). Earnings 15,000 less income tax 461.70 and Class 4 NI
+  # 145.80 = 14,392.50; income 13,092.50; applicable amount (95.55 + 109.85)
+  # x 52 = 10,680.80; award 1,800 - 0.2 x 2,411.70 = 1,317.66.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -636,7 +638,7 @@
         savings: 0
   output:
     council_tax_reduction_working_age_earnings_disregard: 1_300
-    simulated_council_tax_reduction_benunit: 1_279.66
+    simulated_council_tax_reduction_benunit: 1_317.66
 
 - name: Scotland, an employed lone parent working 30 hours gets the £17.10
   # (25 + 17.10) x 52 = 2,189.20.
