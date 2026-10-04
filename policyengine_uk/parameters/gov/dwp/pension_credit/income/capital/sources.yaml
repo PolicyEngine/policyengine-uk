@@ -5,7 +5,7 @@ description: >
   (Part I) disregard the value of the right to receive income from an
   occupational or personal pension scheme or under a retirement annuity
   contract; the notional income rule for undrawn money purchase pots
-  (regulation 18) is not modelled.
+  (regulation 18) is not modelled. `directly_held_shares`, `unit_and_investment_trusts` and `stocks_and_shares_isa` hold the share-like assets the means tests value separately, and `unitemised_corporate_wealth` holds any part of `corporate_wealth` a dataset does not itemise into them: all of it on datasets without the components, and nil on datasets that build `corporate_wealth` as their exact sum. `corporate_wealth` itself is not listed, so no holding counts twice.
 metadata:
   label: Pension Credit capital sources
   unit: list
@@ -25,4 +25,7 @@ values:
     - owned_land
     - other_residential_property_value
     - non_residential_property_value
-    - corporate_wealth
+    - directly_held_shares
+    - unit_and_investment_trusts
+    - stocks_and_shares_isa
+    - unitemised_corporate_wealth

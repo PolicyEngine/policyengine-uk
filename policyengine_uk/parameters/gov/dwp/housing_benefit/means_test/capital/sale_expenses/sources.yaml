@@ -7,14 +7,29 @@ description: >
   `other_residential_property_value` and `non_residential_property_value` are
   listed. `savings` is not listed: a bank or building society account is
   valued at its balance, and the costs of withdrawing money are not costs of
-  sale (HBGM BW1 Annex F and BP1 F2.03). `corporate_wealth` is listed because
-  shares are valued less 10% for the costs of selling them (HBGM W1.513). It
-  is a mixed variable, though: it also holds unit trusts, which have no costs
-  of sale (HBGM W1.530-W1.531), stocks and shares ISAs and employee share
-  options, and datasets built before private pension wealth was split out also
-  fold non-defined-benefit pension wealth into it, which is not capital at
-  all. The deduction reaches all of these until the data separate them.
-  Sources not counted as Housing Benefit capital are ignored.
+  sale (HBGM BW1 Annex F and BP1 F2.03). `directly_held_shares` is listed
+  because shares are valued less 10% for selling costs (HBGM W1.513 and
+  P1.513). `unit_and_investment_trusts` is deliberately not listed: unit trust
+  holdings are valued at the bid price, which already takes account of the
+  selling expenses, and the 10% is not deducted even if they could be sold
+  through a bank or stockbroker (HBGM W1.530-W1.531 and P1.530-P1.531).
+  Investment trusts are not named in the guidance and, as listed company
+  shares, arguably take the 10%, but the Wealth and Assets Survey asks about
+  unit and investment trusts in one question, so the whole bucket is treated
+  as having no costs of sale. That approximation counts investment trusts at
+  full value; HMRC ISA statistics (table 9.6) put investment trusts at about 7%
+  to 8% of the pooled funds held in stocks and shares ISAs (8.2% at 5 April
+  2022, 6.9% at 5 April 2025). `stocks_and_shares_isa` is deliberately not listed either: the HB
+  guidance manual has no ISA paragraph, and the DWP guidance on the parallel
+  Income Support and JSA rule values an ISA at what the person would get by
+  withdrawing it, with no ISA paragraph applying the 10% (DMG 29662-29664).
+  `unitemised_corporate_wealth` is listed so that datasets which do not
+  itemise `corporate_wealth` keep its previous flat treatment: there it equals
+  `corporate_wealth`, which mixes shares with unit trusts, stocks and shares
+  ISAs and employee share options, and, on datasets built before private
+  pension wealth was split out, non-defined-benefit pension wealth, which is
+  not capital at all. The deduction reaches all of these until the data
+  separate them. Sources not counted as Housing Benefit capital are ignored.
 metadata:
   label: Housing Benefit capital sources with sale expenses
   period: year
@@ -40,6 +55,8 @@ metadata:
       href: https://assets.publishing.service.gov.uk/media/5a749328ed915d0e8e3994c0/hbgm-bw1-assessment-of-capital.pdf#page=43
     - title: Housing Benefit Guidance Manual BP1, paras. P1.513 and P1.530-P1.531
       href: https://assets.publishing.service.gov.uk/media/5a7ec5d840f0b6230268b71f/hbgm-bp1-assessment-of-capital.pdf#page=38
+    - title: Decision Makers' Guide chapter 29, paras. 29662-29664 (ISAs, parallel IS and JSA guidance)
+      href: https://assets.publishing.service.gov.uk/media/69d8f3a496c86b751317022c/dmg-Ch-29.pdf#page=135
     - title: Housing Benefit Guidance Manual BW1, Annex F
       href: https://assets.publishing.service.gov.uk/media/5a749328ed915d0e8e3994c0/hbgm-bw1-assessment-of-capital.pdf#page=93
     - title: Housing Benefit Guidance Manual BP1, paras. F2.00-F2.03
@@ -49,4 +66,5 @@ values:
     - owned_land
     - other_residential_property_value
     - non_residential_property_value
-    - corporate_wealth
+    - directly_held_shares
+    - unitemised_corporate_wealth

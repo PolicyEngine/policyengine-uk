@@ -57,3 +57,39 @@ def test_pension_credit_capital_stocks_are_not_prorated_monthly():
         simulation.calculate("pension_credit_assessable_capital", "2026-01")[0]
         == 33_600
     )
+
+
+def test_itemised_share_like_stocks_are_not_prorated_monthly():
+    stocks = {
+        "savings": 1_000,
+        "corporate_wealth": 12_000,
+        "directly_held_shares": 4_000,
+        "unit_and_investment_trusts": 3_000,
+        "stocks_and_shares_isa": 2_000,
+    }
+    for age, capital in (
+        (30, "uc_assessable_capital"),
+        (70, "pension_credit_assessable_capital"),
+    ):
+        situation = {
+            "people": {"person": {"age": {"2026": age}}},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {
+                "household": {
+                    "members": ["person"],
+                    **{name: {"2026": value} for name, value in stocks.items()},
+                }
+            },
+        }
+        simulation = Simulation(situation=situation)
+
+        for name, value in stocks.items():
+            assert simulation.calculate(name, "2026-01")[0] == value, name
+        # 12,000 less the 9,000 itemised.
+        assert simulation.calculate("unitemised_corporate_wealth", "2026-01")[0] == (
+            3_000
+        )
+        # Shares and the unitemised residual less 10% for the expenses of
+        # sale; unit trusts and the ISA at their withdrawal value:
+        # 1,000 + 3,600 + 3,000 + 2,000 + 2,700.
+        assert simulation.calculate(capital, "2026-01")[0] == 12_300, capital

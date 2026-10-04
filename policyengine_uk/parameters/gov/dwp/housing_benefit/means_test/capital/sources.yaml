@@ -3,10 +3,9 @@ description: >
   The Housing Benefit Regulations 2006 treat the whole of a claimant's capital
   as assessable unless it is disregarded under Schedule 6. The current mappings
   are `savings` for liquid capital, `owned_land` for land held directly,
-  `corporate_wealth` as the broad available proxy for share-like financial
-  assets such as stocks, shares, unit trusts, and investment ISAs,
+  the share-like sources,
   `other_residential_property_value` for residential property other than the
-  home, and `non_residential_property_value` for other land and premises.
+  home, and `non_residential_property_value` for other land and premises. `directly_held_shares`, `unit_and_investment_trusts` and `stocks_and_shares_isa` hold the share-like assets the means tests value separately, and `unitemised_corporate_wealth` holds any part of `corporate_wealth` a dataset does not itemise into them: all of it on datasets without the components, and nil on datasets that build `corporate_wealth` as their exact sum. `corporate_wealth` itself is not listed, so no holding counts twice.
   `main_residence_value` is excluded because Schedule 6 paragraph 1 disregards
   premises occupied as the claimant's home. `private_pension_wealth` is
   excluded because Schedule 6 paragraphs 31 and 32 disregard the value of the
@@ -15,7 +14,7 @@ description: >
   pension-age regulations and paragraphs 32 and 33 of Schedule 7 to the
   Northern Ireland regulations make the same disregard). Datasets built before
   private pension wealth was split out of `corporate_wealth` still carry it
-  inside that countable bucket. Other Schedule 6 disregards within these broad
+  inside `unitemised_corporate_wealth`. Other Schedule 6 disregards within these broad
   asset classes are not yet split out separately. Because the
   dataset only provides household-level capital stocks, the model allocates
   them across benunits using an adult-share proxy.
@@ -42,6 +41,9 @@ values:
   2006-04-10:
     - savings
     - owned_land
-    - corporate_wealth
+    - directly_held_shares
+    - unit_and_investment_trusts
+    - stocks_and_shares_isa
+    - unitemised_corporate_wealth
     - other_residential_property_value
     - non_residential_property_value
