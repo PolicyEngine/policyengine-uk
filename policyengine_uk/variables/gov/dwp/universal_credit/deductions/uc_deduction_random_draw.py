@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.stochastic import splitmix64_uniform
 
 
@@ -21,7 +22,7 @@ class uc_deduction_random_draw(Variable):
         # weight it carries: a constituency filtered from the national data is
         # still data. Household situations get 1.0, which never falls below
         # any incidence, so calculators get no deductions unless set.
-        if not getattr(benunit.simulation, "built_from_dataset", False):
+        if not built_from_data(benunit.simulation):
             return np.ones(benunit.count)
         ids = benunit("benunit_id", period)
         return splitmix64_uniform(ids, salt=0)

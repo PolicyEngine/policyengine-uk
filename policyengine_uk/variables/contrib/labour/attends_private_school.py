@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.data_source import built_from_data
 
 
 def interpolate_percentile(param, percentile):
@@ -39,7 +40,7 @@ class attends_private_school(Variable):
         # constituency filtered from them. A household situation has no
         # income distribution to rank within, so it attends no private school
         # unless set.
-        if not getattr(person.simulation, "built_from_dataset", False):
+        if not built_from_data(person.simulation):
             return 0
         household = person.household
         # To ensure that our model matches

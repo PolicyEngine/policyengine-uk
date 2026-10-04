@@ -19,6 +19,7 @@ from policyengine_uk.data import (
     UKSingleYearDataset,
     filter_dataset,
 )
+from policyengine_uk.utils.data_source import built_from_data
 from policyengine_uk.utils.stochastic import splitmix64_uniform
 
 YEAR = 2025
@@ -31,8 +32,32 @@ UC_OUTPUTS = (
     "uc_deductions",
 )
 # Weight per household for a national-scale population: 400 households carry
-# about 2.3m of weight, a quarter of them (one region) about 0.6m.
-NATIONAL_SCALE = 5_000
+# about 1.6m of weight. One region (a quarter of them) carries about 0.4m, or
+# 0.8m of people, under the old threshold of a million for both.
+NATIONAL_SCALE = 3_500
+SITUATION = {
+    "people": {
+        "adult": {"age": {YEAR: 35}},
+        "child": {
+            "age": {YEAR: 10},
+            "attends_private_school_random_draw": {YEAR: 0},
+        },
+    },
+    "benunits": {
+        "benunit": {
+            "members": ["adult", "child"],
+            "would_claim_uc": {YEAR: True},
+            "universal_credit_pre_benefit_cap": {YEAR: 6_000},
+            "benefit_cap_reduction": {YEAR: 0},
+        }
+    },
+    "households": {
+        "household": {
+            "members": ["adult", "child"],
+            "household_weight": {YEAR: 1e9},
+        }
+    },
+}
 
 
 def tables(n: int = 400, weight_scale: float = 1.0) -> dict:
@@ -72,7 +97,7 @@ def tables(n: int = 400, weight_scale: float = 1.0) -> dict:
     return {"person": person, "benunit": benunit, "household": household}
 
 
-def data_simulation(t: dict) -> Microsimulation:
+def multi_year(t: dict) -> UKMultiYearDataset:
     # Copies: building encodes enum columns in place.
     year = UKSingleYearDataset(
         person=t["person"].copy(),
@@ -80,7 +105,11 @@ def data_simulation(t: dict) -> Microsimulation:
         household=t["household"].copy(),
         fiscal_year=YEAR,
     )
-    return Microsimulation(dataset=UKMultiYearDataset(datasets=[year]))
+    return UKMultiYearDataset(datasets=[year])
+
+
+def data_simulation(t: dict) -> Microsimulation:
+    return Microsimulation(dataset=multi_year(t))
 
 
 def row_filter(t: dict, keep) -> dict:
@@ -140,8 +169,11 @@ def test_region_filtered_from_data_matches_the_national_run(national):
     deductions it has in the national simulation."""
     t, sim = national
     region = row_filter(t, lambda h: h.region == "LONDON")
-    # A constituency-sized share of a national-sized population.
-    assert region["household"].household_weight.sum() < 1e6
+    # A small share of a national-sized population: under the old threshold
+    # for benefit units, and for people (the old private school test summed
+    # household weight over people).
+    weight = region["household"].set_index("household_id").household_weight
+    assert weight.loc[region["person"].person_household_id].sum() < 1e6
     regional = data_simulation(region)
     kept = np.isin(t["benunit"].benunit_id, region["benunit"].benunit_id)
     for variable in UC_OUTPUTS:
@@ -196,31 +228,56 @@ def test_data_without_weight_attends_no_private_school():
 
 def test_situations_get_defaults_whatever_their_weight():
     """A household situation is not data, even with the weight of a nation."""
-    situation = {
-        "people": {
-            "adult": {"age": {YEAR: 35}},
-            "child": {
-                "age": {YEAR: 10},
-                "attends_private_school_random_draw": {YEAR: 0},
-            },
-        },
-        "benunits": {
-            "benunit": {
-                "members": ["adult", "child"],
-                "would_claim_uc": {YEAR: True},
-                "universal_credit_pre_benefit_cap": {YEAR: 6_000},
-                "benefit_cap_reduction": {YEAR: 0},
-            }
-        },
-        "households": {
-            "household": {
-                "members": ["adult", "child"],
-                "household_weight": {YEAR: 1e9},
-            }
-        },
-    }
-    sim = Simulation(situation=situation)
+    sim = Simulation(situation=SITUATION)
+    assert not built_from_data(sim)
     for draw in DRAWS:
         assert values(sim, draw)[0] == 1.0
     assert values(sim, "uc_deductions")[0] == 0
     assert not values(sim, "attends_private_school").any()
+
+
+def test_rebuilding_in_place_follows_the_new_source():
+    """The builders set the flag, so a data simulation rebuilt from a
+    situation gets household defaults, and a situation rebuilt from data gets
+    the imputations."""
+    data = tables(n=40, weight_scale=NATIONAL_SCALE)
+    sim = data_simulation(data)
+    sim.build_from_situation(SITUATION)
+    assert not built_from_data(sim)
+    for draw in DRAWS:
+        assert values(sim, draw)[0] == 1.0
+    assert not values(sim, "attends_private_school").any()
+
+    sim = Simulation(situation=SITUATION)
+    sim.build_from_multi_year_dataset(multi_year(data))
+    assert built_from_data(sim)
+    ids = values(sim, "benunit_id")
+    for salt, draw in enumerate(DRAWS):
+        expected = splitmix64_uniform(ids, salt=salt).astype(np.float32)
+        assert np.array_equal(values(sim, draw), expected), draw
+    assert values(sim, "attends_private_school").any()
+
+
+def test_core_simulation_over_data_gets_imputations():
+    """A policyengine-core Simulation built over the UK system from data
+    records is_over_dataset rather than built_from_dataset."""
+    from policyengine_core.simulations import Simulation as CoreSimulation
+
+    from policyengine_uk.system import system
+
+    t = tables(n=40, weight_scale=NATIONAL_SCALE)
+    frame = (
+        t["person"]
+        .merge(t["benunit"], left_on="person_benunit_id", right_on="benunit_id")
+        .merge(t["household"], left_on="person_household_id", right_on="household_id")
+    )
+    sim = CoreSimulation(
+        tax_benefit_system=system,
+        dataset=frame.rename(columns=lambda column: f"{column}__{YEAR}"),
+    )
+    assert built_from_data(sim)
+    ids = values(sim, "benunit_id")
+    for salt, draw in enumerate(DRAWS):
+        expected = splitmix64_uniform(ids, salt=salt).astype(np.float32)
+        assert np.array_equal(values(sim, draw), expected), draw
+    assert values(sim, "attends_private_school").any()
