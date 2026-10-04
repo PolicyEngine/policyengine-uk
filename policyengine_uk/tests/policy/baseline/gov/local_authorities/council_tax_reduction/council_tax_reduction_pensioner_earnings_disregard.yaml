@@ -419,12 +419,14 @@
     council_tax_reduction_pensioner_earnings_disregard: 0
 
 - name: England pensioner with State Pension and earnings has 5 a week of earnings disregarded in CTR
+  # Aged 72: State Pension age was reached in 2019, before 1 April 2021, so
+  # the higher personal allowance applies (SI 2012/2885 Sch 2 para 1).
   period: 2026
   absolute_error_margin: 0.01
   input:
     people:
       pensioner:
-        age: 70
+        age: 72
         state_pension: 15_000
         employment_income: 1_000
     benunits:

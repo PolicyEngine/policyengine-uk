@@ -1,0 +1,310 @@
+# Pension-age Housing Benefit personal allowances by when State Pension age was
+# attained: SI 2006/214 Sch 3 para 1 (NI: SR 2006/406 Sch 4 para 1), as amended
+# by SI 2021/188 from 1 April 2021. Higher rates (1)(b)/(2)(b) where a member
+# attained pensionable age before 1 April 2021; lower rates (1)(c)/(2)(c) where
+# every member attained it on or after. Amounts are the Up-rating Order rates.
+# Each date of birth is placed by age and months_since_last_birthday, both
+# measured at 6 October of the fiscal year.
+
+- name: Single woman who attained State Pension age on 31 March 2021 keeps the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.19355
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_applicable_amount: 256.00 * 52  # para 1(1)(b), claimant attained 31 March 2021
+
+- name: Single man who attained State Pension age on 1 April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: true
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 238.00 * 52  # para 1(1)(c), claimant attained 1 April 2021
+
+- name: Single person aged 80 gets the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        months_since_last_birthday: 4.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_applicable_amount: 256.00 * 52  # para 1(1)(b), claimant attained 1 June 2006
+
+- name: Single person aged 70 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 238.00 * 52  # para 1(1)(c), claimant attained 6 April 2022
+
+- name: In 2021-22, a single person who attained State Pension age on 31 March 2021 gets the higher rate
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 66
+        months_since_last_birthday: 6.19355
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_applicable_amount: 191.15 * 52  # para 1(1)(b), claimant attained 31 March 2021
+
+- name: In 2021-22, a single person who attained State Pension age on 1 April 2021 gets the lower rate
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 66
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 177.10 * 52  # para 1(1)(c), claimant attained 1 April 2021
+
+- name: Couple where one member attained State Pension age before April 2021 gets the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 80
+        months_since_last_birthday: 4.1613
+        is_male: true
+      younger:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_applicable_amount: 383.35 * 52  # para 1(2)(b), older attained 1 June 2011, younger attained 6 April 2022
+
+- name: Couple where both attained State Pension age after April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 68
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 363.25 * 52  # para 1(2)(c), older attained 6 April 2022, younger attained 1 January 2024
+
+- name: Couple on either side of the cutoff by one day gets the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 71
+        months_since_last_birthday: 6.19355
+        is_male: true
+      younger:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_applicable_amount: 383.35 * 52  # para 1(2)(b), older attained 31 March 2021, younger attained 1 April 2021
+
+- name: Mixed-age couple whose older member attained State Pension age after April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 60
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 363.25 * 52  # para 1(2)(c), older attained 6 April 2022, younger attained 1 January 2033
+
+- name: Mixed-age couple whose older member attained State Pension age before April 2021 gets the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 80
+        months_since_last_birthday: 4.1613
+        is_male: true
+      younger:
+        age: 60
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: true
+    housing_benefit_applicable_amount: 383.35 * 52  # para 1(2)(b), older attained 1 June 2011, younger attained 1 January 2033
+
+- name: Pension-age lone parent who attained State Pension age after April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: false
+      grandchild:
+        age: 12
+    benunits:
+      benunit:
+        members: [claimant, grandchild]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    is_lone_parent: true
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 238.00 * 52  # para 1(1)(c)
+
+- name: Before April 2021 every pension-age unit counts as attaining State Pension age before the cutoff
+  period: 2020
+  input:
+    people:
+      claimant:
+        age: 66
+        months_since_last_birthday: 0.0
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: true
+
+- name: Private renter aged 70 with a £30,000 State Pension is assessed at the lower rate
+  # The reported household. Income is 30,000 less 3,486 income tax; with no
+  # earnings there is no earnings disregard. At the lower rate,
+  # 9,000 - 0.65 x (26,514 - 238 x 52) is below zero. The higher rate would
+  # give 9,000 - 0.65 x (26,514 - 256 x 52) = 418.70.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 30_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 238 * 52
+    housing_benefit_applicable_income: 26_514
+    housing_benefit: 0
+
+- name: A council tenant aged 70 with the same income and £12,000 rent gets 608.40 a year less than at the higher rate
+  # A council tenancy, so the Local Housing Allowance does not cap the rent.
+  # 12,000 - 0.65 x (26,514 - 238 x 52) = 2,810.30; at the higher rate it would
+  # be 3,418.70, so the lower rate costs 0.65 x (256 - 238) x 52 = 608.40.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 30_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 12_000
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_attained_pension_age_before_cutoff: false
+    housing_benefit_applicable_amount: 238 * 52
+    housing_benefit: 2_810.30

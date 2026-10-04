@@ -1,0 +1,157 @@
+# Pension-age Council Tax Reduction personal allowances by country. England's
+# prescribed requirements (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29) give
+# the lower rates where every member attained State Pension age on or after
+# 1 April 2021; the Scottish (SSI 2012/319 Sch 1 para 2) and Welsh (SI 2013/3029
+# Sch 2 para 1) schemes have one pension-age rate. Amounts are for 2026-27.
+
+- name: In England, a single person who attained State Pension age on 31 March 2021 gets the higher rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.19355
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: LONDON
+  output:
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: In England, a single person who attained State Pension age on 1 April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    council_tax_reduction_applicable_amount: 238.00 * 52
+
+- name: In England, a couple who both attained State Pension age after April 2021 get the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 68
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: SOUTH_WEST
+  output:
+    council_tax_reduction_applicable_amount: 363.25 * 52
+
+- name: In Scotland, a single person who attained State Pension age on 1 April 2021 keeps the one pension-age rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: In Scotland, a couple who both attained State Pension age after April 2021 keep the one pension-age rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 68
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: SCOTLAND
+  output:
+    council_tax_reduction_applicable_amount: 383.35 * 52
+
+- name: In Wales, a single person who attained State Pension age on 1 April 2021 keeps the one pension-age rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 71
+        months_since_last_birthday: 6.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [claimant]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+  output:
+    council_tax_reduction_applicable_amount: 256.00 * 52
+
+- name: In England, a mixed-age couple whose older member attained State Pension age after April 2021 gets the lower rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 6.0
+        is_male: true
+      younger:
+        age: 60
+        months_since_last_birthday: 9.1613
+        is_male: false
+    benunits:
+      benunit:
+        members: [older, younger]
+        benefits_premiums: 0
+    households:
+      household:
+        members: [older, younger]
+        region: EAST_MIDLANDS
+  output:
+    council_tax_reduction_applicable_amount: 363.25 * 52
