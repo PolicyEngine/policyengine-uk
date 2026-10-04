@@ -271,7 +271,7 @@ class Simulation(CoreSimulation):
         Args:
             situation: Dictionary describing household composition and characteristics
         """
-        self.built_from_dataset = False
+        self._start_new_population(built_from_dataset=False)
         self.build_from_populations(self.tax_benefit_system.instantiate_entities())
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
@@ -521,6 +521,17 @@ class Simulation(CoreSimulation):
 
         self.dataset = dataset
 
+    def _start_new_population(self, built_from_dataset: bool) -> None:
+        """Record the new population's source, and drop what the simulation
+        cached for the previous one, so rebuilding in place (e.g. a clone)
+        never reads arrays sized for the old population."""
+        self.built_from_dataset = built_from_dataset
+        if getattr(self, "_fast_cache", None) is not None:
+            self._fast_cache = {}
+        if getattr(self, "_user_input_keys", None) is not None:
+            # A clone shares this set with its original, so replace it.
+            self._user_input_keys = set()
+
     def build_from_ids(
         self,
         person_id: np.ndarray,
@@ -539,7 +550,7 @@ class Simulation(CoreSimulation):
             household_id: Array of household IDs
         """
         # Every data source (DataFrame, dataset, file, URL) builds through here.
-        self.built_from_dataset = True
+        self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency

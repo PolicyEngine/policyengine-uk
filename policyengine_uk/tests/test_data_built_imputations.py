@@ -236,21 +236,38 @@ def test_situations_get_defaults_whatever_their_weight():
     assert not values(sim, "attends_private_school").any()
 
 
+def calculate_imputations(sim) -> None:
+    """Fill the simulation's caches for its current population."""
+    for variable in (
+        *DRAWS,
+        "attends_private_school",
+        "months_since_last_birthday",
+        "person_weight",
+        "is_male",
+    ):
+        values(sim, variable)
+
+
 def test_rebuilding_in_place_follows_the_new_source():
-    """The builders set the flag, so a data simulation rebuilt from a
-    situation gets household defaults, and a situation rebuilt from data gets
-    the imputations."""
+    """The builders set the flag and drop what was cached for the old
+    population, so a calculated clone rebuilt from a situation gets household
+    defaults, and one rebuilt from data gets the imputations."""
     data = tables(n=40, weight_scale=NATIONAL_SCALE)
-    sim = data_simulation(data)
+    sim = data_simulation(data).clone()
+    calculate_imputations(sim)
     sim.build_from_situation(SITUATION)
     assert not built_from_data(sim)
     for draw in DRAWS:
         assert values(sim, draw)[0] == 1.0
     assert not values(sim, "attends_private_school").any()
 
-    sim = Simulation(situation=SITUATION)
+    assert values(sim, "months_since_last_birthday").tolist() == [6, 6]
+
+    sim = Simulation(situation=SITUATION).clone()
+    calculate_imputations(sim)
     sim.build_from_multi_year_dataset(multi_year(data))
     assert built_from_data(sim)
+    assert values(sim, "months_since_last_birthday").shape == (80,)
     ids = values(sim, "benunit_id")
     for salt, draw in enumerate(DRAWS):
         expected = splitmix64_uniform(ids, salt=salt).astype(np.float32)
