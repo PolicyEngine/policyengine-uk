@@ -1,0 +1,319 @@
+# Class 4 profits: SSCBA 1992 s. 15(1)(b) and Sch. 2 paras. 2-3.
+# Class 4 is charged on the profits chargeable to income tax under ITTOIA 2005
+# Part 2 Chapter 2, which are after capital allowances (CAA 2001 s. 247) and
+# the trading allowance (ITTOIA 2005 ss. 783AF and 783AI; HMRC BIM86052), less
+# trading losses as Sch. 2 para. 3 allows.
+# 2026-27: lower profits limit £12,570, upper profits limit £50,270, main rate
+# 6%, additional rate 2%.
+
+- name: Capital allowances reduce Class 4 profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+    capital_allowances: 5_000
+  output:
+    ni_class_4_profits_before_losses: 25_000
+    ni_class_4_profits: 25_000
+    # (25,000 - 12,570) * 6%
+    ni_class_4_main: 745.80
+    ni_class_4: 745.80
+
+- name: Partial trading allowance with receipts known (s. 783AI)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # £300 of expenses: the £1,000 allowance is worth £700 more.
+    self_employment_gross_receipts: 20_300
+    self_employment_income: 20_000
+  output:
+    ni_class_4_profits: 19_300
+    # (19,300 - 12,570) * 6%
+    ni_class_4: 403.80
+
+- name: The trading allowance replaces expenses and capital allowances
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Expenses £300 and capital allowances £400 are both replaced by the
+    # £1,000 allowance: 20,300 - 1,000 = 19,300.
+    self_employment_gross_receipts: 20_300
+    self_employment_income: 20_000
+    capital_allowances: 400
+  output:
+    ni_class_4_profits_before_losses: 19_300
+    ni_class_4_profits: 19_300
+    ni_class_4: 403.80
+
+- name: No trading allowance where expenses exceed it
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_gross_receipts: 22_000
+    self_employment_income: 20_000
+  output:
+    ni_class_4_profits: 20_000
+    # (20,000 - 12,570) * 6%
+    ni_class_4: 445.80
+
+- name: Receipts within the allowance give nil profits (s. 783AF)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_gross_receipts: 950
+    self_employment_income: 700
+  output:
+    ni_class_4_profits_before_losses: 0
+    ni_class_4_profits: 0
+    ni_class_4: 0
+
+- name: The current year's trading loss reduces Class 4 profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+    trading_loss: 4_000
+  output:
+    ni_class_4_loss_relief: 4_000
+    ni_class_4_losses_carried_forward: 0
+    ni_class_4_profits: 26_000
+    # (26,000 - 12,570) * 6%
+    ni_class_4: 805.80
+
+- name: A loss is set only against trade profits, and the rest carried forward
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Sch. 2 para. 3(4): even where income tax sets the loss against
+    # employment income, for Class 4 it reduces trade profits only.
+    employment_income: 40_000
+    self_employment_income: 5_000
+    trading_loss: 8_000
+  output:
+    ni_class_4_loss_relief: 5_000
+    ni_class_4_losses_carried_forward: 3_000
+    ni_class_4_profits: 0
+    ni_class_4: 0
+
+- name: A loss from a loss-making year is brought forward in full
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income:
+      2025: 0
+      2026: 30_000
+    trading_loss:
+      2025: 10_000
+      2026: 0
+  output:
+    ni_class_4_losses_brought_forward: 10_000
+    ni_class_4_loss_relief: 10_000
+    ni_class_4_profits: 20_000
+    # (20,000 - 12,570) * 6%
+    ni_class_4: 445.80
+
+- name: In the loss year, the loss uses up that year's other trade profits first
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income:
+      2025: 6_000
+      2026: 30_000
+    trading_loss:
+      2025: 10_000
+      2026: 0
+  output:
+    ni_class_4_loss_relief: 6_000
+    ni_class_4_profits: 0
+    ni_class_4_losses_carried_forward: 4_000
+
+- name: Only the unrelieved part of a loss is brought forward
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income:
+      2025: 6_000
+      2026: 30_000
+    trading_loss:
+      2025: 10_000
+      2026: 0
+  output:
+    # 10,000 loss less 6,000 relieved against 2025 profits.
+    ni_class_4_losses_brought_forward: 4_000
+    ni_class_4_profits: 26_000
+    # (26,000 - 12,570) * 6%
+    ni_class_4: 805.80
+
+- name: Class 4 losses carry forward until used (Sch. 2 para. 3(4)(b))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income:
+      2024: 0
+      2025: 20_000
+      2026: 60_000
+    trading_loss:
+      2024: 50_000
+      2025: 0
+      2026: 0
+  output:
+    # 50,000 from 2024, less 20,000 used in 2025.
+    ni_class_4_losses_brought_forward: 30_000
+    ni_class_4_loss_relief: 30_000
+    ni_class_4_profits: 30_000
+    # (30,000 - 12,570) * 6%
+    ni_class_4: 1_045.80
+
+- name: A loss entered for one year only is relieved once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Sch. 2 para. 3(4)(b): only the excess of a loss reduces later years'
+    # profits. trading_loss carries 2025's value into 2026 and 2027, which
+    # are not set, but that is the same loss, not a new one each year.
+    self_employment_income:
+      2026: 40_000
+      2027: 40_000
+    trading_loss:
+      2025: 10_000
+  output:
+    ni_class_4_trading_loss:
+      2025: 10_000
+      2026: 0
+      2027: 0
+    ni_class_4_profits_before_losses:
+      2025: 0
+      2026: 40_000
+      2027: 40_000
+    ni_class_4_losses_brought_forward:
+      2026: 10_000
+      2027: 0
+    ni_class_4_loss_relief:
+      2026: 10_000
+      2027: 0
+    ni_class_4_losses_carried_forward:
+      2025: 10_000
+      2026: 0
+      2027: 0
+    ni_class_4_profits:
+      2026: 30_000
+      2027: 40_000
+    # 2026-27 and 2027-28 both have a £12,570 lower profits limit, a £50,270
+    # upper profits limit and a 6% main rate.
+    # (30,000 - 12,570) * 6% and (40,000 - 12,570) * 6%
+    ni_class_4:
+      2026: 1_045.80
+      2027: 1_645.80
+
+- name: An unrelieved loss runs down over the following years
+  period: 2028
+  absolute_error_margin: 0.01
+  input:
+    # No losses are entered after 2025: each later year deducts what is left.
+    self_employment_income:
+      2025: 0
+      2026: 20_000
+      2027: 20_000
+      2028: 20_000
+    trading_loss:
+      2025: 50_000
+  output:
+    ni_class_4_losses_brought_forward:
+      2026: 50_000
+      2027: 30_000
+      2028: 10_000
+    ni_class_4_profits:
+      2026: 0
+      2027: 0
+      2028: 10_000
+    ni_class_4_losses_carried_forward:
+      2028: 0
+
+- name: A year with no loss entered between two loss years adds no loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income:
+      2024: 0
+      2025: 2_000
+      2026: 20_000
+    trading_loss:
+      2024: 5_000
+      2026: 3_000
+  output:
+    ni_class_4_trading_loss:
+      2024: 5_000
+      2025: 0
+      2026: 3_000
+    # 5,000 from 2024, less 2,000 used in 2025.
+    ni_class_4_losses_brought_forward:
+      2025: 5_000
+      2026: 3_000
+    ni_class_4_loss_relief:
+      2025: 2_000
+      2026: 6_000
+    ni_class_4_profits:
+      2025: 0
+      2026: 14_000
+    # (14,000 - 12,570) * 6%
+    ni_class_4:
+      2026: 85.80
+
+- name: A supplied balance of unrelieved losses is brought forward
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+    ni_class_4_losses_brought_forward: 7_000
+  output:
+    ni_class_4_loss_relief: 7_000
+    ni_class_4_profits: 23_000
+    # (23,000 - 12,570) * 6%
+    ni_class_4: 625.80
+
+- name: A supplied balance carries into later years
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income:
+      2026: 5_000
+      2027: 30_000
+    ni_class_4_losses_brought_forward:
+      2026: 7_000
+    trading_loss:
+      2026: 0
+      2027: 0
+  output:
+    # 7,000 brought into 2026, less 5,000 used there.
+    ni_class_4_losses_brought_forward: 2_000
+    ni_class_4_profits: 28_000
+
+- name: Pension contributions are not deducted from Class 4 profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Sch. 2 para. 3(2)(f)-(g): pension contributions relieve income tax only.
+    self_employment_income: 30_000
+    personal_pension_contributions: 5_000
+  output:
+    ni_class_4_profits: 30_000
+    # (30,000 - 12,570) * 6%
+    ni_class_4: 1_045.80
+
+- name: The annual maximum is worked out on Class 4 profits
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Primary Class 1 on £60,000 of earnings exceeds Step Two (6% of the
+    # £37,700 main band, £2,262), so Case 3 applies: Step Four is nil.
+    employment_income: 60_000
+    self_employment_income: 80_000
+    capital_allowances: 20_000
+  output:
+    ni_class_4_profits: 60_000
+    # Main band before the maximum: 6% * 37,700.
+    ni_class_4_main: 2_262
+    # Steps Six to Eight: 2% * (50,270 - 12,570) = 754.
+    # Step Nine: 2% * (60,000 - 50,270) = 194.60.
+    ni_class_4_maximum: 948.60
+    ni_class_4: 948.60
