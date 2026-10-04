@@ -3,7 +3,7 @@ from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.worki
     working_age_applicant_or_partner,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._earnings import (
-    working_age_earnings_components,
+    working_age_earnings,
 )
 
 
@@ -14,10 +14,14 @@ class council_tax_reduction_working_age_person_earned_income(Variable):
     documentation = (
         "A claimant's or partner's annual net earnings for a working-age "
         "council tax reduction claim in Scotland or Wales, before earnings "
-        "disregards: gross earnings less pension contributions (all of them "
-        "with Universal Credit, half otherwise) and the person's income tax "
-        "and National Insurance, not below zero. Children's and other "
-        "members' earnings do not count."
+        "disregards. Only income tax and National Insurance in respect of the "
+        "employment or trade are deducted (not tax on pensions, benefits, "
+        "property, savings or dividends, nor voluntary Class 3 "
+        "contributions). With Universal Credit, Wales uses the Universal "
+        "Credit earned income the award is based on, and Scotland adds "
+        "statutory sick, maternity and paternity pay to it; otherwise half of "
+        "pension contributions are deducted. Children's and other members' "
+        "earnings do not count."
     )
     definition_period = YEAR
     unit = GBP
@@ -29,8 +33,5 @@ class council_tax_reduction_working_age_person_earned_income(Variable):
     )
 
     def formula(person, period, parameters):
-        gross, _, pension_deduction, tax = working_age_earnings_components(
-            person, period
-        )
-        claimant_or_partner = working_age_applicant_or_partner(person, period)
-        return claimant_or_partner * max_(0, gross - pension_deduction - tax)
+        net, _ = working_age_earnings(person, period)
+        return working_age_applicant_or_partner(person, period) * net

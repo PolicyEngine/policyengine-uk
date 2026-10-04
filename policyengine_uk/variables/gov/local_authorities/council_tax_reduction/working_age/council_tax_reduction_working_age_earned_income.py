@@ -8,10 +8,8 @@ class council_tax_reduction_working_age_earned_income(Variable):
     documentation = (
         "Annual net earnings of the claimant and partner for a working-age "
         "council tax reduction claim in Scotland or Wales, before earnings "
-        "disregards. Income tax and National Insurance are deducted from each "
-        "person's earnings up to those earnings; in Wales any tax the earnings "
-        "cannot absorb is disregarded from unearned income instead (see "
-        "council_tax_reduction_working_age_unabsorbed_tax)."
+        "disregards: the sum of each person's net earnings (see "
+        "council_tax_reduction_working_age_person_earned_income)."
     )
     definition_period = YEAR
     unit = GBP

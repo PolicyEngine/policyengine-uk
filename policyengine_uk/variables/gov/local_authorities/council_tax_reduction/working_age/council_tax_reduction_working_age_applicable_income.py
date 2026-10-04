@@ -63,7 +63,9 @@ class council_tax_reduction_working_age_applicable_income(Variable):
         unearned_tax = where(
             wales & ~has_universal_credit,
             min_(
-                benunit("council_tax_reduction_working_age_unabsorbed_tax", period),
+                benunit(
+                    "council_tax_reduction_working_age_unearned_income_tax", period
+                ),
                 unearned,
             ),
             0,

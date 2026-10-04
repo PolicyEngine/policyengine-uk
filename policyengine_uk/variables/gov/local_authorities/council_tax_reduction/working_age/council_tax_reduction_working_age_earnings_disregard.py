@@ -16,7 +16,9 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
         "claim in Scotland or Wales. One weekly disregard applies: £25 for a "
         "lone parent; otherwise £20 of the family's earnings where the "
         "applicable amount includes a disability or severe disability "
-        "premium; otherwise, with a carer premium, £20 of the carers' own "
+        "premium (in Scotland also for a Universal Credit applicant with "
+        "limited capability for work who is in employment); otherwise, with a "
+        "carer benefit in payment, £20 of the carers' own "
         "earnings, plus up to £10 of a non-carer partner's earnings within the "
         "same £20; otherwise £10 for a couple and £5 for a single applicant. "
         "Applicants without Universal Credit who meet a work condition have "
@@ -57,9 +59,33 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
 
         lone_parent = benunit("is_lone_parent", period)
         couple = benunit("is_couple", period)
-        disability = (benunit("disability_premium", period) > 0) | (
-            benunit("severe_disability_premium", period) > 0
+        has_universal_credit = benunit(
+            "council_tax_reduction_working_age_has_universal_credit", period
         )
+        # Scotland also gives the £20 to a Universal Credit applicant or
+        # partner with limited capability for work (or for work-related
+        # activity) where one of them is under pensionable age and in
+        # employment (SSI 2021/249 Sch 3 para 4(3)).
+        scottish_uc_limited_capability = (
+            scotland
+            & has_universal_credit
+            & benunit.any(
+                claimant_or_partner & person("uc_limited_capability_for_WRA", period)
+            )
+            & benunit.any(
+                claimant_or_partner
+                & ~person("is_SP_age", period)
+                & (weekly_person_earnings > 0)
+            )
+        )
+        disability = (
+            (benunit("disability_premium", period) > 0)
+            | (benunit("severe_disability_premium", period) > 0)
+            | scottish_uc_limited_capability
+        )
+        # The carer disregard needs a carer benefit in payment (Wales Sch 8
+        # para 6: "in receipt of carer's allowance"); in Scotland an award of
+        # Universal Credit with the carer element also qualifies.
         carers = benunit("council_tax_reduction_working_age_carers", period)
         # Carer disregard: £20 of the carers' own earnings, plus up to £10 of a
         # non-carer partner's earnings within the £20 (Wales Sch 8 paras 6-7;
@@ -84,7 +110,12 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
             ),
         )
         base = select(
-            [lone_parent, disability, carers > 0, couple],
+            [
+                lone_parent,
+                disability,
+                (named_carers > 0) | (scotland & (carers > 0)),
+                couple,
+            ],
             [
                 min_(rate("lone_parent"), weekly_earnings),
                 min_(rate("disability_or_carer"), weekly_earnings),
@@ -131,9 +162,6 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
         tested_earnings = where(employed_only, employed, earnings)
         covers_additional = (tested_earnings > 0) & (
             tested_earnings >= (base + additional) * WEEKS_IN_YEAR + childcare
-        )
-        has_universal_credit = benunit(
-            "council_tax_reduction_working_age_has_universal_credit", period
         )
         additional_applies = work_condition & covers_additional & ~has_universal_credit
         weekly = base + additional * additional_applies

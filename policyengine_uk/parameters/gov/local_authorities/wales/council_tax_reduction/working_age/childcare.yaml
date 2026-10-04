@@ -1,25 +1,34 @@
-description: Weekly caps on the relevant childcare charges deducted from the earnings of an applicant who is not a pensioner under the Welsh council tax reduction schemes.
+description: Weekly caps on the relevant childcare charges deducted from the earnings of an applicant
+  who is not a pensioner under the Welsh council tax reduction schemes.
 maximum_one_child:
   description: Weekly cap on relevant childcare charges where the family has one child with charges.
   values:
-    2014-04-01: 175
+    2013-04-01: 175
   metadata:
     label: Wales working-age CTR childcare cap, one child
     unit: currency-GBP
     period: week
     reference:
-      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 20(3)(a)
-        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/20
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch.
+        6 para. 20(3)(a)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/20
+    - &id001
+      title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2012 (2013-14
+        schemes)
+      href: https://www.legislation.gov.uk/wsi/2012/3144/contents/made
 maximum_two_or_more_children:
-  description: Weekly cap on relevant childcare charges where the family has more than one child with charges.
+  description: Weekly cap on relevant childcare charges where the family has more than one child with
+    charges.
   values:
-    2014-04-01: 300
+    2013-04-01: 300
   metadata:
     label: Wales working-age CTR childcare cap, two or more children
     unit: currency-GBP
     period: week
     reference:
-      - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch. 6 para. 20(3)(b)
-        href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/20
+    - title: The Council Tax Reduction Schemes and Prescribed Requirements (Wales) Regulations 2013 Sch.
+        6 para. 20(3)(b)
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/20
+    - *id001
 metadata:
   label: Wales working-age CTR childcare charges

@@ -12,10 +12,12 @@ class council_tax_reduction_working_age_carers(Variable):
     entity = BenUnit
     label = "Claimants and partners qualifying for the working-age CTR carer premium"
     documentation = (
-        "The number of claimants and partners who receive Carer's Allowance "
-        "or, in Scotland, Carer Support Payment. In Scotland an award of "
-        "Universal Credit with the carer element also qualifies; when no one "
-        "in the family receives a carer benefit, it counts as one carer."
+        "The number of claimants and partners who qualify for the working-age "
+        "carer premium: entitled to Carer's Allowance or, in Scotland, Carer "
+        "Support Payment, whether or not an overlapping benefit reduces the "
+        "payment to nil. In Scotland an award of Universal Credit that "
+        "includes the carer element also qualifies; when no one in the family "
+        "is entitled to a carer benefit, it counts as one carer."
     )
     definition_period = YEAR
     reference = (
@@ -26,8 +28,13 @@ class council_tax_reduction_working_age_carers(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         claimant_or_partner = working_age_applicant_or_partner(person, period)
-        receives = person("receives_carer_benefit", period)
-        carers = benunit.sum(claimant_or_partner & receives)
+        entitled = person("is_entitled_to_carer_benefit", period)
+        carers = benunit.sum(claimant_or_partner & entitled)
         scotland = is_scotland_scheme(benunit.household("country", period))
-        uc_carer_element = benunit("uc_carer_element", period) > 0
+        # An award of Universal Credit that includes the carer element
+        # (SSI 2021/249 Sch 1 para 6(1)(c)); uc_carer_element alone is the
+        # potential element.
+        uc_carer_element = (benunit("uc_carer_element", period) > 0) & benunit(
+            "council_tax_reduction_working_age_has_universal_credit", period
+        )
         return carers + (scotland & uc_carer_element & (carers == 0))

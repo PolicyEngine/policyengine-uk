@@ -1,6 +1,9 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_applicant_or_partner,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._earnings import (
-    working_age_earnings_components,
+    working_age_earnings,
 )
 
 
@@ -11,9 +14,9 @@ class council_tax_reduction_working_age_employed_earned_income(Variable):
     documentation = (
         "The employed part of the claimant's and partner's net earnings: "
         "employment income and statutory sick, maternity and paternity pay, "
-        "with each person's deductions shared pro rata with their "
-        "self-employed earnings. Scotland's additional £17.10 earnings "
-        "disregard turns on employed earnings from April 2022."
+        "sharing each person's deductions pro rata with their self-employed "
+        "earnings. Scotland's additional £17.10 earnings disregard turns on "
+        "employed earnings from April 2022."
     )
     definition_period = YEAR
     unit = GBP
@@ -21,12 +24,5 @@ class council_tax_reduction_working_age_employed_earned_income(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        gross, employed_gross, _, _ = working_age_earnings_components(person, period)
-        net = person("council_tax_reduction_working_age_person_earned_income", period)
-        share = np.divide(
-            employed_gross,
-            gross,
-            out=np.zeros_like(gross, dtype=float),
-            where=gross > 0,
-        )
-        return benunit.sum(net * share)
+        _, employed = working_age_earnings(person, period)
+        return benunit.sum(working_age_applicant_or_partner(person, period) * employed)
