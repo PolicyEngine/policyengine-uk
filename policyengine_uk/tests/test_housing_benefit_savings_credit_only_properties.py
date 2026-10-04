@@ -9,14 +9,14 @@ Benefit's own income rules, including tariff income, do not apply to it (reg
 27(6)).
 
 Before this change Housing Benefit counted none of the savings credit. On a
-rise in private pension savings credit fell by 40% of the rise in net income,
-Housing Benefit by 65% of it and council tax reduction by 20%, so a family
-lost more than it gained. A single person aged 88 on Attendance Allowance
-whose private pension rose from £9,000 to £9,500 in 2026 lost £13.29 of net
-income, excluding the TV licence. Counting the savings credit, Housing
-Benefit falls by 65% of the rise net of the savings credit withdrawn, 39% in
-all, and the combined withdrawal is 99% (91% once council tax reduction also
-counts the savings credit, PolicyEngine/policyengine-uk#1909).
+rise in private pension, savings credit fell by 40% of the rise in net income,
+Housing Benefit by 65% of the whole rise, and council tax reduction, which
+counts the savings credit (PolicyEngine/policyengine-uk#1909), by 20% of the
+rise net of the savings credit withdrawn, or 12%: 117% in all, so a family
+lost more than it gained. A single person aged 80 with no State Pension whose
+private pension rose from £13,500 to £13,750 in 2026 lost £34 of net income.
+Counting the savings credit, Housing Benefit falls by 65% of the rise net of
+the savings credit withdrawn, or 39%, and the combined withdrawal is 91%.
 
 Invariants, for single people and couples aged 80 or over (so State Pension
 age was reached before April 2016 and savings credit is possible), who rent
@@ -344,7 +344,8 @@ def test_attendance_allowance_case_no_longer_loses_net_income():
     # 0.65 x (19,401.90 - 19,075.19) = 212.36.
     assert abs(before["housing_benefit"] - after["housing_benefit"] - 212.36) < 0.01
     # Excluding the TV licence (free for over-75s on Pension Credit), net
-    # income rises; on main it fell by 13.29.
+    # income rises. Before Housing Benefit and council tax reduction counted
+    # the savings credit, it fell by 13.29.
     change = (after["household_net_income"] + after["tv_licence"]) - (
         before["household_net_income"] + before["tv_licence"]
     )
@@ -379,3 +380,40 @@ def test_savings_credit_only_award_counts_the_frozen_savings_credit():
     # Without the freeze the higher savings credit is paid and counted.
     unfrozen_income = unfrozen.calculate("housing_benefit_applicable_income", YEAR)[0]
     assert abs(unfrozen_income - 13_943.89) < 0.01
+
+
+def test_private_pension_rise_on_savings_credit_only_raises_net_income():
+    # The property's shrunk counterexample on main: single, aged 80, no State
+    # Pension, council rent 3,000, private pension 13,500 -> 13,750. The award
+    # is savings credit only at both ends, so the TV licence is free at both.
+    def calculate(private_pension):
+        data = single_pensioner(
+            age={YEAR: 80},
+            state_pension={YEAR: 0},
+            private_pension_income={YEAR: private_pension},
+        )
+        data["households"]["household"]["rent"] = {YEAR: 3_000}
+        data["households"]["household"]["council_tax"] = {YEAR: 500}
+        simulation = Simulation(situation=data)
+        return {
+            variable: float(simulation.calculate(variable, YEAR).sum())
+            for variable in [
+                "savings_credit",
+                "housing_benefit",
+                "council_tax_benefit",
+                "household_net_income",
+                "tv_licence",
+            ]
+        }
+
+    before, after = calculate(13_500), calculate(13_750)
+    change = {variable: after[variable] - before[variable] for variable in before}
+    # 250 more, 200 after basic-rate income tax; savings credit -0.4 x 200.
+    assert abs(change["savings_credit"] + 80) < 0.01
+    # Housing Benefit -0.65 x (200 - 80); main took -0.65 x 200 = -130.
+    assert abs(change["housing_benefit"] + 78) < 0.01
+    # Council tax reduction -0.2 x (200 - 80).
+    assert abs(change["council_tax_benefit"] + 24) < 0.01
+    # 200 - 80 - 78 - 24 = +18; on main 200 - 80 - 130 - 24 = -34.
+    assert after["tv_licence"] == before["tv_licence"] == 0
+    assert abs(change["household_net_income"] - 18) < 0.01

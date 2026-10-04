@@ -21,8 +21,9 @@
 # both £1 a week for each £500 (or part) of capital over £10,000; Housing
 # Benefit capital limit £16,000; aged personal allowance £256.00 a week single
 # (13,312); taper 65%; income tax personal allowance 12,570 and basic rate 20%.
-# Everyone is over State Pension age and reached it before April 2016, so can
-# have savings credit, and pays no National Insurance.
+# Every Pension Credit claimant and partner is over State Pension age and
+# reached it before April 2016, so can have savings credit, and pays no
+# National Insurance.
 #
 # Robustness to the other open Housing Benefit fixes: the tenants rent from
 # the council, so the Local Housing Allowance order cannot apply; every case
