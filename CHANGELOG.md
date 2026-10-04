@@ -1,3 +1,10 @@
+## [2.113.5] - 2026-10-04
+
+### Fixed
+
+- - Corrected pension-age Housing Benefit and Council Tax Reduction premiums by removing adult disability and adult enhanced disability premiums absent from their statutory schedules and applying the severe disability premium's qualifying-benefit, couple, Housing Benefit non-dependant and shared carer-attribution conditions. The carer condition does not yet count Universal Credit carer-element awards (#2120).
+
+
 ## [2.113.4] - 2026-10-04
 
 ### Changed
