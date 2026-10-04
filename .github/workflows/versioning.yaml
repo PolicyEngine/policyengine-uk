@@ -41,6 +41,11 @@ jobs:
         run: |
           python .github/bump_version.py
           towncrier build --yes --version $(python -c "import re; print(re.search(r'version = \"(.+?)\"', open('pyproject.toml').read()).group(1))")
+      # bump_version.py moves uv.lock's entry for this package with
+      # pyproject.toml. Refuse to commit a lock that `uv sync --locked` would
+      # reject, since that would fail every later pull request.
+      - name: Check uv.lock matches pyproject.toml
+        run: uv lock --check
       - name: Update changelog
         id: commit
         uses: EndBug/add-and-commit@v10
