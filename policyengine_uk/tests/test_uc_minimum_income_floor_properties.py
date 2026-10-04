@@ -11,7 +11,8 @@ below the couple threshold, and is reduced by any amount by which it and the
 partner's earned income would exceed that threshold (reg. 62(3)).
 
 Invariants, for any generated population of single people, couples,
-mixed-age couples and couples with an adult child in their benefit unit, with
+couples with an older partner aged 65 to 80 (mixed-age once past State
+Pension age) and couples with an adult child in their benefit unit, with
 employment, self-employment profits and losses, pension contributions and
 start-up periods, in England, Wales and Scotland:
 
@@ -49,7 +50,7 @@ lawful, non-monotonicity.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, assume, given, settings
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -290,12 +291,43 @@ SELF_EMPLOYED_NI = (
 )
 
 
+# A 66-year-old in 2026 reaches State Pension age (66 and 1 month) after 6
+# April: Class 4 stays due for the year, primary Class 1 and Class 2 do not.
+# The generated draws reach this case only by chance.
+SPA_DURING_2026 = [
+    dict(
+        adults=[
+            dict(
+                age=66,
+                self_employment_income=5_000.0,
+                employment_income=0.0,
+                pension_contributions=0.0,
+                uc_is_in_startup_period=False,
+            ),
+            dict(
+                age=40,
+                self_employment_income=0.0,
+                employment_income=15_000.0,
+                pension_contributions=0.0,
+                uc_is_in_startup_period=False,
+            ),
+        ],
+        children=[],
+        tenure="RENT_FROM_COUNCIL",
+        rent=9_600.0,
+        region="NORTH_EAST",
+    )
+]
+
+
 @PROPERTY_SETTINGS
 @given(
     units=populations,
     year=st.sampled_from(YEARS),
     self_employed=st.booleans(),
 )
+@example(units=SPA_DURING_2026, year=2026, self_employed=True)
+@example(units=SPA_DURING_2026, year=2026, self_employed=False)
 def test_notional_deductions_equal_tax_on_threshold_as_only_income(
     units, year, self_employed
 ):

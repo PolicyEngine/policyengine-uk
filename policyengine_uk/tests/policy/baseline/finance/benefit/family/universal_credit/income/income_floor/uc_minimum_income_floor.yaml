@@ -84,7 +84,7 @@
     uc_minimum_income_floor_national_insurance: 430.62
     uc_minimum_income_floor: 17_880.98
 
-- name: No NI is deducted for a person over State Pension age
+- name: No NI is deducted for a person over State Pension age at the start of the tax year
   period: 2026
   absolute_error_margin: 0.01
   input:
