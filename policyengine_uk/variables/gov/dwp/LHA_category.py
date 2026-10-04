@@ -18,21 +18,35 @@ class LHA_category(Variable):
     value_type = Enum
     entity = BenUnit
     label = "LHA category for the benefit unit, taking into account LHA rules on the number of LHA-covered bedrooms"
+    documentation = (
+        "The Universal Credit category of accommodation, which depends only "
+        "on what the renter is entitled to: the shared accommodation rate "
+        "for a specified renter, otherwise the category for the number of "
+        "bedrooms in the size criteria. Whether the accommodation the renter "
+        "actually occupies is shared does not matter, so a single renter "
+        "aged 35 or over in a room gets the one-bedroom rate. Housing Benefit "
+        "has its own category: see housing_benefit_LHA_category."
+    )
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/25",
+        "https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/27",
+        "https://www.legislation.gov.uk/uksi/2013/382/schedule/1/paragraph/1",
+    )
     definition_period = YEAR
     possible_values = LHACategory
     default_value = LHACategory.C
 
     def formula(benunit, period, parameters):
+        # UC Regs 2013 Sch 4 para 25(1) step 1 and para 25(2)(b): the
+        # category to which the renter is entitled under paras 8-12 and
+        # 26-29.
         num_rooms = benunit("LHA_allowed_bedrooms", period.this_year)
-        person = benunit.members
-        household = person.household
-        is_shared = benunit.any(household("is_shared_accommodation", period.this_year))
         can_only_claim_shared = benunit(
             "is_lha_shared_accommodation_rate_specified_renter", period
         )
         return select(
             [
-                is_shared | can_only_claim_shared,
+                can_only_claim_shared,
                 num_rooms == 1,
                 num_rooms == 2,
                 num_rooms == 3,
@@ -123,11 +137,15 @@ def find_freeze_anchor(freeze_parameter: Parameter, period: str) -> str:
 MONTHLY_MAXIMUM_FIRST_YEAR = 2020
 
 
-def category_maximum(benunit, period, node_name: str):
+def category_maximum(
+    benunit, period, node_name: str, category_variable: str = "LHA_category"
+):
     """Per-category national maximum, read at the determination year.
 
     Frozen rates are held at the level last determined, so the maximum in
     force then is the one that binds, not the current year's.
+    ``category_variable`` names the category to look up: the Universal
+    Credit one by default, or the Housing Benefit one.
     """
     lha = benunit.simulation.tax_benefit_system.parameters.gov.dwp.LHA
 
@@ -137,6 +155,6 @@ def category_maximum(benunit, period, node_name: str):
         determination_period = str(period.start.year)
 
     node = getattr(lha, node_name)
-    category = benunit("LHA_category", period).decode_to_str()
+    category = benunit(category_variable, period).decode_to_str()
     caps = {cat: node.children[cat](determination_period) for cat in node.children}
     return pd.Series(category).map(caps).to_numpy(dtype=float)
