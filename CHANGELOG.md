@@ -1,3 +1,19 @@
+## [2.117.0] - 2026-10-04
+
+### Added
+
+- - Add `partners_care_for_same_severely_disabled_person` (benefit unit). Two people caring for the same severely disabled person cannot both be entitled to Carer's Allowance (SSCBA s.70(7ZA)) or Carer Support Payment (SSI 2023/302 reg 5(3)), so they get one carer premium. Unless it is supplied, partners are treated as caring for the same person unless both are entitled with an award, reported (`carers_allowance_reported`) or supplied directly as an allowance or entitlement that caring hours do not explain, since caring hours cannot show who is cared for.
+
+### Fixed
+
+- - Pay the legacy carer premium once for each claimant or partner entitled to Carer's Allowance or Carer Support Payment (IS Regs 1987 Sch 2 paras 14ZA(1) and 15(7), with the matching Housing Benefit and council tax reduction schedules), rather than one premium for the couple. A couple who both have Carer's Allowance awards get two premiums; a couple who care for the same severely disabled person, or who are both entitled on caring hours alone, get one. The premium enters the Income Support, Housing Benefit and council tax reduction applicable amounts.
+  - Correct the 2025-26 carer premium to £46.40 a week.
+
+### Removed
+
+- - Remove the `gov.dwp.carer_premium.couple` parameter. It held the single rate, while the law pays the per-person amount (`gov.dwp.carer_premium.single`) once for each qualifying claimant and partner. Reforms should change `gov.dwp.carer_premium.single`.
+
+
 ## [2.116.1] - 2026-10-04
 
 ### Changed
