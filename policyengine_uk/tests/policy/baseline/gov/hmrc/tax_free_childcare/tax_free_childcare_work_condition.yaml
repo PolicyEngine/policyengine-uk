@@ -554,3 +554,54 @@
         members: [parent, student, toddler]
   output:
     tax_free_childcare_work_condition: [true, false, false]
+
+# Reg 13(3) excludes a working partner who is "paid" a (1)(b) benefit or
+# allowance. Maternity allowance overlaps the worker's Carer's Allowance to nil,
+# so the worker is entitled to it but not paid it, and still counts as the
+# partner in qualifying paid work for the spouse on Carer's Allowance.
+- name: Working partner entitled to Carer's Allowance reduced to nil does not stop the other qualifying under reg 13
+  period: 2025
+  input:
+    people:
+      worker:
+        in_work: true
+        care_hours: 35
+        maternity_allowance_reported: 5_000
+      spouse:
+        in_work: false
+        carers_allowance: 4_000
+    benunits:
+      benunit:
+        members: [worker, spouse]
+    households:
+      household:
+        members: [worker, spouse]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 4_000]
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_work_condition: true
+
+# Reg 13(1)(b)(iv): "paid or entitled to" carer's allowance. Entitlement reduced
+# to nil by maternity allowance still regards the carer as in paid work.
+- name: Carer entitled to Carer's Allowance reduced to nil is regarded as in paid work under reg 13
+  period: 2025
+  input:
+    people:
+      worker:
+        in_work: true
+      carer:
+        in_work: false
+        care_hours: 35
+        maternity_allowance_reported: 5_000
+    benunits:
+      benunit:
+        members: [worker, carer]
+    households:
+      household:
+        members: [worker, carer]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 0]
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_work_condition: true

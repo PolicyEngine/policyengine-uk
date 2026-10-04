@@ -12,9 +12,10 @@ class tax_free_childcare_regarded_as_in_paid_work(Variable):
         "person receives a caring or incapacity benefit (reg 13(1)(b)) or, "
         "from 6 April 2024, is on carer's leave (reg 13(1)(c)), and has a "
         "partner in qualifying paid work (reg 13(1)(a)). The partner does not "
-        "count as in qualifying paid work while they receive a reg 13(1)(b) "
-        "benefit themselves (reg 13(3)); carer's leave does not have that "
-        "effect. A lone parent cannot qualify this way. The partner's own "
+        "count as in qualifying paid work while they are paid a reg 13(1)(b) "
+        "benefit or allowance, or entitled to a reg 13(1)(b) credit (reg "
+        "13(3)); entitlement to an allowance reduced to nil by an overlapping "
+        "benefit, and carer's leave, do not have that effect. A lone parent cannot qualify this way. The partner's own "
         "minimum income is tested by the income condition."
     )
     definition_period = YEAR
@@ -30,12 +31,15 @@ class tax_free_childcare_regarded_as_in_paid_work(Variable):
             person("tax_free_childcare_on_carers_leave", period)
             & p.carers_leave_qualifies
         )
-        # Reg 13(1)(a) and (3): in paid work, and not paid or entitled to a
-        # reg 13(1)(b) benefit.
+        # Reg 13(1)(a) and (3): in paid work, and not paid a reg 13(1)(b)
+        # benefit or allowance or entitled to a reg 13(1)(b) credit.
+        paid_caring_or_incapacity_benefit = (
+            add(person, period, p.caring_or_incapacity_benefits_in_payment) > 0
+        )
         in_work_without_caring_or_incapacity_benefit = (
             claimant_or_partner
             & person("tax_free_childcare_treated_as_in_work", period)
-            & ~caring_or_incapacity_benefit
+            & ~paid_caring_or_incapacity_benefit
         )
         partner_in_qualifying_paid_work = (
             person.benunit.sum(in_work_without_caring_or_incapacity_benefit)

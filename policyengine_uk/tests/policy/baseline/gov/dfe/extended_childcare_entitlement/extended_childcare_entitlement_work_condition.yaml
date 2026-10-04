@@ -370,3 +370,105 @@
         members: [person1, person2]
   output:
     extended_childcare_entitlement_work_condition: [true, true]
+
+# Before 1 December 2022, SI 2016/1257 reg 9 deemed only qualifying paid work,
+# so the £100,000 limit in reg 4(5) and (7) still applied to the partner on
+# Carer's Allowance. SI 2022/1134 regs 14(4)/15(4) carry no income condition.
+- name: 2022, partner on Carer's Allowance with adjusted net income above £100,000 - does not meet the condition
+  period: 2022
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        carers_allowance: 4_000
+        adjusted_net_income: 120_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, false, false]
+
+- name: 2025, partner on Carer's Allowance with adjusted net income above £100,000 - meets the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        carers_allowance: 4_000
+        adjusted_net_income: 120_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, true, false]
+
+# SI 2016/1257 reg 9(3), before 1 December 2022: a working partner paid or
+# entitled to a listed benefit (here Carer's Allowance) is not in qualifying
+# paid work for the other's reg 9 route. SI 2022/1134 has no such exclusion.
+- name: 2022, working partner also on Carer's Allowance - the partner on contributory ESA does not meet the condition
+  period: 2022
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        carers_allowance: 4_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        esa_contrib: 4_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, false, false]
+
+- name: 2025, working partner also on Carer's Allowance - the partner on contributory ESA meets the condition
+  period: 2025
+  input:
+    people:
+      parent1:
+        age: 40
+        is_parent: true
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        carers_allowance: 4_000
+        minimum_wage: 10
+      parent2:
+        age: 38
+        is_parent: true
+        esa_contrib: 4_000
+        minimum_wage: 10
+      child:
+        age: 4
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+  output:
+    extended_childcare_entitlement_work_condition: [true, true, false]
