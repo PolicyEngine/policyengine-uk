@@ -1,3 +1,10 @@
+## [2.113.1] - 2026-10-04
+
+### Changed
+
+- - Documented that `afcs_reported` is FRS benefit code 8 (Armed Forces Compensation Scheme payments and war disablement pensions, not armed forces independence payment) and tested that AFCS payments never confer severe disability.
+
+
 ## [2.113.0] - 2026-10-04
 
 ### Added
