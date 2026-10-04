@@ -2,6 +2,7 @@
 
 import re
 import sys
+import tomllib
 from pathlib import Path
 
 
@@ -59,6 +60,43 @@ def update_file(path: Path, old_version: str, new_version: str):
         print(f"  Updated {path}")
 
 
+def get_project_name(pyproject_path: Path) -> str:
+    """The project name, normalised the way uv writes it in uv.lock."""
+    name = tomllib.loads(pyproject_path.read_text())["project"]["name"]
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def set_lock_version(text: str, package: str, new_version: str) -> str:
+    """Set the version of the project's own entry in uv.lock text.
+
+    CI installs with `uv sync --locked`, which refuses a lock whose entry for
+    the project disagrees with pyproject.toml, so the two must move together.
+    Only that entry changes: a dependency can share the old version string.
+    """
+    pattern = re.compile(
+        rf'^(\[\[package\]\]\nname = "{re.escape(package)}"\nversion = ")[^"\n]*(")$',
+        re.MULTILINE,
+    )
+    updated, count = pattern.subn(rf"\g<1>{new_version}\g<2>", text)
+    if count != 1:
+        raise ValueError(f"Expected one {package} entry in uv.lock, found {count}")
+    return updated
+
+
+def update_lock(path: Path, package: str, new_version: str):
+    if not path.exists():
+        return
+    text = path.read_text()
+    try:
+        updated = set_lock_version(text, package, new_version)
+    except ValueError as error:
+        print(error, file=sys.stderr)
+        sys.exit(1)
+    if updated != text:
+        path.write_text(updated)
+        print(f"  Updated {path}")
+
+
 def main():
     root = Path(__file__).resolve().parent.parent
     pyproject = root / "pyproject.toml"
@@ -71,6 +109,7 @@ def main():
     print(f"Version: {current} -> {new} ({bump})")
 
     update_file(pyproject, current, new)
+    update_lock(root / "uv.lock", get_project_name(pyproject), new)
 
 
 if __name__ == "__main__":
