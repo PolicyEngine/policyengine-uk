@@ -706,12 +706,14 @@
         council_tax: 1_800
         savings: 0
   output:
-    # The head is treated as liable, but where the rent is shared a student
-    # claims nothing (#2006, Default Scheme Sch para 75(1)) and is not
-    # counted among those jointly liable (Sch 1 para 7(5)). Where a student
-    # shares liability with a non-student, the non-student is solely liable
-    # (LGFA 1992 s.75(4)), so the co-tenant claims on the whole bill and the
-    # head is the co-tenant's non-dependant.
+    # The head is treated as liable, but where the rent is shared the model
+    # gives a student no claim (#2006; in Scotland SSI 2021/249 reg 20(2))
+    # and leaves them out of those jointly liable (reg 79(4)). Where a
+    # student shares liability with a non-student, the non-student is solely
+    # liable (LGFA 1992 s.75(4)), so the co-tenant claims on the whole bill
+    # and the head is the co-tenant's non-dependant. No deduction is made for
+    # a full-time student non-dependant (reg 90(7)(c)); the model's national
+    # deduction is nil here only because the head has no income.
     council_tax_reduction_liable_person: [true, true]
     council_tax_reduction_claimant_benunit: [false, true]
     council_tax_reduction_joint_liability_share: [0.5, 1]
