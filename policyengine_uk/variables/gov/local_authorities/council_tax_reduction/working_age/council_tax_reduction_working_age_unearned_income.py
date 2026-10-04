@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_applicant_or_partner,
+)
 
 
 class council_tax_reduction_working_age_unearned_income(Variable):
@@ -10,8 +13,9 @@ class council_tax_reduction_working_age_unearned_income(Variable):
         "working-age council tax reduction claim in Scotland or Wales, other "
         "than Universal Credit and tariff income from capital. Retirement "
         "pensions, contributory Jobseeker's Allowance and Employment and "
-        "Support Allowance, carer's allowance, the Carer Support Payment "
-        "component (not the Scottish Carer Supplement), "
+        "Support Allowance, carer's allowance, carer support payment (the "
+        "Carer Support Payment component; the Scottish Carer Supplement is a "
+        "separate variable that does not count), "
         "maternity allowance, industrial injuries benefit, incapacity benefit, "
         "severe disablement allowance and working and child tax credits "
         "count. Child Benefit, the income-related benefits, disability "
@@ -30,7 +34,7 @@ class council_tax_reduction_working_age_unearned_income(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        members = person("is_claimant_or_partner", period)
+        members = working_age_applicant_or_partner(person, period)
         income = add_for_members(
             benunit,
             period,
@@ -48,15 +52,6 @@ class council_tax_reduction_working_age_unearned_income(Variable):
             ],
             members,
         )
-        # Only the Carer Support Payment component counts, not the Scottish
-        # Carer Supplement (SSI 2021/249 reg 4(1), as amended by SSI 2025/340,
-        # and the closed list in reg 57(1)).
-        csp = parameters(period).gov.social_security_scotland.carer_support_payment
-        csp_total = add_for_members(benunit, period, ["carer_support_payment"], members)
-        csp_rate = csp.rate + csp.supplement
-        supplement_share = csp.supplement / csp_rate if csp_rate > 0 else 0
-        supplement = csp_total * supplement_share
-        income = income - supplement
         tax_credits = add(benunit, period, ["working_tax_credit", "child_tax_credit"])
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         basic_income = (

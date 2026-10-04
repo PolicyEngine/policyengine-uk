@@ -1,4 +1,8 @@
 description: The Upper Profits Limit is the threshold at which self-employed earners pay the additional Class 4 National Insurance rate.
+# Legal status: £50,270 is the standing figure in SSCBA 1992 s.15(3)(b), which
+# stays until altered by order under SSAA 1992 s.141. Budget 2025 commits to
+# keeping it until April 2031. CPI uprating from 2031-32 is a modelling
+# assumption.
 values:
   2015-04-06: 42_386
   2015-06-05: 43_000
@@ -7,7 +11,56 @@ values:
   2019-04-06: 50_000
   2020-04-06: 50_000
   2021-04-06: 50_270
-  2026-04-06: 50_270
+  2026-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+  2027-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+        - title: "HMRC: Income Tax Personal Allowance and the basic rate limit, and certain National Insurance contributions thresholds from 6 April 2026 to 5 April 2028 (Autumn Statement 2022)"
+          href: https://www.gov.uk/government/publications/the-personal-allowance-and-basic-rate-limit-for-income-tax-and-certain-national-insurance-contributions-nics-thresholds-from-6-april-2026-to-5-apr/income-tax-personal-allowance-and-the-basic-rate-limit-and-certain-national-insurance-contributions-thresholds-from-6-april-2026-to-5-april-2028
+  2028-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+        - title: Budget 2025 (HC 1492) para 4.111
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+        - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+          href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+        - title: Explanatory Memorandum to SI 2026/231 para 5.25
+          href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+  2029-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+        - title: Budget 2025 (HC 1492) para 4.111
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+        - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+          href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+        - title: Explanatory Memorandum to SI 2026/231 para 5.25
+          href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
+  2030-04-06:
+    value: 50_270
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s.15(3)(b)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+        - title: Budget 2025 (HC 1492) para 4.111
+          href: https://assets.publishing.service.gov.uk/media/6929b353345e31ab14ecf735/E03444720_Budget_2025_Web_Accessible.pdf#page=113
+        - title: "HMRC: Maintaining Income Tax and equivalent National Insurance contributions thresholds until 5 April 2031"
+          href: https://www.gov.uk/government/publications/maintaining-income-tax-and-equivalent-national-insurance-contributions-thresholds-until-5-april-2031/income-tax-maintaining-the-personal-allowance-and-the-basic-rate-limit-for-income-tax-and-equivalent-national-insurance-contributions-thresholds-unt
+        - title: Explanatory Memorandum to SI 2026/231 para 5.25
+          href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
 metadata:
   label: NI upper profits limit
   unit: currency-GBP

@@ -98,7 +98,7 @@ class simulated_council_tax_reduction_benunit(Variable):
         capital = where(
             devolved_working_age,
             benunit("council_tax_reduction_working_age_capital", period),
-            benunit.household("savings", period),
+            benunit("council_tax_reduction_assessable_capital", period),
         )
         capital_eligible = capital <= capital_limit
         national_ctr = (

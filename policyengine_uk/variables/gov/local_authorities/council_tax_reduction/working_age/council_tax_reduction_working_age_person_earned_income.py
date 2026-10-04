@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_applicant_or_partner,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._earnings import (
     working_age_earnings_components,
 )
@@ -29,5 +32,5 @@ class council_tax_reduction_working_age_person_earned_income(Variable):
         gross, _, pension_deduction, tax = working_age_earnings_components(
             person, period
         )
-        claimant_or_partner = person("is_claimant_or_partner", period)
+        claimant_or_partner = working_age_applicant_or_partner(person, period)
         return claimant_or_partner * max_(0, gross - pension_deduction - tax)

@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_applicant_or_partner,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_scotland_scheme,
 )
@@ -35,7 +38,7 @@ class council_tax_reduction_working_age_personal_allowance(Variable):
         lone_parent = benunit("is_lone_parent", period)
         age = benunit("eldest_claimant_or_partner_age", period)
         person = benunit.members
-        claimant_or_partner = person("is_claimant_or_partner", period)
+        claimant_or_partner = working_age_applicant_or_partner(person, period)
         on_esa = (
             add_for_members(
                 benunit, period, ["esa_contrib", "esa_income"], claimant_or_partner

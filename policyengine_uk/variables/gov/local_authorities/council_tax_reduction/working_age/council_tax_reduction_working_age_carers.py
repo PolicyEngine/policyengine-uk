@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_applicant_or_partner,
+)
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
     is_scotland_scheme,
 )
@@ -22,7 +25,7 @@ class council_tax_reduction_working_age_carers(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        claimant_or_partner = person("is_claimant_or_partner", period)
+        claimant_or_partner = working_age_applicant_or_partner(person, period)
         receives = person("receives_carer_benefit", period)
         carers = benunit.sum(claimant_or_partner & receives)
         scotland = is_scotland_scheme(benunit.household("country", period))
