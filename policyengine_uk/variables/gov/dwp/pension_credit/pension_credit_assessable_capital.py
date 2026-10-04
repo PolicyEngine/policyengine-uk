@@ -14,7 +14,11 @@ class pension_credit_assessable_capital(Variable):
         "claimant or partner (is_claimant_or_partner): a dependant's capital "
         "is not the claimant's. Where `pension_credit_reported_capital` records "
         "the benefit unit's own capital (0 or more), it replaces the "
-        "household proxy and the person-level sources."
+        "household proxy and the person-level sources. Unlike "
+        "`uc_assessable_capital`, another benefit unit's recorded capital is "
+        "not subtracted from the household capital that an unrecorded unit's "
+        "proxy shares out: the recorded figure and the household sources come "
+        "from different measures, so the proxy is left as it was."
     )
     definition_period = YEAR
     unit = GBP

@@ -285,9 +285,10 @@ def march_2020_rates(universal_credit: bool = False) -> np.ndarray:
 
     The April 2020 tables publish those determinations. Rent Officers Wales's
     April 2022 and April 2023 tables, which hold them, restate 14 weekly (17
-    monthly) of them; each restated monthly figure is a round monthly rent
-    (16 of the 17 are multiples of GBP 5), which reads as a correction to the
-    percentile, so the minimum uses the latest held table's figure. Northern
+    monthly) of them. Each restated figure is a round rent (16 of the 17
+    monthly figures are multiples of GBP 5; the 17th, Vale of Glamorgan one
+    bedroom at GBP 434.52, is GBP 100 a week), which reads as a correction to
+    the percentile, so the minimum uses the latest held table's figure. Northern
     Ireland's monthly Universal Credit rates were not published before April
     2024, so for them the weekly rate is converted as the model converts any
     weekly percentile (to within about 3p of the Housing Executive's figure).
@@ -410,14 +411,26 @@ def lha_rates(parameters, year: int, universal_credit: bool = False) -> dict:
     return dict(brmas=published_rates().brmas, percentile=percentile, rate=rate)
 
 
-def benunit_lha(benunit, period, measure: str, universal_credit: bool = False):
-    """Look up an LHA measure for each benefit unit's BRMA and category."""
+def benunit_lha(
+    benunit,
+    period,
+    measure: str,
+    universal_credit: bool = False,
+    category_variable: str = "LHA_category",
+):
+    """Look up an LHA measure for each benefit unit's BRMA and category.
+
+    ``category_variable`` names the category of accommodation: the Universal
+    Credit one by default, or ``housing_benefit_LHA_category``. Rent officers
+    determine one rate per BRMA and category, so the two benefits read the
+    same table; they differ only in which category applies to the renter.
+    """
     parameters = benunit.simulation.tax_benefit_system.parameters
     table = lha_rates(parameters, period.start.year, universal_credit)
     brma = benunit.value_from_first_person(
         benunit.members.household("brma", period).decode_to_str()
     )
-    category = benunit("LHA_category", period).decode_to_str()
+    category = benunit(category_variable, period).decode_to_str()
     brma_index = table["brmas"].get_indexer(brma)
     category_index = pd.Index(CATEGORIES).get_indexer(category)
     values = table[measure][np.maximum(brma_index, 0), np.maximum(category_index, 0)]

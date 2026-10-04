@@ -579,3 +579,47 @@ def test_a_capped_rate_is_rounded_to_the_penny(
     assert measure(2024, "CENTRAL_LONDON", "B", reform) == pytest.approx(
         expected, abs=0.001
     )
+
+
+@pytest.mark.parametrize("year", [2019, 2024, 2026])
+def test_housing_benefit_reads_the_published_rate_for_its_own_category(year):
+    """HB and UC read one table, each through its own category.
+
+    Every BRMA and category, with the Universal Credit category set to a
+    different one: ``housing_benefit_LHA_rate`` follows
+    ``housing_benefit_LHA_category`` and ``BRMA_LHA_rate`` follows
+    ``LHA_category``, each matching the determined table (and so every
+    published cell).
+    """
+    from policyengine_uk import Simulation
+
+    table = lha_rates(SYSTEM.parameters, year, universal_credit=False)
+    cells = [
+        (brma, i, j)
+        for i, brma in enumerate(table["brmas"])
+        for j in range(len(CATEGORIES))
+    ]
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for n, (brma, _, j) in enumerate(cells):
+        situation["people"][f"p{n}"] = {"age": {year: 40}}
+        situation["benunits"][f"b{n}"] = {
+            "members": [f"p{n}"],
+            "housing_benefit_LHA_category": {year: CATEGORIES[j]},
+            "LHA_category": {year: CATEGORIES[(j + 2) % len(CATEGORIES)]},
+        }
+        situation["households"][f"h{n}"] = {
+            "members": [f"p{n}"],
+            "brma": {year: brma},
+        }
+    simulation = Simulation(situation=situation)
+    housing_benefit = simulation.calculate("housing_benefit_LHA_rate", year) / 52
+    universal_credit = simulation.calculate("BRMA_LHA_rate", year) / 52
+    rows = [i for _, i, _ in cells]
+    own = table["rate"][rows, [j for _, _, j in cells]]
+    swapped = table["rate"][rows, [(j + 2) % len(CATEGORIES) for _, _, j in cells]]
+    np.testing.assert_allclose(housing_benefit, own, atol=0.001)
+    np.testing.assert_allclose(universal_credit, swapped, atol=0.001)
+    published = published_rates().at("rate", year)[rows, [j for _, _, j in cells]]
+    have = ~np.isnan(published)
+    assert have.sum() > 0
+    np.testing.assert_allclose(housing_benefit[have], published[have], atol=0.001)
