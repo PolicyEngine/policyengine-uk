@@ -8,7 +8,9 @@ class income_support_eligible(Variable):
     definition_period = YEAR
     reference = (
         "https://www.legislation.gov.uk/uksi/1987/1967/schedule/1B",
+        "https://www.legislation.gov.uk/uksi/1987/1967/regulation/4ZA",
         "https://www.legislation.gov.uk/ukpga/1992/4/section/124",
+        "https://www.legislation.gov.uk/uksi/1987/1968/regulation/4",
     )
 
     def formula(benunit, period, parameters):
