@@ -1,3 +1,10 @@
+## [2.114.0] - 2026-10-04
+
+### Added
+
+- - Add `cash_isa` and `stocks_and_shares_isa` Household wealth input variables for ISA balances.
+
+
 ## [2.113.6] - 2026-10-04
 
 ### Changed
