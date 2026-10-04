@@ -177,6 +177,9 @@ def situation(units, earnings_bump=0.0, income_support=0.0, accommodation=None):
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
+            # Not on Universal Credit, whose passport would disregard all the
+            # earnings (Sch 4 para 12).
+            "would_claim_uc": {YEAR: False},
             "income_support": {YEAR: income_support},
             "jsa_income": {YEAR: 0.0},
             "esa_income": {YEAR: 0.0},

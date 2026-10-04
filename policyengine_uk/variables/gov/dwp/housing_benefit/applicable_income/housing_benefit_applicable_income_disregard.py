@@ -14,16 +14,16 @@ class housing_benefit_applicable_income_disregard(Variable):
         "also capped at net earnings. The additional earnings disregard of "
         "£17.10 is added where a work condition is met and net earnings at "
         "least equal the other disregards (including that one), the childcare "
-        "charges deducted and £17.10. A claimant who, or whose partner, is on "
-        "Income Support, "
-        "income-based Jobseeker's Allowance or income-related Employment and "
-        "Support Allowance has all earnings disregarded, at any age: the "
-        "working-age Regulations then apply (SI 2006/213 reg 5(1)(b)). The "
+        "charges deducted and £17.10. A family on Universal Credit, Income "
+        "Support, income-based Jobseeker's Allowance or income-related "
+        "Employment and Support Allowance "
+        "(housing_benefit_on_passporting_benefit) has all earnings "
+        "disregarded, at any age: the working-age Regulations then apply "
+        "(SI 2006/213 reg 5(1)(b)). The "
         "£20 disregards for disabled people, carers and some part-time "
         "occupations are not modelled, nor is the working-age permitted work "
         "disregard (Sch 4 para 10A), which replaces paras 3 to 10 but not "
-        "para 18. Nor is the universal credit limb of para 12: the model does "
-        "not pay Housing Benefit to a family on Universal Credit."
+        "para 18."
     )
     definition_period = YEAR
     unit = GBP
@@ -32,6 +32,8 @@ class housing_benefit_applicable_income_disregard(Variable):
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/4",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/5",
         "https://www.legislation.gov.uk/nisr/2006/406/schedule/5",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/12",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/12",
         "https://www.legislation.gov.uk/uksi/2026/978/regulation/2",
         "https://www.legislation.gov.uk/nisr/2026/157/regulation/2",
     )
@@ -79,16 +81,18 @@ class housing_benefit_applicable_income_disregard(Variable):
             additional_amount,
             0,
         )
-        # Working age Sch 4 para 12. The working-age Regulations apply at any
+        # Working age Sch 4 para 12 (NI: SR 2006/405 Sch 5 para 12): "Where a
+        # claimant is on universal credit, income support, an income-based
+        # jobseeker's allowance or an income-related employment and support
+        # allowance, his earnings." The working-age Regulations apply at any
         # age where the claimant or partner is on one of these benefits (SI
         # 2006/213 reg 5(1)(b); SI 2006/214 reg 5(2)), so there is no age
-        # condition. Families on Universal Credit cannot receive Housing
-        # Benefit in the model.
-        on_income_related_benefit = (
-            add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
+        # condition.
+        on_passporting_benefit = benunit(
+            "housing_benefit_on_passporting_benefit", period
         )
         return where(
-            on_income_related_benefit,
+            on_passporting_benefit,
             net_earnings,
             standard + accommodation + additional,
         )

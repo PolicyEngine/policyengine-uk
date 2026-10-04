@@ -70,8 +70,16 @@ def test_emptying_a_person_sources_list_disregards_the_lifetime_isa_there_only()
             "2025-01-01.2100-12-31": []
         }
     }
-    baseline = Simulation(situation=LIFETIME_ISA_HOLDER)
-    reformed = Simulation(situation=LIFETIME_ISA_HOLDER, reform=reform)
+    # Not claiming Universal Credit: on it, the whole of the Housing Benefit
+    # capital would be disregarded (SI 2006/213 Sch 6 para 5).
+    holder = {
+        **LIFETIME_ISA_HOLDER,
+        "benunits": {
+            "benunit": {"members": ["person"], "would_claim_uc": {"2025": False}}
+        },
+    }
+    baseline = Simulation(situation=holder)
+    reformed = Simulation(situation=holder, reform=reform)
 
     assert baseline.calculate("uc_assessable_capital", 2025)[0] == 8_500
     assert reformed.calculate("uc_assessable_capital", 2025)[0] == 1_000

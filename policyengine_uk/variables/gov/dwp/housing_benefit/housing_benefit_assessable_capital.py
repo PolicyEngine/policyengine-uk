@@ -15,10 +15,11 @@ class housing_benefit_assessable_capital(Variable):
         "partner (is_claimant_or_partner): a dependant's capital is not the "
         "claimant's. Where the Pension Credit award is savings credit only, the "
         "Pension Credit assessment of capital is used instead. It is nil for a "
-        "family in receipt of Income Support, income-based Jobseeker's "
-        "Allowance or income-related Employment and Support Allowance, and for "
-        "a pension-age family with a positive guarantee credit (the guarantee "
-        "credit passport)."
+        "family on Universal Credit, Income Support, income-based Jobseeker's "
+        "Allowance or income-related Employment and Support Allowance "
+        "(housing_benefit_on_passporting_benefit), and for a pension-age "
+        "family with a positive guarantee credit (the guarantee credit "
+        "passport)."
     )
     definition_period = YEAR
     unit = GBP
@@ -27,6 +28,7 @@ class housing_benefit_assessable_capital(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/25",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/6/paragraph/5",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/7/paragraph/5",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/27",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/25",
     )
@@ -79,17 +81,17 @@ class housing_benefit_assessable_capital(Variable):
             benunit("guarantee_credit", period) > 0
         )
         # SI 2006/213 Sch 6 para 5 (NI: SR 2006/405 Sch 7 para 5) disregards
-        # "the whole of his capital" where a claimant is on income support, an
-        # income-based jobseeker's allowance or an income-related employment
-        # and support allowance (para 6: a joint-claim partner on income-based
-        # JSA). With no capital the tariff income is nil and the capital limit
-        # is met. See housing_benefit_applicable_income for the age and
-        # universal credit points.
-        on_income_related_benefit = benunit(
-            "in_receipt_of_income_support_jsa_ib_or_esa_ir", period
+        # "the whole of his capital" where a claimant is on universal credit,
+        # income support, an income-based jobseeker's allowance or an
+        # income-related employment and support allowance (para 6: a
+        # joint-claim partner on income-based JSA). With no capital the tariff
+        # income is nil and the capital limit is met. See
+        # housing_benefit_applicable_income for the age and benefit cap points.
+        on_passporting_benefit = benunit(
+            "housing_benefit_on_passporting_benefit", period
         )
         return where(
-            guarantee_credit | on_income_related_benefit,
+            guarantee_credit | on_passporting_benefit,
             0,
             max_(0, capital),
         )

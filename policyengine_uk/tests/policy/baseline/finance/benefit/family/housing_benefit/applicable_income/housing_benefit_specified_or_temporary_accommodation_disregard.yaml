@@ -109,6 +109,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
         in_specified_or_temporary_accommodation: true
   output:
@@ -128,6 +129,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
         in_specified_or_temporary_accommodation: true
   output:
@@ -175,6 +177,7 @@
         is_claimant_or_partner: true
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
         in_specified_or_temporary_accommodation: true
   output:
@@ -195,6 +198,7 @@
         age: 20
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
         in_specified_or_temporary_accommodation: true
   output:
@@ -214,6 +218,7 @@
         age: 25
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
         in_specified_or_temporary_accommodation: true
   output:
@@ -258,6 +263,7 @@
         weekly_hours: 10
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
         in_specified_or_temporary_accommodation: true
   output:
@@ -278,6 +284,7 @@
         weekly_hours: 10
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
         in_specified_or_temporary_accommodation: true
   output:
@@ -297,6 +304,7 @@
         weekly_hours: 10
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
@@ -330,6 +338,7 @@
         age: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
@@ -474,6 +483,7 @@
         employment_income: 1_040 # £20 a week
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         income_support: 3_000
         in_specified_or_temporary_accommodation: true
@@ -517,6 +527,7 @@
         statutory_maternity_pay: 5_200 # £100 a week, earnings under reg 35(1)(i)
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
@@ -534,6 +545,7 @@
         self_employment_income: -2_000
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
@@ -578,6 +590,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
@@ -596,6 +609,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
@@ -613,6 +627,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
@@ -630,6 +645,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     # £5,148 ≥ £260 + £889.20 = £1,149.20.
@@ -648,6 +664,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
         in_specified_or_temporary_accommodation: true
   output:
@@ -668,6 +685,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
         in_specified_or_temporary_accommodation: true
   output:
@@ -694,6 +712,7 @@
         age: 1
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner, child]
         in_specified_or_temporary_accommodation: true
   output:
