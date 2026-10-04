@@ -7,6 +7,10 @@ class care_to_learn_eligible(Variable):
     label = "eligible for Care to Learn childcare support"
     definition_period = YEAR
     defined_for = "would_claim_care_to_learn"
+    reference = (
+        "https://www.gov.uk/government/publications/care-to-learn-conditions-of-grant-funding/care-to-learn-academic-year-2026-to-2027-conditions-of-grant-funding",
+        "https://www.legislation.gov.uk/ukpga/1992/4/section/142",
+    )
 
     def formula(person, period, parameters):
         # Link for instruction: https://www.gov.uk/care-to-learn/eligibility
@@ -14,8 +18,14 @@ class care_to_learn_eligible(Variable):
         # Only parents can be eligible, not children
         is_parent = person("is_parent", period)
 
-        # Check basic eligibility conditions
-        benunit_has_children = person.benunit.any(person("is_child", period))
+        # The young parent must be the main carer of, and receive Child
+        # Benefit for, the child they claim for (ESFA conditions of grant).
+        # So the child is a Child Benefit child or qualifying young person in
+        # the benefit unit, other than the parent themselves.
+        cares_for_child_benefit_child = person.benunit.any(
+            person("is_child_or_qualifying_young_person_for_child_benefit", period)
+            & ~is_parent
+        )
         p = parameters(period).gov.dfe.care_to_learn
         age_eligible = person("age", period) < p.age_limit
 
@@ -34,7 +44,7 @@ class care_to_learn_eligible(Variable):
 
         return (
             is_parent
-            & benunit_has_children
+            & cares_for_child_benefit_child
             & age_eligible
             & not_higher_education
             & lives_in_england

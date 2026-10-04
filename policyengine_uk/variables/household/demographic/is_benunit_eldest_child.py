@@ -5,7 +5,12 @@ import pandas as pd
 class is_benunit_eldest_child(Variable):
     value_type = bool
     entity = Person
-    label = "Eldest child in the benefit unit"
+    label = "Eldest benefit-unit member under 18 (deprecated)"
+    documentation = (
+        "Deprecated: an age cut-off with no legal basis, kept only for "
+        "downstream compatibility with its original formula. Nothing in "
+        "policyengine-uk uses it. Use the programme's own child index instead."
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):

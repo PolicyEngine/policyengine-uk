@@ -1,0 +1,103 @@
+- name: Dependent young person PIP does not exempt the claimant household
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_parent: true
+      other_member:
+        age: 18
+        is_in_non_advanced_education: true
+        pip_dl: 100
+      non_dependant:
+        age: 25
+    benunits:
+      claimant_unit:
+        members: [claimant, other_member]
+      other_unit:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, other_member, non_dependant]
+  output:
+    # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
+    council_tax_reduction_household_has_non_dep_exemption: false
+
+- name: Under-18 partner PIP exempts the claimant household
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+        is_parent: true
+      other_member:
+        age: 17
+        is_in_non_advanced_education: true
+        is_claimant_or_partner: true
+        pip_dl: 100
+      non_dependant:
+        age: 25
+        is_claimant_or_partner: true
+    benunits:
+      claimant_unit:
+        members: [claimant, other_member]
+      other_unit:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, other_member, non_dependant]
+  output:
+    # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
+    is_couple: [true, false]
+    council_tax_reduction_household_has_non_dep_exemption: true
+
+- name: Claimant PIP continues to exempt the household
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_parent: true
+        pip_dl: 100
+      other_member:
+        age: 18
+        is_in_non_advanced_education: true
+      non_dependant:
+        age: 25
+    benunits:
+      claimant_unit:
+        members: [claimant, other_member]
+      other_unit:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, other_member, non_dependant]
+  output:
+    # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
+    council_tax_reduction_household_has_non_dep_exemption: true
+
+- name: Dependent young person blindness does not exempt the claimant household
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_parent: true
+      other_member:
+        age: 18
+        is_in_non_advanced_education: true
+        is_blind: true
+      non_dependant:
+        age: 25
+    benunits:
+      claimant_unit:
+        members: [claimant, other_member]
+      other_unit:
+        members: [non_dependant]
+    households:
+      household:
+        members: [claimant, other_member, non_dependant]
+  output:
+    # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
+    council_tax_reduction_household_has_non_dep_exemption: false
