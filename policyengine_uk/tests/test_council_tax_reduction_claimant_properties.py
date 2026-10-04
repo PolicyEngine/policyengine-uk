@@ -7,28 +7,36 @@ reduction (SI 2012/2885 Sch 1 paras 2-3; SI 2013/3029 regs 22-25; SSI
 (the household reference person, a householder) as the liable resident, and
 families liable for a share of the rent as jointly liable with the head's.
 
+Where the rent is shared, a full-time student is excluded from entitlement
+(Default Scheme Sch para 75(1)); the model takes a person in higher education
+as one, so a family there claims only through a liable non-student.
+
 Invariants, for any generated population of households, including ties in
-age, no head flagged, several heads flagged, and sharer families with no
-member aged 18 or over. Invariants marked "pin" restate the formula, so they
-guard against regressions rather than check it independently.
+age, no head flagged, several heads flagged, sharer families with no member
+aged 18 or over, and adults in higher education. Invariants marked "pin"
+restate the formula, so they guard against regressions rather than check it
+independently.
 
 1. One head: exactly one family in each household contains the household
    head. With one or more members flagged, it holds a flagged member; with
    none, it holds a member of the greatest age.
 2. Claimants: a household whose rent is not shared has at most one claimant
    family, the head's, and the head's family claims whenever the head is
-   18 or over (including a grandparent head whose family's claimant and
-   partner are 17-year-old parents). A family with no member aged 18 or
-   over never claims (no one under 18 can be liable, LGFA 1992 s.6(5)).
-   Every person treated as liable is 18 or over and in the head's family or
-   a sharer family. Pin: a family claims if and only if it has a member
-   treated as liable.
+   18 or over and, where the rent is shared, not a student (including a
+   grandparent head whose family's claimant and partner are 17-year-old
+   parents). A family with no member aged 18 or over never claims (no one
+   under 18 can be liable, LGFA 1992 s.6(5)), and where the rent is shared
+   no family claims through students alone. Every person treated as liable
+   is 18 or over and in the head's family or a sharer family. Pin: a family
+   claims if and only if it has a member treated as liable who, where the
+   rent is shared, is not a student.
 3. Simulated reductions: no family outside the claimants gets one, and a
    household's total never exceeds its council tax. (Reported reductions,
    used where a scheme is not modelled, are outside this test.)
 4. Non-dependants: no claimant or partner of a claimant family is a
-   non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)). Pin:
-   every adult in a family that neither claims nor pays rent is one.
+   non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)). Pin: no
+   member of a sharer family is one, and every adult outside the claimant
+   families, the sharer families and boarders' and lodgers' families is one.
 5. Differential: where the input flags at most one head, the family holding
    the head is the one holding the person-level household head that Housing
    Benefit and Universal Credit use.
@@ -79,6 +87,10 @@ def family(draw):
         ages=draw(st.lists(adult_age, min_size=1, max_size=2)),
         child_age=draw(st.one_of(st.none(), st.integers(0, 15))),
         earnings=draw(st.lists(money, min_size=2, max_size=2)),
+        # Each adult is sometimes in higher education.
+        students=draw(
+            st.lists(st.sampled_from([False, False, True]), min_size=2, max_size=2)
+        ),
         sharer=draw(st.booleans()),
         # Outside the first family: sometimes a single person aged 15-17.
         minor_age=draw(st.one_of(st.none(), st.none(), st.integers(15, 17))),
@@ -136,7 +148,11 @@ def build(population, age_override=None):
                 flagged = adult_index in flagged_adults
                 if age_override is not None:
                     age = age_override(house, adult_index, age, flagged)
-                person = {"age": age, "employment_income": fam["earnings"][i]}
+                person = {
+                    "age": age,
+                    "employment_income": fam["earnings"][i],
+                    "in_HE": fam["students"][i],
+                }
                 if house["head_flags"] != "unset":
                     person["is_household_head"] = flagged
                 people[pid] = person
@@ -207,11 +223,16 @@ def calc(simulation, variable, map_to=None):
     return np.asarray(simulation.calculate(variable, YEAR, map_to=map_to))
 
 
+def household_of_benunit(facts):
+    """The household index of each benefit unit."""
+    households = np.zeros(facts["sharer"].size, dtype=int)
+    households[facts["benunit"]] = facts["household"]
+    return households
+
+
 def per_household(values, facts):
     """Sum benefit-unit values within each household."""
-    household_of_benunit = np.zeros(facts["sharer"].size, dtype=int)
-    household_of_benunit[facts["benunit"]] = facts["household"]
-    return np.bincount(household_of_benunit, weights=values.astype(float))
+    return np.bincount(household_of_benunit(facts), weights=values.astype(float))
 
 
 @PROPERTY_SETTINGS
@@ -253,13 +274,24 @@ def test_claimant_invariants(population):
     in_head_or_sharer = (head | sharer)[facts["benunit"]]
     assert np.all(age[liable] >= 18)
     assert np.all(in_head_or_sharer[liable])
+    student = calc(sim, "in_HE")
+    person_shared = shared[person_household]
+    excluded_student = person_shared & student
     head_adult = np.zeros(claimant.size, dtype=bool)
-    np.logical_or.at(head_adult, facts["benunit"], head_person & (age >= 18))
+    np.logical_or.at(
+        head_adult,
+        facts["benunit"],
+        head_person & (age >= 18) & ~excluded_student,
+    )
     assert np.all(claimant[head_adult])
     claimants_not_shared = per_household(claimant, facts)[~shared]
     assert np.all(claimants_not_shared <= 1)
+    has_adult_non_student = np.zeros(claimant.size, dtype=bool)
+    np.logical_or.at(has_adult_non_student, facts["benunit"], (age >= 18) & ~student)
+    benunit_shared = shared[household_of_benunit(facts)]
+    assert not np.any(claimant & benunit_shared & ~has_adult_non_student)
     has_liable = np.zeros(claimant.size, dtype=bool)
-    np.logical_or.at(has_liable, facts["benunit"], liable)
+    np.logical_or.at(has_liable, facts["benunit"], liable & ~excluded_student)
     assert np.array_equal(claimant, has_liable)
 
     # 3. Simulated reductions: none outside claimant families; never above
@@ -276,10 +308,12 @@ def test_claimant_invariants(population):
     # 4. Non-dependants.
     non_dep = calc(sim, "council_tax_reduction_individual_non_dep_deduction_eligible")
     person_claimant = claimant[facts["benunit"]]
-    person_rent_liable = calc(sim, "benunit_is_rent_liable")[facts["benunit"]]
+    person_sharer = sharer[facts["benunit"]]
+    lodger = calc(sim, "pays_rent_to_householder")
     adult = age >= 18
     assert not np.any(non_dep & person_claimant & claimant_or_partner)
-    assert np.all(non_dep[adult & ~person_claimant & ~person_rent_liable])
+    assert not np.any(non_dep & person_sharer)
+    assert np.all(non_dep[adult & ~person_claimant & ~person_sharer & ~lodger])
 
     # 5. Differential with the person-level household head. Once anyone in
     # the simulation has the input, everyone else's defaults to false, so an
