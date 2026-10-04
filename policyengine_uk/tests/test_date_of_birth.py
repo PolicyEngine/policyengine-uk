@@ -12,7 +12,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import given, settings
+from hypothesis import example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -264,6 +264,13 @@ def births_and_year(draw):
 
 @settings(max_examples=25, deadline=None)
 @given(case=births_and_year())
+# Transitional cohorts in the year they reach the qualifying age, where a
+# wrong birth instant changes has_attained_state_pension_credit_qualifying_age
+# but a uniform draw rarely lands: a woman born 10 December 1952 (qualifying
+# age 62 years and about 9 months, reached in 2015-16) and a man born 10
+# November 1960 (66 years and 7 months, reached in 2027-28).
+@example(case=([(date(1952, 12, 10), False)], 2015))
+@example(case=([(date(1960, 11, 10), True)], 2027))
 def test_a_date_of_birth_input_matches_the_same_birthday_by_age(case):
     """Setting date_of_birth (with the legal age on 6 October) gives the same
     State Pension age, State Pension Credit qualifying age, statuses, Savings
@@ -307,8 +314,15 @@ def test_a_date_of_birth_input_matches_the_same_birthday_by_age(case):
         "months_since_state_pension_age",
     ]:
         assert np.allclose(
-            a.calculate(variable, year), b.calculate(variable, year), atol=1e-3
+            a.calculate(variable, year), b.calculate(variable, year), rtol=0, atol=1e-9
         ), variable
+    # A woman's qualifying age for State Pension Credit is her State Pension
+    # age (SPCA 2002 s.1(6)(a)), so on the date path both statuses agree.
+    women = ~a.calculate("is_male", year)
+    assert np.array_equal(
+        a.calculate("has_attained_state_pension_credit_qualifying_age", year)[women],
+        a.calculate("is_SP_age", year)[women],
+    )
     assert list(a.calculate("date_of_birth", year)[1:]) == [ymd(d) for d in births]
     assert a.calculate("date_of_birth", year)[0] == 0
 

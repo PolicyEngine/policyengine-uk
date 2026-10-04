@@ -134,8 +134,9 @@ Other programmes test State Pension age in two ways:
   itself is read as over it at the beginning of that year. With default
   whole-number ages in a household situation, the inferred birthday is
   6 April. Entering an integer State Pension age therefore makes this
-  boundary reading determine the Class 4 result; fractional ages and explicit
-  birthday-month inputs can place the birthday on another day. Class 1 employee
+  boundary reading determine the Class 4 result; fractional ages, explicit
+  birthday-month inputs and a `date_of_birth` input can place the birthday on
+  another day. Class 1 employee
   contributions stop at State Pension age itself (SSCBA 1992 s.6(3)), which
   the annual model reads as `is_SP_age`.
 
