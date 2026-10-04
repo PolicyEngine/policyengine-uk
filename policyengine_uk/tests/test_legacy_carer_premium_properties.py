@@ -22,7 +22,8 @@ dependent children or qualifying young persons:
   amount or two;
 - unless supplied, partners are treated as caring for the same person unless
   both are entitled with a reported Carer's Allowance award (these families
-  supply no allowance amounts directly, the model's other kind of award);
+  supply no allowance amounts, pre-overlap amounts or entitlements directly,
+  the model's other kind of award);
 - supplying "same person" never raises the premium and caps it at one amount;
 - caring by the claimant or partner never removes Income Support eligibility
   or lowers the premium, and below pension age it always opens the IS route.
@@ -39,6 +40,7 @@ pattern.
 import numpy as np
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.reforms import Reform
 
 from policyengine_uk import Simulation
 
@@ -245,3 +247,42 @@ def test_caring_for_the_same_person_pays_at_most_one_premium(drawn):
     for i in range(k):
         assert premium[k + i] <= premium[i] + 0.01, units[i]
         assert abs(premium[k + i] - min(premium[i], amount * WEEKS)) < 0.01, units[i]
+
+
+def _couple_caring(country, hours, year, reform=None):
+    situation = {
+        "people": {
+            "a": {"age": {year: 40}, "care_hours": {year: hours}},
+            "b": {"age": {year: 38}, "care_hours": {year: hours}},
+        },
+        "benunits": {"bu": {"members": ["a", "b"]}},
+        "households": {"h": {"members": ["a", "b"], "country": {year: country}}},
+    }
+    sim = Simulation(situation=situation, reform=reform)
+    amount = sim.tax_benefit_system.parameters(year).gov.dwp.carer_premium.single
+    return (
+        bool(sim.calculate("partners_care_for_same_severely_disabled_person", year)[0]),
+        float(sim.calculate("carer_premium", year)[0]),
+        amount * WEEKS,
+    )
+
+
+def test_scottish_caring_hours_follow_carer_support_payment():
+    # The hours that explain an entitlement in the same-person default are
+    # Carer Support Payment's in Scotland from 2025 and Carer's Allowance's
+    # otherwise, as in carers_allowance_pre_overlap. Raising only the Carer's
+    # Allowance minimum to 40 leaves a Scottish couple who each care 36 hours
+    # entitled to Carer Support Payment on hours alone, so the default treats
+    # them as caring for the same person: one premium, not two.
+    reform = Reform.from_dict(
+        {"gov.dwp.carers_allowance.min_hours": {"2020-01-01.2030-12-31": 40}},
+        country_id="uk",
+    )
+    same, premium, one = _couple_caring("SCOTLAND", 36, 2026, reform)
+    assert same and abs(premium - one) < 0.01
+    same, premium, one = _couple_caring("SCOTLAND", 36, 2026)
+    assert same and abs(premium - one) < 0.01
+    # Carer's Allowance applies in England, and in Scotland before 2025, so
+    # 36 hours fall short of the reformed minimum and give no entitlement.
+    assert _couple_caring("ENGLAND", 36, 2026, reform)[1] == 0
+    assert _couple_caring("SCOTLAND", 36, 2024, reform)[1] == 0
