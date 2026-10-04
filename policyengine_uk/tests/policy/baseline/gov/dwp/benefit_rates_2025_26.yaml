@@ -1,0 +1,252 @@
+# 2025-26 rates from DWP's "Benefit and pension rates 2025 to 2026", as set by
+# the Social Security Benefits Up-rating Order 2025 (SI 2025/295). Weekly
+# amounts times 52.
+
+- name: Pension Credit standard minimum guarantee, single
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+    people:
+      person:
+        age: 70
+  output:
+    standard_minimum_guarantee: 227.10 * 52
+
+- name: Pension Credit standard minimum guarantee, couple
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    benunits:
+      benunit:
+        members: [person, partner]
+        relation_type: COUPLE
+    people:
+      person:
+        age: 70
+      partner:
+        age: 70
+  output:
+    standard_minimum_guarantee: 346.60 * 52
+
+- name: Housing Benefit personal allowance, single aged 25 or over
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_eligible: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 92.05 * 52
+
+- name: Housing Benefit personal allowance, single under 25
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 22
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_eligible: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 72.90 * 52
+
+- name: Housing Benefit personal allowance, couple one or both 18 or over
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+        is_SP_age: false
+      partner:
+        age: 30
+        is_SP_age: false
+    benunits:
+      benunit:
+        members: [person, partner]
+        housing_benefit_eligible: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 144.65 * 52
+
+- name: Housing Benefit pension-age personal allowance, single who reached State Pension age before April 2021
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 80
+        is_SP_age: true
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_eligible: true
+        is_single_person: true
+        is_couple: false
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 244.40 * 52
+
+- name: Housing Benefit pension-age personal allowance, couple who reached State Pension age before April 2021
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 80
+        is_SP_age: true
+      partner:
+        age: 79
+        is_SP_age: true
+    benunits:
+      benunit:
+        members: [person, partner]
+        housing_benefit_eligible: true
+        is_single_person: false
+        is_couple: true
+        is_lone_parent: false
+        benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 366.00 * 52
+
+- name: Income Support personal allowance, single aged 25 or over
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: [person]
+        youngest_adult_age: 30
+        eldest_adult_age: 30
+        is_single: true
+        benefits_premiums: 0
+  output:
+    income_support_applicable_amount: 92.05 * 52
+
+- name: Income Support personal allowance, couple both 18 or over
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 30
+      partner:
+        age: 30
+    benunits:
+      benunit:
+        members: [person, partner]
+        youngest_adult_age: 30
+        eldest_adult_age: 30
+        is_single: false
+        benefits_premiums: 0
+  output:
+    income_support_applicable_amount: 144.65 * 52
+
+- name: Disability premium, single and couple
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 40
+      b:
+        age: 40
+      c:
+        age: 40
+    benunits:
+      single:
+        members: [a]
+        is_single: true
+        is_couple: false
+        num_disabled_claimants_or_partners_for_legacy_benefits: 1
+      couple:
+        members: [b, c]
+        is_single: false
+        is_couple: true
+        num_disabled_claimants_or_partners_for_legacy_benefits: 1
+  output:
+    disability_premium: [2_246.40, 3_205.80]  # 43.20 and 61.65 a week
+
+- name: Carer premium, one carer and two carers
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      a:
+        age: 40
+        is_entitled_to_carer_benefit: true
+      b:
+        age: 40
+        is_entitled_to_carer_benefit: true
+      c:
+        age: 40
+        is_entitled_to_carer_benefit: true
+    benunits:
+      one:
+        members: [a]
+      two:
+        members: [b, c]
+  output:
+    carer_premium: [2_412.80, 4_825.60]  # 46.40 and 2 x 46.40 a week
+
+- name: Attendance Allowance, Disability Living Allowance and Personal Independence Payment lower and middle rates
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        aa_category: LOWER
+        dla_sc_category: MIDDLE
+        dla_m_category: LOWER
+        pip_dl_category: STANDARD
+        pip_m_category: STANDARD
+  output:
+    attendance_allowance: 73.90 * 52
+    dla_sc: 73.90 * 52
+    dla_m: 29.20 * 52
+    pip_dl: 73.90 * 52
+    pip_m: 29.20 * 52
+
+- name: Carer's Allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        care_hours: 40
+        would_claim_carers_allowance: true
+    households:
+      household:
+        members: [person]
+        region: LONDON
+  output:
+    carers_allowance: 83.30 * 52

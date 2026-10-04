@@ -1,5 +1,7 @@
 description: Working Tax Credit 30 hours element.
 values:
+  # 2022-23 to 2024-25: HMRC tax credit rates and the Tax Credits Up-rating
+  # Regulations. Tax credits ended on 5 April 2025.
   2002-08-01: 620
   2004-04-06: 640
   2005-04-06: 660
@@ -19,10 +21,21 @@ values:
   2020-03-25: 810
   2020-04-06: 825
   2021-04-06: 830
+  2022-04-01: 860
+  2023-04-01: 950
+  2024-04-01: 1015
 metadata:
   period: year
   unit: currency-GBP
   uprating: gov.benefit_uprating_cpi
   reference:
-    title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002
-    href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2
+    - title: The Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002, Schedule 2
+      href: https://www.legislation.gov.uk/uksi/2002/2005/schedule/2
+    - title: "Tax credits, Child Benefit and Guardian's Allowance: rates and allowances (HMRC, gov.uk)"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
+    - title: The Tax Credits Up-rating Regulations 2022 (SI 2022/231)
+      href: https://www.legislation.gov.uk/uksi/2022/231/contents/made
+    - title: The Tax Credits Up-rating Regulations 2023 (SI 2023/237)
+      href: https://www.legislation.gov.uk/uksi/2023/237/contents/made
+    - title: The Tax Credits Up-rating Regulations 2024 (SI 2024/247)
+      href: https://www.legislation.gov.uk/uksi/2024/247/contents/made

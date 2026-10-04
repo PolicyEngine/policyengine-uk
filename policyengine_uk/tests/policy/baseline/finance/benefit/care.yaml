@@ -30,7 +30,7 @@
       household:
         members: [claimant, partner]
   output:
-    carer_premium: 37.5 * 52
+    carer_premium: 75.0 * 52  # 37.50 a week for each carer (HB Regs 2006 Sch 3 Part 4)
 
 - name: Three carers in a benefit unit stay at the couple rate (regression for #420)
   # Only the claimant and partner count, so a third carer in the unit adds
@@ -58,7 +58,7 @@
       household:
         members: [claimant, partner, adult_child]
   output:
-    carer_premium: 37.5 * 52
+    carer_premium: 75.0 * 52  # at most two carers in a benefit unit
 
 - name: No carers in a benefit unit receive no premium
   period: 2020
@@ -103,6 +103,6 @@
     carers_allowance_reported: 0
     country: ENGLAND
   output:
-    carers_allowance: 83.29 * 52
+    carers_allowance: 83.30 * 52
     is_carer_for_benefits: true
     num_carers: 1

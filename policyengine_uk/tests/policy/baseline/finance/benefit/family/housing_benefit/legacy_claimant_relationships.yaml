@@ -26,10 +26,10 @@
         housing_benefit_eligible: true
         benefits_premiums: 0
   output:
-    # HB Sch 3 para 1: the applicable weekly model rate is 92.04; *52.
-    housing_benefit_applicable_amount: 4786.08
+    # HB Sch 3 para 1: the applicable 2025-26 weekly rate is 92.05; *52.
+    housing_benefit_applicable_amount: 4786.60
     # CTR retains the existing shared HB allowance parameters.
-    council_tax_reduction_applicable_amount: 4786.08
+    council_tax_reduction_applicable_amount: 4786.60
     # HB Sch 4 paras 4/7/10: 25 * 52, with no hours disregard.
     housing_benefit_applicable_income_disregard: 1300
 
@@ -65,10 +65,10 @@
         housing_benefit_eligible: true
         benefits_premiums: 0
   output:
-    # HB Sch 3 para 1: the applicable weekly model rate is 144.67; *52.
-    housing_benefit_applicable_amount: 7522.84
+    # HB Sch 3 para 1: the applicable 2025-26 weekly rate is 144.65; *52.
+    housing_benefit_applicable_amount: 7521.80
     # CTR retains the existing shared HB allowance parameters.
-    council_tax_reduction_applicable_amount: 7522.84
+    council_tax_reduction_applicable_amount: 7521.80
     # HB Sch 4 paras 4/7/10: 10 * 52, with no hours disregard.
     housing_benefit_applicable_income_disregard: 520
 
@@ -95,10 +95,10 @@
         housing_benefit_eligible: true
         benefits_premiums: 0
   output:
-    # HB Sch 3 para 1: the applicable weekly model rate is 72.92; *52.
-    housing_benefit_applicable_amount: 3791.84
+    # HB Sch 3 para 1: the applicable 2025-26 weekly rate is 72.90; *52.
+    housing_benefit_applicable_amount: 3790.80
     # CTR retains the existing shared HB allowance parameters.
-    council_tax_reduction_applicable_amount: 3791.84
+    council_tax_reduction_applicable_amount: 3790.80
     # HB Sch 4 paras 4/7/10: 5 * 52, with no hours disregard.
     housing_benefit_applicable_income_disregard: 260
 
@@ -129,10 +129,10 @@
         housing_benefit_eligible: true
         benefits_premiums: 0
   output:
-    # HB Sch 3 para 1: the applicable weekly model rate is 144.67; *52.
-    housing_benefit_applicable_amount: 7522.84
+    # HB Sch 3 para 1: the applicable 2025-26 weekly rate is 144.65; *52.
+    housing_benefit_applicable_amount: 7521.80
     # CTR retains the existing shared HB allowance parameters.
-    council_tax_reduction_applicable_amount: 7522.84
+    council_tax_reduction_applicable_amount: 7521.80
     # HB Sch 4 paras 4/7/10: 10 * 52, with no hours disregard.
     housing_benefit_applicable_income_disregard: 520
 
@@ -163,10 +163,10 @@
         housing_benefit_eligible: true
         benefits_premiums: 0
   output:
-    # HB Sch 3 para 1: the applicable weekly model rate is 72.92; *52.
-    housing_benefit_applicable_amount: 3791.84
+    # HB Sch 3 para 1: the applicable 2025-26 weekly rate is 72.90; *52.
+    housing_benefit_applicable_amount: 3790.80
     # CTR retains the existing shared HB allowance parameters.
-    council_tax_reduction_applicable_amount: 3791.84
+    council_tax_reduction_applicable_amount: 3790.80
     # HB Sch 4 paras 4/7/10: 25 * 52, with no hours disregard.
     housing_benefit_applicable_income_disregard: 1300
 
@@ -197,10 +197,10 @@
         housing_benefit_eligible: true
         benefits_premiums: 0
   output:
-    # HB Sch 3 para 1: the applicable weekly model rate is 110.14; *52.
-    housing_benefit_applicable_amount: 5727.28
+    # HB Sch 3 para 1: the applicable 2025-26 weekly rate is 110.15; *52.
+    housing_benefit_applicable_amount: 5727.80
     # CTR retains the existing shared HB allowance parameters.
-    council_tax_reduction_applicable_amount: 5727.28
+    council_tax_reduction_applicable_amount: 5727.80
     # HB Sch 4 paras 4/7/10: 10 * 52, with no hours disregard.
     housing_benefit_applicable_income_disregard: 520
 
@@ -224,6 +224,6 @@
   output:
     # HB Sch 3 para 1(2): the claimant is under 18, even if responsible
     # for an older qualifying young person. Younger rate 72.92 * 52.
-    housing_benefit_applicable_amount: 3_791.84
+    housing_benefit_applicable_amount: 3_790.80
     # The shared CTR allowance calculation also uses only claimant/partner ages.
-    council_tax_reduction_applicable_amount: 3_791.84
+    council_tax_reduction_applicable_amount: 3_790.80

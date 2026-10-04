@@ -6,9 +6,11 @@ of the supplements to the Industrial Injuries Disablement benefit
 package, payable from 5 July 1948 (the appointed day for the post-war
 social security reforms).
 
-PolicyEngine UK populates the per-day-rate parameters
-(`full_day_rate`, `intermediate_rate`, `part_day_rate`,
-`exceptional_rate`) from 2015-04-01 onwards. For periods before 2015
+PolicyEngine UK populates the weekly rate parameters
+(`full_day_rate`, the normal maximum rate, and `intermediate_rate`,
+`part_day_rate` and `exceptional_rate`) from 2015-04-01 onwards, with
+each year's rate from DWP's Benefit and pension rates publications.
+For periods before 2015
 the parameter resolver returns the 2015 value — `Microsimulation`
 queries on those years would compute against a value the policy didn't
 actually take.
