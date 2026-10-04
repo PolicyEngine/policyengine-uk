@@ -32,3 +32,11 @@
     uc_is_in_startup_period: true
   output:
     uc_mif_applies: false
+
+- name: Self-employment loss (MIF applies)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: -1
+  output:
+    uc_mif_applies: true
