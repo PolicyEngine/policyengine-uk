@@ -35,6 +35,7 @@
         employment_income: 156 # £3 × 52
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     housing_benefit_applicable_income_disregard: 156 # min(£5, £3) × 52
@@ -99,6 +100,7 @@
         employment_income: 208 # £4 × 52
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
   output:
     # Para 7: the partner's earnings make up the £10 where the claimant's
@@ -118,6 +120,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     housing_benefit_applicable_income_disregard: 1_040 # min(£25, £20) × 52
@@ -245,6 +248,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     # Para 17(1): net earnings "equal or exceed" £5 × 52 + £0 childcare +
@@ -318,6 +322,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     # Para 17(1): £2,189.20 "equal or exceed" £1,300 + £0 childcare + £889.20.
@@ -463,6 +468,7 @@
         employment_income: 1_040 # £20 a week
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
         income_support: 3_000
   output:
@@ -480,6 +486,7 @@
         employment_income: 3_000
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
         esa_income: 4_000
   output:
@@ -501,6 +508,7 @@
         employment_income: 2_000
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     housing_benefit_net_earnings: 0
@@ -522,6 +530,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, young_person, child]
   output:
     # A qualifying young person is a "young person" (SI 2006/213 reg

@@ -17,7 +17,12 @@ class housing_benefit_on_passporting_benefit(Variable):
         "(would_claim_uc), so a Universal Credit award that the cap or "
         "deductions reduce to nil still counts. The model tests the year "
         "rather than each day, and both members of a joint claim are on "
-        "Universal Credit. The universal credit limb applies from 28 October "
+        "Universal Credit. There is no age condition: the working-age "
+        "regulations apply to a claimant over the qualifying age for State "
+        "Pension Credit whose partner is on one of these benefits (reg "
+        "5(1)(b)), and the model's Universal Credit needs a claimant or "
+        "partner under State Pension age in any case (is_uc_eligible). The "
+        "universal credit limb applies from 28 October "
         "2013 in Great Britain and 8 May 2018 in Northern Ireland "
         "(gov.dwp.housing_benefit.means_test.universal_credit_passport)."
     )

@@ -1,6 +1,7 @@
 - name: Capped at 0
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
     child_benefit: 1_000
     income_support: 0
@@ -105,6 +106,7 @@
   # Applicable income is floored at nil: 3,250 - 100,000 / 2 < 0.
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
     child_benefit: 0
     income_support: 0

@@ -32,6 +32,8 @@
       claimant:
         age: 40
         employment_income: 8_000
+        # Under 30 hours: no additional earnings disregard (Sch 4 para 17).
+        weekly_hours: 12
         housing_benefit_reported: 1
     benunits:
       benunit:
@@ -75,6 +77,8 @@
       claimant:
         age: 40
         employment_income: 8_000
+        # Under 30 hours: no additional earnings disregard (Sch 4 para 17).
+        weekly_hours: 12
         housing_benefit_reported: 1
     benunits:
       benunit:
@@ -172,6 +176,8 @@
       claimant:
         age: 30
         employment_income: 3_000
+        # Under 30 hours: no additional earnings disregard (Sch 4 para 17).
+        weekly_hours: 6
         housing_benefit_reported: 1
     benunits:
       benunit:

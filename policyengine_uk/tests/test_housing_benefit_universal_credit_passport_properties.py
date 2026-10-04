@@ -37,9 +37,12 @@ before the cap, or one the model computes), not on it, or on a legacy benefit:
    Great Britain and from 2019 in Northern Ireland (in force 28 October 2013
    and 8 May 2018; model years are read on 30 April), and never before.
 7. Order independence: with Housing Benefit and Universal Credit both paid,
-   calculating Housing Benefit, Universal Credit, the benefit cap or the
-   passport first gives the same results, so the passport (which reads
-   Universal Credit before the cap) adds no circular dependency.
+   calculating Housing Benefit, Universal Credit, the benefit cap, the
+   passport or household net income first gives the same means test, the
+   same Housing Benefit, Universal Credit and benefit cap reduction for every
+   benefit unit, and the same household net income. Each population includes
+   a family whose cap binds, so the passport (which reads Universal Credit
+   before the cap) adds no circular dependency through the cap.
 """
 
 import itertools
@@ -113,6 +116,24 @@ def families(draw, uc_modes=("off", "supplied", "computed"), legacy=True):
         },
         non_dependant_earnings=draw(st.one_of(st.none(), st.floats(0, 40_000))),
     )
+
+
+# Appended to the order test's population: a lone parent with four children
+# paying £18,000 private rent, on Universal Credit (computed) and Housing
+# Benefit, whose benefit cap binds.
+CAPPED_ON_UNIVERSAL_CREDIT = dict(
+    adults=[dict(age=30, employment_income=3_000.0, private_pension_income=0.0)],
+    children=[1, 3, 5, 7],
+    tenure="RENT_PRIVATELY",
+    country="ENGLAND",
+    rent=18_000.0,
+    savings=0.0,
+    uc_mode="computed",
+    uc_amount=None,
+    legacy={benefit: 0.0 for benefit in LEGACY},
+    non_dependant_earnings=None,
+)
+PAID = ["housing_benefit", "universal_credit", "benefit_cap_reduction"]
 
 
 # Appended to every generated population, so that each example has a family
@@ -223,10 +244,8 @@ MEANS_TEST = [
 ]
 
 
-def calculate(units, order=None, **kwargs):
+def calculate(units, **kwargs):
     sim = Simulation(situation=situation(units, **kwargs))
-    for variable in order or []:
-        sim.calculate(variable, YEAR)
     values = {v: np.asarray(sim.calculate(v, YEAR)) for v in VARIABLES}
     benunit_ids = list(sim.populations["benunit"].ids)
     claimants = [benunit_ids.index(f"b{i}") for i in range(len(units))]
@@ -379,18 +398,33 @@ def test_universal_credit_limb_dates():
     st.lists(families(uc_modes=("computed",), legacy=False), min_size=1, max_size=10)
 )
 def test_calculation_order_does_not_change_results(units):
-    orders = [
-        ["housing_benefit"],
-        ["universal_credit"],
-        ["benefit_cap_reduction"],
-        ["housing_benefit_on_passporting_benefit"],
-        ["household_net_income"],
-    ]
-    results = [calculate(units, order=order) for order in orders]
+    units = units + [CAPPED_ON_UNIVERSAL_CREDIT]
+    capped = f"b{len(units) - 1}"
+    results = []
+    for first in [
+        "housing_benefit",
+        "universal_credit",
+        "benefit_cap_reduction",
+        "housing_benefit_on_passporting_benefit",
+        "household_net_income",
+    ]:
+        sim = Simulation(situation=situation(units))
+        sim.calculate(first, YEAR)
+        values = {
+            v: np.asarray(sim.calculate(v, YEAR), dtype=float) for v in VARIABLES + PAID
+        }
+        values["household_net_income"] = np.asarray(
+            sim.calculate("household_net_income", YEAR), dtype=float
+        )
+        results.append(values)
+    # The sentinel is passported by Universal Credit and capped, so a
+    # dependency of the passport on the capped amounts would show here.
+    i = list(sim.populations["benunit"].ids).index(capped)
+    assert results[0]["housing_benefit_on_passporting_benefit"][i] == 1
+    assert results[0]["benefit_cap_reduction"][i] > 0
+    assert results[0]["housing_benefit_pre_benefit_cap"][i] > 0
     for other in results[1:]:
-        for variable in VARIABLES:
-            assert np.allclose(
-                results[0][variable].astype(float),
-                other[variable].astype(float),
-                atol=0.01,
-            ), variable
+        for variable in results[0]:
+            assert np.allclose(results[0][variable], other[variable], atol=0.01), (
+                variable
+            )
