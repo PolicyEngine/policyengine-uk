@@ -1,0 +1,4 @@
+- Care to Learn pays each qualifying child's childcare costs up to the weekly maximum per child, once per child, and only to young parents on a study programme (ESFA conditions of grant 2026-27).
+- The extended childcare entitlement requires a qualifying young child (SI 2022/1134 reg 13: aged three, two from April 2024, nine months from September 2024), and lets a parent or partner with limited capability for work or a specified benefit qualify without the work and income tests when the other meets them (regs 14(4) and 15(4)). The income test's boundaries now match regs 14(3)(c) and 18.
+- Maintenance loan household income treats students aged 25 or over as independent (Education (Student Support) Regulations 2011 Sch 4 para 2(1)(a)).
+- Tax-Free Childcare's caring and incapacity route uses the benefits in SI 2015/448 reg 13(1), not the Pension Credit child disability list, and treats a qualifying partner as meeting the minimum income (reg 13(2)(b)).
