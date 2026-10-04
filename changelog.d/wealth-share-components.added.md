@@ -1,1 +1,1 @@
-Add `directly_held_shares` and `unit_and_investment_trusts` household inputs for the share-like components of `corporate_wealth`, and uprate them and the ISA balances with per-capita GDP.
+- Add `directly_held_shares` and `unit_and_investment_trusts` household inputs for the share-like components of `corporate_wealth`, count them and the stocks and shares ISA in place of `corporate_wealth` in every means-test capital sources list (with `unitemised_corporate_wealth` carrying any part a dataset does not itemise), and uprate them and the ISA balances with per-capita GDP.
