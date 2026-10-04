@@ -14,8 +14,9 @@ class council_tax_reduction_working_age_unearned_income(Variable):
         "than Universal Credit and tariff income from capital. Retirement "
         "pensions, contributory Jobseeker's Allowance and Employment and "
         "Support Allowance, carer's allowance, carer support payment (the "
-        "Carer Support Payment component; the Scottish Carer Supplement is a "
-        "separate variable that does not count), "
+        "Carer Support Payment component before any overlapping-benefit "
+        "reduction, as the pension-age route counts it; the Scottish Carer "
+        "Supplement is a separate variable that does not count), "
         "maternity allowance, industrial injuries benefit, incapacity benefit, "
         "severe disablement allowance and working and child tax credits "
         "count. Child Benefit, the income-related benefits, disability "
@@ -44,7 +45,7 @@ class council_tax_reduction_working_age_unearned_income(Variable):
                 "jsa_contrib",
                 "esa_contrib",
                 "carers_allowance",
-                "carer_support_payment",
+                "carer_support_payment_pre_overlap",
                 "maternity_allowance",
                 "iidb",
                 "incapacity_benefit",

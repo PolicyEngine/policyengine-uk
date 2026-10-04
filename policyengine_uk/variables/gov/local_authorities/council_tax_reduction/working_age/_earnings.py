@@ -16,7 +16,7 @@ COUNTED_TAXABLE_UNEARNED = [
     "state_pension",
     "private_pension_income",
     "carers_allowance",
-    "carer_support_payment",
+    "carer_support_payment_pre_overlap",
     "esa_contrib",
     "jsa_contrib",
     "incapacity_benefit",

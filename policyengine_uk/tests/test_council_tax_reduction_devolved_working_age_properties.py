@@ -156,3 +156,109 @@ def test_income_related_esa_passports_to_the_full_liability(units):
     flag = sim.calculate("council_tax_reduction_working_age_passported", YEAR)
     assert flag.all()
     assert np.allclose(award, liability, atol=0.01)
+
+
+def welsh_universal_credit_family(earnings, rent, statutory_maternity_pay=0):
+    return {
+        "region": "WALES",
+        "people": [
+            {
+                "age": 30,
+                "employment_income": earnings,
+                "weekly_hours": 30,
+                "council_tax_benefit_reported": 100,
+            },
+            {"age": 30, "statutory_maternity_pay": statutory_maternity_pay},
+            {"age": 0},
+        ],
+        "would_claim_uc": True,
+        "rent": rent,
+        "council_tax": 1_800,
+        "savings": 0,
+        "esa_income": 0,
+    }
+
+
+def test_welsh_universal_credit_uses_the_universal_credit_income_figure():
+    """Wales with Universal Credit (WSI 2013/3029 Sch 6 paras 3 and 9).
+
+    The applicable amount is the UC maximum amount, and income is the
+    Secretary of State's income figure for the award plus the award. Earnings
+    are therefore whatever the UC model counts, statutory pay included or
+    not, so CTR and UC can never disagree on them. Differential check against
+    the UC variables, with and without statutory maternity pay.
+    """
+    units = [
+        welsh_universal_credit_family(6_000, 6_000),
+        welsh_universal_credit_family(6_000, 6_000, statutory_maternity_pay=5_000),
+        welsh_universal_credit_family(8_000, 6_000),
+    ]
+    sim = Simulation(situation=situation(units))
+    earnings = sim.calculate("council_tax_reduction_working_age_earned_income", YEAR)
+    uc_earnings = sim.calculate("uc_individual_earned_income", YEAR, map_to="benunit")
+    award = sim.calculate(
+        "council_tax_reduction_working_age_universal_credit_award", YEAR
+    )
+    income = sim.calculate("council_tax_reduction_working_age_applicable_income", YEAR)
+    applicable_amount = sim.calculate(
+        "council_tax_reduction_working_age_applicable_amount", YEAR
+    )
+    assert sim.calculate(
+        "council_tax_reduction_working_age_has_universal_credit", YEAR
+    ).all()
+    assert np.allclose(earnings, uc_earnings, atol=0.01)
+    assert np.allclose(
+        income,
+        earnings + sim.calculate("uc_unearned_income", YEAR) + award,
+        atol=0.01,
+    )
+    assert np.allclose(
+        applicable_amount, sim.calculate("uc_maximum_amount", YEAR), atol=0.01
+    )
+
+
+def test_welsh_universal_credit_partial_award_does_not_depend_on_rent():
+    """A targeted case for property 2, where the award is partial.
+
+    Couple with a baby, £11,000 earnings (above the benefit cap's earnings
+    exemption) and rent of £6,000 or £13,000. The housing element raises both
+    the maximum amount and the award, so excess income, 0.45 x 11,000 + 0.55
+    x 5,124 work allowance = 7,768.20, and the award, 1,800 - 0.2 x 7,768.20
+    = 246.36, are the same at either rent.
+    """
+    units = [
+        welsh_universal_credit_family(11_000, 6_000),
+        welsh_universal_credit_family(11_000, 13_000),
+    ]
+    sim = Simulation(situation=situation(units))
+    award = sim.calculate("simulated_council_tax_reduction_benunit", YEAR)
+    assert sim.calculate("benefit_cap_reduction", YEAR).max() == 0
+    assert np.allclose(award, 246.36, atol=0.01)
+
+
+def test_welsh_fixed_amounts_start_with_the_2013_scheme():
+    """Wales's fixed working-age amounts apply from 1 April 2013, when the
+    Council Tax Reduction Schemes (Prescribed Requirements) (Wales)
+    Regulations 2012 (W.S.I. 2012/3144) set them. A parameter read before its
+    first date takes its earliest value, so check the first dates."""
+    from policyengine_uk.system import system
+
+    wales = system.parameters.gov.local_authorities.wales.council_tax_reduction
+    working_age = wales.working_age
+    first = {
+        "earnings_disregard.single": 5,
+        "earnings_disregard.couple": 10,
+        "earnings_disregard.lone_parent": 25,
+        "earnings_disregard.disability_or_carer": 20,
+        "earnings_disregard.additional": 17.10,
+        "tariff_income.threshold": 6_000,
+        "tariff_income.step": 250,
+        "tariff_income.amount": 1,
+        "childcare.maximum_one_child": 175,
+        "childcare.maximum_two_or_more_children": 300,
+    }
+    for name, value in first.items():
+        parameter = working_age.get_child(name)
+        earliest = parameter.values_list[-1]
+        assert earliest.instant_str == "2013-04-01", name
+        assert earliest.value == value, name

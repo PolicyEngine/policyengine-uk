@@ -20,8 +20,11 @@
 # Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
 # carer premium 48.15, personal allowance 95.55 (single, 25 or over), 256.00
 # (single, pension age) and 383.35 (couple, pension age). 2025: CSP 83.30, no
-# supplement, and the model's carer premium 46.38 and personal allowance 92.04
-# (the statutory 2025-26 amounts were 46.40 and 92.05; see #2110). 2024: CA
+# supplement, and Scotland's working-age carer premium 46.40 and personal
+# allowance 92.05 (SSI 2025/24 reg 16; the Housing Benefit amounts the
+# pension-age route reads were 46.38 and 92.04, see #2110). Wales's 2026
+# working-age personal allowance is its own, 101.85 (W.S.I. 2026/13 reg
+# 11(a)). 2024: CA
 # 81.90, carer premium 45.60, personal allowance 90.50. Reduction is withdrawn
 # at 20% of income above the applicable amount. Council tax is 2,000
 # throughout.
@@ -85,10 +88,14 @@
         savings: 0
   output:
     carer_support_payment: 86.45 * 52
-    council_tax_reduction_applicable_income: 7_000 + 86.45 * 52
+    council_tax_reduction_working_age_applicable_income: 7_000 + 86.45 * 52
+    council_tax_reduction_working_age_applicable_amount: (95.55 + 48.15) * 52
     council_tax_reduction: 1_195.40
 
-- name: A Welsh carer on Carer's Allowance gets the same Council Tax Reduction as the Scottish carer
+- name: A Welsh carer on Carer's Allowance has it counted in Council Tax Reduction
+  # Wales's working-age rules (W.S.I. 2026/13 reg 11): applicable amount
+  # (101.85 + 48.15 carer premium) x 52 = 7,800; income 7,000 pension +
+  # 4,495.40 Carer's Allowance; award 2,000 - 0.2 x 3,695.40 = 1,260.92.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -112,8 +119,9 @@
     carers_allowance: 86.45 * 52
     carer_support_payment: 0
     scottish_carer_supplement: 0
-    council_tax_reduction_applicable_income: 7_000 + 86.45 * 52
-    council_tax_reduction: 1_195.40
+    council_tax_reduction_working_age_applicable_income: 7_000 + 86.45 * 52
+    council_tax_reduction_working_age_applicable_amount: (101.85 + 48.15) * 52
+    council_tax_reduction: 1_260.92
 
 - name: A Scottish carer who does not claim Carer Support Payment has none counted
   period: 2026
@@ -188,6 +196,10 @@
     # applicable amount, and a full award of 2,000.
     council_tax_reduction_applicable_income: 5_000 + 86.45 * 52
     council_tax_reduction_applicable_amount: (95.55 + 48.15) * 52
+    # The working-age route counts the same amount. Scotland's 2026-27
+    # amounts (SSI 2026/56 reg 14) equal these: 95.55 + 48.15 carer premium.
+    council_tax_reduction_working_age_applicable_income: 5_000 + 86.45 * 52
+    council_tax_reduction_working_age_applicable_amount: (95.55 + 48.15) * 52
     # 2,000 - 0.2 x (9,495.40 - 7,472.40)
     council_tax_reduction: 1_595.40
 
@@ -215,10 +227,12 @@
     carers_allowance: 0
     carer_support_payment: 83.30 * 52
     scottish_carer_supplement: 0
-    council_tax_reduction_applicable_income: 7_000 + 83.30 * 52
-    council_tax_reduction_applicable_amount: (92.04 + 46.38) * 52
-    # 2,000 - 0.2 x (11,331.60 - 7,197.84) = 1,173.25
-    council_tax_reduction: 2_000 - 0.2 * (7_000 + 83.30 * 52 - (92.04 + 46.38) * 52)
+    council_tax_reduction_working_age_applicable_income: 7_000 + 83.30 * 52
+    # Scotland's own 2025-26 working-age amounts (SSI 2025/24 reg 16): personal
+    # allowance 92.05 and carer premium 46.40 a week.
+    council_tax_reduction_working_age_applicable_amount: (92.05 + 46.40) * 52
+    # 2,000 - 0.2 x (11,331.60 - 7,199.40) = 1,173.56
+    council_tax_reduction: 2_000 - 0.2 * (7_000 + 83.30 * 52 - (92.05 + 46.40) * 52)
 
 - name: In 2024 the Scottish carer is still on Carer's Allowance, which was already counted
   period: 2024

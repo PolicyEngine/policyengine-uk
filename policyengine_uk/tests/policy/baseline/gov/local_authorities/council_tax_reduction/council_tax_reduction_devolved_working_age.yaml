@@ -508,7 +508,7 @@
         council_tax: 2_000
         savings: 0
   output:
-    council_tax_reduction_working_age_unabsorbed_tax: 286
+    council_tax_reduction_working_age_unearned_income_tax: 286
     council_tax_reduction_working_age_applicable_income: 13_714
     simulated_council_tax_reduction_benunit: 316.44
 
@@ -689,3 +689,271 @@
         savings: 0
   output:
     council_tax_reduction_working_age_adult_premiums: 2_246.40
+
+- name: Wales, tax on a pension does not come off wages
+  # Only tax "deducted from those earnings" comes off earnings (Sch 6 para
+  # 15(3)(a)); tax on the pension is disregarded from the pension (Sch 9 para
+  # 4). Earnings are the lowest slice of income, so the £500 wages bear no tax
+  # and the 386 = 0.2 x (14,500 - 12,570) is all on the pension. Income:
+  # 500 - 260 (£5 disregard) + 14,000 - 386 = 13,854; applicable amount
+  # 101.85 x 52 = 5,296.20; award 1,800 - 0.2 x 8,557.80 = 88.44.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        employment_income: 500
+        private_pension_income: 14_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    income_tax: 386
+    council_tax_reduction_working_age_earned_income: 500
+    council_tax_reduction_working_age_earnings_disregard: 260
+    council_tax_reduction_working_age_unearned_income_tax: 386
+    council_tax_reduction_working_age_applicable_income: 13_854
+    simulated_council_tax_reduction_benunit: 88.44
+
+- name: Wales, pension tax survives when childcare absorbs the wages
+  # Lone parent, child aged 3, £10,000 wages at 16 hours, £13,000 pension,
+  # £9,000 childcare (under the £175 a week cap). The wages bear no tax; the
+  # 2,086 = 0.2 x (23,000 - 12,570) is on the pension. Earnings 10,000 -
+  # 1,300 (£25 disregard) - 9,000 childcare = 0 (the £17.10 needs earnings to
+  # cover it). Pension 13,000 - 2,086 = 10,914, below the applicable amount
+  # (101.85 + 87.88 child + 20.22 family premium) x 52 = 10,917.40, so the
+  # award is the full 1,800.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 10_000
+        weekly_hours: 16
+        private_pension_income: 13_000
+        childcare_expenses: 9_000
+        council_tax_benefit_reported: 100
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_earned_income: 10_000
+    council_tax_reduction_working_age_earnings_disregard: 1_300
+    council_tax_reduction_working_age_childcare_deduction: 9_000
+    council_tax_reduction_working_age_unearned_income_tax: 2_086
+    council_tax_reduction_working_age_applicable_amount: 10_917.40
+    council_tax_reduction_working_age_applicable_income: 10_914
+    simulated_council_tax_reduction_benunit: 1_800
+
+- name: Scotland, a pension counts gross and its tax does not come off wages
+  # SSI 2021/249 reg 50(3)(a) deducts tax "deducted from" the earnings; reg 57
+  # counts the pension gross. The £4,000 wages bear no tax (the 271.70 is on
+  # the pension). Income 4,000 - 260 + 10,000 = 13,740; applicable amount
+  # 95.55 x 52 = 4,968.60; award 1,800 - 0.2 x 8,771.40 = 45.72.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 4_000
+        weekly_hours: 20
+        private_pension_income: 10_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    income_tax: 271.70
+    council_tax_reduction_working_age_earned_income: 4_000
+    council_tax_reduction_working_age_applicable_income: 13_740
+    simulated_council_tax_reduction_benunit: 45.72
+
+- name: Wales, dividend tax does not come off wages
+  # £15,000 wages and £10,000 dividends. Only the tax and NI on the wages
+  # come off them: 0.2 x 2,430 = 486 income tax and 0.08 x 2,430 = 194.40
+  # Class 1, leaving 14,319.60. The dividend tax (1,021.25) is not deducted
+  # from earnings, and the dividends are not on the closed income list.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 15_000
+        weekly_hours: 37
+        dividend_income: 10_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    income_tax: 1_507.25
+    council_tax_reduction_working_age_earned_income: 14_319.60
+    council_tax_reduction_working_age_unearned_income: 0
+    council_tax_reduction_working_age_unearned_income_tax: 0
+
+- name: Wales, a carer premium on entitlement when an overlapping benefit takes the payment to nil
+  # Sch 7 para 14(1) needs the claimant to be "entitled to a carer's
+  # allowance"; contributory ESA of £6,000 overlaps it to nil. Applicable
+  # amount (101.85 + 48.15) x 52 = 7,800; income 6,000 ESA + 4,000 pension,
+  # untaxed; award 1,800 - 0.2 x 2,200 = 1,360.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 40
+        esa_contrib_reported: 6_000
+        private_pension_income: 4_000
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: WALES
+        country: WALES
+        council_tax: 1_800
+        savings: 0
+  output:
+    carers_allowance: 0
+    council_tax_reduction_working_age_carers: 1
+    council_tax_reduction_working_age_applicable_amount: 7_800
+    council_tax_reduction_working_age_applicable_income: 10_000
+    simulated_council_tax_reduction_benunit: 1_360
+
+- name: Scotland, caring hours without a carer benefit or a Universal Credit award give no carer premium
+  # Sch 1 para 6(1)(c) needs "an award of universal credit which includes the
+  # carer element"; a potential element is not one. The claimant does not
+  # claim Carer Support Payment. £5 disregard; income 12,000 - 260 = 11,740;
+  # award 1,800 - 0.2 x (11,740 - 4,968.60) = 445.72.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 12_000
+        weekly_hours: 20
+        care_hours: 40
+        would_claim_carers_allowance: false
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_working_age_carers: 0
+    council_tax_reduction_working_age_earnings_disregard: 260
+    simulated_council_tax_reduction_benunit: 445.72
+
+- name: Scotland, a Universal Credit worker with LCWRA gets the £20 disregard
+  # Sch 3 para 4(3): the £20 also applies to a UC applicant with limited
+  # capability for work-related activity who is in employment and under
+  # pensionable age, with no disability premium. Earnings 12,000 (no tax or
+  # NI) - 1,040; no children, so no UC counts. Award 1,800 - 0.2 x (10,960 -
+  # 4,968.60) = 601.72.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 12_000
+        weekly_hours: 30
+        uc_limited_capability_for_WRA: true
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        rent: 6_000
+        savings: 0
+  output:
+    council_tax_reduction_working_age_has_universal_credit: true
+    council_tax_reduction_working_age_earnings_disregard: 1_040
+    council_tax_reduction_working_age_applicable_income: 10_960
+    simulated_council_tax_reduction_benunit: 601.72
+
+- name: Scotland, voluntary Class 3 contributions do not come off earnings
+  # Reg 50(3)(a) deducts "primary Class 1 contributions"; voluntary Class 3
+  # is not deductible. Same award as without them: 445.72.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 12_000
+        weekly_hours: 20
+        ni_class_3: 500
+        council_tax_benefit_reported: 100
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        region: SCOTLAND
+        country: SCOTLAND
+        council_tax: 1_800
+        savings: 0
+  output:
+    national_insurance: 500
+    council_tax_reduction_working_age_earned_income: 12_000
+    simulated_council_tax_reduction_benunit: 445.72
