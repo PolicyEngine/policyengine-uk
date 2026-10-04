@@ -1,3 +1,17 @@
+## [2.113.1] - 2026-10-04
+
+### Changed
+
+- - Documented that `afcs_reported` is FRS benefit code 8 (Armed Forces Compensation Scheme payments and war disablement pensions, not armed forces independence payment) and tested that AFCS payments never confer severe disability.
+
+
+## [2.113.0] - 2026-10-04
+
+### Added
+
+- - Give joint tenants and other sharers their share of the household's rent, boarders and lodgers their own rent and private tenure, a Housing Benefit LHA category (with its own size criteria and shared-accommodation rule) beside the Universal Credit one, statutory non-dependant exclusions and apportionment, the Housing Benefit meals deduction, and Council Tax Reduction on the council tax divided among jointly liable people, each claim under its own family's scheme and exemption from non-dependant deductions.
+
+
 ## [2.112.1] - 2026-10-03
 
 ### Fixed

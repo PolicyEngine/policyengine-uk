@@ -24,5 +24,6 @@ class council_tax_reduction_devolved_working_age(Variable):
     def formula(benunit, period, parameters):
         country = benunit.household("country", period)
         devolved = is_scotland_scheme(country) | is_wales_scheme(country)
-        pensioner = benunit("council_tax_reduction_pensioner", period)
+        # The same per-claim scheme flag the national formula routes on.
+        pensioner = benunit("council_tax_reduction_claim_pensioner", period)
         return devolved & ~pensioner
