@@ -65,10 +65,15 @@ these applies in one line of the PR description:
 axiom: <legal id> encoded-correct | <rulespec-uk PR> encoded | <rulespec-uk issue> queued | n/a: <reason>
 ```
 
-A `queued` rulespec-uk issue must be dispatch-ready and labelled `pe-parity`.
-It needs the module path and corpus citation, the verbatim law, the required
-outputs, and companion tests from the same external source as the PR's YAML
-tests. Never hand-write RuleSpec. See `.github/CONTRIBUTING.md` ("Axiom parity").
+If you are an external contributor and cannot complete the Axiom work, use
+`axiom: needed`; a maintainer will follow up.
+
+Use `queued` only when the signed encoder is blocked; record the blocker in the
+issue. Each billed encoder run requires separate approval. A `queued`
+rulespec-uk issue must be dispatch-ready and labelled `pe-parity`. It needs the
+module path and corpus citation, the verbatim law, the required outputs, and
+companion tests from the same external source as the PR's YAML tests. Never
+hand-write RuleSpec. See `.github/CONTRIBUTING.md` ("Axiom parity").
 
 ## Required Lint And Format
 

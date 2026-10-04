@@ -52,7 +52,7 @@ Every policy change here must also be correct in [rulespec-uk](https://github.co
 
 - National modules live under `uk/`, and council schemes such as council tax reduction live under `uk-<council>/`. Search `main` there before opening a new issue.
 - An `encoded-correct` claim names the module and a companion case in its `.test.yaml` that exercises the same situation as your YAML test.
-- Label `queued` issues `pe-parity`. Reuse your YAML test's externally sourced expected values (legislation.gov.uk, gov.uk guidance, official calculators) as the companion tests; don't copy values computed by policyengine-uk.
+- Use `queued` only when the signed encoder is blocked; record the blocker in the issue. Each billed encoder run requires separate approval. Label `queued` issues `pe-parity`. Reuse your YAML test's externally sourced expected values (legislation.gov.uk, gov.uk guidance, official calculators) as the companion tests; don't copy values computed by policyengine-uk.
 
 ## Repo-specific anti-patterns
 
