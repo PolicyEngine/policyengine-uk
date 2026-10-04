@@ -563,3 +563,76 @@
   output:
     pension_credit: 0
     income_support_eligible: true
+
+- name: Case 24, the claimant must meet both the age and the carer conditions.
+  # SSCBA 1992 s.124(1)(aa) and (e), IS Regs 1987 Sch 1B para 4: the younger
+  # partner is under the qualifying age but is not a carer, and the older
+  # partner is a carer but over the qualifying age, so neither can claim.
+  period: 2026
+  input:
+    people:
+      younger:
+        age: 50
+        income_support_reported: 1_000
+      older:
+        age: 70
+        is_carer_for_benefits: true
+    benunits:
+      benunit:
+        members: [younger, older]
+    households:
+      household:
+        members: [younger, older]
+  output:
+    income_support_eligible: false
+
+- name: Case 25, a couple that would claim Pension Credit is treated as on it even when its income is too high.
+  # The s.124(1)(g) bar reads the Pension Credit age conditions and take-up,
+  # not the Pension Credit means test (see income_support_eligible). Here
+  # Pension Credit is nil, yet Income Support is barred.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+        private_pension_income: 30_000
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: true
+    households:
+      household:
+        members: [carer, man]
+  output:
+    pension_credit: 0
+    income_support_eligible: false
+
+- name: Case 26, the same couple without a Pension Credit claim is eligible for Income Support, but it is nil at that income.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+        private_pension_income: 30_000
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: false
+    households:
+      household:
+        members: [carer, man]
+  output:
+    income_support_eligible: true
+    income_support: 0
