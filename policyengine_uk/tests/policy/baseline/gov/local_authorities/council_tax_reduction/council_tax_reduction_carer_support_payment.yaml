@@ -20,8 +20,9 @@
 # Weekly rates. 2026: CSP and CA 86.45, Scottish Carer Supplement 11.70,
 # carer premium 48.15, personal allowance 95.55 (single, 25 or over), 256.00
 # (single, pension age) and 383.35 (couple, pension age). 2025: CSP 83.30, no
-# supplement, and the model's carer premium 46.38 and personal allowance 92.04
-# (the statutory 2025-26 amounts were 46.40 and 92.05; see #2110). 2024: CA
+# supplement, carer premium 46.40 (IS Regs 1987 Sch 2 para 15(7) from 7 April
+# 2025), and the model's personal allowance 92.04 (the statutory 2025-26
+# allowance was 92.05; see #2110). 2024: CA
 # 81.90, carer premium 45.60, personal allowance 90.50. Reduction is withdrawn
 # at 20% of income above the applicable amount. Council tax is 2,000
 # throughout.
@@ -216,9 +217,9 @@
     carer_support_payment: 83.30 * 52
     scottish_carer_supplement: 0
     council_tax_reduction_applicable_income: 7_000 + 83.30 * 52
-    council_tax_reduction_applicable_amount: (92.04 + 46.38) * 52
-    # 2,000 - 0.2 x (11,331.60 - 7,197.84) = 1,173.25
-    council_tax_reduction: 2_000 - 0.2 * (7_000 + 83.30 * 52 - (92.04 + 46.38) * 52)
+    council_tax_reduction_applicable_amount: (92.04 + 46.40) * 52
+    # 2,000 - 0.2 x (11,331.60 - 7,198.88) = 1,173.46
+    council_tax_reduction: 2_000 - 0.2 * (7_000 + 83.30 * 52 - (92.04 + 46.40) * 52)
 
 - name: In 2024 the Scottish carer is still on Carer's Allowance, which was already counted
   period: 2024
