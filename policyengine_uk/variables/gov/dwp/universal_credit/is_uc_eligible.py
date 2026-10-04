@@ -26,7 +26,11 @@ class is_uc_eligible(Variable):
         limit = parameters(period).gov.dwp.universal_credit.means_test.capital.limit
         claimant = benunit.members("is_uc_claimant", period)
         meets_minimum_age = benunit.members("meets_uc_minimum_age_condition", period)
-        pension_age = benunit.members("is_SP_age", period)
+        # WRA 2012 s.4(1)(b): "has not reached the qualifying age for state
+        # pension credit"; s.4(4) imports SPCA 2002 s.1(6).
+        pension_age = benunit.members(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
         has_qualifying_claimant = benunit.any(
             claimant & meets_minimum_age & ~pension_age
         )

@@ -36,7 +36,9 @@ class housing_benefit_assessable_capital(Variable):
     def formula(benunit, period, parameters):
         household = benunit.household
         person = benunit.members
-        any_over_SP_age = benunit.any(person("is_SP_age", period))
+        pension_age_regulations = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
+        )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = sum(household(source, period) for source in p.sources)
         claimant_or_partner = person("is_claimant_or_partner", period)
@@ -62,14 +64,22 @@ class housing_benefit_assessable_capital(Variable):
         # Pension Credit is savings credit only, the Secretary of State's
         # calculation of capital is used, and the £16,000 limit applies to it.
         # The recalculation when capital rises above £16,000 during an
-        # assessed income period (reg 27(7) and (8)) is not modelled.
-        savings_credit_only = benunit("in_receipt_of_savings_credit_only", period)
+        # assessed income period (reg 27(7) and (8)) is not modelled. That
+        # regulation is in the pension-age regulations, so it applies only
+        # where they do.
+        savings_credit_only = pension_age_regulations & benunit(
+            "in_receipt_of_savings_credit_only", period
+        )
         capital = where(
             savings_credit_only,
             benunit("pension_credit_assessable_capital", period),
             household_capital_proxy + person_capital,
         )
-        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
+        # Pension HB reg 26 disregards "the whole of his capital and income"
+        # for guarantee-credit recipients within that regulation set.
+        guarantee_credit = pension_age_regulations & (
+            benunit("guarantee_credit", period) > 0
+        )
         # SI 2006/213 Sch 6 para 5 (NI: SR 2006/405 Sch 7 para 5) disregards
         # "the whole of his capital" where a claimant is on universal credit,
         # income support, an income-based jobseeker's allowance or an

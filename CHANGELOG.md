@@ -1,3 +1,41 @@
+## [2.116.1] - 2026-10-04
+
+### Changed
+
+- Document which Local Housing Allowance category and determination Housing Benefit and Universal Credit each read, and drop Universal Credit test inputs that the published rates no longer use.
+
+
+## [2.116.0] - 2026-10-04
+
+### Added
+
+- - Add the working-age Housing Benefit earnings disregard for claimants in specified or temporary accommodation (SI 2006/213 Schedule 4 paragraph 18, from 5 October 2026, inserted by SI 2026/753 as substituted by SI 2026/978; Northern Ireland: SR 2006/405 Schedule 5 paragraph 18, inserted by SR 2026/157). Where the claimant or partner is an employed or self-employed earner, £61.41 a week for a single claimant or lone parent under 25 and £77.73 at 25 or over; for a couple, £97.33 where both are under 18, £61.53 where one is 18 or over but both are under 25, and £119.70 where one is 25 or over. It is added to the £5, £10 and £25 disregards, capped at net earnings, and counts in the £17.10 additional disregard's earnings test (paragraph 17(3)(a)). It reads the new `in_specified_or_temporary_accommodation` input, which defaults to false, so it changes no dataset result. The model reads 2026-27 at 30 April 2026, so it applies from 2027-28.
+
+
+## [2.115.0] - 2026-10-04
+
+### Added
+
+- Added `state_pension_credit_qualifying_age` and `has_attained_state_pension_credit_qualifying_age`, the qualifying age for State Pension Credit from each person's date of birth, and `ni_class_4_liable`, Class 4 liability by age at the start of the tax year.
+
+### Changed
+
+- Winter Fuel Payment uses pensionable age from 2024-25 and the State Pension Credit qualifying age in earlier years, as the regulations in force in each year require.
+
+### Fixed
+
+- Class 4 National Insurance now stops from the first tax year that begins on or after the day State Pension age is reached (Social Security (Contributions) Regulations 2001 reg 91(a)): a person over State Pension age on 6 April is excepted, and one who reaches it during the year pays Class 4 for that whole year. Before, anyone over State Pension age on 6 October was excepted.
+- Pension Credit, Universal Credit, Housing Benefit, Council Tax Reduction, Income Support, the benefit cap (which reaches only working-age Housing Benefit and Universal Credit) and Winter Fuel Payment now use the qualifying age for State Pension Credit (State Pension Credit Act 2002 s.1(6)) instead of each person's own State Pension age. For a man born before 6 December 1953 that is the State Pension age of a woman born on the same day, not 65, so these programmes change only in 2018-19 and earlier. National Insurance and State Pension keep using the person's own State Pension age; Class 4 now reads it at the start of the tax year (see the Class 4 entry). Housing Benefit and Council Tax Reduction choose their pension-age or working-age allowances, means tests and premium schedules with their own statutory tests (HB(SPC) Regs 2006 reg 5 and the CTR pensioner tests), which exclude families on Universal Credit, Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance; the pension-age severe disability premium follows the qualifying age. Income Support uses its own working-age premiums, and its age test applies to the claimant, who must also be the one in a prescribed category such as carer, so a mixed-age couple can claim it through the younger partner unless the couple is on Pension Credit (SSCBA 1992 s.124(1)(aa), (e) and (g)).
+
+
+## [2.114.3] - 2026-10-04
+
+### Fixed
+
+- - Local Housing Allowance rates now come from the published determinations instead of the 30th percentile of the 2020 list of rents uprated by the private rent index. Sources: VOA, the Welsh and Scottish Governments, the NIHE, and monthly Universal Credit rates from DWP (Great Britain) and nidirect (Northern Ireland). Determinations from April 2020 are recomputed from the published 30th percentile rents with the national maxima, the anomalous-rate rule (Rent Officers Order Sch 3B para 3) and the March 2020 minimum (para 3A, which also applies to Northern Ireland's Universal Credit rates). This reproduces every published rate and stops rates falling with dwelling size. Universal Credit uses the monthly determination rather than 52 weeks of the weekly one.
+- - Replaced the Scottish lists of rents, which were copies of English BRMAs' lists, with Rent Service Scotland's own lists released under FOI 202200303624, so percentile reforms scale Scottish LHA rates by Scotland's rent distributions.
+
+
 ## [2.114.2] - 2026-10-04
 
 ### Fixed
