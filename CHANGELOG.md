@@ -1,3 +1,11 @@
+## [2.114.3] - 2026-10-04
+
+### Fixed
+
+- - Local Housing Allowance rates now come from the published determinations instead of the 30th percentile of the 2020 list of rents uprated by the private rent index. Sources: VOA, the Welsh and Scottish Governments, the NIHE, and monthly Universal Credit rates from DWP (Great Britain) and nidirect (Northern Ireland). Determinations from April 2020 are recomputed from the published 30th percentile rents with the national maxima, the anomalous-rate rule (Rent Officers Order Sch 3B para 3) and the March 2020 minimum (para 3A, which also applies to Northern Ireland's Universal Credit rates). This reproduces every published rate and stops rates falling with dwelling size. Universal Credit uses the monthly determination rather than 52 weeks of the weekly one.
+- - Replaced the Scottish lists of rents, which were copies of English BRMAs' lists, with Rent Service Scotland's own lists released under FOI 202200303624, so percentile reforms scale Scottish LHA rates by Scotland's rent distributions.
+
+
 ## [2.114.2] - 2026-10-04
 
 ### Fixed
