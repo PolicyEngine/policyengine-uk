@@ -67,8 +67,9 @@ TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 REGIONS = ["LONDON", "NORTH_EAST", "WALES", "SCOTLAND"]
 WORKING_AGE = st.integers(18, 64)
 PENSION_AGE = st.integers(67, 80)
-# The last shape has an adult child in the parents' benefit unit, whom the
-# model also flags as a claimant: the couple is the two eldest claimants.
+# The last shape has an adult child in the parents' benefit unit. The model
+# flags at most two claimants (is_claimant_or_partner), here the parents; the
+# couple is the two eldest claimants. The YAML tests flag a third by input.
 SHAPES = {
     "single": [WORKING_AGE],
     "couple": [WORKING_AGE, WORKING_AGE],
