@@ -48,5 +48,11 @@ class council_tax_reduction_applicable_amount(Variable):
             + couple * couple_personal_allowance
             + lone_parent * lone_parent_personal_allowance
         ) * WEEKS_IN_YEAR
-        premiums = benunit("benefits_premiums", period)
+        # The pension-age schedules have only the severe disability and carer
+        # premiums; the same pensioner test chooses the schedule.
+        premiums = where(
+            pensioner,
+            benunit("pension_age_benefits_premiums", period),
+            benunit("working_age_benefits_premiums", period),
+        )
         return personal_allowance + premiums

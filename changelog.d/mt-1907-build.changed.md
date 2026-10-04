@@ -1,1 +1,0 @@
-- Applied pensionable age to Winter Fuel Payment from 2024-25 while retaining the State Pension Credit qualifying-age test for earlier years, including when reforms separate the timetables.
