@@ -49,6 +49,7 @@
         employment_income: 5_200 # £100 × 52
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     housing_benefit_applicable_income_disregard: 260 # £5 × 52, not uprated
@@ -63,6 +64,7 @@
         employment_income: 5_200
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     housing_benefit_applicable_income_disregard: 260 # £5 × 52, not uprated
@@ -79,6 +81,7 @@
         age: 38
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
   output:
     housing_benefit_applicable_income_disregard: 520 # £10 × 52
@@ -132,6 +135,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     housing_benefit_applicable_income_disregard: 1_300 # £25 × 52
@@ -209,6 +213,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     housing_benefit_applicable_income_disregard: 260 # £5 × 52
@@ -224,6 +229,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     housing_benefit_applicable_income_disregard: 1_149.20 # (£5 + £17.10) × 52
@@ -256,6 +262,7 @@
         weekly_hours: 30
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     housing_benefit_applicable_income_disregard: 260 # £5 × 52
@@ -273,6 +280,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     # £8,000 ≥ (£25 + £17.10) × 52 = £2,189.20.
@@ -291,6 +299,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     # £2,080 < (£25 + £17.10) × 52 = £2,189.20.
@@ -327,6 +336,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     housing_benefit_applicable_income_disregard: 1_300 # £25 × 52
@@ -345,6 +355,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     # Childcare deducted is min(£4,160, one-child maximum) = £4,160.
@@ -366,6 +377,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
     # £5,200 ≥ £1,300 + £1,040 + £889.20 = £3,229.20.
@@ -387,6 +399,7 @@
         age: 5
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner, child]
   output:
     housing_benefit_applicable_income_disregard: 1_409.20 # (£10 + £17.10) × 52
@@ -406,6 +419,7 @@
         weekly_hours: 16
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [claimant, partner]
   output:
     # One member must work 30 hours; hours are not added across the couple.
@@ -423,6 +437,7 @@
         is_disabled_for_benefits: true
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person]
   output:
     # Para 17(2)(b)(iv)(aa): a single claimant with the disability premium

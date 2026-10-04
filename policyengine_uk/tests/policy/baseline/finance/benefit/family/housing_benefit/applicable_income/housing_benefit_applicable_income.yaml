@@ -25,6 +25,7 @@
 - name: Baseline inputs
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
     child_benefit: 1_000
     income_support: 0
@@ -51,6 +52,7 @@
   # earnings. 3,250 - 1,500 / 2 = 2,500.
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
     child_benefit: 0
     income_support: 0
@@ -77,6 +79,7 @@
   # para 56 does not apply. 3,250 + 2,000 - 1,500 / 2 = 4,500.
   period: 2025
   input:
+    would_claim_uc: false  # not on Universal Credit, which passports the means test
     # Benefits
     child_benefit: 0
     income_support: 0
