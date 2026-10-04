@@ -55,9 +55,15 @@ class uc_minimum_income_floor_national_insurance(Variable):
         ) + class_4.rates.additional * max_(
             0, threshold - class_4.thresholds.upper_profits_limit
         )
-        self_employed = class_2 + class_4_amount
+        # Each class is due only from those the model treats as liable for
+        # it, as for the person's actual contributions. Primary Class 1 and
+        # Class 2 stop at State Pension age (ni_liable). Class 4 is due for
+        # the whole tax year from anyone not over it on 6 April (SI 2001/1004
+        # reg. 91(a), ni_class_4_liable). No class is due from anyone under 16.
+        liable = person("ni_liable", period)
+        class_4_liable = person("ni_class_4_liable", period)
+        self_employed = liable * class_2 + class_4_liable * class_4_amount
         mif = p.gov.dwp.universal_credit.means_test.minimum_income_floor
-        amount = where(mif.self_employed_national_insurance, self_employed, employee)
-        # No primary Class 1, Class 2 or Class 4 is due from anyone the model
-        # treats as not liable (under 16 or over State Pension age).
-        return person("ni_liable", period) * amount
+        return where(
+            mif.self_employed_national_insurance, self_employed, liable * employee
+        )
