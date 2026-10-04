@@ -1,3 +1,18 @@
+## [2.118.0] - 2026-10-04
+
+### Added
+
+- Add the `gov.dwp.universal_credit.means_test.minimum_income_floor.self_employed_national_insurance` parameter and the `uc_minimum_income_floor_gross`, `uc_minimum_income_floor_income_tax`, `uc_minimum_income_floor_national_insurance` and `uc_individual_earned_income_before_mif` variables; `uc_minimum_income_floor` is now the net floor.
+
+### Fixed
+
+- Apply the Universal Credit minimum income floor as the law sets it (UC Regs 2013 reg. 62): compare each self-employed claimant's earned income after their own tax, NI and pension contributions with the individual threshold converted to a net amount (reg. 62(4)) by deducting the income tax and Class 2 and Class 4 NI due on it, as DWP does, rather than the gross threshold less the tax on their actual profits; apply the couple rule of reg. 62(3); use the minimum wage for the person's age, never the apprenticeship rate (reg. 90(2)); apply the floor to claimants only, including those with a trading loss; and stop setting a trading loss against employed earnings (reg. 57(2)).
+
+### Removed
+
+- Remove `uc_mif_capped_earned_income`, which applied a gross floor to gross earnings; use `uc_individual_earned_income`.
+
+
 ## [2.117.2] - 2026-10-04
 
 ### Fixed
