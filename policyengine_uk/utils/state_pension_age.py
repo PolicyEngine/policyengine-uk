@@ -16,23 +16,9 @@ import numpy as np
 
 from policyengine_uk.utils.dates import (
     add_months_to_yyyymmdd,
-    birth_instant_from_age,
     grid_month,
-    grid_months_to_yyyymmdd,
     yyyymmdd_to_grid_months,
 )
-
-
-def date_of_birth(age, months_since_last_birthday, year: int) -> tuple:
-    """The instant of birth, in grid months, and the day of birth (YYYYMMDD).
-
-    The person was born age years and months_since_last_birthday months before
-    6 October of the fiscal year starting in ``year``. The day of birth is the
-    one starting at or after that instant, so the person's legal age on 6
-    October is age.
-    """
-    birth = birth_instant_from_age(year, age, months_since_last_birthday)
-    return birth, grid_months_to_yyyymmdd(birth)
 
 
 def age_attaining_pensionable_age(

@@ -96,7 +96,12 @@ the exact age on 6 October, overriding `months_since_last_birthday` even
 when another person supplies birthday months. The default implies a birth
 date of 6 April: an entered age of 66 is above State Pension age at the
 6 October check in 2026-27 and below it in 2027-28. Set a fractional age
-or `months_since_last_birthday` to specify a different inferred birth date.
+or `months_since_last_birthday` to specify a different inferred birth date,
+or set `date_of_birth` directly (a YYYYMMDD number, with `age` as the age on
+6 October): `state_pension_age`, `months_since_state_pension_age`,
+`is_SP_age`, the State Pension Credit qualifying age and its attainment, and
+the Savings Credit age test then all follow that day. A value that is not a
+calendar date, or that gives a different age, raises an error.
 Survey microdata records whole years only, so in
 simulations built from data, including a region or constituency filtered
 from it, each single year of age and sex is spread evenly over the year by

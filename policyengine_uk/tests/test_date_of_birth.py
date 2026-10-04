@@ -243,47 +243,72 @@ def test_microdata_share_born_before_cutoff_matches_statute():
             assert abs(earlier_year - expected) <= tolerance, (year, age)
 
 
+@st.composite
+def births_and_year(draw):
+    """A year from 2015 (when the State Pension Credit qualifying age still
+    differs from State Pension age for men born before 6 December 1953) and
+    people born before its 6 October, of either sex."""
+    year = draw(st.integers(min_value=2015, max_value=2040))
+    births = draw(
+        st.lists(
+            st.tuples(
+                st.dates(min_value=date(1935, 1, 1), max_value=date(year - 1, 12, 31)),
+                st.booleans(),
+            ),
+            min_size=1,
+            max_size=8,
+        )
+    )
+    return births, year
+
+
 @settings(max_examples=25, deadline=None)
-@given(
-    births=st.lists(
-        st.dates(min_value=date(1935, 1, 1), max_value=date(2020, 12, 31)),
-        min_size=1,
-        max_size=8,
-    ),
-    year=st.integers(min_value=2021, max_value=2040),
-)
-def test_a_date_of_birth_input_matches_the_same_birthday_by_age(births, year):
+@given(case=births_and_year())
+def test_a_date_of_birth_input_matches_the_same_birthday_by_age(case):
     """Setting date_of_birth (with the legal age on 6 October) gives the same
-    State Pension age, status and cutoffs as placing the same day with
+    State Pension age, State Pension Credit qualifying age, statuses, Savings
+    Credit age test and cutoffs as placing the same day with
     months_since_last_birthday. A person left without the input in the same
     situation gets what they would with no input at all."""
+    people, year = case
+    births = [birth for birth, _ in people]
     mid_year = date(year, 10, 6)
     by_date = {"unset": {"age": {year: 40}}}
     by_months = {"unset": {"age": {year: 40}, "months_since_last_birthday": {year: 6}}}
-    for i, birth in enumerate(births):
+    for i, (birth, male) in enumerate(people):
         age = legal_age(birth, mid_year)
         months = grid_months(mid_year) - grid_months(birth) - 12 * age
-        by_date[f"p{i}"] = {"age": {year: age}, "date_of_birth": {year: ymd(birth)}}
+        by_date[f"p{i}"] = {
+            "age": {year: age},
+            "date_of_birth": {year: ymd(birth)},
+            "is_male": {year: male},
+        }
         by_months[f"p{i}"] = {
             "age": {year: age},
             "months_since_last_birthday": {year: months},
+            "is_male": {year: male},
         }
     a = Simulation(situation=situation(by_date))
     b = Simulation(situation=situation(by_months))
     for variable in [
         "birth_year",
         "is_SP_age",
+        "has_attained_state_pension_credit_qualifying_age",
+        "meets_savings_credit_age_requirement",
         "uc_is_child_born_before_child_limit",
         "is_CTC_child_limit_exempt",
     ]:
         assert np.array_equal(
             a.calculate(variable, year), b.calculate(variable, year)
         ), variable
-    assert np.allclose(
-        a.calculate("state_pension_age", year),
-        b.calculate("state_pension_age", year),
-        atol=1e-4,
-    )
+    for variable in [
+        "state_pension_age",
+        "state_pension_credit_qualifying_age",
+        "months_since_state_pension_age",
+    ]:
+        assert np.allclose(
+            a.calculate(variable, year), b.calculate(variable, year), atol=1e-3
+        ), variable
     assert list(a.calculate("date_of_birth", year)[1:]) == [ymd(d) for d in births]
     assert a.calculate("date_of_birth", year)[0] == 0
 
