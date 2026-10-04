@@ -64,6 +64,18 @@
     BRMA_LHA_rate: 10_830.04
     uc_LHA_cap: 10_860
 
+- name: Maidstone one bedroom, April 2025, held at April 2024 (SI 2025/5)
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: B
+    benunit_rent: 100_000
+  output:
+    # VOA: 172.60 a week x 52; DWP: 750.00 a month x 12.
+    BRMA_LHA_rate: 8_975.20
+    uc_LHA_cap: 9_000
+
 - name: Maidstone two bedrooms, April 2026, held at April 2024 (SI 2026/5)
   period: 2026
   absolute_error_margin: 0.01
