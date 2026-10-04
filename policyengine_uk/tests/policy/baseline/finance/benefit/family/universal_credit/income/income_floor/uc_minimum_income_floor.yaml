@@ -1,7 +1,142 @@
-- name: Minimum income floor
-  period: 2020
-  absolute_error_margin: 0
+# The minimum income floor is the individual threshold of UC Regs 2013
+# reg. 90(2), the National Minimum Wage rate for the person's age (never the
+# apprenticeship rate) times their expected hours (35 a week, reg. 88),
+# converted to a net amount by deducting "such amount for income tax and
+# national insurance contributions as the Secretary of State considers
+# appropriate" (reg. 62(4)(b)). The model deducts the income tax, and the
+# Class 2 and Class 4 NI, the person would pay if the threshold were their
+# only income, from self-employment: the basis of DWP's guidance and of the
+# floor DWP supplied for 2025-26 (1,642.72 a month on a threshold of
+# 1,851.85).
+#
+# Hand calculations use the rates the model holds for each year:
+# - 2026: National Living Wage 12.71 an hour (21 and over), 10.85 (18 to 20);
+#   personal allowance 12,570; rest-of-UK basic rate 20%; Scottish starter
+#   rate 19% on the first 3,967 of taxable income, then basic rate 20% up to
+#   16,956; Class 2 nil; Class 4 6% above the lower profits limit of 12,570;
+# - 2020: National Living Wage 8.72 an hour (25 and over); personal
+#   allowance 12,500; basic rate 20%; Class 2 3.05 a week; Class 4 9% above
+#   9,500.
+
+- name: Individual threshold is the minimum wage for the person's age for 35 hours a week
+  period: 2026
+  absolute_error_margin: 0.01
   input:
-    minimum_wage: 10
+    age: 30
   output:
-    uc_minimum_income_floor: 350 * 52
+    # 12.71 x 35 x 52, or 1,927.68 a month (12.71 x 35 x 52 / 12).
+    uc_minimum_income_floor_gross: 23_132.20
+
+- name: An apprentice's threshold uses the rate for their age, not the apprenticeship rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_apprentice: true
+  output:
+    # Reg. 90(2) names NMW Regs reg. 4 and 4A(1)(a) to (c); the
+    # apprenticeship rate of 8.00 (reg. 4A(1)(d)) would give 14,560.
+    minimum_wage: 8
+    uc_minimum_income_floor_gross: 23_132.20
+
+- name: Net floor for a claimant aged 30 in England, 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+  output:
+    uc_minimum_income_floor_gross: 23_132.20
+    # (23,132.20 - 12,570) x 20%.
+    uc_minimum_income_floor_income_tax: 2_112.44
+    # Class 4: (23,132.20 - 12,570) x 6%.
+    uc_minimum_income_floor_national_insurance: 633.73
+    # 23,132.20 - 2,112.44 - 633.73, or 1,698.84 a month.
+    uc_minimum_income_floor: 20_386.03
+
+- name: Net floor for a Scottish taxpayer uses Scottish income tax rates
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: SCOTLAND
+  output:
+    uc_minimum_income_floor_gross: 23_132.20
+    # Taxable 10,562.20: 3,967 x 19% + (10,562.20 - 3,967) x 20%
+    # = 753.73 + 1,319.04.
+    uc_minimum_income_floor_income_tax: 2_072.77
+    uc_minimum_income_floor_national_insurance: 633.73
+    # 23,132.20 - 2,072.77 - 633.73.
+    uc_minimum_income_floor: 20_425.70
+
+- name: Net floor for a claimant aged 19 uses the 18 to 20 minimum wage
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 19
+    region: NORTH_EAST
+  output:
+    # 10.85 x 35 x 52.
+    uc_minimum_income_floor_gross: 19_747
+    # (19,747 - 12,570) x 20%.
+    uc_minimum_income_floor_income_tax: 1_435.40
+    # (19,747 - 12,570) x 6%.
+    uc_minimum_income_floor_national_insurance: 430.62
+    uc_minimum_income_floor: 17_880.98
+
+- name: No NI is deducted for a person over State Pension age at the start of the tax year
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 70
+    region: NORTH_EAST
+  output:
+    uc_minimum_income_floor_gross: 23_132.20
+    uc_minimum_income_floor_income_tax: 2_112.44
+    # Class 4 is not due from anyone over pension age at the start of the
+    # tax year (SI 2001/1004 reg. 91(a)).
+    uc_minimum_income_floor_national_insurance: 0
+    uc_minimum_income_floor: 21_019.76
+
+- name: Class 4 is deducted all year for a person who reaches State Pension age after 6 April
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # A whole-number age of 66 puts the birthday on 6 April 1960, so State
+    # Pension age (66 and 1 month) is reached on 6 May 2026, after the start
+    # of the tax year. Class 4 is due for all of 2026-27 (SI 2001/1004 reg.
+    # 91(a)), as on the person's actual profits.
+    age: 66
+    region: NORTH_EAST
+  output:
+    is_SP_age: true
+    ni_class_4_liable: true
+    # Class 4: (23,132.20 - 12,570) x 6%.
+    uc_minimum_income_floor_national_insurance: 633.73
+    uc_minimum_income_floor: 20_386.03
+
+- name: Net floor in 2020 deducts Class 2 as well as Class 4
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+  output:
+    # 8.72 x 35 x 52.
+    uc_minimum_income_floor_gross: 15_870.40
+    # (15,870.40 - 12,500) x 20%.
+    uc_minimum_income_floor_income_tax: 674.08
+    # Class 2: 3.05 x 52 = 158.60, as the profits are above the small
+    # profits threshold. Class 4: (15,870.40 - 9,500) x 9% = 573.34.
+    uc_minimum_income_floor_national_insurance: 731.94
+    uc_minimum_income_floor: 14_464.38
+
+- name: The 2016 threshold uses that year's National Living Wage
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+  output:
+    # 7.20 x 35 x 52.
+    uc_minimum_income_floor_gross: 13_104

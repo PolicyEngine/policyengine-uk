@@ -53,6 +53,12 @@ SHAPES = [
 ]
 MIXED_AGE_COUPLE_SHAPES = {"mixed", "mixed_with_dependant"}
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
+NORTH_WEST_BRMAS = [
+    "CENTRAL_GREATER_MANCHESTER",
+    "GREATER_LIVERPOOL",
+    "EAST_CHESHIRE",
+    "WEST_CUMBRIA",
+]
 
 
 # The three eligibility formulas as they were before the mixed-age couple
@@ -179,13 +185,14 @@ def cases(draw):
         "benunit": {
             "would_claim_uc": draw(st.booleans()),
             "would_claim_pc": draw(st.booleans()),
-            "BRMA_LHA_rate": draw(st.integers(4_000, 12_000)),
         },
         "household": {
             "tenure_type": tenure,
             "rent": 0 if tenure == "OWNED_OUTRIGHT" else draw(st.integers(0, 12_000)),
             "savings": draw(st.sampled_from([0, 5_000, 20_000])),
             "region": "NORTH_WEST",
+            # The LHA varies with the BRMA's published rates.
+            "brma": draw(st.sampled_from(NORTH_WEST_BRMAS)),
             "council_tax": 1_500,
         },
     }

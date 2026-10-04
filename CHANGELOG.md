@@ -1,3 +1,198 @@
+## [2.118.0] - 2026-10-04
+
+### Added
+
+- Add the `gov.dwp.universal_credit.means_test.minimum_income_floor.self_employed_national_insurance` parameter and the `uc_minimum_income_floor_gross`, `uc_minimum_income_floor_income_tax`, `uc_minimum_income_floor_national_insurance` and `uc_individual_earned_income_before_mif` variables; `uc_minimum_income_floor` is now the net floor.
+
+### Fixed
+
+- Apply the Universal Credit minimum income floor as the law sets it (UC Regs 2013 reg. 62): compare each self-employed claimant's earned income after their own tax, NI and pension contributions with the individual threshold converted to a net amount (reg. 62(4)) by deducting the income tax and Class 2 and Class 4 NI due on it, as DWP does, rather than the gross threshold less the tax on their actual profits; apply the couple rule of reg. 62(3); use the minimum wage for the person's age, never the apprenticeship rate (reg. 90(2)); apply the floor to claimants only, including those with a trading loss; and stop setting a trading loss against employed earnings (reg. 57(2)).
+
+### Removed
+
+- Remove `uc_mif_capped_earned_income`, which applied a gross floor to gross earnings; use `uc_individual_earned_income`.
+
+
+## [2.117.2] - 2026-10-04
+
+### Fixed
+
+- Give Council Tax Reduction to the household head's family, the liable resident, instead of the oldest adult's, so families tied for oldest no longer both get a full award.
+
+
+## [2.117.1] - 2026-10-04
+
+### Fixed
+
+- - Disregard the earnings, whole income and whole capital of a Housing Benefit claimant on Universal Credit, as SI 2006/213 Schedule 4 paragraph 12, Schedule 5 paragraph 4 and Schedule 6 paragraph 5 (Northern Ireland: SR 2006/405 Schedule 5 paragraph 12, Schedule 6 paragraph 4 and Schedule 7 paragraph 5) require, so where Housing Benefit is paid alongside Universal Credit the means test gives the maximum. Being on Universal Credit means being entitled to it, whether it is in payment or not (regulation 2(3B)), which the model reads as Universal Credit above nil before the benefit cap and deductions. The limb applies from 28 October 2013 in Great Britain and 8 May 2018 in Northern Ireland (`gov.dwp.housing_benefit.means_test.universal_credit_passport`). Adds `housing_benefit_on_passporting_benefit`, which the three passports now read. No family receives both benefits in the model yet, so outputs on the Enhanced FRS do not change.
+
+
+## [2.117.0] - 2026-10-04
+
+### Added
+
+- - Add `partners_care_for_same_severely_disabled_person` (benefit unit). Two people caring for the same severely disabled person cannot both be entitled to Carer's Allowance (SSCBA s.70(7ZA)) or Carer Support Payment (SSI 2023/302 reg 5(3)), so they get one carer premium. Unless it is supplied, partners are treated as caring for the same person unless both are entitled with an award, reported (`carers_allowance_reported`) or supplied directly as an allowance or entitlement that caring hours do not explain, since caring hours cannot show who is cared for.
+
+### Fixed
+
+- - Pay the legacy carer premium once for each claimant or partner entitled to Carer's Allowance or Carer Support Payment (IS Regs 1987 Sch 2 paras 14ZA(1) and 15(7), with the matching Housing Benefit and council tax reduction schedules), rather than one premium for the couple. A couple who both have Carer's Allowance awards get two premiums; a couple who care for the same severely disabled person, or who are both entitled on caring hours alone, get one. The premium enters the Income Support, Housing Benefit and council tax reduction applicable amounts.
+  - Correct the 2025-26 carer premium to £46.40 a week.
+
+### Removed
+
+- - Remove the `gov.dwp.carer_premium.couple` parameter. It held the single rate, while the law pays the per-person amount (`gov.dwp.carer_premium.single`) once for each qualifying claimant and partner. Reforms should change `gov.dwp.carer_premium.single`.
+
+
+## [2.116.1] - 2026-10-04
+
+### Changed
+
+- Document which Local Housing Allowance category and determination Housing Benefit and Universal Credit each read, and drop Universal Credit test inputs that the published rates no longer use.
+
+
+## [2.116.0] - 2026-10-04
+
+### Added
+
+- - Add the working-age Housing Benefit earnings disregard for claimants in specified or temporary accommodation (SI 2006/213 Schedule 4 paragraph 18, from 5 October 2026, inserted by SI 2026/753 as substituted by SI 2026/978; Northern Ireland: SR 2006/405 Schedule 5 paragraph 18, inserted by SR 2026/157). Where the claimant or partner is an employed or self-employed earner, £61.41 a week for a single claimant or lone parent under 25 and £77.73 at 25 or over; for a couple, £97.33 where both are under 18, £61.53 where one is 18 or over but both are under 25, and £119.70 where one is 25 or over. It is added to the £5, £10 and £25 disregards, capped at net earnings, and counts in the £17.10 additional disregard's earnings test (paragraph 17(3)(a)). It reads the new `in_specified_or_temporary_accommodation` input, which defaults to false, so it changes no dataset result. The model reads 2026-27 at 30 April 2026, so it applies from 2027-28.
+
+
+## [2.115.0] - 2026-10-04
+
+### Added
+
+- Added `state_pension_credit_qualifying_age` and `has_attained_state_pension_credit_qualifying_age`, the qualifying age for State Pension Credit from each person's date of birth, and `ni_class_4_liable`, Class 4 liability by age at the start of the tax year.
+
+### Changed
+
+- Winter Fuel Payment uses pensionable age from 2024-25 and the State Pension Credit qualifying age in earlier years, as the regulations in force in each year require.
+
+### Fixed
+
+- Class 4 National Insurance now stops from the first tax year that begins on or after the day State Pension age is reached (Social Security (Contributions) Regulations 2001 reg 91(a)): a person over State Pension age on 6 April is excepted, and one who reaches it during the year pays Class 4 for that whole year. Before, anyone over State Pension age on 6 October was excepted.
+- Pension Credit, Universal Credit, Housing Benefit, Council Tax Reduction, Income Support, the benefit cap (which reaches only working-age Housing Benefit and Universal Credit) and Winter Fuel Payment now use the qualifying age for State Pension Credit (State Pension Credit Act 2002 s.1(6)) instead of each person's own State Pension age. For a man born before 6 December 1953 that is the State Pension age of a woman born on the same day, not 65, so these programmes change only in 2018-19 and earlier. National Insurance and State Pension keep using the person's own State Pension age; Class 4 now reads it at the start of the tax year (see the Class 4 entry). Housing Benefit and Council Tax Reduction choose their pension-age or working-age allowances, means tests and premium schedules with their own statutory tests (HB(SPC) Regs 2006 reg 5 and the CTR pensioner tests), which exclude families on Universal Credit, Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance; the pension-age severe disability premium follows the qualifying age. Income Support uses its own working-age premiums, and its age test applies to the claimant, who must also be the one in a prescribed category such as carer, so a mixed-age couple can claim it through the younger partner unless the couple is on Pension Credit (SSCBA 1992 s.124(1)(aa), (e) and (g)).
+
+
+## [2.114.3] - 2026-10-04
+
+### Fixed
+
+- - Local Housing Allowance rates now come from the published determinations instead of the 30th percentile of the 2020 list of rents uprated by the private rent index. Sources: VOA, the Welsh and Scottish Governments, the NIHE, and monthly Universal Credit rates from DWP (Great Britain) and nidirect (Northern Ireland). Determinations from April 2020 are recomputed from the published 30th percentile rents with the national maxima, the anomalous-rate rule (Rent Officers Order Sch 3B para 3) and the March 2020 minimum (para 3A, which also applies to Northern Ireland's Universal Credit rates). This reproduces every published rate and stops rates falling with dwelling size. Universal Credit uses the monthly determination rather than 52 weeks of the weekly one.
+- - Replaced the Scottish lists of rents, which were copies of English BRMAs' lists, with Rent Service Scotland's own lists released under FOI 202200303624, so percentile reforms scale Scottish LHA rates by Scotland's rent distributions.
+
+
+## [2.114.2] - 2026-10-04
+
+### Fixed
+
+- - Care to Learn pays each qualifying child's childcare costs up to the weekly maximum per child, once per child, and only to young parents on a study programme (ESFA conditions of grant 2026-27).
+  - The extended childcare entitlement requires a qualifying young child (SI 2022/1134 reg 13: aged three, two from April 2024, nine months from September 2024), and lets a parent or partner with limited capability for work or a specified benefit qualify without the work and income tests when the other meets them (regs 14(4) and 15(4)). The income test's boundaries now match regs 14(3)(c) and 18.
+  - Maintenance loan household income treats students aged 25 or over as independent (Education (Student Support) Regulations 2011 Sch 4 para 2(1)(a)).
+  - Tax-Free Childcare's caring and incapacity route uses the benefits in SI 2015/448 reg 13(1), not the Pension Credit child disability list, and treats a qualifying partner as meeting the minimum income (reg 13(2)(b)).
+
+
+## [2.114.1] - 2026-10-04
+
+### Fixed
+
+- Use the Pension Credit assessment of income and capital, plus the savings credit payable, for Housing Benefit where the Pension Credit award is savings credit only (HB(SPC) Regs 2006 reg 27). For pensioners without earnings, while the award remains savings credit only, a rise in private pension no longer lowers net income (tested for council tenants in Great Britain); losing Pension Credit passports, such as the free TV licence at 75, still applies when savings credit ends.
+
+
+## [2.114.0] - 2026-10-04
+
+### Added
+
+- - Add `cash_isa` and `stocks_and_shares_isa` Household wealth input variables for ISA balances.
+
+
+## [2.113.6] - 2026-10-04
+
+### Changed
+
+- Document what `pension_credit_reported_capital` must contain (countable capital after the Schedule V disregards and reg. 19 valuation) and what it replaces, and restate its monotonicity property around the savings credit's intended exception.
+
+
+## [2.113.5] - 2026-10-04
+
+### Fixed
+
+- - Corrected pension-age Housing Benefit and Council Tax Reduction premiums by removing adult disability and adult enhanced disability premiums absent from their statutory schedules and applying the severe disability premium's qualifying-benefit, couple, Housing Benefit non-dependant and shared carer-attribution conditions. The carer condition does not yet count Universal Credit carer-element awards (#2120).
+
+
+## [2.113.4] - 2026-10-04
+
+### Changed
+
+- - Documented that policy changes must be mirrored in Axiom RuleSpec (rulespec-uk), and added a pull request template with the required `axiom:` line.
+
+
+## [2.113.3] - 2026-10-04
+
+### Fixed
+
+- Split additional State Pension by each person's State Pension type in the year simulated, as basic and new State Pension already are, instead of their type in the data year. Survey ages are held fixed across projected years, so records that were on the basic State Pension in the data year stand for new State Pension cohorts later, and the part of their reported State Pension between the two flat rates was paid twice. Basic, new and additional State Pension now add up to the reported amount uprated by the flat rate.
+- Council Tax Reduction income now counts Carer Support Payment, which Scottish carers receive in place of Carer's Allowance (Council Tax Reduction (Scotland) Regulations 2021 reg 57(1)(b)(iva); Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg 27(1)(j)). The Scottish Carer Supplement stays out.
+
+
+## [2.113.2] - 2026-10-04
+
+### Fixed
+
+- Deduct from each person's Universal Credit earnings only their own income tax and National Insurance on that employment or self-employment (UC Regs 2013 reg. 55(5)(b), reg. 57(2) step 3), not the whole benefit unit's tax on all income, so tax on pensions, State Pension, property, savings and dividends, the High Income Child Benefit Charge and voluntary Class 3 contributions no longer reduce earned income.
+
+
+## [2.113.1] - 2026-10-04
+
+### Changed
+
+- - Documented that `afcs_reported` is FRS benefit code 8 (Armed Forces Compensation Scheme payments and war disablement pensions, not armed forces independence payment) and tested that AFCS payments never confer severe disability.
+
+
+## [2.113.0] - 2026-10-04
+
+### Added
+
+- - Give joint tenants and other sharers their share of the household's rent, boarders and lodgers their own rent and private tenure, a Housing Benefit LHA category (with its own size criteria and shared-accommodation rule) beside the Universal Credit one, statutory non-dependant exclusions and apportionment, the Housing Benefit meals deduction, and Council Tax Reduction on the council tax divided among jointly liable people, each claim under its own family's scheme and exemption from non-dependant deductions.
+
+
+## [2.112.1] - 2026-10-03
+
+### Fixed
+
+- The legacy severe disability premium and the Pension Credit severe disability addition now share one attribution of whom each carer benefit is paid for caring for (`is_cared_for_by_carer_benefit_recipient`), so a carer in another benefit unit of the household bars the legacy premium as it already barred the addition, even when that carer is ignored as a non-dependant.
+- - Counted a trading loss for Class 4 NICs only in the year it is entered for, so a one-off `trading_loss` is relieved once and only its unrelieved part reduces later years' profits (new `ni_class_4_trading_loss`).
+  - Isolated supplied-input provenance between simulation clones and removed it for deleted inputs, preventing Class 4 from relieving cached carry-over losses again.
+  - Corrected the Class 4 property-test reference to use each year's trading allowance parameter, including the zero allowance in historical years.
+- - Charged Class 4 NICs on the profits chargeable under ITTOIA 2005 Part 2 Chapter 2, after capital allowances and the trading allowance, less trading losses under SSCBA 1992 Sch. 2 para. 3 (new `ni_class_4_profits`). Losses reduce only trade profits for Class 4 and carry forward until used.
+
+
+## [2.112.0] - 2026-10-03
+
+### Added
+
+- Add `months_since_last_birthday`, which places a person's date of birth within their year of age, and `months_since_state_pension_age`.
+
+### Changed
+
+- - Read Attendance Allowance from its dataset award category when supplied, retained an explicitly approximate amount fallback otherwise, and applied Northern Ireland's separate AFIP and PIP commencement dates to the legacy severe disability premium.
+
+### Fixed
+
+- - Apply the pensioner Council Tax Reduction earnings disregards in England (SI 2012/2885 Sch 4), Wales (WSI 2013/3029 Sch 3) and Scotland (SSI 2012/319 Sch 2). A pension-age family's net earnings are now reduced by £25 a week for a lone parent, £10 for a couple and £5 otherwise, capped at net earnings, plus the £17.10 additional earnings disregard where a work condition is met and net earnings cover it (£37.10 in Scotland from 6 April 2020 to 4 April 2021). These sums are fixed in law and are not uprated. Before, pensioner CTR disregarded no earnings.
+- - Uprate Northern Ireland domestic rates when projecting datasets, by the growth in the combined regional and district rate poundage (Department of Finance poundages to 2026-27, weighted by council domestic rates paid; 4.33% a year from 2027-28). Previously every projected year kept the data year's bills.
+- Gave the generated adults in the Universal Credit capital-income and State Pension property tests explicit claimant-or-partner roles, so an adult under 20 is no longer presumed to be the other adult's child.
+- The legacy benefit severe disability premium now qualifies on the benefits the Regulations list (Attendance Allowance, the DLA care component at the middle or highest rate, the PIP daily living component at either rate, and Armed Forces Independence Payment), pays a couple only when both partners qualify or the other partner is blind, pays the single rate when a carer benefit is paid for one partner, and is barred by a non-dependant aged 18 or over or by a carer benefit paid for the claimant. The tax credit severe disability flag now counts higher-rate Attendance Allowance and Armed Forces Independence Payment instead of all Armed Forces Compensation Scheme payments.
+- Set State Pension age from each person's date of birth under Pensions Act 1995 Schedule 4 paragraph 1, including the rise from 66 to 67 for people born on or after 6 April 1960 (Pensions Act 2014 s.26): 66-year-olds move below State Pension age through 2026-27 and 2027-28, and are all below it from 2028-29. The Savings Credit age test, the split between basic and new State Pension, and additional State Pension now follow each person's own State Pension age.
+- - Removed NumPy's generic-timedelta deprecation warning from State Pension date arithmetic without changing calculated dates.
+- - Household calculations default an unspecified birthday position to six months before 6 October, implying a 6 April birth date and making an entered age of 66 above State Pension age at that check in 2026-27 and below it in 2027-28, while fractional ages or `months_since_last_birthday` can specify a different inferred birth date even when other people supply birthday months.
+- - Added replacement guidance for reforms, structural reforms, nested scenarios and saved API policies using the removed male and female State Pension age parameters, rejecting obsolete simulation changes before resetting existing policy.
+- - A member at least 16 years younger than a claimant flagged as a parent is now presumed to be their child at any age, unless a member under 20 and at least 16 years younger already explains the flag. So a flagged lone parent living only with an adult son or daughter is no longer inferred as a couple. Without any parent flag the under-20 limit stays, because survey childless couples carry no flags.
+
+### Removed
+
+- Remove `gov.dwp.state_pension.age.male` and `gov.dwp.state_pension.age.female`, a single State Pension age for each year. The statutory timetable by date of birth replaces them: `gov.dwp.state_pension.age.age_by_birth_date` (the age, in months) and `day_by_birth_date` (the day), with `male.age` and `male.born_before` for men born before 6 December 1953. A reform to State Pension age now changes those rows, for example the ages for births from a given date; code that read a State Pension age should read `state_pension_age` or `is_SP_age`.
+
+
 ## [2.111.2] - 2026-10-03
 
 ### Fixed

@@ -6,13 +6,18 @@ class pension_credit_reported_capital(Variable):
     entity = BenUnit
     label = "reported Pension Credit capital"
     documentation = (
-        "Capital of the claimant and partner as recorded for this benefit unit, "
-        "such as a survey's benefit-unit capital measure. When it is 0 or more "
-        "it replaces the household-level proxy in Pension Credit assessable "
-        "capital: Pension Credit counts the claimant's capital and, under the "
-        "State Pension Credit Act 2002 s. 5, the partner's, and no one else's. "
-        "The default, -1, means none is "
-        "recorded and the household proxy applies. Set it to 0 to record no "
+        "Countable capital of the claimant and partner as recorded for this "
+        "benefit unit, such as a survey's benefit-unit capital measure. Pension "
+        "Credit counts the claimant's capital, and the State Pension Credit Act "
+        "2002 s. 5 treats the partner's as the claimant's. When this is 0 or "
+        "more it replaces every capital source in Pension Credit assessable "
+        "capital: the household proxy (savings, land, property and "
+        "corporate_wealth) and the person-level sources such as a Lifetime ISA. "
+        "The model applies neither the Schedule V disregards nor the reg. 19 "
+        "valuation to it, so it must already be the countable figure, and "
+        "reforms to the capital source parameters do not reach a benefit unit "
+        "that records it. Any negative value, including the default -1, means "
+        "none is recorded and the household proxy applies. 0 records no "
         "capital."
     )
     definition_period = YEAR

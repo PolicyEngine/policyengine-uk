@@ -49,7 +49,7 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
         pension_age_member_hb = (
             benunit.sum(
                 person("housing_benefit_reported", period)
-                * person("is_SP_age", period)
+                * person("has_attained_state_pension_credit_qualifying_age", period)
                 * claimant_or_partner
             )
             > 0
@@ -70,7 +70,7 @@ class has_mixed_age_couple_pension_credit_saving(Variable):
         # then: born on or before 5 February 1954.
         older_member_qualified = benunit.any(
             claimant_or_partner
-            & person("is_SP_age", period)
+            & person("has_attained_state_pension_credit_qualifying_age", period)
             & (birth_day(person, period) <= p.saving_latest_birth_date)
         )
         return (

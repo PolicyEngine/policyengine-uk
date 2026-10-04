@@ -1,5 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.dates import birth_instant, grid_month
+from policyengine_uk.utils.dates import birth_instant
+from policyengine_uk.utils.state_pension_age import months_since_attaining
 
 
 class months_since_state_pension_age(Variable):
@@ -18,11 +19,8 @@ class months_since_state_pension_age(Variable):
     unit = "month"
 
     def formula(person, period, parameters):
-        age_in_months = grid_month(period.start.year, 10) - birth_instant(
-            person, period
+        return months_since_attaining(
+            birth_instant(person, period),
+            period.start.year,
+            person("state_pension_age", period),
         )
-        spa = person("state_pension_age", period).astype(np.float64)
-        months_since = age_in_months - 12 * spa
-        # Rounding to a thousandth of a month (under an hour) removes float
-        # error, so reaching State Pension age exactly on 6 October counts.
-        return np.round(months_since, 3)
