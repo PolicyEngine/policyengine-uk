@@ -1,3 +1,10 @@
+## [2.114.1] - 2026-10-04
+
+### Fixed
+
+- Use the Pension Credit assessment of income and capital, plus the savings credit payable, for Housing Benefit where the Pension Credit award is savings credit only (HB(SPC) Regs 2006 reg 27). For pensioners without earnings, while the award remains savings credit only, a rise in private pension no longer lowers net income (tested for council tenants in Great Britain); losing Pension Credit passports, such as the free TV licence at 75, still applies when savings credit ends.
+
+
 ## [2.114.0] - 2026-10-04
 
 ### Added
