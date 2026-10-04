@@ -14,6 +14,10 @@ class uc_mif_capped_earned_income(Variable):
             "employment_income",
             "self_employment_income",
             "miscellaneous_income",
+            # Income of a company the person stands as sole owner or partner
+            # of, treated as self-employed earnings (UC Regs 2013 reg. 77(3)(b)),
+            # in addition to their pay as its director or employee (reg. 77(4)).
+            "uc_company_self_employed_earnings",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:

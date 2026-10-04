@@ -20,9 +20,13 @@ class is_benefit_cap_exempt_earnings(Variable):
 
         # Earnings exemption for UC (£846/month = £10,152/year)
         # Note: Only check earned income, not UC amount itself to avoid circular dependency
+        # Earned income includes a company's income treated as the owner's
+        # self-employed earnings (UC Regs 2013 reg. 77(3)(b)); income deemed
+        # by the minimum income floor does not count (reg. 82(4)).
         uc_earned = benunit.sum(
             benunit.members("employment_income", period)
             + benunit.members("self_employment_income", period)
+            + benunit.members("uc_company_self_employed_earnings", period)
             - benunit.members("income_tax", period)
             - benunit.members("national_insurance", period)
         )
