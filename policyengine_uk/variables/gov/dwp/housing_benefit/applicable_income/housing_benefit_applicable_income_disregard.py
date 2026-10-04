@@ -20,7 +20,10 @@ class housing_benefit_applicable_income_disregard(Variable):
         "Support Allowance has all earnings disregarded, at any age: the "
         "working-age Regulations then apply (SI 2006/213 reg 5(1)(b)). The "
         "£20 disregards for disabled people, carers and some part-time "
-        "occupations are not modelled."
+        "occupations are not modelled, nor is the working-age permitted work "
+        "disregard (Sch 4 para 10A), which replaces paras 3 to 10 but not "
+        "para 18. Nor is the universal credit limb of para 12: the model does "
+        "not pay Housing Benefit to a family on Universal Credit."
     )
     definition_period = YEAR
     unit = GBP
