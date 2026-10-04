@@ -1,3 +1,2 @@
 - Pay the legacy carer premium once for each claimant or partner entitled to Carer's Allowance or Carer Support Payment (IS Regs 1987 Sch 2 paras 14ZA(1) and 15(7), with the matching Housing Benefit and council tax reduction schedules), rather than one premium for the couple. A couple who both have Carer's Allowance awards get two premiums; a couple who care for the same severely disabled person, or who are both entitled on caring hours alone, get one. The premium enters the Income Support, Housing Benefit and council tax reduction applicable amounts.
 - Correct the 2025-26 carer premium to £46.40 a week.
-- Open the Income Support carer route (IS Regs 1987 Sch 1B para 4) only through the claimant or partner, not through a dependent child or young person who cares.
