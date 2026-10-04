@@ -1,12 +1,12 @@
 # HB(SPC) Regs 2006 Sch 3 para 6, with the non-dependant definition in
 # reg 3: these cases assert final awards without a Guarantee Credit passport.
 # The final HB and CTR awards include the model's current income rules,
-# including two known defects outside this PR: no Savings Credit in HB
-# income for a savings-credit-only claimant (#2112), and no non-dependant
-# deduction exemption for a claimant on Attendance Allowance (#2007). The
-# premium and applicable-amount assertions do not depend on them. Each HB
-# award is the rent less 65% of income after tax above the applicable
-# amount; State Pension gets no earnings disregard (#1908).
+# including a known defect outside this file: no non-dependant deduction
+# exemption for a claimant on Attendance Allowance (#2007). The premium and
+# applicable-amount assertions do not depend on it. Each HB award is the
+# rent less 65% of income after tax, plus the savings credit where the award
+# is savings credit only (HB (SPC) Regs 2006 reg 27(4)(a)), above the
+# applicable amount; State Pension gets no earnings disregard (#1908).
 
 - name: One qualifying pensioner and a non-blind partner get no HB or CTR severe premium
   period: 2026
@@ -98,7 +98,7 @@
     # Savings credit only (59.44): HB income is Pension Credit income plus
     # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 59.44 =
     # 38.64 below the figure without it.
-    housing_benefit: 5_278.89
+    housing_benefit: 5_278.88
     council_tax_benefit: 1_704.27
 
 - name: A non-ignored adult resident blocks the pensioner's HB and CTR severe premium
