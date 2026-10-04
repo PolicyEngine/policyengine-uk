@@ -1,1 +1,1 @@
-Add `is_uc_assessed_claimant`, the single claimant or the two joint claimants whose income a Universal Credit award assesses (`is_uc_claimant`, limited to the two eldest), and the `add_for_members` helper that sums person-level variables over chosen benefit-unit members.
+- Add `is_uc_assessed_claimant`: the single claimant or the two joint claimants whose income a Universal Credit award assesses (`is_uc_claimant`, limited to the two eldest when inputs flag more).
