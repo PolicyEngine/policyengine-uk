@@ -1,3 +1,19 @@
+## [2.115.0] - 2026-10-04
+
+### Added
+
+- Added `state_pension_credit_qualifying_age` and `has_attained_state_pension_credit_qualifying_age`, the qualifying age for State Pension Credit from each person's date of birth, and `ni_class_4_liable`, Class 4 liability by age at the start of the tax year.
+
+### Changed
+
+- Winter Fuel Payment uses pensionable age from 2024-25 and the State Pension Credit qualifying age in earlier years, as the regulations in force in each year require.
+
+### Fixed
+
+- Class 4 National Insurance now stops from the first tax year that begins on or after the day State Pension age is reached (Social Security (Contributions) Regulations 2001 reg 91(a)): a person over State Pension age on 6 April is excepted, and one who reaches it during the year pays Class 4 for that whole year. Before, anyone over State Pension age on 6 October was excepted.
+- Pension Credit, Universal Credit, Housing Benefit, Council Tax Reduction, Income Support, the benefit cap (which reaches only working-age Housing Benefit and Universal Credit) and Winter Fuel Payment now use the qualifying age for State Pension Credit (State Pension Credit Act 2002 s.1(6)) instead of each person's own State Pension age. For a man born before 6 December 1953 that is the State Pension age of a woman born on the same day, not 65, so these programmes change only in 2018-19 and earlier. National Insurance and State Pension keep using the person's own State Pension age; Class 4 now reads it at the start of the tax year (see the Class 4 entry). Housing Benefit and Council Tax Reduction choose their pension-age or working-age allowances, means tests and premium schedules with their own statutory tests (HB(SPC) Regs 2006 reg 5 and the CTR pensioner tests), which exclude families on Universal Credit, Income Support, income-based Jobseeker's Allowance or income-related Employment and Support Allowance; the pension-age severe disability premium follows the qualifying age. Income Support uses its own working-age premiums, and its age test applies to the claimant, who must also be the one in a prescribed category such as carer, so a mixed-age couple can claim it through the younger partner unless the couple is on Pension Credit (SSCBA 1992 s.124(1)(aa), (e) and (g)).
+
+
 ## [2.114.3] - 2026-10-04
 
 ### Fixed
