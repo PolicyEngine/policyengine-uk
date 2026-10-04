@@ -520,6 +520,190 @@
   output:
     severe_disability_premium: [4474.60, 0]
 
+# Carers in other benefit units (para 14(2)(a)(iii) and (2)(b), with 14(4)).
+# The carer condition is separate from the non-dependant condition: a
+# non-dependant whose presence is ignored under para 14(4) can still be the
+# person who receives a carer benefit for caring for the claimant. Whom each
+# carer benefit is paid for is attributed by
+# is_cared_for_by_carer_benefit_recipient, shared with the Pension Credit
+# severe disability addition.
+
+- name: A non-dependant ignored for receiving a qualifying benefit still bars the premium as the claimant's carer
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    # Each is ignored as the other's non-dependant (para 14(4)(a)). The son's
+    # Carer's Allowance is for caring for the claimant, so the claimant fails
+    # para 14(2)(a)(iii); no one is paid for caring for the son.
+    has_non_dependant_for_severe_disability_premium: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    severe_disability_premium: [0, 4474.60]
+
+- name: A blind non-dependant who receives a carer benefit bars the premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 25
+        is_blind: true
+        receives_carer_benefit: true
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, son]
+  output:
+    # The son is ignored as a non-dependant (para 14(4)(b)) but is the
+    # claimant's carer.
+    has_non_dependant_for_severe_disability_premium: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    severe_disability_premium: [0, 0]
+
+- name: A couple who both qualify get the single rate when an ignored non-dependant is paid for caring for one of them
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      partner:
+        age: 48
+        pip_dl_category: ENHANCED
+      son:
+        age: 25
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+      son_family:
+        members: [son]
+    households:
+      household:
+        members: [claimant, partner, son]
+  output:
+    # One award is for one person: a carer for only one of the couple leaves
+    # the single rate (para 14(2)(b); Sch 3 para 20(6)(b)(i)).
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+    severe_disability_premium: [4474.60, 4474.60]
+
+- name: A non-dependant who receives a carer benefit and has a severely disabled partner is treated as caring for their partner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 50
+        pip_dl_category: STANDARD
+      son:
+        age: 30
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+      sons_partner:
+        age: 28
+        pip_dl_category: STANDARD
+    benunits:
+      claimant_family:
+        members: [claimant]
+      son_family:
+        members: [son, sons_partner]
+    households:
+      household:
+        members: [claimant, son, sons_partner]
+  output:
+    # A carer cares within their own benefit unit first, so the claimant has
+    # no carer. The son and his partner both qualify with a carer paid for
+    # one of them: the single rate.
+    is_cared_for_by_carer_benefit_recipient: [false, false, true]
+    severe_disability_premium: [4474.60, 4474.60]
+
+- name: One carer's award bars the premium of only one of two other benefit units, the one with the eldest member
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 60
+        pip_dl_category: STANDARD
+      younger:
+        age: 55
+        pip_dl_category: STANDARD
+      carer:
+        age: 30
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      older_family:
+        members: [older]
+      younger_family:
+        members: [younger]
+      carer_family:
+        members: [carer]
+    households:
+      household:
+        members: [older, younger, carer]
+  output:
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+    severe_disability_premium: [0, 4474.60, 4474.60]
+
+- name: The legacy premium and the Pension Credit addition read the same carer attribution
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        aa_category: LOWER
+      working_age:
+        age: 45
+        pip_dl_category: STANDARD
+      carer:
+        age: 40
+        pip_dl_category: STANDARD
+        receives_carer_benefit: true
+    benunits:
+      pensioner_family:
+        members: [pensioner]
+      working_age_family:
+        members: [working_age]
+      carer_family:
+        members: [carer]
+    households:
+      household:
+        members: [pensioner, working_age, carer]
+  output:
+    # The one carer benefit is for the pensioner under both rules, so the
+    # working-age claimant keeps the premium and the pensioner loses the
+    # addition.
+    is_cared_for_by_carer_benefit_recipient: [true, false, false]
+    severe_disability_premium: [0, 4474.60, 4474.60]
+    severe_disability_minimum_guarantee_addition: [0, 4474.60, 4474.60]
+
 # Flow-through to the applicable amounts.
 
 - name: The premium is part of the legacy benefit premiums
