@@ -483,3 +483,83 @@
         savings: 20_000
   output:
     pension_credit_assessable_capital: 0
+
+- name: Case 21, a mixed-age couple can claim Income Support through the younger partner.
+  # SSCBA 1992 s.124(1)(aa) restricts the claimant, and either member of a
+  # couple can claim. She is a carer under the qualifying age with an
+  # existing award; he was born 6 June 1953 and reached the qualifying age on
+  # 6 March 2017, though his own pensionable age is 6 June 2018. They have not
+  # claimed Pension Credit.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: false
+    households:
+      household:
+        members: [carer, man]
+  output:
+    has_attained_state_pension_credit_qualifying_age: [false, true]
+    pension_credit: 0
+    income_support_eligible: true
+
+- name: Case 22, the same couple cannot have Income Support while on Pension Credit.
+  # s.124(1)(g): the other member of the couple is not entitled to State
+  # Pension Credit. Before 15 May 2019 the older member could claim it for the
+  # couple; the model treats a couple that meets the Pension Credit age
+  # conditions and would claim it as on Pension Credit.
+  period: 2017
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      man:
+        age: 64
+        months_since_last_birthday: 4
+        is_male: true
+    benunits:
+      benunit:
+        members: [carer, man]
+        would_claim_pc: true
+    households:
+      household:
+        members: [carer, man]
+  output:
+    meets_pension_credit_age_conditions: true
+    pension_credit: 12_649
+    income_support_eligible: false
+
+- name: Case 23, a mixed-age couple after May 2019 can keep Income Support through the younger partner.
+  # Pension Credit needs both members over the qualifying age from 15 May 2019
+  # (SPCA 2002 s.4(1A)) unless the SI 2019/37 saving applies, which these
+  # inputs do not give.
+  period: 2026
+  input:
+    people:
+      carer:
+        age: 50
+        is_carer_for_benefits: true
+        income_support_reported: 1_000
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [carer, partner]
+    households:
+      household:
+        members: [carer, partner]
+  output:
+    pension_credit: 0
+    income_support_eligible: true
