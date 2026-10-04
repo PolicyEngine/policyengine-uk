@@ -23,7 +23,10 @@ Support Payment (Scotland), renting from the council in 2026:
 
 1. Differential: Pension Credit and pension-age Housing Benefit assess the
    same income. Where Guarantee Credit is not paid, Housing Benefit
-   applicable income plus its income disregard equals Pension Credit income.
+   applicable income plus its income disregard equals Pension Credit income
+   plus any Pension Credit paid, which is then savings credit: a
+   savings-credit-only award's Housing Benefit income is the Pension Credit
+   income plus the savings credit payable (HB (SPC) Regs 2006 reg 27(4)(a)).
    The draws have no earnings, no pension contributions and capital of at
    most £10,000, so neither tariff income nor the earnings rules apply.
 2. Boundary: on the private-pension step where Guarantee Credit ends,
@@ -32,7 +35,10 @@ Support Payment (Scotland), renting from the council in 2026:
    cliff, so it is excluded.
 3. Metamorphic: setting the Scottish Carer Supplement to zero changes
    Pension Credit income and Housing Benefit applicable income only through
-   income tax: each plus income tax is unchanged. This encodes the model's
+   income tax: each plus income tax is unchanged, Housing Benefit income
+   after taking off the Pension Credit paid (a savings-credit-only award's
+   savings credit, which reg 27(4)(a) adds and which itself moves with the
+   tax on the supplement). This encodes the model's
    current behaviour, not the law's. The law disregards tax only on income
    taken into account (SPC Regs reg 17(10); HB (SPC) Regs 2006 reg 33(12)),
    so the supplement should leave both measures unchanged outright, while
@@ -181,6 +187,7 @@ def grid(families, reform=None):
             "tv_licence",
             "guarantee_credit",
             "pension_credit_income",
+            "pension_credit",
             "housing_benefit_eligible",
             "housing_benefit_applicable_income",
             "housing_benefit_applicable_income_disregard",
@@ -221,7 +228,10 @@ def test_pension_credit_and_housing_benefit_assess_the_same_carer_income(familie
         before_disregard = (
             hb_income + g["housing_benefit_applicable_income_disregard"][i]
         )
-        pc_income = g["pension_credit_income"][i]
+        # Pension Credit paid without Guarantee Credit is savings credit only,
+        # which HB (SPC) Regs 2006 reg 27(4)(a) adds to the Pension Credit
+        # income.
+        pc_income = g["pension_credit_income"][i] + g["pension_credit"][i]
         assert np.allclose(
             before_disregard[compared], pc_income[compared], atol=0.01
         ), (fam, before_disregard[compared], pc_income[compared])
@@ -266,6 +276,11 @@ def test_scottish_carer_supplement_is_not_means_tested_income(families):
         for variable in ["pension_credit_income", "housing_benefit_applicable_income"]:
             with_supplement = g[variable][i] + g["income_tax"][i]
             without_supplement = without[variable][i] + without["income_tax"][i]
+            if variable == "housing_benefit_applicable_income":
+                # Reg 27(4)(a) adds a savings-credit-only award's savings
+                # credit, which moves with the tax on the supplement.
+                with_supplement = with_supplement - g["pension_credit"][i]
+                without_supplement = without_supplement - without["pension_credit"][i]
             # Only where the zero floor does not bind in either run.
             compared = (g[variable][i] > 0) & (without[variable][i] > 0)
             assert np.allclose(
