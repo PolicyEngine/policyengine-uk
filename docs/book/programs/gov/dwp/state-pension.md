@@ -25,13 +25,40 @@ Three variables under `gov/dwp/`:
     accrual that exceeds the new flat rate, folded into NSP under
     current law but tracked separately in PolicyEngine so the reform
     surface stays clean.
-  - Both are computed as `max(reported - flat_max_for_type, 0)` per week,
-    multiplied by `WEEKS_IN_YEAR`.
+  - Both are the reported weekly amount above the type's full rate in the
+    data year, `max(reported - flat_max_for_type, 0)`, uprated as described
+    below and multiplied by `WEEKS_IN_YEAR`.
+
+All three split the amount a person reported in the data year (the
+dataset's first year) by the person's `state_pension_type` in the year
+simulated. The part up to that type's full rate in the data year is basic
+or new State Pension, and the part above it is additional State Pension.
+Both parts are uprated by the type's full rate (the year's over the data
+year's), so together they pay the reported amount uprated by the flat rate,
+for anyone over State Pension age. In law, additional pensions and
+protected payments rise with prices instead: the Social Security Benefits
+Up-rating Order 2026 raised them by 3.8% in April 2026 (articles 4(3) and
+6(3)), and the full rates by 4.8%. This is tracked in
+[#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941).
+
+Survey ages are held fixed in the years a dataset is projected to, so a
+record's birth cohort moves one year later for each year projected, and its
+type can change: a man aged 75 in the 2024-25 data reached State Pension age
+in 2014, on the basic State Pension, but a man aged 75 in 2030-31 reached it
+in 2021, on the new State Pension. Until the fix for
+[#1921](https://github.com/PolicyEngine/policyengine-uk/issues/1921),
+`additional_state_pension` used the data year's type while the other two
+used the year's, so for records like his the part of the reported amount
+between the basic and new flat rates was paid twice. The records keep their
+reported amounts: a record that moves to a new State Pension cohort is not
+given a new State Pension award. That is one reason the model's State
+Pension per recipient grows more slowly than DWP's (see Known aggregate gap
+below).
 
 The flag-up split (`state_pension_type`) is settled by [PR #1618](https://github.com/PolicyEngine/policyengine-uk/pull/1618):
 classification is based on whether the person reaches State Pension age
-before or on/after 6 April 2016. No component is paid before State
-Pension age.
+before or on/after 6 April 2016. A computed `state_pension_type` is `NONE`
+below State Pension age, so no component is paid there.
 
 ## State Pension age
 
@@ -275,10 +302,68 @@ still included and the rise needed to reach the earnings path, rounded up to
 
 ## Known aggregate gap (#1632)
 
-After the BASIC/NEW classification fix in PR #1618 and the pro-rating
-+ Protected Payment fixes in [PR #1634](https://github.com/PolicyEngine/policyengine-uk/pull/1634),
-the model's State Pension aggregate is **~£127.5 bn** against the OBR
-2025 target of **~£140 bn** — a **-£12 bn gap**.
+The model's State Pension covers UK private households: the Family
+Resources Survey covers private households only, not nursing homes and
+other communal establishments. DWP's State Pension spending covers Great
+Britain and UK State Pensions paid to people living abroad, but not
+Northern Ireland, whose State Pension the Department for Communities pays.
+DWP's Spring Forecast 2026 is consistent with the OBR's March 2026 forecast.
+From 2026-27 the two differ by about £2m a year. The OBR's figures are
+£1.4bn higher in 2024-25, which the OBR records as outturn, and £0.1bn
+higher in 2025-26.
+
+The table compares full microsimulation runs on the enhanced FRS 2024-25
+(policyengine-uk-data-private 1.57.4) with DWP's spending less its payments
+abroad.
+
+| £bn | 2024-25 | 2025-26 | 2026-27 | 2027-28 | 2028-29 | 2029-30 | 2030-31 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Model State Pension | 119.0 | 124.8 | 129.6 | 131.6 | 133.6 | 137.5 | 141.6 |
+| OBR March 2026 EFO, State Pension | 138.0 | 146.2 | 154.2 | 158.9 | 164.0 | 172.2 | 180.7 |
+| DWP Spring Forecast 2026, State Pension | 136.6 | 146.1 | 154.2 | 158.9 | 164.0 | 172.2 | 180.7 |
+| of which paid abroad | 5.3 | 5.6 | 5.9 | 6.1 | 6.2 | 6.4 | 6.6 |
+| Model minus DWP less paid abroad | -12.2 | -15.6 | -18.6 | -21.3 | -24.2 | -28.3 | -32.5 |
+
+The model also includes Northern Ireland, which DWP's figures do not, so the
+like-for-like gap is larger by Northern Ireland's State Pension.
+
+**The data year.** In 2024-25 the model has 11.36m State Pension recipients
+averaging £201.6 a week, for the UK. The FRS's own grossed figures for Great
+Britain are 11.53m recipients averaging £212 a week, and DWP's administrative
+figures are 11.88m and £212 (FRS methodology tables M.6a and M.6b, which
+cover Great Britain). The FRS's grossed estimate for the
+UK, with benefit amounts linked to DWP records, is £130.6bn, against
+£135.1bn from administrative data. So most of the model's £16bn shortfall
+against administrative data for the UK arises in building the enhanced FRS,
+not in the survey. For FRS respondents, `state_pension_reported` is the
+FRS benefits table's weekly State Pension amount times 52
+(policyengine-uk-data's `datasets/frs.py`). On the rows the enhanced FRS
+adds from the Survey of Personal Incomes, it is imputed
+(`datasets/imputations/frs_only.py`). The shortfall is tracked in
+[policyengine-uk-data#493](https://github.com/PolicyEngine/policyengine-uk-data/issues/493).
+
+**Projected years.** The gap widens after the data year for two reasons,
+tracked in [#1929](https://github.com/PolicyEngine/policyengine-uk/issues/1929):
+
+- **Caseload.** Survey ages are held fixed in projected years and household
+  weights grow with total population
+  (`policyengine_uk/data/uprating_indices.yaml`), so the pension-age
+  population keeps the data year's age structure. From 2025-26 to 2030-31
+  the model's State Pension recipients fall 3.0%, as State Pension age rises
+  to 67, while DWP's caseload less those paid abroad rises 4.8%.
+- **Awards.** Each record keeps its reported amount, uprated by the flat
+  rate, including records whose cohort moves from basic to new State
+  Pension. The model's State Pension per recipient grows 17.0% over those
+  years. DWP's spending per recipient, less those paid abroad, grows 18.3%,
+  as its new State Pension spending grows from £56.1bn to £102.4bn and its
+  basic State Pension spending falls from £66.7bn to £57.8bn.
+
+Until the fix for [#1921](https://github.com/PolicyEngine/policyengine-uk/issues/1921),
+`additional_state_pension` paid the band between the flat rates twice for
+records moving from basic to new State Pension cohorts (see Components
+above): £0.8bn in 2025-26, rising to £6.8bn in 2030-31. That made the
+model's State Pension per recipient grow 21.8%, faster than DWP's, and hid
+part of the widening.
 
 ### What's been fixed
 
@@ -287,34 +372,28 @@ the model's State Pension aggregate is **~£127.5 bn** against the OBR
 | BASIC vs NEW classification used `is_SP_age` heuristic | Fixed | #1618 |
 | `new_state_pension` returned flat max for every NEW retiree, ignoring partial NI records | Fixed | #1634 |
 | Protected Payment only computed for BASIC-type recipients | Fixed | #1634 (ASP now extends to NEW) |
+| `additional_state_pension` split the reported amount by the data year's State Pension type, paying part of it twice for records moving from basic to new cohorts | Fixed | #1921 |
 
 ### What's still open
 
-The remaining ~£12 bn gap appears to come from the **data side** rather
-than the formula. The FRS records State Pension as a single weekly
-benefit value (`state_pension_reported`), which is derived from the
-DWP-administered single weekly figure (SRP). For BASIC-type retirees
-who reported exactly the maximum basic rate, the formula assigns ASP =
-0 — but in reality many of those retirees also received SERPS / S2P
-top-ups that the single weekly figure either caps or rounds.
+- The data year's shortfall in the enhanced FRS:
+  [policyengine-uk-data#493](https://github.com/PolicyEngine/policyengine-uk-data/issues/493).
+- The pension-age population and new-cohort awards in projected years:
+  [#1929](https://github.com/PolicyEngine/policyengine-uk/issues/1929).
 
-The proposed data-side fix lives in `policyengine-uk-data` and would:
-
-- Impute an ASP component on BASIC-type rows whose reported state
-  pension matches the max basic rate exactly, using the DWP-published
-  share of SERPS / S2P recipients in that band.
-- Source the ASP-by-band distribution from ONS *National Pensioners
-  Survey* breakdowns or DWP administrative caseload by pension type.
-
-This is tracked under [#1632](https://github.com/PolicyEngine/policyengine-uk/issues/1632)
+Both are part of [#1632](https://github.com/PolicyEngine/policyengine-uk/issues/1632)
 and the broader UK pipeline-alignment tracker
 [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621).
 
 ## References
 
 - DWP, [New State Pension](https://www.gov.uk/new-state-pension) and [Basic State Pension](https://www.gov.uk/state-pension) user-facing pages.
-- HMRC, [State Pension forecast](https://www.gov.uk/check-state-pension) (the underlying SP1 figure that lands in the FRS).
+- GOV.UK, [Check your State Pension forecast](https://www.gov.uk/check-state-pension).
 - [Pensions Act 2014](https://www.legislation.gov.uk/ukpga/2014/19/contents) — introduces the New State Pension and the BASIC / NEW boundary.
 - [Social Security Contributions and Benefits Act 1992, Part 2](https://www.legislation.gov.uk/ukpga/1992/4/part/II) — primary statute for the basic scheme.
-- OBR March 2026 EFO — State Pension expenditure target.
+- OBR, [Economic and fiscal outlook, March 2026: detailed forecast tables, expenditure](https://obr.uk/download/march-2026-economic-and-fiscal-outlook-detailed-forecast-tables-expenditure/), table 4.9, "State pension".
+- DWP, [Benefit expenditure and caseload tables 2026: outturn and forecast, Spring Forecast 2026](https://assets.publishing.service.gov.uk/media/69dcdc8c6b695d635c34dcc4/outturn-and-forecast-tables-spring-forecast-2026.xlsx), "State Pension" sheet: total, paid outside the UK, components and caseload.
+- DWP, [Family Resources Survey, integrating administrative data for benefits: tables](https://assets.publishing.service.gov.uk/media/69c416acb66ff902f45441f0/family-resources-survey-transformation-benefits.xlsx), sheet 16, State Pension: admin-linked survey and administrative estimates, 2024-25.
+- DWP, [Family Resources Survey 2024-25: methodology and standard error tables](https://assets.publishing.service.gov.uk/media/69c3c0d2471d520038d0f571/ch1_methodology_and_standard_errors.xlsx), tables M.6a and M.6b: State Pension recipients and weekly amounts, FRS against administrative data.
+- DWP, [Family Resources Survey 2024-25: background information and methodology](https://www.gov.uk/government/statistics/family-resources-survey-financial-year-2024-to-2025/family-resources-survey-background-information-and-methodology), section 4.1, for the survey's coverage of private households.
 - House of Commons Library, [State Pension triple lock](https://commonslibrary.parliament.uk/research-briefings/cbp-7812/) — context for the triple-lock parameters.

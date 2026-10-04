@@ -1,0 +1,183 @@
+# Housing Benefit Regulations 2006 Sch 1 para 2 (amounts ineligible for meals)
+# and reg 13(7); the same amounts are in the pension-age regulations
+# (SI 2006/214 Sch 1 para 2). Weekly amounts x 52.
+
+- name: No meals, no deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+  output:
+    housing_benefit_meals_deduction: 0
+
+- name: Single boarder with at least three meals a day, 2026-27
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      boarder:
+        age: 40
+    benunits:
+      family:
+        members: [boarder]
+        meals_included_in_rent: AT_LEAST_THREE_A_DAY
+    households:
+      home:
+        members: [boarder]
+  output:
+    # Para 2(2)(a): £37.30 a week (SI 2026/148). 37.30 x 52 = 1,939.60.
+    housing_benefit_meals_deduction: 1_939.60
+
+- name: Couple with a child under 16, fewer than three meals a day, 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult_1:
+        age: 40
+      adult_2:
+        age: 38
+      child:
+        age: 10
+    benunits:
+      family:
+        members: [adult_1, adult_2, child]
+        meals_included_in_rent: FEWER_THAN_THREE_A_DAY
+    households:
+      home:
+        members: [adult_1, adult_2, child]
+  output:
+    # Para 2(3)(b): £24.00 for each person aged 16 or over and £12.00 for each
+    # under 16 (SI 2025/295). (2 x 24.00 + 12.00) x 52 = 3,120.
+    housing_benefit_meals_deduction: 3_120
+
+- name: Breakfast only, a flat amount per person
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 30
+      child:
+        age: 5
+    benunits:
+      family:
+        members: [adult, child]
+        meals_included_in_rent: BREAKFAST_ONLY
+    households:
+      home:
+        members: [adult, child]
+  output:
+    # Para 2(5): £4.50 for the claimant and each family member.
+    # 2 x 4.50 x 52 = 468.
+    housing_benefit_meals_deduction: 468
+
+- name: On the LHA route the cap rent is the gross rent, meals included
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      boarder:
+        age: 70
+        rent_paid_as_boarder: 10_000
+    benunits:
+      householder_family:
+        members: [householder]
+      boarder_family:
+        members: [boarder]
+        meals_included_in_rent: AT_LEAST_THREE_A_DAY
+        housing_benefit_LHA_rate: 9_000
+    households:
+      home:
+        members: [householder, boarder]
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    # Regs 12D(2)(a), 13D(5) and (12): without a rent officer's board and
+    # attendance finding, min(gross rent 10,000, LHA 9,000) = 9,000.
+    LHA_cap: [0, 9_000]
+
+- name: A rent officer's board finding takes meals off the rent instead
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      boarder:
+        age: 70
+        rent_paid_as_boarder: 10_000
+    benunits:
+      householder_family:
+        members: [householder]
+      boarder_family:
+        members: [boarder]
+        meals_included_in_rent: AT_LEAST_THREE_A_DAY
+        housing_benefit_board_and_attendance_determination: true
+        housing_benefit_LHA_rate: 9_000
+    households:
+      home:
+        members: [householder, boarder]
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    # Reg 13C(5)(e): off the LHA. Reg 13(7): rent 10,000 less
+    # 37.30 x 52 = 1,939.60 is 8,060.40.
+    LHA_cap: [0, 8_060.40]
+
+- name: Breakfast without a board finding leaves Housing Benefit on the gross rent
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      boarder:
+        age: 70
+        rent_paid_as_boarder: 6_000
+    benunits:
+      householder_family:
+        members: [householder]
+      boarder_family:
+        members: [boarder]
+        meals_included_in_rent: BREAKFAST_ONLY
+        housing_benefit_LHA_rate: 9_000
+        housing_benefit_applicable_income: 0
+    households:
+      home:
+        members: [householder, boarder]
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    LHA_cap: [0, 6_000]
+    housing_benefit_entitlement: [0, 6_000]
+
+- name: Meals do not reduce the Universal Credit housing costs element
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 60
+        is_household_head: true
+      boarder:
+        age: 40
+        rent_paid_as_boarder: 6_000
+    benunits:
+      householder_family:
+        members: [householder]
+      boarder_family:
+        members: [boarder]
+        meals_included_in_rent: AT_LEAST_THREE_A_DAY
+        uncapped_BRMA_LHA_rate: 9_000
+    households:
+      home:
+        members: [householder, boarder]
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    # UC excludes food from service charges only in the social rented
+    # sector and for owner-occupiers (UC Sch 1 para 8(1), (6)(c)); a private
+    # renter's whole payment is core rent: min(6,000, 9,000) = 6,000.
+    uc_housing_costs_element: [0, 6_000]
