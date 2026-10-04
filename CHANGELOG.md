@@ -1,3 +1,10 @@
+## [2.113.6] - 2026-10-04
+
+### Changed
+
+- Document what `pension_credit_reported_capital` must contain (countable capital after the Schedule V disregards and reg. 19 valuation) and what it replaces, and restate its monotonicity property around the savings credit's intended exception.
+
+
 ## [2.113.5] - 2026-10-04
 
 ### Fixed
