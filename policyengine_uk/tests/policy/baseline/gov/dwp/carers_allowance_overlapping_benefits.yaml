@@ -370,6 +370,12 @@
         age: 40
         in_work: true
         is_parent: true
+        # Reg 14(3)/15(3): the other parent must be in qualifying paid work
+        # with at least the reg 18 minimum income (16 x £10 x 13 = £2,080 a
+        # quarter) and adjusted net income of at most £100,000.
+        employment_income: 20_000
+        adjusted_net_income: 20_000
+        minimum_wage: 10
       parent2:
         age: 38
         in_work: false
