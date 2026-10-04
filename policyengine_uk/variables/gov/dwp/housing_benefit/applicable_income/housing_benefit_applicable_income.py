@@ -7,14 +7,16 @@ class housing_benefit_applicable_income(Variable):
     label = "relevant income for Housing Benefit means test"
     documentation = (
         "Income taken into account in the Housing Benefit means test. It is "
-        "nil for a family in receipt of Income Support, income-based "
+        "nil for a family on Universal Credit, Income Support, income-based "
         "Jobseeker's Allowance or income-related Employment and Support "
-        "Allowance, whose whole income is disregarded, and for a pension-age "
-        "family in receipt of the Pension Credit guarantee credit."
+        "Allowance (housing_benefit_on_passporting_benefit), whose whole "
+        "income is disregarded, and for a pension-age family in receipt of "
+        "the Pension Credit guarantee credit."
     )
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/4",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/4",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/5",
     )
     definition_period = YEAR
@@ -95,22 +97,22 @@ class housing_benefit_applicable_income(Variable):
         )
         guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
         # SI 2006/213 Sch 5 para 4 (NI: SR 2006/405 Sch 6 para 4) disregards
-        # "the whole of his income" where a claimant is on income support, an
-        # income-based jobseeker's allowance or an income-related employment
-        # and support allowance. Para 5 does the same where the claimant's
-        # partner in a joint-claim couple is on income-based JSA. The model
-        # holds these awards for the benefit unit and cannot tell which member
-        # claims Housing Benefit (a couple choose, reg 82(1)), so it applies
-        # the disregard whichever member is on the benefit. There is no age
-        # condition: SI 2006/213 reg 5(1)(b) (NI: SR 2006/405 reg 5(1)(b))
-        # applies these regulations to a claimant over the qualifying age for
-        # State Pension Credit whose partner is on one of these benefits, so a
-        # mixed-age couple whose younger member is on income-related ESA is
-        # covered. The universal credit limb is left out: the model never pays
-        # Housing Benefit and Universal Credit to the same family
-        # (housing_benefit_eligible), and Universal Credit depends on Housing
-        # Benefit through the benefit cap.
-        on_income_related_benefit = benunit(
-            "in_receipt_of_income_support_jsa_ib_or_esa_ir", period
+        # "the whole of his income" where a claimant is on universal credit,
+        # income support, an income-based jobseeker's allowance or an
+        # income-related employment and support allowance. Para 5 does the
+        # same where the claimant's partner in a joint-claim couple is on
+        # income-based JSA. The model holds these awards for the benefit unit
+        # and cannot tell which member claims Housing Benefit (a couple
+        # choose, reg 82(1)), so it applies the disregard whichever member is
+        # on the benefit. There is no age condition: SI 2006/213 reg 5(1)(b)
+        # (NI: SR 2006/405 reg 5(1)(b)) applies these regulations to a
+        # claimant over the qualifying age for State Pension Credit whose
+        # partner is on one of these benefits, so a mixed-age couple whose
+        # younger member is on income-related ESA or Universal Credit is
+        # covered. Universal Credit is read before the benefit cap
+        # (housing_benefit_on_passporting_benefit), which avoids a circular
+        # dependency through the cap.
+        on_passporting_benefit = benunit(
+            "housing_benefit_on_passporting_benefit", period
         )
-        return where(guarantee_credit | on_income_related_benefit, 0, applicable_income)
+        return where(guarantee_credit | on_passporting_benefit, 0, applicable_income)

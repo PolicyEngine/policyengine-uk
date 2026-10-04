@@ -13,10 +13,11 @@ class housing_benefit_assessable_capital(Variable):
         "no weight. Person-level sources, such as a Lifetime ISA, count only for "
         "the holder's own benunit, and only when the holder is its claimant or "
         "partner (is_claimant_or_partner): a dependant's capital is not the "
-        "claimant's. It is nil for a family in receipt of Income Support, "
-        "income-based Jobseeker's Allowance or income-related Employment and "
-        "Support Allowance, and for a pension-age family in receipt of the "
-        "Pension Credit guarantee credit."
+        "claimant's. It is nil for a family on Universal Credit, Income "
+        "Support, income-based Jobseeker's Allowance or income-related "
+        "Employment and Support Allowance "
+        "(housing_benefit_on_passporting_benefit), and for a pension-age "
+        "family in receipt of the Pension Credit guarantee credit."
     )
     definition_period = YEAR
     unit = GBP
@@ -25,6 +26,7 @@ class housing_benefit_assessable_capital(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/25",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/6/paragraph/5",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/7/paragraph/5",
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
     )
 
     def formula(benunit, period, parameters):
@@ -54,17 +56,17 @@ class housing_benefit_assessable_capital(Variable):
         )
         guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
         # SI 2006/213 Sch 6 para 5 (NI: SR 2006/405 Sch 7 para 5) disregards
-        # "the whole of his capital" where a claimant is on income support, an
-        # income-based jobseeker's allowance or an income-related employment
-        # and support allowance (para 6: a joint-claim partner on income-based
-        # JSA). With no capital the tariff income is nil and the capital limit
-        # is met. See housing_benefit_applicable_income for the age and
-        # universal credit points.
-        on_income_related_benefit = benunit(
-            "in_receipt_of_income_support_jsa_ib_or_esa_ir", period
+        # "the whole of his capital" where a claimant is on universal credit,
+        # income support, an income-based jobseeker's allowance or an
+        # income-related employment and support allowance (para 6: a
+        # joint-claim partner on income-based JSA). With no capital the tariff
+        # income is nil and the capital limit is met. See
+        # housing_benefit_applicable_income for the age and benefit cap points.
+        on_passporting_benefit = benunit(
+            "housing_benefit_on_passporting_benefit", period
         )
         return where(
-            guarantee_credit | on_income_related_benefit,
+            guarantee_credit | on_passporting_benefit,
             0,
             max_(0, household_capital_proxy + person_capital),
         )
