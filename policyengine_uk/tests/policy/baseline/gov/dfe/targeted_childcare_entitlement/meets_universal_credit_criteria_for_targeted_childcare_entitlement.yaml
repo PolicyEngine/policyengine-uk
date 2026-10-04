@@ -1,0 +1,243 @@
+# Targeted (two-year-old) childcare, Universal Credit route. Local Authority
+# (Duty to Secure Early Years Provision Free of Charge) Regulations 2014
+# reg. 1(2), definition of "eligible child" (a)(vii), and reg. 1(3)-(4):
+# https://www.legislation.gov.uk/uksi/2014/2147/regulation/1
+#
+# The parent must be entitled to universal credit with earned income not
+# exceeding the applicable amount. Reg. 1(3)(a): "earned income" means income
+# for the purposes of Chapter 2 of Part 6 of the UC Regulations 2013, which
+# is net of the person's own tax, NI and pension contributions and comes
+# before the work allowance (reg. 22, Part 3). Reg. 1(3)(c) reads the limit
+# against a couple's combined income. The limit here is 15,400 a year.
+# In 2026-27 the personal allowance and the primary threshold are 12,570.
+
+- name: "#1986 counterexample: earnings of 17,000 exceed the limit"
+  # Tax (17,000 - 12,570) x 20% = 886; NI (17,000 - 12,570) x 8% = 354.40;
+  # earned income 15,759.60 > 15,400. After the 5,124 work allowance it
+  # would be 10,635.60, which is how the model wrongly passed it before.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 17_000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_earned_income_before_work_allowance: 15_759.60
+    uc_earned_income: 10_635.60
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+
+- name: Earned income just under the limit meets the criterion
+  # Tax (16,500 - 12,570) x 20% = 786; NI 3,930 x 8% = 314.40; earned income
+  # 15,399.60 <= 15,400.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 16_500
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_earned_income_before_work_allowance: 15_399.60
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: true
+
+- name: Earned income just over the limit does not
+  # Tax 3,931 x 20% = 786.20; NI 3,931 x 8% = 314.48; earned income
+  # 15,400.32 > 15,400.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 16_501
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_earned_income_before_work_allowance: 15_400.32
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+
+- name: A couple's combined earned income is tested
+  # Reg. 1(3)(c): 8,000 + 8,000 = 16,000 > 15,400, although each partner is
+  # under the limit alone.
+  period: 2026
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 8_000
+      parent2:
+        age: 30
+        employment_income: 8_000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent1, parent2, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_earned_income_before_work_allowance: 16_000
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+
+- name: Combined earned income exactly at the limit meets the criterion
+  # "not exceeding": 7,700 + 7,700 = 15,400 <= 15,400. Each is under the
+  # personal allowance and primary threshold, so no tax or NI.
+  period: 2026
+  input:
+    people:
+      parent1:
+        age: 30
+        employment_income: 7_700
+      parent2:
+        age: 30
+        employment_income: 7_700
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent1, parent2, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent1, parent2, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_earned_income_before_work_allowance: 15_400
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: true
+
+- name: Income treated as earned under the minimum income floor counts
+  # Reg. 1(3)(a) uses UC Part 6 Chapter 2, which includes reg. 62. The
+  # partner who is not the child's carer has profits of 3,000 and is subject
+  # to the floor (35 hours at the national living wage), so the couple's
+  # earned income is far above 15,400, although actual earnings are 3,000.
+  period: 2026
+  input:
+    people:
+      self_employed_partner:
+        age: 30
+        self_employment_income: 3_000
+        uc_is_in_startup_period: false
+      carer:
+        age: 30
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [self_employed_partner, carer, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [self_employed_partner, carer, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_mif_applies: [true, false, false]
+    benefit_cap_earned_income: 3_000
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+
+- name: Without pension contributions, earnings of 16,800 exceed the limit
+  # Tax 4,230 x 20% = 846; NI 4,230 x 8% = 338.40; earned income 15,615.60.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 16_800
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_earned_income_before_work_allowance: 15_615.60
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
+
+- name: Pension contributions come off earned income for the limit
+  # Reg. 55(5)(a): the 1,000 contribution brings earned income to at most
+  # 16,800 - 1,000 - 338.40 - 646 = 14,815.60 (with tax relief at source),
+  # under 15,400.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 16_800
+        employee_pension_contributions: 1_000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: true
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: true
+
+- name: No Universal Credit entitlement, no Universal Credit route
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 5_000
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    meets_universal_credit_criteria_for_targeted_childcare_entitlement: false
