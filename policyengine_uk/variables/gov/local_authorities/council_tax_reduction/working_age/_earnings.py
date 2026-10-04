@@ -34,7 +34,8 @@ def working_age_earnings(person, period):
     paras 15(3), 16). With an award of Universal Credit:
     - Wales uses the Secretary of State's figure for the award, which is the
       model's Universal Credit earned income before the work allowance
-      (Sch 6 para 9);
+      (Sch 6 para 9). It follows the Universal Credit model, which does not
+      yet count statutory pay as earnings (UC Regs 2013 reg 55(4));
     - Scotland uses the Universal Credit measure plus statutory sick,
       maternity and paternity pay, which reg 49(4) treats as earnings.
     Without Universal Credit, employment and self-employment income and

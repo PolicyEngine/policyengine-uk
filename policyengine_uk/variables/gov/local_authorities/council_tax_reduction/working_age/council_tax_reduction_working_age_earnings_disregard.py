@@ -20,7 +20,13 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
         "limited capability for work who is in employment); otherwise, with a "
         "carer benefit in payment, £20 of the carers' own "
         "earnings, plus up to £10 of a non-carer partner's earnings within the "
-        "same £20; otherwise £10 for a couple and £5 for a single applicant. "
+        "same £20. In Scotland, where the carer premium is included but no "
+        "one in the family has a carer benefit in payment (an award of "
+        "Universal Credit with the carer element, or a carer benefit an "
+        "overlapping benefit reduces to nil), the £20 is approximated against "
+        "the family's earnings, which can exceed the £10 limit on a non-carer "
+        "partner's earnings. Otherwise £10 for a couple and £5 for a single "
+        "applicant. "
         "Applicants without Universal Credit who meet a work condition have "
         "£17.10 more disregarded if their earnings cover the other disregard, "
         "their childcare charges and the £17.10; for a couple's disability "
@@ -90,8 +96,9 @@ class council_tax_reduction_working_age_earnings_disregard(Variable):
         # Carer disregard: £20 of the carers' own earnings, plus up to £10 of a
         # non-carer partner's earnings within the £20 (Wales Sch 8 paras 6-7;
         # Scotland Sch 3 paras 6-7). Carers are identified by carer benefit
-        # receipt; a Scottish UC carer element with no carer benefit in the
-        # family falls back to the family's earnings.
+        # receipt. A Scottish carer premium with no carer benefit in payment
+        # in the family (a UC carer element, or a benefit overlapped to nil)
+        # falls back to the family's earnings, an approximation.
         is_carer = claimant_or_partner & person("receives_carer_benefit", period)
         carer_earnings = benunit.sum(is_carer * weekly_person_earnings)
         other_earnings = benunit.sum(
