@@ -344,9 +344,9 @@ def test_meals_and_council_tax(population):
         np.maximum(0, rent - deduction)[boarder],
         atol=0.01,
     )
-    # 7. Council tax shares, where the rent is shared. (Elsewhere the family
-    # of the household's oldest adult claims, and families tied for oldest
-    # both do: a separate, existing issue.)
+    # 7. Council tax shares, where the rent is shared. (Elsewhere only the
+    # household head's family claims: test_council_tax_reduction_claimant_
+    # properties.py.)
     claimant = calc(a, "council_tax_reduction_claimant_benunit")
     share = calc(a, "council_tax_reduction_joint_liability_share")
     total = per_household(a, claimant * share)
@@ -355,7 +355,7 @@ def test_meals_and_council_tax(population):
     assert shared.any()
     assert np.all(total[shared] <= 1 + 1e-6)
     # Each claim there follows its own family's pensioner status, not the
-    # household's oldest family's (SI 2012/2885 reg 3).
+    # household head's family's (SI 2012/2885 reg 3).
     in_shared = of_household(a, "council_tax_reduction_claims_are_joint")
     assert np.array_equal(
         calc(a, "council_tax_reduction_claim_pensioner")[in_shared],

@@ -155,7 +155,7 @@
     council_tax_reduction_joint_liability_share: [1, 1]
     simulated_council_tax_reduction_benunit: [1_800, 0]
 
-- name: An older parent who is not liable stays the claimant where no rent is shared
+- name: An older parent who is not liable is the head's non-dependant where no rent is shared
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -181,10 +181,14 @@
         country: ENGLAND
         region: LONDON
   output:
-    # No sharer: the oldest adult's family claims, as before, and the
-    # rent-paying head is the father's non-dependant, as before.
-    council_tax_reduction_claimant_benunit: [false, true]
-    council_tax_reduction_individual_non_dep_deduction_eligible: [true, false]
+    # No sharer: the household head's family claims, as the resident liable
+    # for the council tax (LGFA 1992 s.6), however old the father is, and the
+    # father is the head's non-dependant (SI 2012/2885 reg 9). No local
+    # authority is given, so the head's working-age claim falls under the
+    # default council's (Maidstone's) scheme, which the model does not
+    # simulate.
+    council_tax_reduction_claimant_benunit: [true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
     simulated_council_tax_reduction_benunit: [0, 0]
 
 - name: A non-liable resident is a non-dependant of the sharers however old
