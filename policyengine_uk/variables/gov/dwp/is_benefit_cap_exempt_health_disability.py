@@ -9,10 +9,7 @@ class is_benefit_cap_exempt_health_disability(Variable):
     reference = "https://www.gov.uk/benefit-cap/when-youre-not-affected"
 
     def formula(benunit, period, parameters):
-        # Check if anyone in benefit unit is over state pension age
         person = benunit.members
-        over_pension_age = person("is_SP_age", period)
-        has_pensioner = benunit.any(over_pension_age)
 
         # UC-specific exemptions
         # Limited capability for work and work-related activity

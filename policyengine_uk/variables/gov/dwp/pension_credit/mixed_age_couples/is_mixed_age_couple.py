@@ -20,6 +20,7 @@ class is_mixed_age_couple(Variable):
         # The claimant and partner (SPCA 2002 s.17), so a pensioner with an
         # 18 or 19 year old dependant is not a couple here.
         claimant_or_partner = person("is_claimant_or_partner", period)
-        pension_age = person("is_SP_age", period)
+        # SPCA 2002 s.4(1A): the other member "has not attained the qualifying age".
+        pension_age = person("has_attained_state_pension_credit_qualifying_age", period)
         n_pension_age = benunit.sum(claimant_or_partner & pension_age)
         return (benunit.sum(claimant_or_partner) == 2) & (n_pension_age == 1)

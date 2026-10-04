@@ -12,8 +12,9 @@ class council_tax_reduction_pensioner(Variable):
         "Income Support, income-based Jobseeker's Allowance or income-related "
         "Employment and Support Allowance, or has an award of Universal Credit. "
         "A mixed-age couple on Universal Credit is therefore not a pensioner in "
-        "England, Wales or Scotland. The model routes English schemes on this "
-        "test; the Welsh and Scottish formulas do not yet use it."
+        "England, Wales or Scotland. The shared applicable allowance uses this "
+        "test, as does English scheme selection; Welsh and Scottish scheme "
+        "selection retains its existing approximations."
     )
     definition_period = YEAR
     reference = (
@@ -28,9 +29,12 @@ class council_tax_reduction_pensioner(Variable):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         # Either member of a couple can claim, so the older one can claim as a
-        # pensioner. is_SP_age stands in for the qualifying age for State
-        # Pension Credit, as elsewhere in the model.
-        over_qualifying_age = person("is_SP_age", period)
+        # pensioner: "has attained the qualifying age for state pension credit"
+        # (SI 2012/2885 reg 3(1)(a)(i), WSI 2013/3029 reg 3(1)(a)(i),
+        # SSI 2012/319 reg 12(1)). The benefit conditions still apply.
+        over_qualifying_age = person(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
         attained_qualifying_age = benunit.any(claimant_or_partner & over_qualifying_age)
         income_related_benefit = benunit(
             "council_tax_reduction_relevant_income_based_benefit", period

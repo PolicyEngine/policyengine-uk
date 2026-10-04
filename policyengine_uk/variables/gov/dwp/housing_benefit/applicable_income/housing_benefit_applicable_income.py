@@ -37,7 +37,9 @@ class housing_benefit_applicable_income(Variable):
         members = person("is_claimant_or_partner", period) | person(
             "is_child_or_young_person_for_legacy_benefits", period
         )
-        any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        pension_age_regulations = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
+        )
         BENUNIT_MEANS_TESTED_BENEFITS = [
             "child_benefit",
             "income_support",
@@ -103,14 +105,22 @@ class housing_benefit_applicable_income(Variable):
         )
         # SI 2006/214 reg 27 (NI: SR 2006/406 reg 25): where the award of
         # Pension Credit is savings credit only, the Secretary of State's
-        # assessment of income is used instead, plus the savings credit.
-        savings_credit_only = benunit("in_receipt_of_savings_credit_only", period)
+        # assessment of income is used instead, plus the savings credit. That
+        # regulation is in the pension-age regulations, so it applies only
+        # where they do.
+        savings_credit_only = pension_age_regulations & benunit(
+            "in_receipt_of_savings_credit_only", period
+        )
         applicable_income = where(
             savings_credit_only,
             benunit("housing_benefit_savings_credit_only_income", period),
             income_under_general_rules,
         )
-        guarantee_credit = any_over_SP_age & (benunit("guarantee_credit", period) > 0)
+        # Pension HB reg 26 disregards "the whole of his capital and income"
+        # for guarantee-credit recipients within that regulation set.
+        guarantee_credit = pension_age_regulations & (
+            benunit("guarantee_credit", period) > 0
+        )
         # SI 2006/213 Sch 5 para 4 (NI: SR 2006/405 Sch 6 para 4) disregards
         # "the whole of his income" where a claimant is on income support, an
         # income-based jobseeker's allowance or an income-related employment
