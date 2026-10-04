@@ -357,10 +357,14 @@
         savings: 0
   output:
     # Working age, so not eligible for Pension Credit: no guarantee credit.
+    # The Welsh working-age rules apply (WSI 2013/3029 Sch 6-8): applicable
+    # amount 101.85 x 52 = 5,296.20; income 10,000 less the £5 earnings
+    # disregard (260) = 9,740; award 2,000 - 0.2 x 4,443.80 = 1,111.24.
     guarantee_credit: 0
     in_receipt_of_guarantee_credit: false
-    council_tax_reduction_applicable_income: 10_000
-    council_tax_reduction: 993.72
+    council_tax_reduction_working_age_applicable_amount: 5_296.20
+    council_tax_reduction_working_age_applicable_income: 9_740
+    council_tax_reduction: 1_111.24
 
 - name: Scotland guarantee credit recipient gets maximum CTR above the capital limit
   period: 2026

@@ -1,0 +1,63 @@
+from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.working_age._applicant import (
+    working_age_applicant_or_partner,
+)
+
+
+class council_tax_reduction_working_age_unearned_income(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "Working-age council tax reduction unearned income"
+    documentation = (
+        "Annual unearned income of the claimant and partner counted in a "
+        "working-age council tax reduction claim in Scotland or Wales, other "
+        "than Universal Credit and tariff income from capital. Retirement "
+        "pensions, contributory Jobseeker's Allowance and Employment and "
+        "Support Allowance, carer's allowance, carer support payment (the "
+        "Carer Support Payment component before any overlapping-benefit "
+        "reduction, as the pension-age route counts it; the Scottish Carer "
+        "Supplement is a separate variable that does not count), "
+        "maternity allowance, industrial injuries benefit, incapacity benefit, "
+        "severe disablement allowance and working and child tax credits "
+        "count. Child Benefit, the income-related benefits, disability "
+        "benefits, Housing Benefit and child maintenance do not. Actual "
+        "savings interest, dividends and rent are treated as capital, which "
+        "yields tariff income instead."
+    )
+    definition_period = YEAR
+    unit = GBP
+    reference = (
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/63",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/17",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/9",
+    )
+
+    def formula(benunit, period, parameters):
+        person = benunit.members
+        members = working_age_applicant_or_partner(person, period)
+        income = add_for_members(
+            benunit,
+            period,
+            [
+                "state_pension",
+                "private_pension_income",
+                "jsa_contrib",
+                "esa_contrib",
+                "carers_allowance",
+                "carer_support_payment_pre_overlap",
+                "maternity_allowance",
+                "iidb",
+                "incapacity_benefit",
+                "sda",
+            ],
+            members,
+        )
+        tax_credits = add(benunit, period, ["working_tax_credit", "child_tax_credit"])
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
+        basic_income = (
+            add_for_members(benunit, period, ["basic_income"], members)
+            if bi.interactions.include_in_means_tests
+            else 0
+        )
+        return income + tax_credits + basic_income
