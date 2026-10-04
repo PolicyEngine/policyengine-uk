@@ -6,7 +6,9 @@ class benunit_rent(Variable):
     entity = BenUnit
     label = "Rent"
     documentation = (
-        "Gross rent that members of this family are liable for (social housing only)"
+        "Rent that members of this family are liable for: the family's share "
+        "of the household's rent, plus anything its members pay the "
+        "householder as boarders or lodgers."
     )
     definition_period = YEAR
     unit = GBP
