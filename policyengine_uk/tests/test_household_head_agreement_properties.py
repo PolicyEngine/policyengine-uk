@@ -9,8 +9,9 @@ benunit_contains_household_head.
 Invariants, for any generated population of households and any flag input
 (one member, several, both members of a couple, everyone, none, or no input
 at all), with families of non-dependants, sharers, boarders and lodgers,
-families of a child alone, and ties in age. Invariants marked "pin" restate the formula, so they guard
-against regressions rather than check it independently.
+families of a child alone, and ties in age. Invariants marked "pin" restate
+the formula, so they guard against regressions rather than check it
+independently.
 
 1. One head: exactly one member of each household is the head: the eldest
    flagged member where the input flags any member of the household, else the
@@ -25,11 +26,12 @@ against regressions rather than check it independently.
      they pay the householder as a boarder or lodger.
    - Non-dependants (pin): a person is a non-dependant of the household head
      if and only if their family is neither the head's nor liable for rent.
-   - Universal Credit non-dependant deductions fall only on the claim that
-     counts the household's non-dependants (uc_non_dependants_counted); at
-     most one family in a household is counted, and where the head's family
-     is liable for the rent and claims Universal Credit, it is the head's.
-     Only families with a share of the rent have Housing Benefit ones.
+   - Universal Credit non-dependants: at most one family in a household
+     counts them (uc_non_dependants_counted; UC Regs 2013 Sch 4 para
+     9(2)(f)). Pin: deductions fall only on that family's claim, and where
+     the head's family is liable for the rent and claims Universal Credit,
+     it is the head's. Only families with a share of the rent have Housing
+     Benefit non-dependant deductions.
    - Council Tax Reduction: only the head's family and sharers claim; where
      the head is 18 or over, the head's family claims and no one in it is a
      non-dependant.
@@ -200,6 +202,17 @@ STUDENT_FLAGGED_BESIDE_PARENT = [
         tenure="OWNED_OUTRIGHT",
     ),
 ]
+# The head and a sharer both flagged beside a non-dependant, all three adults
+# claiming Universal Credit: read from the raw flag, both renters' claims
+# count the non-dependant. Random generation rarely builds a flagged sharer
+# beside a non-dependant.
+HEAD_AND_SHARER_FLAGGED = [
+    _household(
+        [_family([50]), _family([40], role="sharer"), _family([30])],
+        "several",
+        [0, 1],
+    ),
+]
 
 
 def flagged_members(house):
@@ -328,6 +341,7 @@ def sum_in_household(values, household):
 @given(population)
 @example(NO_ONE_LIABLE)
 @example(STUDENT_FLAGGED_BESIDE_PARENT)
+@example(HEAD_AND_SHARER_FLAGGED)
 def test_every_programme_reads_one_head(population):
     situation, facts = build(population)
     sim = Simulation(situation=situation)
@@ -419,6 +433,7 @@ def identical(a, b):
 @given(population)
 @example(NO_ONE_LIABLE)
 @example(STUDENT_FLAGGED_BESIDE_PARENT)
+@example(HEAD_AND_SHARER_FLAGGED)
 def test_flags_matter_only_through_the_head(population):
     situation, facts = build(population)
     well_formed, _ = build(population, head_input=reference_head(facts))

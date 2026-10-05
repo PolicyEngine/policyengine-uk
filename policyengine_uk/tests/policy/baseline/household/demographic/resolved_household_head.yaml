@@ -41,8 +41,8 @@
     is_resolved_household_head: [false, true]
     benunit_contains_household_head: [false, true]
     # Each flagged family used to have half the rent (6,000), and the younger
-    # one was then neither a Council Tax Reduction claimant nor a
-    # non-dependant of anyone.
+    # one was then neither a Council Tax Reduction claimant nor a Universal
+    # Credit or Housing Benefit non-dependant.
     is_liable_for_household_rent: [false, true]
     share_of_household_rent: [0, 1]
     personal_rent: [0, 12_000]
@@ -215,6 +215,61 @@
     housing_benefit_non_dep_deductions: [0, 400, 400]
     council_tax_reduction_claimant_benunit: [false, true, true]
     council_tax_reduction_individual_non_dep_deduction_eligible: [true, false, false]
+
+- name: The head and a sharer both flagged beside a non-dependant - only the head's family's Universal Credit claim counts the non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 50
+        is_household_head: true
+      sharer:
+        age: 40
+        is_household_head: true
+      non_dependant:
+        age: 30
+        is_household_head: false
+        uc_individual_non_dep_deduction: 1_000
+        household_benefits_individual_non_dep_deduction: 800
+        council_tax_reduction_individual_non_dep_deduction: 200
+    benunits:
+      head_family:
+        members: [head]
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+      non_dependant_family:
+        members: [non_dependant]
+    households:
+      home:
+        members: [head, sharer, non_dependant]
+        rent: 20_000
+        tenure_type: RENT_PRIVATELY
+        country: WALES
+        local_authority: CARDIFF
+        council_tax: 1_800
+  output:
+    is_resolved_household_head: [true, false, false]
+    benunit_contains_household_head: [true, false, false]
+    # Two people liable (UC Sch 4 para 24(4)): 10,000 each.
+    is_liable_for_household_rent: [true, true, false]
+    share_of_household_rent: [0.5, 0.5, 0]
+    benunit_rent: [10_000, 10_000, 0]
+    is_non_dependant_of_household_head: [false, false, true]
+    # Both renters claim Universal Credit. The non-dependant is one in the
+    # head's family's claim, so not in the sharer's (UC Regs 2013 Sch 4 para
+    # 9(2)(f)): one deduction and one extra bedroom (para 10), on the head's
+    # family. Read from the raw flag, both claims counted them.
+    is_uc_eligible: [true, true, true]
+    uc_non_dependants_counted: [true, false, false]
+    uc_non_dep_deductions: [1_000, 0, 0]
+    LHA_allowed_bedrooms: [2, 1, 1]
+    # HB apportions the deduction between the joint occupiers by their shares
+    # of the rent (reg 74(5)).
+    housing_benefit_non_dep_deductions: [400, 400, 0]
+    council_tax_reduction_claimant_benunit: [true, true, false]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, true]
 
 - name: A lodger flagged as head beside the householder pays the householder and has no share of the rent
   period: 2026
