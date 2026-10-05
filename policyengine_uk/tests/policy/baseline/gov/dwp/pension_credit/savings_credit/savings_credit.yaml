@@ -47,3 +47,17 @@
   output:
     # 0.6 * (17,000 - 314.34 * 52).
     savings_credit: 392.592
+
+- name: Case 5, 2027 does not apply CPI directly to the threshold.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    is_savings_credit_eligible: true
+    relation_type: SINGLE
+    savings_credit_income: 11_000
+    pension_credit_income: 11_000
+    standard_minimum_guarantee: 12_376
+    minimum_guarantee: 20_000
+  output:
+    # 0.6 * (11,000 - 208.07 * 52).
+    savings_credit: 108.216

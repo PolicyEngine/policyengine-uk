@@ -149,3 +149,19 @@
         savings_credit_income: 10_310.05
   output:
     is_savings_credit_eligible: true
+
+- name: Case 9, 2027 uses the last enacted threshold without direct CPI uprating.
+  period: 2027
+  input:
+    people:
+      person:
+        age: 82
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        savings_credit_income: 11_000
+  output:
+    # 11,000 > 208.07 * 52.
+    is_savings_credit_eligible: true
