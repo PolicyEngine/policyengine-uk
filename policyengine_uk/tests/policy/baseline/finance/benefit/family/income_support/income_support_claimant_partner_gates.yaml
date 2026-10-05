@@ -353,8 +353,9 @@
       family:
         members: [carer, partner]
         income_support_assessable_capital: 0
-        # The model reads (g) through the take-up flag, not the reported
-        # Pension Credit.
+        # The model reads (g) through the take-up flag. The reported Pension
+        # Credit gives the couple the SI 2019/37 saving
+        # (meets_pension_credit_age_conditions), not entitlement.
         would_claim_pc: false
   output:
     meets_pension_credit_age_conditions: true
