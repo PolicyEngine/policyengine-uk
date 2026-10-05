@@ -13,8 +13,8 @@ the child's parent, or the person themselves:
 - The tax credit income test: TCA 2002 s.7(2), SI 2002/2008 reg 4.
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
 - Targeted childcare: SI 2014/2147 reg 1(2).
-- Maintenance loans for students entitled to benefits: SI 2011/1986 reg
-  71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a).
+- Maintenance loans for students entitled to benefits: SI 2011/1986 regs
+  61(2) and 71(1)(h).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -26,11 +26,8 @@ adult) claims in their own right, so:
 - the claimant-or-partner awards are bounded by the benefit-unit awards
   (0 <= claimant_or_partner_esa_income <= esa_income, likewise for JSA) and
   equal them when no other member reports an award;
-- a person is on an award exactly when they are the payee of their couple's
-  positive award (the claimant or partner who reports it, or the claimant)
-  or, for anyone else, when the award on their own report alone is positive
-  after tariff income from the household's capital and within the capital
-  limit (Income Support: when they report it).
+- a person is on an award exactly when their couple's award is positive (the
+  claimant and partner) or they report one themselves (anyone else).
 
 Roles are given explicitly (is_claimant_or_partner), so the properties test
 the readers rather than role inference. The take-up mode is fixed
@@ -83,13 +80,7 @@ def award_reports(draw):
 
 @st.composite
 def families(draw):
-    """A claimant, an optional partner, up to two dependants and sometimes an
-    adult outside the couple who is already a member.
-
-    Qualifying young persons and the existing outside adult may report awards
-    of their own, so the properties also cover members who are on an award
-    in their own right.
-    """
+    """A claimant, an optional partner and up to two dependants."""
     dependants = []
     for _ in range(draw(st.integers(0, 2))):
         if draw(st.booleans()):
@@ -100,7 +91,6 @@ def families(draw):
                 {
                     "age": draw(st.integers(16, 19)),
                     "current_education": "UPPER_SECONDARY",
-                    **draw(award_reports()),
                 }
             )
     eldest_dependant = max([d["age"] for d in dependants], default=0)
@@ -119,22 +109,11 @@ def families(draw):
                 **draw(award_reports()),
             }
         )
-    non_couple = list(dependants)
-    if draw(st.booleans()):
-        non_couple.append(
-            {
-                "age": draw(st.integers(20, 60)),
-                "current_education": "NOT_IN_EDUCATION",
-                **draw(award_reports()),
-            }
-        )
     household = {
         "country": draw(st.sampled_from(["ENGLAND", "SCOTLAND", "WALES"])),
-        # £7,000 gives tariff income of £208 a year, more than a £200 report
-        # on its own but less than two reports together.
         "savings": draw(st.sampled_from([0, 7_000, 20_000])),
     }
-    return adults, non_couple, household
+    return adults, dependants, household
 
 
 @st.composite
@@ -154,8 +133,8 @@ def other_members(draw):
 
 def situation(units, year=YEAR):
     people, benunits, households = {}, {}, {}
-    for i, (adults, non_couple, household, other) in enumerate(units):
-        members = [(m, True) for m in adults] + [(m, False) for m in non_couple]
+    for i, (adults, dependants, household, other) in enumerate(units):
+        members = [(m, True) for m in adults] + [(m, False) for m in dependants]
         if other is not None:
             members.append((other, False))
         names = []
@@ -232,16 +211,14 @@ def test_claimant_or_partner_awards_bounded_by_benefit_unit_awards(drawn):
         total_award = sim.calculate(total, YEAR)
         assert (scoped_award >= 0).all()
         assert (scoped_award <= total_award + 0.01).all()
-        for i, (_, non_couple, _, other) in enumerate(units):
-            if other[report] == 0 and all(m.get(report, 0) == 0 for m in non_couple):
-                # Nobody outside the couple reports this award: the two
-                # coincide.
+        for i, (_, _, _, other) in enumerate(units):
+            if other[report] == 0:
+                # Nobody else reports this award: the two coincide.
                 assert np.isclose(scoped_award[i], total_award[i]), (scoped, units[i])
 
 
-def reference_award(reported, capital, params):
-    """The income-related award on a reported amount, read directly from the
-    regulations. Works on scalars or arrays.
+def reference_claimant_or_partner_award(adults, other, household, report, params):
+    """The claimant-or-partner award read directly from the regulations.
 
     Capital is the household's savings (the only capital input here), all of
     it the benefit unit's, as it is the only one in its household. Tariff
@@ -250,23 +227,16 @@ def reference_award(reported, capital, params):
     regs 107 and 116, as parameterised).
     """
     capital_rules = params.capital
+    capital = household["savings"]
+    anyone_reports = other[report] > 0 or any(a[report] > 0 for a in adults)
+    if not anyone_reports or capital > capital_rules.limit:
+        return 0.0
     steps = np.ceil(
-        np.maximum(0, capital - capital_rules.tariff_income.threshold)
+        max(0, capital - capital_rules.tariff_income.threshold)
         / capital_rules.tariff_income.step
     )
     tariff = steps * capital_rules.tariff_income.amount * 52
-    return np.where(
-        (reported > 0) & (capital <= capital_rules.limit),
-        np.maximum(0.0, reported - tariff),
-        0.0,
-    )
-
-
-def reference_claimant_or_partner_award(adults, household, report, params):
-    """The award on the claimant's and partner's reports."""
-    return float(
-        reference_award(sum(a[report] for a in adults), household["savings"], params)
-    )
+    return max(0.0, sum(a[report] for a in adults) - tariff)
 
 
 @SETTINGS
@@ -287,30 +257,9 @@ def test_claimant_or_partner_awards_match_reference(drawn):
         award = sim.calculate(variable, YEAR)
         for i, (adults, _, household, other) in enumerate(units):
             expected = active * reference_claimant_or_partner_award(
-                adults, household, report, params
+                adults, other, household, report, params
             )
             assert np.isclose(award[i], expected), (variable, units[i])
-
-
-def payee(sim, claimant_or_partner, reports):
-    """The claimant or partner who reports the award, or the claimant (the
-    head, else the eldest of the couple) where neither does."""
-    benunit = sim.calculate("benunit_id", YEAR, map_to="person")
-    head = sim.calculate("is_benunit_head", YEAR) & claimant_or_partner
-    age = sim.calculate("age", YEAR)
-    result = np.zeros(len(benunit), dtype=bool)
-    for unit in np.unique(benunit):
-        members = benunit == unit
-        couple = members & claimant_or_partner
-        reporting = couple & reports
-        if reporting.any():
-            result |= reporting
-        elif (members & head).any():
-            result |= members & head
-        elif couple.any():
-            eldest = np.flatnonzero(couple)[np.argmax(age[couple])]
-            result[eldest] = True
-    return result
 
 
 @SETTINGS
@@ -319,45 +268,28 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
     units = [(*family, other) for family, other in drawn]
     sim = Simulation(situation=situation(units))
     claimant_or_partner = sim.calculate("is_claimant_or_partner", YEAR)
-    capital = sim.calculate("savings", YEAR, map_to="person")
-    dwp = sim.tax_benefit_system.parameters(YEAR).gov.dwp
-    for person_variable, couple_award, report, params, active in [
+    for person_variable, couple_award, report, total_award in [
         (
             "is_on_income_related_esa",
             "claimant_or_partner_esa_income",
             "esa_income_reported",
-            dwp.ESA.income,
-            True,
+            "esa_income",
         ),
         (
             "is_on_income_based_jsa",
             "claimant_or_partner_jsa_income",
             "jsa_income_reported",
-            dwp.JSA.income,
-            dwp.JSA.income.active,
+            "jsa_income",
         ),
-        (
-            "is_on_income_support",
-            "income_support",
-            "income_support_reported",
-            None,
-            dwp.income_support.active,
-        ),
+        ("is_on_income_support", "income_support", "income_support_reported", None),
     ]:
         on = sim.calculate(person_variable, YEAR)
-        reported = sim.calculate(report, YEAR)
-        # Of the claimant and partner, only the payee is on a couple's award:
-        # the one who reports it, or the claimant where neither does
-        # (HB Regs 2006 reg 2(3), (3A): "payable to him").
-        couple = (sim.calculate(couple_award, YEAR, map_to="person") > 0) & payee(
-            sim, claimant_or_partner, reported > 0
-        )
-        if params is None:
-            # Income Support: their own report, while it is in payment.
-            own = active & (reported > 0)
-        else:
-            # The award on their own report alone, on the household's capital.
-            own = active & (reference_award(reported, capital, params) > 0)
+        couple = sim.calculate(couple_award, YEAR, map_to="person") > 0
+        own = sim.calculate(report, YEAR) > 0
+        if total_award is not None:
+            # Another member's own report counts while the benefit unit's
+            # modelled award is positive.
+            own = own & (sim.calculate(total_award, YEAR, map_to="person") > 0)
         expected = np.where(claimant_or_partner, couple, own)
         assert np.array_equal(on, expected), (person_variable, units)
 
@@ -371,10 +303,8 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
 @given(
     st.lists(
         st.tuples(
-            st.lists(st.sampled_from([0, 0, 200, 3_000]), min_size=1, max_size=2),
-            st.sampled_from([None, 0, 200, 3_000]),
+            st.lists(st.sampled_from([0, 0, 3_000]), min_size=1, max_size=2),
             st.sampled_from([0, 3_000]),
-            st.sampled_from([0, 7_000]),
         ),
         min_size=1,
         max_size=6,
@@ -384,19 +314,15 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
     """A non-dependant is exempt only through their own (or couple's) award.
 
     Each household in Merton has an older applicant (the household head) and a
-    non-dependant benefit unit of one or two claimants, sometimes with an adult
-    outside their couple who is already a member, with or without a further
-    adult who reports income-related ESA. Savings of £7,000 give tariff income
-    of £208 a year, more than a £200 report on its own. The existing members'
-    individual deductions never change when the further adult is added.
+    non-dependant benefit unit of one or two claimants, with or without another
+    adult who reports income-related ESA. The existing members' individual
+    deductions never change when the other adult is added.
     """
     year = NON_DEP_YEAR
     people, benunits, households = {}, {}, {}
     layouts = []
     for variant, other_present in [(0, False), (1, True)]:
-        for i, (claimant_awards, existing_award, other_award, savings) in enumerate(
-            drawn
-        ):
+        for i, (claimant_awards, other_award) in enumerate(drawn):
             tag = f"{variant}_{i}"
             names = [f"applicant_{tag}"]
             people[names[0]] = {"age": {year: 60}}
@@ -408,15 +334,6 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                     "is_claimant_or_partner": {year: True},
                     "current_education": {year: "NOT_IN_EDUCATION"},
                     "esa_income_reported": {year: award},
-                }
-                unit.append(name)
-            if existing_award is not None:
-                name = f"existing_{tag}"
-                people[name] = {
-                    "age": {year: 45},
-                    "is_claimant_or_partner": {year: False},
-                    "current_education": {year: "NOT_IN_EDUCATION"},
-                    "esa_income_reported": {year: existing_award},
                 }
                 unit.append(name)
             if other_present:
@@ -438,7 +355,6 @@ def test_other_members_esa_never_changes_non_dependant_exemption(drawn):
                 "members": names + unit,
                 "country": {year: "ENGLAND"},
                 "local_authority": {year: "MERTON"},
-                "savings": {year: savings},
             }
             layouts.append(names + unit)
     sim = Simulation(

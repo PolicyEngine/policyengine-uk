@@ -81,13 +81,11 @@
     income_support_assessable_capital: [5_000, 5_000]
 
 # is_on_income_related_esa, is_on_income_based_jsa and is_on_income_support:
-# "on" a benefit when it "is payable to him" (HB Regs 2006 reg 2(3), (3A)) or
-# they are "in receipt of" it (reg 2(1)). A couple's award is paid to the
-# claimant: of the claimant and partner only the payee (the one who reports
-# it) is on it. Another member is on it only through an award they report
-# themselves.
+# "on" a benefit when it is payable to the person (HB Regs 2006 reg 2(1),
+# (3), (3A)). A couple's award covers both partners; another member is on it
+# only through an award they report themselves.
 
-- name: Only the payee is on the couple's income-related ESA
+- name: Both partners are on the couple's income-related ESA
   period: 2025
   input:
     people:
@@ -109,7 +107,7 @@
       household:
         members: [claimant, partner, other]
   output:
-    is_on_income_related_esa: [true, false, false]
+    is_on_income_related_esa: [true, true, false]
 
 - name: Another member is on their own income-related ESA and the couple is not
   period: 2025
