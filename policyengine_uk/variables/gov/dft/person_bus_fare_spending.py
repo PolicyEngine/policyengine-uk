@@ -91,8 +91,8 @@ class person_bus_fare_spending(Variable):
 class household_bus_fare_age_weight(Variable):
     label = "household bus fare age weight"
     documentation = (
-        "Sum of members' bus fare allocation weights, the denominator that "
-        "makes person_bus_fare_spending sum to household bus_fare_spending."
+        "Sum of members' bus fare allocation weights, used to distribute "
+        "reported household spending when journey pricing is unavailable."
     )
     entity = Household
     definition_period = YEAR
