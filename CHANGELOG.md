@@ -1,3 +1,22 @@
+## [2.119.0] - 2026-10-05
+
+### Added
+
+- Add `date_of_birth`, each person's day of birth as a YYYYMMDD number from `age` and `months_since_last_birthday`, which can also be set directly (with `age` as the person's age on 6 October) and then sets State Pension age and the cutoffs below; and add date parameters for the 6 April 2017 cutoffs: `gov.dwp.universal_credit.elements.child.limit.born_before`, `gov.dwp.tax_credits.child_tax_credit.limit.born_before` and `gov.dwp.pension_credit.guarantee_credit.child.first.born_before`, and for the Pension Credit mixed-age couple saving, `gov.dwp.pension_credit.mixed_age_couples.saving_latest_birth_date` (5 February 1954).
+
+### Changed
+
+- `birth_year` is now the calendar year of `date_of_birth`. It is unchanged for household situations with whole ages; in survey data, people whose birthday falls from 7 October to 31 December now have the year before the period less their age, and a fractional age no longer truncates to the year before.
+
+### Fixed
+
+- Apply the "born before 6 April 2017" rules by date of birth: the Universal Credit child limit and higher first child element (UC Regs 2013 reg 24A(3); UC (Transitional Provisions) Regs 2014 reg 43), the Child Tax Credit child limit (Tax Credits Act 2002 s.9(3A)), the Pension Credit first child addition (SPC Regs 2002 Sch IIA para 10), and the Pension Credit mixed-age couple saving, which needs the older member born on or before 5 February 1954 to have reached the qualifying age by 14 May 2019 (SI 2019/37 art. 4). The child rules compared a birth year of the period less the whole age with 2017, so in survey data the whole cohort born from October 2016 to October 2017 counted as born after the cutoff, when about half was born before it. Universal Credit and Pension Credit also now order children by date of birth (UC Regs reg 24B), so the first or eldest child is the one born first. For the child rules, household situations with whole ages, which place each person in the middle of their year of age, are unchanged; a fractional age is now read as the exact age on 6 October, as it already is for State Pension age. The mixed-age saving does change for whole ages: a situation's older member aged period less 1954 is placed on 6 April 1954, after the cutoff, where the birth year admitted them.
+
+### Removed
+
+- Remove `gov.dwp.universal_credit.elements.child.limit.start_year` and `gov.dwp.tax_credits.child_tax_credit.limit.start_year`, which held the year 2017, and `gov.dwp.pension_credit.mixed_age_couples.saving_latest_birth_year` (1954). A reform to a cutoff now sets the matching date parameter, written as a YYYYMMDD number: `born_before` (20170406) or `saving_latest_birth_date` (19540205).
+
+
 ## [2.118.0] - 2026-10-04
 
 ### Added

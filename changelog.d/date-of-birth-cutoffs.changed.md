@@ -1,1 +1,0 @@
-`birth_year` is now the calendar year of `date_of_birth`. It is unchanged for household situations with whole ages; in survey data, people whose birthday falls from 7 October to 31 December now have the year before the period less their age, and a fractional age no longer truncates to the year before.
