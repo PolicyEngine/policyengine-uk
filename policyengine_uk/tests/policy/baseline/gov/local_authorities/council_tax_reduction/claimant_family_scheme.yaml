@@ -764,3 +764,95 @@
     simulated_council_tax_reduction_benunit: [0, 0]
     council_tax_benefit: [1_500, 0]
     council_tax_reduction: 1_500
+
+- name: A report is kept beside a paying simulated claim where the share may count a student
+  # The share leaves out only people in higher education. A jointly liable
+  # full-time further-education student is counted, though para 7(5) may
+  # leave them out, so the share (a third) may be too small and the head's
+  # report is not capped at it.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_benefit_reported: 700
+      student:
+        age: 25
+        current_education: POST_SECONDARY
+        in_HE: false
+      pensioner:
+        age: 80
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      student_family:
+        members: [student]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      pensioner_family:
+        members: [pensioner]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [head, student, pensioner]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    council_tax_reduction_joint_liability_share: [0.333333, 0.333333, 0.333333]
+    council_tax_reduction_scheme_supported: [false, false, true]
+    # The pensioner's claim pays 1,800 / 3 = 600 under the pensioner scheme.
+    simulated_council_tax_reduction_benunit: [0, 0, 600]
+    council_tax_benefit: [700, 0, 600]
+    council_tax_reduction: 1_300
+
+- name: A head who applies alone stays a pensioner when her benefit unit's claimant and partner get Income Support
+  # The Income Support is the young parents' award, not the grandmother's
+  # or a partner's (SI 2012/2885 reg 3(1)(a)(ii)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        would_claim_uc: false
+        income_support: 3_000
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        council_tax: 1_800
+        savings: 0
+  output:
+    is_council_tax_reduction_applicant_or_partner: [true, false, false, false]
+    council_tax_reduction_head_applies_alone: [true]
+    council_tax_reduction_relevant_income_based_benefit: [true]
+    council_tax_reduction_pensioner: [true]
+    simulated_council_tax_reduction_benunit: [1_800]

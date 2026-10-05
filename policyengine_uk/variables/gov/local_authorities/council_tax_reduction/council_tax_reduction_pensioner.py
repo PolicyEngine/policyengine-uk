@@ -48,8 +48,13 @@ class council_tax_reduction_pensioner(Variable):
         attained_qualifying_age = benunit.any(
             applicant_or_partner & over_qualifying_age
         )
-        income_related_benefit = benunit(
-            "council_tax_reduction_relevant_income_based_benefit", period
+        # The benefit unit's Income Support, income-based JSA, income-related
+        # ESA and Universal Credit belong to its claimant and partner. Where
+        # the household head applies alone, they are not the applicant's.
+        head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
+        income_related_benefit = (
+            benunit("council_tax_reduction_relevant_income_based_benefit", period)
+            & ~head_applies_alone
         )
         # The award before the benefit cap: the cap reduces an award
         # (UC Regs 2013 reg 81) rather than removing it. An award counts only
@@ -69,7 +74,9 @@ class council_tax_reduction_pensioner(Variable):
         # model those migrants.
         working_age_applicant = benunit.any(applicant_or_partner & ~over_qualifying_age)
         universal_credit_award = (
-            benunit("is_uc_entitled", period) & working_age_applicant
+            benunit("is_uc_entitled", period)
+            & ~head_applies_alone
+            & working_age_applicant
         )
         return (
             attained_qualifying_age & ~income_related_benefit & ~universal_credit_award

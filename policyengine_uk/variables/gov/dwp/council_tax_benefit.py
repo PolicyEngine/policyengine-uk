@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.highest_education import (
+    EducationType,
+)
 
 
 class council_tax_benefit(Variable):
@@ -12,7 +15,10 @@ class council_tax_benefit(Variable):
         "reduction on its share of the council tax, a jointly liable "
         "claimant's reported reduction is limited to its own share, so the "
         "two cannot together exceed the bill; the share is the one the "
-        "simulated claims use. Otherwise reported reductions are kept as "
+        "simulated claims use. The share leaves out only the students the "
+        "model sees in higher education, so where a jointly liable person it "
+        "counts is in other education, and may be a student the law leaves "
+        "out, the report is kept. Otherwise reported reductions are kept as "
         "reported. A family that cannot claim keeps a reported reduction only "
         "where no claim in its household is simulated."
     )
@@ -44,16 +50,28 @@ class council_tax_benefit(Variable):
         # SI 2012/2885 Sch 1 para 7(3)-(4): a jointly liable claimant's
         # maximum reduction is on its share of the council tax. Applied only
         # beside a simulated claim that pays something, which uses the same
-        # share; reports are otherwise kept, since the share does not yet
-        # exclude the students para 7(5) leaves out.
+        # share; reports are otherwise kept.
         share_of_liability = (
             benunit.household(
                 "council_tax_reduction_maximum_eligible_liability", period
             )
             * share
         )
+        # Para 7(5) leaves students excluded from the scheme out of the
+        # divisor. The share leaves out people in higher education (in_HE);
+        # a jointly liable person it counts who is in other education may be
+        # such a student too, making the share too small, so the report is
+        # kept there.
+        counted_in_education = (
+            person("council_tax_reduction_liable_person", period)
+            & ~person("in_HE", period)
+            & (person("current_education", period) != EducationType.NOT_IN_EDUCATION)
+        )
+        share_may_count_student = (
+            benunit.max(person.household.sum(counted_in_education)) > 0
+        )
         reported_claim = where(
-            (paid_in_household > 0) & (share < 1),
+            (paid_in_household > 0) & (share < 1) & ~share_may_count_student,
             min_(reported, share_of_liability),
             reported,
         )

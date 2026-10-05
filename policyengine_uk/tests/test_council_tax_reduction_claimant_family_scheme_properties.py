@@ -26,10 +26,10 @@ not):
    Allowance, the daily living component of Personal Independence Payment or
    Armed Forces Independence Payment.
 2. As if alone: each family's pensioner status, exemption and whether its
-   scheme is simulated are what they would be if it lived alone, wherever its
-   own Universal Credit award is the same either way. (The award depends on
-   the rent the family pays, which changes when it lives alone, and the
-   pensioner test follows the award.)
+   scheme is simulated are what they would be if it lived alone with its own
+   benefit awards. (Its Universal Credit award depends on the rent it pays,
+   which changes when it lives alone, and the pensioner test follows the
+   award; so the alone simulation is given the family's awards.)
 3. Scheme: a family's scheme is simulated exactly when it lives in Scotland
    or Wales, is a pensioner, or lives in a council whose working-age scheme
    is modelled. In England only a pensioner family is paid by the national
@@ -43,12 +43,14 @@ not):
 5. Fallback: a claiming family gets its simulated reduction where its scheme
    is simulated, and otherwise its reported one. Beside a simulated claim
    that pays something, a jointly liable claimant's reported reduction is
-   limited to its share of the council tax; otherwise it is kept as reported. A
-   family that cannot claim gets its reported reduction only where no claim
-   in its household is simulated.
+   limited to its share of the council tax, unless a jointly liable person
+   the share counts is in education (who may be a student the share should
+   leave out); otherwise it is kept as reported. A family that cannot claim
+   gets its reported reduction only where no claim in its household is
+   simulated.
 6. Bounds: a family that cannot claim gets no simulated reduction; a
-   household whose simulated claims pay something never gets more than its
-   council tax.
+   household whose simulated claims pay something, and whose share counts no
+   one in education, never gets more than its council tax.
 7. The exemption is the applicant's own: in a council's working-age scheme,
    giving one claiming family an exempting benefit removes the non-dependant
    deductions from its own reduction and leaves every other claim's
@@ -119,6 +121,13 @@ def adults(draw, most):
         ages=draw(st.lists(adult_age, min_size=n, max_size=n)),
         disabilities=draw(st.lists(disability, min_size=n, max_size=n)),
         earnings=draw(st.lists(money, min_size=n, max_size=n)),
+        # Some adults are in full-time further education, which the
+        # joint-liability share does not leave out.
+        in_education=draw(
+            st.lists(
+                st.sampled_from([False, False, False, True]), min_size=n, max_size=n
+            )
+        ),
     )
 
 
@@ -157,22 +166,33 @@ def households(draw):
 population = st.lists(households(), min_size=1, max_size=6)
 
 
-def person(age, disability_input, earnings):
+def person(age, disability_input, earnings, in_education=False):
     attributes = {"age": age, "employment_income": earnings}
     if disability_input is not None:
         attributes[disability_input] = DISABILITY[disability_input]
+    if in_education:
+        attributes["current_education"] = "POST_SECONDARY"
     return attributes
 
 
-def build(population, alone=False, perturb_others=False):
+def build(population, alone=False, perturb_others=False, awards=None):
     """One situation for the whole population, plus per-family facts.
 
     alone: put every family in a household of its own, as its head.
     perturb_others: give every family that claims, other than each
     household's target, the household's replacement ages and disabilities.
+    awards: benefit-unit inputs per family, in family order (for example the
+    families' own benefit awards from another simulation).
     """
     people, benunits, homes = {}, {}, {}
-    facts = dict(country=[], local_authority=[], role=[], target=[], house=[])
+    facts = dict(
+        country=[],
+        local_authority=[],
+        role=[],
+        target=[],
+        house=[],
+        share_may_count_student=[],
+    )
     for h, house in enumerate(population):
         country, local_authority = house["scheme"]
         home = dict(
@@ -184,6 +204,13 @@ def build(population, alone=False, perturb_others=False):
             savings=house["savings"],
         )
         members, replacement = [], 0
+        # Everyone in the head's and the sharers' families is 20 or over, so
+        # all of them are jointly liable and counted in the share.
+        liable_in_education = any(
+            any(fam["in_education"])
+            for fam in house["families"]
+            if fam["role"] != "non_dependant"
+        )
         for f, fam in enumerate(house["families"]):
             ids = []
             claims = fam["role"] != "non_dependant"
@@ -195,7 +222,9 @@ def build(population, alone=False, perturb_others=False):
                     age = house["other_ages"][replacement]
                     disability_input = house["other_disabilities"][replacement]
                     replacement += 1
-                people[pid] = person(age, disability_input, fam["earnings"][i])
+                people[pid] = person(
+                    age, disability_input, fam["earnings"][i], fam["in_education"][i]
+                )
                 if i == 0:
                     people[pid]["council_tax_benefit_reported"] = fam["reported"]
                 people[pid]["is_household_head"] = (
@@ -213,6 +242,11 @@ def build(population, alone=False, perturb_others=False):
                 "claims_all_entitled_benefits": True,
                 "would_claim_uc": True,
             }
+            if awards is not None:
+                index = len(facts["role"])
+                benunits[f"h{h}_f{f}"].update(
+                    {name: float(values[index]) for name, values in awards.items()}
+                )
             if alone:
                 homes[f"h{h}_f{f}"] = {"members": ids, **home}
             members.extend(ids)
@@ -221,6 +255,9 @@ def build(population, alone=False, perturb_others=False):
             facts["role"].append(fam["role"])
             facts["target"].append(is_target)
             facts["house"].append(h)
+            facts["share_may_count_student"].append(
+                any(fam["in_education"]) if alone else liable_in_education
+            )
         if not alone:
             homes[f"h{h}"] = {"members": members, **home}
     situation = {
@@ -248,6 +285,13 @@ def any_in_benunit(simulation, person_values):
     return simulation.map_result(person_values.astype(float), "person", "benunit") > 0
 
 
+# A family's own awards that the pensioner test reads (SI 2012/2885 reg 3).
+OWN_AWARDS = [
+    "universal_credit_pre_benefit_cap",
+    "income_support",
+    "jsa_income",
+    "esa_income",
+]
 FLAGS = [
     "council_tax_reduction_pensioner",
     "council_tax_reduction_applicant_has_non_dep_exemption",
@@ -289,19 +333,13 @@ def test_scheme_follows_own_family(population):
             exempting |= calc(sim, variable) > 0
     assert np.array_equal(exempt, any_in_benunit(sim, claimant_or_partner & exempting))
 
-    # 2. As if alone, wherever the family's own Universal Credit award and
-    # income-related benefits are the same either way.
-    alone_situation, alone_facts = build(population, alone=True)
+    # 2. As if alone, with the family's own benefit awards.
+    awards = {name: calc(sim, name) for name in OWN_AWARDS}
+    alone_situation, alone_facts = build(population, alone=True, awards=awards)
     alone = Simulation(situation=alone_situation)
     assert np.array_equal(alone_facts["role"], facts["role"])
-    same_awards = calc(sim, "is_uc_entitled") == calc(alone, "is_uc_entitled")
-    for v in ("income_support", "jsa_income", "esa_income"):
-        same_awards &= (calc(sim, v) > 0) == (calc(alone, v) > 0)
-    assert same_awards.any()
     for variable in FLAGS:
-        assert np.array_equal(
-            calc(sim, variable)[same_awards], calc(alone, variable)[same_awards]
-        ), variable
+        assert np.array_equal(calc(sim, variable), calc(alone, variable)), variable
 
     # 3. Scheme.
     england = facts["country"] == "ENGLAND"
@@ -325,13 +363,14 @@ def test_scheme_follows_own_family(population):
     household_simulates = simulates[house].astype(bool)
     paid = np.bincount(house, weights=(claimant & supported) * simulated)
     household_pays = paid[house] > 0
+    may_count_student = facts["share_may_count_student"]
     expected = np.where(
         claimant,
         np.where(
             supported,
             simulated,
             np.where(
-                household_pays & (share < 1),
+                household_pays & (share < 1) & ~may_count_student,
                 np.minimum(reported_amount, bill * share),
                 reported_amount,
             ),
@@ -346,7 +385,8 @@ def test_scheme_follows_own_family(population):
     assert np.all(simulated[~claimant] == 0)
     household_reduction = calc(sim, "council_tax_reduction")
     over = household_reduction > calc(sim, "council_tax") + 0.01
-    assert not np.any(over & (paid > 0))
+    counts_student = np.bincount(house, weights=may_count_student) > 0
+    assert not np.any(over & (paid > 0) & ~counts_student)
 
 
 @PROPERTY_SETTINGS
