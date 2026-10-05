@@ -151,6 +151,10 @@ def situation(units, year, bump=None, overrides=None):
         for j, adult in enumerate(unit["adults"]):
             name = f"p{i}_{j}"
             person = {k: {year: v} for k, v in adult.items()}
+            # The generated adults are the claimant and partner; say so, so the
+            # claimant-or-partner presumption (a member under 20 and much
+            # younger is the head's child) does not apply. Children get False.
+            person["is_claimant_or_partner"] = {year: True}
             if bump is not None and bump[:2] == (i, j):
                 variable, amount = bump[2], bump[3]
                 person[variable] = {year: adult[variable] + amount}
@@ -159,7 +163,7 @@ def situation(units, year, bump=None, overrides=None):
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
         households[f"h{i}"] = {
