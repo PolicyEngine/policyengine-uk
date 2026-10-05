@@ -17,7 +17,13 @@ class child_benefit(Variable):
         opts_out = benunit("child_benefit_opts_out", period)
         hitc = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
         income = benunit.max(benunit.members("adjusted_net_income", period))
-        charge_applies = income > hitc.phase_out_start
+        # Compute the fraction independently of payment to avoid the cycle
+        # child_benefit -> CB_HITC -> child_benefit. An infinite phase-out
+        # endpoint also reduces the charge fraction to zero.
+        charge_fraction = max_(income - hitc.phase_out_start, 0) / (
+            hitc.phase_out_end - hitc.phase_out_start
+        )
+        charge_applies = charge_fraction > 0
         # The dataset flag describes a charge-driven decision. A reform that
         # removes the charge restores payments without changing entitlement.
         charge = benunit.simulation.tax_benefit_system.get_variable("CB_HITC")

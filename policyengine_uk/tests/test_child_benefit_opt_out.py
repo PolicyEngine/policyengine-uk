@@ -18,6 +18,7 @@ class abolish_child_benefit_charge(Reform):
             "gov.hmrc.income_tax.charges.CB_HITC.phase_out_start": {"2026": 100_000},
             "gov.hmrc.income_tax.charges.CB_HITC.phase_out_end": {"2026": 120_000},
         },
+        {"gov.hmrc.income_tax.charges.CB_HITC.phase_out_end": {"2026": float("inf")}},
     ],
 )
 def test_removing_charge_restores_payment_without_changing_baseline(reform):
