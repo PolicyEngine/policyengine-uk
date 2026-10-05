@@ -1,3 +1,16 @@
+## [2.121.0] - 2026-10-05
+
+### Added
+
+- - Price supplied person-level bus journeys with regional yields, single-fare caps and proportional reform controls, preserving reported spending for legacy data.
+
+### Fixed
+
+- - Keep the unimplemented Scottish Two Child Limit Payment inactive in the baseline, with explicit counterfactual tests.
+- - Recognise housing-association tenants as renting and share the rental tenure predicate between households and benefit units.
+- - Preserve the independent Child Benefit claim gate, restore opted-out claimants' payments when a reform lowers the charge below a configurable behavioural threshold, and handle cliff charges without division warnings.
+
+
 ## [2.120.0] - 2026-10-05
 
 ### Added
