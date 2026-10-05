@@ -15,12 +15,5 @@ def add_lagged_earnings(
     add_lagged_parameter(
         obr, "average_earnings", "lagged_average_earnings", first_year=2022
     )
-    add_lagged_parameter(
-        obr,
-        "average_earnings",
-        "nonnegative_lagged_average_earnings",
-        first_year=2022,
-        minimum_value=0,
-    )
 
     return parameters

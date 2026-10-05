@@ -1,8 +1,8 @@
 description: >-
   Minimum income guarantee (basic amount) for Pension Credit. Values after the
-  last enacted rate use a non-negative, one-year-lagged OBR average-earnings
-  index as a forecast proxy for the statutory earnings floor; they are not
-  enacted future rates.
+  last enacted rate use the non-negative May-July average weekly earnings input
+  from the annual statutory review as a forecast floor; they are not enacted
+  future rates.
 SINGLE:
   values:
     2015-04-06: 151.2
@@ -18,7 +18,7 @@ SINGLE:
     2025-04-01: 221.85
     2026-04-01: 238
   metadata:
-    uprating: gov.economic_assumptions.indices.obr.nonnegative_lagged_average_earnings
+    uprating: gov.economic_assumptions.indices.statutory_earnings_floor
 COUPLE:
   values:
     2015-04-06: 230.85
@@ -34,7 +34,7 @@ COUPLE:
     2025-04-01: 338.61
     2026-04-01: 363.25
   metadata:
-    uprating: gov.economic_assumptions.indices.obr.nonnegative_lagged_average_earnings
+    uprating: gov.economic_assumptions.indices.statutory_earnings_floor
 metadata:
   period: week
   label: Pension Credit minimum guarantee
