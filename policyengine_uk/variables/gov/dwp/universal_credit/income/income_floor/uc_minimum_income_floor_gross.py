@@ -67,7 +67,7 @@ class uc_minimum_income_floor_gross(Variable):
                 group == groups.NO_REQUIREMENTS,
             ],
             [
-                work.default_expected_hours,
+                floor.ineligible_partner_hours,
                 person("uc_expected_hours", period),
                 work.interview_or_preparation_threshold_hours,
                 floor.no_requirements_partner_hours,
