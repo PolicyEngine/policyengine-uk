@@ -1,61 +1,90 @@
-- name: Person born in 1948 reaches SPA before cutoff year
+# A whole age places the date of birth in the middle of the year of age: a
+# 75-year-old on 6 October 2023 was born on 6 April 1948.
+
+- name: Man born 6 April 1948 reached State Pension age at 65 in 2013
   period: 2023
   input:
     people:
       person:
-        age: 75  # Born in 1948, reached SPA around 2013-2014
-        state_pension_age: 65
+        age: 75
+        is_male: true
     benunits:
       benunit:
         members: [person]
   output:
     meets_savings_credit_age_requirement: true
 
-- name: Person born in 1952 reaches SPA before cutoff year
+- name: Woman born 6 April 1952 reached State Pension age on 6 May 2014 (table 1)
   period: 2023
   input:
     people:
       person:
-        age: 71  # Born in 1952, reached SPA around 2015
-        state_pension_age: 63
+        age: 71
+        is_male: false
     benunits:
       benunit:
         members: [person]
   output:
     meets_savings_credit_age_requirement: true
 
-- name: Person born in 1954 reaches SPA after cutoff year
+- name: Woman born 6 April 1954 reached State Pension age on 6 November 2019 (table 2)
   period: 2023
   input:
     people:
       person:
-        age: 69  # Born in 1954, reached SPA around 2017-2018
-        state_pension_age: 63.5
+        age: 69
+        is_male: false
     benunits:
       benunit:
         members: [person]
   output:
     meets_savings_credit_age_requirement: false
 
-- name: Person born in 1960 reaches SPA after cutoff year
+- name: Person born 6 April 1960 has not reached State Pension age
   period: 2023
   input:
     people:
       person:
-        age: 63  # Born in 1960, will reach SPA around 2026-2027
-        state_pension_age: 66
+        age: 63
     benunits:
       benunit:
         members: [person]
   output:
     meets_savings_credit_age_requirement: false
 
-- name: Test in 2015 - Person born in 1950 reaches SPA before cutoff year
+- name: Woman born 6 April 1950 reached State Pension age on 6 May 2010 and is 65 in 2015
   period: 2015
   input:
     people:
       person:
-        age: 65  # Born in 1950, reached SPA around 2013
+        age: 65
+        is_male: false
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: Woman born 6 April 1952 reached State Pension age on 6 May 2014 and is 65 in 2017
+  period: 2017
+  input:
+    people:
+      person:
+        age: 65
+        is_male: false
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: An input State Pension age overrides the timetable (63, so reached in 2015)
+  period: 2023
+  input:
+    people:
+      person:
+        age: 71
+        is_male: true
         state_pension_age: 63
     benunits:
       benunit:
@@ -63,15 +92,49 @@
   output:
     meets_savings_credit_age_requirement: true
 
-- name: Test in 2017 - Person who reached SPA in 2015 is eligible
-  period: 2017
+# State Pension Credit Act 2002 s.3(1)(a): attained pensionable age before 6
+# April 2016 and attained the age of 65. Each person's pensionable age comes
+# from their date of birth (Pensions Act 1995 Sch 4 para 1).
+
+- name: Woman born 5 April 1953 reached State Pension age on 6 March 2016, before the cutoff
+  period: 2023
   input:
-    people:
-      person:
-        age: 65  # Born in 1952, reached SPA in 2015
-        state_pension_age: 63
-    benunits:
-      benunit:
-        members: [person]
+    age: 70
+    months_since_last_birthday: 6.032258
+    is_male: false
   output:
     meets_savings_credit_age_requirement: true
+
+- name: Woman born 6 April 1953 reached State Pension age on 6 July 2016, after the cutoff
+  period: 2023
+  input:
+    age: 70
+    months_since_last_birthday: 6
+    is_male: false
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: Man born in 1952 reached State Pension age at 65 in 2017, after the cutoff
+  period: 2023
+  input:
+    age: 71
+    is_male: true
+  output:
+    meets_savings_credit_age_requirement: false
+
+- name: Man aged 75 in 2025, born 1950, reached State Pension age at 65 in 2015
+  period: 2025
+  input:
+    age: 75
+    is_male: true
+  output:
+    meets_savings_credit_age_requirement: true
+
+- name: Woman over State Pension age but under 65 does not yet meet the age requirement
+  period: 2015
+  input:
+    age: 63
+    is_male: false
+  output:
+    is_SP_age: true
+    meets_savings_credit_age_requirement: false

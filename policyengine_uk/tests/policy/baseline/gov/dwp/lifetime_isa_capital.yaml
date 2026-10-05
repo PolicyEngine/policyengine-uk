@@ -1,0 +1,527 @@
+- name: Holders and the household total come from the person balances
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        age: 30
+        lifetime_isa_balance: 4_000
+      person_2:
+        age: 28
+        lifetime_isa_balance: 6_000
+      person_3:
+        age: 55
+    benunits:
+      benunit_1:
+        members: [person_1, person_2]
+      benunit_2:
+        members: person_3
+    households:
+      household:
+        members: [person_1, person_2, person_3]
+  output:
+    has_lifetime_isa: [true, true, false]
+    household_lifetime_isa_balance: 10_000
+
+- name: Under 60 the Lifetime ISA counts after the 25% withdrawal charge
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 59
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    lifetime_isa_countable_capital: 7_500
+
+- name: From 60 the Lifetime ISA counts in full
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 60
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    lifetime_isa_countable_capital: 10_000
+
+- name: In 2020-21 the withdrawal charge was 20%
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    lifetime_isa_countable_capital: 8_000
+
+- name: In 2021-22 the withdrawal charge is 25% again
+  period: 2021
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    lifetime_isa_countable_capital: 7_500
+
+- name: Universal Credit counts the Lifetime ISA at its surrender value
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    uc_assessable_capital: 7_500
+
+- name: A Universal Credit claimant aged 60 counts the whole Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 60
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    uc_assessable_capital: 10_000
+
+- name: Savings and a Lifetime ISA together reach the Universal Credit capital limit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 8_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_000
+  output:
+    uc_assessable_capital: 16_000
+    is_uc_eligible: true
+
+- name: Savings and a Lifetime ISA together exceed the Universal Credit capital limit
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_000
+  output:
+    uc_assessable_capital: 17_500
+    is_uc_eligible: false
+
+- name: An adult child's Lifetime ISA counts in the child's Universal Credit benunit only
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 50
+      parent_2:
+        age: 48
+      adult_child:
+        age: 25
+        lifetime_isa_balance: 10_000
+    benunits:
+      parents:
+        members: [parent_1, parent_2]
+      child:
+        members: adult_child
+    households:
+      household:
+        members: [parent_1, parent_2, adult_child]
+        savings: 9_000
+  output:
+    # Household savings are shared by adults (6,000 and 3,000); the
+    # Lifetime ISA adds 7,500 to the child's benunit alone.
+    uc_assessable_capital: [6_000, 10_500]
+
+- name: Reported Universal Credit capital overrides the holder's Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 50
+      parent_2:
+        age: 48
+      adult_child:
+        age: 25
+        lifetime_isa_balance: 10_000
+    benunits:
+      parents:
+        members: [parent_1, parent_2]
+      child:
+        members: adult_child
+        uc_reported_capital: 2_000
+    households:
+      household:
+        members: [parent_1, parent_2, adult_child]
+        savings: 9_000
+  output:
+    uc_assessable_capital: [7_000, 2_000]
+
+- name: An adult child's Lifetime ISA counts in the child's Housing Benefit benunit only
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 50
+      parent_2:
+        age: 48
+      adult_child:
+        age: 25
+        lifetime_isa_balance: 10_000
+    benunits:
+      parents:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [parent_1, parent_2]
+      child:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: adult_child
+    households:
+      household:
+        members: [parent_1, parent_2, adult_child]
+        savings: 9_000
+  output:
+    housing_benefit_assessable_capital: [6_000, 10_500]
+
+- name: A parent's Income Support claim does not count an adult child's Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        income_support_reported: true
+      child:
+        age: 4
+      adult_child:
+        age: 22
+        lifetime_isa_balance: 10_000
+    benunits:
+      parent_and_child:
+        members: [parent, child]
+        would_claim_IS: true
+      adult_child:
+        members: adult_child
+    households:
+      household:
+        members: [parent, child, adult_child]
+        savings: 2_000
+  output:
+    # The claiming benunit takes the whole household stock (2,000); the
+    # Lifetime ISA stays with its holder.
+    income_support_assessable_capital: [2_000, 7_500]
+
+- name: A parent's income-based JSA claim does not count an adult child's Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        jsa_income_reported: 3_000
+      adult_child:
+        age: 22
+        lifetime_isa_balance: 10_000
+    benunits:
+      parent:
+        members: parent
+      adult_child:
+        members: adult_child
+    households:
+      household:
+        members: [parent, adult_child]
+        savings: 2_000
+  output:
+    jsa_income_assessable_capital: [2_000, 7_500]
+
+- name: A parent's income-related ESA claim does not count an adult child's Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        esa_income_reported: 3_000
+      adult_child:
+        age: 22
+        lifetime_isa_balance: 10_000
+    benunits:
+      parent:
+        members: parent
+      adult_child:
+        members: adult_child
+    households:
+      household:
+        members: [parent, adult_child]
+        savings: 2_000
+  output:
+    esa_income_assessable_capital: [2_000, 7_500]
+
+- name: Grandparents' Pension Credit does not count a grandchild's Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      grandparent_1:
+        age: 70
+      grandparent_2:
+        age: 68
+      grandchild:
+        age: 25
+        lifetime_isa_balance: 10_000
+    benunits:
+      grandparents:
+        members: [grandparent_1, grandparent_2]
+      grandchild:
+        members: grandchild
+    households:
+      household:
+        members: [grandparent_1, grandparent_2, grandchild]
+        savings: 4_000
+  output:
+    pension_credit_assessable_capital: [4_000, 0]
+
+- name: Pension Credit counts a younger partner's Lifetime ISA after the charge
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 70
+      partner:
+        age: 45
+        lifetime_isa_balance: 10_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    pension_credit_assessable_capital: 7_500
+
+- name: A dependent young person's Lifetime ISA does not count against the parent's claim
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      young_person:
+        # A qualifying young person: 18 and in non-advanced education.
+        age: 18
+        current_education: POST_SECONDARY
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+  output:
+    is_uc_claimant: [true, false]
+    uc_assessable_capital: 0
+    housing_benefit_assessable_capital: 0
+    income_support_assessable_capital: 0
+    jsa_income_assessable_capital: 0
+    esa_income_assessable_capital: 0
+
+- name: A holder the dataset records as a dependant does not count
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        # Only 15 years older, so without the flags the 19-year-old would be
+        # presumed the parent's partner rather than child.
+        age: 34
+        is_claimant_or_partner: true
+      dependant:
+        age: 19
+        is_claimant_or_partner: false
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [parent, dependant]
+    households:
+      household:
+        members: [parent, dependant]
+  output:
+    uc_assessable_capital: 0
+    housing_benefit_assessable_capital: 0
+    income_support_assessable_capital: 0
+    jsa_income_assessable_capital: 0
+    esa_income_assessable_capital: 0
+
+- name: Without the dataset flags a 19-year-old 15 years younger is the partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 34
+      dependant:
+        age: 19
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [parent, dependant]
+    households:
+      household:
+        members: [parent, dependant]
+  output:
+    is_claimant_or_partner: [true, true]
+    uc_assessable_capital: 7_500
+    housing_benefit_assessable_capital: 7_500
+    income_support_assessable_capital: 7_500
+    jsa_income_assessable_capital: 7_500
+    esa_income_assessable_capital: 7_500
+
+- name: Pension Credit counts only the capital of members the dataset records as claimant or partner
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      other_adult:
+        # Without the flag the age presumption makes this 60-year-old the
+        # pensioner's partner, whose Lifetime ISA would count in full.
+        age: 60
+        is_claimant_or_partner: false
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [pensioner, other_adult]
+    households:
+      household:
+        members: [pensioner, other_adult]
+  output:
+    pension_credit_assessable_capital: 0
+
+- name: Pension Credit capital follows is_claimant_or_partner, not the Universal Credit claimant flag
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_uc_claimant: true
+      partner:
+        age: 60
+        is_uc_claimant: false
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+  output:
+    is_claimant_or_partner: [true, true]
+    pension_credit_assessable_capital: 10_000
+
+- name: A pensioner's Pension Credit does not count a dependent young person's Lifetime ISA
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_parent: true
+      young_person:
+        age: 18
+        current_education: POST_SECONDARY
+        lifetime_isa_balance: 10_000
+    benunits:
+      family:
+        members: [pensioner, young_person]
+    households:
+      household:
+        members: [pensioner, young_person]
+  output:
+    pension_credit_assessable_capital: 0
+
+- name: Before the Lifetime ISA existed the means tests count none
+  period: 2016
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+        lifetime_isa_balance: 10_000
+    benunits:
+      benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: person
+    households:
+      household:
+        members: person
+  output:
+    uc_assessable_capital: 0
+    housing_benefit_assessable_capital: 0
+    income_support_assessable_capital: 0
+    jsa_income_assessable_capital: 0
+    esa_income_assessable_capital: 0

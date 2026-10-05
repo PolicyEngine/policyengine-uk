@@ -18,7 +18,10 @@ class income_support_eligible(Variable):
         "category the model covers (a carer, a lone parent of a young child, "
         "or a single claimant with a child placed by a local authority) and "
         "not be entitled to Employment and Support Allowance. Neither the "
-        "claimant nor the partner may be entitled to income-related ESA. An "
+        "claimant nor the partner may be entitled to income-related ESA, and "
+        "the other member of a couple may not be entitled to State Pension "
+        "Credit, which the model takes to be so where the couple meets the "
+        "Pension Credit age conditions and would claim it. An "
         "adult in the benefit unit who is neither the claimant nor the "
         "partner (such as a non-dependent adult) does not affect "
         "eligibility, with a declared exception for a stored esa_income "
@@ -84,14 +87,13 @@ class income_support_eligible(Variable):
             lone_parent_with_young_child | single_with_placed_child
         )
         # s.124(1)(aa): the claimant has not attained the qualifying age for
-        # State Pension Credit, which is state pension age (SPCA 2002 s.1(6)).
-        # A partner over that age does not bar the claim; s.124(1)(g) bars it
-        # only if the partner is entitled to State Pension Credit, which a
-        # mixed-age couple cannot be (SPCA 2002 s.4(1A); the SI 2019/37
-        # art. 4 savings are not modelled, as in is_pension_credit_eligible).
-        # Reading Pension Credit here would make a dependency cycle through
-        # Working Tax Credit.
-        under_qualifying_age = ~person("is_SP_age", period)
+        # State Pension Credit (SPCA 2002 s.1(6)). A partner over that age
+        # does not bar the claim by that alone; s.124(1)(g) bars it only if
+        # the other member of the couple is entitled to State Pension Credit
+        # (on_pension_credit below).
+        under_qualifying_age = ~person(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
         # s.124(1)(h): the claimant is not entitled to an employment and
         # support allowance of either kind ...
         no_contributory_esa = person("esa_contrib", period) <= 0
@@ -129,9 +131,22 @@ class income_support_eligible(Variable):
         income_related_esa = (esa_income > 0) & (
             ~as_reported | (award_on_claimant_or_partner_reports > 0)
         )
+        # s.124(1)(g): the other member of a couple is not entitled to State
+        # Pension Credit. Entitlement needs a claim (SSAA 1992 s.1). Reading the
+        # Pension Credit amount here would be circular (Pension Credit income
+        # counts working tax credit, whose income counts Income Support), so a
+        # couple is taken to be on Pension Credit where it meets the Pension
+        # Credit age conditions and would claim it. That leaves out Pension
+        # Credit's means test: a couple the means test would refuse Pension
+        # Credit is still treated as on it, so Income Support is barred where it
+        # could be payable but Pension Credit would not be.
+        on_pension_credit = benunit(
+            "meets_pension_credit_age_conditions", period
+        ) & benunit("would_claim_pc", period)
         capital = benunit("income_support_assessable_capital", period)
         return (
             benunit.any(claimant)
+            & ~on_pension_credit
             & ~income_related_esa
             & (capital <= IS.means_test.capital.limit)
         )

@@ -140,8 +140,10 @@
         age: 30
     benunits:
       benunit_1:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: person_1
       benunit_2:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: person_2
     households:
       household:
