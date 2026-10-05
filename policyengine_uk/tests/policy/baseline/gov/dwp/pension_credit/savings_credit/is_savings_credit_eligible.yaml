@@ -111,7 +111,8 @@
       benunit:
         members: [person]
         relation_type: SINGLE
-        savings_credit_income: 10_100
+        # One penny below 198.27 * 52.
+        savings_credit_income: 10_310.03
   output:
     is_savings_credit_eligible: false
 
@@ -132,3 +133,19 @@
         savings_credit_income: 16_000
   output:
     is_savings_credit_eligible: false
+
+- name: Case 8, 2025 single claimant above the published threshold is eligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        # One penny above 198.27 * 52.
+        savings_credit_income: 10_310.05
+  output:
+    is_savings_credit_eligible: true
