@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import couple_members
 
 
 class uc_minimum_income_floor_gross(Variable):
@@ -45,7 +44,7 @@ class uc_minimum_income_floor_gross(Variable):
         wage = p.gov.hmrc.minimum_wage.non_apprentice
         group = person("uc_work_related_group_apart_from_earnings", period)
         groups = group.possible_values
-        ineligible_partner = couple_members(person, period) & person(
+        ineligible_partner = person("is_uc_assessed_claimant", period) & person(
             "uc_is_ineligible_partner", period
         )
         hours = select(

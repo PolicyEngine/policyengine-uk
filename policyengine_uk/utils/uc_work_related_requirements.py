@@ -7,21 +7,14 @@ apply to claimants.
 """
 
 
-def couple_members(person, period):
-    """The claimant and any partner: at most two people in a benefit unit.
-
-    Where the data flag more (an adult child in the parents' benefit unit),
-    the two eldest are the couple.
-    """
-    age = person("age", period)
-    flagged = person("is_uc_claimant", period)
-    return flagged & (person.get_rank(person.benunit, -age, condition=flagged) < 2)
-
-
 def claimants(person, period):
     """The single claimant or the joint claimants.
 
-    A partner who cannot be a joint claimant (reg. 3(3)) is a member of the
-    couple but not a claimant: no work-related group or floor applies to them.
+    The members of the couple are `is_uc_assessed_claimant`: at most two
+    people in a benefit unit. A partner who cannot be a joint claimant (reg.
+    3(3)) is a member of the couple but not a claimant: no work-related group
+    or floor applies to them.
     """
-    return couple_members(person, period) & ~person("uc_is_ineligible_partner", period)
+    return person("is_uc_assessed_claimant", period) & ~person(
+        "uc_is_ineligible_partner", period
+    )
