@@ -1,25 +1,31 @@
 # Child Benefit
 
 `child_benefit_entitlement` is the amount before take-up and payment opt-outs.
-`child_benefit` pays that entitlement when either `would_claim_child_benefit`
-or `child_benefit_opts_out` identifies a claimant, unless the charge-driven
-opt-out remains active. `CB_HITC` then charges only the benefit actually paid.
+`child_benefit` pays that entitlement only when `would_claim_child_benefit`
+is true, unless the charge-driven opt-out remains active. `CB_HITC` then charges
+only the benefit actually paid.
 
-The two inputs follow the [Microcosm Child Benefit export contract](https://github.com/PolicyEngine/microcosm/blob/4163b819402d9417554e0cb4e9ff890973897c24/packages/microcosm-build/src/microcosm/build/uk_runtime/child_benefit_take_up.py#L436):
+Claiming and opting out of payment are independent inputs:
 
 | Would claim | Opted out | Meaning |
 |---|---|---|
-| false | false | Genuine nonclaimant; receives no payment under a charge reform |
+| false | false or true | Nonclaimant; receives no payment under a charge reform |
 | true | false | Claimant receiving payment |
-| false or true | true | Registered claimant with a charge-driven payment opt-out |
+| true | true | Registered claimant with a charge-driven payment opt-out |
 
-Microcosm stores claims excluding opted-out families in `would_claim_child_benefit`.
-The model therefore also recognises `child_benefit_opts_out` as evidence of a
-registered claim. Older datasets drew the opt-out flag independently, including
-for nonclaimants. Producers of those datasets must clear that flag for genuine
-nonclaimants before loading; the model cannot distinguish the two meanings from
-the booleans alone. Household calculators should supply both flags as false to
-represent a nonclaimant.
+EnhancedFRS draws the opt-out flag independently, including for nonclaimants.
+That input remains supported: a false claim flag always prevents payment,
+regardless of the opt-out flag. Household calculators should set
+`would_claim_child_benefit` to false to represent a nonclaimant.
+
+[Earlier Microcosm exports](https://github.com/PolicyEngine/microcosm/blob/4163b819402d9417554e0cb4e9ff890973897c24/packages/microcosm-build/src/microcosm/build/uk_runtime/child_benefit_take_up.py#L436)
+stored `claims & ~opt_out` in `would_claim_child_benefit`, obscuring registered
+opt-outs. Those datasets must be rebuilt or migrated by their producer to
+export registered claims, including opted-out claimants, before using this
+model to score the return to payment. The model does not infer claims from
+opt-out flags or dataset names, since that would revive EnhancedFRS
+nonclaimants. Coordinate the corrected Microcosm export, this model and rebuilt
+data in a release; updating model code alone does not repair existing data.
 
 `gov.hmrc.child_benefit.opt_out_charge_share` is a behavioural assumption, not
 a statutory eligibility rule. It defaults to one: a flagged family continues

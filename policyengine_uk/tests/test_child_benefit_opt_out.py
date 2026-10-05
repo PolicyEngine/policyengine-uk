@@ -80,6 +80,7 @@ def test_cliff_charge_has_no_division_warnings(income, opts_out, taper_end):
 
 
 @pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+@pytest.mark.parametrize("nonclaimant_income", [30_000, 100_000])
 @pytest.mark.parametrize(
     "reform, payment, charge",
     [
@@ -112,28 +113,42 @@ def test_cliff_charge_has_no_division_warnings(income, opts_out, taper_end):
     ],
 )
 def test_dataset_opted_out_claimants_resume_but_nonclaimants_do_not(
-    reform, payment, charge
+    reform, payment, charge, nonclaimant_income
 ):
-    """Microcosm #1089 stores claim-and-not-opted-out in its would-claim column."""
+    """Claim status stays independent of opt-out draws, including in EnhancedFRS."""
     dataset = UKSingleYearDataset(
         person=pd.DataFrame(
             {
-                "person_id": [1, 2, 3, 4, 5, 6],
-                "person_benunit_id": [1, 1, 1, 2, 2, 2],
-                "person_household_id": [1, 1, 1, 2, 2, 2],
-                "age": [40, 8, 5, 40, 8, 5],
-                "adjusted_net_income": [100_000, 0, 0, 100_000, 0, 0],
+                "person_id": [1, 2, 3, 4, 5, 6, 7, 8, 9],
+                "person_benunit_id": [1, 1, 1, 2, 2, 2, 3, 3, 3],
+                "person_household_id": [1, 1, 1, 2, 2, 2, 3, 3, 3],
+                "age": [40, 8, 5, 40, 8, 5, 40, 8, 5],
+                "adjusted_net_income": [
+                    100_000,
+                    0,
+                    0,
+                    100_000,
+                    0,
+                    0,
+                    nonclaimant_income,
+                    0,
+                    0,
+                ],
             }
         ),
         benunit=pd.DataFrame(
             {
-                "benunit_id": [1, 2],
-                "would_claim_child_benefit": [False, False],
-                "child_benefit_opts_out": [True, False],
+                "benunit_id": [1, 2, 3],
+                # Registered opt-out, nonclaimant, independent EnhancedFRS-style draw.
+                "would_claim_child_benefit": [True, False, False],
+                "child_benefit_opts_out": [True, False, True],
             }
         ),
         household=pd.DataFrame(
-            {"household_id": [1, 2], "region": ["SOUTH_EAST", "SOUTH_EAST"]}
+            {
+                "household_id": [1, 2, 3],
+                "region": ["SOUTH_EAST", "SOUTH_EAST", "SOUTH_EAST"],
+            }
         ),
         fiscal_year=2026,
     )
@@ -141,13 +156,20 @@ def test_dataset_opted_out_claimants_resume_but_nonclaimants_do_not(
         dataset=UKMultiYearDataset(datasets=[dataset]), reform=reform
     )
     assert simulation.calculate("child_benefit_entitlement", 2026) == pytest.approx(
-        [2_337.40, 2_337.40], abs=0.01
+        [2_337.40, 2_337.40, 2_337.40], abs=0.01
     )
-    assert simulation.baseline.calculate("child_benefit", 2026) == pytest.approx([0, 0])
+    assert simulation.baseline.calculate("child_benefit", 2026) == pytest.approx(
+        [0, 0, 0]
+    )
+    assert simulation.baseline.calculate("CB_HITC", 2026) == pytest.approx(
+        [0, 0, 0, 0, 0, 0, 0, 0, 0]
+    )
     assert simulation.calculate("child_benefit", 2026) == pytest.approx(
-        [payment, 0], abs=0.01
+        [payment, 0, 0], abs=0.01
     )
     assert simulation.calculate("CB_HITC", 2026) == pytest.approx(
-        [charge, 0, 0, 0, 0, 0], abs=0.01
+        [charge, 0, 0, 0, 0, 0, 0, 0, 0], abs=0.01
     )
-    assert simulation.baseline.calculate("child_benefit", 2026) == pytest.approx([0, 0])
+    assert simulation.baseline.calculate("child_benefit", 2026) == pytest.approx(
+        [0, 0, 0]
+    )

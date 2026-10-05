@@ -59,7 +59,7 @@
   input:
     adjusted_net_income: 40_000
     child_benefit_entitlement: 1_000
-    # Both false means no registered claim in Microcosm's exported contract.
+    # The independent claim flag determines nonclaimant status.
     child_benefit_opts_out: false
     would_claim_child_benefit: false
   output:
@@ -157,14 +157,53 @@
     child_benefit: [1_000, 1_000, 0]
     CB_HITC: [0, 0, 0]
 
-- name: Case 14, an exported opted-out claim resumes when the charge is removed.
+- name: Case 14, a registered opted-out claim resumes when the charge is removed.
   period: 2026
   input:
     adjusted_net_income: 90_000
     child_benefit_entitlement: 1_000
-    would_claim_child_benefit: false
+    would_claim_child_benefit: true
     child_benefit_opts_out: true
     gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: .inf
   output:
     child_benefit: 1_000
     CB_HITC: 0
+
+# EnhancedFRS draws the opt-out flag independently of its claim flag.
+# https://github.com/PolicyEngine/policyengine-uk/pull/2140#issuecomment-5993831707
+- name: Case 15, an independent opt-out draw does not register a nonclaimant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, adjusted_net_income: 30_000}
+      person2: {age: 8}
+      person3: {age: 5}
+    benunits:
+      family:
+        members: [person1, person2, person3]
+        would_claim_child_benefit: false
+        child_benefit_opts_out: true
+  output:
+    child_benefit_entitlement: 2_337.40
+    child_benefit: 0
+    CB_HITC: [0, 0, 0]
+
+- name: Case 16, charge removal does not revive an independent nonclaimant opt-out draw.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, adjusted_net_income: 30_000}
+      person2: {age: 8}
+      person3: {age: 5}
+    benunits:
+      family:
+        members: [person1, person2, person3]
+        would_claim_child_benefit: false
+        child_benefit_opts_out: true
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: .inf
+  output:
+    child_benefit_entitlement: 2_337.40
+    child_benefit: 0
+    CB_HITC: [0, 0, 0]

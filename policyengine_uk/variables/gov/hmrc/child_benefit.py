@@ -5,21 +5,21 @@ from policyengine_uk.utils.child_benefit import child_benefit_charge_share
 class child_benefit(Variable):
     label = "Child Benefit"
     documentation = (
-        "Total Child Benefit paid to the benefit unit. Registered payment opt-outs "
-        "resume when the charge share falls below the assumed opt-out threshold."
+        "Total Child Benefit paid to a benefit unit that would claim it. "
+        "Claimants with payment opt-outs resume when the charge share falls below "
+        "the assumed opt-out threshold; an opt-out flag never establishes a claim."
     )
     entity = BenUnit
     definition_period = YEAR
     value_type = float
     unit = GBP
     category = BENEFIT
+    defined_for = "would_claim_child_benefit"
     reference = "https://www.gov.uk/child-benefit-tax-charge/stop-child-benefit"
 
     def formula(benunit, period, parameters):
         entitlement = benunit("child_benefit_entitlement", period)
         opts_out = benunit("child_benefit_opts_out", period)
-        # Microcosm's would-claim input excludes registered payment opt-outs.
-        claims = benunit("would_claim_child_benefit", period) | opts_out
         hitc = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
         income = benunit.max(benunit.members("adjusted_net_income", period))
         # Compute the fraction independently of payment to avoid the cycle
@@ -32,4 +32,4 @@ class child_benefit(Variable):
         charge = benunit.simulation.tax_benefit_system.get_variable("CB_HITC")
         if charge.is_neutralized:
             remains_opted_out = False
-        return entitlement * claims * ~(opts_out & remains_opted_out)
+        return entitlement * ~(opts_out & remains_opted_out)
