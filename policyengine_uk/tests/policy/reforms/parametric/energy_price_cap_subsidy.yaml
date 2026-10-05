@@ -114,3 +114,18 @@
     monthly_domestic_energy_consumption: 100
   output:
     monthly_epg_subsidy: 50 + 21 / 12
+
+- name: Case 12, October 2022 baseline parameters apply without overrides.
+  period: 2022-10
+  absolute_error_margin: 0.01
+  input:
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 29.56
+
+- name: Case 13, July 2023 baseline parameters apply without overrides.
+  period: 2023-07
+  input:
+    monthly_domestic_energy_consumption: 100
+  output:
+    monthly_epg_subsidy: 0

@@ -38,7 +38,9 @@ class uses_energy_prepayment_meter(Variable):
     label = "Uses an energy prepayment meter"
     documentation = (
         "Whether the household pays for domestic gas or electricity through "
-        "a prepayment meter."
+        "a prepayment meter. Current PolicyEngine UK microsimulation data does "
+        "not populate this input, so it defaults to false unless supplied in a "
+        "household calculation or by a future dataset."
     )
     entity = Household
     definition_period = YEAR

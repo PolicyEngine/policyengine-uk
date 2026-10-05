@@ -4,42 +4,164 @@ description: >-
   values used for this illustration periodically, so values across those
   changes are not a constant-consumption price index.
 values:
-  2019-01-01: 1_104
-  2019-04-01: 1_217
-  2019-10-01: 1_143
-  2020-04-01: 1_126
-  2020-10-01: 1_042
-  2021-04-01: 1_138
-  2021-10-01: 1_277
-  2022-04-01: 1_971
-  2022-10-01: 3_549
-  2023-01-01: 4_279
-  2023-04-01: 3_280
-  2023-07-01: 2_074
-  2023-10-01: 1_834
-  2024-01-01: 1_928
-  2024-04-01: 1_690
-  2024-07-01: 1_568
-  2024-10-01: 1_717
-  2025-01-01: 1_738
-  2025-04-01: 1_849
-  2025-07-01: 1_720
-  2025-10-01: 1_755
-  2026-01-01: 1_758
-  2026-04-01: 1_641
-  2026-07-01: 1_663
-  2026-10-01: 1_723
+  2019-01-01:
+    value: 1_104
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2019-04-01:
+    value: 1_217
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2019-10-01:
+    value: 1_143
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2020-04-01:
+    value: 1_126
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2020-10-01:
+    value: 1_042
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2021-04-01:
+    value: 1_138
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2021-10-01:
+    value: 1_277
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2022-04-01:
+    value: 1_971
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2021-22
+          href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
+  2022-10-01:
+    value: 3_549
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2022-23, page 29
+          href: https://www.ofgem.gov.uk/sites/default/files/2023-07/Ofgem%20ARA%202023.pdf#page=29
+  2023-01-01:
+    value: 4_279
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2022-23, page 29
+          href: https://www.ofgem.gov.uk/sites/default/files/2023-07/Ofgem%20ARA%202023.pdf#page=29
+  2023-04-01:
+    value: 3_280
+    metadata:
+      reference:
+        - title: Ofgem Annual Report and Accounts 2022-23, page 29
+          href: https://www.ofgem.gov.uk/sites/default/files/2023-07/Ofgem%20ARA%202023.pdf#page=29
+  2023-07-01:
+    value: 2_074
+    metadata:
+      reference:
+        - title: Customers to pay less for energy bills from summer
+          href: https://www.ofgem.gov.uk/press-release/customers-pay-less-energy-bills-summer
+  # Ofgem restated £1,923 as £1,834 after adopting its 2023 typical
+  # domestic consumption values; the unit rates did not change.
+  2023-10-01:
+    value: 1_834
+    metadata:
+      reference:
+        - title: Changes to energy price cap between 1 October and 31 December 2023
+          href: https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-october-31-december-2023
+        - title: New energy price cap level starts today
+          href: https://www.ofgem.gov.uk/news/new-energy-price-cap-level-starts-today
+  2024-01-01:
+    value: 1_928
+    metadata:
+      reference:
+        - title: New energy price cap level for January to March 2024 starts today
+          href: https://www.ofgem.gov.uk/news/new-energy-price-cap-level-january-march-2024-starts-today
+  2024-04-01:
+    value: 1_690
+    metadata:
+      reference:
+        - title: New energy price cap level for April to June 2024 starts today
+          href: https://www.ofgem.gov.uk/news/new-energy-price-cap-level-april-june-2024-starts-today
+  2024-07-01:
+    value: 1_568
+    metadata:
+      reference:
+        - title: Energy price cap for July to September confirmed
+          href: https://www.ofgem.gov.uk/press-release/energy-price-cap-july-september-confirmed
+  2024-10-01:
+    value: 1_717
+    metadata:
+      reference:
+        - title: New energy price cap level for October to December 2024 starts today
+          href: https://www.ofgem.gov.uk/news/new-energy-price-cap-level-october-december-2024-starts-today
+  2025-01-01:
+    value: 1_738
+    metadata:
+      reference:
+        - title: Energy price cap will rise by 1.2% from January
+          href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-rise-12-january
+  2025-04-01:
+    value: 1_849
+    metadata:
+      reference:
+        - title: Changes to energy price cap between 1 April and 30 June 2025
+          href: https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-april-and-30-june-2025
+  2025-07-01:
+    value: 1_720
+    metadata:
+      reference:
+        - title: Energy price cap will fall by 7% from July
+          href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-fall-7-july
+  2025-10-01:
+    value: 1_755
+    metadata:
+      reference:
+        - title: Energy price cap will rise by 2% from October
+          href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-rise-2-percent-october
+  2026-01-01:
+    value: 1_758
+    metadata:
+      reference:
+        - title: Changes to energy price cap between 1 January and 31 March 2026
+          href: https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-january-and-31-march-2026
+  2026-04-01:
+    value: 1_641
+    metadata:
+      reference:
+        - title: Energy price cap will fall by 7% from April
+          href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-fall-7-april
+  # Ofgem's revised 2026 typical domestic consumption values produce £1,663;
+  # the same unit rates produce £1,862 under the previous assumptions.
+  2026-07-01:
+    value: 1_663
+    metadata:
+      reference:
+        - title: Energy price cap will rise by 13% from July
+          href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-rise-13-july
+  2026-10-01:
+    value: 1_723
+    metadata:
+      reference:
+        - title: Energy price cap will rise by 4% from October 2026
+          href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-rise-4-october-2026
 metadata:
   unit: currency-GBP
   period: year
   label: Ofgem energy price cap illustration
   preserve_calendar_dates: true
-  reference:
-    - title: Ofgem Annual Report and Accounts 2021-22
-      href: https://www.ofgem.gov.uk/publications/ofgem-annual-report-and-accounts-2021-22
-    - title: Ofgem Annual Report and Accounts 2022-23
-      href: https://www.ofgem.gov.uk/sites/default/files/2023-07/Ofgem%20ARA%202023.pdf
-    - title: Energy price cap (default tariff) levels
-      href: https://www.ofgem.gov.uk/energy-regulation/domestic-and-non-domestic/energy-pricing-rules/energy-price-cap/energy-price-cap-default-tariff-levels
-    - title: Energy price cap will rise by 4% from October 2026
-      href: https://www.ofgem.gov.uk/press-release/energy-price-cap-will-rise-4-october-2026

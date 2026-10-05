@@ -38,7 +38,7 @@ class monthly_epg_consumption_level(Variable):
         prepayment_consumption_level = max_(
             0,
             min_(energy_consumption, general_consumption_level)
-            - annual_prepayment_discount / 12,
+            - annual_prepayment_discount / MONTHS_IN_YEAR,
         )
         receives_prepayment_discount = (
             in_great_britain & uses_prepayment_meter & (annual_prepayment_discount > 0)
