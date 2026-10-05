@@ -1,1 +1,0 @@
-- Add `is_uc_assessed_claimant`: the single claimant or the two joint claimants whose income a Universal Credit award assesses (`is_uc_claimant`, limited to the two eldest when inputs flag more).

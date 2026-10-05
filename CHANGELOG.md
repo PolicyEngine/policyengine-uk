@@ -1,3 +1,14 @@
+## [2.120.0] - 2026-10-05
+
+### Added
+
+- - Add `is_uc_assessed_claimant`: the single claimant or the two joint claimants whose income a Universal Credit award assesses (`is_uc_claimant`, limited to the two eldest when inputs flag more).
+
+### Fixed
+
+- - Count only the claimants' income in Universal Credit (UC Regs 2013 reg. 22(1); WRA 2012 s. 8(4)). `uc_earned_income` and `uc_unearned_income` also counted the claimant's children and qualifying young people, so a dependant's wages, profits or pension reduced the parents' award. The benefit cap earnings exception (reg. 82(1)(a)), the capped benefit total (WRA 2012 s. 96(1)) and the childcare work condition (reg. 32(1)) now read the claimants only, so a dependant's job neither lifts the cap nor meets or blocks the work condition.
+
+
 ## [2.119.0] - 2026-10-05
 
 ### Added
