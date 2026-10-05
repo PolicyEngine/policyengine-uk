@@ -53,7 +53,10 @@ class uc_work_related_group_apart_from_earnings(Variable):
             person("uc_limited_capability_for_WRA", period)
             # s. 19(2)(b) with reg. 30: regular and substantial caring
             # responsibilities for a severely disabled person. The same flag
-            # covers the 35-hour carers of reg. 89(1)(b).
+            # covers the 35-hour carers of reg. 89(1)(b). It does not apply
+            # reg. 30(3), under which a person who "derives earned income
+            # from those caring responsibilities" is not such a carer, so a
+            # carer paid for that care still counts here.
             | person("is_carer_for_benefits", period)
             # s. 19(2)(c): the responsible carer for a child under the age
             # of 1.
