@@ -4,8 +4,10 @@ from policyengine_uk.model_api import *
 class two_child_limit_payment(Variable):
     label = "Two Child Limit Payment"
     documentation = (
-        "Scotland's payment to mitigate the UK two-child benefit cap. "
-        "Equals the UC child element for each child affected by the limit."
+        "Counterfactual Scottish mitigation of the UK two-child benefit cap. "
+        "The proposed regulations were not laid, so the baseline pays zero. "
+        "When enabled by a reform, pays the UC child element for each child "
+        "affected by the limit."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -19,7 +21,7 @@ class two_child_limit_payment(Variable):
     def formula(benunit, period, parameters):
         in_scotland = benunit.household("country", period).decode_to_str() == "SCOTLAND"
 
-        # Check if payment is in effect (from December 2024)
+        # A reform can enable the proposed scheme.
         in_effect = parameters(
             period
         ).gov.social_security_scotland.two_child_limit_payment.in_effect

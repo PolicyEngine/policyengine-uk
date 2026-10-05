@@ -680,3 +680,46 @@
     council_tax_reduction_liable_person: [true, false, false, false]
     council_tax_reduction_claimant_benunit: [true]
     council_tax_reduction_joint_liability_share: [1]
+
+- name: Where the rent is shared, a student head's family does not claim and the co-tenant claims the whole council tax
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 30
+        is_household_head: true
+        in_HE: true
+      cotenant:
+        age: 30
+        is_household_head: false
+    benunits:
+      head_family:
+        members: [head]
+      cotenant_family:
+        members: [cotenant]
+        liable_for_share_of_household_rent: true
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [head, cotenant]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The head is treated as liable, but where the rent is shared the model
+    # gives a student no claim (#2006; in Scotland SSI 2021/249 reg 20(2))
+    # and leaves them out of those jointly liable (reg 79(4)). Where a
+    # student shares liability with a non-student, the non-student is solely
+    # liable (LGFA 1992 s.75(4)), so the co-tenant claims on the whole bill
+    # and the head is the co-tenant's non-dependant. No deduction is made for
+    # a full-time student non-dependant (reg 90(7)(c)); the model's national
+    # deduction is nil here only because the head has no income.
+    council_tax_reduction_liable_person: [true, true]
+    council_tax_reduction_claimant_benunit: [false, true]
+    council_tax_reduction_joint_liability_share: [0.5, 1]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [true, false]
+    simulated_council_tax_reduction_benunit: [0, 1_800]

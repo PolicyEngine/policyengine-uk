@@ -1,0 +1,107 @@
+# Income Support carer route. SSCBA 1992 s.124(1)(e): a person is entitled
+# to Income Support if "he falls within a prescribed category of person".
+# IS Regs 1987 reg 4ZA(1) prescribes the persons in Schedule 1B. Sch 1B
+# para 4 covers "A person (the carer)" who (a) "is regularly and
+# substantially engaged in caring for another person" receiving a qualifying
+# disability benefit, with no Carer's Allowance claim needed, or (b) "is both
+# entitled to, and in receipt of, a carer's allowance or carer support
+# payment". A couple choose which of them claims (Claims and Payments Regs
+# 1987 reg 4(3)), so either partner's caring qualifies; a child's or young
+# person's caring does not.
+
+- name: IS carer route for a single claimant who cares
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        income_support_reported: 1000
+    benunits:
+      family:
+        members: [claimant]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    income_support_eligible: true
+
+- name: IS carer route opens for a claimant who cares without claiming Carer's Allowance (para 4(a))
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        would_claim_carers_allowance: false
+        income_support_reported: 1000
+    benunits:
+      family:
+        members: [claimant]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
+    income_support_eligible: true
+
+- name: IS carer route when the partner is the carer
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        income_support_reported: 1000
+      partner:
+        age: 38
+        receives_carer_benefit: true
+    benunits:
+      family:
+        members: [claimant, partner]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    is_claimant_or_partner: [true, true]
+    income_support_eligible: true
+
+- name: IS carer route does not open through a qualifying young person's caring
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        income_support_reported: 1000
+      young_person:
+        age: 17
+        is_in_non_advanced_education: true
+        care_hours: 35
+    benunits:
+      family:
+        members: [parent, young_person]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    is_lone_parent: true
+    is_carer_for_benefits: [false, true]
+    income_support_eligible: false
+
+- name: IS carer route does not open through a child's caring
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        income_support_reported: 1000
+      partner:
+        age: 39
+      child:
+        age: 12
+        care_hours: 40
+    benunits:
+      family:
+        members: [claimant, partner, child]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    is_claimant_or_partner: [true, true, false]
+    income_support_eligible: false

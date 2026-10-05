@@ -4,17 +4,17 @@ from policyengine_uk.model_api import *
 class is_non_dependant_of_household_head(Variable):
     value_type = bool
     entity = Person
-    label = "Non-dependant of the household head's family"
+    label = "Non-dependant of the families liable for the household's rent"
     documentation = (
-        "Whether this person lives in the household outside the household "
-        "head's family and is not liable for rent. A joint tenant or other "
+        "Whether this person lives in the household outside every family "
+        "liable for its rent (the household head's family and any sharers) "
+        "and is not liable for rent themselves. A joint tenant or other "
         "sharer of the rent, a boarder and a lodger are liable on a "
         "commercial basis for their occupation, so none is a non-dependant "
-        "of anyone. The household head and their household are not "
-        "non-dependants of a boarder or lodger who pays them. Universal "
-        "Credit counts a non-dependant in one claim only, which the model "
-        "gives to the household head's family; Housing Benefit and Council "
-        "Tax Reduction apportion a non-dependant of several joint occupiers "
+        "of anyone, and the household head's household is not a boarder's or "
+        "lodger's. Universal Credit counts a non-dependant in one claim only "
+        "(uc_non_dependants_counted); Housing Benefit and Council Tax "
+        "Reduction apportion a non-dependant of several joint occupiers "
         "between them. Foster children and carers engaged through a charity "
         "are not identified."
     )
