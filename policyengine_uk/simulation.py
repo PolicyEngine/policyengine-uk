@@ -211,6 +211,9 @@ class Simulation(CoreSimulation):
             "employee_pension_contributions",
             "employee_pension_contributions_reported",
         )
+        # Dataset totals must not mask journey-based fare policy formulas.
+        # The reported amount remains available for legacy data and Wales.
+        self.move_values("bus_fare_spending", "bus_fare_spending_reported")
 
         self.input_variables = self.get_known_variables()
 

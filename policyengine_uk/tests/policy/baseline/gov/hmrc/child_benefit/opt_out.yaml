@@ -1,0 +1,80 @@
+# HMRC: opting out stops payments, not registration or entitlement.
+# https://www.gov.uk/child-benefit-tax-charge/stop-child-benefit
+- name: Case 1, a charge-driven opt-out stops payment and the tax charge.
+  period: 2026
+  input:
+    adjusted_net_income: 90_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+    would_claim_child_benefit: true
+  output:
+    child_benefit: 0
+    CB_HITC: 0
+    child_benefit_entitlement: 1_000
+
+- name: Case 2, a claimant who has not opted out receives the benefit and pays the charge.
+  period: 2026
+  input:
+    adjusted_net_income: 90_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: false
+  output:
+    child_benefit: 1_000
+    CB_HITC: 1_000
+
+- name: Case 3, opting out while partly charged stops the entire payment.
+  period: 2026
+  input:
+    adjusted_net_income: 70_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+  output:
+    child_benefit: 0
+    CB_HITC: 0
+
+- name: Case 4, charge-driven opt-outs resume payment when a reform raises the threshold.
+  period: 2026
+  input:
+    adjusted_net_income: 90_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_start: 100_000
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: 120_000
+  output:
+    child_benefit: 1_000
+    CB_HITC: 0
+
+- name: Case 5, a family exactly at the charge threshold has no charge-driven opt-out.
+  period: 2026
+  input:
+    adjusted_net_income: 60_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+  output:
+    child_benefit: 1_000
+    CB_HITC: 0
+
+- name: Case 6, removing the charge does not make a non-claimant claim.
+  period: 2026
+  input:
+    adjusted_net_income: 40_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+    would_claim_child_benefit: false
+  output:
+    child_benefit: 0
+
+- name: Case 7, an opted-out couple is tested against the higher earner.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, adjusted_net_income: 20_000}
+      person2: {age: 36, adjusted_net_income: 90_000}
+    benunits:
+      family:
+        members: [person1, person2]
+        child_benefit_entitlement: 1_000
+        child_benefit_opts_out: true
+  output:
+    child_benefit: 0
+    CB_HITC: [0, 0]
