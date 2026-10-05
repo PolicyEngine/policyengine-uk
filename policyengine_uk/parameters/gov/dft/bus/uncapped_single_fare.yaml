@@ -1,7 +1,10 @@
 description: Representative uncapped single fare inferred from the 2024-25 fare-cap grant,
   fare-paying boardings and a 70 percent single-ticket share. Assumes no demand response
   and full grant pass-through. This is a modelling assumption, not an observed individual
-  fare. See docs/engineering/bus-fares.md.
+  fare. Caps at or above GBP 2.75, including the GBP 3 cap, have no effect relative to
+  uncapped travel with this default GBP 2.748 fare. Supply person-specific
+  local_bus_uncapped_single_fare inputs to represent fares above those caps.
+  See docs/engineering/bus-fares.md.
 values:
   '2024-01-01': 2.748019953976
 metadata:

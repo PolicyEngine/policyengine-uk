@@ -5,7 +5,10 @@ class would_claim_child_benefit(Variable):
     label = "Would claim Child Benefit"
     documentation = (
         "Whether this benefit unit would claim Child Benefit if eligible. "
-        "Generated stochastically in the dataset using take-up rates."
+        "Microcosm exports this as claims excluding payment opt-outs; a true "
+        "child_benefit_opts_out flag therefore also identifies a registered claim. "
+        "Set both flags false for a genuine nonclaimant. Household calculators "
+        "default to claiming unless supplied otherwise."
     )
     entity = BenUnit
     definition_period = YEAR

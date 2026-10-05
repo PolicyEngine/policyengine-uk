@@ -21,7 +21,10 @@ Supply consistent splits for cross-boundary travel.
 The model treats a person flagged `bus_pass_eligible` as travelling free,
 matching Microcosm's pricing assumption. The dataset owns that eligibility
 flag; the model does not infer concessionary eligibility from age or change
-it when a concessionary scheme is reformed. For fare-paying passengers,
+it when a concessionary scheme is reformed. Supply `bus_pass_eligible` alongside
+journey inputs, including in household calculators; an omitted flag defaults to
+false and the person pays fares even if eligible for a statutory concession.
+For fare-paying passengers,
 `local_bus_single_fare_share` is the share of boardings bought as singles,
 bounded to [0, 1]. Its fallback is 0.70, the 2024 NTS other-local-bus estimate.
 An optional `local_bus_uncapped_single_fare` overrides the representative
@@ -109,9 +112,13 @@ Removing the cap therefore raises the benchmark yield from about £1.55 to
 £1.94 at the representative share, matching the grant-addback calculation
 in issue #1871. This assumes full grant pass-through and no demand response.
 Individual shares can differ, so a dataset aggregate need not recover the
-published grant. Changing the cap above `u` has no further effect with this
-representative fare; supply person-specific uncapped fares for other price
-assumptions. Very large reductions can reach the zero-yield floor.
+published grant. Caps at or above £2.75, including the £3 cap, have no effect
+relative to uncapped travel under the default £2.748 representative fare.
+The default has no fare distribution above these caps, so it cannot estimate
+the savings those caps give to passengers with higher fares. Supply
+person-specific `local_bus_uncapped_single_fare` values above a cap to model
+its effect on those passengers. Very large reductions can reach the zero-yield
+floor.
 
 ## Other reform controls and limits
 
