@@ -17,13 +17,19 @@ partner are its claimant and partner (the YAML cases cover a head who is
 not):
 
 1. Own members: a family is a pensioner exactly when its claimant or partner
-   has reached State Pension age. It is exempt from non-dependant deductions
-   exactly when its claimant or partner is blind or gets Attendance
-   Allowance, the care component of Disability Living Allowance, the daily
-   living component of Personal Independence Payment or Armed Forces
-   Independence Payment.
+   has reached the qualifying age for State Pension Credit and neither of
+   them is on Income Support, income-based Jobseeker's Allowance or
+   income-related Employment and Support Allowance, or has a Universal Credit
+   award (which needs one of them under that age). It is exempt from
+   non-dependant deductions exactly when its claimant or partner is blind or
+   gets Attendance Allowance, the care component of Disability Living
+   Allowance, the daily living component of Personal Independence Payment or
+   Armed Forces Independence Payment.
 2. As if alone: each family's pensioner status, exemption and whether its
-   scheme is simulated are what they would be if it lived alone.
+   scheme is simulated are what they would be if it lived alone, wherever its
+   own Universal Credit award is the same either way. (The award depends on
+   the rent the family pays, which changes when it lives alone, and the
+   pensioner test follows the award.)
 3. Scheme: a family's scheme is simulated exactly when it lives in Scotland
    or Wales, is a pensioner, or lives in a council whose working-age scheme
    is modelled. In England only a pensioner family is paid by the national
@@ -259,11 +265,23 @@ def test_scheme_follows_own_family(population):
     supported = calc(sim, "council_tax_reduction_scheme_supported")
     claimant = calc(sim, "council_tax_reduction_claimant_benunit")
 
-    # 1. Own members.
+    # 1. Own members. SI 2012/2885 reg 3(1): the qualifying age for State
+    # Pension Credit, and no income-related benefit or Universal Credit award
+    # for the claimant or partner. A Universal Credit award needs a member
+    # under that age (UC Regs 2013 reg 3(2)(a)).
     claimant_or_partner = calc(sim, "is_claimant_or_partner")
+    attained = calc(sim, "has_attained_state_pension_credit_qualifying_age")
+    income_related = (
+        sum(calc(sim, v) for v in ("income_support", "jsa_income", "esa_income")) > 0
+    )
+    universal_credit_award = calc(sim, "is_uc_entitled") & any_in_benunit(
+        sim, claimant_or_partner & ~attained
+    )
     assert np.array_equal(
         pensioner,
-        any_in_benunit(sim, claimant_or_partner & calc(sim, "is_SP_age")),
+        any_in_benunit(sim, claimant_or_partner & attained)
+        & ~income_related
+        & ~universal_credit_award,
     )
     exempting = calc(sim, "is_blind").astype(bool)
     for variable in DISABILITY:
@@ -271,12 +289,19 @@ def test_scheme_follows_own_family(population):
             exempting |= calc(sim, variable) > 0
     assert np.array_equal(exempt, any_in_benunit(sim, claimant_or_partner & exempting))
 
-    # 2. As if alone.
+    # 2. As if alone, wherever the family's own Universal Credit award and
+    # income-related benefits are the same either way.
     alone_situation, alone_facts = build(population, alone=True)
     alone = Simulation(situation=alone_situation)
     assert np.array_equal(alone_facts["role"], facts["role"])
+    same_awards = calc(sim, "is_uc_entitled") == calc(alone, "is_uc_entitled")
+    for v in ("income_support", "jsa_income", "esa_income"):
+        same_awards &= (calc(sim, v) > 0) == (calc(alone, v) > 0)
+    assert same_awards.any()
     for variable in FLAGS:
-        assert np.array_equal(calc(sim, variable), calc(alone, variable)), variable
+        assert np.array_equal(
+            calc(sim, variable)[same_awards], calc(alone, variable)[same_awards]
+        ), variable
 
     # 3. Scheme.
     england = facts["country"] == "ENGLAND"
