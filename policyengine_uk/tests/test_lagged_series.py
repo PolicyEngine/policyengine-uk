@@ -6,7 +6,12 @@ Average earnings are not flat, so that previously left the lagged earnings
 index well below the series it lags.
 """
 
+from policyengine_core.parameters import Parameter, ParameterNode
+
 from policyengine_uk import system
+from policyengine_uk.parameters.gov.economic_assumptions.lagged_series import (
+    add_lagged_parameter,
+)
 
 
 def _obr(node: str):
@@ -29,6 +34,10 @@ def test_lagged_series_reach_the_end_of_their_source():
     for source_name, lagged_name in (
         ("consumer_price_index", "lagged_cpi"),
         ("average_earnings", "lagged_average_earnings"),
+        (
+            "average_earnings",
+            "nonnegative_lagged_average_earnings",
+        ),
     ):
         source = getattr(growth, source_name)
         lagged = getattr(growth, lagged_name)
@@ -48,6 +57,10 @@ def test_lagged_series_hold_the_previous_year_of_their_source():
     for source_name, lagged_name in (
         ("consumer_price_index", "lagged_cpi"),
         ("average_earnings", "lagged_average_earnings"),
+        (
+            "average_earnings",
+            "nonnegative_lagged_average_earnings",
+        ),
     ):
         source = getattr(growth, source_name)
         lagged = getattr(growth, lagged_name)
@@ -65,9 +78,47 @@ def test_the_lagged_earnings_index_keeps_growing_with_earnings():
     assert index("2039") > index("2035") > index("2030")
 
 
+def test_lagged_series_can_apply_a_nonnegative_floor():
+    node = ParameterNode(name="test", data={})
+    node.add_child(
+        "source",
+        Parameter(
+            name="test.source",
+            data={"values": {"2024-01-01": -0.02, "2025-01-01": 0.03}},
+        ),
+    )
+
+    lagged = add_lagged_parameter(
+        node,
+        "source",
+        "nonnegative_lagged_source",
+        first_year=2025,
+        minimum_value=0,
+    )
+
+    assert lagged("2025") == 0
+    assert lagged("2026") == 0.03
+
+
+def test_minimum_guarantee_uses_nonnegative_lagged_earnings():
+    parameters = system.parameters
+    guarantee = parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    index = _obr("indices").nonnegative_lagged_average_earnings
+
+    for relation_type in ("SINGLE", "COUPLE"):
+        branch = getattr(guarantee, relation_type)
+        expected_2027 = branch("2026") * index("2027") / index("2026")
+
+        assert branch("2027") == expected_2027
+
+
 def test_lagged_parameter_names_match_their_position_in_the_tree():
     growth = _obr("yoy_growth")
 
-    for lagged_name in ("lagged_cpi", "lagged_average_earnings"):
+    for lagged_name in (
+        "lagged_cpi",
+        "lagged_average_earnings",
+        "nonnegative_lagged_average_earnings",
+    ):
         lagged = getattr(growth, lagged_name)
         assert lagged.name.endswith(f"yoy_growth.obr.{lagged_name}")

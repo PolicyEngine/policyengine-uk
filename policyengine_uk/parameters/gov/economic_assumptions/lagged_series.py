@@ -19,15 +19,25 @@ def add_lagged_parameter(
     source_name: str,
     lagged_name: str,
     first_year: int,
+    minimum_value: float | None = None,
 ) -> Parameter:
-    """Add a one-year-lagged copy of ``source_name`` as a child of ``node``."""
+    """Add a one-year-lagged copy of ``source_name`` as a child of ``node``.
+
+    If ``minimum_value`` is set, values below it are replaced with that floor.
+    """
     source = getattr(node, source_name)
+
+    def lagged_value(year: int) -> float:
+        value = source(year - 1)
+        if minimum_value is None:
+            return value
+        return max(minimum_value, value)
 
     lagged = Parameter(
         f"{node.name}.{lagged_name}",
         data={
             "values": {
-                f"{year}-01-01": source(year - 1)
+                f"{year}-01-01": lagged_value(year)
                 for year in lag_source_years(source, first_year)
             },
         },
