@@ -36,9 +36,12 @@ not):
    pensioner scheme, and only a working-age family by a council's scheme.
 4. Others do not matter: changing the ages and disability benefits of every
    other family that claims leaves a family's pensioner status, exemption,
-   scheme and simulated award unchanged. Its council_tax_benefit is unchanged
-   too, unless it falls back to a reported reduction and whether a simulated
-   claim in its household pays something changes (property 5's
+   scheme and simulated award unchanged, with its applicable amount and
+   income held as they were. (The model's severe disability premium counts
+   the other adults in the household, so their ages and benefits can change
+   a family's applicable amount whatever its scheme.) Its council_tax_benefit
+   is unchanged too, unless it falls back to a reported reduction and whether
+   a simulated claim in its household pays something changes (property 5's
    reconciliation).
 5. Fallback: a claiming family gets its simulated reduction where its scheme
    is simulated, and otherwise its reported one. Beside a simulated claim
@@ -182,7 +185,7 @@ def build(population, alone=False, perturb_others=False, awards=None):
     perturb_others: give every family that claims, other than each
     household's target, the household's replacement ages and disabilities.
     awards: benefit-unit inputs per family, in family order (for example the
-    families' own benefit awards from another simulation).
+    families' own benefit awards or means test from another simulation).
     """
     people, benunits, homes = {}, {}, {}
     facts = dict(
@@ -292,6 +295,11 @@ OWN_AWARDS = [
     "jsa_income",
     "esa_income",
 ]
+# A family's means test, held fixed in property 4.
+MEANS_TEST = [
+    "council_tax_reduction_applicable_amount",
+    "council_tax_reduction_applicable_income",
+]
 FLAGS = [
     "council_tax_reduction_pensioner",
     "council_tax_reduction_applicant_has_non_dep_exemption",
@@ -393,8 +401,9 @@ def test_scheme_follows_own_family(population):
 @given(population)
 def test_other_families_do_not_change_a_claim(population):
     situation, facts = build(population)
-    perturbed_situation, _ = build(population, perturb_others=True)
     before = Simulation(situation=situation)
+    means_test = {name: calc(before, name) for name in MEANS_TEST}
+    perturbed_situation, _ = build(population, perturb_others=True, awards=means_test)
     after = Simulation(situation=perturbed_situation)
     target = facts["target"]
     # 4. Others do not matter.
