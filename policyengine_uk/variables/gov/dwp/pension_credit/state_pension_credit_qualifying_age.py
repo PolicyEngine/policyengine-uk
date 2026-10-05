@@ -1,8 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.state_pension_age import (
-    age_attaining_pensionable_age,
-    date_of_birth,
-)
+from policyengine_uk.utils.dates import birth_instant, grid_months_to_yyyymmdd
+from policyengine_uk.utils.state_pension_age import age_attaining_pensionable_age
 
 
 class state_pension_credit_qualifying_age(Variable):
@@ -17,7 +15,7 @@ class state_pension_credit_qualifying_age(Variable):
         "1953, whose pensionable age is 65. Universal Credit, Housing Benefit, "
         "Council Tax Reduction, Income Support and Winter Fuel Payment before "
         "September 2024 use this age as well as Pension Credit. The date of "
-        "birth comes from age and "
+        "birth is date_of_birth where given, and otherwise comes from age and "
         "months_since_last_birthday."
     )
     definition_period = YEAR
@@ -29,11 +27,8 @@ class state_pension_credit_qualifying_age(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.state_pension.age
-        birth, birth_date = date_of_birth(
-            person("age", period),
-            person("months_since_last_birthday", period),
-            period.start.year,
-        )
+        birth = birth_instant(person, period)
+        birth_date = grid_months_to_yyyymmdd(birth)
         # State Pension Credit Act 2002 s.1(6): "(a) in the case of a woman,
         # pensionable age; or (b) in the case of a man, the age which is
         # pensionable age in the case of a woman born on the same day as the

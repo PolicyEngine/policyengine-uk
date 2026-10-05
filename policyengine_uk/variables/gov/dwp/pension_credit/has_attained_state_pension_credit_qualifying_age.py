@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.dates import birth_instant
 from policyengine_uk.utils.state_pension_age import months_since_attaining
 
 
@@ -22,8 +23,8 @@ class has_attained_state_pension_credit_qualifying_age(Variable):
 
     def formula(person, period, parameters):
         months_since = months_since_attaining(
-            person("age", period),
-            person("months_since_last_birthday", period),
+            birth_instant(person, period),
+            period.start.year,
             person("state_pension_credit_qualifying_age", period),
         )
         return months_since >= 0

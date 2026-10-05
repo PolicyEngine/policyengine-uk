@@ -79,7 +79,10 @@ timetable row by row:
 A person attains State Pension age on the later of the two. The model
 places each person's date of birth with `age` and
 `months_since_last_birthday`, which counts months since their last
-birthday on 6 October, the middle of the fiscal year:
+birthday on 6 October, the middle of the fiscal year. `date_of_birth` holds
+the resulting day (as a YYYYMMDD number), which other date-of-birth rules
+also read, such as the 6 April 2017 cutoffs in Universal Credit, Child Tax
+Credit and Pension Credit:
 
 - `state_pension_age` is the person's own State Pension age;
 - `months_since_state_pension_age` is how long before 6 October they
@@ -93,7 +96,12 @@ the exact age on 6 October, overriding `months_since_last_birthday` even
 when another person supplies birthday months. The default implies a birth
 date of 6 April: an entered age of 66 is above State Pension age at the
 6 October check in 2026-27 and below it in 2027-28. Set a fractional age
-or `months_since_last_birthday` to specify a different inferred birth date.
+or `months_since_last_birthday` to specify a different inferred birth date,
+or set `date_of_birth` directly (a YYYYMMDD number, with `age` as the age on
+6 October): `state_pension_age`, `months_since_state_pension_age`,
+`is_SP_age`, the State Pension Credit qualifying age and its attainment, and
+the Savings Credit age test then all follow that day. A value that is not a
+calendar date, or that gives a different age, raises an error.
 Survey microdata records whole years only, so in
 simulations built from data, including a region or constituency filtered
 from it, each single year of age and sex is spread evenly over the year by
@@ -126,8 +134,9 @@ Other programmes test State Pension age in two ways:
   itself is read as over it at the beginning of that year. With default
   whole-number ages in a household situation, the inferred birthday is
   6 April. Entering an integer State Pension age therefore makes this
-  boundary reading determine the Class 4 result; fractional ages and explicit
-  birthday-month inputs can place the birthday on another day. Class 1 employee
+  boundary reading determine the Class 4 result; fractional ages, explicit
+  birthday-month inputs and a `date_of_birth` input can place the birthday on
+  another day. Class 1 employee
   contributions stop at State Pension age itself (SSCBA 1992 s.6(3)), which
   the annual model reads as `is_SP_age`.
 

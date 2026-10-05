@@ -16,23 +16,9 @@ import numpy as np
 
 from policyengine_uk.utils.dates import (
     add_months_to_yyyymmdd,
-    exact_age_in_months,
     grid_month,
-    grid_months_to_yyyymmdd,
     yyyymmdd_to_grid_months,
 )
-
-
-def date_of_birth(age, months_since_last_birthday, year: int) -> tuple:
-    """The instant of birth, in grid months, and the day of birth (YYYYMMDD).
-
-    The person was born age years and months_since_last_birthday months before
-    6 October of the fiscal year starting in ``year``. The day of birth is the
-    one starting at or after that instant, so the person's legal age on 6
-    October is age.
-    """
-    birth = grid_month(year, 10) - exact_age_in_months(age, months_since_last_birthday)
-    return birth, grid_months_to_yyyymmdd(birth)
 
 
 def age_attaining_pensionable_age(
@@ -63,14 +49,18 @@ def age_attaining_pensionable_age(
     return (attained - birth) / 12
 
 
-def months_since_attaining(age, months_since_last_birthday, attained_age) -> np.ndarray:
-    """Months between attaining ``attained_age`` and 6 October; negative if
-    the person attains it later.
+def months_since_attaining(birth, year: int, attained_age) -> np.ndarray:
+    """Months between attaining ``attained_age`` and 6 October of the fiscal
+    year starting in ``year``; negative if the person attains it later.
+
+    ``birth`` is the instant of birth in grid months, the same instant the
+    attained age was measured from (policyengine_uk.utils.dates.birth_instant),
+    so the result is 6 October less the instant of attainment.
 
     Rounding to a thousandth of a month (under an hour) removes float error,
     so attaining the age exactly on 6 October, or exactly on 6 April six
     months earlier, counts as having attained it then.
     """
-    age_in_months = exact_age_in_months(age, months_since_last_birthday)
+    age_in_months = grid_month(year, 10) - np.asarray(birth, dtype=np.float64)
     months_since = age_in_months - 12 * np.asarray(attained_age, dtype=np.float64)
     return np.round(months_since, 3)

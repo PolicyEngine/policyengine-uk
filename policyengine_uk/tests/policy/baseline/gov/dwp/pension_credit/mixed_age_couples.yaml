@@ -635,3 +635,49 @@
   output:
     is_mixed_age_couple: true
     meets_pension_credit_age_conditions: true
+
+# SI 2019/37 art. 4(1): the older member must have reached the qualifying age
+# by 14 May 2019, so been born on or before 5 February 1954 (State Pension age
+# 6 May 2019; a birth on 6 February 1954 reaches it on 6 July 2019). Ages are
+# the legal ages on 6 October 2026.
+- name: Mixed-age saving, older member born 5 February 1954, is set
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 72
+        date_of_birth: 19540205
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+  output:
+    has_mixed_age_couple_pension_credit_saving: true
+
+- name: Mixed-age saving, older member born 6 February 1954, is not set
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 72
+        date_of_birth: 19540206
+        state_pension: 9_000
+        pension_credit_reported: 1_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+  output:
+    has_mixed_age_couple_pension_credit_saving: false

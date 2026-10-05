@@ -1,7 +1,8 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.dates import (
     MONTHS_FROM_TAX_YEAR_START_TO_MID_YEAR,
-    exact_age_in_months,
+    birth_instant,
+    grid_month,
 )
 
 
@@ -28,7 +29,9 @@ class meets_savings_credit_age_requirement(Variable):
             person("months_since_state_pension_age", period)
             > months_from_cutoff_to_mid_year
         )
-        age_in_months = exact_age_in_months(
-            person("age", period), person("months_since_last_birthday", period)
+        # The exact age on 6 October, from the same instant of birth as State
+        # Pension age.
+        age_in_months = grid_month(period.start.year, 10) - birth_instant(
+            person, period
         )
         return reached_before_cutoff & (age_in_months >= 12 * p.minimum_age)
