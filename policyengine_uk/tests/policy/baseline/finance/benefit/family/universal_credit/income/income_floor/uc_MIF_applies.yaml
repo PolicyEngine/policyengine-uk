@@ -1,3 +1,9 @@
+# UC Regs 2013 reg. 62(1): "This regulation applies to a claimant who (a) is
+# in gainful self-employment (see regulation 64); and (b) would, apart from
+# this regulation or regulation 90, fall within section 22 of the Act
+# (claimants subject to all work-related requirements)." Reg. 62(5) leaves
+# out assessment periods in a start-up period.
+
 - name: No self-employment income
   period: 2020
   absolute_error_margin: 0
@@ -40,3 +46,205 @@
     self_employment_income: -1
   output:
     uc_mif_applies: true
+
+- name: A trader who breaks even is still in gainful self-employment
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 0
+    uc_is_in_gainful_self_employment: true
+  output:
+    # Reg. 64 turns on the trade, not on the profit. Without the input the
+    # model reads no profit or loss as no self-employment.
+    uc_mif_applies: true
+
+- name: Self-employment that is not gainful
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 2_000
+    uc_is_in_gainful_self_employment: false
+  output:
+    # ADM H4061: "The minimum income floor does not apply to claimants who
+    # are not gainfully S/E for UC purposes".
+    uc_mif_applies: false
+
+- name: Earnings above the threshold do not take the claimant out of the floor's scope
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 60_000
+  output:
+    # "apart from ... regulation 90": the earnings threshold is ignored. The
+    # floor applies but changes nothing above the threshold.
+    uc_mif_applies: true
+
+- name: Limited capability for work and work-related activity (section 19)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 3_000
+    uc_limited_capability_for_WRA: true
+  output:
+    uc_mif_applies: false
+
+- name: Carer for 35 hours a week (section 19)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 3_000
+    care_hours: 35
+  output:
+    uc_mif_applies: false
+
+- name: Carer whose earnings are above the Carer's Allowance limit (section 19)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 18_000
+    care_hours: 35
+  output:
+    # Reg. 30(1)(a)(i): a person who would satisfy the conditions for
+    # Carer's Allowance "but for the fact that their earnings have exceeded
+    # the limit" still has regular and substantial caring responsibilities.
+    uc_mif_applies: false
+
+- name: Limited capability for work (section 21)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 3_000
+    uc_has_limited_capability_for_work: true
+  output:
+    uc_mif_applies: false
+
+- name: Pregnant claimant within 11 weeks of the expected week of confinement (section 19)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 3_000
+    uc_is_in_pregnancy_or_post_confinement_period: true
+  output:
+    uc_mif_applies: false
+
+- name: Foster parent (section 20)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 30
+    self_employment_income: 3_000
+    uc_is_foster_parent_or_new_friend_or_family_carer: true
+  output:
+    uc_mif_applies: false
+
+- name: Lone parent of a baby (section 19)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 0
+  output:
+    # ADM H4061 example 3: when her son is born the claimant "moves into
+    # the no work-related requirements group. The minimum income floor no
+    # longer applies".
+    uc_mif_applies: [false, false]
+
+- name: Lone parent of a child aged 1 (section 20)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 1
+  output:
+    uc_mif_applies: [false, false]
+
+- name: Lone parent of a child aged 2 (section 21)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 2
+  output:
+    uc_mif_applies: [false, false]
+
+- name: Lone parent of a child aged 3 (section 22)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 30
+        self_employment_income: 3_000
+      child:
+        age: 3
+  output:
+    uc_mif_applies: [true, false]
+
+- name: Couple with a baby, both self-employed, only the responsible carer escapes the floor
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      nominated:
+        age: 30
+        self_employment_income: 3_000
+        uc_is_responsible_carer: true
+      partner:
+        age: 32
+        self_employment_income: 3_000
+        uc_is_responsible_carer: false
+      child:
+        age: 0
+  output:
+    # Reg. 86(2): "Only one of joint claimants may be nominated as a
+    # responsible carer".
+    uc_mif_applies: [false, true, false]
+
+- name: Mixed-age couple, the partner over State Pension Credit qualifying age (section 19)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      older:
+        age: 70
+        self_employment_income: 3_000
+      younger:
+        age: 40
+        self_employment_income: 3_000
+  output:
+    uc_mif_applies: [false, true]
+
+- name: A partner who cannot be a joint claimant is not a claimant
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 30
+        self_employment_income: 3_000
+      partner:
+        age: 32
+        self_employment_income: 3_000
+        uc_is_ineligible_partner: true
+  output:
+    # ADM H4077 note: "the MIF is not applied to the ineligible claimant's
+    # actual earnings."
+    uc_mif_applies: [true, false]

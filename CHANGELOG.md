@@ -1,3 +1,14 @@
+## [2.122.0] - 2026-10-05
+
+### Added
+
+- Add `uc_work_related_group_apart_from_earnings`, `uc_is_responsible_carer`, `uc_expected_hours`, `uc_youngest_child_age` and `uc_is_in_gainful_self_employment`; the inputs `uc_has_limited_capability_for_work`, `uc_is_in_pregnancy_or_post_confinement_period`, `uc_is_adopter_in_first_year`, `uc_is_student_with_no_work_related_requirements`, `uc_is_responsible_foster_parent_of_child_under_one`, `uc_is_foster_parent_or_new_friend_or_family_carer` and `uc_is_ineligible_partner`; and the parameters under `gov.dwp.universal_credit.work_requirements` for the responsible carer's child ages and expected hours and the 16-hour threshold, with `gov.dwp.universal_credit.means_test.minimum_income_floor.no_requirements_partner_hours` and `gov.dwp.universal_credit.means_test.minimum_income_floor.ineligible_partner_hours` (the 35 hours of reg. 90(3)(b)(ii)). Without a recorded nomination, `uc_is_responsible_carer` takes the joint claimant who works fewer hours (`hours_worked`), then the elder; `hours_worked` defaults to 0, so set `uc_is_responsible_carer` (or each member's hours) for a couple with a child entered without hours.
+
+### Fixed
+
+- Apply the Universal Credit minimum income floor only to claimants who would otherwise be subject to all work-related requirements (UC Regs 2013 reg. 62(1)(b)): not to claimants with limited capability for work or work-related activity, carers, claimants over State Pension Credit qualifying age, the responsible carer of a child under 3, or the prescribed descriptions of regs. 89 and 91 (Welfare Reform Act 2012 ss. 19 to 21). Set the floor from the expected hours of reg. 88 (30 a week for the responsible carer of a child under 13, as DWP does, in place of 35), and build the couple threshold from each partner's own threshold (reg. 90(2) and (3)): 16 hours for a partner in the work-focused interview or work preparation group, nothing for a partner with no work-related requirements, and 35 hours at the national living wage for a partner who cannot be a joint claimant.
+
+
 ## [2.121.0] - 2026-10-05
 
 ### Added
