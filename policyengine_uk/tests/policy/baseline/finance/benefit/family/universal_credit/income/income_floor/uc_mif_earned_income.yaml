@@ -274,9 +274,9 @@
     uc_individual_earned_income: [19_252.46, 21_519.60, 0, 0]
     # Less the work allowance of 427 x 12 = 5,124.
     uc_earned_income: 35_648.06
-    # Both children were born before 6 April 2017, so the first has the
-    # higher child element (reg. 36): 666.97 x 12 + (351.88 + 303.94) x 12 +
-    # 12,000.
+    # A child was born before 6 April 2017, so the first child keeps the
+    # higher child element (reg. 36, saved by SI 2014/1230 reg. 43): 666.97 x
+    # 12 + (351.88 + 303.94) x 12 + 12,000.
     uc_maximum_amount: 27_873.48
     # 27,873.48 - 0.55 x 35,648.06.
     universal_credit: 8_267.05
