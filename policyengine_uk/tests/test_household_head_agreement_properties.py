@@ -213,6 +213,18 @@ HEAD_AND_SHARER_FLAGGED = [
         [0, 1],
     ),
 ]
+# No one flagged, so the eldest member is the head, and the head's family is
+# listed after a sharer's, beside a non-dependant, all claiming Universal
+# Credit. The head's family's claim counts the non-dependant because the head
+# comes first in the order, not because its family is listed first. Read from
+# the raw flag, or without the head-first order, the sharer's claim would.
+HEAD_LISTED_AFTER_SHARER = [
+    _household(
+        [_family([30]), _family([40], role="sharer"), _family([50])],
+        "none",
+        [0],
+    ),
+]
 
 
 def flagged_members(house):
@@ -342,6 +354,7 @@ def sum_in_household(values, household):
 @example(NO_ONE_LIABLE)
 @example(STUDENT_FLAGGED_BESIDE_PARENT)
 @example(HEAD_AND_SHARER_FLAGGED)
+@example(HEAD_LISTED_AFTER_SHARER)
 def test_every_programme_reads_one_head(population):
     situation, facts = build(population)
     sim = Simulation(situation=situation)
@@ -434,6 +447,7 @@ def identical(a, b):
 @example(NO_ONE_LIABLE)
 @example(STUDENT_FLAGGED_BESIDE_PARENT)
 @example(HEAD_AND_SHARER_FLAGGED)
+@example(HEAD_LISTED_AFTER_SHARER)
 def test_flags_matter_only_through_the_head(population):
     situation, facts = build(population)
     well_formed, _ = build(population, head_input=reference_head(facts))

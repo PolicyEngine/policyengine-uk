@@ -257,10 +257,11 @@
     share_of_household_rent: [0.5, 0.5, 0]
     benunit_rent: [10_000, 10_000, 0]
     is_non_dependant_of_household_head: [false, false, true]
-    # Both renters claim Universal Credit. The non-dependant is one in the
-    # head's family's claim, so not in the sharer's (UC Regs 2013 Sch 4 para
-    # 9(2)(f)): one deduction and one extra bedroom (para 10), on the head's
-    # family. Read from the raw flag, both claims counted them.
+    # Both renters claim Universal Credit. UC Regs 2013 Sch 4 para 9(2)(f)
+    # lets only one of their claims count the non-dependant; the model gives
+    # them to the head's family's claim, so they are not one in the sharer's:
+    # one deduction and one extra bedroom (para 10), on the head's family.
+    # Read from the raw flag, both claims counted them.
     is_uc_eligible: [true, true, true]
     uc_non_dependants_counted: [true, false, false]
     uc_non_dep_deductions: [1_000, 0, 0]
