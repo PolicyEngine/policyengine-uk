@@ -32,10 +32,12 @@ legal entitlement: caring, ESA and Income Support are the model's reported
 or proxy inputs; it reads the qualifying age
 (has_attained_state_pension_credit_qualifying_age) and the model's proxy for
 being on Pension Credit (meets_pension_credit_age_conditions and
-would_claim_pc) from the model; and the means test is out of scope. No one
-drawn here reports Pension Credit or Housing Benefit, so in 2025 no family
-with a claimant or partner under the qualifying age meets the Pension Credit
-age conditions; income_support_claimant_partner_gates.yaml pins (g).
+would_claim_pc) from the model; and the means test is out of scope. No
+claimant or partner drawn here reports Pension Credit or Housing Benefit
+(only some added adults do), so in 2025 no family with a claimant or partner
+under the qualifying age meets the Pension Credit age conditions. The
+differential asserts this, and income_support_claimant_partner_gates.yaml
+pins (g).
 
 Roles are given explicitly (is_claimant_or_partner), so the properties test
 the eligibility rule rather than the role inference; the inferred case is
@@ -162,13 +164,17 @@ def excluded_members(draw):
     They are not in education, so a 16 to 19 year old is not a qualifying
     young person. Most are primed with what barred or opened the claim when
     every member counted: over state pension age, income-related ESA, an
-    Income Support report, or caring.
+    Income Support report, or caring. Some are primed with what the
+    s.124(1)(g) proxy reads for a couple: over the qualifying age, with
+    reported Pension Credit or Housing Benefit.
     """
     adult = {
         **draw(adult_inputs(min_age=16)),
         "current_education": "NOT_IN_EDUCATION",
     }
-    primed = draw(st.sampled_from(["random", "elderly", "esa", "award", "carer"]))
+    primed = draw(
+        st.sampled_from(["random", "elderly", "esa", "award", "carer", "pension"])
+    )
     if primed == "elderly":
         adult["age"] = draw(st.integers(66, 90))
     elif primed == "esa":
@@ -177,6 +183,12 @@ def excluded_members(draw):
         adult["income_support_reported"] = 1_000
     elif primed == "carer":
         adult["receives_carer_benefit"] = True
+    elif primed == "pension":
+        adult["age"] = draw(st.integers(66, 90))
+        reported = draw(
+            st.sampled_from(["pension_credit_reported", "housing_benefit_reported"])
+        )
+        adult[reported] = 1_000
     return adult
 
 
@@ -323,7 +335,8 @@ def reference_eligibility(
         )
 
     if esa_income is not None:
-        income_related_esa = esa_income > 0
+        # Within half a penny of zero is no award.
+        income_related_esa = esa_income > 0.005
     else:
         reported_esa = sum(a["esa_income_reported"] for a in adults)
         tariff = (
@@ -404,4 +417,10 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
             parameters,
         )
         assert eligible[i] == expected, units[i]
+        # The docstring's claim: no family drawn here with a claimant or
+        # partner under the qualifying age is taken to be on Pension Credit.
+        assert (
+            not on_pension_credit[i]
+            or attained_qualifying_age[start : start + len(adults)].all()
+        ), units[i]
         start += len(adults) + len(dependants) + 1

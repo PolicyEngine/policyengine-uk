@@ -336,7 +336,7 @@
     # Pension Credit, so the carer who has the award cannot claim.
     income_support_eligible: false
 
-- name: The same couple keeps Income Support when it would not claim Pension Credit
+- name: The same couple keeps Income Support when the take-up flag says it would not claim Pension Credit
   period: 2025
   input:
     people:
@@ -353,6 +353,8 @@
       family:
         members: [carer, partner]
         income_support_assessable_capital: 0
+        # The model reads (g) through the take-up flag, not the reported
+        # Pension Credit.
         would_claim_pc: false
   output:
     meets_pension_credit_age_conditions: true

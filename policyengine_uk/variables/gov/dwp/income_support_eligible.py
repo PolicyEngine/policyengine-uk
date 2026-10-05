@@ -13,7 +13,10 @@ class income_support_eligible(Variable):
         "new claim, so the claimant is the one of the claimant and partner "
         "who has the existing award. The model takes that to be whichever of "
         "them reports Income Support (income_support_reported); if both do, "
-        "either can be the claimant. The claimant must be under the "
+        "either can be the claimant. The bar on new claims (UC (Transitional "
+        "Provisions) Regs 2014 reg 6A(1)) is in force from 25 July 2022; the "
+        "model applies this reading in every year as a simplification. The "
+        "claimant must be under the "
         "qualifying age for State Pension Credit, fall within a prescribed "
         "category the model covers (a carer, a lone parent of a young child, "
         "or a single claimant with a child placed by a local authority) and "
@@ -54,6 +57,8 @@ class income_support_eligible(Variable):
         # partner who takes over an award does so by claiming (reg 4(4)), so
         # the claimant is whichever of them has the existing award. The model
         # takes that to be the claimant or partner who reports Income Support.
+        # Reg 6A was inserted from 25 July 2022 (SI 2022/752); the model
+        # applies this reading in every year as a simplification.
         has_award = claimant_or_partner & (
             person("income_support_reported", period) > 0
         )
@@ -113,7 +118,10 @@ class income_support_eligible(Variable):
         # or partner's. A stored value equal to either amount, to within half
         # a penny after rounding to its stored precision, is read through the
         # reports. Either way, no income-related ESA is paid when esa_income
-        # is zero, so a zero never bars the claim.
+        # is zero, so a zero never bars the claim. An amount within half a
+        # penny of zero counts as zero, the same tolerance as the comparisons:
+        # reports that exactly match the tariff income can leave a float
+        # residual of about £0.000002.
         esa_income = benunit("esa_income", period)
         reported_total = add(benunit, period, ["esa_income_reported"])
         award_on_all_reports = income_related_esa_award(benunit, period, reported_total)
@@ -125,11 +133,14 @@ class income_support_eligible(Variable):
         # Compare in the precision esa_income is stored in (float32), so the
         # formula's own award always matches the award recomputed here.
         stored = esa_income.dtype
+        half_penny = 0.005
         as_reported = np.isclose(
-            esa_income, award_on_all_reports.astype(stored), rtol=0, atol=0.005
-        ) | np.isclose(esa_income, reported_total.astype(stored), rtol=0, atol=0.005)
-        income_related_esa = (esa_income > 0) & (
-            ~as_reported | (award_on_claimant_or_partner_reports > 0)
+            esa_income, award_on_all_reports.astype(stored), rtol=0, atol=half_penny
+        ) | np.isclose(
+            esa_income, reported_total.astype(stored), rtol=0, atol=half_penny
+        )
+        income_related_esa = (esa_income > half_penny) & (
+            ~as_reported | (award_on_claimant_or_partner_reports > half_penny)
         )
         # s.124(1)(g): the other member of a couple is not entitled to State
         # Pension Credit. Entitlement needs a claim (SSAA 1992 s.1). Reading the

@@ -197,8 +197,8 @@ def test_a_report_can_change_how_an_entered_award_is_read():
 def test_a_zero_award_never_bars_the_claim():
     # £10.01 + £41.99 sums a little above £52 in stored precision, so after
     # £52 of tariff income (capital £6,250) the formula leaves a sub-penny
-    # residual. Entering zero, or abolishing income-related ESA, pays no ESA,
-    # so neither may bar Income Support.
+    # residual. That residual is no award, and entering zero, or abolishing
+    # income-related ESA, pays no ESA, so none of them may bar Income Support.
     partner = {
         "age": {YEAR: 42},
         "is_claimant_or_partner": {YEAR: True},
@@ -214,6 +214,9 @@ def test_a_zero_award_never_bars_the_claim():
     abolished = simulation({"carer": carer, "partner": partner}, capital)
     abolished.tax_benefit_system.neutralize_variable("esa_income")
     assert eligible(abolished)
+    calculated = simulation({"carer": carer, "partner": partner}, capital)
+    assert abs(calculated.calculate("esa_income", YEAR)[0]) < 0.005
+    assert eligible(calculated)
 
 
 def test_the_tolerance_is_half_a_penny():
