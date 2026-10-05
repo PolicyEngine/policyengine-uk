@@ -341,8 +341,9 @@
 - name: A dependant's contributory JSA or ESA supplied by the data does not count either
   # Not a lawful case: a person receiving ESA or JSA is not a qualifying
   # young person (reg. 5(5)), so they would not be the claimant's
-  # dependant. Data can still supply both, as the Enhanced FRS does for some
-  # synthetic children; their income is still not the claimant's.
+  # dependant. Data can still supply them (the Enhanced FRS gives some
+  # synthetic children contributory ESA); their income is still not the
+  # claimant's.
   period: 2026
   absolute_error_margin: 0
   input:
