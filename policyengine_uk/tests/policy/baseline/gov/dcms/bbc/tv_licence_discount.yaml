@@ -79,3 +79,42 @@
     is_blind: false
   output:
     tv_licence_discount: 0
+
+- name: Separate benefit units do not combine age and Pension Credit.
+  period: 2023
+  input:
+    people:
+      older_person:
+        age: 75
+      pension_credit_recipient:
+        age: 70
+    benunits:
+      older_person_benunit:
+        members: [older_person]
+        pension_credit: 0
+      recipient_benunit:
+        members: [pension_credit_recipient]
+        pension_credit: 1
+    households:
+      household:
+        members: [older_person, pension_credit_recipient]
+  output:
+    tv_licence_discount: 0
+
+- name: Partners combine age and Pension Credit within one benefit unit.
+  period: 2023
+  input:
+    people:
+      older_partner:
+        age: 75
+      pension_credit_recipient:
+        age: 70
+    benunits:
+      couple:
+        members: [older_partner, pension_credit_recipient]
+        pension_credit: 1
+    households:
+      household:
+        members: [older_partner, pension_credit_recipient]
+  output:
+    tv_licence_discount: 1
