@@ -112,6 +112,10 @@
     # 91(a)), as on the person's actual profits.
     age: 66
     region: NORTH_EAST
+    # A claimant over State Pension Credit qualifying age is subject to no
+    # work-related requirements and has no threshold; the group is set here
+    # to isolate the deduction.
+    uc_work_related_group_apart_from_earnings: ALL_REQUIREMENTS
   output:
     is_SP_age: true
     ni_class_4_liable: true

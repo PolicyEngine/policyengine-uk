@@ -619,17 +619,18 @@
         members: [elder, younger, child]
         region: NORTH_EAST
   output:
-    # Elder: 15,000 - (15,000 - 1,000 - 12,570) x 20% - (15,000 - 12,570)
-    # x 6% = 14,568.20.
-    uc_individual_earned_income_before_mif: [14_568.20, 2_000, 0]
+    # Elder: 15,000 - (15,000 - 12,570) x 20% - (15,000 - 12,570) x 6%
+    # = 15,000 - 486 - 145.80 = 14,368.20. Without gross receipts the
+    # trading allowance gives no relief on a profit above it.
+    uc_individual_earned_income_before_mif: [14_368.20, 2_000, 0]
     # The responsible carer of a child under 1 is in section 19 and adds
     # nothing to the couple threshold, so the couple threshold is the other
     # partner's 20,386.03. No hours are given, so the elder is the
     # responsible carer by default.
     uc_is_responsible_carer: [true, false, false]
     uc_mif_applies: [false, true, false]
-    # 20,386.03 - 14,568.20.
-    uc_individual_earned_income: [14_568.20, 5_817.83, 0]
+    # 20,386.03 - 14,368.20.
+    uc_individual_earned_income: [14_368.20, 6_017.83, 0]
 
 - name: Partner who cannot be a joint claimant, earnings below the 35-hour amount
   period: 2026
