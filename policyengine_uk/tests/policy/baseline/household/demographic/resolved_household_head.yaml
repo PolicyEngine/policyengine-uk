@@ -203,9 +203,15 @@
     share_of_household_rent: [0, 0.5, 0.5]
     benunit_rent: [0, 10_000, 10_000]
     is_non_dependant_of_household_head: [true, false, false]
-    # UC counts the non-dependant in the head's claim only; HB apportions it
-    # between the joint occupiers by their shares of the rent (reg 74(5)).
-    uc_non_dep_deductions: [0, 1_000, 0]
+    # UC counts the non-dependant in one claim by a liable renter only (UC
+    # Regs 2013 Sch 4 para 9(2)(f); see uc_non_dependants_counted): the
+    # head's family's if it claims, else the first liable family that does.
+    # The head is 70, over State Pension age, so not eligible for UC; the
+    # sharer's claim counts the non-dependant. HB apportions it between the
+    # joint occupiers by their shares of the rent (reg 74(5)).
+    is_uc_eligible: [true, false, true]
+    uc_non_dependants_counted: [false, false, true]
+    uc_non_dep_deductions: [0, 0, 1_000]
     housing_benefit_non_dep_deductions: [0, 400, 400]
     council_tax_reduction_claimant_benunit: [false, true, true]
     council_tax_reduction_individual_non_dep_deduction_eligible: [true, false, false]
