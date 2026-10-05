@@ -29,8 +29,10 @@ guard against regressions rather than check it independently.
 4. Non-dependants: no claimant or partner of a claimant family is a
    non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)). Pin:
    every adult in a family that neither claims nor pays rent is one.
-5. Differential: where the input flags at most one head, the family holding
-   the head is the one holding the person-level is_household_head flag.
+5. Differential: where the input flags exactly one member of a household,
+   or no household in the simulation has the input (so the flag's formula
+   picks the eldest), the family holding the head is the one holding the
+   person-level is_household_head flag.
    (Every programme reads the same head; see
    test_household_head_agreement_properties.py.)
 6. Not age: with one head flagged, raising every other member's age above

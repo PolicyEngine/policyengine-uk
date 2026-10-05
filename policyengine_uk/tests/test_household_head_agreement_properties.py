@@ -146,22 +146,24 @@ def households(draw):
 population = st.lists(households(), min_size=1, max_size=5)
 
 
-def _family(ages, child_age=None, role="non_dependant"):
+def _family(ages, child_age=None, role="non_dependant", student=False, earnings=0.0):
     return dict(
         ages=ages,
         child_age=child_age,
-        earnings=[0.0, 0.0],
+        earnings=[earnings, 0.0],
         role=role,
         payment=1.0,
-        student=False,
+        student=student,
     )
 
 
-def _household(families, head_flags, head_choice, rent=9_000.0):
+def _household(
+    families, head_flags, head_choice, rent=9_000.0, tenure="RENT_PRIVATELY"
+):
     return dict(
         families=families,
         scheme=("ENGLAND", "MAIDSTONE"),
-        tenure="RENT_PRIVATELY",
+        tenure=tenure,
         rent=rent,
         council_tax=1_500.0,
         head_flags=head_flags,
@@ -180,6 +182,19 @@ NO_ONE_LIABLE = [
     # Two flagged children: the elder, alone in its family, is the head, and
     # the younger's parent is neither liable nor a sharer.
     _household([_family([], 12), _family([40], 8)], "several", [0, 2]),
+]
+# A student in higher education flagged as head beside their parent, in an
+# owner-occupied home: the only case where the maintenance loan's
+# living-arrangement and household-income proxies turn on the head. The parent
+# earns, so the sponsor's income counts. Random generation rarely builds it.
+STUDENT_FLAGGED_BESIDE_PARENT = [
+    _household(
+        [_family([52], earnings=30_000.0), _family([20], student=True)],
+        "several",
+        [0, 1],
+        rent=0.0,
+        tenure="OWNED_OUTRIGHT",
+    ),
 ]
 
 
@@ -308,6 +323,7 @@ def sum_in_household(values, household):
 @PROPERTY_SETTINGS
 @given(population)
 @example(NO_ONE_LIABLE)
+@example(STUDENT_FLAGGED_BESIDE_PARENT)
 def test_every_programme_reads_one_head(population):
     situation, facts = build(population)
     sim = Simulation(situation=situation)
@@ -382,6 +398,7 @@ def identical(a, b):
 @PROPERTY_SETTINGS
 @given(population)
 @example(NO_ONE_LIABLE)
+@example(STUDENT_FLAGGED_BESIDE_PARENT)
 def test_flags_matter_only_through_the_head(population):
     situation, facts = build(population)
     well_formed, _ = build(population, head_input=reference_head(facts))
