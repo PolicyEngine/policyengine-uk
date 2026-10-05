@@ -1,0 +1,87 @@
+# Housing Benefit with the earnings disregards, end to end (2026).
+# Withdrawal rate 65% of income above the applicable amount. Council
+# tenancies, so the Local Housing Allowance cannot apply, and no Guarantee
+# Credit, so the Guarantee Credit passport cannot apply either.
+
+- name: Pensioner without earnings has no disregard against their State Pension
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 15_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    guarantee_credit: 0 # income above the £238 a week minimum guarantee
+    housing_benefit_applicable_income_disregard: 0
+    # 15,000 − income tax 0.2 × (15,000 − 12,570) = 486 → 14,514.
+    housing_benefit_applicable_income: 14_514
+    housing_benefit_applicable_amount: 13_312 # £256 × 52
+    # 6,240 − 0.65 × (14,514 − 13,312) = 6,240 − 781.30.
+    housing_benefit: 5_458.70
+
+- name: Pensioner with small earnings has £5 a week of them disregarded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 15_000
+        employment_income: 1_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    guarantee_credit: 0
+    # Income tax 0.2 × (16,000 − 12,570) = 686; 1,000 / 16,000 of it on
+    # earnings, so net earnings 957.125 and the disregard is £5 × 52 = 260.
+    housing_benefit_net_earnings: 957.125
+    housing_benefit_applicable_income_disregard: 260
+    # 16,000 − 686 − 260 = 15,054.
+    housing_benefit_applicable_income: 15_054
+    # 6,240 − 0.65 × (15,054 − 13,312) = 6,240 − 1,132.30.
+    housing_benefit: 5_107.70
+
+- name: Working-age full-time worker continuing a Housing Benefit award gets the additional disregard
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 10_000
+        weekly_hours: 30
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: false
+        # Working age, so no Pension Credit; set so that no form of the
+        # Guarantee Credit passport can apply.
+        guarantee_credit: 0
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_applicable_income_disregard: 1_149.20 # (£5 + £17.10) × 52
+    # 10,000 is below the tax and NI thresholds: 10,000 − 1,149.20.
+    housing_benefit_applicable_income: 8_850.80
+    housing_benefit_applicable_amount: 4_968.60 # £95.55 × 52
+    # 6,240 − 0.65 × (8,850.80 − 4,968.60) = 6,240 − 2,523.43.
+    housing_benefit: 3_716.57

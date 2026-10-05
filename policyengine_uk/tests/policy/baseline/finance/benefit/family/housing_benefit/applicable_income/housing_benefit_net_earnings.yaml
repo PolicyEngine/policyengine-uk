@@ -1,0 +1,102 @@
+# Net earnings for the Housing Benefit earnings disregards: SI 2006/213
+# regs 36(3) and 38; SI 2006/214 regs 36(2) and 39. Gross earnings less income
+# tax, National Insurance and half of pension contributions. PolicyEngine
+# attributes a person's income tax to earnings in proportion to their share
+# of the person's total income. 2026: personal allowance £12,570, basic rate
+# 20%, Class 1 primary threshold £241.73 × 52 = £12,569.96, main rate 8%.
+
+- name: Earnings below the tax and National Insurance thresholds are all net earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 5_200
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    housing_benefit_net_earnings: 5_200
+
+- name: Half of pension contributions is deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 5_200
+        personal_pension_contributions: 400
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    housing_benefit_net_earnings: 5_000 # 5,200 − 0.5 × 400
+
+- name: Income tax and National Insurance on earnings are deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 20_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # Income tax 0.2 × (20,000 − 12,570) = 1,486.
+    # NI 0.08 × (20,000 − 12,569.96) = 594.4032.
+    # 20,000 − 1,486 − 594.4032 = 17,919.5968.
+    housing_benefit_net_earnings: 17_919.60
+
+- name: Income tax is attributed to earnings by their share of total income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 15_000
+        employment_income: 1_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    # Income tax 0.2 × (16,000 − 12,570) = 686, of which 1,000 / 16,000 is
+    # attributed to earnings: 42.875. No National Insurance above State
+    # Pension age. 1,000 − 42.875 = 957.125.
+    housing_benefit_net_earnings: 957.125
+
+- name: A self-employment loss is not set against employment income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 2_000
+        self_employment_income: -3_000
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    housing_benefit_net_earnings: 2_000 # SI 2006/213 reg 38(10)
+
+- name: A couple's net earnings are added together
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 3_000
+      partner:
+        age: 38
+        self_employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    housing_benefit_net_earnings: 5_000
