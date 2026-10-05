@@ -46,8 +46,7 @@ cap, and a third to have working claimants paying for childcare:
    tie in age the order would decide; the generated families flag at most
    two.)
 
-Marriage Allowance is switched off throughout, as in the other Universal
-Credit property tests.
+Marriage Allowance is switched off throughout.
 """
 
 import numpy as np
