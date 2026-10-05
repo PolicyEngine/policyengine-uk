@@ -9,10 +9,11 @@ value the simulation reads, so it holds however that value got there: set
 before or after the simulation is built, on a clone or a branch, for this year
 or another, deleted and recalculated.
 
-In each case below an adult outside the couple reports £3,000 of
+In most cases below an adult outside the couple reports £3,000 of
 income-related ESA, so the award on the reported amounts is £3,000. That
-report alone must never bar the claim. Entered awards use £4,000, which no
-reported amount here produces.
+report alone must never bar the claim. Most entered awards are £4,000, which
+no reported amount here produces. The later tests vary the reports and the
+entered amounts to pin the zero, half-penny and tolerance rules.
 """
 
 import numpy as np
@@ -215,7 +216,10 @@ def test_a_zero_award_never_bars_the_claim():
     abolished.tax_benefit_system.neutralize_variable("esa_income")
     assert eligible(abolished)
     calculated = simulation({"carer": carer, "partner": partner}, capital)
-    assert abs(calculated.calculate("esa_income", YEAR)[0]) < 0.005
+    # A residual above zero, so this case (and the couple's residual in
+    # test_the_couples_residual_is_no_award_beside_another_members_report)
+    # exercises the half-penny rule rather than an exact zero.
+    assert 0 < calculated.calculate("esa_income", YEAR)[0] < 0.005
     assert eligible(calculated)
 
 
