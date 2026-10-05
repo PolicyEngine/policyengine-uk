@@ -1,0 +1,13 @@
+description: Fiscal year of the published bus-fare yield benchmark, used only to price
+  the reference single-fare cap.
+values:
+  '0001-01-01': 2024
+metadata:
+  unit: year
+  period: year
+  label: reference year
+  reference:
+  - title: DfT bus statistics data tables, BUS01 and BUS05i
+    href: https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables
+  - title: Microcosm 954, NTS and published-receipts pricing evidence
+    href: https://github.com/PolicyEngine/microcosm/pull/954

@@ -25,8 +25,11 @@ against regressions rather than check it independently.
      they pay the householder as a boarder or lodger.
    - Non-dependants (pin): a person is a non-dependant of the household head
      if and only if their family is neither the head's nor liable for rent.
-   - Only the head's family has Universal Credit non-dependant deductions;
-     only families with a share of the rent have Housing Benefit ones.
+   - Universal Credit non-dependant deductions fall only on the claim that
+     counts the household's non-dependants (uc_non_dependants_counted); at
+     most one family in a household is counted, and where the head's family
+     is liable for the rent and claims Universal Credit, it is the head's.
+     Only families with a share of the rent have Housing Benefit ones.
    - Council Tax Reduction: only the head's family and sharers claim; where
      the head is 18 or over, the head's family claims and no one in it is a
      non-dependant.
@@ -92,6 +95,7 @@ OUTPUTS = [
     "benunit_is_rent_liable",
     "is_non_dependant_of_household_head",
     "uc_non_dep_deductions",
+    "uc_non_dependants_counted",
     "housing_benefit_non_dep_deductions",
     "LHA_allowed_bedrooms",
     "housing_benefit_LHA_allowed_bedrooms",
@@ -360,8 +364,24 @@ def test_every_programme_reads_one_head(population):
     non_dependant = calc(sim, "is_non_dependant_of_household_head")
     rent_liable = calc(sim, "benunit_is_rent_liable")
     assert np.array_equal(non_dependant, ~person_head_family & ~rent_liable[benunit_of])
-    # Universal Credit and Housing Benefit non-dependant deductions.
-    assert np.all(calc(sim, "uc_non_dep_deductions")[~head_family] == 0)
+    # Universal Credit non-dependant deductions fall on the one claim that
+    # counts the household's non-dependants: the head's family's wherever it
+    # is liable for the rent and claims.
+    counted = calc(sim, "uc_non_dependants_counted")
+    assert np.all(counted[calc(sim, "uc_non_dep_deductions") > 0])
+    household_of_benunit = np.zeros(head_family.size, dtype=int)
+    household_of_benunit[benunit_of] = facts["household"]
+    assert np.all(sum_in_household(counted, household_of_benunit) <= 1)
+    head_family_claims = (
+        head_family
+        & any_in_benunit(calc(sim, "is_liable_for_household_rent"), facts)
+        & calc(sim, "is_uc_eligible")
+        & calc(sim, "would_claim_uc")
+    )
+    head_claims_uc = sum_in_household(head_family_claims, household_of_benunit) > 0
+    in_household = head_claims_uc[household_of_benunit]
+    assert np.array_equal(counted[in_household], head_family[in_household])
+    # Housing Benefit non-dependant deductions.
     assert np.all(calc(sim, "housing_benefit_non_dep_deductions")[share == 0] == 0)
     # Council Tax Reduction.
     claimant = calc(sim, "council_tax_reduction_claimant_benunit")

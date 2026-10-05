@@ -15,6 +15,7 @@ metadata:
   unit: currency-GBP
   label: New State Pension amount
   uprating: gov.economic_assumptions.indices.triple_lock
+  documentation: Projected weekly State Pension rates are not rounded to 5p; SSAA 1992 s.150A(4) permits discretionary rounding up or down (https://www.legislation.gov.uk/ukpga/1992/5/section/150A/4).
   reference:
     - title: House of Commons Library
       href: https://researchbriefings.files.parliament.uk/documents/SN05649/SN05649.pdf

@@ -10,15 +10,24 @@ class maintenance_loan_household_income(Variable):
         "Student Finance England-style household income for maintenance loan assessment. "
         "This can be set explicitly in simulations. By default, the model uses a proxy: "
         "dependent students use sponsor income from a selected older household benefit unit, "
-        "plus their own benefit-unit income; otherwise the model uses benefit-unit adjusted net income."
+        "plus their own benefit-unit income; otherwise the model uses benefit-unit adjusted net income. "
+        "A student is dependent only if none of the independence tests the model can see applies "
+        "(Education (Student Support) Regulations 2011 Sch 4 para 2(1)): aged under 25 on the first "
+        "day of the academic year (para 2(1)(a)), not in a couple (a proxy for para 2(1)(b)), and "
+        "not a parent (a proxy for para 2(1)(j))."
     )
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.legislation.gov.uk/uksi/2011/1986/schedule/4"
 
     def formula(person, period, parameters):
+        p = parameters(period).gov.dfe.maintenance_loans
         in_higher_education = person("maintenance_loan_in_higher_education", period)
         has_sponsor = person("maintenance_loan_has_sponsor", period)
         sponsor_income = person("maintenance_loan_sponsor_income", period)
+        # Sch 4 para 2(1)(a): a student aged 25 or over on the first day of the
+        # academic year is independent.
+        under_independent_age = person("age", period) < p.independent_student_age
         is_couple = person.benunit("is_couple", period)
         is_household_head = person("is_resolved_household_head", period)
         is_parent = person("is_parent", period)
@@ -38,6 +47,7 @@ class maintenance_loan_household_income(Variable):
         dependent_student_proxy = (
             in_higher_education
             & has_sponsor
+            & under_independent_age
             & np.logical_not(is_couple)
             & np.logical_not(is_household_head)
             & np.logical_not(is_parent)
