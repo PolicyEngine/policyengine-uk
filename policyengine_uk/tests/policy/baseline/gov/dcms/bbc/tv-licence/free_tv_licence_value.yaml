@@ -1,0 +1,19 @@
+- name: Free licence value applies to BBC iPlayer use without television ownership.
+  period: 2026
+  input:
+    household_owns_tv: false
+    tv_licence_required: true
+    tv_licence_discount: 1
+    would_evade_tv_licence_fee: false
+  output:
+    free_tv_licence_value: 180
+
+- name: Television ownership alone creates no free licence value.
+  period: 2026
+  input:
+    household_owns_tv: true
+    tv_licence_required: false
+    tv_licence_discount: 1
+    would_evade_tv_licence_fee: false
+  output:
+    free_tv_licence_value: 0

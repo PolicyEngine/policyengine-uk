@@ -42,3 +42,32 @@
     would_evade_tv_licence_fee: false
   output:
     tv_licence: 0
+
+- name: TV licence required for BBC iPlayer without television ownership.
+  period: 2026
+  input:
+    household_owns_tv: false
+    tv_licence_required: true
+    tv_licence_discount: 0
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence: 180
+
+- name: Television ownership alone does not require a TV licence.
+  period: 2026
+  input:
+    household_owns_tv: true
+    tv_licence_required: false
+    tv_licence_discount: 0
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence: 0
+
+- name: Television ownership remains the fallback for existing inputs.
+  period: 2026
+  input:
+    household_owns_tv: false
+    tv_licence_discount: 0
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence: 0
