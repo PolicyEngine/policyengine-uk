@@ -1,4 +1,4 @@
-description: Carer premium for one qualifying carer, for legacy benefits.
+description: Carer premium for each claimant or partner who qualifies, for legacy benefits. A couple who both qualify receive it twice.
 values:
   2015-04-01: 34.6
   2016-04-01: 34.6
@@ -9,18 +9,24 @@ values:
   2021-04-01: 37.7
   2022-04-01: 38.85
   2023-04-01: 42.75
-  2024-04-01: 
+  2024-04-01:
     value: 45.6
     reference:
       - title: Benefits Uprating 2024/25 | Commons Library Briefing
         href: https://researchbriefings.files.parliament.uk/documents/CBP-9872/CBP-9872.pdf
-  2025-04-01: 46.38
+  2025-04-01:
+    value: 46.4
+    reference:
+      - title: Income Support (General) Regulations 1987 Sch. 2 para. 15(7), as in force from 7 April 2025
+        href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/2025-04-07
   2026-04-01: 48.15
 metadata:
   period: week
-  label: Legacy benefit carer premium (one carer)
+  label: Legacy benefit carer premium (per qualifying claimant or partner)
   uprating: gov.benefit_uprating_cpi
   unit: currency-GBP
-  reference: 
+  reference:
     - title: Benefits Uprating 2022/23
       href: https://researchbriefings.files.parliament.uk/documents/CBP-9439/CBP-9439.pdf
+    - title: Income Support (General) Regulations 1987 Sch. 2 para. 15(7) (in respect of each person who qualifies)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/schedule/2/paragraph/15

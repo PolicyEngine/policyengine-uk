@@ -14,4 +14,7 @@ class council_tax_reduction_non_dep_deductions(Variable):
         )
         deductions_in_household = benunit.max(benunit.members.household.sum(deductions))
         deductions_in_benunit = benunit.sum(deductions)
-        return deductions_in_household - deductions_in_benunit
+        # A non-dependant of two or more jointly liable people is apportioned
+        # equally between them (SI 2012/2885 Sch 1 para 8(5)).
+        share = benunit("council_tax_reduction_joint_liability_share", period)
+        return (deductions_in_household - deductions_in_benunit) * share

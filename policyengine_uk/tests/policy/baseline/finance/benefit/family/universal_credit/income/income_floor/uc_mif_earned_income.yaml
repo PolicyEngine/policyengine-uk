@@ -12,8 +12,9 @@
 # Hand calculations use 2026-27 rates: net floor 20,386.03 for a claimant
 # aged 21 or over in England (23,132.20 gross, see
 # uc_minimum_income_floor.yaml); personal allowance 12,570, basic rate 20%;
-# trading allowance 1,000; Class 4 NI 6% above 12,570; primary Class 1 NI 8%
-# above 12,569.96; UC
+# no trading allowance on a profit above 1,000 unless gross receipts show
+# expenses below 1,000 (ITTOIA 2005 ss. 783AF and 783AI); Class 4 NI 6% above
+# 12,570; primary Class 1 NI 8% above 12,569.96; UC
 # standard allowance 424.90 a month (single, 25 or over), 666.97 (couple),
 # child element 303.94, work allowance 427 a month with housing costs; taper
 # 55%. Marriage Allowance is switched off to keep the tax simple.
@@ -34,8 +35,8 @@
         rent: 9_600
   output:
     uc_mif_applies: true
-    # Taxable profit 4,000 and profits of 5,000 are below the allowance and
-    # the lower profits limit.
+    # Profits of 5,000 are below the personal allowance and the lower
+    # profits limit.
     uc_individual_earned_income_before_mif: 5_000
     uc_individual_earned_income: 20_386.03
     uc_earned_income: 20_386.03
@@ -60,12 +61,12 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 9_600
   output:
-    # 20,000 - (19,000 - 12,570) x 20% - (20,000 - 12,570) x 6% = 18,268.20,
+    # 20,000 - (20,000 - 12,570) x 20% - (20,000 - 12,570) x 6% = 18,068.20,
     # below the floor, so the same UC as with profits of 5,000. Before this
-    # fix the claimant was treated as having 23,132.20 - 1,286 - 445.80 =
-    # 21,400.40, and UC was 2,928.58 against 1,976.09 at 5,000 and 2,213.58
+    # fix the claimant was treated as having 23,132.20 - 1,486 - 445.80 =
+    # 21,200.40, and UC was 3,038.58 against 1,976.09 at 5,000 and 2,323.58
     # at 15,000: UC rose with profits.
-    uc_individual_earned_income_before_mif: 18_268.20
+    uc_individual_earned_income_before_mif: 18_068.20
     uc_individual_earned_income: 20_386.03
     universal_credit: 3_486.48
 
@@ -78,15 +79,15 @@
     self_employment_income: 24_000
     pension_contributions: 3_000
   output:
-    # Taxable profit 23,000 less 3,000 pension relief and the personal
-    # allowance: 7,430 x 20%.
-    uc_income_tax_on_earnings: 1_486
+    # Taxable profit 24,000 less 3,000 pension relief and the personal
+    # allowance: 8,430 x 20%.
+    uc_income_tax_on_earnings: 1_686
     # Class 4: (24,000 - 12,570) x 6%.
     uc_national_insurance_on_earnings: 685.80
-    # 24,000 - 3,000 - 1,486 - 685.80. Reg. 57(2) deducts the relievable
+    # 24,000 - 3,000 - 1,686 - 685.80. Reg. 57(2) deducts the relievable
     # pension contributions too, so this is below the net floor. Before this
     # fix the gross 24,000 was above the gross threshold, so no floor.
-    uc_individual_earned_income_before_mif: 18_828.20
+    uc_individual_earned_income_before_mif: 18_628.20
     uc_individual_earned_income: 20_386.03
 
 - name: Floor does not apply when net earnings are above the net floor, even below the gross threshold
@@ -96,17 +97,22 @@
     age: 30
     region: NORTH_EAST
     self_employment_income: 23_000
+    # Expenses of 200, so the claimant takes the trading allowance instead
+    # (ITTOIA 2005 s. 783AI): taxable profit is 23,200 - 1,000 = 22,200.
+    self_employment_gross_receipts: 23_200
   output:
-    # (22,000 - 12,570) x 20%.
-    uc_income_tax_on_earnings: 1_886
-    # (23,000 - 12,570) x 6%.
-    uc_national_insurance_on_earnings: 625.80
-    # 23,000 - 1,886 - 625.80 is above 20,386.03, so the actual amount
-    # counts. Before this fix the gross 23,000 was below the gross threshold
-    # and the claimant was treated as having 23,132.20 - 1,886 - 625.80
-    # = 20,620.40.
-    uc_individual_earned_income_before_mif: 20_488.20
-    uc_individual_earned_income: 20_488.20
+    # (22,200 - 12,570) x 20%.
+    uc_income_tax_on_earnings: 1_926
+    # Class 4 on the same profit: (22,200 - 12,570) x 6%.
+    uc_national_insurance_on_earnings: 577.80
+    # 23,000 - 1,926 - 577.80 is above 20,386.03, so the actual amount
+    # counts. Without the allowance this claimant's tax and Class 4 would be
+    # those the net floor deducts, at the same rates, so a profit below the
+    # gross threshold would leave them below the net floor. Before this fix
+    # the gross 23,000 was below the gross threshold and the claimant was
+    # treated as having 23,132.20 - 1,926 - 577.80 = 20,628.40.
+    uc_individual_earned_income_before_mif: 20_496.20
+    uc_individual_earned_income: 20_496.20
 
 - name: Floor lifts net earnings below it to the net floor
   period: 2026
@@ -116,9 +122,9 @@
     region: NORTH_EAST
     self_employment_income: 22_000
   output:
-    # 22,000 - (21,000 - 12,570) x 20% - (22,000 - 12,570) x 6%.
-    uc_individual_earned_income_before_mif: 19_748.20
-    # Before this fix: 23,132.20 - 1,686 - 565.80 = 20,880.40.
+    # 22,000 - (22,000 - 12,570) x 20% - (22,000 - 12,570) x 6%.
+    uc_individual_earned_income_before_mif: 19_548.20
+    # Before this fix: 23,132.20 - 1,886 - 565.80 = 20,680.40.
     uc_individual_earned_income: 20_386.03
 
 - name: Floor does not apply in a start-up period
@@ -358,19 +364,24 @@
 - name: A third adult flagged as a claimant does not join the couple threshold
   period: 2026
   absolute_error_margin: 0.01
+  # is_uc_claimant follows is_claimant_or_partner, which never flags more
+  # than two people, so the third claimant here comes from the inputs.
   input:
     people:
       self_employed:
         age: 40
         self_employment_income: 1_000
         would_claim_marriage_allowance: false
+        is_uc_claimant: true
       employee:
         age: 40
         employment_income: 35_000
         would_claim_marriage_allowance: false
+        is_uc_claimant: true
       adult_child:
         age: 25
         would_claim_marriage_allowance: false
+        is_uc_claimant: true
     households:
       household:
         members: [self_employed, employee, adult_child]

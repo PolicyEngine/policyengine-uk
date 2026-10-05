@@ -84,7 +84,7 @@
     uc_minimum_income_floor_national_insurance: 430.62
     uc_minimum_income_floor: 17_880.98
 
-- name: No NI is deducted for a person over State Pension age
+- name: No NI is deducted for a person over State Pension age at the start of the tax year
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -101,6 +101,23 @@
     # tax year (SI 2001/1004 reg. 91(a)).
     uc_minimum_income_floor_national_insurance: 0
     uc_minimum_income_floor: 21_019.76
+
+- name: Class 4 is deducted all year for a person who reaches State Pension age after 6 April
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # A whole-number age of 66 puts the birthday on 6 April 1960, so State
+    # Pension age (66 and 1 month) is reached on 6 May 2026, after the start
+    # of the tax year. Class 4 is due for all of 2026-27 (SI 2001/1004 reg.
+    # 91(a)), as on the person's actual profits.
+    age: 66
+    region: NORTH_EAST
+  output:
+    is_SP_age: true
+    ni_class_4_liable: true
+    # Class 4: (23,132.20 - 12,570) x 6%.
+    uc_minimum_income_floor_national_insurance: 633.73
+    uc_minimum_income_floor: 20_386.03
 
 - name: Net floor in 2020 deducts Class 2 as well as Class 4
   period: 2020

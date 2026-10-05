@@ -7,6 +7,8 @@ metadata:
     title: State Pension Credit Act 2002 s. 15(1)
   - href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/15
     title: State Pension Credit Regulations 2002 reg. 15
+  - href: https://www.legislation.gov.uk/uksi/2026/246/article/17/made
+    title: SI 2026/246 art. 17 (Scottish Carer Supplement excepted from reg. 15(1))
   unit: list
 values:
   2002-01-01:
@@ -18,3 +20,9 @@ values:
   - pension_credit_deemed_income
   - esa_contrib
   - jsa_contrib
+  # Reg. 15(1) prescribes all social security benefits except those it lists;
+  # neither of these is listed. carer_support_payment is the Carer Support
+  # Payment component only: reg. 15(1)(ri) excepts the Scottish Carer
+  # Supplement, which is a separate variable.
+  - carers_allowance
+  - carer_support_payment

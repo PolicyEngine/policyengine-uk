@@ -6,7 +6,7 @@ class WTC_disabled_element(Variable):
     entity = BenUnit
     label = "Working Tax Credit disabled element"
     definition_period = YEAR
-    reference = "Tax Credits Act 2002 s. 11"
+    reference = "https://www.legislation.gov.uk/uksi/2002/2005/regulation/9"
     unit = GBP
     defined_for = "is_WTC_eligible"
 
@@ -17,7 +17,7 @@ class WTC_disabled_element(Variable):
         person_qualifies = (
             person_meets_hours
             & person("is_disabled_for_benefits", period)
-            & person("is_adult", period)
+            & person("is_claimant_or_partner", period)
         )
         qualifies = benunit.any(person_qualifies)
         return qualifies * WTC.elements.disabled
