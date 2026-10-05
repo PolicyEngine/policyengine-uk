@@ -1,6 +1,6 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.variables.household.demographic.highest_education import (
-    EducationType,
+from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
+    is_full_time_student_non_dep,
 )
 
 
@@ -15,12 +15,16 @@ class council_tax_benefit(Variable):
         "reduction on its share of the council tax, a jointly liable "
         "claimant's reported reduction is limited to its own share, so the "
         "two cannot together exceed the bill; the share is the one the "
-        "simulated claims use. The share leaves out only the students the "
-        "model sees in higher education, so where a jointly liable person it "
-        "counts is in other education, and may be a student the law leaves "
-        "out, the report is kept. Otherwise reported reductions are kept as "
-        "reported. A family that cannot claim keeps a reported reduction only "
-        "where no claim in its household is simulated."
+        "simulated claims use. The share leaves out only people in higher "
+        "education (in_HE), so where a jointly liable person it counts may be "
+        "a student the law leaves out (the model's student test for "
+        "non-dependants, or in_FE), the report is kept. That test reads "
+        "current_education, which defaults to tertiary education at 18 and "
+        "19, so with no education input a jointly liable 18- or 19-year-old "
+        "keeps the cap off; part-time students and students the scheme brings "
+        "back in are treated the same way. Otherwise reported reductions are "
+        "kept as reported. A family that cannot claim keeps a reported "
+        "reduction only where no claim in its household is simulated."
     )
     definition_period = YEAR
     unit = GBP
@@ -59,16 +63,19 @@ class council_tax_benefit(Variable):
         )
         # Para 7(5) leaves students excluded from the scheme out of the
         # divisor. The share leaves out people in higher education (in_HE);
-        # a jointly liable person it counts who is in other education may be
-        # such a student too, making the share too small, so the report is
-        # kept there.
-        counted_in_education = (
+        # a jointly liable person it counts who may be a student (the
+        # model's student test for non-dependants, or in_FE) could be left
+        # out too, making the share too small, so the report is kept there.
+        # The test reads current_education, whose age default puts 18- and
+        # 19-year-olds in tertiary education; it does not tell full-time from
+        # part-time study or find the students para 75(2) brings back in.
+        counted_may_be_student = (
             person("council_tax_reduction_liable_person", period)
             & ~person("in_HE", period)
-            & (person("current_education", period) != EducationType.NOT_IN_EDUCATION)
+            & (is_full_time_student_non_dep(person, period) | person("in_FE", period))
         )
         share_may_count_student = (
-            benunit.max(person.household.sum(counted_in_education)) > 0
+            benunit.max(person.household.sum(counted_may_be_student)) > 0
         )
         reported_claim = where(
             (paid_in_household > 0) & (share < 1) & ~share_may_count_student,

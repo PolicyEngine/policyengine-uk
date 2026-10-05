@@ -816,6 +816,122 @@
     council_tax_benefit: [700, 0, 600]
     council_tax_reduction: 1_300
 
+- name: The same, with the student shown by in_FE
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        council_tax_benefit_reported: 700
+      student:
+        age: 25
+        in_FE: true
+      pensioner:
+        age: 80
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      student_family:
+        members: [student]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      pensioner_family:
+        members: [pensioner]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+    households:
+      home:
+        members: [head, student, pensioner]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    simulated_council_tax_reduction_benunit: [0, 0, 600]
+    council_tax_benefit: [700, 0, 600]
+    council_tax_reduction: 1_300
+
+- name: A jointly liable 19-year-old with no education input keeps the cap off
+  # current_education defaults to tertiary education at 18 and 19, which the
+  # model's student test reads, so the share may count a student and the
+  # sharer's report is kept even beside the head's paying claim. The household
+  # gets more than its bill; the cap is deliberately conservative here.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 80
+        is_household_head: true
+      sharer:
+        age: 19
+        council_tax_benefit_reported: 1_500
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    current_education: [NOT_IN_EDUCATION, TERTIARY]
+    council_tax_reduction_joint_liability_share: [0.5, 0.5]
+    council_tax_benefit: [900, 1_500]
+    council_tax_reduction: 2_400
+
+- name: At 20, with no education input, the same sharer's report is capped at its half
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 80
+        is_household_head: true
+      sharer:
+        age: 20
+        council_tax_benefit_reported: 1_500
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        council_tax_reduction_applicable_income: 0
+      sharer_family:
+        members: [sharer]
+        liable_for_share_of_household_rent: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [head, sharer]
+        rent: 18_000
+        tenure_type: RENT_PRIVATELY
+        council_tax: 1_800
+        savings: 0
+        country: ENGLAND
+        local_authority: MAIDSTONE
+  output:
+    current_education: [NOT_IN_EDUCATION, NOT_IN_EDUCATION]
+    council_tax_benefit: [900, 900]
+    council_tax_reduction: 1_800
+
 - name: A head who applies alone stays a pensioner when her benefit unit's claimant and partner get Income Support
   # The Income Support is the young parents' award, not the grandmother's
   # or a partner's (SI 2012/2885 reg 3(1)(a)(ii)).

@@ -47,13 +47,15 @@ not):
    is simulated, and otherwise its reported one. Beside a simulated claim
    that pays something, a jointly liable claimant's reported reduction is
    limited to its share of the council tax, unless a jointly liable person
-   the share counts is in education (who may be a student the share should
-   leave out); otherwise it is kept as reported. A family that cannot claim
-   gets its reported reduction only where no claim in its household is
-   simulated.
+   the share counts may be a student the share should leave out (enrolled in
+   education, or in_FE); otherwise it is kept as reported. A family that
+   cannot claim gets its reported reduction only where no claim in its
+   household is simulated. Every adult here is 20 or over, so
+   current_education's age default (tertiary at 18 and 19) never applies;
+   the YAML covers it.
 6. Bounds: a family that cannot claim gets no simulated reduction; a
    household whose simulated claims pay something, and whose share counts no
-   one in education, never gets more than its council tax.
+   one who may be a student, never gets more than its council tax.
 7. The exemption is the applicant's own: in a council's working-age scheme,
    giving one claiming family an exempting benefit removes the non-dependant
    deductions from its own reduction and leaves every other claim's
@@ -124,11 +126,14 @@ def adults(draw, most):
         ages=draw(st.lists(adult_age, min_size=n, max_size=n)),
         disabilities=draw(st.lists(disability, min_size=n, max_size=n)),
         earnings=draw(st.lists(money, min_size=n, max_size=n)),
-        # Some adults are in full-time further education, which the
-        # joint-liability share does not leave out.
+        # Some adults are enrolled in further education, shown by
+        # current_education or by in_FE; the joint-liability share does not
+        # leave them out. None means not in education.
         in_education=draw(
             st.lists(
-                st.sampled_from([False, False, False, True]), min_size=n, max_size=n
+                st.sampled_from([None, None, None, None, "current_education", "in_FE"]),
+                min_size=n,
+                max_size=n,
             )
         ),
     )
@@ -169,12 +174,14 @@ def households(draw):
 population = st.lists(households(), min_size=1, max_size=6)
 
 
-def person(age, disability_input, earnings, in_education=False):
+def person(age, disability_input, earnings, in_education=None):
     attributes = {"age": age, "employment_income": earnings}
     if disability_input is not None:
         attributes[disability_input] = DISABILITY[disability_input]
-    if in_education:
+    if in_education == "current_education":
         attributes["current_education"] = "POST_SECONDARY"
+    elif in_education == "in_FE":
+        attributes["in_FE"] = True
     return attributes
 
 
@@ -210,7 +217,7 @@ def build(population, alone=False, perturb_others=False, awards=None):
         # Everyone in the head's and the sharers' families is 20 or over, so
         # all of them are jointly liable and counted in the share.
         liable_in_education = any(
-            any(fam["in_education"])
+            any(e is not None for e in fam["in_education"])
             for fam in house["families"]
             if fam["role"] != "non_dependant"
         )
@@ -259,7 +266,9 @@ def build(population, alone=False, perturb_others=False, awards=None):
             facts["target"].append(is_target)
             facts["house"].append(h)
             facts["share_may_count_student"].append(
-                any(fam["in_education"]) if alone else liable_in_education
+                any(e is not None for e in fam["in_education"])
+                if alone
+                else liable_in_education
             )
         if not alone:
             homes[f"h{h}"] = {"members": members, **home}
