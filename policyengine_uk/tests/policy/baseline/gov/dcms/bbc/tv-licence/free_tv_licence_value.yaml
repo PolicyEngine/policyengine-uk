@@ -1,4 +1,4 @@
-- name: Free licence value applies to BBC iPlayer use without television ownership.
+- name: Case 1, BBC iPlayer use without television ownership.
   period: 2026
   input:
     household_owns_tv: false
@@ -8,12 +8,30 @@
   output:
     free_tv_licence_value: 180
 
-- name: Television ownership alone creates no free licence value.
+- name: Case 2, television ownership without licensable use.
   period: 2026
   input:
     household_owns_tv: true
     tv_licence_required: false
     tv_licence_discount: 1
+    would_evade_tv_licence_fee: false
+  output:
+    free_tv_licence_value: 0
+
+- name: Case 3, full free licence value enters HBAI income in kind.
+  period: 2026
+  input:
+    tv_licence_required: true
+    tv_licence_discount: 1
+    would_evade_tv_licence_fee: false
+  output:
+    free_tv_licence_value: 180
+
+- name: Case 4, blind discount is not a free licence in HBAI income.
+  period: 2026
+  input:
+    tv_licence_required: true
+    tv_licence_discount: 0.5
     would_evade_tv_licence_fee: false
   output:
     free_tv_licence_value: 0
