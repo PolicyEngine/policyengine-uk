@@ -1,4 +1,7 @@
-description: The following personal allowance amount is provided to single filers over the pension age under the Housing Benefit.
+description: >-
+  The following personal allowance amount is provided to single filers over
+  the pension age under the Housing Benefit. Amounts after the last enacted
+  rate use a component-weighted forecast and are not enacted future rates.
 values:
   2015-04-01: 181
   2021-04-01: 191.15
@@ -12,9 +15,11 @@ metadata:
   period: week
   unit: currency-GBP
   label: Housing benefit single aged personal allowance
-  uprating: gov.benefit_uprating_cpi
+  uprating: gov.dwp.housing_benefit.allowances.protected_pension_age_uprating
   reference: 
     - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
       href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
     - title: Benefit and pension rates 2024 to 2025 - Policy paper
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+    - title: A14/2025 Housing Benefit uprating for the financial year ending March 2027, paragraphs 5 and 20
+      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2025/a142025-housing-benefit-uprating-for-the-financial-year-ending-march-2027

@@ -21,6 +21,9 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_protected_pension_age_uprating import (
+    add_protected_pension_age_uprating,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
 )
@@ -101,6 +104,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters = add_lagged_earnings(self.parameters)
         self.parameters = add_lagged_cpi(self.parameters)
         self.parameters = add_statutory_uprating_inputs(self.parameters)
+        self.parameters = add_protected_pension_age_uprating(self.parameters)
         self.parameters = add_triple_lock(self.parameters)
         self.parameters = create_economic_assumption_indices(self.parameters)
         self.parameters = add_lsr_deprecation_aliases(self.parameters)
