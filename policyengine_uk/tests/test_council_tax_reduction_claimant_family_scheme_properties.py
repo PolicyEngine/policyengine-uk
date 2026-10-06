@@ -36,21 +36,28 @@ not):
    pensioner scheme, and only a working-age family by a council's scheme.
 4. Others do not matter: changing the ages and disability benefits of every
    other family that claims leaves a family's pensioner status, exemption,
-   scheme and simulated award unchanged. Held as they were: its applicable
-   amount and income, and two household allocations through which other
-   families reach its own awards. The model's severe disability premium
-   counts the other adults in the household
-   (has_non_dependant_for_severe_disability_premium), so their ages and
-   benefits can change a family's applicable amounts whatever its scheme.
-   And the household's non-dependants count in one Universal Credit claim
-   only (UC Regs 2013 Sch 4 para 9(2); uc_non_dependants_counted), which the
-   model makes the head family's where it claims. So a head's family
-   reaching pension age can move them into a sharer's claim and change the
-   sharer's award, which the pensioner test follows. Each family's awards
-   are still computed, so a claim that read another family's awards would
-   fail. Its council_tax_benefit is unchanged too, unless it falls back to a
-   reported reduction and whether a simulated claim in its household pays
-   something changes (property 5's reconciliation).
+   scheme and simulated award unchanged. Held as they were: its means test
+   (applicable amount, income and capital) and two household allocations,
+   because the model lets other families reach a family's own awards:
+   - its severe disability premium counts the other adults in the household
+     (has_non_dependant_for_severe_disability_premium), so their ages and
+     benefits can change a family's applicable amounts whatever its scheme;
+   - the household's non-dependants count in one Universal Credit claim
+     only (UC Regs 2013 Sch 4 para 9(2); uc_non_dependants_counted), which
+     the model makes the head family's where it claims, so a head's family
+     reaching pension age can move them into a sharer's claim and change the
+     sharer's award, which the pensioner test follows;
+   - Pension Credit's guarantee credit, which sets a family's CTR capital to
+     nil, depends on other families twice: the severe disability addition's
+     residence condition counts every other adult in the household, and
+     pension_credit_assessable_capital divides the household's savings among
+     its pension-age adults.
+   Each family's awards are still computed, so a claim that read another
+   family's awards would fail. Its council_tax_benefit is unchanged too,
+   unless it falls back to a reported reduction and whether a simulated
+   claim in its household pays something changes (property 5's
+   reconciliation). Populations that broke earlier versions of this
+   property are pinned as examples.
 5. Fallback: a claiming family gets its simulated reduction where its scheme
    is simulated, and otherwise its reported one. Beside a simulated claim
    that pays something, a jointly liable claimant's reported reduction is
@@ -71,7 +78,7 @@ not):
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -315,10 +322,12 @@ OWN_AWARDS = [
     "jsa_income",
     "esa_income",
 ]
-# A family's means test, held fixed in property 4.
+# A family's means test, held fixed in property 4. Its capital is nil where it
+# gets guarantee credit, which other families can change in the model.
 MEANS_TEST = [
     "council_tax_reduction_applicable_amount",
     "council_tax_reduction_applicable_income",
+    "council_tax_reduction_assessable_capital",
 ]
 # Household allocations through which other families' circumstances reach a
 # family's own awards, held fixed in property 4.
@@ -423,8 +432,115 @@ def test_scheme_follows_own_family(population):
     assert not np.any(over & (paid > 0) & ~counts_student)
 
 
+def pinned_family(role, ages, earnings, disabilities=None, in_education=None):
+    return dict(
+        role=role,
+        child_age=None,
+        reported=0.0,
+        ages=ages,
+        disabilities=disabilities or [None] * len(ages),
+        earnings=earnings,
+        in_education=in_education or [None] * len(ages),
+    )
+
+
+def pinned_household(local_authority, families, other_ages, **inputs):
+    """An English household whose second family is the target."""
+    return dict(
+        families=families,
+        scheme=("ENGLAND", local_authority),
+        council_tax=inputs.get("council_tax", 1_800.0),
+        rent=inputs.get("rent", 12_000.0),
+        savings=inputs.get("savings", 0.0),
+        target=1,
+        other_ages=other_ages,
+        other_disabilities=inputs.get("other_disabilities", [None] * 6),
+    )
+
+
+# Populations that broke earlier versions of property 4, each through one of
+# the routes its docstring lists.
+# CI on d988725dc: the head's family reaches pension age, so the non-dependant
+# moves into the sharer's Universal Credit claim and its award follows.
+UC_NON_DEPENDANT_MOVES = [
+    pinned_household(
+        "NEWHAM",
+        [
+            pinned_family("head", [47], [0.0], ["attendance_allowance"], ["in_FE"]),
+            pinned_family(
+                "sharer",
+                [100, 63],
+                [27_200.0, 7_429.0],
+                None,
+                ["current_education", None],
+            ),
+            pinned_family("non_dependant", [66], [0.0], ["is_blind"]),
+        ],
+        [85, 36, 64, 70, 35, 67],
+        other_disabilities=[
+            "attendance_allowance",
+            "attendance_allowance",
+            "pip_dl",
+            "attendance_allowance",
+            "attendance_allowance",
+            "is_blind",
+        ],
+        council_tax=2_865.0,
+        rent=33_635.0,
+    )
+]
+# The same move raises the sharer's uc_maximum_amount, which the _legacy
+# councils use as a Universal Credit family's applicable amount.
+UC_MAXIMUM_MOVES = [
+    pinned_household(
+        "NEWHAM",
+        [
+            pinned_family("head", [30], [0.0]),
+            pinned_family("sharer", [40, 40], [2_000.0, 0.0]),
+            pinned_family("non_dependant", [30], [0.0]),
+        ],
+        [85] * 6,
+        council_tax=2_000.0,
+        rent=30_000.0,
+    )
+]
+# The head reaching pension age halves the sharer's share of the household's
+# savings for Pension Credit, so it gets guarantee credit and nil CTR capital.
+PENSION_CREDIT_CAPITAL_SPLIT = [
+    pinned_household(
+        "MAIDSTONE",
+        [
+            pinned_family("head", [30], [30_000.0]),
+            pinned_family("sharer", [70], [12_000.0]),
+        ],
+        [85] * 6,
+        rent=6_000.0,
+        savings=17_000.0,
+    )
+]
+# The head gaining Attendance Allowance meets the sharer's severe disability
+# addition residence condition, with the same result.
+PENSION_CREDIT_SEVERE_DISABILITY = [
+    pinned_household(
+        "MAIDSTONE",
+        [
+            pinned_family("head", [30], [30_000.0]),
+            pinned_family("sharer", [70], [12_000.0], ["attendance_allowance"]),
+        ],
+        [30] * 6,
+        other_disabilities=["attendance_allowance"] * 6,
+        rent=6_000.0,
+        savings=17_000.0,
+    )
+]
+
+
 @PROPERTY_SETTINGS
 @given(population)
+@example(population=UC_NON_DEPENDANT_MOVES)
+@example(population=UC_MAXIMUM_MOVES)
+@example(population=PENSION_CREDIT_CAPITAL_SPLIT)
+@example(population=PENSION_CREDIT_SEVERE_DISABILITY)
 def test_other_families_do_not_change_a_claim(population):
     situation, facts = build(population)
     before = Simulation(situation=situation)
