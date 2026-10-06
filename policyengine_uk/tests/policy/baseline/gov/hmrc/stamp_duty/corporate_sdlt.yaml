@@ -1,0 +1,132 @@
+# Corporate SDLT is shareholding x (residential + non-residential corporate
+# SDLT revenue) = shareholding x (£705m + £2,425m) = shareholding x £3,130m
+# (gov.hmrc.stamp_duty.statistics, 2020 values held flat). A shareholding of
+# 1e-6 gives £3,130 and 3e-6 gives £9,390. business_rates is set to 0 so the
+# totals isolate SDLT. A £500,000 purchase that is not a first home pays
+# £15,000 of SDLT (see expected_sdlt.yaml).
+- name: Corporate SDLT enters household and government taxes once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    shareholding: 0.000001
+    business_rates: 0
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    corporate_sdlt: 3_130
+    expected_sdlt: 0
+    corporate_tax_incidence: 3_130
+    household_tax: 3_130
+    gov_tax: 3_130
+    pre_budget_change_household_tax: 3_130
+- name: Household and corporate SDLT each enter the totals once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    main_residential_property_purchased: 500_000
+    main_residential_property_purchased_is_first_home: false
+    shareholding: 0.000001
+    business_rates: 0
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    expected_sdlt: 15_000
+    corporate_sdlt: 3_130
+    household_tax: 18_130
+    gov_tax: 18_130
+    pre_budget_change_household_tax: 18_130
+- name: Abolishing SDLT removes household and corporate SDLT from the totals
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.abolish: true
+    region: LONDON
+    main_residential_property_purchased: 500_000
+    main_residential_property_purchased_is_first_home: false
+    shareholding: 0.000001
+    business_rates: 0
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    stamp_duty_land_tax: 15_000
+    expected_sdlt: 0
+    corporate_sdlt: 0
+    corporate_tax_incidence: 0
+    household_tax: 0
+    gov_tax: 0
+    pre_budget_change_household_tax: 0
+- name: Two households, baseline - each household's SDLT counted once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      buyer:
+        age: 40
+      shareholder:
+        age: 60
+    benunits:
+      benunit_1:
+        members: [buyer]
+      benunit_2:
+        members: [shareholder]
+    households:
+      household_1:
+        members: [buyer]
+        region: LONDON
+        main_residential_property_purchased: 500_000
+        main_residential_property_purchased_is_first_home: false
+        shareholding: 0.000001
+        business_rates: 0
+        council_tax: 0
+        household_owns_tv: false
+      household_2:
+        members: [shareholder]
+        region: SCOTLAND
+        shareholding: 0.000003
+        business_rates: 0
+        council_tax: 0
+        household_owns_tv: false
+  output:
+    expected_sdlt: [15_000, 0]
+    corporate_sdlt: [3_130, 9_390]
+    household_tax: [18_130, 9_390]
+    gov_tax: [18_130, 9_390]
+- name: Two households, SDLT abolished - no SDLT left in either household's totals
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.abolish: true
+    people:
+      buyer:
+        age: 40
+      shareholder:
+        age: 60
+    benunits:
+      benunit_1:
+        members: [buyer]
+      benunit_2:
+        members: [shareholder]
+    households:
+      household_1:
+        members: [buyer]
+        region: LONDON
+        main_residential_property_purchased: 500_000
+        main_residential_property_purchased_is_first_home: false
+        shareholding: 0.000001
+        business_rates: 0
+        council_tax: 0
+        household_owns_tv: false
+      household_2:
+        members: [shareholder]
+        region: SCOTLAND
+        shareholding: 0.000003
+        business_rates: 0
+        council_tax: 0
+        household_owns_tv: false
+  output:
+    expected_sdlt: [0, 0]
+    corporate_sdlt: [0, 0]
+    household_tax: [0, 0]
+    gov_tax: [0, 0]

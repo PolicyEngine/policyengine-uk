@@ -1,0 +1,68 @@
+# expected_sdlt is the household's own SDLT, with nothing added to it.
+# Residential rates from 1 April 2025 (gov.uk/stamp-duty-land-tax/residential-property-rates):
+# 0% to £125,000; 2% to £250,000; 5% to £925,000. A £500,000 purchase that is
+# not a first home pays 2% x £125,000 + 5% x £250,000 = £15,000.
+- name: No purchase and no corporate wealth means no SDLT in the tax totals (England)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    stamp_duty_land_tax: 0
+    expected_sdlt: 0
+    corporate_sdlt: 0
+    household_tax: 0
+    gov_tax: 0
+- name: No SDLT in the tax totals of a household outside England and Northern Ireland (Scotland)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: SCOTLAND
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    expected_sdlt: 0
+    household_tax: 0
+    gov_tax: 0
+- name: No SDLT in the tax totals of a household outside England and Northern Ireland (Wales)
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: WALES
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    expected_sdlt: 0
+    household_tax: 0
+    gov_tax: 0
+- name: Expected SDLT on a purchase equals the SDLT liability
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    region: LONDON
+    main_residential_property_purchased: 500_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    stamp_duty_land_tax: 15_000
+    expected_sdlt: 15_000
+    household_tax: 15_000
+    gov_tax: 15_000
+- name: Abolishing SDLT zeroes expected SDLT but not the liability variable
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    gov.hmrc.stamp_duty.abolish: true
+    region: LONDON
+    main_residential_property_purchased: 500_000
+    main_residential_property_purchased_is_first_home: false
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    stamp_duty_land_tax: 15_000
+    expected_sdlt: 0
+    household_tax: 0
+    gov_tax: 0
