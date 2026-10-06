@@ -28,6 +28,7 @@
       parent:
         age: 30
         employment_income: 20_000
+        property_rental_income: 5_000
         property_income: 5_000
       child:
         age: 5
@@ -41,12 +42,44 @@
         rent: 9_600
   output:
     # Earnings take the personal allowance first: (20,000 - 12,570) x 20%.
-    # Property income is taxed on (5,000 - 1,000) x 20% = 800, not deducted.
+    # Property income (5,000 of receipts with no expenses) is taxed on
+    # (5,000 - 1,000) x 20% = 800, not deducted.
     income_tax: [2_286, 0]
     uc_income_tax_on_earnings: [1_486, 0]
     # (20,000 - 12,569.96) x 8%.
     uc_national_insurance_on_earnings: [594.40, 0]
     # 20,000 - 1,486 - 594.40.
+    uc_individual_earned_income: [17_919.60, 0]
+
+- name: The finance-cost reduction comes off the tax on property, not on earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 20_000
+        property_rental_income: 5_000
+        property_income: 5_000
+        property_finance_costs: 3_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # Actual expenses beat the allowance: 5,000 x 20% - 20% x 3,000 = 400 of
+    # tax on property, against 800. The 600 reduction (ITTOIA 2005 s. 274AA)
+    # is limited by the property profits, so it does not come off the tax on
+    # earnings, which stays (20,000 - 12,570) x 20%.
+    property_finance_cost_relief: [600, 0]
+    income_tax: [1_886, 0]
+    uc_income_tax_on_earnings: [1_486, 0]
     uc_individual_earned_income: [17_919.60, 0]
     # Less the work allowance of 427 x 12 = 5,124.
     uc_earned_income: 12_795.60
@@ -247,9 +280,11 @@
   input:
     age: 35
     employment_income: 20_000
+    property_rental_income: 5_000
     property_income: 5_000
   output:
-    # Property: (5,000 - 1,000) x 22% = 880.
+    # Property: 5,000 of receipts with no expenses, so (5,000 - 1,000) x 22%
+    # = 880.
     property_income_tax: 880
     income_tax: 2_366
     uc_income_tax_on_earnings: 1_486

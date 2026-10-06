@@ -1,0 +1,33 @@
+# Tax credits count property profits with the costs of dwelling-related loans
+# deducted: The Tax Credits (Definition and Calculation of Income) Regulations
+# 2002 reg. 11(2A) disregards the ITTOIA 2005 s. 272A restriction. Property
+# income is "annual taxable profits" (reg. 11(1)), so costs above the profit
+# leave nil rather than a loss.
+
+- name: Finance costs are deducted from property income for tax credits
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    tax_credits_property_income: 6_000
+    # 6,000 less the 300 disregard on non-earned income.
+    tax_credits_applicable_income: 5_700
+
+- name: Finance costs above the profit leave nil
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 3_000
+    property_finance_costs: 8_000
+  output:
+    tax_credits_property_income: 0
+
+- name: Without finance costs property income is unchanged
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    property_income: 3_000
+  output:
+    tax_credits_property_income: 3_000

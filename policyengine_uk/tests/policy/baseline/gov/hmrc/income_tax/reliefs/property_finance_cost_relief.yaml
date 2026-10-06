@@ -1,0 +1,265 @@
+# Residential finance costs, ITTOIA 2005 ss. 272A, 274A and 274AA.
+# Costs of dwelling-related loans are not deducted from property profits
+# (s. 272A(4), from 2020-21). The landlord gets a tax reduction instead: the
+# property basic rate (the basic rate before 2027-28, Finance Act 2026 Sch. 1
+# para. 40) times the lowest of the relievable amount, the property profits
+# and adjusted total income (s. 274AA). Unrelieved costs are carried forward
+# (s. 274AA(4)). The reduction and the property allowance cannot be combined
+# (s. 783BL).
+
+- name: £20,000 receipts, £6,000 expenses and £8,000 finance costs in 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_rental_income: 20_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    uses_property_allowance: false
+    taxable_property_income: 14_000
+    property_finance_costs_relievable: 8_000
+    property_finance_costs_relieved: 8_000
+    # 20% x 8,000
+    property_finance_cost_relief: 1_600
+    property_finance_costs_carried_forward: 0
+    # (30,000 - 12,570) x 20% + 14,000 x 20% - 1,600
+    income_tax: 4_686
+
+- name: The same landlord in 2027-28 gets relief at the 22% property basic rate
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_rental_income: 20_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    # 22% x 8,000
+    property_finance_cost_relief: 1_760
+    # (30,000 - 12,570) x 20% + 14,000 x 22% - 1,760
+    income_tax: 4_806
+
+- name: A Scottish taxpayer gets relief at the basic rate of 20% in 2025-26
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+    region: SCOTLAND
+  output:
+    pays_scottish_income_tax: true
+    property_finance_cost_relief: 1_600
+
+- name: A Scottish taxpayer also gets the 22% property basic rate in 2027-28
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+    region: SCOTLAND
+  output:
+    pays_scottish_income_tax: true
+    # s. 274AA(5) gives no Scottish rate: 22% x 8,000, although the property
+    # profits themselves are taxed at Scottish rates.
+    property_finance_cost_relief: 1_760
+
+- name: Relief is limited to the property profits and the rest carried forward
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 3_000
+    property_finance_costs: 8_000
+  output:
+    property_finance_costs_relieved: 3_000
+    # 20% x 3,000
+    property_finance_cost_relief: 600
+    property_finance_costs_carried_forward: 5_000
+
+- name: Relief is limited to adjusted total income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    # Adjusted total income: 14,000 - 12,570 personal allowance.
+    property_finance_costs_relieved: 1_430
+    property_finance_cost_relief: 286
+    property_income_tax: 286
+    income_tax: 0
+    property_finance_costs_carried_forward: 6_570
+
+- name: A landlord within the personal allowance gets no relief and keeps the costs
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    property_income: 10_000
+    property_finance_costs: 8_000
+  output:
+    property_finance_costs_relieved: 0
+    property_finance_cost_relief: 0
+    income_tax: 0
+    property_finance_costs_carried_forward: 8_000
+
+- name: Costs brought forward are relieved with this year's costs
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 10_000
+    property_finance_costs: 2_000
+    property_finance_costs_brought_forward: 3_000
+  output:
+    property_finance_costs_relievable: 5_000
+    property_finance_costs_relieved: 5_000
+    property_finance_cost_relief: 1_000
+    property_finance_costs_carried_forward: 0
+    # (30,000 - 12,570) x 20% + 10,000 x 20% - 1,000
+    income_tax: 4_486
+
+- name: Relief is limited to the Step 5 tax left after other reductions
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+    other_tax_credits: 5_000
+  output:
+    # Step 5 tax 3,486 + 2,800 = 6,286, less 5,000 of other reductions.
+    property_finance_cost_relief: 1_286
+    income_tax: 0
+    # The carry-forward follows the costs relieved, not the tax limit.
+    property_finance_costs_carried_forward: 0
+
+- name: A higher-rate landlord with small finance costs elects for the allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    property_rental_income: 5_000
+    property_income: 4_800
+    property_finance_costs: 500
+  output:
+    # Allowance: (5,000 - 1,000) x 40% = 1,600 on property. Expenses:
+    # 4,800 x 40% - 20% x 500 = 1,820.
+    uses_property_allowance: true
+    property_allowance_deduction: 800
+    taxable_property_income: 4_000
+    property_finance_cost_relief: 0
+    # This year's costs are among the expenses the allowance replaces.
+    property_finance_costs_carried_forward: 0
+    # 37,700 x 20% + 9,730 x 40% + 1,600
+    income_tax: 13_032
+
+- name: Costs brought forward stay carried forward when the allowance is used
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    property_rental_income: 5_000
+    property_income: 4_800
+    property_finance_costs: 500
+    property_finance_costs_brought_forward: 1_000
+  output:
+    # Expenses: 4,800 x 40% - 20% x 1,500 = 1,620, above the allowance's 1,600.
+    uses_property_allowance: true
+    property_finance_cost_relief: 0
+    property_finance_costs_carried_forward: 1_000
+
+- name: A basic-rate landlord with larger finance costs keeps actual expenses
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_rental_income: 5_000
+    property_income: 4_800
+    property_finance_costs: 3_000
+  output:
+    # Allowance: 4,000 x 20% = 800. Expenses: 4,800 x 20% - 20% x 3,000 = 360.
+    uses_property_allowance: false
+    property_allowance_deduction: 0
+    taxable_property_income: 4_800
+    property_finance_cost_relief: 600
+
+- name: Receipts within the allowance keep full relief when electing out saves nothing
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_rental_income: 900
+    property_income: 900
+    property_finance_costs: 2_000
+  output:
+    # Full relief: no tax on the 900. Electing out: 900 x 20% - 20% x 900 = 0.
+    uses_property_allowance: true
+    taxable_property_income: 0
+    property_finance_cost_relief: 0
+    property_finance_costs_carried_forward: 0
+
+- name: A Scottish starter-rate landlord elects out of full relief
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 13_000
+    property_rental_income: 900
+    property_income: 900
+    property_finance_costs: 2_000
+    region: SCOTLAND
+  output:
+    # Electing out (s. 783BJ): 900 taxed at the 19% starter rate (171) and a
+    # 20% reduction on 900 (180), against no tax on it with full relief.
+    uses_property_allowance: false
+    taxable_property_income: 900
+    property_income_tax: 171
+    property_finance_cost_relief: 180
+    # (13,000 - 12,570) x 19% + 171 - 180
+    income_tax: 72.70
+    property_finance_costs_carried_forward: 1_100
+
+- name: Half of the finance costs are deductible in 2018-19
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    deductible_property_finance_costs: 4_000
+    taxable_property_income: 10_000
+    property_finance_costs_relievable: 4_000
+    property_finance_cost_relief: 800
+    # (30,000 - 11,850) x 20% + 10,000 x 20% - 800
+    income_tax: 4_830
+
+- name: Finance costs are fully deductible before 2017-18
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    deductible_property_finance_costs: 8_000
+    taxable_property_income: 6_000
+    property_finance_costs_relievable: 0
+    property_finance_cost_relief: 0
+
+- name: Restoring full deductibility removes the reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.reliefs.property_finance_costs.disallowed_share: 0
+    employment_income: 30_000
+    property_income: 14_000
+    property_finance_costs: 8_000
+  output:
+    deductible_property_finance_costs: 8_000
+    taxable_property_income: 6_000
+    property_finance_cost_relief: 0
+    # (30,000 - 12,570) x 20% + 6,000 x 20%
+    income_tax: 4_686
