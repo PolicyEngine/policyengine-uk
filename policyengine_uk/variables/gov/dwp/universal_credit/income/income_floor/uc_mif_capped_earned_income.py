@@ -12,6 +12,8 @@ class uc_mif_capped_earned_income(Variable):
     def formula(person, period, parameters):
         INCOME_COMPONENTS = [
             "employment_income",
+            # UC Regs 2013 reg 55(4): statutory payments are employed earnings.
+            "uc_statutory_payments_treated_as_employed_earnings",
             "self_employment_income",
             "miscellaneous_income",
         ]

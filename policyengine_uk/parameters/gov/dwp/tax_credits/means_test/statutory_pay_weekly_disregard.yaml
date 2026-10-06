@@ -1,0 +1,17 @@
+description: >
+  Weekly amount of statutory maternity, paternity, shared parental, adoption
+  and parental bereavement pay that tax credits leave out of employment
+  income. Regulation 4(1)(h) of the Tax Credits (Definition and Calculation of
+  Income) Regulations 2002 counts "the amount (if any) by which a payment of
+  statutory maternity pay, statutory paternity pay, statutory shared parental
+  pay or statutory adoption pay, statutory parental bereavement pay or
+  statutory adoption pay exceeds £100 per week".
+metadata:
+  label: Tax credits weekly disregard of statutory parental pay
+  period: week
+  unit: currency-GBP
+  reference:
+    - title: The Tax Credits (Definition and Calculation of Income) Regulations 2002 reg. 4(1)(h)
+      href: https://www.legislation.gov.uk/uksi/2002/2006/regulation/4
+values:
+  2003-04-06: 100

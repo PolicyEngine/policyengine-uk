@@ -31,6 +31,8 @@ class tax_credits_applicable_income(Variable):
         income = max_(income - TC.means_test.non_earned_disregard, 0)
         STEP_2_COMPONENTS = [
             "employment_income",
+            # Reg 4(1)(g) and (h): statutory payments are employment income.
+            "tax_credits_statutory_pay_employment_income",
             "self_employment_income",
             "social_security_income",
             "miscellaneous_income",

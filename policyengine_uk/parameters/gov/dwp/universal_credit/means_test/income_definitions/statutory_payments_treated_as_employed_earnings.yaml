@@ -1,0 +1,57 @@
+description: >
+  Statutory payments that Universal Credit treats as employed earnings.
+  Regulation 55(4) of the Universal Credit Regulations 2013 says "The following
+  benefits are to be treated as employed earnings— (a) statutory sick pay; (b)
+  statutory maternity pay; (c) ... statutory paternity pay; (d) ...; (e)
+  statutory adoption pay; ... (f) statutory shared parental pay; ... (g)
+  statutory parental bereavement pay; and (h) statutory neonatal care pay."
+  The deductions in regulation 55(5) (tax, primary Class 1 and relievable
+  pension contributions) apply to them as to other employed earnings.
+  Sub-paragraph (f) was inserted from 31 December 2014, (g) from 6 April 2020
+  and (h) from 6 April 2025. Sub-paragraph (d), additional statutory paternity
+  pay, was omitted from 5 April 2015; the model holds ordinary and additional
+  statutory paternity pay in one variable.
+metadata:
+  economy: false
+  label: Universal Credit statutory payments treated as employed earnings
+  period: year
+  unit: list
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 55(4)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/55
+    - title: S.I. 2014/3255 art. 28(4) (inserts reg. 55(4)(f), statutory shared parental pay)
+      href: https://www.legislation.gov.uk/uksi/2014/3255/article/28
+    - title: S.I. 2020/354 reg. 28(4) (inserts reg. 55(4)(g), statutory parental bereavement pay)
+      href: https://www.legislation.gov.uk/uksi/2020/354/regulation/28
+    - title: S.I. 2025/201 reg. 19(4) (inserts reg. 55(4)(h), statutory neonatal care pay)
+      href: https://www.legislation.gov.uk/uksi/2025/201/regulation/19
+    - title: The Universal Credit Regulations (Northern Ireland) 2016 reg. 55(4) (the same payments except statutory neonatal care pay, which Northern Ireland does not have)
+      href: https://www.legislation.gov.uk/nisr/2016/216/regulation/55
+
+values:
+  2013-04-29:
+    - statutory_sick_pay
+    - statutory_maternity_pay
+    - statutory_paternity_pay
+    - statutory_adoption_pay
+  2014-12-31:
+    - statutory_sick_pay
+    - statutory_maternity_pay
+    - statutory_paternity_pay
+    - statutory_adoption_pay
+    - statutory_shared_parental_pay
+  2020-04-06:
+    - statutory_sick_pay
+    - statutory_maternity_pay
+    - statutory_paternity_pay
+    - statutory_adoption_pay
+    - statutory_shared_parental_pay
+    - statutory_parental_bereavement_pay
+  2025-04-06:
+    - statutory_sick_pay
+    - statutory_maternity_pay
+    - statutory_paternity_pay
+    - statutory_adoption_pay
+    - statutory_shared_parental_pay
+    - statutory_parental_bereavement_pay
+    - statutory_neonatal_care_pay

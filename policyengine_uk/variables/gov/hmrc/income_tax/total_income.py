@@ -14,6 +14,9 @@ class total_income(Variable):
 
     adds = [
         "employment_income",
+        # Statutory payments are taxable social security income (ITEPA 2003
+        # s.660 Table A), so part of total income.
+        "employment_benefits",
         "private_pension_income",
         "social_security_income",
         "self_employment_income",
