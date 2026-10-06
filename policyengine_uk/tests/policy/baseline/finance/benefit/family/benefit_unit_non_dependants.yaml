@@ -796,3 +796,201 @@
   output:
     council_tax_reduction_claimant_benunit: [true, false]
     council_tax_reduction_non_dep_deductions: [200, 0]
+
+# Personal exclusions. HB Regs 2006 and HB (SPC) Regs 2006 reg 3(2)(d)-(e)
+# and 3(4), UC Regs 2013 Sch 4 para 9(2)(a), (d)-(e) and CTR SI 2012/2885 reg
+# 9(2)(d)-(e) exclude a person, not a family: whoever is liable for their own
+# occupation (the householder, a joint tenant or other sharer of the rent, a
+# boarder or lodger) is nobody's non-dependant, whatever benefit unit the
+# survey puts them in.
+
+# The son pays the householder for his own room. He is liable to make
+# payments on a commercial basis to the householder (HB reg 3(2)(e)(i); UC
+# para 9(2)(d)), and he and his mother are each separately liable to the
+# householder, so he does not reside with her (HB reg 3(4)). Compare "HB, a
+# lodger's adult son is a non-dependant of the lodger and of the householder",
+# where the son pays nothing and is charged £1,060.80 to each.
+- name: HB and UC, a lodger's adult son who pays for his own room is nobody's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 45
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 25
+        is_claimant_or_partner: false
+        rent_paid_as_lodger: 2_600
+        employment_income: 2_600
+        weekly_hours: 10
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [lodger, lodger_son]
+    households:
+      household:
+        members: [head, lodger, lodger_son]
+        rent: 9_000
+  output:
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false, false]
+    housing_benefit_non_dep_deductions: [0, 0]
+    uc_non_dep_deductions: [0, 0]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false]
+
+# Para 9(2)(d) excludes only the person who pays: a lodger's adult son who
+# pays nothing himself is a non-dependant of the lodger, his renter, and bears
+# £96.55 a month (para 14(1)): £1,158.60 a year.
+- name: UC, a lodger's adult son who pays nothing is the lodger's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      lodger:
+        age: 45
+        is_claimant_or_partner: true
+        rent_paid_as_lodger: 5_200
+      lodger_son:
+        age: 25
+        is_claimant_or_partner: false
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [lodger, lodger_son]
+    households:
+      household:
+        members: [head, lodger, lodger_son]
+        rent: 9_000
+  output:
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, true]
+    uc_non_dep_deductions: [0, 1_158.60]
+
+# The same exclusion for board and lodging (HB reg 3(2)(e)(i); UC para
+# 9(2)(d)).
+- name: HB and UC, a boarder's adult son who pays for his own board is nobody's non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 60
+        is_household_head: true
+        is_claimant_or_partner: true
+      boarder:
+        age: 45
+        is_claimant_or_partner: true
+        rent_paid_as_boarder: 6_000
+      boarder_son:
+        age: 25
+        is_claimant_or_partner: false
+        rent_paid_as_boarder: 4_000
+        employment_income: 2_600
+        weekly_hours: 10
+    benunits:
+      benunit_1:
+        members: [head]
+      benunit_2:
+        members: [boarder, boarder_son]
+    households:
+      household:
+        members: [head, boarder, boarder_son]
+        rent: 9_000
+  output:
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, false]
+    housing_benefit_non_dep_deductions: [0, 0]
+    uc_non_dep_deductions: [0, 0]
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false]
+
+# The son is a joint tenant with his mother. A person who jointly occupies the
+# claimant's dwelling and is liable with the claimant to pay for it is not a
+# non-dependant (HB reg 3(2)(d)), nor is one liable on a commercial basis for
+# their own occupation (UC para 9(2)(d)). The benefit unit's two liable
+# members have the whole rent between them.
+- name: HB and UC, an adult son jointly liable for the rent with his mother is not her non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 50
+        is_household_head: true
+        is_claimant_or_partner: true
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        is_liable_for_household_rent: true
+        employment_income: 2_600
+        weekly_hours: 10
+    benunits:
+      benunit:
+        members: [parent, son]
+    households:
+      household:
+        members: [parent, son]
+        rent: 12_000
+  output:
+    share_of_household_rent: 1
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false]
+    housing_benefit_non_dep_deductions: 0
+    uc_non_dep_deductions: 0
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false]
+
+# Two 17-year-old parents flagged with is_parent make the benefit unit's
+# claimant and partner, so the 45-year-old householder in the same benefit
+# unit is neither. He is still the person liable for the home: the claimant
+# himself, a joint occupier with the claimant (HB reg 3(2)(d)) or the person
+# the claimant pays (reg 3(2)(e)(ii)); the renter or a person liable for
+# their own occupation in UC (para 9(2)(a), (d)-(e)). Either way he is not a
+# non-dependant of his own household's claim.
+- name: HB and UC, a householder who is not his benefit unit's claimant or partner is not its non-dependant
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      householder:
+        age: 45
+        is_household_head: true
+        employment_income: 2_600
+        weekly_hours: 10
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      benunit:
+        members: [householder, young_mother, young_father, baby]
+    households:
+      household:
+        members: [householder, young_mother, young_father, baby]
+        rent: 9_000
+  output:
+    is_claimant_or_partner: [false, true, true, false]
+    is_benefit_unit_non_dependant_for_legacy_benefits: [false, false, false, false]
+    is_benefit_unit_non_dependant_for_universal_credit: [false, false, false, false]
+    housing_benefit_individual_non_dep_deduction_eligible: [false, false, false, false]
+    housing_benefit_non_dep_deductions: 0
+    uc_non_dep_deductions: 0
+    council_tax_reduction_individual_non_dep_deduction_eligible: [false, false, false, false]
