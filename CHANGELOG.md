@@ -1,3 +1,10 @@
+## [2.122.2] - 2026-10-06
+
+### Changed
+
+- - Note that the council tax reduction (CTR) capital-route loss in #1909 is an artefact of the `corporate_wealth` proxy, so CTR offsets in pension costings that rest on it should not be read as real effects. A pensioner whose Pension Credit award is savings credit only is tested against the CTR capital limit on Pension Credit's capital (`council_tax_reduction_assessable_capital`), and Pension Credit's capital sources count `corporate_wealth` but not `private_pension_wealth`. In datasets built before the `private_pension_wealth` split, `corporate_wealth` also holds imputed pension wealth, which Pension Credit disregards (State Pension Credit Regulations 2002 Sch V paras 22 and 23), so these pensioners can fail the £16,000 limit on pension wealth that is not countable capital. A benefit unit that records `pension_credit_reported_capital` bypasses the proxy. See #1837 and #1936. Two CTR test cases pin the route, and a new Housing Benefit case pins the savings-credit-only route of #1945 for a household built from age, pensions, rent, tenure and capital alone.
+
+
 ## [2.122.1] - 2026-10-06
 
 ### Fixed
