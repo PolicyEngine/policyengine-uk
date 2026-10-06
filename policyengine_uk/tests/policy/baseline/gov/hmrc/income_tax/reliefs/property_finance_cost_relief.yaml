@@ -220,6 +220,24 @@
     # (13,000 - 12,570) x 19% + 171 - 180
     income_tax: 72.70
     property_finance_costs_carried_forward: 1_100
+    # The 9 of the reduction above the tax on the property comes off the tax
+    # on earnings, as it does in income tax: 81.70 - 9.
+    uc_income_tax_on_earnings: 72.70
+
+- name: Receipts of exactly the allowance keep full relief on a tie
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_rental_income: 1_000
+    property_income: 1_000
+    property_finance_costs: 2_000
+  output:
+    # Electing out: 1,000 x 20% - 20% x 1,000 = 0, the same as full relief.
+    property_receipts_within_allowance: true
+    uses_property_allowance: true
+    taxable_property_income: 0
+    property_finance_cost_relief: 0
 
 - name: Half of the finance costs are deductible in 2018-19
   period: 2018
@@ -235,6 +253,25 @@
     property_finance_cost_relief: 800
     # (30,000 - 11,850) x 20% + 10,000 x 20% - 800
     income_tax: 4_830
+
+- name: Without receipts, a profit above the allowance before 2020-21 gets no full relief
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 30_000
+    property_income: 1_500
+    property_finance_costs: 1_000
+  output:
+    # Receipts are at least the 1,500 of profit before finance costs, so
+    # above the allowance, although the profit after the 500 still
+    # deductible is 1,000.
+    property_receipts_within_allowance: false
+    uses_property_allowance: false
+    taxable_property_income: 1_000
+    # 20% x min(500 disallowed, 1,000 profit).
+    property_finance_cost_relief: 100
+    # (30,000 - 11,850) x 20% + 1,000 x 20% - 100
+    income_tax: 3_730
 
 - name: Finance costs are fully deductible before 2017-18
   period: 2016
@@ -263,3 +300,43 @@
     property_finance_cost_relief: 0
     # (30,000 - 12,570) x 20% + 6,000 x 20%
     income_tax: 4_686
+
+- name: Each partner chooses with the other's route held fixed
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      landlord:
+        age: 40
+        employment_income: 30_000
+        property_rental_income: 5_000
+        property_income: 4_800
+        property_finance_costs: 850
+      partner:
+        age: 40
+        employment_income: 10_500
+        property_rental_income: 900
+        property_income: 900
+        property_finance_costs: 1_000
+    benunits:
+      benunit:
+        members: [landlord, partner]
+        is_married: true
+    households:
+      household:
+        members: [landlord, partner]
+  output:
+    # The partner keeps full relief: electing out leaves their tax at nil
+    # either way (11,400 is within the personal allowance). With it, they
+    # have 12,570 - 10,500 = 2,070 of allowance unused and transfer the
+    # maximum 1,260 of Marriage Allowance.
+    uses_property_allowance: [false, true]
+    marriage_allowance: [1_260, 0]
+    # The landlord's own choice, with the partner's held fixed: actual
+    # expenses give 4,800 x 20% - 20% x 850 = 790 of tax on property against
+    # (5,000 - 1,000) x 20% = 800 with the allowance. Switching both at once
+    # would also cut the transfer to 1,170 and make the allowance look
+    # better.
+    property_finance_cost_relief: [170, 0]
+    # (30,000 - 12,570 - 1,260) x 20% + 4,800 x 20% - 170
+    income_tax: [4_024, 0]

@@ -53,10 +53,15 @@ class property_allowance_deduction_if_used(Variable):
             receipts >= person("property_income", period)
         )
         # Full relief (receipts within the allowance, s. 783BF) makes the
-        # profit nil; partial relief (s. 783BH) replaces expenses with the
-        # allowance. Both come to the allowance's excess over actual
-        # expenses, capped at profit.
-        relief_with_receipts = min_(profit, allowance - expenses)
-        relief_without_receipts = where(profit <= allowance, profit, 0)
-        relief = where(receipts_known, relief_with_receipts, relief_without_receipts)
+        # profit nil. Partial relief (s. 783BH) replaces actual expenses with
+        # the allowance, which comes to the allowance's excess over them,
+        # capped at profit; without receipts the expenses are unknown, and a
+        # profit above the allowance is taken to reflect the better of the
+        # two already.
+        partial_relief = where(receipts_known, min_(profit, allowance - expenses), 0)
+        relief = where(
+            person("property_receipts_within_allowance", period),
+            profit,
+            partial_relief,
+        )
         return max_(relief, 0)

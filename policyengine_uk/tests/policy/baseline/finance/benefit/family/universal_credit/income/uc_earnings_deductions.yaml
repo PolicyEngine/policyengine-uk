@@ -50,6 +50,16 @@
     uc_national_insurance_on_earnings: [594.40, 0]
     # 20,000 - 1,486 - 594.40.
     uc_individual_earned_income: [17_919.60, 0]
+    # Less the work allowance of 427 x 12 = 5,124.
+    uc_earned_income: 12_795.60
+    # Rent from property is not UC unearned income (reg. 66(1) is a closed
+    # list).
+    uc_unearned_income: 0
+    # 424.90 x 12 + 303.94 x 12 + 9,600 = 5,098.80 + 3,647.28 + 9,600.
+    uc_maximum_amount: 18_346.08
+    # 18,346.08 - 0.55 x 12,795.60. Deducting all of the tax, as before this
+    # fix, gave 11,748.50: 0.55 x 800 = 440 too much.
+    universal_credit: 11_308.50
 
 - name: The finance-cost reduction comes off the tax on property, not on earnings
   period: 2026
@@ -81,15 +91,10 @@
     income_tax: [1_886, 0]
     uc_income_tax_on_earnings: [1_486, 0]
     uc_individual_earned_income: [17_919.60, 0]
-    # Less the work allowance of 427 x 12 = 5,124.
     uc_earned_income: 12_795.60
-    # Rent from property is not UC unearned income (reg. 66(1) is a closed
-    # list).
-    uc_unearned_income: 0
-    # 424.90 x 12 + 303.94 x 12 + 9,600 = 5,098.80 + 3,647.28 + 9,600.
     uc_maximum_amount: 18_346.08
-    # 18,346.08 - 0.55 x 12,795.60. Deducting all of the tax, as before this
-    # fix, gave 11,748.50: 0.55 x 800 = 440 too much.
+    # Unchanged by the finance costs. Taking the 600 reduction off the tax on
+    # earnings would give 10,978.50: 0.55 x 600 = 330 less.
     universal_credit: 11_308.50
 
 - name: Mixed-age couple, the pensioner's tax on State Pension does not reduce the partner's earnings

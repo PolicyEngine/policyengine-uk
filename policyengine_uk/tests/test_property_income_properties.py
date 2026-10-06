@@ -261,3 +261,99 @@ def test_income_tax_is_non_increasing_in_finance_costs(sim, drawn):
     r = run(sim, drawn)
     base, more = r["income_tax"][:CASES], r["income_tax"][CASES:]
     assert (more <= base + tolerance(base)).all()
+
+
+# Couples: a partner's route can move a person's tax through the Marriage
+# Allowance, so each person must choose with the other's route held fixed.
+COUPLES = 12
+COUPLE_EMPLOYMENT_INCOME = [0, 9_000, 11_000, 20_000, 30_000, 45_000, 60_000]
+couple_member = st.tuples(
+    st.sampled_from(COUPLE_EMPLOYMENT_INCOME),
+    st.one_of(amount, st.floats(min_value=-1_000, max_value=0)),  # profit
+    amount,  # expenses
+    st.sampled_from([0.0, 300.0, 850.0, 1_500.0, 6_000.0]),  # finance costs
+    st.sampled_from(["unknown", "consistent", "consistent"]),
+)
+# A close call: the allowance's value over actual expenses (1,000 - expenses)
+# within 150 of the finance costs it would give up.
+close_call = st.tuples(
+    st.sampled_from([20_000, 30_000, 45_000]),
+    st.floats(min_value=1_500, max_value=20_000),  # profit
+    st.floats(min_value=0, max_value=950),  # expenses
+    st.floats(min_value=-150, max_value=150),  # finance costs less the gap
+).map(lambda m: (m[0], m[1], m[2], max(1_000 - m[2] + m[3], 1.0), "consistent"))
+# A partner within the personal allowance with receipts within the property
+# allowance and finance costs, whose route moves their unused allowance.
+transferor = st.tuples(
+    st.floats(min_value=8_000, max_value=12_500),  # employment income
+    st.floats(min_value=50, max_value=1_000),  # profit = receipts
+    st.floats(min_value=50, max_value=3_000),  # finance costs
+).map(lambda m: (m[0], m[1], 0.0, m[2], "consistent"))
+couples = st.lists(
+    st.one_of(
+        st.tuples(couple_member, couple_member),
+        st.tuples(close_call, transferor),
+    ),
+    min_size=COUPLES,
+    max_size=COUPLES,
+)
+
+
+@pytest.fixture(scope="module")
+def couple_sim():
+    people, benunits, households = {}, {}, {}
+    for c in range(COUPLES):
+        members = []
+        for k in range(2):
+            name = f"person_{c}_{k}"
+            members.append(name)
+            people[name] = {
+                "age": {YEAR: 40},
+                "employment_income": {YEAR: 0},
+                "property_income": {YEAR: 0},
+                "property_rental_income": {YEAR: 0},
+                "property_finance_costs": {YEAR: 0},
+            }
+        benunits[f"benunit_{c}"] = {"members": members, "is_married": {YEAR: True}}
+        households[f"household_{c}"] = {"members": members}
+    return Simulation(
+        situation={"people": people, "benunits": benunits, "households": households}
+    )
+
+
+def set_couple_inputs(sim, drawn, uses_allowance=None):
+    members = [member for couple in drawn for member in couple]
+    employment, profit, expenses, costs, mode = map(np.array, zip(*members))
+    receipts = np.where(mode == "consistent", np.maximum(profit, 0) + expenses, 0)
+    # The simulation moves employment_income to employment_income_before_lsr
+    # when it is built, so that is the input to set.
+    sim.set_input("employment_income_before_lsr", YEAR, employment.astype(float))
+    sim.set_input("property_income", YEAR, profit)
+    sim.set_input("property_rental_income", YEAR, receipts)
+    sim.set_input("property_finance_costs", YEAR, costs)
+    sim.reset_calculations()
+    if uses_allowance is not None:
+        sim.set_input("uses_property_allowance", YEAR, uses_allowance)
+
+
+@SETTINGS
+@given(couples)
+def test_no_one_lowers_their_tax_by_switching_route_alone(couple_sim, drawn):
+    set_couple_inputs(couple_sim, drawn)
+    routes = couple_sim.calculate("uses_property_allowance", YEAR)
+    income_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
+    profit = couple_sim.calculate("property_income", YEAR).astype(float)
+    choosing = (
+        (couple_sim.calculate("property_allowance_deduction_if_used", YEAR) > 0)
+        & (couple_sim.calculate("property_finance_costs_relievable", YEAR) > 0)
+        & (profit > 0)
+    )
+    position = np.arange(2 * COUPLES) % 2
+    for k in range(2):
+        switching = choosing & (position == k)
+        if not switching.any():
+            continue
+        set_couple_inputs(couple_sim, drawn, routes ^ switching)
+        switched_tax = couple_sim.calculate("income_tax", YEAR).astype(float)
+        margin = tolerance(income_tax, switched_tax)
+        assert (switched_tax[switching] >= (income_tax - margin)[switching]).all()

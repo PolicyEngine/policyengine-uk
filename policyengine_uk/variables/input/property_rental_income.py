@@ -4,15 +4,16 @@ from policyengine_uk.model_api import *
 class property_rental_income(Variable):
     value_type = float
     entity = Person
-    label = "property rental income"
+    label = "gross property rental receipts"
     documentation = (
         "Gross rents and other receipts of the person's UK and overseas "
         "property businesses, before any expenses. Rent-a-room receipts are "
         "not included. Optional: used only to apply the property allowance, "
         "which is measured against gross receipts and replaces actual "
-        "expenses. Must be at least property_income; leave at zero when "
-        "unknown, and receipts below property_income are treated as unknown. "
-        "property_income remains the profit used everywhere else."
+        "expenses. It does not replace property_income, the profit that is "
+        "taxed: set both. Must be at least property_income; leave at zero "
+        "when unknown, and receipts below property_income are treated as "
+        "unknown."
     )
     definition_period = YEAR
     unit = GBP

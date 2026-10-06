@@ -13,6 +13,10 @@ INDEPENDENT_OF_ROUTE = [
     "pays_scottish_income_tax",
     "other_tax_credits",
 ]
+# Rounds of decisions within a benefit unit before the routes are taken as
+# settled. Partners' routes interact only through small amounts (such as the
+# Marriage Allowance), so a second round rarely changes anything.
+MAX_ROUNDS = 3
 
 
 def income_tax_with_route(simulation, name, period, uses_allowance):
@@ -42,7 +46,10 @@ class uses_property_allowance(Variable):
         "two cannot be combined. Full relief applies to receipts within the "
         "allowance unless the person elects out of it, and partial relief "
         "only if they elect for it; each election is made only if it lowers "
-        "the person's income tax. Without finance costs to relieve, the "
+        "the person's own income tax, with everyone else's route held fixed. "
+        "Ties keep the default, so a person with receipts within the "
+        "allowance keeps full relief even where electing out would carry "
+        "finance costs forward. Without finance costs to relieve, the "
         "allowance is used whenever it lowers taxable property income."
     )
     definition_period = YEAR
@@ -83,21 +90,44 @@ class uses_property_allowance(Variable):
         if not choosing.any():
             # Nobody has a choice to weigh: skip the branches.
             return uses
+        # Full relief applies unless electing out of it (s. 783BJ) lowers
+        # tax; partial relief applies only if electing for it (s. 783BK)
+        # lowers tax. Until a person decides, they keep that default.
+        full_relief = person("property_receipts_within_allowance", period)
+        route = where(choosing, full_relief, uses)
         for variable in INDEPENDENT_OF_ROUTE:
             person(variable, period)
         simulation = person.simulation
-        tax_using = income_tax_with_route(
-            simulation, "property_allowance_used", period, uses | choosing
+        # One person per benefit unit decides at a time, with everyone
+        # else's route held fixed: a partner's route can move this person's
+        # tax (through the Marriage Allowance, for example), and comparing
+        # both partners' switches at once would count that. Rounds repeat
+        # until nobody changes.
+        order = person.get_rank(
+            person.benunit, np.zeros(person.count), condition=choosing
         )
-        tax_not_using = income_tax_with_route(
-            simulation, "property_allowance_not_used", period, uses
-        )
-        # Tax is computed to the penny; smaller differences are rounding.
-        saving = np.round(tax_not_using - tax_using, 2)
-        # The allowance removes all of the profit exactly when receipts are
-        # within it. Full relief then applies unless electing out of it
-        # (s. 783BJ) lowers tax; partial relief applies only if electing for
-        # it (s. 783BK) lowers tax.
-        full_relief = deduction >= profit
-        prefers_allowance = where(full_relief, saving >= 0, saving > 0)
-        return where(choosing, prefers_allowance, uses)
+        for _ in range(MAX_ROUNDS):
+            changed = False
+            for rank in range(int(order.max()) + 1):
+                deciding = choosing & (order == rank)
+                tax_using = income_tax_with_route(
+                    simulation, "property_allowance_used", period, route | deciding
+                )
+                tax_not_using = income_tax_with_route(
+                    simulation,
+                    "property_allowance_not_used",
+                    period,
+                    route & ~deciding,
+                )
+                # Tax is computed to the penny; smaller differences are
+                # rounding.
+                saving = np.round(tax_not_using - tax_using, 2)
+                prefers_allowance = where(full_relief, saving >= 0, saving > 0)
+                decided = where(deciding, prefers_allowance, route)
+                changed = changed or bool((decided != route).any())
+                route = decided
+            # With one person deciding per benefit unit, everyone else's
+            # route was fixed throughout, so one round settles it.
+            if order.max() == 0 or not changed:
+                break
+        return route
