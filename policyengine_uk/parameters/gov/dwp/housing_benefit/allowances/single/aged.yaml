@@ -16,9 +16,11 @@ metadata:
   unit: currency-GBP
   label: Housing benefit single aged personal allowance
   uprating: gov.dwp.housing_benefit.allowances.protected_pension_age_uprating.single
-  reference: 
-    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
-      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
+  reference:
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 3 paragraph 1
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/1
+    - title: The Social Security Benefits Up-rating Order 2026 article 24(6) and Schedule 6
+      href: https://www.legislation.gov.uk/uksi/2026/148/schedule/6/made
     - title: Benefit and pension rates 2024 to 2025 - Policy paper
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
     - title: A14/2025 Housing Benefit uprating for the financial year ending March 2027, paragraphs 5 and 20

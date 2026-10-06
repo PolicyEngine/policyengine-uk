@@ -28,6 +28,7 @@ SINGLE:
     2026-04-01: 208.07
   metadata:
     label: Pension Credit Savings Credit income threshold (single)
+    uprating: gov.dwp.pension_credit.savings_credit.threshold_uprating.SINGLE
 COUPLE:
   values:
     2015-04-06: 201.8
@@ -53,6 +54,7 @@ COUPLE:
     2026-04-01: 329.75
   metadata:
     label: Pension Credit Savings Credit income threshold (couple)
+    uprating: gov.dwp.pension_credit.savings_credit.threshold_uprating.COUPLE
 metadata:
   unit: currency-GBP
   period: week
@@ -62,8 +64,12 @@ metadata:
       href: https://www.legislation.gov.uk/ukpga/2002/16/section/3
     - title: The State Pension Credit Regulations 2002 reg. 7
       href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/7/2021-04-12
+    - title: Social Security Administration Act 1992 section 150
+      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150
     - title: Social Security Administration Act 1992 section 150A
       href: https://www.legislation.gov.uk/ukpga/1992/5/section/150A
+    - title: Social Security Administration (Northern Ireland) Act 1992 section 132
+      href: https://www.legislation.gov.uk/ukpga/1992/8/section/132
     - title: Social Security Administration (Northern Ireland) Act 1992 section 132A
       href: https://www.legislation.gov.uk/ukpga/1992/8/section/132A
     - title: A11/2024 Housing Benefit uprating for the financial year ending March 2026
