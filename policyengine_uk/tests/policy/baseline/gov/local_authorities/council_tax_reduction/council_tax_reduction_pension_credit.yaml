@@ -617,18 +617,22 @@
     council_tax_reduction_assessable_capital: 16_000.01
     council_tax_reduction: 0
 
-# The next two cases pin where the capital-route loss of the savings-credit-only
-# route comes from, so that it is not read as a real effect (#1909 follow-up;
-# #1837, #1936). Pension Credit's capital sources count `corporate_wealth` and
-# not `private_pension_wealth` (State Pension Credit Regulations 2002 Sch V
-# paras 22 and 23 disregard the value of a right to a pension), and a
-# savings-credit-only recipient is tested on the Pension Credit figure. In
-# datasets built before the `private_pension_wealth` split, `corporate_wealth`
-# also holds imputed private pension wealth, so the first case's loss is an
-# artefact of the proxy there. The first case pins today's behaviour and will
-# change once the data splits the column.
+# The next two cases pin the route behind the capital-route loss of #1909, so
+# that the loss is not read as a real effect (see also #1837 and #1936). A
+# savings-credit-only recipient is tested against the CTR capital limit on the
+# Pension Credit figure, and Pension Credit's capital sources count
+# `corporate_wealth` but not `private_pension_wealth`: State Pension Credit
+# Regulations 2002 Sch V paras 22 and 23 disregard the value of a right to
+# receive income from an occupational or personal pension scheme or under a
+# retirement annuity contract. In datasets built before the
+# `private_pension_wealth` split, `corporate_wealth` also holds imputed pension
+# wealth, so there the first case's exclusion rests on pension wealth that
+# Pension Credit does not count. The rule in the first case counts
+# `corporate_wealth` whatever it holds, and stays as written once a dataset
+# splits the column; what changes is the value the dataset gives
+# `corporate_wealth`.
 
-- name: Savings credit only is excluded on corporate_wealth alone, although household savings are nil
+- name: Savings credit only, corporate_wealth counts as Pension Credit capital, so a pensioner with nil household savings is over the CTR capital limit
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -667,7 +671,7 @@
     council_tax_reduction_assessable_capital: 20_000
     council_tax_reduction: 0
 
-- name: Savings credit only is not excluded on private_pension_wealth, which Pension Credit disregards
+- name: Savings credit only, private_pension_wealth is not Pension Credit capital, so it does not take the pensioner over the CTR capital limit
   period: 2026
   absolute_error_margin: 0.01
   input:
