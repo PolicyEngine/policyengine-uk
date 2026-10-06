@@ -1,4 +1,6 @@
 import re
+import numpy as np
+from policyengine_core import periods
 from policyengine_uk.system import system
 import plotly.express as px
 import pandas as pd
@@ -32,11 +34,29 @@ def find_variable_in_tree_recursive(variable_name, node):
     return None
 
 
+def get_dependency_nodes(node):
+    # A variable calculated over a period other than its definition period (a
+    # monthly one summed over a year, or a yearly one divided into a month)
+    # has itself as a child for each period it is calculated over; what it
+    # reads is under those children.
+    nodes = []
+    node_period = periods.period(node.period)
+    for child in node.children:
+        child_period = periods.period(child.period)
+        if child.name == node.name and (
+            node_period.contains(child_period) or child_period.contains(node_period)
+        ):
+            nodes.extend(get_dependency_nodes(child))
+        else:
+            nodes.append(child)
+    return nodes
+
+
 def get_variable_dependencies(variable_name, sim):
     node = find_variable_in_trees(variable_name, sim.tracer)
     if not node:
         return []
-    return [child.name for child in node.children]
+    return [child.name for child in get_dependency_nodes(node)]
 
 
 def extract_variables_regex(formula_source):
@@ -46,9 +66,70 @@ def extract_variables_regex(formula_source):
     return matches
 
 
+def unused_branch_name(sim, base_name="dependency-contribution"):
+    # A name no branch of sim, sim itself or its ancestors uses, so get_branch
+    # creates a new branch instead of returning an existing one.
+    taken = set(sim.branches)
+    ancestor = sim
+    while ancestor is not None:
+        taken.add(ancestor.branch_name)
+        ancestor = getattr(ancestor, "parent_branch", None)
+    name, suffix = base_name, 1
+    while name in taken:
+        suffix += 1
+        name = f"{base_name}-{suffix}"
+    return name
+
+
+def calculate_with_dependency_zeroed(sim, variable_name, dependency, year, map_to=None):
+    """Recalculate variable_name with dependency set to zero in year.
+
+    Runs on a new untraced branch of sim, removed from sim.branches before
+    returning: what the branch inputs or deletes stays in the branch, so sim is
+    left as it was. In the branch, the dependency's values within year
+    (inputs, calculated values, and annual sums of monthly values) are deleted
+    and replaced by a zero input for each period it is defined for. Inputting
+    each defined period directly means no set_input helper has to split an
+    annual zero across months that already hold values, which core refuses
+    when they do not add up to zero. variable_name's values within year are
+    then deleted so that it is recalculated; every other variable keeps the
+    value sim had calculated.
+    """
+    period = periods.period(year)
+    variable = sim.tax_benefit_system.get_variable(dependency)
+    if periods.unit_weight(variable.definition_period) < periods.unit_weight(
+        period.unit
+    ):
+        input_periods = period.get_subperiods(variable.definition_period)
+    else:
+        input_periods = [period]
+    zeros = np.zeros(sim.get_variable_population(dependency).count)
+
+    branch_name = unused_branch_name(sim)
+    branch = sim.get_branch(branch_name)
+    try:
+        branch.trace = False
+        branch.delete_arrays(dependency, period)
+        for input_period in input_periods:
+            branch.set_input(dependency, input_period, zeros)
+        branch.delete_arrays(variable_name, period)
+        return branch.calculate(variable_name, period, map_to=map_to)
+    finally:
+        sim.branches.pop(branch_name, None)
+
+
 def calculate_dependency_contributions(
     sim, variable_name, year, top_n=None, filter=None, map_to=None
 ):
+    """Mean change in variable_name from zeroing each variable it reads directly.
+
+    The variables variable_name reads directly come from sim's trace, so sim
+    needs trace=True. A float one's contribution is the mean of variable_name
+    minus variable_name recalculated with that variable zero in year (see
+    calculate_with_dependency_zeroed), after mapping to map_to and selecting
+    filter if given. Other variables contribute zero. sim's values are left
+    unchanged.
+    """
     original_values = sim.calculate(variable_name, year)
 
     if map_to is not None:
@@ -63,16 +144,16 @@ def calculate_dependency_contributions(
 
     dependency_contributions = {}
     first_level_dependencies = get_variable_dependencies(variable_name, sim)
-    for variable in first_level_dependencies:
+    for variable in dict.fromkeys(first_level_dependencies):
         if "weight" in variable:
             continue
-        sim.get_holder(variable_name).delete_arrays(year)
         value_type = sim.tax_benefit_system.get_variable(variable).value_type
-        current_values = sim.calculate(variable, year)
         if value_type == float:
-            sim.set_input(variable, year, (current_values * 0).astype(float))
-
-        new_values_mapped = sim.calculate(variable_name, year, map_to=map_to)
+            new_values_mapped = calculate_with_dependency_zeroed(
+                sim, variable_name, variable, year, map_to=map_to
+            )
+        else:
+            new_values_mapped = original_values_mapped
         if filter is not None:
             contribution = (
                 original_values_mapped[filter] - new_values_mapped[filter]
@@ -80,8 +161,6 @@ def calculate_dependency_contributions(
         else:
             contribution = (original_values_mapped - new_values_mapped).mean()
         dependency_contributions[variable] = contribution
-        sim.set_input(variable_name, year, original_values)
-        sim.set_input(variable, year, current_values)
 
     result = pd.Series(dependency_contributions)
 
