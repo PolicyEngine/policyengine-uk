@@ -17,9 +17,10 @@ prescribed circumstances, employment, self-employment, pension contributions
 and start-up periods, in England, Wales and Scotland:
 
 1. Scope: the floor applies only to a claimant in the all work-related
-   requirements group, in gainful self-employment, outside a start-up period.
-   Everyone else keeps their actual earned income, and nobody's earned income
-   is lowered.
+   requirements group, in gainful self-employment, outside a start-up period
+   (from the data, or the one that begins when a responsible carer enters
+   that group). Everyone else keeps their actual earned income, and nobody's
+   earned income is lowered.
 2. Thresholds: a person's gross threshold is the minimum wage for their age
    times 52 times their expected hours (section 22), 16 (sections 20 and 21)
    or nothing (section 19 and anyone who is not a claimant). Expected hours
@@ -87,6 +88,7 @@ CIRCUMSTANCES = [
     "uc_is_responsible_foster_parent_of_child_under_one",
     "uc_is_foster_parent_or_new_friend_or_family_carer",
 ]
+STARTUP_ON_ENTRY = "uc_is_in_startup_period_on_entering_all_requirements_group"
 PERSON_VARIABLES = [
     "age",
     "is_uc_claimant",
@@ -94,6 +96,7 @@ PERSON_VARIABLES = [
     "uc_is_responsible_carer",
     "uc_is_in_gainful_self_employment",
     "uc_is_in_startup_period",
+    STARTUP_ON_ENTRY,
     "uc_expected_hours",
     "uc_mif_applies",
     "uc_individual_earned_income_before_mif",
@@ -206,6 +209,7 @@ def calculate(units, year, **kwargs):
             values["uc_is_in_gainful_self_employment"].astype(bool)
             & values["is_uc_claimant"].astype(bool)
             & ~values["uc_is_in_startup_period"].astype(bool)
+            & ~values[STARTUP_ON_ENTRY].astype(bool)
         ).astype(float)
     )
     return values
@@ -307,6 +311,7 @@ def check_scope(v, units):
         (v["group"] == "ALL_REQUIREMENTS")
         & v["uc_is_in_gainful_self_employment"].astype(bool)
         & ~v["uc_is_in_startup_period"].astype(bool)
+        & ~v[STARTUP_ON_ENTRY].astype(bool)
     )
     np.testing.assert_array_equal(applies, in_scope, err_msg=str(units))
     before = v["uc_individual_earned_income_before_mif"]
@@ -348,6 +353,7 @@ def unrestricted(units, year, v):
         name: {
             GROUP: "ALL_REQUIREMENTS" if claimant else "NOT_A_CLAIMANT",
             "uc_expected_hours": 35,
+            STARTUP_ON_ENTRY: False,
         }
         for name, claimant in zip(v["names"], v["is_uc_claimant"])
     }
