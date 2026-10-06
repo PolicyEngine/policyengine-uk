@@ -399,7 +399,9 @@
         region: NORTH_EAST
   output:
     # Reg. 32(1)(b) applies "whether claiming jointly or as a single person";
-    # the partner is neither in paid work nor (as modelled) excepted.
+    # the partner is neither in paid work nor unable to provide childcare
+    # for a reason in (i)-(iii).
+    uc_unable_to_provide_childcare: [false, false, false]
     uc_childcare_work_condition: false
 
 - name: Reg. 32(1) - met when the claimant and the other member both work
@@ -425,6 +427,147 @@
         members: [claimant, partner, child]
         region: NORTH_EAST
   output:
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(b)(iii) - the other member's exception applies on a single claim
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        uc_is_temporarily_absent_from_claimant_household: true
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+  output:
+    # Reg. 32(1)(b) applies "whether claiming jointly or as a single person",
+    # so the other member, who does not work, is unable to provide childcare
+    # while temporarily absent from the claimant's household (ADM F7012-F7013).
+    uc_unable_to_provide_childcare: [false, true, false]
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(2) - the other member of a single claim on statutory maternity pay is not treated as in paid work
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        statutory_maternity_pay: 6_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+  output:
+    # Reg. 32(2) treats "a claimant" as in paid work. The other member of a
+    # single claim is not a claimant (WRA 2012 s. 40), does not work and has
+    # no reg. 32(1)(b) exception, so limb (b) fails.
+    in_work: [true, false, false]
+    uc_childcare_treated_as_in_paid_work: [false, true, false]
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(2) - a joint claimant on statutory maternity pay is treated as in paid work (control)
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        statutory_maternity_pay: 6_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+  output:
+    # Each joint claimant is a claimant, so reg. 32(2)(b) treats the partner
+    # as in paid work and limb (b) is met.
+    uc_is_ineligible_partner: [false, false, false]
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1)(a) - on a single claim only the claimant can meet the paid work limb
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+        employment_income: 10_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+  output:
+    # Limb (a) needs "the claimant" in paid work or with an offer of it. The
+    # claimant has limited capability for work but does not work; the other
+    # member's work does not meet limb (a) for them.
+    uc_unable_to_provide_childcare: [true, false, false]
+    uc_childcare_work_condition: false
+
+- name: Reg. 32(1) - joint claimants, one working and the other with limited capability for work (control)
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 10_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+        region: NORTH_EAST
+  output:
+    # The partner is a joint claimant in paid work (limb (a)), and the
+    # claimant who does not work has limited capability for work (limb (b)(i)).
     uc_childcare_work_condition: true
 
 - name: Reg. 80A(2)(d)(ii) - a single claimant responsible for a child has the family cap
