@@ -1,0 +1,20 @@
+description: Vehicle excise duty expensive car supplement.
+values:
+  '2024-04-01': 410
+  '2025-04-01': 425
+  '2026-04-01': 440
+metadata:
+  unit: currency-GBP
+  period: year
+  label: vehicle excise duty expensive car supplement
+  reference:
+  - title: Vehicle Excise and Registration Act 1994, Schedule 1
+    href: https://www.legislation.gov.uk/ukpga/1994/22/schedule/1
+  - title: HMRC Budget 2025 rates and allowances, Vehicle Excise Duty
+    href: https://www.gov.uk/government/publications/budget-2025-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances
+  - title: DVLA vehicle tax rate tables
+    href: https://www.gov.uk/vehicle-tax-rate-tables
+  - title: DVLA Annual Report and Accounts 2024-25
+    href: https://www.gov.uk/government/publications/dvla-annual-report-and-accounts-2024-to-2025
+  - title: HM Treasury answer on Expensive Car Supplement, 12 January 2026
+    href: https://questions-statements.parliament.uk/written-questions/detail/2026-01-06/103368

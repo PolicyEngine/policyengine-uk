@@ -1,0 +1,9 @@
+description: Age from which a dependent child takes the older-child weight in the Households Below Average Income modified OECD equivalence scale.
+values:
+  2010-04-01: 14
+metadata:
+  unit: year
+  label: HBAI equivalence scale older-child age
+  reference:
+    - title: HBAI background information and methodology FYE 2025, Table 4 (equivalence scales)
+      href: https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#equivalisation-1

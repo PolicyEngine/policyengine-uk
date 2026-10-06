@@ -1,0 +1,14 @@
+description: HMRC regards a person on carer's leave whose partner is in qualifying paid work as in qualifying paid work themselves, for Tax-Free Childcare, if this is true.
+metadata:
+  reference:
+    - title: The Childcare Payments (Eligibility) Regulations 2015 - Regulation 13(1)(c)
+      href: https://www.legislation.gov.uk/uksi/2015/448/regulation/13
+    - title: The Carer's Leave (Consequential Amendments to Subordinate Legislation) Regulations 2024 - Regulation 8(2)
+      href: https://www.legislation.gov.uk/uksi/2024/266/regulation/8/made
+  period: year
+  unit: bool
+  label: Tax-Free Childcare carer's leave counts as caring
+values:
+  2015-01-01: false
+  # SI 2024/266 reg 8(2) inserted 13(1)(c) from 6 April 2024.
+  2024-04-06: true

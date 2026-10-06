@@ -1,0 +1,27 @@
+description: Tobacco duty other amount per kilogram.
+values:
+  '2023-11-22':
+    value: 173.68
+    metadata:
+      effective_time: '18:00:00'
+  '2024-10-30':
+    value: 183.49
+    metadata:
+      effective_time: '18:00:00'
+  '2025-11-26':
+    value: 193.87
+    metadata:
+      effective_time: '18:00:00'
+  '2026-10-01': 248.07
+metadata:
+  unit: currency-GBP
+  period: year
+  label: tobacco duty other amount per kilogram
+  reference:
+  - title: Tobacco Products Duty Act 1979, Schedule 1
+    href: https://www.legislation.gov.uk/ukpga/1979/7/schedule/1
+  - title: HMRC historical Tobacco Duty rates
+    href: https://www.gov.uk/government/statistics/tobacco-bulletin/historical-tobacco-duty-rates
+  - title: HMRC Tobacco Products Duty rates
+    href: https://www.gov.uk/government/publications/rates-and-allowances-excise-duty-tobacco-duty/excise-duty-tobacco-duty-rates
+  preserve_calendar_dates: true

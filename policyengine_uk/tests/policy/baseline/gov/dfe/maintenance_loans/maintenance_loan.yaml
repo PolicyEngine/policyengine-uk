@@ -70,7 +70,6 @@
         is_parent: true
       child:
         age: 1
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -432,7 +431,6 @@
         is_parent: true
       child:
         age: 1
-        is_child: true
     benunits:
       grandparent_benunit:
         members: ["grandparent"]
@@ -522,3 +520,61 @@
         region: LONDON
   output:
     maintenance_loan: [14_135]
+
+# Education (Student Support) Regulations 2011 Sch 4 para 2(1)(a): a student
+# aged 25 or over on the first day of the academic year is independent, so the
+# parents' income is not assessed. At 24 the parent's £40,000 is added to the
+# student's own £5,000; at 25 only the student's own income counts.
+- name: Maintenance loan household income adds a sponsor's income for a 24-year-old
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 40_000
+        is_household_head: true
+      student:
+        age: 24
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["parent", "student"]
+        country: ENGLAND
+  output:
+    maintenance_loan_has_sponsor: [false, true]
+    maintenance_loan_household_income: [40_000, 45_000]
+
+- name: Maintenance loan household income treats a 25-year-old as independent
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        current_education: NOT_IN_EDUCATION
+        adjusted_net_income: 40_000
+        is_household_head: true
+      student:
+        age: 25
+        current_education: TERTIARY
+        adjusted_net_income: 5_000
+        is_household_head: false
+    benunits:
+      parent_benunit:
+        members: ["parent"]
+      student_benunit:
+        members: ["student"]
+    households:
+      household:
+        members: ["parent", "student"]
+        country: ENGLAND
+  output:
+    maintenance_loan_has_sponsor: [false, true]
+    maintenance_loan_household_income: [40_000, 5_000]

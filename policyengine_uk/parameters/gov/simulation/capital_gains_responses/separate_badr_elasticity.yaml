@@ -1,0 +1,6 @@
+description: Whether gains qualifying for Business Asset Disposal Relief or Investors' Relief respond with gov.simulation.capital_gains_responses.badr_elasticity rather than the main elasticity. While false, all gains respond with the main elasticity.
+values:
+  2000-01-01: false
+metadata:
+  unit: bool
+  label: Separate retention-rate elasticity for Business Asset Disposal Relief gains

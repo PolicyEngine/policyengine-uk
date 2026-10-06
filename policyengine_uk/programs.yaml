@@ -84,6 +84,46 @@ programs:
     variable: fuel_duty
     parameter_prefix: gov.hmrc.fuel_duty
     verified_start_year: 2022
+    notes: Petrol and diesel, plus supplied kilograms of LPG and natural road fuel gas. Gas consumption is not imputed.
+
+  - id: alcohol_duty
+    name: Alcohol duty
+    full_name: Alcohol Duty
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: alcohol_duty
+    parameter_prefix: gov.hmrc.alcohol_duty
+    verified_start_year: 2024
+    verified_end_year: 2026
+    notes: Household quantities and strengths, including draught relief. Excludes small producer relief and population imputation.
+
+  - id: tobacco_duty
+    name: Tobacco duty
+    full_name: Tobacco Products Duty
+    category: Taxes
+    agency: HMRC
+    status: partial
+    coverage: UK
+    variable: tobacco_duty
+    parameter_prefix: gov.hmrc.tobacco_duty
+    verified_start_year: 2024
+    verified_end_year: 2026
+    notes: Household quantities and retail cigarette prices. Population quantities are not imputed.
+
+  - id: vehicle_excise_duty
+    name: Vehicle excise duty
+    full_name: Vehicle Excise Duty
+    category: Taxes
+    agency: DfT
+    status: partial
+    coverage: UK
+    variable: vehicle_excise_duty
+    parameter_prefix: gov.dft.vehicle_excise_duty
+    verified_start_year: 2024
+    verified_end_year: 2026
+    notes: One car per person with supplied vehicle characteristics. Excludes vans, motorcycles, eVED and population imputation.
 
   - id: student_loans
     name: Student loan repayments
@@ -137,8 +177,10 @@ programs:
     agency: HMRC
     status: complete
     coverage: UK
-    parameter_prefix: gov.hmrc
-    verified_start_year: 2022
+    variable: minimum_wage
+    parameter_prefix: gov.hmrc.minimum_wage
+    verified_start_year: 2017
+    notes: Rates from 2015 are the 30 April values; the October 2015 and October 2016 changes fall mid fiscal year
 
   # --- DWP programs ---
   - id: universal_credit
@@ -245,6 +287,7 @@ programs:
     variable: carers_allowance
     parameter_prefix: gov.dwp.carers_allowance
     verified_start_year: 2022
+    notes: Reduced by overlapping benefits such as State Pension and contributory ESA
 
   - id: dla
     name: DLA
@@ -481,7 +524,7 @@ programs:
     variable: council_tax_reduction
     parameter_prefix: gov.local_authorities
     verified_start_year: 2013
-    notes: First-pass national support for Scotland, Wales, and England pensioner schemes, with reported CTB/CTR retained for unsupported English working-age local schemes.
+    notes: First-pass national support for Scotland, Wales, and England pensioner schemes (including the Pension Credit guarantee credit disregard and savings-credit-only rules), with reported CTB/CTR retained for unsupported English working-age local schemes.
 
   # --- Treasury programs ---
   - id: cost_of_living_support

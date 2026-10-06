@@ -1,0 +1,216 @@
+- name: An explicit Pension Credit earnings input is the claimant and partner's earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        employment_income: 3_000
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+        pension_credit_earnings: 10_000
+  output:
+    # pension_credit_earnings counts only the claimant and partner (SPCA s.5),
+    # so an input of 10,000 is taken as theirs; the dependant's 3,000 is not
+    # added.
+    pension_credit_income: 10_000
+
+- name: Pension Credit earnings exclude a qualifying young person's earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        employment_income: 5_000
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        employment_income: 3_000
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # Only the claimant's 5,000 counts.
+    pension_credit_earnings: 5_000
+
+- name: Pension Credit excludes an 18-year-old qualifying young person's income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        state_pension: 8_000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        employment_income: 3_000
+        self_employment_income: 1_000
+        property_income: 500
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+        working_tax_credit: 200
+        pension_credit_deemed_income: 104
+  output:
+    is_claimant_or_partner: [true, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    # SPCA 2002 s.5: 8,000 claimant pension + 200 unit tax credit + 104
+    # unit tariff income = 8,304; the dependant's 4,500 income is excluded.
+    pension_credit_income: 8_304
+
+- name: Pension Credit excludes a 19-year-old qualifying young person's deductions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        state_pension: 10_000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 18
+        employment_income: 3_000
+        income_tax: 100
+        national_insurance: 100
+        pension_contributions: 2_000
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    # SPCA 2002 s.5: only the claimant's 10,000 pension counts. Neither
+    # the dependant's 3,000 earnings nor 100 + 100 + 50% * 2,000 deductions count.
+    pension_credit_income: 10_000
+
+- name: Pension Credit means-tested basic income is restricted to the claimant and partner
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.contrib.ubi_center.basic_income.interactions.include_in_means_tests: true
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        state_pension: 8_000
+        basic_income: 100
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        basic_income: 1_000
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    # The reform elects to count basic income. SPCA 2002 s.5 limits whose
+    # income is counted: 8,000 pension + 100 claimant basic income = 8,100.
+    pension_credit_income: 8_100
+
+- name: Pension Credit counts both partners' income deductions and carer additions
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        state_pension: 5_000
+        employment_income: 1_000
+        jsa_contrib: 100
+        income_tax: 100
+        national_insurance: 0
+        pension_contributions: 200
+        is_entitled_to_carer_benefit: true
+      partner:
+        age: 75
+        private_pension_income: 2_000
+        self_employment_income: 500
+        esa_contrib: 200
+        income_tax: 50
+        national_insurance: 25
+        pension_contributions: 100
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        pension_credit_deemed_income: 104
+  output:
+    is_claimant_or_partner: [true, true]
+    # SPCA 2002 s.5: gross = 5,000 + 1,000 + 100 + 2,000 + 500 + 200
+    # + 104 = 8,904; deductions = 100 + 50 + 25 + 50% * 300 = 325.
+    pension_credit_income: 8_579
+    # Reg.9: remove the claimant's 100 JSA and partner's 200 ESA.
+    savings_credit_income: 8_279
+    # Sch.I para.4 and the 2026 carer addition: 2 * 48.15 * 52 = 5,007.60.
+    carer_minimum_guarantee_addition: 5_007.60
+
+- name: A qualifying young person who is a carer does not receive a Pension Credit carer addition
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        is_entitled_to_carer_benefit: false
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+        is_entitled_to_carer_benefit: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    # Sch.I para.4 counts entitled claimants/partners: 0 * 48.15 * 52 = 0.
+    carer_minimum_guarantee_addition: 0
+
+- name: Savings Credit does not subtract a dependant's excluded benefits from claimant income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_parent: true
+        state_pension: 10_000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      young_person:
+        age: 19
+        is_in_non_advanced_education: true
+        esa_contrib: 200
+        receives_benefits_in_own_right: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
+    is_claimant_or_partner: [true, false]
+    # SPCA 2002 s.5 and reg.9: 10,000 claimant pension - 0 claimant/partner
+    # excluded benefits = 10,000. The dependant's 200 ESA never enters income.
+    pension_credit_income: 10_000
+    savings_credit_income: 10_000
