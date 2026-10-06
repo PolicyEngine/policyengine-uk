@@ -33,6 +33,13 @@ Three horizons are stitched together for each series:
    assumptions (Fiscal Risks and Sustainability report) and the long-run
    RPI-CPI wedge methodology.
 
+The cumulative indices run to the last year any growth series covers, so
+they end where the data ends rather than at a fixed year. That is one year
+past the last year in `yoy_growth.yaml`, because the lagged CPI and earnings
+series run a year past their source. A series that ends sooner holds its
+final growth rate to that year. Every parameter uprated by an index runs as
+far, and is on fiscal-year values throughout.
+
 ## How the 2031+ values were constructed
 
 Issue [#1379](https://github.com/PolicyEngine/policyengine-uk/issues/1379)
@@ -64,9 +71,10 @@ analysis.
    detailed forecast tables (note the EFO release month in the header comment).
 2. Recompute the 2031-2073 convergence path so the first long-run year
    continues smoothly from the new last forecast year (no jump).
-3. Run `python policyengine_uk/parameters/gov/economic_assumptions/create_economic_assumption_indices.py`
-   to regenerate the cumulative `indices/` parameters that uprating depends
-   on.
+3. Nothing to regenerate: the cumulative indices that uprating depends on
+   are built from these series each time the tax-benefit system loads
+   (`create_economic_assumption_indices.py`), and extend to any new last
+   year automatically.
 4. Update the EFO reference in each series' `metadata.reference`.
 
 [rpi-cpi]: https://obr.uk/box/the-long-run-difference-between-rpi-and-cpi-inflation/

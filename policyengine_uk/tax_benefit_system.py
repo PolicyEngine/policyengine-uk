@@ -42,8 +42,8 @@ from policyengine_uk.utils.parameters import (
 COUNTRY_DIR = Path(__file__).parent
 DEFAULT_DATASET_ENV_VAR = "POLICYENGINE_UK_DEFAULT_DATASET"
 
-# Cache for fully-processed parameter tree, so convert_to_fiscal_year_parameters
-# (22,538 param.update() calls) only runs once per process.
+# Cache for the fully-processed parameter tree, so the processing pipeline in
+# process_parameters only runs once per process.
 _processed_parameters_cache = None
 
 
@@ -140,7 +140,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         global _processed_parameters_cache
         if _processed_parameters_cache is not None:
             # Fast path: clone pre-processed parameters rather than re-running
-            # the full pipeline (saves ~0.5s from convert_to_fiscal_year_parameters).
+            # the full pipeline.
             # apply_parameter_changes() calls reset_parameters() + process_parameters()
             # directly, so reforms still get the full pipeline.
             self._parameters_at_instant_cache = {}

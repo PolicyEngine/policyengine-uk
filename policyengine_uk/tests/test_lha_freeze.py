@@ -144,3 +144,35 @@ def test_frozen_years_hold_the_reset_level_for_an_uncapped_area():
         assert _weekly_rate(frozen_year, "MAIDSTONE", "C") == pytest.approx(
             reset, abs=0.01
         )
+
+
+def test_the_anchor_is_the_last_unfrozen_year_however_values_are_stored():
+    """A run of unfrozen years stored as one value still anchors on its last year.
+
+    Fiscal-year conversion stores a value only where a year changes, so the
+    run 2015-2028 below is a single stored value dated 2015.
+    """
+    from policyengine_core.parameters import ParameterNode
+
+    from policyengine_uk.variables.gov.dwp.LHA_category import find_freeze_anchor
+
+    freeze = ParameterNode(
+        "root",
+        data={"freeze": {"values": {"2015-01-01": False, "2029-01-01": True}}},
+    ).freeze
+
+    assert find_freeze_anchor(freeze, "2031-01-01") == "2028-01-01"
+    assert find_freeze_anchor(freeze, "2029-01-01") == "2028-01-01"
+    assert find_freeze_anchor(freeze, "2028-01-01") is None
+
+
+def test_unfreezing_for_several_years_holds_the_last_of_them():
+    """Unfrozen 2026 to 2028, frozen again from 2029: 2030 holds the 2028 rate."""
+    reform = {"gov.dwp.LHA.freeze": {"year:2026:3": False}}
+    rates = {
+        year: _weekly_rate(year, "MAIDSTONE", "C", reform=reform)
+        for year in (2026, 2028, 2030)
+    }
+
+    assert rates[2028] != pytest.approx(rates[2026], abs=0.01)
+    assert rates[2030] == pytest.approx(rates[2028], abs=0.01)

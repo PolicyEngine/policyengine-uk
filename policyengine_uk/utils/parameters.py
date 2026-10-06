@@ -43,6 +43,14 @@ def fiscal_year_average(param, year: int):
         if start < instant < end:
             changes.append(instant)
 
+    if not changes:
+        # One value holds all year. Return it as it is: value * days / days
+        # can differ from it in the last bit.
+        value = param(start.isoformat())
+        if not isinstance(value, (int, float)) or isinstance(value, bool):
+            return None
+        return value
+
     boundaries = [start, *sorted(changes), end]
     total = 0.0
     for segment_start, segment_end in zip(boundaries, boundaries[1:]):
@@ -75,6 +83,53 @@ def uk_fiscal_year_period(time_period):
     return periods.Period(("day", start, days))
 
 
+# The first fiscal year converted. Parameters are backdated to 1 January 2015
+# before conversion.
+FIRST_FISCAL_YEAR = 2015
+
+
+def _fiscal_year_value(param, year: int, blend: bool):
+    value = fiscal_year_average(param, year) if blend else None
+    if value is None:
+        value = param(f"{year}-04-30")
+    return value
+
+
+def _same_value(a, b) -> bool:
+    return a is b or (type(a) is type(b) and a == b)
+
+
+def _fiscal_year_writes(param, blend: bool) -> dict:
+    """The years whose fiscal-year value the calendar year does not already hold.
+
+    A calendar year with no value dated after 1 January holds one value all
+    year, and for a sampled parameter that is the value read on 30 April, so
+    only years with a value dated inside them can change. A blended fiscal
+    year also runs into the next calendar year, so every year up to the
+    parameter's last dated value is checked against what it already holds.
+    Past that year a parameter holds one value, which is its fiscal-year
+    value for every later year too.
+    """
+    if not param.values_list:
+        return {}
+    dated_inside = {
+        int(value.instant_str[:4])
+        for value in param.values_list
+        if value.instant_str[4:] != "-01-01"
+    }
+    if blend:
+        last_dated_year = max(int(value.instant_str[:4]) for value in param.values_list)
+        years = range(FIRST_FISCAL_YEAR, last_dated_year + 1)
+    else:
+        years = sorted(year for year in dated_inside if year >= FIRST_FISCAL_YEAR)
+    values = {year: _fiscal_year_value(param, year, blend) for year in years}
+    return {
+        year: value
+        for year, value in values.items()
+        if year in dated_inside or not _same_value(param(f"{year}-01-01"), value)
+    }
+
+
 def convert_to_fiscal_year_parameters(parameters):
     """
     Convert parameters to use UK fiscal year values.
@@ -83,8 +138,8 @@ def convert_to_fiscal_year_parameters(parameters):
     for a year (e.g., param("2026")), we want the value at April 30 of
     that year (which represents the fiscal year starting April 6).
 
-    This function samples each parameter at April 30 of each year and
-    sets that as the value for the entire year period.
+    This function sets each year's value, from 2015 on, to the parameter's
+    value at April 30 of that year.
 
     Sampling a single date drops any change taking effect later in the fiscal
     year. Parameters carrying `fiscal_year_blend: true` in their metadata are
@@ -96,25 +151,29 @@ def convert_to_fiscal_year_parameters(parameters):
     Parameters with ``preserve_calendar_dates: true`` retain statutory dates.
     Their formulas must explicitly annualise the underlying transactions.
 
+    There is no last year. Conversion used to stop at a fixed year, after
+    which the calendar value applied, and writing every year to wherever the
+    data ends is slow. Instead only the years whose value would change are
+    rewritten; every other year already holds its fiscal-year value, so the
+    result is the same on every date as writing every year.
+
     Values are computed for every year before any are written, so that
     rewriting one year cannot affect the reading of another.
     """
-    # Cover years from 2015 through 2040 for long-term projections
-    YEARS = list(range(2015, 2041))
     for param in parameters.get_descendants():
         if isinstance(param, Parameter):
             if (param.metadata or {}).get("preserve_calendar_dates", False):
                 continue
             blend = (param.metadata or {}).get("fiscal_year_blend", False)
-            values = {}
-            for year in YEARS:
-                value = fiscal_year_average(param, year) if blend else None
-                if value is None:
-                    value = param(f"{year}-04-30")
-                values[year] = value
-            for year, value in values.items():
+            for year, value in _fiscal_year_writes(param, blend).items():
                 param.update(
                     period=f"{year}",
                     value=value,
                 )
+            # Writing a year marks a parameter modified, and every parameter
+            # used to have every year written. Mark the rest too, so the flag
+            # reads as it did: Simulation.check_macro_cache in
+            # policyengine-core will not reuse cached results that depend on
+            # a parameter marked modified.
+            param.mark_as_modified()
     return parameters

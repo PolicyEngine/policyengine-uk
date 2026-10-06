@@ -90,37 +90,37 @@ def find_freeze_anchor(freeze_parameter: Parameter, period: str) -> str:
     """Finds the instant whose rents a frozen LHA rate should be based on.
 
     Frozen rates are held in cash terms at the level set in the most recent
-    year in which LHA was *not* frozen, so this returns the start instant of
-    the latest unfrozen period before the given period.
+    year in which LHA was *not* frozen, so this returns 1 January of the
+    latest fiscal year, up to the given period, in which the freeze
+    parameter is false.
+
+    It reads the parameter a year at a time rather than walking its stored
+    values. Fiscal-year conversion stores a value only where a year changes,
+    so a run of unfrozen years can be one stored value dated at its start,
+    and the latest stored false value would give the run's first year rather
+    than its last.
 
     Args:
         freeze_parameter (Parameter): The LHA freeze parameter.
         period (str): The period to search up to.
 
     Returns:
-        str: The instant of the latest unfrozen period, or None if not frozen.
+        str: 1 January of the latest unfrozen year, or None if not frozen.
     """
-    # Values at or before the requested period, newest first.
-    relevant_values = [
-        v for v in freeze_parameter.values_list if v.instant_str <= str(period)
-    ]
-
-    if not relevant_values:
-        return None
-
-    if not relevant_values[0].value:
+    if not freeze_parameter.values_list or not freeze_parameter(period):
         # Not currently frozen.
         return None
 
-    # Walk back to the most recent value that is False; the rates in force
-    # during the freeze are the ones determined in that year.
-    for value in relevant_values:
-        if not value.value:
-            return value.instant_str
+    # 30 April reads the fiscal year, which is the whole calendar year's
+    # value once converted.
+    first_year = int(freeze_parameter.values_list[-1].instant_str[:4])
+    for year in range(int(str(period)[:4]), first_year - 1, -1):
+        if not freeze_parameter(f"{year}-04-30"):
+            return f"{year}-01-01"
 
     # Frozen for the whole of the parameter's history; fall back to the
     # oldest value available.
-    return relevant_values[-1].instant_str
+    return freeze_parameter.values_list[-1].instant_str
 
 
 # Universal Credit's monthly national maximum is only modelled from April

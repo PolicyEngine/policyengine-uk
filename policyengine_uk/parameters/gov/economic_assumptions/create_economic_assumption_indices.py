@@ -4,12 +4,19 @@ from policyengine_core.parameters import (
     get_parameter,
 )
 
+from policyengine_uk.parameters.gov.economic_assumptions.horizon import (
+    growth_horizon,
+)
+
 
 def create_economic_assumption_indices(
     parameters: ParameterNode,
 ) -> ParameterNode:
     econ_assumptions: ParameterNode = parameters.gov.economic_assumptions
     yoy_growth: ParameterNode = econ_assumptions.yoy_growth
+    # Every index runs to the last year the growth series cover. A series
+    # that ends sooner holds its final growth rate to that year.
+    horizon = growth_horizon(yoy_growth)
     indices = ParameterNode(
         name="gov.economic_assumptions.indices",
         data={},
@@ -38,10 +45,10 @@ def create_economic_assumption_indices(
             start_year = int(descendant.values_list[-1].instant_str[:4])
             values = {start_year: 1.0}
 
-            for year in range(start_year + 1, 2040):
-                yoy_growth = descendant(year)
+            for year in range(start_year + 1, horizon + 1):
+                growth = descendant(year)
                 indices_value = round(
-                    values[year - 1] * (1 + yoy_growth),
+                    values[year - 1] * (1 + growth),
                     5,
                 )
                 values[year] = indices_value

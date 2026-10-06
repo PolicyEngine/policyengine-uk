@@ -220,13 +220,16 @@ class TestScenarioOverrides:
 class TestFiscalYearCoverage:
     """Tests to verify fiscal year conversion covers all needed years."""
 
-    @pytest.mark.parametrize("year", [2025, 2026, 2027, 2028, 2029, 2030, 2040])
+    @pytest.mark.parametrize(
+        "year", [2025, 2026, 2027, 2028, 2029, 2030, 2040, 2050, 2074]
+    )
     def test_year_in_conversion_range(self, uk_system, year):
         """
-        Test that years from 2025-2040 can be queried.
+        Test that years from 2025 to the end of the economic assumptions
+        can be queried.
 
-        This verifies that the fiscal year conversion range covers
-        all years needed for long-term projections.
+        Conversion has no last year; test_fiscal_year_conversion.py checks
+        that every year holds its fiscal-year value.
         """
         params = uk_system.get_parameters_at_instant(str(year))
         assert params is not None

@@ -1,5 +1,7 @@
 from policyengine_core.parameters import Parameter, ParameterNode
 
+from policyengine_uk.parameters.gov.economic_assumptions.horizon import last_year
+
 
 def lag_source_years(source: Parameter, first_year: int) -> range:
     """Years a one-year-lagged copy of ``source`` should be built for.
@@ -10,8 +12,7 @@ def lag_source_years(source: Parameter, first_year: int) -> range:
     freezes the lagged value at the last year written, because a parameter
     carries its final value forward rather than raising.
     """
-    last_source_year = max(int(value.instant_str[:4]) for value in source.values_list)
-    return range(first_year, last_source_year + 2)
+    return range(first_year, last_year(source) + 2)
 
 
 def add_lagged_parameter(
