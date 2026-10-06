@@ -95,7 +95,7 @@ class LabourSupplyResponseData(BaseModel):
 
 def apply_labour_supply_responses(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -109,7 +109,11 @@ def apply_labour_supply_responses(
 
     Args:
         sim: PolicyEngine simulation object (should have baseline attribute)
-        target_variable: Variable that drives labour supply decisions
+        target_variable: Variable that drives labour supply decisions. The
+            default is HBAI net income before HBAI resets a negative income
+            to zero: the household's actual budget constraint. The reset is
+            a statistical convention; measured on the reset figure, a pay
+            rise for a household below zero would look fully withdrawn.
         input_variable: Variable representing labour supply (typically employment_income)
         year: Year for calculation
         count_adults: Number of adults to calculate responses for
@@ -193,7 +197,7 @@ def apply_labour_supply_responses(
 
 def apply_progression_responses(
     sim: Simulation,
-    target_variable: str = "hbai_household_net_income",
+    target_variable: str = "hbai_household_net_income_before_reset_to_zero",
     input_variable: str = "employment_income",
     year: int = 2025,
     count_adults: int = 2,
@@ -207,7 +211,11 @@ def apply_progression_responses(
 
     Args:
         sim: PolicyEngine simulation object (should have baseline attribute)
-        target_variable: Variable that drives labour supply decisions
+        target_variable: Variable that drives labour supply decisions. The
+            default is HBAI net income before HBAI resets a negative income
+            to zero: the household's actual budget constraint. The reset is
+            a statistical convention; measured on the reset figure, a pay
+            rise for a household below zero would look fully withdrawn.
         input_variable: Variable representing labour supply (typically employment_income)
         year: Year for calculation
         count_adults: Number of adults to calculate responses for

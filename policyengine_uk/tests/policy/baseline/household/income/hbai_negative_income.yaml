@@ -1,0 +1,162 @@
+# HBAI resets a negative household income before housing costs to zero and
+# derives income after housing costs from the reset figure, which can be
+# negative: "Negative incomes BHC are reset to zero, but negative AHC incomes
+# calculated from the adjusted BHC incomes are possible. Where incomes have
+# been adjusted to zero BHC, income AHC is derived from the adjusted BHC
+# income." (HBAI Background Information and Methodology report FYE 2025,
+# "Negative incomes").
+#
+# The cases use 2024 (FYE 2025), where the absolute poverty lines are HBAI's
+# published FYE 2025 lines: for a single adult 15,040.08 a year before housing
+# costs and 11,276.52 after (see poverty/hbai_family_type_lines.yaml).
+# Universal Credit is not claimed, so the household's only income is what the
+# case gives it.
+
+- name: Deductions above income leave a negative figure that is reset to zero
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    people:
+      adult:
+        age: 40
+        maintenance_expenses: 5_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        council_tax: 1_500
+        rent: 6_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    hbai_household_net_income_before_reset_to_zero: -6_500
+    hbai_household_net_income: 0
+    real_hbai_household_net_income: 0
+    equiv_hbai_household_net_income: 0
+    # Income after housing costs is the reset figure less rent: 0 - 6,000.
+    hbai_household_net_income_ahc: -6_000
+    # Divided by the 0.58 AHC equivalence factor for a single adult.
+    equiv_hbai_household_net_income_ahc: -10_344.83
+    # The before-housing-costs gap is the whole line, never more.
+    poverty_gap_bhc: 15_040.08
+    poverty_gap: 15_040.08
+    deep_poverty_gap: 7_520.04
+    # The after-housing-costs gap is the line plus the negative income.
+    poverty_gap_ahc: 17_276.52
+    in_poverty_bhc: true
+    in_poverty_ahc: true
+    in_deep_poverty_bhc: true
+    in_deep_poverty_ahc: true
+    in_poverty: true
+    in_deep_poverty: true
+
+- name: An owner-occupier's housing costs come off the reset income
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    people:
+      adult:
+        age: 40
+        maintenance_expenses: 3_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        council_tax: 1_000
+        tenure_type: OWNED_WITH_MORTGAGE
+        mortgage_interest_repayment: 2_000
+        water_and_sewerage_charges: 400
+        structural_insurance_payments: 100
+  output:
+    hbai_household_net_income_before_reset_to_zero: -4_000
+    hbai_household_net_income: 0
+    hbai_household_net_income_ahc: -2_500
+
+- name: A negative figure given directly is reset; housing costs still come off
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        hbai_household_net_income_before_reset_to_zero: -25_000
+        rent: 4_800
+        tenure_type: RENT_PRIVATELY
+  output:
+    hbai_household_net_income: 0
+    hbai_household_net_income_ahc: -4_800
+    poverty_gap_bhc: 15_040.08
+    poverty_gap_ahc: 16_076.52
+
+- name: A figure of exactly zero stays zero
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        hbai_household_net_income_before_reset_to_zero: 0
+  output:
+    hbai_household_net_income: 0
+    hbai_household_net_income_ahc: 0
+
+- name: A positive income is unchanged by the reset
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    people:
+      adult:
+        age: 40
+    benunits:
+      benunit:
+        members: [adult]
+    households:
+      household:
+        members: [adult]
+        hbai_household_net_income_before_reset_to_zero: 12_345
+        rent: 5_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    hbai_household_net_income: 12_345
+    hbai_household_net_income_ahc: 7_345
+    # 12,345 is below the 15,040.08 line: a gap of 2,695.08.
+    poverty_gap_bhc: 2_695.08
+
+- name: Earnings above deductions give the same income with or without the reset
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    people:
+      adult:
+        age: 40
+        employment_income: 20_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+    households:
+      household:
+        members: [adult]
+        council_tax: 1_500
+  output:
+    # 20,000 less Income Tax of 20% x (20,000 - 12,570) = 1,486, Class 1 NICs
+    # of 8% x (20,000 - 12,570) = 594.40 and Council Tax of 1,500.
+    hbai_household_net_income_before_reset_to_zero: 16_419.60
+    hbai_household_net_income: 16_419.60

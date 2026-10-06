@@ -32,20 +32,27 @@ def test_household_income_decile_caps_at_ten():
     assert result.max() == 10
 
 
-def test_household_income_decile_keeps_negative_incomes_outside_deciles():
+def test_household_income_decile_ranks_incomes_reset_to_zero_in_the_bottom_decile():
+    # HBAI resets a negative income to zero before ranking, so
+    # equiv_hbai_household_net_income is never negative and a household
+    # whose income was reset sits in the bottom decile, not outside the deciles.
+    # Two of twenty equally weighted households have their income reset: a
+    # tenth of the population, so both fill the bottom decile.
     household = FakeHousehold(
         {
-            "equiv_hbai_household_net_income": np.array([-5, 0, 10], dtype=float),
-            "household_count_people": np.ones(3),
-            "household_weight": np.ones(3),
+            "equiv_hbai_household_net_income": np.concatenate(
+                [[0.0, 0.0], np.arange(1, 19, dtype=float) * 1_000]
+            ),
+            "household_count_people": np.ones(20),
+            "household_weight": np.ones(20),
         }
     )
 
     result = household_income_decile.formula(household, 2025, None)
 
-    assert result[0] == -1
-    assert np.all(result[1:] >= 1)
-    assert np.all(result[1:] <= 10)
+    assert result[0] == result[1] == 1
+    assert np.all(result >= 1)
+    assert np.all(result <= 10)
 
 
 def test_pre_budget_change_income_decile_domain_is_negative_or_one_to_ten():

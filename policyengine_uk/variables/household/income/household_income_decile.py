@@ -5,7 +5,12 @@ import numpy as np
 
 class household_income_decile(Variable):
     label = "household income decile"
-    documentation = "Decile of household income (person-weighted)"
+    documentation = (
+        "Decile of equivalised HBAI household net income before housing costs "
+        "(person-weighted). As in HBAI, a negative income is reset to zero "
+        "before ranking, so a household with negative income before the reset "
+        "falls in the bottom decile."
+    )
     entity = Household
     definition_period = YEAR
     value_type = int
@@ -15,8 +20,4 @@ class household_income_decile(Variable):
         count_people = household("household_count_people", period)
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(income, weights=household_weight * count_people)
-        decile = weighted_income.decile_rank().values
-        # Set negatives to -1.
-        # This avoids the bottom decile summing to a negative number,
-        # which would flip the % change in the interface.
-        return where(income < 0, -1, decile)
+        return weighted_income.decile_rank().values
