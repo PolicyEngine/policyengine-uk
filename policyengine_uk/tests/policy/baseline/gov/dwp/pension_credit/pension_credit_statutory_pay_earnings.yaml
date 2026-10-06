@@ -132,7 +132,8 @@
   output:
     # 2 * 6,409 = 12,818.
     pension_credit_earnings: 2 * 123.25 * 52
-    # Sch VI paras 4A and 5(b): one 10 * 52 = 520 for the couple.
+    # Sch VI para 5(b): one 10 a week for the couple, however many of them
+    # earn: 10 * 52 = 520.
     pension_credit_earnings_disregard: 10 * 52
     # 12,818 - 520 = 12,298.
     pension_credit_income: (2 * 123.25 - 10) * 52
@@ -169,8 +170,10 @@
     # the dependant's statutory sick pay would make it 520.
     pension_credit_earnings_disregard: 4 * 52
     pension_credit_income: 0
-    # Couple 363.25 plus 81.07 for the eldest child, born before 6 April 2017
-    # (Sch IIA para 10): 444.32 * 52 = 23,104.64.
+    # The model treats the 17-year-old as a qualifying young person (reg 4A,
+    # through its default education proxy), so the minimum guarantee is the
+    # couple's 363.25 plus 81.07 for an eldest child or qualifying young person
+    # born before 6 April 2017 (Sch IIA para 10): 444.32 * 52 = 23,104.64.
     guarantee_credit: (363.25 + 81.07) * 52
 
 - name: Case 6, a carer's twenty pound disregard applies to statutory sick pay.
@@ -224,7 +227,8 @@
     pension_credit_earnings: 194.32 * 52
     pension_credit_earnings_disregard: 10 * 52
     # 10,104.64 - 520 = 9,584.64. Guarantee Credit is not asserted: the model
-    # pays no Pension Credit to a mixed-age couple.
+    # makes a couple eligible for Pension Credit only if both are over State
+    # Pension age (is_pension_credit_eligible).
     pension_credit_income: (194.32 - 10) * 52
 
 - name: Case 8, pension-age Housing Benefit counts statutory paternity pay as earnings.
@@ -244,8 +248,9 @@
       benunit:
         members: [person1, person2]
         # HB (SPC) Regs 2006 Sch 4 para 7(b): 10 a week for a couple. Set
-        # here because the model's Housing Benefit earnings disregard is not
-        # yet the statutory amount.
+        # here because the model's Housing Benefit disregard uprates the 5 and
+        # 10 pound amounts with prices and gives them whether or not there are
+        # earnings.
         housing_benefit_applicable_income_disregard: 10 * 52
     households:
       household:
