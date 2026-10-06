@@ -16,7 +16,10 @@ from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
-from policyengine_uk.utils.parameters import uk_fiscal_year_period
+from policyengine_uk.utils.parameters import (
+    check_parameter_not_removed,
+    uk_fiscal_year_period,
+)
 
 # PolicyEngine UK imports
 from policyengine_uk.data.dataset_schema import (
@@ -102,6 +105,11 @@ class Simulation(CoreSimulation):
     calculated_periods: List[str] = []
     _variable_dependencies: Dict[str, List[str]] = None
     dataset = None
+    # True when built from survey or other microdata rather than a situation
+    # dictionary. Variables that impute unobserved detail across a population
+    # (such as months_since_last_birthday) read it; unlike the sum of weights,
+    # it stays true for a region or constituency filtered from the data.
+    built_from_dataset: bool = False
 
     def __init__(
         self,
@@ -117,7 +125,7 @@ class Simulation(CoreSimulation):
             ]
         ] = None,
         trace: bool = False,
-        reform: Dict | Type[Reform] = None,
+        reform: Dict | Type[Reform] | tuple = None,
     ):
         """Initialize a UK simulation.
 
@@ -126,6 +134,8 @@ class Simulation(CoreSimulation):
             situation: A dictionary describing the situation to simulate
             dataset: Data source - can be DataFrame, URL string, or Dataset object
             trace: Whether to enable detailed tracing of calculations
+            reform: A parameter-change dict, a structural Reform class, or
+                a tuple of these applied in order (see Scenario.from_reform)
         """
         # Initialize tax-benefit rules
         self.tax_benefit_system = CountryTaxBenefitSystem()
@@ -171,6 +181,7 @@ class Simulation(CoreSimulation):
             self.build_from_dataset_source(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
+        self.built_from_dataset = situation is None
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -230,6 +241,8 @@ class Simulation(CoreSimulation):
         return variables
 
     def apply_parameter_changes(self, changes: dict):
+        for parameter in changes:
+            check_parameter_not_removed(canonicalize_lsr_parameter_path(parameter))
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:

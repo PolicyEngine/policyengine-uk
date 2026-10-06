@@ -27,10 +27,13 @@ class marriage_allowance(Variable):
     def formula(person, period, parameters):
         marital = person("marital_status", period)
         married = marital == marital.possible_values.MARRIED
-        is_adult = person("is_adult", period)
+        # The election is between spouses or civil partners (ITA 2007
+        # s.55C(1)(a)): the claimant and partner of a married benefit unit,
+        # never their children.
+        spouse_or_civil_partner = person("is_claimant_or_partner", period)
         eligible = (
             married
-            & is_adult
+            & spouse_or_civil_partner
             & person("meets_marriage_allowance_income_conditions", period)
         )
         transferable_amount = person("partners_unused_personal_allowance", period)

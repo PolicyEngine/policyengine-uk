@@ -5,7 +5,12 @@ import pandas as pd
 class is_older_child(Variable):
     value_type = bool
     entity = Person
-    label = "Whether the person is over 14 but under 18"
+    label = "Aged 14 to 17 (deprecated)"
+    documentation = (
+        "Deprecated: an age cut-off with no legal basis, kept only for "
+        "downstream compatibility with its original formula. Nothing in "
+        "policyengine-uk uses it. Use is_hbai_child_aged_14_or_over instead."
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):

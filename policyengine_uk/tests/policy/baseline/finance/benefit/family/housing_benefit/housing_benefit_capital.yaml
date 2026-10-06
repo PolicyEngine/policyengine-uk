@@ -129,7 +129,7 @@
     housing_benefit_assessable_capital: 50_000
     housing_benefit_eligible: false
 
-- name: Mixed benunits split household Housing Benefit capital by adult share
+- name: Mixed benunits split household Housing Benefit capital by claimant and partner share
   period: 2025
   absolute_error_margin: 0
   input:

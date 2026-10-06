@@ -10,8 +10,9 @@ Invariants, for any generated population of families:
 
 1. Receipt: in_receipt_of_guarantee_credit is true exactly when pension_credit
    and guarantee_credit are both positive, so it implies Pension Credit
-   eligibility and would_claim_pc, and every adult in a receiving family is
-   over State Pension age.
+   eligibility and would_claim_pc, and every claimant and partner in a
+   receiving family (is_claimant_or_partner) is over State Pension age. A
+   dependent 18 or 19 year old is not a partner, so it does not count.
 2. Passport: a receiving family's Housing Benefit applicable income, tariff
    income and assessable capital are all zero.
 3. Differential: where the family claims and is eligible for Pension Credit,
@@ -141,11 +142,17 @@ def calculate(units, old_formula=False, **kwargs):
     values["any_over_sp_age"] = (
         np.asarray(sim.calculate("is_SP_age", YEAR, map_to="benunit")) > 0
     )
+    # Person arrays follow the order the situation adds people in.
+    claimant_or_partner = np.asarray(sim.calculate("is_claimant_or_partner", YEAR))
+    sp_age = np.asarray(sim.calculate("is_SP_age", YEAR))
+    starts = np.cumsum([0] + [len(unit["ages"]) for unit in units])
+    values["claimants_and_partners_over_sp_age"] = np.array(
+        [
+            np.all(sp_age[a:b][claimant_or_partner[a:b].astype(bool)])
+            for a, b in zip(starts[:-1], starts[1:])
+        ]
+    )
     return values
-
-
-def all_adults_over_sp_age(unit):
-    return all(age >= 67 for age in unit["ages"])
 
 
 @PROPERTY_SETTINGS
@@ -157,9 +164,7 @@ def test_receipt_means_a_paid_guarantee_credit_and_passports(units):
     assert np.array_equal(receipt, paid)
     assert not np.any(receipt & ~values["is_pension_credit_eligible"].astype(bool))
     assert not np.any(receipt & ~values["would_claim_pc"].astype(bool))
-    for i, unit in enumerate(units):
-        if receipt[i]:
-            assert all_adults_over_sp_age(unit), unit
+    assert np.all(values["claimants_and_partners_over_sp_age"][receipt])
     for variable in [
         "housing_benefit_applicable_income",
         "housing_benefit_tariff_income",
