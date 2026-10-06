@@ -133,7 +133,7 @@ def run(sim, drawn):
         carried_forward=calc("property_finance_costs_carried_forward"),
         pre_charges=calc("income_tax_pre_charges"),
         adjusted_net_income=calc("adjusted_net_income"),
-        allowances=calc("allowances"),
+        personal_allowance=calc("personal_allowance"),
         income_tax=calc("income_tax"),
     )
 
@@ -205,8 +205,12 @@ def test_relief_accounting(sim, drawn):
         <= tolerance(r["costs"], r["brought_forward"])
     ).all()
     # Relieved: the lowest of the relievable amount, the property profits and
-    # adjusted total income, on the expenses route only.
-    adjusted_total_income = np.maximum(0, r["adjusted_net_income"] - r["allowances"])
+    # adjusted total income, on the expenses route only. The generated people
+    # have no savings, dividends, Step 2 reliefs or blind person's allowance,
+    # so adjusted total income is net income less the personal allowance.
+    adjusted_total_income = np.maximum(
+        0, r["adjusted_net_income"] - r["personal_allowance"]
+    )
     expected_relieved = np.where(
         expenses_route,
         np.maximum(

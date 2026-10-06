@@ -93,6 +93,24 @@
     income_tax: 0
     property_finance_costs_carried_forward: 6_570
 
+- name: Gift Aid does not reduce adjusted total income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    property_income: 18_000
+    property_finance_costs: 8_000
+    gift_aid: 3_000
+  output:
+    # Adjusted total income is net income less the personal allowance:
+    # 18,000 - 12,570. Gift Aid extends the basic rate band; it is not
+    # deducted at Step 2 or Step 3.
+    property_finance_costs_relieved: 5_430
+    property_finance_costs_carried_forward: 2_570
+    # 20% x 5,430 = 1,086, limited to the Step 5 tax, which the model works
+    # out with Gift Aid deducted: (18,000 - 12,570 - 3,000) x 20% = 486.
+    property_finance_cost_relief: 486
+    income_tax: 0
+
 - name: A landlord within the personal allowance gets no relief and keeps the costs
   period: 2025
   absolute_error_margin: 0.01
