@@ -36,17 +36,21 @@ not):
    pensioner scheme, and only a working-age family by a council's scheme.
 4. Others do not matter: changing the ages and disability benefits of every
    other family that claims leaves a family's pensioner status, exemption,
-   scheme and simulated award unchanged, with its applicable amount, its
-   income and its own benefit awards held as they were. (The model's severe
-   disability premium counts the other adults in the household, so their
-   ages and benefits can change a family's applicable amount whatever its
-   scheme. And the household's non-dependants count in one Universal Credit
-   claim only (UC Regs 2013 Sch 4 para 9(2)), which the model makes the head
-   family's where it claims, so a head's family reaching pension age can
-   move them into a sharer's claim and change the sharer's award, which the
-   pensioner test follows.) Its council_tax_benefit is unchanged too, unless
-   it falls back to a reported reduction and whether a simulated claim in
-   its household pays something changes (property 5's reconciliation).
+   scheme and simulated award unchanged. Held as they were: its applicable
+   amount and income, and two household allocations through which other
+   families reach its own awards. The model's severe disability premium
+   counts the other adults in the household
+   (has_non_dependant_for_severe_disability_premium), so their ages and
+   benefits can change a family's applicable amounts whatever its scheme.
+   And the household's non-dependants count in one Universal Credit claim
+   only (UC Regs 2013 Sch 4 para 9(2); uc_non_dependants_counted), which the
+   model makes the head family's where it claims. So a head's family
+   reaching pension age can move them into a sharer's claim and change the
+   sharer's award, which the pensioner test follows. Each family's awards
+   are still computed, so a claim that read another family's awards would
+   fail. Its council_tax_benefit is unchanged too, unless it falls back to a
+   reported reduction and whether a simulated claim in its household pays
+   something changes (property 5's reconciliation).
 5. Fallback: a claiming family gets its simulated reduction where its scheme
    is simulated, and otherwise its reported one. Beside a simulated claim
    that pays something, a jointly liable claimant's reported reduction is
@@ -244,6 +248,9 @@ def build(population, alone=False, perturb_others=False, awards=None):
                 people[pid]["is_household_head"] = (
                     alone or fam["role"] == "head"
                 ) and i == 0
+                # A family's adults are its claimant and partner, however far
+                # apart their ages.
+                people[pid]["is_claimant_or_partner"] = True
                 ids.append(pid)
             if fam["child_age"] is not None:
                 pid = f"h{h}_f{f}_child"
@@ -259,7 +266,7 @@ def build(population, alone=False, perturb_others=False, awards=None):
             if awards is not None:
                 index = len(facts["role"])
                 benunits[f"h{h}_f{f}"].update(
-                    {name: float(values[index]) for name, values in awards.items()}
+                    {name: values[index].item() for name, values in awards.items()}
                 )
             if alone:
                 homes[f"h{h}_f{f}"] = {"members": ids, **home}
@@ -301,8 +308,7 @@ def any_in_benunit(simulation, person_values):
     return simulation.map_result(person_values.astype(float), "person", "benunit") > 0
 
 
-# A family's own awards that the pensioner test reads (SI 2012/2885 reg 3),
-# held fixed in properties 2 and 4.
+# A family's own awards that the pensioner test reads (SI 2012/2885 reg 3).
 OWN_AWARDS = [
     "universal_credit_pre_benefit_cap",
     "income_support",
@@ -313,6 +319,12 @@ OWN_AWARDS = [
 MEANS_TEST = [
     "council_tax_reduction_applicable_amount",
     "council_tax_reduction_applicable_income",
+]
+# Household allocations through which other families' circumstances reach a
+# family's own awards, held fixed in property 4.
+HOUSEHOLD_ALLOCATIONS = [
+    "uc_non_dependants_counted",
+    "has_non_dependant_for_severe_disability_premium",
 ]
 FLAGS = [
     "council_tax_reduction_pensioner",
@@ -416,7 +428,7 @@ def test_scheme_follows_own_family(population):
 def test_other_families_do_not_change_a_claim(population):
     situation, facts = build(population)
     before = Simulation(situation=situation)
-    held = {name: calc(before, name) for name in MEANS_TEST + OWN_AWARDS}
+    held = {name: calc(before, name) for name in MEANS_TEST + HOUSEHOLD_ALLOCATIONS}
     perturbed_situation, _ = build(population, perturb_others=True, awards=held)
     after = Simulation(situation=perturbed_situation)
     target = facts["target"]
