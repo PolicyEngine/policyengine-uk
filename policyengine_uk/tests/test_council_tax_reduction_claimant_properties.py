@@ -37,9 +37,12 @@ independently.
    non-dependant (the applicant's family, SI 2012/2885 reg 9(2)(a)). Pin: no
    member of a sharer family is one, and every adult outside the claimant
    families, the sharer families and boarders' and lodgers' families is one.
-5. Differential: where the input flags at most one head, the family holding
-   the head is the one holding the person-level household head that Housing
-   Benefit and Universal Credit use.
+5. Differential: where the input flags exactly one member of a household,
+   or no household in the simulation has the input (so the flag's formula
+   picks the eldest), the family holding the head is the one holding the
+   person-level is_household_head flag.
+   (Every programme reads the same head; see
+   test_household_head_agreement_properties.py.)
 6. Not age: with one head flagged, raising every other member's age above
    the head's does not change who claims.
 7. No-op: where the flagged head is strictly the eldest member and the rent
@@ -270,7 +273,7 @@ def test_claimant_invariants(population):
     np.logical_or.at(has_adult, facts["benunit"], age >= 18)
     assert not np.any(claimant & ~has_adult)
     liable = calc(sim, "council_tax_reduction_liable_person")
-    head_person = calc(sim, "council_tax_reduction_household_head")
+    head_person = calc(sim, "is_resolved_household_head")
     in_head_or_sharer = (head | sharer)[facts["benunit"]]
     assert np.all(age[liable] >= 18)
     assert np.all(in_head_or_sharer[liable])
@@ -315,7 +318,7 @@ def test_claimant_invariants(population):
     assert not np.any(non_dep & person_sharer)
     assert np.all(non_dep[adult & ~person_claimant & ~person_sharer & ~lodger])
 
-    # 5. Differential with the person-level household head. Once anyone in
+    # 5. Differential with the person-level household head flag. Once anyone in
     # the simulation has the input, everyone else's defaults to false, so an
     # "unset" household is well formed only if every household is.
     all_unset = all(house["head_flags"] == "unset" for house in population)

@@ -40,7 +40,7 @@ class is_council_tax_reduction_applicant_or_partner(Variable):
             "council_tax_reduction_head_applies_alone", period
         )
         liable_head = person("council_tax_reduction_liable_person", period) & person(
-            "council_tax_reduction_household_head", period
+            "is_resolved_household_head", period
         )
         claimant_or_partner = person("is_claimant_or_partner", period)
         return where(head_applies_alone, liable_head, claimant_or_partner)

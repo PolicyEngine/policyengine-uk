@@ -30,7 +30,7 @@ class uc_non_dependants_counted(Variable):
             & benunit("is_uc_eligible", period)
             & benunit("would_claim_uc", period)
         )
-        head_family = benunit.any(person("is_household_head", period))
+        head_family = benunit("benunit_contains_household_head", period)
         # Order the claims: the household head's family first, then the
         # others in the order the families were given.
         position = np.arange(len(head_family))
