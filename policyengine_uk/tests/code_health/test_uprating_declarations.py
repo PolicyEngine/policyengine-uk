@@ -1,10 +1,12 @@
 """Every variable declaring `uprating` should appear in uprating_indices.yaml.
 
-The class-level `uprating = "..."` attribute on a Variable is dead metadata:
-nothing in policyengine-uk reads it, and policyengine-core only inspects it to
-refuse combining it with its own `@uprated` decorator. `uprating_indices.yaml`
-is the only mechanism that applies uprating, via `apply_single_year_uprating`
-and `reset_growthfactor_uprating` in `data/economic_assumptions.py`.
+`uprating_indices.yaml` is the only mechanism that projects a dataset's stored
+columns to later years, via `apply_single_year_uprating` and
+`reset_growthfactor_uprating` in `data/economic_assumptions.py`. The
+class-level `uprating = "..."` attribute on a Variable does not: policyengine-
+core reads it only to carry a value forward to a period with no stored value
+(a direct situation input, or a dataset column after its last stored year),
+which is inert for the years a dataset is projected to (#1868 review A1).
 
 A variable can therefore declare an index and silently never be uprated. That
 is what #1859 found for electricity and gas consumption, and #1862 for three
@@ -18,9 +20,7 @@ import yaml
 
 from policyengine_uk import CountryTaxBenefitSystem
 
-UPRATING_INDICES = (
-    Path(__file__).parents[2] / "data" / "uprating_indices.yaml"
-)
+UPRATING_INDICES = Path(__file__).parents[2] / "data" / "uprating_indices.yaml"
 
 # Variables that declare an index but are deliberately not in the YAML, with
 # the reason. Anything else failing this test is a genuine gap.
@@ -33,6 +33,13 @@ KNOWN_UNUPRATED = {
     # Reported counterpart of employee_pension_contributions, which IS
     # uprated; the reported variable feeds imputation rather than results.
     "employee_pension_contributions_reported",
+    # Stored at the data build's own FY26/27 price level (calibrated to NEED
+    # at Ofgem Q2 2026 rates), so projecting them would re-apply price
+    # changes the build already includes. test_energy_price_level.py
+    # requires them to stay out of the YAML (#1867).
+    "domestic_energy_consumption",
+    "electricity_consumption",
+    "gas_consumption",
 }
 
 # Variables the YAML deliberately uprates by an index other than the one they
