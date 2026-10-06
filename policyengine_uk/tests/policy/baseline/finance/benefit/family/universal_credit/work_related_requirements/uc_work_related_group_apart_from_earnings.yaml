@@ -138,6 +138,128 @@
   output:
     uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
 
+# Reg. 89(1)(a) reads "the qualifying age for state pension credit": State
+# Pension Credit Act 2002 s. 1(6), a woman's pensionable age, and for a man the
+# pensionable age of a woman born on the same day. That is the meaning the
+# phrase has in Welfare Reform Act 2012 s. 4(4), and Interpretation Act 1978
+# s. 11 gives it the same meaning in the regulations. A man born before 6
+# December 1953 has a pensionable age of 65
+# (Pensions Act 1995 Sch. 4 para. 1 rule (1)) but reaches the qualifying age on
+# the table 1 day for a woman born the same day. UC Regs 2013 reg. 3(2)(a) let
+# such a man claim jointly with a partner under the qualifying age. Ages and
+# months place the date of birth that many years and months before 6 October
+# of the fiscal year; every expected day is from Sch. 4 para. 1 as it stood on
+# 6 October 2016.
+
+- name: A man past the qualifying age but under State Pension age has no work-related requirements, regulation 89(1)(a)
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 April 1952. Table 1, "6th April 1952 to 5th May 1952": the
+        # qualifying age on 6 May 2014. His own State Pension age is 65, on 6
+        # April 2017, after 6 October 2016.
+        age: 64
+        months_since_last_birthday: 6
+        gender: MALE
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [true, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: A man under the qualifying age is subject to all work-related requirements
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 June 1953. Table 1, "6th June 1953 to 5th July 1953": the
+        # qualifying age on 6 March 2017, after 6 October 2016.
+        age: 63
+        months_since_last_birthday: 4
+        gender: MALE
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [false, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: The same man a year later, past the qualifying age on 6 March 2017 and under State Pension age until 6 June 2018
+  period: 2017
+  input:
+    people:
+      older:
+        age: 64
+        months_since_last_birthday: 4
+        gender: MALE
+      younger:
+        age: 41
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [true, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: A woman born the same day reached both ages together
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 April 1952: pensionable age, and so the qualifying age, on 6
+        # May 2014 (rule (3), table 1).
+        age: 64
+        months_since_last_birthday: 6
+        gender: FEMALE
+      younger:
+        age: 40
+        gender: MALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [true, false]
+    is_SP_age: [true, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: A man born on 6 December 1953 reaches both ages on 6 March 2019
+  period: 2018
+  input:
+    people:
+      older:
+        # Rule (1) covers only men born before 6 December 1953. Table 2,
+        # "6th December 1953 to 5th January 1954", applies to any person: 6
+        # March 2019, after 6 October 2018.
+        age: 64
+        months_since_last_birthday: 10
+        gender: MALE
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [false, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: The minimum income floor does not reach a self-employed man past the qualifying age, regulation 62(1)(b)
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 April 1952, as above: section 19 by reg. 89(1)(a), so not
+        # within section 22, which reg. 62(1)(b) requires.
+        age: 64
+        months_since_last_birthday: 6
+        gender: MALE
+        self_employment_income: 5_000
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    uc_is_in_gainful_self_employment: [true, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+    uc_mif_applies: [false, false]
+
 - name: Pregnancy within 11 weeks of the expected week of confinement, regulation 89(1)(c)
   period: 2026
   input:
