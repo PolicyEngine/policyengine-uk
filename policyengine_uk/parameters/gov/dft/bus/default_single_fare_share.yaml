@@ -1,0 +1,13 @@
+description: Share of other-local-bus fare-paying boardings paid at the point of use
+  in the 2024 National Travel Survey; used only when no person share is supplied.
+values:
+  '0001-01-01': 0.7
+metadata:
+  unit: /1
+  period: year
+  label: default single fare share
+  reference:
+  - title: DfT National Travel Survey 2024
+    href: https://www.gov.uk/government/statistics/national-travel-survey-2024
+  - title: Microcosm 954, NTS and published-receipts pricing evidence
+    href: https://github.com/PolicyEngine/microcosm/pull/954

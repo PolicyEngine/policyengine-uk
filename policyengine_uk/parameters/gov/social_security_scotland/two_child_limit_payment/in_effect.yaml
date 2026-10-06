@@ -1,13 +1,12 @@
-description: Whether the Two Child Limit Payment is in effect in Scotland.
+description: Whether the counterfactual Two Child Limit Payment is in effect in Scotland; the proposed regulations were not laid, so the baseline is inactive in every year.
 values:
   0001-01-01: false
-  2025-04-06: true
 metadata:
   unit: bool
   label: Two Child Limit Payment in effect
   period: year
   reference:
-    - title: Scottish Government - Two Child Limit Payment
-      href: https://www.gov.scot/policies/social-security/two-child-limit-payment/
-    - title: Scottish Budget December 2024 announcement
-      href: https://www.gov.scot/publications/scottish-budget-2025-26/
+    - title: Scottish Government confirmation that the regulations will not be laid, 3 December 2025
+      href: https://socialsecuritycommission.scot/publications/draft-regulations/the-two-child-limit-payment-scotland-regulations-2026/the-two-child-limit-payment-scotland-regulations-2026-further-update-from-the-scottish-government/
+    - title: Scottish Budget 2026-27, Chapter 5, Table 5.08
+      href: https://www.gov.scot/publications/scottish-budget-2026-27/

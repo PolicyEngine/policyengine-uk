@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import couple_members
 
 
 class uc_youngest_child_age(Variable):
@@ -34,6 +33,6 @@ class uc_youngest_child_age(Variable):
         child = (
             person("is_child_for_universal_credit", period)
             & ~person("is_looked_after_by_local_authority", period)
-            & ~couple_members(person, period)
+            & ~person("is_uc_assessed_claimant", period)
         )
         return benunit.min(where(child, person("age", period), np.inf))

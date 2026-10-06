@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import couple_members
 
 
 class uc_member_of_couple_claims_as_single_person(Variable):
@@ -32,7 +31,7 @@ class uc_member_of_couple_claims_as_single_person(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        ineligible_partner = couple_members(person, period) & person(
+        ineligible_partner = person("is_uc_assessed_claimant", period) & person(
             "uc_is_ineligible_partner", period
         )
         # Reg. 3(3) lets the other member claim; WRA 2012 s. 4(1)(a) and (b)

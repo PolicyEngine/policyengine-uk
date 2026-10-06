@@ -422,10 +422,11 @@ def test_partner_who_cannot_be_a_joint_claimant(units, year):
         atol=0.01,
     )
     # Reg. 90(3)(b)(ii): 35 hours at the national living wage, whatever the
-    # partner's age.
+    # partner's age. The 35 is the regulation's own figure, not reg. 88's
+    # expected hours.
     np.testing.assert_allclose(
         v["uc_minimum_income_floor_gross"][ineligible],
-        v["parameters"].default_expected_hours * 52 * v["national_living_wage"],
+        35 * 52 * v["national_living_wage"],
         atol=0.01,
         err_msg=str(units),
     )

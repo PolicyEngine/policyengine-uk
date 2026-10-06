@@ -1,0 +1,337 @@
+# SI 2006/213 Sch 4 para 12, Sch 5 para 4 and Sch 6 para 5 (NI: SR 2006/405
+# Sch 5 para 12, Sch 6 para 4 and Sch 7 para 5): where a claimant is on
+# universal credit, income support, an income-based jobseeker's allowance or an
+# income-related employment and support allowance, the claimant's earnings, the
+# whole of the claimant's income and the whole of the claimant's capital are
+# disregarded. A person is on universal credit on any day they are entitled to
+# it, whether it is in payment or not (reg 2(3B)). With nil income Housing
+# Benefit is the appropriate maximum: the eligible rent less non-dependant
+# deductions (SSCBA 1992 s.130(3)(a); reg 70).
+#
+# In law working-age Housing Benefit is paid alongside Universal Credit for
+# specified or temporary accommodation (UC (Transitional Provisions) Regs 2014
+# reg 5(2)(a)), whose rent is excluded from the Universal Credit housing costs
+# element (UC Regs 2013 Sch 1 para 3(h)-(i)). The model has no such route yet
+# (PolicyEngine/policyengine-uk#1910 adds one), so these cases supply
+# housing_benefit_eligible and a nil uc_housing_costs_element as inputs.
+#
+# Expected values are hand-computed from the regulations: council tenancies
+# (no LHA), no non-dependants, 2025-26 amounts. Universal Credit: standard
+# allowance £400.14 a month for a single claimant aged 25 or over (UC Regs
+# reg 36), a 55% taper on earnings with no work allowance (reg 22), and
+# tariff income of £4.35 a month for each £250 of capital over £6,000
+# (reg 72). Housing Benefit: £5 a week single earnings disregard (Sch 4
+# para 10), tariff income of £1 a week for each £250 of capital over £6,000
+# (reg 52), 65% taper (reg 71), 52 weeks a year.
+
+- name: Single claimant on Universal Credit has earnings, income and capital disregarded and gets maximum Housing Benefit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 8_000
+        # Under 30 hours: no additional earnings disregard (Sch 4 para 17).
+        weekly_hours: 12
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        housing_benefit_eligible: true
+        uc_housing_costs_element: 0
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 7_000
+  output:
+    # 400.14 x 12 = 4,801.68, less 55% of 8,000 = 4,400, less tariff income
+    # ceil((7,000 - 6,000) / 250) = 4 x 4.35 x 12 = 208.80: 192.88.
+    universal_credit_pre_benefit_cap: 192.88
+    is_uc_entitled: true
+    universal_credit: 192.88
+    housing_benefit_on_passporting_benefit: true
+    # Sch 4 para 12: all the earnings.
+    housing_benefit_applicable_income_disregard: 8_000
+    # Sch 6 para 5: the £7,000 is disregarded, so there is no tariff income.
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    # Sch 5 para 4: the whole income.
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 5_200
+    housing_benefit_pre_benefit_cap: 5_200
+    housing_benefit: 5_200
+
+- name: The same claimant not on Universal Credit is means-tested on earnings and capital
+  # Not claiming Universal Credit, so on the continuing-award route. Applicable
+  # income = 8,000 - 260 (£5 x 52) + tariff income 208 (4 x £1 x 52) = 7,948.
+  # With the applicable amount set to 4,000, entitlement = 5,200 - 0.65 x
+  # (7,948 - 4,000) = 5,200 - 2,566.20 = 2,633.80.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 8_000
+        # Under 30 hours: no additional earnings disregard (Sch 4 para 17).
+        weekly_hours: 12
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+        housing_benefit_applicable_amount: 4_000
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 7_000
+  output:
+    is_uc_entitled: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_assessable_capital: 7_000
+    housing_benefit_tariff_income: 208
+    housing_benefit_applicable_income: 7_948
+    housing_benefit_eligible: true
+    housing_benefit_entitlement: 2_633.80
+
+- name: Universal Credit reduced to nil by deductions still passports Housing Benefit
+  # Reg 2(3B): on universal credit "whether it is in payment or not". The
+  # £1,000 entitlement is all deducted, so nothing is paid.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        employment_income: 3_000
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 1_000
+        uc_deductions: 1_000
+        housing_benefit_eligible: true
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 10_000
+  output:
+    is_uc_entitled: true
+    universal_credit: 0
+    housing_benefit_on_passporting_benefit: true
+    housing_benefit_applicable_income_disregard: 3_000
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 5_200
+
+- name: Universal Credit of one penny passports Housing Benefit
+  # The minimum Universal Credit award is one penny (WRA 2012 s.5(1)(b); UC
+  # Regs reg 17), so an entitlement of £0.01 is an entitlement.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        employment_income: 3_000
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 0.01
+        housing_benefit_eligible: true
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 10_000
+  output:
+    is_uc_entitled: true
+    housing_benefit_on_passporting_benefit: true
+    housing_benefit_applicable_income: 0
+    housing_benefit_assessable_capital: 0
+    housing_benefit_entitlement: 5_200
+
+- name: A Universal Credit claim that comes to nil does not passport Housing Benefit
+  # No entitlement below one penny. Applicable income = 3,000 - 260 + tariff
+  # income 832 (ceil((10,000 - 6,000) / 250) = 16, x £1 x 52) = 3,572; with
+  # the applicable amount set to 3,000, entitlement = 5,200 - 0.65 x 572 =
+  # 4,828.20.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        employment_income: 3_000
+        # Under 30 hours: no additional earnings disregard (Sch 4 para 17).
+        weekly_hours: 6
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_eligible: true
+        housing_benefit_applicable_amount: 3_000
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 10_000
+  output:
+    is_uc_entitled: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_assessable_capital: 10_000
+    housing_benefit_tariff_income: 832
+    housing_benefit_applicable_income: 3_572
+    housing_benefit_entitlement: 4_828.20
+
+- name: Couple on a joint Universal Credit claim has both members' earnings and the household capital disregarded
+  # Joint claimants are both entitled to Universal Credit (WRA 2012 s.3(2)), and
+  # the partner's income and capital are treated as the claimant's (reg 25).
+  # Without the passport the couple's net earnings would be 9,000, less the
+  # £10 a week couple disregard.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 3_000
+        housing_benefit_reported: 1
+      partner:
+        age: 33
+        employment_income: 6_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 2_000
+        housing_benefit_eligible: true
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_HA
+        rent: 6_240
+        savings: 14_000
+  output:
+    housing_benefit_on_passporting_benefit: true
+    housing_benefit_applicable_income_disregard: 9_000
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 6_240
+
+- name: Mixed-age couple on Universal Credit is assessed under the working-age regulations with its income disregarded
+  # Reg 5(1)(b): the working-age regulations apply to a claimant over the
+  # qualifying age for State Pension Credit whose partner is on universal
+  # credit, so the older member's pension is disregarded too (Sch 5 para 4).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        private_pension_income: 5_000
+        housing_benefit_reported: 1
+      partner:
+        age: 40
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 3_000
+        housing_benefit_eligible: true
+        guarantee_credit: 0
+    households:
+      household:
+        members: [claimant, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_720
+        savings: 9_000
+  output:
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: true
+    housing_benefit_applicable_income_disregard: 2_000
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 5_720
+
+- name: Northern Ireland claimant on Universal Credit has earnings, income and capital disregarded
+  # SR 2006/405 Sch 5 para 12, Sch 6 para 4 and Sch 7 para 5, in force for
+  # universal credit from 8 May 2018 (SR 2018/92).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 45
+        employment_income: 3_000
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 1_000
+        housing_benefit_eligible: true
+    households:
+      household:
+        members: [claimant]
+        country: NORTHERN_IRELAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 4_160
+        savings: 10_000
+  output:
+    housing_benefit_on_passporting_benefit: true
+    housing_benefit_applicable_income_disregard: 3_000
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 4_160
+
+- name: A family on Universal Credit with income and capital gets the same Housing Benefit as on income-based JSA
+  # The universal credit and income-based JSA limbs of the passport have the
+  # same effect: maximum Housing Benefit. Same household as the income-based
+  # JSA case in housing_benefit_income_related_benefit_passport.yaml.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 1_000
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: true
+        universal_credit_pre_benefit_cap: 3_500
+        housing_benefit_eligible: true
+    households:
+      household:
+        members: [claimant]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 5_200
+        savings: 12_000
+  output:
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    housing_benefit_on_passporting_benefit: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit_entitlement: 5_200

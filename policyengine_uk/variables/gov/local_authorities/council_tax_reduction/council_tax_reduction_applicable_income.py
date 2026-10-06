@@ -11,8 +11,10 @@ class council_tax_reduction_applicable_income(Variable):
         "whose partner, is in receipt of Pension Credit guarantee credit, and "
         "use the Secretary of State's Pension Credit assessment of income, plus "
         "the savings credit payable, where the award is savings credit only. "
-        "The other adjustments those provisions allow (childcare charges, lone "
-        "parent and maintenance disregards, and the rest) are not modelled."
+        "Otherwise a pension-age family's net earnings are reduced by the "
+        "pensioner earnings disregards. The other adjustments those "
+        "provisions allow (childcare charges, the £20 earnings disregards, "
+        "maintenance disregards and the rest) are not modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -23,6 +25,11 @@ class council_tax_reduction_applicable_income(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/24",
         "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
     ]
 
     def formula(benunit, period, parameters):
@@ -44,6 +51,21 @@ class council_tax_reduction_applicable_income(Variable):
         ]
         personal_benefits = [
             "carers_allowance",
+            # Scottish carers receive Carer Support Payment in place of Carer's
+            # Allowance. Scottish Council Tax Reduction counts it, with no cap at
+            # the Carer's Allowance amount:
+            # SSI 2021/249 reg 57(1)(b)(iva) at working age and SSI 2012/319
+            # reg 27(1)(j) at pension age. Neither counts the Scottish Carer
+            # Supplement (reg 57(1) does not list it; reg 27(1)(j)(xxib)
+            # excepts it), so scottish_carer_supplement is not listed.
+            # Whether CTR counts CSP before or after the CSP Regs reg 16(2)
+            # overlapping-benefit reduction is unsettled: SSI 2012/319 reg
+            # 27(3) grosses up deductions other than the reg 27(5)
+            # adjustments, which do not list reg 16(2), while SSI 2021/249 reg
+            # 57(1)(b) counts the amount the applicant is entitled to. Until
+            # that is decided, the amount before the reduction is counted, as
+            # it was before the reduction was modelled.
+            "carer_support_payment_pre_overlap",
             "esa_contrib",
             "jsa_contrib",
             "state_pension",
@@ -80,8 +102,15 @@ class council_tax_reduction_applicable_income(Variable):
         tax = add_for_members(
             benunit, period, ["income_tax", "national_insurance"], members
         )
+        # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
+        # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
+        # earnings disregards, capped at net earnings. Zero for working-age
+        # families.
+        earnings_disregard = benunit(
+            "council_tax_reduction_pensioner_earnings_disregard", period
+        )
         income_under_general_rules = max_(
-            0, increased_income - tax - pension_contributions
+            0, increased_income - tax - pension_contributions - earnings_disregard
         )
         # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
         # 2012/319 reg 24: a guarantee credit recipient's whole income is

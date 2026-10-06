@@ -44,7 +44,8 @@ class uc_individual_earned_income_before_mif(Variable):
         self_employed = max_(0, person("self_employment_income", period))
         earnings = add(person, period, earnings_components) + self_employed
         # Contributions paid after the person reaches 75 are not relievable
-        # (Finance Act 2004 s. 188(3)(a)).
+        # (Finance Act 2004 s. 188(3)(a)), so reg. 55(5)(a) does not deduct
+        # them.
         age_limit = parameters(
             period
         ).gov.hmrc.pensions.pension_contributions_relief_age_limit

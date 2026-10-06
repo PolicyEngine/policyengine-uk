@@ -84,9 +84,10 @@
         members: [self_employed, partner, child]
         region: NORTH_EAST
   output:
-    # 15,000 - (15,000 - 1,000 - 12,570) x 20% - (15,000 - 12,570) x 6%
-    # = 15,000 - 286 - 145.80.
-    uc_individual_earned_income_before_mif: [14_568.20, 2_000, 0]
+    # 15,000 - (15,000 - 12,570) x 20% - (15,000 - 12,570) x 6%
+    # = 15,000 - 486 - 145.80. Without gross receipts the trading allowance
+    # gives no relief on a profit above it.
+    uc_individual_earned_income_before_mif: [14_368.20, 2_000, 0]
     uc_is_responsible_carer: [false, true, false]
     # The partner is in section 20 (a child aged 1): no floor, and a 16-hour
     # threshold of 10,574.72 in the couple threshold of 30,960.75. The
@@ -119,10 +120,10 @@
         region: NORTH_EAST
   output:
     uc_mif_applies: [false, true, false]
-    # The partner's floor of 20,386.03 less the 3,993.48 by which it and the
-    # nominated carer's 14,568.20 would exceed the couple threshold:
-    # 30,960.75 - 14,568.20.
-    uc_individual_earned_income: [14_568.20, 16_392.55, 0]
+    # The partner's floor of 20,386.03 less the 3,793.48 by which it and the
+    # nominated carer's 14,368.20 would exceed the couple threshold:
+    # 30,960.75 - 14,368.20.
+    uc_individual_earned_income: [14_368.20, 16_592.55, 0]
 
 - name: A child looked after by a local authority has no responsible carer
   period: 2026

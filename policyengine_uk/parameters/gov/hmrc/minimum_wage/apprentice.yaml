@@ -1,36 +1,96 @@
 description: Minimum wage rate for apprentices.
+# The apprenticeship rate applies to an apprentice who is under 19 or in the
+# first 12 months of the apprenticeship (NMW Regulations 2015 reg. 5). Rates
+# take effect on the commencement date of each amending S.I.: on 1 October
+# until 2016, then on 1 April from 2017.
 values:
-  2012-10-01: 2.65
-  2013-10-01: 2.68
-  2014-10-01: 2.73
-  2015-10-01: 3.3
-  2016-10-01: 3.4
-  2017-04-01: 3.5
-  2018-04-01: 3.7
-  2019-04-01: 3.9
-  2020-04-01: 4.15
-  2021-04-01: 4.3
-  2022-04-01: 4.81
+  2012-10-01:
+    value: 2.65
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2012, regulation 2(4)(a)
+        href: https://www.legislation.gov.uk/uksi/2012/2397/made
+  2013-10-01:
+    value: 2.68
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2013, regulation 2(3)(c)
+        href: https://www.legislation.gov.uk/uksi/2013/1975/made
+  2014-10-01:
+    value: 2.73
+    reference:
+      - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2014, regulation 3(2)(c)
+        href: https://www.legislation.gov.uk/uksi/2014/2485/made
+  2015-10-01:
+    value: 3.3
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2015, regulation 2(2)(d)
+        href: https://www.legislation.gov.uk/uksi/2015/1724/made
+  2016-04-01:
+    value: 3.3
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2016, regulation 3 (substituted regulation 4A(1)(d))
+        href: https://www.legislation.gov.uk/uksi/2016/68/made
+  2016-10-01:
+    value: 3.4
+    reference:
+      - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2016, regulation 2(2)(d)
+        href: https://www.legislation.gov.uk/uksi/2016/953/made
+  2017-04-01:
+    value: 3.5
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2017, regulation 2(3)(d)
+        href: https://www.legislation.gov.uk/uksi/2017/465/made
+  2018-04-01:
+    value: 3.7
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2018, regulation 2(3)(d)
+        href: https://www.legislation.gov.uk/uksi/2018/455/made
+  2019-04-01:
+    value: 3.9
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2019, regulation 2(3)(d)
+        href: https://www.legislation.gov.uk/uksi/2019/603/made
+  2020-04-01:
+    value: 4.15
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2020, regulation 2(3)(d)
+        href: https://www.legislation.gov.uk/uksi/2020/338/made
+  2021-04-01:
+    value: 4.3
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2021, regulation 2(3)(e)
+        href: https://www.legislation.gov.uk/uksi/2021/329/made
+  2022-04-01:
+    value: 4.81
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2022, regulation 2(3)(d)
+        href: https://www.legislation.gov.uk/uksi/2022/382/made
+  2023-04-01:
+    value: 5.28
+    reference:
+      - title: The National Minimum Wage (Amendment) Regulations 2023, regulation 2(3)(d)
+        href: https://www.legislation.gov.uk/uksi/2023/354/made
   2024-04-01:
     value: 6.4
     reference:
-      - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024
+      - title: The National Minimum Wage (Amendment) (No. 2) Regulations 2024, regulation 2(3)(d)
         href: https://www.legislation.gov.uk/uksi/2024/432/made
   2025-04-01:
     value: 7.55
     reference:
-      - title: The National Minimum Wage (Amendment) Regulations 2025
+      - title: The National Minimum Wage (Amendment) Regulations 2025, regulation 2(3)(c)
         href: https://www.legislation.gov.uk/uksi/2025/401/made
   2026-04-01:
     value: 8
     reference:
-      - title: National Minimum Wage and National Living Wage rates
-        href: https://www.gov.uk/national-minimum-wage-rates
+      - title: The National Minimum Wage (Amendment) Regulations 2026, regulation 2(3)(c)
+        href: https://www.legislation.gov.uk/uksi/2026/357/made
 metadata:
   economy: false
   household: false
   label: Apprentice minimum wage
   unit: currency-GBP
   reference:
+  - title: The National Minimum Wage Regulations 2015, regulations 4A(1)(d) and 5
+    href: https://www.legislation.gov.uk/uksi/2015/621/contents
   - href: https://www.gov.uk/national-minimum-wage-rates
     title: GOV.UK - National Minimum Wage

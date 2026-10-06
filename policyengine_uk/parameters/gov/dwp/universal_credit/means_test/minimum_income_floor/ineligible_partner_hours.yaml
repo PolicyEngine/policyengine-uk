@@ -1,0 +1,20 @@
+description: >-
+  Weekly hours behind the amount that a partner who cannot be a joint claimant
+  adds to the couple threshold for the Universal Credit minimum income floor,
+  where a member of a couple claims as a single person (regulation 3(3)).
+  Regulation 90(3)(b)(ii) adds "the amount a person would be paid for 35 hours
+  per week" at the national minimum wage rate of regulation 4 of the National
+  Minimum Wage Regulations (regulation 11 of the 1999 Regulations as made).
+  The 35 is set by regulation 90 itself, separately from the expected hours of
+  regulation 88.
+values:
+  2013-04-29: 35
+metadata:
+  unit: hour
+  period: week
+  label: Universal Credit minimum income floor hours for a partner who cannot be a joint claimant
+  reference:
+    - title: The Universal Credit Regulations 2013 reg. 90(3)(b)(ii)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/90
+    - title: The Universal Credit Regulations 2013 reg. 90(3)(b)(ii), as made
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/90/2013-04-29
