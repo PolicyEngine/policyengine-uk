@@ -454,8 +454,9 @@ def test_partner_who_cannot_be_a_joint_claimant(units, year):
 # phrase has in Welfare Reform Act 2012 s. 4(4) and so, by Interpretation Act
 # 1978 s. 11, in the regulations: a woman's pensionable age, and for a man the
 # pensionable age of a woman born on the same day. For a man born before 6
-# December 1953 that day comes before his own State Pension age of 65, so in
-# 2015-16 to 2018-19 some claimants are over the one and under the other.
+# December 1953 that day comes before his own State Pension age of 65 (on it,
+# for a birth on 6 November 1953), so in 2015-16 to 2018-19 some claimants are
+# over the one and under the other.
 QUALIFYING_AGE_YEARS = [2015, 2016, 2017, 2018, 2019]
 LAST_YEAR_THE_AGES_DIFFER = 2018
 MALE_RULE_BORN_BEFORE = date(1953, 12, 6)

@@ -142,14 +142,15 @@
 # Pension Credit Act 2002 s. 1(6), a woman's pensionable age, and for a man the
 # pensionable age of a woman born on the same day. That is the meaning the
 # phrase has in Welfare Reform Act 2012 s. 4(4), and Interpretation Act 1978
-# s. 11 gives it the same meaning in the regulations. A man born before 6
-# December 1953 has a pensionable age of 65
-# (Pensions Act 1995 Sch. 4 para. 1 rule (1)) but reaches the qualifying age on
-# the table 1 day for a woman born the same day. UC Regs 2013 reg. 3(2)(a) let
-# such a man claim jointly with a partner under the qualifying age. Ages and
-# months place the date of birth that many years and months before 6 October
-# of the fiscal year; every expected day is from Sch. 4 para. 1 as it stood on
-# 6 October 2016.
+# s. 11 gives it the same meaning in the regulations. A man born before
+# 6 December 1953 has a pensionable age of 65 (Pensions Act 1995 Sch. 4 para. 1
+# rule (1)) but reaches the qualifying age on the day a woman born the same day
+# reaches pensionable age: her 60th birthday if born before 6 April 1950
+# (rule (2)), otherwise the table 1 day (rule (3)). UC Regs 2013 reg. 3(2)(a)
+# let such a man claim jointly with a partner under the qualifying age. Ages
+# and months place the date of birth that many years and months before
+# 6 October of the fiscal year; every expected day is from Sch. 4 para. 1 as it
+# stood on 6 October 2016.
 
 - name: A man past the qualifying age but under State Pension age has no work-related requirements, regulation 89(1)(a)
   period: 2016

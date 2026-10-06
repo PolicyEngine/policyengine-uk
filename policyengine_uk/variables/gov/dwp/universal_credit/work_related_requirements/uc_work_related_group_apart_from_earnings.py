@@ -70,7 +70,8 @@ class uc_work_related_group_apart_from_earnings(Variable):
             # 2002 s. 1(6), the meaning the phrase has in Welfare Reform Act
             # 2012 s. 4(4), carried into the regulations by Interpretation
             # Act 1978 s. 11. A man born before 6 December 1953 reached it
-            # before his own State Pension age of 65.
+            # before his own State Pension age of 65, or on the same day if
+            # born on 6 November 1953.
             | person("has_attained_state_pension_credit_qualifying_age", period)
             # Reg. 89(1)(c): 11 weeks before to 15 weeks after confinement.
             | person("uc_is_in_pregnancy_or_post_confinement_period", period)
