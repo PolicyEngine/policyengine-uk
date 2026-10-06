@@ -49,3 +49,123 @@
   output:
     pension_contributions_relief: 6_000
     income_tax: 11032 - 6000 * 0.4
+
+# FA 2004 s.190(1) caps relief at relevant UK earnings: employment income
+# plus trading income (s.189(2)). A self-employment loss is nil trading
+# income; it does not reduce employment income and never makes relief
+# negative.
+# https://www.legislation.gov.uk/ukpga/2004/12/section/189
+# https://www.legislation.gov.uk/ukpga/2004/12/section/190
+
+- name: Self-employment loss larger than wages, no contributions
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 11_000
+    self_employment_income: -20_000
+  output:
+    relevant_uk_earnings: 11_000
+    # Previously min(11_000 - 20_000, 0) = -9_000, which cut allowances to
+    # 3_570 and charged 0.2 * (11_000 - 3_570) = 1_486 of income tax.
+    pension_contributions_relief: 0
+    allowances: 12_570
+    income_tax: 0
+
+- name: Self-employment loss only, with contributions
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    self_employment_income: -5_000
+    personal_pension_contributions: 3_000
+  output:
+    relevant_uk_earnings: 0
+    # Previously min(-5_000, 3_000) = -5_000.
+    pension_contributions_relief: 0
+    allowances: 12_570
+
+- name: Self-employment loss does not reduce the cap on wages
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 60_000
+    self_employment_income: -30_000
+    personal_pension_contributions: 40_000
+  output:
+    relevant_uk_earnings: 60_000
+    # min(60_000, 40_000); previously min(30_000, 40_000) = 30_000.
+    pension_contributions_relief: 40_000
+    allowances: 12_570 + 40_000
+    # 0.2 * (60_000 - 52_570) = 1_486; previously 0.2 * 17_430 = 3_486.
+    income_tax: 1_486
+
+- name: Self-employment loss with net pay contributions
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    self_employment_income: -25_000
+    employee_pension_contributions_reported: 2_000
+  output:
+    relevant_uk_earnings: 20_000
+    # Previously min(-5_000, 2_000) = -5_000.
+    pension_contributions_relief: 2_000
+    # 0.2 * (20_000 - 12_570 - 2_000) = 1_086.
+    income_tax: 1_086
+
+- name: Contributions above earnings are capped at earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 8_000
+    self_employment_income: 2_000
+    personal_pension_contributions: 15_000
+  output:
+    relevant_uk_earnings: 10_000
+    pension_contributions_relief: 10_000
+
+- name: Contributions above wages, with a self-employment loss
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 8_000
+    self_employment_income: -2_000
+    personal_pension_contributions: 15_000
+  output:
+    relevant_uk_earnings: 8_000
+    # Previously min(6_000, 15_000) = 6_000.
+    pension_contributions_relief: 8_000
+
+- name: No relief on contributions paid at 75 or over
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 75
+    employment_income: 30_000
+    personal_pension_contributions: 5_000
+  output:
+    relevant_uk_earnings: 30_000
+    pension_contributions_relief: 0
+
+- name: Self-employment loss does not narrow the capital gains basic rate band
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 11_000
+    self_employment_income: -20_000
+    personal_pension_contributions: 1_000
+    capital_gains: 50_000
+  output:
+    pension_contributions_relief: 1_000
+    income_tax: 0
+    # Gains above the 3_000 exempt amount: 47_000. Basic rate band
+    # 37_700 + 1_000 contributions = 38_700, all unused.
+    # 0.18 * 38_700 + 0.24 * (47_000 - 38_700) = 6_966 + 1_992 = 8_958.
+    # Previously the -9_000 relief shrank the band to 28_700: 9_558.
+    capital_gains_tax: 8_958
