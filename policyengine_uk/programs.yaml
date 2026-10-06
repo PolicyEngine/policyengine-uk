@@ -247,7 +247,7 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: JSA
+    variable: jsa
     parameter_prefix: gov.dwp.JSA
     verified_start_year: 2022
     notes: Income-based and contribution-based
@@ -259,7 +259,7 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: ESA
+    variable: esa
     parameter_prefix: gov.dwp.ESA
     verified_start_year: 2022
     notes: Income-related and contribution-based
@@ -293,7 +293,7 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: DLA
+    variable: dla
     parameter_prefix: gov.dwp.dla
     verified_start_year: 2022
 
@@ -349,7 +349,7 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: winter_fuel_payment
+    variable: winter_fuel_allowance
     parameter_prefix: gov.dwp.winter_fuel_payment
     verified_start_year: 2022
 
@@ -372,7 +372,6 @@ programs:
     status: complete
     coverage: UK
     variable: maternity_allowance
-    parameter_prefix: gov.dwp
     verified_start_year: 2022
 
   # --- DfE programs ---
@@ -442,7 +441,6 @@ programs:
   - id: adult_dependants_grant
     name: Adult Dependants' Grant
     full_name: Student Finance England Adult Dependants' Grant
-
     category: Benefits
     agency: DfE
     status: partial
