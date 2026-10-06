@@ -7,6 +7,7 @@ from policyengine_core.parameters import ParameterNode
 
 import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem
+from policyengine_uk.utils.excise import fiscal_year_segments
 
 
 def _requirement(parameter_root):
@@ -20,13 +21,30 @@ def test_pension_credit_condition_uses_the_statutory_start_date():
     )
     requirement = _requirement(parameters)
 
-    assert requirement("2020-07-31") == 0
-    assert requirement("2020-08-01") == 1
+    assert requirement("2020-07-31") is False
+    assert requirement("2020-08-01") is True
 
 
-def test_pension_credit_condition_is_annualised_across_2020_21():
+def test_pension_credit_condition_keeps_its_date_after_processing():
+    """Processing preserves the 1 August Boolean policy transition."""
+    system = CountryTaxBenefitSystem()
+    requirement = _requirement(system.parameters)
+
+    assert requirement("2020-07-31") is False
+    assert requirement("2020-08-01") is True
+
+
+def test_pension_credit_condition_segments_the_2020_21_fiscal_year():
     """The fiscal year has 117 unrestricted and 248 restricted days."""
     system = CountryTaxBenefitSystem()
-    requirement = _requirement(system.get_parameters_at_instant("2020"))
+    aged_rules = system.parameters.gov.dcms.bbc.tv_licence.discount.aged
+    segments = list(fiscal_year_segments(aged_rules, 2020))
 
-    assert requirement == pytest.approx(248 / 365)
+    unrestricted_share = sum(
+        share for rules, share in segments if not rules.must_claim_pc
+    )
+    restricted_share = sum(share for rules, share in segments if rules.must_claim_pc)
+
+    assert unrestricted_share == pytest.approx(117 / 365)
+    assert restricted_share == pytest.approx(248 / 365)
+    assert all(isinstance(rules.must_claim_pc, bool) for rules, _ in segments)
