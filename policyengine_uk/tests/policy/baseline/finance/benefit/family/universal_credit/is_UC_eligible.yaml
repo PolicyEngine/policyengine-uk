@@ -1,4 +1,4 @@
-- name: Has no working-age adults
+- name: Has no claimants meeting the age conditions
   period: 2020
   absolute_error_margin: 0
   input:
@@ -13,7 +13,7 @@
   output:
     is_uc_eligible: false
 
-- name: Has one working-age adult
+- name: Has one claimant meeting the age conditions
   period: 2020
   absolute_error_margin: 0
   input:
@@ -28,7 +28,7 @@
   output:
     is_uc_eligible: true
 
-- name: Working-age adult remains eligible at the upper capital limit
+- name: Claimant meeting the age conditions remains eligible at the upper capital limit
   period: 2025
   absolute_error_margin: 0
   input:
@@ -45,7 +45,7 @@
   output:
     is_uc_eligible: true
 
-- name: Working-age adult is ineligible above the upper capital limit
+- name: Claimant meeting the age conditions is ineligible above the upper capital limit
   period: 2025
   absolute_error_margin: 0
   input:
@@ -105,7 +105,7 @@
     uc_assessable_capital: [10_000, 10_000]
     is_uc_eligible: [true, true]
 
-- name: Multi-benunit households split proxy capital equally across adults
+- name: Multi-benunit households split proxy capital equally across claimants
   period: 2025
   absolute_error_margin: 0
   input:
@@ -174,7 +174,7 @@
     uc_assessable_capital: [12_000, 8_000]
     is_uc_eligible: [true, true]
 
-- name: Multi-benunit proxy capital is weighted by adults in each benunit
+- name: Multi-benunit proxy capital is weighted by claimants in each benunit
   period: 2025
   absolute_error_margin: 0
   input:
@@ -314,4 +314,23 @@
         main_residence_value: 1_000_000
   output:
     uc_assessable_capital: 0
+    is_uc_eligible: true
+
+- name: Private pension wealth is disregarded from Universal Credit capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 30
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_000
+        private_pension_wealth: 150_000
+  output:
+    uc_assessable_capital: 10_000
     is_uc_eligible: true

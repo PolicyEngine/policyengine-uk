@@ -4,6 +4,12 @@
 PolicyEngine UK models the UK tax and benefit system as of 2025, incorporating major reforms from 2020-2025. This page documents the key policy changes by year, working backwards from 2025, showing how each reform is implemented in the codebase.
 ```
 
+## Announced policy to 2030-31
+
+### Budget 2025 threshold freezes
+
+Budget 2025 keeps the income tax personal allowance and basic rate limit, and the equivalent National Insurance thresholds, at their current levels until April 2031. The model holds the [primary threshold](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/primary_threshold.yaml) and [lower profits limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/thresholds/lower_profits_limit.yaml) at £12,570, the [upper earnings limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/upper_earnings_limit.yaml) and [upper profits limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/thresholds/upper_profits_limit.yaml) at £50,270, and the [secondary threshold](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/secondary_threshold.yaml) at £96 a week through 2030-31, then uprates them with CPI from 2031-32. For Class 1, regulations set only the 2026-27 amounts; the later years are announced policy. The Class 4 limits are standing figures in SSCBA 1992 s.15(3). The model annualises the weekly secondary threshold as 52 × £96 = £4,992; the annual figure in law is £5,000 ([#1967](https://github.com/PolicyEngine/policyengine-uk/issues/1967)). The [lower earnings limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/lower_earnings_limit.yaml) is not frozen: it rose with CPI to £129 a week in 2026-27.
+
 ## 2025 reforms
 
 ### Autumn Budget 2024
@@ -26,11 +32,11 @@ The government announced further National Insurance cuts, reducing the [employee
 
 ### Capital gains tax changes (Autumn Budget 2024)
 
-The government increased capital gains tax rates from 10%/20% to [18% for basic rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/basic_rate.yaml#L4) and [24% for higher rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/higher_rate.yaml#L4) in fiscal year 2025-26.
+The government increased capital gains tax rates from 10%/20% to [18% for basic rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/basic_rate.yaml#L4) and [24% for higher rate taxpayers](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/higher_rate.yaml#L4) for disposals from 30 October 2024 (Finance Act 2025 s. 7), part-way through 2024-25; the model day-weights that year between the two schedules and applies the new rates in full from 2025-26. Gains qualifying for Business Asset Disposal Relief or Investors' Relief (`capital_gains_badr`) are charged at a [separate rate](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/badr/rate.yaml) that rises from 10% to 14% in fiscal year 2025-26 and 18% from 2026-27, up to a [£1 million lifetime limit](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/badr/lifetime_limit.yaml). Carried interest (`capital_gains_carried_interest`) is charged at a [flat 32%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/carried_interest/higher_rate.yaml) from fiscal year 2025-26 (Finance Act 2025 s. 12); its move into income tax from 2026-27 is not modelled.
 
 ### Spring Budget 2024
 
-The government increased the [child benefit high income tax charge threshold from £50,000 to £60,000](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/income_tax/charges/CB_HITC/phase_out_start.yaml#L4) in fiscal year 2024-25.
+The government increased the [child benefit high income tax charge threshold from £50,000 to £60,000](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/income_tax/charges/CB_HITC/phase_out_start.yaml#L4) in fiscal year 2024-25. The [higher rate of capital gains tax on residential property](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/cgt/residential_property/higher_rate.yaml) fell from 28% to 24% for disposals from 6 April 2024 (Finance (No. 2) Act 2024 s. 6); the basic rate stayed at 18%, and neither changed on 30 October 2024. These rates apply to the `capital_gains_residential_property` component of a person's gains.
 
 ### Autumn Statement 2023 (Employee NI cut)
 
@@ -97,7 +103,7 @@ The model baseline includes all reforms above, incorporating the current UK tax 
 Key features:
 - **Income tax**: 20%/40%/45% rates with personal allowance of £12,570 and higher rate threshold of £50,270
 - **National Insurance**: 8% employee rate, 15% employer rate, 6% self-employed rate
-- **Capital gains tax**: 18%/24% rates with £3,000 annual exempt amount
+- **Capital gains tax**: 18%/24% main rates with £3,000 annual exempt amount; 14% on Business Asset Disposal Relief gains, 18%/24% on residential property gains and a flat 32% on carried interest
 - **Universal Credit**: 55% taper rate with rebalancing reforms active
 - **Benefits**: Standard uprating with targeted cost of living support for 2022
 

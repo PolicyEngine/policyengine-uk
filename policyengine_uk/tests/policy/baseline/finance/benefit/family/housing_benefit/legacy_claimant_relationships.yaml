@@ -1,0 +1,233 @@
+- name: Lone parent with qualifying young person uses lone-parent rates
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    # Isolate the statutory Sch 4 categories from existing automatic uprating.
+    gov.dwp.housing_benefit.means_test.income_disregard.single: 5
+    gov.dwp.housing_benefit.means_test.income_disregard.couple: 10
+    gov.dwp.housing_benefit.means_test.income_disregard.lone_parent: 25
+    people:
+      person0:
+        age: 40
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
+        weekly_hours: 0
+        is_claimant_or_partner: true
+        is_parent: true
+      person1:
+        age: 18
+        weekly_hours: 0
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [person0, person1]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    # HB Sch 3 para 1: the applicable weekly model rate is 92.04; *52.
+    housing_benefit_applicable_amount: 4786.08
+    # CTR retains the existing shared HB allowance parameters.
+    council_tax_reduction_applicable_amount: 4786.08
+    # HB Sch 4 paras 4/7/10: 25 * 52, with no hours disregard.
+    housing_benefit_applicable_income_disregard: 1300
+
+- name: Couple with qualifying young person uses one couple allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    # Isolate the statutory Sch 4 categories from existing automatic uprating.
+    gov.dwp.housing_benefit.means_test.income_disregard.single: 5
+    gov.dwp.housing_benefit.means_test.income_disregard.couple: 10
+    gov.dwp.housing_benefit.means_test.income_disregard.lone_parent: 25
+    people:
+      person0:
+        age: 40
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
+        weekly_hours: 0
+        is_claimant_or_partner: true
+        is_parent: true
+      person1:
+        age: 38
+        weekly_hours: 0
+        is_claimant_or_partner: true
+      person2:
+        age: 18
+        weekly_hours: 0
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [person0, person1, person2]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    # HB Sch 3 para 1: the applicable weekly model rate is 144.67; *52.
+    housing_benefit_applicable_amount: 7522.84
+    # CTR retains the existing shared HB allowance parameters.
+    council_tax_reduction_applicable_amount: 7522.84
+    # HB Sch 4 paras 4/7/10: 10 * 52, with no hours disregard.
+    housing_benefit_applicable_income_disregard: 520
+
+- name: Under-18 single claimant uses single rates
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    # Isolate the statutory Sch 4 categories from existing automatic uprating.
+    gov.dwp.housing_benefit.means_test.income_disregard.single: 5
+    gov.dwp.housing_benefit.means_test.income_disregard.couple: 10
+    gov.dwp.housing_benefit.means_test.income_disregard.lone_parent: 25
+    people:
+      person0:
+        age: 17
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
+        weekly_hours: 0
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [person0]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    # HB Sch 3 para 1: the applicable weekly model rate is 72.92; *52.
+    housing_benefit_applicable_amount: 3791.84
+    # CTR retains the existing shared HB allowance parameters.
+    council_tax_reduction_applicable_amount: 3791.84
+    # HB Sch 4 paras 4/7/10: 5 * 52, with no hours disregard.
+    housing_benefit_applicable_income_disregard: 260
+
+- name: Couple with under-18 partner uses couple rates
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    # Isolate the statutory Sch 4 categories from existing automatic uprating.
+    gov.dwp.housing_benefit.means_test.income_disregard.single: 5
+    gov.dwp.housing_benefit.means_test.income_disregard.couple: 10
+    gov.dwp.housing_benefit.means_test.income_disregard.lone_parent: 25
+    people:
+      person0:
+        age: 30
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
+        weekly_hours: 0
+        is_claimant_or_partner: true
+      person1:
+        age: 17
+        weekly_hours: 0
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [person0, person1]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    # HB Sch 3 para 1: the applicable weekly model rate is 144.67; *52.
+    housing_benefit_applicable_amount: 7522.84
+    # CTR retains the existing shared HB allowance parameters.
+    council_tax_reduction_applicable_amount: 7522.84
+    # HB Sch 4 paras 4/7/10: 10 * 52, with no hours disregard.
+    housing_benefit_applicable_income_disregard: 520
+
+- name: Lone under-18 parent uses younger lone-parent allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    # Isolate the statutory Sch 4 categories from existing automatic uprating.
+    gov.dwp.housing_benefit.means_test.income_disregard.single: 5
+    gov.dwp.housing_benefit.means_test.income_disregard.couple: 10
+    gov.dwp.housing_benefit.means_test.income_disregard.lone_parent: 25
+    people:
+      person0:
+        age: 17
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
+        weekly_hours: 0
+        is_claimant_or_partner: true
+        is_parent: true
+      person1:
+        age: 1
+        weekly_hours: 0
+    benunits:
+      benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
+        members: [person0, person1]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    # HB Sch 3 para 1: the applicable weekly model rate is 72.92; *52.
+    housing_benefit_applicable_amount: 3791.84
+    # CTR retains the existing shared HB allowance parameters.
+    council_tax_reduction_applicable_amount: 3791.84
+    # HB Sch 4 paras 4/7/10: 25 * 52, with no hours disregard.
+    housing_benefit_applicable_income_disregard: 1300
+
+- name: Two under-18 claimants use younger couple allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    # Isolate the statutory Sch 4 categories from existing automatic uprating.
+    gov.dwp.housing_benefit.means_test.income_disregard.single: 5
+    gov.dwp.housing_benefit.means_test.income_disregard.couple: 10
+    gov.dwp.housing_benefit.means_test.income_disregard.lone_parent: 25
+    people:
+      person0:
+        age: 17
+        # Earnings above the flat amount and below the tax and NI
+        # thresholds, so the disregard is the flat amount (Sch 4 caps it at
+        # net earnings).
+        employment_income: 2_000
+        weekly_hours: 0
+        is_claimant_or_partner: true
+      person1:
+        age: 16
+        weekly_hours: 0
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [person0, person1]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    # HB Sch 3 para 1: the applicable weekly model rate is 110.14; *52.
+    housing_benefit_applicable_amount: 5727.28
+    # CTR retains the existing shared HB allowance parameters.
+    council_tax_reduction_applicable_amount: 5727.28
+    # HB Sch 4 paras 4/7/10: 10 * 52, with no hours disregard.
+    housing_benefit_applicable_income_disregard: 520
+
+- name: Under-18 claimant allowance ignores an older qualifying dependant
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 17
+        is_claimant_or_partner: true
+      qualifying_dependant:
+        age: 18
+        is_claimant_or_partner: false
+        is_in_non_advanced_education: true
+    benunits:
+      benunit:
+        members: [claimant, qualifying_dependant]
+        housing_benefit_eligible: true
+        benefits_premiums: 0
+  output:
+    # HB Sch 3 para 1(2): the claimant is under 18, even if responsible
+    # for an older qualifying young person. Younger rate 72.92 * 52.
+    housing_benefit_applicable_amount: 3_791.84
+    # The shared CTR allowance calculation also uses only claimant/partner ages.
+    council_tax_reduction_applicable_amount: 3_791.84

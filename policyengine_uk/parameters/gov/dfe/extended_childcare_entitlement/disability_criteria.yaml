@@ -1,15 +1,37 @@
-description: The Department for Education exempts participants in these programs from work requirements of extended childcare entitlement.
+description: The Department for Education lets a parent or partner who has limited capability for work or receives one of these benefits meet the extended childcare entitlement conditions without working, when the other member of the couple works.
 metadata:
   reference:
-    - title: The Childcare Regulations 2022 - Regulation 11A
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2016 - Regulation 9(1)(b)
+      href: https://www.legislation.gov.uk/uksi/2016/1257/regulation/9/made
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022 - Regulations 14(4) and 15(4)
+      href: https://www.legislation.gov.uk/uksi/2022/1134/regulation/14
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022 - Regulation 11A
       href: https://www.legislation.gov.uk/uksi/2022/1134/regulation/11A
   period: year
   unit: program
   label: Extended childcare entitlement disability criteria
 values:
+  # SI 2016/1257 reg 9(1)(b): "paid or entitled to", so an allowance reduced to
+  # nil by an overlapping benefit still counts.
   2015-09-01:
-    - carers_allowance  # 11A(1)(a): Carer's allowance under Section 70 of Social Security Contributions and Benefits Act 1992
-    - uc_carer_element  # 11A(1)(c): Universal Credit carer element under Regulation 29 of the Universal Credit Regulations 2013
-    - esa_contrib  # 11A(1)(e): Employment and support allowance under Welfare Reform Act 2007
-    - incapacity_benefit  # 11A(1)(g): Long-term or short-term incapacity benefit under Social Security Contributions and Benefits Act
-    - sda  # 11A(1)(h): Severe disablement allowance under Section 68 of Social Security Contributions and Benefits Act
+    - incapacity_benefit  # (i) and (iii): incapacity benefit and long-term incapacity benefit
+    - sda  # (ii): severe disablement allowance
+    - carers_allowance_pre_overlap  # (iv): entitlement to carer's allowance before overlapping benefits
+    - receives_carers_allowance  # (iv): carer's allowance supplied as received
+    - esa_contrib  # (v): contributory employment and support allowance
+    - receives_limited_capability_for_work_credits  # (vi): credits for incapacity for work or limited capability for work
+    - receives_uc_carer_element  # (vii): the carer element of Universal Credit
+    - uc_limited_capability_for_WRA  # (viii): limited capability for work and work-related activity
+  # SI 2022/1134 reg 14(4)(b) and the specified benefits in reg 14(5) as made,
+  # moved to reg 11A from 30 March 2023 by SI 2023/276. Regs 14(4) and 15(4) ask
+  # whether a person is entitled to a specified benefit, so an allowance reduced
+  # to nil by an overlapping benefit still counts.
+  2022-12-01:
+    - uc_limited_capability_for_WRA  # 14(4)(b)(i)-(ii): limited capability for work, or for work and work-related activity
+    - is_entitled_to_carer_benefit  # 11A(1)(a)-(b): carer's allowance, or carer's assistance under the Social Security (Scotland) Act 2018 s.28
+    - receives_uc_carer_element  # 11A(1)(c): the carer element under UC Regs reg 29, on an award (reg 14(5)(a) as made: "an award of universal credit [...] that includes the carer element")
+    - receives_limited_capability_for_work_credits  # 11A(1)(d): credits for incapacity for work or limited capability for work
+    - esa_contrib  # 11A(1)(e): employment and support allowance (contribution-based)
+    - esa_income  # 11A(1)(e): employment and support allowance (income-related)
+    - incapacity_benefit  # 11A(1)(f)-(g): long-term, short-term and transitional incapacity benefit
+    - sda  # 11A(1)(h): severe disablement allowance

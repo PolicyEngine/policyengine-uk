@@ -1,0 +1,312 @@
+- name: No carer addition without a claim even when the caring hours condition is met
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        care_hours: 35
+        carers_allowance_reported: 0
+        would_claim_carers_allowance: false
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carers_allowance: 0
+    is_carer_for_benefits: true
+    is_entitled_to_carer_benefit: false
+    carer_minimum_guarantee_addition: 0
+
+- name: Carer addition for a claimant receiving Carer's Allowance
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        carers_allowance_reported: 1
+        care_hours: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    is_carer_for_benefits: true
+    carer_minimum_guarantee_addition: 46.37 * 52
+
+- name: No carer addition for a claimant who neither receives nor is entitled
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 70
+        care_hours: 10
+        carers_allowance_reported: 0
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    carer_minimum_guarantee_addition: 0
+
+- name: Severe disability addition is not withheld by a non-claiming carer
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 0
+        would_claim_carers_allowance: false
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [false, false]
+    is_carer_for_benefits: [false, true]
+    # Both partners qualify (Sch I para 1(1)(b)) and no carer benefit is paid,
+    # so the double amount applies (reg 6(5)): 2 x 67.30 x 52.
+    severe_disability_minimum_guarantee_addition: 2 * 67.3 * 52
+
+- name: Severe disability addition needs both partners to qualify
+  # Sch I para 1(1)(b)-(c): a claimant with a partner is severely disabled
+  # only if both receive a qualifying benefit, or one does and the other is
+  # blind.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 68
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    severe_disability_minimum_guarantee_addition: 0
+
+- name: Severe disability addition with one qualifying partner and a blind partner
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 68
+        is_blind: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    # Sch I para 1(1)(c): single amount, 67.30 x 52.
+    severe_disability_minimum_guarantee_addition: 67.3 * 52
+
+- name: A child does not rescue a couple where only one partner qualifies
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 68
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+    households:
+      household:
+        members: [claimant, partner, child]
+        country: ENGLAND
+  output:
+    severe_disability_minimum_guarantee_addition: 0
+
+- name: Severe disability addition is withheld when Carer's Allowance is paid for the qualifying partner of a blind partner
+  # Sch I para 1(1)(c)(iv): no carer benefit may be paid for the partner who
+  # receives the qualifying benefit. The carer is assumed to care for them.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        is_blind: true
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [false, true]
+    severe_disability_minimum_guarantee_addition: 0
+
+- name: Both partners qualify and Carer's Allowance is paid for one of them
+  # Sch I para 1(1)(b) still holds when a carer benefit is paid for one only
+  # of the partners; reg 6(5)(a) then gives the single amount, 67.30 x 52.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+      partner:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [false, true]
+    severe_disability_minimum_guarantee_addition: 67.3 * 52
+
+- name: Both partners qualify and carer benefits are paid for both
+  # Carer benefits for both partners fail Sch I para 1(1)(b), and (c) needs a
+  # blind partner, so no addition.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+      partner:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [true, true]
+    severe_disability_minimum_guarantee_addition: 0
+
+- name: A single claimant with a carer benefit paid for them gets no addition
+  # Sch I para 1(1)(a)(iii). Supplying the claimant flag replaces the formula
+  # for everyone, so set it for both.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+        is_claimant_or_partner: true
+      carer:
+        age: 45
+        care_hours: 35
+        carers_allowance_reported: 1
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, carer]
+    households:
+      household:
+        members: [claimant, carer]
+        country: ENGLAND
+  output:
+    severe_disability_minimum_guarantee_addition: 0
+
+- name: A single claimant's own Carer's Allowance does not bar the addition
+  # Sch I para 1(1)(a)(iii) bars an allowance paid "in respect of caring for
+  # him"; the claimant's own award is for caring for someone else. 67.30 x 52.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: true
+    severe_disability_minimum_guarantee_addition: 67.3 * 52
+
+- name: The qualifying partner's own Carer's Allowance does not bar head (c)
+  # The partner receiving attendance allowance cares for the blind partner;
+  # (c)(iv) bars only a carer benefit paid for caring for the qualifying
+  # partner. Single amount, 67.30 x 52.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        attendance_allowance: 100
+        care_hours: 35
+        carers_allowance_reported: 1
+      partner:
+        age: 70
+        is_blind: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    receives_carer_benefit: [true, false]
+    severe_disability_minimum_guarantee_addition: 67.3 * 52

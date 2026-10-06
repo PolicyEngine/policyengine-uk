@@ -3,11 +3,11 @@
   input:
     people:   
       person1:
+        age: 40
         uc_limited_capability_for_WRA: false
-        is_child: false
       person2:
+        age: 5
         uc_limited_capability_for_WRA: false
-        is_child: true
     benunits:
       benunit:
         members: [person1, person2]
@@ -19,13 +19,100 @@
   input:
     people:   
       person1:
+        age: 40
         uc_limited_capability_for_WRA: false
-        is_child: false
       person2:
+        age: 39
         uc_limited_capability_for_WRA: false
-        is_child: false
     benunits:
       benunit:
         members: [person1, person2]
   output:
+    is_uc_work_allowance_eligible: false
+
+- name: Case 3, a young claimant is not their own dependent child.
+  period: 2025
+  input:
+    age: 17
+    is_benunit_head: true
+    is_in_non_advanced_education: true
+    uc_limited_capability_for_WRA: false
+  output:
+    is_uc_work_allowance_eligible: false
+
+- name: Case 4, a nonqualifying 17-year-old does not create a work allowance.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_uc_claimant: true
+        uc_limited_capability_for_WRA: false
+      person2:
+        age: 17
+        is_uc_claimant: false
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+        uc_limited_capability_for_WRA: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: false
+
+- name: Case 5, an explicitly identified young partner is not a dependent child.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 22
+        is_uc_claimant: true
+        uc_limited_capability_for_WRA: false
+      person2:
+        age: 18
+        is_uc_claimant: true
+        is_in_non_advanced_education: true
+        uc_limited_capability_for_WRA: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: false
+
+- name: Case 6, a nonqualifying 16-year-old does not create a work allowance.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        uc_limited_capability_for_WRA: false
+      person2:
+        age: 16
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+        uc_limited_capability_for_WRA: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_uc_work_allowance_eligible: false
+
+- name: Case 7, a looked-after child does not create a work allowance.
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 40
+        is_parent: true
+        uc_limited_capability_for_WRA: false
+      person2:
+        age: 5
+        is_looked_after_by_local_authority: true
+        uc_limited_capability_for_WRA: false
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
     is_uc_work_allowance_eligible: false

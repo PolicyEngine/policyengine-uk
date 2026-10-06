@@ -11,7 +11,10 @@ class uc_deductions(Variable):
         "paragraph 3(1)(a) of SI 2013/380). Per-household statistics are "
         "validated against the DWP deductions statistics; weighted "
         "aggregates are not, because they scale with the model's UC "
-        "caseload, which falls short of the administrative count."
+        "caseload, which falls short of the administrative count. "
+        "Annualized from the surveyed monthly rate: for deduction types "
+        "with spells shorter than a year (e.g. advance recovery), annual "
+        "per-household amounts are upper bounds."
     )
     entity = BenUnit
     definition_period = YEAR

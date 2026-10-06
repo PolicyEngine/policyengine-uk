@@ -1,0 +1,24 @@
+description: The Department for Education does not count a working partner as in qualifying paid work, for the other member of the couple's limited capability or benefit route to the extended childcare entitlement, while the working partner is paid or entitled to any of these benefits or credits.
+metadata:
+  reference:
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2016 - Regulation 9(3)
+      href: https://www.legislation.gov.uk/uksi/2016/1257/regulation/9/made
+    - title: The Childcare (Free of Charge for Working Parents) (England) Regulations 2022 - Regulations 14(4) and 15(4)
+      href: https://www.legislation.gov.uk/uksi/2022/1134/regulation/14
+  period: year
+  unit: program
+  label: Extended childcare entitlement partner exclusion criteria
+values:
+  # SI 2016/1257 reg 9(3): "paid or entitled to a benefit or an allowance, or is
+  # entitled to a credit, described in paragraph (1)(b)". The reg 9(1)(b)(viii)
+  # determination of limited capability is not a benefit, allowance or credit.
+  2015-01-01:
+    - incapacity_benefit
+    - sda
+    - carers_allowance_pre_overlap
+    - receives_carers_allowance
+    - esa_contrib
+    - receives_limited_capability_for_work_credits
+    - receives_uc_carer_element
+  # SI 2022/1134 regs 14(4) and 15(4) have no such exclusion.
+  2022-12-01: []

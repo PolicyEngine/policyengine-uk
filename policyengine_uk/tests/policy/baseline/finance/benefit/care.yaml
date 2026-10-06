@@ -8,26 +8,41 @@
     num_carers: 1
     carer_premium: 37.5 * 52
 
-- name: Two carers in a benefit unit receive the couple rate
-  period: 2020
+- name: Carer from 35 hours a week without Carer's Allowance (regulation 30 UC Regs 2013)
+  period: 2025
   absolute_error_margin: 0
   input:
-    num_carers: 2
+    age: 40
+    care_hours: 35
+    carers_allowance_reported: 0
+    would_claim_carers_allowance: false
+    country: ENGLAND
   output:
-    carer_premium: 37.5 * 52
+    carers_allowance: 0
+    is_carer_for_benefits: true
+    num_carers: 1
 
-- name: Three carers in a benefit unit stay at the couple rate (regression for #420)
-  period: 2020
+- name: Fewer than 35 hours and no award is not a carer
+  period: 2025
   absolute_error_margin: 0
   input:
-    num_carers: 3
+    age: 40
+    care_hours: 34
+    carers_allowance_reported: 0
+    country: ENGLAND
   output:
-    carer_premium: 37.5 * 52
-
-- name: No carers in a benefit unit receive no premium
-  period: 2020
-  absolute_error_margin: 0
-  input:
+    is_carer_for_benefits: false
     num_carers: 0
+
+- name: Carer from 35 hours a week who would claim receives Carer's Allowance and is a carer for benefits
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    care_hours: 35
+    carers_allowance_reported: 0
+    country: ENGLAND
   output:
-    carer_premium: 0
+    carers_allowance: 83.29 * 52
+    is_carer_for_benefits: true
+    num_carers: 1

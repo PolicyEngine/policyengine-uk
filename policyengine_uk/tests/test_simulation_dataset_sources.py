@@ -175,3 +175,81 @@ def test_build_from_file_loads_local_multi_year_dataset(monkeypatch, tmp_path):
         assert simulation_module._url_dataset_cache[cache_key] is built["dataset"]
     finally:
         simulation_module._url_dataset_cache.pop(cache_key, None)
+
+
+def _single_person_dataset():
+    """A one-person dataset built from frames, as the multi-year tests do."""
+    import pandas as pd
+
+    from policyengine_uk.data.dataset_schema import UKSingleYearDataset
+
+    person = pd.DataFrame(
+        {
+            "person_id": [1],
+            "person_benunit_id": [1],
+            "person_household_id": [1],
+            "employment_income": [30_000.0],
+            "age": [40],
+        }
+    )
+    benunit = pd.DataFrame({"benunit_id": [1]})
+    household = pd.DataFrame({"household_id": [1]})
+    return UKSingleYearDataset(
+        person=person, benunit=benunit, household=household, fiscal_year=2025
+    )
+
+
+def _save_read_only(dataset, path: Path) -> str:
+    """Save a dataset and make the file read-only, as a cached download is."""
+    dataset.save(str(path))
+    path.chmod(0o444)
+    return str(path)
+
+
+def test_single_year_dataset_loads_from_a_read_only_file(tmp_path):
+    """Reading a dataset needs no write access.
+
+    huggingface_hub 1.32.0 stores cached downloads as read-only blobs, and
+    opening the file in the default append mode refused them, so every
+    dataset-backed simulation in CI failed with a PermissionError.
+    """
+    from policyengine_uk.data.dataset_schema import UKSingleYearDataset
+
+    path = _save_read_only(_single_person_dataset(), tmp_path / "single.h5")
+
+    loaded = UKSingleYearDataset(path)
+
+    assert loaded.time_period == "2025"
+    assert float(loaded.person["employment_income"].iloc[0]) == 30_000
+
+
+def test_multi_year_dataset_loads_from_a_read_only_file(tmp_path):
+    from policyengine_uk.data.dataset_schema import UKMultiYearDataset
+
+    dataset = UKMultiYearDataset(datasets=[_single_person_dataset()])
+    path = _save_read_only(dataset, tmp_path / "multi.h5")
+
+    loaded = UKMultiYearDataset(path)
+
+    assert loaded.years == [2025]
+    assert float(loaded[2025].person["employment_income"].iloc[0]) == 30_000
+
+
+def test_simulation_builds_from_a_read_only_dataset_file(monkeypatch, tmp_path):
+    """The path a cached single-year download takes through Simulation.
+
+    Extending a single year to later years needs a real dataset's columns, so
+    that step is stubbed; the file open under test happens before it.
+    """
+    from policyengine_uk.data.dataset_schema import UKMultiYearDataset
+
+    monkeypatch.setattr(
+        simulation_module,
+        "extend_single_year_dataset",
+        lambda dataset, parameters: UKMultiYearDataset(datasets=[dataset]),
+    )
+    path = _save_read_only(_single_person_dataset(), tmp_path / "single.h5")
+
+    simulation = Simulation(dataset=path)
+
+    assert float(simulation.calculate("employment_income", 2025)[0]) == 30_000

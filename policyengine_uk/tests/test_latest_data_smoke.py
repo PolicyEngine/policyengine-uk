@@ -16,8 +16,6 @@ set, via the ``microsimulation`` marker configured in ``conftest.py``.
 
 from __future__ import annotations
 
-import os
-
 import numpy as np
 import pytest
 
@@ -35,10 +33,13 @@ def sim() -> Microsimulation:
     """Simulation built against the unpinned latest dataset.
 
     Overrides any pinned-version dataset set in conftest.py so the test
-    exercises whatever is on HuggingFace ``main`` right now.
+    exercises whatever is on HuggingFace ``main`` right now. The override
+    lasts only while the simulation is built, so tests that run later in the
+    same process still get the pinned dataset whatever order they run in.
     """
-    os.environ["POLICYENGINE_UK_DEFAULT_DATASET"] = LATEST_DATASET_URL
-    return Microsimulation()
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setenv("POLICYENGINE_UK_DEFAULT_DATASET", LATEST_DATASET_URL)
+        return Microsimulation()
 
 
 def _weighted(sim: Microsimulation, variable: str, period: int = YEAR) -> float:
@@ -126,4 +127,37 @@ def test_childcare_entitlement_populated(sim):
     assert eligible > 500_000, (
         f"extended_childcare_entitlement_eligible weighted total "
         f"{eligible:.3g} implies the childcare chain is broken"
+    )
+
+
+@pytest.mark.microsimulation
+def test_tax_free_childcare_never_exceeds_the_statutory_rate(sim):
+    """No award may exceed the statutory share of the spending it tops up.
+
+    The government contribution is a percentage of the *total* paid to the
+    provider, household and government together — 20%, per
+    ``gov.hmrc.tax_free_childcare.contribution.rate`` and Childcare Payments
+    Act 2014 s.21. ``childcare_expenses`` records that total, so an award can
+    only ever be at most that share of it, and less wherever the per-child cap
+    binds.
+
+    Computing the top-up as ``rate / (1 - rate)`` instead returns 25% of the
+    total — the right multiplier for a payment *into* an account applied to the
+    wrong base. That error is invisible in any aggregate, because the aggregate
+    also moves with take-up, the dataset vintage and the cap. Checking the
+    ratio catches it directly and does not depend on which dataset is loaded.
+    """
+    award = np.asarray(sim.calculate("tax_free_childcare", YEAR).values, dtype=float)
+    expenses = np.asarray(sim.calculate("childcare_expenses", YEAR).values, dtype=float)
+    rate = sim.tax_benefit_system.parameters(
+        f"{YEAR}-01-01"
+    ).gov.hmrc.tax_free_childcare.contribution.rate
+
+    receiving = award > 0
+    assert receiving.any(), "no Tax-Free Childcare awards to check"
+
+    share = award[receiving] / expenses[receiving]
+    assert share.max() <= rate + 1e-6, (
+        f"Highest award is {share.max():.3f} of the childcare spending it tops "
+        f"up, above the statutory {float(rate):.3f}"
     )

@@ -1,5 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_core.simulations import *
+from policyengine_uk.utils.capital_gains import (
+    badr_gains_before_response,
+    realisation_factors,
+)
 
 
 class capital_gains_behavioural_response(Variable):
@@ -8,28 +12,22 @@ class capital_gains_behavioural_response(Variable):
     label = "capital gains behavioral response"
     documentation = (
         "Change in realised gains under a reform to the taxation of gains, "
-        "given the assumed elasticity of realisations with respect to the "
-        "retention rate."
+        "given an elasticity of realisations with respect to either the "
+        "retention rate or the marginal tax rate. Gains qualifying for "
+        "Business Asset Disposal Relief respond at their own elasticity "
+        "(capital_gains_badr_behavioural_response); the rest at the main one."
     )
     unit = GBP
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        simulation = person.simulation
-        if simulation.baseline is None:
+        factors = realisation_factors(person, period, parameters)
+        if factors is None:
             return 0
-
-        if parameters(period).gov.simulation.capital_gains_responses.elasticity == 0:
-            return 0
+        main_factor, _ = factors
 
         capital_gains = person("capital_gains_before_response", period)
-        retention_rate_change = person(
-            "relative_capital_gains_retention_rate_change", period
+        other_gains = capital_gains - badr_gains_before_response(person, period)
+        return other_gains * (main_factor - 1) + person(
+            "capital_gains_badr_behavioural_response", period
         )
-        elasticity = person("capital_gains_elasticity", period)
-
-        # Calculate response using log differences
-        response_factor = np.exp(elasticity * retention_rate_change) - 1
-        response = capital_gains * response_factor
-
-        return response
