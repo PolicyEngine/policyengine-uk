@@ -6,11 +6,16 @@
 # changes. This PR is that change, and its CI runs the full suite against the
 # new releases before they land.
 #
-# The branch is pushed and the PR opened with a GitHub App token minted from
-# the org-level APP_ID / APP_PRIVATE_KEY secrets. GitHub does not start
-# workflows for pushes or PRs made with GITHUB_TOKEN, so a PR opened with it
-# would get no CI. The App token is minted only after `uv lock` has run, since
-# resolving can run a dependency's build backend.
+# Two jobs, because resolving can run a dependency's build backend:
+#
+# - `lock` runs `uv lock --upgrade` with no secrets and a read-only
+#   GITHUB_TOKEN, and hands the new uv.lock to `publish` as an artifact.
+# - `publish` starts on a fresh runner, mints a GitHub App token from the
+#   org-level APP_ID / APP_PRIVATE_KEY secrets, and runs no dependency code.
+#   It treats the artifact as data and decides everything else itself.
+#
+# The App token is needed because GitHub does not start workflows for pushes
+# or PRs made with GITHUB_TOKEN, so a PR opened with it would get no CI.
 #
 # There is at most one open update PR. Each run refreshes it with the newest
 # releases, unless someone else has committed to it (say, a fix for a test the
@@ -26,7 +31,6 @@ on:
     - cron: "0 6 * * 1"
   workflow_dispatch:
 
-# GITHUB_TOKEN only reads; the App token does the writing.
 permissions:
   contents: read
   pull-requests: read
@@ -43,11 +47,12 @@ env:
   GH_REPO: ${{ github.repository }}
 
 jobs:
-  update-lock:
-    name: Update uv.lock
+  lock:
+    name: Upgrade uv.lock
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    if: github.repository == 'PolicyEngine/policyengine-uk'
+    # Both jobs check out github.sha, the main commit this run started from.
+    if: github.repository == 'PolicyEngine/policyengine-uk' && github.ref == 'refs/heads/main'
     defaults:
       run:
         # Explicit bash adds -o pipefail, so `uv lock | tee` fails when uv does.
@@ -56,7 +61,7 @@ jobs:
       - name: Checkout main
         uses: actions/checkout@v6
         with:
-          ref: main
+          ref: ${{ github.sha }}
           persist-credentials: false
 
       # The same unpinned setup as the CI workflows: the latest uv release.
@@ -67,6 +72,59 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: "3.13"
+
+      - name: Upgrade uv.lock
+        run: |
+          mkdir -p "$RUNNER_TEMP/lock"
+          uv lock --upgrade 2>&1 | tee "$RUNNER_TEMP/uv-lock.log"
+          grep -E '^(Updated|Added|Removed) ' "$RUNNER_TEMP/uv-lock.log" \
+            > "$RUNNER_TEMP/lock/changes.txt" || true
+          cp uv.lock "$RUNNER_TEMP/lock/uv.lock"
+
+      - name: Upload the new lock
+        uses: actions/upload-artifact@v7
+        with:
+          name: uv-lock
+          path: ${{ runner.temp }}/lock
+          retention-days: 1
+          if-no-files-found: error
+
+  publish:
+    name: Open or update the PR
+    needs: lock
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Download the new lock
+        uses: actions/download-artifact@v8
+        with:
+          name: uv-lock
+          path: ${{ runner.temp }}/lock
+
+      - name: Apply the new lock
+        run: |
+          cp "$RUNNER_TEMP/lock/uv.lock" uv.lock
+          # Keep only well-formed uv summary lines for the PR body.
+          grep -E '^(Updated|Added|Removed) [A-Za-z0-9._-]+ v[^`<]*$' \
+            "$RUNNER_TEMP/lock/changes.txt" > "$RUNNER_TEMP/changes.txt" || true
 
       - name: Find an open update PR
         id: existing
@@ -91,9 +149,8 @@ jobs:
           # The PR is this workflow's own if every commit on it, other than
           # merges of main, is the workflow's, and it changes only the lock and
           # the fragment. A merge that resolved a conflict in any other file
-          # shows up in the file list.
-          # Fetch first, so a failed API call stops the run instead of reading
-          # as "nobody else committed".
+          # shows up in the file list. Fetch first, so a failed API call stops
+          # the run instead of reading as "nobody else committed".
           gh api --paginate "repos/$GH_REPO/pulls/$number/commits" \
             --jq '.[] | select((.parents | length) == 1) | .commit.author.email' \
             > "$RUNNER_TEMP/authors.txt"
@@ -109,14 +166,7 @@ jobs:
             echo "::notice::#$number has commits from someone other than this workflow (${others:-none}) or changes other files (${files:-none}), so it is left as it is."
           fi
 
-      - name: Upgrade uv.lock
-        if: steps.existing.outputs.action != 'skip'
-        run: |
-          uv lock --upgrade 2>&1 | tee "$RUNNER_TEMP/uv-lock.log"
-          grep -E '^(Updated|Added|Removed) ' "$RUNNER_TEMP/uv-lock.log" \
-            > "$RUNNER_TEMP/changes.txt" || true
-
-      - name: Decide what to push
+      - name: Decide what to do
         id: changes
         if: steps.existing.outputs.action != 'skip'
         env:
@@ -137,16 +187,6 @@ jobs:
             echo "push=true" >> "$GITHUB_OUTPUT"
             echo "close=false" >> "$GITHUB_OUTPUT"
           fi
-
-      - name: Generate GitHub App token
-        id: app-token
-        if: steps.changes.outputs.push == 'true' || steps.changes.outputs.close == 'true'
-        uses: actions/create-github-app-token@v3
-        with:
-          app-id: ${{ secrets.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-          permission-contents: write
-          permission-pull-requests: write
 
       - name: Commit and push
         if: steps.changes.outputs.push == 'true'
@@ -169,6 +209,8 @@ jobs:
           git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $auth" \
             push --force-with-lease="refs/heads/$BRANCH:$HEAD" origin "HEAD:refs/heads/$BRANCH"
 
+      # REST calls rather than `gh pr create/edit`: those also read project
+      # fields, which a token scoped to contents and pull requests cannot.
       - name: Open or update the PR
         if: steps.changes.outputs.push == 'true'
         env:
@@ -189,20 +231,28 @@ jobs:
             echo
             echo "axiom: n/a: dependency lock update"
             echo
-            echo "<details><summary>Changes from <code>uv lock --upgrade</code> ($count)</summary>"
-            echo
-            echo '```'
-            cat "$RUNNER_TEMP/changes.txt"
-            echo '```'
-            echo
-            echo "</details>"
+            if [ "$count" -eq 0 ]; then
+              echo "No package versions changed, but other contents of the lock did; see the diff."
+            else
+              echo "<details><summary>Changes from <code>uv lock --upgrade</code> ($count)</summary>"
+              echo
+              echo '```'
+              cat "$RUNNER_TEMP/changes.txt"
+              echo '```'
+              echo
+              echo "</details>"
+            fi
           } > "$body"
           if [ "$ACTION" = create ]; then
-            gh pr create --base main --head "$BRANCH" --label dependencies \
-              --title "Update uv.lock to the newest dependency releases" \
-              --body-file "$body"
+            number=$(gh api "repos/$GH_REPO/pulls" -f base=main -f head="$BRANCH" \
+              -f title="Update uv.lock to the newest dependency releases" \
+              -F body=@"$body" --jq .number)
+            echo "Opened #$number"
+            gh api "repos/$GH_REPO/issues/$number/labels" -f 'labels[]=dependencies' > /dev/null \
+              || echo "::warning::Could not add the dependencies label to #$number."
           else
-            gh pr edit "$NUMBER" --body-file "$body"
+            gh api -X PATCH "repos/$GH_REPO/pulls/$NUMBER" -F body=@"$body" > /dev/null
+            echo "Updated #$NUMBER"
           fi
           {
             echo "### uv lock --upgrade"
@@ -217,6 +267,13 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
           NUMBER: ${{ steps.existing.outputs.number }}
+          HEAD: ${{ steps.existing.outputs.head }}
         run: |
-          gh pr close "$NUMBER" --delete-branch \
-            --comment "\`uv lock --upgrade\` on \`main\` changes nothing now, so this update is no longer needed."
+          gh api "repos/$GH_REPO/issues/$NUMBER/comments" \
+            -f body="\`uv lock --upgrade\` on \`main\` changes nothing now, so this update is no longer needed." \
+            > /dev/null || echo "::warning::Could not comment on #$NUMBER."
+          gh api -X PATCH "repos/$GH_REPO/pulls/$NUMBER" -f state=closed > /dev/null
+          # Delete the branch only if it is still the head that was checked.
+          if [ "$(git ls-remote origin "refs/heads/$BRANCH" | cut -f1)" = "$HEAD" ]; then
+            gh api -X DELETE "repos/$GH_REPO/git/refs/heads/$BRANCH"
+          fi
