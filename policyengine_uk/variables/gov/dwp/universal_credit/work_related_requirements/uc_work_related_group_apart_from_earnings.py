@@ -39,6 +39,10 @@ class uc_work_related_group_apart_from_earnings(Variable):
             title="Universal Credit Regulations 2013 reg. 62(1)(b)",
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/62",
         ),
+        dict(
+            title="State Pension Credit Act 2002 s. 1(6)",
+            href="https://www.legislation.gov.uk/ukpga/2002/16/section/1",
+        ),
     ]
     definition_period = YEAR
 
@@ -61,8 +65,14 @@ class uc_work_related_group_apart_from_earnings(Variable):
             # s. 19(2)(c): the responsible carer for a child under the age
             # of 1.
             | (responsible_carer & (youngest < child_age.no_requirements))
-            # Reg. 89(1)(a): the qualifying age for State Pension Credit.
-            | person("is_SP_age", period)
+            # Reg. 89(1)(a): the claimant "has reached the qualifying age
+            # for state pension credit". That is State Pension Credit Act
+            # 2002 s. 1(6), the meaning the phrase has in Welfare Reform Act
+            # 2012 s. 4(4), carried into the regulations by Interpretation
+            # Act 1978 s. 11. A man born before 6 December 1953 reached it
+            # before his own State Pension age of 65, or on the same day if
+            # born on 6 November 1953.
+            | person("has_attained_state_pension_credit_qualifying_age", period)
             # Reg. 89(1)(c): 11 weeks before to 15 weeks after confinement.
             | person("uc_is_in_pregnancy_or_post_confinement_period", period)
             # Reg. 89(1)(d): an adopter in the 12 months after placement.
