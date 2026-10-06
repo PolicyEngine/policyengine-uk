@@ -87,6 +87,9 @@ class previous_tax_credits_current_year_income(tc.tax_credits_current_year_incom
             "social_security_income",
             "miscellaneous_income",
         ]
+        bi = parameters(period).gov.contrib.ubi_center.basic_income
+        if bi.interactions.include_in_means_tests:
+            step_two.append("basic_income")
         return income + add_for_members(benunit, period, step_two, members)
 
 

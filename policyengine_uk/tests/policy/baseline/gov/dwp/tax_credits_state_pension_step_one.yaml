@@ -27,7 +27,9 @@
 #
 # Each pensioner reached State Pension age after 6 April 2016, so has no
 # savings credit (SPCA 2002 s.3(1)(a)). The CTC family element is entered at
-# £545, its statutory amount, which the model uprates.
+# its statutory amount, which the model gets wrong (#2051): £545 where a child
+# was born before 6 April 2017, and nil otherwise (CTC Regs 2002 reg 7(2)(a),
+# from 6 April 2017).
 
 - name: State Pension is step one, so the £300 disregard applies to it
   # Tax credit income: step one 9,500 - 300 = £9,200; step two £2,600; total
@@ -235,9 +237,10 @@
   # reg 1(2), "eligible child", as at 1 September 2024).
   # Tax credit income: (11,490 - 300) + 5,000 = £16,190, within the limit.
   # (With State Pension in step two: £16,490, above it.)
-  # CTC: £4,000, below the £19,995 threshold. Pension Credit income,
-  # 11,490 + 5,000 less income tax of 0.2 x (16,490 - 12,570) = £784, is above
-  # the guarantee.
+  # CTC: the £3,455 child element, below the £19,995 threshold. A child
+  # aged 2 was born after 6 April 2017, so there is no family element (CTC
+  # Regs 2002 reg 7(2)(a)). Pension Credit income, 11,490 + 5,000 less income
+  # tax of 0.2 x (16,490 - 12,570) = £784, is above the guarantee.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -257,7 +260,7 @@
         members: [grandparent, grandchild]
         would_claim_uc: false
         child_minimum_guarantee_addition: 0
-        CTC_family_element: 545
+        CTC_family_element: 0
         working_tax_credit_run_on: false
         extended_childcare_entitlement_eligible: false
     households:
@@ -266,7 +269,7 @@
         country: ENGLAND
   output:
     tax_credits_current_year_income: 16_190
-    child_tax_credit: 4_000
+    child_tax_credit: 3_455
     pension_credit: 0
     meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: true
     targeted_childcare_entitlement_eligible: true
