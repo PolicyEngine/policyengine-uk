@@ -9,14 +9,16 @@ class pension_credit_war_pension_income(Variable):
     unit = GBP
     documentation = (
         "The claimant's and partner's war disablement pensions, war widow's or "
-        "widower's pensions and Armed Forces Compensation Scheme payments "
-        "(afcs, which holds guaranteed income payments and war disablement "
-        "pensions), less the Sch. IV para. 1 disregard. One weekly disregard "
-        "applies to each person's payments together, and the claimant and "
-        "partner each have their own (reg. 14). Dependants' and other "
-        "benefit-unit members' payments do not count. Components that Sch. IV "
-        "paras 2 to 6 and 12 disregard in full, and reg. 15(5)(a) and (ab) "
-        "payments that count in full, are not separated in the data."
+        "widower's pensions and Armed Forces Compensation Scheme payments, each "
+        "payment less the Sch. IV para. 1 disregard. afcs holds Armed Forces "
+        "Compensation Scheme payments, including guaranteed income payments, "
+        "and war disablement pensions; war_widows_pension holds war widow's or "
+        "widower's pensions. Each of the two gets its own weekly disregard, "
+        "which does not pass to the other payment or to the other member of a "
+        "couple. Dependants' and other benefit-unit members' payments do not "
+        "count (State Pension Credit Act 2002 s.5; reg. 14). Components that "
+        "Sch. IV paras 2 to 6 and 12 disregard in full, and reg. 15(5)(a) and "
+        "(ab) payments that count in full, are not separated in the data."
     )
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/15",
@@ -28,7 +30,8 @@ class pension_credit_war_pension_income(Variable):
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.pension_credit.income
         person = benunit.members
-        payments = add(person, period, ["afcs", "war_widows_pension"])
         disregard = p.war_pension_disregard * WEEKS_IN_YEAR
-        counted = max_(payments - disregard, 0)
+        counted = 0
+        for payment in ["afcs", "war_widows_pension"]:
+            counted += max_(person(payment, period) - disregard, 0)
         return benunit.sum(counted * person("is_claimant_or_partner", period))

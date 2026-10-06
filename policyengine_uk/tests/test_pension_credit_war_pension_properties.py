@@ -5,7 +5,7 @@ war widow's or widower's pension", and the State Pension Credit Regulations
 2002 reg 15(5)(aa) count "a guaranteed income payment" of the Armed Forces
 Compensation Scheme. Reg 17(7) applies Sch IV, whose para 1 disregards "£10 of
 any of the following". `pension_credit_war_pension_income` counts the
-claimant's and partner's `afcs` and `war_widows_pension`, each person's less
+claimant's and partner's `afcs` and `war_widows_pension`, each payment less
 £10 a week, and Pension Credit income includes it.
 
 Invariants, for single people and couples over State Pension age renting from
@@ -18,7 +18,7 @@ families (the sources #1952 added):
    income disregard equals Pension Credit income less the counted war pension
    income. The difference is intended: the Housing Benefit (Persons who have
    attained the qualifying age for state pension credit) Regulations 2006 reg
-   29(1)(e) and (g) count these payments less £10 (Sch 5 para 1), but the
+   29(1) count these payments and Sch 5 para 1 disregards £10 of them, but the
    Social Security Administration Act 1992 s.134(8) lets an authority modify
    its scheme to disregard "the whole or part" of a prescribed war
    disablement or war widow's pension, and `housing_benefit_applicable_income`
@@ -28,13 +28,15 @@ families (the sources #1952 added):
    pension contributions and capital of at most £10,000, so neither tariff
    income nor the earnings rules apply.
 2. Bounds and closed form. The counted amount is between 0 and the gross
-   payments of the claimant and partner, and equals the sum over the claimant
-   and partner of max(0, AFCS + war widow's pension - £520 a year).
+   payments of the claimant and partner, and equals the sum over the
+   claimant's and partner's payments of max(0, payment - £520 a year).
 3. Monotone. Guarantee Credit does not rise as one person's AFCS payment
-   rises, and does not change while the payment is at or below £10 a week.
-4. Metamorphic. Moving an amount between `afcs` and `war_widows_pension`
-   within one person changes neither Pension Credit income nor Guarantee
-   Credit: one £10 a week applies to each person's payments together.
+   rises, and does not change while that payment is at or below £10 a week,
+   whatever war widow's pension the person also receives.
+4. Metamorphic. Pension Credit income and Guarantee Credit depend on the
+   claimant's and partner's payments only as a collection: reassigning the
+   amounts between the two sources and between the claimant and partner
+   changes neither, because each payment has its own £10 a week.
 """
 
 import numpy as np
@@ -45,7 +47,7 @@ from policyengine_uk import Simulation
 
 YEAR = 2026
 WEEKS = 52
-# Sch IV para 1: £10 a week.
+# Sch IV para 1: £10 a week of each payment.
 DISREGARD = 10 * WEEKS
 PENSIONS = np.arange(0, 20_001, 1_000)
 # Weekly AFCS payments for invariant 3, through the disregard and beyond.
@@ -84,9 +86,6 @@ def adult(draw):
         state_pension=draw(money(15_000)),
         afcs=draw(weekly_payment()),
         war_widows_pension=draw(weekly_payment()),
-        # Share of the person's payments moved to the other source in
-        # invariant 4.
-        share=draw(st.floats(0, 1)),
     )
 
 
@@ -103,6 +102,8 @@ def family(draw):
         council_tax=draw(money(3_000)),
         savings=draw(st.one_of(st.just(0.0), money(10_000))),
         private_pension=draw(money(15_000)),
+        # Invariant 4 reassigns the payments in this order.
+        order=draw(st.permutations(range(2 * len(adults)))),
     )
 
 
@@ -168,6 +169,13 @@ def drawn_payments(fam):
     return [(a["afcs"], a["war_widows_pension"]) for a in fam["adults"]]
 
 
+def reassigned_payments(fam):
+    """The family's payments, reassigned among sources and adults by `order`."""
+    amounts = [amount for pair in drawn_payments(fam) for amount in pair]
+    moved = [amounts[k] for k in fam["order"]]
+    return [(moved[2 * j], moved[2 * j + 1]) for j in range(len(fam["adults"]))]
+
+
 def pension_grid(families, payments=drawn_payments):
     """Each family once per private pension on the PENSIONS grid."""
     rows = [(fam, pension, payments(fam)) for fam in families for pension in PENSIONS]
@@ -209,8 +217,9 @@ def test_counted_war_pension_income_bounds_and_closed_form(families):
     gross = get("afcs") + get("war_widows_pension")
     for i, fam in enumerate(families):
         expected = sum(
-            max(0.0, a["afcs"] + a["war_widows_pension"] - DISREGARD)
-            for a in fam["adults"]
+            max(0.0, payment - DISREGARD)
+            for pair in drawn_payments(fam)
+            for payment in pair
         )
         assert np.all(war[i] >= 0), fam
         assert np.all(war[i] <= gross[i] + 0.01), fam
@@ -220,13 +229,14 @@ def test_counted_war_pension_income_bounds_and_closed_form(families):
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
 def test_guarantee_credit_does_not_rise_with_an_afcs_payment(families):
-    # The first adult's war widow's pension is set to zero so that the grid
-    # is the whole of their payments; the partner keeps their drawn payments.
+    # The first adult's AFCS payment runs over the grid; their war widow's
+    # pension and the partner's payments stay as drawn.
     rows = [
         (
             fam,
             fam["private_pension"],
-            [(weekly * WEEKS, 0.0)] + drawn_payments(fam)[1:],
+            [(weekly * WEEKS, fam["adults"][0]["war_widows_pension"])]
+            + drawn_payments(fam)[1:],
         )
         for fam in families
         for weekly in AFCS_GRID
@@ -241,22 +251,11 @@ def test_guarantee_credit_does_not_rise_with_an_afcs_payment(families):
         )
 
 
-def moved(fam):
-    """Each person's total payments, split between the sources by `share`."""
-    return [
-        (
-            a["share"] * (a["afcs"] + a["war_widows_pension"]),
-            (1 - a["share"]) * (a["afcs"] + a["war_widows_pension"]),
-        )
-        for a in fam["adults"]
-    ]
-
-
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
-def test_moving_payments_between_sources_within_a_person(families):
+def test_reassigning_payments_between_sources_and_partners(families):
     get = pension_grid(families)
-    get_moved = pension_grid(families, payments=moved)
+    get_moved = pension_grid(families, payments=reassigned_payments)
     for variable in ["pension_credit_income", "guarantee_credit"]:
         original, after = get(variable), get_moved(variable)
         for i, fam in enumerate(families):

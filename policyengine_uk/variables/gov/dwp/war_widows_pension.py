@@ -13,8 +13,9 @@ class war_widows_pension(Variable):
         "State Pension Credit Regulations 2002 Sch. IV paras 2 to 6 and 12 "
         "(for example a supplementary pension under article 23(2) of the "
         "Service Pensions Order 2006) are not separated. Family Resources "
-        "Survey benefit code 9 (War Widow's/Widower's Pension) belongs here; "
-        "datasets currently put it in bsp_reported with code 6."
+        "Survey benefit code 9, asked as War Widow's/Widower's Pension (and "
+        "any related allowances), belongs here; the survey-based datasets "
+        "currently add it to bsp_reported with code 6."
     )
     definition_period = YEAR
     unit = GBP
