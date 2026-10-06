@@ -1,0 +1,12 @@
+description: Step of capital above the threshold, or part of one, that the Scotland Council Tax Reduction working-age scheme treats as yielding one amount of weekly tariff income.
+values:
+  2013-04-01: 250
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Scotland Council Tax Reduction working-age tariff income capital step
+  reference:
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 reg. 51 (persons under pension age, to 31 March 2022)
+      href: https://www.legislation.gov.uk/ssi/2012/303/regulation/51
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 63(1)(b)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/63
