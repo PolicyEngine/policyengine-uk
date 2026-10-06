@@ -21,5 +21,5 @@ class pays_rent_to_householder(Variable):
 
     def formula(person, period, parameters):
         paid = add(person, period, ["rent_paid_as_boarder", "rent_paid_as_lodger"])
-        in_head_benunit = person.benunit.any(person("is_household_head", period))
+        in_head_benunit = person.benunit("benunit_contains_household_head", period)
         return person.benunit.any(paid > 0) & ~in_head_benunit
