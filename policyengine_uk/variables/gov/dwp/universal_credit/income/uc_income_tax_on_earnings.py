@@ -91,6 +91,24 @@ class uc_income_tax_on_earnings(Variable):
         # off the tax on earnings first, as allowances do. So the deduction
         # never exceeds the income tax the person pays, never includes a
         # charge such as the High Income Child Benefit Charge, and does not
-        # move when other income absorbs more or less of a reduction.
-        reductions = add(person, period, income_tax.income_tax_subtractions)
+        # move when other income absorbs more or less of a reduction. The
+        # exception is the finance-cost reduction, which is given on property
+        # profits and limited by them (ITTOIA 2005 s. 274AA), so it comes off
+        # the tax on property income first. Only a part larger than that tax
+        # (possible where Scottish rates on property income are below the
+        # reduction's rate) comes off the tax on earnings.
+        reductions = add(
+            person,
+            period,
+            [
+                variable
+                for variable in income_tax.income_tax_subtractions
+                if variable != "property_finance_cost_relief"
+            ],
+        )
+        reductions += max_(
+            0,
+            person("property_finance_cost_relief", period)
+            - person("property_income_tax", period),
+        )
         return max_(0, tax - reductions)
