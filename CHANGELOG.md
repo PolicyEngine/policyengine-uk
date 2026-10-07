@@ -1,3 +1,10 @@
+## [2.123.5] - 2026-10-07
+
+### Fixed
+
+- - Corrected the Class 1 secondary threshold for 2015-16 and 2016-17 to the statutory £156 a week (£8,112 a year); it held the £155 primary threshold.
+
+
 ## [2.123.4] - 2026-10-07
 
 ### Fixed
