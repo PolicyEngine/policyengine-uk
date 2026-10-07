@@ -14,7 +14,7 @@ from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
-from policyengine_core.tracers import FullTracer, SimpleTracer
+from policyengine_core.tracers import SimpleTracer
 
 from policyengine_uk.utils.parameters import (
     check_parameter_not_removed,
@@ -33,10 +33,6 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.utils.dependencies import get_variable_dependencies
-from policyengine_uk.utils.supplied_inputs import (
-    SUPPLIED_INPUT_VARIABLES,
-    drop_missing_supplied_inputs,
-)
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_lsr_parameter_path,
@@ -141,26 +137,21 @@ class Simulation(CoreSimulation):
             reform: A parameter-change dict, a structural Reform class, or
                 a tuple of these applied in order (see Scenario.from_reform)
         """
-        # Initialize tax-benefit rules
-        self.tax_benefit_system = CountryTaxBenefitSystem()
+        # Core initializes cache ownership, tracing, and system backreferences.
+        # UK still controls data loading and scenario application below.
+        tax_benefit_system = CountryTaxBenefitSystem()
+        super().__init__(
+            tax_benefit_system=tax_benefit_system,
+            populations=tax_benefit_system.instantiate_entities(),
+            trace=trace,
+        )
 
         # Migrate Reform to Scenario
 
         if reform is not None:
             scenario = Scenario.from_reform(reform)
 
-        self.branch_name = "default"
-        self.result_cache.replace_invalidated(set())
-        self.debug: bool = False
-        self.trace: bool = trace
-        self.tracer: SimpleTracer = SimpleTracer() if not trace else FullTracer()
-        self.opt_out_cache: bool = False
-        self.max_spiral_loops: int = 10
-        self.memory_config = None
-        self._data_storage_dir: Optional[str] = None
         self.disable_economic_assumptions: bool = False
-
-        self.branches: Dict[str, Simulation] = {}
 
         if scenario is not None and scenario.applied_before_data_load:
             if scenario.simulation_modifier is not None:
@@ -195,7 +186,7 @@ class Simulation(CoreSimulation):
 
         # Apply structural modifiers
 
-        self.tax_benefit_system.reset_parameter_caches()
+        self.tax_benefit_system.clear_parameter_caches()
 
         # Apply structural reforms based on parameters
         structural_reform = create_structural_reforms_from_parameters(
@@ -236,9 +227,8 @@ class Simulation(CoreSimulation):
                 self.apply_parameter_changes(scenario.parameter_changes)
 
     def reset_calculations(self):
-        for variable in self.tax_benefit_system.variables:
-            if variable not in self.input_variables:
-                self.delete_arrays(variable)
+        """Discard this simulation's derived values, preserving supplied inputs."""
+        self.clear_calculated_results()
 
     def get_known_variables(self):
         variables = []
@@ -270,6 +260,7 @@ class Simulation(CoreSimulation):
                 p.update(period="year:2000:100", value=changes[parameter])
 
         self.tax_benefit_system.process_parameters()
+        self.clear_calculated_results()
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.
@@ -570,21 +561,29 @@ class Simulation(CoreSimulation):
         self.build_from_populations(builder.populations)
 
     def move_values(self, variable_donor: str, variable_target: str) -> None:
-        """Move values from one variable to another across all branches.
+        """Move supplied inputs on this simulation and its direct branches.
 
-        Used for behavioral response modeling where original values need
-        to be preserved.
+        Route reported inputs to pre-response variables without promoting
+        formula outputs or carried periods to new inputs. An explicit donor
+        replaces the target at the same period, as before. Other clones and
+        baseline simulations are not implicitly modified.
 
         Args:
             variable_donor: Variable to move values from
             variable_target: Variable to move values to
         """
         for simulation in list(self.branches.values()) + [self]:
-            holder = simulation.get_holder(variable_donor)
-            for known_period in holder.get_known_periods():
-                array = holder.get_array(known_period)
+            # Retain the input snapshots before any write invalidates results.
+            inputs = [
+                (
+                    known_period,
+                    simulation.get_supplied_input(variable_donor, known_period),
+                )
+                for known_period in simulation.supplied_input_periods(variable_donor)
+            ]
+            for known_period, array in inputs:
                 simulation.set_input(variable_target, known_period, array)
-                holder.delete_arrays(known_period)
+                simulation.delete_arrays(variable_donor, known_period)
 
     def calculate_all(self, year: int) -> None:
         person, benunit, household = (
@@ -633,12 +632,6 @@ class Simulation(CoreSimulation):
             period = self.default_calculation_period
 
         period = period_(period)
-
-        if variable_name in SUPPLIED_INPUT_VARIABLES:
-            # A value deleted straight from the holder leaves its input record
-            # behind. Forget it before the engine can refill the period with a
-            # carried-over value that the record would pass off as supplied.
-            drop_missing_supplied_inputs(self, variable_name)
 
         return super().calculate(
             variable_name, period, map_to=map_to, decode_enums=decode_enums

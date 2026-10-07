@@ -52,7 +52,6 @@ from policyengine_core.reforms import Reform
 
 from policyengine_uk import Simulation
 from policyengine_uk.utils.supplied_inputs import (
-    SUPPLIED_INPUT_VARIABLES,
     supplied_input,
     supplied_input_periods,
 )
@@ -722,8 +721,11 @@ def test_class_4_counts_only_supplied_losses_on_plain_clones():
     assert clone.calculate("ni_class_4_profits", 2026)[0] == 25_000
     for simulation in (sim, clone):
         assert simulation.calculate("ni_class_4_profits", 2027)[0] == 40_000
-    assert clone._user_input_keys is not sim._user_input_keys
-    assert clone._user_input_contexts is not sim._user_input_contexts
+    assert sim.supplied_input_periods("trading_loss") == [period_(2025)]
+    assert clone.supplied_input_periods("trading_loss") == [
+        period_(2025),
+        period_(2026),
+    ]
 
 
 @pytest.mark.parametrize("on_branch", [False, True])
@@ -754,8 +756,7 @@ def test_class_4_does_not_count_a_deleted_loss_after_recalculation(on_branch):
 def test_supplied_input_helpers_ignore_missing_stored_arrays():
     sim = single_person({"trading_loss": {2025: 10_000, 2026: 5_000}})
     population = sim.get_variable_population("trading_loss")
-    # Direct holder deletion leaves core's provenance keys behind. Neither
-    # helper may identify the missing stored value as an effective input.
+    # Direct public holder deletion also removes Core's input provenance.
     population.get_holder("trading_loss").delete_arrays(period_(2026))
     assert supplied_input(population, "trading_loss", period_(2026)) is None
     assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
@@ -773,10 +774,9 @@ def test_class_4_does_not_count_a_loss_deleted_from_its_holder(on_branch, delete
     )
     sim = original.get_branch("deleted_loss") if on_branch else original
     sim.set_input("trading_loss", 2026, np.array([deleted_loss]))
-    # Holder.delete_arrays removes the stored value but not core's record of
-    # it. The engine then carries the 2025 loss into 2026; with the stale
-    # record that 10,000 would count as a second loss (profits of 20,000 and
-    # contributions of 445.80), also when the deleted loss was 10,000 too.
+    # Core removes the stored input and its provenance together. The engine
+    # can then carry the 2025 loss into 2026 without treating it as a second
+    # supplied loss, even when the deleted value was also 10,000.
     sim.get_holder("trading_loss").delete_arrays(period_(2026), sim.branch_name)
     assert sim.calculate("trading_loss", 2026)[0] == 10_000
     population = sim.get_variable_population("trading_loss")
@@ -792,16 +792,15 @@ def test_class_4_does_not_count_a_loss_deleted_from_its_holder(on_branch, delete
         assert original.calculate("ni_class_4_profits", 2026)[0] == 30_000
 
 
-def test_supplied_input_helpers_refuse_an_unregistered_variable():
-    sim = single_person({"employment_income": {2026: 20_000}})
-    population = sim.get_variable_population("employment_income")
-    # Simulation.calculate keeps input records in step with storage only for
-    # SUPPLIED_INPUT_VARIABLES, so the helpers answer for no other variable.
-    assert "employment_income" not in SUPPLIED_INPUT_VARIABLES
-    with pytest.raises(ValueError, match="SUPPLIED_INPUT_VARIABLES"):
-        supplied_input(population, "employment_income", period_(2026))
-    with pytest.raises(ValueError, match="SUPPLIED_INPUT_VARIABLES"):
-        supplied_input_periods(population, "employment_income")
+def test_supplied_input_helpers_support_variables_without_registration():
+    sim = single_person({"self_employment_income": {2026: 20_000}})
+    population = sim.get_variable_population("self_employment_income")
+    assert supplied_input(
+        population, "self_employment_income", period_(2026)
+    ).tolist() == [20_000]
+    assert supplied_input_periods(population, "self_employment_income") == [
+        period_(2026)
+    ]
 
 
 class neutralize_trading_loss(Reform):

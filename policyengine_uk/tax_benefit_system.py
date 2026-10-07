@@ -1,5 +1,4 @@
 # Standard library imports
-import copy
 from pathlib import Path
 from typing import Dict, List
 
@@ -71,14 +70,14 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     variables: Dict[str, Variable]
 
     def reset_parameter_caches(self):
-        """Reset all caches in the tax-benefit system."""
+        """Compatibility alias for Core's public parameter-cache operation."""
         self.clear_parameter_caches()
 
     def reset_parameters(self) -> None:
         """Reset parameters by reloading from the parameters directory."""
         self.clear_parameter_caches()
         self.load_parameters(self.parameters_dir)
-        self.parameters = add_removed_parameter_aliases(self.parameters)
+        self.replace_parameters(add_removed_parameter_aliases(self.parameters))
 
     def process_parameters(self) -> None:
         """Process and transform parameters with UK-specific adjustments.
@@ -94,47 +93,30 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """
         self.clear_parameter_caches()
         # Add various UK-specific parameter adjustments
-        self.parameters = add_private_pension_uprating_factor(self.parameters)
-        self.parameters = add_lagged_earnings(self.parameters)
-        self.parameters = add_lagged_cpi(self.parameters)
-        self.parameters = add_statutory_uprating_inputs(self.parameters)
-        self.parameters = add_triple_lock(self.parameters)
-        self.parameters = create_economic_assumption_indices(self.parameters)
-        self.parameters = add_lsr_deprecation_aliases(self.parameters)
+        parameters = add_private_pension_uprating_factor(self.parameters)
+        parameters = add_lagged_earnings(parameters)
+        parameters = add_lagged_cpi(parameters)
+        parameters = add_statutory_uprating_inputs(parameters)
+        parameters = add_triple_lock(parameters)
+        parameters = create_economic_assumption_indices(parameters)
+        parameters = add_lsr_deprecation_aliases(parameters)
 
         # Create baseline parameters for reform comparisons
-        self.parameters.add_child("baseline", self.parameters.clone())
+        parameters.add_child("baseline", parameters.clone())
 
         # Apply general parameter operations
-        self.parameters = propagate_parameter_metadata(self.parameters)
-        self.parameters = uprate_parameters(self.parameters)
-        self.parameters = backdate_parameters(self.parameters, "2015-01-01")
-        self.parameters.gov = convert_to_fiscal_year_parameters(self.parameters.gov)
-        self.reset_parameter_caches()
+        parameters = propagate_parameter_metadata(parameters)
+        parameters = uprate_parameters(parameters)
+        parameters = backdate_parameters(parameters, "2015-01-01")
+        parameters.gov = convert_to_fiscal_year_parameters(parameters.gov)
+        self.replace_parameters(parameters)
+        self.clear_parameter_caches()
 
     def __init__(self):
         """Initialize the UK tax-benefit system with entities and parameters."""
-        self.replace_parameters(None)
-        self.variables = {}
-
-        # Create copies of entity classes to avoid modifying originals
-        person, benunit, household = (
-            copy.copy(Person),
-            copy.copy(BenUnit),
-            copy.copy(Household),
-        )
-
-        # Set up entities
-        self.entities = [person, benunit, household]
-        self.person_entity = person
-        self.group_entities = [benunit, household]
-        self.group_entity_keys = [entity.key for entity in self.group_entities]
-
-        # Link entities to this tax-benefit system
-        for entity in self.entities:
-            entity.set_tax_benefit_system(self)
-
-        self.variable_module_metadata = {}
+        # No class-level parameter directory: UK processing below replaces
+        # Core's general country-parameter transformations and abolitions.
+        super().__init__(entities=[Person, BenUnit, Household])
 
         # Load all variables from the variables directory
         self.add_variables_from_directory(COUNTRY_DIR / "variables")
@@ -147,7 +129,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # the full pipeline (saves ~0.5s from convert_to_fiscal_year_parameters).
             # apply_parameter_changes() calls reset_parameters() + process_parameters()
             # directly, so reforms still get the full pipeline.
-            self.parameters = _processed_parameters_cache.clone()
+            self.replace_parameters(_processed_parameters_cache.clone())
         else:
             self.reset_parameters()
             self.process_parameters()

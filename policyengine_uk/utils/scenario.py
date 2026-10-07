@@ -15,20 +15,14 @@ def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
     policyengine-core's ``Reform.__init__`` takes a baseline system and
     builds a separate reformed system, so a simulation instead runs the
     class's ``apply`` on its own tax-benefit system, as
-    ``Simulation.apply_reform`` does. Before data load there are no
-    populations or cached values, so only the system changes; afterwards
-    ``Simulation.apply_reform`` also discards cached formula output.
+    ``Simulation.apply_reform`` does. Core construction supplies valid
+    empty populations before UK data loading, so the same public operation
+    applies before and after loading and owns result invalidation.
     """
-    # A modifier cannot know its phase when the Scenario is built, because
-    # ``applied_before_data_load`` is set on the Scenario afterwards, so the
-    # simulation's populations (created by data load) are the phase signal.
-    if getattr(simulation, "populations", None) is None:
-        reform.apply(simulation.tax_benefit_system)
-    else:
-        simulation.apply_reform(reform)
+    simulation.apply_reform(reform)
     # Adding or replacing parameter nodes does not clear the per-node
     # at-instant caches the way ``Parameter.update`` does.
-    simulation.tax_benefit_system.reset_parameter_caches()
+    simulation.tax_benefit_system.clear_parameter_caches()
 
 
 class Scenario(BaseModel):

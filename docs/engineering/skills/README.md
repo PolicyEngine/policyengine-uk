@@ -13,6 +13,8 @@ first, then keep adapters thin.
 
 Current skills:
 
+- `cache-ownership.md`: Core-owned caches, supplied inputs, branch snapshots,
+  parameter installation, and the staged country migration release order.
 - `dataset-sources.md`: default datasets, Hugging Face dataset URLs, local H5
   file paths, and upstream dataset materialization behavior.
 - `documentation-review.md`: model-neutral review checks for public behavior,

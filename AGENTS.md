@@ -35,6 +35,9 @@ interactions with upstream dataset materializers, read
 When changing public behavior, documentation, metadata surfaces, or generated
 documentation, read `docs/engineering/skills/documentation-review.md`.
 
+When changing cache access, simulation initialization, parameter installation,
+input provenance, or branching, read `docs/engineering/skills/cache-ownership.md`.
+
 ## Non-Negotiable PR Requirements
 
 Every pull request must include a Towncrier changelog fragment under
