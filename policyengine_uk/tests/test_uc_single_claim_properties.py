@@ -41,12 +41,15 @@ claimant alone with the children ("solo"). Invariants:
    applies to a family with a member over the qualifying age for State
    Pension Credit and no Universal Credit award. Whether there is an award
    can differ between the single claim and the stripped calculation, either
-   way round: the single claim has a single claimant's amounts (reg. 36(3))
-   but keeps the work allowance the other member's limited capability gives
-   (reg. 22(3)), which stripping it removes. So each calculation's second
-   exception is checked against its own inputs (the route, or a claimant's
-   AFCS or contributory ESA), and the two are compared only for families
-   the pension-age route reaches in neither (see off_pension_age_route).
+   way round. The single claim has a single claimant's amounts (reg. 36(3))
+   and still counts the other member's income, such as contributory ESA
+   (reg. 22(3)), so its award can be the lower. It also keeps the work
+   allowance the other member's limited capability gives (reg. 22(3)),
+   which stripping removes, so its award can be the higher. So each
+   calculation's second exception is checked against its own inputs (the
+   route as that calculation gives it, or a claimant's AFCS or contributory
+   ESA), and the two are compared only for families the pension-age route
+   reaches in neither (see off_pension_age_route).
 6. Regulation 3(3)(a): with the flag left to its formula, a member of a
    couple under 18 is the ineligible partner exactly when none of the
    generated regulation 8(1) circumstances applies to them (limited
@@ -350,9 +353,9 @@ def off_pension_age_route(*calculations):
     family with a claimant or partner over the qualifying age for State
     Pension Credit and no Universal Credit award. Whether there is an award
     can differ between the calculations, either way round: a single claim has
-    a single claimant's amounts (reg. 36(3)) but the joint claimants' work
-    allowance (reg. 22(3)), and a flag on both members leaves no one who can
-    claim. So comparisons of that exception across calculations exclude the
+    a single claimant's amounts (reg. 36(3)) but the joint claimants' income
+    and work allowance (reg. 22(3)), and a flag on both members leaves no one
+    who can claim. So comparisons of that exception across calculations exclude the
     families the route reaches in any of them. Within each calculation the
     route lifts the cap wherever it applies.
     """
@@ -364,9 +367,11 @@ def off_pension_age_route(*calculations):
 def exempt_other_from_inputs(families, values, members):
     """is_benefit_cap_exempt_other as the inputs give it, with no mask.
 
-    The pension-age route, or AFCS or contributory ESA of one of ``members``
-    (reg. 83(1)(a) and (e); the model takes any contributory ESA as including
-    the support component). ``members`` are the people whose own benefits
+    The pension-age route as the same calculation gives it (taken from the
+    model; test_benefit_cap_and_ctr_pension_age_properties.py and
+    benefit_cap_pension_age.yaml test the route itself), or AFCS or
+    contributory ESA of one of ``members`` (reg. 83(1)(a) and (e); the model
+    takes any contributory ESA as including the support component). ``members`` are the people whose own benefits
     count: the claimant alone on a single claim, in a stripped calculation
     (the other member's benefits removed) or with no partner, and both
     members of a couple neither of whom is excluded.
