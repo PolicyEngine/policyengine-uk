@@ -1,18 +1,12 @@
 description: >-
-  Great Britain provides this monthly Energy Bills Support Scheme amount to
-  eligible domestic electricity customers.
+  Annual Energy Bills Support Scheme top-up. This preserves the existing
+  parameter path for reforms that add a yearly household payment.
 values:
   2022-01-01: 0
-  2022-10-01: 66
-  2022-12-01: 67
-  2023-04-01: 0
 metadata:
   unit: currency-GBP
-  period: month
-  label: Great Britain monthly Energy Bills Support Scheme discount
+  period: year
+  label: Energy Bills Support Scheme annual top-up
   reference:
-    - title: Energy Bills Support Scheme guidance for electricity suppliers, paragraphs 5.1 to 5.14
-      href: https://assets.publishing.service.gov.uk/media/661eb96a90095817cebd3dc7/withdrawn-ebss-guidance-for-electricity-suppliers.pdf#page=16
-    - title: £400 energy bills discount to support households this winter
-      href: https://www.gov.uk/government/news/400-energy-bills-discount-to-support-households-this-winter
-  preserve_calendar_dates: true
+    - title: GOV.UK Press release
+      href: https://www.gov.uk/government/news/millions-to-receive-350-boost-to-help-with-rising-energy-costs

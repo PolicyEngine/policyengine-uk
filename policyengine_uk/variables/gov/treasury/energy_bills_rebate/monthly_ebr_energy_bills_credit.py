@@ -24,5 +24,5 @@ class monthly_ebr_energy_bills_credit(Variable):
         return where(
             is_northern_ireland,
             ebr.energy_bills_credit_northern_ireland,
-            ebr.energy_bills_credit,
+            ebr.energy_bills_credit_monthly,
         )

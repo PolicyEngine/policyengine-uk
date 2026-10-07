@@ -64,3 +64,10 @@
     monthly_ebr_energy_bills_credit:
       2024-01: 0
     ebr_energy_bills_credit: 0
+
+- name: Case 9, an annual reform on the existing parameter path is added once.
+  period: 2022
+  input:
+    gov.treasury.energy_bills_rebate.energy_bills_credit: 500
+  output:
+    ebr_energy_bills_credit: 699

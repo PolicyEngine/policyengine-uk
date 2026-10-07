@@ -23,4 +23,7 @@ class ebr_energy_bills_credit(Variable):
                 "monthly_ebr_energy_bills_credit",
                 f"{period.this_year}-{month:02d}",
             )
-        return annual_credit
+        annual_top_up = parameters(
+            period
+        ).gov.treasury.energy_bills_rebate.energy_bills_credit
+        return annual_credit + annual_top_up
