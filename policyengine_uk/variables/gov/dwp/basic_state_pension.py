@@ -23,9 +23,23 @@ class basic_state_pension(Variable):
 
         reported = person("state_pension_reported", data_year) / WEEKS_IN_YEAR
         pension_type = person("state_pension_type", period)
-        sp_amount = parameters.gov.dwp.state_pension.basic_state_pension.amount
-        max_sp_data_year = sp_amount(data_year)
-        max_sp_period = sp_amount(period)
+        # state_pension_reported was observed under the legislated rates, so
+        # split it at the baseline's data-year rate, not the reformed one.
+        # Otherwise a reform that also sets the data year's rate (an undated
+        # reform, or any reform in a simulation without a dataset, where the
+        # data year is the period) leaves the period-over-data-year ratio at 1,
+        # and state_pension does not follow the reform
+        # (PolicyEngine/policyengine-uk#2122).
+        baseline = getattr(simulation, "baseline", None)
+        legislated = (
+            baseline.tax_benefit_system.parameters
+            if baseline is not None
+            else parameters
+        ).gov.dwp.state_pension
+        max_sp_data_year = legislated.basic_state_pension.amount(data_year)
+        max_sp_period = parameters.gov.dwp.state_pension.basic_state_pension.amount(
+            period
+        )
 
         # Compute the person's share of the data-year maximum so reforms can
         # scale the current-period amount while preserving the original cap.

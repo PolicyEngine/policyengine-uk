@@ -22,7 +22,7 @@ class income_support_applicable_income(Variable):
         INCOME_COMPONENTS = [
             "employment_income",
             "self_employment_income",
-            "property_income",
+            "property_income_after_finance_costs",
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income

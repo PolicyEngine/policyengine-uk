@@ -1,0 +1,125 @@
+# Property allowance, ITTOIA 2005 Part 6A Chapter 2 (ss. 783B-783BQ).
+# property_income is profit after actual expenses. The allowance is an
+# alternative to those expenses (s. 783BH(3)), so it may only add the part of
+# the £1,000 that actual expenses have not already used. Receipts within the
+# allowance are fully relieved (s. 783BF).
+
+- name: Landlord with £25,000 profit gets no allowance on top of expenses
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    property_income: 25_000
+  output:
+    property_allowance_deduction: 0
+    taxable_property_income: 25_000
+    adjusted_net_income: 25_000
+    # (25,000 - 12,570) * 22% (property basic rate from 2027-28)
+    income_tax: 2_734.60
+
+- name: Profit within the allowance, receipts unknown, is fully relieved
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    property_income: 600
+  output:
+    uses_property_allowance: true
+    property_allowance_deduction: 600
+    taxable_property_income: 0
+
+- name: Profit equal to the allowance, receipts unknown, is fully relieved
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    property_income: 1_000
+  output:
+    property_allowance_deduction: 1_000
+    taxable_property_income: 0
+
+- name: Profit above the allowance, receipts unknown, is taxed as reported
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    property_income: 1_001
+  output:
+    uses_property_allowance: false
+    property_allowance_deduction: 0
+    taxable_property_income: 1_001
+
+- name: Receipts of £900 are fully relieved (s. 783BF)
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    employment_income: 30_000
+    property_rental_income: 900
+    property_income: 900
+  output:
+    property_allowable_expenses: 0
+    property_allowance_deduction: 900
+    taxable_property_income: 0
+    property_income_tax: 0
+
+- name: Partial relief beats £600 of expenses on £5,000 of receipts (s. 783BH)
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    employment_income: 30_000
+    property_rental_income: 5_000
+    property_income: 4_400
+  output:
+    property_allowable_expenses: 600
+    uses_property_allowance: true
+    property_allowance_deduction: 400
+    # 5,000 receipts - 1,000 allowance
+    taxable_property_income: 4_000
+    property_income_tax: 800
+    property_finance_cost_relief: 0
+
+- name: Actual expenses above the allowance leave no extra relief
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    property_rental_income: 25_000
+    property_income: 20_000
+  output:
+    property_allowable_expenses: 5_000
+    property_allowance_deduction: 0
+    taxable_property_income: 20_000
+
+- name: Receipts below profit are inconsistent and treated as unknown
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    property_rental_income: 500
+    property_income: 1_500
+  output:
+    property_allowable_expenses: 0
+    property_allowance_deduction: 0
+    taxable_property_income: 1_500
+
+- name: A property loss gets no allowance and is not taxed
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    property_rental_income: 800
+    property_income: -400
+  output:
+    property_allowance_deduction: 0
+    taxable_property_income: 0
+
+- name: No property allowance before 2017-18
+  period: 2016
+  absolute_error_margin: 0
+  input:
+    property_income: 600
+  output:
+    property_allowance_deduction: 0
+    taxable_property_income: 600
+
+- name: The allowance applies from 2017-18
+  period: 2017
+  absolute_error_margin: 0
+  input:
+    property_income: 600
+  output:
+    property_allowance_deduction: 600
+    taxable_property_income: 0

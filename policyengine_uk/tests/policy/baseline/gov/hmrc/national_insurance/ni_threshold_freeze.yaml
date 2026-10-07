@@ -3,7 +3,8 @@
 # UPL £50,270, ST £5,000 (£96 a week). 2027-28 was already frozen by
 # Autumn Statement 2022 (PT, UEL, LPL, UPL) and Autumn Budget 2024 (ST).
 # Rates: Class 1 8% / 2%, employer 15%, Class 4 6% / 2%.
-# The model annualises the weekly ST as 52 x £96 = £4,992.
+# The model stores the ST as 5,000 / 52 a week (reg 11(3A)), so 52 weeks give
+# £5,000 (#1967).
 
 - name: 2027-28 employee Class 1 at the primary threshold
   period: 2027
@@ -22,7 +23,7 @@
     employment_income: 30_000
   output:
     ni_class_1_employee: (30_000 - 12_570) * 0.08  # 1,394.40
-    ni_class_1_employer: (30_000 - 4_992) * 0.15  # 3,751.20
+    ni_class_1_employer: (30_000 - 5_000) * 0.15  # 3,750.00
 
 - name: 2027-28 employee Class 1 above the UEL
   period: 2027
@@ -33,7 +34,7 @@
   output:
     ni_class_1_employee_primary: (50_270 - 12_570) * 0.08  # 3,016
     ni_class_1_employee_additional: (60_000 - 50_270) * 0.02  # 194.60
-    ni_class_1_employer: (60_000 - 4_992) * 0.15  # 8,251.20
+    ni_class_1_employer: (60_000 - 5_000) * 0.15  # 8,250.00
 
 - name: 2027-28 Class 4 at the lower profits limit
   period: 2027
@@ -79,7 +80,7 @@
     employment_income: 30_000
   output:
     ni_class_1_employee: (30_000 - 12_570) * 0.08  # 1,394.40
-    ni_class_1_employer: (30_000 - 4_992) * 0.15  # 3,751.20
+    ni_class_1_employer: (30_000 - 5_000) * 0.15  # 3,750.00
 
 - name: 2030-31 employee Class 1 above the UEL
   period: 2030
@@ -90,7 +91,7 @@
   output:
     ni_class_1_employee_primary: (50_270 - 12_570) * 0.08  # 3,016
     ni_class_1_employee_additional: (60_000 - 50_270) * 0.02  # 194.60
-    ni_class_1_employer: (60_000 - 4_992) * 0.15  # 8,251.20
+    ni_class_1_employer: (60_000 - 5_000) * 0.15  # 8,250.00
 
 - name: 2030-31 Class 4 at the lower profits limit
   period: 2030

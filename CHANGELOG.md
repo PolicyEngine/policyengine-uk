@@ -1,3 +1,32 @@
+## [2.123.1] - 2026-10-07
+
+### Fixed
+
+- - Split the reported State Pension at the legislated data-year rate, so a State Pension rate reform changes `state_pension` when it also sets the data year's rate: undated reforms, and every reform in a simulation without a dataset (a household calculation), where the data year is the period.
+- - Charge the High Value Council Tax Surcharge only on households that own their main residence (owned outright or with a mortgage). Owners, not occupiers, are liable, so tenants now owe nothing even when a positive `main_residence_value` is supplied. Households with no `tenure_type` take the `RENT_PRIVATELY` default and are no longer charged.
+
+
+## [2.123.0] - 2026-10-07
+
+### Added
+
+- - Added landlords' residential finance-cost tax reduction (ITTOIA 2005 ss. 272A, 274A and 274AA) from three new optional inputs: `property_rental_income` (gross receipts), `property_finance_costs` and `property_finance_costs_brought_forward`. The reduction is the property basic rate (the basic rate before 2027-28) on the lowest of the relievable costs, the property profits and adjusted total income, is limited to the tax left at Step 5, and reports the unrelieved costs as `property_finance_costs_carried_forward`. A new `disallowed_share` parameter carries the 2017-18 to 2020-21 phase-in, and setting it to nil restores full deductibility. Universal Credit sets the reduction against the tax on property income, not the tax on earnings, and the means tests that count property income (tax credits, Housing Benefit, Income Support, Pension Credit and council tax reduction) count it after finance costs.
+
+### Fixed
+
+- - Corrected the reduced VAT rate history from April 1994 through August 1997.
+- - Corrected the Tax Credits withdrawal rate effective date to 6 April 2011.
+- - Included income equal to the minimum guarantee in Guarantee Credit eligibility.
+- - Stopped the property allowance being deducted on top of expenses already netted out of `property_income` (ITTOIA 2005 Part 6A Chapter 2). It now gives full relief only where profit, or receipts when known, are within the allowance, and partial relief when `property_rental_income` shows that expenses fall short of it. A landlord takes the allowance or the finance-cost reduction, whichever leaves less income tax. The allowance now starts in 2017-18.
+
+
+## [2.122.3] - 2026-10-06
+
+### Fixed
+
+- Put a Universal Credit claimant who has reached the qualifying age for State Pension Credit in the group with no work-related requirements (UC Regs 2013 reg. 89(1)(a)), reading that age (State Pension Credit Act 2002 s. 1(6)) instead of the claimant's own State Pension age. The two differ only for men born before 6 December 1953, in 2018-19 and earlier: such a man in a mixed-age couple now leaves the minimum income floor from his qualifying age rather than from 65.
+
+
 ## [2.122.2] - 2026-10-06
 
 ### Changed
