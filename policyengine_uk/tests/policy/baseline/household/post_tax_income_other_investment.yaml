@@ -1,0 +1,16 @@
+- name: Post-tax income adds other investment income and subtracts its tax
+  # £20,000 of other investment income alone in 2025-26: personal allowance
+  # £12,570, starting rate for savings £5,000 at 0%, personal savings
+  # allowance £1,000 at 0%, the remaining £1,430 at 20% = £286.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 40
+        other_investment_income: 20_000
+    households:
+      household:
+        members: [person]
+  output:
+    income_tax: [286]
+    post_tax_income: [19_714]

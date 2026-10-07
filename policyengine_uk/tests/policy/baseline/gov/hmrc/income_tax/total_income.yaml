@@ -1,0 +1,35 @@
+# ITA 2007 s. 23 Step 1 sums all income charged to income tax. Other
+# investment income (National Savings, securities and trust interest) is
+# charged as savings income (taxable_savings_interest_income), so it counts.
+
+- name: Other investment income only counts in total income
+  period: 2025
+  input:
+    other_investment_income: 20_000
+  output:
+    total_income: 20_000
+    taxable_savings_interest_income: 20_000
+    adjusted_net_income: 20_000
+
+- name: Other investment income adds to savings interest, not double counted
+  period: 2025
+  input:
+    employment_income: 30_000
+    savings_interest_income: 2_000
+    other_investment_income: 3_000
+  output:
+    total_income: 35_000
+    taxable_savings_interest_income: 5_000
+    adjusted_net_income: 35_000
+
+- name: Total income matches adjusted net income above the taper threshold
+  # £90k employment plus £20k other investment income: ANI £110k, so the
+  # personal allowance is reduced by (110,000 - 100,000) / 2 = £5,000.
+  period: 2025
+  input:
+    employment_income: 90_000
+    other_investment_income: 20_000
+  output:
+    total_income: 110_000
+    adjusted_net_income: 110_000
+    personal_allowance: 7_570

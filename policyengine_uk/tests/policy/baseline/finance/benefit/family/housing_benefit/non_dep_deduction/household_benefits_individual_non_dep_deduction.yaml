@@ -29,3 +29,11 @@
     total_income: 9_153 # 176 weekly
   output:
     household_benefits_individual_non_dep_deduction: 44.4 * 52
+
+- name: Other investment income counts towards the non-dependant's income
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    other_investment_income: 28_912 # 556 weekly
+  output:
+    household_benefits_individual_non_dep_deduction: 124.55 * 52
