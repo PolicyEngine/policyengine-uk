@@ -3,6 +3,10 @@ from policyengine_uk.model_api import *
 
 class free_tv_licence_value(Variable):
     label = "free TV licence value"
+    documentation = (
+        "Value included in HBAI income for the share of the year covered by "
+        "the complete age-based exemption. The blind discount is excluded."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -18,8 +22,10 @@ class free_tv_licence_value(Variable):
 
     def formula(household, period, parameters):
         licence_required = household("tv_licence_required", period)
-        discount = household("tv_licence_discount", period)
+        free_licence_share = household(
+            "tv_licence_free_licence_share",
+            period,
+        )
         would_evade = household("would_evade_tv_licence_fee", period)
         fee = parameters(period).gov.dcms.bbc.tv_licence.colour
-        receives_free_licence = discount == 1
-        return (licence_required & ~would_evade & receives_free_licence) * fee
+        return (licence_required & ~would_evade) * fee * free_licence_share

@@ -6,7 +6,9 @@ class tv_licence_required(Variable):
     documentation = (
         "Whether anyone in the household watches or records live television "
         "or uses BBC iPlayer. When this is not provided directly, television "
-        "ownership is used as a backward-compatible proxy."
+        "ownership is used as a backward-compatible proxy. That proxy can "
+        "overstate liability for owners who use only non-BBC on-demand services "
+        "and understate it for non-owners who watch live television or BBC iPlayer."
     )
     entity = Household
     definition_period = YEAR
