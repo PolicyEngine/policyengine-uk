@@ -1,3 +1,12 @@
+## [2.123.3] - 2026-10-07
+
+### Fixed
+
+- Preserved Energy Price Guarantee effective dates and added an explicit indicator for when the subsidy applies.
+- Corrected the Energy Price Cap parameter to use Ofgem's final quarterly Direct Debit illustrations.
+- Added the Energy Price Guarantee prepayment discount from July 2023 through March 2024. Current UK microsimulation data does not identify households using prepayment meters, so the discount applies only when that input is supplied.
+
+
 ## [2.123.2] - 2026-10-07
 
 ### Fixed
