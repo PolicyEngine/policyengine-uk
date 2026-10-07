@@ -1,0 +1,153 @@
+# Receipt of a guarantee credit (the Housing Benefit passport test in
+# SI 2006/214 reg 26; NI: SR 2006/406 reg 24). A guarantee credit is received
+# only when the benefit unit is paid Pension Credit and that award includes a
+# guarantee credit.
+# 2026 parameters: standard minimum guarantee £238.00 a week single and
+# £363.25 couple (12,376 and 18,889 a year); Savings Credit threshold £208.07
+# a week single (10,819.64 a year), phase-in 60%, phase-out 40%.
+
+- name: Case 1, single pensioner claiming Pension Credit receives a guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1]
+  output:
+    # 12,376 - 10,000 = 2,376.
+    guarantee_credit: 2_376
+    pension_credit: 2_376
+    in_receipt_of_guarantee_credit: true
+
+- name: Case 2, the same pensioner not claiming Pension Credit receives no guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+    households:
+      household:
+        members: [person1]
+  output:
+    # The guarantee credit is still computed, but nothing is paid.
+    guarantee_credit: 2_376
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+
+- name: Case 3, mixed-age couple without the SI 2019/37 art 4 saving receives no guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 10_000
+      person2:
+        age: 60
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # From 15 May 2019 SPCA s.4(1A) excludes a mixed-age couple unless
+    # SI 2019/37 art 4 saves it. This couple reports neither Pension Credit
+    # nor pension-age Housing Benefit, so PolicyEngine infers no saving and
+    # pays no Pension Credit. The computed guarantee credit is not asserted,
+    # so the case does not depend on whether it is computed for a family
+    # PolicyEngine treats as ineligible.
+    has_mixed_age_couple_pension_credit_saving: false
+    is_pension_credit_eligible: false
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
+
+- name: Case 4, Savings Credit only is not receipt of a guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        # Reached State Pension age long before April 2016, so can get
+        # Savings Credit.
+        age: 90
+        state_pension_reported: 12_480
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1]
+  output:
+    # Income 12,480 (240 a week, below the personal allowance, so no income
+    # tax) exceeds the minimum guarantee of 12,376, so no guarantee credit.
+    # Savings Credit: maximum 0.6 x (12,376 - 10,819.64) = 933.816; phase-in
+    # 0.6 x (12,480 - 10,819.64) = 996.216, capped at 933.816; less
+    # 0.4 x (12,480 - 12,376) = 41.60; = 892.216.
+    income_tax: 0
+    guarantee_credit: 0
+    savings_credit: 892.22
+    pension_credit: 892.22
+    in_receipt_of_guarantee_credit: false
+
+- name: Case 5, pensioner couple claiming Pension Credit receives a guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 72
+        state_pension_reported: 5_000
+      person2:
+        age: 68
+        state_pension_reported: 5_000
+    benunits:
+      benunit:
+        members: [person1, person2]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1, person2]
+  output:
+    # 18,889 - 10,000 = 8,889.
+    guarantee_credit: 8_889
+    pension_credit: 8_889
+    in_receipt_of_guarantee_credit: true
+
+- name: Case 6, pensioner with income above the minimum guarantee receives no guarantee credit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        state_pension_reported: 12_500
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: true
+    households:
+      household:
+        members: [person1]
+  output:
+    # 12,500 exceeds 12,376, and a person who reached State Pension age after
+    # April 2016 cannot get Savings Credit.
+    guarantee_credit: 0
+    pension_credit: 0
+    in_receipt_of_guarantee_credit: false
