@@ -3,7 +3,7 @@
   input:
     household_owns_tv: false
     tv_licence_required: true
-    tv_licence_discount: 1
+    tv_licence_free_licence_share: 1
     would_evade_tv_licence_fee: false
   output:
     free_tv_licence_value: 180
@@ -13,7 +13,7 @@
   input:
     household_owns_tv: true
     tv_licence_required: false
-    tv_licence_discount: 1
+    tv_licence_free_licence_share: 1
     would_evade_tv_licence_fee: false
   output:
     free_tv_licence_value: 0
@@ -22,7 +22,7 @@
   period: 2026
   input:
     tv_licence_required: true
-    tv_licence_discount: 1
+    tv_licence_free_licence_share: 1
     would_evade_tv_licence_fee: false
   output:
     free_tv_licence_value: 180
@@ -31,7 +31,41 @@
   period: 2026
   input:
     tv_licence_required: true
-    tv_licence_discount: 0.5
+    tv_licence_free_licence_share: 0
+    is_blind: true
     would_evade_tv_licence_fee: false
   output:
+    tv_licence_discount: 0.5
+    free_tv_licence_value: 0
+
+- name: Case 5, a partial-year free licence contributes its proportional value.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    tv_licence_required: true
+    tv_licence_free_licence_share: 0.3205479452
+    would_evade_tv_licence_fee: false
+  output:
+    free_tv_licence_value: 50.49
+
+- name: Case 6, an over-75 household on Pension Credit gets a full free licence.
+  period: 2026
+  input:
+    age: 80
+    pension_credit: 1
+    tv_licence_required: true
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence_free_licence_share: 1
+    free_tv_licence_value: 180
+
+- name: Case 7, age alone does not qualify after the Pension Credit condition begins.
+  period: 2026
+  input:
+    age: 80
+    pension_credit: 0
+    tv_licence_required: true
+    would_evade_tv_licence_fee: false
+  output:
+    tv_licence_free_licence_share: 0
     free_tv_licence_value: 0

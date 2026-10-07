@@ -15,18 +15,14 @@ class tv_licence_discount(Variable):
     def formula(household, period, parameters):
         person = household.members
         tv_licence = parameters(period).gov.dcms.bbc.tv_licence
-
-        # Aged discount
-        aged = person("age", period) >= tv_licence.discount.aged.min_age
-        has_aged = household.any(aged)
-        claims_pc = add(household, period, ["pension_credit"]) > 0
-        meets_pc_requirement = not_(tv_licence.discount.aged.must_claim_pc) | claims_pc
-        eligible_for_aged_discount = has_aged & meets_pc_requirement
-        aged_discount = eligible_for_aged_discount * tv_licence.discount.aged.discount
+        free_licence_share = household(
+            "tv_licence_free_licence_share",
+            period,
+        )
 
         # Blind discount
         is_blind = person("is_blind", period)
         has_blind = household.any(is_blind)
         blind_discount = has_blind * tv_licence.discount.blind.discount
 
-        return max_(aged_discount, blind_discount)
+        return free_licence_share + (1 - free_licence_share) * blind_discount
