@@ -1,3 +1,17 @@
+## [2.123.0] - 2026-10-07
+
+### Added
+
+- - Added landlords' residential finance-cost tax reduction (ITTOIA 2005 ss. 272A, 274A and 274AA) from three new optional inputs: `property_rental_income` (gross receipts), `property_finance_costs` and `property_finance_costs_brought_forward`. The reduction is the property basic rate (the basic rate before 2027-28) on the lowest of the relievable costs, the property profits and adjusted total income, is limited to the tax left at Step 5, and reports the unrelieved costs as `property_finance_costs_carried_forward`. A new `disallowed_share` parameter carries the 2017-18 to 2020-21 phase-in, and setting it to nil restores full deductibility. Universal Credit sets the reduction against the tax on property income, not the tax on earnings, and the means tests that count property income (tax credits, Housing Benefit, Income Support, Pension Credit and council tax reduction) count it after finance costs.
+
+### Fixed
+
+- - Corrected the reduced VAT rate history from April 1994 through August 1997.
+- - Corrected the Tax Credits withdrawal rate effective date to 6 April 2011.
+- - Included income equal to the minimum guarantee in Guarantee Credit eligibility.
+- - Stopped the property allowance being deducted on top of expenses already netted out of `property_income` (ITTOIA 2005 Part 6A Chapter 2). It now gives full relief only where profit, or receipts when known, are within the allowance, and partial relief when `property_rental_income` shows that expenses fall short of it. A landlord takes the allowance or the finance-cost reduction, whichever leaves less income tax. The allowance now starts in 2017-18.
+
+
 ## [2.122.3] - 2026-10-06
 
 ### Fixed
