@@ -119,7 +119,7 @@ def normal_gross_income_non_dep_deduction(
     gross_income_components = [
         "employment_income",
         "self_employment_income",
-        "property_income",
+        "property_income_after_finance_costs",
         "private_pension_income",
         "savings_interest_income",
         "dividend_income",

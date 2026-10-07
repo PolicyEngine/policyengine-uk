@@ -485,11 +485,12 @@
     pension_credit_assessable_capital: 0
 
 - name: Case 21, a mixed-age couple can claim Income Support through the younger partner.
-  # SSCBA 1992 s.124(1)(aa) restricts the claimant, and either member of a
-  # couple can claim. She is a carer under the qualifying age with an
-  # existing award; he was born 6 June 1953 and reached the qualifying age on
-  # 6 March 2017, though his own pensionable age is 6 June 2018. They have not
-  # claimed Pension Credit.
+  # SSCBA 1992 s.124(1)(aa) restricts the claimant. The model takes the
+  # claimant to be the member of the couple with the existing award (see
+  # income_support_eligible). She is a carer under the qualifying age with
+  # that award; he was born 6 June 1953 and reached the qualifying age on
+  # 6 March 2017, though his own pensionable age is 6 June 2018. They have
+  # not claimed Pension Credit.
   period: 2017
   input:
     people:
