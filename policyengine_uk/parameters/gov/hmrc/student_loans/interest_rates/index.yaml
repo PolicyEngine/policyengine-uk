@@ -1,5 +1,6 @@
 description: Student loan interest rates.
-label: Interest rates
+metadata:
+  label: Interest rates
 documentation: |
   Interest rates applied to student loan balances vary by plan type.
   Plan 2 has income-contingent rates that vary between RPI and RPI+3%.

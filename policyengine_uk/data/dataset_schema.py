@@ -83,7 +83,7 @@ class UKSingleYearDataset:
                     "financial year starts, so FRS 2024/25 data is 2024. "
                     "Pass fiscal_year explicitly; the default will be "
                     "removed.",
-                    DeprecationWarning,
+                    FutureWarning,
                     stacklevel=2,
                 )
                 fiscal_year = self.DEFAULT_FISCAL_YEAR

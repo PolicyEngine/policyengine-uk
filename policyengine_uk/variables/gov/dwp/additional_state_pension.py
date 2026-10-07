@@ -69,10 +69,11 @@ class additional_state_pension(Variable):
             max_(reported - max_for_type_data, 0),
             0,
         )
-        uprating = where(
-            max_for_type_data > 0,
-            max_for_type_period / max_for_type_data,
-            1,
+        uprating = np.divide(
+            max_for_type_period,
+            max_for_type_data,
+            out=np.ones_like(max_for_type_data, dtype=float),
+            where=max_for_type_data > 0,
         )
         # No State Pension is paid before State Pension age. A computed type
         # is already NONE there; this also holds if the type is an input.

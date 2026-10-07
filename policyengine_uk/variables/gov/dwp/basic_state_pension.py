@@ -43,10 +43,11 @@ class basic_state_pension(Variable):
 
         # Compute the person's share of the data-year maximum so reforms can
         # scale the current-period amount while preserving the original cap.
-        share = where(
-            max_sp_data_year > 0,
-            min_(reported, max_sp_data_year) / max_sp_data_year,
-            0,
+        share = np.divide(
+            min_(reported, max_sp_data_year),
+            max_sp_data_year,
+            out=np.zeros_like(reported, dtype=float),
+            where=max_sp_data_year > 0,
         )
         return (
             where(

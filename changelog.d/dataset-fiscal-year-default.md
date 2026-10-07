@@ -1,1 +1,0 @@
-- Warned when `UKSingleYearDataset` is given a `fiscal_year` alongside a file path, where it cannot take effect, and when it is built from DataFrames without one.
