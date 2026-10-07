@@ -23,8 +23,10 @@ Invariants:
    the income tax thresholds, which Income Tax Act 2007 ss21 and 57 index by
    September CPI, and the ST rises by September CPI, each from its frozen
    level with no catch-up. test_threshold_indexation.py tests this.
-4. Alignment with the personal allowance and the higher rate threshold in
-   every year 2021-2040: test_threshold_indexation.py.
+4. Alignment, in test_threshold_indexation.py: the UEL and UPL with the
+   higher rate threshold in every year 2021-2040, and the PT and LPL with the
+   personal allowance from 2023. The 2021-22 and 2022-23 lower thresholds
+   are intended exceptions, and the 2023-24 LPL is #1968.
 5. No cash cuts: no threshold falls from one year to the next, 2026-2040.
 6. Differential: for any earnings or profits >= 0 in 2026-2030, primary and
    additional Class 1, secondary Class 1 and Class 4 equal an exact-rational

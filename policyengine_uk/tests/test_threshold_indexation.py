@@ -41,13 +41,20 @@ Invariants:
 7. For any freeze end and September CPI path (function level): values up to
    each parameter's last stated year are unchanged; after it, each NICs
    threshold equals its income tax equivalent for that year (taking stated
-   income tax values where the NICs freeze ends first); no indexed value
-   falls; running the indexation twice changes nothing.
+   income tax values where the NICs freeze ends first). The PA, BRL and ST
+   never fall, and an aligned NICs threshold never falls after its first
+   indexed year. That first year can fall, by intent, when the stated NICs
+   amount was above its income tax equivalent: it realigns. Running the
+   indexation twice changes nothing. Indexed values are keyed to 1 January,
+   so the unconverted ``parameters.baseline`` copy reads the same amounts.
 8. Scenarios: a different September CPI moves the PA, BRL and NICs
    thresholds together by the statute; with September CPI <= 0, or with no
    economic assumptions, they stay at their frozen levels.
 9. No double indexing: none of the seven parameters carries ``uprating``
    metadata, so core uprating does not extend them.
+10. The September CPI series: each April's rise is the previous September's
+    CPI to 0.1 percentage points (halves up), and zero unless positive; its
+    index compounds those rises.
 """
 
 import math
@@ -64,6 +71,9 @@ from policyengine_core.parameters import ParameterNode
 
 import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
+    september_cpi_uprating_rate,
+)
 from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
     add_threshold_indexation,
     index_basic_rate_limit,
@@ -98,19 +108,32 @@ def system():
     return CountryTaxBenefitSystem()
 
 
-def thresholds(system, year):
-    hmrc = system.get_parameters_at_instant(str(year)).gov.hmrc
-    income_tax = hmrc.income_tax
+def threshold_parameters(root):
+    """The seven parameters under a ``gov`` node."""
+    hmrc = root.hmrc
     class_1 = hmrc.national_insurance.class_1.thresholds
     class_4 = hmrc.national_insurance.class_4.thresholds
     return {
-        "personal_allowance": float(income_tax.allowances.personal_allowance.amount),
-        "basic_rate_limit": float(income_tax.rates.uk.thresholds[1]),
-        "primary_threshold": float(class_1.primary_threshold),
-        "upper_earnings_limit": float(class_1.upper_earnings_limit),
-        "secondary_threshold": float(class_1.secondary_threshold),
-        "lower_profits_limit": float(class_4.lower_profits_limit),
-        "upper_profits_limit": float(class_4.upper_profits_limit),
+        "personal_allowance": hmrc.income_tax.allowances.personal_allowance.amount,
+        # Bracket 1 itself: a scale read at an instant sorts its thresholds,
+        # so its thresholds[1] would be the £125,140 additional rate threshold
+        # once the basic rate limit passed it.
+        "basic_rate_limit": hmrc.income_tax.rates.uk.brackets[1].threshold,
+        "primary_threshold": class_1.primary_threshold,
+        "upper_earnings_limit": class_1.upper_earnings_limit,
+        "secondary_threshold": class_1.secondary_threshold,
+        "lower_profits_limit": class_4.lower_profits_limit,
+        "upper_profits_limit": class_4.upper_profits_limit,
+    }
+
+
+def thresholds(system, year, root=None, instant=None):
+    """Each threshold in tax year ``year`` (by default from the processed gov)."""
+    root = system.parameters.gov if root is None else root
+    at = str(year) if instant is None else instant
+    return {
+        name: float(parameter(at))
+        for name, parameter in threshold_parameters(root).items()
     }
 
 
@@ -464,6 +487,16 @@ def synthetic_values(root, year):
 
 
 NAMES = list(PATHS)
+# The amounts stated through 2030-31.
+FROZEN_AMOUNTS = {
+    "personal_allowance": 12_570,
+    "basic_rate_limit": 37_700,
+    "primary_threshold": 241.73,
+    "upper_earnings_limit": 966.73,
+    "secondary_threshold": 96.153846,
+    "lower_profits_limit": 12_570,
+    "upper_profits_limit": 50_270,
+}
 NICS_ALIGNED = {
     "lower_profits_limit": lambda pa, brl: pa,
     "upper_profits_limit": lambda pa, brl: pa + brl,
@@ -503,15 +536,7 @@ NICS_ALIGNED = {
     last_years={name: 2030 for name in NAMES},
     rates=[0.02] * 64,
     horizon=2039,
-    bases={
-        "personal_allowance": 12_570,
-        "basic_rate_limit": 37_700,
-        "primary_threshold": 241.73,
-        "upper_earnings_limit": 966.73,
-        "secondary_threshold": 96.153846,
-        "lower_profits_limit": 12_570,
-        "upper_profits_limit": 50_270,
-    },
+    bases=FROZEN_AMOUNTS,
 )
 def test_indexation_function_on_any_freeze_and_cpi_path(
     last_years, rates, horizon, bases
@@ -563,6 +588,29 @@ def test_indexation_function_on_any_freeze_and_cpi_path(
     assert {year: synthetic_values(root, year) for year in years} == before
 
 
+def test_a_nics_threshold_stated_above_its_equivalent_realigns():
+    # Intended: an LPL stated at £12,571 to 2024-25 realigns to the £12,570
+    # personal allowance in 2025-26, even with no CPI rise.
+    last_years = {name: 2030 for name in NAMES} | {"lower_profits_limit": 2024}
+    bases = FROZEN_AMOUNTS | {"lower_profits_limit": 12_571}
+    root = synthetic_parameters(last_years, [0.0] * 64, 2039, bases)
+    add_threshold_indexation(root)
+    assert synthetic_values(root, 2024)["lower_profits_limit"] == 12_571
+    for year in range(2025, 2041):
+        assert synthetic_values(root, year)["lower_profits_limit"] == 12_570, year
+
+
+@pytest.mark.parametrize("year", [2030, *INDEXED_YEARS, 2040])
+def test_nested_baseline_reads_the_same_amounts(system, year):
+    # parameters.baseline is cloned before fiscal-year conversion, so it is
+    # read at 1 January; indexed values keyed to 1 January give it the same
+    # amount as the converted gov tree.
+    nested = thresholds(
+        system, year, root=system.parameters.baseline.gov, instant=f"{year}-01-01"
+    )
+    assert nested == thresholds(system, year)
+
+
 # Invariant 8: scenarios.
 
 
@@ -596,6 +644,20 @@ def test_no_rise_when_september_cpi_falls():
     assert thresholds(system, 2031) == thresholds(system, 2030)
 
 
+def test_a_basic_rate_limit_above_the_additional_rate_threshold_is_kept():
+    # 14.2% a year takes the BRL past the fixed £125,140 additional rate
+    # threshold by 2039; the parameter still follows s21(3).
+    system = system_with_september_cpi(
+        {f"{year}-09-01": 0.142 for year in range(2030, 2039)}
+    )
+    for year, (pa, brl, _) in reference_path(system).items():
+        values = thresholds(system, year)
+        assert values["personal_allowance"] == float(pa), year
+        assert values["basic_rate_limit"] == float(brl), year
+        assert values["upper_profits_limit"] == float(pa + brl), year
+    assert thresholds(system, 2039)["basic_rate_limit"] > 125_140
+
+
 def test_thresholds_stay_frozen_without_economic_assumptions():
     situation = {
         "people": {"person": {"age": {2025: 40}}},
@@ -619,6 +681,32 @@ def test_indexed_parameters_carry_no_uprating(name):
     else:
         metadata = data["metadata"]
     assert "uprating" not in metadata
+
+
+# Invariant 10: the September CPI series.
+
+
+@given(raw=st.decimals(min_value="-1", max_value="10", places=6))
+@example(raw=Decimal("0.00049"))  # rounds to 0.000: no rise
+@example(raw=Decimal("0.0185"))  # 0.019
+@example(raw=Decimal("0.0195"))  # 0.020
+@example(raw=Decimal("-0.005"))  # a fall: no rise
+def test_september_cpi_rise_is_the_published_rate_and_never_negative(raw):
+    rise = september_cpi_uprating_rate(float(raw))
+    assert Fraction(repr(rise)) == reference_increase(raw)
+
+
+def test_september_cpi_series_and_index_follow_the_input(system):
+    economic_assumptions = system.parameters.gov.economic_assumptions
+    cpi_september = economic_assumptions.statutory_uprating_inputs.cpi_september
+    rises = economic_assumptions.yoy_growth.september_cpi_uprating
+    index = economic_assumptions.indices.september_cpi_uprating
+    for year in range(2011, 2040):
+        expected = reference_increase(cpi_september(f"{year - 1}-09-01"))
+        assert Fraction(repr(float(rises(str(year))))) == expected, year
+        # The index is stored to 5 decimal places.
+        ratio = float(index(str(year))) / float(index(str(year - 1)))
+        assert ratio == pytest.approx(1 + float(expected), abs=2e-5), year
 
 
 # End to end: the indexed thresholds reach the tax and NICs calculations.

@@ -5,11 +5,12 @@ description: The Upper Profits Limit is the threshold at which self-employed ear
 # below) the model keeps the limit equal to the higher rate threshold
 # (personal allowance plus basic rate limit)
 # (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
-# government keeps the UPL in line with the higher rate threshold, which
+# government has kept the UPL in line with the higher rate threshold, which
 # Income Tax Act 2007 ss21 and 57 index by September CPI from 2031-32, and
 # says the UPL will be uprated by September CPI after 2030-31 (Explanatory
-# Memorandum to SI 2026/231 paras 5.1 and 5.25). This is announced policy, not
-# law, and the file has no uprating.
+# Memorandum to SI 2026/231 paras 5.1 and 5.25). That is announced policy, not
+# law; keeping it equal to the higher rate threshold, round-ups included, is a
+# modelling assumption consistent with it. The file has no uprating.
 values:
   2015-04-06: 42_386
   2015-06-05: 43_000

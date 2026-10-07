@@ -11,11 +11,13 @@ description: The Upper Earnings Limit is the upper bound for the main rate of Cl
 # limit at the higher rate threshold (personal allowance plus basic rate
 # limit) over 52, to the penny, as for 966.73
 # (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
-# UEL has been aligned with the higher rate threshold since April 2009 and
-# "will remain at a level equivalent to the annual HRT" (Explanatory
-# Memorandum to SI 2026/231 paras 5.14-5.15); Income Tax Act 2007 ss21 and 57
-# index the higher rate threshold by September CPI from 2031-32. This is
-# announced policy, not law, and the file has no uprating.
+# UEL has been aligned with the higher rate threshold since April 2009, and
+# for 2026-27 "will remain at a level equivalent to the annual HRT"
+# (Explanatory Memorandum to SI 2026/231 paras 5.14-5.15); para 5.1 says it
+# will be uprated by September CPI after 2030-31. Income Tax Act 2007 ss21 and
+# 57 index the higher rate threshold by September CPI from 2031-32. Keeping
+# the UEL equal to it, round-ups included, is a modelling assumption
+# consistent with that announced policy, not law. The file has no uprating.
 values:
   2015-04-06: 815
   2016-04-06: 827

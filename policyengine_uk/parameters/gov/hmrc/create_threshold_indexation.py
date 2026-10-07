@@ -24,16 +24,20 @@ National Insurance
 No statute indexes the NICs thresholds. SSCBA 1992 s5 needs the Class 1
 limits and thresholds specified for each tax year, and the Class 4 limits in
 SSCBA s15(3) are subject to alteration by order after the Treasury's annual
-review under SSAA 1992 s141. Government policy keeps them aligned with income
-tax: the primary threshold and lower profits limit with the personal
-allowance, and the upper earnings and profits limits with the higher rate
-threshold (the personal allowance plus the basic rate limit). HMRC's Budget
-2025 note says they "will remain aligned" through 2030-31, and the
-Explanatory Memorandum to SI 2026/231 (paras 5.1 and 5.15) says all six
-thresholds will then be "uprated by the September Consumer Prices Index" and
-that the UEL stays "equivalent to the annual HRT". So after its own last
-stated value each of these NICs thresholds equals its income tax equivalent
-for the same year:
+review under SSAA 1992 s141. Government policy aligns them with income tax:
+the primary threshold and lower profits limit with the personal allowance,
+and the upper earnings and profits limits with the higher rate threshold (the
+personal allowance plus the basic rate limit). HMRC's Budget 2025 note says
+they "will remain aligned" for the frozen years to 2030-31. The Explanatory
+Memorandum to SI 2026/231 para 5.1 says that after 2030-31 the personal
+allowance, higher rate threshold, UEL, UPL, PT and LPL "will be uprated by the
+September Consumer Prices Index (CPI)". Para 5.14 says the UEL has been
+aligned with the higher rate threshold since April 2009, and para 5.15 that
+for 2026-27 it "will remain at a level equivalent to the annual HRT". Nothing
+announced says the NICs thresholds will take the income tax round-ups. The
+model assumes the alignment continues, which is consistent with that policy:
+after its own last stated value each of these NICs thresholds equals its
+income tax equivalent for the same year:
 
 - lower profits limit = personal allowance;
 - upper profits limit = personal allowance + basic rate limit;
@@ -43,21 +47,28 @@ for the same year:
 
 The secondary threshold is not aligned with an income tax threshold. HMRC's
 Autumn Budget 2024 note says that after its freeze it "will be increased in
-line with Consumer Prices Index (CPI)". Nothing later sets a rounding rule, so
-it rises by the same September CPI increase each year, unrounded.
+line with Consumer Prices Index (CPI)". Nothing later says which CPI, how to
+round, or what happens when prices fall, so the model assumes it rises by the
+same September CPI increase each year, unrounded and never cut.
 
 The percentage increase for the tax year starting in April of year Y is
 ``gov.economic_assumptions.yoy_growth.september_cpi_uprating`` at year Y:
 September CPI of year Y - 1 to the 0.1 percentage points the ONS publishes,
 and zero when prices did not rise. Values are written for each tax year up to
 the last year of ``gov.economic_assumptions.indices.september_cpi_uprating``,
-the horizon over which every other parameter is uprated. These parameters
-carry no ``uprating`` metadata, so core uprating does not extend them.
+the horizon over which every other parameter is uprated. Each is keyed to
+1 January of the year the tax year starts, as core uprating keys its values,
+so the unconverted ``parameters.baseline`` copy reads the same amount for a
+year as fiscal-year conversion gives ``parameters.gov``. These parameters carry
+no ``uprating`` metadata, so core uprating does not extend them.
 
-A reform that changes one of these parameters after the tax-benefit system is
-built does not move the others. A scenario applied before data load (for
-example one that changes the CPI forecast) reprocesses the parameters, so the
-thresholds follow it.
+The values are computed when the parameters are processed. A reform passed as
+a dict edits the processed parameters, so changing one of these parameters
+does not move the others. A scenario whose ``parameter_changes`` edit the raw
+parameters, or a simulation modifier that resets and reprocesses them (as
+``no_economic_assumptions`` does), rebuilds the values. So a changed CPI
+forecast moves all seven, and a raw edit to the personal allowance or basic
+rate limit after 2030-31 also moves the aligned NICs thresholds.
 """
 
 from decimal import ROUND_CEILING, ROUND_HALF_UP, Decimal
@@ -73,8 +84,8 @@ BASIC_RATE_LIMIT_MULTIPLE = Decimal(100)
 PENNY = Decimal("0.01")
 # Fiscal-year conversion reads each tax year's value at 30 April.
 FISCAL_YEAR_SAMPLE_MONTH_DAY = "04-30"
-# Tax years start on 6 April.
-TAX_YEAR_START_MONTH_DAY = "04-06"
+# Indexed values are keyed to 1 January, as core uprating keys its values.
+INDEXED_VALUE_MONTH_DAY = "01-01"
 
 
 def to_decimal(value: float) -> Decimal:
@@ -158,14 +169,14 @@ def tax_year_path(
 def write_after_last_stated_value(
     parameter: Parameter, values: Dict[int, Decimal]
 ) -> None:
-    """Add a value from 6 April of each year after the last stated one."""
+    """Add a value for each tax year after the last stated one."""
     last_stated = last_stated_tax_year(parameter)
     for year, value in sorted(values.items()):
         if year > last_stated:
             parameter.values_list.append(
                 ParameterAtInstant(
                     parameter.name,
-                    f"{year}-{TAX_YEAR_START_MONTH_DAY}",
+                    f"{year}-{INDEXED_VALUE_MONTH_DAY}",
                     data=float(value),
                 )
             )
