@@ -18,9 +18,7 @@ import yaml
 
 from policyengine_uk import CountryTaxBenefitSystem
 
-UPRATING_INDICES = (
-    Path(__file__).parents[2] / "data" / "uprating_indices.yaml"
-)
+UPRATING_INDICES = Path(__file__).parents[2] / "data" / "uprating_indices.yaml"
 
 # Variables that declare an index but are deliberately not in the YAML, with
 # the reason. Anything else failing this test is a genuine gap.
@@ -33,6 +31,12 @@ KNOWN_UNUPRATED = {
     # Reported counterpart of employee_pension_contributions, which IS
     # uprated; the reported variable feeds imputation rather than results.
     "employee_pension_contributions_reported",
+    # policyengine-uk-data stores energy spend already priced at the dataset's
+    # target price level (Ofgem Q2 2026 unit rates), so CPI-uprating from the
+    # data year re-applies price changes the build has priced in (#1868).
+    "domestic_energy_consumption",
+    "electricity_consumption",
+    "gas_consumption",
 }
 
 # Variables the YAML deliberately uprates by an index other than the one they
