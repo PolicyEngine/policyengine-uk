@@ -357,3 +357,82 @@
   output:
     council_tax_band_d_amount: 2389.00
     simulated_council_tax: 2389.00
+
+- name: "North Yorkshire, a 2023 unitary, resolves to its own Band D amount"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: YORKSHIRE
+        local_authority: NORTH_YORKSHIRE
+        council_tax_band: D
+  output:
+    council_tax_band_d_amount: 2544.34
+    simulated_council_tax: 2544.34
+
+- name: "Northern Ireland levies domestic rates, so there is no Band D amount or council tax"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: NORTHERN_IRELAND
+        local_authority: BELFAST
+        council_tax_band: D
+  output:
+    council_tax_band_d_amount: 0
+    simulated_council_tax: 0
+
+- name: "A district abolished in April 2023 (Allerdale) has no Band D amount"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: NORTH_WEST
+        local_authority: ALLERDALE
+        council_tax_band: D
+  output:
+    council_tax_band_d_amount: 0
+    simulated_council_tax: 0
+
+- name: "With no local authority supplied, the household takes the enum default, Maidstone"
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SOUTH_EAST
+        council_tax_band: D
+  output:
+    council_tax_band_d_amount: 2502.59
+    simulated_council_tax: 2502.59

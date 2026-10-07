@@ -13,7 +13,19 @@ class council_tax_band_d_amount(Variable):
         "well as the billing authority's own charge; for Scotland it excludes "
         "the separately billed water and waste water charges. Fiscal 2025 and "
         "2026 are loaded for all three nations, so earlier years are held flat "
-        "backwards from 2025."
+        "backwards from 2025.\n\n"
+        "Authority context: the amount is looked up from the household's "
+        "local_authority input, which the dataset must supply. Without it the "
+        "household takes the enum default (Maidstone), so a dataset that does "
+        "not populate local_authority charges every household Maidstone's "
+        "level. Microcosm UK assigns an authority to every household; the "
+        "Enhanced FRS does not, and reweights a national sample per authority "
+        "instead. Northern Ireland districts (domestic rates) and English "
+        "districts abolished in April 2023 have no Band D amount and return "
+        "zero. Downstream calibration should not consume this variable as a "
+        "national total until the dataset supplies local_authority; "
+        "policyengine-uk-data's Band D level target needs "
+        "PolicyEngine/policyengine-uk-data#484 (issue #483) first."
     )
     definition_period = YEAR
     unit = GBP
