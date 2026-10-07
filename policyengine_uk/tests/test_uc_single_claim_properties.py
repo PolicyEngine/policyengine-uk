@@ -355,9 +355,9 @@ def off_pension_age_route(*calculations):
     can differ between the calculations, either way round: a single claim has
     a single claimant's amounts (reg. 36(3)) but the joint claimants' income
     and work allowance (reg. 22(3)), and a flag on both members leaves no one
-    who can claim. So comparisons of that exception across calculations exclude the
-    families the route reaches in any of them. Within each calculation the
-    route lifts the cap wherever it applies.
+    who can claim. So comparisons of that exception across calculations
+    exclude the families the route reaches in any of them. Within each
+    calculation the route lifts the cap wherever it applies.
     """
     for values in calculations:
         assert np.all(values["is_benefit_cap_exempt_other"][values[PENSION_AGE_ROUTE]])
@@ -371,10 +371,11 @@ def exempt_other_from_inputs(families, values, members):
     model; test_benefit_cap_and_ctr_pension_age_properties.py and
     benefit_cap_pension_age.yaml test the route itself), or AFCS or
     contributory ESA of one of ``members`` (reg. 83(1)(a) and (e); the model
-    takes any contributory ESA as including the support component). ``members`` are the people whose own benefits
-    count: the claimant alone on a single claim, in a stripped calculation
-    (the other member's benefits removed) or with no partner, and both
-    members of a couple neither of whom is excluded.
+    takes any contributory ESA as including the support component).
+    ``members`` are the people whose own benefits count: the claimant alone
+    on a single claim, in a stripped calculation (the other member's
+    benefits removed) or with no partner, and both members of a couple
+    neither of whom is excluded.
     """
     own = np.array(
         [
