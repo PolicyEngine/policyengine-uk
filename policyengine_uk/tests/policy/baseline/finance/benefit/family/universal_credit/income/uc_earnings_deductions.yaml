@@ -28,6 +28,7 @@
       parent:
         age: 30
         employment_income: 20_000
+        property_rental_income: 5_000
         property_income: 5_000
       child:
         age: 5
@@ -41,7 +42,8 @@
         rent: 9_600
   output:
     # Earnings take the personal allowance first: (20,000 - 12,570) x 20%.
-    # Property income is taxed on (5,000 - 1,000) x 20% = 800, not deducted.
+    # Property income (5,000 of receipts with no expenses) is taxed on
+    # (5,000 - 1,000) x 20% = 800, not deducted.
     income_tax: [2_286, 0]
     uc_income_tax_on_earnings: [1_486, 0]
     # (20,000 - 12,569.96) x 8%.
@@ -57,6 +59,42 @@
     uc_maximum_amount: 18_346.08
     # 18,346.08 - 0.55 x 12,795.60. Deducting all of the tax, as before this
     # fix, gave 11,748.50: 0.55 x 800 = 440 too much.
+    universal_credit: 11_308.50
+
+- name: The finance-cost reduction comes off the tax on property, not on earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 20_000
+        property_rental_income: 5_000
+        property_income: 5_000
+        property_finance_costs: 3_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # Actual expenses beat the allowance: 5,000 x 20% - 20% x 3,000 = 400 of
+    # tax on property, against 800. The 600 reduction (ITTOIA 2005 s. 274AA)
+    # is limited by the property profits, so it does not come off the tax on
+    # earnings, which stays (20,000 - 12,570) x 20%.
+    property_finance_cost_relief: [600, 0]
+    income_tax: [1_886, 0]
+    uc_income_tax_on_earnings: [1_486, 0]
+    uc_individual_earned_income: [17_919.60, 0]
+    uc_earned_income: 12_795.60
+    uc_maximum_amount: 18_346.08
+    # Unchanged by the finance costs. Taking the 600 reduction off the tax on
+    # earnings would give 10,978.50: 0.55 x 600 = 330 less.
     universal_credit: 11_308.50
 
 - name: Mixed-age couple, the pensioner's tax on State Pension does not reduce the partner's earnings
@@ -247,9 +285,11 @@
   input:
     age: 35
     employment_income: 20_000
+    property_rental_income: 5_000
     property_income: 5_000
   output:
-    # Property: (5,000 - 1,000) x 22% = 880.
+    # Property: 5,000 of receipts with no expenses, so (5,000 - 1,000) x 22%
+    # = 880.
     property_income_tax: 880
     income_tax: 2_366
     uc_income_tax_on_earnings: 1_486
