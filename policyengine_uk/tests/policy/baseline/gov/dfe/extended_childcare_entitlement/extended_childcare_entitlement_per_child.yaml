@@ -102,3 +102,54 @@
     # (1,140 - 570) x 6.231916 for the child only
     extended_childcare_entitlement_per_child: [0, 3552.19]
     extended_childcare_entitlement: 3552.19
+
+# The same overlap through the targeted eligibility formula itself: Income
+# Support is a qualifying benefit, and eligibility for the working parent
+# entitlement no longer switches the targeted hours off.
+- name: Income Support family eligible for both keeps the targeted hours and gets 15 on top
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [child]
+        income_support: 1_000
+        extended_childcare_entitlement_eligible: true
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    targeted_childcare_entitlement_eligible: true
+    # 570 x 8.775556 each
+    targeted_childcare_entitlement: 5002.07
+    extended_childcare_entitlement_per_child: 5002.07
+    is_child_receiving_targeted_childcare: true
+    is_child_receiving_extended_childcare: true
+
+- name: Income Support family eligible for both before September 2025 gets the targeted 15 hours
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [child]
+        income_support: 1_000
+        extended_childcare_entitlement_eligible: true
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    targeted_childcare_entitlement_eligible: true
+    # 570 x 8.486995 targeted; the 15-hour working parent total adds nothing.
+    targeted_childcare_entitlement: 4837.59
+    extended_childcare_entitlement_per_child: 0
+    is_child_receiving_targeted_childcare: true
+    is_child_receiving_extended_childcare: false

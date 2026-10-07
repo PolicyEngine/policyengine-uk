@@ -25,9 +25,12 @@ randomly drawn families, each simulated twice (eligible and not):
 4. A child's funded hours never exceed the larger of its universal or
    targeted hours and its working parent total, so never 30 hours a week
    plus the universal 15.
-5. Raising the family's maximum hours used never lowers support.
+5. Raising the family's maximum hours used, or a child's own hours used,
+   never lowers support.
 6. A child counts as receiving the extended entitlement exactly when it has
    working parent hours beyond its universal or targeted hours.
+7. The family's extended_childcare_entitlement equals the sum of its
+   children's working parent amounts.
 
 A further property runs the real eligibility test: raising the £100,000
 income limit never lowers childcare support or household net income, and the
@@ -81,7 +84,7 @@ family = st.fixed_dictionaries(
 years = st.sampled_from([2024, 2025, 2026])
 
 
-def simulate(families, year, eligible, cap_bump=0):
+def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
     """One Simulation: each family appears once per value in ``eligible``."""
     situation = {"people": {}, "benunits": {}, "households": {}}
     for copy, is_eligible in enumerate(eligible):
@@ -91,7 +94,9 @@ def simulate(families, year, eligible, cap_bump=0):
                 name = f"c{copy}_{i}_{j}"
                 situation["people"][name] = {
                     "age": {year: c["age"]},
-                    "max_free_entitlement_hours_used": {year: c["hours_used"]},
+                    "max_free_entitlement_hours_used": {
+                        year: c["hours_used"] + hours_bump
+                    },
                     "is_looked_after_by_local_authority": {year: c["looked_after"]},
                 }
                 members.append(name)
@@ -114,6 +119,11 @@ def simulate(families, year, eligible, cap_bump=0):
     values = {v: [float(x) for x in sim.calculate(v, year)] for v in ENTITLEMENTS}
     values["receiving"] = [
         bool(x) for x in sim.calculate("is_child_receiving_extended_childcare", year)
+    ]
+    # The family amount, repeated on each child.
+    values["family_extended"] = [
+        float(x)
+        for x in sim.calculate("extended_childcare_entitlement", year, map_to="person")
     ]
     return values
 
@@ -211,6 +221,10 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
     for f, before, after in zip(families, not_eligible, eligible):
         # 1. Never lower, for the family or any child.
         assert sum(map(funded, after)) >= sum(map(funded, before)) - 0.02, f
+        # 7. The family amount is the sum of its children's amounts.
+        for copy in (before, after):
+            per_child = sum(c["extended_childcare_entitlement_per_child"] for c in copy)
+            assert close(copy[0]["family_extended"], per_child), (year, f, copy)
         for c, b, a in zip(f["children"], before, after):
             assert funded(a) >= funded(b) - 0.02, (year, f, c, b, a)
             # 2. Universal and targeted do not depend on eligibility.
@@ -245,12 +259,14 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
 @given(years, st.lists(family, min_size=1, max_size=5), st.sampled_from([1, 5, 15]))
 def test_more_hours_used_never_lowers_childcare_support(year, families, bump):
     lower = split(simulate(families, year, eligible=[True]), families, 1)[0]
-    higher = split(
-        simulate(families, year, eligible=[True], cap_bump=bump), families, 1
-    )[0]
-    for f, lo, hi in zip(families, lower, higher):
-        for c, a, b in zip(f["children"], lo, hi):
-            assert funded(b) >= funded(a) - 0.02, (year, f, c, bump, a, b)
+    for raised in (
+        simulate(families, year, eligible=[True], cap_bump=bump),
+        simulate(families, year, eligible=[True], hours_bump=bump),
+    ):
+        higher = split(raised, families, 1)[0]
+        for f, lo, hi in zip(families, lower, higher):
+            for c, a, b in zip(f["children"], lo, hi):
+                assert funded(b) >= funded(a) - 0.02, (year, f, c, bump, a, b)
 
 
 # The real eligibility route: a working couple with a child, one parent's

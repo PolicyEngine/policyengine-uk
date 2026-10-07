@@ -14,7 +14,10 @@ class extended_childcare_entitlement_per_child(Variable):
         "s.1(6) counts the universal or targeted hours towards that total. So "
         "the child's funded hours are the larger of the universal or targeted "
         "hours and the working parent total, never both added in full, and "
-        "becoming eligible never removes the universal or targeted hours."
+        "becoming eligible never removes the universal or targeted hours. A "
+        "family that does not take up the universal or targeted hours "
+        "(would_claim_universal_childcare, would_claim_targeted_childcare) "
+        "has none to subtract, so its whole working parent total counts here."
     )
     definition_period = YEAR
     unit = GBP
