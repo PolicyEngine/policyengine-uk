@@ -140,3 +140,34 @@
     ni_class_1_income: 40_000
   output:
     ni_class_1_employer: 5_250  # 0.15 x (40,000 - 5,000)
+
+# 2015-16 and 2016-17: the secondary threshold was £156 a week (SI 2001/1004
+# reg 10(d)) and £8,112 for an annual earnings period (reg 11(3A)(b)), at
+# 13.8%. £155 was the primary threshold (#2178).
+
+- name: Employer NI uses the £8,112 annual secondary threshold in 2015-16
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 20_000
+  output:
+    ni_class_1_employer: 1_640.54  # 0.138 x (20,000 - 8,112) = 1,640.544
+
+- name: No employer NI at the annual secondary threshold in 2016-17
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 8_112
+  output:
+    ni_class_1_employer: 0
+
+- name: No employer NI just below the annual secondary threshold in 2016-17
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    ni_class_1_income: 8_100  # 52 x £155 = £8,060 would charge £5.52
+  output:
+    ni_class_1_employer: 0
