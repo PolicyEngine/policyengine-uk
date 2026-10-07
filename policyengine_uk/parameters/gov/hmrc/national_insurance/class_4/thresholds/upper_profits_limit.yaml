@@ -1,8 +1,15 @@
 description: The Upper Profits Limit is the threshold at which self-employed earners pay the additional Class 4 National Insurance rate.
 # Legal status: £50,270 is the standing figure in SSCBA 1992 s.15(3)(b), which
 # stays until altered by order under SSAA 1992 s.141. Budget 2025 commits to
-# keeping it until April 2031. CPI uprating from 2031-32 is a modelling
-# assumption.
+# keeping it until April 2031. From 2031-32 (the tax year after the last value
+# below) the model keeps the limit equal to the higher rate threshold
+# (personal allowance plus basic rate limit)
+# (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
+# government keeps the UPL in line with the higher rate threshold, which
+# Income Tax Act 2007 ss21 and 57 index by September CPI from 2031-32, and
+# says the UPL will be uprated by September CPI after 2030-31 (Explanatory
+# Memorandum to SI 2026/231 paras 5.1 and 5.25). This is announced policy, not
+# law, and the file has no uprating.
 values:
   2015-04-06: 42_386
   2015-06-05: 43_000
@@ -65,7 +72,6 @@ metadata:
   label: NI upper profits limit
   unit: currency-GBP
   period: year
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
     - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

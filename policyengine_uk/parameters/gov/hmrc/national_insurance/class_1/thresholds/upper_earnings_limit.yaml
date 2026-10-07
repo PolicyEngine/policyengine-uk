@@ -6,7 +6,16 @@ description: The Upper Earnings Limit is the upper bound for the main rate of Cl
 # Legal status: SI 2001/1004 reg 10 sets the amounts for 2026-27 only. The
 # 2027-28 to 2030-31 values are announced policy (Autumn Statement 2022 and
 # Budget 2025), to be set in each year's rates, limits and thresholds
-# regulations. CPI uprating from 2031-32 is a modelling assumption.
+# regulations.
+# From 2031-32 (the tax year after the last value below) the model keeps the
+# limit at the higher rate threshold (personal allowance plus basic rate
+# limit) over 52, to the penny, as for 966.73
+# (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
+# UEL has been aligned with the higher rate threshold since April 2009 and
+# "will remain at a level equivalent to the annual HRT" (Explanatory
+# Memorandum to SI 2026/231 paras 5.14-5.15); Income Tax Act 2007 ss21 and 57
+# index the higher rate threshold by September CPI from 2031-32. This is
+# announced policy, not law, and the file has no uprating.
 values:
   2015-04-06: 815
   2016-04-06: 827
@@ -62,7 +71,6 @@ values:
 metadata:
   label: NI upper earnings limit
   unit: currency-GBP
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   period: week
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf

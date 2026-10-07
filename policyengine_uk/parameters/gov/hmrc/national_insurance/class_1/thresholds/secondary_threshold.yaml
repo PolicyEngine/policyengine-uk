@@ -2,7 +2,6 @@ description: Secondary threshold for National Insurance.
 metadata:
   label: NI secondary threshold
   period: week
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:
   - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
@@ -17,7 +16,13 @@ metadata:
 # Legal status: SI 2001/1004 reg 10 sets the amounts for 2026-27 only. The
 # 2027-28 to 2030-31 values are announced policy (Autumn Budget 2024 and
 # Budget 2025), to be set in each year's rates, limits and thresholds
-# regulations. CPI uprating from 2031-32 is a modelling assumption.
+# regulations.
+# From 2031-32 (the tax year after the last value below) the model raises the
+# threshold each year by September CPI of the previous year, unrounded
+# (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
+# Autumn Budget 2024 note said the threshold "will be increased in line with
+# Consumer Prices Index (CPI)" after its freeze; nothing later sets the rule,
+# so this is a modelling assumption, and the file has no uprating.
 values:
   2015-04-06: 155
   2016-04-06: 155
