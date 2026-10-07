@@ -30,8 +30,10 @@ Invariants:
    arithmetic from STATUTORY. 2022-23 is left out: the Health and Social Care
    Levy raised the secondary percentage to 15.05% from 6 April to 5 November
    2022, and the rate parameter does not carry it.
-4. Threshold edge: employer NI is zero at and just below the annual ST and
-   positive a penny above it.
+4. Threshold edge: employer NI is zero just below the annual ST, less than
+   half a penny at it, and positive a penny above it. At the ST itself the
+   stored 5,000 / 52 (96.153846) annualises to £4,999.999992, so exact
+   arithmetic gives about £0.000001 from 2025-26; float32 rounds it to zero.
 
 Comparisons allow float32 rounding: the model stores values as float32.
 """
@@ -170,8 +172,8 @@ def test_employer_ni_at_the_threshold_edge(year):
         250_000.0,
     ]
     model = check_employer_ni(year, edges)
-    assert model[edges.index(annual)] == 0
     assert model[edges.index(annual - 0.01)] == 0
+    assert abs(model[edges.index(annual)]) < 0.005
     assert model[edges.index(annual + 0.01)] > 0
 
 
