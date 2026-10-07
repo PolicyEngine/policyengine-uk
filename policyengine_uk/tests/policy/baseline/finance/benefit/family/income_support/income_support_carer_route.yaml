@@ -6,7 +6,10 @@
 # disability benefit, with no Carer's Allowance claim needed, or (b) "is both
 # entitled to, and in receipt of, a carer's allowance or carer support
 # payment". A couple choose which of them claims (Claims and Payments Regs
-# 1987 reg 4(3)), so either partner's caring qualifies; a child's or young
+# 1987 reg 4(3)), but no new claim can be made (UC (Transitional Provisions)
+# Regs 2014 reg 6A(1)) and a partner who takes over an award does so by
+# claiming (reg 4(4)), so the claimant is whichever partner has the existing
+# award. The route opens through that partner's caring; a child's or young
 # person's caring does not.
 
 - name: IS carer route for a single claimant who cares
@@ -44,16 +47,16 @@
     is_carer_for_benefits: true
     income_support_eligible: true
 
-- name: IS carer route when the partner is the carer
+- name: IS carer route when the partner who has the award is the carer
   period: 2025
   input:
     people:
       claimant:
         age: 40
-        income_support_reported: 1000
       partner:
         age: 38
         receives_carer_benefit: true
+        income_support_reported: 1000
     benunits:
       family:
         members: [claimant, partner]
