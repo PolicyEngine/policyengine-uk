@@ -1,12 +1,14 @@
-description: The Department for Education provides this amount of financial support through the Care to Learn scheme.
+description: The Department for Education pays up to this weekly amount per child through the Care to Learn scheme, towards childcare and travel costs.
 in_london:
-  description: The Department for Education provides this amount of financial support through the Care to Learn scheme for those living in London.
+  description: The Department for Education pays up to this weekly amount per child through the Care to Learn scheme, towards childcare and travel costs, for young parents whose home address is in London.
   metadata:
     unit: currency-GBP
     period: week
     label: Maximum weekly amount per child in London
     reference:
-      - title: Documentation for Care to Learn scheme 
+      - title: ESFA, Care to Learn 2026 to 2027 academic year conditions of grant funding, sections 2.2 and 4.1
+        href: https://www.gov.uk/government/publications/care-to-learn-conditions-of-grant-funding/care-to-learn-academic-year-2026-to-2027-conditions-of-grant-funding
+      - title: Documentation for Care to Learn scheme
         href: https://www.gov.uk/care-to-learn
       - title: House of Commons Library – Paying for Childcare in England (12 July 2024)
         href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf#page=43
@@ -14,13 +16,15 @@ in_london:
     2024-01-01: 195
 
 outside_london:
-  description: The Department for Education provides this amount of financial support through the Care to Learn scheme for those living outside London.
+  description: The Department for Education pays up to this weekly amount per child through the Care to Learn scheme, towards childcare and travel costs, for young parents whose home address is outside London.
   metadata:
     unit: currency-GBP
     period: week
     label: Maximum weekly amount per child outside London
     reference:
-      - title: Documentation for Care to Learn scheme 
+      - title: ESFA, Care to Learn 2026 to 2027 academic year conditions of grant funding, sections 2.2 and 4.1
+        href: https://www.gov.uk/government/publications/care-to-learn-conditions-of-grant-funding/care-to-learn-academic-year-2026-to-2027-conditions-of-grant-funding
+      - title: Documentation for Care to Learn scheme
         href: https://www.gov.uk/care-to-learn
       - title: House of Commons Library – Paying for Childcare in England (12 July 2024)
         href: https://researchbriefings.files.parliament.uk/documents/CBP-8054/CBP-8054.pdf#page=43

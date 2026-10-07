@@ -48,7 +48,7 @@
     pension_credit: 0
     in_receipt_of_guarantee_credit: false
 
-- name: Case 3, mixed-age couple receives no guarantee credit, because PolicyEngine does not model the SI 2019/37 art 4 saving.
+- name: Case 3, mixed-age couple without the SI 2019/37 art 4 saving receives no guarantee credit.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -66,11 +66,10 @@
       household:
         members: [person1, person2]
   output:
-    # PolicyEngine's is_pension_credit_eligible omits the SI 2019/37 art 4
-    # saving, so no Pension Credit is paid. In law a mixed-age couple saved
-    # by art 4 may be entitled to it. The computed guarantee credit is not
-    # asserted, so the case does not depend on whether it is computed for a
-    # family PolicyEngine treats as ineligible.
+    # Neither an existing award nor the SI 2019/37 art 4 saving is supplied,
+    # and the older member had not reached the qualifying age by May 2019.
+    # The mixed-age exclusion therefore applies and no Pension Credit is
+    # paid. A computed Guarantee Credit is not receipt.
     is_pension_credit_eligible: false
     pension_credit: 0
     in_receipt_of_guarantee_credit: false
@@ -149,3 +148,42 @@
     guarantee_credit: 0
     pension_credit: 0
     in_receipt_of_guarantee_credit: false
+
+- name: Mixed-age couple with the SI 2019/37 art 4 saving receives Guarantee Credit and passports HB.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 75
+        state_pension_reported: 10_000
+      partner:
+        age: 60
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+        # Known entitlement as this couple on 14 May 2019 and continuously
+        # since: SI 2019/37 art 4 preserves the Pension Credit age route.
+        # https://www.legislation.gov.uk/uksi/2019/37/article/4
+        has_mixed_age_couple_pension_credit_saving: true
+        would_claim_pc: true
+        would_claim_housing_benefit: true
+    households:
+      household:
+        members: [pensioner, partner]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    is_pension_credit_eligible: true
+    # Couple minimum guarantee: £363.25/week x 52 = £18,889. Capital
+    # deemed income: ceil((20,000 - 10,000) / 500) x 52 = £1,040.
+    # 18,889 - (10,000 + 1,040) = £7,849 of Guarantee Credit, paid.
+    guarantee_credit: 7_849
+    pension_credit: 7_849
+    in_receipt_of_guarantee_credit: true
+    # SI 2006/214 reg 26 disregards all capital and income on receipt;
+    # the younger partner does not prevent the saved couple's passport.
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+    housing_benefit: 6_240

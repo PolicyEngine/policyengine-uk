@@ -1,0 +1,56 @@
+description: Weekly sums the Scottish Council Tax Reduction (State Pension Credit) Regulations disregard from the net earnings of an applicant who has attained the qualifying age for state pension credit, and their partner.
+single:
+  description: Weekly earnings disregard for a pension-age applicant who has no partner and is not a lone parent, where no £20 disregard applies.
+  values:
+    2013-04-01: 5
+  metadata:
+    label: Scotland pension-age CTR earnings disregard, single
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 Sch. 2 para. 8(a)
+        href: https://www.legislation.gov.uk/ssi/2012/319/schedule/2/paragraph/8
+couple:
+  description: Weekly earnings disregard for a pension-age applicant who has a partner, where no £20 disregard applies.
+  values:
+    2013-04-01: 10
+  metadata:
+    label: Scotland pension-age CTR earnings disregard, couple
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 Sch. 2 para. 8(b)
+        href: https://www.legislation.gov.uk/ssi/2012/319/schedule/2/paragraph/8
+lone_parent:
+  description: Weekly earnings disregard for a pension-age applicant who is a lone parent.
+  values:
+    2013-04-01: 25
+  metadata:
+    label: Scotland pension-age CTR earnings disregard, lone parent
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 Sch. 2 paras. 1(a) and 2
+        href: https://www.legislation.gov.uk/ssi/2012/319/schedule/2
+additional:
+  description: Weekly increase in the earnings disregard (the additional earnings disregard) where the pension-age applicant meets one of its work conditions and their net earnings at least equal the other disregards, the deductible childcare charges and this amount.
+  values:
+    2013-04-01: 17.1
+    # The Council Tax Reduction (Scotland) Amendment (No. 3) (Coronavirus)
+    # Regulations 2020 (SSI 2020/108) reg. 3(a), in force 6 April 2020,
+    # substituted "£37.10 until and including 4 April 2021, and after that
+    # by £17.10" in para. 10(1), and the same words without "by" in para.
+    # 10(3)(c).
+    2020-04-06: 37.1
+    2021-04-05: 17.1
+  metadata:
+    label: Scotland pension-age CTR additional earnings disregard
+    unit: currency-GBP
+    period: week
+    reference:
+      - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 Sch. 2 para. 10(1) and (3)(c)
+        href: https://www.legislation.gov.uk/ssi/2012/319/schedule/2/paragraph/10
+      - title: The Council Tax Reduction (Scotland) Amendment (No. 3) (Coronavirus) Regulations 2020 reg. 3(a)
+        href: https://www.legislation.gov.uk/ssi/2020/108/regulation/3
+metadata:
+  label: Scotland pension-age CTR earnings disregards

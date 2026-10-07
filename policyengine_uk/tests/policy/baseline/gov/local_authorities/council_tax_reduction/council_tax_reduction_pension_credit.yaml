@@ -239,9 +239,10 @@
         council_tax: 2_000
         savings: 0
   output:
-    # The son's guarantee_credit is calculated as 7,376, but he is not
-    # eligible for Pension Credit, so he is not in receipt of it.
-    guarantee_credit: [3_376, 7_376]
+    # The son is not eligible for Pension Credit, so he has no guarantee
+    # credit (guarantee_credit is defined only for Pension Credit-eligible
+    # benefit units) and is not in receipt of it.
+    guarantee_credit: [3_376, 0]
     in_receipt_of_guarantee_credit: [true, false]
     council_tax_reduction_applicable_income: [0, 5_000]
     # The national schemes' non-dependant deduction currently uses Housing
@@ -277,7 +278,8 @@
         council_tax: 2_000
         savings: 20_000
   output:
-    guarantee_credit: 8_849
+    # Not eligible for Pension Credit, so no guarantee credit.
+    guarantee_credit: 0
     is_pension_credit_eligible: false
     in_receipt_of_guarantee_credit: false
     council_tax_reduction: 0
@@ -332,7 +334,7 @@
     council_tax_reduction_applicable_income: 0
     council_tax_reduction: 2_000
 
-- name: Wales working-age earner with a calculated guarantee credit keeps the taper
+- name: Wales working-age earner, not eligible for Pension Credit, keeps the taper
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -354,7 +356,8 @@
         council_tax: 2_000
         savings: 0
   output:
-    guarantee_credit: 2_376
+    # Working age, so not eligible for Pension Credit: no guarantee credit.
+    guarantee_credit: 0
     in_receipt_of_guarantee_credit: false
     council_tax_reduction_applicable_income: 10_000
     council_tax_reduction: 993.72
@@ -613,3 +616,91 @@
     in_receipt_of_savings_credit_only: true
     council_tax_reduction_assessable_capital: 16_000.01
     council_tax_reduction: 0
+
+# The next two cases pin the route behind the capital-route loss of #1909, so
+# that the loss is not read as a real effect (see also #1837 and #1936). A
+# savings-credit-only recipient is tested against the CTR capital limit on the
+# Pension Credit figure, and Pension Credit's capital sources count
+# `corporate_wealth` but not `private_pension_wealth`: State Pension Credit
+# Regulations 2002 Sch V paras 22 and 23 disregard the value of a right to
+# receive income from an occupational or personal pension scheme or under a
+# retirement annuity contract. In datasets built before the
+# `private_pension_wealth` split, `corporate_wealth` also holds imputed pension
+# wealth, so there the first case's exclusion rests on pension wealth that
+# Pension Credit does not count. The rule in the first case counts
+# `corporate_wealth` whatever it holds, and stays as written once a dataset
+# splits the column; what changes is the value the dataset gives
+# `corporate_wealth`.
+
+- name: Savings credit only, corporate_wealth counts as Pension Credit capital, so a pensioner with nil household savings is over the CTR capital limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 12_000
+        private_pension_income: 1_500
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+        corporate_wealth: 20_000
+  output:
+    # (12,000 + 1,500 - 12,570) x 0.2 = 186. (20,000 - 10,000) / 500 = 20
+    # steps of £1 a week; 20 x 52 = 1,040 of deemed income.
+    pension_credit_assessable_capital: 20_000
+    pension_credit_deemed_income: 1_040
+    # 13,500 - 186 + 1,040 = 14,354, above the minimum guarantee of 12,376.
+    pension_credit_income: 14_354
+    guarantee_credit: 0
+    # 933.816 - 0.4 x (14,354 - 12,376) = 933.816 - 791.20 = 142.616.
+    savings_credit: 142.62
+    in_receipt_of_savings_credit_only: true
+    # The Pension Credit capital is 20,000, over 16,000, with nil savings in
+    # the household. The same pensioner with 20,000 of private_pension_wealth
+    # keeps CTR in the next case.
+    council_tax_reduction_assessable_capital: 20_000
+    council_tax_reduction: 0
+
+- name: Savings credit only, private_pension_wealth is not Pension Credit capital, so it does not take the pensioner over the CTR capital limit
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 90
+        state_pension: 12_000
+        private_pension_income: 1_500
+    benunits:
+      benunit:
+        members: [pensioner]
+        claims_all_entitled_benefits: true
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+        local_authority: MAIDSTONE
+        tenure_type: OWNED_OUTRIGHT
+        council_tax: 2_000
+        savings: 0
+        private_pension_wealth: 20_000
+  output:
+    # No capital counts, so no deemed income: as with no wealth at all,
+    # 13,500 - 186 = 13,314 and 933.816 - 0.4 x (13,314 - 12,376) = 558.616.
+    pension_credit_assessable_capital: 0
+    pension_credit_deemed_income: 0
+    pension_credit_income: 13_314
+    savings_credit: 558.62
+    in_receipt_of_savings_credit_only: true
+    council_tax_reduction_assessable_capital: 0
+    # 2,000 - 0.2 x (13,314 + 558.616 - 13,312) = 2,000 - 112.1232 = 1,887.8768.
+    council_tax_reduction: 1_887.88

@@ -10,21 +10,22 @@ Invariants, for any generated population of families:
 
 1. Receipt: in_receipt_of_guarantee_credit is true exactly when pension_credit
    and guarantee_credit are both positive, so it implies Pension Credit
-   eligibility and would_claim_pc, and every adult in a receiving family is
-   over State Pension age.
+   eligibility and would_claim_pc. Its claimant and partner have reached the
+   qualifying age or have the SI 2019/37 art 4 mixed-age couple saving.
 2. Passport: a receiving family's Housing Benefit applicable income, tariff
    income and assessable capital are all zero.
 3. Differential: where the family claims and is eligible for Pension Credit,
    every Housing Benefit output equals the pre-fix formula (passport on a
    computed guarantee credit). The two passports differ exactly for families
-   with someone over State Pension age and a computed guarantee credit that is
+   under the pension-age regulations and a computed guarantee credit that is
    not paid; there the pre-fix formula passports and this one does not
-   (intended). For a mixed-age couple saved by SI 2019/37 art 4, which
-   is_pension_credit_eligible omits, that is a known departure from the law
-   until the saving is modelled. Housing Benefit itself then differs only
+   (intended). The SI 2019/37 art 4 saving applies to qualifying mixed-age
+   couples. Housing Benefit itself then differs only
    when the counted capital is over the limit or the counted income exceeds
    the applicable amount.
-4. Metamorphic: not claiming Pension Credit never raises Housing Benefit.
+4. Metamorphic: for Guarantee Credit recipients, not claiming Pension Credit
+   never raises Housing Benefit. Savings-credit-only awards use reg 27's
+   separate income rule, which counts the savings credit payable.
 5. Under the Pension Credit freeze, receipt is the baseline receipt, because
    the frozen award is the baseline award.
 """
@@ -82,7 +83,12 @@ def situation(units, would_claim_pc=None):
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {YEAR: age}}
+            # The shapes describe claimants and partners, including young
+            # partners who would otherwise be presumed dependent children.
+            person = {
+                "age": {YEAR: age},
+                "is_claimant_or_partner": {YEAR: True},
+            }
             if age >= 67:
                 person["state_pension_reported"] = {YEAR: unit["state_pension"]}
                 person["private_pension_income"] = {YEAR: unit["private_pension"]}
@@ -107,8 +113,8 @@ def situation(units, would_claim_pc=None):
 
 class in_receipt_of_guarantee_credit(Variable):
     # The passport test on main before this fix: a computed guarantee credit.
-    # The Housing Benefit formulas still require someone over State Pension
-    # age, so swapping this in reproduces the old behaviour exactly.
+    # The Housing Benefit formulas still require the pension-age regulations
+    # to apply, so swapping this in reproduces main's entitlement passport.
     value_type = bool
     entity = BenUnit
     definition_period = YEAR_PERIOD
@@ -138,8 +144,11 @@ def calculate(units, old_formula=False, **kwargs):
     if old_formula:
         sim.tax_benefit_system.update_variable(in_receipt_of_guarantee_credit)
     values = {v: np.asarray(sim.calculate(v, YEAR)) for v in VARIABLES}
-    values["any_over_sp_age"] = (
-        np.asarray(sim.calculate("is_SP_age", YEAR, map_to="benunit")) > 0
+    values["pension_age_regulations"] = np.asarray(
+        sim.calculate("housing_benefit_pension_age_regulations_apply", YEAR)
+    )
+    values["mixed_age_saving"] = np.asarray(
+        sim.calculate("has_mixed_age_couple_pension_credit_saving", YEAR)
     )
     return values
 
@@ -159,7 +168,7 @@ def test_receipt_means_a_paid_guarantee_credit_and_passports(units):
     assert not np.any(receipt & ~values["would_claim_pc"].astype(bool))
     for i, unit in enumerate(units):
         if receipt[i]:
-            assert all_adults_over_sp_age(unit), unit
+            assert all_adults_over_sp_age(unit) or values["mixed_age_saving"][i], unit
     for variable in [
         "housing_benefit_applicable_income",
         "housing_benefit_tariff_income",
@@ -180,11 +189,15 @@ def test_matches_the_old_formula_when_pension_credit_is_claimed(units):
         assert np.allclose(new[variable][claimed], old[variable][claimed], atol=0.01), (
             variable
         )
-    old_passport = old["any_over_sp_age"] & old["in_receipt_of_guarantee_credit"]
-    new_passport = new["any_over_sp_age"] & new["in_receipt_of_guarantee_credit"]
+    old_passport = (
+        old["pension_age_regulations"] & old["in_receipt_of_guarantee_credit"]
+    )
+    new_passport = (
+        new["pension_age_regulations"] & new["in_receipt_of_guarantee_credit"]
+    )
     # Intended difference: a computed guarantee credit that is not paid.
     computed_not_paid = (
-        new["any_over_sp_age"]
+        new["pension_age_regulations"]
         & (new["guarantee_credit"] > 0)
         & ~(new["pension_credit"] > 0)
     )
@@ -195,11 +208,15 @@ def test_matches_the_old_formula_when_pension_credit_is_claimed(units):
 
 @PROPERTY_SETTINGS
 @given(POPULATIONS)
-def test_not_claiming_pension_credit_never_raises_housing_benefit(units):
+def test_not_claiming_guarantee_credit_never_raises_housing_benefit(units):
     claiming = calculate(units, would_claim_pc=True)
     not_claiming = calculate(units, would_claim_pc=False)
     assert not np.any(not_claiming["in_receipt_of_guarantee_credit"])
-    assert np.all(not_claiming["housing_benefit"] <= claiming["housing_benefit"] + 0.01)
+    guarantee_credit_recipients = claiming["in_receipt_of_guarantee_credit"]
+    assert np.all(
+        not_claiming["housing_benefit"][guarantee_credit_recipients]
+        <= claiming["housing_benefit"][guarantee_credit_recipients] + 0.01
+    )
 
 
 def test_pension_credit_freeze_keeps_the_baseline_receipt():

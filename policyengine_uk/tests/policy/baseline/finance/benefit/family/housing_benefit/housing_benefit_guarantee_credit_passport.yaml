@@ -151,7 +151,7 @@
     housing_benefit_applicable_income: 0
     housing_benefit: 7_800
 
-- name: Case 5, mixed-age couple with a continuing award is not passported, because PolicyEngine does not model the SI 2019/37 art 4 saving.
+- name: Case 5, mixed-age couple whose older member did not qualify by May 2019 is not passported.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -174,18 +174,11 @@
         tenure_type: RENT_FROM_COUNCIL
         savings: 20_000
   output:
-    # PolicyEngine's is_pension_credit_eligible omits the SI 2019/37 art 4
-    # saving, so it pays this couple no Pension Credit and there is no
-    # passport. In law a mixed-age couple saved under art 4(1)(b) (entitled
-    # to Housing Benefit as that couple on 14 May 2019, and to Pension Credit
-    # or Housing Benefit ever since, which the continuing award here may
-    # stand for) is not excluded by SPCA 2002 s.4(1A). It may then be
-    # entitled to a guarantee credit (18,889 - (10,000 + 1,040) = 7,849 on
-    # the 2026 parameters), and reg 26 would disregard its capital. This
-    # case pins the model, not the law, until that saving is modelled. The
-    # computed guarantee credit is not asserted, so the case does not depend
-    # on whether one is computed for a family PolicyEngine treats as
-    # ineligible.
+    # The older member, aged 70 in 2026, had not reached the qualifying
+    # age by 14 May 2019. Current reported Housing Benefit therefore does
+    # not establish the SI 2019/37 art 4 saving. No Pension Credit is paid,
+    # so SI 2006/214 reg 26 does not disregard this couple's capital.
+    has_mixed_age_couple_pension_credit_saving: false
     is_pension_credit_eligible: false
     pension_credit: 0
     in_receipt_of_guarantee_credit: false
@@ -193,6 +186,67 @@
     housing_benefit_tariff_income: 1_040
     housing_benefit_eligible: false
     housing_benefit: 0
+
+- name: Entitled pension-age nonclaimant receives no maximum HB passport while the claimant does in 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      nonclaimant:
+        age: 70
+        state_pension_reported: 10_000
+      claimant:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      not_claiming:
+        members: [nonclaimant]
+        would_claim_pc: false
+        would_claim_housing_benefit: true
+      claiming:
+        members: [claimant]
+        would_claim_pc: true
+        would_claim_housing_benefit: true
+    households:
+      not_claiming_household:
+        members: [nonclaimant]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+      claiming_household:
+        members: [claimant]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    # Pension Credit capital income: SI 2002/1792 reg 15(6), and the repo's
+    # pension_credit.income.capital parameters, give £1/week per £500 above
+    # £10,000: ceil((20,000 - 10,000) / 500) x 1 x 52 = £1,040/year.
+    # The 2025 SINGLE minimum_guarantee parameter is £221.85/week:
+    # 221.85 x 52 = £11,536.20; 11,536.20 - (10,000 + 1,040) = £496.20.
+    # Both are entitled; only the claimant receives that Guarantee Credit.
+    pension_credit_deemed_income: [1_040, 1_040]
+    minimum_guarantee: [11_536.20, 11_536.20]
+    guarantee_credit: [496.20, 496.20]
+    pension_credit: [0, 496.20]
+    in_receipt_of_guarantee_credit: [false, true]
+    # SI 2006/214 reg 26 disregards income and capital only on receipt:
+    # https://www.legislation.gov.uk/uksi/2006/214/regulation/26
+    housing_benefit_assessable_capital: [20_000, 0]
+    # Reg 29(2) and housing_benefit.means_test.capital.pension_age give
+    # the same £1/week tariff: 20 x 52 = £1,040 for the nonclaimant.
+    # https://www.legislation.gov.uk/uksi/2006/214/regulation/29
+    housing_benefit_tariff_income: [1_040, 0]
+    housing_benefit_applicable_income: [11_040, 0]
+    # Reg 43 and the pension_age.limit parameter exclude capital over
+    # £16,000: 20,000 > 16,000, but the claimant's assessable capital is 0.
+    # https://www.legislation.gov.uk/uksi/2006/214/regulation/43
+    housing_benefit_eligible: [false, true]
+    # The nonclaimant gets £0. The claimant has no counted income and no
+    # non-dependants; council tenure has no LHA cap, so HB is the full rent,
+    # £120/week x 52 = £6,240/year (SI 2006/214 regs 50 and 55).
+    # https://www.legislation.gov.uk/uksi/2006/214/regulation/50
+    housing_benefit: [0, 6_240]
 
 - name: Case 6, Savings Credit only does not passport Housing Benefit.
   period: 2026
