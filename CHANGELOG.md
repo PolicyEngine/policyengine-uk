@@ -1,3 +1,11 @@
+## [2.123.1] - 2026-10-07
+
+### Fixed
+
+- - Split the reported State Pension at the legislated data-year rate, so a State Pension rate reform changes `state_pension` when it also sets the data year's rate: undated reforms, and every reform in a simulation without a dataset (a household calculation), where the data year is the period.
+- - Charge the High Value Council Tax Surcharge only on households that own their main residence (owned outright or with a mortgage). Owners, not occupiers, are liable, so tenants now owe nothing even when a positive `main_residence_value` is supplied. Households with no `tenure_type` take the `RENT_PRIVATELY` default and are no longer charged.
+
+
 ## [2.123.0] - 2026-10-07
 
 ### Added
