@@ -1,3 +1,10 @@
+## [2.123.2] - 2026-10-07
+
+### Fixed
+
+- - Store the Class 1 secondary threshold from 2025-26 as £5,000 / 52 a week, so employer National Insurance uses the statutory annual £5,000 (SI 2001/1004 reg 11(3A)(b)) rather than 52 x the rounded weekly £96 = £4,992. Employer NI falls by up to £1.20 a year per employee earning above the threshold.
+
+
 ## [2.123.1] - 2026-10-07
 
 ### Fixed
