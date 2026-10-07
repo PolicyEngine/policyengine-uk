@@ -6,7 +6,7 @@ import pytest
 from policyengine_core.parameters import ParameterNode
 
 import policyengine_uk
-from policyengine_uk import CountryTaxBenefitSystem
+from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.utils.excise import fiscal_year_segments
 
 
@@ -48,3 +48,34 @@ def test_pension_credit_condition_segments_the_2020_21_fiscal_year():
     assert unrestricted_share == pytest.approx(117 / 365)
     assert restricted_share == pytest.approx(248 / 365)
     assert all(isinstance(rules.must_claim_pc, bool) for rules, _ in segments)
+
+
+def test_year_keyed_minimum_age_reform_applies_to_one_fiscal_year():
+    """A bare-year age reform must not be split across adjacent years."""
+    years = (2024, 2025, 2026)
+    situation = {
+        "people": {
+            "person": {
+                "age": {str(year): 72 for year in years},
+            },
+        },
+        "benunits": {
+            "benunit": {
+                "members": ["person"],
+                "pension_credit": {str(year): 1 for year in years},
+            },
+        },
+        "households": {
+            "household": {
+                "members": ["person"],
+            },
+        },
+    }
+    reform = {
+        "gov.dcms.bbc.tv_licence.discount.aged.min_age": {"2025": 70},
+    }
+    simulation = Simulation(situation=situation, reform=reform)
+
+    discounts = [simulation.calculate("tv_licence_discount", year)[0] for year in years]
+
+    assert discounts == pytest.approx([0, 1, 0])
