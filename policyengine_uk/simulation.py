@@ -150,7 +150,7 @@ class Simulation(CoreSimulation):
             scenario = Scenario.from_reform(reform)
 
         self.branch_name = "default"
-        self.invalidated_caches = set()
+        self.result_cache.replace_invalidated(set())
         self.debug: bool = False
         self.trace: bool = trace
         self.tracer: SimpleTracer = SimpleTracer() if not trace else FullTracer()
@@ -234,30 +234,6 @@ class Simulation(CoreSimulation):
                 scenario.simulation_modifier(self)
             if scenario.parameter_changes is not None:
                 self.apply_parameter_changes(scenario.parameter_changes)
-
-    def clone(
-        self,
-        debug: bool = False,
-        trace: bool = False,
-        clone_tax_benefit_system: bool = True,
-    ) -> "Simulation":
-        clone = super().clone(debug, trace, clone_tax_benefit_system)
-        # policyengine-core 3.32.9: simulations/simulation.py::Simulation.clone
-        # shallow-copies __dict__, while holders/holder.py::Holder.clone copies
-        # value storage. Holder.set_input's provenance and context must belong
-        # to the same simulation as that storage, including for plain clones.
-        clone._user_input_keys = set(getattr(self, "_user_input_keys", ()))
-        clone._user_input_contexts = list(getattr(self, "_user_input_contexts", ()))
-        return clone
-
-    def delete_arrays(self, variable: str, period: Period = None) -> None:
-        super().delete_arrays(variable, period)
-        # policyengine-core's Simulation.delete_arrays and
-        # holders/holder.py::Holder.delete_arrays remove storage, but retain
-        # provenance keys. Drop those keys before carry-over can refill storage.
-        # Inspect storage after core's deletion to honour period containment
-        # and the current branch, ancestor branches and default branch.
-        drop_missing_supplied_inputs(self, variable)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:

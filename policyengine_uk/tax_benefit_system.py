@@ -1,7 +1,7 @@
 # Standard library imports
 import copy
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Dict, List
 
 # PolicyEngine core imports
 from policyengine_core.parameters.operations.propagate_parameter_metadata import (
@@ -72,14 +72,11 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def reset_parameter_caches(self):
         """Reset all caches in the tax-benefit system."""
-        self._parameters_at_instant_cache = {}
-        for parameter in self.parameters.get_descendants():
-            parameter._at_instant_cache = {}
-        self.parameters._at_instant_cache = {}
+        self.clear_parameter_caches()
 
     def reset_parameters(self) -> None:
         """Reset parameters by reloading from the parameters directory."""
-        self._parameters_at_instant_cache = {}
+        self.clear_parameter_caches()
         self.load_parameters(self.parameters_dir)
         self.parameters = add_removed_parameter_aliases(self.parameters)
 
@@ -95,7 +92,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         - Parameter uprating and backdating
         - Conversion to fiscal year parameters
         """
-        self._parameters_at_instant_cache = {}
+        self.clear_parameter_caches()
         # Add various UK-specific parameter adjustments
         self.parameters = add_private_pension_uprating_factor(self.parameters)
         self.parameters = add_lagged_earnings(self.parameters)
@@ -117,7 +114,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
     def __init__(self):
         """Initialize the UK tax-benefit system with entities and parameters."""
-        self._parameters_at_instant_cache: Dict[str, Any] = {}
+        self.replace_parameters(None)
         self.variables = {}
 
         # Create copies of entity classes to avoid modifying originals
@@ -150,7 +147,6 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # the full pipeline (saves ~0.5s from convert_to_fiscal_year_parameters).
             # apply_parameter_changes() calls reset_parameters() + process_parameters()
             # directly, so reforms still get the full pipeline.
-            self._parameters_at_instant_cache = {}
             self.parameters = _processed_parameters_cache.clone()
         else:
             self.reset_parameters()
