@@ -117,8 +117,15 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - savings
 - savings_interest_income
 - sublet_income
+- cash_isa
+- consumer_debt
+- mortgage_debt
+- rent_paid_as_boarder
+- rent_paid_as_lodger
+- stocks_and_shares_isa
 gov.economic_assumptions.yoy_growth.obr.per_capita.mixed_income:
 - self_employment_income
+- self_employment_gross_receipts
 gov.economic_assumptions.yoy_growth.obr.private_pension_index:
 - private_pension_income
 gov.economic_assumptions.yoy_growth.obr.lagged_average_earnings:
