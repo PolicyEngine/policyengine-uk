@@ -3,10 +3,9 @@ description: >
   Allowance capital. The Jobseeker's Allowance Regulations 1996 treat capital
   as assessable unless it is disregarded under Schedule 8. The current
   mappings are `savings` for liquid capital, `owned_land` for land held
-  directly, `corporate_wealth` as the broad available proxy for share-like
-  financial assets, `other_residential_property_value` for residential
+  directly, the share-like sources, `other_residential_property_value` for residential
   property other than the home, and `non_residential_property_value` for other
-  land and premises. `main_residence_value` is excluded because Schedule 8
+  land and premises. `directly_held_shares`, `unit_and_investment_trusts` and `stocks_and_shares_isa` hold the share-like assets the means tests value separately, and `unitemised_corporate_wealth` holds any part of `corporate_wealth` a dataset does not itemise into them: all of it on datasets without the components, and nil on datasets that build `corporate_wealth` as their exact sum. `corporate_wealth` itself is not listed, so no holding counts twice. `main_residence_value` is excluded because Schedule 8
   paragraph 1 disregards premises occupied as the claimant's home.
   `private_pension_wealth` is excluded because Schedule 8 paragraphs 28 and 29
   disregard the value of the right to receive an occupational or personal
@@ -34,6 +33,9 @@ values:
   1996-10-07:
     - savings
     - owned_land
-    - corporate_wealth
+    - directly_held_shares
+    - unit_and_investment_trusts
+    - stocks_and_shares_isa
+    - unitemised_corporate_wealth
     - other_residential_property_value
     - non_residential_property_value
