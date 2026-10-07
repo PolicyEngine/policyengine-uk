@@ -217,3 +217,23 @@
   output:
     ni_class_4_profits: 5_964
     ni_class_2: 0
+
+# A full year is every contribution week in it. A contribution week starts at
+# midnight between Saturday and Sunday (SI 2001/1004 reg. 1(2)), and the year's
+# first week starts on the first Sunday after 5 April (HMRC NIM70200), so
+# 2019-20 has 53: Sundays from 7 April 2019 to 5 April 2020.
+- name: NI Class 2 - 2019-20, 53 contribution weeks.
+  period: 2019
+  input:
+    self_employment_income: 10_000
+  output:
+    # SI 2019/262 reg 3: £3.00 a week from £6,365.
+    ni_class_2: 3 * 53
+
+- name: NI Class 2 - 2020-21, 52 contribution weeks.
+  period: 2020
+  input:
+    self_employment_income: 10_000
+  output:
+    # Sundays from 12 April 2020 to 4 April 2021.
+    ni_class_2: 3.05 * 52

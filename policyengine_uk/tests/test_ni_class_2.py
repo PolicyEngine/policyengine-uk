@@ -2,34 +2,40 @@
 
 STATUTE holds each tax year's figures as enacted, read from legislation.gov.uk
 (the amending instrument's made text and the point-in-time text of s.11),
-independently of the parameter files.
+independently of the parameter files. CONTRIBUTION_WEEKS holds each year's
+contribution weeks, counted from the calendar: a contribution week starts at
+midnight between Saturday and Sunday (SI 2001/1004 reg. 1(2)) and the year's
+first week on the first Sunday after 5 April (HMRC NIM70200).
 
 The thresholds apply to relevant profits: the profits on which Class 4 is
-payable under s.15, computed under Schedule 2 (s.11(3)). With no gross
-receipts or losses supplied, those are self-employment profit less capital
-allowances (CAA 2001 s.247). A profit of £1,000 or less is treated as covered
-by the trading allowance and gives nil relevant profits; that never changes
-liability, because every threshold is far above £1,000.
+payable under s.15, computed under Schedule 2 (s.11(3)). Here the inputs are
+profit, whole-pound capital allowances (CAA 2001 s.247) and a whole-pound
+trading loss made in the same year (Sch 2 para 3), with no gross receipts, so
+relevant profits are profit less both. A profit of £1,000 or less is treated
+as covered by the trading allowance from 2017-18, when the allowance starts,
+and then gives nil relevant profits; that never changes liability, because
+every threshold is far above £1,000. The trading allowance with gross
+receipts, and losses brought forward, are covered by the YAML cases.
 
-Invariants, for every model year, profits >= 0 and capital allowances >= 0:
+Invariants, for every model year 2015-2030, profits >= 0, capital allowances
+>= 0 and in-year trading losses >= 0, all whole pounds apart from profits:
 
-1. Differential: ni_class_2 is 52 weeks at the statutory weekly rate when
-   s.11(2) makes the earner liable, and 0 otherwise. Before 2022-23 the
-   earner is liable on relevant profits of, or exceeding, the small profits
-   threshold. In 2022-23 and 2023-24 only relevant profits that exceed the
-   lower profits threshold are liable; relevant profits from the small
-   profits threshold up to it are treated as paid (s.11(5A)-(5B)), which
-   costs nothing. From 2024-25 s.11(2) is omitted and no one is liable.
-2. ni_class_2 is either 0 or 52 x the weekly rate.
+1. Differential: ni_class_2 is the statutory weekly rate for each contribution
+   week in the year when s.11(2) makes the earner liable, and 0 otherwise.
+   Before 2022-23 the earner is liable on relevant profits of, or exceeding,
+   the small profits threshold. In 2022-23 and 2023-24 only relevant profits
+   that exceed the lower profits threshold are liable; relevant profits from
+   the small profits threshold up to it are treated as paid (s.11(5A)-(5B)),
+   which costs nothing. From 2024-25 s.11(2) is omitted and no one is liable.
+2. ni_class_2 is either 0 or a full year at the weekly rate.
 3. ni_class_2 is non-decreasing in relevant profits, so non-decreasing in
-   profit and non-increasing in capital allowances.
+   profit and non-increasing in capital allowances and losses.
 4. Shared base: ni_class_2 is the s.11(2) rule applied to the model's own
    ni_class_4_profits, the base Class 4 is charged on.
 
-The model counts 52 weeks of self-employment in a year. Profits are stored
-as float32, so the reference is evaluated on the float32 value. Capital
-allowances are whole pounds here, so profit less allowances is exact in
-float32.
+Profits are stored as float32, so the reference is evaluated on the float32
+value. Allowances and losses are whole pounds, so subtracting them from a
+float32 profit is exact in float32.
 """
 
 from fractions import Fraction
@@ -41,8 +47,7 @@ from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.system import system
-
-WEEKS = 52
+from policyengine_uk.utils.class_2 import class_2_contribution_weeks
 
 # Tax year starting in April of the key: (weekly rate under s.11(2), small
 # profits threshold, lower profits threshold or None where s.11(2) keys on the
@@ -61,6 +66,10 @@ STATUTE = {
     2025: ("0", 6_845, None),  # SI 2025/288 reg 3(a)
     2026: ("0", 7_105, None),  # SI 2026/231 reg 3(a)
 }
+# Contribution weeks: years whose first Sunday after 5 April falls on 6 or 7
+# April hold 53 Sundays to the next 5 April (2019-20: 7 April 2019 to 5 April
+# 2020; 2025-26: 6 April 2025 to 5 April 2026). Every other year has 52.
+CONTRIBUTION_WEEKS = {2019: 53, 2025: 53}
 MODEL_YEARS = list(range(2015, 2031))
 PROPERTY_SETTINGS = settings(
     max_examples=10,
@@ -75,20 +84,25 @@ def statute(year):
     return STATUTE[min(year, max(STATUTE))]
 
 
-def relevant_profits(profits, capital_allowances=0):
-    # s.11(3): the Class 4 profits, here profit less capital allowances.
-    exact = Fraction(float(np.float32(profits))) - capital_allowances
+def weeks(year):
+    return CONTRIBUTION_WEEKS.get(year, 52)
+
+
+def relevant_profits(profits, capital_allowances=0, trading_loss=0):
+    # s.11(3): the Class 4 profits, here profit less capital allowances and
+    # the year's trading loss.
+    exact = Fraction(float(np.float32(profits))) - capital_allowances - trading_loss
     return max(exact, Fraction(0))
 
 
-def statutory_class_2(year, profits, capital_allowances=0):
+def statutory_class_2(year, profits, capital_allowances=0, trading_loss=0):
     rate, small_profits_threshold, lower_profits_threshold = statute(year)
-    profits = relevant_profits(profits, capital_allowances)
+    profits = relevant_profits(profits, capital_allowances, trading_loss)
     if lower_profits_threshold is None:
         liable = profits >= small_profits_threshold
     else:
         liable = profits > lower_profits_threshold
-    return WEEKS * Fraction(rate) if liable else Fraction(0)
+    return weeks(year) * Fraction(rate) if liable else Fraction(0)
 
 
 # Every threshold s.11 has used, with points either side of each.
@@ -103,20 +117,25 @@ THRESHOLD_PROFITS = sorted(
 )
 
 
-# Whole-pound capital allowances that move profits across each threshold.
+# Whole-pound capital allowances and trading losses that move profits across
+# each threshold.
 CAPITAL_ALLOWANCES = [0, 500, 1_000, 2_500]
+TRADING_LOSSES = [0, 750]
 
 
 def simulate(cases):
-    # One person per (profits, capital allowances) case, with the same values
-    # in every model year, so a single simulation covers every year.
+    # One person per (profits, capital allowances, trading loss) case, with
+    # the same values in every model year, so a single simulation covers every
+    # year. Each year's loss is no more than its profits after allowances, so
+    # none is carried forward.
     people = {
         f"p{i}": {
             "age": {year: 40 for year in MODEL_YEARS},
             "self_employment_income": {year: profits for year in MODEL_YEARS},
             "capital_allowances": {year: allowances for year in MODEL_YEARS},
+            "trading_loss": {year: loss for year in MODEL_YEARS},
         }
-        for i, (profits, allowances) in enumerate(cases)
+        for i, (profits, allowances, loss) in enumerate(cases)
     }
     return Simulation(
         situation={
@@ -127,15 +146,25 @@ def simulate(cases):
     )
 
 
+def gross(relevant, allowances=0, loss=0):
+    # The profit whose relevant profits are `relevant`.
+    return (float(relevant) + allowances + loss, allowances, loss)
+
+
 def assert_invariants(cases):
-    cases = [case if isinstance(case, tuple) else (case, 0) for case in cases]
+    cases = [
+        tuple(case) + (0,) * (3 - len(case))
+        if isinstance(case, tuple)
+        else (case, 0, 0)
+        for case in cases
+    ]
     sim = simulate(cases)
     relevant = [relevant_profits(*case) for case in cases]
     order = sorted(range(len(cases)), key=lambda i: relevant[i])
     for year in MODEL_YEARS:
         class_2 = sim.calculate("ni_class_2", year)
         class_4_profits = sim.calculate("ni_class_4_profits", year)
-        full_year = WEEKS * float(statute(year)[0])
+        full_year = weeks(year) * float(statute(year)[0])
         for i, case in enumerate(cases):
             expected = float(statutory_class_2(year, *case))
             assert class_2[i] == pytest.approx(expected, abs=0.01), (year, case)
@@ -160,20 +189,34 @@ def test_class_2_parameters_match_statute(year):
         assert class_2.lower_profits_threshold == lower_profits_threshold
 
 
+@pytest.mark.parametrize("year", MODEL_YEARS)
+def test_contribution_weeks_follow_the_calendar(year):
+    assert class_2_contribution_weeks(year) == weeks(year)
+
+
+def test_contribution_weeks_match_hmrc_example():
+    # NIM70200: "The first contribution week of the 2021 to 2022 tax year
+    # starts on Sunday, 11 April 2021 and the last contribution week of that
+    # year ends on Saturday, 9 April 2022": 364 days, 52 weeks.
+    assert class_2_contribution_weeks(2021) == 52
+
+
 def test_ni_class_2_matches_statute_at_every_threshold():
     rng = np.random.default_rng(1_992)
     spread = list(rng.uniform(0, 200_000, 200).round(2))
     assert_invariants(THRESHOLD_PROFITS + spread + [60_000.0, 1_000_000.0])
 
 
-def test_ni_class_2_tests_thresholds_on_profits_after_capital_allowances():
-    # Gross profits set so that profit less capital allowances lands on, and
-    # either side of, every threshold s.11 has used.
+def test_ni_class_2_tests_thresholds_on_profits_after_deductions():
+    # Profits set so that profit less capital allowances and the year's loss
+    # lands on, and either side of, every threshold s.11 has used.
     assert_invariants(
         [
-            (relevant + allowances, allowances)
+            gross(relevant, allowances, loss)
             for relevant in THRESHOLD_PROFITS
-            for allowances in CAPITAL_ALLOWANCES[1:]
+            for allowances in CAPITAL_ALLOWANCES
+            for loss in TRADING_LOSSES
+            if allowances or loss
         ]
     )
 
@@ -181,22 +224,23 @@ def test_ni_class_2_tests_thresholds_on_profits_after_capital_allowances():
 @PROPERTY_SETTINGS
 @given(
     st.lists(
-        st.tuples(
+        st.builds(
+            gross,
             st.one_of(
+                st.sampled_from(THRESHOLD_PROFITS),
                 st.floats(0, 200_000, allow_nan=False, allow_infinity=False),
                 st.integers(0, 200_000).map(float),
-                st.sampled_from(THRESHOLD_PROFITS),
             ),
-            st.one_of(
-                st.sampled_from(CAPITAL_ALLOWANCES),
-                st.integers(0, 20_000),
-            ),
+            st.one_of(st.sampled_from(CAPITAL_ALLOWANCES), st.integers(0, 20_000)),
+            st.one_of(st.sampled_from(TRADING_LOSSES), st.integers(0, 20_000)),
         ),
         min_size=1,
         max_size=24,
     )
 )
 def test_ni_class_2_properties(cases):
+    # Relevant profits are drawn first, so threshold points stay on their
+    # thresholds whatever allowances and losses are drawn with them.
     assert_invariants(cases)
 
 

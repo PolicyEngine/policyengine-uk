@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
 
 
 class ni_class_2(Variable):
@@ -6,10 +7,11 @@ class ni_class_2(Variable):
     entity = Person
     label = "NI Class 2 contributions"
     documentation = (
-        "Compulsory Class 2 contributions under s.11(2) SSCBA 1992, tested on "
-        "the earner's relevant profits: the profits on which Class 4 is "
-        "payable under s.15 (s.11(3)), so after capital allowances, the "
-        "trading allowance and Schedule 2 loss relief (ni_class_4_profits)."
+        "Compulsory Class 2 contributions under s.11(2) SSCBA 1992 for a full "
+        "year of self-employment: the weekly rate for each contribution week "
+        "in the tax year (53 in 2019-20, otherwise 52 to 2023-24). Liability "
+        "is tested on relevant profits, the profits on which Class 4 is "
+        "payable under s.15 (s.11(3)), as modelled in ni_class_4_profits."
     )
     definition_period = YEAR
     unit = GBP
@@ -20,8 +22,12 @@ class ni_class_2(Variable):
             href="https://www.legislation.gov.uk/ukpga/1992/4/section/11",
         ),
         dict(
-            title="HMRC National Insurance Manual NIM70300",
-            href="https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim70300",
+            title="HMRC National Insurance Manual NIM70650",
+            href="https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim70650",
+        ),
+        dict(
+            title="HMRC National Insurance Manual NIM70200",
+            href="https://www.gov.uk/hmrc-internal-manuals/national-insurance-manual/nim70200",
         ),
     ]
 
@@ -32,14 +38,6 @@ class ni_class_2(Variable):
         # exceeded the lower profits limit), which s.15(3) computes under
         # Schedule 2. Class 2 and Class 4 therefore share one profit base.
         profits = person("ni_class_4_profits", period)
-        # Section 11(2). From 2022-23 only profits that exceed the lower
-        # profits threshold are liable; profits from the small profits
-        # threshold up to it are treated as paid (s.11(5A)-(5B)) and cost
-        # nothing. Before then liability started at the small profits
-        # threshold. The flat rate is 0 once s.11(2) is omitted in 2024-25.
-        liable = where(
-            class_2.lower_profits_threshold_applies,
-            profits > class_2.lower_profits_threshold,
-            profits >= class_2.small_profits_threshold,
-        )
-        return liable * class_2.flat_rate * WEEKS_IN_YEAR
+        # The flat rate is 0 once s.11(2) is omitted in 2024-25.
+        weeks = class_2_contribution_weeks(period.start.year)
+        return class_2_liable(profits, class_2) * class_2.flat_rate * weeks

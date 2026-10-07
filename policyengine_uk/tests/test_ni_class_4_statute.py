@@ -75,7 +75,11 @@ CLASS_2 = {
     2023: ("3.45", 12_570, True),  # SI 2023/236 reg 3
 }
 YEARS = sorted(CLASS_4)
-WEEKS = 52
+# A full year of Class 2 is one weekly contribution per contribution week:
+# one per Sunday from 6 April to the next 5 April (SI 2001/1004 reg 1(2);
+# HMRC NIM70200). 2019-20 has 53 (Sundays 7 April 2019 to 5 April 2020); the
+# other years with Class 2 have 52.
+CONTRIBUTION_WEEKS = {2019: 53}
 PROPERTY_SETTINGS = settings(
     max_examples=6,
     deadline=None,
@@ -93,7 +97,8 @@ def statutory_class_2(year, profits):
         return Fraction(0)
     rate, threshold, exceed = CLASS_2[year]
     liable = profits > threshold if exceed else profits >= threshold
-    return WEEKS * Fraction(rate) if liable else Fraction(0)
+    weeks = CONTRIBUTION_WEEKS.get(year, 52)
+    return weeks * Fraction(rate) if liable else Fraction(0)
 
 
 def statutory_class_4(year, profits, class_1):
@@ -192,15 +197,15 @@ HAND_DERIVED = [
     # max = 3,416.29 + 273 = 3,689.29. Not binding.
     (2018, 60_000, 0, 153.40, 3_686.34),
     # 2019-20 with £2,000 of Class 1. s.15(3): 9% x (50,000 - 8,632)
-    # = 3,723.12. Class 2 52 x 3 = 156. Step 4 = 3,723.12 + 159 - 156
-    # - 2,000 = 1,726.12 (Case 2). Step 5 = 1,726.12 / 9% = 19,179.11;
-    # Step 7 = 41,368 - 19,179.11 = 22,188.89; Step 8 = 443.78.
-    # Max = 1,726.12 + 443.78 = 2,169.90. Binding.
-    (2019, 50_000, 2_000, 156.00, 2_169.90),
-    # 2019-20 with £6,000 of Class 1. Step 4 = 3,723.12 + 159 - 156 - 6,000
+    # = 3,723.12. Class 2 53 x 3 = 159 (53 contribution weeks). Step 4
+    # = 3,723.12 + 159 - 159 - 2,000 = 1,723.12 (Case 2). Step 5 = 1,723.12
+    # / 9% = 19,145.78; Step 7 = 41,368 - 19,145.78 = 22,222.22; Step 8
+    # = 444.44. Max = 1,723.12 + 444.44 = 2,167.56. Binding.
+    (2019, 50_000, 2_000, 159.00, 2_167.56),
+    # 2019-20 with £6,000 of Class 1. Step 4 = 3,723.12 + 159 - 159 - 6,000
     # < 0 (Case 3, nil). Step 7 = Step 6 = 50,000 - 8,632 = 41,368;
     # Step 8 = 2% x 41,368 = 827.36; Step 9 = 0. Max = 827.36. Binding.
-    (2019, 50_000, 6_000, 156.00, 827.36),
+    (2019, 50_000, 6_000, 159.00, 827.36),
     # 2020-21. 9% x (20,000 - 9,500) = 945. Class 2 52 x 3.05 = 158.60.
     (2020, 20_000, 0, 158.60, 945.00),
     # 2021-22 at the lower profits limit: Class 2 (profits of, or exceeding,
