@@ -4,20 +4,32 @@ STATUTE holds each tax year's figures as enacted, read from legislation.gov.uk
 (the amending instrument's made text and the point-in-time text of s.11),
 independently of the parameter files.
 
-Invariants, for every model year and profits >= 0:
+The thresholds apply to relevant profits: the profits on which Class 4 is
+payable under s.15, computed under Schedule 2 (s.11(3)). With no gross
+receipts or losses supplied, those are self-employment profit less capital
+allowances (CAA 2001 s.247). A profit of £1,000 or less is treated as covered
+by the trading allowance and gives nil relevant profits; that never changes
+liability, because every threshold is far above £1,000.
+
+Invariants, for every model year, profits >= 0 and capital allowances >= 0:
 
 1. Differential: ni_class_2 is 52 weeks at the statutory weekly rate when
    s.11(2) makes the earner liable, and 0 otherwise. Before 2022-23 the
-   earner is liable on profits of, or exceeding, the small profits threshold.
-   In 2022-23 and 2023-24 only profits that exceed the lower profits
-   threshold are liable; profits from the small profits threshold up to it
-   are treated as paid (s.11(5A)-(5B)), which costs nothing. From 2024-25
-   s.11(2) is omitted and no one is liable.
+   earner is liable on relevant profits of, or exceeding, the small profits
+   threshold. In 2022-23 and 2023-24 only relevant profits that exceed the
+   lower profits threshold are liable; relevant profits from the small
+   profits threshold up to it are treated as paid (s.11(5A)-(5B)), which
+   costs nothing. From 2024-25 s.11(2) is omitted and no one is liable.
 2. ni_class_2 is either 0 or 52 x the weekly rate.
-3. ni_class_2 is non-decreasing in profits.
+3. ni_class_2 is non-decreasing in relevant profits, so non-decreasing in
+   profit and non-increasing in capital allowances.
+4. Shared base: ni_class_2 is the s.11(2) rule applied to the model's own
+   ni_class_4_profits, the base Class 4 is charged on.
 
 The model counts 52 weeks of self-employment in a year. Profits are stored
-as float32, so the reference is evaluated on the float32 value.
+as float32, so the reference is evaluated on the float32 value. Capital
+allowances are whole pounds here, so profit less allowances is exact in
+float32.
 """
 
 from fractions import Fraction
@@ -63,9 +75,15 @@ def statute(year):
     return STATUTE[min(year, max(STATUTE))]
 
 
-def statutory_class_2(year, profits):
+def relevant_profits(profits, capital_allowances=0):
+    # s.11(3): the Class 4 profits, here profit less capital allowances.
+    exact = Fraction(float(np.float32(profits))) - capital_allowances
+    return max(exact, Fraction(0))
+
+
+def statutory_class_2(year, profits, capital_allowances=0):
     rate, small_profits_threshold, lower_profits_threshold = statute(year)
-    profits = Fraction(float(np.float32(profits)))
+    profits = relevant_profits(profits, capital_allowances)
     if lower_profits_threshold is None:
         liable = profits >= small_profits_threshold
     else:
@@ -85,15 +103,20 @@ THRESHOLD_PROFITS = sorted(
 )
 
 
-def simulate(profits_list):
-    # One person per profit level, with the same profits in every model year,
-    # so a single simulation covers every year.
+# Whole-pound capital allowances that move profits across each threshold.
+CAPITAL_ALLOWANCES = [0, 500, 1_000, 2_500]
+
+
+def simulate(cases):
+    # One person per (profits, capital allowances) case, with the same values
+    # in every model year, so a single simulation covers every year.
     people = {
         f"p{i}": {
             "age": {year: 40 for year in MODEL_YEARS},
             "self_employment_income": {year: profits for year in MODEL_YEARS},
+            "capital_allowances": {year: allowances for year in MODEL_YEARS},
         }
-        for i, profits in enumerate(profits_list)
+        for i, (profits, allowances) in enumerate(cases)
     }
     return Simulation(
         situation={
@@ -104,17 +127,22 @@ def simulate(profits_list):
     )
 
 
-def assert_invariants(profits_list):
-    sim = simulate(profits_list)
-    order = np.argsort(np.asarray(profits_list, dtype=np.float32), kind="stable")
+def assert_invariants(cases):
+    cases = [case if isinstance(case, tuple) else (case, 0) for case in cases]
+    sim = simulate(cases)
+    relevant = [relevant_profits(*case) for case in cases]
+    order = sorted(range(len(cases)), key=lambda i: relevant[i])
     for year in MODEL_YEARS:
         class_2 = sim.calculate("ni_class_2", year)
+        class_4_profits = sim.calculate("ni_class_4_profits", year)
         full_year = WEEKS * float(statute(year)[0])
-        for i, profits in enumerate(profits_list):
-            expected = float(statutory_class_2(year, profits))
-            assert class_2[i] == pytest.approx(expected, abs=0.01), (year, profits)
+        for i, case in enumerate(cases):
+            expected = float(statutory_class_2(year, *case))
+            assert class_2[i] == pytest.approx(expected, abs=0.01), (year, case)
             assert class_2[i] == 0 or class_2[i] == pytest.approx(full_year, abs=0.01)
-        assert np.all(np.diff(class_2[order]) >= 0), (year, profits_list, class_2)
+            shared_base = float(statutory_class_2(year, class_4_profits[i]))
+            assert class_2[i] == pytest.approx(shared_base, abs=0.01), (year, case)
+        assert np.all(np.diff(class_2[order]) >= 0), (year, cases, class_2)
 
 
 @pytest.mark.parametrize("year", sorted(STATUTE))
@@ -138,20 +166,38 @@ def test_ni_class_2_matches_statute_at_every_threshold():
     assert_invariants(THRESHOLD_PROFITS + spread + [60_000.0, 1_000_000.0])
 
 
+def test_ni_class_2_tests_thresholds_on_profits_after_capital_allowances():
+    # Gross profits set so that profit less capital allowances lands on, and
+    # either side of, every threshold s.11 has used.
+    assert_invariants(
+        [
+            (relevant + allowances, allowances)
+            for relevant in THRESHOLD_PROFITS
+            for allowances in CAPITAL_ALLOWANCES[1:]
+        ]
+    )
+
+
 @PROPERTY_SETTINGS
 @given(
     st.lists(
-        st.one_of(
-            st.floats(0, 200_000, allow_nan=False, allow_infinity=False),
-            st.integers(0, 200_000).map(float),
-            st.sampled_from(THRESHOLD_PROFITS),
+        st.tuples(
+            st.one_of(
+                st.floats(0, 200_000, allow_nan=False, allow_infinity=False),
+                st.integers(0, 200_000).map(float),
+                st.sampled_from(THRESHOLD_PROFITS),
+            ),
+            st.one_of(
+                st.sampled_from(CAPITAL_ALLOWANCES),
+                st.integers(0, 20_000),
+            ),
         ),
         min_size=1,
         max_size=24,
     )
 )
-def test_ni_class_2_properties(profits_list):
-    assert_invariants(profits_list)
+def test_ni_class_2_properties(cases):
+    assert_invariants(cases)
 
 
 def test_2023_annual_maximum_uses_the_2023_24_class_2_rate():

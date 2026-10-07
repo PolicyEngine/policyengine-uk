@@ -132,3 +132,88 @@
     self_employment_income: 60_000
   output:
     ni_class_2: 0
+
+# Relevant profits (s.11(3)) are the profits on which Class 4 is payable
+# under s.15, computed under Schedule 2: after capital allowances (CAA 2001
+# s.247), the trading allowance (ITTOIA 2005 s.783AI) and loss relief (Sch 2
+# para 3). The thresholds are tested on those profits, not on
+# self_employment_income.
+- name: NI Class 2 - 2023-24, capital allowances take profits to the lower profits threshold.
+  period: 2023
+  input:
+    self_employment_income: 13_570
+    capital_allowances: 1_000
+  output:
+    # 13,570 - 1,000 = 12,570, which does not exceed £12,570.
+    ni_class_4_profits: 12_570
+    ni_class_2: 0
+
+- name: NI Class 2 - 2023-24, capital allowances leave profits above the lower profits threshold.
+  period: 2023
+  input:
+    self_employment_income: 13_571
+    capital_allowances: 1_000
+  output:
+    ni_class_4_profits: 12_571
+    ni_class_2: 3.45 * 52
+
+- name: NI Class 2 - 2023-24, the trading allowance takes profits below the lower profits threshold.
+  period: 2023
+  input:
+    # No expenses, so the £1,000 allowance is deducted from receipts instead.
+    self_employment_gross_receipts: 13_000
+    self_employment_income: 13_000
+  output:
+    ni_class_4_profits: 12_000
+    ni_class_2: 0
+
+- name: NI Class 2 - 2023-24, a loss brought forward takes profits below the lower profits threshold.
+  period: 2023
+  input:
+    self_employment_income:
+      2022: 0
+      2023: 13_000
+    trading_loss:
+      2022: 1_000
+      2023: 0
+  output:
+    ni_class_4_losses_brought_forward: 1_000
+    ni_class_4_profits: 12_000
+    ni_class_2: 0
+
+- name: NI Class 2 - 2022-23, capital allowances take profits below the lower profits threshold.
+  period: 2022
+  input:
+    self_employment_income: 12_500
+    capital_allowances: 1_000
+  output:
+    # 11,500 does not exceed £11,908.
+    ni_class_4_profits: 11_500
+    ni_class_2: 0
+
+- name: NI Class 2 - 2021-22, capital allowances take profits below the small profits threshold.
+  period: 2021
+  input:
+    self_employment_income: 7_514
+    capital_allowances: 1_000
+  output:
+    ni_class_4_profits: 6_514
+    ni_class_2: 0
+
+- name: NI Class 2 - 2021-22, capital allowances leave profits at the small profits threshold.
+  period: 2021
+  input:
+    self_employment_income: 7_515
+    capital_allowances: 1_000
+  output:
+    ni_class_4_profits: 6_515
+    ni_class_2: 3.05 * 52
+
+- name: NI Class 2 - 2015-16, the year's own trading loss takes profits below the small profits threshold.
+  period: 2015
+  input:
+    self_employment_income: 6_464
+    trading_loss: 500
+  output:
+    ni_class_4_profits: 5_964
+    ni_class_2: 0
