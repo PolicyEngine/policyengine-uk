@@ -170,7 +170,7 @@ def calculate(population):
         people[name] = {"age": {YEAR: 70}}
         benunits[f"b{i}"] = {
             "members": [name],
-            "BRMA_LHA_rate": {YEAR: unit["lha_rate"]},
+            "housing_benefit_LHA_rate": {YEAR: unit["lha_rate"]},
             "housing_benefit_applicable_amount": {YEAR: unit["applicable_amount"]},
             "housing_benefit_applicable_income": {YEAR: unit["income"]},
             "housing_benefit_non_dep_deductions": {YEAR: unit["non_dep_deductions"]},
@@ -188,7 +188,7 @@ def calculate(population):
         for variable in [
             "housing_benefit_entitlement",
             "benunit_rent",
-            "BRMA_LHA_rate",
+            "housing_benefit_LHA_rate",
             "LHA_cap",
             "LHA_eligible",
             "housing_benefit_applicable_amount",
@@ -231,7 +231,9 @@ def test_bounds_closed_form_and_differential(population):
     # LHA tenants are exactly the private renters here.
     assert np.array_equal(lha, tenures == "RENT_PRIVATELY")
     assert np.allclose(
-        values["LHA_cap"], np.minimum(rent, values["BRMA_LHA_rate"]), atol=TOLERANCE
+        values["LHA_cap"],
+        np.minimum(rent, values["housing_benefit_LHA_rate"]),
+        atol=TOLERANCE,
     )
 
     # 1. Bounds.
@@ -357,7 +359,7 @@ def end_to_end(population):
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
-            "BRMA_LHA_rate": {YEAR: unit["lha_rate"]},
+            "housing_benefit_LHA_rate": {YEAR: unit["lha_rate"]},
         }
         household_members = list(names)
         if unit["non_dependant_earnings"] is not None:
@@ -384,7 +386,7 @@ def end_to_end(population):
             "housing_benefit",
             "housing_benefit_eligible",
             "benunit_rent",
-            "BRMA_LHA_rate",
+            "housing_benefit_LHA_rate",
             "LHA_cap",
             "LHA_eligible",
             "housing_benefit_applicable_amount",
@@ -424,5 +426,5 @@ def test_end_to_end_pension_age_housing_benefit(population):
     eligible = values["housing_benefit_eligible"].astype(bool)
     assert np.allclose(hb[eligible], expected[eligible], atol=TOLERANCE), population
     assert np.all(hb[~eligible] == 0)
-    lha_limit = np.minimum(rent, values["BRMA_LHA_rate"])
+    lha_limit = np.minimum(rent, values["housing_benefit_LHA_rate"])
     assert np.all(hb[lha] <= lha_limit[lha] + TOLERANCE), population

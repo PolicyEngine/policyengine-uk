@@ -34,7 +34,9 @@ class uc_childcare_work_condition(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        claimant = person("is_uc_claimant", period)
+        # The claimant and partner (at most two members), never a dependant
+        # or a further member flagged as a claimant.
+        claimant = person("is_uc_assessed_claimant", period)
         in_paid_work = person("in_work", period) | person(
             "uc_childcare_treated_as_in_paid_work", period
         )

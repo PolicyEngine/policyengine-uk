@@ -68,7 +68,7 @@ The government announced cost of living payments: [£650 for means-tested benefi
 
 ### Energy Price Guarantee
 
-Following the energy crisis, the government introduced an [Energy Price Guarantee capping typical household bills at £2,500](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/ofgem/energy_price_guarantee.yaml#L12-L18) in fiscal year 2022-23.
+Following the energy crisis, the government introduced an [Energy Price Guarantee capping typical household bills at £2,500](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/ofgem/energy_price_guarantee.yaml) in fiscal year 2022-23.
 
 ## 2021 reforms
 

@@ -1,5 +1,5 @@
 description: >-
-  While this parameter is true, LHA rates are frozen in cash terms at the level set in the most recent year in which it was false. When this parameter is false, values are set at the (default 30th) BRMA percentile of that year's rents. Values from 2027 onward reflect announced rather than enacted policy: no Modification Order has been made beyond 2026-27, and the Autumn Statement 2023 costing maintains the April 2024 uplift in cash terms thereafter.
+  While this parameter is true, LHA rates are frozen in cash terms at the level determined in the most recent year in which it was false. When it is false, rates are determined from that year's percentile rents (the 30th percentile by default), the national maximum, the anomalous-rate rule and, from April 2024, the March 2020 minimum. A year here is the fiscal year from April, so the value from 6 April 2025 governs the rates in force from April 2025. Determinations before April 2020 are taken as published, since they followed CPI and 1% uprating and then the 2016 to 2020 freeze with targeted affordability uplifts, so this parameter governs determinations from April 2020 onward. Values from 2027 onward reflect announced rather than enacted policy: no Modification Order has been made beyond 2026-27, and the Autumn Statement 2023 costing maintains the April 2024 uplift in cash terms thereafter.
 values:
   2015-01-01: false
   2020-04-06:
@@ -8,6 +8,8 @@ values:
       reference:
         - title: The Social Security (Coronavirus) (Further Measures) Regulations 2020, reg. 4 (April 2020 reset to the 30th percentile)
           href: https://www.legislation.gov.uk/uksi/2020/371/regulation/4/made
+        - title: The Social Security (Coronavirus) (Further Measures) Regulations (Northern Ireland) 2020, reg. 4
+          href: https://www.legislation.gov.uk/nisr/2020/53/regulation/4/made
   2021-04-06:
     value: true
     metadata:
@@ -18,12 +20,20 @@ values:
           href: https://www.legislation.gov.uk/uksi/2021/1380/made
         - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Modification) Order 2023 (determinations in 2023)
           href: https://www.legislation.gov.uk/uksi/2023/6/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2021
+          href: https://www.legislation.gov.uk/nisr/2021/14/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment and Modification) Regulations (Northern Ireland) 2022
+          href: https://www.legislation.gov.uk/nisr/2022/15/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2023
+          href: https://www.legislation.gov.uk/nisr/2023/4/made
   2024-04-06:
     value: false
     metadata:
       reference:
         - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2024 (April 2024 reset to the 30th percentile)
           href: https://www.legislation.gov.uk/uksi/2024/11/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment) Regulations (Northern Ireland) 2024
+          href: https://www.legislation.gov.uk/nisr/2024/3/made
   2025-04-06:
     value: true
     metadata:
@@ -32,6 +42,10 @@ values:
           href: https://www.legislation.gov.uk/uksi/2025/5/made
         - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Modification) Order 2026
           href: https://www.legislation.gov.uk/uksi/2026/5/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2025
+          href: https://www.legislation.gov.uk/nisr/2025/1/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Modification) Regulations (Northern Ireland) 2026
+          href: https://www.legislation.gov.uk/nisr/2026/2/made
         - title: Autumn Statement 2023 policy costings (April 2024 uplift maintained in cash terms thereafter)
           href: https://assets.publishing.service.gov.uk/media/655d0a83544aea000dfb321d/Autumn_Statement_2023_Policy_Costings_-_Final.pdf#page=16
 metadata:

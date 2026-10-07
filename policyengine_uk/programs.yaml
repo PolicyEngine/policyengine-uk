@@ -549,8 +549,8 @@ programs:
     coverage: UK
     parameter_prefix: gov.ofgem
     verified_start_year: 2022
-    verified_end_year: 2023
-    notes: Temporary program, ended October 2023
+    verified_end_year: 2024
+    notes: Temporary program, ended 31 March 2024
 
   # --- Scotland programs ---
   - id: scottish_income_tax

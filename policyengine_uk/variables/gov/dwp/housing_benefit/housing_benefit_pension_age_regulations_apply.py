@@ -22,7 +22,7 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         "working-age regulations. The model has no lawful such awards (tax "
         "credit migrants under SI 2014/1230 reg 60A are not modelled), and its "
         "Universal Credit eligibility test also needs a claimant or partner "
-        "under State Pension age, so the pension-age regulations are the right "
+        "under the qualifying age, so the pension-age regulations are the right "
         "result."
     )
     definition_period = YEAR
@@ -35,9 +35,11 @@ class housing_benefit_pension_age_regulations_apply(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        # is_SP_age stands in for the qualifying age for State Pension Credit,
-        # as elsewhere in the model.
-        over_qualifying_age = person("is_SP_age", period)
+        # HB (SPC) Regs 2006 reg 5(1): "has attained the qualifying age for
+        # state pension credit"; reg 5(2) excludes the benefits below.
+        over_qualifying_age = person(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
         attained_qualifying_age = benunit.any(claimant_or_partner & over_qualifying_age)
         # Universal Credit needs a claimant or partner under the qualifying age
         # (WRA 2012 s.4(1)(b); UC Regs 2013 reg 3(2)(a)), except for tax credit

@@ -34,8 +34,9 @@ Invariants, for any generated population of families:
    every year from 2015 to 2030, at working and pension age: £5, £10 or £25
    (SI 2006/213 Sch 4 paras 4, 7, 10; SI 2006/214 Sch 4 paras 2, 7), plus
    £17.10 (£37.10 in 2020, SI 2020/371 reg 5) where a work condition holds,
-   for families with enough earnings and no Income Support, income-based JSA
-   or income-related ESA (whose working-age earnings are all disregarded).
+   for families with enough earnings and on none of Universal Credit, Income
+   Support, income-based JSA or income-related ESA (whose working-age
+   earnings are all disregarded, Sch 4 para 12).
 """
 
 import numpy as np
@@ -129,6 +130,7 @@ def situation(units, year, earnings_bump=0.0, no_income_related_benefits=False):
         if no_income_related_benefits:
             for benefit in ("income_support", "jsa_income", "esa_income"):
                 benunits[f"b{i}"][benefit] = {year: 0.0}
+            benunits[f"b{i}"]["would_claim_uc"] = {year: False}
         households[f"h{i}"] = {
             "members": names,
             "country": {year: unit["nation"]},
