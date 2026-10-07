@@ -231,3 +231,86 @@
         region: NORTHERN_IRELAND
   output:
     council_tax_discount_rate: 0
+
+- name: A child alongside one adult does not count as a resident, so the 25% discount applies
+  # LGFA 1992 s.6(5): a resident is an individual aged 18 or over.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      adult:
+        age: 40
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [adult, child]
+    households:
+      household:
+        members: [adult, child]
+        region: SOUTH_EAST
+        local_authority: MAIDSTONE
+        council_tax_band: D
+  output:
+    council_tax_discount_rate: 0.25
+    simulated_council_tax_less_discounts: 1876.94
+
+- name: A single adult in Cardiff pays 75% of the Band D liability
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: WALES
+        local_authority: CARDIFF
+        council_tax_band: D
+  output:
+    simulated_council_tax: 2013.18
+    council_tax_discount_rate: 0.25
+    simulated_council_tax_less_discounts: 1509.89
+
+- name: A single adult in Edinburgh pays 75% of the Band D liability
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        region: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax_band: D
+  output:
+    simulated_council_tax: 1626.05
+    council_tax_discount_rate: 0.25
+    simulated_council_tax_less_discounts: 1219.54
+
+- name: A dwelling with no resident in Scotland received twice the appropriate percentage before April 2005
+  # Section 79(2)(a) applied until its repeal with effect from 1 April 2005 (S.S.I. 2005/51 reg. 2).
+  period: 2004
+  absolute_error_margin: 0.001
+  input:
+    people:
+      person_1:
+        age: 10
+    benunits:
+      benunit:
+        members: [person_1]
+    households:
+      household:
+        members: [person_1]
+        region: SCOTLAND
+  output:
+    council_tax_discount_rate: 0.5

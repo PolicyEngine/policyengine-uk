@@ -19,8 +19,14 @@ class simulated_council_tax_less_discounts(Variable):
         "equivalent billing-authority determinations, the section 11B and 11C "
         "long-term-empty and second-home premiums and their Welsh "
         "counterparts in sections 12A and 12B, and Council Tax Reduction.\n\n"
-        "Disregarded-person categories are not yet modelled, so the discount "
-        "is understated for households containing disregarded adults; see "
+        "PARTIAL: this is not the complete net liability. Disregarded-person "
+        "categories (students, carers, the severely mentally impaired and "
+        "others) are not yet modelled, so every adult counts as a resident "
+        "and the discount is understated for households containing "
+        "disregarded adults: two adults with one disregarded get no discount "
+        "here instead of 25 per cent, and all-disregarded households get none "
+        "instead of 50 per cent. Aggregates of this variable are therefore an "
+        "upper bound on liability after discounts; see "
         "council_tax_discount_rate."
     )
     definition_period = YEAR
