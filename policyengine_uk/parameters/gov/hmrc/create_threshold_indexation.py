@@ -59,8 +59,11 @@ the last year of ``gov.economic_assumptions.indices.september_cpi_uprating``,
 the horizon over which every other parameter is uprated. Each is keyed to
 1 January of the year the tax year starts, as core uprating keys its values,
 so the unconverted ``parameters.baseline`` copy reads the same amount for a
-year as fiscal-year conversion gives ``parameters.gov``. These parameters carry
-no ``uprating`` metadata, so core uprating does not extend them.
+year as fiscal-year conversion gives ``parameters.gov``. Stated values,
+including a scenario's overrides, keep their own dates, so that copy read at
+1 January lags them by a year, as it does every April-dated parameter. These
+parameters carry no ``uprating`` metadata, so core uprating does not extend
+them.
 
 The values are computed when the parameters are processed. A reform passed as
 a dict edits the processed parameters, so changing one of these parameters

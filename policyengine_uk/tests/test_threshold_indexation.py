@@ -49,7 +49,8 @@ Invariants:
    so the unconverted ``parameters.baseline`` copy reads the same amounts.
 8. Scenarios: a different September CPI moves the PA, BRL and NICs
    thresholds together by the statute; with September CPI <= 0, or with no
-   economic assumptions, they stay at their frozen levels.
+   economic assumptions, they stay at their frozen levels; a reprocessed
+   override of the PA or BRL keeps the NICs thresholds aligned with it.
 9. No double indexing: none of the seven parameters carries ``uprating``
    metadata, so core uprating does not extend them.
 10. The September CPI series: each April's rise is the previous September's
@@ -71,6 +72,7 @@ from policyengine_core.parameters import ParameterNode
 
 import policyengine_uk
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.model_api import Scenario
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     september_cpi_uprating_rate,
 )
@@ -656,6 +658,41 @@ def test_a_basic_rate_limit_above_the_additional_rate_threshold_is_kept():
         assert values["basic_rate_limit"] == float(brl), year
         assert values["upper_profits_limit"] == float(pa + brl), year
     assert thresholds(system, 2039)["basic_rate_limit"] > 125_140
+
+
+@pytest.mark.parametrize(
+    "path, name, value",
+    [
+        (
+            "gov.hmrc.income_tax.allowances.personal_allowance.amount",
+            "personal_allowance",
+            15_000,
+        ),
+        ("gov.hmrc.income_tax.rates.uk[1].threshold", "basic_rate_limit", 40_000),
+    ],
+)
+def test_nics_thresholds_follow_a_reprocessed_income_tax_override(path, name, value):
+    # A scenario's parameter_changes reset and reprocess the parameters, so
+    # the aligned NICs thresholds follow an override of the PA or BRL.
+    scenario = Scenario(
+        parameter_changes={path: {"2031": value}}, applied_before_data_load=True
+    )
+    situation = {
+        "people": {"person": {"age": {2031: 40}}},
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {"household": {"members": ["person"]}},
+    }
+    system = Simulation(situation=situation, scenario=scenario).tax_benefit_system
+    assert thresholds(system, 2031)[name] == value
+    for year in range(2031, 2041):
+        values = thresholds(system, year)
+        pa, brl = values["personal_allowance"], values["basic_rate_limit"]
+        assert values["lower_profits_limit"] == pytest.approx(pa, abs=EXACT), year
+        assert values["upper_profits_limit"] == pytest.approx(pa + brl, abs=EXACT)
+        assert abs(52 * values["primary_threshold"] - pa) <= WEEKLY_ROUNDING, year
+        assert (
+            abs(52 * values["upper_earnings_limit"] - (pa + brl)) <= WEEKLY_ROUNDING
+        ), year
 
 
 def test_thresholds_stay_frozen_without_economic_assumptions():
