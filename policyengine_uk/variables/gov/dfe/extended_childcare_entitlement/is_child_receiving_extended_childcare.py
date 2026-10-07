@@ -4,29 +4,13 @@ from policyengine_uk.model_api import *
 class is_child_receiving_extended_childcare(Variable):
     value_type = bool
     entity = Person
-    label = "child is eligible for extended childcare entitlement"
+    label = "child is receiving extended childcare entitlement"
+    documentation = (
+        "Whether this child gets working parent hours beyond any universal or "
+        "targeted hours. A 3- or 4-year-old whose family uses no more than the "
+        "universal 15 hours a week is on the universal entitlement only."
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        # Get child's age
-        age = person("age", period)
-
-        # Get the parameters for extended childcare entitlement hours by age
-        p = parameters(period).gov.dfe.extended_childcare_entitlement
-
-        # Check if hours > 0 for this age (using the hours parameter)
-        hours_by_age = p.hours.calc(age)
-
-        qualifying_child = person(
-            "extended_childcare_entitlement_qualifying_child", period
-        )
-
-        # Get the benefit unit's extended childcare entitlement amount
-        benunit = person.benunit
-        entitlement_amount = benunit("extended_childcare_entitlement", period)
-
-        # Child is eligible if:
-        # 1. They are a qualifying child of working parents AND
-        # 2. Hours > 0 for this age AND
-        # 3. Benefit unit's entitlement amount > 0
-        return qualifying_child & (hours_by_age > 0) & (entitlement_amount > 0)
+        return person("extended_childcare_entitlement_per_child", period) > 0

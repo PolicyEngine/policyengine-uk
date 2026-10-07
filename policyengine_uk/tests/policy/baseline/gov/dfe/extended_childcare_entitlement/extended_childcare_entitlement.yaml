@@ -1,20 +1,29 @@
-- name: Eligible for 30 hours - All conditions met
+# extended_childcare_entitlement is the working parent hours above the universal
+# (3-4) and targeted (2) hours each child also gets: Childcare Act 2016 s.1(6)(a)
+# counts those hours towards the 30. Every child here is in England (the default)
+# and claims the universal entitlement (the default), so a 3- or 4-year-old's
+# universal 570 hours a year come off the 1,140 the parameter gives. Rates per
+# hour: 2025 £8.486995 (age 2) and £6.026996 (3-4); 2026 £8.775556 (age 2) and
+# £6.231916 (3-4).
+- name: 3-year-old gets the 15 working parent hours above the universal 15
   period: 2025
-  absolute_error_margin: 3
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
-        age: 3  # Age 3+ gets 30 hours
+        age: 3
     benunits:
       benunit1:
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6872.805
+    # (1,140 - 570) x 6.026996
+    extended_childcare_entitlement: 3435.39
+    universal_childcare_entitlement: 3435.39
 
 - name: Eligible for 15 hours - 2 year old (evaluated at Jan 1, 2025 before Sept expansion)
   period: 2025
-  absolute_error_margin: 3
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
@@ -24,7 +33,8 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4839.016
+    # 15 x 38 x 8.486995; no targeted hours, so nothing comes off.
+    extended_childcare_entitlement: 4837.59
 
 - name: Not eligible (one condition not met)
   period: 2025
@@ -42,19 +52,20 @@
 
 - name: Eligible for mixed hours - Family with multiple children
   period: 2025
-  absolute_error_margin: 6
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
         age: 2  # 15 hours at Jan 1, 2025
       child2:
-        age: 3  # 30 hours
+        age: 3  # 30 hours, 15 of them universal
     benunits:
       benunit1:
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 11711.821
+    # 570 x 8.486995 + (1,140 - 570) x 6.026996
+    extended_childcare_entitlement: 8272.97
 
 - name: Not eligible - Family with multiple children but conditions not met
   period: 2025
@@ -74,22 +85,23 @@
 
 - name: Eligible with one working parent and one disabled parent
   period: 2025
-  absolute_error_margin: 9
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
         age: 2  # 15 hours at Jan 1, 2025
       child2:
-        age: 3  # 30 hours
+        age: 3  # 30 hours, 15 of them universal
       child3:
-        age: 3  # 30 hours
+        age: 3  # 30 hours, 15 of them universal
     benunits:
       benunit1:
         members: [child1, child2, child3]
         family_type: COUPLE_WITH_CHILDREN
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 18584.626
+    # 570 x 8.486995 + 2 x (1,140 - 570) x 6.026996
+    extended_childcare_entitlement: 11708.36
 
 - name: No expenses for zero hours
   period: 2025
@@ -107,7 +119,7 @@
 
 - name: Child using fewer hours than maximum entitlement
   period: 2025
-  absolute_error_margin: 2
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
@@ -118,29 +130,33 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 4581.87  # 20 hours * 38 weeks * £6.07 per hour (2025 rate)
+    # (20 x 38 - 570) x 6.026996: 190 working parent hours on top of the
+    # universal 570.
+    extended_childcare_entitlement: 1145.13
+    universal_childcare_entitlement: 3435.39
 
 - name: Child using fewer hours than maximum entitlement - multiple children
   period: 2025
-  absolute_error_margin: 2
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
         age: 2  # Can get 15 hours at Jan 1, 2025, but only using 10
         max_free_entitlement_hours_used: 10
       child2:
-        age: 3
+        age: 3  # Uses 15 hours, all of them universal
         max_free_entitlement_hours_used: 15
     benunits:
       benunit1:
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6662.413
+    # 10 x 38 x 8.486995 + max(0, 15 x 38 - 570) x 6.026996
+    extended_childcare_entitlement: 3225.06
 
 - name: Benefit unit maximum hours cap applied
   period: 2025
-  absolute_error_margin: 5
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
@@ -153,14 +169,14 @@
       benunit1:
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
-        maximum_extended_childcare_hours_usage: 40 
+        maximum_extended_childcare_hours_usage: 40
   output:
-    extended_childcare_entitlement: 13745.609
+    # The cap applies to each child: 2 x (1,140 - 570) x 6.026996
+    extended_childcare_entitlement: 6870.78
 
-
-- name: Benefit unit without maximum hours cap applied
+- name: A family cap below the universal hours leaves the universal hours whole
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
@@ -170,14 +186,33 @@
       benunit1:
         members: [child1]
         extended_childcare_entitlement_eligible: true
-        maximum_extended_childcare_hours_usage: 10 
+        maximum_extended_childcare_hours_usage: 10
   output:
-    extended_childcare_entitlement: 2290.935
+    # 10 x 38 = 380 hours is under the universal 570, so no working parent
+    # hours, and the universal 570 stay.
+    extended_childcare_entitlement: 0
+    universal_childcare_entitlement: 3435.39
 
+- name: A family cap above 15 adds the hours between 15 and the cap
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child1:
+        age: 3
+        max_free_entitlement_hours_used: 30
+    benunits:
+      benunit1:
+        members: [child1]
+        extended_childcare_entitlement_eligible: true
+        maximum_extended_childcare_hours_usage: 18
+  output:
+    # (18 x 38 - 570) x 6.026996
+    extended_childcare_entitlement: 687.08
 
 - name: Benefit unit without maximum hours cap applied with 3 years old child
   period: 2025
-  absolute_error_margin: 2
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
@@ -189,11 +224,13 @@
         extended_childcare_entitlement_eligible: true
         maximum_extended_childcare_hours_usage: 18
   output:
-    extended_childcare_entitlement: 3436.402
+    # The child uses 15 hours, all of them universal.
+    extended_childcare_entitlement: 0
+    universal_childcare_entitlement: 3435.39
 
 - name: Eligible for 30 hours - 2 year old after September 2025 expansion
   period: 2026
-  absolute_error_margin: 3
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
@@ -203,29 +240,33 @@
         members: [child1]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 10004.133
+    # 30 x 38 x 8.775556; no targeted hours.
+    extended_childcare_entitlement: 10004.13
 
 - name: Eligible for 30 hours - Family with multiple 2-year-olds after expansion
   period: 2026
-  absolute_error_margin: 6
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
         age: 2  # 30 hours after September 2025
       child2:
-        age: 3  # 30 hours
+        age: 3  # 30 hours, 15 of them universal
     benunits:
       benunit1:
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 17108.518
+    # 1,140 x 8.775556 + (1,140 - 570) x 6.231916
+    extended_childcare_entitlement: 13556.33
+
 # SI 2022/1134 reg 13(2)(b): a child looked after by a local authority is not a
-# qualifying child, so only the other three-year-old's 30 hours count
-# (the same £6,872.805 as the single three-year-old above).
+# qualifying child, so only the other three-year-old's working parent hours
+# count (the same £3,435.39 as the single three-year-old above). The
+# looked-after child keeps the universal hours.
 - name: A looked-after child's hours do not count
   period: 2025
-  absolute_error_margin: 3
+  absolute_error_margin: 0.05
   input:
     people:
       child1:
@@ -238,4 +279,5 @@
         members: [child1, child2]
         extended_childcare_entitlement_eligible: true
   output:
-    extended_childcare_entitlement: 6872.805
+    extended_childcare_entitlement: 3435.39
+    universal_childcare_entitlement: [3435.39, 3435.39]

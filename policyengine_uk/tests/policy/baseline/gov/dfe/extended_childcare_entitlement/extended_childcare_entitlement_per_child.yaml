@@ -1,0 +1,104 @@
+# Each child's working parent hours are the part of its funded hours above the
+# universal (3-4) or targeted (2) hours: Childcare Act 2016 s.1(6)(a), and DfE's
+# statutory guidance (April 2026) para A1.11 for a 2-year-old eligible for both.
+# Rates per hour: 2025 £8.486995 (age 2); 2026 £11.891514 (under 2),
+# £8.775556 (age 2) and £6.231916 (3-4).
+- name: A 2-year-old eligible for both gets 15 targeted plus 15 working parent hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+        targeted_childcare_entitlement_eligible: true
+  output:
+    # 570 x 8.775556 each
+    targeted_childcare_entitlement: 5002.07
+    extended_childcare_entitlement_per_child: 5002.07
+    extended_childcare_entitlement: 5002.07
+
+- name: Before September 2025 a 2-year-old eligible for both gets the targeted 15 hours
+  period: 2025
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+        targeted_childcare_entitlement_eligible: true
+  output:
+    # The working parent total (15 hours at 1 January 2025) is no more than
+    # the targeted 570 hours: 570 x 8.486995 targeted, nothing on top.
+    targeted_childcare_entitlement: 4837.59
+    extended_childcare_entitlement_per_child: 0
+
+- name: A 1-year-old has no universal or targeted hours to come off
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+  output:
+    # 30 x 38 x 11.891514
+    extended_childcare_entitlement_per_child: 13556.33
+
+- name: A family not claiming the universal hours gets the whole 30 as working parent hours
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+        would_claim_universal_childcare: false
+  output:
+    # 30 x 38 x 6.231916; universal is 0, so nothing comes off.
+    universal_childcare_entitlement: 0
+    extended_childcare_entitlement_per_child: 7104.38
+
+- name: Nothing for a child in a family that is not eligible
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: false
+  output:
+    extended_childcare_entitlement_per_child: 0
+
+- name: Adults get nothing
+  period: 2026
+  absolute_error_margin: 0.05
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+        extended_childcare_entitlement_eligible: true
+  output:
+    # (1,140 - 570) x 6.231916 for the child only
+    extended_childcare_entitlement_per_child: [0, 3552.19]
+    extended_childcare_entitlement: 3552.19
