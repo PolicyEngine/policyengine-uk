@@ -39,10 +39,14 @@ claimant alone with the children ("solo"). Invariants:
    model's, not this change's. The second exception is also met where
    Housing Benefit falls under the pension-age regulations, which the model
    applies to a family with a member over the qualifying age for State
-   Pension Credit and no Universal Credit award. A single claim's lower
-   amounts can leave no award where joint claimants have one, so that
-   exception is compared only for families the pension-age route reaches in
-   neither calculation (see off_pension_age_route).
+   Pension Credit and no Universal Credit award. Whether there is an award
+   can differ between the single claim and the stripped calculation, either
+   way round: the single claim has a single claimant's amounts (reg. 36(3))
+   but keeps the work allowance the other member's limited capability gives
+   (reg. 22(3)), which stripping it removes. So each calculation's second
+   exception is checked against its own inputs (the route, or a claimant's
+   AFCS or contributory ESA), and the two are compared only for families
+   the pension-age route reaches in neither (see off_pension_age_route).
 6. Regulation 3(3)(a): with the flag left to its formula, a member of a
    couple under 18 is the ineligible partner exactly when none of the
    generated regulation 8(1) circumstances applies to them (limited
@@ -52,8 +56,10 @@ claimant alone with the children ("solo"). Invariants:
 7. A flag that marks no single claim (a single adult, or both members of a
    couple) leaves every rule Housing Benefit shares (the cap rate, the cap
    exceptions, the shared accommodation test) as it was without the flag.
-   Such a flag leaves no one able to claim Universal Credit, so the
-   pension-age route is again held fixed for the second cap exception.
+   Such a flag leaves no one able to claim Universal Credit, so for the
+   second cap exception each calculation is again checked against its own
+   inputs, and families on the pension-age route in either calculation are
+   left out of the comparison (see off_pension_age_route).
 
 Each property also runs on EXAMPLE_FAMILIES, built so that the cases the
 properties are about occur, each in a family of its own: an other member
@@ -343,8 +349,9 @@ def off_pension_age_route(*calculations):
     age exception, SI 2014/1230 reg. 60C). The model takes that route for a
     family with a claimant or partner over the qualifying age for State
     Pension Credit and no Universal Credit award. Whether there is an award
-    differs between the calculations: a single claim has a single claimant's
-    amounts (reg. 36(3)), and a flag on both members leaves no one who can
+    can differ between the calculations, either way round: a single claim has
+    a single claimant's amounts (reg. 36(3)) but the joint claimants' work
+    allowance (reg. 22(3)), and a flag on both members leaves no one who can
     claim. So comparisons of that exception across calculations exclude the
     families the route reaches in any of them. Within each calculation the
     route lifts the cap wherever it applies.
@@ -352,6 +359,28 @@ def off_pension_age_route(*calculations):
     for values in calculations:
         assert np.all(values["is_benefit_cap_exempt_other"][values[PENSION_AGE_ROUTE]])
     return ~np.logical_or.reduce([values[PENSION_AGE_ROUTE] for values in calculations])
+
+
+def exempt_other_from_inputs(families, values, members):
+    """is_benefit_cap_exempt_other as the inputs give it, with no mask.
+
+    The pension-age route, or AFCS or contributory ESA of one of ``members``
+    (reg. 83(1)(a) and (e); the model takes any contributory ESA as including
+    the support component). ``members`` are the people whose own benefits
+    count: the claimant alone on a single claim, in a stripped calculation
+    (the other member's benefits removed) or with no partner, and both
+    members of a couple neither of whom is excluded.
+    """
+    own = np.array(
+        [
+            any(
+                family[member]["afcs"] > 0 or family[member]["esa_contrib"] > 0
+                for member in members
+            )
+            for family in families
+        ]
+    )
+    return values[PENSION_AGE_ROUTE] | own
 
 
 def calculate(families, year, mode, extra=()):
@@ -515,6 +544,12 @@ def test_benefit_cap_rate_and_exceptions(families, year):
         stripped["is_benefit_cap_exempt_health_disability"],
         err_msg=f"is_benefit_cap_exempt_health_disability: {families}",
     )
+    for values in [single, stripped]:
+        np.testing.assert_array_equal(
+            values["is_benefit_cap_exempt_other"],
+            exempt_other_from_inputs(families, values, ["claimant"]),
+            err_msg=f"is_benefit_cap_exempt_other: {families}",
+        )
     off_route = off_pension_age_route(single, stripped)
     np.testing.assert_array_equal(
         single["is_benefit_cap_exempt_other"][off_route],
@@ -583,6 +618,18 @@ def test_a_flag_marking_no_single_claim_leaves_shared_rules_alone(families, year
     assert not np.any(both["uc_member_of_couple_claims_as_single_person"]), families
     assert not np.any(both["is_uc_eligible"]), families
     assert not np.any(alone_flagged["is_uc_eligible"]), families
+    couple = ["claimant", "partner"]
+    for values, members in [
+        (both, couple),
+        (joint, couple),
+        (alone_flagged, ["claimant"]),
+        (solo, ["claimant"]),
+    ]:
+        np.testing.assert_array_equal(
+            values["is_benefit_cap_exempt_other"],
+            exempt_other_from_inputs(families, values, members),
+            err_msg=f"is_benefit_cap_exempt_other: {families}",
+        )
     for flagged, unflagged in [(both, joint), (alone_flagged, solo)]:
         off_route = off_pension_age_route(flagged, unflagged)
         for variable in shared:
