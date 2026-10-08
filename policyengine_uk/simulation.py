@@ -18,6 +18,7 @@ from policyengine_core.tracers import FullTracer, SimpleTracer
 
 from policyengine_uk.utils.parameters import (
     check_parameter_not_removed,
+    reblend_dated_reforms,
     uk_fiscal_year_period,
 )
 
@@ -249,6 +250,13 @@ class Simulation(CoreSimulation):
         clone._user_input_keys = set(getattr(self, "_user_input_keys", ()))
         clone._user_input_contexts = list(getattr(self, "_user_input_contexts", ()))
         return clone
+
+    def apply_reform(self, reform: Union[tuple, Reform]):
+        # A reform dated part-way through a year on a fiscal-year-blended
+        # parameter is re-averaged over the model year (see
+        # reblend_dated_reforms).
+        with reblend_dated_reforms(self.tax_benefit_system):
+            super().apply_reform(reform)
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)

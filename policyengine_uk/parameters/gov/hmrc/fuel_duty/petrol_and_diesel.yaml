@@ -4,7 +4,9 @@ description: The UK levies fuel duty on petrol and diesel at this rate per litre
 # year (6 April to 5 April) when parameters are converted to annual values,
 # so a model year carries every rate in force during it in proportion to its
 # days. Time of day is not modelled: a 6pm change counts from the start of
-# its day.
+# its day. A reform dated part-way through a year is re-averaged the same
+# way; see "Reforms dated part-way through a year" in
+# docs/engineering/excise-duties.md.
 values:
   2010-04-01:
     value: 0.5719
