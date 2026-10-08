@@ -1,14 +1,15 @@
 # Firm-level VAT (planned)
 
 ```{warning}
-**Not yet modelled.** PolicyEngine UK currently models VAT only at the
-*household consumption* level (the `vat` variable, computed from
-consumption-category spending and rate parameters under
-`gov.hmrc.vat`). This page captures the agreed scope and roadmap for
-adding firm-level VAT and a new `Firm` entity, tracked under
+**Not yet modelled.** PolicyEngine UK models VAT only on *household
+consumption*: the `vat` variable applies `gov.hmrc.vat.standard_rate` and
+`gov.hmrc.vat.reduced_rate` to each household's standard- and reduced-rate
+spending (`full_rate_vat_consumption`, `reduced_rate_vat_consumption`), then
+grosses the result up to VAT receipts. There is no business side. This page
+sets out the scope for adding firm-level VAT and a `Firm` entity, tracked in
 [#1320](https://github.com/PolicyEngine/policyengine-uk/issues/1320) and
-[#1333](https://github.com/PolicyEngine/policyengine-uk/issues/1333). It
-mirrors the [BiK plan](./benefits-in-kind.md) pattern.
+[#1333](https://github.com/PolicyEngine/policyengine-uk/issues/1333). Both
+issues are still open (October 2026).
 ```
 
 ## Why firm-level VAT?
@@ -37,10 +38,10 @@ net liability.
    `firm_vat_registered`. Firms are linked to households for sole
    traders and partnerships (unincorporated business income flows
    already exist in the FRS) and stand alone for incorporated entities.
-2. **Registration threshold logic**: a firm is VAT-registered if
-   turnover meets or exceeds `gov.hmrc.vat.registration_threshold` (or
-   the firm has elected to register voluntarily). Threshold currently
-   £90,000 since April 2024.
+2. **Registration threshold logic**: a firm must register if its taxable
+   turnover is more than a new `gov.hmrc.vat.firm.registration_threshold`
+   parameter, or it can register voluntarily. The threshold has been
+   £90,000 since 1 April 2024.
 3. **Standard / reduced / zero-rated supply split** at the firm level,
    driven by sector-specific share parameters.
 4. **`firm_vat_on_sales`** (output VAT) and **`firm_vat_on_purchases`**
@@ -113,9 +114,9 @@ A new tree under `parameters/gov/hmrc/vat/firm/`:
 
 - `registration_threshold.yaml` — currently £90,000 from April 2024.
 - `deregistration_threshold.yaml` — currently £88,000 from April 2024.
-- `rates/standard.yaml`, `reduced.yaml`, `zero.yaml` — these already
-  exist on the household-side tree and will be referenced rather than
-  duplicated.
+- Rates: reference the existing `gov/hmrc/vat/standard_rate.yaml` and
+  `reduced_rate.yaml` rather than duplicating them. Zero-rated supplies
+  need no rate parameter.
 - `sector_supply_split/` — share parameters by industry sector for the
   standard/reduced/zero/exempt split (Phase 1.5 refinement; MVP can use
   a single national split per sector).
@@ -151,7 +152,7 @@ component sits w.r.t. our current data:
    ONS Supply and Use tables.
 3. Calibrate the panel so that summed `firm_net_vat_liability` matches
    the HMRC VAT receipts outturn for the year. This mirrors the
-   second-stage imputation pattern flagged in
+   second-stage imputation pattern discussed in
    [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621).
 4. For sole traders and partnerships, link the synthetic firm row back
    to the FRS household that owns it via self-employment income.
@@ -175,9 +176,11 @@ files (#1333) used to size each step before they are productionised.
 
 ## Open questions
 
-- Should the synthetic firm panel live in `policyengine-uk-data` (matching
-  the FRS calibration pipeline) or in this repo? Recommendation: it
-  belongs in `policyengine-uk-data`, with the rules variables here.
+- Should the synthetic firm panel live in the data pipeline or in this
+  repo? Recommendation: in the data pipeline, which for PolicyEngine UK is
+  now [Microcosm UK](https://github.com/PolicyEngine/microcosm) (it replaced
+  the Enhanced FRS build; its first certified national release is dated
+  4 October 2026), with the rules variables here.
 - Do we need to model Making Tax Digital filing-frequency mechanics, or
   is annualised liability sufficient for nowcasting purposes?
 - HMRC Datalab access for anonymised VAT returns: pursue, or stick to
@@ -187,7 +190,7 @@ files (#1333) used to size each step before they are productionised.
 
 - HMRC, [VAT rates](https://www.gov.uk/vat-rates) and [VAT registration thresholds](https://www.gov.uk/vat-registration-thresholds).
 - [Value Added Tax Act 1994](https://www.legislation.gov.uk/ukpga/1994/23/contents) — primary statute.
-- HMRC, [VAT statistics](https://www.gov.uk/government/collections/value-added-tax-vat-statistics) — annual outturn used for calibration.
+- HMRC, [VAT statistics](https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics) — annual outturn used for calibration.
 - ONS, [UK Business: Activity, Size and Location](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation) (the IDBR-based business demography release).
 - ONS, [Supply and Use tables](https://www.ons.gov.uk/economy/nationalaccounts/supplyandusetables) — intermediate consumption shares.
 - Companion analysis repo: [`policyengine/uk-vatlab`][vatlab] (#1333).
