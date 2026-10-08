@@ -1,4 +1,6 @@
-description: Standard pension-age Housing Benefit tariff income threshold.
+description: >-
+  Ordinary pension-age Housing Benefit tariff income threshold, excluding the
+  higher threshold for specified accommodation before 2 November 2009.
 metadata:
   label: Pension-age Housing Benefit tariff income threshold
   period: year
@@ -6,5 +8,22 @@ metadata:
   reference:
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 29(2)
       href: https://www.legislation.gov.uk/uksi/2006/214/regulation/29
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 reg. 27(2)
+      href: https://www.legislation.gov.uk/nisr/2006/406/regulation/27
 values:
-  2006-04-10: 10000
+  2006-04-10:
+    value: 6_000
+    metadata:
+      reference:
+        - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 29(2)(b), as made
+          href: https://www.legislation.gov.uk/uksi/2006/214/regulation/29/made
+        - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006 reg. 27(2)(b), as made
+          href: https://www.legislation.gov.uk/nisr/2006/406/regulation/27/made
+  2009-11-02:
+    value: 10_000
+    metadata:
+      reference:
+        - title: The Social Security (Deemed Income from Capital) Regulations 2009 regs. 1 and 5
+          href: https://www.legislation.gov.uk/uksi/2009/1676/made
+        - title: The Social Security (Deemed Income from Capital) Regulations (Northern Ireland) 2009 regs. 1 and 3
+          href: https://www.legislation.gov.uk/nisr/2009/262/made

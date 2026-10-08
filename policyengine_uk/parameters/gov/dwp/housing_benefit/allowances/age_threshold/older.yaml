@@ -1,11 +1,15 @@
-description: A higher Houseing Benefit allowance amount is provided for filers over this age threshold.
+description: >-
+  Inclusive age threshold for a single claimant's higher working-age Housing
+  Benefit personal allowance, subject to statutory exceptions.
 metadata:
   label: Housing benefit allowance older age threshold
   period: year
   unit: year
-  reference: 
-    - title: The Housing Benefit Regulations 2006 sec. 74
-      href: https://www.legislation.gov.uk/uksi/2006/213/made/data.pdf#page=73
+  reference:
+    - title: The Housing Benefit Regulations 2006 Schedule 3 Part 1 paragraph 1, as made
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/part/1/made
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006 Schedule 4 Part I paragraph 1
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/4
 
 values:
   2019-04-01: 25
