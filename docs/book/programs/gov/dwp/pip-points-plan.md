@@ -5,10 +5,22 @@
 and mobility **band** as a categorical input (`pip_dl_category` and
 `pip_m_category`, each `STANDARD | ENHANCED | NONE`) and multiplies by
 the published weekly rate. The **points-system** logic that determines
-which band a claimant falls into — 0–12 daily-living activities and 12
-mobility activities, scored from the legislation — is **not** modelled.
+which band a claimant falls into — ten daily-living activities and two
+mobility activities, each scored 0–12 points under the legislation — is
+**not** modelled.
 This page captures the proposed scope, tracked under
 [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
+```
+
+```{admonition} Status, October 2026
+A first step is open as
+[#1661](https://github.com/PolicyEngine/policyengine-uk/pull/1661): total
+points inputs (`pip_dl_points`, `pip_m_points`) and the 8- and 12-point
+thresholds under `gov.dwp.pip.{daily_living,mobility}.points_thresholds`,
+with the category derived from points only when it is not given as an
+input. That is a simpler form of Phase 1 below: no per-activity scores
+and no `use_point_system` switch, since a category input already takes
+precedence over the formula.
 ```
 
 ## What PIP scoring actually is
@@ -46,9 +58,9 @@ sufficient because:
 - the FRS doesn't capture activity-level point scores at all,
 - DWP's published caseload reports band counts (standard / enhanced)
   rather than activity scores,
-- the calibrated `pip_dl_category` / `pip_m_category` in
-  `policyengine-uk-data` are derived directly from FRS reported PIP
-  payments and DWP outturn caseload.
+- the data pipeline (now Microcosm UK) sets `pip_dl_category` /
+  `pip_m_category` from the PIP components respondents report in the
+  FRS.
 
 So for headline distributional and fiscal analysis the categorical
 inputs are correct.
@@ -57,9 +69,12 @@ inputs are correct.
 
 Three reform scenarios that the categorical model can't answer:
 
-1. **Activity-level descriptor reform** — e.g. the 2024 Conservative
-   Green Paper proposed restricting points awarded for descriptors like
-   "needs prompting to prepare food". A categorical input can't capture
+1. **Activity-level descriptor reform** — e.g. the April 2024 green paper
+   proposed changing the descriptors, and the March 2025 *Pathways to
+   Work* green paper proposed requiring at least four points in one
+   daily-living activity for the daily-living component. The government
+   withdrew the four-point change in July 2025, pending a review of the
+   PIP assessment. A categorical input can't capture
    this; the categorical band wouldn't shift unless an analyst manually
    re-bands a synthetic distribution.
 2. **Threshold reform** — changing the band thresholds (e.g. raising
@@ -108,7 +123,7 @@ machinery (for reform analysis) get the activity-level surface.
 ### Phase 3 — data-side imputation
 
 - The FRS provides PIP payment amounts but not descriptor selections.
-  `policyengine-uk-data` would need to impute descriptor selections per
+  The data pipeline (Microcosm UK) would need to impute descriptor selections per
   claimant that are consistent with the observed band. The plausible
   approach is to draw uniformly across descriptor combinations that
   sum to the observed band, weighted by DWP-published "activities most
@@ -125,9 +140,9 @@ machinery (for reform analysis) get the activity-level surface.
 - DWP's PIP review process distinguishes "ongoing" vs "fixed-term"
   awards. Should the model expose the award duration, or treat all
   current awards as ongoing? (Current model assumes ongoing.)
-- The 2024 Green Paper considered moving some of the highest-points
-  activities to a separate disability benefit — should the design
-  anticipate that?
+- The outcome of the PIP assessment review may change descriptors or
+  the scoring rule; the descriptor-parameter design in Phase 2 should
+  make such changes a parameter edit.
 
 ## References
 
@@ -135,6 +150,7 @@ machinery (for reform analysis) get the activity-level surface.
 - DWP, [Personal Independence Payment: Assessment guide][assess-guide].
 - DWP, [PIP statistics](https://www.gov.uk/government/collections/personal-independence-payment-statistics) — caseload by component and band.
 - DWP, [Modernising support for independent living: the health and disability green paper (April 2024)][green-paper] — proposals to restrict descriptors.
+- DWP, [Pathways to Work: Reforming Benefits and Support to Get Britain Working (March 2025)](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper) — the four-point proposal.
 - Issue: [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
 - Existing model: `pip_dl_category`, `pip_m_category`, `pip_dl`, `pip_m`.
 
