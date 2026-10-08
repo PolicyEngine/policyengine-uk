@@ -355,10 +355,12 @@ def test_meals_and_council_tax(population):
     assert shared.any()
     assert np.all(total[shared] <= 1 + 1e-6)
     # Each claim there follows its own family's pensioner status, not the
-    # household head's family's (SI 2012/2885 reg 3).
+    # household head's family's (SI 2012/2885 reg 3). These households are in
+    # Maidstone, whose working-age scheme the model does not simulate, so a
+    # family's scheme is simulated exactly when it is a pensioner.
     in_shared = of_household(a, "council_tax_reduction_claims_are_joint")
     assert np.array_equal(
-        calc(a, "council_tax_reduction_claim_pensioner")[in_shared],
+        calc(a, "council_tax_reduction_scheme_supported")[in_shared],
         calc(a, "council_tax_reduction_pensioner")[in_shared],
     )
     # The simulated reductions of the household's claims never exceed its
@@ -416,17 +418,16 @@ def test_no_op_without_sharers_boarders_or_lodgers(population):
         head_bedrooms[head_claims],
         (bedrooms_alone + adults_outside)[head_claims],
     )
-    # Council Tax Reduction: one claim, on the household's scheme, simulated
-    # or reported as the household's scheme is.
+    # Council Tax Reduction: one claim, the household head's family's, on its
+    # own scheme; every family's reduction is simulated or reported as that
+    # claim's scheme is.
     assert not calc(sim, "council_tax_reduction_claims_are_joint").any()
-    assert np.array_equal(
-        calc(sim, "council_tax_reduction_claim_pensioner"),
-        of_household(sim, "council_tax_reduction_household_has_pensioner"),
+    assert np.array_equal(calc(sim, "council_tax_reduction_claimant_benunit"), head)
+    head_scheme = (
+        per_household(sim, calc(sim, "council_tax_reduction_scheme_supported") & head)
+        > 0
     )
-    supported = of_household(sim, "council_tax_reduction_scheme_supported")
-    assert np.array_equal(
-        calc(sim, "council_tax_reduction_claim_scheme_supported"), supported
-    )
+    supported = sim.map_result(head_scheme, "household", "benunit") > 0
     assert np.allclose(
         calc(sim, "council_tax_benefit"),
         np.where(

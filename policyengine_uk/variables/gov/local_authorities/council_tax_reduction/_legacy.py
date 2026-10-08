@@ -10,20 +10,6 @@ def is_full_time_student_non_dep(person, period):
     )
 
 
-def single_claim_is_pensioner(household, period):
-    """Whether the household's single claim is a pensioner's.
-
-    A non-dependant brings no deduction under a council's working-age scheme
-    where the household's one claim is a pensioner's. Where families claim on
-    their shares, each claim's own scheme decides whether its award uses the
-    deduction (council_tax_reduction_claim_pensioner), so none is ruled out
-    here.
-    """
-    return household(
-        "council_tax_reduction_household_has_pensioner", period
-    ) & ~household("council_tax_reduction_claims_are_joint", period)
-
-
 def legacy_council_tax_reduction(
     benunit,
     period,
@@ -105,14 +91,12 @@ def local_non_dep_deductions(
     # A non-dependant of two or more jointly liable people is apportioned
     # equally between them (SI 2012/2885 Sch 1 para 8(5)).
     share = benunit("council_tax_reduction_joint_liability_share", period)
-    # Where families claim on their shares, no deduction from an applicant
-    # who, or whose partner, is blind or gets a qualifying disability benefit,
-    # whatever the other claimants get (the councils' schemes follow
-    # SI 2012/2886 Sch para 30(6)). A single claim's exemption is applied to
-    # each non-dependant's deduction.
-    applicant_exempt = benunit.household(
-        "council_tax_reduction_claims_are_joint", period
-    ) & benunit("council_tax_reduction_applicant_has_non_dep_exemption", period)
+    # No deduction from an applicant who, or whose partner, is blind or gets a
+    # qualifying disability benefit, whatever other claimants in the household
+    # get (the councils' schemes follow SI 2012/2886 Sch para 30(6)).
+    applicant_exempt = benunit(
+        "council_tax_reduction_applicant_has_non_dep_exemption", period
+    )
     return where(
         applicant_exempt, 0, (deductions_in_household - deduction_for_benunit) * share
     )
@@ -122,10 +106,16 @@ def normal_gross_income_non_dep_deduction(
     person,
     period,
     ctr,
-    working_age,
+    in_scheme_area,
     exempt_income_based_benefits=True,
     exempt_uc_no_earned_income=True,
 ):
+    """The deduction a non-dependant brings under one council's scheme.
+
+    It depends on the non-dependant alone. Whether a claimant's award uses it
+    (the claimant's own scheme) and whether the claimant is exempt from
+    non-dependant deductions are decided per claimant family.
+    """
     gross_income_components = [
         "employment_income",
         "self_employment_income",
@@ -152,11 +142,6 @@ def normal_gross_income_non_dep_deduction(
         ctr.non_dep_deduction.amount.calc(weekly_benunit_gross_income),
         ctr.non_dep_deduction.amount.calc(0),
     )
-    # The exemption of a household's single claim. Joint claims are exempted
-    # one by one, in local_non_dep_deductions.
-    claimant_exempt = person.household(
-        "council_tax_reduction_household_has_non_dep_exemption", period
-    ) & ~person.household("council_tax_reduction_claims_are_joint", period)
     full_time_student = is_full_time_student_non_dep(person, period)
     income_based_benefit = (
         (person.benunit("income_support", period) > 0)
@@ -167,9 +152,8 @@ def normal_gross_income_non_dep_deduction(
     has_uc = person.benunit("universal_credit", period) > 0
     no_earned_income = weekly_benunit_earned_income <= 0
     exempt = (
-        claimant_exempt
-        | full_time_student
+        full_time_student
         | (exempt_income_based_benefits & income_based_benefit)
         | (exempt_uc_no_earned_income & has_uc & no_earned_income)
     )
-    return working_age * where(exempt, 0.0, weekly_deduction * WEEKS_IN_YEAR)
+    return in_scheme_area * where(exempt, 0.0, weekly_deduction * WEEKS_IN_YEAR)
