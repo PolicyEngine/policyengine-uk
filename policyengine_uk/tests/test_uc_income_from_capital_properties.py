@@ -33,10 +33,12 @@ unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
 s. 35), which raises the tax a person pays on their earnings and so changes
 the deduction from them (see test_uc_earnings_deductions_properties.py).
 The award after the benefit cap is compared only where the cap exemption is
-also unchanged: the model's earnings exception to the cap still nets tax on
-all of a person's income off their earnings
-(PolicyEngine/policyengine-uk#1986), so capital income can switch the cap on.
-A strict xfail pins that case.
+also unchanged. The cap's earnings exception now nets only the tax on
+non-savings, non-dividend income off earnings (PolicyEngine/policyengine-uk#1986),
+so savings and dividend income leave it alone, but property income is taxed in
+that same band and can still switch the cap on.
+test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception pins
+the dividend case.
 """
 
 import numpy as np
@@ -323,13 +325,6 @@ def test_tax_on_dividends_does_not_raise_a_working_familys_award():
     assert values["uc_earned_income"][0] == pytest.approx(10_000, abs=0.01)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "PolicyEngine/policyengine-uk#1986: the benefit cap earnings exception "
-        "nets tax on all of a person's income off their earnings"
-    ),
-)
 def test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception():
     # 2026: single claimant aged 30 in London, council rent 20,000, earning
     # 11,000 with no tax or NI on it. Without dividends the model applies no
