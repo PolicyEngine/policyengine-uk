@@ -14,8 +14,9 @@ class guarantee_credit(Variable):
     documentation = (
         "The guarantee credit element of State Pension Credit. It is part of "
         "State Pension Credit, so it is zero unless the benefit unit meets "
-        "the Pension Credit entitlement conditions (including State Pension "
-        "age for the claimant and any partner); other schemes that passport "
+        "the Pension Credit entitlement conditions, including the shared "
+        "qualifying-age conditions and any preserved mixed-age-couple saving; "
+        "other schemes that passport "
         "on Guarantee Credit read this variable."
     )
     defined_for = "is_pension_credit_eligible"

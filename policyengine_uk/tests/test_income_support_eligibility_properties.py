@@ -15,21 +15,29 @@ No adult outside the couple is named, so:
   reports (test_income_support_esa_entered_directly.py);
 - income_support_eligible equals a family-by-family reading of the model's
   gate: one of the claimant and partner reports Income Support, is under
-  state pension age, is in a prescribed category the model covers (a carer;
-  a lone parent of a child aged 5 or under, the model's reading of Sch 1B
-  para 1, counting only children in the household, reg 16(4); or a single
-  claimant with a child placed by a local authority, para 2) and has no
-  contributory ESA
+  the qualifying age for State Pension Credit, is in a prescribed category
+  the model covers (a carer; a lone parent of a child aged 5 or under, the
+  model's reading of Sch 1B para 1, counting only children in the
+  household, reg 16(4); or a single claimant with a child placed by a local
+  authority, para 2) and has no contributory ESA
   (s.124(1)(aa), (e), (h)); neither has income-related ESA (s.124(1)(h)),
   meaning the award on their reported amounts after the ESA capital test, or
   an esa_income the reported amounts do not explain (one that equals neither
-  the award on everyone's reported amounts nor their plain total); and
+  the award on everyone's reported amounts nor their plain total); the
+  couple is not taken to be on State Pension Credit (s.124(1)(g)); and
   capital is within the Income Support limit.
 
 The second property is a reference check of the bounded model gate, not of
 legal entitlement: caring, ESA and Income Support are the model's reported
-or proxy inputs, it reads state pension age from the model (is_SP_age), and
-the means test is out of scope.
+or proxy inputs; it reads the qualifying age
+(has_attained_state_pension_credit_qualifying_age) and the model's proxy for
+being on Pension Credit (meets_pension_credit_age_conditions and
+would_claim_pc) from the model; and the means test is out of scope. No
+claimant or partner drawn here reports Pension Credit or Housing Benefit
+(only some added adults do), so in 2025 no family with a claimant or partner
+under the qualifying age meets the Pension Credit age conditions. The
+differential asserts this, and income_support_claimant_partner_gates.yaml
+pins (g).
 
 Roles are given explicitly (is_claimant_or_partner), so the properties test
 the eligibility rule rather than the role inference; the inferred case is
@@ -156,13 +164,17 @@ def excluded_members(draw):
     They are not in education, so a 16 to 19 year old is not a qualifying
     young person. Most are primed with what barred or opened the claim when
     every member counted: over state pension age, income-related ESA, an
-    Income Support report, or caring.
+    Income Support report, or caring. Some are primed with what the
+    s.124(1)(g) proxy reads for a couple: over the qualifying age, with
+    reported Pension Credit or Housing Benefit.
     """
     adult = {
         **draw(adult_inputs(min_age=16)),
         "current_education": "NOT_IN_EDUCATION",
     }
-    primed = draw(st.sampled_from(["random", "elderly", "esa", "award", "carer"]))
+    primed = draw(
+        st.sampled_from(["random", "elderly", "esa", "award", "carer", "pension"])
+    )
     if primed == "elderly":
         adult["age"] = draw(st.integers(66, 90))
     elif primed == "esa":
@@ -171,6 +183,12 @@ def excluded_members(draw):
         adult["income_support_reported"] = 1_000
     elif primed == "carer":
         adult["receives_carer_benefit"] = True
+    elif primed == "pension":
+        adult["age"] = draw(st.integers(66, 90))
+        reported = draw(
+            st.sampled_from(["pension_credit_reported", "housing_benefit_reported"])
+        )
+        adult[reported] = 1_000
     return adult
 
 
@@ -280,7 +298,15 @@ def test_excluded_member_never_changes_is_eligibility(drawn, data):
         assert eligible[i] == eligible[k + i], drawn[i]
 
 
-def reference_eligibility(adults, dependants, capital, esa_income, sp_age, parameters):
+def reference_eligibility(
+    adults,
+    dependants,
+    capital,
+    esa_income,
+    attained_qualifying_age,
+    on_pension_credit,
+    parameters,
+):
     """The model's Income Support gate, read family by family."""
     IS = parameters.gov.dwp.income_support
     ESA = parameters.gov.dwp.ESA.income.capital
@@ -309,7 +335,8 @@ def reference_eligibility(adults, dependants, capital, esa_income, sp_age, param
         )
 
     if esa_income is not None:
-        income_related_esa = esa_income > 0
+        # Within half a penny of zero is no award.
+        income_related_esa = esa_income > 0.005
     else:
         reported_esa = sum(a["esa_income_reported"] for a in adults)
         tariff = (
@@ -323,8 +350,11 @@ def reference_eligibility(adults, dependants, capital, esa_income, sp_age, param
             reported_esa > 0 and capital <= ESA.limit and reported_esa > tariff
         )
     return (
-        any(is_claimant(a, s) for a, s in zip(adults, sp_age))
+        any(is_claimant(a, s) for a, s in zip(adults, attained_qualifying_age))
         and not income_related_esa
+        # s.124(1)(g), read through the model's proxy for being on Pension
+        # Credit.
+        and not on_pension_credit
         and capital <= IS.means_test.capital.limit
     )
 
@@ -357,7 +387,12 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     eligible = sim.calculate("income_support_eligible", YEAR)
     if eligible.any():
         event("some family eligible")
-    sp_age = sim.calculate("is_SP_age", YEAR)
+    attained_qualifying_age = sim.calculate(
+        "has_attained_state_pension_credit_qualifying_age", YEAR
+    )
+    on_pension_credit = sim.calculate(
+        "meets_pension_credit_age_conditions", YEAR
+    ) & sim.calculate("would_claim_pc", YEAR)
     parameters = sim.tax_benefit_system.parameters(YEAR)
     start = 0
     for i, (adults, dependants, capital, extra) in enumerate(units):
@@ -377,8 +412,15 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
             dependants,
             capital,
             entered,
-            sp_age[start : start + len(adults)],
+            attained_qualifying_age[start : start + len(adults)],
+            on_pension_credit[i],
             parameters,
         )
         assert eligible[i] == expected, units[i]
+        # The docstring's claim: no family drawn here with a claimant or
+        # partner under the qualifying age is taken to be on Pension Credit.
+        assert (
+            not on_pension_credit[i]
+            or attained_qualifying_age[start : start + len(adults)].all()
+        ), units[i]
         start += len(adults) + len(dependants) + 1

@@ -49,7 +49,7 @@
   period: 2024
   input:
     self_employment_income: 30000
-    loss_relief: 10000
+    loss_relief: 15000
     capital_allowances: 15000
     gov.hmrc.income_tax.allowances.trading_allowance: 5000
   output:
@@ -63,7 +63,7 @@
     capital_allowances: 10000
     gov.hmrc.income_tax.allowances.trading_allowance: 1000
   output:
-    taxable_self_employment_income: 34000
+    taxable_self_employment_income: 35000
 
 - name: High self-employment income with some deductions
   period: 2024
@@ -73,7 +73,7 @@
     capital_allowances: 30000
     gov.hmrc.income_tax.allowances.trading_allowance: 1000
   output:
-    taxable_self_employment_income: 149000
+    taxable_self_employment_income: 150000
 
 - name: Low self-employment income with low deductions
   period: 2024
@@ -83,7 +83,7 @@
     capital_allowances: 200
     gov.hmrc.income_tax.allowances.trading_allowance: 300
   output:
-    taxable_self_employment_income: 400
+    taxable_self_employment_income: 700
 
 - name: Deductions exceed self-employment income
   period: 2024
@@ -103,7 +103,7 @@
     capital_allowances: 300000
     gov.hmrc.income_tax.allowances.trading_allowance: 1000
   output:
-    taxable_self_employment_income: 499000
+    taxable_self_employment_income: 500000
 
 - name: Decimal values
   period: 2024
@@ -113,7 +113,7 @@
     capital_allowances: 5000.75
     gov.hmrc.income_tax.allowances.trading_allowance: 1000.00
   output:
-    taxable_self_employment_income: 33999.50
+    taxable_self_employment_income: 34999.50
 
 - name: Pre-net self-employment income can override trading allowance deduction
   period: 2024

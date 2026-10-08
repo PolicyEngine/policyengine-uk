@@ -4,6 +4,12 @@
 PolicyEngine UK models the UK tax and benefit system as of 2025, incorporating major reforms from 2020-2025. This page documents the key policy changes by year, working backwards from 2025, showing how each reform is implemented in the codebase.
 ```
 
+## Announced policy to 2030-31
+
+### Budget 2025 threshold freezes
+
+Budget 2025 keeps the income tax personal allowance and basic rate limit, and the equivalent National Insurance thresholds, at their current levels until April 2031. The model holds the [primary threshold](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/primary_threshold.yaml) and [lower profits limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/thresholds/lower_profits_limit.yaml) at £12,570, the [upper earnings limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/upper_earnings_limit.yaml) and [upper profits limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/thresholds/upper_profits_limit.yaml) at £50,270, and the [secondary threshold](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/secondary_threshold.yaml) at £96 a week through 2030-31, then uprates them with CPI from 2031-32. For Class 1, regulations set only the 2026-27 amounts; the later years are announced policy. The Class 4 limits are standing figures in SSCBA 1992 s.15(3). The model annualises the weekly secondary threshold as 52 × £96 = £4,992; the annual figure in law is £5,000 ([#1967](https://github.com/PolicyEngine/policyengine-uk/issues/1967)). The [lower earnings limit](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/lower_earnings_limit.yaml) is not frozen: it rose with CPI to £129 a week in 2026-27.
+
 ## 2025 reforms
 
 ### Autumn Budget 2024
@@ -62,7 +68,7 @@ The government announced cost of living payments: [£650 for means-tested benefi
 
 ### Energy Price Guarantee
 
-Following the energy crisis, the government introduced an [Energy Price Guarantee capping typical household bills at £2,500](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/ofgem/energy_price_guarantee.yaml#L12-L18) in fiscal year 2022-23.
+Following the energy crisis, the government introduced an [Energy Price Guarantee capping typical household bills at £2,500](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/ofgem/energy_price_guarantee.yaml) in fiscal year 2022-23.
 
 ## 2021 reforms
 

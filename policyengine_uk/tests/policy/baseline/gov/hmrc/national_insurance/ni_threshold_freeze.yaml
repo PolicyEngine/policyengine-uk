@@ -1,0 +1,121 @@
+# Budget 2025 holds the NICs thresholds at their 2026-27 levels until
+# 5 April 2031 (Budget 2025 paras 4.111-4.112): PT and LPL £12,570, UEL and
+# UPL £50,270, ST £5,000 (£96 a week). 2027-28 was already frozen by
+# Autumn Statement 2022 (PT, UEL, LPL, UPL) and Autumn Budget 2024 (ST).
+# Rates: Class 1 8% / 2%, employer 15%, Class 4 6% / 2%.
+# The model stores the ST as 5,000 / 52 a week (reg 11(3A)), so 52 weeks give
+# £5,000 (#1967).
+
+- name: 2027-28 employee Class 1 at the primary threshold
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 12_570
+  output:
+    ni_class_1_employee: 0
+
+- name: 2027-28 employee Class 1 between the primary threshold and the UEL
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employee: (30_000 - 12_570) * 0.08  # 1,394.40
+    ni_class_1_employer: (30_000 - 5_000) * 0.15  # 3,750.00
+
+- name: 2027-28 employee Class 1 above the UEL
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 60_000
+  output:
+    ni_class_1_employee_primary: (50_270 - 12_570) * 0.08  # 3,016
+    ni_class_1_employee_additional: (60_000 - 50_270) * 0.02  # 194.60
+    ni_class_1_employer: (60_000 - 5_000) * 0.15  # 8,250.00
+
+- name: 2027-28 Class 4 at the lower profits limit
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    self_employment_income: 12_570
+  output:
+    ni_class_4: 0
+
+- name: 2027-28 Class 4 between the profits limits
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    self_employment_income: 30_000
+  output:
+    ni_class_4: (30_000 - 12_570) * 0.06  # 1,045.80
+
+- name: 2027-28 Class 4 above the upper profits limit
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    self_employment_income: 60_000
+  output:
+    ni_class_4: (50_270 - 12_570) * 0.06 + (60_000 - 50_270) * 0.02  # 2,456.60
+
+- name: 2030-31 employee Class 1 at the primary threshold
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 12_570
+  output:
+    ni_class_1_employee: 0
+
+- name: 2030-31 employee Class 1 between the primary threshold and the UEL
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 30_000
+  output:
+    ni_class_1_employee: (30_000 - 12_570) * 0.08  # 1,394.40
+    ni_class_1_employer: (30_000 - 5_000) * 0.15  # 3,750.00
+
+- name: 2030-31 employee Class 1 above the UEL
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 60_000
+  output:
+    ni_class_1_employee_primary: (50_270 - 12_570) * 0.08  # 3,016
+    ni_class_1_employee_additional: (60_000 - 50_270) * 0.02  # 194.60
+    ni_class_1_employer: (60_000 - 5_000) * 0.15  # 8,250.00
+
+- name: 2030-31 Class 4 at the lower profits limit
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    self_employment_income: 12_570
+  output:
+    ni_class_4: 0
+
+- name: 2030-31 Class 4 between the profits limits
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    self_employment_income: 30_000
+  output:
+    ni_class_4: (30_000 - 12_570) * 0.06  # 1,045.80
+
+- name: 2030-31 Class 4 above the upper profits limit
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    self_employment_income: 60_000
+  output:
+    ni_class_4: (50_270 - 12_570) * 0.06 + (60_000 - 50_270) * 0.02  # 2,456.60
