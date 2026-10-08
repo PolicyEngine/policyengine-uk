@@ -1,128 +1,96 @@
 # Pension treatment compared with the Scottish Tax-Benefit Model
 
-This page documents how PolicyEngine UK's handling of personal pension
-contributions compares with the [Scottish Tax-Benefit Model (STBM)
-methodology][stbm-blog] described in the Virtual Worlds blog. It
-addresses [#672](https://github.com/PolicyEngine/policyengine-uk/issues/672).
+This page compares how PolicyEngine UK and the
+[Scottish Tax-Benefit Model (STBM)][stbm] treat personal pension
+contributions in income tax, for
+[#672](https://github.com/PolicyEngine/policyengine-uk/issues/672) (still open,
+October 2026).
 
-Read alongside [pension-tax-relief.md](./pension-tax-relief.md), which
-explains the PolicyEngine pension-relief mechanics in detail.
+The STBM column is taken from its source code at commit
+[`f534ca1`][stbm-it] (`src/IncomeTaxCalculations.jl`,
+`calculate_pension_taxation!`, and `src/Pensions.jl`). The
+[STBM blog post on pension contributions][stbm-blog] that #672 links to is a
+short note, and its author says they are unsure of it. It does not describe
+the method, so this page does not rely on it.
+
+[How PolicyEngine UK models pension tax relief](./pension-tax-relief.md) has
+more detail on the PolicyEngine side.
 
 ## Summary
 
-Both models compute the **same total tax cost** of pension tax relief
-at the aggregate level for a given household, but they differ in how
-the relief is presented:
+| | PolicyEngine UK | STBM |
+|---|---|---|
+| How relief is given | Reduces taxable income by the contribution (`pension_contributions_relief`) | Treats contributions as paid net of basic rate: grosses them up by 1/(1 − basic rate) and widens every rate band above the starting band by the gross amount, as under relief at source |
+| Contributions that get relief | The person's own contributions | Employee contributions, additional voluntary contributions **and employer contributions** |
+| Basic-rate relief added to the pot | Not shown separately | Recorded separately (`pension_relief_at_source`) |
+| Earnings limit | Relief capped at employment plus self-employment income | No earnings cap; £3,600 limit when total income is below it |
+| Annual allowance | £60,000, tapered on adjusted net income above £260,000 (`pension_annual_allowance`) | Tapered on total income above a threshold-income parameter |
+| Contributions above the allowance | Charged at the marginal rate (`personal_pension_contributions_tax`) | Relief stops at the allowance; no separate charge |
+| Employer contributions in the data | Read from the data (`employer_pension_contributions`) | Imputed when missing from the FRS, using the ONS ASHE employer-contribution bands (`src/Pensions.jl`) |
+| Carry-forward of unused allowance | Not modelled | Not modelled |
 
-|                                       | PolicyEngine UK                                | Scottish Tax-Benefit Model                             |
-|---------------------------------------|------------------------------------------------|--------------------------------------------------------|
-| Treatment of within-allowance contribution | Reduce taxable income by gross contribution    | Same                                                   |
-| Relief mechanism in code              | Single `pension_contributions_relief` variable | Split between relief-at-source and basic-rate-band extension |
-| Excess-over-allowance treatment       | Separate `personal_pension_contributions_tax` charge at marginal rate | Same |
-| Salary sacrifice                      | `pension_contributions_via_salary_sacrifice` input; deducted from earnings before NI; affects employer NI cost | Same in principle |
-| Employer contributions                | `employer_pension_contributions` input; excluded from earnings for income tax and NI | Same |
-| State Pension                         | Three composable variables (`basic_state_pension`, `new_state_pension`, `additional_state_pension`) with triple-lock uprating | Modelled as a single uprated transfer |
+## Where the two models differ
 
-## Where the two models could diverge
+### 1. Reducing taxable income versus widening the bands
 
-### 1. Presentation of relief at source vs the higher-rate top-up
+For an income-tax payer whose contribution stays inside one band, the two
+methods give the same total relief. They can differ when the person pays
+little or no income tax: STBM still records the basic-rate addition to the
+pot, which PolicyEngine UK does not show.
 
-STBM (as described in the Virtual Worlds blog) tends to keep the
-**relief-at-source** portion (basic-rate, paid into the pension pot)
-separate from the **higher-rate top-up** (paid back to the taxpayer via
-Self Assessment). PolicyEngine UK combines both into a single
-`pension_contributions_relief` reduction in taxable income.
+**Shared gap: the personal allowance taper.** In law, gross pension
+contributions reduce adjusted net income
+([Income Tax Act 2007 s. 58](https://www.legislation.gov.uk/ukpga/2007/3/section/58)),
+so contributing can restore personal allowance lost above £100,000.
+Neither model does this. In PolicyEngine UK, `adjusted_net_income` adds up
+the taxable income components without deducting `pension_contributions_relief`:
+an employee on £110,000 has adjusted net income of £110,000 and a personal
+allowance of £7,570 in 2025-26 whether or not they contribute £10,000.
+STBM widens the bands but leaves the taper income unchanged, and its code
+flags this as unchecked.
 
-Why it doesn't change the answer: at the *household-level fiscal cost*,
-both methods produce identical totals. HMRC's *pension tax relief
-statistics* — which both models target for calibration — report the
-combined relief.
+### 2. Employer contributions
 
-Where it would change the answer: a user who wants to break out the
-"cash visible to the taxpayer" portion of their tax bill needs the
-split version (because their own SA refund is only the higher-rate
-top-up). PolicyEngine UK would need an output split into two new
-variables (`pension_relief_at_source` and `pension_higher_rate_top_up`)
-to surface this distinction — discussed in
-[pension-tax-relief.md](./pension-tax-relief.md).
+STBM counts employer contributions in the relief calculation. In UK law
+employer contributions are not taxed as the employee's income, so they get
+no personal relief. They are simply outside taxable pay, which is how
+PolicyEngine UK treats them. Including them in STBM's relief widens the
+employee's bands further than the law does.
 
-### 2. Annual allowance taper
+### 3. Annual allowance taper
 
-For high earners (adjusted income > £260,000 since 2023-24), the
-annual allowance is tapered. PolicyEngine UK encodes this through:
+The legal taper uses "adjusted income", which adds employer contributions,
+and applies only when "threshold income" is also above £200,000.
 
-- `gov/hmrc/income_tax/allowances/annual_allowance/taper.yaml`
-- `gov/hmrc/income_tax/allowances/annual_allowance/reduction_rate.yaml`
-- `gov/hmrc/income_tax/allowances/annual_allowance/minimum.yaml`
+- PolicyEngine UK tapers on adjusted net income, with no threshold-income
+  test.
+- STBM tapers on total income above a threshold parameter.
 
-STBM applies the same taper mechanically. The two diverge only if
-STBM's modelling of the *adjusted-income* trigger differs from
-PolicyEngine UK's `meets_marriage_allowance_income_conditions`-style
-piecewise calculations.
+Neither follows the statute exactly. Both affect only very high earners.
 
-### 3. Carry-forward of unused allowance
+### 4. Lifetime and lump sum allowances
 
-UK rules allow carrying forward unused annual allowance from the
-previous three tax years. **Neither** PolicyEngine UK nor (as of the
-linked blog) STBM models this — both treat the annual allowance as
-strictly per-year.
+The lifetime allowance was abolished from 6 April 2024 and replaced by the
+lump sum allowance and the lump sum and death benefit allowance.
+PolicyEngine UK has no parameters for any of these. They apply when pensions
+are drawn, not to contributions.
 
-For most households this doesn't matter; the carry-forward is mainly
-used by people with lumpy contributions (one-off bonus / sale events).
-Either model would need an explicit `unused_annual_allowance_carryforward`
-input to handle this correctly.
+## What neither model does
 
-### 4. Lifetime allowance (abolished from 6 April 2024)
-
-PolicyEngine UK historically tracked the lifetime allowance under
-`gov/hmrc/pensions/`. From 6 April 2024 the lifetime allowance was
-abolished and replaced by the **lump sum allowance** and **lump sum
-and death benefit allowance**. PolicyEngine UK and STBM both need
-parameters here; current PolicyEngine UK status:
-
-- the historical lifetime-allowance values remain in the parameter tree
-  for back-cast simulations,
-- the post-2024 lump sum allowances are not yet modelled, as they
-  rarely affect ordinary income-tax-cost analysis (they only bite at
-  withdrawal).
-
-### 5. State Pension structure
-
-PolicyEngine UK uses the three-variable split documented in
-[state-pension.md](../dwp/state-pension.md):
-`basic_state_pension`, `new_state_pension`, `additional_state_pension`
-(SERPS / S2P for BASIC; Protected Payment for NEW). STBM appears to
-treat State Pension as a single transfer per the blog — which is
-appropriate for headline distributional analysis but obscures the
-Protected Payment structure that matters for reform analysis (e.g.
-abolishing the triple lock on the new flat rate only).
-
-## Calibration
-
-Both models target HMRC pension tax relief statistics and DWP State
-Pension outturn. PolicyEngine UK's residual State Pension undershoot is
-documented under [state-pension.md](../dwp/state-pension.md) and
-[#1632](https://github.com/PolicyEngine/policyengine-uk/issues/1632);
-STBM's calibration variance is not publicly documented in detail.
-
-## What's not modelled in either
-
-- **Pension contribution behavioural response** to tax-rate changes
-  (people changing their contribution rate when the higher-rate band
-  changes). Both models hold contributions fixed.
-- **Decumulation taxation** (income drawn from pensions in retirement)
-  beyond the basic `private_pension_income` input — neither model
-  walks through crystallisation, the 25% tax-free lump sum, or annuity
-  vs. drawdown decisions.
+- Carry-forward of unused annual allowance from the previous three years.
+- Behavioural responses: contributions are held fixed when tax rates change.
+- Decumulation: crystallisation, the tax-free lump sum, and annuity versus
+  drawdown choices.
 
 ## References
 
-- Virtual Worlds, [STBM blog: Pension contributions][stbm-blog] — the
-  reference methodology this page compares against.
-- PolicyEngine UK: [pension-tax-relief.md](./pension-tax-relief.md),
-  [state-pension.md](../dwp/state-pension.md).
-- Variables: [`pension_contributions_relief`](../../../policyengine_uk/variables/gov/hmrc/pensions/pension_contributions_relief.py), [`personal_pension_contributions_tax`](../../../policyengine_uk/variables/gov/hmrc/pensions/private_pension_contributions_tax.py).
-- HMRC, [Pension tax relief statistics](https://www.gov.uk/government/collections/personal-pensions-statistics).
+- STBM source: [`IncomeTaxCalculations.jl`][stbm-it] and [`Pensions.jl`][stbm-pen] at `f534ca1`.
+- [STBM blog: pension contributions][stbm-blog].
+- PolicyEngine UK: [pension tax relief](./pension-tax-relief.md); variables [`pension_contributions_relief`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/hmrc/pensions/pension_contributions_relief.py), [`pension_annual_allowance`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/hmrc/income_tax/allowances/pension_annual_allowance.py) and [`personal_pension_contributions_tax`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/hmrc/pensions/private_pension_contributions_tax.py).
+- HMRC, [Pensions Tax Manual: annual allowance taper](https://www.gov.uk/hmrc-internal-manuals/pensions-tax-manual/ptm057100).
 - Issue: [#672](https://github.com/PolicyEngine/policyengine-uk/issues/672).
 
+[stbm]: https://github.com/grahamstark/ScottishTaxBenefitModel.jl
+[stbm-it]: https://github.com/grahamstark/ScottishTaxBenefitModel.jl/blob/f534ca1277260a6b4f24c9ab5ebfe9c015e1484d/src/IncomeTaxCalculations.jl
+[stbm-pen]: https://github.com/grahamstark/ScottishTaxBenefitModel.jl/blob/f534ca1277260a6b4f24c9ab5ebfe9c015e1484d/src/Pensions.jl
 [stbm-blog]: https://stb-blog.virtual-worlds.scot/articles/2022/01/01/pension-contributions.html
