@@ -1,0 +1,5 @@
+- Fixed Universal Credit deductions and benefit cap reductions to report what the award actually loses under a protected minimum floor, so the components sum to the reduction applied instead of over-reporting it.
+- Added `uc_benefit_cap_reduction`, the benefit cap reduction applied to a Universal Credit award after the protected floor, leaving `benefit_cap_reduction` gross for Housing Benefit.
+- Fixed a protected floor above 1 adding money to Universal Credit awards, by clamping the permitted reduction at zero.
+- Fixed Universal Credit deductions applying to benefit units that would not claim Universal Credit.
+- Corrected the effective date of the 25% deductions cap to 30 April 2021, and the one-penny minimum payable citation to Schedule 6, paragraph 3(1)(a) of SI 2013/380.

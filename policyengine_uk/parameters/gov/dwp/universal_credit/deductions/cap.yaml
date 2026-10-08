@@ -1,8 +1,8 @@
-description: Maximum total deductions from a Universal Credit award, as a fraction of the standard allowance. Schedule 6 paragraph 4(1) of SI 2013/380 sets a statutory ceiling of 40%; within it, DWP sets the operational cap administratively - 30% from October 2019 (Budget 2018), 25% from April 2021 (announced for October 2021 at Budget 2020, brought forward at Budget 2021), and 15% (the Fair Repayment Rate) from 30 April 2025, which required no legislative change. Last resort deductions (housing and fuel arrears hardship deductions) and child maintenance deductions - separate categories in DWP guidance - may each exceed the cap (Explanatory Memorandum to SI 2025/387, paragraphs 5.10 to 5.15).
+description: Maximum total deductions from a Universal Credit award, as a fraction of the standard allowance. Schedule 6 paragraph 4(1) of SI 2013/380 sets a statutory ceiling of 40%; within it, DWP sets the operational cap administratively - 30% from October 2019 (Budget 2018), 25% from 30 April 2021 (announced for October 2021 at Budget 2020, brought forward at Budget 2021), and 15% (the Fair Repayment Rate) from 30 April 2025, which required no legislative change. Last resort deductions (housing and fuel arrears hardship deductions) and child maintenance deductions - separate categories in DWP guidance - may each exceed the cap (Explanatory Memorandum to SI 2025/387, paragraphs 5.10 to 5.15).
 values:
   2015-04-01: 0.4
   2019-10-01: 0.3
-  2021-04-01: 0.25
+  2021-04-30: 0.25
   2025-04-30: 0.15
 metadata:
   label: UC deductions cap
