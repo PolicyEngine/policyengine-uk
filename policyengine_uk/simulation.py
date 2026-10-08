@@ -274,6 +274,11 @@ class Simulation(CoreSimulation):
     def apply_parameter_changes(self, changes: dict):
         for parameter in changes:
             check_parameter_not_removed(canonicalize_lsr_parameter_path(parameter))
+        # Keep the processed, unreformed baseline tree. Reloading and
+        # reprocessing would otherwise clone the baseline from the reformed
+        # tree, so anything reading parameters.baseline would compare the
+        # reform with itself (#2188).
+        baseline = self.tax_benefit_system.parameters.children["baseline"]
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:
@@ -293,7 +298,7 @@ class Simulation(CoreSimulation):
             else:
                 p.update(period="year:2000:100", value=changes[parameter])
 
-        self.tax_benefit_system.process_parameters()
+        self.tax_benefit_system.process_parameters(baseline=baseline)
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.

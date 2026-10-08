@@ -1,7 +1,7 @@
 # Standard library imports
 import copy
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 # PolicyEngine core imports
 from policyengine_core.parameters.operations.propagate_parameter_metadata import (
@@ -10,6 +10,7 @@ from policyengine_core.parameters.operations.propagate_parameter_metadata import
 from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
+from policyengine_core.parameters import ParameterNode
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
 from policyengine_core.variables import Variable
 
@@ -83,7 +84,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.load_parameters(self.parameters_dir)
         self.parameters = add_removed_parameter_aliases(self.parameters)
 
-    def process_parameters(self) -> None:
+    def process_parameters(self, baseline: Optional[ParameterNode] = None) -> None:
         """Process and transform parameters with UK-specific adjustments.
 
         Applies various parameter transformations including:
@@ -94,6 +95,14 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         - Economic assumption indices
         - Parameter uprating and backdating
         - Conversion to fiscal year parameters
+
+        Args:
+            baseline: an already processed, unreformed parameter tree to keep
+                as the ``baseline`` child. Pass it when the tree being
+                processed holds reform changes, so the baseline copy is not
+                cloned from the reformed values. When omitted, the baseline
+                is cloned from the tree before the general operations, as at
+                system build.
         """
         self._parameters_at_instant_cache = {}
         # Add various UK-specific parameter adjustments
@@ -105,14 +114,19 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters = create_economic_assumption_indices(self.parameters)
         self.parameters = add_lsr_deprecation_aliases(self.parameters)
 
-        # Create baseline parameters for reform comparisons
-        self.parameters.add_child("baseline", self.parameters.clone())
+        # Create baseline parameters for reform comparisons. A supplied
+        # baseline is already processed, so it is attached after the general
+        # operations below rather than run through them a second time.
+        if baseline is None:
+            self.parameters.add_child("baseline", self.parameters.clone())
 
         # Apply general parameter operations
         self.parameters = propagate_parameter_metadata(self.parameters)
         self.parameters = uprate_parameters(self.parameters)
         self.parameters = backdate_parameters(self.parameters, "2015-01-01")
         self.parameters.gov = convert_to_fiscal_year_parameters(self.parameters.gov)
+        if baseline is not None:
+            self.parameters.add_child("baseline", baseline)
         self.reset_parameter_caches()
 
     def __init__(self):
