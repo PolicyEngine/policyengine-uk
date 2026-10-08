@@ -10,7 +10,7 @@ class housing_benefit_applicable_income(Variable):
         "nil for a family on Universal Credit, Income Support, income-based "
         "Jobseeker's Allowance or income-related Employment and Support "
         "Allowance (housing_benefit_on_passporting_benefit), whose whole "
-        "income is disregarded, and for a pension-age family with a positive "
+        "income is disregarded, and for a pension-age family receiving a "
         "guarantee credit (the guarantee credit passport). Where the Pension "
         "Credit award is savings credit only, it is the Secretary of State's "
         "assessment of income plus the savings credit payable, less childcare "
@@ -118,10 +118,14 @@ class housing_benefit_applicable_income(Variable):
             benunit("housing_benefit_savings_credit_only_income", period),
             income_under_general_rules,
         )
-        # Pension HB reg 26 disregards "the whole of his capital and income"
-        # for guarantee-credit recipients within that regulation set.
-        guarantee_credit = pension_age_regulations & (
-            benunit("guarantee_credit", period) > 0
+        # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
+        # reg 24) disregards the whole of the capital and income of a
+        # claimant in receipt, or whose partner is in receipt, of a
+        # guarantee credit. By reg 2(5), receipt includes awards withheld
+        # solely under SPC Regs 2002 reg 13 (small amounts), which the
+        # model does not withhold. Entitlement without a claim is not receipt.
+        passported = pension_age_regulations & benunit(
+            "in_receipt_of_guarantee_credit", period
         )
         # SI 2006/213 Sch 5 para 4 (NI: SR 2006/405 Sch 6 para 4) disregards
         # "the whole of his income" where a claimant is on universal credit,
@@ -142,4 +146,4 @@ class housing_benefit_applicable_income(Variable):
         on_passporting_benefit = benunit(
             "housing_benefit_on_passporting_benefit", period
         )
-        return where(guarantee_credit | on_passporting_benefit, 0, applicable_income)
+        return where(passported | on_passporting_benefit, 0, applicable_income)
