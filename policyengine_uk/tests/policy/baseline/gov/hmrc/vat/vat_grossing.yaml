@@ -30,3 +30,14 @@
   output:
     # 7,000 x 20% / 0.7
     vat: 2_000
+
+- name: A reform to the deprecated combined factor still takes effect
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    gov.simulation.microdata_vat_coverage: 0.5
+    full_rate_vat_consumption: 10_000
+    reduced_rate_vat_consumption: 1_000
+  output:
+    # 2,050 / 0.5
+    vat: 4_100
