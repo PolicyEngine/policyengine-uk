@@ -5,20 +5,30 @@
 [#1354](https://github.com/PolicyEngine/policyengine-uk/issues/1354),
 which asks for a comprehensive analysis of how the data processing
 pipeline (reweighting, SPI integration) changes effective take-up
-rates away from the seed values in `policyengine-uk-data`. This page
-documents the methodology and per-programme target list.
+rates away from the seed values. This page documents the methodology
+and per-programme target list.
+```
+
+```{admonition} Status, October 2026
+The data pipeline is now [Microcosm UK](https://github.com/PolicyEngine/microcosm),
+which replaced the Enhanced FRS build in `policyengine-uk-data` (first
+certified national release, 4 October 2026). Microcosm draws UC, Pension
+Credit and Child Benefit take-up anchored on reported receipt, so the
+analysis below should run on the Microcosm release. It has not been run
+yet.
 ```
 
 ## Why this matters
 
 PolicyEngine UK doesn't compute benefit take-up from scratch — it
 **seeds** stochastic take-up flags (`would_claim_*`) per programme in
-`policyengine-uk-data` from prior research-published target rates,
+the data build (now Microcosm UK) from published target rates,
 then runs them through:
 
-1. **Reported anchoring** (currently inconsistent — only UC and PC use
-   the input-only pattern; HB / IS / WTC / CTC still derive at
-   runtime; see [pipeline alignment plan](./uk-pipeline-alignment-plan.md)).
+1. **Reported anchoring** (still inconsistent — UC and PC are input-only
+   and anchored on reported receipt in Microcosm; HB / IS / WTC / CTC and
+   Council Tax Reduction still derive from reported receipt at runtime;
+   see [pipeline alignment plan](./uk-pipeline-alignment-plan.md)).
 2. **Reweighting** to match aggregate caseload and expenditure
    targets.
 3. **SPI integration** for income-tax-relevant variables (which can
@@ -38,8 +48,8 @@ Per #1354, with current PolicyEngine UK take-up handling status:
 
 | Programme | Variable | Take-up input | Source of seed rate | Status |
 |-----------|----------|----------------|---------------------|--------|
-| Universal Credit | `universal_credit` | `would_claim_uc` (input-only) | DWP UC official statistics | Modern pattern |
-| Pension Credit | `pension_credit` | `would_claim_pension_credit` (input-only) | DWP Pension Credit take-up tables | Modern pattern |
+| Universal Credit | `universal_credit` | `would_claim_uc` (input-only) | `gov.dwp.universal_credit.takeup_rate` | Modern pattern |
+| Pension Credit | `pension_credit` | `would_claim_pc` (input-only) | `gov.dwp.pension_credit.takeup` | Modern pattern |
 | Housing Benefit | `housing_benefit` | `would_claim_housing_benefit` (formula-derived) | `gov.dwp.housing_benefit.takeup` | Legacy pattern (#1621 item 1) |
 | Income Support | `income_support` | `would_claim_IS` (formula-derived) | `gov.dwp.income_support.takeup` | Legacy pattern (#1621 item 1) |
 | Child Tax Credit | `child_tax_credit` | `would_claim_CTC` (formula-derived) | `gov.dwp.tax_credits.child_tax_credit.takeup` | Legacy pattern; scheme ended 2025-04-06 |
@@ -52,10 +62,10 @@ Per #1354, with current PolicyEngine UK take-up handling status:
 | Travel Grant | – | `would_claim_travel_grant` | SFE statistics | – |
 | Extended Childcare Entitlement | `extended_childcare_entitlement` | `would_claim_extended_childcare` | DfE take-up | – |
 | Targeted Childcare Entitlement | `targeted_childcare_entitlement` | `would_claim_targeted_childcare` | DfE take-up | – |
-| Scottish Child Payment | `scottish_child_payment` | `would_claim_scp` | Social Security Scotland statistics | – |
+| Scottish Child Payment | `scottish_child_payment` | `would_claim_scp` | `gov.social_security_scotland.scottish_child_payment.takeup_rate` (under 6, 6 and over) | – |
 | State Pension | `state_pension` | n/a (effectively universal) | – | Universal — see [state-pension.md](../programs/gov/dwp/state-pension.md) |
 | PIP / DLA / AA / SDA / Carer's Allowance | various | currently coded as "reported = paid" | DWP caseload | No explicit take-up variable today; covered in [disability-legacy-benefits.md](../programs/gov/dwp/disability-legacy-benefits.md) |
-| Council Tax Reduction | `council_tax_benefit` | (no formula; reported-only) | – | Tracked in #1669 — rules-based formula in flight |
+| Council Tax Reduction | `council_tax_reduction` | `would_claim_council_tax_reduction` (formula-derived from reported receipt) | – | Local schemes now simulated; take-up still follows reported receipt. #1669 open |
 
 ## Methodology
 
@@ -97,16 +107,15 @@ data refresh.
 
 ## Related work
 
-- The **takeup-anchoring port** from `policyengine-us-data`
-  (`assign_takeup_with_reported_anchors`, see [pipeline alignment
-  plan](./uk-pipeline-alignment-plan.md)) is the most likely cause of
-  systematic drift between seed and effective for the legacy-pattern
-  programmes. Landing that port first would change the numbers this
-  analysis produces.
+- **Reported-anchored take-up** is now in Microcosm UK for UC, Pension
+  Credit and Child Benefit (see [pipeline alignment
+  plan](./uk-pipeline-alignment-plan.md)). The legacy-pattern
+  programmes are the most likely source of drift between seed and
+  effective rates.
 - The **`would_claim_*` input-only conversion** (also in #1621) would
   give the analysis a cleaner ladder: with all of `would_claim_*` as
   inputs, the effective rate is exactly the share assigned by the
-  stochastic step in `frs.py`, and pipeline drift becomes a pure
+  data build's take-up stage, and pipeline drift becomes a pure
   reweighting question.
 
 ## References
