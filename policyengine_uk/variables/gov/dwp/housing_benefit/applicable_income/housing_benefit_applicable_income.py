@@ -137,17 +137,18 @@ class housing_benefit_applicable_income(Variable):
         # income support, an income-based jobseeker's allowance or an
         # income-related employment and support allowance. Para 5 does the
         # same where the claimant's partner in a joint-claim couple is on
-        # income-based JSA. The model holds these awards for the benefit unit
-        # and cannot tell which member claims Housing Benefit (a couple
-        # choose, reg 82(1)), so it applies the disregard whichever member is
-        # on the benefit. There is no age condition: SI 2006/213 reg 5(1)(b)
-        # (NI: SR 2006/405 reg 5(1)(b)) applies these regulations to a
-        # claimant over the qualifying age for State Pension Credit whose
-        # partner is on one of these benefits, so a mixed-age couple whose
-        # younger member is on income-related ESA or Universal Credit is
-        # covered. Universal Credit is read before the benefit cap
-        # (housing_benefit_on_passporting_benefit), which avoids a circular
-        # dependency through the cap.
+        # income-based JSA. The model cannot tell which of the claimant and
+        # partner claims Housing Benefit (a couple choose, reg 82(1)), so it
+        # applies the disregard whichever of them is on the benefit. Another
+        # member's own award does not count: they claim in their own right
+        # (in_receipt_of_income_support_jsa_ib_or_esa_ir). There is no age
+        # condition: SI 2006/213 reg 5(1)(b) (NI: SR 2006/405 reg 5(1)(b))
+        # applies these regulations to a claimant over the qualifying age for
+        # State Pension Credit whose partner is on one of these benefits, so a
+        # mixed-age couple whose younger member is on income-related ESA or
+        # Universal Credit is covered. Universal Credit is read before the
+        # benefit cap (housing_benefit_on_passporting_benefit), which avoids a
+        # circular dependency through the cap.
         on_passporting_benefit = benunit(
             "housing_benefit_on_passporting_benefit", period
         )

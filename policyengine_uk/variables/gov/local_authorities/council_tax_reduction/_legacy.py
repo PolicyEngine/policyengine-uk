@@ -144,8 +144,9 @@ def normal_gross_income_non_dep_deduction(
     )
     full_time_student = is_full_time_student_non_dep(person, period)
     # No deduction for a non-dependant "who is on" Income Support, income-based
-    # JSA or income-related ESA: their own (or their couple's) award, not that of
-    # another member of their benefit unit.
+    # JSA or income-related ESA: an award payable to them (Default Scheme Sch
+    # para 2(3)-(4)). Of a couple, only the payee is on the couple's award, and
+    # another member of their benefit unit's award never counts.
     income_based_benefit = (
         person("is_on_income_support", period)
         | person("is_on_income_based_jsa", period)

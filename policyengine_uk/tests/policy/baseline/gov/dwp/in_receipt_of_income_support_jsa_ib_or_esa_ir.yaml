@@ -1,5 +1,7 @@
 # Receipt of Income Support, income-based JSA or income-related ESA: a
-# positive amount of any of them, held for the benefit unit.
+# positive amount of any of them on the claimant's or partner's award. An
+# award entered for the benefit unit is taken to be theirs. Another member's
+# own award is tested in legacy_award_readers/.
 
 - name: No income-related benefit
   period: 2025
