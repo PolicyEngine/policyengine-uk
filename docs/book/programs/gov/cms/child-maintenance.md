@@ -1,133 +1,131 @@
 # Child maintenance (planned)
 
 ```{warning}
-**Not yet modelled in detail.** PolicyEngine UK currently has two generic
-input variables — `maintenance_income` and `maintenance_expenses` — that
-flow through HBAI but do **not** distinguish child maintenance from
-other maintenance and do **not** apply the Universal Credit asymmetry
-described below. This page captures the agreed scope for adding a
-properly-modelled Child Maintenance Service (CMS) calculation, tracked
-under [#669](https://github.com/PolicyEngine/policyengine-uk/issues/669).
+**Not yet modelled in detail.** PolicyEngine UK has two generic person-level
+inputs, `maintenance_income` and `maintenance_expenses`. They do not tell
+child maintenance apart from maintenance between former partners, and the
+model does not calculate a Child Maintenance Service (CMS) award. This page
+sets out the scope for doing that, tracked in
+[#669](https://github.com/PolicyEngine/policyengine-uk/issues/669) (still
+open, October 2026).
 ```
 
-## Why model child maintenance separately
+## What the model does today
 
-The Centre for Social Justice paper [*The Hidden Parent Poverty Trap:
-Child Maintenance and Universal Credit*][csj] shows that the
-**asymmetric** UC treatment of child maintenance produces a meaningful
-work-incentive cliff for paying parents:
+- `maintenance_income` is added to `market_income`, `household_market_income`
+  and `hbai_household_net_income`.
+- `maintenance_expenses` is subtracted in `market_income` and
+  `hbai_household_net_income`.
+- Neither variable feeds any means test. Universal Credit unearned income is
+  the list in `gov.dwp.universal_credit.means_test.income_definitions.unearned`,
+  which contains no maintenance, and UC earned income does not net off
+  maintenance paid.
 
-- **Receiving parent**: child maintenance income is **fully disregarded**
-  in the UC means test. That's good for the receiving household and
-  matches the policy intent of CMS.
-- **Paying parent**: child maintenance paid out is **not** deducted from
-  earnings in the UC means test. The paying parent is means-tested on
-  gross earnings as if the maintenance had never left their pocket.
+For **child** maintenance that is the right answer for UC:
 
-The current PolicyEngine treatment uses a single `market_income`
-deduction `income - maintenance_expenses` (`variables/household/income/
-market_income.py`). That is fine for HBAI net income but is **too
-generous** to the paying parent in UC — they would currently see
-maintenance reduce their UC-applicable income too, producing higher UC
-than they actually get.
+- **Receiving parent:** child maintenance is not unearned income under
+  [UC Regulations 2013 reg. 66(1)](https://www.legislation.gov.uk/uksi/2013/376/regulation/66),
+  so it is fully disregarded.
+- **Paying parent:** maintenance paid is not deducted, so the paying parent is
+  means-tested on their full earnings.
+
+This asymmetry is the work-incentive problem described by the Centre for Social
+Justice in [*The Hidden Parent Poverty Trap: Child Maintenance and Universal
+Credit*][csj]. The model already reproduces it, because neither input reaches
+UC.
+
+The gap is **maintenance between former spouses or civil partners**.
+Reg. 66(1)(d) counts it as unearned income in UC, but the model cannot see it,
+because it shares `maintenance_income` with child maintenance. Those
+recipients' UC is overstated.
 
 ## Scope
 
-### Phase 1 — disambiguate the inputs
+### Phase 1: separate the inputs
 
-- New input variable `child_maintenance_received` (Person, GBP, annual)
-  — the amount of CMS / private child maintenance the person receives.
-- New input variable `child_maintenance_paid` (Person, GBP, annual) —
-  the amount the person pays out.
-- Keep `maintenance_income` / `maintenance_expenses` for spousal and
-  other maintenance flows; document the distinction explicitly.
-- In `policyengine-uk-data`, route the FRS child-maintenance items into
-  the new variables and the FRS spousal-maintenance items into the
+- New input `child_maintenance_received` (Person, GBP, annual).
+- New input `child_maintenance_paid` (Person, GBP, annual).
+- Keep `maintenance_income` and `maintenance_expenses` for maintenance
+  between former partners, and say so in their documentation.
+- In the data pipeline (now
+  [Microcosm UK](https://github.com/PolicyEngine/microcosm)), route the FRS
+  child-maintenance items to the new inputs and the spousal items to the
   existing ones.
+- HBAI income keeps both kinds, received and paid.
 
-### Phase 2 — fix the UC asymmetry
+### Phase 2: count spousal maintenance in UC
 
-- New variable `uc_applicable_child_maintenance` (BenUnit) that returns
-  **`child_maintenance_received` only**, with `child_maintenance_paid`
-  set to **zero** — i.e. the UC-side asymmetry.
-- Subtract `uc_applicable_child_maintenance` from
-  `uc_applicable_income` so it's fully disregarded for the receiver.
-- Crucially **do not** subtract `child_maintenance_paid` from
-  `uc_applicable_income`; this reproduces the CSJ-identified poverty
-  trap.
+- Add `maintenance_income` (now spousal only) to the UC unearned income list
+  from 2013-04-29, citing reg. 66(1)(d).
+- Leave `child_maintenance_received` and `child_maintenance_paid` out of UC.
+- Check the legacy benefits and Pension Credit the same way before adding
+  either input to their income definitions.
 
-### Phase 3 — model the CMS formula itself
+### Phase 3: model the CMS calculation
 
-Currently both `maintenance_income` and the proposed `child_maintenance_*`
-variables are pure inputs. Phase 3 would derive the CMS award when the
-required inputs are present, using the gross-income basis the CMS
-applies:
+Derive the CMS weekly amount when the inputs are available, from the paying
+parent's gross weekly income
+([GOV.UK](https://www.gov.uk/how-child-maintenance-is-worked-out);
+[Child Support Act 1991 Sch. 1](https://www.legislation.gov.uk/ukpga/1991/48/schedule/1)):
 
-| Paying-parent gross weekly income | Rule |
-|------------------------------------|------|
-| Less than £7  | No payment ("nil rate") |
-| £7 – £100     | Flat-rate £7 |
-| £100 – £200   | Reduced rate (formula-based) |
-| £200 – £3,000 | Basic rate: 12% / 16% / 19% of gross income for 1 / 2 / 3+ children, with a tapered top slice between £800 and £3,000 |
-| Over £3,000   | Capped at the £3,000 figure (statutory upper limit) |
+| Paying parent's gross weekly income | Rate | Weekly amount |
+|---|---|---|
+| Below £7 | Nil | £0 |
+| £7 to £100, or on benefits | Flat | £7 |
+| £100.01 to £199.99 | Reduced | Formula |
+| £200 to £3,000 | Basic | 12% / 16% / 19% of income up to £800 for 1 / 2 / 3+ children, then 9% / 12% / 15% of income from £800 to £3,000 |
+| Above £3,000 | Basic, capped | Income above £3,000 is ignored; the receiving parent can apply to the courts |
+| Not enough information | Default | £38 / £51 / £64 |
 
-Plus the **shared-care reduction** (one-seventh per night of shared
-care up to 174 nights/year) and the **other-children adjustment** for
-non-qualifying children living with the paying parent.
+Then:
 
-Phase 3 is optional for headline UC analysis (where the asymmetry in
-Phase 2 is what matters) but unlocks reform scenarios that change the
-CMS rate or threshold.
+- **Shared care:** the amount falls by 1/7 for 52 to 103 nights a year, 2/7
+  for 104 to 155, 3/7 for 156 to 174, and by half plus £7 a week for 175 or
+  more.
+- **Other children:** an adjustment applies for other children living with
+  the paying parent.
+
+The income bands are fixed in legislation, not uprated each year.
+
+Phase 3 is optional for UC analysis, which needs only Phases 1 and 2. It
+allows reforms to the CMS rates or bands to be scored.
 
 ## Implementation outline
 
-### New parameters under `gov/cms/`
+### Parameters under `gov/cms/`
 
-- `gross_income_band/{lower,upper}_threshold.yaml` (£7 and £3,000 weekly
-  in 2025 terms)
-- `rate/basic/{1,2,3_or_more}_child.yaml` (12 / 16 / 19%)
-- `rate/reduced/{base,marginal}.yaml`
-- `shared_care/reduction_per_night.yaml`
-- `take_up/cms_collect_share.yaml` (HMRC published share of CMS-vs-
-  family-arrangement maintenance)
+- `income_bands/`: the £7, £100, £200, £800 and £3,000 limits.
+- `rate/flat.yaml`, `rate/default/` and `rate/basic/` (12/16/19% and
+  9/12/15%).
+- `rate/reduced/`: the reduced-rate formula.
+- `shared_care/`: the night bands and fractions.
 
-### New variables under `variables/gov/cms/`
+### Variables under `variables/gov/cms/`
 
 - `child_maintenance_gross_weekly_income` (Person)
 - `child_maintenance_obligation_pre_shared_care` (Person)
 - `child_maintenance_shared_care_reduction` (Person)
 - `child_maintenance_paid_cms_basis` (Person, derived award)
 
-### UC integration
-
-- `variables/gov/dwp/universal_credit/uc_applicable_income.py` adds
-  `child_maintenance_received` as a deduction (full disregard) and
-  **does not** deduct `child_maintenance_paid` — matching the policy.
-- HBAI keeps the current symmetric treatment; the CSJ asymmetry is a
-  UC-side specific.
-
 ## Data needs
 
-- **FRS** records both receipt and payment of maintenance and identifies
-  the recipient/payer at person level. Phase 1 imputation routes FRS
-  child-maintenance items into the new variables.
-- **CMS / Child Maintenance Statistics** ([gov.uk/government/collections/
-  child-maintenance-service-statistics][cms-stats]) give published
-  CMS-arrangement caseload and total maintenance flowing through the
-  statutory scheme; useful for calibrating the new variables against
-  the share of maintenance that goes through CMS vs. private
-  ("family-based") arrangements.
+- **FRS** records maintenance received and paid at person level. Phase 1
+  needs a check of how far its source items separate child maintenance
+  from spousal maintenance.
+- **DWP [Child Maintenance Service statistics][cms-stats]** (quarterly, latest
+  data to June 2026) give the CMS caseload and amounts. They support checking
+  the new inputs, bearing in mind that many families use private
+  ("family-based") arrangements outside the CMS.
 
 ## References
 
 - Centre for Social Justice, [The Hidden Parent Poverty Trap: Child
   Maintenance and Universal Credit][csj].
-- DWP, [How we work out child maintenance][how-we-work-out] — official
-  user-facing CMS methodology guide.
-- [Child Support Act 1991](https://www.legislation.gov.uk/ukpga/1991/48/contents) — primary statute.
-- [The Child Support Maintenance Calculation Regulations 2012 (SI 2012/2677)](https://www.legislation.gov.uk/uksi/2012/2677/contents) — the operational regulations.
-- HMRC/DWP, [Child Maintenance Service statistics][cms-stats] — caseload and expenditure outturns.
+- GOV.UK, [How child maintenance is worked out](https://www.gov.uk/how-child-maintenance-is-worked-out).
+- [Child Support Act 1991](https://www.legislation.gov.uk/ukpga/1991/48/contents) and [Schedule 1](https://www.legislation.gov.uk/ukpga/1991/48/schedule/1).
+- [The Child Support Maintenance Calculation Regulations 2012 (SI 2012/2677)](https://www.legislation.gov.uk/uksi/2012/2677/contents).
+- [The Universal Credit Regulations 2013, reg. 66](https://www.legislation.gov.uk/uksi/2013/376/regulation/66).
+- DWP, [Child Maintenance Service statistics][cms-stats].
 
 [csj]: https://www.centreforsocialjustice.org.uk/library/the-hidden-parent-poverty-trap-child-maintenance-and-universal-credit
-[how-we-work-out]: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/672432/how-we-work-out-child-maintenance.pdf
-[cms-stats]: https://www.gov.uk/government/collections/child-maintenance-service-statistics
+[cms-stats]: https://www.gov.uk/government/collections/statistics-on-the-2012-statutory-child-maintenance-scheme
