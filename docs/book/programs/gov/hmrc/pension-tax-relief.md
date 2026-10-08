@@ -4,24 +4,38 @@ This page documents how PolicyEngine UK models tax relief on personal
 pension contributions and addresses the confusion reported in
 [#704](https://github.com/PolicyEngine/policyengine-uk/issues/704)
 about whether higher-rate taxpayers receive the right amount of
-relief.
+relief. #704 is still open (October 2026); the figures below were re-run
+on the current model.
 
 ## What the model does
 
 `pension_contributions_relief` (defined in
 [`variables/gov/hmrc/pensions/pension_contributions_relief.py`](../../../policyengine_uk/variables/gov/hmrc/pensions/pension_contributions_relief.py))
-reduces the person's taxable income by the amount of their pension
-contribution, capped at:
+reduces the person's taxable income by their pension contributions,
+limited to:
 
-- the higher of `pension_annual_allowance` (currently £60,000) and the
-  `gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount`
-  (£3,600 — the unearned-income contribution ceiling),
-- the person's total earned income (employment + self-employment),
-- subject to the `pension_contributions_relief_age_limit` (75).
+- the person's employment plus self-employment income;
+- then the higher of `pension_annual_allowance` (£60,000 by default) and
+  `gov.hmrc.income_tax.reliefs.pension_contribution.basic_amount` (£3,600);
+- and only for people under `gov.hmrc.pensions.pension_contributions_relief_age_limit`
+  (75).
+
+The law limits relief to the higher of relevant UK earnings and £3,600
+gross ([Finance Act 2004 s. 190](https://www.legislation.gov.uk/ukpga/2004/12/section/190)).
+The model applies the earnings limit first, so someone with no earnings gets
+no relief. That makes no difference to their income tax, which is zero
+anyway, but it means the basic-rate top-up paid into their pension under
+relief at source is not modelled.
 
 Contributions **above** the annual allowance trigger a separate
 charge — `personal_pension_contributions_tax` — which taxes the
 excess at the person's marginal rate.
+
+One gap: the relief does not reduce `adjusted_net_income`, so contributions
+do not restore personal allowance lost above £100,000, as they do in law
+([Income Tax Act 2007 s. 58](https://www.legislation.gov.uk/ukpga/2007/3/section/58)).
+An employee on £110,000 keeps a £7,570 personal allowance in 2025-26 whether
+or not they contribute £10,000.
 
 So the headline behaviour is: **within the annual allowance, pension
 contributions reduce taxable income £1-for-£1**. The income-tax saving
@@ -31,7 +45,8 @@ rate.
 ## Worked examples
 
 The four scenarios reported in #704 (all 2025-26, all self-employed,
-single person, no other income):
+single person aged 40, no other income). The "model" column was re-run in
+October 2026:
 
 | ID    | Self-employed income | Pension contribution | Expected income-tax change | What the model returns | Why |
 |-------|---------------------|----------------------|-----------------------------|------------------------|-----|
@@ -93,5 +108,6 @@ the model repo.
 - HMRC, [Tax on your private pension contributions: Tax relief](https://www.gov.uk/tax-on-your-private-pension/pension-tax-relief) — user-facing guide to RAS + higher-rate relief.
 - [Finance Act 2004 s. 188-194](https://www.legislation.gov.uk/ukpga/2004/12/section/188) — primary statute for relief-at-source.
 - [Finance Act 2004 s. 227](https://www.legislation.gov.uk/ukpga/2004/12/section/227) — annual allowance excess charge.
-- HMRC, [Pension tax relief statistics](https://www.gov.uk/government/collections/personal-pensions-statistics) — published costing methodology used for the calibration target.
+- HMRC, [Personal pensions statistics](https://www.gov.uk/government/collections/personal-pensions-statistics) — including the published cost of pension tax relief.
+- [Finance Act 2004 s. 190](https://www.legislation.gov.uk/ukpga/2004/12/section/190) — the earnings-or-£3,600 limit on relief.
 - Model variables: [`pension_contributions_relief`](../../../policyengine_uk/variables/gov/hmrc/pensions/pension_contributions_relief.py) and [`personal_pension_contributions_tax`](../../../policyengine_uk/variables/gov/hmrc/pensions/private_pension_contributions_tax.py).
