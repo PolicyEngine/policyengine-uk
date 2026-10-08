@@ -28,6 +28,7 @@ project:
       children:
       - file: docs/engineering/excise-duties.md
       - file: docs/engineering/bus-fares.md
+      - file: docs/engineering/vat-coverage.md
       - file: docs/book/policy/model-baseline
       - file: docs/book/policy/uc-rebalancing
 site:
