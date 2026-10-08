@@ -128,12 +128,8 @@ def test_lower_earnings_limit_2025_26_and_2026_27(system):
     assert threshold(system, "lower_earnings_limit", 2026) == 129
 
 
-@pytest.mark.parametrize("year", [2025, *FROZEN_YEARS])
-def test_annual_secondary_threshold_is_statutory(system, year):
-    # SI 2001/1004 reg 11(3A)(b): £5,000 where the earnings period is a year
-    # (#1967). 52 x the rounded weekly £96 would give £4,992.
-    annual = 52 * threshold(system, "secondary_threshold", year)
-    assert annual == pytest.approx(5_000, abs=0.01)
+# The annual secondary threshold in every year from 2015-16, including the
+# £5,000 from 2025-26 (#1967), is pinned in test_ni_secondary_threshold.py.
 
 
 # Invariant 2: cash freeze.

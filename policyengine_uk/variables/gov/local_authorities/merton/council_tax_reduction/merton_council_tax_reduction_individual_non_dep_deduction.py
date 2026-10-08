@@ -1,10 +1,9 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction._legacy import (
     normal_gross_income_non_dep_deduction,
-    single_claim_is_pensioner,
 )
 from policyengine_uk.variables.gov.local_authorities.council_tax_reduction.config import (
-    is_merton_working_age,
+    is_merton_area,
 )
 
 
@@ -19,15 +18,15 @@ class merton_council_tax_reduction_individual_non_dep_deduction(Variable):
     def formula(person, period, parameters):
         ctr = parameters(period).gov.local_authorities.merton.council_tax_reduction
         household = person.household
-        working_age = is_merton_working_age(
+        # Each claimant's own scheme decides whether their award uses this.
+        in_scheme_area = is_merton_area(
             household("local_authority", period),
             household("country", period),
-            single_claim_is_pensioner(household, period),
         )
         return normal_gross_income_non_dep_deduction(
             person,
             period,
             ctr,
-            working_age,
+            in_scheme_area,
             exempt_uc_no_earned_income=True,
         )

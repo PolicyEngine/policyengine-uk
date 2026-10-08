@@ -304,7 +304,9 @@
     # The eldest adult is not the liable resident; the head is.
     benunit_contains_household_head: [true, false]
     council_tax_reduction_claimant_benunit: [true, false]
-    council_tax_reduction_household_has_pensioner: false
+    # The parent's family is pension-age, but it is not liable and claims
+    # nothing; the householder's claim follows their own family.
+    council_tax_reduction_pensioner: [false, true]
     council_tax_reduction_individual_non_dep_deduction_eligible: [false, true]
     council_tax_reduction_non_dep_deductions: [200, 0]
     simulated_council_tax_reduction_benunit: [1_600, 0]
@@ -337,13 +339,15 @@
         savings: 0
   output:
     # The claimant's family is working-age; Maidstone's working-age scheme is
-    # not modelled, so no simulated reduction.
-    council_tax_reduction_household_has_pensioner: false
-    council_tax_reduction_scheme_supported: false
+    # not modelled, so no simulated reduction. The parent's family would be on
+    # the pensioner scheme, but it is not liable and claims nothing.
+    council_tax_reduction_pensioner: [false, true]
+    council_tax_reduction_scheme_supported: [false, true]
     simulated_council_tax_reduction_benunit: [0, 0]
+    council_tax_benefit: [0, 0]
     # A non-dependant's Attendance Allowance does not exempt the claimant
     # from non-dependant deductions (SI 2012/2885 Sch 1 para 8(6)).
-    council_tax_reduction_household_has_non_dep_exemption: false
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, true]
 
 - name: With two members flagged as head, the eldest flagged member's family claims
   period: 2026

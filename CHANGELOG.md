@@ -1,3 +1,37 @@
+## [2.123.7] - 2026-10-08
+
+### Fixed
+
+- - Correct the Energy Bills Support Scheme amounts, monthly timing, and eligibility in Great Britain and Northern Ireland.
+- - Corrected the 2020 over-75 TV licence Pension Credit transition to start on 1 August while preserving its Boolean eligibility rule.
+
+
+## [2.123.6] - 2026-10-08
+
+### Fixed
+
+- Assess each family that claims Council Tax Reduction under its own scheme and its own non-dependant exemption, so in a shared-rent household a working-age sharer no longer takes the pensioner scheme because the household head's family is pension-age (or the reverse), and one claimant's disability no longer exempts another's claim from non-dependant deductions.
+- - Disregard Housing Benefit income and capital on receipt of Guarantee Credit, so pensioners who do not claim Pension Credit retain the ordinary means test.
+
+
+## [2.123.5] - 2026-10-07
+
+### Fixed
+
+- - Corrected the Class 1 secondary threshold for 2015-16 and 2016-17 to the statutory £156 a week (£8,112 a year); it held the £155 primary threshold.
+
+
+## [2.123.4] - 2026-10-07
+
+### Fixed
+
+- - Apply the Income Support ESA and existing-award conditions only to the claimant and partner (SSCBA 1992 s.124(1)). Another member of the benefit unit who is neither the claimant nor the partner (a non-dependent adult or a dependent young person) no longer bars the claim by having income-related ESA, and no longer counts as having an existing Income Support award.
+  - Treat the claimant or partner who reports the existing Income Support award as the claimant. No new claim can be made (UC (Transitional Provisions) Regs 2014 reg 6A(1), from 25 July 2022; the model applies this in every year), and a partner who takes over an award makes a claim (Claims and Payments Regs 1987 reg 4(4)). That person must be under the qualifying age for State Pension Credit, in a prescribed category and without ESA, so a partner who cares can no longer take over the other partner's award.
+  - Bar Income Support when the claimant is entitled to contributory ESA (s.124(1)(h)). Income-related ESA of the claimant or partner still bars it. An `esa_income` that the reported awards do not explain (one entered directly, or set by a reform) is taken to be theirs. An amount within half a penny of zero is no award, so a float residual no longer bars the claim.
+  - Add the IS Regs 1987 Sch 1B para 2 prescribed category: a single claimant or lone parent with a child under 16 placed by a local authority (proxied by `is_looked_after_by_local_authority`).
+  - Leave a child placed by a local authority out of `youngest_child_age_for_legacy_benefits`; such a child is not a member of the claimant's household (IS Regs 1987 reg 16(4)).
+
+
 ## [2.123.3] - 2026-10-07
 
 ### Fixed

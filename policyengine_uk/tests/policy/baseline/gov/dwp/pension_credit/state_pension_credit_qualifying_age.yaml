@@ -38,7 +38,7 @@
     is_SP_age: false
     is_pension_credit_eligible: true
     is_uc_eligible: false
-    council_tax_reduction_household_has_pensioner: true
+    council_tax_reduction_pensioner: true
     is_benefit_cap_exempt_other: true
     # SI 2000/729 reg 2(1)(i): 200 for a person under 80 not in residential care.
     winter_fuel_allowance: 200
@@ -160,7 +160,7 @@
     is_SP_age: false
     is_pension_credit_eligible: false
     is_uc_eligible: true
-    council_tax_reduction_household_has_pensioner: false
+    council_tax_reduction_pensioner: false
     is_benefit_cap_exempt_other: false
     winter_fuel_allowance: 0
 
