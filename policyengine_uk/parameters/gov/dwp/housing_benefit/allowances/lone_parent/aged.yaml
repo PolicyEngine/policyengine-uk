@@ -9,7 +9,16 @@ values:
   2022-04-06: 197.1
   2023-04-01: 217
   2024-04-01: 235.2
-  2025-04-01: 239.2
+  2025-04-01:
+    value: 244.4
+    metadata:
+      reference:
+        - title: The Social Security Benefits Up-rating Order 2025, Schedule 6 paragraph 1(1)(b)
+          href: https://www.legislation.gov.uk/uksi/2025/295/schedule/6/made
+        - title: The Social Security Benefits Up-rating Order (Northern Ireland) 2025, Schedule 6 paragraph 1(1)(b)
+          href: https://www.legislation.gov.uk/nisr/2025/64/schedule/6/made
+        - title: Benefit and pension rates 2025 to 2026, Housing Benefit personal allowances
+          href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
   2026-04-01: 256
 
 metadata:
