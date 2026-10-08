@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.excise import fiscal_year_segments
 
 
 class tv_licence_discount(Variable):
@@ -9,7 +10,8 @@ class tv_licence_discount(Variable):
     unit = "/1"
     reference = (
         "https://www.legislation.gov.uk/ukpga/2003/21/section/365A",
-        "https://www.tvlicensing.co.uk/reducedfee",
+        "https://www.gov.uk/government/news/bbc-and-governments-joint-statement-on-delaying-the-tv-licence-fee-for-over-75s",
+        "https://www.gov.uk/free-discount-tv-licence",
     )
 
     def formula(household, period, parameters):
@@ -17,12 +19,18 @@ class tv_licence_discount(Variable):
         tv_licence = parameters(period).gov.dcms.bbc.tv_licence
 
         # Aged discount
-        aged = person("age", period) >= tv_licence.discount.aged.min_age
-        has_aged = household.any(aged)
         claims_pc = add(household, period, ["pension_credit"]) > 0
-        meets_pc_requirement = not_(tv_licence.discount.aged.must_claim_pc) | claims_pc
-        eligible_for_aged_discount = has_aged & meets_pc_requirement
-        aged_discount = eligible_for_aged_discount * tv_licence.discount.aged.discount
+        aged_discount = 0
+        for aged_rules, share in fiscal_year_segments(
+            parameters.gov.dcms.bbc.tv_licence.discount.aged,
+            period.start.year,
+        ):
+            aged = person("age", period) >= aged_rules.min_age
+            has_aged = household.any(aged)
+            meets_pc_requirement = not_(aged_rules.must_claim_pc) | claims_pc
+            aged_discount += (
+                has_aged * meets_pc_requirement * aged_rules.discount * share
+            )
 
         # Blind discount
         is_blind = person("is_blind", period)
