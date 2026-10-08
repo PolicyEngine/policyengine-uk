@@ -1,0 +1,9 @@
+description: Weekly remunerative work hours for Housing Benefit childcare
+values:
+  2015-04-01: 16
+metadata:
+  unit: hour
+  label: weekly remunerative work hours for housing benefit childcare
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/6

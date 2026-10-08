@@ -1,0 +1,9 @@
+description: Maximum break preserving the pension-age special earnings disregard
+values:
+  2015-04-01: 8
+metadata:
+  unit: week
+  label: maximum break preserving the pension-age special earnings disregard
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/5

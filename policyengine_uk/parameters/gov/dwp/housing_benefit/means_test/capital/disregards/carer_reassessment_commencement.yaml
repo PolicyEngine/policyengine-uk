@@ -1,0 +1,19 @@
+description: Commencement of the specific Carer's Allowance reassessment capital exclusion.
+values:
+  2015-04-01: 20260716
+metadata:
+  unit: date
+  label: housing benefit commencement of the specific carer's allowance reassessment capital exclusion
+  reference:
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/6
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/6
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/7
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/7
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/uksi/2026/681
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/nisr/2026/146

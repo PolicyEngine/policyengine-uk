@@ -1,0 +1,13 @@
+description: Whether the former pension-age allowance category for claimants under 65 remains in legislation.
+values:
+  2015-04-01: true
+  2018-12-06: false
+metadata:
+  unit: bool
+  label: housing benefit former under-65 pension category applies
+  preserve_calendar_dates: true
+  reference:
+    - title: Housing Benefit statutory rule 1
+      href: https://www.legislation.gov.uk/uksi/2017/1187/regulation/7/made
+    - title: Housing Benefit statutory rule 2
+      href: https://www.legislation.gov.uk/nisr/2017/242/regulation/7/made

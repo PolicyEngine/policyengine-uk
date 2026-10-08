@@ -94,3 +94,66 @@ def test_pension_capital_values_have_dated_gb_and_ni_sources(
     assert date in values
     references = {reference["href"] for reference in values[date].metadata["reference"]}
     assert references == expected_references
+
+
+@pytest.mark.parametrize(
+    "year,single,couple,under_65_single,under_65_couple",
+    [
+        # Original annual Orders/Adjustment Regulations, GB and NI.
+        (2015, 166.05, 248.30, 151.20, 230.85),
+        (2016, 168.70, 252.30, 155.60, 237.55),
+        (2017, 172.55, 258.15, 159.35, 243.25),
+        (2018, 176.40, 263.80, 163.00, 248.80),
+    ],
+)
+def test_original_pension_allowance_history(
+    written_housing_benefit_parameters,
+    year,
+    single,
+    couple,
+    under_65_single,
+    under_65_couple,
+):
+    allowances = written_housing_benefit_parameters.allowances
+    date = f"{year}-04-30"
+    for name in ("single", "lone_parent"):
+        assert getattr(allowances, name).aged(date) == single
+        assert getattr(allowances, name).pension_age_under_65(date) == under_65_single
+    assert allowances.couple.aged(date) == couple
+    assert allowances.couple.pension_age_under_65(date) == under_65_couple
+
+
+def test_under_65_category_removed_on_statutory_date(
+    written_housing_benefit_parameters,
+):
+    category = written_housing_benefit_parameters.allowances.pension_age_history.under_65_category_applies
+    assert category("2018-12-05")
+    assert not category("2018-12-06")
+
+
+@pytest.mark.parametrize(
+    "year,thresholds,amounts",
+    [
+        (
+            2015,
+            [0, 129, 189, 246, 328, 408],
+            [14.55, 33.40, 45.85, 75.05, 85.45, 93.80],
+        ),
+        (
+            2016,
+            [0, 133, 195, 253, 338, 420],
+            [14.65, 33.65, 46.20, 75.60, 86.10, 94.50],
+        ),
+        (
+            2017,
+            [0, 136, 200, 259, 346, 430],
+            [14.80, 34.00, 46.65, 76.35, 86.95, 95.45],
+        ),
+    ],
+)
+def test_original_non_dependant_scale_history(
+    written_housing_benefit_parameters, year, thresholds, amounts
+):
+    scale = written_housing_benefit_parameters.non_dep_deduction.amount(f"{year}-04-30")
+    assert list(scale.thresholds) == thresholds
+    assert list(scale.amounts) == amounts

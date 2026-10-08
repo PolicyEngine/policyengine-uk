@@ -1,0 +1,9 @@
+description: Maximum break linking old incapacity periods
+values:
+  2015-04-01: 56
+metadata:
+  unit: day
+  label: maximum break linking old incapacity periods
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/28

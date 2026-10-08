@@ -15,10 +15,12 @@ description: >
   pension-age regulations and paragraphs 32 and 33 of Schedule 7 to the
   Northern Ireland regulations make the same disregard). Datasets built before
   private pension wealth was split out of `corporate_wealth` still carry it
-  inside that countable bucket. Other Schedule 6 disregards within these broad
-  asset classes are not yet split out separately. Because the
-  dataset only provides household-level capital stocks, the model allocates
-  them across benunits using an adult-share proxy.
+  inside that countable bucket. Category-specific retained capital exclusions
+  are removed before allocation, where their payment, purpose, date and
+  statutory qualification facts are supplied. Not every historic compensation
+  scheme in Schedule 6 has a separate input. Known claimant/partner capital,
+  including a reported zero, replaces the household proxy rather than adding
+  to it. Otherwise household stocks are allocated by claimant/partner counts.
 metadata:
   label: Housing Benefit countable capital sources
   period: year
@@ -34,8 +36,8 @@ metadata:
       href: https://www.legislation.gov.uk/nisr/2006/405/schedule/7/paragraph/32
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 reg. 44(1)
       href: https://www.legislation.gov.uk/uksi/2006/214/regulation/44
-    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 6 para. 1
-      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/6/paragraph/1
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 6 para. 26
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/6/paragraph/26
     - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 6 para. 24
       href: https://www.legislation.gov.uk/uksi/2006/214/schedule/6/paragraph/24
 values:

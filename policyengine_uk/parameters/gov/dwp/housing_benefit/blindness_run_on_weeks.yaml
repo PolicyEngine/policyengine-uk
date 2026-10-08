@@ -1,0 +1,12 @@
+description: Period for which a person who regains sight remains treated as blind for Housing Benefit premium and childcare conditions.
+values:
+  2006-04-01: 28
+metadata:
+  unit: week
+  reference:
+    - title: Housing Benefit Regulations 2006, Schedule 3 paragraph 13(2)
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/13
+    - title: Housing Benefit childcare, regulation 28(10)(b)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/28
+    - title: Pension-age Housing Benefit, Schedule 3 paragraph 6(5)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/6

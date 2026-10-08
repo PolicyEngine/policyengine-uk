@@ -13,14 +13,11 @@ class meets_housing_benefit_additional_earnings_disregard_conditions(Variable):
         "least 30 hours a week; a couple with a child or young person, or a "
         "lone parent, with someone working at least 16 hours; or a disabled "
         "claimant or partner working at least 16 hours. Disability uses the "
-        "input the model uses for the disability premium. Membership of the "
-        "work-related activity group and the support component are not "
-        "modelled. Nor is the Working Tax Credit 30 hour element route "
-        "(paragraph 17(2)(a) and 9(2)(a)); beyond the routes above it covers "
-        "only a couple whose 30-hour worker is under 25 and whose partner is "
-        "aged at least 60 and works 16 hours, and a disability that meets the "
-        "Working Tax Credit test but not the disability premium one, and no "
-        "tax credit can be claimed for 2025-26 onwards. The 50 plus element "
+        "input the model uses for the disability premium together with "
+        "determined ESA work-related activity and support-group status. "
+        "Pension-age claims use their own Schedule 4 disability conditions. "
+        "An actual Working Tax Credit 30-hour-element award is a separate "
+        "route (paragraph 17(2)(a) and 9(2)(a)). The 50 plus element "
         "route (paragraph 17(2)(c) and 9(2)(c)) ended with the element on 6 "
         "April 2012. The net earnings test is applied in "
         "housing_benefit_applicable_income_disregard. Only the claimant's and "
@@ -41,8 +38,11 @@ class meets_housing_benefit_additional_earnings_disregard_conditions(Variable):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         hours = person("weekly_hours", period)
-        works_hours = claimant_or_partner & (hours >= p.worker_hours)
-        works_lower_hours = claimant_or_partner & (hours >= p.worker_hours_lower)
+        remunerative = person("housing_benefit_remunerative_work", period)
+        works_hours = claimant_or_partner & remunerative & (hours >= p.worker_hours)
+        works_lower_hours = (
+            claimant_or_partner & remunerative & (hours >= p.worker_hours_lower)
+        )
         # Para 17(2)(b)(i) and 9(2)(b)(i): one person meets both tests.
         aged_worker = benunit.any(works_hours & (person("age", period) >= p.worker_age))
         # Para 17(2)(b)(ii)-(iii) and 9(2)(b)(ii)-(iii).
@@ -54,7 +54,20 @@ class meets_housing_benefit_additional_earnings_disregard_conditions(Variable):
         )
         family_worker = family_with_child & benunit.any(works_lower_hours)
         # Para 17(2)(b)(iv)-(v) and 9(2)(b)(iv): the disabled person works.
-        disabled_worker = benunit.any(
-            works_lower_hours & person("is_disabled_for_benefits", period)
+        working_age_disability = (
+            person("is_disabled_for_benefits", period)
+            | person("esa_work_related_activity_group", period)
+            | person("esa_support_group", period)
         )
-        return aged_worker | family_worker | disabled_worker
+        disability = where(
+            person.benunit("housing_benefit_pension_age_regulations_apply", period),
+            person("housing_benefit_pension_special_disregard_conditions", period),
+            working_age_disability,
+        )
+        disabled_worker = benunit.any(works_lower_hours & disability)
+        return (
+            aged_worker
+            | family_worker
+            | disabled_worker
+            | benunit("working_tax_credit_30_hour_element_in_award", period)
+        )

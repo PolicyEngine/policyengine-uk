@@ -11,4 +11,8 @@ class housing_benefit_individual_non_dep_deduction_eligible(Variable):
         rent_liable = person.benunit("benunit_is_rent_liable", period)
         p = parameters(period).gov.dwp.housing_benefit.non_dep_deduction
         age_eligible = person("age", period) >= p.age_threshold
-        return age_eligible & ~rent_liable
+        return (
+            age_eligible
+            & ~rent_liable
+            & ~person("housing_benefit_non_dep_additional_exception", period)
+        )

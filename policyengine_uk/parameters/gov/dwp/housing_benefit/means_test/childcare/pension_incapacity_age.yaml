@@ -1,0 +1,9 @@
+description: Pension-age childcare partner incapacity age
+values:
+  2015-04-01: 80
+metadata:
+  unit: year
+  label: pension-age childcare partner incapacity age
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/31

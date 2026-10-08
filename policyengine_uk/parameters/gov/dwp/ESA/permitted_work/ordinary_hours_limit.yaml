@@ -1,0 +1,9 @@
+description: Exclusive weekly hours limit for ordinary higher-limit permitted work
+values:
+  2015-04-01: 16
+metadata:
+  unit: hour
+  label: exclusive weekly hours limit for ordinary higher-limit permitted work
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45

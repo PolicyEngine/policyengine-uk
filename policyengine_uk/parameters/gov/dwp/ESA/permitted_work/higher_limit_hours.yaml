@@ -1,0 +1,9 @@
+description: Minimum-wage hours used to calculate the higher permitted-work earnings limit
+values:
+  2015-04-01: 16
+metadata:
+  unit: hour
+  label: minimum-wage hours used to calculate the higher permitted-work earnings limit
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45

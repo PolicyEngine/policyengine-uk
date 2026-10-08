@@ -1,0 +1,9 @@
+description: Maximum break linking ESA limited-capability periods
+values:
+  2015-04-01: 84
+metadata:
+  unit: day
+  label: maximum break linking esa limited-capability periods
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/28

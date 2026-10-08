@@ -1,0 +1,9 @@
+description: Linked incapacity days for Housing Benefit childcare
+values:
+  2015-04-01: 196
+metadata:
+  unit: day
+  label: linked incapacity days for housing benefit childcare
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/28

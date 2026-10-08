@@ -1,0 +1,9 @@
+description: Weekly special Housing Benefit earnings disregard
+values:
+  2015-04-01: 20
+metadata:
+  unit: currency-GBP
+  label: weekly special housing benefit earnings disregard
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4

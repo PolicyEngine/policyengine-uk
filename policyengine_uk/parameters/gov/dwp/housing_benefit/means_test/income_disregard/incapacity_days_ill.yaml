@@ -1,0 +1,9 @@
+description: Old incapacity duration for an ill claimant under the statutory shortened route
+values:
+  2015-04-01: 196
+metadata:
+  unit: day
+  label: old incapacity duration for an ill claimant under the statutory shortened route
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/5

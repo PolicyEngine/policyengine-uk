@@ -1,0 +1,10 @@
+description: Housing Benefit family premium is available without abolition protection in Northern Ireland.
+values:
+  2006-04-01: true
+  2016-09-05: false
+metadata:
+  unit: bool
+  preserve_calendar_dates: true
+  reference:
+    - title: Housing Benefit family premium abolition and transitional protection
+      href: https://www.legislation.gov.uk/nisr/2016/310/made

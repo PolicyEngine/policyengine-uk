@@ -1,0 +1,12 @@
+description: Whether the former ordinary higher-limit permitted-work 52-week restriction applies.
+values:
+  2015-04-01: true
+  2017-04-03: false
+metadata:
+  unit: bool
+  label: former permitted-work duration restriction applies
+  reference:
+    - title: Removal of the ESA permitted-work 52-week restriction
+      href: https://www.legislation.gov.uk/uksi/2017/205/regulation/3/made
+    - title: Northern Ireland matching removal from 3 April 2017
+      href: https://www.legislation.gov.uk/nisr/2017/50/regulation/3/made

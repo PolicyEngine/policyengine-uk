@@ -1,0 +1,9 @@
+description: Lower permitted-work weekly earnings limit
+values:
+  2015-04-01: 20
+metadata:
+  unit: currency-GBP
+  label: lower permitted-work weekly earnings limit
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45

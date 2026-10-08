@@ -1,0 +1,31 @@
+description: Weekly ordinary Housing Benefit family premium, where abolition protection applies.
+values:
+  2015-04-01: 17.45
+  2020-04-01: 17.6
+  2021-04-01: 17.65
+  2022-04-01: 17.85
+  2023-04-01: 18.53
+  2024-04-01: 19.15
+  2025-04-01: 19.48
+  2026-04-01: 20.22
+metadata:
+  unit: currency-GBP
+  period: week
+  uprating: gov.benefit_uprating_cpi
+  reference:
+    - title: Social Security Benefits Up-rating Order 2015, family premium
+      href: https://www.legislation.gov.uk/uksi/2015/457/article/18/made
+    - title: Social Security Benefits Up-rating Order 2020, family premium
+      href: https://www.legislation.gov.uk/uksi/2020/234/article/25/made
+    - title: Social Security Benefits Up-rating Order 2021, family premium
+      href: https://www.legislation.gov.uk/uksi/2021/162/article/25/made
+    - title: Social Security Benefits Up-rating Order 2022, family premium
+      href: https://www.legislation.gov.uk/uksi/2022/292/article/25/made
+    - title: Social Security Benefits Up-rating Order 2023, family premium
+      href: https://www.legislation.gov.uk/uksi/2023/316/article/25/made
+    - title: Social Security Benefits Up-rating Order 2024, family premium
+      href: https://www.legislation.gov.uk/uksi/2024/242/article/24/made
+    - title: Social Security Benefits Up-rating Order 2025, family premium
+      href: https://www.legislation.gov.uk/uksi/2025/295/article/24/made
+    - title: Social Security Benefits Up-rating Order 2026, family premium
+      href: https://www.legislation.gov.uk/uksi/2026/148/article/24/made

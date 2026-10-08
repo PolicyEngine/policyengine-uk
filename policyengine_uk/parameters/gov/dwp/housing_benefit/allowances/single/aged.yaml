@@ -1,6 +1,35 @@
 description: The following personal allowance amount is provided to single filers over the pension age under the Housing Benefit.
 values:
-  2015-04-01: 181
+  2015-04-01:
+    value: 166.05
+    metadata:
+      reference:
+        - title: Enacted pension-age Housing Benefit allowances for 2015
+          href: https://www.legislation.gov.uk/uksi/2015/457/schedule/7/made
+  2016-04-01:
+    value: 168.7
+    metadata:
+      reference:
+        - title: Enacted pension-age Housing Benefit allowances for 2016
+          href: https://www.legislation.gov.uk/uksi/2016/242/regulation/6/made
+  2017-04-01:
+    value: 172.55
+    metadata:
+      reference:
+        - title: Enacted pension-age Housing Benefit allowances for 2017
+          href: https://www.legislation.gov.uk/uksi/2017/260/schedule/7/made
+  2018-04-01:
+    value: 176.4
+    metadata:
+      reference:
+        - title: Enacted pension-age Housing Benefit allowances for 2018
+          href: https://www.legislation.gov.uk/uksi/2018/281/schedule/6/made
+  2019-04-01:
+    value: 181
+    metadata:
+      reference:
+        - title: Enacted pension-age Housing Benefit allowances for 2019
+          href: https://www.legislation.gov.uk/uksi/2019/480/schedule/6/made
   2021-04-01: 191.15
   2022-04-06: 197.1
   2023-04-01: 217
@@ -14,6 +43,14 @@ metadata:
   label: Housing benefit single aged personal allowance
   uprating: gov.benefit_uprating_cpi
   reference: 
+    - title: Northern Ireland pension-age Housing Benefit allowances 2015
+      href: https://www.legislation.gov.uk/nisr/2015/124/schedule/7/made
+    - title: Northern Ireland pension-age Housing Benefit allowances 2016
+      href: https://www.legislation.gov.uk/nisr/2016/110/regulation/6/made
+    - title: Northern Ireland pension-age Housing Benefit allowances 2017
+      href: https://www.legislation.gov.uk/nisr/2017/56/schedule/7/made
+    - title: Northern Ireland pension-age Housing Benefit allowances 2018
+      href: https://www.legislation.gov.uk/nisr/2018/58/schedule/6/made
     - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
       href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
     - title: Benefit and pension rates 2024 to 2025 - Policy paper

@@ -1,0 +1,9 @@
+description: Maximum sick absence treated as work for Housing Benefit childcare
+values:
+  2015-04-01: 28
+metadata:
+  unit: week
+  label: maximum sick absence treated as work for housing benefit childcare
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/28

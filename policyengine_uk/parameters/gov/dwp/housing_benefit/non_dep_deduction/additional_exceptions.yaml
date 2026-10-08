@@ -1,0 +1,43 @@
+description: Housing Benefit additional non-dependant exception thresholds and pension-age postponement.
+metadata:
+  reference:
+    - title: Housing Benefit Regulations 2006, regulation 74(7)-(8)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/74
+    - title: Housing Benefit (State Pension Credit) Regulations 2006, regulation 59(10)-(13)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/59
+    - title: Northern Ireland pension-age Housing Benefit Regulations 2006, regulation 57
+      href: https://www.legislation.gov.uk/nisr/2006/406/regulation/57
+hospital_weeks:
+  description: Minimum linked inpatient duration, exceeded before the non-dependant absence exemption applies.
+  values:
+    2006-04-01: 52
+  metadata:
+    unit: week
+assessment_phase_age:
+  description: Age below which income-related ESA outside the support and work-related activity groups exempts a non-dependant.
+  values:
+    2006-04-01: 25
+  metadata:
+    unit: year
+former_pension_age:
+  description: Former claimant or partner age condition for pension-age non-dependant student exemptions and postponement, retained for Northern Ireland students.
+  values:
+    2006-04-01: 65
+  metadata:
+    unit: year
+age_condition_removed:
+  description: Date the age-65 condition ended for GB pension-age student exemptions and GB and NI pension-age postponement, encoded YYYYMMDD.
+  values:
+    2006-04-01: 20181206
+  metadata:
+    reference:
+      - title: Social Security (Equalisation of State Pension Age) Regulations 2017, regulation 7
+        href: https://www.legislation.gov.uk/uksi/2017/1187/regulation/7
+      - title: Social Security (Equalisation of State Pension Age) Regulations (Northern Ireland) 2017, regulation 7
+        href: https://www.legislation.gov.uk/nisr/2017/242/regulation/7
+postponement_weeks:
+  description: Pension-age Housing Benefit postponement of a qualifying non-dependant deduction increase.
+  values:
+    2006-04-01: 26
+  metadata:
+    unit: week

@@ -1,0 +1,9 @@
+description: Permitted-work limit upward rounding increment
+values:
+  2015-04-01: 0.5
+metadata:
+  unit: currency-GBP
+  label: permitted-work limit upward rounding increment
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45

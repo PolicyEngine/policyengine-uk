@@ -1,0 +1,9 @@
+description: Former ordinary higher-limit permitted-work duration limit
+values:
+  2015-04-01: 52
+metadata:
+  unit: week
+  label: former ordinary higher-limit permitted-work duration limit
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2008/794/regulation/45

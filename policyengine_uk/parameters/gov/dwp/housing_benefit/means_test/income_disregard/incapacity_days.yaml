@@ -1,0 +1,9 @@
+description: Old incapacity duration for pension-age special earnings disregard
+values:
+  2015-04-01: 364
+metadata:
+  unit: day
+  label: old incapacity duration for pension-age special earnings disregard
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/5

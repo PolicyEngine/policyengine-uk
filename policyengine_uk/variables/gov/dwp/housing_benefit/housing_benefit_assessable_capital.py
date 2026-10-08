@@ -10,7 +10,10 @@ class housing_benefit_assessable_capital(Variable):
         "Household sources are allocated across benunits in proportion to their "
         "claimants and partners, a PolicyEngine convention because household "
         "capital data cannot identify ownership; children and young persons add "
-        "no weight. Person-level sources, such as a Lifetime ISA, count only for "
+        "no weight. Supplied category-specific retained exclusions are removed "
+        "before this allocation. A known claimant/partner owned amount, "
+        "including zero, instead replaces the household proxy, less only "
+        "their own qualifying exclusions. Person-level sources, such as a Lifetime ISA, count only for "
         "the holder's own benunit, and only when the holder is its claimant or "
         "partner (is_claimant_or_partner): a dependant's capital is not the "
         "claimant's. Where the Pension Credit award is savings credit only, the "
@@ -43,6 +46,21 @@ class housing_benefit_assessable_capital(Variable):
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
         household_capital = sum(household(source, period) for source in p.sources)
+        working_exclusions = person(
+            "housing_benefit_working_age_disregarded_capital", period
+        )
+        pension_exclusions = person(
+            "housing_benefit_pension_age_disregarded_capital", period
+        )
+        # Remove retained excluded funds before allocating a shared household
+        # stock. Subtracting them after allocation would charge another family
+        # for part of the holder's excluded money.
+        household_exclusions = where(
+            pension_age_regulations,
+            benunit.max(person.household.sum(pension_exclusions)),
+            benunit.max(person.household.sum(working_exclusions)),
+        )
+        household_capital = max_(household_capital - household_exclusions, 0)
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
@@ -72,10 +90,33 @@ class housing_benefit_assessable_capital(Variable):
         savings_credit_only = pension_age_regulations & benunit(
             "in_receipt_of_savings_credit_only", period
         )
+        owned_exclusions = benunit.sum(
+            where(
+                person.benunit("housing_benefit_pension_age_regulations_apply", period),
+                pension_exclusions,
+                working_exclusions,
+            )
+            * claimant_or_partner
+        )
+        known_owned_capital = max_(
+            benunit("housing_benefit_owned_household_capital", period)
+            - owned_exclusions,
+            0,
+        )
+        # A known zero replaces the proxy just as a positive supplied value
+        # does. Person-level LISA capital is added once, in either path.
+        ordinary_capital = (
+            where(
+                benunit("housing_benefit_owned_household_capital_known", period),
+                known_owned_capital,
+                household_capital_proxy,
+            )
+            + person_capital
+        )
         capital = where(
             savings_credit_only,
             benunit("pension_credit_assessable_capital", period),
-            household_capital_proxy + person_capital,
+            ordinary_capital,
         )
         # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
         # reg 24) disregards the whole of the capital and income of a

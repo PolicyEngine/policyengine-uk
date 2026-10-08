@@ -1,0 +1,9 @@
+description: Minimum age for the school or local authority out-of-hours childcare route
+values:
+  2015-04-01: 8
+metadata:
+  unit: year
+  label: minimum age for the school or local authority out-of-hours childcare route
+  reference:
+    - title: Housing Benefit statutory conditions
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/28

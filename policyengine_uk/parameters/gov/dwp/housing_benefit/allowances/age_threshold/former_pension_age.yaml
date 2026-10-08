@@ -1,0 +1,9 @@
+description: Age boundary for the former lower pension-age Housing Benefit allowance category.
+values:
+  2015-04-01: 65
+metadata:
+  unit: year
+  label: housing benefit former pension-age allowance boundary
+  reference:
+    - title: Housing Benefit pension-age Regulations 2006, Schedule 3 paragraph 1 as in 2015
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/2015-04-06

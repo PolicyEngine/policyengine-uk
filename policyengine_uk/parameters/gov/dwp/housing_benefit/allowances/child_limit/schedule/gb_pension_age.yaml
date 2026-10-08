@@ -1,0 +1,22 @@
+description: Whether the Housing Benefit two-child personal-allowance restriction applies under this regulation set.
+values:
+  2015-04-01: false
+  2017-04-06: true
+  2024-06-08: false
+metadata:
+  unit: bool
+  label: housing benefit gb pension age child limit applies
+  preserve_calendar_dates: true
+  reference:
+    - title: Housing Benefit statutory rule 1
+      href: https://www.legislation.gov.uk/uksi/2017/376/made
+    - title: Housing Benefit statutory rule 2
+      href: https://www.legislation.gov.uk/nisr/2017/79/made
+    - title: Housing Benefit statutory rule 3
+      href: https://www.legislation.gov.uk/uksi/2024/611/regulation/6
+    - title: Housing Benefit statutory rule 4
+      href: https://www.legislation.gov.uk/nisr/2024/119/regulation/5
+    - title: Housing Benefit statutory rule 5
+      href: https://www.legislation.gov.uk/uksi/2026/316/regulation/2
+    - title: Housing Benefit statutory rule 6
+      href: https://www.legislation.gov.uk/nisr/2026/68/regulation/2

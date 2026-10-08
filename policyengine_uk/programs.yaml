@@ -224,12 +224,12 @@ programs:
     full_name: Housing Benefit
     category: Benefits
     agency: DWP
-    status: complete
+    status: partial
     coverage: UK
     variable: housing_benefit
     parameter_prefix: gov.dwp.housing_benefit
     verified_start_year: 2022
-    notes: Legacy benefit being replaced by Universal Credit
+    notes: Legacy benefit being replaced by Universal Credit; special childcare, capital and award-history rules require factual inputs, and some historical/cohort and non-dependant provisions remain incomplete. See docs/engineering/housing-benefit-assessment.md.
 
   - id: income_support
     name: Income Support

@@ -1,0 +1,19 @@
+description: Working-age qualifying arrears capital exclusion period.
+values:
+  2015-04-01: 52
+metadata:
+  unit: week
+  label: housing benefit working-age qualifying arrears capital exclusion period
+  reference:
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/6
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/6
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/7
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/7
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/uksi/2026/681
+    - title: Housing Benefit capital exclusion legislation
+      href: https://www.legislation.gov.uk/nisr/2026/146

@@ -1,0 +1,34 @@
+description: Weekly pension-age Housing Benefit personal allowance where neither claimant nor partner has attained age 65, before the category was removed on 6 December 2018.
+values:
+  2015-04-01: 151.2
+  2016-04-01: 155.6
+  2017-04-01: 159.35
+  2018-04-01: 163
+  2018-12-06: 0
+metadata:
+  period: week
+  unit: currency-GBP
+  label: housing benefit single pension-age allowance below 65
+  reference:
+    - title: Northern Ireland pension-age Housing Benefit allowances 2015
+      href: https://www.legislation.gov.uk/nisr/2015/124/schedule/7/made
+    - title: Northern Ireland pension-age Housing Benefit allowances 2016
+      href: https://www.legislation.gov.uk/nisr/2016/110/regulation/6/made
+    - title: Northern Ireland pension-age Housing Benefit allowances 2017
+      href: https://www.legislation.gov.uk/nisr/2017/56/schedule/7/made
+    - title: Northern Ireland pension-age Housing Benefit allowances 2018
+      href: https://www.legislation.gov.uk/nisr/2018/58/schedule/6/made
+    - title: Pension-age Housing Benefit Regulations 2006, Schedule 3, former paragraph 1
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/2015-04-06
+    - title: Social Security Benefits Up-rating Order 2015, Schedule 7
+      href: https://www.legislation.gov.uk/uksi/2015/457/schedule/7/made
+    - title: Social Security Benefits Up-rating Regulations 2016, regulation 6
+      href: https://www.legislation.gov.uk/uksi/2016/242/regulation/6/made
+    - title: Social Security Benefits Up-rating Order 2017, Schedule 7
+      href: https://www.legislation.gov.uk/uksi/2017/260/schedule/7/made
+    - title: Social Security Benefits Up-rating Order 2018, Schedule 6
+      href: https://www.legislation.gov.uk/uksi/2018/281/schedule/6/made
+    - title: Removal of the under-65 category from 6 December 2018
+      href: https://www.legislation.gov.uk/uksi/2017/1187/regulation/7/made
+    - title: Northern Ireland matching removal of the under-65 category
+      href: https://www.legislation.gov.uk/nisr/2017/242/regulation/7/made

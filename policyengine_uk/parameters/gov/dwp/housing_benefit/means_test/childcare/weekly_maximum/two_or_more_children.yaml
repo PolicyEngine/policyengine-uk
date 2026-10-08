@@ -1,0 +1,14 @@
+description: Maximum weekly relevant Housing Benefit childcare charges for two or more children.
+values:
+  2015-04-01: 300
+metadata:
+  unit: currency-GBP
+  period: week
+  label: housing benefit childcare maximum for two or more children
+  reference:
+    - title: Housing Benefit Regulations 2006, regulation 27(3)
+      href: https://www.legislation.gov.uk/uksi/2006/213/regulation/27
+    - title: Pension-age Housing Benefit Regulations 2006, regulation 30(3)
+      href: https://www.legislation.gov.uk/uksi/2006/214/regulation/30
+    - title: Northern Ireland Housing Benefit Regulations, regulation 24(3)
+      href: https://www.legislation.gov.uk/nisr/2006/405/regulation/24

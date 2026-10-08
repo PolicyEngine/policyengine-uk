@@ -1,0 +1,11 @@
+description: Weekly working-age Housing Benefit family premium for lone parents with continuing April 1998 protection.
+values:
+  2015-04-01: 22.2
+metadata:
+  unit: currency-GBP
+  period: week
+  reference:
+    - title: Housing Benefit Regulations 2006, Schedule 3 paragraph 3
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/3
+    - title: Social Security Benefits Up-rating Order 2026, article 23(7)
+      href: https://www.legislation.gov.uk/uksi/2026/148/article/23/made
