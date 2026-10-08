@@ -9,12 +9,13 @@ administrations operate parallel schemes that are not yet modelled
 beyond the Scottish Universal Funded ELC for 3- and 4-year-olds added
 in [#1643][pr-1643]. This page captures the proposed scope, tracked
 under [#1008](https://github.com/PolicyEngine/policyengine-uk/issues/1008)
-and the broader [#1644 audit](./../../../programs.yaml).
+and the broader [#1644 audit][issue-1644].
 ```
 
 ## What's modelled today
 
-The current childcare coverage is captured in `programs.yaml` (see the
+The current childcare coverage is captured in
+[`policyengine_uk/programs.yaml`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/programs.yaml) (see the
 [#1644 split into per-programme rows][issue-1644]) and works as follows:
 
 - **UK-wide**: Tax-Free Childcare (HMRC); Universal Credit childcare
@@ -25,8 +26,10 @@ The current childcare coverage is captured in `programs.yaml` (see the
   (30h working parents), Targeted Childcare Entitlement (disadvantaged
   2-year-olds + working families with younger children), Care to Learn,
   Student Finance England Childcare Grant.
-- **Scotland**: Universal Funded ELC for 3- and 4-year-olds (1,140
-  hrs/year) added in [#1643][pr-1643].
+- **Scotland**: eligibility for the universal funded ELC for 3- and
+  4-year-olds (`scottish_funded_early_learning_childcare_eligible`) and
+  its 1,140 hours a year, added in [#1643][pr-1643]. No funding value is
+  attached yet, so it does not reach household income.
 - **Wales, Northern Ireland**: no programmes modelled.
 
 ## Proposed scope by jurisdiction
@@ -46,9 +49,9 @@ The [#1644 audit][issue-1644] flagged three Scottish gaps:
    — the Scottish equivalent of Student Finance England's Childcare
    Grant. Income-tested, paid at standard weekly rates.
 3. **Scottish EMA-equivalent** for young parents in further education
-   (the [Educational Maintenance Allowance][saas-ema] is paid by local
-   authorities in Scotland under SAAS oversight; the childcare-support
-   layer parallels Care to Learn in England).
+   (the [Educational Maintenance Allowance][saas-ema] is paid through
+   schools, colleges and local authorities in Scotland; the
+   childcare-support layer parallels Care to Learn in England).
 
 ### Wales
 
@@ -137,19 +140,20 @@ disregards.
   splits Universal / Extended / Targeted), or as one variable with the
   age-and-eligibility logic inside? Recommendation: separate, mirroring
   the English pattern for queryability.
-- Welsh Flying Start is geographic. Do we have a postcode-to-LSOA
-  cross-walk in the FRS pipeline?
-- All four EMA / EMA-equivalent schemes are now extinct in England but
-  still operational in the devolved nations. Should they be modelled
-  under the existing `gov.dfe.care_to_learn` umbrella or as separate
-  regional schemes?
+- Welsh Flying Start is geographic. Microcosm UK assigns each household
+  to a 2021 Output Area, which nests in LSOAs, so eligibility by area is
+  now possible once the Flying Start area list is sourced.
+- EMA ended in England but still runs in Scotland, Wales and Northern
+  Ireland. Today `child_ema` and `adult_ema` are reported amounts with
+  no formula. Should the devolved schemes be modelled under the existing
+  `gov.dfe.care_to_learn` umbrella or as separate regional schemes?
 
 ## References
 
 - Audit: [#1644](https://github.com/PolicyEngine/policyengine-uk/issues/1644) — full childcare coverage audit.
 - Tracking: [#1008](https://github.com/PolicyEngine/policyengine-uk/issues/1008) — original Scotland/Wales/NI gap report.
 - Recent landed work: [#1643][pr-1643] — Scottish Universal Funded ELC.
-- Existing England docs (for the pattern to mirror): the entitlement variables under [`policyengine_uk/variables/gov/dfe/`](../../../../policyengine_uk/variables/gov/dfe).
+- Existing England docs (for the pattern to mirror): the entitlement variables under [`policyengine_uk/variables/gov/dfe/`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/dfe).
 - Welsh childcare statute: [Childcare Funding (Wales) Act 2019][wales-act].
 - Scottish eligible-2-year-old statute: [SSSI 2014/196][sssi-196-2014].
 
