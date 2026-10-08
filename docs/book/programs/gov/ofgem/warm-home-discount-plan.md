@@ -1,129 +1,130 @@
 # Warm Home Discount (planned)
 
 ```{warning}
-**Not yet modelled.** The Warm Home Discount (WHD) is an Ofgem-administered
-scheme that pays a one-off rebate of £150 per qualifying household per
-winter, off their domestic electricity bill. PolicyEngine UK doesn't
-currently model it. This page captures the proposed scope, tracked
-under [#502](https://github.com/PolicyEngine/policyengine-uk/issues/502).
+**Not yet modelled.** The Warm Home Discount (WHD) is a £150 rebate off
+a household's electricity bill each winter, paid by energy suppliers
+under schemes that Ofgem administers. PolicyEngine UK doesn't model it.
+This page sets out the proposed scope, tracked in
+[#502](https://github.com/PolicyEngine/policyengine-uk/issues/502).
+Updated October 2026: in England and Wales eligibility is now based on
+benefit receipt alone, which makes the scheme much easier to model than
+when this page was first drafted.
 ```
 
-## Why modelling WHD is harder than it looks
+## The scheme now
 
-The Warm Home Discount has two components, with different eligibility
-rules:
+### England and Wales
 
-- **Core Group 1**: people in receipt of the **Guarantee Credit element
-  of Pension Credit**. This group is identified automatically by DWP
-  data-matching and the rebate is applied to their electricity bill
-  without an application. Eligibility for this group is a clean,
-  centrally-defined rule and is straightforwardly modellable from the
-  existing PolicyEngine variables (`pension_credit`).
-- **Core Group 2** ("Broader Group" until 2022-23): people whose home is
-  **assessed as having a high energy cost** and who are on certain
-  qualifying means-tested benefits (UC, IS, JSA-IB, ESA-IR, HB, CTC, WTC
-  in particular bands). The high-energy-cost assessment uses an
-  Energy Performance Certificate (EPC) plus VOA property data; the
-  qualifying-benefit list shifted in England in 2022-23 ([source][gov-2022]).
+[The Warm Home Discount (England and Wales) Regulations 2026](https://www.legislation.gov.uk/uksi/2026/389/contents)
+(SI 2026/389) continue the scheme from 1 April 2026 to 31 March 2031.
+They replace the
+[2022 Regulations](https://www.legislation.gov.uk/uksi/2022/772/contents)
+(SI 2022/772), which applied to both England and Wales.
 
-The combination of (a) the EPC-based property assessment, (b) different
-schemes in England, Scotland, and Wales, and (c) the absence of a
-public point-in-time eligibility register makes this harder to model
-than typical means-tested benefits.
+Under the 2022 Regulations, the means-tested group had to pass a
+"high cost to heat" test based on property data. For winter 2025-26
+that test was removed, so every household on a qualifying means-tested
+benefit got the rebate: around 6 million households in Great Britain,
+2.7 million more than the year before
+([government response, June 2025](https://assets.publishing.service.gov.uk/media/6852e6e9679778c74ec15e82/expanding-the-warm-home-discount-scheme-2025-to-2026-government-response.pdf)).
 
-## Devolved variants
+For winter 2026-27, GOV.UK
+([eligibility in England and Wales](https://www.gov.uk/the-warm-home-discount-scheme/if-you-live-in-england-and-wales))
+says a household qualifies if, on the qualifying date of 23 August
+2026, its electricity supplier is in the scheme and the person or
+their partner gets one of:
 
-| Nation | Core 1 (PC Guarantee Credit) | Core 2 ("Broader Group") |
-|--------|-------------------------------|---------------------------|
-| England | yes — auto, £150 | yes — EPC-based property assessment + qualifying benefits |
-| Scotland | yes — auto, £150 | by **application** through energy suppliers; criteria vary year to year |
-| Wales | yes — auto, £150 | by **application** through energy suppliers; criteria vary year to year |
+- Universal Credit;
+- Housing Benefit;
+- income-related Employment and Support Allowance;
+- Pension Credit.
 
-Scotland and Wales did not adopt the 2022 England reform that swapped
-the application-based Broader Group for the EPC-based Core 2; instead
-both retain the application model.
+The rebate is applied automatically.
+
+### Scotland
+
+The scheme runs under separate Scottish regulations
+([2022](https://www.legislation.gov.uk/uksi/2022/1073/contents), SI
+2022/1073; 2026 Regulations running to 31 March 2031 have been laid in
+draft). For winter 2026-27
+([eligibility in Scotland](https://www.gov.uk/the-warm-home-discount-scheme/if-you-live-in-scotland)):
+
+- **Core group, automatic:** Pension Credit; Universal Credit with an
+  extra amount for a disability or health condition; income-related ESA
+  with a disability or pensioner premium; or a Support for Mortgage
+  Interest loan with one of those premiums. Also people responsible for
+  a child under 5 who are unemployed and on Universal Credit or
+  income-related ESA, or have a Support for Mortgage Interest loan.
+- **Broader group, by application** to the energy supplier, which can
+  set its own extra criteria.
+
+The qualifying date is also 23 August 2026.
+
+### Northern Ireland
+
+The scheme doesn't operate in Northern Ireland: its primary legislation
+extends to Great Britain only.
 
 ## Proposed scope
 
-### Phase 1 — Core Group 1 only
+### Phase 1: England and Wales
 
-The single cleanest WHD modelling target: payment to any household
-with positive `pension_credit_guarantee_credit` in the winter season.
-~1 million households per year by DWP outturn (out of ~3 million WHD
-recipients).
+Now a rule on benefit receipt:
 
-- New parameter `gov.ofgem.warm_home_discount.core_group_1.amount`
-  (£150 since winter 2022-23, £140 before).
-- New variable `warm_home_discount_core_1` (Household, YEAR) =
-  `amount` if any benunit member has positive Pension Credit Guarantee
-  Credit, else 0.
-- Roll into a `warm_home_discount` umbrella variable; Phase 2 adds the
-  Core Group 2 leg.
+- Parameter `gov.ofgem.warm_home_discount.amount`: £150 (£140 before
+  winter 2022-23). Check the 2026 Regulations for any change.
+- Parameter listing the qualifying benefits, so a reform can widen or
+  narrow the list.
+- Variable `warm_home_discount` (Household, YEAR): the amount if the
+  household is in England or Wales and any benefit unit receives a
+  qualifying benefit. Read receipt from the modelled benefits, for
+  example `universal_credit`, `housing_benefit`, `esa_income` and
+  `pension_credit`, so that take-up carries through.
+- No separate take-up flag, since the rebate is paid without a claim.
 
-### Phase 2 — Core Group 2 (England)
+### Phase 2: Scotland core group
 
-Requires:
+The core group can be built from the same benefit variables plus the
+Universal Credit disability elements, the ESA premiums and the age of
+the youngest child.
 
-- Adding EPC band as a household input variable (or imputing it from
-  property age/type via a `policyengine-uk-data` second-stage QRF).
-- Encoding the qualifying-benefit list per scheme year (the list
-  changed in winter 2022-23).
-- Property-cost-score parameters from Ofgem's annual scheme rules.
+### Phase 3: Scotland broader group
 
-This is the bulk of the work.
+Application-based, so it needs a take-up rate calibrated to Ofgem's
+published recipient numbers for Scotland, on top of the eligible group.
 
-### Phase 3 — Scotland and Wales
+## Data and calibration
 
-Application-based Core 2 isn't modellable from administrative
-eligibility rules alone. The reasonable approximation is a take-up rate
-applied to the same qualifying-benefit set:
-
-- A `would_claim_warm_home_discount_scotland` / `_wales` stochastic
-  flag in `policyengine-uk-data` calibrated against Ofgem-published
-  Scottish/Welsh recipient counts.
-
-## Alternative: model as a Core 1-only umbrella
-
-Given the complexity of Phase 2 and the relatively modest fiscal
-weight of WHD (~£400m/year on Core 1 across the UK), a defensible v1
-is to model **only** Core Group 1 and document Core Group 2 as
-under-imputed. That captures the most policy-relevant slice (Pension
-Credit interaction, eligibility through the means-tested-benefit
-ladder) at minimal modelling cost.
-
-Reform analysis using PolicyEngine to "expand WHD to all UC
-households" or similar would still work with Phase 1 alone by setting
-a Core-1-equivalent uplift on the WHD parameter.
-
-## Data needs
-
-- **Ofgem WHD statistics**:
-  [Warm Home Discount Scheme: annual reports](https://www.ofgem.gov.uk/publications/warm-home-discount-annual-reports)
-  give per-scheme-year recipient counts and total spend by group.
-- **DWP Pension Credit caseload** — already used for Pension Credit
-  calibration; no new data work needed for Phase 1.
-- **EPC distribution by property type** for Phase 2 — VOA + ONS data
-  exist but need cross-walking to FRS rows.
+- Ofgem's [Warm Home Discount pages](https://www.ofgem.gov.uk/environmental-and-social-schemes/warm-home-discount-whd):
+  recipients and spend by group and country.
+- DWP benefit caseloads, already used to calibrate the qualifying
+  benefits.
+- The 2025-26 impact assessment and government response give the
+  expected number of recipients after the expansion. Use them to check
+  Phase 1's aggregate.
 
 ## Open questions
 
-- The WHD scheme year runs October to March; PolicyEngine UK
-  variables are year-level. Should the variable represent the rebate
-  paid during the simulation year (Oct-Mar payments), or the rebate
-  accrued during the simulation year (Mar-Oct accrual window)? UC and
-  Pension Credit conventions suggest the former.
-- The auto-payment for Core Group 1 means the rebate is functionally
-  irreversible — it doesn't depend on the household applying. Does the
-  model need a `would_claim_warm_home_discount` flag at all for Core 1,
-  or should it just be `defined_for = "has_pension_credit_guarantee_credit"`?
-  Recommendation: skip the take-up gate for Core 1.
+- **Timing.** The scheme year runs from October to March, with the
+  qualifying date in August. A model year (April to March) contains one
+  winter's rebate, so pay the rebate in the year that contains the
+  winter.
+- **Who counts as the household.** The rebate attaches to an
+  electricity account. In multi-benefit-unit households, decide whether
+  one qualifying benefit unit is enough (simplest, and likely right for
+  most households) and say so.
+- **Electricity VAT interaction.** The rebate reduces the bill. If the
+  model ever nets it off energy spending, it would interact with the
+  domestic electricity VAT work in
+  [#2189](https://github.com/PolicyEngine/policyengine-uk/pull/2189).
+  Modelled as a benefit, it doesn't.
 
 ## References
 
-- [Warm Home Discount Scheme: official guidance](https://www.gov.uk/the-warm-home-discount-scheme).
-- [Warm Home Discount (England and Wales) Regulations 2022 (SI 2022/687)](https://www.legislation.gov.uk/uksi/2022/687/contents) — the 2022-23 reform that introduced the EPC-based England Core Group 2.
-- [Warm Home Discount (Scotland) Regulations 2022 (SI 2022/690)](https://www.legislation.gov.uk/uksi/2022/690/contents) — devolved variant.
-- Ofgem, [Warm Home Discount Scheme: annual reports][gov-2022].
+- [The Warm Home Discount (England and Wales) Regulations 2026 (SI 2026/389)](https://www.legislation.gov.uk/uksi/2026/389/contents).
+- [The Warm Home Discount (England and Wales) Regulations 2022 (SI 2022/772)](https://www.legislation.gov.uk/uksi/2022/772/contents).
+- [The Warm Home Discount (Scotland) Regulations 2022 (SI 2022/1073)](https://www.legislation.gov.uk/uksi/2022/1073/contents).
+- DESNZ, [Expanding the Warm Home Discount scheme, 2025 to 2026: government response](https://assets.publishing.service.gov.uk/media/6852e6e9679778c74ec15e82/expanding-the-warm-home-discount-scheme-2025-to-2026-government-response.pdf).
+- GOV.UK, [Warm Home Discount Scheme](https://www.gov.uk/the-warm-home-discount-scheme).
+- Ofgem, [Warm Home Discount scheme pages and reports](https://www.ofgem.gov.uk/environmental-and-social-schemes/warm-home-discount-whd).
 - Issue: [#502](https://github.com/PolicyEngine/policyengine-uk/issues/502).
-
-[gov-2022]: https://www.ofgem.gov.uk/publications/warm-home-discount-annual-reports
