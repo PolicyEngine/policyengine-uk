@@ -9,6 +9,11 @@ page documents the diagnosis from the PolicyEngine UK side and the
 guidance for the upstream `policyengine.py` repo. It is not a model
 bug — the UK model produces the expected non-zero values when called
 correctly.
+
+Re-checked in October 2026 on policyengine-uk 2.123.7: both scenarios
+below still return £7,486 and £1,354.60. The upstream reproducer
+(policyengine.py#280) was closed without merging; #1628 can be closed
+once the policyengine.py household-impact tests are confirmed green.
 ```
 
 ## Reproduction from the UK side
@@ -16,7 +21,7 @@ correctly.
 Running the two scenarios directly against `policyengine-uk` main:
 
 ```python
-from policyengine_uk import Microsimulation
+from policyengine_uk import Simulation
 YEAR = 2025
 
 # Scenario 1 — single adult with employment income.
@@ -26,7 +31,7 @@ s1 = {
     "benunits": {"benunit": {"members": ["adult"]}},
     "households": {"household": {"members": ["adult"]}},
 }
-sim = Microsimulation(situation=s1)
+sim = Simulation(situation=s1)
 print("income_tax:", sim.calculate("income_tax", YEAR).sum())
 # -> 7486.00
 
@@ -40,7 +45,7 @@ s2 = {
     "benunits": {"benunit": {"members": ["a1", "a2", "c1"]}},
     "households": {"household": {"members": ["a1", "a2", "c1"]}},
 }
-sim = Microsimulation(situation=s2)
+sim = Simulation(situation=s2)
 print("child_benefit:", sim.calculate("child_benefit", YEAR).sum())
 # -> 1354.60
 ```
@@ -67,10 +72,10 @@ benefit / tax variable that hadn't been populated for 2025 in the
 situation would compute against missing inputs and could return 0.
 
 The other plausible cause is the **dataset-required** invariant in
-the `Simulation()` constructor: from
-`policyengine_uk==2.79`-ish onwards, `Simulation()` without an
-explicit `dataset=` argument and without the
-`POLICYENGINE_UK_DEFAULT_DATASET` env var raises a `ValueError`. If
+the `Simulation()` constructor: `Simulation()` with no `situation=`,
+no explicit `dataset=` and no `POLICYENGINE_UK_DEFAULT_DATASET` env
+var raises `ValueError: Simulation() requires an explicit dataset when
+no situation is provided`. If
 the `policyengine.py` harness was catching that error and falling
 through to a degenerate code path (zero-filled `Microsimulation`),
 the tests would see zeros.
@@ -82,10 +87,9 @@ The `policyengine.py` household-impact harness should:
 1. Pass an **explicit `period`** to every `calculate(...)` call
    matching the year encoded in the situation YAML, rather than relying
    on the model default.
-2. Build the situation using the **`Microsimulation(situation=...)`**
-   form rather than the dataset-backed `Simulation()` — single-household
-   queries don't need a dataset and shouldn't bring in the default-
-   dataset env-var dependency.
+2. Build single-household cases with **`Simulation(situation=...)`**
+   rather than a dataset-backed simulation — they don't need a dataset
+   and shouldn't bring in the default-dataset env-var dependency.
 3. **Assert against the year encoded in the test fixture**, not the
    model's `default_input_period`. The fixture-encoded year is what the
    test author intended.
@@ -106,6 +110,6 @@ a one-stop diagnosis instead of having to re-derive it.
 
 - Issue: [#1628](https://github.com/PolicyEngine/policyengine-uk/issues/1628).
 - Reproducer: [`PolicyEngine/policyengine.py#280`](https://github.com/PolicyEngine/policyengine.py/pull/280).
-- Default-period contract: [`policyengine_uk/simulation.py`](../../../policyengine_uk/simulation.py) (`default_input_period`, `default_calculation_period`).
-- Default-dataset env var contract: documented in
-  [mp30k-uk-switch-plan.md](../assumptions/mp30k-uk-switch-plan.md#current-state).
+- Default-period contract: [`policyengine_uk/simulation.py`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/simulation.py) (`default_input_period`, `default_calculation_period`).
+- Default-dataset env var contract: `POLICYENGINE_UK_DEFAULT_DATASET`,
+  defined in [`policyengine_uk/tax_benefit_system.py`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/tax_benefit_system.py).
