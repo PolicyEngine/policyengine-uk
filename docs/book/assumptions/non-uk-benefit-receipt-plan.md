@@ -1,26 +1,29 @@
 # Benefit expenditure paid outside UK private households (planned)
 
 ```{note}
-**Planning page.** PolicyEngine UK calibrates household-level benefit
-aggregates to **DWP/HMRC outturn totals** for the UK as a whole.
+**Planning page.** The data behind PolicyEngine UK is calibrated so that
+household benefit totals match published **DWP/HMRC/OBR totals**.
 Some of that outturn doesn't go to **UK private households** — it
 goes to people living abroad (exported pensions), people in
 institutional accommodation outside the FRS sampling frame (care homes,
 hostels), and a small administrative-leakage residual. This page
-captures the proposed treatment, tracked under
-[#842](https://github.com/PolicyEngine/policyengine-uk/issues/842).
+sets out the proposed treatment, tracked in
+[#842](https://github.com/PolicyEngine/policyengine-uk/issues/842) (still
+open, October 2026). Calibration now happens in
+[Microcosm UK](https://github.com/PolicyEngine/microcosm), which replaced
+the Enhanced FRS build, so most of the work below belongs there.
 ```
 
 ## Why this matters
 
-When we calibrate FRS-derived household weights so that simulated
-`state_pension` matches OBR's £140bn total (say), we are implicitly
-assuming every pound of OBR-reported expenditure lands on an FRS
-household. It doesn't:
+Calibrating FRS household weights so that simulated `state_pension`
+matches a national spending total assumes every pound of that total lands
+on a household the FRS samples. It doesn't:
 
-- **Exported State Pension** — UK pensioners living overseas receive
-  basic / new State Pension at the rate they accrued. ~£5bn/yr by recent
-  DWP statistics, paid to people the FRS doesn't sample.
+- **State Pension paid abroad** — pensioners living overseas receive the
+  State Pension they built up. DWP's benefit expenditure tables report
+  the amount paid to recipients abroad, and Stat-Xplore gives the
+  caseload by country. None of these people are in the FRS.
 - **Disability Living Allowance / PIP** abroad — limited cases under
   reciprocal agreements (EU/EFTA + a handful of others).
 - **Institutional residents** — care-home residents receive most
@@ -30,17 +33,23 @@ household. It doesn't:
 - **Administrative leakage** — fraud / error / advance payments that
   appear in DWP cashflow but never reach an entitled person.
 
-The current calibration absorbs all of the above into FRS-household
-benefits, **inflating** PolicyEngine's per-household estimates by
-whatever share of outturn actually lives outside UK private
-households.
+Where a target includes these groups, calibration pushes their spending
+onto FRS households and **overstates** what UK private households receive.
+
+**Already done for State Pension.** Microcosm no longer fits the OBR State
+Pension forecast, which counts Great Britain plus pensioners paid abroad and
+leaves out Northern Ireland. State Pension is now bound to the resident
+figures from DWP Stat-Xplore and the Northern Ireland Department for
+Communities. That ruling (R4) is recorded under
+[microcosm#1069](https://github.com/PolicyEngine/microcosm/issues/1069).
+The same question is open for other programmes.
 
 ## Scope
 
 ### Phase 1 — quantify the gap by programme
 
-For each benefit programme tracked in `programs.yaml`, identify the
-share of outturn that goes outside UK private households. DWP and HMRC
+For each benefit programme the calibration targets, identify the share
+of the published total that goes outside UK private households. DWP and HMRC
 publish enough data to assemble a first-pass table:
 
 | Programme | UK private households | Overseas | Institutional | Admin / error |
@@ -54,22 +63,18 @@ publish enough data to assemble a first-pass table:
 | Attendance Allowance | published | -- | care-home residue | -- |
 | Winter Fuel Payment | published | overseas eligible cohort | -- | -- |
 
-Sources: DWP *Benefits paid outside the United Kingdom* statistics, the
-DWP *Fraud and Error in the Benefit System* annual release, and
-programme-specific outturn breakdowns.
+Sources: DWP *Benefit expenditure and caseload tables* and Stat-Xplore
+(payments abroad), the DWP *Fraud and Error in the Benefit System* annual
+release, and programme-specific breakdowns.
 
 ### Phase 2 — subtract from calibration targets
 
-Once the gap is quantified per programme, the **calibration target** in
-`policyengine-uk-data` should be the **UK-private-household component**
-of outturn, not the full outturn. Concretely:
-
-- Add a column `private_household_share` (0–1) to each programme's
-  calibration target row, default 1.0 with explicit per-programme
-  overrides.
-- Update the reweighting loss function to compare simulated household
-  aggregates against `outturn × private_household_share` rather than
-  raw outturn.
+Once the gap is quantified per programme, each **calibration target**
+should be the **UK-private-household part** of the total, not the full
+total. Microcosm's State Pension change does this by binding a resident
+series instead. Where no resident series exists, the target can carry an
+explicit private-household share (0–1, default 1) with a cited source for
+each override.
 
 This avoids the overweighting bias without trying to synthesise
 out-of-scope households.
@@ -87,19 +92,18 @@ preferable because:
   assumptions about their characteristics that aren't validated against
   any micro-data source.
 
-The additive correction lives in `policyengine-uk-data` and surfaces in
-PolicyEngine UK as an explicit non-household revenue / spending line.
+The additive correction would live in the data pipeline and appear in
+PolicyEngine UK as an explicit non-household spending line.
 
 ## Implementation outline
 
-This is primarily a **data-side** change in `policyengine-uk-data`. The
-in-repo changes are minor:
+This is mainly a **data-side** change in Microcosm UK's target
+register. (`policyengine_uk/programs.yaml` is metadata on model coverage,
+not calibration targets, so it is not the place for these shares.) The
+changes in this repo are small:
 
-- A new `private_household_share` field on each row of
-  [`programs.yaml`](../../../policyengine_uk/programs.yaml) (default 1.0
-  for everything but State Pension, AA, and a handful of others).
-- A documentation hook from the calibrated programme variables back to
-  this page so the modelling assumption is discoverable.
+- a non-household spending line for the Phase 3 correction, if adopted;
+- documentation linking the affected benefit variables to this page.
 
 ## Open questions
 
@@ -116,8 +120,8 @@ in-repo changes are minor:
 
 ## References
 
-- DWP, [Benefits paid outside the United Kingdom statistics](https://www.gov.uk/government/collections/benefits-paid-outside-the-united-kingdom) — overseas residue by programme.
+- DWP, [Benefit expenditure and caseload tables](https://www.gov.uk/government/collections/benefit-expenditure-and-caseload-tables) — spending by benefit, including payments abroad.
 - DWP, [Fraud and Error in the Benefit System](https://www.gov.uk/government/collections/fraud-and-error-in-the-benefit-system) — administrative leakage estimates.
-- DWP, [Stat-Xplore](https://stat-xplore.dwp.gov.uk/) — programme-specific caseload breakdowns including residence and tenure splits.
+- DWP, [Stat-Xplore](https://stat-xplore.dwp.gov.uk/) — caseloads by benefit, including State Pension recipients by country of residence.
 - HMRC, [Tax credits and Child Benefit statistics](https://www.gov.uk/government/collections/personal-tax-credits-statistics) — EU-treaty Child Benefit residue.
-- Issue: [#842](https://github.com/PolicyEngine/policyengine-uk/issues/842). Related: [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621) (UK pipeline alignment).
+- Issue: [#842](https://github.com/PolicyEngine/policyengine-uk/issues/842). Related: [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621) (UK pipeline alignment) and [microcosm#1069](https://github.com/PolicyEngine/microcosm/issues/1069) (State Pension on resident figures).
