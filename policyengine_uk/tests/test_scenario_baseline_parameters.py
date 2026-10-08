@@ -49,7 +49,12 @@ def _vat_change(sim):
 )
 def test_every_reform_route_scores_vat_against_the_unreformed_baseline(kwargs):
     sim = Simulation(situation=SITUATION, **kwargs)
-    assert _vat_change(sim) == pytest.approx(526.32, abs=0.01)
+    # All spending here is standard-rated, so raising the rate from 20% to
+    # 22% raises VAT by a tenth, whatever the grossing factor (526.32 at the
+    # current factor).
+    unreformed_vat = float(Simulation(situation=SITUATION).calculate("vat", 2026)[0])
+    assert _vat_change(sim) == pytest.approx(0.1 * unreformed_vat, abs=0.01)
+    assert _vat_change(sim) > 0
     assert sim.tax_benefit_system.parameters.baseline.gov.hmrc.vat.standard_rate(
         "2026-06-01"
     ) == pytest.approx(0.2)
