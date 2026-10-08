@@ -2,11 +2,14 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
+import threading
+import tomllib
 from unittest.mock import patch
 
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 import pytest
 
@@ -206,18 +209,113 @@ def test_git_sha_ignores_unusable_git_directory(tmp_path):
     assert _get_git_sha(package_root) is None
 
 
-def test_git_sha_ignores_malformed_pyproject(tmp_path):
+UNREADABLE_PYPROJECTS = {
+    "invalid TOML": b"[project\n",
+    "Latin-1": 'authors = [{name = "Jos\xe9"}]\n'.encode("latin-1"),
+    "UTF-16": '[project]\nname = "policyengine-uk"\n'.encode("utf-16"),
+    "nested too deeply": b"a = " + b"[" * 100_000,
+}
+
+
+@pytest.mark.parametrize(
+    "content", UNREADABLE_PYPROJECTS.values(), ids=UNREADABLE_PYPROJECTS.keys()
+)
+def test_git_sha_ignores_unreadable_pyproject(tmp_path, content):
     checkout = tmp_path / "policyengine-uk"
     package_root, _ = _make_policyengine_uk_checkout(checkout)
-    (checkout / "pyproject.toml").write_text("[project\n")
+    (checkout / "pyproject.toml").write_bytes(content)
 
     assert _get_git_sha(package_root) is None
+
+
+@pytest.mark.parametrize(
+    "content", UNREADABLE_PYPROJECTS.values(), ids=UNREADABLE_PYPROJECTS.keys()
+)
+def test_git_sha_falls_back_to_installer_record_past_unreadable_pyproject(
+    tmp_path, content
+):
+    # `pip install --target .` from git into a repository whose own
+    # pyproject cannot be parsed.
+    repo = tmp_path / "deployment"
+    package_root = _install_with_direct_url(
+        repo,
+        {"url": "https://example.com", "vcs_info": {"vcs": "git", "commit_id": SHA}},
+    )
+    (repo / "pyproject.toml").write_bytes(content)
+    _init_repo(repo, project_name=None)
+
+    assert _get_git_sha(package_root) == SHA
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="needs named pipes")
+def test_git_sha_does_not_block_on_fifo_pyproject(tmp_path):
+    checkout = tmp_path / "policyengine-uk"
+    package_root = _make_package(checkout)
+    _init_repo(checkout, project_name=None)
+    fifo = checkout / "pyproject.toml"
+    os.mkfifo(fifo)
+    result = {}
+    lookup = threading.Thread(
+        target=lambda: result.update(sha=_get_git_sha(package_root)), daemon=True
+    )
+    lookup.start()
+    lookup.join(timeout=30)
+    if lookup.is_alive():
+        # Release the blocked reader so the thread can finish.
+        os.close(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK))
+    assert not lookup.is_alive()
+    assert result["sha"] is None
 
 
 def test_git_sha_reads_own_checkout_head(tmp_path):
     package_root, head = _make_policyengine_uk_checkout(tmp_path / "policyengine-uk")
 
     assert _get_git_sha(package_root) == head
+
+
+@pytest.mark.parametrize("checkout_name", ["José", "日本語", "trailing space "])
+def test_git_sha_reads_own_checkout_head_at_unusual_path(tmp_path, checkout_name):
+    package_root, head = _make_policyengine_uk_checkout(tmp_path / checkout_name)
+
+    assert _get_git_sha(package_root) == head
+
+
+NON_UTF8_LOCALES = ("en_US.ISO8859-1", "en_IE.ISO8859-1", "de_DE.ISO8859-1")
+LOCALE_PROBE = """
+import importlib.util, sys
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("probe", sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+print(module._get_git_sha(Path(sys.argv[2])))
+"""
+
+
+def test_git_sha_reads_own_checkout_head_under_non_utf8_locale(tmp_path):
+    # A non-ASCII checkout path must not depend on decoding git's output in
+    # the locale encoding.
+    package_root, head = _make_policyengine_uk_checkout(
+        tmp_path / "José" / "policyengine-uk"
+    )
+    for name in NON_UTF8_LOCALES:
+        env = {**GIT_TEST_ENV, "LC_ALL": name, "PYTHONUTF8": "0"}
+        encoding = subprocess.check_output(
+            [sys.executable, "-c", "import locale; print(locale.getencoding())"],
+            env=env,
+            text=True,
+        ).strip()
+        if encoding.replace("-", "").lower() != "utf8":
+            break
+    else:
+        pytest.skip("no non-UTF-8 locale is installed")
+
+    output = subprocess.check_output(
+        [sys.executable, "-c", LOCALE_PROBE, str(BUILD_METADATA_PATH), package_root],
+        env=env,
+        text=True,
+    )
+
+    assert output.strip() == head
 
 
 def test_git_sha_reads_own_checkout_nested_in_another_repository(tmp_path):
@@ -271,6 +369,20 @@ def test_git_sha_is_none_without_git_executable(tmp_path, monkeypatch):
     monkeypatch.setattr(build_metadata.subprocess, "check_output", missing_git)
 
     assert _get_git_sha(package_root) is None
+
+
+def test_git_sha_is_none_when_git_times_out(tmp_path, monkeypatch):
+    package_root, _ = _make_policyengine_uk_checkout(tmp_path / "policyengine-uk")
+    timeouts = []
+
+    def slow_git(args, **kwargs):
+        timeouts.append(kwargs.get("timeout"))
+        raise subprocess.TimeoutExpired(args, kwargs.get("timeout"))
+
+    monkeypatch.setattr(build_metadata.subprocess, "check_output", slow_git)
+
+    assert _get_git_sha(package_root) is None
+    assert timeouts and all(timeout is not None for timeout in timeouts)
 
 
 def test_git_sha_reads_this_checkout_head():
@@ -329,11 +441,14 @@ def test_git_sha_ignores_installer_records_without_git_commit(tmp_path, direct_u
     assert _get_git_sha(package_root) is None
 
 
-def test_git_sha_ignores_installer_record_of_another_copy(tmp_path):
+def test_git_sha_ignores_installer_record_of_another_copy(tmp_path, monkeypatch):
+    other_site_packages = tmp_path / "other-site-packages"
     _install_with_direct_url(
-        tmp_path / "other-site-packages",
+        other_site_packages,
         {"url": "https://example.com", "vcs_info": {"vcs": "git", "commit_id": SHA}},
     )
+    # A lookup across sys.path would find the other copy first.
+    monkeypatch.syspath_prepend(str(other_site_packages))
     package_root = _make_package(tmp_path / "site-packages")
 
     assert _get_git_sha(package_root) is None
@@ -356,6 +471,8 @@ PATH_SEGMENTS = st.one_of(
             "build",
             "policyengine-uk",
             "policyengine_uk",
+            "José",
+            "trailing space ",
         ]
     ),
     # No dots, so a segment can never be ".git", "." or "pyproject.toml".
@@ -455,3 +572,34 @@ def test_git_sha_property_installer_record_never_invents_a_sha(
     assert _get_direct_url_git_sha(package_root) == (
         commit_id if is_git_commit else None
     )
+
+
+@pytest.fixture(scope="module")
+def reusable_checkout(tmp_path_factory):
+    checkout = tmp_path_factory.mktemp("reusable") / "policyengine-uk"
+    package_root, head = _make_policyengine_uk_checkout(checkout)
+    return checkout, package_root, head
+
+
+@PROPERTY_SETTINGS
+@given(content=st.binary(max_size=200))
+@example(content=b'[project]\nname = "policyengine-uk"\n')
+@example(content='[project]\nname = "Jos\xe9"\n'.encode("latin-1"))
+@example(content='[project]\nname = "policyengine-uk"\n'.encode("utf-16"))
+@example(content=b"a = " + b"[" * 100_000)
+@example(content=b"a = " + b"9" * 5_000)
+def test_git_sha_property_any_pyproject_bytes_never_raise(reusable_checkout, content):
+    checkout, package_root, head = reusable_checkout
+    (checkout / "pyproject.toml").write_bytes(content)
+    try:
+        project = tomllib.loads(content.decode()).get("project")
+        name = project.get("name") if isinstance(project, dict) else None
+    except Exception:
+        name = None
+
+    declares_package = (
+        isinstance(name, str)
+        and re.sub(r"[-_.]+", "-", name).lower() == "policyengine-uk"
+    )
+
+    assert _get_git_sha(package_root) == (head if declares_package else None)

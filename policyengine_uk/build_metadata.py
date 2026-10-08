@@ -38,6 +38,8 @@ GIT_REPOSITORY_ENV_VARS = frozenset(
     }
 )
 GIT_SHA_PATTERN = re.compile(r"[0-9a-f]{40}|[0-9a-f]{64}")
+# A git call that runs longer than this is treated as having no answer.
+GIT_TIMEOUT_SECONDS = 10
 DATA_BUILD_SURFACE = (
     "data",
     "parameters",
@@ -88,9 +90,19 @@ def _get_git_sha(package_root: Path = PACKAGE_ROOT) -> str | None:
     repository that merely contains the install, such as a
     policyengine-uk-data checkout whose ``.venv`` holds policyengine-uk, is
     never consulted: its HEAD is that repository's commit, not this
-    package's.
+    package's. The lookup never raises, because policyengine.py reads this
+    metadata while loading the model.
     """
-    return _get_checkout_git_sha(package_root) or _get_direct_url_git_sha(package_root)
+    for get_sha in (_get_checkout_git_sha, _get_direct_url_git_sha):
+        try:
+            sha = get_sha(package_root)
+        except Exception:
+            # A source that fails, for example on an unreadable pyproject,
+            # has no answer; the next source may still have one.
+            sha = None
+        if sha is not None:
+            return sha
+    return None
 
 
 def _get_checkout_git_sha(package_root: Path) -> str | None:
@@ -101,10 +113,10 @@ def _get_checkout_git_sha(package_root: Path) -> str | None:
         return None
     if not _declares_package(checkout_root / "pyproject.toml"):
         return None
-    # Git skips an unusable .git directory and keeps searching upwards, so
-    # confirm the repository it found is rooted here.
-    toplevel = _run_git(checkout_root, "rev-parse", "--show-toplevel")
-    if toplevel is None or not _is_same_path(Path(toplevel), checkout_root):
+    # Git skips an unusable .git directory and keeps searching upwards. An
+    # empty --show-cdup confirms the repository it found is rooted here,
+    # without decoding a path from git's output.
+    if _run_git(checkout_root, "rev-parse", "--show-cdup") != "":
         return None
     return _as_git_sha(_run_git(checkout_root, "rev-parse", "HEAD"))
 
@@ -112,20 +124,13 @@ def _get_checkout_git_sha(package_root: Path) -> str | None:
 def _get_direct_url_git_sha(package_root: Path) -> str | None:
     # The installer writes direct_url.json into the dist-info directory next
     # to the package it installed; another copy elsewhere on sys.path does
-    # not describe this one. Provenance lookup must never stop the model
-    # loading, so any failure means "unknown".
-    try:
-        distributions = list(
-            metadata.distributions(
-                name=PACKAGE_NAME,
-                path=[str(package_root.parent)],
-            )
-        )
-        if len(distributions) != 1:
-            return None
-        direct_url = json.loads(distributions[0].read_text("direct_url.json") or "{}")
-    except Exception:
+    # not describe this one.
+    distributions = list(
+        metadata.distributions(name=PACKAGE_NAME, path=[str(package_root.parent)])
+    )
+    if len(distributions) != 1:
         return None
+    direct_url = json.loads(distributions[0].read_text("direct_url.json") or "{}")
     vcs_info = direct_url.get("vcs_info") if isinstance(direct_url, dict) else None
     if not isinstance(vcs_info, dict) or vcs_info.get("vcs") != "git":
         return None
@@ -133,11 +138,11 @@ def _get_direct_url_git_sha(package_root: Path) -> str | None:
 
 
 def _declares_package(pyproject_path: Path) -> bool:
-    try:
-        with pyproject_path.open("rb") as file:
-            project = tomllib.load(file).get("project")
-    except (OSError, tomllib.TOMLDecodeError):
+    # is_file() also rules out a FIFO, which would block the read.
+    if not pyproject_path.is_file():
         return False
+    with pyproject_path.open("rb") as file:
+        project = tomllib.load(file).get("project")
     name = project.get("name") if isinstance(project, dict) else None
     return (
         isinstance(name, str) and re.sub(r"[-_.]+", "-", name).lower() == PACKAGE_NAME
@@ -156,16 +161,10 @@ def _run_git(cwd: Path, *args: str) -> str | None:
             stderr=subprocess.DEVNULL,
             text=True,
             env=env,
+            timeout=GIT_TIMEOUT_SECONDS,
         ).strip()
     except (OSError, ValueError, subprocess.SubprocessError):
         return None
-
-
-def _is_same_path(first: Path, second: Path) -> bool:
-    try:
-        return os.path.samefile(first, second)
-    except OSError:
-        return False
 
 
 def _as_git_sha(value: object) -> str | None:
