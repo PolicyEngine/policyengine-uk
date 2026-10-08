@@ -16,4 +16,10 @@ class baseline_vat(Variable):
             full_rate_consumption * p.hmrc.vat.standard_rate
             + reduced_rate_consumption * p.hmrc.vat.reduced_rate
         )
-        return raw_vat / p.simulation.microdata_vat_coverage
+        # Survey consumption under-records spending, and households bear only
+        # part of VAT liabilities, so household VAT is grossed up to receipts.
+        coverage = (
+            p.simulation.vat.survey_consumption_coverage
+            * p.simulation.vat.household_share_of_receipts
+        )
+        return raw_vat / coverage
