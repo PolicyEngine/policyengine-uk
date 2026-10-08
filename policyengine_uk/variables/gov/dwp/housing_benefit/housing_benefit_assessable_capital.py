@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import valued_capital
 
 
 class housing_benefit_assessable_capital(Variable):
@@ -6,7 +7,10 @@ class housing_benefit_assessable_capital(Variable):
     entity = BenUnit
     label = "Housing Benefit assessable capital"
     documentation = (
-        "Housing Benefit capital counted from the configured capital sources. "
+        "Housing Benefit capital counted from the configured capital sources, "
+        "each valued at market value less 10% where a sale would incur "
+        "expenses and less any debt secured on it (reg. 47 of SI 2006/213, "
+        "reg. 45 of SI 2006/214). "
         "Household sources are allocated across benunits in proportion to their "
         "claimants and partners, a PolicyEngine convention because household "
         "capital data cannot identify ownership; children and young persons add "
@@ -40,7 +44,9 @@ class housing_benefit_assessable_capital(Variable):
             "housing_benefit_pension_age_regulations_apply", period
         )
         p = parameters(period).gov.dwp.housing_benefit.means_test.capital
-        household_capital = sum(household(source, period) for source in p.sources)
+        household_capital = valued_capital(
+            lambda variable: household(variable, period), p.sources, p.sale_expenses
+        )
         claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)

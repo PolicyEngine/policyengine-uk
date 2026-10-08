@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_valuation import valued_capital
 
 
 class uc_assessable_capital(Variable):
@@ -7,6 +8,8 @@ class uc_assessable_capital(Variable):
     label = "Universal Credit assessable capital"
     documentation = (
         "Universal Credit capital counted from the configured capital sources, "
+        "each valued at market value less 10% where a sale would incur "
+        "expenses and less any debt secured on it (reg. 49(1)), "
         "with benunit-reported overrides when available. PolicyEngine allocates "
         "the remaining household capital between unreported benefit units in "
         "proportion to their claimant and partner counts, including units that "
@@ -29,8 +32,10 @@ class uc_assessable_capital(Variable):
     def formula(benunit, period, parameters):
         household = benunit.household
         p = parameters(period).gov.dwp.universal_credit.means_test
-        household_capital = sum(
-            household(source, period) for source in p.capital.sources
+        household_capital = valued_capital(
+            lambda variable: household(variable, period),
+            p.capital.sources,
+            p.capital.sale_expenses,
         )
         benunit_claimants = add(benunit, period, ["is_uc_claimant"])
         claimant_or_partner = benunit.members("is_uc_claimant", period)

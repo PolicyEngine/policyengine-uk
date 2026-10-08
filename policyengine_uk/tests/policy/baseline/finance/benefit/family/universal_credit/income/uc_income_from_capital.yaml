@@ -18,11 +18,9 @@
 # Every case below has income under the personal allowance, so no income tax
 # or National Insurance, and no housing, child or disability element.
 #
-# Property values are taken as UC capital as entered. Reg. 49(1) would first
-# deduct 10% for sale costs and any secured debt from a property's market
-# value; the model does not yet (#1960). So "£10,000 of let property" below
-# means £10,000 of assessable capital, for example a property with a market
-# value of £11,111.11 and no mortgage.
+# Property is valued under reg. 49(1): its market value less 10% for the
+# expenses of sale and less any debt secured on it. So "£10,000 of let
+# property" below, with no mortgage, is £9,000 of assessable capital.
 
 - name: Savings interest, dividends and rent below £6,000 of capital leave the award unchanged
   period: 2026
@@ -66,12 +64,12 @@
         savings: 0
         other_residential_property_value: 10_000
   output:
-    # Tariff income on £10,000 of capital: (10,000 - 6,000) / 250 = 16 steps
-    # x £4.35 = £69.60 a month, £835.20 a year. UC = 5,098.80 - 835.20 =
-    # £4,263.60.
-    uc_tariff_income: 835.20
-    uc_unearned_income: 835.20
-    universal_credit: 4_263.60
+    # £10,000 of let property is 90% x 10,000 = £9,000 of capital (reg.
+    # 49(1)(a)). Tariff income: (9,000 - 6,000) / 250 = 12 steps x £4.35 =
+    # £52.20 a month, £626.40 a year. UC = 5,098.80 - 626.40 = £4,472.40.
+    uc_tariff_income: 626.40
+    uc_unearned_income: 626.40
+    universal_credit: 4_472.40
 
 - name: Northern Ireland treats rent and interest from capital the same way
   period: 2026
@@ -92,10 +90,11 @@
         savings: 0
         other_residential_property_value: 10_000
   output:
-    # UC Regs (NI) 2016 regs. 66(1) and 72 match the GB text on these points.
-    uc_tariff_income: 835.20
-    uc_unearned_income: 835.20
-    universal_credit: 4_263.60
+    # UC Regs (NI) 2016 regs. 49(1), 66(1) and 72 match the GB text on these
+    # points, so the property is £9,000 of capital here too.
+    uc_tariff_income: 626.40
+    uc_unearned_income: 626.40
+    universal_credit: 4_472.40
 
 - name: Rent from a lodger in the home does not reduce the award
   period: 2026

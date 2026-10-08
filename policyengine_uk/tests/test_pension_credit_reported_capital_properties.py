@@ -11,9 +11,11 @@ Invariants, over generated households of one or two benefit units:
 1. Override identity: a pension-age unit with reported capital R >= 0 has
    assessable capital R, whatever the household holds.
 2. Default differential: with nothing reported, assessable capital equals the
-   household proxy recomputed here from the inputs (household sources times
-   the unit's share of the household's pension-age adults, plus person-level
-   sources of the claimant or partner), the formula before this change.
+   household proxy recomputed here from the inputs (household sources, valued
+   under SPC Regs 2002 reg. 19 with savings at face value and the others at
+   90%, times the unit's share of the household's pension-age adults, plus
+   person-level sources of the claimant or partner), the formula before this
+   change.
 3. Locality: reporting capital for one unit never changes another unit's
    assessable capital. The strategy for this property always gives the other
    unit someone over State Pension age, nothing recorded and household capital,
@@ -111,7 +113,11 @@ def proxy(people, units, household, index):
         "non_residential_property_value",
         "corporate_wealth",
     ]
-    household_capital = sum(household.get(s, 0) for s in sources)
+    # SPC Regs 2002 reg. 19(a): sources whose sale would incur expenses (land,
+    # property, shares) are valued at 90%; savings at face value.
+    household_capital = sum(
+        household.get(s, 0) * (1 if s == "savings" else 0.9) for s in sources
+    )
     sp_age = {name: p["age"] >= 66 for name, p in people.items()}
     unit = units[index]["members"]
     unit_sp = sum(sp_age[n] for n in unit)
