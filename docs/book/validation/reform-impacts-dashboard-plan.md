@@ -6,7 +6,8 @@
 which asks for a dashboard tracking the budgetary impact of
 high-importance reforms over time and across model / data versions.
 The repo already has the **fixtures** — what's missing is a published
-view onto them.
+view onto them. Updated October 2026: still not built; the dataset move
+to Microcosm UK (below) makes it more useful.
 ```
 
 ## What exists today
@@ -27,13 +28,19 @@ shape:
     gov.dwp.universal_credit.means_test.reduction_rate: 0.2
 ```
 
-Each fixture is exercised by
-[`test_parametric_reform_impacts.py`](../../../policyengine_uk/tests/test_parametric_reform_impacts.py)
-on every PR, and any drift outside the `tolerance` fails CI. So CI
-already catches *unintended* impact changes — but only via a binary
-pass/fail signal that flips silently between PRs.
+Each fixture is run by
+[`tests/microsimulation/test_reform_impacts.py`](../../../policyengine_uk/tests/microsimulation/test_reform_impacts.py),
+which compares the change in `gov_balance` in 2029 with
+`expected_impact` (£bn), within `tolerance` (default £1bn). It runs in
+CI's Test job on every PR, on the dataset CI is configured with, so CI
+already catches *unintended* impact changes. But the signal is only
+pass or fail, and when a change is intended, someone reruns
+[`update_reform_impacts.py`](../../../policyengine_uk/tests/microsimulation/update_reform_impacts.py)
+and the old value is overwritten. The fixtures are regression values
+taken from the model's own output, not external costings (the file says
+so at the top).
 
-What's missing is a **time series**: the same nine reforms run on
+What's missing is a **time series**: the same eight reforms run on
 every commit / version, plotted against the published OBR/RF
 benchmark for the same reform, with annotations for the relevant
 infrastructure changes (model versions, dataset refreshes, EFO
@@ -109,10 +116,20 @@ analysis.
 Add to v2 over time as published OBR / RF reforms become available
 benchmarks:
 
-- Remove the Universal Credit two-child limit (worked example in
-  [child-poverty-tcl.md](./child-poverty-tcl.md)).
+- Remove the two-child limit (an external comparison is drafted in
+  [#1724](https://github.com/PolicyEngine/policyengine-uk/pull/1724)).
 - Freeze the Personal Allowance for an additional year.
 - 1pp employer NI change.
+
+## Why now
+
+The UK data pipeline is moving from the Enhanced FRS to
+[Microcosm UK](https://github.com/PolicyEngine/microcosm), whose first
+certified national release was published on 4 October 2026. Moving the
+fixtures' dataset will shift every expected impact at once, and model
+changes to VAT, fuel duty and other bases are landing at the same time.
+A history that records the dataset alongside each value is the easiest
+way to show which change moved which number.
 
 ## What this doesn't replace
 
@@ -127,7 +144,7 @@ relevant pages are:
 
 - [nowcasting-comparison.md](../assumptions/nowcasting-comparison.md) (PolicyEngine vs RF).
 - [rf-nowcasting-methodology.md](../assumptions/rf-nowcasting-methodology.md) (RF methodology detail).
-- [child-poverty-tcl.md](./child-poverty-tcl.md) (worked external comparison).
+- [#1724](https://github.com/PolicyEngine/policyengine-uk/pull/1724) (child poverty against OBR and Resolution Foundation benchmarks, in review).
 
 ## Open questions
 
@@ -145,5 +162,5 @@ relevant pages are:
 
 - Issue: [#806](https://github.com/PolicyEngine/policyengine-uk/issues/806).
 - Existing fixture list: [`reforms_config.yaml`](../../../policyengine_uk/tests/microsimulation/reforms_config.yaml).
-- Existing regression runner: [`test_parametric_reform_impacts.py`](../../../policyengine_uk/tests/test_parametric_reform_impacts.py).
-- Visualisation helper used by neighbouring validation pages: [`update_reform_impacts.py`](../../../policyengine_uk/tests/microsimulation/update_reform_impacts.py).
+- Existing regression runner: [`test_reform_impacts.py`](../../../policyengine_uk/tests/microsimulation/test_reform_impacts.py).
+- Script that rewrites the expected values: [`update_reform_impacts.py`](../../../policyengine_uk/tests/microsimulation/update_reform_impacts.py).
