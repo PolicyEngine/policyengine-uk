@@ -141,3 +141,19 @@ def test_net_income_does_not_fall_when_guarantee_credit_ends(
     assert above["household_net_income"] + above["tv_licence"] >= (
         below["household_net_income"] + below["tv_licence"] - 0.01
     )
+
+
+@pytest.mark.parametrize(
+    ("allowance_name", "weekly_amount"),
+    [("single", 244.40), ("lone_parent", 244.40), ("couple", 366.00)],
+)
+def test_protected_allowances_match_enacted_2025_amounts(allowance_name, weekly_amount):
+    """Pin the published protected-cohort rates, not a computed CPI estimate.
+
+    SI 2025/295 Sch 6 and NI SR 2025/64 Sch 6, table paras 1(1)(b)
+    and 1(2)(b), prescribe these amounts independently of the model.
+    """
+    allowance = getattr(
+        _parameters().gov.dwp.housing_benefit.allowances, allowance_name
+    ).aged
+    assert allowance("2025-04-30") == weekly_amount
