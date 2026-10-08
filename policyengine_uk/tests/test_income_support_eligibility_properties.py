@@ -27,7 +27,13 @@ No adult outside the couple is named, so:
   taken to be on State Pension Credit (s.124(1)(g)); and capital is within
   the Income Support limit;
 - raising any claimant's or partner's hours or JSA never makes a family
-  eligible, because (c) and (f) only ever bar a claim.
+  eligible. (c) and (f) only ever bar a claim. The one other path is (g):
+  income-based JSA reported by the claimant or partner ends the inferred
+  SI 2019/37 saving (has_mixed_age_couple_pension_credit_saving), which can
+  take a mixed-age couple out of the Pension Credit age conditions and so
+  lift the (g) bar. That inference already fails when either of them
+  reports Income Support, and a couple in which neither does has no award
+  holder, so it is never eligible.
 
 The first and third hold for every input except at the value convention's
 boundary. A stored esa_income or jsa_income (entered directly or replaced by
@@ -548,7 +554,9 @@ def more_work_or_jsa(draw, adults):
 @given(st.lists(families(), min_size=1, max_size=8), st.data())
 def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
     """(c) and (f) only ever bar a claim: raising any claimant's or partner's
-    hours or JSA cannot turn an ineligible family eligible."""
+    hours or JSA cannot turn an ineligible family eligible. More JSA can lift
+    the (g) bar only for a couple with no Income Support report, which is
+    never eligible (see the module docstring)."""
     capital_as_savings, esa_income, jsa_income = data.draw(input_settings(len(drawn)))
     jsa_income = None if jsa_income is None else jsa_income * 2
     more = [

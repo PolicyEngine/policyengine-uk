@@ -347,6 +347,10 @@ def test_the_formulas_residual_is_no_award():
     # £52 of tariff income the formula leaves a sub-penny residual. That
     # residual is no award, so it does not bar the claim.
     residual = reporting_family(10.01, 41.99)
+    # A residual above zero, so this case (and the couple's residual in
+    # test_the_couples_residual_is_no_award_beside_another_members_report)
+    # exercises the half-penny rule rather than an exact zero. The residual
+    # exists because core sums the reports in float64.
     assert 0 < residual.calculate("jsa_income", YEAR)[0] < 0.005
     assert eligible(residual)
 
@@ -373,3 +377,18 @@ def test_the_couples_residual_is_no_award_beside_another_members_report():
     penny = reporting_family(52.01)
     assert 0.005 < penny.calculate("jsa_income", YEAR)[0] < 0.015
     assert not eligible(penny)
+
+
+def test_the_couples_award_tolerance_is_half_a_penny():
+    # Beside an excluded adult's £3,000, jsa_income is a real award that the
+    # reports explain, so the couple's own award decides. £52.004 against
+    # £52 of tariff income leaves them £0.004, which is no award; £52.006
+    # leaves £0.006, which bars the claim.
+    def couple_award(report):
+        return reporting_family(report, other_adults=[3_000])
+
+    below, above = couple_award(52.004), couple_award(52.006)
+    assert below.calculate("jsa_income", YEAR)[0] > 2_999
+    assert eligible(below)
+    assert above.calculate("jsa_income", YEAR)[0] > 2_999
+    assert not eligible(above)
