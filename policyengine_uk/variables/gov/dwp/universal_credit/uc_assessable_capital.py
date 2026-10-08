@@ -6,8 +6,10 @@ class uc_assessable_capital(Variable):
     entity = BenUnit
     label = "Universal Credit assessable capital"
     documentation = (
-        "Universal Credit capital counted from the configured capital sources, "
-        "with benunit-reported overrides when available. PolicyEngine allocates "
+        "Universal Credit capital counted from the configured capital sources. "
+        "Where the benefit unit's capital is recorded (uc_reported_capital, by "
+        "default benunit_reported_capital), that figure replaces them. "
+        "PolicyEngine allocates "
         "the remaining household capital between unreported benefit units in "
         "proportion to their claimant and partner counts, including units that "
         "do not receive Universal Credit. This allocation is a modelling "

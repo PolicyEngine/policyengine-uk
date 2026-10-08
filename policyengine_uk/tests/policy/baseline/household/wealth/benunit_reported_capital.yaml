@@ -1,0 +1,101 @@
+# benunit_reported_capital records the benefit unit's savings and investments
+# (-1 when nothing is recorded). Universal Credit (WRA 2012 s.5; UC Regulations
+# 2013 reg.18) and Pension Credit (SPCA 2002 s.5) assess the claimant's and
+# partner's capital together, so both programmes take the recorded figure in
+# place of the household capital proxy unless their own variable is set.
+# Tariff income: UC Regulations 2013 reg.72, 4.35 pounds a month for each 250
+# pounds or part above 6,000.
+
+- name: Recorded capital replaces the household proxy for both programmes.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        benunit_reported_capital: 2_000
+    households:
+      household:
+        members: [claimant]
+        savings: 50_000
+  output:
+    uc_reported_capital: 2_000
+    pension_credit_reported_capital: 2_000
+    uc_assessable_capital: 2_000
+    is_uc_eligible: true
+
+- name: With nothing recorded the household proxy applies.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        savings: 50_000
+  output:
+    benunit_reported_capital: -1
+    uc_reported_capital: -1
+    uc_assessable_capital: 50_000
+    is_uc_eligible: false
+
+- name: A programme variable set directly overrides the recorded capital for that programme only.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        benunit_reported_capital: 20_000
+        uc_reported_capital: 3_000
+    households:
+      household:
+        members: [claimant]
+        savings: 50_000
+  output:
+    uc_assessable_capital: 3_000
+    pension_credit_reported_capital: 20_000
+
+- name: Recorded capital sets UC tariff income.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+    benunits:
+      benunit:
+        members: [claimant]
+        benunit_reported_capital: 6_251
+    households:
+      household:
+        members: [claimant]
+        savings: 50_000
+  output:
+    uc_assessable_capital: 6_251
+    # 251 pounds above 6,000 is two steps: 2 * 4.35 * 12 = 104.40.
+    uc_tariff_income: 104.4
+
+- name: Recorded capital replaces the household proxy for Pension Credit.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 75
+    benunits:
+      benunit:
+        members: [pensioner]
+        benunit_reported_capital: 12_000
+    households:
+      household:
+        members: [pensioner]
+        savings: 200_000
+  output:
+    pension_credit_assessable_capital: 12_000

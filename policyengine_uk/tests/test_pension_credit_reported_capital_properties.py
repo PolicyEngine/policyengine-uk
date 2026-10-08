@@ -241,9 +241,11 @@ def test_reported_capital_uprates_with_savings():
     from policyengine_uk.system import system
 
     variables = system.variables
+    # The variable is a formula of benunit_reported_capital, which carries the
+    # uprating; a dataset that stores it directly is uprated through
+    # uprating_indices.yaml.
     assert (
-        variables["pension_credit_reported_capital"].uprating
-        == variables["savings"].uprating
+        variables["benunit_reported_capital"].uprating == variables["savings"].uprating
     )
     assert variables["pension_credit_reported_capital"].default_value == -1
     indices = yaml.safe_load(
