@@ -7,8 +7,9 @@ household level, but this is a **manual** lever the user has to set via
 the `gov.contrib.policyengine.budget.consumer_incident_tax_change`
 parameter. There is no automatic pass-through from changes in direct
 taxes (e.g. income tax, NI) to consumption-mediated indirect taxes.
-This page captures the proposed automation route tracked under
-[#1114](https://github.com/PolicyEngine/policyengine-uk/issues/1114).
+This page sets out a proposed automatic route, tracked in
+[#1114](https://github.com/PolicyEngine/policyengine-uk/issues/1114) (still
+open, October 2026).
 ```
 
 ## What this is about
@@ -20,35 +21,42 @@ Right now PolicyEngine UK computes:
 
 1. **Direct effect** — full structural change to income tax / NI / UC /
    etc. given the reform.
-2. **Behavioural response on labour supply** — modelled via the
-   substitution/income-elasticity machinery at
-   `variables/gov/simulation/labour_supply_response/`.
+2. **Behavioural response on labour supply** — modelled with the
+   substitution and income elasticities under
+   `gov.simulation.labour_supply_responses` (`policyengine_uk/dynamics/labour_supply.py`,
+   `employment_income_behavioral_response`).
 3. **Indirect-tax response** — *not modelled*. Households' consumption
    bundles are read from the dataset and don't shift in response to
    income changes.
 
-UKMOD's *Tax Calculator and Outlook* (TCO) module models this gap with
-an aggregate **consumption elasticity of 0.8**: a 1% increase in net
-income produces a 0.8% increase in consumption, which then flows
-through VAT and excise revenue.
+#1114 reports that UKMOD handles this with an aggregate **consumption
+elasticity of 0.8**: a 1% rise in net income gives a 0.8% rise in
+consumption, which then flows through VAT and excise revenue. That figure
+has not yet been checked against UKMOD's own documentation, so it needs a
+primary source before it is used as a default.
 
 ## Scope
 
 ### Phase 1 — household-level consumption response
 
-- New parameter `gov/simulation/indirect_tax_response/consumption_elasticity.yaml`
-  with the default UKMOD value of 0.8 (cite the source explicitly in
-  the metadata).
+- New parameter `gov/simulation/indirect_tax_response/consumption_elasticity.yaml`,
+  defaulting to 0 (no response) until a sourced value such as UKMOD's is
+  confirmed and cited in its metadata.
 - New variable `consumption_response_factor` (Household, YEAR) =
   `1 + elasticity * (net_income_change / baseline_net_income)`.
-- Apply the factor to each consumption category (`food_and_non_alcoholic_beverages_consumption`,
-  `alcohol_and_tobacco_consumption`, `transport_consumption`, etc.) so
-  that downstream VAT and excise duty variables pick up the change
-  automatically.
+- Apply the factor to the twelve COICOP categories that `consumption`
+  adds up (`food_and_non_alcoholic_beverages_consumption`,
+  `alcohol_and_tobacco_consumption`, `transport_consumption` and so on).
+  VAT reads `consumption` (through `full_rate_vat_consumption` and
+  `reduced_rate_vat_consumption`), so it picks up the change.
+- The duties do not read those categories. Fuel duty reads
+  `petrol_litres` and `diesel_litres`, and alcohol duty reads the
+  `*_litres` inputs under `variables/input/consumption/alcohol/`. They
+  need the same factor applied to their quantity inputs.
 
 ### Phase 2 — heterogeneity by category
 
-- A 0.8 economy-wide elasticity hides that some categories (food
+- A single economy-wide elasticity hides that some categories (food
   staples, domestic energy) are nearly income-inelastic while others
   (recreation, restaurants) are not. Replace the single
   `consumption_elasticity.yaml` with a per-category set, calibrated to
@@ -98,7 +106,7 @@ Recommendation: route (2). The dataset-side variable becomes
   produce a *positive* `consumer_incident_tax_revenue_change` aggregate
   (more take-home pay -> more consumption -> more VAT).
 - A reform that raises NI should produce a *negative* aggregate.
-- The aggregate should track 0.8 × (sum of net income change × VAT-equivalent rate)
+- The aggregate should track elasticity × (sum of net income change × VAT-equivalent rate)
   to within a small tolerance.
 
 ## Open questions
@@ -114,8 +122,8 @@ Recommendation: route (2). The dataset-side variable becomes
 
 ## References
 
-- UKMOD TCO module documentation (consumption elasticity of 0.8).
-- ONS [Living Costs and Food Survey](https://www.ons.gov.uk/peoplepopulationandcommunity/personalandhouseholdfinances/incomeandwealth/bulletins/familyspendingintheuk/latest) — income-elasticity calibration source for Phase 2.
-- HMRC, [VAT and excise duty receipts statistics](https://www.gov.uk/government/collections/value-added-tax-vat-statistics) — calibration target for the aggregate.
+- UKMOD documentation, to confirm the 0.8 consumption elasticity reported in #1114 (not yet checked).
+- ONS [Living Costs and Food Survey](https://www.ons.gov.uk/peoplepopulationandcommunity/personalandhouseholdfinances/expenditure/bulletins/familyspendingintheuk/latest) — income-elasticity calibration source for Phase 2.
+- HMRC, [VAT annual statistics](https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics) — calibration target for the aggregate.
 - Existing infrastructure: [`consumer_incident_tax_revenue_change`](../../../policyengine_uk/variables/contrib/policyengine/consumer_incident_tax_revenue_change.py) and the broader `gov/simulation/labour_supply_response/` tree for the parallel labour-supply pattern.
 - Related issue: [#1114](https://github.com/PolicyEngine/policyengine-uk/issues/1114).
