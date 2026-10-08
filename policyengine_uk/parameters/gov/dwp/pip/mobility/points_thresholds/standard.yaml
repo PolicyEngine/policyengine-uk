@@ -1,0 +1,9 @@
+description: A claimant scoring at least this many points across the Schedule 1 Part 3 mobility activities qualifies for the standard rate of the PIP mobility component.
+values:
+  2013-04-08: 8
+metadata:
+  unit: integer
+  label: PIP mobility standard rate points threshold
+  reference:
+    - title: Social Security (Personal Independence Payment) Regulations 2013, reg. 6(2)(a)
+      href: https://www.legislation.gov.uk/uksi/2013/377/regulation/6

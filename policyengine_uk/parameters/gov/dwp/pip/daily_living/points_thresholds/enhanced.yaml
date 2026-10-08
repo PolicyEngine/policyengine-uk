@@ -1,0 +1,9 @@
+description: A claimant scoring at least this many points across the Schedule 1 Part 2 daily living activities qualifies for the enhanced rate of the PIP daily living component.
+values:
+  2013-04-08: 12
+metadata:
+  unit: integer
+  label: PIP daily living enhanced rate points threshold
+  reference:
+    - title: Social Security (Personal Independence Payment) Regulations 2013, reg. 5(2)(b)
+      href: https://www.legislation.gov.uk/uksi/2013/377/regulation/5
