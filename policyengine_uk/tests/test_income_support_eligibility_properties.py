@@ -12,19 +12,20 @@ No adult outside the couple is named, so:
   age, ESA, JSA, Income Support, caring or work;
 - income_support_eligible equals a family-by-family reading of the model's
   gate: one of the claimant and partner reports Income Support, is under
-  state pension age, is in a prescribed category the model covers (a carer;
-  a lone parent of a child aged 5 or under, the model's reading of Sch 1B
-  para 1, counting only children in the household, reg 16(4); or a single
-  claimant with a child placed by a local authority, para 2), has no
-  contributory ESA or JSA, is not a non-carer working 16 hours a week or
-  more, and has no other member of the couple who is a non-carer working 24
-  hours or more (s.124(1)(aa), (c), (e), (f), (h); IS Regs 1987 regs 5(1),
-  5(1A) and 6(4)(c)); neither has income-related ESA or income-based JSA
-  (s.124(1)(h), (f)), meaning the award on their reported amounts after that
-  benefit's capital test, or an esa_income or jsa_income the reported
-  amounts do not explain (one that equals neither the award on everyone's
-  reported amounts nor their plain total); and capital is within the Income
-  Support limit;
+  the qualifying age for State Pension Credit, is in a prescribed category
+  the model covers (a carer; a lone parent of a child aged 5 or under, the
+  model's reading of Sch 1B para 1, counting only children in the
+  household, reg 16(4); or a single claimant with a child placed by a local
+  authority, para 2), has no contributory ESA or JSA, is not a non-carer
+  working 16 hours a week or more, and has no other member of the couple who
+  is a non-carer working 24 hours or more (s.124(1)(aa), (c), (e), (f), (h);
+  IS Regs 1987 regs 5(1), 5(1A) and 6(4)(c)); neither has income-related ESA
+  or income-based JSA (s.124(1)(h), (f)), meaning the award on their reported
+  amounts after that benefit's capital test, or an esa_income or jsa_income
+  the reported amounts do not explain (one that equals neither the award on
+  everyone's reported amounts nor their plain total); the couple is not
+  taken to be on State Pension Credit (s.124(1)(g)); and capital is within
+  the Income Support limit;
 - raising any claimant's or partner's hours or JSA never makes a family
   eligible, because (c) and (f) only ever bar a claim.
 
@@ -43,8 +44,15 @@ example, with the intended results.
 
 The second property is a reference check of the bounded model gate, not of
 legal entitlement: caring, work hours, ESA, JSA and Income Support are the
-model's reported or proxy inputs, it reads state pension age from the model
-(is_SP_age), and the means test is out of scope.
+model's reported or proxy inputs; it reads the qualifying age
+(has_attained_state_pension_credit_qualifying_age) and the model's proxy for
+being on Pension Credit (meets_pension_credit_age_conditions and
+would_claim_pc) from the model; and the means test is out of scope. No
+claimant or partner drawn here reports Pension Credit or Housing Benefit
+(only some added adults do), so in 2025 no family with a claimant or partner
+under the qualifying age meets the Pension Credit age conditions. The
+differential asserts this, and income_support_claimant_partner_gates.yaml
+pins (g).
 
 Roles are given explicitly (is_claimant_or_partner), so the properties test
 the eligibility rule rather than the role inference; the inferred case is
@@ -194,13 +202,17 @@ def excluded_members(draw):
     They are not in education, so a 16 to 19 year old is not a qualifying
     young person. Most are primed with what barred or opened the claim when
     every member counted: over state pension age, income-related ESA, an
-    Income Support report, or caring.
+    Income Support report, or caring. Some are primed with what the
+    s.124(1)(g) proxy reads for a couple: over the qualifying age, with
+    reported Pension Credit or Housing Benefit.
     """
     adult = {
         **draw(adult_inputs(min_age=16)),
         "current_education": "NOT_IN_EDUCATION",
     }
-    primed = draw(st.sampled_from(["random", "elderly", "esa", "award", "carer"]))
+    primed = draw(
+        st.sampled_from(["random", "elderly", "esa", "award", "carer", "pension"])
+    )
     if primed == "elderly":
         adult["age"] = draw(st.integers(66, 90))
     elif primed == "esa":
@@ -209,6 +221,12 @@ def excluded_members(draw):
         adult["income_support_reported"] = 1_000
     elif primed == "carer":
         adult["receives_carer_benefit"] = True
+    elif primed == "pension":
+        adult["age"] = draw(st.integers(66, 90))
+        reported = draw(
+            st.sampled_from(["pension_credit_reported", "housing_benefit_reported"])
+        )
+        adult[reported] = 1_000
     return adult
 
 
@@ -356,7 +374,14 @@ def income_related_award(reported, capital, rules):
 
 
 def reference_eligibility(
-    adults, dependants, capital, esa_income, jsa_income, sp_age, parameters
+    adults,
+    dependants,
+    capital,
+    esa_income,
+    jsa_income,
+    attained_qualifying_age,
+    on_pension_credit,
+    parameters,
 ):
     """The model's Income Support gate, read family by family."""
     IS = parameters.gov.dwp.income_support
@@ -391,7 +416,7 @@ def reference_eligibility(
             and (
                 carer(adult) or lone_parent_with_young_child or single_with_placed_child
             )
-            and not sp_age[i]
+            and not attained_qualifying_age[i]
             and adult["esa_contrib_reported"] == 0
             and adult["jsa_contrib_reported"] == 0
             and not works(adult, WORK.claimant_hours)
@@ -399,7 +424,8 @@ def reference_eligibility(
         )
 
     if esa_income is not None:
-        income_related_esa = esa_income > 0
+        # Within half a penny of zero is no award.
+        income_related_esa = esa_income > 0.005
     else:
         income_related_esa = income_related_award(
             sum(a["esa_income_reported"] for a in adults),
@@ -407,7 +433,8 @@ def reference_eligibility(
             parameters.gov.dwp.ESA.income.capital,
         )
     if jsa_income is not None:
-        income_based_jsa = jsa_income > 0
+        # Within half a penny of zero is no award.
+        income_based_jsa = jsa_income > 0.005
     else:
         income_based_jsa = JSA.active and income_related_award(
             sum(a["jsa_income_reported"] for a in adults), capital, JSA.capital
@@ -416,6 +443,9 @@ def reference_eligibility(
         any(is_claimant(i) for i in range(len(adults)))
         and not income_related_esa
         and not income_based_jsa
+        # s.124(1)(g), read through the model's proxy for being on Pension
+        # Credit.
+        and not on_pension_credit
         and capital <= IS.means_test.capital.limit
     )
 
@@ -451,7 +481,12 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
     eligible = sim.calculate("income_support_eligible", YEAR)
     if eligible.any():
         event("some family eligible")
-    sp_age = sim.calculate("is_SP_age", YEAR)
+    attained_qualifying_age = sim.calculate(
+        "has_attained_state_pension_credit_qualifying_age", YEAR
+    )
+    on_pension_credit = sim.calculate(
+        "meets_pension_credit_age_conditions", YEAR
+    ) & sim.calculate("would_claim_pc", YEAR)
     parameters = sim.tax_benefit_system.parameters(YEAR)
     start = 0
     for i, (adults, dependants, capital, extra) in enumerate(units):
@@ -484,10 +519,17 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
             capital,
             entered_esa,
             entered_jsa,
-            sp_age[start : start + len(adults)],
+            attained_qualifying_age[start : start + len(adults)],
+            on_pension_credit[i],
             parameters,
         )
         assert eligible[i] == expected, units[i]
+        # The docstring's claim: no family drawn here with a claimant or
+        # partner under the qualifying age is taken to be on Pension Credit.
+        assert (
+            not on_pension_credit[i]
+            or attained_qualifying_age[start : start + len(adults)].all()
+        ), units[i]
         start += len(adults) + len(dependants) + 1
 
 
@@ -570,6 +612,8 @@ def test_direct_awards_match_the_reference_deterministically(_):
     eligible = sim.calculate("income_support_eligible", YEAR)
     parameters = sim.tax_benefit_system.parameters(YEAR)
     for i, (adult, esa, jsa, expected) in enumerate(cases):
-        reference = reference_eligibility([adult], [], 0, esa, jsa, [False], parameters)
+        reference = reference_eligibility(
+            [adult], [], 0, esa, jsa, [False], False, parameters
+        )
         assert reference == expected, (adult, esa, jsa)
         assert eligible[i] == expected, (adult, esa, jsa)

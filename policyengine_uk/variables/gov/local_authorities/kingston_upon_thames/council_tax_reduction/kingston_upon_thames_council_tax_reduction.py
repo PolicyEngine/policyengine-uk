@@ -23,7 +23,7 @@ class kingston_upon_thames_council_tax_reduction(Variable):
         working_age = is_kingston_upon_thames_working_age(
             household("local_authority", period),
             household("country", period),
-            household("council_tax_reduction_household_has_pensioner", period),
+            benunit("council_tax_reduction_pensioner", period),
         )
         has_uc_award = benunit("universal_credit", period) > 0
         capital = household("savings", period)

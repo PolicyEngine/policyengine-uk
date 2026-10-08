@@ -13,7 +13,10 @@ class uc_assessable_capital(Variable):
         "do not receive Universal Credit. This allocation is a modelling "
         "convention when capital ownership is unobserved, not a statutory rule. "
         "The claimant and partner owner set follows section 5 of the Welfare "
-        "Reform Act 2012 and regulation 18 of the Universal Credit Regulations."
+        "Reform Act 2012 and regulation 18 of the Universal Credit Regulations. "
+        "Person-level sources, such as a Lifetime ISA, count only for the "
+        "holder's own benunit, and only when the holder is its claimant or "
+        "partner (is_uc_claimant): a dependant's capital is not the claimant's."
     )
     definition_period = YEAR
     unit = GBP
@@ -30,6 +33,11 @@ class uc_assessable_capital(Variable):
             household(source, period) for source in p.capital.sources
         )
         benunit_claimants = add(benunit, period, ["is_uc_claimant"])
+        claimant_or_partner = benunit.members("is_uc_claimant", period)
+        person_capital = sum(
+            benunit.sum(benunit.members(source, period) * claimant_or_partner)
+            for source in p.capital.person_sources
+        )
         household_reported_capital = household("household_uc_reported_capital", period)
         household_unreported_claimants = household(
             "household_uc_unreported_claimants", period
@@ -48,6 +56,6 @@ class uc_assessable_capital(Variable):
         assessed_capital = where(
             use_reported_capital,
             reported_capital,
-            household_capital_proxy,
+            household_capital_proxy + person_capital,
         )
         return max_(0, assessed_capital)

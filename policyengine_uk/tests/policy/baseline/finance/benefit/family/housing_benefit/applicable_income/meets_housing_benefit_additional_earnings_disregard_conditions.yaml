@@ -1,0 +1,154 @@
+# Work conditions for the additional earnings disregard: SI 2006/213 Sch 4
+# para 17(2); SI 2006/214 Sch 4 para 9(2). The net earnings test is in
+# housing_benefit_applicable_income_disregard.
+
+- name: Single person aged 25 working 30 hours meets the condition
+  period: 2026
+  input:
+    people:
+      person:
+        age: 25
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+
+- name: Single person aged 24 working 40 hours does not
+  period: 2026
+  input:
+    people:
+      person:
+        age: 24
+        weekly_hours: 40
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+
+- name: Couple where only the partner aged 24 works 30 hours does not
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 26
+      partner:
+        age: 24
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # The member aged at least 25 must be the one working 30 hours.
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+
+- name: Lone parent working 16 hours meets the condition
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 20
+        weekly_hours: 16
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+
+- name: Lone parent working 15 hours does not
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+        weekly_hours: 15
+      child:
+        age: 2
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+
+- name: Couple with a child and one member working 16 hours meets the condition
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 22
+      partner:
+        age: 22
+        weekly_hours: 16
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: [claimant, partner, child]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+
+- name: Childless couple each working 20 hours does not
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        weekly_hours: 20
+      partner:
+        age: 40
+        weekly_hours: 20
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+
+- name: Disabled partner working 16 hours meets the condition
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 40
+        weekly_hours: 16
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+
+- name: Disabled partner not working and other partner working 16 hours does not
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        weekly_hours: 16
+      partner:
+        age: 40
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    # Para 17(2)(b)(v): the member working 16 hours must be the disabled one.
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+
+- name: Pensioner aged 70 working 30 hours meets the condition
+  period: 2026
+  input:
+    people:
+      person:
+        age: 70
+        weekly_hours: 30
+    benunits:
+      benunit:
+        members: [person]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: true

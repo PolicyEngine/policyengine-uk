@@ -123,7 +123,7 @@ print("\nElasticities by parental status:")
 print(by_parent)
 ```
 
-Substitution elasticities range from 0.14 to 0.30 depending on demographics, while income elasticities range from -0.185 to 0. The model excludes certain groups from responses: self-employed workers, students, those aged 60+, and secondary earners beyond the first adult.
+Substitution elasticities range from 0.094 to 0.439 depending on demographics, while income elasticities range from -0.185 to 0; lone fathers are assigned neither. The model excludes certain groups from responses: self-employed workers, students, those aged 60+, and adults beyond the two oldest in each household. Their employment income is left unchanged.
 
 ## Validating against OBR estimates
 

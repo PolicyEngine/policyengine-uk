@@ -1,0 +1,29 @@
+description: >-
+  Annualised Energy Price Guarantee discount for a typical Great Britain
+  household using a prepayment meter. The monthly formula applies one twelfth
+  of this illustrative amount in each month.
+values:
+  0001-01-01: 0
+  2023-07-01:
+    value: 21
+    metadata:
+      reference:
+        - title: Prepayment meter customers to pay less for energy from today
+          href: https://www.gov.uk/government/news/prepayment-meter-customers-to-pay-less-for-energy-from-today
+  2023-10-01:
+    value: 40
+    metadata:
+      reference:
+        - title: Energy Price Guarantee prepayment meter rates and standing charges, October to December 2023
+          href: https://www.gov.uk/government/publications/energy-price-guarantee-regional-rates/energy-price-guarantee-prepayment-meters-regional-rates-and-standing-charges-october-to-december-2023
+  2024-04-01:
+    value: 0
+    metadata:
+      reference:
+        - title: Energy Price Guarantee prepayment meter rates and standing charges, January to March 2024
+          href: https://www.gov.uk/government/publications/energy-price-guarantee-regional-rates/energy-price-guarantee-prepayment-meters-regional-rates-and-standing-charges-january-to-march-2024
+metadata:
+  unit: currency-GBP
+  period: year
+  label: Energy Price Guarantee prepayment discount
+  preserve_calendar_dates: true
