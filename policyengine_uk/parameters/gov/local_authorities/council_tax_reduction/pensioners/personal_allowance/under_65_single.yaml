@@ -1,0 +1,46 @@
+description: Weekly Council Tax Reduction pensioner personal allowance for a single applicant or lone parent aged under 65 while the former category exists in the applicable national table.
+metadata:
+  unit: currency-GBP
+  period: week
+  label: CTR pensioner under-65 single or lone-parent personal allowance
+  breakdown: country
+  reference:
+    - title: England prescribed pensioner personal allowances, 2015
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2015-04-01
+    - title: England prescribed pensioner personal allowances, 2016
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2016-04-01
+    - title: England prescribed pensioner personal allowances, 2017
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2017-04-01
+    - title: England prescribed pensioner personal allowances, 2018
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2018-04-01
+    - title: Scotland pensioner personal allowances, including retained under-65 rates in 2020
+      href: https://www.legislation.gov.uk/ssi/2012/319/schedule/1/2020-04-30
+    - title: Wales pensioner personal allowances, 2019
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2019-04-01
+    - title: Wales pensioner personal allowances, 2020
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2020-04-01
+    - title: Wales pensioner personal allowances, 2021
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2021-04-01
+ENGLAND:
+  2015-04-01: 151.2
+  2016-04-01: 155.6
+  2017-04-01: 159.35
+  2018-04-01: 163
+SCOTLAND:
+  2015-04-01: 151.2
+  2016-04-01: 155.6
+  2017-04-01: 159.35
+  2018-04-01: 163
+  2019-04-01: 167.25
+WALES:
+  2015-04-01: 151.2
+  2016-04-01: 155.6
+  2017-04-01: 159.35
+  2018-04-01: 163
+  2019-04-01: 167.25
+  2020-04-01: 173.8
+  2021-04-01: 177.1
+NORTHERN_IRELAND:
+  2015-04-01: 0
+UNKNOWN:
+  2015-04-01: 0

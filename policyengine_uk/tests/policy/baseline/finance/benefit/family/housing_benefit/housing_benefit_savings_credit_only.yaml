@@ -203,7 +203,8 @@
         hours_worked: 1_040
       person2:
         age: 8
-        childcare_expenses: 2_600
+        housing_benefit_childcare_charges_paid: 2_600
+        housing_benefit_childcare_provider: REGISTERED_APPROVED
     benunits:
       benunit:
         members: [person1, person2]

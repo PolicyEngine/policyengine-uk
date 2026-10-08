@@ -28,7 +28,9 @@
         benefits_premiums: 0
   output:
     # HB Sch 3 para 1: the applicable weekly model rate is 92.04; *52.
-    housing_benefit_applicable_amount: 4786.08
+    # SI 2006/213 Sch 3 para 2: add the child's £84.66 * 52.
+    housing_benefit_child_allowance: 4_402.32
+    housing_benefit_applicable_amount: 9_188.40
     # CTR retains the existing shared HB allowance parameters.
     council_tax_reduction_applicable_amount: 4786.08
     # HB Sch 4 paras 4/7/10: 25 * 52, with no hours disregard.
@@ -68,7 +70,9 @@
         benefits_premiums: 0
   output:
     # HB Sch 3 para 1: the applicable weekly model rate is 144.67; *52.
-    housing_benefit_applicable_amount: 7522.84
+    # SI 2006/213 Sch 3 para 2: add the child's £84.66 * 52.
+    housing_benefit_child_allowance: 4_402.32
+    housing_benefit_applicable_amount: 11_925.16
     # CTR retains the existing shared HB allowance parameters.
     council_tax_reduction_applicable_amount: 7522.84
     # HB Sch 4 paras 4/7/10: 10 * 52, with no hours disregard.
@@ -168,7 +172,9 @@
         benefits_premiums: 0
   output:
     # HB Sch 3 para 1: the applicable weekly model rate is 72.92; *52.
-    housing_benefit_applicable_amount: 3791.84
+    # SI 2006/213 Sch 3 para 2: add the child's £84.66 * 52.
+    housing_benefit_child_allowance: 4_402.32
+    housing_benefit_applicable_amount: 8_194.16
     # CTR retains the existing shared HB allowance parameters.
     council_tax_reduction_applicable_amount: 3791.84
     # HB Sch 4 paras 4/7/10: 25 * 52, with no hours disregard.
@@ -228,6 +234,8 @@
   output:
     # HB Sch 3 para 1(2): the claimant is under 18, even if responsible
     # for an older qualifying young person. Younger rate 72.92 * 52.
-    housing_benefit_applicable_amount: 3_791.84
+    # SI 2006/213 Sch 3 para 2: add the child's £84.66 * 52.
+    housing_benefit_child_allowance: 4_402.32
+    housing_benefit_applicable_amount: 8_194.16
     # The shared CTR allowance calculation also uses only claimant/partner ages.
     council_tax_reduction_applicable_amount: 3_791.84

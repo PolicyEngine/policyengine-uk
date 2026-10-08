@@ -680,9 +680,10 @@
         age: 30
         employment_income: 7_800 # £150 a week
         weekly_hours: 16
-        childcare_expenses: 2_080 # £40 a week
       child:
         age: 5
+        housing_benefit_childcare_charges_paid: 2_080
+        housing_benefit_childcare_provider: REGISTERED_APPROVED
     benunits:
       benunit:
         would_claim_uc: false  # not on Universal Credit, which passports the means test

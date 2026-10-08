@@ -355,17 +355,19 @@
         age: 30
         employment_income: 5_200 # £100 a week
         weekly_hours: 16
-        childcare_expenses: 4_160 # £80 a week
       child:
         age: 5
+        housing_benefit_childcare_charges_paid: 4_160
+        housing_benefit_childcare_provider: REGISTERED_APPROVED
     benunits:
       benunit:
         would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, child]
   output:
-    # Childcare deducted is min(£4,160, one-child maximum) = £4,160.
-    # £5,200 < £1,300 + £4,160 + £889.20 = £6,349.20, so only £25 a week.
-    housing_benefit_applicable_income_childcare_element: 4_160
+    # SI 2006/213 reg 27(1)(c): no tax credits, so childcare is capped
+    # at earnings after the £25 disregard: £5,200 - £1,300 = £3,900.
+    # £5,200 < £1,300 + £3,900 + £889.20, so no additional disregard.
+    housing_benefit_applicable_income_childcare_element: 3_900
     housing_benefit_applicable_income_disregard: 1_300
 
 - name: Lone parent whose earnings cover the disregards and childcare gets the additional disregard
@@ -377,9 +379,10 @@
         age: 30
         employment_income: 5_200 # £100 a week
         weekly_hours: 16
-        childcare_expenses: 1_040 # £20 a week
       child:
         age: 5
+        housing_benefit_childcare_charges_paid: 1_040
+        housing_benefit_childcare_provider: REGISTERED_APPROVED
     benunits:
       benunit:
         would_claim_uc: false  # not on Universal Credit, which passports the means test
@@ -430,7 +433,7 @@
     # One member must work 30 hours; hours are not added across the couple.
     housing_benefit_applicable_income_disregard: 520 # £10 × 52
 
-- name: Disabled single person working 20 hours gets £5 plus the additional disregard (model limitation; the law gives £20 plus it)
+- name: Disabled single person working 20 hours gets £20 plus the additional disregard
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -448,15 +451,9 @@
     # Para 17(2)(b)(iv)(aa): a single claimant with the disability premium
     # working 16 hours or more meets the condition.
     meets_housing_benefit_additional_earnings_disregard_conditions: true
-    # KNOWN LIMITATION: the law gives £1,929.20. Intended model limitation.
-    # In law the same disability premium brings in
-    # the £20 disregard in place of £5: Sch 4 para 3(2), "This paragraph
-    # applies where the claimant's applicable amount includes an amount by
-    # way of the disability premium". The law gives (£20 + £17.10) × 52 =
-    # £1,929.20 (£8,000 ≥ £1,040 + £889.20). The £20 disregards are out of
-    # scope for this change and tracked as a follow-up; until then the model
-    # gives (£5 + £17.10) × 52.
-    housing_benefit_applicable_income_disregard: 1_149.20
+    # SI 2006/213 Sch 4 para 3(2): the actual disability premium gives
+    # the £20 ordinary disregard. (£20 + £17.10) * 52 = £1,929.20.
+    housing_benefit_applicable_income_disregard: 1_929.20
 
 - name: Working-age claimant on Income Support has all earnings disregarded
   period: 2026

@@ -1,0 +1,12 @@
+description: Whether the Welsh pensioner Council Tax Reduction scheme for the model year retains its separate under-65 personal allowance.
+values:
+  2015-04-01: true
+  2022-04-01: false
+metadata:
+  unit: bool
+  label: Wales former CTR pensioner under-65 category applies
+  reference:
+    - title: Application to schemes for financial years beginning from 1 April 2022
+      href: https://www.legislation.gov.uk/wsi/2022/51/regulation/1/made
+    - title: Replacement pensioner personal allowance table
+      href: https://www.legislation.gov.uk/wsi/2022/51/regulation/5/made

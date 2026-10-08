@@ -54,6 +54,7 @@
         guarantee_credit: 0
     households:
       household:
+        country: ENGLAND
         members: [claimant]
         rent: 6_240
         tenure_type: RENT_FROM_COUNCIL
@@ -64,8 +65,9 @@
     housing_benefit_pension_age_regulations_apply: true
     council_tax_reduction_pensioner: true
     benefits_premiums: 0
-    housing_benefit_applicable_amount: 9_412
-    council_tax_reduction_applicable_amount: 9_412
+    # 2017 under-65 pensioner category: £159.35 * 52.
+    housing_benefit_applicable_amount: 8_286.20
+    council_tax_reduction_applicable_amount: 8_286.20
 
 - name: Synthetic component routing does not apply the pension-age guarantee-credit passport under working-age flags
   # This fixes the scheme flags and income components to test their consumers;
@@ -142,12 +144,14 @@
         housing_benefit_applicable_income_childcare_element: 0
     households:
       household:
+        country: ENGLAND
         members: [claimant]
         savings: 12_000
   output:
     has_attained_state_pension_credit_qualifying_age: true
-    housing_benefit_applicable_amount: 9_412
-    council_tax_reduction_applicable_amount: 9_412
+    # 2017 under-65 pensioner category: £159.35 * 52.
+    housing_benefit_applicable_amount: 8_286.20
+    council_tax_reduction_applicable_amount: 8_286.20
     housing_benefit_assessable_capital: 0
     housing_benefit_tariff_income: 0
     housing_benefit_applicable_income: 0

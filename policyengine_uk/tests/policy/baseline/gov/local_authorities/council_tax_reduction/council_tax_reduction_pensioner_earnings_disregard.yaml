@@ -225,6 +225,9 @@
         employment_income: 10_000
         weekly_hours: 20
         is_disabled_for_benefits: true
+        # SI 2012/2885 Sch 4 para 5(1)(a)(iii): listed award, not a
+        # generic disability flag, establishes the 16-hour work route.
+        attendance_allowance: 1_000
     benunits:
       benunit:
         members: [pensioner]
@@ -452,3 +455,27 @@
     council_tax_reduction_applicable_amount: 13_312
     # 2,000 - 20% x (15,054 - 13,312) (main: 1,599.60).
     council_tax_reduction: 1_651.60
+
+- name: Case 22, a generic disability flag alone does not establish the pensioner 16-hour route.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 70
+        employment_income: 10_000
+        weekly_hours: 20
+        is_disabled_for_benefits: true
+        attendance_allowance: 0
+        dla: 0
+        pip: 0
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # SI 2012/2885 Sch 4 para 5(1) requires a listed award or condition.
+    council_tax_reduction_pensioner_earnings_disregard: 260

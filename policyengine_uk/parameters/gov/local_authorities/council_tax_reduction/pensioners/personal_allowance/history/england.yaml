@@ -1,0 +1,11 @@
+description: Whether England's pensioner Council Tax Reduction table retains its separate under-65 personal allowance.
+values:
+  2015-04-01: true
+  2018-12-06: false
+metadata:
+  unit: bool
+  label: England former CTR pensioner under-65 category applies
+  preserve_calendar_dates: true
+  reference:
+    - title: Prescribed pensioner personal allowances, Schedule 2 paragraph 1, Tables 1 and 2
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2018-04-01

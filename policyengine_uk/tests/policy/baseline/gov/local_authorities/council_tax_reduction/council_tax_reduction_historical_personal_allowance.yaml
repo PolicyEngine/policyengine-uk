@@ -1,0 +1,551 @@
+# Historical CTR personal-allowance table component tests.
+# The pensioner flag is supplied to isolate the table from age eligibility;
+# synthetic under-65 inputs after December 2018 are not real new claims.
+# England: SI 2012/2885 Sch 2 para 1 (dated 2016-04-01 and 2018-04-01).
+# Scotland: SSI 2012/319 Sch 1 para 2; SSI 2020/413 regs 1 and 13.
+# Wales: WSI 2013/3029 Sch 2 para 1; WSI 2022/51 regs 1(3) and 5.
+# Rates use 30 April; dated category changes use fiscal-year segments.
+# Higher rates remain the existing shared HB parameters. The Scotland 2020
+# case supplies its enacted higher rate to isolate this category correction
+# from the separate older-rate corrections owned by PR #1925.
+
+- name: Case 1, ENGLAND personal allowance for ages 64 in 2016.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # £155.6 per week * 52.
+    council_tax_reduction_applicable_amount: 8091.20
+    housing_benefit_applicable_amount: 0
+
+- name: Case 2, ENGLAND personal allowance for ages 64 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # £159.35 per week * 52.
+    council_tax_reduction_applicable_amount: 8286.20
+    housing_benefit_applicable_amount: 0
+
+- name: Case 3, ENGLAND personal allowance for ages 64 and 63 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+      person2:
+        age: 63
+    benunits:
+      benunit:
+        members: [person1, person2]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # £243.25 per week * 52.
+    council_tax_reduction_applicable_amount: 12649.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 4, ENGLAND personal allowance for ages 65 and 64 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 65
+      person2:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1, person2]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1, person2]
+        country: ENGLAND
+  output:
+    # £258.15 per week * 52.
+    council_tax_reduction_applicable_amount: 13423.80
+    housing_benefit_applicable_amount: 0
+
+- name: Case 5, SCOTLAND personal allowance for ages 64 in 2016.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+  output:
+    # £155.6 per week * 52.
+    council_tax_reduction_applicable_amount: 8091.20
+    housing_benefit_applicable_amount: 0
+
+- name: Case 6, SCOTLAND personal allowance for ages 64 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+  output:
+    # £159.35 per week * 52.
+    council_tax_reduction_applicable_amount: 8286.20
+    housing_benefit_applicable_amount: 0
+
+- name: Case 7, SCOTLAND personal allowance for ages 64 and 63 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+      person2:
+        age: 63
+    benunits:
+      benunit:
+        members: [person1, person2]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+  output:
+    # £243.25 per week * 52.
+    council_tax_reduction_applicable_amount: 12649.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 8, SCOTLAND personal allowance for ages 65 and 64 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 65
+      person2:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1, person2]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1, person2]
+        country: SCOTLAND
+  output:
+    # £258.15 per week * 52.
+    council_tax_reduction_applicable_amount: 13423.80
+    housing_benefit_applicable_amount: 0
+
+- name: Case 9, WALES personal allowance for ages 64 in 2016.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # £155.6 per week * 52.
+    council_tax_reduction_applicable_amount: 8091.20
+    housing_benefit_applicable_amount: 0
+
+- name: Case 10, WALES personal allowance for ages 64 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # £159.35 per week * 52.
+    council_tax_reduction_applicable_amount: 8286.20
+    housing_benefit_applicable_amount: 0
+
+- name: Case 11, WALES personal allowance for ages 64 and 63 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+      person2:
+        age: 63
+    benunits:
+      benunit:
+        members: [person1, person2]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1, person2]
+        country: WALES
+  output:
+    # £243.25 per week * 52.
+    council_tax_reduction_applicable_amount: 12649.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 12, WALES personal allowance for ages 65 and 64 in 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 65
+      person2:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1, person2]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1, person2]
+        country: WALES
+  output:
+    # £258.15 per week * 52.
+    council_tax_reduction_applicable_amount: 13423.80
+    housing_benefit_applicable_amount: 0
+
+- name: Case 13, ENGLAND personal allowance for ages 64 in 2015.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # £151.2 per week * 52.
+    council_tax_reduction_applicable_amount: 7862.40
+    housing_benefit_applicable_amount: 0
+
+- name: Case 14, ENGLAND personal allowance for ages 64 in 2018.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # 244 days at £163 and 121 days at £176.40, divided by 365 and multiplied by 52.
+    council_tax_reduction_applicable_amount: 8706.99
+    housing_benefit_applicable_amount: 0
+
+- name: Case 15, SCOTLAND personal allowance for ages 64 in 2018.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+  output:
+    # £163 per week * 52.
+    council_tax_reduction_applicable_amount: 8476.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 16, WALES personal allowance for ages 64 in 2018.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # £163 per week * 52.
+    council_tax_reduction_applicable_amount: 8476.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 17, ENGLAND personal allowance for ages 64 in 2019.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: ENGLAND
+  output:
+    # £181 per week * 52.
+    council_tax_reduction_applicable_amount: 9412.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 18, SCOTLAND personal allowance for ages 64 in 2019.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+  output:
+    # £167.25 per week * 52.
+    council_tax_reduction_applicable_amount: 8697.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 19, WALES personal allowance for ages 64 in 2019.
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # £167.25 per week * 52.
+    council_tax_reduction_applicable_amount: 8697.00
+    housing_benefit_applicable_amount: 0
+
+- name: Case 20, SCOTLAND personal allowance for ages 64 in 2020.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    gov.dwp.housing_benefit.allowances.single.aged: 187.75
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+  output:
+    # 301 days at the retained £167.25 and 64 days at £187.75, annualised.
+    council_tax_reduction_applicable_amount: 8883.92
+    housing_benefit_applicable_amount: 0
+
+- name: Case 21, WALES personal allowance for ages 64 in 2020.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # £173.8 per week * 52.
+    council_tax_reduction_applicable_amount: 9037.60
+    housing_benefit_applicable_amount: 0
+
+- name: Case 22, SCOTLAND personal allowance for ages 64 in 2021.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: SCOTLAND
+  output:
+    # £191.15 per week * 52.
+    council_tax_reduction_applicable_amount: 9939.80
+    housing_benefit_applicable_amount: 0
+
+- name: Case 23, WALES personal allowance for ages 64 in 2021.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # £177.1 per week * 52.
+    council_tax_reduction_applicable_amount: 9209.20
+    housing_benefit_applicable_amount: 0
+
+- name: Case 24, WALES personal allowance for ages 64 in 2022.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 64
+    benunits:
+      benunit:
+        members: [person1]
+        council_tax_reduction_pensioner: true
+        pension_age_benefits_premiums: 0
+        housing_benefit_eligible: false
+    households:
+      household:
+        members: [person1]
+        country: WALES
+  output:
+    # £197.1 per week * 52.
+    council_tax_reduction_applicable_amount: 10249.20
+    housing_benefit_applicable_amount: 0

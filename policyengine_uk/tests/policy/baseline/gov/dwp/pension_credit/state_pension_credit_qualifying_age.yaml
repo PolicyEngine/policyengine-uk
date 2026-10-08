@@ -327,8 +327,9 @@
 
 - name: Case 14, the pension-age Housing Benefit and CTR personal allowance applies from the qualifying age.
   # Born 6 April 1952, over the qualifying age in 2016-17, so the pension-age
-  # regulations (SI 2006/214) apply. The model's single pension-age rate for
-  # 2016-17 is 181 a week: 181 x 52 = 9,412. No premiums apply.
+  # regulations (SI 2006/214) apply. The former under-65 category is
+  # £155.60 * 52 = £8,091.20 (SI 2016/242 reg 6; England CTR Sch 2).
+  # No premiums apply.
   period: 2016
   absolute_error_margin: 0.01
   input:
@@ -342,12 +343,13 @@
         members: [person1]
     households:
       household:
+        country: ENGLAND
         members: [person1]
         tenure_type: RENT_FROM_COUNCIL
   output:
     benefits_premiums: 0
-    housing_benefit_applicable_amount: 9_412
-    council_tax_reduction_applicable_amount: 9_412
+    housing_benefit_applicable_amount: 8_091.20
+    council_tax_reduction_applicable_amount: 8_091.20
 
 - name: Case 15, below the qualifying age the working-age allowance for a single person aged 25 or over applies.
   # Born 6 September 1953, under the qualifying age in 2017-18: 73.10 a week,

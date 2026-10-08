@@ -1,0 +1,13 @@
+description: Whether Scotland's pensioner Council Tax Reduction table retains its separate under-65 personal allowance.
+values:
+  2015-04-01: true
+  2021-02-01: false
+metadata:
+  unit: bool
+  label: Scotland former CTR pensioner under-65 category applies
+  preserve_calendar_dates: true
+  reference:
+    - title: Council Tax Reduction (Scotland) Amendment (No. 4) Regulations 2020, commencement
+      href: https://www.legislation.gov.uk/ssi/2020/413/regulation/1/made
+    - title: Removal of the under-65 category
+      href: https://www.legislation.gov.uk/ssi/2020/413/regulation/13/made

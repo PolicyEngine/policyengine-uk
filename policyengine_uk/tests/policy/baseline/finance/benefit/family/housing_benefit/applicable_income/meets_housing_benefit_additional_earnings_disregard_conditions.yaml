@@ -9,6 +9,7 @@
       person:
         age: 25
         weekly_hours: 30
+        employment_income: 8_000
     benunits:
       benunit:
         members: [person]
@@ -22,6 +23,7 @@
       person:
         age: 24
         weekly_hours: 40
+        employment_income: 8_000
     benunits:
       benunit:
         members: [person]
@@ -37,6 +39,7 @@
       partner:
         age: 24
         weekly_hours: 30
+        employment_income: 8_000
     benunits:
       benunit:
         members: [claimant, partner]
@@ -51,6 +54,7 @@
       parent:
         age: 20
         weekly_hours: 16
+        employment_income: 8_000
       child:
         age: 2
     benunits:
@@ -66,6 +70,7 @@
       parent:
         age: 30
         weekly_hours: 15
+        employment_income: 8_000
       child:
         age: 2
     benunits:
@@ -83,6 +88,7 @@
       partner:
         age: 22
         weekly_hours: 16
+        employment_income: 8_000
       child:
         age: 1
     benunits:
@@ -98,9 +104,11 @@
       claimant:
         age: 40
         weekly_hours: 20
+        employment_income: 8_000
       partner:
         age: 40
         weekly_hours: 20
+        employment_income: 8_000
     benunits:
       benunit:
         members: [claimant, partner]
@@ -116,6 +124,7 @@
       partner:
         age: 40
         weekly_hours: 16
+        employment_income: 8_000
         is_disabled_for_benefits: true
     benunits:
       benunit:
@@ -130,6 +139,7 @@
       claimant:
         age: 40
         weekly_hours: 16
+        employment_income: 8_000
       partner:
         age: 40
         is_disabled_for_benefits: true
@@ -147,8 +157,48 @@
       person:
         age: 70
         weekly_hours: 30
+        employment_income: 8_000
     benunits:
       benunit:
         members: [person]
   output:
     meets_housing_benefit_additional_earnings_disregard_conditions: true
+
+- name: Case 11, unpaid 30-hour work does not satisfy the remunerative-work condition.
+  period: 2026
+  input:
+    age: 30
+    weekly_hours: 30
+    employment_income: 0
+    self_employment_income: 0
+    housing_benefit_paid_work_expected: false
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+
+- name: Case 12, expected payment can establish remunerative work before earnings arrive.
+  period: 2026
+  input:
+    age: 30
+    weekly_hours: 30
+    employment_income: 0
+    housing_benefit_paid_work_expected: true
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_applicable_income_disregard: 0
+
+- name: Case 13, a lone parent's unpaid 16-hour work does not satisfy the condition.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 30
+        weekly_hours: 16
+        employment_income: 0
+        housing_benefit_paid_work_expected: false
+      person2:
+        age: 5
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    meets_housing_benefit_additional_earnings_disregard_conditions: false

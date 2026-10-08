@@ -1,0 +1,13 @@
+description: Age below which the former Council Tax Reduction pensioner personal allowance category applies.
+values:
+  2015-04-01: 65
+metadata:
+  unit: year
+  label: former CTR pensioner allowance age boundary
+  reference:
+    - title: England pensioner personal allowances, Schedule 2 paragraph 1
+      href: https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2016-04-01
+    - title: Wales pensioner personal allowances, Schedule 2 paragraph 1
+      href: https://www.legislation.gov.uk/wsi/2013/3029/schedule/2/2016-04-30
+    - title: Scotland pensioner personal allowances, Schedule 1 paragraph 2
+      href: https://www.legislation.gov.uk/ssi/2012/319/schedule/1/2016-04-30

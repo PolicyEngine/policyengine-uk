@@ -45,6 +45,15 @@ do not change Council Tax Reduction or Income Support.
 The main-phase ESA age exception tests the claimant personally. A partner's
 main-phase award does not on its own satisfy that exception.
 
+The connected Council Tax Reduction calculation also needs the former
+under-65 pensioner personal allowance. Its category dates are separate from
+HB: England removed it on 6 December 2018, Scotland on 1 February 2021 and
+Wales for schemes from 1 April 2022. Separate referenced CTR rates and Boolean
+schedules preserve those differences. The existing higher-age allowance
+parameters remain shared; HB's new child additions are not imported into CTR.
+The Welsh replacement applies by annual scheme year; it does not change the
+last five days of the model's previous 6-April fiscal year.
+
 ## Childcare
 
 Report qualifying charges on each child using
@@ -192,5 +201,8 @@ the model as a complete reconstruction of every HB provision or pre-2015 award.
 - [2026 GB carers' reassessment exclusion](https://www.legislation.gov.uk/uksi/2026/681).
 - [2026 NI counterpart](https://www.legislation.gov.uk/nisr/2026/146).
 - [LISA medical withdrawal exception](https://www.legislation.gov.uk/uksi/1998/1870/schedule/paragraph/4).
+- [England CTR historical pensioner table](https://www.legislation.gov.uk/uksi/2012/2885/schedule/2/2018-04-01).
+- [Scotland CTR removal of the under-65 category](https://www.legislation.gov.uk/ssi/2020/413/regulation/13/made).
+- [Wales CTR replacement pensioner table](https://www.legislation.gov.uk/wsi/2022/51/regulation/5/made).
 
 The relevant parameters and variables also carry their own source references.
