@@ -1,1 +1,0 @@
-- Disregard Housing Benefit income and capital on receipt of Guarantee Credit, so pensioners who do not claim Pension Credit retain the ordinary means test.

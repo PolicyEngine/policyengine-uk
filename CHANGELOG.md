@@ -1,3 +1,11 @@
+## [2.123.6] - 2026-10-08
+
+### Fixed
+
+- Assess each family that claims Council Tax Reduction under its own scheme and its own non-dependant exemption, so in a shared-rent household a working-age sharer no longer takes the pensioner scheme because the household head's family is pension-age (or the reverse), and one claimant's disability no longer exempts another's claim from non-dependant deductions.
+- - Disregard Housing Benefit income and capital on receipt of Guarantee Credit, so pensioners who do not claim Pension Credit retain the ordinary means test.
+
+
 ## [2.123.5] - 2026-10-07
 
 ### Fixed
