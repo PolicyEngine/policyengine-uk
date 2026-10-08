@@ -2,15 +2,22 @@
 
 ```{warning}
 **Not yet modelled.** The Cold Weather Payment (CWP) is a DWP payment
-of **£25 per 7-day period of recorded cold weather** to qualifying
-households in England, Wales and (historically) Northern Ireland.
-PolicyEngine UK doesn't currently model it. This page captures the
-proposed scope, tracked under
+of **£25 per 7-day period of very cold weather** to qualifying
+households in England and Wales. Northern Ireland runs its own scheme
+on the same terms (1 November 2026 to 31 March 2027,
+[nidirect](https://www.nidirect.gov.uk/articles/cold-weather-payment)).
+PolicyEngine UK doesn't model it. This page sets out the proposed
+scope, tracked in
 [#435](https://github.com/PolicyEngine/policyengine-uk/issues/435).
 
-In Scotland the equivalent benefit is the **Winter Heating Payment**
-(£59.75 per qualifying household per winter, replacing CWP from
-February 2023) — also not modelled.
+In Scotland the equivalent is the **Winter Heating Payment**, a flat
+annual payment (£62.00 at the latest uprating,
+[mygov.scot](https://www.mygov.scot/winter-heating-payment)), which
+replaced Cold Weather Payment there in 2023. It isn't modelled either.
+The separate Pension Age Winter Heating Payment, which replaced Winter
+Fuel Payment in Scotland, is modelled under
+`gov.social_security_scotland.pawhp`. Updated October 2026: amounts,
+legislation and the Scotland and Northern Ireland position checked.
 ```
 
 ## What CWP is
@@ -19,18 +26,27 @@ Defined in [The Social Fund Cold Weather Payments (General)
 Regulations 1988][cwp-1988] (SI 1988/1724). A household qualifies if
 **all** of the following hold:
 
-- The address is in a postcode covered by a weather station that
-  recorded **7 consecutive days** at or below 0°C (forecast or
-  observed) in the qualifying period (1 November – 31 March).
-- A member of the benunit receives one of the **qualifying benefits**:
-  Pension Credit; Income Support, JSA-IB, or ESA-IR (in either case
-  with a disability-related premium, a child under 5, or in a few
-  other circumstances); Universal Credit (with limited capability for
-  work, a disability addition, or a child under 5).
+- The address is in a postcode linked to a weather station where the
+  average temperature is recorded as, or forecast to be, **0°C or below
+  over 7 consecutive days** between 1 November and 31 March.
+- A member of the benefit unit receives a **qualifying benefit**:
+  Pension Credit; Income Support, income-based JSA or income-related
+  ESA with a disability or pensioner premium or a child under 5 (or,
+  for ESA, in the support or work-related activity group); Universal
+  Credit when not employed with a limited capability for work element,
+  a disabled child element or a child under 5, or when employed with a
+  disabled child element; or Support for Mortgage Interest with one of
+  those premiums or a child under 5. The GOV.UK eligibility page has
+  the exact conditions.
 
-The payment is £25 per 7-day cold period; multiple cold periods
-trigger multiple payments. Outturn averages ~£100m to ~£200m/year
-nationally depending on winter severity.
+The payment is £25 per 7-day cold period, and each further cold
+period triggers another payment. Spending varies a lot with the winter: in
+2024-25, for example, about 1.4 million payments worth around £35
+million were made in England and Wales
+([DWP, April 2025](https://www.gov.uk/government/news/over-35-million-in-cold-weather-payments-support-paid-this-winter)).
+DWP doesn't count actual payments through the winter; it publishes the
+estimated number of eligible people at the start of each season and the
+weekly triggers, from which payments can be estimated.
 
 ## Why this is harder than other DWP benefits
 
@@ -60,13 +76,14 @@ and option 3 for back-casts where the data is available.
 
 ### Phase 1 — qualifying-benefit gate + expected-value payment
 
-- New parameter `gov.dwp.cold_weather_payment.amount` = £25 (since
-  the scheme's inception).
+- New parameter `gov.dwp.cold_weather_payment.amount` = £25. The amount
+  was lower in earlier years, so take any backdated values from the
+  amendment history of SI 1988/1724.
 - New parameter
   `gov.dwp.cold_weather_payment.expected_periods_per_year` =
   long-run national average from DWP CWP statistics.
 - New variable `cold_weather_payment_eligible` (BenUnit, YEAR) that
-  fires if any benunit member receives one of the qualifying benefits
+  fires if any benefit unit member receives one of the qualifying benefits
   with the relevant addition / age trigger.
 - New variable `cold_weather_payment` (BenUnit, YEAR) = `amount` ×
   `expected_periods_per_year` × `eligible`.
@@ -83,19 +100,24 @@ lookup by `region`.
 
 ### Phase 3 — Scotland Winter Heating Payment
 
-Different rules and a different administration — modelled as a
-separate variable:
+Paid by Social Security Scotland under
+[The Winter Heating Assistance (Low Income) (Scotland) Regulations 2023](https://www.legislation.gov.uk/ssi/2023/16/contents)
+(SSI 2023/16). The qualifying benefits are essentially the same as for
+Cold Weather Payment (Pension Credit with no further condition; the
+other benefits with the same disability, pensioner-premium or
+child-under-5 conditions), assessed in a qualifying week (2 to 8
+November in 2026), but the payment is a flat annual amount with no
+weather trigger. So:
 
-- `winter_heating_payment_scotland_eligible`: any benunit member on
-  Pension Credit + Scotland residence (the WHP qualifying-benefit
-  list is broader than CWP).
-- `winter_heating_payment_scotland` = `amount` × `eligible` where
-  `amount` is the flat per-household winter payment (£59.75 in
-  2023-24, uprated subsequently).
+- `winter_heating_payment_eligible`: the Phase 1 eligibility rule plus
+  residence in Scotland. Reuse the Phase 1 variable rather than a second
+  copy of the benefit conditions.
+- `winter_heating_payment` = `amount` × eligible, with `amount`
+  uprated each year (£62.00 at the latest uprating).
 
 ## Data needs
 
-- DWP, [Cold Weather Payment statistics](https://www.gov.uk/government/collections/cold-weather-payments-statistics) — caseload and expenditure by region by winter, primary calibration source.
+- DWP, [Cold Weather Payment statistics](https://www.gov.uk/government/collections/social-fund-cold-weather-payments) — estimated eligible numbers at the start of each season and weekly triggers by weather station; the main calibration source.
 - DWP-published WHP statistics (Scotland) — Phase 3 calibration.
 - Met Office, [UK climate historic stations](https://www.metoffice.gov.uk/research/climate/maps-and-data/historic-station-data) — Phase 2 regional expected-period parameterisation.
 
@@ -104,25 +126,23 @@ data work for Phase 1/2.
 
 ## Open questions
 
-- The qualifying-benefit list for CWP is narrower than for WHD —
-  specifically the disability/child-under-5 triggers within UC and the
-  legacy benefits. Should the eligibility be modelled as a single
-  composite condition variable, or as separate `_via_uc` /
-  `_via_legacy` / `_via_pc` flags?
-- CWP averages ~£100m/year — well below most modelled benefits, but
-  the marginal household-level impact is meaningful for the low-income
-  pensioners and disabled households it targets. Worth modelling
-  Phase 1 even if Phase 2 doesn't follow.
-- Welsh Government has occasionally topped up CWP from devolved funds.
-  Should the model expose a `wales_top_up` parameter for reform
-  analyses?
+- The qualifying-benefit list is narrower than for the Warm Home
+  Discount in England and Wales, which now covers everyone on
+  Universal Credit, Housing Benefit, income-related ESA or Pension
+  Credit. Model the eligibility as one composite variable, shared with
+  the Scottish Winter Heating Payment, or as separate flags by route
+  (Universal Credit, legacy benefits, Pension Credit)?
+- Spending is small next to most modelled benefits, but the payment
+  matters to the low-income pensioners and disabled households it
+  targets. Phase 1 is worth doing even if Phase 2 doesn't follow.
 
 ## References
 
 - [The Social Fund Cold Weather Payments (General) Regulations 1988 (SI 1988/1724)][cwp-1988].
 - gov.uk, [Cold Weather Payment](https://www.gov.uk/cold-weather-payment).
-- DWP, [Cold Weather Payment statistics](https://www.gov.uk/government/collections/cold-weather-payments-statistics).
-- Scottish equivalent: [Winter Heating Payment (Scotland) Regulations 2023 (SSI 2023/8)](https://www.legislation.gov.uk/ssi/2023/8/contents).
+- DWP, [Cold Weather Payment statistics](https://www.gov.uk/government/collections/social-fund-cold-weather-payments).
+- Scottish equivalent: [The Winter Heating Assistance (Low Income) (Scotland) Regulations 2023 (SSI 2023/16)](https://www.legislation.gov.uk/ssi/2023/16/contents); [mygov.scot](https://www.mygov.scot/winter-heating-payment).
+- Northern Ireland: [nidirect, Cold Weather Payment](https://www.nidirect.gov.uk/articles/cold-weather-payment).
 - Issue: [#435](https://github.com/PolicyEngine/policyengine-uk/issues/435).
 
 [cwp-1988]: https://www.legislation.gov.uk/uksi/1988/1724
