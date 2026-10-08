@@ -1,0 +1,14 @@
+description: VAT rate on supplies of domestic electricity in Northern Ireland. The temporary zero rate from 1 October 2026 does not apply there.
+values:
+  1994-04-01: 0.08
+  1997-09-01: 0.05
+metadata:
+  unit: /1
+  period: year
+  label: VAT rate on domestic electricity, Northern Ireland
+  reference:
+    - title: Value Added Tax Act 1994, Schedule 7A, Group 1
+      href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/7A
+    - title: HMRC Revenue and Customs Brief 10 (2026)
+      href: https://www.gov.uk/government/publications/revenue-and-customs-brief-10-2026-temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain/temporary-zero-rate-of-vat-for-domestic-electricity-in-great-britain
+  fiscal_year_blend: true
