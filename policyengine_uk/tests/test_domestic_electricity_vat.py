@@ -106,7 +106,8 @@ def test_vat_responds_to_electricity():
     low = calc("vat", electricity=1_200)
     high = calc("vat", electricity=5_000)
     expected = 3_800 / 1.05 * 0.05 * FY2026_SHARE_AT_5_PERCENT
-    assert high - low == pytest.approx(expected)
+    # vat is float32, so the difference of two totals is good to about 1p.
+    assert high - low == pytest.approx(expected, abs=0.01)
 
 
 def test_energy_vat_is_not_grossed_up_by_coverage():

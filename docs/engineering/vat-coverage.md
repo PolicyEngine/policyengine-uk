@@ -77,11 +77,36 @@ product = raw / obr_receipts
 print(product, product / 0.7)
 ```
 
-## Interaction with an explicit energy VAT base
+## Energy bills are not grossed up
 
-A domestic fuel and power VAT base built from `electricity_consumption` and
-`gas_consumption` (PolicyEngine/policyengine-uk#2166) changes what the survey
-coverage applies to. If those energy inputs are already calibrated to an
-aggregate, they should not be divided by the survey coverage again, and the
-reconciled energy part of `reduced_rate_vat_consumption` should come out of the
-base used to derive it.
+VAT on domestic electricity and gas is charged on each household's own bills
+(`domestic_energy_vat`, PolicyEngine/policyengine-uk#2166), and the ONS domestic
+fuel and power share of spending comes out of the generic reduced-rate share.
+Those bills are calibrated to national energy use (NEED), and households bear
+VAT on them in full, so neither factor applies to them:
+
+```
+vat = (standard rate x full_rate_vat_consumption
+       + reduced rate x reduced_rate_vat_consumption)
+      / (survey_consumption_coverage x household_share_of_receipts)
+      + domestic_energy_vat
+```
+
+Dividing energy VAT by the household share as well would put part of
+government, charity and exempt-business VAT on electricity bills, and a zero
+rate on domestic electricity would then cost 1/0.7 times the VAT households
+actually pay on it.
+
+With energy split out, the coverage is derived against receipts net of energy
+VAT: coverage = pre-scaling non-energy VAT / (0.7 x (receipts - energy VAT)).
+
+| Year | Pre-scaling non-energy VAT | Energy-bill VAT | OBR VAT receipts | Survey coverage |
+|---|---|---|---|---|
+| 2024-25 | £79.2bn | £2.0bn | £171.0bn (outturn) | 0.670 |
+| 2025-26 | £82.5bn | £2.0bn | £180.2bn | 0.662 |
+| 2026-27 | £84.7bn | £1.4bn | £187.7bn | 0.650 |
+
+The 2024-25 value rounds to the same 0.67 as the derivation above, so the
+parameter is unchanged. To reproduce, subtract
+`sim.calculate("domestic_energy_vat", year).sum()` from the receipts in the
+snippet above before dividing.
