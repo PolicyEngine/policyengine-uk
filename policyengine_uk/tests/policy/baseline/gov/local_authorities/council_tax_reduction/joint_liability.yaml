@@ -298,8 +298,8 @@
     # working-age scheme, which the model does not simulate, so keeps the
     # reported reduction (none here).
     council_tax_reduction_claims_are_joint: true
-    council_tax_reduction_claim_pensioner: [true, false]
-    council_tax_reduction_claim_scheme_supported: [true, false]
+    council_tax_reduction_pensioner: [true, false]
+    council_tax_reduction_scheme_supported: [true, false]
     simulated_council_tax_reduction_benunit: [1_000, 0]
     council_tax_benefit: [1_000, 0]
 
@@ -340,7 +340,6 @@
     # 2,000 / 3 = 666.67 for her claim. The couple falls under the
     # working-age scheme, which is not simulated in Maidstone.
     council_tax_reduction_pensioner: [false, true]
-    council_tax_reduction_claim_pensioner: [false, true]
     council_tax_reduction_joint_liability_share: [0.333333, 0.333333]
     simulated_council_tax_reduction_benunit: [0, 666.67]
     council_tax_benefit: [0, 666.67]
@@ -382,7 +381,6 @@
     # Universal Credit award makes it working-age; that does not carry over
     # to the single pensioner's claim.
     council_tax_reduction_pensioner: [true, false]
-    council_tax_reduction_claim_pensioner: [true, false]
     simulated_council_tax_reduction_benunit: [666.67, 0]
     council_tax_benefit: [666.67, 0]
 

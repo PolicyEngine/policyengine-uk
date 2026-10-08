@@ -41,10 +41,12 @@ P3  Differential against the formulas before this change. A family with no
 P4  The change only removes exemptions: exempt now implies exempt before, the
     cap is never higher, and Universal Credit and Housing Benefit never rise.
     A CTR pensioner now was a CTR pensioner before.
-P5  The model's Welsh and Scottish CTR formulas do not route on pensioner
-    status, but they count Universal Credit as income. So their CTR changes
-    only through Universal Credit: unchanged where Universal Credit is
-    unchanged, and never lower where the cap has lowered Universal Credit.
+P5  The Welsh and Scottish CTR schemes do not depend on pensioner status,
+    but they count Universal Credit as income. So with the CTR pensioner test
+    held as it is now (it also sets the pension-age applicable amount and
+    earnings disregard), the cap change moves their CTR only through Universal
+    Credit: unchanged where Universal Credit is unchanged, and never lower
+    where the cap has lowered Universal Credit.
 P6  Metamorphic: with a Universal Credit award, adding a member over State
     Pension age to a couple's ages (making it mixed-age) never exempts it from
     the cap.
@@ -106,22 +108,34 @@ class is_benefit_cap_exempt_other(Variable):
         return has_pensioner | afcs | esa_support_component
 
 
-class council_tax_reduction_household_has_pensioner(Variable):
+class council_tax_reduction_pensioner(Variable):
     value_type = bool
-    entity = Household
+    entity = BenUnit
     label = "CTR pensioner test before this change"
     definition_period = YEAR
 
-    def formula(household, period, parameters):
-        person = household.members
-        claimant_benunit = person.benunit("benunit_contains_household_head", period)
-        return household.any(claimant_benunit & person("is_SP_age", period))
+    # The age test alone, on each claim's own applicant and partner.
+    def formula(benunit, period, parameters):
+        person = benunit.members
+        applicant_or_partner = person(
+            "is_council_tax_reduction_applicant_or_partner", period
+        )
+        return benunit.any(applicant_or_partner & person("is_SP_age", period))
 
 
 class before_this_change(Reform):
     def apply(self):
         self.update_variable(is_benefit_cap_exempt_other)
-        self.update_variable(council_tax_reduction_household_has_pensioner)
+        self.update_variable(council_tax_reduction_pensioner)
+
+
+# The cap exception alone as it was, with today's pensioner test for Council
+# Tax Reduction. council_tax_reduction_pensioner also sets the CTR applicable
+# amount and earnings disregard, so P5 holds it fixed to isolate the route
+# through Universal Credit.
+class before_the_cap_change(Reform):
+    def apply(self):
+        self.update_variable(is_benefit_cap_exempt_other)
 
 
 @st.composite
@@ -215,14 +229,14 @@ BENUNIT = [
     "afcs",
     "esa_contrib",
 ]
-HOUSEHOLD = ["council_tax_reduction_household_has_pensioner", "household_net_income"]
+HOUSEHOLD = ["household_net_income"]
 BEFORE = [
     "is_benefit_cap_exempt",
     "benefit_cap",
     "universal_credit",
     "housing_benefit",
     "council_tax_benefit",
-    "council_tax_reduction_household_has_pensioner",
+    "council_tax_reduction_pensioner",
     "household_net_income",
 ]
 
@@ -230,7 +244,9 @@ BEFORE = [
 def calculate(units, before=False):
     simulation = Simulation(situation=situation(units))
     if before:
-        simulation.apply_reform(before_this_change)
+        simulation.apply_reform(
+            before_the_cap_change if before == "cap" else before_this_change
+        )
         names = BEFORE
     else:
         names = BENUNIT + HOUSEHOLD
@@ -254,6 +270,7 @@ def close(a, b):
 def test_benefit_cap_and_ctr_pension_age_invariants(units):
     now = calculate(units)
     before = calculate(units, before=True)
+    cap_only = calculate(units, before="cap")
     for i, unit in enumerate(units):
         on_uc = bool(now["is_uc_entitled"][i]) and has_working_age_claimant(unit)
         legacy = unit["legacy"] > 0
@@ -281,15 +298,15 @@ def test_benefit_cap_and_ctr_pension_age_invariants(units):
         assert now["benefit_cap"][i] <= before["benefit_cap"][i], unit
         assert now["universal_credit"][i] <= before["universal_credit"][i] + 0.01
         assert now["housing_benefit"][i] <= before["housing_benefit"][i] + 0.01
-        if now["council_tax_reduction_household_has_pensioner"][i]:
-            assert before["council_tax_reduction_household_has_pensioner"][i], unit
+        if now["council_tax_reduction_pensioner"][i]:
+            assert before["council_tax_reduction_pensioner"][i], unit
         # P5
         if unit["country"] in ("WALES", "SCOTLAND"):
             ctr_now, ctr_before = (
                 now["council_tax_benefit"][i],
-                before["council_tax_benefit"][i],
+                cap_only["council_tax_benefit"][i],
             )
-            if close(now["universal_credit"][i], before["universal_credit"][i]):
+            if close(now["universal_credit"][i], cap_only["universal_credit"][i]):
                 assert close(ctr_now, ctr_before), unit
             else:
                 assert ctr_now >= ctr_before - 0.01, unit

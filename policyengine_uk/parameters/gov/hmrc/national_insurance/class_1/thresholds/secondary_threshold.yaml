@@ -19,8 +19,24 @@ metadata:
 # Budget 2025), to be set in each year's rates, limits and thresholds
 # regulations. CPI uprating from 2031-32 is a modelling assumption.
 values:
-  2015-04-06: 155
-  2016-04-06: 155
+  # £155 was the primary threshold in 2015-16 and 2016-17 (reg 10(c)), not the
+  # secondary threshold (#2178).
+  2015-04-06:
+    value: 156
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(d) (£156 a week), as at 6 April 2015
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2015-04-06
+        - title: The Social Security (Contributions) Regulations 2001 reg 11(3A)(b) (£8,112 where the earnings period is a year), as at 6 April 2015
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11/2015-04-06
+  2016-04-06:
+    value: 156
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(d) (£156 a week), as at 6 April 2016
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2016-04-06
+        - title: The Social Security (Contributions) Regulations 2001 reg 11(3A)(b) (£8,112 where the earnings period is a year), as at 6 April 2016
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11/2016-04-06
   2017-04-06: 157
   2018-04-06: 162
   2019-04-06: 166

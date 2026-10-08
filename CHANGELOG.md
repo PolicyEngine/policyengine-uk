@@ -1,3 +1,26 @@
+## [2.123.7] - 2026-10-08
+
+### Fixed
+
+- - Correct the Energy Bills Support Scheme amounts, monthly timing, and eligibility in Great Britain and Northern Ireland.
+- - Corrected the 2020 over-75 TV licence Pension Credit transition to start on 1 August while preserving its Boolean eligibility rule.
+
+
+## [2.123.6] - 2026-10-08
+
+### Fixed
+
+- Assess each family that claims Council Tax Reduction under its own scheme and its own non-dependant exemption, so in a shared-rent household a working-age sharer no longer takes the pensioner scheme because the household head's family is pension-age (or the reverse), and one claimant's disability no longer exempts another's claim from non-dependant deductions.
+- - Disregard Housing Benefit income and capital on receipt of Guarantee Credit, so pensioners who do not claim Pension Credit retain the ordinary means test.
+
+
+## [2.123.5] - 2026-10-07
+
+### Fixed
+
+- - Corrected the Class 1 secondary threshold for 2015-16 and 2016-17 to the statutory £156 a week (£8,112 a year); it held the £155 primary threshold.
+
+
 ## [2.123.4] - 2026-10-07
 
 ### Fixed
