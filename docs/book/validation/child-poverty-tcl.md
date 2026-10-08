@@ -16,32 +16,33 @@ Tracks [#1398](https://github.com/PolicyEngine/policyengine-uk/issues/1398).
 |--------|----------------------------------------:|------------------------:|
 | [OBR EFO November 2025 (Table 3.2)][obr-efo] | 450,000 | £3.0 bn |
 | [Resolution Foundation *No half measures*][rf-nhm] | 480,000 | £3.5 bn |
-| **PolicyEngine UK (AHC)** | **~501,000** | **£3.40 bn** |
-| **PolicyEngine UK (BHC)** | **~415,000** | (same) |
+| **PolicyEngine UK, Microcosm UK 2024-25 (AHC)** | **~463,000** | **£3.26 bn** |
+| **PolicyEngine UK, Microcosm UK 2024-25 (BHC)** | **~336,000** | (same) |
+| PolicyEngine UK, Enhanced FRS 2022-23 (AHC), May 2026 | ~501,000 | £3.40 bn |
+| PolicyEngine UK, Enhanced FRS 2022-23 (BHC), May 2026 | ~415,000 | (same) |
 
-PolicyEngine's central estimate sits between the two external
-benchmarks on the headcount (slightly above RF, slightly above OBR) and
-between them on the fiscal cost (below RF, above OBR). The agreement
-is well within the noise we'd expect from differences in nowcasting and
-take-up assumptions.
+The October 2026 run uses the certified Microcosm UK 2024-25 national
+release (SHA-256 `aa31bdf6…`) on policyengine-uk 2.123.7. On that
+dataset, PolicyEngine's after-housing-costs headcount sits between the
+OBR and Resolution Foundation figures, and its cost sits between theirs
+too. The May 2026 Enhanced FRS run, kept for comparison, was above both
+on headcount.
 
 ## How the estimate was produced
 
 ```python
-import os
-os.environ.setdefault(
-    "POLICYENGINE_UK_DEFAULT_DATASET",
-    "hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5",
-)
 from policyengine_uk import Microsimulation
 
+# Path to the certified Microcosm UK 2024-25 national release
+# (microcosm_uk_2024_25.h5 in policyengine/populace-uk-private).
+DATASET = "microcosm_uk_2024_25.h5"
 YEAR = 2029
 
 # Current law baseline (TCL removed from 2026-04-06 per Budget 2025)
-sim_baseline = Microsimulation()
+sim_baseline = Microsimulation(dataset=DATASET)
 
 # Counterfactual where the TCL is held in place at 2 children
-sim_counter = Microsimulation(reform={
+sim_counter = Microsimulation(dataset=DATASET, reform={
     "gov.dwp.universal_credit.elements.child.limit.child_count": {
         f"{YEAR}-01-01": 2,
     },
@@ -73,9 +74,10 @@ positive (baseline has fewer in poverty than counterfactual) and the
 Treasury cost is positive (baseline collects less revenue than the
 counterfactual would).
 
-## Why PolicyEngine sits slightly above RF / OBR
+## Why the estimates differ
 
-Three plausible drivers:
+Three plausible drivers of the remaining differences, and of the move
+between the Enhanced FRS and Microcosm runs:
 
 1. **Nowcasting methodology**. RF and OBR use somewhat different
    earnings, rent, and benefit-uprating paths through 2029-30. See the
@@ -87,15 +89,15 @@ Three plausible drivers:
    for currently eligible cases. RF's "No half measures" report uses a
    slightly lower marginal take-up for the new claimants, which would
    reduce headcount and cost.
-3. **Calibration vintage**. RF/OBR estimates were finalised against
-   November 2025 EFO assumptions; PolicyEngine's parameters tick over
-   with each EFO release.
+3. **Data and calibration vintage**. RF/OBR estimates were finalised
+   against November 2025 EFO assumptions; PolicyEngine's parameters tick
+   over with each EFO release. The Microcosm release is built from FRS
+   2024-25 rather than 2022-23, with take-up anchored on reported receipt.
 
 ## How to keep this validation alive
 
-- Re-run the snippet whenever the State Pension fix from
-  [PR #1634](https://github.com/PolicyEngine/policyengine-uk/pull/1634)
-  or the upcoming `would_claim_*` conversions (#1621) land — both
+- Re-run the snippet on each new certified Microcosm UK release, and
+  when the remaining `would_claim_*` conversions (#1621) land — both
   could move the AHC poverty rate by a non-trivial amount.
 - After each new EFO release, update the per-year poverty headcounts and
   the fiscal cost table.
