@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.vat import vat_grossing_factor
 
 
 class baseline_vat(Variable):
@@ -18,8 +19,5 @@ class baseline_vat(Variable):
         )
         # Survey consumption under-records spending, and households bear only
         # part of VAT liabilities, so household VAT is grossed up to receipts.
-        coverage = (
-            p.simulation.vat.survey_consumption_coverage
-            * p.simulation.vat.household_share_of_receipts
-        )
+        coverage = vat_grossing_factor(p.simulation)
         return raw_vat / coverage

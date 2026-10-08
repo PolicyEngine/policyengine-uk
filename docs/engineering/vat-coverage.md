@@ -26,6 +26,13 @@ imputation, with no derivation recorded. Its product with today's datasets put
 2024-25 VAT 24% above OBR receipts on Microcosm UK 2024-25 and 71% above on
 Enhanced FRS 2024-25.
 
+`gov.simulation.microdata_vat_coverage` is kept as a deprecated parameter so
+that existing reforms to it still work. Its value is now the product of the two
+factors (0.469). If a reform sets it to any other value, `vat` and
+`baseline_vat` use that value in place of the two factors
+(`policyengine_uk/utils/vat.py`); otherwise they use the two factors. New
+reforms should change the two factors instead.
+
 ## Derivation (October 2026)
 
 The product of the two factors is the dataset's pre-scaling VAT divided by
