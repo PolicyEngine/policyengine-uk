@@ -1,139 +1,114 @@
-# Capital gains distribution plan
+# Capital gains distribution
 
 ```{note}
-**Planning page.** Tracks [#818](https://github.com/PolicyEngine/policyengine-uk/issues/818)
-and the related zero-wealth imputation question raised in
-[#817](https://github.com/PolicyEngine/policyengine-uk/issues/817).
-PolicyEngine UK's capital gains imputation lives in
-`policyengine-uk-data`, not in this repo — but the modelling
-assumptions and the calibration constraints are documented here so the
-cross-repo plan is discoverable from a single page.
+**Planning page, updated October 2026.** Tracks
+[#818](https://github.com/PolicyEngine/policyengine-uk/issues/818)
+(model gains jointly across income groups) and
+[#817](https://github.com/PolicyEngine/policyengine-uk/issues/817)
+(don't impute gains to households with no wealth). The imputation lives
+in the data pipeline, not in this repo. Most of what this page proposed
+in May 2026 has since been built in
+[Microcosm UK](https://github.com/PolicyEngine/microcosm), which is now
+the UK data pipeline. What remains is listed at the
+end of this page.
 ```
 
-## Current state
+## How the model uses capital gains
 
-PolicyEngine UK reads `capital_gains_before_response` as a person-level
-input variable; the runtime variables under
-[`variables/gov/hmrc/capital_gains_tax/`](../../../policyengine_uk/variables/gov/hmrc/capital_gains_tax)
-then compute the elasticity-based behavioural response and the tax
-liability against the published CGT bracket structure.
+`capital_gains_before_response` is a person-level input, uprated by OBR
+per-capita GDP growth. `capital_gains_tax` charges it at the main CGT
+rates, with three components charged at their own rates (all added by
+[#1861](https://github.com/PolicyEngine/policyengine-uk/pull/1861)):
 
-The input itself is produced in `policyengine-uk-data` by:
+- `capital_gains_badr`: gains qualifying for Business Asset Disposal
+  Relief or Investors' Relief, at the relief rate up to the lifetime
+  limit;
+- `capital_gains_residential_property`: gains on UK residential
+  property, at the residential rates;
+- `capital_gains_carried_interest`: carried interest, at the carried
+  interest rates.
 
-1. Splitting the population into income deciles.
-2. Fitting a separate marginal distribution of capital gains within
-   each decile (against HMRC's *Capital Gains Statistics*).
-3. Drawing values for each FRS row from the decile-conditional
-   distribution.
+Each is a component of the total, not an addition to it.
 
-This is the **independent per-decile model** that #818 flagged.
+Behavioural responses: `capital_gains_behavioural_response` changes
+realisations using an elasticity with respect to the retention rate
+(`relative_capital_gains_retention_rate_change`) or the marginal tax
+rate. Gains qualifying for BADR respond at their own elasticity
+(`capital_gains_badr_elasticity`); the rest use
+`gov.simulation.capital_gains_responses.elasticity`.
 
-## Limitations of the current approach
+## How the gains are imputed
 
-### 1. Overfitting at the boundaries
+### Before: one distribution per income decile
 
-Per-decile fitting means each decile's tail is fit independently from
-its neighbours. With HMRC's published CGT statistics binning gains by
-income, the per-decile tails contain few observations — the fitted
-upper tails are noisy, and the joint distribution of "income + capital
-gains" can have spurious features at decile boundaries.
+The Enhanced FRS fitted a separate gains distribution within each
+income decile and drew each household's gains from its decile. #818
+pointed out the problems:
 
-### 2. No conditioning on wealth
+- each decile's upper tail was fitted on few observations, so the tails
+  were noisy and the joint distribution of income and gains had breaks
+  at decile boundaries;
+- two people in the same decile drew from the same distribution however
+  different their incomes;
+- gains depended on income only, not on wealth, so they could be
+  imputed to households with no assets (#817).
 
-#817 reported a related failure mode: capital gains are imputed to
-households with zero recorded wealth. That's structurally implausible
-(you can't realise gains on assets you don't own) and arises because
-the per-decile model conditions only on income, not on wealth holdings.
-Many low-income retirees with substantial wealth would receive gains
-the current model misses; many low-income tenants with zero wealth
-incorrectly receive them.
+### Now: Microcosm UK
 
-### 3. No covariance between income and gains beyond decile membership
+Microcosm builds gains in four stages (see the UK
+[sources specification](https://github.com/PolicyEngine/microcosm/blob/75167a68/packages/microcosm-build/src/microcosm/build/uk/spec/sources.yaml)):
 
-A higher-rate-band earner with £200k income and a lower-rate earner
-with £40k income within the same decile (after weighting / SPI)
-receive draws from the same marginal distribution. In reality the
-correlation between income and gains is much stronger than that.
+1. **Support split** (`cgt_support_split`). Within each income band of
+   HMRC Capital Gains Tax statistics Table 3, the households with the
+   most investable wealth (financial wealth, business wealth and
+   property other than the main home) are split into lighter copies, so
+   that there are enough rows to hold the largest gains.
+2. **Who has gains** (`cgt_incidence_clone`). The set and order of
+   gainers come from the incidence distribution in Advani and Summers
+   (2020), *Capital Gains and UK Inequality* (CAGE Working Paper 465).
+3. **How much** (`hmrc_cgt_gains_spine`). Amounts are redrawn so that
+   gains match HMRC Table 3 for 2024-25, which counts taxpayers and
+   gains **jointly by size of gain and taxable income**, conditioned on
+   Tables 1, 2.1a, 5 and 6.
+4. **What kind** (`hmrc_cgt_asset_type_spine`). Gains are split by
+   asset type using Table 8 (residential property), Table 4.1 (BADR and
+   Investors' Relief) and Table 7 (gains by asset type), which fills
+   `capital_gains_residential_property` and `capital_gains_badr`.
 
-## Proposed approach (#818)
+All the HMRC tables come from the Capital Gains Tax statistics July
+2026 release, through Microcosm's pinned Chronicle feed.
 
-Switch to a **multivariate model over (income, wealth, age, gender)**
-that produces capital gains as a derived dimension. Concrete options:
+Against #818: gains are now fitted to the published joint distribution
+of gain size and taxable income, not decile by decile. Against #817:
+the largest gains are placed on the wealthiest households in each
+income band. Microcosm's release checks also include a projection check
+on people just below the annual exempt amount (`gates.json`), so that
+uprating does not push implausible numbers of them into paying CGT in
+later years.
 
-### A. Multivariate KDE
+## What's left
 
-The [OG-USA bequest model](https://pslmodels.github.io/OG-USA/content/api/bequest_transmission.html)
-referenced in #818 uses a multivariate Gaussian KDE over the relevant
-conditioning variables. For UK gains the bandwidth + kernel choice
-would need calibrating against HMRC's gains-by-income-by-age cross-tabs;
-the SAS *Survey of Personal Incomes* extracts (where available via
-Datalab) give a richer conditioning set.
+- **A zero-wealth test.** Add a test, here or in Microcosm, that no
+  positive gains sit on households with zero investable wealth. Neither
+  repo asserts this directly yet, so #817 should stay open until it
+  does.
+- **Close #818** once the next certified Microcosm release confirms the
+  Table 3 fit, and link the release's diagnostics from the issue.
+- **Elasticities by group.** Responses use one main elasticity and one
+  BADR elasticity. With the joint distribution in place, an elasticity
+  that varies by income or size of gain becomes possible, at the cost
+  of more parameters to justify.
+- **Wealth source.** Investable wealth comes from Microcosm's Wealth
+  and Assets Survey imputation. Its quality limits how well #817 can be
+  met.
 
-Tradeoffs:
-
-- **Pro**: no per-decile boundary artefacts; the joint distribution
-  comes out smooth in all dimensions.
-- **Con**: KDE bandwidth choice is tricky in the tail; large gains
-  remain noisy unless we supplement with a tail model.
-
-### B. Two-stage QRF
-
-Train a quantile-regression-forest (QRF) on the SPI donor set with
-predictors = `(age, gender, region, employment_income,
-self_employment_income, savings_interest_income, dividend_income,
-total_wealth, gross_financial_wealth)` and output = annual capital
-gains. This is the same machinery already used in
-`policyengine-uk-data/datasets/imputations/income.py` and the
-proposed second-stage QRF in [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621)
-/ [pipeline alignment plan](./uk-pipeline-alignment-plan.md).
-
-Tradeoffs:
-
-- **Pro**: the QRF naturally handles correlated predictors and
-  produces well-calibrated quantiles in the tail. Reuses existing
-  imputation infrastructure.
-- **Con**: requires a clean SPI-linked donor set with all the
-  conditioning variables (currently the QRF in `income.py` doesn't
-  output capital gains).
-
-**Recommendation**: option B. The infrastructure is in place, the
-calibration is testable against HMRC published gains-by-income-band
-tables, and it consistently solves both #818 (overfitting) and #817
-(implausible zero-wealth gains) by making `total_wealth` a predictor.
-
-## What changes in this repo
-
-The model-side surface is small:
-
-- The `capital_gains_before_response` input variable stays the same.
-  All the changes are upstream in `policyengine-uk-data`.
-- A regression test in the model that asserts **no positive capital
-  gains for households with zero total wealth** would catch
-  reintroductions of the #817 failure mode and live well in
-  `policyengine_uk/tests/`.
-
-## Open questions
-
-- Wealth in the FRS is incomplete and noisy; the WAS (Wealth and
-  Assets Survey) is the better wealth conditioning source but is on a
-  different sampling frame. Should the QRF be trained on a WAS-linked
-  donor, or do we condition on the FRS-imputed wealth and accept the
-  noise?
-- HMRC's published CGT statistics break gains down by income, age, and
-  asset type but not by household wealth. Calibration targets will
-  need to be assembled across multiple HMRC and ONS sources.
-- Behavioural response (`capital_gains_behavioural_response` in this
-  repo) currently uses a single elasticity. A multivariate model that
-  gets the distribution right opens the door to **elasticity by
-  income / wealth band** — useful for reform analysis but adds a
-  parameter surface.
+The quantile regression forest approach proposed here in May is no
+longer needed for this.
 
 ## References
 
-- Issue: [#818](https://github.com/PolicyEngine/policyengine-uk/issues/818) — original "model gains jointly across income groups".
-- Related: [#817](https://github.com/PolicyEngine/policyengine-uk/issues/817) — avoid imputing CG to zero-wealth households.
-- Reference implementation: [OG-USA bequest-transmission multivariate KDE](https://pslmodels.github.io/OG-USA/content/api/bequest_transmission.html).
-- Reusable infrastructure: the QRF in [`policyengine_uk_data/datasets/imputations/income.py`](https://github.com/PolicyEngine/policyengine-uk-data) and the second-stage QRF plan in [pipeline alignment](./uk-pipeline-alignment-plan.md).
-- HMRC, [Capital Gains Tax statistics](https://www.gov.uk/government/collections/capital-gains-tax-statistics) — calibration source.
-- ONS, [Wealth and Assets Survey](https://www.ons.gov.uk/peoplepopulationandcommunity/personalandhouseholdfinances/incomeandwealth/bulletins/totalwealthingreatbritain/latest) — alternative conditioning source for wealth.
-- Existing variables: [`capital_gains_before_response`](../../../policyengine_uk/variables/gov/hmrc/capital_gains_tax/capital_gains_before_response.py), [`capital_gains`](../../../policyengine_uk/variables/household/income/capital_gains.py), [`capital_gains_behavioural_response`](../../../policyengine_uk/variables/gov/hmrc/capital_gains_tax/capital_gains_behavioural_response.py).
+- Issues: [#818](https://github.com/PolicyEngine/policyengine-uk/issues/818), [#817](https://github.com/PolicyEngine/policyengine-uk/issues/817).
+- CGT components: [#1861](https://github.com/PolicyEngine/policyengine-uk/pull/1861).
+- HMRC, [Capital Gains Tax statistics](https://www.gov.uk/government/statistics/capital-gains-tax-statistics).
+- Advani, A. and Summers, A. (2020), *Capital Gains and UK Inequality*, CAGE Working Paper 465.
+- Microcosm UK [sources specification](https://github.com/PolicyEngine/microcosm/blob/75167a68/packages/microcosm-build/src/microcosm/build/uk/spec/sources.yaml) (stages `cgt_support_split`, `cgt_incidence_clone`, `hmrc_cgt_gains_spine`, `hmrc_cgt_asset_type_spine`).
