@@ -5,9 +5,20 @@
 pipeline and the US `policyengine-us` / `policyengine-us-data` patterns,
 plus a sequence of scoped PRs that would close them. Tracked under
 [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621).
-Most items here are **cross-repo** — they touch
-`policyengine-uk-data` rather than this repo — but the model-side
-contract is documented here so the receiving side has a stable target.
+Most items here are **cross-repo** — they touch the data pipeline
+rather than this repo — but the model-side contract is documented here
+so the receiving side has a stable target.
+```
+
+```{admonition} Status, October 2026
+The target data pipeline is now
+[Microcosm UK](https://github.com/PolicyEngine/microcosm), which replaced
+the Enhanced FRS build in `policyengine-uk-data`. Its first certified
+national release (`microcosm_uk_2024_25`) was published on 4 October 2026.
+Gaps 2 and 3 below, and PR 4 of the sequence, are implemented there;
+gap 1 is still open on the model side. The aggregate residuals are the
+May 2026 Enhanced FRS measurements and have not been re-measured on the
+Microcosm release.
 ```
 
 ## Architectural gaps vs US
@@ -23,8 +34,8 @@ through cleanly to take-up.
 
 **UK pattern (partial)**: some UK `would_claim_*` variables already
 match — `would_claim_uc` and `would_claim_pc` are input-only with
-`default_value = True`, populated stochastically in
-`policyengine-uk-data/datasets/frs.py`. But several still derive from
+`default_value = True`, populated by the data build (now Microcosm
+UK's `frs_take_up` stage). But several still derive from
 `_reported` at runtime:
 
 - `would_claim_housing_benefit`
@@ -39,14 +50,20 @@ invisible unless the user manually sets
 `claims_all_entitled_benefits = True` everywhere.
 
 **Fix**: convert each to input-only `default_value = True` (matching
-`would_claim_uc`), populate stochastically in
-`uk-data/datasets/frs.py`. Note: WTC and CTC ceased to pay new awards on
+`would_claim_uc`), and add each to Microcosm UK's reported-anchored
+take-up stages. Note: WTC and CTC ceased to pay new awards on
 2025-04-06 (see [tax-credits.md](../programs/gov/dwp/tax-credits.md)),
 so their fix is primarily for back-cast simulations.
 
 ### 2. Take-up assignment ignores reported data
 
-Today's UK take-up assignment is a pure random draw:
+**Done in Microcosm UK.** Its `frs_take_up`, `pension_credit_take_up`
+and `child_benefit_take_up` stages keep every benefit unit that reports
+receipt as a claimant and draw the rest to the target rate
+([`source_stages.json` at `75167a6`](https://github.com/PolicyEngine/microcosm/blob/75167a68/packages/microcosm-build/src/microcosm/build/uk/source_stages.json)).
+The description below is the Enhanced FRS behaviour this replaced.
+
+The Enhanced FRS take-up assignment was a pure random draw:
 
 ```python
 pe_benunit["would_claim_uc"] = generator.random(len(pe_benunit)) < universal_credit_rate
@@ -62,6 +79,14 @@ a `_reported` column exists. This tightens per-variable calibration
 without changing the target rates.
 
 ### 3. Second-stage imputation gap on SPI donors
+
+**Done in Microcosm UK.** `hmrc_spi_income_spine` trains an FRS-only
+second stage on the new SPI incomes (its outputs include `gift_aid` and
+`charitable_investment_gifts`), `spi_housing_shell` redraws tenure,
+dwelling and council tax band for the SPI households, and the wealth,
+spending and VAT stages now run after the SPI block, so they are drawn
+for the new incomes rather than inherited from the FRS parent. The
+description below is the Enhanced FRS behaviour this replaced.
 
 `policyengine_uk_data/datasets/imputations/income.py::impute_income`
 trains a QRF that replaces only six income variables on SPI donor
@@ -94,7 +119,8 @@ After the formula-side fixes already merged (BASIC/NEW classification
 in [PR #1618](https://github.com/PolicyEngine/policyengine-uk/pull/1618),
 new State Pension pro-rating + Protected Payment in
 [PR #1634](https://github.com/PolicyEngine/policyengine-uk/pull/1634)),
-the residual benefit-aggregate gaps against OBR are:
+the residual benefit-aggregate gaps against OBR on the Enhanced FRS
+(measured May 2026; not yet re-measured on Microcosm UK) were:
 
 | Variable | Model | Target | Gap | Likely cause |
 |----------|------:|------:|----:|--------------|
@@ -122,18 +148,17 @@ already-fixed items.
 ## Candidate PR sequence
 
 1. **Convert remaining `would_claim_*` formulas to input-only** (model
-   side) + stochastic assignment in `policyengine-uk-data`
-   (`datasets/frs.py`). Low risk; matches the existing UC/PC pattern.
-2. **Port `assign_takeup_with_reported_anchors`** into
-   `policyengine-uk-data`. Pure data-pipeline change; tightens
-   calibration.
-3. **Add second-stage QRF for FRS-only variables on SPI donors** in
-   `policyengine-uk-data`. Biggest single ticket but directly addresses
-   the "high-income donor has zero gift aid / zero rent" failure.
-4. **Add `gift_aid` to `IMPUTATIONS`** (one-line addition in
-   `policyengine_uk_data/datasets/imputations/income.py`). Independent
-   of (3); can land immediately.
-5. **Residual benefit-aggregate follow-ups** — separate small PRs for
+   side) + reported-anchored assignment in Microcosm UK's `frs_take_up`
+   stage. Still open: the four formulas above read `_reported` at
+   runtime on `main`.
+2. ~~Port `assign_takeup_with_reported_anchors`~~ — done in Microcosm UK
+   (gap 2).
+3. ~~Add second-stage QRF for FRS-only variables on SPI donors~~ — done
+   in Microcosm UK (gap 3).
+4. ~~Add `gift_aid` to `IMPUTATIONS`~~ — done in Microcosm UK, where
+   `gift_aid` is a stage-2 output.
+5. **Residual benefit-aggregate follow-ups** — re-measure on the
+   Microcosm release first, then separate small PRs for
    IS phase-out (analogous to the WTC/CTC reactive scheme close-out),
    ESA contrib investigation, AA calibration, TFC under-imputation,
    ASP data-side fix (the residual #1632 leg).
