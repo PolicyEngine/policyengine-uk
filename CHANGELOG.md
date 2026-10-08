@@ -1,3 +1,11 @@
+## [2.123.7] - 2026-10-08
+
+### Fixed
+
+- - Correct the Energy Bills Support Scheme amounts, monthly timing, and eligibility in Great Britain and Northern Ireland.
+- - Corrected the 2020 over-75 TV licence Pension Credit transition to start on 1 August while preserving its Boolean eligibility rule.
+
+
 ## [2.123.6] - 2026-10-08
 
 ### Fixed
