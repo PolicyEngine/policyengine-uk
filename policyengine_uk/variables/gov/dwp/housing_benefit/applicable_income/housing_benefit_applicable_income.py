@@ -1,6 +1,61 @@
 from policyengine_uk.model_api import *
 
 
+def hb_income_before_deductions(benunit, period, parameters):
+    """Existing ordinary income, before childcare/disregards and the income floor."""
+    # HB reg 25(3), pension-age reg 23(3) and NI reg 22(3) exclude
+    # dependent children's own income, even when they share this benefit unit.
+    person = benunit.members
+    members = person("is_claimant_or_partner", period)
+    BENUNIT_MEANS_TESTED_BENEFITS = [
+        "income_support",
+        "jsa_income",
+        "esa_income",
+    ]
+    PERSONAL_BENEFITS = [
+        "carers_allowance",
+        # The Carer Support Payment component only: the Scottish Carer
+        # Supplement is disregarded (HB Regs 2006 Sch 5 para 75; HB (SPC)
+        # Regs 2006 reg 29(1)(j)(xviiha)), so scottish_carer_supplement is
+        # not listed.
+        "carer_support_payment",
+        "esa_contrib",
+        "jsa_contrib",
+        "state_pension",
+        "maternity_allowance",
+        "statutory_sick_pay",
+        "statutory_maternity_pay",
+    ]
+    INCOME_COMPONENTS = [
+        "employment_income",
+        "self_employment_income",
+        "property_income_after_finance_costs",
+        "private_pension_income",
+    ]
+    bi = parameters(period).gov.contrib.ubi_center.basic_income
+    # Add personal benefits, credits and total benefits to income
+    benefits = add_for_members(benunit, period, BENUNIT_MEANS_TESTED_BENEFITS, members)
+    income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
+    personal_benefits = add_for_members(benunit, period, PERSONAL_BENEFITS, members)
+    credits = add_for_members(benunit, period, ["tax_credits"], members)
+    increased_income = income + personal_benefits + credits + benefits
+
+    if not bi.interactions.include_in_means_tests:
+        # Basic income is already in personal benefits, deduct if needed
+        increased_income -= add_for_members(benunit, period, ["basic_income"], members)
+    # Reduce increased income by pension contributions and tax
+    pension_contributions = (
+        add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
+    )
+    TAX_COMPONENTS = ["income_tax", "national_insurance"]
+    tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
+    increased_income_reduced_by_tax_and_pensions = (
+        increased_income - tax - pension_contributions
+    )
+    tariff_income = benunit("housing_benefit_tariff_income", period)
+    return increased_income_reduced_by_tax_and_pensions + tariff_income
+
+
 class housing_benefit_applicable_income(Variable):
     value_type = float
     entity = BenUnit
@@ -18,6 +73,15 @@ class housing_benefit_applicable_income(Variable):
         "income under the Housing Benefit rules."
     )
     reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/25",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/65",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/31",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/23",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/22",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/64",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/32",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/27",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/4",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/4",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
@@ -31,79 +95,19 @@ class housing_benefit_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the claimant and partner and, as the model did
-        # before, the programme's own children or young persons. The regulations count
-        # only the claimant's and partner's (HB Regs 2006 reg 25); dropping dependants'
-        # own income is a follow-up. Anyone else in the benefit unit does not count.
-        person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_young_person_for_legacy_benefits", period
+        income_before_deductions = hb_income_before_deductions(
+            benunit, period, parameters
         )
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period
         )
-        BENUNIT_MEANS_TESTED_BENEFITS = [
-            "child_benefit",
-            "income_support",
-            "jsa_income",
-            "esa_income",
-        ]
-        PERSONAL_BENEFITS = [
-            "carers_allowance",
-            # The Carer Support Payment component only: the Scottish Carer
-            # Supplement is disregarded (HB Regs 2006 Sch 5 para 75; HB (SPC)
-            # Regs 2006 reg 29(1)(j)(xviiha)), so scottish_carer_supplement is
-            # not listed.
-            "carer_support_payment",
-            "esa_contrib",
-            "jsa_contrib",
-            "state_pension",
-            "maternity_allowance",
-            "statutory_sick_pay",
-            "statutory_maternity_pay",
-            "ssmg",
-        ]
-        INCOME_COMPONENTS = [
-            "employment_income",
-            "self_employment_income",
-            "property_income_after_finance_costs",
-            "private_pension_income",
-        ]
-        bi = parameters(period).gov.contrib.ubi_center.basic_income
-        # Add personal benefits, credits and total benefits to income
-        benefits = add_for_members(
-            benunit, period, BENUNIT_MEANS_TESTED_BENEFITS, members
-        )
-        income = add_for_members(benunit, period, INCOME_COMPONENTS, members)
-        personal_benefits = add_for_members(benunit, period, PERSONAL_BENEFITS, members)
-        credits = add_for_members(benunit, period, ["tax_credits"], members)
-        increased_income = income + personal_benefits + credits + benefits
-
-        if not bi.interactions.include_in_means_tests:
-            # Basic income is already in personal benefits, deduct if needed
-            increased_income -= add_for_members(
-                benunit, period, ["basic_income"], members
-            )
-        # Reduce increased income by pension contributions and tax
-        pension_contributions = (
-            add_for_members(benunit, period, ["pension_contributions"], members) * 0.5
-        )
-        TAX_COMPONENTS = ["income_tax", "national_insurance"]
-        tax = add_for_members(benunit, period, TAX_COMPONENTS, members)
-        increased_income_reduced_by_tax_and_pensions = (
-            increased_income - tax - pension_contributions
-        )
-        tariff_income = benunit("housing_benefit_tariff_income", period)
         disregard = benunit("housing_benefit_applicable_income_disregard", period)
         childcare_element = benunit(
             "housing_benefit_applicable_income_childcare_element", period
         )
         income_under_general_rules = max_(
             0,
-            increased_income_reduced_by_tax_and_pensions
-            + tariff_income
-            - disregard
-            - childcare_element,
+            income_before_deductions - disregard - childcare_element,
         )
         # SI 2006/214 reg 27 (NI: SR 2006/406 reg 25): where the award of
         # Pension Credit is savings credit only, the Secretary of State's
