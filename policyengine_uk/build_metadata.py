@@ -113,12 +113,19 @@ def _get_checkout_git_sha(package_root: Path) -> str | None:
         return None
     if not _declares_package(checkout_root / "pyproject.toml"):
         return None
-    # Git skips an unusable .git directory and keeps searching upwards. An
-    # empty --show-cdup confirms the repository it found is rooted here,
-    # without decoding a path from git's output.
-    if _run_git(checkout_root, "rev-parse", "--show-cdup") != "":
+    # Git skips an unusable .git directory and keeps searching upwards, and
+    # inside a .git directory or a bare repository --show-cdup prints nothing.
+    # So require, from one call, a work tree ("true") rooted exactly here (an
+    # empty --show-cdup) and then HEAD. No path is decoded from the output.
+    output = _run_git(
+        checkout_root, "rev-parse", "--is-inside-work-tree", "--show-cdup", "HEAD"
+    )
+    if output is None:
         return None
-    return _as_git_sha(_run_git(checkout_root, "rev-parse", "HEAD"))
+    lines = output.split("\n")
+    if len(lines) != 3 or lines[0] != "true" or lines[1] != "":
+        return None
+    return _as_git_sha(lines[2])
 
 
 def _get_direct_url_git_sha(package_root: Path) -> str | None:
@@ -130,11 +137,22 @@ def _get_direct_url_git_sha(package_root: Path) -> str | None:
     )
     if len(distributions) != 1:
         return None
-    direct_url = json.loads(distributions[0].read_text("direct_url.json") or "{}")
+    direct_url = json.loads(
+        _read_dist_info_file(distributions[0], "direct_url.json") or "{}"
+    )
     vcs_info = direct_url.get("vcs_info") if isinstance(direct_url, dict) else None
     if not isinstance(vcs_info, dict) or vcs_info.get("vcs") != "git":
         return None
     return _as_git_sha(vcs_info.get("commit_id"))
+
+
+def _read_dist_info_file(distribution: metadata.Distribution, name: str) -> str | None:
+    # Read only a regular file: a FIFO or device would block the read. A
+    # distribution not backed by a dist-info directory has no answer.
+    dist_info = getattr(distribution, "_path", None)
+    if not isinstance(dist_info, Path) or not (dist_info / name).is_file():
+        return None
+    return distribution.read_text(name)
 
 
 def _declares_package(pyproject_path: Path) -> bool:

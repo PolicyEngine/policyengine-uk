@@ -209,6 +209,25 @@ def test_git_sha_ignores_unusable_git_directory(tmp_path):
     assert _get_git_sha(package_root) is None
 
 
+@pytest.mark.parametrize("container", ["git directory", "bare repository"])
+def test_git_sha_ignores_repository_found_without_a_work_tree(tmp_path, container):
+    # Inside a .git directory or a bare repository, git finds the enclosing
+    # repository but `--show-cdup` prints nothing, as it does at a top level.
+    outer = tmp_path / "policyengine-uk-data"
+    _init_repo(outer, "policyengine-uk-data")
+    if container == "git directory":
+        parent = outer / ".git" / "area"
+    else:
+        parent = tmp_path / "policyengine-uk-data.git"
+        _git(tmp_path, "clone", "-q", "--bare", str(outer), str(parent))
+    checkout = parent / "policyengine-uk"
+    package_root = _make_package(checkout)
+    (checkout / ".git").mkdir()
+    (checkout / "pyproject.toml").write_text('[project]\nname = "policyengine-uk"\n')
+
+    assert _get_git_sha(package_root) is None
+
+
 UNREADABLE_PYPROJECTS = {
     "invalid TOML": b"[project\n",
     "Latin-1": 'authors = [{name = "Jos\xe9"}]\n'.encode("latin-1"),
@@ -475,12 +494,90 @@ def test_git_sha_prefers_installer_record_over_enclosing_repository(tmp_path):
         {"url": "https://example.com", "vcs_info": {"vcs": "git"}},
         {"url": "https://example.com", "vcs_info": {"vcs": "git", "commit_id": "main"}},
         {"url": "https://example.com", "vcs_info": "git"},
+        *(
+            {
+                "url": "https://example.com",
+                "vcs_info": {"vcs": "git", "commit_id": commit_id},
+            }
+            for commit_id in (
+                SHA.upper(),
+                SHA[:39],
+                SHA + "0",
+                SHA[:7],
+                SHA + "\n",
+                " " + SHA,
+                SHA + "-dirty",
+            )
+        ),
     ],
 )
 def test_git_sha_ignores_installer_records_without_git_commit(tmp_path, direct_url):
     package_root = _install_with_direct_url(tmp_path / "site-packages", direct_url)
 
     assert _get_git_sha(package_root) is None
+
+
+def test_git_sha_ignores_ambiguous_installer_records(tmp_path):
+    # Two dist-info directories side by side, as a botched upgrade into the
+    # same --target can leave: neither is known to describe the code.
+    site_packages = tmp_path / "site-packages"
+    package_root = _install_with_direct_url(
+        site_packages,
+        {"url": "https://example.com", "vcs_info": {"vcs": "git", "commit_id": SHA}},
+    )
+    stale = site_packages / "policyengine_uk-1.0.0.dist-info"
+    stale.mkdir()
+    (stale / "METADATA").write_text(
+        "Metadata-Version: 2.1\nName: policyengine-uk\nVersion: 1.0.0\n"
+    )
+    (stale / "direct_url.json").write_text(
+        json.dumps(
+            {
+                "url": "https://example.com",
+                "vcs_info": {"vcs": "git", "commit_id": "f" * 40},
+            }
+        )
+    )
+
+    assert _get_git_sha(package_root) is None
+
+
+@pytest.mark.skipif(not hasattr(os, "mkfifo"), reason="needs named pipes")
+def test_git_sha_does_not_block_on_fifo_installer_record(tmp_path):
+    package_root = _install_with_direct_url(tmp_path / "site-packages", None)
+    fifo = tmp_path / "site-packages" / "policyengine_uk-2.0.0.dist-info"
+    fifo = fifo / "direct_url.json"
+    os.mkfifo(fifo)
+    result = {}
+    lookup = threading.Thread(
+        target=lambda: result.update(sha=_get_git_sha(package_root)), daemon=True
+    )
+    lookup.start()
+    lookup.join(timeout=30)
+    if lookup.is_alive():
+        # Release the blocked reader so the thread can finish.
+        os.close(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK))
+    assert not lookup.is_alive()
+    assert result["sha"] is None
+
+
+def test_git_sha_reads_installer_record_of_the_loaded_copy(tmp_path, monkeypatch):
+    other_site_packages = tmp_path / "other-site-packages"
+    _install_with_direct_url(
+        other_site_packages,
+        {
+            "url": "https://example.com",
+            "vcs_info": {"vcs": "git", "commit_id": "f" * 40},
+        },
+    )
+    # A lookup across sys.path would find the other copy first.
+    monkeypatch.syspath_prepend(str(other_site_packages))
+    package_root = _install_with_direct_url(
+        tmp_path / "site-packages",
+        {"url": "https://example.com", "vcs_info": {"vcs": "git", "commit_id": SHA}},
+    )
+
+    assert _get_git_sha(package_root) == SHA
 
 
 def test_git_sha_ignores_installer_record_of_another_copy(tmp_path, monkeypatch):
