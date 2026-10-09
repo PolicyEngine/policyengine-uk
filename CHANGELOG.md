@@ -1,3 +1,25 @@
+## [2.123.10] - 2026-10-09
+
+### Fixed
+
+- - Bar Income Support when the claimant is engaged in remunerative work, 16 hours a week or more of paid work, or the partner is, 24 hours or more (SSCBA 1992 s.124(1)(c); IS Regs 1987 reg 5(1) and (1A), with 24 hours for both before 7 April 1992 and 16 for the partner until 6 October 1996). A carer within Sch 1B para 4, claimant or partner, is not treated as engaged in remunerative work (reg 6(4)(c)). The hours come from the new `income_support_remunerative_work_hours`, which is usual weekly hours and can be entered directly to average fluctuating hours or to leave out work that reg 6(1) excludes, such as child minding at home or a councillor's duties.
+  - Bar Income Support when the claimant is entitled to a jobseeker's allowance of either kind, or the partner to income-based JSA (s.124(1)(f)). The partner's contribution-based JSA does not bar it. Income-based JSA is the award on the claimant's and partner's reported amounts after the JSA capital test. A `jsa_income` that holds anything the reported amounts do not give (neither that award on everyone's reports nor their plain total), such as an award entered directly or a reform that removes it, is taken to be theirs. As for ESA, an amount within half a penny of zero is no award, so a float residual does not bar the claim.
+
+
+## [2.123.9] - 2026-10-09
+
+### Changed
+
+- Cancel superseded test runs on main and give every lint, docs and versioning job a timeout, so outdated or hung jobs free shared GitHub Actions runners.
+
+
+## [2.123.8] - 2026-10-08
+
+### Fixed
+
+- Universal Credit for a member of a couple who claims as a single person (UC Regs 2013 reg. 3(3)): the single-claimant standard allowance at the claimant's own age, no LCWRA or carer element for the other member, the single-claimant benefit cap and the shared accommodation rate, while the couple's capital and income still count. The other member's own disability and other personal benefits no longer lift the benefit cap. In the childcare work condition the claimant must meet the paid work limb and the other member the partner limb, and only the claimant can be treated as in paid work under regulation 32(2). A partner under 18 outside regulation 8 is now identified as such a partner. The benefit cap rate and exceptions and the LHA shared accommodation test, which Housing Benefit shares, keep the couple rules for a family that stays on legacy benefits (reports one and would not claim Universal Credit).
+
+
 ## [2.123.7] - 2026-10-08
 
 ### Fixed

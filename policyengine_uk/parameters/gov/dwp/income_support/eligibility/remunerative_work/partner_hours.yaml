@@ -1,0 +1,26 @@
+description: Income Support treats a claimant's partner as engaged in remunerative work at this many weekly hours of paid work or more.
+values:
+  1988-04-11:
+    value: 24
+    reference:
+      - title: Income Support (General) Regulations 1987 reg. 5(1) (as made)
+        href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/5/1988-04-11
+  1992-04-07:
+    value: 16
+    reference:
+      - title: Income Support (General) Regulations 1987 reg. 5(1) (as at 7 April 1992)
+        href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/5/1992-04-07
+  1996-10-07:
+    value: 24
+    reference:
+      - title: Income Support (General) Regulations 1987 reg. 5(1A), inserted by SI 1996/1944
+        href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/5/1996-10-07
+metadata:
+  unit: hour
+  period: week
+  label: Income Support partner remunerative work hours
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s. 124(1)(c)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/124
+    - title: Income Support (General) Regulations 1987 reg. 5(1A)
+      href: https://www.legislation.gov.uk/uksi/1987/1967/regulation/5
