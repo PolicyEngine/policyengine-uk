@@ -1,3 +1,4 @@
+import contextlib
 import importlib.util
 import json
 import os
@@ -178,12 +179,15 @@ def _git_sha_within(
     lookup.start()
     lookup.join(timeout=seconds)
     # Decide before cleanup, which can let a blocked lookup finish late.
-    timed_out = lookup.is_alive()
-    if timed_out:
-        # Release the blocked reader so the thread does not linger.
-        os.close(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK))
+    if lookup.is_alive():
+        # Release a reader blocked on the FIFO so the thread does not linger;
+        # a lookup stuck elsewhere has no reader to release.
+        with contextlib.suppress(OSError):
+            os.close(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK))
         lookup.join(timeout=5)
-    return timed_out, result.get("sha")
+        return True, None
+    # A lookup that raised left no result, which fails here.
+    return False, result["sha"]
 
 
 def test_git_sha_ignores_enclosing_repository(tmp_path):
