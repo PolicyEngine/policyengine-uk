@@ -11,6 +11,8 @@ class housing_benefit_applicable_amount(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3",
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/3",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3/paragraph/1A",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/4/part/I",
     )
 
     def formula(benunit, period, parameters):
@@ -52,4 +54,7 @@ class housing_benefit_applicable_amount(Variable):
             + lone_parent * lone_parent_personal_allowance
         ) * WEEKS_IN_YEAR
         premiums = benunit("benefits_premiums", period)
-        return personal_allowance + premiums
+        esa_adjustment = benunit(
+            "housing_benefit_main_phase_esa_allowance_adjustment", period
+        )
+        return personal_allowance + premiums + esa_adjustment
