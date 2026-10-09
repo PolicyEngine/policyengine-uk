@@ -1,9 +1,11 @@
-description: LCFS (from which ETB data is derived) microdata is known to under-report household consumption. We scale up the VAT liability to hit HMRC-reported VAT receipts (following the approach of IFS' TAXBEN, though they might have better coverage anyway from access to the non-EUL dataset). For HMRC statistics see https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics.
+description: Deprecated. Combined VAT grossing factor, kept so that existing reforms to this path still work. Its value is gov.simulation.vat.survey_consumption_coverage times gov.simulation.vat.household_share_of_receipts (0.67 x 0.7). If a reform sets it to a different value, vat uses it in place of the two factors; otherwise vat uses the two factors. New reforms should change the two factors instead.
 metadata:
   unit: /1
   period: year
+  economy: false
+  deprecated: true
   reference:
-    - title: Value Added Tax (VAT) annual statistics
-      href: https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics
+    - title: docs/engineering/vat-coverage.md (derivation of the two factors this combines)
+      href: https://github.com/PolicyEngine/policyengine-uk/blob/main/docs/engineering/vat-coverage.md
 values:
-  2010-01-01: 0.38
+  2010-01-01: 0.469
