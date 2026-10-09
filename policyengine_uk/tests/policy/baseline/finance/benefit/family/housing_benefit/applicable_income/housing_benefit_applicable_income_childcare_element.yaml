@@ -1,5 +1,6 @@
-# Qualifying charges are externally pre-assessed; these tests isolate the
-# count/cap/residual calculation. Cap inputs reproduce #1925, not another fix.
+# Detailed provider, charge-type and work/leave conditions are deferred.
+# Aggregate childcare_expenses and age-eligible child counts retain the
+# existing annual approximation. Cap inputs reproduce #1925, not another fix.
 - name: "No children and no qualifying charges"
   period: 2024
   absolute_error_margin: 0.02
@@ -28,7 +29,7 @@
   output:
     housing_benefit_applicable_income_childcare_element: 0
 
-- name: "Generic expenditure alone is not a qualifying assessment"
+- name: "Existing claimant childcare_expenses are used without a new input"
   period: 2024
   absolute_error_margin: 0.02
   input:
@@ -41,7 +42,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 0
+        childcare_expenses: 0
     benunits:
       family:
         members: ["claimant","child0"]
@@ -58,7 +59,7 @@
     gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
     gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
   output:
-    housing_benefit_applicable_income_childcare_element: 0
+    housing_benefit_applicable_income_childcare_element: 9000
 
 - name: "One child below weekly cap"
   period: 2024
@@ -73,7 +74,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -105,7 +106,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9100
+        childcare_expenses: 9100
     benunits:
       family:
         members: ["claimant","child0"]
@@ -137,7 +138,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 20000
+        childcare_expenses: 20000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -169,11 +170,11 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 5000
+        childcare_expenses: 5000
       child1:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 5000
+        childcare_expenses: 5000
     benunits:
       family:
         members: ["claimant","child0","child1"]
@@ -205,11 +206,11 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 7800
+        childcare_expenses: 7800
       child1:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 7800
+        childcare_expenses: 7800
     benunits:
       family:
         members: ["claimant","child0","child1"]
@@ -241,11 +242,11 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
       child1:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0","child1"]
@@ -277,15 +278,15 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 8000
+        childcare_expenses: 8000
       child1:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 8000
+        childcare_expenses: 8000
       child2:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 8000
+        childcare_expenses: 8000
     benunits:
       family:
         members: ["claimant","child0","child1","child2"]
@@ -304,7 +305,7 @@
   output:
     housing_benefit_applicable_income_childcare_element: 15600
 
-- name: "Two children but paid care for only one use one-child cap"
+- name: "Age-based cap approximation counts both children when only one has recorded spending"
   period: 2024
   absolute_error_margin: 0.02
   input:
@@ -317,11 +318,11 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 20000
+        childcare_expenses: 20000
       child1:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 0
+        childcare_expenses: 0
     benunits:
       family:
         members: ["claimant","child0","child1"]
@@ -338,7 +339,9 @@
     gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
     gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
   output:
-    housing_benefit_applicable_income_childcare_element: 9100
+    # Spending attribution is not assessed: two age-eligible children give
+    # the multiple-child cap even when costs are recorded on only one child.
+    housing_benefit_applicable_income_childcare_element: 15600
 
 - name: "Older child without qualifying care does not increase cap"
   period: 2024
@@ -353,11 +356,11 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 20000
+        childcare_expenses: 20000
       child1:
         age: 17
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 0
+        childcare_expenses: 0
     benunits:
       family:
         members: ["claimant","child0","child1"]
@@ -389,7 +392,7 @@
       child0:
         age: 17
         is_child_or_young_person_for_legacy_benefits: false
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -421,7 +424,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: -500
+        childcare_expenses: -500
     benunits:
       family:
         members: ["claimant","child0"]
@@ -453,7 +456,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -485,7 +488,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -517,7 +520,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -549,7 +552,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -581,7 +584,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -613,7 +616,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -645,7 +648,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -677,7 +680,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -709,7 +712,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -741,7 +744,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -773,7 +776,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -805,7 +808,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 1000
+        childcare_expenses: 1000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -838,7 +841,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 1000
+        childcare_expenses: 1000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -871,7 +874,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 1000
+        childcare_expenses: 1000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -904,7 +907,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 9000
+        childcare_expenses: 9000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -936,7 +939,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -972,7 +975,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -1008,7 +1011,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -1044,7 +1047,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -1080,7 +1083,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -1116,7 +1119,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -1152,7 +1155,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -1175,6 +1178,8 @@
   output:
     housing_benefit_applicable_income_childcare_element: 1540
 
+
+
 - name: "NORTHERN_IRELAND pension regulations true earnings and CTC residual"
   period: 2024
   absolute_error_margin: 0.02
@@ -1188,7 +1193,7 @@
       child0:
         age: 10
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 2000
+        childcare_expenses: 2000
     benunits:
       family:
         members: ["claimant","child0"]
@@ -1210,3 +1215,97 @@
         country: "NORTHERN_IRELAND"
   output:
     housing_benefit_applicable_income_childcare_element: 1540
+
+
+- name: "Recorded spending without age-eligible children gives no deduction"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 5000
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: ["claimant"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: "Standard age limit excludes a child aged 16"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 16
+        is_child_or_young_person_for_legacy_benefits: true
+        childcare_expenses: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: "Disability extends the annual child age limit to include age 16"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 16
+        is_disabled_for_benefits: true
+        is_child_or_young_person_for_legacy_benefits: true
+        childcare_expenses: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 9000

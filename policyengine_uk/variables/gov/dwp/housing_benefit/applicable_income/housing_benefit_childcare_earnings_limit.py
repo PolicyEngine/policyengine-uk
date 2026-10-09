@@ -48,7 +48,7 @@ class housing_benefit_childcare_earnings_limit(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/27",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/30",
-        "https://www.legislation.gov.uk/nisr/2006/405/regulation/25",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/24",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/28",
         "https://assets.publishing.service.gov.uk/media/5a7c7cf7ed915d6969f4538d/hbgm-bw2-assessment-of-income.pdf",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/17",
