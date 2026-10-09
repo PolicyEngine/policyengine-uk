@@ -39,7 +39,15 @@ class tax_credits_applicable_income(Variable):
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
         income += add_for_members(benunit, period, STEP_2_COMPONENTS, members)
-        EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
+        # TCA 2002 s.7(2) and SI 2002/2008 reg 4: no income test while "the
+        # person, or either of the persons" claiming is entitled to Income
+        # Support, income-based JSA or income-related ESA. That is the claimant's
+        # or partner's award, not another member's.
+        EXEMPT_BENEFITS = [
+            "income_support",
+            "claimant_or_partner_esa_income",
+            "claimant_or_partner_jsa_income",
+        ]
         on_exempt_benefits = (
             add_for_members(benunit, period, EXEMPT_BENEFITS, members) > 0
         )

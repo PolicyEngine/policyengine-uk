@@ -42,11 +42,16 @@ class council_tax_reduction_applicable_income(Variable):
         members = person("is_claimant_or_partner", period) | person(
             "is_child_or_young_person_for_legacy_benefits", period
         )
+        # Only the claimant's and partner's income-related awards: the scheme
+        # counts the applicant's and partner's income (Sch 1 para 11 above). A
+        # member outside the family who has an award of their own claims in their
+        # own right. Income Support already needs the claimant's or partner's own
+        # award (income_support_eligible).
         benunit_means_tested_benefits = [
             "child_benefit",
             "income_support",
-            "jsa_income",
-            "esa_income",
+            "claimant_or_partner_jsa_income",
+            "claimant_or_partner_esa_income",
             "universal_credit",
         ]
         personal_benefits = [

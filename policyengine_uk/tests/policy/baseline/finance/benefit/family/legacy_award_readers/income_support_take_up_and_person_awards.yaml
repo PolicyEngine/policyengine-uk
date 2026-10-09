@@ -1,0 +1,261 @@
+# would_claim_IS is the family's take-up flag: the claimant or partner
+# reports Income Support. An Income Support report from a member who is neither
+# the claimant, the partner nor their dependant ("other") is that member's own
+# claim. Any report in the simulation turns claims_all_entitled_benefits off.
+
+- name: Another member's Income Support report is not this family's claim
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    claims_all_entitled_benefits: false
+    would_claim_IS: false
+
+- name: The partner's Income Support report is this family's claim
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        income_support_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    would_claim_IS: true
+
+# income_support_assessable_capital gives full household capital to a benefit
+# unit on the Income Support claim path when anyone in the household is on it,
+# and otherwise shares it by claimants and partners. With no claimant or
+# partner reporting Income Support, £10,000 of savings is shared 1:1 between
+# the two benefit units.
+
+- name: Another member's Income Support report does not move household capital to their benefit unit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 4_000
+      lodger:
+        age: 35
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: [claimant, other]
+      lodger_unit:
+        members: [lodger]
+    households:
+      household:
+        members: [claimant, other, lodger]
+        savings: 10_000
+  output:
+    would_claim_IS: [false, false]
+    income_support_assessable_capital: [5_000, 5_000]
+
+# is_on_income_related_esa, is_on_income_based_jsa and is_on_income_support:
+# "on" a benefit when it "is payable to him" (HB Regs 2006 reg 2(3), (3A)) or
+# they are "in receipt of" it (reg 2(1)). A couple's award is paid to the
+# claimant: of the claimant and partner only the payee (the one who reports
+# it) is on it. Another member is on it only through an award they report
+# themselves.
+
+- name: Only the payee is on the couple's income-related ESA
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [claimant, partner, other]
+    households:
+      household:
+        members: [claimant, partner, other]
+  output:
+    is_on_income_related_esa: [true, false, false]
+
+- name: Another member is on their own income-related ESA and the couple is not
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner, other]
+    households:
+      household:
+        members: [claimant, partner, other]
+  output:
+    is_on_income_related_esa: [false, false, true]
+
+- name: The claimant's income-related ESA removed by the capital test leaves them off it
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        savings: 16_001
+  output:
+    is_on_income_related_esa: false
+
+- name: Another member is on their own income-based JSA while it is paid
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    is_on_income_based_jsa: [false, true]
+
+- name: Nobody is on income-based JSA once it has closed
+  period: 2027
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    is_on_income_based_jsa: [false, false]
+
+- name: Another member is on their own Income Support and the claimant is not
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    income_support: 0
+    is_on_income_support: [false, true]
+
+- name: The claimant is on an entered Income Support award and another member is not
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [claimant, other]
+        income_support: 1_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    is_on_income_support: [true, false]
+
+- name: Nobody is on Income Support once it has closed
+  period: 2027
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    is_on_income_support: [false, false]
