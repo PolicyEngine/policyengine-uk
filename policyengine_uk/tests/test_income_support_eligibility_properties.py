@@ -28,12 +28,13 @@ No adult outside the couple is named, so:
   the Income Support limit;
 - raising any claimant's or partner's hours or JSA never makes a family
   eligible. (c) and (f) only ever bar a claim. The one other path is (g):
-  income-based JSA reported by the claimant or partner ends the inferred
-  SI 2019/37 saving (has_mixed_age_couple_pension_credit_saving), which can
-  take a mixed-age couple out of the Pension Credit age conditions and so
-  lift the (g) bar. That inference already fails when either of them
-  reports Income Support, and a couple in which neither does has no award
-  holder, so it is never eligible.
+  income-based JSA reported by the claimant or partner can end the Housing
+  Benefit route to the inferred SI 2019/37 saving
+  (has_mixed_age_couple_pension_credit_saving) when neither member reports
+  Pension Credit, which can take a mixed-age couple out of the Pension
+  Credit age conditions and so lift the (g) bar. That Housing Benefit route
+  already fails when either of them reports Income Support, and a couple in
+  which neither does has no award holder, so it is never eligible.
 
 The first and third hold for every input except at the value convention's
 boundary. A stored esa_income or jsa_income (entered directly or replaced by
