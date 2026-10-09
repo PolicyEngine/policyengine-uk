@@ -156,3 +156,78 @@ def test_reduced_rate_reform_reaches_gas_not_electricity():
     assert calc(
         "domestic_energy_vat", year=2025, scenario=scenario, gas=1_050
     ) == pytest.approx(50)
+
+
+# Price basis of the energy inputs (#2189 review, finding C1). The inputs are
+# priced at Ofgem cap unit rates including 5% VAT, so the VAT-exclusive base
+# is the bill / 1.05 whatever rate a reform sets. Previously the divisor was
+# the baseline-tree reduced rate, which a Scenario reform also changes (#2188),
+# so a 20% gas rate treated 5%-priced bills as if they included 20%.
+HER_CASE = dict(region="LONDON", electricity=1_050, gas=1_050, year=2025)
+GAS_RATE = "gov.hmrc.vat.reduced_rate"
+
+
+def test_price_basis_rate_is_5_percent():
+    p = system.parameters.gov.simulation.vat
+    for year in ("2024", "2025", "2026", "2027"):
+        assert p.energy_input_price_basis_rate(year) == pytest.approx(0.05)
+
+
+def test_gas_rate_reform_scenario_and_reform_agree_at_250():
+    # Model year 2025, London, £1,050 of electricity and £1,050 of gas, both
+    # priced including 5% VAT. VAT-exclusive base: 1,050 / 1.05 = £1,000 each.
+    #   electricity: 1,000 x 5%  =  £50
+    #   gas:         1,000 x 20% = £200
+    #   total                    = £250
+    # Before the fix the Scenario route divided by 1.20 instead:
+    #   1,050 / 1.20 x 5% + 1,050 / 1.20 x 20% = 43.75 + 175 = £218.75.
+    scenario = Scenario(parameter_changes={GAS_RATE: 0.20})
+    reform = Reform.from_dict(
+        {GAS_RATE: {"2025-01-01.2100-12-31": 0.20}}, country_id="uk"
+    )
+    via_scenario = Simulation(situation=household(**HER_CASE), scenario=scenario)
+    via_reform = Simulation(situation=household(**HER_CASE), reform=reform)
+    scenario_vat = float(via_scenario.calculate("domestic_energy_vat", 2025)[0])
+    reform_vat = float(via_reform.calculate("domestic_energy_vat", 2025)[0])
+    assert scenario_vat == pytest.approx(250, abs=0.01)
+    assert reform_vat == pytest.approx(250, abs=0.01)
+    assert scenario_vat == pytest.approx(reform_vat, abs=0.01)
+    # Total vat differs only through energy, so it matches across routes too.
+    assert float(via_scenario.calculate("vat", 2025)[0]) == pytest.approx(
+        float(via_reform.calculate("vat", 2025)[0]), abs=0.01
+    )
+    # Reform.from_dict leaves the baseline tree alone: 1,000 x 5% x 2 = £100.
+    # (Under Scenario the baseline tree is still contaminated, #2188.)
+    assert float(
+        via_reform.calculate("baseline_domestic_energy_vat", 2025)[0]
+    ) == pytest.approx(100, abs=0.01)
+
+
+def test_scalar_zero_gas_rate_leaves_electricity_vat_alone():
+    # £1,050 of electricity only: 1,050 / 1.05 x 5% = £50. A scalar Scenario
+    # setting the reduced rate to 0 used to give 1,050 / 1.00 x 5% = £52.50.
+    scenario = Scenario(parameter_changes={GAS_RATE: 0.0})
+    assert calc(
+        "domestic_energy_vat", year=2025, gas=0, scenario=scenario
+    ) == pytest.approx(50, abs=0.01)
+
+
+@pytest.mark.parametrize(
+    "region, electricity_rate",
+    [
+        # GB, model year 2026: 183 of 365 days at 5%, so 0.05 x 183 / 365.
+        ("LONDON", 0.05 * FY2026_SHARE_AT_5_PERCENT),
+        ("SCOTLAND", 0.05 * FY2026_SHARE_AT_5_PERCENT),
+        # Northern Ireland is outside the zero rate: 5% all year.
+        ("NORTHERN_IRELAND", 0.05),
+    ],
+)
+def test_baseline_fy2026_window_by_nation_with_gas(region, electricity_rate):
+    # £1,050 of electricity and £2,100 of gas, each VAT-exclusive at / 1.05:
+    #   electricity: 1,000 x rate  (GB 25.07, NI 50)
+    #   gas:         2,000 x 5%  = £100 in every nation
+    # so GB = 125.07 and NI = 150.
+    vat = calc("domestic_energy_vat", region=region, electricity=1_050, gas=2_100)
+    assert vat == pytest.approx(1_000 * electricity_rate + 100, abs=0.01)
+    gas_only = calc("domestic_energy_vat", region=region, electricity=0, gas=2_100)
+    assert gas_only == pytest.approx(100, abs=0.01)

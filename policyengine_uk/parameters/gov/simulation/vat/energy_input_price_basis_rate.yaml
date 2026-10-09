@@ -1,0 +1,20 @@
+description: VAT rate included in the prices used to value the electricity_consumption and gas_consumption inputs. Energy-bill VAT is charged on those inputs net of this rate, so the VAT-exclusive base stays fixed when a reform changes a statutory VAT rate. This describes the input data, not policy; change it only if the inputs are repriced on a different VAT basis.
+metadata:
+  unit: /1
+  period: year
+  economy: false
+  label: VAT rate included in energy input prices
+  derivation: >-
+    The default electricity and gas inputs are NEED kWh consumption valued at
+    Ofgem price cap unit rates for 1 April to 30 June 2026, which Ofgem quotes
+    including VAT at 5%. The VAT-exclusive base is therefore the input divided
+    by 1.05. Reading the statutory reduced rate here instead would make a
+    reform to that rate reprice the inputs (PolicyEngine/policyengine-uk#2189,
+    review finding C1).
+  reference:
+    - title: Ofgem, Changes to energy price cap between 1 April and 30 June 2026 (unit rates and standing charges include VAT)
+      href: https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-april-and-30-june-2026
+    - title: VAT Act 1994, Schedule 7A, Group 1 (reduced rate on domestic fuel and power)
+      href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/7A
+values:
+  2000-01-01: 0.05

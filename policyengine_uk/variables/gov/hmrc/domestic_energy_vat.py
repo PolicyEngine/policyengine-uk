@@ -4,13 +4,16 @@ from policyengine_uk.model_api import *
 from policyengine_uk.utils.parameters import fiscal_year_average
 
 
-def _domestic_energy_vat(household, period, electricity_rate, gas_rate, priced_rate):
+def _domestic_energy_vat(household, period, parameters, electricity_rate, gas_rate):
     # electricity_consumption and gas_consumption are priced at Ofgem cap unit
-    # rates, which include VAT at the reduced rate, so the VAT-exclusive base is
-    # the bill divided by one plus that rate (5/105 of the bill at 5%). The
-    # base is held fixed when the rate changes. The inputs are calibrated to
-    # NEED consumption, not grossed up to receipts, so neither the survey
-    # consumption coverage nor the household share of VAT receipts applies.
+    # rates, which include VAT at 5%, so the VAT-exclusive base is the bill
+    # divided by 1.05 (5/105 of the bill is VAT). The divisor is the rate the
+    # inputs were priced at (gov.simulation.vat.energy_input_price_basis_rate),
+    # never the statutory rate being modelled, so the base stays fixed when a
+    # reform changes a VAT rate. The inputs are calibrated to NEED consumption,
+    # not grossed up to receipts, so neither the survey consumption coverage
+    # nor the household share of VAT receipts applies.
+    priced_rate = parameters(period).gov.simulation.vat.energy_input_price_basis_rate
     country = household("country", period)
     northern_ireland = country == country.possible_values.NORTHERN_IRELAND
     rate = where(
@@ -45,9 +48,9 @@ class domestic_energy_vat(Variable):
         return _domestic_energy_vat(
             household,
             period,
+            parameters,
             vat.domestic_electricity_rate,
             vat.reduced_rate,
-            p.baseline.gov.hmrc.vat.reduced_rate,
         )
 
 
@@ -72,5 +75,5 @@ class baseline_domestic_energy_vat(Variable):
         )
         reduced_rate = parameters(period).baseline.gov.hmrc.vat.reduced_rate
         return _domestic_energy_vat(
-            household, period, electricity_rate, reduced_rate, reduced_rate
+            household, period, parameters, electricity_rate, reduced_rate
         )
