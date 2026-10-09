@@ -20,8 +20,9 @@
 # 5,061.16; £61.53 → 3,199.56; £119.70 → 6,224.40; £5 → 260; £10 → 520; £25
 # → 1,300; £17.10 → 889.20.
 #
-# The model reads each fiscal year at 30 April: 2027 (2027-28) has para 18 in
-# full; 2026 (2026-27) reads 30 April 2026, before 5 October, so it has none.
+# The accommodation amount retains its legal date: 2026-27 has 182 days
+# before 5 October and 183 days afterwards. Completed awards are combined
+# after earnings caps, childcare, the income threshold and taper.
 # Earnings are below the income tax personal allowance and the National
 # Insurance primary threshold (both £12,570), so net earnings equal gross
 # earnings, and the hours are below every £17.10 work condition unless a
@@ -401,7 +402,7 @@
     housing_benefit_specified_or_temporary_accommodation_disregard: 0
     housing_benefit_applicable_income_disregard: 260
 
-- name: In 2026 the model reads 30 April 2026, before para 18 came into force
+- name: The 2026 fiscal year includes the 183 days from 5 October
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -415,11 +416,9 @@
         members: [person]
         in_specified_or_temporary_accommodation: true
   output:
-    # KNOWN LIMITATION, intended: para 18 applies from 5 October 2026, for 183
-    # of the 365 days of 2026-27, but the model reads the year's law at 30
-    # April, so 2026-27 has no para 18 disregard.
-    housing_benefit_specified_or_temporary_accommodation_disregard: 0
-    housing_benefit_applicable_income_disregard: 260 # £5 × 52
+    # Full £77.73 × 52 annual equivalent for 183/365 of the year.
+    housing_benefit_specified_or_temporary_accommodation_disregard: 2026.51693
+    housing_benefit_applicable_income_disregard: 2286.51693
 
 - name: In 2025 there is no para 18 disregard
   period: 2025
@@ -680,9 +679,9 @@
         age: 30
         employment_income: 7_800 # £150 a week
         weekly_hours: 16
-        childcare_expenses: 2_080 # £40 a week
       child:
         age: 5
+        childcare_expenses: 2_080 # £40/week; detailed qualifying-care rules deferred
     benunits:
       benunit:
         would_claim_uc: false  # not on Universal Credit, which passports the means test
@@ -781,3 +780,470 @@
     # 10,400 − 0.65 × (10,140 − 4,968.60) = 10,400 − 3,361.41; 2,627.27 less
     # than above, which is 0.65 × 4,041.96.
     housing_benefit_entitlement: 7_038.59
+
+# First-year award regressions: GB SI 2026/753 reg 1 and SI 2026/978 reg 2;
+# NI SR 2026/157 regs 1/2; HB reg 71 and NI reg 69. Household facts stay
+# constant; statutory weekly amounts × 52 apply within each date segment.
+
+- name: GB and NI working-age awards include the first year while pension-age awards do not
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: [30,30,30,30,30,30,30,30]
+    is_claimant_or_partner: [true,true,true,true,true,true,true,true]
+    is_lone_parent: [false,false,false,false,false,false,false,false]
+    is_couple: [false,false,false,false,false,false,false,false]
+    employment_income: [5000,5000,5000,5000,5000,5000,5000,5000]
+    income_tax: [0,0,0,0,0,0,0,0]
+    national_insurance: [0,0,0,0,0,0,0,0]
+    pension_contributions: [0,0,0,0,0,0,0,0]
+    housing_benefit_net_earnings: [5000,5000,5000,5000,5000,5000,5000,5000]
+    housing_benefit_special_earnings_disregard: [260,260,260,260,260,260,260,260]
+    housing_benefit_permitted_work_disregard: [0,0,0,0,0,0,0,0]
+    housing_benefit_pension_age_regulations_apply: [false,false,false,false,true,true,true,true]
+    housing_benefit_on_passporting_benefit: [false,false,false,false,false,false,false,false]
+    housing_benefit_tariff_income: [0,0,0,0,0,0,0,0]
+    guarantee_credit: [0,0,0,0,0,0,0,0]
+    income_support: [0,0,0,0,0,0,0,0]
+    jsa_income: [0,0,0,0,0,0,0,0]
+    esa_income: [0,0,0,0,0,0,0,0]
+    tax_credits: [0,0,0,0,0,0,0,0]
+    housing_benefit_applicable_income_childcare_element: [0,0,0,0,0,0,0,0]
+    meets_housing_benefit_additional_earnings_disregard_conditions: [false,false,false,false,false,false,false,false]
+    housing_benefit_applicable_amount: [0,0,0,0,0,0,0,0]
+    in_specified_or_temporary_accommodation: [true,true,true,true,true,true,true,true]
+    benunit_rent: [10400,10400,10400,10400,10400,10400,10400,10400]
+    LHA_eligible: [false,false,false,false,false,false,false,false]
+    housing_benefit_meals_deduction: [0,0,0,0,0,0,0,0]
+    housing_benefit_non_dep_deductions: [0,0,0,0,0,0,0,0]
+    country: ["ENGLAND","WALES","SCOTLAND","NORTHERN_IRELAND","ENGLAND","WALES","SCOTLAND","NORTHERN_IRELAND"]
+  output:
+    # Before: 10,400 - 65% × 4,740 = 7,319; after: 10,400 - 65% × 698.04 = 9,946.274.
+    housing_benefit_entitlement: [8636.236005479452,8636.236005479452,8636.236005479452,8636.236005479452,7319,7319,7319,7319]
+
+- name: Low earnings cross the income threshold so completed awards must be combined
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 1000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 1000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 500
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # Before: 10,400 - 65% × (740 - 500) = 10,244; after: full eligible rent.
+    housing_benefit_applicable_income_disregard: 631.013698630137
+    housing_benefit_entitlement: 10322.213698630138
+
+- name: The zero-award floor applies before annual integration
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 7000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 7000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 2000
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # Before: max(0, 2,000 - 65% × 6,740) = 0; after: 2,000 - 65% × 2,698.04 = 246.274.
+    housing_benefit_entitlement: 123.47436164383558
+
+- name: Zero earnings cannot create an accommodation deduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 0
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 0
+    housing_benefit_special_earnings_disregard: 0
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # No earner and no net earnings; income is nil and the award cannot exceed eligible rent.
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_disregard: 0
+    housing_benefit_entitlement: 10400
+
+- name: ENGLAND childcare_expenses uses the remaining earnings in each date segment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 5000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      child:
+        age: 5
+        is_claimant_or_partner: false
+        is_child_or_young_person_for_legacy_benefits: true
+        childcare_expenses: 1000
+    benunits:
+      family:
+        members: [parent, child]
+        housing_benefit_net_earnings: 5000
+        housing_benefit_special_earnings_disregard: 1300
+        housing_benefit_permitted_work_disregard: 0
+        housing_benefit_pension_age_regulations_apply: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        guarantee_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        tax_credits: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_applicable_amount: 0
+        in_specified_or_temporary_accommodation: true
+        benunit_rent: 10400
+        LHA_eligible: false
+        housing_benefit_meals_deduction: 0
+        housing_benefit_non_dep_deductions: 0
+    households:
+      household:
+        members: [parent, child]
+        country: ENGLAND
+  output:
+    # Before: £1,300 standard + £1,000 childcare gives £2,700 income.
+    # After: accommodation takes all remaining £3,700 earnings, leaving
+    # no childcare deduction and no assessable income. HB reg 27/71;
+    # NI regs 24/69: (8,645 × 182 + 10,400 × 183) / 365.
+    housing_benefit_entitlement: 9524.904109589042
+
+- name: NORTHERN_IRELAND childcare_expenses uses the remaining earnings in each date segment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        is_claimant_or_partner: true
+        employment_income: 5000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+      child:
+        age: 5
+        is_claimant_or_partner: false
+        is_child_or_young_person_for_legacy_benefits: true
+        childcare_expenses: 1000
+    benunits:
+      family:
+        members: [parent, child]
+        housing_benefit_net_earnings: 5000
+        housing_benefit_special_earnings_disregard: 1300
+        housing_benefit_permitted_work_disregard: 0
+        housing_benefit_pension_age_regulations_apply: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        guarantee_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+        tax_credits: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_applicable_amount: 0
+        in_specified_or_temporary_accommodation: true
+        benunit_rent: 10400
+        LHA_eligible: false
+        housing_benefit_meals_deduction: 0
+        housing_benefit_non_dep_deductions: 0
+    households:
+      household:
+        members: [parent, child]
+        country: NORTHERN_IRELAND
+  output:
+    # Before: £1,300 standard + £1,000 childcare gives £2,700 income.
+    # After: accommodation takes all remaining £3,700 earnings, leaving
+    # no childcare deduction and no assessable income. HB reg 27/71;
+    # NI regs 25/69: (8,645 × 182 + 10,400 × 183) / 365.
+    housing_benefit_entitlement: 9524.904109589042
+
+
+- name: An explicit annual applicable-income input is not recalculated
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 5000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 5000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+    housing_benefit_applicable_income: 1000
+  output:
+    # Keep supplied income: 10,400 - 65% × 1,000 = 9,750 in both segments.
+    housing_benefit_entitlement: 9750
+
+- name: An explicit annual zero disregard is not overwritten by segmentation
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 5000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 5000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+    housing_benefit_applicable_income_disregard: 0
+  output:
+    # Keep supplied disregard: 10,400 - 65% × 5,000 = 7,150 in both segments.
+    housing_benefit_entitlement: 7150
+
+- name: An explicit annual childcare deduction is retained inside each award calculation
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 5000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 5000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 1000
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # Before income: 3,740; after income is floored at zero after the supplied £1,000 childcare deduction.
+    housing_benefit_entitlement: 9187.830136986302
+
+- name: The additional disregard earnings test uses the full accommodation amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 5000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 5000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # Before: £260 + £889.20 qualifies. After: £5,000 is below £260 + £4,041.96 + £889.20.
+    housing_benefit_applicable_income_disregard: 2729.8988493150687
+    housing_benefit_entitlement: 8924.434252054794
+
+- name: A supplied zero accommodation amount preserves its override
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 5000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 5000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+  output:
+    # The supplied full-year zero leaves only the standard £260 disregard.
+    housing_benefit_applicable_income_disregard: 260
+    housing_benefit_entitlement: 7319
+
+- name: Working-age passporting remains effective across the date boundary
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    is_claimant_or_partner: true
+    is_lone_parent: false
+    is_couple: false
+    employment_income: 5000
+    income_tax: 0
+    national_insurance: 0
+    pension_contributions: 0
+    housing_benefit_net_earnings: 5000
+    housing_benefit_special_earnings_disregard: 260
+    housing_benefit_permitted_work_disregard: 0
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_on_passporting_benefit: true
+    housing_benefit_tariff_income: 0
+    guarantee_credit: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+    tax_credits: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_applicable_amount: 0
+    in_specified_or_temporary_accommodation: true
+    benunit_rent: 10400
+    LHA_eligible: false
+    housing_benefit_meals_deduction: 0
+    housing_benefit_non_dep_deductions: 0
+  output:
+    # The whole income remains disregarded; no tapered assessment is introduced.
+    housing_benefit_applicable_income_disregard: 5000
+    housing_benefit_entitlement: 10400
