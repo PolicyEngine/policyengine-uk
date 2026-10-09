@@ -17,7 +17,9 @@ the child's parent, or the person themselves:
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
 - Targeted childcare: SI 2014/2147 reg 1(2).
 - Maintenance loans for students entitled to benefits: SI 2011/1986 reg
-  71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a).
+  71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a) (the
+  student is on the award) and (c) (the student's applicable amount would
+  include a disability or severe disability premium).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent

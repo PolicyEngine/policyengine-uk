@@ -122,9 +122,10 @@
   # 3,486 and National Insurance (30,000 - 12,570) x 8% = 1,394.40 leave net
   # earnings of 25,119.60; less the £5 a week single disregard (Sch 4 para 10),
   # applicable income is 24,859.60. 65% of its excess over her applicable
-  # amount exceeds the rent whenever that amount is below £9,475.21, which a
-  # single person's personal allowance is, so Housing Benefit is nil. Read as
-  # hers, his award would passport her whole income and give the full £10,000.
+  # amount covers the rent whenever that amount is at most £9,474.98
+  # (24,859.60 - 10,000 / 0.65), which a single person's personal allowance
+  # is, so Housing Benefit is nil. Read as hers, his award would passport her
+  # whole income and give the full £10,000.
   period: 2025
   absolute_error_margin: 0.01
   input:
