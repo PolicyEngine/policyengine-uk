@@ -1,0 +1,1 @@
+Apply the Pension Credit earnings disregards of SPC Regs 2002 Schedule VI: 20 pounds a week for lone parents, carers and claimants or partners on a listed disability benefit or certified blind, otherwise 5 pounds (single) or 10 pounds (couple), capped at earnings.
