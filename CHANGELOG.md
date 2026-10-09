@@ -1,3 +1,10 @@
+## [2.123.9] - 2026-10-09
+
+### Changed
+
+- Cancel superseded test runs on main and give every lint, docs and versioning job a timeout, so outdated or hung jobs free shared GitHub Actions runners.
+
+
 ## [2.123.8] - 2026-10-08
 
 ### Fixed
