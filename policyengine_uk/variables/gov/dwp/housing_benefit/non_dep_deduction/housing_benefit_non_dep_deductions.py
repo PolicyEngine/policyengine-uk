@@ -27,4 +27,9 @@ class housing_benefit_non_dep_deductions(Variable):
             "household_benefits_individual_non_dep_deduction", period
         ) * person("is_non_dependant_of_household_head", period)
         share = benunit("share_of_household_rent", period)
-        return share * benunit.max(person.household.sum(deductions))
+        # No deduction at all if the claimant or partner is blind or receives
+        # a listed disability benefit (reg 74(6); SPC reg 55(6)). The
+        # per-person exemptions in reg 74(7)-(8) (students, under-25s on
+        # income-based benefits, patients, armed forces) are not modelled.
+        exempt = benunit("housing_benefit_non_dep_deduction_exempt", period)
+        return where(exempt, 0, share * benunit.max(person.household.sum(deductions)))

@@ -97,3 +97,61 @@
   output:
     # Only person 3 is a non-dependant of the head's family: 3.
     housing_benefit_non_dep_deductions: [3, 0, 0]
+
+# HB Regs 2006 reg 74(1)(b) and (2): a non-dependant aged 18 or over who is
+# not in remunerative work takes the minimum deduction, £19.30 a week in
+# 2025-26, whatever their income. Reg 74(6): no deduction at all if the
+# claimant or partner receives Attendance Allowance (among other benefits).
+- name: A non-working adult non-dependant with only investment income takes the minimum deduction
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_household_head: true
+      adult_child:
+        age: 25
+        other_investment_income: 28_912 # 556 a week, no hours
+    benunits:
+      claimant_family:
+        members: [claimant]
+      adult_child_family:
+        members: [adult_child]
+    households:
+      household:
+        members: [claimant, adult_child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 15_000
+  output:
+    # 19.30 * 52 = 1,003.60 (the top band would be 124.55 * 52 = 6,476.60).
+    housing_benefit_non_dep_deductions: [1_003.60, 0]
+
+- name: A claimant on Attendance Allowance has no non-dependant deduction
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_household_head: true
+        attendance_allowance: 3_800
+      adult_child:
+        age: 30
+        hours_worked: 1_950 # 37.5 hours a week
+        employment_income: 28_912 # 556 a week
+    benunits:
+      claimant_family:
+        members: [claimant]
+      adult_child_family:
+        members: [adult_child]
+    households:
+      household:
+        members: [claimant, adult_child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 15_000
+  output:
+    housing_benefit_non_dep_deduction_exempt: [true, false]
+    # Reg 74(6)(b)(i) / SPC reg 55(6)(b)(i): no deduction, although the
+    # non-dependant alone would take 124.55 * 52 = 6,476.60.
+    housing_benefit_non_dep_deductions: [0, 0]
