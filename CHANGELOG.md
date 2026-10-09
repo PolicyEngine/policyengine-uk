@@ -1,3 +1,17 @@
+## [2.125.0] - 2026-10-09
+
+### Added
+
+- - Add `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income`: the income-related award of the claimant and partner. When `esa_income` or `jsa_income` holds what the reported awards give (its formula, or their plain total), this is the same on the claimant's and partner's reports; any other stored value is taken to be theirs, and a stored zero is zero. An entered award equal to either reported amount, to within half a penny at stored precision, is read through the reports, so enter these variables directly to state the claimant's or partner's award.
+  - Add `is_on_income_related_esa`, `is_on_income_based_jsa` and `is_on_income_support`: whether the award is payable to the person. Of the claimant and partner, that is the payee of their award (the one who reports it, or the claimant); for anyone else, the award on their own report alone, after tariff income from the benefit unit's capital and within the capital limit, while the benefit unit's award is positive (for Income Support: their own report while Income Support is active and not neutralised), so another member's report never changes it.
+
+### Fixed
+
+- - Count only the claimant's and partner's income-related ESA and income-based JSA in Housing Benefit, council tax reduction and tax credit income, and in the passports for Housing Benefit (`in_receipt_of_income_support_jsa_ib_or_esa_ir`), working-age council tax reduction, Scottish Child Payment and targeted childcare. Another member of the benefit unit, such as a non-dependent adult, who reports an award claims in their own right; their award still counts in household income.
+  - Exempt a council tax reduction non-dependant in the local working-age schemes only when Income Support, income-based JSA or income-related ESA is payable to them, not to their partner or another benefit-unit member. A non-dependant couple on one of these benefits therefore pays the partner's deduction. The maintenance loan schedule for students entitled to benefits now reads whether income-related ESA is payable to the student (HB Regs 2006 reg 56(2)(a)), alongside the existing parent and disability tests, and adds reg 56(2)(c): a student who is the claimant or partner qualifies when their applicable amount would include the disability or severe disability premium, as when their partner receives a disability benefit.
+  - Treat a family as claiming Income Support (`would_claim_IS`) when the claimant or partner reports it, or when every entitled benefit is claimed (`claims_all_entitled_benefits`); another member's report no longer counts.
+
+
 ## [2.124.0] - 2026-10-09
 
 ### Added
