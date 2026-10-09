@@ -8,9 +8,12 @@ in remunerative work. For every family:
 - esa_income_eligible and jsa_income_eligible equal a family-by-family
   reading of the law (legacy_award_work_reference);
 - more hours or more pay for anyone never makes a family eligible, in the
-  years tested (2025 and 2026). Before 6 April 2024 reg 99(3)(a) took a
-  fixed Class 2 deduction once profit reached a threshold, so £1 more
-  profit could lower net earnings; that intended cliff is a YAML case;
+  years tested (2025 and 2026) and within the scope below. Before 6 April
+  2024 reg 99(3)(a) took a fixed Class 2 deduction once profit reached a
+  threshold, so £1 more profit could lower net earnings; that intended
+  cliff is a YAML case. Outside the scope, other income can move the
+  personal allowance the pay's tax is worked out with (through the taper),
+  so this is not claimed there;
 - caring never ends an ESA award (a carer partner is not treated as in
   remunerative work, ESA Regs reg 43(2)(c)) and never matters for JSA (the
   JSA regulations have no exception for carers doing unrelated paid work);
@@ -44,7 +47,8 @@ PAY = [0, 0, 1_040, 1_092, 5_200, 10_166, 10_192, 10_582, 10_608, 15_600]
 # and £13,200, which needs half a £5,900 pension premium to fall within them.
 PROFIT = [1_040, 5_200, 10_166, 10_300, 13_200, 15_600]
 # Payments an employer makes for sickness or leave, which are not earnings
-# (reg 95(2)(b)) but which the shared taxable pay and Class 1 bases include.
+# (reg 95(2)(b)) but which the shared Class 1 base includes (all three) and
+# the shared taxable pay includes (sick and maternity pay).
 STATUTORY_PAY = [
     None,
     None,

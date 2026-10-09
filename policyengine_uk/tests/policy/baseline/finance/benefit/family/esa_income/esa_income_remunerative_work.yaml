@@ -552,9 +552,10 @@
 
 # Statutory sick, maternity and paternity pay are not earnings (reg 95(2)(b)).
 # £10,300 of pay is £198.08 a week, over £195.50, with no tax or Class 1 on
-# it. The shared taxable employment income and Class 1 base include these
-# payments, which would put tax and Class 1 on the pay and bring it under
-# the limit.
+# it. The shared bases include these payments: taxable employment income
+# includes statutory sick and maternity pay, and the Class 1 base all three.
+# Using them would put tax or Class 1 on the pay and bring it under the
+# limit.
 
 - name: Statutory sick pay adds no tax or Class 1 to the pay (reg 95(2)(b))
   period: 2025

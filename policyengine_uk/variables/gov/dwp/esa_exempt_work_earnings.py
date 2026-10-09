@@ -19,15 +19,17 @@ class esa_exempt_work_earnings(Variable):
         "expenses and employee pension contributions (net pay arrangements), "
         "above the personal and blind person's allowances, less the married "
         "couple's allowance reduction up to that tax. The allowances are the "
-        "person's own, so other income can still reduce them through the "
-        "personal allowance taper, but the tax on other income never comes "
-        "off the pay, a self-employment loss cannot change it, and credits "
-        "settled through a tax return (such as foreign tax credit relief) are "
-        "not taken off it. Class 1: the main and additional primary rates on "
-        "the pay between the primary threshold and the upper earnings limit "
-        "and above it. Statutory sick, maternity and paternity pay are not "
-        "earnings (reg 95(2)(b)), so they add neither to the pay nor to the "
-        "tax and contributions taken off it. A second job taxed at the basic "
+        "person's own, so other income, and anything else that moves adjusted "
+        "net income (such as a loss from another trade), can still change "
+        "them through the personal allowance taper. But the tax on other "
+        "income never comes off the pay, a self-employment loss is never "
+        "deducted from the pay, and credits settled through a tax return "
+        "(such as foreign tax credit relief) are not taken off it. Class 1: "
+        "the main and additional primary rates on the pay between the primary "
+        "threshold and the upper earnings limit and above it. Statutory "
+        "sick, maternity and paternity pay are not earnings (reg 95(2)(b)), "
+        "so they add neither to the pay nor to the tax and contributions "
+        "taken off it. A second job taxed at the basic "
         "rate through PAYE would leave lower net earnings than this. "
         "Self-employment (reg 98(3) and reg 99): the profit less a notional "
         "income tax at the basic rate (the Scottish basic rate for a Scottish "
@@ -76,8 +78,9 @@ class esa_exempt_work_earnings(Variable):
 
         # Employment, reg 96(3): PAYE and primary Class 1 on the pay alone.
         # Statutory sick, maternity and paternity pay are not earnings (reg
-        # 95(2)(b)), so the shared taxable employment income and Class 1
-        # base, which include them, are not used.
+        # 95(2)(b)), so the shared bases are not used: taxable employment
+        # income includes statutory sick and maternity pay, and the Class 1
+        # base (ni_class_1_income) includes all three.
         pay = person("employment_income", period)
         taxable_pay = max_(0, pay - person("employment_deductions", period))
         taxable_pay_after_pension = max_(
