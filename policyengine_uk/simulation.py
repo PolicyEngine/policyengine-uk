@@ -111,8 +111,10 @@ class Simulation(CoreSimulation):
     dataset = None
     # True when built from survey or other microdata rather than a situation
     # dictionary. Variables that impute unobserved detail across a population
-    # (such as months_since_last_birthday) read it; unlike the sum of weights,
-    # it stays true for a region or constituency filtered from the data.
+    # (such as months_since_last_birthday) read it through
+    # utils.data_source.built_from_data; unlike the sum of weights, it stays
+    # true for a region or constituency filtered from the data. The builders
+    # set it, so rebuilding a simulation in place keeps it right.
     built_from_dataset: bool = False
 
     def __init__(
@@ -185,7 +187,6 @@ class Simulation(CoreSimulation):
             self.build_from_dataset_source(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
-        self.built_from_dataset = situation is None
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -301,6 +302,7 @@ class Simulation(CoreSimulation):
         Args:
             situation: Dictionary describing household composition and characteristics
         """
+        self._start_new_population(built_from_dataset=False)
         self.build_from_populations(self.tax_benefit_system.instantiate_entities())
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
@@ -550,6 +552,17 @@ class Simulation(CoreSimulation):
 
         self.dataset = dataset
 
+    def _start_new_population(self, built_from_dataset: bool) -> None:
+        """Record the new population's source, and drop what the simulation
+        cached for the previous one, so rebuilding in place (e.g. a clone)
+        never reads arrays sized for the old population."""
+        self.built_from_dataset = built_from_dataset
+        if getattr(self, "_fast_cache", None) is not None:
+            self._fast_cache = {}
+        if getattr(self, "_user_input_keys", None) is not None:
+            # A clone shares this set with its original, so replace it.
+            self._user_input_keys = set()
+
     def build_from_ids(
         self,
         person_id: np.ndarray,
@@ -567,6 +580,8 @@ class Simulation(CoreSimulation):
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
         """
+        # Every data source (DataFrame, dataset, file, URL) builds through here.
+        self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
