@@ -115,3 +115,89 @@
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 108.3 * 52
+
+# Schedule 3 paragraph 1. Isolate the age bands from the separate premiums.
+
+- name: Single allowance immediately below 25
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    benefits_premiums: 0
+    eldest_claimant_or_partner_age: 24
+    is_single_person: true
+    is_couple: false
+    is_lone_parent: false
+  output:
+    housing_benefit_applicable_amount: 71.7 * 52
+
+- name: Single allowance from age 25
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    benefits_premiums: 0
+    eldest_claimant_or_partner_age: 25
+    is_single_person: true
+    is_couple: false
+    is_lone_parent: false
+  output:
+    housing_benefit_applicable_amount: 90.5 * 52
+
+- name: Couple allowance when both members are under 18
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    benefits_premiums: 0
+    eldest_claimant_or_partner_age: 17
+    is_single_person: false
+    is_couple: true
+    is_lone_parent: false
+  output:
+    housing_benefit_applicable_amount: 108.3 * 52
+
+- name: Couple allowance when a member turns 18
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    benefits_premiums: 0
+    eldest_claimant_or_partner_age: 18
+    is_single_person: false
+    is_couple: true
+    is_lone_parent: false
+  output:
+    housing_benefit_applicable_amount: 142.25 * 52
+
+- name: Lone-parent allowance immediately below 18
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    benefits_premiums: 0
+    eldest_claimant_or_partner_age: 17
+    is_single_person: false
+    is_couple: false
+    is_lone_parent: true
+  output:
+    housing_benefit_applicable_amount: 71.7 * 52
+
+- name: Lone-parent allowance from age 18
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    benefits_premiums: 0
+    eldest_claimant_or_partner_age: 18
+    is_single_person: false
+    is_couple: false
+    is_lone_parent: true
+  output:
+    housing_benefit_applicable_amount: 90.5 * 52
