@@ -1,242 +1,1212 @@
-- name: One child, capped
-  period: 2025
-  absolute_error_margin: 0.01
+# Qualifying charges are externally pre-assessed; these tests isolate the
+# count/cap/residual calculation. Cap inputs reproduce #1925, not another fix.
+- name: "No children and no qualifying charges"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+    benunits:
+      family:
+        members: ["claimant"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: "Generic expenditure alone is not a qualifying assessment"
+  period: 2024
+  absolute_error_margin: 0.02
   input:
     people:
       claimant:
         age: 40
         is_parent: true
         childcare_expenses: 9000
+        is_claimant_or_partner: true
       child0:
         age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 0
     benunits:
-      benunit:
-        members: [claimant, child0]
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
   output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 1
-    housing_benefit_applicable_income_childcare_element: 9000
+    housing_benefit_applicable_income_childcare_element: 0
 
-- name: Two child, capped
-  period: 2025
-  absolute_error_margin: 0.01
+- name: "One child below weekly cap"
+  period: 2024
+  absolute_error_margin: 0.02
   input:
     people:
       claimant:
         age: 40
         is_parent: true
-        childcare_expenses: 10000
+        childcare_expenses: 0
+        is_claimant_or_partner: true
       child0:
-        age: 8
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 9000
+
+- name: "One child at weekly cap"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9100
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 9100
+
+- name: "One child above weekly cap"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 20000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 9100
+
+- name: "Two children below multiple-child cap"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 5000
       child1:
         age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 5000
     benunits:
-      benunit:
-        members: [claimant, child0, child1]
+      family:
+        members: ["claimant","child0","child1"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
   output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 2 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 2
     housing_benefit_applicable_income_childcare_element: 10000
 
-- name: No children
-  period: 2025
-  absolute_error_margin: 0.01
+- name: "Two children at multiple-child cap"
+  period: 2024
+  absolute_error_margin: 0.02
   input:
     people:
       claimant:
         age: 40
         is_parent: true
-        childcare_expenses: 30000
-    benunits:
-      benunit:
-        members: [claimant]
-  output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 0
-    housing_benefit_applicable_income_childcare_element: 0
-
-- name: Non-disabled child aged 15 remains within annual age approximation
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        is_parent: true
-        childcare_expenses: 9000
+        childcare_expenses: 0
+        is_claimant_or_partner: true
       child0:
-        age: 15
-    benunits:
-      benunit:
-        members: [claimant, child0]
-  output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 1
-    housing_benefit_applicable_income_childcare_element: 9000
-
-- name: Non-disabled young person aged 16 no longer counts
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        is_parent: true
-        childcare_expenses: 9000
-      child0:
-        age: 16
-    benunits:
-      benunit:
-        members: [claimant, child0]
-  output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 0
-    housing_benefit_applicable_income_childcare_element: 0
-
-- name: Non-disabled young person aged 17 no longer counts
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        is_parent: true
-        childcare_expenses: 9000
-      child0:
-        age: 17
-    benunits:
-      benunit:
-        members: [claimant, child0]
-  output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 0
-    housing_benefit_applicable_income_childcare_element: 0
-
-- name: Disabled young person aged 16 counts
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        is_parent: true
-        childcare_expenses: 9000
-      child0:
-        age: 16
-        is_disabled_for_benefits: true
-    benunits:
-      benunit:
-        members: [claimant, child0]
-  output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 1
-    housing_benefit_applicable_income_childcare_element: 9000
-
-- name: Blind young person aged 16 counts
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        is_parent: true
-        childcare_expenses: 9000
-      child0:
-        age: 16
-        is_blind: true
-    benunits:
-      benunit:
-        members: [claimant, child0]
-  output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 1 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 1
-    housing_benefit_applicable_income_childcare_element: 9000
-
-- name: Disabled young person aged 17 no longer counts
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        is_parent: true
-        childcare_expenses: 9000
-      child0:
-        age: 17
-        is_disabled_for_benefits: true
-    benunits:
-      benunit:
-        members: [claimant, child0]
-  output:
-    # Annual age limits are <16, or <17 if disabled/blind (HB reg 28(6)).
-    # With 0 relevant children the deduction is min(cost, weekly cap * 52).
-    num_relevant_children_for_housing_benefit_childcare: 0
-    housing_benefit_applicable_income_childcare_element: 0
-
-- name: One relevant child and an older young person use the one-child cap
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 40
-        is_parent: true
-        childcare_expenses: 30_000
-      child:
         age: 10
-      young_person:
-        age: 17
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 7800
+      child1:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 7800
     benunits:
-      benunit:
-        members: [claimant, child, young_person]
+      family:
+        members: ["claimant","child0","child1"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
   output:
-    num_relevant_children_for_housing_benefit_childcare: 1
-    # Reg 27(3) selects the one-child cap: min(30,000, 312.0555942 * 52).
-    # The existing uprated WTC cap is retained; its difference from the
-    # statutory HB cap of 175/week is outside this classification change.
-    housing_benefit_applicable_income_childcare_element: 16_226.8908984
+    housing_benefit_applicable_income_childcare_element: 15600
 
-- name: Under-18 claimant is not their own relevant child
-  period: 2025
-  input:
-    people:
-      claimant:
-        age: 17
-        childcare_expenses: 9_000
-    benunits:
-      benunit:
-        members: [claimant]
-  output:
-    # 0 dependants implies 0 childcare cap (HB reg 27(3)).
-    num_relevant_children_for_housing_benefit_childcare: 0
-    housing_benefit_applicable_income_childcare_element: 0
-
-- name: Disabled 16-year-old outside education and training is not a relevant young person
-  period: 2025
+- name: "Two children above multiple-child cap"
+  period: 2024
+  absolute_error_margin: 0.02
   input:
     people:
       claimant:
         age: 40
         is_parent: true
-        childcare_expenses: 9_000
-      young_person:
-        age: 16
-        is_disabled_for_benefits: true
-        is_in_non_advanced_education: false
-        is_in_approved_training: false
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+      child1:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
     benunits:
-      benunit:
-        members: [claimant, young_person]
+      family:
+        members: ["claimant","child0","child1"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
   output:
-    # HB reg 28(6) requires a child of the family, including a qualifying
-    # young person; the disability age extension does not create that status.
-    num_relevant_children_for_housing_benefit_childcare: 0
+    housing_benefit_applicable_income_childcare_element: 15600
+
+- name: "Three paid-care children do not increase the family cap"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 8000
+      child1:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 8000
+      child2:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 8000
+    benunits:
+      family:
+        members: ["claimant","child0","child1","child2"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 15600
+
+- name: "Two children but paid care for only one use one-child cap"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 20000
+      child1:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 0
+    benunits:
+      family:
+        members: ["claimant","child0","child1"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 9100
+
+- name: "Older child without qualifying care does not increase cap"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 20000
+      child1:
+        age: 17
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 0
+    benunits:
+      family:
+        members: ["claimant","child0","child1"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 9100
+
+- name: "Charges for an excluded young person are not counted"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 17
+        is_child_or_young_person_for_legacy_benefits: false
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
     housing_benefit_applicable_income_childcare_element: 0
+
+- name: "Negative supplied charges are floored"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: -500
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: "Zero earnings and no tax credits give no deduction"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 0
+        housing_benefit_special_earnings_disregard: 0
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: "Low earnings after standard disregard"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 740
+
+- name: "Standard disregard exhausts earnings"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 260
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: "WTC payment meets residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 500
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 1240
+
+- name: "CTC payment meets residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "Both tax credit payments may meet residual under DWP W2.180"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 500
+        child_tax_credit: 600
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 1840
+
+- name: "Permitted work replaces standard amount before childcare"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 500
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 500
+
+- name: "Accommodation disregard reduces available earnings"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 500
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 240
+
+- name: "Accommodation amount is capped at earnings left"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 1000
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 0
+
+- name: "Special standard amount reduces remaining earnings"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 2000
+        housing_benefit_special_earnings_disregard: 1040
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 960
+
+- name: "Higher lone-parent amount is retained over permitted work"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 2000
+        housing_benefit_special_earnings_disregard: 1300
+        housing_benefit_permitted_work_disregard: 500
+        is_lone_parent: true
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 700
+
+- name: "Additional disregard qualifies at exact childcare-inclusive threshold"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 1000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 2149.2
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: true
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 1000
+    housing_benefit_applicable_income_disregard: 1149.2
+
+- name: "Additional disregard fails just below childcare-inclusive threshold"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 1000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 2149.19
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: true
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 1000
+    housing_benefit_applicable_income_disregard: 260
+
+- name: "Childcare does not recurse through additional disregard with low earnings"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 1000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: true
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 740
+    housing_benefit_applicable_income_disregard: 260
+
+- name: "Explicit one-child cap reform wins"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 9000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 20000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 0
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 100
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+  output:
+    housing_benefit_applicable_income_childcare_element: 5200
+
+- name: "ENGLAND pension regulations false earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "ENGLAND"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "ENGLAND pension regulations true earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: true
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "ENGLAND"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "SCOTLAND pension regulations false earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "SCOTLAND"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "SCOTLAND pension regulations true earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: true
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "SCOTLAND"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "WALES pension regulations false earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "WALES"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "WALES pension regulations true earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: true
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "WALES"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "NORTHERN_IRELAND pension regulations false earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: false
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "NORTHERN_IRELAND"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540
+
+- name: "NORTHERN_IRELAND pension regulations true earnings and CTC residual"
+  period: 2024
+  absolute_error_margin: 0.02
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 0
+        is_claimant_or_partner: true
+      child0:
+        age: 10
+        is_child_or_young_person_for_legacy_benefits: true
+        housing_benefit_qualifying_childcare_charges: 2000
+    benunits:
+      family:
+        members: ["claimant","child0"]
+        housing_benefit_net_earnings: 1000
+        housing_benefit_special_earnings_disregard: 260
+        housing_benefit_permitted_work_disregard: 0
+        is_lone_parent: false
+        housing_benefit_specified_or_temporary_accommodation_disregard: 0
+        working_tax_credit: 0
+        child_tax_credit: 800
+        meets_housing_benefit_additional_earnings_disregard_conditions: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_pension_age_regulations_apply: true
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_1: 175
+    gov.dwp.tax_credits.working_tax_credit.elements.childcare_2: 300
+    households:
+      household:
+        members: ["claimant","child0"]
+        country: "NORTHERN_IRELAND"
+  output:
+    housing_benefit_applicable_income_childcare_element: 1540

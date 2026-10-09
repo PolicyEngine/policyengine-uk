@@ -1,0 +1,1 @@
+- Limit Housing Benefit childcare deductions to pre-assessed qualifying charges, the paid-care child-count cap, and remaining earnings plus tax-credit payments.
