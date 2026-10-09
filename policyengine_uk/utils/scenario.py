@@ -5,6 +5,7 @@ from policyengine_core.reforms import Reform
 from policyengine_core.periods import period, instant
 from policyengine_uk.utils.parameters import (
     check_parameter_not_removed,
+    reblend_dated_reforms,
     uk_fiscal_year_period,
 )
 
@@ -23,7 +24,8 @@ def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
     # ``applied_before_data_load`` is set on the Scenario afterwards, so the
     # simulation's populations (created by data load) are the phase signal.
     if getattr(simulation, "populations", None) is None:
-        reform.apply(simulation.tax_benefit_system)
+        with reblend_dated_reforms(simulation.tax_benefit_system):
+            reform.apply(simulation.tax_benefit_system)
     else:
         simulation.apply_reform(reform)
     # Adding or replacing parameter nodes does not clear the per-node
@@ -158,40 +160,43 @@ class Scenario(BaseModel):
             # Make sure to capture YYYY-MM-DD.YYYY-MM-DD.
 
             def modifier(sim: Simulation):
-                for parameter in reform:
-                    check_parameter_not_removed(parameter)
-                    target = sim.tax_benefit_system.parameters.get_child(parameter)
-                    if isinstance(reform[parameter], dict):
-                        for period_str, value in reform[parameter].items():
-                            if "." in period_str:
-                                start = instant(period_str.split(".")[0])
-                                stop = instant(period_str.split(".")[1])
-                                period_ = None
-                            else:
-                                start = None
-                                stop = None
-                                period_ = (
-                                    uk_fiscal_year_period(period_str)
-                                    if target.metadata.get("preserve_calendar_dates")
-                                    else period(period_str)
+                with reblend_dated_reforms(sim.tax_benefit_system):
+                    for parameter in reform:
+                        check_parameter_not_removed(parameter)
+                        target = sim.tax_benefit_system.parameters.get_child(parameter)
+                        if isinstance(reform[parameter], dict):
+                            for period_str, value in reform[parameter].items():
+                                if "." in period_str:
+                                    start = instant(period_str.split(".")[0])
+                                    stop = instant(period_str.split(".")[1])
+                                    period_ = None
+                                else:
+                                    start = None
+                                    stop = None
+                                    period_ = (
+                                        uk_fiscal_year_period(period_str)
+                                        if target.metadata.get(
+                                            "preserve_calendar_dates"
+                                        )
+                                        else period(period_str)
+                                    )
+                                target.update(
+                                    start=start,
+                                    stop=stop,
+                                    period=period_,
+                                    value=value,
                                 )
+                        else:
+                            start = instant("2023-01-01")
+                            stop = None
+                            period_ = None
+
                             target.update(
                                 start=start,
                                 stop=stop,
                                 period=period_,
-                                value=value,
+                                value=reform[parameter],
                             )
-                    else:
-                        start = instant("2023-01-01")
-                        stop = None
-                        period_ = None
-
-                        target.update(
-                            start=start,
-                            stop=stop,
-                            period=period_,
-                            value=reform[parameter],
-                        )
 
             return Scenario(
                 simulation_modifier=modifier,

@@ -188,6 +188,53 @@ rate: every later year stays one 1 April step behind. Reform classes and legacy
 reform dictionaries change the annual values after uprating and are not
 affected.
 
+## Reforms dated part-way through a year
+
+This applies to every parameter with `fiscal_year_blend: true`: the petrol and
+diesel, road fuel gas and natural gas duty rates, and the CGT rates. Parameters
+with `preserve_calendar_dates: true` are never converted, so none of this
+applies to them.
+
+**Fiscal-year semantics.** After conversion, a blended parameter holds one
+day-weighted average per model year (6 April to 5 April), written over the
+calendar year with the same label. A bare-year override replaces the whole
+fiscal year. A change dated part-way through a year is replayed on the dated
+schedule and the year is re-averaged: 60p a litre from 1 September 2026 raises
+model year 2026 by 217 of its 365 days at 60p in place of the rates then in
+force, which for 1,200 litres is +£38.26. Before this was fixed, the change
+applied only from the September monthly reading, against a baseline average
+that still included the January and March 2027 increases it replaces, and
+scored +£24.19.
+
+**Accepted syntax.**
+
+- `Reform.from_dict`, and dictionaries passed as `reform=`: a range key
+  `"2026-09-01.2100-12-31"` is a persistent change from 1 September 2026, and a
+  range ending before 5 April (`"2026-09-01.2027-01-31"`) reverts to the
+  schedule afterwards. A single-date key differs between the two:
+  `Reform.from_dict` reads `"2026-09-01"` as from that date onwards, while a
+  plain dictionary reads it as that one day. Several ranges on one parameter can fall in the same
+  fiscal year. On these reforms, 1 January and 31 December are read as
+  model-year boundaries, because that is what they bound on the converted tree:
+  `"2026-01-01.2100-12-31"` and the bare key `"2026"` both change model year
+  2026 onwards in full, exactly as before. A change that really takes effect
+  on 1 January cannot be written this way; write the hand-computed annual
+  values instead.
+- `Scenario(parameter_changes=...)`: a bare year names one fiscal year. A
+  single-date key such as `"2026-09-01"` is a one-day period, not a change from
+  that date onwards: on fuel duty it changes model year 2026 by one day's
+  weight (+£0.23 for the example above). `Scenario` does not accept range keys
+  and raises a `ValueError`; use `Reform.from_dict` for a dated persistent
+  change.
+
+**Scoring a mid-year change.** The day weighting assumes equal daily use across
+the year. Fuel duty, for example, is charged on litres consumed through the
+year, and the model has no seasonal profile, so a change from 1 October to
+31 March takes 182/365 of the year's litres, not the share actually bought in
+those months. Monthly
+`fuel_duty` still reads the model-year rate in each calendar month, so a
+reform's effect shows in every month of the model year, not only from its date.
+
 ## Population data follow-ups
 
 These formulas do not impute quantities or vehicle characteristics from the
