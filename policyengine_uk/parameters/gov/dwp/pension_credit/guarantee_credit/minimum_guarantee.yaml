@@ -1,4 +1,8 @@
-description: Minimum income guarantee (basic amount) for Pension Credit.
+description: >-
+  Minimum income guarantee (basic amount) for Pension Credit. Values after the
+  last enacted rate use the non-negative May-July average weekly earnings input
+  from the annual statutory review as a forecast floor; they are not enacted
+  future rates.
 SINGLE:
   values:
     2015-04-06: 151.2
@@ -11,10 +15,19 @@ SINGLE:
     2022-04-01: 182.6
     2023-04-01: 201.05
     2024-04-01: 218.15
-    2025-04-01: 221.85
+    2025-04-01:
+      value: 227.1
+      metadata:
+        reference:
+          - title: The Social Security Benefits Up-rating Order 2025 art. 29
+            href: https://www.legislation.gov.uk/uksi/2025/295/article/29/made
+          - title: The Social Security Benefits Up-rating Order (Northern Ireland) 2025 art. 29
+            href: https://www.legislation.gov.uk/nisr/2025/64/article/29/made
+          - title: Benefit and pension rates 2025 to 2026
+            href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
     2026-04-01: 238
   metadata:
-    uprating: gov.benefit_uprating_cpi
+    uprating: gov.economic_assumptions.indices.statutory_earnings_floor
 COUPLE:
   values:
     2015-04-06: 230.85
@@ -27,10 +40,19 @@ COUPLE:
     2022-04-01: 278.7
     2023-04-01: 306.85
     2024-04-01: 332.95
-    2025-04-01: 338.61
+    2025-04-01:
+      value: 346.6
+      metadata:
+        reference:
+          - title: The Social Security Benefits Up-rating Order 2025 art. 29
+            href: https://www.legislation.gov.uk/uksi/2025/295/article/29/made
+          - title: The Social Security Benefits Up-rating Order (Northern Ireland) 2025 art. 29
+            href: https://www.legislation.gov.uk/nisr/2025/64/article/29/made
+          - title: Benefit and pension rates 2025 to 2026
+            href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
     2026-04-01: 363.25
   metadata:
-    uprating: gov.benefit_uprating_cpi
+    uprating: gov.economic_assumptions.indices.statutory_earnings_floor
 metadata:
   period: week
   label: Pension Credit minimum guarantee
@@ -40,3 +62,9 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/6/2021-04-12
     - title: Benefit and pension rates 2026 to 2027
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: Social Security Administration Act 1992 section 150A
+      href: https://www.legislation.gov.uk/ukpga/1992/5/section/150A
+    - title: Social Security Administration (Northern Ireland) Act 1992 section 132A
+      href: https://www.legislation.gov.uk/ukpga/1992/8/section/132A
+    - title: A14/2025 Housing Benefit uprating for the financial year ending March 2027
+      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2025/a142025-housing-benefit-uprating-for-the-financial-year-ending-march-2027

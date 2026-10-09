@@ -99,3 +99,69 @@
   output:
     # 12,000 > 208.07 * 52, but no claimant reached SPA before the cutoff.
     is_savings_credit_eligible: false
+
+- name: Case 6, 2025 single claimant below the published threshold is ineligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        # One penny below 198.27 * 52.
+        savings_credit_income: 10_310.03
+  output:
+    is_savings_credit_eligible: false
+
+- name: Case 7, 2025 couple below the published threshold is ineligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+      person2:
+        age: 78
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person, person2]
+        relation_type: COUPLE
+        savings_credit_income: 16_000
+  output:
+    is_savings_credit_eligible: false
+
+- name: Case 8, 2025 single claimant above the published threshold is eligible.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 80
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        # One penny above 198.27 * 52.
+        savings_credit_income: 10_310.05
+  output:
+    is_savings_credit_eligible: true
+
+- name: Case 9, 2027 uses the threshold derived from the two projection bases.
+  period: 2027
+  input:
+    people:
+      person:
+        age: 82
+        state_pension_age: 60
+    benunits:
+      benunit:
+        members: [person]
+        relation_type: SINGLE
+        savings_credit_income: 11_000
+  output:
+    # The projected weekly threshold is about 216.71465, or 11,269.16 a year.
+    is_savings_credit_eligible: false

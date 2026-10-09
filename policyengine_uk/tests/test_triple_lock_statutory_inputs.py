@@ -4,9 +4,10 @@ The April uprating of the State Pension uses September CPI and May-July
 earnings growth from the previous year. These tests check that forecasts of
 those inputs follow the OBR where it publishes them, fall back to
 calendar-year growth after, respond to macro scenarios applied before the
-data load, and can be set directly; and that the earnings-path guarantee
-models one reading of the plan announced in September 2026 as a
-parameter reform.
+data load, and can be set directly. They also check that Pension Credit uses
+the same May-July earnings input without inheriting the CPI and 2.5% elements
+of the State Pension triple lock, and that the earnings-path guarantee models
+one reading of the plan announced in September 2026 as a parameter reform.
 """
 
 import numpy as np
@@ -43,8 +44,19 @@ def uprating(parameters, year):
     return parameters.gov.economic_assumptions.yoy_growth.triple_lock(f"{year}-01-01")
 
 
+def statutory_earnings_floor(parameters, year):
+    return parameters.gov.economic_assumptions.yoy_growth.statutory_earnings_floor(
+        f"{year}-01-01"
+    )
+
+
 def new_state_pension_weekly(parameters, year):
     return parameters.gov.dwp.state_pension.new_state_pension.amount(f"{year}-06-01")
+
+
+def minimum_guarantee_weekly(parameters, relation_type, year):
+    guarantee = parameters.gov.dwp.pension_credit.guarantee_credit.minimum_guarantee
+    return getattr(guarantee, relation_type)(f"{year}-06-01")
 
 
 def statutory_inputs(parameters):
@@ -61,6 +73,42 @@ def test_april_2027_uses_published_may_july_2026_earnings():
     assert new_state_pension_weekly(parameters, 2027) == pytest.approx(
         241.30 * 1.039, abs=0.005
     )
+
+
+def test_pension_credit_uses_the_state_pension_statutory_earnings_input():
+    parameters = system.parameters
+
+    assert statutory_inputs(parameters).awe_total_pay_may_july(
+        "2026-07-01"
+    ) == pytest.approx(0.039)
+    assert statutory_earnings_floor(parameters, 2027) == pytest.approx(0.039)
+    assert minimum_guarantee_weekly(parameters, "SINGLE", 2027) == pytest.approx(
+        238 * 1.039, rel=1e-5
+    )
+    assert minimum_guarantee_weekly(parameters, "COUPLE", 2027) == pytest.approx(
+        363.25 * 1.039, rel=1e-5
+    )
+
+
+def test_pension_credit_earnings_floor_rounds_and_never_reduces_the_guarantee():
+    parameters = parameters_under(
+        {
+            f"{INPUTS}.awe_total_pay_may_july": {
+                "2027": 0.0124,
+                "2028": -0.004,
+            }
+        }
+    )
+
+    assert [
+        statutory_earnings_floor(parameters, year) for year in (2028, 2029)
+    ] == pytest.approx([0.012, 0.0])
+    for relation_type in ("SINGLE", "COUPLE"):
+        guarantee_2027 = minimum_guarantee_weekly(parameters, relation_type, 2027)
+        guarantee_2028 = minimum_guarantee_weekly(parameters, relation_type, 2028)
+        guarantee_2029 = minimum_guarantee_weekly(parameters, relation_type, 2029)
+        assert guarantee_2028 == pytest.approx(guarantee_2027 * 1.012, rel=1e-5)
+        assert guarantee_2029 == pytest.approx(guarantee_2028, rel=1e-5)
 
 
 def test_every_published_year_has_its_own_value():

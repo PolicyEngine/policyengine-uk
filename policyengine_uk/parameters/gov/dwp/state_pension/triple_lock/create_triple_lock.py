@@ -1,4 +1,4 @@
-"""Build the State Pension uprating series from the statutory inputs.
+"""Build statutory earnings and State Pension uprating series.
 
 Each April the basic and new State Pension rise by the highest of:
 
@@ -29,10 +29,13 @@ each year it applies, the pension also rises at least enough to stay on an
 earnings path started from its level in the year before the guarantee first
 applied. Current law leaves it off.
 
-The output parameter ``gov.economic_assumptions.yoy_growth.triple_lock`` holds
-the rate taking effect in April of each year, keyed to 1 January as the other
-growth series are, and runs to one year past the last year of the
-economic-assumption series.
+The output parameters hold the rates taking effect in April of each year,
+keyed to 1 January as the other growth series are. ``triple_lock`` applies the
+State Pension rule. ``statutory_earnings_floor`` holds the non-negative
+earnings component for amounts, including the Pension Credit standard minimum
+guarantee, that section 150A protects without extending the triple lock to
+them. Both run to one year past the last year of the economic-assumption
+series.
 """
 
 from dataclasses import dataclass
@@ -155,6 +158,13 @@ def uprating_rates(years: Dict[int, UpratingYear]) -> Dict[int, float]:
     return rates
 
 
+def statutory_earnings_floor_rates(
+    years: Dict[int, UpratingYear],
+) -> Dict[int, float]:
+    """Return the non-negative earnings rate from each statutory review."""
+    return {year: max(inputs.earnings, 0.0) for year, inputs in years.items()}
+
+
 def _flag(parameter: Parameter, instant: str) -> bool:
     value = parameter(instant)
     return bool(value) if value is not None else False
@@ -200,22 +210,53 @@ def read_uprating_years(parameters: ParameterNode) -> Dict[int, UpratingYear]:
 
 
 def add_triple_lock(parameters: ParameterNode) -> ParameterNode:
-    """Add ``gov.economic_assumptions.yoy_growth.triple_lock``."""
-    rates = uprating_rates(read_uprating_years(parameters))
-    new_parameter = Parameter(
+    """Add the statutory earnings floor and State Pension triple lock."""
+    years = read_uprating_years(parameters)
+    triple_lock_rates = uprating_rates(years)
+    earnings_floor_rates = statutory_earnings_floor_rates(years)
+    triple_lock = Parameter(
         "gov.economic_assumptions.yoy_growth.triple_lock",
         data={
             "description": (
                 "State Pension uprating taking effect in April of each year."
             ),
-            "values": {f"{year}-01-01": rate for year, rate in rates.items()},
+            "values": {
+                f"{year}-01-01": rate for year, rate in triple_lock_rates.items()
+            },
             "metadata": {
                 "unit": "/1",
                 "label": "State Pension uprating rate",
             },
         },
     )
+    parameters.gov.economic_assumptions.yoy_growth.add_child("triple_lock", triple_lock)
+    statutory_earnings_floor = Parameter(
+        "gov.economic_assumptions.yoy_growth.statutory_earnings_floor",
+        data={
+            "description": (
+                "Non-negative May-July average weekly earnings growth used "
+                "as the statutory uprating floor under section 150A."
+            ),
+            "values": {
+                f"{year}-01-01": rate for year, rate in earnings_floor_rates.items()
+            },
+            "metadata": {
+                "unit": "/1",
+                "label": "Statutory earnings uprating floor",
+                "reference": [
+                    {
+                        "title": (
+                            "Social Security Administration Act 1992 section 150A"
+                        ),
+                        "href": (
+                            "https://www.legislation.gov.uk/ukpga/1992/5/section/150A"
+                        ),
+                    }
+                ],
+            },
+        },
+    )
     parameters.gov.economic_assumptions.yoy_growth.add_child(
-        "triple_lock", new_parameter
+        "statutory_earnings_floor", statutory_earnings_floor
     )
     return parameters

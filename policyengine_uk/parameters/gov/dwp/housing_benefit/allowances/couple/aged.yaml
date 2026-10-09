@@ -1,20 +1,36 @@
-description: The following couple personal allowance is provided under the Housing Benefit if at least one member is over the state pension age threshold.
+description: >-
+  Personal allowance for a couple under the pension-age Housing Benefit rules.
+  Amounts after the last enacted rate use a component-weighted forecast and
+  are not enacted future rates.
 values:
   2015-04-01: 270.6
   2021-04-01: 286.05
   2022-04-06: 294.9
   2023-04-01: 324.7
   2024-04-01: 352
-  2025-04-01: 357.98
+  2025-04-01:
+    value: 366
+    metadata:
+      reference:
+        - title: The Social Security Benefits Up-rating Order 2025, Schedule 6 paragraph 1(2)(b)
+          href: https://www.legislation.gov.uk/uksi/2025/295/schedule/6/made
+        - title: The Social Security Benefits Up-rating Order (Northern Ireland) 2025, Schedule 6 paragraph 1(2)(b)
+          href: https://www.legislation.gov.uk/nisr/2025/64/schedule/6/made
+        - title: Benefit and pension rates 2025 to 2026, Housing Benefit personal allowances
+          href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
   2026-04-01: 383.35
 
 metadata:
   period: week
   unit: currency-GBP
   label: Housing benefit aged couple personal allowance
-  uprating: gov.benefit_uprating_cpi
-  reference: 
-    - title: The Housing Benefit Regulations 2006 Schedule 3 sec. 1
-      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=212
+  uprating: gov.dwp.housing_benefit.allowances.protected_pension_age_uprating.couple
+  reference:
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006 Schedule 3 paragraph 1
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/3/paragraph/1
+    - title: The Social Security Benefits Up-rating Order 2026 article 24(6) and Schedule 6
+      href: https://www.legislation.gov.uk/uksi/2026/148/schedule/6/made
     - title: Benefit and pension rates 2024 to 2025 - Policy paper
       href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+    - title: A14/2025 Housing Benefit uprating for the financial year ending March 2027, paragraphs 5, 6 and 20
+      href: https://www.gov.uk/government/publications/housing-benefit-adjudication-circulars-2025/a142025-housing-benefit-uprating-for-the-financial-year-ending-march-2027
