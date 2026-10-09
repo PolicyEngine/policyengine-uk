@@ -18,6 +18,15 @@ class housing_benefit_applicable_income(Variable):
         "income under the Housing Benefit rules."
     )
     reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/regulation/25",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/65",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/31",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/23",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/29",
+        "https://www.legislation.gov.uk/nisr/2006/405/regulation/22",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/64",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/32",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/27",
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/4",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/4",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
@@ -31,19 +40,14 @@ class housing_benefit_applicable_income(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the claimant and partner and, as the model did
-        # before, the programme's own children or young persons. The regulations count
-        # only the claimant's and partner's (HB Regs 2006 reg 25); dropping dependants'
-        # own income is a follow-up. Anyone else in the benefit unit does not count.
+        # HB reg 25(3), pension-age reg 23(3) and NI reg 22(3) exclude
+        # dependent children's own income, even when they share this benefit unit.
         person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_young_person_for_legacy_benefits", period
-        )
+        members = person("is_claimant_or_partner", period)
         pension_age_regulations = benunit(
             "housing_benefit_pension_age_regulations_apply", period
         )
         BENUNIT_MEANS_TESTED_BENEFITS = [
-            "child_benefit",
             "income_support",
             "jsa_income",
             "esa_income",
@@ -61,7 +65,6 @@ class housing_benefit_applicable_income(Variable):
             "maternity_allowance",
             "statutory_sick_pay",
             "statutory_maternity_pay",
-            "ssmg",
         ]
         INCOME_COMPONENTS = [
             "employment_income",

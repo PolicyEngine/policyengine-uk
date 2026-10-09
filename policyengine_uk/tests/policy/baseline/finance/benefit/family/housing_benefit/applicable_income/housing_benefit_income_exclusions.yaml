@@ -1,0 +1,345 @@
+# GB Sch 5 paras 31/65 and reg 25(3); NI Sch 6 paras 32/64 and reg 22(3).
+
+- name: ENGLAND working-age excludes Child Benefit, Social Fund and dependent earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      child:
+        age: 17
+        is_claimant_or_partner: false
+        is_child_or_young_person_for_legacy_benefits: true
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, child]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, child]
+        country: ENGLAND
+  output:
+    housing_benefit_applicable_income: 12000
+
+- name: ENGLAND working-age counts partner income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_child_or_young_person_for_legacy_benefits: false
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, partner]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    housing_benefit_applicable_income: 22400
+
+- name: ENGLAND pension-age excludes Child Benefit, Social Fund and dependent earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      child:
+        age: 17
+        is_claimant_or_partner: false
+        is_child_or_young_person_for_legacy_benefits: true
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, child]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: true
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, child]
+        country: ENGLAND
+  output:
+    housing_benefit_applicable_income: 12000
+
+- name: ENGLAND pension-age counts partner income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_child_or_young_person_for_legacy_benefits: false
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, partner]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: true
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    housing_benefit_applicable_income: 22400
+
+- name: NORTHERN_IRELAND working-age excludes Child Benefit, Social Fund and dependent earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      child:
+        age: 17
+        is_claimant_or_partner: false
+        is_child_or_young_person_for_legacy_benefits: true
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, child]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, child]
+        country: NORTHERN_IRELAND
+  output:
+    housing_benefit_applicable_income: 12000
+
+- name: NORTHERN_IRELAND working-age counts partner income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_child_or_young_person_for_legacy_benefits: false
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, partner]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: false
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, partner]
+        country: NORTHERN_IRELAND
+  output:
+    housing_benefit_applicable_income: 22400
+
+- name: NORTHERN_IRELAND pension-age excludes Child Benefit, Social Fund and dependent earnings
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      child:
+        age: 17
+        is_claimant_or_partner: false
+        is_child_or_young_person_for_legacy_benefits: true
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, child]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: true
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, child]
+        country: NORTHERN_IRELAND
+  output:
+    housing_benefit_applicable_income: 12000
+
+- name: NORTHERN_IRELAND pension-age counts partner income
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 75
+        is_claimant_or_partner: true
+        private_pension_income: 12000
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+        ssmg: 500
+      partner:
+        age: 40
+        is_claimant_or_partner: true
+        is_child_or_young_person_for_legacy_benefits: false
+        employment_income: 10400
+        income_tax: 0
+        national_insurance: 0
+        pension_contributions: 0
+    benunits:
+      family:
+        members: [claimant, partner]
+        child_benefit: 1500
+        income_support: 0
+        esa_income: 0
+        jsa_income: 0
+        tax_credits: 0
+        housing_benefit_pension_age_regulations_apply: true
+        in_receipt_of_guarantee_credit: false
+        in_receipt_of_savings_credit_only: false
+        housing_benefit_on_passporting_benefit: false
+        housing_benefit_tariff_income: 0
+        housing_benefit_applicable_income_disregard: 0
+        housing_benefit_applicable_income_childcare_element: 0
+    households:
+      home:
+        members: [claimant, partner]
+        country: NORTHERN_IRELAND
+  output:
+    housing_benefit_applicable_income: 22400
