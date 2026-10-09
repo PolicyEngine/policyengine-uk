@@ -1,3 +1,6 @@
+# A supplied family amount (extended_childcare_entitlement as an input) with no
+# working parent hours calculated for any child counts for every qualifying
+# child of an eligible age, as before; a supplied zero means nobody receives it.
 - name: Child age 2 with positive entitlement - eligible
   period: 2025
   input:
@@ -63,3 +66,118 @@
       extended_childcare_entitlement: 1500
   output:
     is_child_receiving_extended_childcare: true
+
+- name: A supplied family amount of zero means nobody receives it
+  period: 2026
+  input:
+    person:
+      age: 3
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: true
+      extended_childcare_entitlement: 0
+  output:
+    is_child_receiving_extended_childcare: false
+
+# A child is receiving the working parent entitlement when it gets working
+# parent hours beyond any universal or targeted hours, so a 3- or 4-year-old
+# whose family uses no more than 15 hours a week is on the universal
+# entitlement only.
+- name: Child age 2 in an eligible family is receiving
+  period: 2025
+  input:
+    person:
+      age: 2
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: true
+  output:
+    is_child_receiving_extended_childcare: true
+
+- name: Child age 4 in an eligible family using 30 hours is receiving
+  period: 2025
+  input:
+    person:
+      age: 4
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: true
+  output:
+    is_child_receiving_extended_childcare: true
+    is_child_receiving_universal_childcare: true
+
+- name: Child age 3 in an eligible family using 10 hours is on the universal hours only
+  period: 2025
+  input:
+    person:
+      age: 3
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: true
+      maximum_extended_childcare_hours_usage: 10
+  output:
+    is_child_receiving_extended_childcare: false
+    is_child_receiving_universal_childcare: true
+
+- name: Child age 3 in a family that is not eligible
+  period: 2025
+  input:
+    person:
+      age: 3
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: false
+  output:
+    is_child_receiving_extended_childcare: false
+
+- name: Child age 5 in an eligible family - ineligible due to age
+  period: 2025
+  input:
+    person:
+      age: 5
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: true
+  output:
+    is_child_receiving_extended_childcare: false
+
+- name: Child age 0 in an eligible family - ineligible due to age
+  period: 2025
+  input:
+    person:
+      age: 0
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: true
+  output:
+    is_child_receiving_extended_childcare: false
+
+- name: Child age 0.75 in an eligible family - eligible (2025 parameter)
+  period: 2025
+  input:
+    person:
+      age: 0.75
+    benunit:
+      members: [person]
+      extended_childcare_entitlement_eligible: true
+  output:
+    is_child_receiving_extended_childcare: true
+
+- name: Each child is counted on its own hours, not its sibling's
+  period: 2026
+  input:
+    people:
+      child1:
+        age: 1
+      child2:
+        age: 3
+    benunits:
+      benunit1:
+        members: [child1, child2]
+        extended_childcare_entitlement_eligible: true
+        maximum_extended_childcare_hours_usage: 10
+  output:
+    # The 1-year-old gets 10 working parent hours; the 3-year-old's 10 hours
+    # are within its universal 15.
+    is_child_receiving_extended_childcare: [true, false]
+    is_child_receiving_universal_childcare: [false, true]

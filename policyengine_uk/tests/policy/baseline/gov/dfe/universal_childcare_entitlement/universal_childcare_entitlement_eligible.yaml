@@ -37,3 +37,22 @@
     country: ENGLAND
   output:
     universal_childcare_entitlement_eligible: True
+
+# Childcare Act 2016 s.1(6)(a): the universal hours count towards the working
+# parent's 30 hours, so eligibility for that entitlement does not remove them.
+- name: Child aged 3 in a family eligible for the working parent entitlement stays eligible
+  period: 2026
+  input:
+    people:
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [child]
+        extended_childcare_entitlement_eligible: true
+    households:
+      household:
+        members: [child]
+        country: ENGLAND
+  output:
+    universal_childcare_entitlement_eligible: true

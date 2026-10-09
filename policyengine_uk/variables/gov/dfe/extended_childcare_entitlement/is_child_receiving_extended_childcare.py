@@ -4,29 +4,34 @@ from policyengine_uk.model_api import *
 class is_child_receiving_extended_childcare(Variable):
     value_type = bool
     entity = Person
-    label = "child is eligible for extended childcare entitlement"
+    label = "child is receiving extended childcare entitlement"
+    documentation = (
+        "Whether this child gets working parent hours beyond any universal or "
+        "targeted hours it gets. A 3- or 4-year-old who gets the universal "
+        "hours, in a family using no more than 15 hours a week, is on the "
+        "universal entitlement only. Nobody receives it when the family's "
+        "extended_childcare_entitlement is zero; a positive family amount "
+        "supplied as an input, with no working parent hours calculated for "
+        "any child, counts for every qualifying child of an eligible age."
+    )
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        # Get child's age
-        age = person("age", period)
+        benunit = person.benunit
+        family_amount = benunit("extended_childcare_entitlement", period)
 
-        # Get the parameters for extended childcare entitlement hours by age
+        # Calculated amounts: each child's own working parent hours.
+        child_amount = person("extended_childcare_entitlement_per_child", period)
+        calculated_family_amount = benunit.sum(child_amount)
+
+        # A supplied family amount that no child's calculated hours account
+        # for: attribute it to every qualifying child with hours at its age.
         p = parameters(period).gov.dfe.extended_childcare_entitlement
-
-        # Check if hours > 0 for this age (using the hours parameter)
-        hours_by_age = p.hours.calc(age)
-
         qualifying_child = person(
             "extended_childcare_entitlement_qualifying_child", period
+        ) & (p.hours.calc(person("age", period)) > 0)
+        supplied_only = benunit.project(calculated_family_amount) <= 0
+
+        return (benunit.project(family_amount) > 0) & (
+            (child_amount > 0) | (supplied_only & qualifying_child)
         )
-
-        # Get the benefit unit's extended childcare entitlement amount
-        benunit = person.benunit
-        entitlement_amount = benunit("extended_childcare_entitlement", period)
-
-        # Child is eligible if:
-        # 1. They are a qualifying child of working parents AND
-        # 2. Hours > 0 for this age AND
-        # 3. Benefit unit's entitlement amount > 0
-        return qualifying_child & (hours_by_age > 0) & (entitlement_amount > 0)
