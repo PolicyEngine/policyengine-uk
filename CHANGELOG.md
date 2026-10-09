@@ -1,3 +1,19 @@
+## [2.124.0] - 2026-10-09
+
+### Added
+
+- - Added `benunit_reported_capital`, the benefit unit's recorded savings and investments (such as the FRS's TOTCAPB4; -1 when nothing is recorded). `uc_reported_capital` and `pension_credit_reported_capital` are now formulas that default to it, so a dataset records the observed capital once and each means test derives its own; either can still be set directly. The input uprates like `savings`, as does either programme variable when a dataset stores it directly. Results are unchanged for datasets and situations that do not supply the new input, except as noted under Changed.
+
+### Changed
+
+- - `uc_reported_capital` and `pension_credit_reported_capital` set directly in a situation now apply only to the years they are set, as for any formula variable; later years derive from `benunit_reported_capital`, which is uprated from the year it is set. Before, a value set for one year carried into later years (uprated, for Pension Credit). A dataset that stores `uc_reported_capital` now has it uprated by per-capita GDP, like `savings`, where it used to be held flat; stored `pension_credit_reported_capital` uprates as before.
+
+### Fixed
+
+- - Fixed `build_metadata` reporting the commit of an enclosing git repository, such as a policyengine-uk-data checkout whose virtualenv holds policyengine-uk, as policyengine-uk's `git_sha`. It now reads only policyengine-uk's own checkout or the installer's PEP 610 git record, and otherwise returns `None`.
+- - Add the 15.05% employer Class 1 rate for 2022-23 (Health and Social Care Levy Act 2021 s.5(2)(b)) and its end on 6 November 2022 (Health and Social Care Levy (Repeal) Act 2022 s.2(1)). Model year 2022 now reads 15.05%, as the employee main rate reads 13.25%.
+
+
 ## [2.123.10] - 2026-10-09
 
 ### Fixed
