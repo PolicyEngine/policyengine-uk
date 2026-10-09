@@ -1,0 +1,1 @@
+- Use the separate historical under-65 pensioner Housing Benefit allowances, with jurisdiction-specific category end dates and the existing annual sampling convention.
