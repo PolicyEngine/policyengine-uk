@@ -20,8 +20,13 @@ Invariants, over generated households of one or two benefit units:
    capital is never negative.
 5. Monotonicity: Universal Credit tariff income never falls, and eligibility and
    the award never rise, as recorded capital rises.
-6. Uprating: the input and both programme variables uprate like `savings`, so a
-   dataset that stores any of them projects it the same way.
+6. Uprating: a dataset that stores the input, or either programme variable
+   directly as datasets built before the input did, projects it to later years
+   exactly as it projects `savings`.
+7. Periods: the input set for one year is uprated into later years. A
+   programme variable set directly applies only to the years it is set, as for
+   any formula variable; later years derive from the input (intended: the
+   input carries the uprating).
 """
 
 from pathlib import Path
@@ -31,7 +36,10 @@ import yaml
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import Simulation
+import pandas as pd
+
+from policyengine_uk import Microsimulation, Simulation
+from policyengine_uk.data import UKSingleYearDataset
 
 YEAR = 2025
 SETTINGS = settings(
@@ -210,3 +218,84 @@ def test_recorded_capital_uprates_with_savings():
         assert variables[name].formulas
         assert variables[name].uprating is None
         assert variables[name].default_value == -1
+
+
+def _dataset(benunit_columns, savings):
+    """Three single adults, one per benefit unit and household, aged 30, 50
+    and 75 so that both programmes assess them."""
+    ids = np.arange(1, 4)
+    person = pd.DataFrame(
+        {
+            "person_id": ids,
+            "person_benunit_id": ids,
+            "person_household_id": ids,
+            "age": [30, 50, 75],
+        }
+    )
+    household = pd.DataFrame(
+        {
+            "household_id": ids,
+            "household_weight": 1.0,
+            "region": "LONDON",
+            "rent": 0.0,
+            "tenure_type": "OWNED_OUTRIGHT",
+            "council_tax": 0.0,
+            "savings": savings,
+        }
+    )
+    benunit = pd.DataFrame({"benunit_id": ids, **benunit_columns})
+    return UKSingleYearDataset(
+        person=person, benunit=benunit, household=household, fiscal_year=2025
+    )
+
+
+def test_stored_columns_project_like_savings():
+    recorded = [10_000.0, -1.0, 0.0]
+    savings = [10_000.0, 20_000.0, 30_000.0]
+    for columns in [
+        {"benunit_reported_capital": recorded},
+        # As a dataset built before the input existed stores them.
+        {"uc_reported_capital": recorded, "pension_credit_reported_capital": recorded},
+    ]:
+        sim = Microsimulation(dataset=_dataset(columns, savings))
+        growth = (
+            sim.calculate("savings", 2027).values
+            / sim.calculate("savings", 2025).values
+        )
+        assert np.all(growth > 1)
+        for name in PROGRAMME_VARIABLES:
+            first = sim.calculate(name, 2025).values
+            later = sim.calculate(name, 2027).values
+            np.testing.assert_array_equal(first, recorded)
+            np.testing.assert_allclose(later, np.array(recorded) * growth, rtol=1e-6)
+            # A stored -1 stays negative, so "nothing recorded" survives.
+            assert later[1] < 0
+
+
+def _single_adult(benunit_inputs):
+    return Simulation(
+        situation={
+            "people": {"p": {"age": {"2025": 30}}},
+            "benunits": {"b": {"members": ["p"], **benunit_inputs}},
+            "households": {"h": {"members": ["p"], "savings": {"2025": 50_000}}},
+        }
+    )
+
+
+def test_input_set_once_is_uprated_into_later_years():
+    sim = _single_adult({"benunit_reported_capital": {"2025": 10_000}})
+    index = sim.tax_benefit_system.parameters.get_child(
+        "gov.economic_assumptions.indices.obr.per_capita.gdp"
+    )
+    expected = 10_000 * index("2026-01-01") / index("2025-01-01")
+    for name in PROGRAMME_VARIABLES:
+        assert sim.calculate(name, 2026)[0] == np.float32(expected)
+    assert sim.calculate("uc_assessable_capital", 2026)[0] == np.float32(expected)
+
+
+def test_programme_variable_set_directly_applies_to_its_year_only():
+    """Intended: set the input to have a value carried into later years."""
+    for name in PROGRAMME_VARIABLES:
+        sim = _single_adult({name: {"2025": 3_000}})
+        assert sim.calculate(name, 2025)[0] == 3_000
+        assert sim.calculate(name, 2026)[0] == -1
