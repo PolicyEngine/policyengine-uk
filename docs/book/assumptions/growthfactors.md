@@ -32,6 +32,8 @@ We use HMRC road-fuel clearances and OBR-implied forecast volumes for petrol and
 
 We apply this to: `diesel_spending`, `petrol_spending`
 
+The pump prices that turn spending into litres (`household.consumption.fuel.prices.petrol` and `.diesel`) are DESNZ calendar-year averages (Quarterly Energy Prices tables 4.1.1 and 4.1.2), the same basis Microcosm UK uses to price household fuel spending. The spending growth rates (`petrol_spending_litre_proxy`, `diesel_spending_litre_proxy`) are derived from those prices, so that weighted litres follow the volume path above: (1 + growth) = (1 + volume growth) × price<sub>t</sub> / price<sub>t−1</sub> ÷ (1 + population growth). Whenever the prices change, re-derive the growth rates; a test checks that they match.
+
 ## Average earnings
 
 ```{note}
