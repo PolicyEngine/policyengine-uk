@@ -132,26 +132,30 @@
   output:
     housing_benefit_severe_disability_premium_applies: true
 
-- name: Another benefit unit's adult claimant in the household defeats the severe disability premium
+- name: An adult in another family who is the household head's non-dependant defeats the severe disability premium
   period: 2025
   input:
     people:
       claimant:
         age: 30
         attendance_allowance: 4_000
-      lodger:
+        # The claimant's family is liable for the rent.
+        is_household_head: true
+      non_dependant:
         age: 40
     benunits:
       claimant_unit:
         members: [claimant]
-      lodger_unit:
-        members: [lodger]
+      non_dependant_unit:
+        members: [non_dependant]
     households:
       household:
-        members: [claimant, lodger]
+        members: [claimant, non_dependant]
   output:
-    # The household composition proxy treats another family's claimant as a
-    # non-dependant, as lha_renter_has_non_dependant does.
+    # HB reg 3: the other adult normally resides with the claimant and is not
+    # liable to pay for their occupation, so is a non-dependant; aged 18 or
+    # over with no qualifying benefit, they defeat Sch 3 para 14(2)(a)(ii).
+    is_non_dependant_of_household_head: [false, true]
     housing_benefit_severe_disability_premium_applies: [false, false]
 
 - name: An HB young person who is not a UC qualifying young person blocks both shared rates
