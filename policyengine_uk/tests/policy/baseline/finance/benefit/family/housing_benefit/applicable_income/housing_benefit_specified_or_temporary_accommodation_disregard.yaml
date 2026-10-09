@@ -681,7 +681,7 @@
         weekly_hours: 16
       child:
         age: 5
-        housing_benefit_qualifying_childcare_charges: 2_080 # pre-assessed £40/week
+        childcare_expenses: 2_080 # £40/week; detailed qualifying-care rules deferred
     benunits:
       benunit:
         would_claim_uc: false  # not on Universal Credit, which passports the means test
@@ -929,7 +929,7 @@
     housing_benefit_applicable_income_disregard: 0
     housing_benefit_entitlement: 10400
 
-- name: ENGLAND qualifying childcare uses the remaining earnings in each date segment
+- name: ENGLAND childcare_expenses uses the remaining earnings in each date segment
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -945,7 +945,7 @@
         age: 5
         is_claimant_or_partner: false
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 1000
+        childcare_expenses: 1000
     benunits:
       family:
         members: [parent, child]
@@ -977,10 +977,10 @@
     # Before: £1,300 standard + £1,000 childcare gives £2,700 income.
     # After: accommodation takes all remaining £3,700 earnings, leaving
     # no childcare deduction and no assessable income. HB reg 27/71;
-    # NI regs 25/69: (8,645 × 182 + 10,400 × 183) / 365.
+    # NI regs 24/69: (8,645 × 182 + 10,400 × 183) / 365.
     housing_benefit_entitlement: 9524.904109589042
 
-- name: NORTHERN_IRELAND qualifying childcare uses the remaining earnings in each date segment
+- name: NORTHERN_IRELAND childcare_expenses uses the remaining earnings in each date segment
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -996,7 +996,7 @@
         age: 5
         is_claimant_or_partner: false
         is_child_or_young_person_for_legacy_benefits: true
-        housing_benefit_qualifying_childcare_charges: 1000
+        childcare_expenses: 1000
     benunits:
       family:
         members: [parent, child]
