@@ -55,7 +55,8 @@ class housing_benefit_on_passporting_benefit(Variable):
         )
         # Universal Credit before the benefit cap and deductions: Universal
         # Credit depends on Housing Benefit through the benefit cap
-        # (benefit_cap_reduction), so reading the amount paid
+        # (uc_benefit_cap_reduction, whose total benefit_cap_welfare_benefits
+        # counts Housing Benefit), so reading the amount paid
         # (universal_credit) here would be circular. Before the cap is also
         # the law's reading: entitlement counts whether or not it is paid.
         on_universal_credit = benunit("is_uc_entitled", period) & universal_credit_limb
