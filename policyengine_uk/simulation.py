@@ -250,6 +250,18 @@ class Simulation(CoreSimulation):
         clone._user_input_contexts = list(getattr(self, "_user_input_contexts", ()))
         return clone
 
+    def apply_reform(self, reform) -> None:
+        # policyengine-core's Simulation.apply_reform calls
+        # ``reform.apply(self.tax_benefit_system)``, and core's
+        # Simulation.__init__ binds ``tax_benefit_system.simulation`` before
+        # it applies reforms. This class does not call core's __init__, so
+        # make the binding here. Structural reforms that adjust inputs
+        # (adjust_budgets, disable_simulated_benefits) read it. Binding on
+        # every call also keeps a cloned system pointing at the simulation
+        # that applies the reform rather than the one it was cloned from.
+        self.tax_benefit_system.simulation = self
+        super().apply_reform(reform)
+
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
         # policyengine-core's Simulation.delete_arrays and
@@ -274,6 +286,11 @@ class Simulation(CoreSimulation):
     def apply_parameter_changes(self, changes: dict):
         for parameter in changes:
             check_parameter_not_removed(canonicalize_lsr_parameter_path(parameter))
+        # Keep the processed, unreformed baseline tree. Reloading and
+        # reprocessing would otherwise clone the baseline from the reformed
+        # tree, so anything reading parameters.baseline would compare the
+        # reform with itself (#2188).
+        baseline = self.tax_benefit_system.parameters.children["baseline"]
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:
@@ -293,7 +310,7 @@ class Simulation(CoreSimulation):
             else:
                 p.update(period="year:2000:100", value=changes[parameter])
 
-        self.tax_benefit_system.process_parameters()
+        self.tax_benefit_system.process_parameters(baseline=baseline)
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.
