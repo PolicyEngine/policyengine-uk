@@ -1,0 +1,81 @@
+- name: ENGLAND ordinary capital threshold and partial steps
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: [ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND]
+    housing_benefit_assessable_capital: [6000, 6001, 10000, 10001, 10250, 10251]
+    housing_benefit_residential_capital_exception: [false, false, false, false, false, false]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, false, false, false]
+    in_receipt_of_guarantee_credit: [false, false, false, false, false, false]
+    in_receipt_of_savings_credit_only: [false, false, false, false, false, false]
+  output:
+    housing_benefit_tariff_income: [0, 52, 832, 884, 884, 936]
+
+- name: ENGLAND residential capital threshold and partial steps
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: [ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND]
+    housing_benefit_assessable_capital: [6000, 6001, 10000, 10001, 10250, 10251]
+    housing_benefit_residential_capital_exception: [true, true, true, true, true, true]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, false, false, false]
+    in_receipt_of_guarantee_credit: [false, false, false, false, false, false]
+    in_receipt_of_savings_credit_only: [false, false, false, false, false, false]
+  output:
+    housing_benefit_tariff_income: [0, 0, 0, 52, 52, 104]
+
+- name: NORTHERN_IRELAND ordinary capital threshold and partial steps
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    housing_benefit_assessable_capital: [6000, 6001, 10000, 10001, 10250, 10251]
+    housing_benefit_residential_capital_exception: [false, false, false, false, false, false]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, false, false, false]
+    in_receipt_of_guarantee_credit: [false, false, false, false, false, false]
+    in_receipt_of_savings_credit_only: [false, false, false, false, false, false]
+  output:
+    housing_benefit_tariff_income: [0, 52, 832, 884, 884, 936]
+
+- name: NORTHERN_IRELAND residential capital threshold and partial steps
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    country: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    housing_benefit_assessable_capital: [6000, 6001, 10000, 10001, 10250, 10251]
+    housing_benefit_residential_capital_exception: [true, true, true, true, true, true]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, false, false, false]
+    in_receipt_of_guarantee_credit: [false, false, false, false, false, false]
+    in_receipt_of_savings_credit_only: [false, false, false, false, false, false]
+  output:
+    housing_benefit_tariff_income: [0, 0, 0, 52, 52, 104]
+
+- name: Omitted residential status retains the ordinary threshold
+  period: 2025
+  input:
+    housing_benefit_assessable_capital: 10001
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_residential_capital_exception: false
+    housing_benefit_tariff_income: 884
+
+- name: Specified accommodation alone does not establish the capital exception
+  period: 2025
+  input:
+    in_specified_or_temporary_accommodation: true
+    housing_benefit_assessable_capital: 10001
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_residential_capital_exception: false
+    housing_benefit_tariff_income: 884
+
+- name: Pension-age tariff and passports are not changed by residential status
+  period: 2025
+  input:
+    housing_benefit_assessable_capital: [10001, 10001, 10001]
+    housing_benefit_residential_capital_exception: [true, true, true]
+    housing_benefit_pension_age_regulations_apply: [true, true, true]
+    in_receipt_of_guarantee_credit: [false, true, false]
+    in_receipt_of_savings_credit_only: [false, false, true]
+  output:
+    housing_benefit_tariff_income: [52, 0, 0]
