@@ -59,7 +59,7 @@ benunit worked. PolicyEngine computes it via `ctc_entitlement`, gated by
 
 | Element | Parameter |
 |---------|-----------|
-| Family | `family_element.yaml` (extinct from 2017 for new claims) |
+| Family | `family_element.yaml`: £545 a year from 2003-04 to 2024-25, never uprated. Until 2010-11 it was £1,090 with a child under one (`family_element_baby_addition.yaml`). From 2017-18 it is included only where a child or qualifying young person was born before 6 April 2017 (`eligibility/family_element_born_before.yaml`; Tax Credits Act 2002 s.9(2)(a), CTC Regs 2002 reg 7(2)(a)) |
 | Per qualifying child | `child_element.yaml` |
 | Disabled child addition | `dis_child_element.yaml` |
 | Severely disabled child addition | `severe_dis_child_element.yaml` |
