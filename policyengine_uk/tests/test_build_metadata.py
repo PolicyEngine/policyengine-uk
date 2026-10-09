@@ -167,6 +167,25 @@ def _install_with_direct_url(site_packages: Path, direct_url: object) -> Path:
     return package_root
 
 
+def _git_sha_within(
+    package_root: Path, fifo: Path, seconds: float
+) -> tuple[bool, str | None]:
+    """Look up the sha in a thread; report whether it outlived ``seconds``."""
+    result = {}
+    lookup = threading.Thread(
+        target=lambda: result.update(sha=_get_git_sha(package_root)), daemon=True
+    )
+    lookup.start()
+    lookup.join(timeout=seconds)
+    # Decide before cleanup, which can let a blocked lookup finish late.
+    timed_out = lookup.is_alive()
+    if timed_out:
+        # Release the blocked reader so the thread does not linger.
+        os.close(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK))
+        lookup.join(timeout=5)
+    return timed_out, result.get("sha")
+
+
 def test_git_sha_ignores_enclosing_repository(tmp_path):
     # The policyengine-uk-data build: policyengine-uk installed into a
     # virtualenv inside the uk-data checkout.
@@ -273,17 +292,10 @@ def test_git_sha_does_not_block_on_fifo_pyproject(tmp_path):
     _init_repo(checkout, project_name=None)
     fifo = checkout / "pyproject.toml"
     os.mkfifo(fifo)
-    result = {}
-    lookup = threading.Thread(
-        target=lambda: result.update(sha=_get_git_sha(package_root)), daemon=True
-    )
-    lookup.start()
-    lookup.join(timeout=30)
-    if lookup.is_alive():
-        # Release the blocked reader so the thread can finish.
-        os.close(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK))
-    assert not lookup.is_alive()
-    assert result["sha"] is None
+    timed_out, sha = _git_sha_within(package_root, fifo, seconds=30)
+
+    assert not timed_out
+    assert sha is None
 
 
 def test_git_sha_reads_own_checkout_head(tmp_path):
@@ -548,17 +560,10 @@ def test_git_sha_does_not_block_on_fifo_installer_record(tmp_path):
     fifo = tmp_path / "site-packages" / "policyengine_uk-2.0.0.dist-info"
     fifo = fifo / "direct_url.json"
     os.mkfifo(fifo)
-    result = {}
-    lookup = threading.Thread(
-        target=lambda: result.update(sha=_get_git_sha(package_root)), daemon=True
-    )
-    lookup.start()
-    lookup.join(timeout=30)
-    if lookup.is_alive():
-        # Release the blocked reader so the thread can finish.
-        os.close(os.open(fifo, os.O_WRONLY | os.O_NONBLOCK))
-    assert not lookup.is_alive()
-    assert result["sha"] is None
+    timed_out, sha = _git_sha_within(package_root, fifo, seconds=30)
+
+    assert not timed_out
+    assert sha is None
 
 
 def test_git_sha_reads_installer_record_of_the_loaded_copy(tmp_path, monkeypatch):
