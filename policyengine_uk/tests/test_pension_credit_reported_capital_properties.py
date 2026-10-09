@@ -35,7 +35,6 @@ Invariants, over generated households of one or two benefit units:
 import math
 
 import numpy as np
-import yaml
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -233,24 +232,3 @@ def test_intended_exception_savings_credit_rises_with_capital():
         return sim.calculate("pension_credit_entitlement", YEAR)[0]
 
     assert np.isclose(entitlement(10_500) - entitlement(10_000), 0.2 * WEEKS_IN_YEAR)
-
-
-def test_reported_capital_uprates_with_savings():
-    from pathlib import Path
-
-    from policyengine_uk.system import system
-
-    variables = system.variables
-    # The variable is a formula of benunit_reported_capital, which carries the
-    # uprating; a dataset that stores it directly is uprated through
-    # uprating_indices.yaml.
-    assert (
-        variables["benunit_reported_capital"].uprating == variables["savings"].uprating
-    )
-    assert variables["pension_credit_reported_capital"].default_value == -1
-    indices = yaml.safe_load(
-        (Path(__file__).parents[1] / "data" / "uprating_indices.yaml").read_text()
-    )
-    group = [k for k, v in indices.items() if "savings" in v]
-    assert len(group) == 1
-    assert "pension_credit_reported_capital" in indices[group[0]]

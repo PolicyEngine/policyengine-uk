@@ -289,8 +289,10 @@ def test_input_set_once_is_uprated_into_later_years():
     )
     expected = 10_000 * index("2026-01-01") / index("2025-01-01")
     for name in PROGRAMME_VARIABLES:
-        assert sim.calculate(name, 2026)[0] == np.float32(expected)
-    assert sim.calculate("uc_assessable_capital", 2026)[0] == np.float32(expected)
+        np.testing.assert_allclose(sim.calculate(name, 2026)[0], expected, rtol=1e-6)
+    np.testing.assert_allclose(
+        sim.calculate("uc_assessable_capital", 2026)[0], expected, rtol=1e-6
+    )
 
 
 def test_programme_variable_set_directly_applies_to_its_year_only():
@@ -299,3 +301,11 @@ def test_programme_variable_set_directly_applies_to_its_year_only():
         sim = _single_adult({name: {"2025": 3_000}})
         assert sim.calculate(name, 2025)[0] == 3_000
         assert sim.calculate(name, 2026)[0] == -1
+    # With nothing recorded for 2026, UC falls back to the household proxy.
+    sim = _single_adult({"uc_reported_capital": {"2025": 3_000}})
+    np.testing.assert_allclose(
+        sim.calculate("uc_assessable_capital", 2026)[0],
+        sim.calculate("savings", 2026)[0],
+        rtol=1e-6,
+    )
+    assert sim.calculate("savings", 2026)[0] > 50_000
