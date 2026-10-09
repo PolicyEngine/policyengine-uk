@@ -19,12 +19,14 @@ Invariants:
    stand for 2026-27 and SSCBA 1992 s.15(3), not from the parameter files.
 2. Cash freeze: PT, UEL, ST, LPL and UPL are identical in every year
    2026-2030.
-3. Indexation resumes from the frozen level: from 2031, each threshold is its
-   2030 value times CPI(Y) / CPI(2030). There is no catch-up to the path the
-   threshold would have followed without the freeze.
-4. Alignment: 52 x PT = LPL = personal allowance in every year 2024-2040;
-   52 x UEL = UPL in every year 2021-2040; and UPL = personal allowance +
-   basic rate limit in every year 2021-2030.
+3. After the freeze: from 2031 the PT, UEL, LPL and UPL stay aligned with
+   the income tax thresholds, which Income Tax Act 2007 ss21 and 57 index by
+   September CPI, and the ST rises by September CPI, each from its frozen
+   level with no catch-up. test_threshold_indexation.py tests this.
+4. Alignment, in test_threshold_indexation.py: the UEL and UPL with the
+   higher rate threshold in every year 2021-2040, and the PT and LPL with the
+   personal allowance from 2023. The 2021-22 and 2022-23 lower thresholds
+   are intended exceptions, and the 2023-24 LPL is #1968.
 5. No cash cuts: no threshold falls from one year to the next, 2026-2040.
 6. Differential: for any earnings or profits >= 0 in 2026-2030, primary and
    additional Class 1, secondary Class 1 and Class 4 equal an exact-rational
@@ -139,19 +141,7 @@ def test_frozen_thresholds_hold_in_cash_terms(system, name):
     assert len(set(values.values())) == 1, values
 
 
-# Invariant 3: indexation resumes from the frozen level.
-@pytest.mark.parametrize("name", FROZEN)
-def test_indexation_resumes_from_frozen_level(system, name):
-    base = threshold(system, name, 2030)
-    for year in range(2031, 2041):
-        expected = base * cpi(system, year) / cpi(system, 2030)
-        assert threshold(system, name, year) == pytest.approx(expected, rel=1e-9), (
-            name,
-            year,
-        )
-    # One year of CPI in 2031, not the cumulative rise since 2026.
-    first_step = threshold(system, name, 2031) / base
-    assert first_step == pytest.approx(cpi(system, 2031) / cpi(system, 2030))
+# Invariants 3 and 4 are in test_threshold_indexation.py.
 
 
 def test_lower_earnings_limit_is_cpi_uprated_from_2026_27(system):
@@ -161,33 +151,6 @@ def test_lower_earnings_limit_is_cpi_uprated_from_2026_27(system):
         assert threshold(system, "lower_earnings_limit", year) == pytest.approx(
             expected, rel=1e-9
         )
-
-
-# Invariant 4: alignment with the income tax thresholds.
-def test_primary_threshold_and_lpl_align_with_personal_allowance(system):
-    for year in range(2024, 2041):
-        income_tax = system.get_parameters_at_instant(str(year)).gov.hmrc.income_tax
-        personal_allowance = float(income_tax.allowances.personal_allowance.amount)
-        pt_annual = 52 * threshold(system, "primary_threshold", year)
-        lpl = threshold(system, "lower_profits_limit", year)
-        assert pt_annual == pytest.approx(personal_allowance, rel=1e-5), year
-        assert lpl == pytest.approx(personal_allowance, rel=1e-9), year
-
-
-def test_uel_and_upl_align(system):
-    for year in range(2021, 2041):
-        uel_annual = 52 * threshold(system, "upper_earnings_limit", year)
-        upl = threshold(system, "upper_profits_limit", year)
-        assert uel_annual == pytest.approx(upl, rel=1e-5), year
-
-
-def test_upl_equals_higher_rate_threshold_through_the_freeze(system):
-    for year in range(2021, 2031):
-        income_tax = system.get_parameters_at_instant(str(year)).gov.hmrc.income_tax
-        personal_allowance = float(income_tax.allowances.personal_allowance.amount)
-        basic_rate_limit = float(income_tax.rates.uk.thresholds[1])
-        upl = threshold(system, "upper_profits_limit", year)
-        assert upl == personal_allowance + basic_rate_limit, year
 
 
 # Invariant 5: no cash cuts.

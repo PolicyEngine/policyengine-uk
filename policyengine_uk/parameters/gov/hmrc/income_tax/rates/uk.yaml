@@ -31,28 +31,46 @@ brackets:
   threshold:
     description: The lower threshold for the higher rate of income tax (and therefore
       the upper threshold of the basic rate)
+    # The basic rate limit. Income Tax Act 2007 s21 indexes it by September CPI,
+    # rounding the result up to a multiple of £100. Finance Act 2021 s5(1) and
+    # (3)(a), as amended by Finance Act 2023 s5 and Finance Act 2026 s10, fixes
+    # it at £37,700 and disapplies s21 for 2022-23 to 2030-31. From the tax year
+    # after the last value below (2031-32),
+    # policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py applies
+    # s21 year by year, so this threshold has no uprating.
     metadata:
       label: Higher rate threshold
       period: year
       reference:
       - href: https://www.legislation.gov.uk/ukpga/2021/26/section/5
         title: Finance Act 2021 s. 5 (1)
+      - href: https://www.legislation.gov.uk/ukpga/2007/3/section/21
+        title: Income Tax Act 2007 s. 21 (indexation)
       unit: currency-GBP
-      uprating: gov.benefit_uprating_cpi
     values:
       2015-04-05: 32000
       2017-04-01: 33500
       2018-04-01: 34500
       2019-04-01: 37500
       2020-04-01: 37500
-      2021-04-01: 37700
-      2027-04-01: 37700
+      2021-04-01:
+        value: 37700
+        metadata:
+          reference:
+            - title: The Income Tax (Indexation) Order 2021 art 2
+              href: https://www.legislation.gov.uk/uksi/2021/111/article/2/made
+      2027-04-01:
+        value: 37700
+        metadata:
+          reference:
+            - title: Finance Act 2021 s. 5 (1), as amended by Finance Act 2023 s. 5 (2)
+              href: https://www.legislation.gov.uk/ukpga/2023/1/section/5/enacted
       2030-04-01:
         value: 37700
         metadata:
           reference:
-            - title: OBR Economic and Fiscal Outlook November 2025
-              href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+            - title: Finance Act 2021 s. 5 (1), as amended by Finance Act 2026 s. 10 (2)
+              href: https://www.legislation.gov.uk/ukpga/2026/11/section/10
 - rate:
     description: The additional rate is the highest tax bracket, with no upper bound
     metadata:

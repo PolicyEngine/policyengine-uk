@@ -44,12 +44,12 @@ from policyengine_core.parameters import Parameter, ParameterNode
 from policyengine_uk.parameters.gov.economic_assumptions.create_statutory_uprating_inputs import (
     AWE_OBSERVATION_MONTH_DAY,
     CPI_OBSERVATION_MONTH_DAY,
+    PUBLISHED_PRECISION,
     last_input_year,
+    round_to_published_precision,
 )
 
 FIRST_UPRATING_YEAR = 2011
-# Published statistics are quoted to one decimal place of a percentage.
-PUBLISHED_PRECISION = Decimal("0.001")
 # Guards the round-up of a guaranteed minimum against floating-point noise,
 # so a ratio of 1.025000000000001 is not taken up to 2.6%.
 RATIO_PRECISION = Decimal("0.000000001")
@@ -64,13 +64,6 @@ def uprating_instant(year: int) -> str:
     for that April. A change keyed to a single day covers only that day.
     """
     return f"{year}-04-30"
-
-
-def round_to_published_precision(rate: float) -> float:
-    """Round a growth rate to 0.1 percentage points, halves away from zero."""
-    return float(
-        Decimal(repr(float(rate))).quantize(PUBLISHED_PRECISION, ROUND_HALF_UP)
-    )
 
 
 def round_up_to_published_precision(rate: float) -> float:

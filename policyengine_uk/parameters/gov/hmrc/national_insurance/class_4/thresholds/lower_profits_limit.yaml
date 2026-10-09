@@ -1,8 +1,15 @@
 description: The Lower Profits Limit is the threshold at which self-employed earners pay the main Class 4 National Insurance rate.
 # Legal status: £12,570 is the standing figure in SSCBA 1992 s.15(3)(a), which
 # stays until altered by order under SSAA 1992 s.141. Budget 2025 commits to
-# keeping it until April 2031. CPI uprating from 2031-32 is a modelling
-# assumption.
+# keeping it until April 2031. From 2031-32 (the tax year after the last value
+# below) the model keeps the limit equal to the personal allowance
+# (policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py). The
+# government has kept the LPL aligned with the personal allowance, which
+# Income Tax Act 2007 s57 indexes by September CPI from 2031-32, and says the
+# LPL will be uprated by September CPI after 2030-31 (Explanatory Memorandum
+# to SI 2026/231 para 5.1). That is announced policy, not law; keeping it
+# equal to the allowance, round-up included, is a modelling assumption
+# consistent with it. The file has no uprating.
 values:
   2015-04-06: 8_060
   2017-04-06: 8_164
@@ -76,7 +83,6 @@ metadata:
   label: NI lower profits limit
   unit: currency-GBP
   period: year
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:
     - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
     - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

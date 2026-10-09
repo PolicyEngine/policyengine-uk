@@ -1,22 +1,42 @@
 description: The Personal Allowance is deducted from general income.
+# Income Tax Act 2007 s57 indexes the allowance by September CPI: the increase
+# is rounded up to a multiple of £10 and added to the previous year's
+# allowance. Finance Act 2021 s5(2) and (3)(b), as amended by Finance Act 2023
+# s5 and Finance Act 2026 s10, fixes it at £12,570 and disapplies s57 for
+# 2022-23 to 2030-31. From the tax year after the last value below (2031-32),
+# policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py applies
+# s57 year by year, so this file has no uprating.
 values:
   2015-04-06: 10_600
   2017-04-06: 11_500
   2018-04-06: 11_850
   2019-04-06: 12_500
-  2021-04-06: 12_570
-  2027-04-06: 12_570
+  2021-04-06:
+    value: 12_570
+    metadata:
+      reference:
+        - title: The Income Tax (Indexation) Order 2021 art 3(a)
+          href: https://www.legislation.gov.uk/uksi/2021/111/article/3/made
+  2027-04-06:
+    value: 12_570
+    metadata:
+      reference:
+        - title: Finance Act 2021 s. 5 (2), as amended by Finance Act 2023 s. 5 (3)
+          href: https://www.legislation.gov.uk/ukpga/2023/1/section/5/enacted
   2030-04-06:
     value: 12_570
     metadata:
       reference:
-        - title: OBR Economic and Fiscal Outlook November 2025
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+        - title: Finance Act 2021 s. 5 (2), as amended by Finance Act 2026 s. 10 (3)
+          href: https://www.legislation.gov.uk/ukpga/2026/11/section/10
 metadata:
   period: year
   label: Personal allowance
   unit: currency-GBP
-  uprating: gov.economic_assumptions.indices.obr.consumer_price_index
   reference:
     - title: Income Tax Act 2007 s. 35
       href: https://www.legislation.gov.uk/ukpga/2007/3/section/35
+    - title: Income Tax Act 2007 s. 57 (indexation)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/57
+    - title: Finance Act 2021 s. 5
+      href: https://www.legislation.gov.uk/ukpga/2021/26/section/5
