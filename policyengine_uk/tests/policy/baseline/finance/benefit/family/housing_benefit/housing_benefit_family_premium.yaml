@@ -1,0 +1,214 @@
+# Cases: none; ordinary; historical lone parent; no longer lone parent; no child.
+- name: ENGLAND pension regime false protected family categories
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: [ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND]
+    housing_benefit_family_premium_category: [NONE, ORDINARY_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, ORDINARY_PROTECTED]
+    is_child_or_young_person_for_legacy_benefits: [true, true, true, true, false]
+    is_lone_parent: [false, true, true, false, true]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, false, false]
+    housing_benefit_eligible: [true, true, true, true, true]
+    eldest_claimant_or_partner_age: [40, 40, 40, 40, 40]
+    is_single_person: [true, false, false, true, false]
+    is_couple: [false, false, false, false, false]
+    benefits_premiums: [100, 100, 100, 100, 100]
+  output:
+    housing_benefit_family_premium: [0, 1051.44, 1154.3999999999999, 1051.44, 0]
+    housing_benefit_applicable_amount: [5068.599999999999, 6120.04, 6223, 6120.04, 5068.599999999999]
+
+# Cases: none; ordinary; historical lone parent; no longer lone parent; no child.
+- name: ENGLAND pension regime true protected family categories
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: [ENGLAND, ENGLAND, ENGLAND, ENGLAND, ENGLAND]
+    housing_benefit_family_premium_category: [NONE, ORDINARY_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, ORDINARY_PROTECTED]
+    is_child_or_young_person_for_legacy_benefits: [true, true, true, true, false]
+    is_lone_parent: [false, true, true, false, true]
+    housing_benefit_pension_age_regulations_apply: [true, true, true, true, true]
+    housing_benefit_eligible: [true, true, true, true, true]
+    eldest_claimant_or_partner_age: [75, 75, 75, 75, 75]
+    is_single_person: [true, false, false, true, false]
+    is_couple: [false, false, false, false, false]
+    benefits_premiums: [100, 100, 100, 100, 100]
+  output:
+    housing_benefit_family_premium: [0, 1051.44, 1051.44, 1051.44, 0]
+    housing_benefit_applicable_amount: [13412, 14463.440000000002, 14463.440000000002, 14463.440000000002, 13412]
+
+# Cases: none; ordinary; historical lone parent; no longer lone parent; no child.
+- name: NORTHERN_IRELAND pension regime false protected family categories
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    housing_benefit_family_premium_category: [NONE, ORDINARY_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, ORDINARY_PROTECTED]
+    is_child_or_young_person_for_legacy_benefits: [true, true, true, true, false]
+    is_lone_parent: [false, true, true, false, true]
+    housing_benefit_pension_age_regulations_apply: [false, false, false, false, false]
+    housing_benefit_eligible: [true, true, true, true, true]
+    eldest_claimant_or_partner_age: [40, 40, 40, 40, 40]
+    is_single_person: [true, false, false, true, false]
+    is_couple: [false, false, false, false, false]
+    benefits_premiums: [100, 100, 100, 100, 100]
+  output:
+    housing_benefit_family_premium: [0, 1051.44, 1154.3999999999999, 1051.44, 0]
+    housing_benefit_applicable_amount: [5068.599999999999, 6120.04, 6223, 6120.04, 5068.599999999999]
+
+# Cases: none; ordinary; historical lone parent; no longer lone parent; no child.
+- name: NORTHERN_IRELAND pension regime true protected family categories
+  period: 2026
+  absolute_error_margin: 0.02
+  input:
+    country: [NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND, NORTHERN_IRELAND]
+    housing_benefit_family_premium_category: [NONE, ORDINARY_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, HISTORICAL_LONE_PARENT_PROTECTED, ORDINARY_PROTECTED]
+    is_child_or_young_person_for_legacy_benefits: [true, true, true, true, false]
+    is_lone_parent: [false, true, true, false, true]
+    housing_benefit_pension_age_regulations_apply: [true, true, true, true, true]
+    housing_benefit_eligible: [true, true, true, true, true]
+    eldest_claimant_or_partner_age: [75, 75, 75, 75, 75]
+    is_single_person: [true, false, false, true, false]
+    is_couple: [false, false, false, false, false]
+    benefits_premiums: [100, 100, 100, 100, 100]
+  output:
+    housing_benefit_family_premium: [0, 1051.44, 1051.44, 1051.44, 0]
+    housing_benefit_applicable_amount: [13412, 14463.440000000002, 14463.440000000002, 14463.440000000002, 13412]
+
+- name: Ordinary family premium published history 2015
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 17.45 * 52
+
+- name: Ordinary family premium published history 2020
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 17.6 * 52
+
+- name: Ordinary family premium published history 2021
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 17.65 * 52
+
+- name: Ordinary family premium published history 2022
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 17.85 * 52
+
+- name: Ordinary family premium published history 2023
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 18.53 * 52
+
+- name: Ordinary family premium published history 2024
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 19.15 * 52
+
+- name: Ordinary family premium published history 2025
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 19.48 * 52
+
+- name: Ordinary family premium published history 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: false
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 20.22 * 52
+
+- name: Before closure ordinary family premium needs no historical category
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: true
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium_category: NONE
+    housing_benefit_family_premium: 17.45 * 52
+
+- name: Missing category in closure year does not presume a protected claim
+  period: 2016
+  input:
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: true
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium_category: NONE
+    housing_benefit_family_premium: 0
+
+- name: Parameter reform overrides the protected ordinary amount
+  period: 2026
+  input:
+    gov.dwp.housing_benefit.premiums.family.amount: 0
+    housing_benefit_family_premium_category: ORDINARY_PROTECTED
+    is_child_or_young_person_for_legacy_benefits: true
+    is_lone_parent: true
+    housing_benefit_pension_age_regulations_apply: false
+  output:
+    housing_benefit_family_premium: 0
+
+- name: Child or young person status excludes an unrelated adult and a looked after child
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_claimant_or_partner: true
+      looked_after:
+        age: 10
+        is_looked_after_by_local_authority: true
+      unrelated_adult:
+        age: 30
+    benunits:
+      family:
+        members: [parent, looked_after, unrelated_adult]
+        housing_benefit_family_premium_category: ORDINARY_PROTECTED
+  output:
+    housing_benefit_family_premium: 0

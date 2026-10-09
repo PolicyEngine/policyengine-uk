@@ -1,0 +1,55 @@
+description: Weekly Housing Benefit ordinary family premium for legally protected awards.
+values:
+  2015-04-01:
+    value: 17.45
+    metadata:
+      reference:
+        title: Housing Benefit 2015 family premium rate
+        href: https://www.legislation.gov.uk/uksi/2015/457/article/17/made
+  2020-04-01:
+    value: 17.6
+    metadata:
+      reference:
+        title: Housing Benefit 2020 family premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2020-to-2021/benefit-and-pension-rates-2020-to-2021
+  2021-04-01:
+    value: 17.65
+    metadata:
+      reference:
+        title: Housing Benefit 2021 family premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2021-to-2022/benefit-and-pension-rates-2021-to-2022
+  2022-04-01:
+    value: 17.85
+    metadata:
+      reference:
+        title: Housing Benefit 2022 family premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024/benefit-and-pension-rates-2023-to-2024
+  2023-04-01:
+    value: 18.53
+    metadata:
+      reference:
+        title: Housing Benefit 2023 family premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2023-to-2024/benefit-and-pension-rates-2023-to-2024
+  2024-04-01:
+    value: 19.15
+    metadata:
+      reference:
+        title: Housing Benefit 2024 family premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2024-to-2025/benefit-and-pension-rates-2024-to-2025
+  2025-04-01:
+    value: 19.48
+    metadata:
+      reference:
+        title: Housing Benefit 2025 family premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+  2026-04-01:
+    value: 20.22
+    metadata:
+      reference:
+        title: Housing Benefit 2026 family premium rate
+        href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+metadata:
+  unit: currency-GBP
+  period: week
+  label: Housing Benefit protected family premium
+  uprating: gov.benefit_uprating_cpi
