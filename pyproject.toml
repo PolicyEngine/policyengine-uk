@@ -51,6 +51,10 @@ include = [
 [tool.hatch.build.targets.wheel]
 packages = ["policyengine_uk"]
 
+# Records the commit the wheel is built from; see hatch_build.py.
+[tool.hatch.build.targets.wheel.hooks.custom]
+path = "hatch_build.py"
+
 [project.optional-dependencies]
 dev = [
     # pytest and wheel are brought in transitively by policyengine-core's
@@ -59,6 +63,8 @@ dev = [
     # does NOT install transitively when installing policyengine-uk[dev],
     # so they must be listed explicitly here.
     "coverage",
+    # Builds wheels in the build hook tests.
+    "hatchling",
     "hypothesis",
     "pytest-cov",
     "pytest-xdist",

@@ -12,6 +12,8 @@ on:
       - .github/**
       - pyproject.toml
       - uv.lock
+      - hatch_build.py
+      - Makefile
   workflow_dispatch:
 
 # A new push to a pull request supersedes the run on its previous head, so
@@ -41,6 +43,49 @@ jobs:
         run: uv pip install --system .
       - name: Smoke-import
         run: python -c "import policyengine_uk; print('import OK')"
+      - name: Check the installed package reports this commit
+        # Outside the checkout, so Python imports the installed wheel, which
+        # hatch_build.py built from this clean checkout.
+        working-directory: ${{ runner.temp }}
+        run: |
+          python - "$(git -C "$GITHUB_WORKSPACE" rev-parse HEAD)" <<'EOF'
+          import sys
+          from policyengine_uk import build_metadata
+
+          head = sys.argv[1]
+          git_sha = build_metadata.get_runtime_metadata()["git_sha"]
+          print(f"{build_metadata.PACKAGE_ROOT}: git_sha={git_sha}")
+          assert "site-packages" in build_metadata.PACKAGE_ROOT.parts
+          assert git_sha == head, f"expected {head}"
+          EOF
+  Release-Build:
+    name: Release build records the commit
+    runs-on: ubuntu-latest
+    steps:
+      # The Publish job in versioning.yaml, without the tag and the upload.
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+            python-version: '3.13'
+      - name: Install package
+        run: uv pip install -e .[dev] --system
+      - name: Install policyengine
+        run: uv pip install policyengine --system
+      - name: Install Wheel and Pytest
+        run: pip3 install wheel setuptools pytest==5.4.3
+      - name: Build package
+        run: make
+      - name: Build a wheel from the sdist
+        # make builds the release wheel from the checkout. Check the sdist
+        # still builds the same package, as building the wheel from it once did.
+        run: uv build --wheel --out-dir "$RUNNER_TEMP/from-sdist" dist/*.tar.gz
+      - name: Check the wheel records this commit
+        run: >-
+          python .github/check_release_build.py dist "$(git rev-parse HEAD)"
+          "$RUNNER_TEMP/from-sdist"
   Lint:
     runs-on: ubuntu-latest
     steps:
