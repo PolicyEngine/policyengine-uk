@@ -1,0 +1,11 @@
+description: Minimum age at which an individual counts as a resident for the council tax discounts. Section 6(5) of the Local Government Finance Act 1992 defines a resident as an individual aged 18 or over who has their sole or main residence in the dwelling; the definition applies in England, Wales and Scotland.
+metadata:
+  economy: false
+  unit: year
+  period: year
+  label: Council tax resident minimum age
+  reference:
+    - title: "Local Government Finance Act 1992, section 6(5)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/6
+values:
+  1993-04-01: 18

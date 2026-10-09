@@ -1,0 +1,11 @@
+description: The multiple of the appropriate percentage discounted where a chargeable dwelling in England has no resident. Section 11(2)(a) of the Local Government Finance Act 1992 gives twice the appropriate percentage, so this is 2 and the familiar 50 per cent is derived rather than printed.
+metadata:
+  economy: false
+  unit: /1
+  period: year
+  label: England council tax no-resident discount multiple
+  reference:
+    - title: "Local Government Finance Act 1992, section 11(2)(a)"
+      href: https://www.legislation.gov.uk/ukpga/1992/14/section/11
+values:
+  1993-04-01: 2

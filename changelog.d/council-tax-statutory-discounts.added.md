@@ -1,0 +1,1 @@
+Added statutory council tax discounts across Great Britain (Local Government Finance Act 1992 sections 11 and 79, and the Council Tax (Discounts, Disregards and Exemptions) (Wales) Regulations 2026): per-nation appropriate-percentage and no-resident-multiple parameters, a derived discount rate variable, and council tax net of discounts.
