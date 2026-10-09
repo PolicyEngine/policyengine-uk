@@ -5,9 +5,9 @@ class expected_sdlt(Variable):
     label = "Stamp Duty (expected)"
     documentation = (
         "Expected annual Stamp Duty Land Tax on the household's own property "
-        "purchases and leases. Population datasets mark only the households "
-        "that buy property in the year as purchasers, so this is "
-        "stamp_duty_land_tax with no further scaling. SDLT paid by "
+        "purchases and leases. The FRS-based datasets impute an annual "
+        "purchaser indicator (a seeded draw at the property purchase rate), "
+        "so this is stamp_duty_land_tax with no further scaling. SDLT paid by "
         "corporations and incident on the household is corporate_sdlt, which "
         "the tax totals count separately."
     )
