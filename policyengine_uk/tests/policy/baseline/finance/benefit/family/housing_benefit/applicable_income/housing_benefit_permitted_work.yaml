@@ -1,0 +1,533 @@
+- name: Permitted work replaces rather than maximises the special standard amount
+  period: 2024
+  input:
+    housing_benefit_special_earnings_disregard_eligible: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 500
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    is_lone_parent: false
+    is_couple: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 500
+
+- name: ENGLAND pension regime false ordinary fallback
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 0
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 260
+
+- name: ENGLAND pension regime false replacement not stacking
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: ENGLAND pension regime false lone parent precedence
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 1040
+    is_lone_parent: true
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 1300
+
+- name: ENGLAND pension regime false net earnings cap
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 500
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 500
+
+- name: ENGLAND pension regime false additional still applies
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: ENGLAND pension regime false additional earnings boundary
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 2889.19
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: ENGLAND pension regime false additional exact equality
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 2889.2
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: ENGLAND pension regime true ordinary fallback
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 0
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 260
+
+- name: ENGLAND pension regime true replacement not stacking
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: ENGLAND pension regime true lone parent precedence
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 1040
+    is_lone_parent: true
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 1300
+
+- name: ENGLAND pension regime true net earnings cap
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 500
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 500
+
+- name: ENGLAND pension regime true additional still applies
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: ENGLAND pension regime true additional earnings boundary
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 2889.19
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: ENGLAND pension regime true additional exact equality
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: ENGLAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 2889.2
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: NORTHERN_IRELAND pension regime false ordinary fallback
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 0
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 260
+
+- name: NORTHERN_IRELAND pension regime false replacement not stacking
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: NORTHERN_IRELAND pension regime false lone parent precedence
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 1040
+    is_lone_parent: true
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 1300
+
+- name: NORTHERN_IRELAND pension regime false net earnings cap
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 500
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 500
+
+- name: NORTHERN_IRELAND pension regime false additional still applies
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: NORTHERN_IRELAND pension regime false additional earnings boundary
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 2889.19
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: NORTHERN_IRELAND pension regime false additional exact equality
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: false
+    housing_benefit_net_earnings: 2889.2
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: NORTHERN_IRELAND pension regime true ordinary fallback
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 0
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 260
+
+- name: NORTHERN_IRELAND pension regime true replacement not stacking
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: NORTHERN_IRELAND pension regime true lone parent precedence
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 1040
+    is_lone_parent: true
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 1300
+
+- name: NORTHERN_IRELAND pension regime true net earnings cap
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 500
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 500
+
+- name: NORTHERN_IRELAND pension regime true additional still applies
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: NORTHERN_IRELAND pension regime true additional earnings boundary
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 2889.19
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2000
+
+- name: NORTHERN_IRELAND pension regime true additional exact equality
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    country: NORTHERN_IRELAND
+    housing_benefit_pension_age_regulations_apply: true
+    housing_benefit_net_earnings: 2889.2
+    housing_benefit_permitted_work_disregard: 2000
+    is_lone_parent: false
+    is_couple: false
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    meets_housing_benefit_additional_earnings_disregard_conditions: true
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2889.2
+
+- name: Permitted work stacks only with separate accommodation amount
+  period: 2027
+  input:
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    housing_benefit_specified_or_temporary_accommodation_disregard: 1000
+    housing_benefit_applicable_income_childcare_element: 0
+    is_lone_parent: false
+    is_couple: true
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 3000
+
+- name: A reform of the lone parent amount retains precedence
+  period: 2024
+  input:
+    gov.dwp.housing_benefit.means_test.income_disregard.lone_parent: 50
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    is_lone_parent: true
+    is_couple: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: false
+  output:
+    housing_benefit_applicable_income_disregard: 2600
+
+- name: Passport still disregards all earnings
+  period: 2024
+  input:
+    housing_benefit_net_earnings: 5000
+    housing_benefit_permitted_work_disregard: 2000
+    housing_benefit_specified_or_temporary_accommodation_disregard: 0
+    housing_benefit_applicable_income_childcare_element: 0
+    is_lone_parent: false
+    is_couple: false
+    meets_housing_benefit_additional_earnings_disregard_conditions: false
+    housing_benefit_on_passporting_benefit: true
+  output:
+    housing_benefit_applicable_income_disregard: 5000

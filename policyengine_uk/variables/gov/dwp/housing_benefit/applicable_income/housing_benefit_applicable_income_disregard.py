@@ -22,9 +22,10 @@ class housing_benefit_applicable_income_disregard(Variable):
         "(SI 2006/213 reg 5(1)(b)). The "
         "£20 standard disregard uses established qualifying routes or an "
         "explicit full-amount pre-assessment, without reconstructing partial "
-        "carer/occupation earnings allocations. The permitted-work "
-        "disregard (Sch 4 para 10A), which replaces paras 3 to 10 but not "
-        "para 18, is not yet modelled here."
+        "carer/occupation earnings allocations. A pre-assessed permitted-work amount "
+        "(housing_benefit_permitted_work_disregard) replaces the ordinary "
+        "standard amount, retaining a higher lone-parent disregard. It does "
+        "not replace the separate accommodation or additional disregard."
     )
     definition_period = YEAR
     unit = GBP
@@ -37,6 +38,10 @@ class housing_benefit_applicable_income_disregard(Variable):
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/12",
         "https://www.legislation.gov.uk/uksi/2026/978/regulation/2",
         "https://www.legislation.gov.uk/nisr/2026/157/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/10A",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/5A",
+        "https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/10A",
+        "https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/5A",
     )
 
     def formula(benunit, period, parameters):
@@ -44,6 +49,18 @@ class housing_benefit_applicable_income_disregard(Variable):
         net_earnings = benunit("housing_benefit_net_earnings", period)
         # Working age Sch 4 paras 4, 7 and 10; pension age Sch 4 paras 2 and 7.
         standard = benunit("housing_benefit_special_earnings_disregard", period)
+        # Working-age para 10A(2) / pension-age para 5A(2): replace the
+        # ordinary amount, except for a higher lone-parent amount. The input
+        # already applies the statutory work and partner-allocation limits.
+        permitted = max_(benunit("housing_benefit_permitted_work_disregard", period), 0)
+        standard = where(
+            permitted > 0,
+            min_(
+                net_earnings,
+                max_(permitted, benunit("is_lone_parent", period) * standard),
+            ),
+            standard,
+        )
         # Working age Sch 4 para 18 (NI Sch 5 para 18), from 5 October 2026:
         # specified or temporary accommodation. It applies alongside paras 3
         # to 10A, none of which excludes it, and takes the earnings they
