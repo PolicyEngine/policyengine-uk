@@ -1,0 +1,1 @@
+- Limited Housing Benefit childcare deductions to remaining earnings plus tax-credit payments while retaining childcare_expenses and the existing age-based cap approximation; deferred detailed qualifying-care rules without adding an input.
