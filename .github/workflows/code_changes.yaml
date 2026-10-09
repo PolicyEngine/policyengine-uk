@@ -10,6 +10,8 @@ on:
       - policyengine_uk/**
       - tests/**
       - .github/**
+      - hatch_build.py
+      - Makefile
   workflow_dispatch:
 
 # This workflow only lints and tests (versioning, publishing and the docs

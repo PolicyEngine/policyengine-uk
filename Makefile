@@ -1,8 +1,11 @@
 .PHONY: docs test test-yaml test-python
 
+# Builds the wheel from the checkout rather than from the sdist (build's
+# default), so hatch_build.py can record the commit: an unpacked sdist has no
+# .git. Both commands give identical artifacts apart from that record.
 all: install
 	pip install build
-	python -m build
+	python -m build --sdist --wheel
 
 install:
 	pip install policyengine
