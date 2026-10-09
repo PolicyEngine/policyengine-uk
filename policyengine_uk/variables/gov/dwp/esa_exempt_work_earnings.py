@@ -39,6 +39,11 @@ class esa_exempt_work_earnings(Variable):
         "self-employment when there is a profit and to employment otherwise. "
         "A loss in one employment is not set against earnings from another "
         "(reg 98(11)), so a self-employment loss counts as nil. The notional "
+        "Class 4 is on the profit itself, reg 99(4)'s chargeable income: "
+        "capital allowances, the trading allowance and losses from another "
+        "trade or an earlier period do not come off it (reg 98(5)(a), (b) "
+        "and (d), and (11)), so the Class 4 profits the shared "
+        "ni_class_4_main is charged on are not used. The notional "
         "National Insurance reads the model's Class 2 and Class 4 parameters "
         "for the year. The transferable (marriage) allowance and other "
         "reliefs reg 99(1) allows are not applied. Enter this variable directly for actual net "
@@ -118,8 +123,21 @@ class esa_exempt_work_earnings(Variable):
         )
         basic_rate = where(scottish, scottish_basic_rate, rates.uk.rates[0])
         notional_tax = basic_rate * max_(0, profit - allowances)
-        # Reg 99(3)(b): Class 4 at the main rate between the profits limits.
-        notional_class_4 = person("ni_class_4_main", period)
+        # Reg 99(3)(b): Class 4 at the main rate on the chargeable income
+        # between the profits limits. Chargeable income (reg 99(4)) is the
+        # reg 98 profit, before capital allowances and the trading allowance
+        # (reg 98(5)(a) and (b)) and with no loss from another trade or an
+        # earlier period set against it (reg 98(5)(d) and (11)), so the
+        # shared ni_class_4_main, charged on ni_class_4_profits, is not used.
+        class_4 = nics.class_4
+        class_4_band = max_(
+            0,
+            min_(profit, class_4.thresholds.upper_profits_limit)
+            - class_4.thresholds.lower_profits_limit,
+        )
+        notional_class_4 = (
+            person("ni_class_4_liable", period) * class_4.rates.main * class_4_band
+        )
         # Reg 99(3)(a), until 5 April 2024: Class 2 at the weekly rate unless
         # the profit is below the small profits threshold or, from 6 April
         # 2022, at or below the lower profits threshold (SSCBA 1992 s.11(4),
@@ -127,7 +145,7 @@ class esa_exempt_work_earnings(Variable):
         class_2_rule = p.gov.dwp.ESA.income.self_employment_class_2
         class_2_due = where(
             class_2_rule.above_lower_profits_threshold,
-            profit > nics.class_4.thresholds.lower_profits_limit,
+            profit > class_4.thresholds.lower_profits_limit,
             profit >= nics.class_2.small_profits_threshold,
         )
         notional_class_2 = (

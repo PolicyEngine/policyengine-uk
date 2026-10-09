@@ -42,3 +42,40 @@
     is_blind: true
   output:
     tv_licence_discount: 1
+
+- name: All aged households qualify before the Pension Credit condition.
+  period: 2019
+  input:
+    age: 75
+    pension_credit: 0
+    is_blind: false
+  output:
+    tv_licence_discount: 1
+
+- name: The 2020-21 discount reflects the 1 August transition.
+  period: 2020
+  absolute_error_margin: 0.000001
+  input:
+    age: 75
+    pension_credit: 0
+    is_blind: false
+  output:
+    tv_licence_discount: 0.3205479452
+
+- name: Pension Credit recipients retain the full 2020-21 discount.
+  period: 2020
+  input:
+    age: 75
+    pension_credit: 1
+    is_blind: false
+  output:
+    tv_licence_discount: 1
+
+- name: The Pension Credit condition applies for all of 2021-22.
+  period: 2021
+  input:
+    age: 75
+    pension_credit: 0
+    is_blind: false
+  output:
+    tv_licence_discount: 0

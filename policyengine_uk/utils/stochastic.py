@@ -25,3 +25,35 @@ def splitmix64_uniform(ids: np.ndarray, salt: int = 0) -> np.ndarray:
     # which would otherwise round near-1 draws up to exactly 1.0.
     draws = (z >> np.uint64(11)).astype(np.float64) / 2.0**53
     return np.minimum(draws, 1.0 - 2.0**-24)
+
+
+def stratified_uniform(
+    strata: np.ndarray, draws: np.ndarray, weights: np.ndarray
+) -> np.ndarray:
+    """Spread records evenly over [0, 1) within each stratum, by weight.
+
+    Records in a stratum are ordered by their draw and each is placed at the
+    midpoint of its slice of the stratum's cumulative weight. The weighted
+    distribution within every stratum is then uniform to within the largest
+    single weight, rather than only in expectation as with independent draws.
+    The result does not depend on the order of the records. A stratum with no
+    positive weight keeps the draws.
+    """
+    strata = np.asarray(strata)
+    draws = np.asarray(draws, dtype=np.float64)
+    weights = np.maximum(np.asarray(weights, dtype=np.float64), 0)
+    order = np.lexsort((draws, strata))
+    _, group = np.unique(strata[order], return_inverse=True)
+    sorted_weights = weights[order]
+    totals = np.bincount(group, weights=sorted_weights)
+    group_starts = np.concatenate([[0.0], np.cumsum(totals)[:-1]])
+    within = np.cumsum(sorted_weights) - group_starts[group] - sorted_weights / 2
+    group_totals = totals[group]
+    positions = np.where(
+        group_totals > 0,
+        within / np.where(group_totals > 0, group_totals, 1),
+        draws[order],
+    )
+    result = np.empty_like(positions)
+    result[order] = positions
+    return np.clip(result, 0, 1.0 - 2.0**-24)

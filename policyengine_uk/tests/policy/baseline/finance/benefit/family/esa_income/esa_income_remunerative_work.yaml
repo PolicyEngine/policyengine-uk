@@ -333,6 +333,68 @@
     esa_income_eligible: true
     esa_income: 5_000
 
+- name: Reg 99's Class 4 is on the profit before capital allowances (reg 98(5))
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        hours_worked: 780
+        self_employment_income: 13_200
+        capital_allowances: 1_000
+        personal_pension_contributions: 5_780
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # The actual Class 4 profits are £13,200 - £1,000 = £12,200, under the
+    # £12,570 lower profits limit, so no Class 4 is due. Reg 99(4)'s
+    # chargeable income takes no capital allowance (reg 98(5)(a) and (b)):
+    # reg 99(3)(b) gives 6% x (£13,200 - £12,570) = £37.80, and reg 99(1)
+    # 20% x £630 = £126. Half the pension contributions, £2,890.
+    # (£13,200 - £126 - £37.80 - £2,890) / 52 = £195.12, within £195.50; on
+    # the actual Class 4 it would be £195.85, over the limit.
+    ni_class_4_main: 0
+    esa_exempt_work_earnings: 195.12
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+    esa_income: 5_000
+
+- name: Reg 99's Class 4 takes no loss from another trade (reg 98(11))
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        hours_worked: 780
+        self_employment_income: 13_200
+        # A loss in a different trade (trading_loss), which Class 4 relieves
+        # (SSCBA 1992 Sch 2 para 3) but reg 98(11) does not set against the
+        # profit.
+        trading_loss: 1_000
+        personal_pension_contributions: 5_780
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # As above: no actual Class 4 on £12,200, but £37.80 of notional Class 4
+    # on the £13,200 profit, so £195.12.
+    ni_class_4_main: 0
+    esa_exempt_work_earnings: 195.12
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+    esa_income: 5_000
+
 - name: A self-employment loss is not set against pay (reg 98(11))
   period: 2025
   absolute_error_margin: 0.01

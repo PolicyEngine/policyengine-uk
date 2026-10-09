@@ -296,3 +296,99 @@ def test_a_stored_zero_never_bars_the_claim():
     removed.tax_benefit_system.neutralize_variable("jsa_income")
     removed.delete_arrays("jsa_income")
     assert eligible(removed)
+
+
+def reporting_family(carer_report, partner_report=None, other_adults=(), **benunit):
+    """A caring award holder who reports income-based JSA, an optional
+    partner who reports it, and adults outside the couple who report it,
+    with £6,250 of capital (£52 a year of tariff income) unless given."""
+    people = {
+        "carer": {
+            "age": {YEAR: 40},
+            "is_claimant_or_partner": {YEAR: True},
+            "receives_carer_benefit": {YEAR: True},
+            "income_support_reported": {YEAR: 1_000},
+            "jsa_income_reported": {YEAR: carer_report},
+        }
+    }
+    if partner_report is not None:
+        people["partner"] = {
+            "age": {YEAR: 42},
+            "is_claimant_or_partner": {YEAR: True},
+            "jsa_income_reported": {YEAR: partner_report},
+        }
+    for i, report in enumerate(other_adults):
+        people[f"other_{i}"] = {
+            "age": {YEAR: 30},
+            "is_claimant_or_partner": {YEAR: False},
+            "current_education": {YEAR: "NOT_IN_EDUCATION"},
+            "jsa_income_reported": {YEAR: report},
+        }
+    members = list(people)
+    capital = benunit.pop("capital", 6_250)
+    return Simulation(
+        situation={
+            "people": people,
+            "benunits": {
+                "family": {
+                    "members": members,
+                    "income_support_assessable_capital": {YEAR: capital},
+                    "jsa_income_assessable_capital": {YEAR: capital},
+                    **benunit,
+                }
+            },
+            "households": {"home": {"members": members}},
+        }
+    )
+
+
+def test_the_formulas_residual_is_no_award():
+    # £10.01 + £41.99 sums a little above £52 in stored precision, so after
+    # £52 of tariff income the formula leaves a sub-penny residual. That
+    # residual is no award, so it does not bar the claim.
+    residual = reporting_family(10.01, 41.99)
+    # A residual above zero, so this case (and the couple's residual in
+    # test_the_couples_residual_is_no_award_beside_another_members_report)
+    # exercises the half-penny rule rather than an exact zero. The residual
+    # exists because core sums the reports in float64.
+    assert 0 < residual.calculate("jsa_income", YEAR)[0] < 0.005
+    assert eligible(residual)
+
+
+def test_an_entered_amount_within_half_a_penny_of_zero_is_no_award():
+    # £0.003 entered beside the carer's own £3,000 report is not what the
+    # reports give, so it is read as entered; within half a penny of zero it
+    # is no award. £0.006 is.
+    def entered(amount):
+        return reporting_family(3_000, capital=0, jsa_income={YEAR: amount})
+
+    assert eligible(entered(0.003))
+    assert not eligible(entered(0.006))
+
+
+def test_the_couples_residual_is_no_award_beside_another_members_report():
+    # An excluded adult's £3,000 makes jsa_income a real award, but on the
+    # couple's own reports (£10.01 + £41.99 against £52 of tariff income) the
+    # award is only a float residual, so it does not bar the claim. A real
+    # penny of award (£52.01 against £52) still does.
+    residual = reporting_family(10.01, 41.99, other_adults=[3_000])
+    assert residual.calculate("jsa_income", YEAR)[0] > 2_999
+    assert eligible(residual)
+    penny = reporting_family(52.01)
+    assert 0.005 < penny.calculate("jsa_income", YEAR)[0] < 0.015
+    assert not eligible(penny)
+
+
+def test_the_couples_award_tolerance_is_half_a_penny():
+    # Beside an excluded adult's £3,000, jsa_income is a real award that the
+    # reports explain, so the couple's own award decides. £52.004 against
+    # £52 of tariff income leaves them £0.004, which is no award; £52.006
+    # leaves £0.006, which bars the claim.
+    def couple_award(report):
+        return reporting_family(report, other_adults=[3_000])
+
+    below, above = couple_award(52.004), couple_award(52.006)
+    assert below.calculate("jsa_income", YEAR)[0] > 2_999
+    assert eligible(below)
+    assert above.calculate("jsa_income", YEAR)[0] > 2_999
+    assert not eligible(above)

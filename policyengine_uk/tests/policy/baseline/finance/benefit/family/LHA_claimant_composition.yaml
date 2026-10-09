@@ -90,7 +90,7 @@
     # Responsibility for a UC QYP blocks A. Existing bedroom formula = 1: B.
     LHA_category: B
 
-- name: Couple aged 30 and 17 is not a single specified renter
+- name: Renter aged 30 whose partner is 17 claims as a single person and is a specified renter
   period: 2025
   input:
     people:
@@ -109,13 +109,42 @@
   output:
     is_couple: true
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    # The partner is not a non-dependant (UC Sch 4 para 9(2)(b)).
     lha_renter_has_non_dependant: false
+    # The partner is under 18 with no reg. 8 circumstance, so the renter
+    # claims as a single person (UC Regs 2013 reg. 3(3)(a)) and is "a member
+    # of a couple claiming as a single person" under 35 (Sch 4 para 28(2);
+    # ADM F3213): shared accommodation.
+    uc_member_of_couple_claims_as_single_person: true
+    is_lha_shared_accommodation_rate_specified_renter: true
+    LHA_category: A
+
+- name: Couple aged 30 and 17 where the partner is within reg. 8 is not a specified renter
+  period: 2025
+  input:
+    people:
+      renter:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        # Reg. 8(1)(c): caring responsibilities, so the couple claim jointly.
+        care_hours: 35
+    benunits:
+      couple:
+        members: [renter, partner]
+    households:
+      home:
+        members: [renter, partner]
+  output:
+    is_couple: true
+    uc_member_of_couple_claims_as_single_person: false
     is_lha_shared_accommodation_rate_specified_renter: false
-    # A partner establishes neither QYP responsibility nor a non-dependant;
-    # couple room = 1: B under the existing bedroom calculation.
+    # Joint renters have one bedroom (Sch 4 para 10(1)(a)): B.
     LHA_category: B
 
-- name: A 17-year-old claimant in another benefit unit blocks the shared rate
+- name: A 17-year-old in another family is a non-dependant of the household head only
   period: 2025
   input:
     people:
@@ -134,13 +163,16 @@
       home:
         members: [renter, apprentice]
   output:
-    lha_renter_has_non_dependant: [true, true]
-    is_lha_shared_accommodation_rate_specified_renter: [false, false]
-    # Other unit's claimant blocks A; 1 + 1 occupant aged 16+ outside = 2: C.
-    # Renter previously A because the other claimant was under 18.
-    LHA_category: [C, C]
+    lha_renter_has_non_dependant: [true, false]
+    is_lha_shared_accommodation_rate_specified_renter: [false, true]
+    # The renter (the household head, the elder) has the apprentice as a
+    # non-dependant: 1 + 1 non-dependant aged 16+ = 2: C. Only the household
+    # head's family has non-dependants from other families (UC Sch 4 para
+    # 9(2)(e)-(f)), so the apprentice's own family has none: single, 17 < 35,
+    # no dependants: A.
+    LHA_category: [C, A]
 
-- name: A 17-year-old student claimant in another unit also blocks the shared rate
+- name: A 17-year-old student in another family is also the household head's non-dependant
   period: 2025
   input:
     people:
@@ -158,12 +190,13 @@
       home:
         members: [renter, student_claimant]
   output:
-    lha_renter_has_non_dependant: [true, true]
-    # Other claimant blocks A even if their age/education meets the QYP test.
-    # 1 + 1 occupant aged 16+ outside = 2: C (renter previously A).
-    LHA_category: [C, C]
+    lha_renter_has_non_dependant: [true, false]
+    # The other family's claimant is the household head's non-dependant even
+    # if their age and education meet the QYP test: 1 + 1 = 2: C. The
+    # student's own family has no non-dependant: A.
+    LHA_category: [C, A]
 
-- name: Rent liability of another benefit unit does not exempt its claimant
+- name: A family liable for rent is not a non-dependant
   period: 2025
   input:
     people:
@@ -183,9 +216,12 @@
         members: [renter, other_renter]
   output:
     eldest_claimant_or_partner_age: [30, 40]
-    lha_renter_has_non_dependant: [true, true]
-    # Conservative proxy retained: 1 + 1 occupant aged 16+ outside = 2: C.
-    LHA_category: [C, C]
+    lha_renter_has_non_dependant: [false, false]
+    # A person liable on a commercial basis for their occupation is not a
+    # non-dependant (UC Sch 4 para 9(2)(d)), so neither family adds a bedroom
+    # to the other. Renter: single, 30 < 35, no non-dependant: A. Household
+    # head (40): 1 bedroom: B.
+    LHA_category: [A, B]
 
 - name: Occupants in a different household do not block the shared rate
   period: 2025
@@ -211,15 +247,19 @@
     # Other renter 40 >= 35; 1 bedroom: B.
     LHA_category: [A, B]
 
-- name: Actual shared accommodation retains its separate route to category A
+- name: Actual shared accommodation gives the shared rate for Housing Benefit only
   period: 2025
   input:
     age: 40
     is_shared_accommodation: true
   output:
     is_lha_shared_accommodation_rate_specified_renter: false
-    # 40 >= 35, but actual shared accommodation independently gives A.
-    LHA_category: A
+    # Universal Credit sets the category by entitlement alone (UC Sch 4 para
+    # 25(2)(b)): 40 >= 35 and 1 bedroom: B, whether or not the accommodation
+    # is shared. Housing Benefit gives the shared rate to a claimant entitled
+    # to one bedroom who lacks exclusive use (HB Regs 2006 reg 13D(2)(a)(ii)).
+    LHA_category: B
+    housing_benefit_LHA_category: A
 
 - name: A disabled 17-year-old renter is excepted from the shared accommodation rate
   # UC Sch 4 para 29(5)(c): a renter under 35 receiving the PIP daily living

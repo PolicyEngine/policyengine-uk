@@ -136,6 +136,7 @@
   absolute_error_margin: 1
   input:
     employment_income: 12570
+    property_rental_income: 2000
     property_income: 2000
   output:
     # Property allowance is £1000, so £1000 taxable at 20%
@@ -146,6 +147,7 @@
   absolute_error_margin: 1
   input:
     employment_income: 60000
+    property_rental_income: 2000
     property_income: 2000
   output:
     # £1000 (after property allowance) all at 40% since employment income
@@ -158,6 +160,7 @@
   absolute_error_margin: 1
   input:
     employment_income: 12570
+    property_rental_income: 2000
     property_income: 2000
   output:
     # £1000 at NEW rate 22%
@@ -168,6 +171,7 @@
   absolute_error_margin: 1
   input:
     employment_income: 60000
+    property_rental_income: 2000
     property_income: 2000
   output:
     # £1000 at NEW rate 42%
@@ -178,6 +182,7 @@
   absolute_error_margin: 1
   input:
     employment_income: 200000
+    property_rental_income: 2000
     property_income: 2000
   output:
     # £1000 at NEW rate 47%
@@ -194,6 +199,7 @@
   input:
     # Person with just personal allowance worth of employment income
     employment_income: 12570
+    property_rental_income: 2000
     property_income: 2000
   output:
     # Property allowance is £1000, so £1000 taxable at 22%
@@ -207,6 +213,7 @@
   absolute_error_margin: 1
   input:
     employment_income: 60000
+    property_rental_income: 2000
     property_income: 2000
   output:
     # £1000 at 42%
