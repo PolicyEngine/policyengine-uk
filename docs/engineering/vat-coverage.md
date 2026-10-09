@@ -92,6 +92,12 @@ vat = (standard rate x full_rate_vat_consumption
       + domestic_energy_vat
 ```
 
+The electricity and gas inputs are priced at Ofgem cap unit rates that
+include VAT at 5%, so `domestic_energy_vat` charges the statutory rates on the
+input divided by 1.05. The divisor is the fixed price-basis parameter
+`gov.simulation.vat.energy_input_price_basis_rate`, not the statutory reduced
+rate, so a reform to a VAT rate leaves the VAT-exclusive base unchanged.
+
 Dividing energy VAT by the household share as well would put part of
 government, charity and exempt-business VAT on electricity bills, and a zero
 rate on domestic electricity would then cost 1/0.7 times the VAT households
