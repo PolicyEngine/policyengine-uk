@@ -39,10 +39,14 @@
   input:
     age: 30
     care_hours: 35
+    # No entitlement to carer's allowance or carer support payment.
+    carers_allowance_pre_overlap: 0
+    carer_support_payment_pre_overlap: 0
     carers_allowance: 0
     carer_support_payment: 0
     working_tax_credit: 0
   output:
+    is_entitled_to_carer_benefit: false
     is_uc_benefit_cap_exempt_specified_benefit: true
     is_uc_benefit_cap_exempt: true
     # HB reg 75F(1)(h)-(ha): entitlement to carer's allowance or carer
@@ -110,8 +114,42 @@
   output:
     housing_benefit_pension_age_regulations_apply: true
     is_housing_benefit_benefit_cap_exempt: true
-    # The UC cap has no age exception (regs 79, 82 and 83).
-    is_uc_benefit_cap_exempt: false
+    # UC regs 79, 82 and 83 have no age exception. A claimant over the
+    # qualifying age can claim UC only on a qualifying claim (SI 2014/1230
+    # reg 60A), for which reg 60C disapplies the cap.
+    is_uc_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+
+- name: SI 2014/1230 reg 60C - joint claimants who have both reached the qualifying age are not capped
+  # Reg 60C: "Where a qualifying claim is made by a single claimant who has,
+  # or joint claimants both of whom have, reached the qualifying age for state
+  # pension credit, regulation 79 ... is not to apply". Reg 60A makes such a
+  # claim possible for tax credit migrants; the model's own eligibility test
+  # does not, so the award is an input.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 72
+      younger:
+        age: 68
+    benunits:
+      benunit:
+        members: [older, younger]
+        universal_credit_pre_benefit_cap: 30_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [older, younger]
+        region: LONDON
+  output:
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    uc_benefit_cap_reduction: 0
+    universal_credit: 30_000
 
 - name: UC regs 79-83 - a mixed-age couple on UC is capped; under reg 5(1)(b) so is their HB
   period: 2025

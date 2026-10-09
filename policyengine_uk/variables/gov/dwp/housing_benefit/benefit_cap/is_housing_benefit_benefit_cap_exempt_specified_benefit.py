@@ -4,12 +4,14 @@ from policyengine_uk.model_api import *
 # some a child or young person, lifts the cap: industrial injuries benefit
 # (HB Regs 2006 reg. 75F(1)(b)), attendance allowance (c), disability living
 # allowance (e), personal independence payment and armed forces independence
-# payment (ea), carer's allowance (h) and carer support payment (ha).
+# payment (ea), and entitlement to carer's allowance (h) or carer support
+# payment (ha).
 SPECIFIED_PERSONAL_BENEFITS = [
     "attendance_allowance",
     "armed_forces_independence_payment",
-    "carers_allowance",
-    "carer_support_payment",
+    # Entitlement, not payment: reg. 75F(1)(h)-(ha) read "is entitled to", so
+    # an overlapping benefit that reduces the payment to nil still counts.
+    "is_entitled_to_carer_benefit",
     "dla",
     "pip_dl",
     "pip_m",
@@ -28,8 +30,9 @@ class is_housing_benefit_benefit_cap_exempt_specified_benefit(Variable):
         "component, industrial injuries benefit, attendance allowance, a war "
         "pension or armed forces compensation, disability living allowance, "
         "personal independence payment, armed forces independence payment, "
-        "carer's allowance or carer support payment. Housing Benefit has no claim by a member of a couple as a "
-        "single person, so the partner's benefits always count. The Universal "
+        "or entitlement to carer's allowance or carer support payment. "
+        "Housing Benefit has no claim by a member of a couple as a single "
+        "person, so the partner's benefits always count. The Universal "
         "Credit LCWRA and carer elements are not Housing Benefit exceptions. "
         "Regulation 75F(1)(g) (a claimant receiving Universal Credit) never "
         "applies: the model pays a family Universal Credit or Housing "

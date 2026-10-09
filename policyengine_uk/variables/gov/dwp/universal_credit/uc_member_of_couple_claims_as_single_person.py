@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import couple_members
 
 
 class uc_member_of_couple_claims_as_single_person(Variable):
@@ -15,8 +14,8 @@ class uc_member_of_couple_claims_as_single_person(Variable):
         "award then has a single claimant's amounts (reg. 36(3)), the "
         "couple's capital (reg. 18(2)) and the deduction joint claimants "
         "would have (reg. 22(3)). False where no member can claim: both "
-        "flagged, a single adult flagged, or a claimant over State Pension "
-        "age."
+        "flagged, a single adult flagged, or a claimant who has reached the "
+        "qualifying age for State Pension Credit."
     )
     definition_period = YEAR
     reference = [
@@ -32,7 +31,7 @@ class uc_member_of_couple_claims_as_single_person(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        ineligible_partner = couple_members(person, period) & person(
+        ineligible_partner = person("is_uc_assessed_claimant", period) & person(
             "uc_is_ineligible_partner", period
         )
         # Reg. 3(3) lets the other member claim; WRA 2012 s. 4(1)(a) and (b)
@@ -40,6 +39,6 @@ class uc_member_of_couple_claims_as_single_person(Variable):
         can_claim = (
             person("is_uc_single_or_joint_claimant", period)
             & person("meets_uc_minimum_age_condition", period)
-            & ~person("is_SP_age", period)
+            & ~person("has_attained_state_pension_credit_qualifying_age", period)
         )
         return benunit.any(ineligible_partner) & benunit.any(can_claim)

@@ -15,7 +15,10 @@ class uc_is_responsible_carer(Variable):
         "couple's choice: datasets and households should supply it where "
         "they know it. Without one, the model takes the claimant who works "
         "fewer hours as the main carer, and the elder where their hours are "
-        "the same."
+        "the same. `hours_worked` is an input that defaults to 0, so for a "
+        "couple entered without hours the default falls to the elder: "
+        "calculator and API users should set `uc_is_responsible_carer` (or "
+        "each member's hours) for a couple with a child."
     )
     reference = [
         dict(

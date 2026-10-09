@@ -1,5 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import couple_members
 
 
 class uc_is_ineligible_partner(Variable):
@@ -44,6 +43,6 @@ class uc_is_ineligible_partner(Variable):
         # member under 16 fails it even where reg. 8 applies; reg. 3(3)(a)
         # then strictly leaves the other member no single claim, which the
         # model does not follow. Where both members fail, neither can claim.
-        couple = couple_members(person, period)
+        couple = person("is_uc_assessed_claimant", period)
         in_couple = person.benunit.sum(couple) == 2
         return couple & in_couple & ~person("meets_uc_minimum_age_condition", period)

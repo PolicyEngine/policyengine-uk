@@ -15,10 +15,19 @@ Invariants, over generated households of one or two benefit units:
    the unit's share of the household's pension-age adults, plus person-level
    sources of the claimant or partner), the formula before this change.
 3. Locality: reporting capital for one unit never changes another unit's
-   assessable capital.
+   assessable capital. The strategy for this property always gives the other
+   unit someone over State Pension age, nothing recorded and household capital,
+   so a leak would show.
 4. Bounds: assessable capital is never negative, and is 0 for a unit with no
    one over State Pension age.
-5. Monotonicity: Pension Credit entitlement never rises with reported capital.
+5. Monotonicity: the guarantee credit never rises with reported capital, and
+   nor does total entitlement when all income is savings credit qualifying
+   income (the generated households have no excluded income).
+   Intended exception (SPCA 2002 s. 3): with income that the savings credit
+   excludes (reg. 9), such as contributory ESA, deemed income from capital
+   phases the savings credit in at 60% but tapers it at only 40% above the
+   minimum guarantee, so entitlement can rise with capital. A pinned case
+   checks that it does.
 6. Deemed income: for reported capital R it is ceil(max(0, R - 10,000) / 500)
    pounds a week (SPC Regs 2002 reg 15(6)).
 """
@@ -26,7 +35,6 @@ Invariants, over generated households of one or two benefit units:
 import math
 
 import numpy as np
-import yaml
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -137,14 +145,37 @@ def test_override_default_bounds_and_deemed_income(case):
             assert np.isclose(capital[i], proxy(people, units, household, i), rtol=1e-6)
 
 
+@st.composite
+def two_unit_households(draw):
+    """Two units; the second has someone over State Pension age, records no
+    capital and shares non-zero household capital, so a leak would show."""
+    people = {
+        "a0": {"age": draw(ages), "state_pension": draw(money)},
+        "b0": {"age": draw(st.sampled_from([67, 72, 80, 90])), "state_pension": 0},
+    }
+    if draw(st.booleans()):
+        people["b1"] = {"age": draw(ages), "state_pension": 0}
+    for person in people.values():
+        person["lifetime_isa_countable_capital"] = draw(st.sampled_from([0, 5_000]))
+    units = [
+        {"members": ["a0"], "reported": -1},
+        {"members": [n for n in people if n.startswith("b")], "reported": -1},
+    ]
+    household = {
+        "savings": draw(st.integers(min_value=1_000, max_value=200_000)),
+        "owned_land": draw(st.sampled_from([0, 25_000])),
+        "corporate_wealth": draw(st.sampled_from([0, 40_000])),
+    }
+    return people, units, household
+
+
 @SETTINGS
-@given(households(), st.integers(min_value=0, max_value=60_000))
+@given(two_unit_households(), st.integers(min_value=0, max_value=60_000))
 def test_locality(case, value):
     people, units, household = case
-    if len(units) < 2:
-        return
-    before = simulate(people, units, household, overrides=[-1, units[1]["reported"]])
-    after = simulate(people, units, household, overrides=[value, units[1]["reported"]])
+    before = simulate(people, units, household, overrides=[-1, -1])
+    after = simulate(people, units, household, overrides=[value, -1])
+    assert before.calculate("pension_credit_assessable_capital", YEAR)[1] > 0
     assert np.isclose(
         before.calculate("pension_credit_assessable_capital", YEAR)[1],
         after.calculate("pension_credit_assessable_capital", YEAR)[1],
@@ -158,33 +189,46 @@ def test_locality(case, value):
     st.integers(min_value=0, max_value=60_000),
 )
 def test_entitlement_never_rises_with_reported_capital(case, a, b):
+    # The generated households have no income the savings credit excludes,
+    # so total entitlement is monotone here; see the intended exception below.
     people, units, household = case
     low, high = sorted([a, b])
     overrides_low = [low] + [u["reported"] for u in units[1:]]
     overrides_high = [high] + [u["reported"] for u in units[1:]]
-    e_low = simulate(people, units, household, overrides_low).calculate(
-        "pension_credit_entitlement", YEAR
-    )[0]
-    e_high = simulate(people, units, household, overrides_high).calculate(
-        "pension_credit_entitlement", YEAR
-    )[0]
-    assert e_high <= e_low + 1e-6
+    low_sim = simulate(people, units, household, overrides_low)
+    high_sim = simulate(people, units, household, overrides_high)
+    for variable in ["guarantee_credit", "pension_credit_entitlement"]:
+        assert (
+            high_sim.calculate(variable, YEAR)[0]
+            <= low_sim.calculate(variable, YEAR)[0] + 1e-6
+        )
 
 
-def test_reported_capital_uprates_with_savings():
-    from pathlib import Path
+def test_intended_exception_savings_credit_rises_with_capital():
+    """SPCA 2002 s. 3: with income the savings credit excludes (contributory
+    ESA, reg. 9), 500 pounds more capital adds 1 pound a week of deemed income
+    to both incomes: amount A rises by 60p and amount B by 40p, so the savings
+    credit rises by 20p a week (10.40 a year)."""
 
-    from policyengine_uk.system import system
+    def entitlement(capital):
+        sim = Simulation(
+            situation={
+                "people": {
+                    "p": {
+                        "age": {str(YEAR): 80},
+                        "state_pension": {str(YEAR): 10_900},
+                        "esa_contrib": {str(YEAR): 1_300},
+                    }
+                },
+                "benunits": {
+                    "b": {
+                        "members": ["p"],
+                        "pension_credit_reported_capital": {str(YEAR): capital},
+                    }
+                },
+                "households": {"h": {"members": ["p"]}},
+            }
+        )
+        return sim.calculate("pension_credit_entitlement", YEAR)[0]
 
-    variables = system.variables
-    assert (
-        variables["pension_credit_reported_capital"].uprating
-        == variables["savings"].uprating
-    )
-    assert variables["pension_credit_reported_capital"].default_value == -1
-    indices = yaml.safe_load(
-        (Path(__file__).parents[1] / "data" / "uprating_indices.yaml").read_text()
-    )
-    group = [k for k, v in indices.items() if "savings" in v]
-    assert len(group) == 1
-    assert "pension_credit_reported_capital" in indices[group[0]]
+    assert np.isclose(entitlement(10_500) - entitlement(10_000), 0.2 * WEEKS_IN_YEAR)

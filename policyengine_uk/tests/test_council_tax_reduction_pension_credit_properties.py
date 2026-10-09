@@ -23,8 +23,10 @@ liability, ND the non-dependant deductions and A the applicable amount:
    nothing otherwise.
 4. Differential: everyone else keeps the previous formula, max(0, L - 0.2 x
    max(0, I - A) - ND) when household savings are within 16,000, where I is the
-   income definition on main before this change, recomputed here from its
-   components rather than read from the variable under test.
+   income definition on main before this change less the schemes' pensioner
+   earnings disregard, both recomputed here (the income from its components,
+   the disregard from the statutory sums) rather than read from the variables
+   under test.
 5. Metamorphic: a guarantee credit recipient's CTR does not change when the
    State Pension changes.
 6. Metamorphic: nor when its savings change.
@@ -257,10 +259,12 @@ BENUNIT_VARIABLES = [
     "savings_credit",
     "pension_credit_income",
     "pension_credit_assessable_capital",
+    "council_tax_reduction_pensioner",
 ]
 # council_tax_reduction_applicable_income on main before this change (1c5b4d04):
 # these incomes and benefits, less income tax, National Insurance and half of
-# pension contributions, floored at zero.
+# pension contributions, floored at zero. Since #2033, a pensioner family's
+# earnings disregard also comes off before the floor.
 MAIN_INCOME_COMPONENTS = [
     "employment_income",
     "self_employment_income",
@@ -282,9 +286,14 @@ MAIN_INCOME_COMPONENTS = [
     "universal_credit",
 ]
 MAIN_DEDUCTIONS = ["income_tax", "national_insurance"]
+# The pensioner earnings disregards in 2026, written out from the law, not
+# read from the parameters: £25 a week for a lone parent, £10 with a partner,
+# £5 otherwise, plus £17.10 (SI 2012/2885 Sch 4 paras 2, 8 and 10; WSI
+# 2013/3029 Sch 3; SSI 2012/319 Sch 2).
+PENSIONER_FLAT_DISREGARD = {"lone_parent": 25, "couple": 10, "single": 5}
+PENSIONER_ADDITIONAL_DISREGARD = 17.10
 HOUSEHOLD_VARIABLES = [
     "council_tax_reduction_maximum_eligible_liability",
-    "council_tax_reduction_household_has_pensioner",
     "savings",
 ]
 
@@ -298,6 +307,40 @@ def guarantee_reform(single_weekly):
         f"{minimum_guarantee}.SINGLE": {period: single_weekly},
         f"{minimum_guarantee}.COUPLE": {period: single_weekly * 1.53},
     }
+
+
+def pensioner_earnings_disregard(sim, claimants):
+    """The schemes' pensioner earnings disregard from the statutory sums.
+
+    Net earnings and the work conditions are Housing Benefit's (tested with
+    #1908); the amounts, the cap at net earnings and the "equal or exceed"
+    earnings test are recomputed here. Zero for families that are not the
+    schemes' pensioners.
+    """
+
+    def read(variable):
+        return np.asarray(sim.calculate(variable, YEAR))[claimants]
+
+    net = read("housing_benefit_net_earnings").astype(float)
+    lone_parent = read("is_lone_parent").astype(bool)
+    couple = read("is_couple").astype(bool)
+    weekly = np.where(
+        lone_parent,
+        PENSIONER_FLAT_DISREGARD["lone_parent"],
+        np.where(
+            couple,
+            PENSIONER_FLAT_DISREGARD["couple"],
+            PENSIONER_FLAT_DISREGARD["single"],
+        ),
+    )
+    standard = np.minimum(weekly * 52, net)
+    additional = PENSIONER_ADDITIONAL_DISREGARD * 52
+    covers = np.round(net, 2) >= np.round(standard + additional, 2)
+    conditions = read(
+        "meets_housing_benefit_additional_earnings_disregard_conditions"
+    ).astype(bool)
+    disregard = standard + np.where(conditions & covers, additional, 0)
+    return np.where(read("council_tax_reduction_pensioner"), disregard, 0)
 
 
 def calculate(units, guarantee=None, **kwargs):
@@ -320,14 +363,14 @@ def calculate(units, guarantee=None, **kwargs):
         0,
         benunit_total(MAIN_INCOME_COMPONENTS)
         - benunit_total(MAIN_DEDUCTIONS)
-        - 0.5 * benunit_total(["pension_contributions"]),
+        - 0.5 * benunit_total(["pension_contributions"])
+        - pensioner_earnings_disregard(sim, claimants),
     )
+    # Each claim's scheme follows its own family's pensioner status.
     values["national"] = np.array(
         [
-            unit["country"] != "ENGLAND" or has_pensioner
-            for unit, has_pensioner in zip(
-                units, values["council_tax_reduction_household_has_pensioner"]
-            )
+            unit["country"] != "ENGLAND" or pensioner
+            for unit, pensioner in zip(units, values["council_tax_reduction_pensioner"])
         ]
     )
     return values

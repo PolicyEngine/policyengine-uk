@@ -3,12 +3,13 @@
 Pension Credit income left out Carer's Allowance and Carer Support Payment,
 although the State Pension Credit Regulations 2002 reg 15(1) prescribe "all
 social security benefits" as income except those they list, and neither is
-listed. Pension-age Housing Benefit counted both. While Guarantee Credit was
-paid, Housing Benefit was passported to its maximum and hid the difference;
-when Guarantee Credit ended, Housing Benefit was assessed on the carer's
-benefit that Pension Credit had ignored. A pensioner couple whose partner
-received Carer's Allowance lost £1,779.24 of net income when private pension
-rose from £9,700 to £9,800 in 2026.
+listed. Pension-age Housing Benefit counted both, and Council Tax Reduction
+counted Carer's Allowance (it does not yet count Carer Support Payment: #1955).
+While Guarantee Credit was paid, both were passported to their maximum and hid
+the difference; when Guarantee Credit ended, both were assessed on the
+Carer's Allowance that Pension Credit had ignored, so a pensioner couple whose
+partner received it lost well over the £100 rise in their private pension at
+that step.
 
 The Scottish Carer Supplement, paid with Carer Support Payment from 15 March
 2026, is the opposite case: SPC Regs reg 15(1)(ri) excepts it from Pension
@@ -22,7 +23,10 @@ Support Payment (Scotland), renting from the council in 2026:
 
 1. Differential: Pension Credit and pension-age Housing Benefit assess the
    same income. Where Guarantee Credit is not paid, Housing Benefit
-   applicable income plus its income disregard equals Pension Credit income.
+   applicable income plus its income disregard equals Pension Credit income
+   plus any Pension Credit paid, which is then savings credit: a
+   savings-credit-only award's Housing Benefit income is the Pension Credit
+   income plus the savings credit payable (HB (SPC) Regs 2006 reg 27(4)(a)).
    The draws have no earnings, no pension contributions and capital of at
    most £10,000, so neither tariff income nor the earnings rules apply.
 2. Boundary: on the private-pension step where Guarantee Credit ends,
@@ -31,24 +35,34 @@ Support Payment (Scotland), renting from the council in 2026:
    cliff, so it is excluded.
 3. Metamorphic: setting the Scottish Carer Supplement to zero changes
    Pension Credit income and Housing Benefit applicable income only through
-   income tax: each plus income tax is unchanged.
+   income tax: each plus income tax is unchanged, Housing Benefit income
+   after taking off the Pension Credit paid (a savings-credit-only award's
+   savings credit, which reg 27(4)(a) adds and which itself moves with the
+   tax on the supplement). This encodes the model's
+   current behaviour, not the law's. The law disregards tax only on income
+   taken into account (SPC Regs reg 17(10); HB (SPC) Regs 2006 reg 33(12)),
+   so the supplement should leave both measures unchanged outright, while
+   the model deducts all income tax, including the tax on the supplement
+   (#1954). When that is fixed, assert the measures themselves are unchanged.
 
 These compare PolicyEngine's own income measures, so they hold whatever
-carer's benefit the model pays. The model does not yet apply the
-overlapping-benefit reduction of Carer's Allowance and Carer Support Payment
-by State Pension (SPC Regs reg 15(4)(a) and (g)).
+carer's benefit the model pays. State Pension overlaps with Carer's Allowance
+and Carer Support Payment and reduces them (Social Security (Overlapping
+Benefits) Regulations 1979 reg 12; Carer Support Payment Regulations 2023 reg
+16(2)), to nil where it is at least as much. So the carer's own State Pension
+is drawn below the carer benefit, which leaves some of it paid; the other
+partner's State Pension is drawn up to £15,000.
 
 Only one member of a couple is drawn as a carer. Two carers in a couple get
 two Pension Credit carer additions (SPC Regs reg 6(8)) but, until the couple
 carer premium is set to twice the single rate, one Housing Benefit carer
 premium, so invariant 2 does not yet hold for them. Disability benefits are
-not drawn: with a carer benefit in payment in the benefit unit, Pension Credit
-withholds its severe disability addition, but the Housing Benefit severe
-disability premium keys on a different disability test.
+not drawn: Pension Credit and Housing Benefit use different severe-disability
+tests and retain different approximations for carers and household composition.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -65,6 +79,22 @@ REGIONS = {
     "ENGLAND": "NORTH_WEST",
     "WALES": "WALES",
     "SCOTLAND": "SCOTLAND",
+}
+# Below the 2026-27 Carer's Allowance and Carer Support Payment of £86.45 a
+# week (£4,495.40 a year), so the overlapping-benefit reduction leaves some of
+# the carer's benefit payable.
+CARER_STATE_PENSION_MAX = 4_400
+# Keep a near-complete overlap in every run: a reported carer award still
+# leaves £95.40 of CSP paid, so the income and supplement properties apply.
+PARTIALLY_OVERLAPPED_SCOTTISH_CARER = {
+    "adults": [{"age": 80, "state_pension": 15_000}],
+    "carer": 0,
+    "carer_state_pension": CARER_STATE_PENSION_MAX,
+    "by_hours": False,
+    "country": "SCOTLAND",
+    "rent": 6_000,
+    "council_tax": 1_500,
+    "savings": 0,
 }
 NO_SCOTTISH_CARER_SUPPLEMENT = {
     "gov.social_security_scotland.carer_support_payment.supplement": {
@@ -91,6 +121,7 @@ def family(draw, countries=tuple(REGIONS)):
     return dict(
         adults=adults,
         carer=draw(st.integers(0, len(adults) - 1)),
+        carer_state_pension=draw(money(CARER_STATE_PENSION_MAX)),
         # The carer qualifies either by caring hours or by a reported award.
         by_hours=draw(st.booleans()),
         country=draw(st.sampled_from(countries)),
@@ -108,13 +139,17 @@ def situation(families):
             names = []
             for j, a in enumerate(fam["adults"]):
                 name = f"p{i}_{k}_{j}"
+                is_carer = j == fam["carer"]
+                state_pension = (
+                    fam["carer_state_pension"] if is_carer else a["state_pension"]
+                )
                 person = {
                     "age": {YEAR: a["age"]},
-                    "state_pension": {YEAR: a["state_pension"]},
+                    "state_pension": {YEAR: state_pension},
                     # All private pension goes to the first adult.
                     "private_pension_income": {YEAR: float(pension) * (j == 0)},
                 }
-                if j == fam["carer"]:
+                if is_carer:
                     if fam["by_hours"]:
                         person["care_hours"] = {YEAR: 35}
                     else:
@@ -152,6 +187,7 @@ def grid(families, reform=None):
             "tv_licence",
             "guarantee_credit",
             "pension_credit_income",
+            "pension_credit",
             "housing_benefit_eligible",
             "housing_benefit_applicable_income",
             "housing_benefit_applicable_income_disregard",
@@ -176,6 +212,7 @@ def assert_carer_benefit_paid(g, i, fam):
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example([PARTIALLY_OVERLAPPED_SCOTTISH_CARER])
 def test_pension_credit_and_housing_benefit_assess_the_same_carer_income(families):
     g = grid(families)
     for i, fam in enumerate(families):
@@ -191,7 +228,10 @@ def test_pension_credit_and_housing_benefit_assess_the_same_carer_income(familie
         before_disregard = (
             hb_income + g["housing_benefit_applicable_income_disregard"][i]
         )
-        pc_income = g["pension_credit_income"][i]
+        # Pension Credit paid without Guarantee Credit is savings credit only,
+        # which HB (SPC) Regs 2006 reg 27(4)(a) adds to the Pension Credit
+        # income.
+        pc_income = g["pension_credit_income"][i] + g["pension_credit"][i]
         assert np.allclose(
             before_disregard[compared], pc_income[compared], atol=0.01
         ), (fam, before_disregard[compared], pc_income[compared])
@@ -199,6 +239,7 @@ def test_pension_credit_and_housing_benefit_assess_the_same_carer_income(familie
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(), min_size=1, max_size=4))
+@example([PARTIALLY_OVERLAPPED_SCOTTISH_CARER])
 def test_net_income_does_not_fall_where_guarantee_credit_ends_for_carers(families):
     g = grid(families)
     net = g["household_net_income"] + g["tv_licence"]
@@ -221,6 +262,7 @@ def test_net_income_does_not_fall_where_guarantee_credit_ends_for_carers(familie
 
 @PROPERTY_SETTINGS
 @given(st.lists(family(countries=("SCOTLAND",)), min_size=1, max_size=4))
+@example([PARTIALLY_OVERLAPPED_SCOTTISH_CARER])
 def test_scottish_carer_supplement_is_not_means_tested_income(families):
     g = grid(families)
     without = grid(families, reform=NO_SCOTTISH_CARER_SUPPLEMENT)
@@ -234,6 +276,11 @@ def test_scottish_carer_supplement_is_not_means_tested_income(families):
         for variable in ["pension_credit_income", "housing_benefit_applicable_income"]:
             with_supplement = g[variable][i] + g["income_tax"][i]
             without_supplement = without[variable][i] + without["income_tax"][i]
+            if variable == "housing_benefit_applicable_income":
+                # Reg 27(4)(a) adds a savings-credit-only award's savings
+                # credit, which moves with the tax on the supplement.
+                with_supplement = with_supplement - g["pension_credit"][i]
+                without_supplement = without_supplement - without["pension_credit"][i]
             # Only where the zero floor does not bind in either run.
             compared = (g[variable][i] > 0) & (without[variable][i] > 0)
             assert np.allclose(

@@ -26,15 +26,31 @@ claimant alone with the children ("solo"). Invariants:
    No one is self-employed, so the minimum income floor (reg. 62, with
    reg. 90(3)(b) for this case) is not engaged.
 4. Capital (reg. 18(2)): the single claim's capital equals the joint
-   claimants', the other member's Lifetime ISA included.
-5. Benefit cap: the Universal Credit single-claimant rate applies exactly
-   when no child is in the family (reg. 80A(2)); the other member's
-   disability benefits, LCWRA, caring, AFCS and contributory ESA lift no
-   Universal Credit cap (reg. 83(1)), so the exceptions equal the joint
-   claimants' with those removed. Housing Benefit has no single claim by a
-   member of a couple, so its cap rate, exceptions and shared accommodation
-   test (HB Regs 2006 regs. 2(1), 13D(2), 75CA, 75E, 75F) and its LHA
-   category are the joint claimants' whatever the flag.
+   claimants', and the sum of each member's capital calculated alone, the
+   other member's Lifetime ISA included.
+5. Benefit cap: in families whose children are all under 16, the
+   Universal Credit single-claimant rate applies exactly when there is no
+   child (reg. 80A(2); a 16 or 17-year-old is a qualifying young person only
+   in qualifying education, which the generator leaves unset). The other
+   member's disability benefits, LCWRA, caring, AFCS and contributory ESA
+   lift no Universal Credit cap (reg. 83(1)), so the Universal Credit
+   exceptions equal the joint claimants' with those removed, and a
+   claimant's own AFCS or contributory ESA lifts it. The model takes any
+   contributory ESA as including the support component (reg. 83(1)(a) needs
+   the support component); that proxy is the model's, not this change's.
+   Housing Benefit has no single claim by a member of a couple, so its cap
+   rate, exceptions and shared accommodation test (HB Regs 2006 regs. 2(1),
+   13D(2), 75CA, 75E, 75F) and its LHA category are the joint claimants'
+   whatever the flag. Its cap exception is also met where Housing Benefit
+   falls under the pension-age regulations, which the model applies to a
+   family with a member over the qualifying age for State Pension Credit and
+   no Universal Credit award. Whether there is an award can differ between
+   the single claim and the joint claimants, either way round: the single
+   claim has a single claimant's amounts (reg. 36(3)) but still counts the
+   other member's income (reg. 22(3)). So within each calculation the route
+   lifts the Housing Benefit cap wherever it applies, and the two are
+   compared only for families the route reaches in neither (see
+   off_pension_age_route).
 6. Regulation 3(3)(a): with the flag left to its formula, a member of a
    couple under 18 is the ineligible partner exactly when none of the
    generated regulation 8(1) circumstances applies to them (limited
@@ -44,13 +60,22 @@ claimant alone with the children ("solo"). Invariants:
 7. A flag that marks no single claim (a single adult, or both members of a
    couple) leaves the Universal Credit cap rate, cap exceptions and shared
    accommodation test, and their Housing Benefit counterparts, as they were
-   without the flag.
+   without the flag. Such a flag leaves no one able to claim Universal
+   Credit, so families on the pension-age route in either calculation are
+   left out of the comparison of the Housing Benefit cap exception (see
+   off_pension_age_route), and each calculation's Universal Credit exception
+   is checked against its own inputs (a claimant's AFCS or contributory ESA).
 
 Each property also runs on EXAMPLE_FAMILIES, built so that the cases the
-properties are about occur: an other member with LCWRA, caring, PIP, AFCS
-and contributory ESA; a private renter under 35; a claimant under 25 with an
-older partner; children under and over 16. test_examples_reach_the_cases
-checks that each of those cases changes the result it should.
+properties are about occur, each in a family of its own: an other member
+with LCWRA and PIP, with caring, with AFCS, with contributory ESA; a
+claimant with LCWRA, with caring, with AFCS; a private renter under 35; a
+claimant under 25 with an older partner; an older partner; children under
+and over 16; ADM E2017's Tom and Jane. LCWRA and caring are never in the
+same person, since reg. 29(4) then gives only the LCWRA element, which the
+model does not yet apply. test_examples_reach_the_cases checks that each
+case changes the result it should, against the joint claimants or the
+claimant alone.
 
 Marriage Allowance is switched off throughout: a transfer moves tax between
 the partners, which is not what these invariants are about.
@@ -140,19 +165,19 @@ def adult_inputs(age, **inputs):
 
 
 def example_families():
-    """Families in which every case the properties cover occurs."""
+    """Families in which every case the properties cover occurs.
+
+    The order is EXAMPLE_INDEX's.
+    """
     return [
         # A claimant under 25, a private renter, with an older other member
-        # who has LCWRA, caring, PIP, AFCS and contributory ESA.
+        # who has LCWRA, PIP and a private pension.
         dict(
             claimant=adult_inputs(22, employment_income=6_000.0),
             partner=adult_inputs(
                 40,
                 uc_limited_capability_for_WRA=True,
-                care_hours=35,
                 pip_dl=4_000.0,
-                afcs=1_000.0,
-                esa_contrib=2_000.0,
                 private_pension_income=1_200.0,
             ),
             children=[],
@@ -160,11 +185,9 @@ def example_families():
             tenure="RENT_PRIVATELY",
             region="NORTH_EAST",
         ),
-        # A claimant with LCWRA and caring, a child under 16, social rent.
+        # A claimant with LCWRA, a child under 16, social rent.
         dict(
-            claimant=adult_inputs(
-                30, uc_limited_capability_for_WRA=True, care_hours=35
-            ),
+            claimant=adult_inputs(30, uc_limited_capability_for_WRA=True),
             partner=adult_inputs(30, employment_income=12_000.0),
             children=[4],
             rent=6_000.0,
@@ -190,9 +213,65 @@ def example_families():
             tenure="RENT_FROM_COUNCIL",
             region="SCOTLAND",
         ),
+        # An other member who cares 35 hours a week, without LCWRA.
+        dict(
+            claimant=adult_inputs(33),
+            partner=adult_inputs(35, care_hours=35),
+            children=[],
+            rent=5_000.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="NORTH_EAST",
+        ),
+        # A claimant who cares 35 hours a week, without LCWRA.
+        dict(
+            claimant=adult_inputs(28, care_hours=35),
+            partner=adult_inputs(28),
+            children=[],
+            rent=5_000.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="NORTH_EAST",
+        ),
+        # An other member with an AFCS payment and nothing else.
+        dict(
+            claimant=adult_inputs(40),
+            partner=adult_inputs(40, afcs=1_000.0),
+            children=[],
+            rent=0.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="NORTH_EAST",
+        ),
+        # An other member with contributory ESA and nothing else.
+        dict(
+            claimant=adult_inputs(40),
+            partner=adult_inputs(40, esa_contrib=2_000.0),
+            children=[],
+            rent=0.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="NORTH_EAST",
+        ),
+        # A claimant with an AFCS payment and nothing else.
+        dict(
+            claimant=adult_inputs(40, afcs=1_000.0),
+            partner=adult_inputs(40),
+            children=[],
+            rent=0.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="NORTH_EAST",
+        ),
     ]
 
 
+EXAMPLE_INDEX = dict(
+    young_renter=0,
+    lcwra_claimant=1,
+    older_partner=2,
+    tom_and_jane=3,
+    carer_partner=4,
+    carer_claimant=5,
+    afcs_partner=6,
+    esa_partner=7,
+    afcs_claimant=8,
+)
 EXAMPLE_FAMILIES = example_families()
 
 
@@ -266,7 +345,52 @@ BENUNIT_VARIABLES = [
     "is_housing_benefit_benefit_cap_exempt_specified_benefit",
     "is_housing_benefit_benefit_cap_exempt",
     "is_housing_benefit_young_individual",
+    "housing_benefit_pension_age_regulations_apply",
 ]
+PENSION_AGE_ROUTE = "housing_benefit_pension_age_regulations_apply"
+
+
+def off_pension_age_route(*calculations):
+    """The families that no calculation puts on the pension-age route.
+
+    is_housing_benefit_benefit_cap_exempt also lifts the cap where Housing
+    Benefit falls under the pension-age regulations (HB (SPC) Regs 2006 reg.
+    5); Universal Credit has no such exception. The model takes that route for a
+    family with a claimant or partner over the qualifying age for State
+    Pension Credit and no Universal Credit award. Whether there is an award
+    can differ between the calculations, either way round: a single claim has
+    a single claimant's amounts (reg. 36(3)) but the joint claimants' income
+    and work allowance (reg. 22(3)), and a flag on both members leaves no one
+    who can claim. So comparisons of that exception across calculations
+    exclude the families the route reaches in any of them. Within each
+    calculation the route lifts the cap wherever it applies.
+    """
+    for values in calculations:
+        assert np.all(
+            values["is_housing_benefit_benefit_cap_exempt"][values[PENSION_AGE_ROUTE]]
+        )
+    return ~np.logical_or.reduce([values[PENSION_AGE_ROUTE] for values in calculations])
+
+
+def assert_own_afcs_or_esa_lifts_the_uc_cap(families, values, members):
+    """A claimant's AFCS or contributory ESA lifts the Universal Credit cap.
+
+    Reg. 83(1)(a) and (e); the model takes any contributory ESA as including
+    the support component. ``members`` are the people whose own benefits
+    count: the claimant alone on a single claim, in a stripped calculation
+    (the other member's benefits removed) or with no partner, and both
+    members of a couple neither of whom is excluded.
+    """
+    own = np.array(
+        [
+            any(
+                family[member]["afcs"] > 0 or family[member]["esa_contrib"] > 0
+                for member in members
+            )
+            for family in families
+        ]
+    )
+    assert np.all(values["is_uc_benefit_cap_exempt_specified_benefit"][own]), families
 
 
 def calculate(families, year, mode, extra=()):
@@ -371,12 +495,12 @@ def test_deduction_is_the_joint_claimants(families, year):
 @given(
     families=populations,
     year=st.sampled_from([2021, 2026]),
-    balances=st.lists(st.floats(0, 30_000), min_size=12, max_size=12),
+    balances=st.lists(st.floats(0, 30_000), min_size=18, max_size=18),
 )
 @example(
     families=example_families(),
     year=2026,
-    balances=[8_000.0, 16_000.0, 0.0, 30_000.0, 2_000.0, 0.0] + [0.0] * 6,
+    balances=[8_000.0, 16_000.0, 0.0, 30_000.0, 2_000.0, 0.0] + [5_000.0] * 12,
 )
 def test_capital_includes_the_other_members(families, year, balances):
     families = copy.deepcopy(families)
@@ -385,16 +509,28 @@ def test_capital_includes_the_other_members(families, year, balances):
         family["partner"]["lifetime_isa_balance"] = balances[2 * i + 1]
     single = calculate(families, year, "single")
     joint = calculate(families, year, "joint")
-    solo = calculate(families, year, "solo")
+    claimant_alone = calculate(families, year, "solo")
+    partner_alone = calculate(
+        [dict(family, claimant=family["partner"]) for family in families],
+        year,
+        "solo",
+    )
     np.testing.assert_allclose(
         single["uc_assessable_capital"],
         joint["uc_assessable_capital"],
         atol=0.01,
         err_msg=str(families),
     )
-    assert np.all(
-        single["uc_assessable_capital"] >= solo["uc_assessable_capital"] - 0.01
-    ), families
+    # Differential: the other member's capital is the same amount it is when
+    # they are calculated alone, so leaving it out in both the single and
+    # joint calculations would fail here.
+    np.testing.assert_allclose(
+        single["uc_assessable_capital"],
+        claimant_alone["uc_assessable_capital"]
+        + partner_alone["uc_assessable_capital"],
+        atol=0.01,
+        err_msg=str(families),
+    )
 
 
 @PROPERTY_SETTINGS
@@ -423,18 +559,25 @@ def test_benefit_cap_rate_and_exceptions(families, year):
         np.testing.assert_array_equal(
             single[variable], stripped[variable], err_msg=f"{variable}: {families}"
         )
+    for values in [single, stripped]:
+        assert_own_afcs_or_esa_lifts_the_uc_cap(families, values, ["claimant"])
     # Housing Benefit has no single claim by a member of a couple: its rules
     # see the couple whatever the Universal Credit flag says.
     for variable in [
         "is_housing_benefit_benefit_cap_single_claimant_rate",
         "is_housing_benefit_benefit_cap_exempt_specified_benefit",
-        "is_housing_benefit_benefit_cap_exempt",
         "is_housing_benefit_young_individual",
         "housing_benefit_LHA_category",
     ]:
         np.testing.assert_array_equal(
             single[variable], joint[variable], err_msg=f"{variable}: {families}"
         )
+    off_route = off_pension_age_route(single, joint)
+    np.testing.assert_array_equal(
+        single["is_housing_benefit_benefit_cap_exempt"][off_route],
+        joint["is_housing_benefit_benefit_cap_exempt"][off_route],
+        err_msg=f"is_housing_benefit_benefit_cap_exempt: {families}",
+    )
     # HB reg. 2(1): a claimant with a partner is never a single claimant or a
     # young individual.
     assert not np.any(single["is_housing_benefit_benefit_cap_single_claimant_rate"])
@@ -447,7 +590,11 @@ def test_benefit_cap_rate_and_exceptions(families, year):
     year=st.sampled_from(YEARS),
     partner_ages=st.lists(st.integers(15, 20), min_size=6, max_size=6),
 )
-@example(families=example_families(), year=2026, partner_ages=[17, 17, 16, 17, 0, 0])
+@example(
+    families=example_families(),
+    year=2026,
+    partner_ages=[17, 17, 16, 17, 17, 16, 17, 17, 16],
+)
 def test_a_partner_under_18_outside_regulation_8_cannot_claim_jointly(
     families, year, partner_ages
 ):
@@ -503,13 +650,27 @@ def test_a_flag_marking_no_single_claim_leaves_cap_and_lha_rules_alone(families,
     assert not np.any(both["uc_member_of_couple_claims_as_single_person"]), families
     assert not np.any(both["is_uc_eligible"]), families
     assert not np.any(alone_flagged["is_uc_eligible"]), families
-    for variable in shared:
-        np.testing.assert_array_equal(
-            both[variable], joint[variable], err_msg=f"{variable}: {families}"
-        )
-        np.testing.assert_array_equal(
-            alone_flagged[variable], solo[variable], err_msg=f"{variable}: {families}"
-        )
+    couple = ["claimant", "partner"]
+    for values, members in [
+        (both, couple),
+        (joint, couple),
+        (alone_flagged, ["claimant"]),
+        (solo, ["claimant"]),
+    ]:
+        assert_own_afcs_or_esa_lifts_the_uc_cap(families, values, members)
+    for flagged, unflagged in [(both, joint), (alone_flagged, solo)]:
+        off_route = off_pension_age_route(flagged, unflagged)
+        for variable in shared:
+            compared = (
+                off_route
+                if variable == "is_housing_benefit_benefit_cap_exempt"
+                else np.ones_like(off_route)
+            )
+            np.testing.assert_array_equal(
+                flagged[variable][compared],
+                unflagged[variable][compared],
+                err_msg=f"{variable}: {families}",
+            )
 
 
 def test_examples_reach_the_cases():
@@ -517,34 +678,40 @@ def test_examples_reach_the_cases():
     year = 2026
     single = calculate(EXAMPLE_FAMILIES, year, "single")
     joint = calculate(EXAMPLE_FAMILIES, year, "joint")
-    first, second = 0, 1
+    i = EXAMPLE_INDEX
     # Reg. 36(3): the claimant under 25 with a partner of 40.
-    assert single["claimant_type"][first] == "SINGLE_YOUNG"
-    assert joint["claimant_type"][first] == "COUPLE_OLD"
-    # Regs. 27(1), 29(1): the other member's LCWRA and caring give nothing;
-    # the claimant's do.
-    assert single["uc_LCWRA_element"][first] == 0 < joint["uc_LCWRA_element"][first]
-    assert single["uc_carer_element"][first] == 0 < joint["uc_carer_element"][first]
-    assert single["uc_LCWRA_element"][second] > 0
-    assert single["uc_carer_element"][second] > 0
-    # Reg. 83(1): the other member's benefits lift the joint claimants' cap
-    # only. HB reg. 75F(1): the partner's benefits lift the HB cap either way.
-    assert not single["is_uc_benefit_cap_exempt_specified_benefit"][first]
-    assert joint["is_uc_benefit_cap_exempt_specified_benefit"][first]
-    assert single["is_housing_benefit_benefit_cap_exempt_specified_benefit"][first]
+    assert single["claimant_type"][i["young_renter"]] == "SINGLE_YOUNG"
+    assert joint["claimant_type"][i["young_renter"]] == "COUPLE_OLD"
+    # Reg. 27(1): the other member's LCWRA gives nothing; the claimant's does.
+    family = i["young_renter"]
+    assert single["uc_LCWRA_element"][family] == 0 < joint["uc_LCWRA_element"][family]
+    assert single["uc_LCWRA_element"][i["lcwra_claimant"]] > 0
+    # Reg. 29(1): the same for caring (no LCWRA in either carer, reg. 29(4)).
+    family = i["carer_partner"]
+    assert single["uc_carer_element"][family] == 0 < joint["uc_carer_element"][family]
+    assert single["uc_carer_element"][i["carer_claimant"]] > 0
+    # Reg. 83(1): the other member's LCWRA and PIP, AFCS or ESA lift the
+    # joint claimants' cap only; the claimant's AFCS lifts it. HB reg.
+    # 75F(1): the partner's benefits lift the HB cap either way.
+    for family in [i["young_renter"], i["afcs_partner"], i["esa_partner"]]:
+        assert not single["is_uc_benefit_cap_exempt_specified_benefit"][family]
+        assert joint["is_uc_benefit_cap_exempt_specified_benefit"][family]
+        assert single["is_housing_benefit_benefit_cap_exempt_specified_benefit"][family]
+    assert single["is_uc_benefit_cap_exempt_specified_benefit"][i["afcs_claimant"]]
     # Reg. 80A(2) and Sch 4 para 28(2): single rate and shared accommodation.
     # HB regs. 2(1), 13D(2) and 75CA(2): a couple either way.
-    assert single["is_uc_benefit_cap_single_claimant_rate"][first]
-    assert not joint["is_uc_benefit_cap_single_claimant_rate"][first]
-    assert not single["is_housing_benefit_benefit_cap_single_claimant_rate"][first]
-    assert single["is_lha_shared_accommodation_rate_specified_renter"][first]
-    assert not joint["is_lha_shared_accommodation_rate_specified_renter"][first]
-    assert single["LHA_category"][first] == "A"
-    assert not single["is_housing_benefit_young_individual"][first]
+    family = i["young_renter"]
+    assert single["is_uc_benefit_cap_single_claimant_rate"][family]
+    assert not joint["is_uc_benefit_cap_single_claimant_rate"][family]
+    assert not single["is_housing_benefit_benefit_cap_single_claimant_rate"][family]
+    assert single["is_lha_shared_accommodation_rate_specified_renter"][family]
+    assert not joint["is_lha_shared_accommodation_rate_specified_renter"][family]
+    assert single["LHA_category"][family] == "A"
+    assert not single["is_housing_benefit_young_individual"][family]
     assert (
-        single["housing_benefit_LHA_category"][first]
-        == joint["housing_benefit_LHA_category"][first]
+        single["housing_benefit_LHA_category"][family]
+        == joint["housing_benefit_LHA_category"][family]
         == "B"
     )
     # Reg. 22(3): the other member's LCW gives the work allowance either way.
-    assert single["is_uc_work_allowance_eligible"][first]
+    assert single["is_uc_work_allowance_eligible"][family]

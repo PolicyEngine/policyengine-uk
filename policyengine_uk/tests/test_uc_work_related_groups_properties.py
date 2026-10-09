@@ -44,16 +44,33 @@ and start-up periods, in England, Wales and Scotland:
    raised to exactly zero, which the model reads as no self-employment.
 7. A partner who cannot be a joint claimant (reg. 3(3)) never has the floor,
    and adds the same amount to the couple threshold whatever their age.
+8. Qualifying age (reg. 89(1)(a)): a claimant past the qualifying age for
+   State Pension Credit is in section 19 whatever else applies, so never has
+   the floor. For births every fifth day from 1948 to 1956, both sexes, in
+   2015-16 to 2019-20, the group follows the statute's day for a woman born
+   on the same day (Pensions Act 1995 Sch. 4 para. 1, read by
+   test_state_pension_age). Differential against the State Pension age
+   route it replaced: only claimants past the qualifying age and under State
+   Pension age change group, all into section 19, all men born before 6
+   December 1953, and only before 2019-20.
 
 Marriage Allowance is switched off throughout: a transfer can lower one
 partner's earned income when the other's earnings rise.
 """
 
+from datetime import date, timedelta
+from functools import lru_cache
+
 import numpy as np
-from hypothesis import HealthCheck, assume, given, settings
+import pytest
+from hypothesis import HealthCheck, assume, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.tests.test_state_pension_age import (
+    grid_months,
+    reference_attainment_day,
+)
 
 PROPERTY_SETTINGS = settings(
     max_examples=10,
@@ -422,10 +439,176 @@ def test_partner_who_cannot_be_a_joint_claimant(units, year):
         atol=0.01,
     )
     # Reg. 90(3)(b)(ii): 35 hours at the national living wage, whatever the
-    # partner's age.
+    # partner's age. The 35 is the regulation's own figure, not reg. 88's
+    # expected hours.
     np.testing.assert_allclose(
         v["uc_minimum_income_floor_gross"][ineligible],
-        v["parameters"].default_expected_hours * 52 * v["national_living_wage"],
+        35 * 52 * v["national_living_wage"],
         atol=0.01,
         err_msg=str(units),
     )
+
+
+# Regulation 89(1)(a): "the claimant has reached the qualifying age for state
+# pension credit". State Pension Credit Act 2002 s. 1(6), the meaning the
+# phrase has in Welfare Reform Act 2012 s. 4(4) and so, by Interpretation Act
+# 1978 s. 11, in the regulations: a woman's pensionable age, and for a man the
+# pensionable age of a woman born on the same day. For a man born before 6
+# December 1953 that day comes before his own State Pension age of 65 (on it,
+# for a birth on 6 November 1953), so in 2015-16 to 2018-19 some claimants are
+# over the one and under the other.
+QUALIFYING_AGE_YEARS = [2015, 2016, 2017, 2018, 2019]
+LAST_YEAR_THE_AGES_DIFFER = 2018
+MALE_RULE_BORN_BEFORE = date(1953, 12, 6)
+# Births every fifth day from 6 April 1948 to April 1956, and both sides of
+# the 6 December 1953 boundary of Pensions Act 1995 Sch. 4 para. 1 rule (1).
+QUALIFYING_AGE_BIRTHS = sorted(
+    {date(1948, 4, 6) + timedelta(days=d) for d in range(0, 8 * 366, 5)}
+    | {date(1953, 12, 5), date(1953, 12, 6)}
+)
+
+
+@lru_cache(maxsize=None)
+def qualifying_age_couples():
+    """Each birth date, for each sex, as the elder member of a couple whose
+    partner is 40 and has no section 19 to 21 circumstance. The elder is
+    listed first in each benefit unit."""
+    people, benunits, households, keys = {}, {}, {}, []
+    for male in (True, False):
+        for birth in QUALIFYING_AGE_BIRTHS:
+            elder = f"{'m' if male else 'f'}{birth:%Y%m%d}"
+            partner = f"{elder}_partner"
+            ages, months = {}, {}
+            for year in QUALIFYING_AGE_YEARS:
+                age_in_months = grid_months(date(year, 10, 6)) - grid_months(birth)
+                ages[year] = int(age_in_months // 12)
+                months[year] = age_in_months - 12 * ages[year]
+            people[elder] = {
+                "age": ages,
+                "months_since_last_birthday": months,
+                "is_male": {year: male for year in QUALIFYING_AGE_YEARS},
+            }
+            people[partner] = {
+                "age": {year: 40 for year in QUALIFYING_AGE_YEARS},
+                "is_male": {year: not male for year in QUALIFYING_AGE_YEARS},
+            }
+            benunits[f"b_{elder}"] = {"members": [elder, partner]}
+            households[f"h_{elder}"] = {"members": [elder, partner]}
+            keys.append((birth, male))
+    situation = {"people": people, "benunits": benunits, "households": households}
+    return Simulation(situation=situation), keys
+
+
+@pytest.mark.parametrize("year", QUALIFYING_AGE_YEARS)
+def test_regulation_89_1_a_follows_the_statute_for_every_birth_date(year):
+    """The elder member is in section 19 exactly when the statute puts a woman
+    born on the same day at pensionable age on or before 6 October, read with
+    test_state_pension_age's reference, which shares no code with the model.
+    The partner stays in section 22."""
+    sim, keys = qualifying_age_couples()
+    group = np.asarray(sim.calculate(GROUP, year)).astype(str)
+    elder, partner = group[0::2], group[1::2]
+    mid_year = date(year, 10, 6)
+    mismatches = [
+        (birth, male, found)
+        for (birth, male), found in zip(keys, elder)
+        if found
+        != (
+            "NO_REQUIREMENTS"
+            if reference_attainment_day(birth, male=False) <= mid_year
+            else "ALL_REQUIREMENTS"
+        )
+    ]
+    assert not mismatches, mismatches[:10]
+    assert np.all(partner == "ALL_REQUIREMENTS")
+
+
+def test_regulation_89_1_a_differs_from_state_pension_age_only_before_2019():
+    """In 2015-16 to 2018-19 some men are in section 19 by reg. 89(1)(a)
+    while under their own State Pension age, and all of them were born before
+    6 December 1953; from 2019-20 nobody is. Everyone over State Pension age
+    is in section 19."""
+    sim, keys = qualifying_age_couples()
+    for year in QUALIFYING_AGE_YEARS:
+        group = np.asarray(sim.calculate(GROUP, year)).astype(str)[0::2]
+        sp_age = np.asarray(sim.calculate("is_SP_age", year))[0::2]
+        moved = (group == "NO_REQUIREMENTS") & ~sp_age
+        assert moved.any() == (year <= LAST_YEAR_THE_AGES_DIFFER), year
+        assert all(
+            male and birth < MALE_RULE_BORN_BEFORE
+            for (birth, male), m in zip(keys, moved)
+            if m
+        ), year
+        assert np.all(group[sp_age] == "NO_REQUIREMENTS"), year
+
+
+@st.composite
+def families_near_the_qualifying_age(draw):
+    """A family whose first adult is 60 to 65 on 6 October, either sex."""
+    unit = draw(families())
+    unit["adults"][0].update(
+        age=draw(st.integers(60, 65)),
+        months_since_last_birthday=draw(st.integers(0, 11)),
+        is_male=draw(st.booleans()),
+    )
+    return unit
+
+
+# Born 6 April 1952: the qualifying age on 6 May 2014, State Pension age on 6
+# April 2017. A self-employed man of 64 in a couple, so every run of the
+# property below includes someone the change moves.
+QUALIFYING_AGE_COHORT = [
+    dict(
+        adults=[
+            dict(
+                age=64,
+                months_since_last_birthday=6,
+                is_male=True,
+                self_employment_income=5_000.0,
+            ),
+            dict(age=40, is_male=False),
+        ],
+        children=[],
+        rent=0.0,
+        region="LONDON",
+    )
+]
+
+
+@PROPERTY_SETTINGS
+@example(units=QUALIFYING_AGE_COHORT, year=2016)
+@given(
+    units=st.lists(families_near_the_qualifying_age(), min_size=1, max_size=8),
+    year=st.sampled_from(QUALIFYING_AGE_YEARS[:-1]),
+)
+def test_qualifying_age_route_moves_only_claimants_past_it(units, year):
+    """Whatever else applies, a claimant past the qualifying age is in
+    section 19 and has no minimum income floor. Differential against the
+    route before this change, which read State Pension age: supplying
+    is_SP_age as the qualifying-age status reproduces it. Only claimants past
+    the qualifying age and under State Pension age who fall in no other
+    section 19 route change group, and all of them move into section 19."""
+    inputs = situation(units, year)
+    names = list(inputs["people"])
+    sim = Simulation(situation=inputs)
+    group = np.asarray(sim.calculate(GROUP, year)).astype(str)
+    over = np.asarray(
+        sim.calculate("has_attained_state_pension_credit_qualifying_age", year)
+    )
+    sp_age = np.asarray(sim.calculate("is_SP_age", year))
+    claimant = group != "NOT_A_CLAIMANT"
+    assert np.all(group[claimant & over] == "NO_REQUIREMENTS"), units
+    assert not np.asarray(sim.calculate("uc_mif_applies", year))[over].any(), units
+    overrides = {
+        name: {"has_attained_state_pension_credit_qualifying_age": bool(s)}
+        for name, s in zip(names, sp_age)
+    }
+    before = Simulation(situation=situation(units, year, overrides=overrides))
+    old = np.asarray(before.calculate(GROUP, year)).astype(str)
+    moved = group != old
+    np.testing.assert_array_equal(
+        moved,
+        claimant & over & ~sp_age & (old != "NO_REQUIREMENTS"),
+        err_msg=str(units),
+    )
+    assert np.all(group[moved] == "NO_REQUIREMENTS"), units

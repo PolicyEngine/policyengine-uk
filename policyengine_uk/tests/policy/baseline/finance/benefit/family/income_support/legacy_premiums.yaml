@@ -14,6 +14,7 @@
     is_disabled_for_benefits: true
     is_enhanced_disabled_for_benefits: true
     is_severely_disabled_for_benefits: true
+    pip_dl_category: ENHANCED
   output:
     # The claimant qualifies in their own right: no statutory age-18 floor.
     disability_premium: 2332.20
@@ -28,6 +29,7 @@
     is_disabled_for_benefits: true
     is_enhanced_disabled_for_benefits: true
     is_severely_disabled_for_benefits: true
+    pip_dl_category: ENHANCED
   output:
     disability_premium: 2332.20
     enhanced_disability_premium: 1144
@@ -46,6 +48,7 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [parent, young_person]
@@ -66,9 +69,11 @@
       young_person:
         age: 19
         is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 17
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [parent, young_person]
@@ -91,16 +96,17 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [claimant, partner]
   output:
     disability_premium: 3328
     enhanced_disability_premium: 1632.80
-    # Deliberately preserve the existing severe-premium approximation:
-    # one qualifying partner currently triggers the full couple rate.
-    # IS Sch 2 para 13 / HB Sch 3 para 14 require both to qualify.
-    severe_disability_premium: 8949.20
+    # IS Sch 2 para 13(2)(b) / HB Sch 3 para 14(2)(b) require both partners
+    # to qualify; the claimant receives no qualifying benefit and is not
+    # blind, so there is no severe disability premium.
+    severe_disability_premium: 0
 
 - name: Disabled lone parent with a young person keeps single legacy premiums
   period: 2026
@@ -113,9 +119,11 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
+        pip_dl_category: ENHANCED
       young_person:
         age: 19
         is_in_non_advanced_education: true
+        age_started_or_accepted_current_education_or_training: 17
     benunits:
       family:
         members: [parent, young_person]
@@ -136,6 +144,7 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [parent, child]
@@ -154,11 +163,13 @@
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
+        pip_dl_category: ENHANCED
       partner:
         age: 32
         is_disabled_for_benefits: true
         is_enhanced_disabled_for_benefits: true
         is_severely_disabled_for_benefits: true
+        pip_dl_category: ENHANCED
     benunits:
       family:
         members: [claimant, partner]

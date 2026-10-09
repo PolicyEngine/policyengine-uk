@@ -6,11 +6,11 @@ limits (LPL, UPL), at their 2026-27 levels until 5 April 2031. The Lower
 Earnings Limit is not frozen: it rose with CPI to £129 a week in 2026-27.
 
 Model year Y is the fiscal year starting 6 April Y. The model stores PT and UEL
-as the annual amounts over 52 (12,570 / 52 and 50,270 / 52, as SI 2001/1004
-reg 11(3)(c) and 11(2A)(c) do for periods of whole weeks) and ST as the reg
-10(d) weekly amount (£96), and annualises weekly thresholds as 52 weeks. So the
-model's annual ST is £4,992, where reg 11(3A)(b) gives £5,000 (#1967); the
-statute table follows the model here, and a strict xfail marks the gap.
+and ST as the annual amounts over 52 (12,570 / 52, 50,270 / 52 and 5,000 / 52,
+as SI 2001/1004 reg 11(3)(c), 11(2A)(c) and 11(3A)(c) do for periods of whole
+weeks), and annualises weekly thresholds as 52 weeks. So the model's annual ST
+is the £5,000 in reg 11(3A)(b), not 52 x the rounded reg 10(d) weekly £96
+(£4,992) (#1967).
 
 Invariants:
 
@@ -59,8 +59,7 @@ PARAMETER_DIR = Path(policyengine_uk.__file__).parent / "parameters"
 STATUTORY_2026_27 = {
     "lower_earnings_limit": Fraction(129),  # weekly, CPI-uprated
     "primary_threshold": Fraction(12_570, 52),  # annual / 52
-    # reg 10(d) weekly, as the model stores it; see #1967 for the annual £5,000.
-    "secondary_threshold": Fraction(96),
+    "secondary_threshold": Fraction(5_000, 52),  # annual / 52 (#1967)
     "upper_earnings_limit": Fraction(50_270, 52),  # annual / 52
     "lower_profits_limit": Fraction(12_570),  # annual
     "upper_profits_limit": Fraction(50_270),  # annual
@@ -129,15 +128,8 @@ def test_lower_earnings_limit_2025_26_and_2026_27(system):
     assert threshold(system, "lower_earnings_limit", 2026) == 129
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="#1967: the model annualises the weekly ST as 52 x £96 = £4,992; "
-    "SI 2001/1004 reg 11(3A)(b) gives £5,000 a year.",
-)
-@pytest.mark.parametrize("year", FROZEN_YEARS)
-def test_annual_secondary_threshold_is_statutory(system, year):
-    annual = 52 * threshold(system, "secondary_threshold", year)
-    assert annual == pytest.approx(5_000, abs=0.5)
+# The annual secondary threshold in every year from 2015-16, including the
+# £5,000 from 2025-26 (#1967), is pinned in test_ni_secondary_threshold.py.
 
 
 # Invariant 2: cash freeze.
@@ -328,7 +320,7 @@ def check_liabilities(earnings, profits, years):
 # Every threshold, a penny and a pound either side, plus seeded random levels.
 EDGES = [
     edge + offset
-    for edge in [4_992, 12_570, 50_270]
+    for edge in [4_992, 5_000, 12_570, 50_270]
     for offset in (-1, -0.01, 0, 0.01, 1)
 ]
 

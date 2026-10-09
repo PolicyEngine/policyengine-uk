@@ -7,15 +7,36 @@ metadata:
   - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
   - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
   unit: currency-GBP
-# The model stores the weekly £96 in reg 10(d) and annualises it as 52 weeks
-# (£4,992); reg 11(3A)(b) gives £5,000 a year (#1967).
+# From 2025-26 the value is the annual £5,000 in SI 2001/1004 reg 11(3A)(b)
+# divided by 52 (96.153846 = 5,000 / 52), so that the model's 52-week
+# annualisation gives £5,000. This is the convention reg 11(3)(c) and
+# 11(2A)(c) use for the primary threshold and upper earnings limit, which the
+# model also stores as annual / 52. The rounded weekly figure in reg 10(d) is
+# £96, which would annualise to £4,992 (#1967). Before 2025-26 the weekly
+# figure times 52 equals the annual one (for example £175 x 52 = £9,100).
 # Legal status: SI 2001/1004 reg 10 sets the amounts for 2026-27 only. The
 # 2027-28 to 2030-31 values are announced policy (Autumn Budget 2024 and
 # Budget 2025), to be set in each year's rates, limits and thresholds
 # regulations. CPI uprating from 2031-32 is a modelling assumption.
 values:
-  2015-04-06: 155
-  2016-04-06: 155
+  # £155 was the primary threshold in 2015-16 and 2016-17 (reg 10(c)), not the
+  # secondary threshold (#2178).
+  2015-04-06:
+    value: 156
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(d) (£156 a week), as at 6 April 2015
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2015-04-06
+        - title: The Social Security (Contributions) Regulations 2001 reg 11(3A)(b) (£8,112 where the earnings period is a year), as at 6 April 2015
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11/2015-04-06
+  2016-04-06:
+    value: 156
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 10(d) (£156 a week), as at 6 April 2016
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/10/2016-04-06
+        - title: The Social Security (Contributions) Regulations 2001 reg 11(3A)(b) (£8,112 where the earnings period is a year), as at 6 April 2016
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11/2016-04-06
   2017-04-06: 157
   2018-04-06: 162
   2019-04-06: 166
@@ -30,13 +51,15 @@ values:
     value: 175
   2024-01-01: 175
   2025-04-06:
-    value: 96
+    value: 96.153846
     metadata:
       reference:
         - title: National Insurance Contributions (Secondary Class 1 Contributions) Act 2025 s.2
           href: https://www.legislation.gov.uk/ukpga/2025/11/section/2
+        - title: The Social Security (Contributions) Regulations 2001 reg 11(3A)(b) (£5,000 where the earnings period is a year)
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/11
   2026-04-06:
-    value: 96
+    value: 96.153846
     metadata:
       reference:
         - title: The Social Security (Contributions) Regulations 2001 reg 10(d) and reg 11(3A), for 2026-27 (reg 10's tax year set by SI 2026/231 reg 5(2)(a))
@@ -44,13 +67,13 @@ values:
         - title: SI 2026/231 reg 5
           href: https://www.legislation.gov.uk/uksi/2026/231/regulation/5/made
   2027-04-06:
-    value: 96
+    value: 96.153846
     metadata:
       reference:
         - title: "HMRC: Changes to the Class 1 National Insurance Contributions Secondary Threshold, the Secondary Class 1 National Insurance contributions rate, and the Employment Allowance from 6 April 2025 (Autumn Budget 2024)"
           href: https://www.gov.uk/government/publications/changes-to-the-class-1-national-insurance-contributions-secondary-threshold-the-secondary-class-1-national-insurance-contributions-rate-and-the-empl/changes-to-the-class-1-national-insurance-contributions-secondary-threshold-the-secondary-class-1-national-insurance-contributions-rate-and-the-empl
   2028-04-06:
-    value: 96
+    value: 96.153846
     metadata:
       reference:
         - title: Budget 2025 (HC 1492) para 4.112
@@ -58,7 +81,7 @@ values:
         - title: Explanatory Memorandum to SI 2026/231 para 5.26
           href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
   2029-04-06:
-    value: 96
+    value: 96.153846
     metadata:
       reference:
         - title: Budget 2025 (HC 1492) para 4.112
@@ -66,7 +89,7 @@ values:
         - title: Explanatory Memorandum to SI 2026/231 para 5.26
           href: https://www.legislation.gov.uk/uksi/2026/231/pdfs/uksiem_20260231_en_001.pdf
   2030-04-06:
-    value: 96
+    value: 96.153846
     metadata:
       reference:
         - title: Budget 2025 (HC 1492) para 4.112

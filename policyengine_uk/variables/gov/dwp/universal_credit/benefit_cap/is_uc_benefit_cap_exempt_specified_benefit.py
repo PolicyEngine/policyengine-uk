@@ -7,13 +7,14 @@ from policyengine_uk.utils.uc_work_related_requirements import (
 # young person the claimant is responsible for) lifts the cap: industrial
 # injuries benefit (UC Regs 2013 reg. 83(1)(b)), attendance allowance (c),
 # which reg. 2 defines to include armed forces independence payment,
-# disability living allowance (f), personal independence payment (g), carer's
-# allowance (i) and carer support payment (ia).
+# disability living allowance (f), personal independence payment (g), and
+# entitlement to carer's allowance (i) or carer support payment (ia).
 SPECIFIED_PERSONAL_BENEFITS = [
     "attendance_allowance",
     "armed_forces_independence_payment",
-    "carers_allowance",
-    "carer_support_payment",
+    # Entitlement, not payment: reg. 83(1)(i)-(ia) read "is entitled to", so
+    # an overlapping benefit that reduces the payment to nil still counts.
+    "is_entitled_to_carer_benefit",
     "dla",
     "pip_dl",
     "pip_m",
@@ -32,7 +33,8 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         "industrial injuries benefit, attendance allowance (including armed "
         "forces independence payment, reg. 2), a war pension or armed forces "
         "compensation, disability living allowance, personal "
-        "independence payment, carer's allowance or carer support payment. "
+        "independence payment, or entitlement to carer's allowance or carer "
+        "support payment. "
         "A partner who cannot be a joint claimant, so that the other member "
         "claims as a single person (reg. 3(3)), is not a claimant: their own "
         "benefits and limited capability lift no cap. Working tax credit, "

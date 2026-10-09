@@ -7,46 +7,44 @@ class housing_benefit_LHA_category(Variable):
     entity = BenUnit
     label = "LHA category of dwelling (Housing Benefit)"
     documentation = (
-        "The Housing Benefit category of dwelling (HB Regs 2006 reg. "
-        "13D(2)). The shared accommodation rate applies to a young individual "
-        "with no non-dependant to whom the severe disability premium does not "
-        "apply, and, as for Universal Credit, in shared accommodation. "
-        "Otherwise the category follows the number of bedrooms in the size "
-        "criteria, up to four. Housing Benefit has no claim by a member of a "
-        "couple as a single person, so a couple is never a young individual. "
-        "Universal Credit has its own category: see LHA_category."
+        "The Housing Benefit category of dwelling. The shared accommodation "
+        "rate applies to a young individual with no non-dependant, and to a "
+        "claimant entitled to one bedroom who lacks exclusive use of "
+        "self-contained accommodation, unless the severe disability premium "
+        "applies. Otherwise the category follows the number of bedrooms in "
+        "the Housing Benefit size criteria, up to four."
     )
     definition_period = YEAR
     possible_values = LHACategory
     default_value = LHACategory.C
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/13D",
-        "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/13D",
         "https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B",
     )
 
     def formula(benunit, period, parameters):
-        rooms = benunit("LHA_allowed_bedrooms", period.this_year)
-        household = benunit.members.household
-        is_shared = benunit.any(household("is_shared_accommodation", period.this_year))
-        # HB Regs 2006 reg 13D(2)(a)(i): a young individual who has no
-        # non-dependant residing with them and to whom Sch 3 para 14 (severe
-        # disability premium) does not apply. A Universal Credit qualifying
-        # young person who is not a Housing Benefit young person is a
-        # non-dependant (reg. 3), which the household composition proxy does
-        # not identify, so responsibility under either scheme also blocks it.
+        rooms = benunit("housing_benefit_LHA_allowed_bedrooms", period.this_year)
+        # Schedule 3 paragraph 14 (severe disability premium) applies.
+        severe_disability = benunit(
+            "housing_benefit_severe_disability_premium_applies", period
+        )
+        # HB Regs 2006 reg 13D(2)(a)(i).
         young_individual = (
             benunit("is_housing_benefit_young_individual", period)
-            & ~benunit("lha_renter_has_non_dependant", period)
-            & ~benunit(
-                "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
-                period,
-            )
-            & ~benunit("housing_benefit_severe_disability_premium_applies", period)
+            & ~benunit("housing_benefit_has_non_dependant", period)
+            & ~severe_disability
+        )
+        # Reg 13D(2)(a)(ii): entitled to one bedroom but neither condition in
+        # 13D(2)(b) is met.
+        one_bedroom_shared = (
+            (rooms == 1)
+            & benunit("housing_benefit_shares_accommodation", period)
+            & ~severe_disability
         )
         return select(
             [
-                young_individual | is_shared,
+                young_individual | one_bedroom_shared,
                 rooms == 1,
                 rooms == 2,
                 rooms == 3,

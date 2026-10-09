@@ -12,14 +12,18 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         "Regulations 2006. That is the case where the claimant or partner has "
         "reached the qualifying age for State Pension Credit and neither of "
         "them is on Universal Credit, Income Support, income-based Jobseeker's "
-        "Allowance or income-related Employment and Support Allowance (HB Regs "
-        "2006 reg. 5). The benefit cap (Part 8A of the working-age "
-        "regulations) does not reach Housing Benefit under the pension-age "
-        "regulations. A Universal Credit award counts only where a claimant "
-        "or partner is under the qualifying age: Universal Credit needs one "
-        "(Welfare Reform Act 2012 s. 4(1)(b)) except for tax credit migrants "
-        "(SI 2014/1230 reg. 60A), whom the model does not have. Taken from "
-        "PolicyEngine-UK #1944."
+        "Allowance or income-related Employment and Support Allowance. The "
+        "benefit cap (Part 8A of the working-age regulations) does not reach "
+        "Housing Benefit under the pension-age regulations. A Universal Credit "
+        "award counts only where a claimant or partner is under the qualifying "
+        "age. That is right for the cap, which SI 2014/1230 reg 60C disapplies "
+        "for a claim where every claimant has reached that age, but not for "
+        "reg 5 itself, under which such an award would bring in the "
+        "working-age regulations. The model has no lawful such awards (tax "
+        "credit migrants under SI 2014/1230 reg 60A are not modelled), and its "
+        "Universal Credit eligibility test also needs a claimant or partner "
+        "under the qualifying age, so the pension-age regulations are the right "
+        "result."
     )
     definition_period = YEAR
     reference = (
@@ -31,16 +35,27 @@ class housing_benefit_pension_age_regulations_apply(Variable):
     def formula(benunit, period, parameters):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
-        # is_SP_age stands in for the qualifying age for State Pension Credit,
-        # as elsewhere in the model.
-        over_qualifying_age = person("is_SP_age", period)
+        # HB (SPC) Regs 2006 reg 5(1): "has attained the qualifying age for
+        # state pension credit"; reg 5(2) excludes the benefits below.
+        over_qualifying_age = person(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
         attained_qualifying_age = benunit.any(claimant_or_partner & over_qualifying_age)
-        # The award is read before the benefit cap, which depends on this
-        # variable.
+        # Universal Credit needs a claimant or partner under the qualifying age
+        # (WRA 2012 s.4(1)(b); UC Regs 2013 reg 3(2)(a)), except for tax credit
+        # migrants (SI 2014/1230 reg 60A), whose award is exempt from the cap
+        # (reg 60C). An award counts here only with such a claimant or partner.
+        # A dependant is neither: is_claimant_or_partner presumes a member under
+        # 20 and at least 16 years younger than the claimant to be their child,
+        # so a pensioner's 18- or 19-year-old does not make the award a
+        # working-age one, whether or not is_parent identifies the pensioner as
+        # the parent. The award is read before the benefit cap, which depends
+        # on this variable.
         working_age_claimant = benunit.any(claimant_or_partner & ~over_qualifying_age)
         on_universal_credit = benunit("is_uc_entitled", period) & working_age_claimant
-        on_income_related_benefit = (
-            add(benunit, period, ["income_support", "jsa_income", "esa_income"]) > 0
+        # Reg 5 names the same three benefits as the CTR pensioner test.
+        on_income_related_benefit = benunit(
+            "council_tax_reduction_relevant_income_based_benefit", period
         )
         return (
             attained_qualifying_age & ~on_universal_credit & ~on_income_related_benefit

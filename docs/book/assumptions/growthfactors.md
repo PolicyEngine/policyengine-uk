@@ -60,7 +60,7 @@ We derive these rates from OBR GDP growth and ONS population projections.
 |-------------|------|------|------|------|------|------|------|------|
 | Growth rate | 9.2% | 5.0% | 3.8% | 2.8% | 2.8% | 3.1% | 3.3% | 3.3% |
 
-We use per capita GDP for these variables: `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `corporate_wealth`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `savings`, `savings_interest_income`, `sublet_income`
+We use per capita GDP for these variables: `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `corporate_wealth`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `sublet_income`
 
 ## Council tax
 
@@ -80,7 +80,7 @@ We use the OBR's mortgage interest rate index growth rates.
 |-------------|------|------|------|------|------|------|------|------|
 | Growth rate | 26.2% | 48.5% | 22.1% | 13.6% | 12.6% | 8.2% | 4.2% | 4.7% |
 
-We apply this to: `mortgage_interest_repayment`
+We apply this to: `mortgage_interest_repayment`, `property_finance_costs`, `property_finance_costs_brought_forward`
 
 ## Private pension index
 
