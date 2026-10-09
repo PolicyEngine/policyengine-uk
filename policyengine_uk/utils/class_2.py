@@ -29,14 +29,18 @@ def class_2_contribution_weeks(year: int) -> int:
 
 
 def class_2_liable(relevant_profits, class_2):
-    """Whether s.11(2) SSCBA 1992 makes an earner with these relevant profits
-    liable to Class 2 for the year.
+    """Whether relevant profits meet the s.11(2) SSCBA 1992 profit condition
+    for the year.
 
     From 2022-23 only relevant profits that exceed the lower profits threshold
     are liable; those from the small profits threshold up to it are treated as
     paid (s.11(5A)-(5B)) and cost nothing. Before then liability started at
     the small profits threshold ("of, or exceeding"). ``class_2`` is the
     gov.hmrc.national_insurance.class_2 parameter node for the year.
+
+    This is the threshold condition only. Callers multiply by the flat rate,
+    which is nil from 2024-25, when s.11(2) is omitted; the retained
+    thresholds then apply only to a reform that restores a rate.
     """
     return np.where(
         class_2.lower_profits_threshold_applies,

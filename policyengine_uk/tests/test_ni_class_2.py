@@ -66,9 +66,12 @@ STATUTE = {
     2025: ("0", 6_845, None),  # SI 2025/288 reg 3(a)
     2026: ("0", 7_105, None),  # SI 2026/231 reg 3(a)
 }
-# Contribution weeks: years whose first Sunday after 5 April falls on 6 or 7
-# April hold 53 Sundays to the next 5 April (2019-20: 7 April 2019 to 5 April
-# 2020; 2025-26: 6 April 2025 to 5 April 2026). Every other year has 52.
+# Contribution weeks: one per Sunday from 6 April to the next 5 April. A year
+# has 53 when 6 April is a Sunday, or when 6 April is a Saturday and the year
+# has 366 days. 2019-20 runs from Sunday 7 April 2019 to Sunday 5 April 2020
+# (29 February 2020 included); 2025-26 from Sunday 6 April 2025 to Sunday 5
+# April 2026. Every other year from 2015-16 to 2030-31 has 52; 2024-25, for
+# one, runs from Sunday 7 April 2024 to Sunday 30 March 2025.
 CONTRIBUTION_WEEKS = {2019: 53, 2025: 53}
 MODEL_YEARS = list(range(2015, 2031))
 PROPERTY_SETTINGS = settings(
@@ -127,7 +130,9 @@ def simulate(cases):
     # One person per (profits, capital allowances, trading loss) case, with
     # the same values in every model year, so a single simulation covers every
     # year. Each year's loss is no more than its profits after allowances, so
-    # none is carried forward.
+    # none is carried forward, except where a profit of £1,000 or less is
+    # relieved by the trading allowance from 2017-18: that loss carries
+    # forward, but those cases stay below every threshold.
     people = {
         f"p{i}": {
             "age": {year: 40 for year in MODEL_YEARS},
