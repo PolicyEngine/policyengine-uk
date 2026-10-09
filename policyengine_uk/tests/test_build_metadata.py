@@ -351,6 +351,48 @@ def test_git_sha_ignores_git_environment_overrides(tmp_path, monkeypatch):
     assert _get_git_sha(package_root) == head
 
 
+@pytest.mark.parametrize(
+    "safe_directory",
+    [
+        {
+            "GIT_CONFIG_COUNT": "1",
+            "GIT_CONFIG_KEY_0": "safe.directory",
+            "GIT_CONFIG_VALUE_0": "*",
+        },
+        {"GIT_CONFIG_PARAMETERS": "'safe.directory'='*'"},
+    ],
+    ids=["GIT_CONFIG_COUNT", "GIT_CONFIG_PARAMETERS"],
+)
+def test_git_sha_honours_safe_directory_from_environment(
+    tmp_path, monkeypatch, safe_directory
+):
+    # Containers and CI often run as a user who does not own the checkout and
+    # pass safe.directory through git's environment configuration.
+    package_root, head = _make_policyengine_uk_checkout(tmp_path / "policyengine-uk")
+    foreign_owner = {"GIT_TEST_ASSUME_DIFFERENT_OWNER": "1"}
+    refused = subprocess.run(
+        ["git", "-C", str(package_root.parent), "rev-parse", "HEAD"],
+        env={**GIT_TEST_ENV, **foreign_owner},
+        capture_output=True,
+    )
+    if refused.returncode == 0:
+        pytest.skip("this git cannot simulate a checkout owned by another user")
+    # Keep the user's own git configuration, which may already trust every
+    # directory, out of the lookup.
+    for key, value in {
+        **foreign_owner,
+        "GIT_CONFIG_GLOBAL": os.devnull,
+        "GIT_CONFIG_NOSYSTEM": "1",
+    }.items():
+        monkeypatch.setenv(key, value)
+    assert _get_git_sha(package_root) is None
+
+    for key, value in safe_directory.items():
+        monkeypatch.setenv(key, value)
+
+    assert _get_git_sha(package_root) == head
+
+
 def test_git_sha_is_none_before_first_commit(tmp_path):
     checkout = tmp_path / "policyengine-uk"
     package_root = _make_package(checkout)

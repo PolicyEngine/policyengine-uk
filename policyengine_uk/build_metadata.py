@@ -15,16 +15,16 @@ from policyengine_core import get_runtime_metadata as get_core_runtime_metadata
 PACKAGE_NAME = "policyengine-uk"
 PACKAGE_ROOT = Path(__file__).resolve().parent
 # Variables that point git at a repository other than the one it discovers
-# from its working directory (the list `git rev-parse --local-env-vars`
-# prints). They are cleared so a caller's environment, such as a git hook,
-# cannot substitute another repository's HEAD.
+# from its working directory: the list `git rev-parse --local-env-vars`
+# prints, less the configuration variables (GIT_CONFIG, GIT_CONFIG_COUNT,
+# GIT_CONFIG_PARAMETERS). They are cleared so a caller's environment, such as
+# a git hook, cannot substitute another repository's HEAD. Configuration is
+# kept because it can carry settings like safe.directory, which a checkout
+# owned by another user needs.
 GIT_REPOSITORY_ENV_VARS = frozenset(
     {
         "GIT_ALTERNATE_OBJECT_DIRECTORIES",
         "GIT_COMMON_DIR",
-        "GIT_CONFIG",
-        "GIT_CONFIG_COUNT",
-        "GIT_CONFIG_PARAMETERS",
         "GIT_DIR",
         "GIT_GRAFT_FILE",
         "GIT_IMPLICIT_WORK_TREE",
