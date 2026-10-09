@@ -4,14 +4,32 @@ metadata:
   label: NI employer rate
   propagate_metadata_to_children: true
   unit: /1
+  # Annual values are the rate at 30 April of each tax year, as for the
+  # employee main rate (no fiscal_year_blend). For 2022-23 that is the levy
+  # rate of 15.05%, although earnings paid from 6 November 2022 were charged
+  # at 13.8%; see #1807 for the choice between sampling and averaging.
 values:
-  2015-04-01: 
+  2015-04-01:
     value: 0.138
-    reference:
-      - title: National Insurance rates and thresholds
-        href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
-  2025-01-01: 
+    metadata:
+      reference:
+        - title: National Insurance rates and thresholds
+          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+  2022-04-06:
+    value: 0.1505
+    metadata:
+      reference:
+        - title: Health and Social Care Levy Act 2021 s.5(2)(b)
+          href: https://www.legislation.gov.uk/ukpga/2021/28/section/5/enacted
+  2022-11-06:
+    value: 0.138
+    metadata:
+      reference:
+        - title: Health and Social Care Levy (Repeal) Act 2022 s.2(1)
+          href: https://www.legislation.gov.uk/ukpga/2022/43/section/2/enacted
+  2025-01-01:
     value: 0.15
-    reference:
-      - title: National Insurance Contributions (Secondary Class 1 Contributions) Act 2025(1)
-        href: https://www.legislation.gov.uk/ukpga/2025/11/section/1
+    metadata:
+      reference:
+        - title: National Insurance Contributions (Secondary Class 1 Contributions) Act 2025 s.1
+          href: https://www.legislation.gov.uk/ukpga/2025/11/section/1
