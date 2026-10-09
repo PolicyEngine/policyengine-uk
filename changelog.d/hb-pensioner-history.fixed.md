@@ -1,0 +1,1 @@
+- Corrected the higher pension-age Housing Benefit personal allowances for 2015 to 2018, retaining the 2019 rates from 2019.
