@@ -1,7 +1,14 @@
+# HB Regs 2006 reg 74(2): the gross-income bands apply only to a non-dependant
+# in remunerative work, which reg 6(1) defines as at least 16 paid hours a
+# week. hours_worked: 832 is 832 / 52 = 16.0 hours a week, so the cases that
+# test the bands set it. Everyone else takes the reg 74(1)(b) minimum, which
+# is £19.30 a week in 2025-26.
+
 - name: Reduced rent without LHA
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832 # 16 hours a week
     total_income: 5_200 # 100 weekly
   output:
     household_benefits_individual_non_dep_deduction: 19.3 * 52
@@ -10,6 +17,7 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832 # 16 hours a week
     total_income: 28_912 # 556 weekly
   output:
     household_benefits_individual_non_dep_deduction: 124.55 * 52
@@ -18,6 +26,7 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832 # 16 hours a week
     total_income: 17_420 # 335 weekly
   output:
     household_benefits_individual_non_dep_deduction: 99.65 * 52
@@ -26,6 +35,77 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832 # 16 hours a week
     total_income: 9_153 # 176 weekly
   output:
     household_benefits_individual_non_dep_deduction: 44.4 * 52
+
+- name: Other investment income counts for a non-dependant in remunerative work
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832 # 16 hours a week
+    other_investment_income: 28_912 # 556 weekly
+  output:
+    # 556 >= 554, the top 2025-26 threshold: 124.55 * 52 = 6,476.60.
+    household_benefits_individual_non_dep_deduction: 124.55 * 52
+
+- name: Non-worker with only investment income takes the minimum deduction
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    other_investment_income: 28_912 # 556 weekly, no hours
+  output:
+    # Not in remunerative work, so reg 74(1)(b) applies whatever the income:
+    # 19.30 * 52 = 1,003.60 (not 124.55 * 52 = 6,476.60).
+    household_benefits_individual_non_dep_deduction: 19.3 * 52
+
+- name: Non-worker with high investment income takes the minimum deduction
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    other_investment_income: 60_000
+    dividend_income: 40_000 # 100,000 / 52 = 1,923 weekly, no hours
+  output:
+    # 19.30 * 52 = 1,003.60.
+    household_benefits_individual_non_dep_deduction: 19.3 * 52
+
+- name: Worker in remunerative work with earnings keeps the earnings band
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 1_950 # 37.5 hours a week
+    employment_income: 28_912 # 556 weekly
+  output:
+    # 556 >= 554: 124.55 * 52 = 6,476.60.
+    household_benefits_individual_non_dep_deduction: 124.55 * 52
+
+- name: Just under 16 hours a week is not remunerative work
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 831 # 831 / 52 = 15.98 hours a week
+    employment_income: 28_912 # 556 weekly
+  output:
+    # 15.98 < 16, so reg 74(1)(b): 19.30 * 52 = 1,003.60.
+    household_benefits_individual_non_dep_deduction: 19.3 * 52
+
+- name: Exactly 16 hours a week is remunerative work
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832 # 832 / 52 = 16.0 hours a week ("not less than 16")
+    employment_income: 28_912 # 556 weekly
+  output:
+    # 16 >= 16, so the reg 74(2) bands apply: 124.55 * 52 = 6,476.60.
+    household_benefits_individual_non_dep_deduction: 124.55 * 52
+
+- name: Worker with no gross income takes the minimum deduction
+  period: 2025
+  input:
+    housing_benefit_individual_non_dep_deduction_eligible: true
+    hours_worked: 832 # 16 hours a week
+  output:
+    # 0 < 176, so reg 74(2)(a) gives the reg 74(1)(b) amount:
+    # 19.30 * 52 = 1,003.60.
+    household_benefits_individual_non_dep_deduction: 19.3 * 52
