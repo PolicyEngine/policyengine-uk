@@ -1,0 +1,55 @@
+# Temporary GB zero rate on domestic electricity, 1 October 2026 to
+# 31 March 2027 (SI 2026/987). £1,050 of bills carries £50 of VAT at 5%.
+# FY 2026-27 has 183 days at 5% and 182 at 0%: 50 * 183 / 365 = 25.07.
+- name: GB electricity in FY 2026-27 is zero-rated for 182 of 365 days
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: WALES
+    electricity_consumption: 1_050
+    gas_consumption: 0
+  output:
+    domestic_energy_vat: 25.07
+
+- name: Northern Ireland electricity stays at 5%
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: NORTHERN_IRELAND
+    electricity_consumption: 1_050
+    gas_consumption: 0
+  output:
+    domestic_energy_vat: 50
+
+- name: Gas is not affected by the electricity zero rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: SCOTLAND
+    electricity_consumption: 0
+    gas_consumption: 1_050
+  output:
+    domestic_energy_vat: 50
+
+- name: GB electricity is back at 5% in FY 2027-28
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    electricity_consumption: 1_050
+    gas_consumption: 0
+  output:
+    domestic_energy_vat: 50
+
+- name: Energy VAT adds to VAT without the coverage or household-share gross-up
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    region: LONDON
+    consumption: 0
+    electricity_consumption: 1_050
+    gas_consumption: 1_050
+  output:
+    reduced_rate_vat_consumption: 0
+    vat: 100
+    vat_change: 0

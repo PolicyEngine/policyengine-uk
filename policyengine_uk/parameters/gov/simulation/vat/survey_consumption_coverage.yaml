@@ -4,17 +4,19 @@ metadata:
   period: year
   economy: false
   derivation: >-
-    Pre-scaling VAT (standard rate times full_rate_vat_consumption plus reduced
-    rate times reduced_rate_vat_consumption) on the certified Microcosm UK
-    2024-25 national release (policyengine/populace-uk-private, revision
-    f9d1922c) is £80.5bn in 2024. OBR VAT receipts for 2024-25 (outturn, March
-    2026 EFO table 3.8) are £171.0bn. 80.5 / 171.0 = 0.471 for the product of
-    the two factors; divided by the household share of 0.7 gives 0.67. The
-    HMRC ready reckoner gives a consistent level: £8.8bn for one percentage
-    point on the standard rate in 2026-27 implies a product of 0.48 on the same
-    data. On Enhanced FRS 2024-25 the same calculation gives 0.65, so this
-    value overstates VAT on that dataset by about 38%. Re-derive when the
-    default dataset changes, with docs/engineering/vat-coverage.md.
+    VAT on household energy bills (domestic_energy_vat) is not grossed up, so
+    the coverage applies only to VAT on other recorded consumption. On the
+    certified Microcosm UK 2024-25 national release (policyengine/populace-uk-private,
+    revision f9d1922c), pre-scaling VAT on that consumption is £79.2bn in 2024
+    and VAT on energy bills is £2.0bn. OBR VAT receipts for 2024-25 (outturn,
+    March 2026 EFO table 3.8) are £171.0bn. Coverage = 79.2 / (0.7 x (171.0 -
+    2.0)) = 0.670. Before energy bills were split out, the same calculation
+    gave 0.672, so the rounded value is unchanged. The HMRC ready reckoner
+    gives a consistent level: £8.8bn for one percentage point on the standard
+    rate in 2026-27 implies a product of 0.48 on the same data. On Enhanced
+    FRS 2024-25 the coverage would be about 0.93, so this value overstates VAT
+    on that dataset by about 38%. Re-derive when the default dataset changes,
+    with docs/engineering/vat-coverage.md.
   reference:
     - title: OBR, Economic and fiscal outlook March 2026, detailed forecast tables, receipts, table 3.8
       href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
