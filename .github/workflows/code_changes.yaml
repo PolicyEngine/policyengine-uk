@@ -12,9 +12,19 @@ on:
       - .github/**
   workflow_dispatch:
 
+# This workflow only lints and tests (versioning, publishing and the docs
+# deploy are separate workflows), so when a newer commit lands on main the
+# older run's result is superseded. Cancel it instead of letting a 50-minute
+# Test job hold a shared runner. From 2026-10-06 to 10-08, 8 of 17 push runs
+# were superseded mid-run and finishing them used 357 runner-minutes.
+concurrency:
+  group: code-changes-push-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
         - uses: actions/checkout@v6
         - name: Install uv

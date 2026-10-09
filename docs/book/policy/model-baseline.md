@@ -14,7 +14,7 @@ Budget 2025 keeps the income tax personal allowance and basic rate limit, and th
 
 ### Autumn Budget 2024
 
-The government increased the [employer National Insurance rate from 13.8% to 15%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employer.yaml#L13-L17) and reduced the [employer secondary threshold from £9,100 to £5,000 annually](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/secondary_threshold.yaml#L26-L30), both taking effect in fiscal year 2025-26.
+The government increased the [employer National Insurance rate from 13.8% to 15%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employer.yaml#L30-L35) and reduced the [employer secondary threshold from £9,100 to £5,000 annually](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/thresholds/secondary_threshold.yaml#L26-L30), both taking effect in fiscal year 2025-26.
 
 ### Universal Credit rebalancing
 
@@ -28,7 +28,7 @@ Annual benefit uprating applied 4.1% increases to state pensions and 1.7% to wor
 
 ### Autumn Statement 2023
 
-The government announced further National Insurance cuts, reducing the [employee main rate from 10% to 8%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L22-L27) and the [self-employed Class 4 rate from 9% to 6%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/rates/main.yaml#L16-L21) in fiscal year 2024-25. [Class 2 National Insurance contributions were abolished](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_2/flat_rate.yaml#L14-L19) for self-employed people, with the flat rate set to £0 in fiscal year 2024-25.
+The government announced further National Insurance cuts, reducing the [employee main rate from 10% to 8%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L24-L29) and the [self-employed Class 4 rate from 9% to 6%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_4/rates/main.yaml#L16-L21) in fiscal year 2024-25. [Class 2 National Insurance contributions were abolished](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_2/flat_rate.yaml#L14-L19) for self-employed people, with the flat rate set to £0 in fiscal year 2024-25.
 
 ### Capital gains tax changes (Autumn Budget 2024)
 
@@ -40,7 +40,7 @@ The government increased the [child benefit high income tax charge threshold fro
 
 ### Autumn Statement 2023 (Employee NI cut)
 
-An initial National Insurance cut reduced the [employee main rate from 12% to 10%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L16-L21) in fiscal year 2024-25.
+An initial National Insurance cut reduced the [employee main rate from 12% to 10%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L18-L23) in fiscal year 2024-25.
 
 ## 2023 reforms
 
@@ -56,7 +56,7 @@ The government announced an increase in the [National Insurance primary threshol
 
 ### Autumn Budget 2021 (Health and Social Care Levy)
 
-The government temporarily increased [National Insurance rates by 1.25 percentage points](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L4-L10) in fiscal year 2022-23, later reversed the same fiscal year.
+The Health and Social Care Levy Act 2021 raised the [employee main rate from 12% to 13.25%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employee/main.yaml#L4-L17) and the [employer rate from 13.8% to 15.05%](https://github.com/PolicyEngine/policyengine-uk/blob/master/policyengine_uk/parameters/gov/hmrc/national_insurance/class_1/rates/employer.yaml#L18-L29) for fiscal year 2022-23. The Health and Social Care Levy (Repeal) Act 2022 restored 12% and 13.8% for earnings paid from 6 November 2022. The model reads each fiscal year's rates at 30 April, so 2022-23 carries the levy rates for the whole year ([#1807](https://github.com/PolicyEngine/policyengine-uk/issues/1807)).
 
 ### Mini-Budget 2022 (September)
 

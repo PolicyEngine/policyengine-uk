@@ -25,6 +25,7 @@ jobs:
   Python-Compat:
     name: Install + smoke-import (py${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -43,6 +44,7 @@ jobs:
         run: python -c "import policyengine_uk; print('import OK')"
   Lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
         - uses: actions/checkout@v6
         - name: Install uv
