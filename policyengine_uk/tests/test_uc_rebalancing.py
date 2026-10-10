@@ -226,19 +226,112 @@ def test_section_4_floor_rises_with_the_previous_amount(
     ) >= uc_reform.protected_lcwra_floor(previous, before, now, factor)
 
 
-def test_new_claimants_use_fixed_health_element(monkeypatch):
-    _force_uc_seed(monkeypatch, [0.0])
-    sim = Simulation(situation=_uc_claimant(30))
+def _new_claimant_rate(sim: Simulation, year: int) -> float:
+    return float(
+        sim.tax_benefit_system.parameters(
+            str(year)
+        ).gov.dwp.universal_credit.rebalancing.new_claimant_health_element
+    )
+
+
+def test_new_claimants_use_fixed_health_element():
+    situation = _uc_claimant(30)
+    situation["benunits"]["benunit"]["uc_receives_new_claimant_health_element"] = {
+        year: True for year in YEARS
+    }
+    sim = Simulation(situation=situation)
 
     for year in range(2026, 2030):
         health_element = sim.calculate("uc_LCWRA_element", year)[0] / 12
-        expected_health = float(
-            sim.tax_benefit_system.parameters(
-                str(year)
-            ).gov.dwp.universal_credit.rebalancing.new_claimant_health_element
-        )
+        assert health_element == pytest.approx(_new_claimant_rate(sim, year))
 
-        assert health_element == pytest.approx(expected_health)
+
+def _many_uc_claimants(count: int) -> dict:
+    people = {
+        f"person_{i}": {
+            "age": {year: 30 for year in YEARS},
+            "employment_income": {year: 0 for year in YEARS},
+            "uc_limited_capability_for_WRA": {year: True for year in YEARS},
+        }
+        for i in range(count)
+    }
+    return {
+        "people": people,
+        "benunits": {
+            f"benunit_{i}": {"members": [f"person_{i}"]} for i in range(count)
+        },
+        "households": {
+            f"household_{i}": {"members": [f"person_{i}"]} for i in range(count)
+        },
+    }
+
+
+def test_household_award_does_not_depend_on_its_position():
+    # Before the fix, a seeded draw over the benefit units in the simulation
+    # gave about 11% of these identical households the new-claimant rate in
+    # 2026, depending only on their position.
+    sim = Simulation(situation=_many_uc_claimants(40))
+    alone = Simulation(situation=_uc_claimant(30))
+
+    for year in range(2026, 2030):
+        health_elements = sim.calculate("uc_LCWRA_element", year)
+        assert np.all(health_elements == health_elements[0])
+        assert health_elements[0] == pytest.approx(
+            alone.calculate("uc_LCWRA_element", year)[0]
+        )
+        assert health_elements[0] / 12 > _new_claimant_rate(sim, year)
+
+
+def _dataset(new_claimant_status=None):
+    from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+    import pandas as pd
+
+    benunit = {"benunit_id": [1, 2]}
+    if new_claimant_status is not None:
+        benunit["uc_receives_new_claimant_health_element"] = new_claimant_status
+    single_year = UKSingleYearDataset(
+        person=pd.DataFrame(
+            {
+                "person_id": [1, 2],
+                "person_benunit_id": [1, 2],
+                "person_household_id": [1, 2],
+                "age": [30, 30],
+                "uc_limited_capability_for_WRA": [True, True],
+            }
+        ),
+        benunit=pd.DataFrame(benunit),
+        household=pd.DataFrame(
+            {
+                "household_id": [1, 2],
+                "household_weight": [1.0, 1.0],
+                "region": ["NORTH_EAST", "NORTH_EAST"],
+            }
+        ),
+        fiscal_year=2026,
+    )
+    return UKMultiYearDataset(datasets=[single_year])
+
+
+def test_data_without_a_status_keeps_the_seeded_draw(monkeypatch):
+    _force_uc_seed(monkeypatch, [0.0, 0.99])
+    sim = Simulation(dataset=_dataset())
+
+    health_elements = np.asarray(sim.calculate("uc_LCWRA_element", 2026)) / 12
+    assert health_elements[0] == pytest.approx(_new_claimant_rate(sim, 2026))
+    assert health_elements[1] == pytest.approx(429.80)
+    assert list(sim.calculate("uc_receives_new_claimant_health_element", 2026)) == [
+        True,
+        False,
+    ]
+
+
+def test_data_that_supplies_the_status_overrides_the_draw(monkeypatch):
+    _force_uc_seed(monkeypatch, [0.0, 0.99])
+    sim = Simulation(dataset=_dataset(new_claimant_status=[False, True]))
+
+    health_elements = np.asarray(sim.calculate("uc_LCWRA_element", 2026)) / 12
+    assert health_elements[0] == pytest.approx(429.80)
+    assert health_elements[1] == pytest.approx(_new_claimant_rate(sim, 2026))
 
 
 def test_standard_allowance_reforms_still_change_standard_allowance(monkeypatch):
@@ -257,3 +350,26 @@ def test_standard_allowance_reforms_still_change_standard_allowance(monkeypatch)
     reformed_standard_allowance = reformed.calculate("uc_standard_allowance", 2026)[0]
 
     assert reformed_standard_allowance / baseline_standard_allowance > 1.5
+
+
+def test_a_branch_can_state_its_own_status():
+    sim = Simulation(situation=_uc_claimant(30))
+    parent = sim.calculate("uc_LCWRA_element", 2026)[0]
+    branch = sim.get_branch("new_claimant")
+    branch.set_input("uc_receives_new_claimant_health_element", 2026, [True])
+    branch.delete_arrays("uc_LCWRA_element", 2026)
+    uc_reform.universal_credit_july_2025_reform.simulation_modifier(branch)
+
+    assert branch.calculate("uc_LCWRA_element", 2026)[0] / 12 == pytest.approx(
+        _new_claimant_rate(sim, 2026)
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(parent)
+
+    # A branch of that branch inherits its status.
+    nested = branch.get_branch("nested")
+    nested.delete_arrays("uc_LCWRA_element", 2026)
+    uc_reform.universal_credit_july_2025_reform.simulation_modifier(nested)
+    assert nested.calculate("uc_LCWRA_element", 2026)[0] / 12 == pytest.approx(
+        _new_claimant_rate(sim, 2026)
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(parent)

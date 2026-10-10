@@ -100,6 +100,33 @@ def _protected_existing_health_element_monthly(
     )
 
 
+NEW_CLAIMANT_STATUS = "uc_receives_new_claimant_health_element"
+
+
+def _new_claimant_health_element_status(
+    sim: Microsimulation, year: int, drawn: np.ndarray, built_from_data: bool
+) -> np.ndarray:
+    """Which benefit units get the new-claimant LCWRA rate in a year.
+
+    A value the situation or dataset supplies is used as given. Data without
+    one takes the seeded draw, recorded as an input. A household situation
+    without one gets the protected amount (the variable's default): a draw
+    there would make a household's award depend on its position among the
+    other benefit units in the simulation.
+    """
+    # sim.get_array reads the simulation's own branch (and the branches it
+    # inherits from); the holder's get_array reads only the default branch.
+    supplied = sim.get_array(NEW_CLAIMANT_STATUS, year)
+    if supplied is not None:
+        return np.asarray(supplied, dtype=bool)
+    if built_from_data:
+        status = np.asarray(drawn, dtype=bool)
+    else:
+        status = np.zeros(len(drawn), dtype=bool)
+    sim.set_input(NEW_CLAIMANT_STATUS, year, status)
+    return status
+
+
 def add_universal_credit_reform(sim: Microsimulation):
     rebalancing = sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing
 
@@ -114,10 +141,13 @@ def add_universal_credit_reform(sim: Microsimulation):
         2029: 0.22,
     }  # WPI Economics for Trussell Trust based on admin PIP data, 2025
     new_claimant_health_element = rebalancing.new_claimant_health_element
+    built_from_data = getattr(sim, "built_from_dataset", False)
     for year in range(2026, 2030):
         if not rebalancing.active(year):
             continue
-        is_post_2025_claimant = uc_seed < post_2025_claimant_share[year]
+        is_post_2025_claimant = _new_claimant_health_element_status(
+            sim, year, uc_seed < post_2025_claimant_share[year], built_from_data
+        )
         # Copy: calculate returns the simulation's cached array, and the writes
         # below must reach the cache only through set_input.
         current_health_element = np.array(sim.calculate("uc_LCWRA_element", year))

@@ -24,7 +24,7 @@ Existing recipients are treated differently. Universal Credit Regulations 2013 r
 
 For a tax year without a legislated amount, the model uses the lowest amount the Universal Credit Act 2025 s. 4 duty allows. For every standard allowance amount, the protected amount plus that allowance must be at least the previous year's sum, increased by the relevant CPI percentage: the CPI 12-month rate in the September before the tax year, never below 0% (s. 4(4)(a)). The model reads that rate from `gov.economic_assumptions.statutory_uprating_inputs.cpi_september`. Section 3 switches off the element's ordinary uprating, so the amount otherwise stays where it was. Run from the 2025-26 amounts at the 3.8% September 2025 CPI rate, this rule gives the legislated £429.80.
 
-The implementation uses transition probabilities based on WPI Economics analysis for the Trussell Trust, derived from administrative Personal Independence Payment data. The probability of being a new claimant varies by year:
+Whether a benefit unit gets the new-claimant rate is the benefit unit's `uc_receives_new_claimant_health_element` for the year. A household situation can set it, for example `{"uc_receives_new_claimant_health_element": {"2026": True}}` on the benefit unit; otherwise it is false, which pays the protected amount. A dataset can supply it too. A simulation built from data that does not supply it assigns it by a seeded draw, using transition probabilities based on WPI Economics analysis for the Trussell Trust, derived from administrative Personal Independence Payment data. The probability of being a new claimant varies by year:
 
 - 2026: 11%
 - 2027: 13%
