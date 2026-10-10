@@ -20,6 +20,8 @@ The reforms combine a higher standard allowance, protected awards for existing h
 
 From April 2026, new Universal Credit claimants who qualify for the Limited Capability for Work-Related Activity (LCWRA) element receive a fixed monthly amount of £217.26.
 
+Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it disapplies the annual up-rating in Social Security Administration Act 1992 s. 150(1) and (2) in the tax years ending 5 April 2026 to 5 April 2029, and an up-rating order takes effect from the tax year after the one in which it is made. The new-claimant amount (`elements.disabled.amount`) therefore stays at £217.26 a month to 2029-30. From 2030-31 it is uprated from £217.26 by the benefit uprating index, one year's growth at a time, and never falls. The amount is uprated by `gov.dwp.universal_credit.elements.disabled.uprating`, which `rebalancing/create_health_element_uprating.py` builds when parameters are processed: the benefit uprating index, held flat in each year in which `rebalancing.health_element_freeze` and `rebalancing.active` are both true.
+
 Existing recipients are treated differently. Their LCWRA amount is uprated so that the combined value of:
 
 - their standard allowance, and
@@ -51,7 +53,7 @@ These uplifts are applied to the CPI-uprated standard allowance for each year. I
 The reforms are implemented through parameters, scenario modifiers, and scenarios that work together to enable policy analysis.
 ```
 
-- **Parameters**: Three YAML files define the reform's activation status, health element amount for new claimants, and standard allowance uplift rates.
+- **Parameters**: YAML files define the reform's activation status, the health element amount for new claimants, the health element freeze, and the standard allowance uplift rates.
 - **Scenario modifier**: The `add_universal_credit_reform` function applies the protected existing-claimant health-element path during microsimulation.
 - **Scenario**: The `universal_credit_july_2025_reform` scenario enables the reforms in policy analysis.
 
@@ -111,10 +113,32 @@ scenario = Scenario(
 sim = Simulation(scenario=scenario)
 ```
 
+### Lifting the health element freeze
+
+```python
+from policyengine_uk import Simulation, Scenario
+
+# Uprate the LCWRA element by CPI from 2028-29 instead of freezing it.
+# A bare year names the fiscal year from 6 April.
+scenario = Scenario(
+    parameter_changes={
+        "gov.dwp.universal_credit.rebalancing.health_element_freeze": {
+            "2028": False,
+            "2029": False,
+        }
+    }
+)
+
+sim = Simulation(scenario=scenario)
+```
+
+The freeze reaches the element through parameter processing, which `Scenario(parameter_changes=...)` re-runs; a `reform=` dictionary does not re-run it.
+
 ## Legislative reference
 
 The reforms are based on the Universal Credit Bill and its impact assessment:
 
+- https://www.legislation.gov.uk/ukpga/2025/22/section/3
 - https://bills.parliament.uk/publications/62123/documents/6889
 - https://bills.parliament.uk/publications/62124/documents/6892
 - https://assets.publishing.service.gov.uk/media/689ca49e1c63de6de5bb1298/withdrawn-universal-credit-bill-uc-rebalancing-impact-assessment.pdf
