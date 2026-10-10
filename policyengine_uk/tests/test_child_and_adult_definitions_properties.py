@@ -44,15 +44,20 @@ Invariants:
    19 and without own-right benefits, that route alone makes a UC or PC
    qualifying young person whatever the education inputs; without it the
    education route is unchanged. Own-right benefits exclude both routes. UC
-   and PC agree below 19, where only UC's terminal date differs.
+   and PC agree below 19, where only UC's terminal date differs. Child
+   Benefit reg 4 (until the 31 August after the 16th birthday) counts for
+   the same years.
 
 Scope: these are tests of the ENCODED statutory limbs, not full entitlement.
 Education status proxies full-time non-advanced study: hours, employment
-contracts, approved providers and interruptions are unobserved. CB/CTC leaver
-extensions are omitted. UC/PC's route to the 1 September after the 16th
-birthday, which has no education condition, counts for a year that starts
-before that date (invariant 5). UC's terminal date is an input; PC's September
-terminal date is absent.
+contracts, approved providers and interruptions are unobserved. The CTC
+leaver extensions are omitted; Child Benefit's extension period and terminal
+date (regs 5 and 7) are inputs, false here, with their own tests in
+test_child_benefit_school_leaver_routes_properties.py. The route to the 1
+September after the 16th birthday (UC, PC) or the 31 August before it (Child
+Benefit reg 4), which has no education condition, counts for a year that
+starts before that date (invariant 5). UC's terminal date is an input; PC's
+September terminal date is absent.
 Own-benefit receipt collapses different programme-specific benefit lists.
 UC/CTC/PC blanket looked-after exclusions omit statutory exceptions. HBAI's
 fallback assumes dependence at 16--17 regardless of study, requires an
@@ -188,17 +193,19 @@ def statutory_child(age):
 
 
 def in_route_to_first_september_after_16th_birthday(p):
-    # UC reg 5(1)(a) and SPC reg 4A(1)(a) have no education condition. With no
-    # date of birth, a whole age on 6 October places the birthday on 6 April,
-    # so the year (from 6 April) starts before the 1 September following the
-    # 16th birthday exactly when that age is under 17.
+    # UC reg 5(1)(a), SPC reg 4A(1)(a) and Child Benefit reg 4 have no
+    # education condition. With no date of birth, a whole age on 6 October
+    # places the birthday on 6 April, so the year (from 6 April) starts before
+    # the 1 September following the 16th birthday exactly when that age is
+    # under 17. Child Benefit's 31 August is the day before.
     return p.get("is_before_first_september_following_16th_birthday", p["age"] < 17)
 
 
 def qualifying_young_person(p, programme):
-    # CB and CTC: education/training routes only (see omissions in module
-    # docstring). UC and PC: also the route with no education condition.
+    # CTC: education/training routes only (see omissions in module
+    # docstring). UC, PC and CB: also the route with no education condition.
     # CB: https://www.legislation.gov.uk/uksi/2006/223/regulation/3
+    # CB at 16: https://www.legislation.gov.uk/uksi/2006/223/regulation/4
     # CB own-benefit restriction: https://www.legislation.gov.uk/uksi/2006/223/regulation/8
     # UC: https://www.legislation.gov.uk/uksi/2013/376/regulation/5
     # CTC: https://www.legislation.gov.uk/uksi/2002/2007/regulation/5
@@ -208,6 +215,7 @@ def qualifying_young_person(p, programme):
     if programme in {
         "universal_credit",
         "pension_credit",
+        "child_benefit",
     } and in_route_to_first_september_after_16th_birthday(p):
         return True
     if not (non_advanced_education(p) or p["is_in_approved_training"]):
