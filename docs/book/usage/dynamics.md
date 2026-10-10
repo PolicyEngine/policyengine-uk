@@ -165,9 +165,9 @@ Separately from `apply_dynamics`, a reform can set
 `employment_income_behavioral_response` is then their employment income before
 responses times the substitution elasticity times `relative_wage_change`, plus
 the income elasticity times `relative_income_change`. Both changes compare the
-reform with its baseline (`simulation.baseline`), each measured with labour
-supply responses switched off and at the reform's earnings and capital gains
-before responses: `relative_wage_change` is the relative change in one minus
+reform with its baseline (`simulation.baseline`), each measured with every
+behavioural response switched off and at the reform's earnings and capital
+gains before responses: `relative_wage_change` is the relative change in one minus
 the marginal tax rate, and `relative_income_change` the relative change in
 household net income. The changes are capped at
 `gov.simulation.labour_supply_responses.bounds`. The response is part of

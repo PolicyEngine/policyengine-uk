@@ -1,15 +1,26 @@
 """Branches that measure a simulation's results at inputs set on the branch.
 
 Behavioural responses compare a reform with its baseline at the same inputs
-before the response: the labour supply responses at the reform's earnings, and
-the capital gains response at the reform's gains. Each measurement runs in a
-branch of the reform simulation or of its baseline, with the response
-neutralised and those inputs set.
+before the response: the labour supply responses at the reform's earnings and
+gains, and the capital gains response at the reform's gains. Each measurement
+runs in a branch of the reform simulation or of its baseline, with every
+behavioural response neutralised and those inputs set.
 """
 
-from typing import Dict, Iterable
+from typing import Dict
 
 import numpy as np
+
+# Every behavioural response. Each is measured from the position before any
+# response, so one response's measurement does not include another response,
+# and does not recompute it inside its own branches: the labour supply
+# measurement takes gains before their realisation response, and the capital
+# gains measurement takes earnings before the labour supply response.
+BEHAVIOURAL_RESPONSES = (
+    "employment_income_behavioral_response",
+    "capital_gains_behavioural_response",
+    "capital_gains_badr_behavioural_response",
+)
 
 
 def drop_calculated_values(simulation) -> None:
@@ -41,15 +52,14 @@ def measurement_branch(
     simulation,
     name: str,
     period,
-    neutralised: Iterable[str],
     inputs: Dict[str, np.ndarray],
 ):
-    """A branch of ``simulation`` with the ``neutralised`` variables
-    neutralised and ``inputs`` set for ``period``.
+    """A branch of ``simulation`` with every behavioural response neutralised
+    and ``inputs`` set for ``period``.
 
-    The branch clones the tax-benefit system, so neutralising a response there
-    keeps it live in the simulation, and the response does not recurse back
-    into its own measurement.
+    The branch clones the tax-benefit system, so neutralising the responses
+    there keeps them live in the simulation, and no response recurses back
+    into a measurement.
 
     A branch starts from every value its simulation holds, and would read
     those in place of values at the inputs set here: results the simulation
@@ -75,7 +85,7 @@ def measurement_branch(
             "A measurement branch requires a cloned tax-benefit system; "
             "refusing to neutralise on the simulation's own."
         )
-    for variable in neutralised:
+    for variable in BEHAVIOURAL_RESPONSES:
         branch.tax_benefit_system.neutralize_variable(variable)
     drop_calculated_values(branch)
     for variable, value in inputs.items():

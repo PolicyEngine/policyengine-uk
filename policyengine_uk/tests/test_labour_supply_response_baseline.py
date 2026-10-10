@@ -27,6 +27,10 @@ earnings and elasticities:
 6. The response does not depend on the order of calculation: calculating the
    baseline first, recalculating after deleting the response, and calculating
    periods in any order give the same values.
+7. Each behavioural response is measured from the position before any
+   response, so setting the capital gains elasticity leaves the labour supply
+   response unchanged, and setting the labour supply elasticities leaves the
+   capital gains response unchanged.
 """
 
 import numpy as np
@@ -39,6 +43,8 @@ from policyengine_uk.model_api import Scenario
 from policyengine_uk.scenarios.no_economic_assumptions import (
     remove_economic_assumptions,
 )
+from policyengine_uk.utils.capital_gains import RESPONSE_VARIABLES
+from policyengine_uk.utils.measurement_branches import BEHAVIOURAL_RESPONSES
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
@@ -411,3 +417,81 @@ def test_periods_give_the_same_response_in_any_order():
         assert (alone[year] < 0).all()
         np.testing.assert_array_equal(in_order[year], alone[year])
         np.testing.assert_array_equal(reversed_order[year], alone[year])
+
+
+CAPITAL_GAINS_RESPONSE = "capital_gains_behavioural_response"
+# Capital gains tax charged at income tax rates, with a realisation response.
+CAPITAL_GAINS_REFORM = {
+    "gov.hmrc.cgt.basic_rate": {str(YEAR): 0.20},
+    "gov.hmrc.cgt.higher_rate": {str(YEAR): 0.40},
+    "gov.hmrc.cgt.additional_rate": {str(YEAR): 0.45},
+}
+CAPITAL_GAINS_ELASTICITY = "gov.simulation.capital_gains_responses.elasticity"
+
+
+def test_each_response_is_measured_before_the_other():
+    """Invariant 7.
+
+    When only each response's own variable was neutralised in its
+    measurement, the capital gains marginal rate, measured by stepping gains
+    up in branches, recomputed the labour supply response there against a
+    baseline held at gains before the step. The spurious change in net
+    income moved the capital gains rate: on a 16-person dataset the capital
+    gains response went from -150,569 to -554,679 when the labour supply
+    elasticities were set.
+    """
+    people = {
+        name: {
+            "age": {YEAR: 45},
+            "employment_income": {YEAR: earnings},
+            "capital_gains": {YEAR: gains},
+        }
+        for name, earnings, gains in (
+            ("basic_rate_earner", 25_000, 10_000),
+            ("crossing_the_band", 45_000, 40_000),
+            ("higher_rate_earner", 90_000, 150_000),
+        )
+    }
+    situation = {
+        "people": people,
+        "benunits": {f"{name}_benunit": {"members": [name]} for name in people},
+        "households": {f"{name}_household": {"members": [name]} for name in people},
+    }
+
+    def responses(capital_gains_elasticity, substitution, income):
+        sim = Simulation(
+            situation=situation,
+            scenario=Scenario(
+                parameter_changes={
+                    **CAPITAL_GAINS_REFORM,
+                    CAPITAL_GAINS_ELASTICITY: {str(YEAR): capital_gains_elasticity},
+                    **changes(substitution, income),
+                }
+            ),
+        )
+        return values(sim, RESPONSE), values(sim, CAPITAL_GAINS_RESPONSE)
+
+    labour_both, gains_both = responses(1.0, 0.25, -0.05)
+    labour_only, no_gains_response = responses(0.0, 0.25, -0.05)
+    no_labour_response, gains_only = responses(1.0, 0.0, 0.0)
+
+    np.testing.assert_array_equal(no_gains_response, 0)
+    np.testing.assert_array_equal(no_labour_response, 0)
+    assert (gains_only < 0).all()
+    assert (labour_only != 0).any()
+    np.testing.assert_array_equal(gains_both, gains_only)
+    np.testing.assert_array_equal(labour_both, labour_only)
+
+
+def test_measurements_neutralise_every_behavioural_response():
+    """A response missing from BEHAVIOURAL_RESPONSES would be recomputed
+    inside the other responses' measurements."""
+    variables = Simulation(situation=earners([0])).tax_benefit_system.variables
+    responses = {
+        name
+        for name in variables
+        if name.endswith(("behavioural_response", "behavioral_response"))
+    }
+
+    assert responses == set(BEHAVIOURAL_RESPONSES)
+    assert set(RESPONSE_VARIABLES) <= responses

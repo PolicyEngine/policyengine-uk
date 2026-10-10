@@ -5,8 +5,6 @@ from contextlib import contextmanager
 
 from policyengine_uk.utils.measurement_branches import measurement_branch
 
-RESPONSE_VARIABLE = "employment_income_behavioral_response"
-
 # Set on both branches to the values of the simulation whose response is being
 # measured, so that the two differ in policy alone.
 HELD_INPUTS = ("employment_income_before_lsr", "capital_gains_before_response")
@@ -37,7 +35,7 @@ def measurement_branches(person, period):
         return
     inputs = {variable: person(variable, period) for variable in HELD_INPUTS}
     branches = tuple(
-        measurement_branch(sim, name, period, [RESPONSE_VARIABLE], inputs)
+        measurement_branch(sim, name, period, inputs)
         for sim, name in (
             (simulation, "lsr_measurement"),
             (simulation.baseline, "baseline_lsr_measurement"),

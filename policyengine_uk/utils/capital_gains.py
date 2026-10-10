@@ -24,16 +24,16 @@ def measure_mtr(
 ) -> np.ndarray:
     """Measure the capital gains MTR in a simulation, holding gains fixed.
 
-    The measurement branch neutralises the behavioural response and measures
-    from inputs alone, so the rate is taken at ``gains`` even where the
-    simulation has already calculated gains after a response, or at gains of
-    its own (see ``measurement_branch``).
+    The measurement branch neutralises the behavioural responses and measures
+    from inputs alone, so the rate is taken at ``gains`` and at earnings
+    before any labour supply response, even where the simulation has already
+    calculated gains after a response, or at gains of its own (see
+    ``measurement_branch``).
     """
     branch = measurement_branch(
         simulation,
         branch_name,
         period,
-        RESPONSE_VARIABLES,
         {"capital_gains_before_response": gains},
     )
     return branch.populations["person"]("marginal_tax_rate_on_capital_gains", period)
