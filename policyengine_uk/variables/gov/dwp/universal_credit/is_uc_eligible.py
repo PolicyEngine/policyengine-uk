@@ -9,8 +9,11 @@ class is_uc_eligible(Variable):
         "Whether a claimant or partner meets the modelled minimum-age and "
         "pension-age conditions and the benefit unit meets the capital limit. "
         "One qualifying claimant suffices, preserving mixed-age couples under "
-        "regulation 3(2)(a). Dependants cannot satisfy the claimant age test. "
-        "A family on the Pension Credit route "
+        "regulation 3(2)(a). Dependants cannot satisfy the claimant age test, "
+        "nor can a partner who cannot be a joint claimant: where a member of "
+        "a couple claims as a single person (regulation 3(3)), that member "
+        "must meet the conditions, and the capital tested includes the other "
+        "member's (regulation 18(2)). A family on the Pension Credit route "
         "(meets_pension_credit_age_conditions) is not eligible unless it "
         "claims when DWP moves it off its legacy benefits "
         "(claims_uc_at_legacy_closure)."
@@ -27,9 +30,13 @@ class is_uc_eligible(Variable):
     def formula(benunit, period, parameters):
         capital = benunit("uc_assessable_capital", period)
         limit = parameters(period).gov.dwp.universal_credit.means_test.capital.limit
-        claimant = benunit.members("is_uc_claimant", period)
+        claimant = benunit.members("is_uc_single_or_joint_claimant", period)
         meets_minimum_age = benunit.members("meets_uc_minimum_age_condition", period)
-        pension_age = benunit.members("is_SP_age", period)
+        # WRA 2012 s.4(1)(b): "has not reached the qualifying age for state
+        # pension credit"; s.4(4) imports SPCA 2002 s.1(6).
+        pension_age = benunit.members(
+            "has_attained_state_pension_credit_qualifying_age", period
+        )
         has_qualifying_claimant = benunit.any(
             claimant & meets_minimum_age & ~pension_age
         )
