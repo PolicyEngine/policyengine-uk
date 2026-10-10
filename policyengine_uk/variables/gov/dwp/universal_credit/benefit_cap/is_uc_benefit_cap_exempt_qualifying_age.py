@@ -1,7 +1,4 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import (
-    other_member_of_single_claim,
-)
 
 
 class is_uc_benefit_cap_exempt_qualifying_age(Variable):
@@ -20,7 +17,9 @@ class is_uc_benefit_cap_exempt_qualifying_age(Variable):
         "claimants is one to which reg. 60C applies. The model's own "
         "eligibility test needs a claimant under the qualifying age, so this "
         "matters only where an award is supplied as an input. A mixed-age "
-        "couple's joint award is capped like any other."
+        "couple's joint award is capped like any other. A member of a couple "
+        "who claims as a single person (UC Regs 2013 reg. 3(3)) is a single "
+        "claimant, so only their own age counts."
     )
     definition_period = YEAR
     reference = (
@@ -32,10 +31,11 @@ class is_uc_benefit_cap_exempt_qualifying_age(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        # The claimants: the single claimant or each joint claimant. The other
-        # member of a reg. 3(3) single claim is not a claimant.
-        claimant = person("is_uc_assessed_claimant", period) & ~(
-            other_member_of_single_claim(person, period)
-        )
+        # The claimants: the single claimant or each joint claimant (WRA 2012
+        # s. 40). A partner who cannot be a joint claimant (reg. 3(3)) is not
+        # one. That holds whatever the claimant's age: the reg. 3(3) routing
+        # in uc_member_of_couple_claims_as_single_person needs a claimant under
+        # the qualifying age, which a reg. 60C claimant never is.
+        claimant = person("is_uc_single_or_joint_claimant", period)
         attained = person("has_attained_state_pension_credit_qualifying_age", period)
         return benunit.any(claimant) & benunit.all(attained | ~claimant)
