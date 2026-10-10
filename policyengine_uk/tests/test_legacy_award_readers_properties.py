@@ -251,13 +251,15 @@ def test_other_members_awards_never_change_the_readers(drawn):
 # applicant under 25, or for parents of a young child of whom only one works
 # (the extended childcare partner condition). The families above rarely take
 # those shapes, so three more properties check every family and member reader
-# on them. The claimant and partner seldom report an award themselves, and the
-# added member's award survives tariff income on the savings drawn, so a
-# reader that wrongly counts it changes. The invariant is about the readers'
-# own scoping: the shapes pay no rent, so Universal Credit stays far below the
-# benefit cap. The cap still counts every member's award (benefit_cap_reduction
-# reads the benefit-unit totals), so with a binding cap another member's award
-# can reach a reader through Universal Credit.
+# on them. The claimant and partner seldom report an award themselves, and on
+# the savings drawn below the £16,000 capital limit the added member's award
+# survives tariff income, so a reader that wrongly counts it changes (£20,000
+# of savings screens income-related ESA and income-based JSA to nil). The
+# invariant is about the readers' own scoping: the shapes pay no rent, so
+# Universal Credit stays far below the benefit cap. The cap still counts every
+# member's award (benefit_cap_reduction reads the benefit-unit totals), so
+# with a binding cap another member's award can reach a reader through
+# Universal Credit.
 PENSION_AGE = 68
 # Whether the pension-age property enters is_mixed_age_couple, so that a
 # reader of the couple's award reports is tested on those reports alone.
