@@ -305,8 +305,23 @@
   period: 2026
   input:
     age: 30
-    uc_has_limited_capability_for_work: true
+    uc_limited_capability_for_work: true
   output:
+    uc_work_related_group_apart_from_earnings: WORK_PREPARATION
+
+- name: Section 21(1)(a) takes a claimant whose own ESA lacks the support component
+  period: 2026
+  input:
+    age: 30
+    is_disabled_for_benefits: true
+    has_own_esa_award: true
+    esa_includes_support_component: false
+  output:
+    # No limited capability for work-related activity (UC Regs 2013 reg.
+    # 40(1)(a)(ii)), so not section 19(2)(a), but limited capability for work
+    # (reg. 39), so section 21(1)(a).
+    uc_limited_capability_for_WRA: false
+    uc_limited_capability_for_work: true
     uc_work_related_group_apart_from_earnings: WORK_PREPARATION
 
 - name: Section 21 takes only a claimant who does not fall within section 19 or 20
@@ -315,7 +330,7 @@
     people:
       parent:
         age: 30
-        uc_has_limited_capability_for_work: true
+        uc_limited_capability_for_work: true
       child:
         age: 1
   output:

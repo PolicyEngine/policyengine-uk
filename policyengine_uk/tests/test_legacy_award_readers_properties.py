@@ -15,6 +15,8 @@ the child's parent, or the person themselves:
   exemption: CTR (Default Scheme) (England) Regs 2012, Schedule.
 - The tax credit income test: TCA 2002 s.7(2), SI 2002/2008 reg 4.
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
+- The benefit cap exemption: HB Regs 2006 reg 75F(1)(a); UC Regs 2013 reg
+  83(1)(a).
 - Targeted childcare: SI 2014/2147 reg 1(2).
 - Maintenance loans for students entitled to benefits: SI 2011/1986 reg
   71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a) (the
@@ -67,6 +69,7 @@ FAMILY_READERS = [
     "council_tax_reduction_applicable_income",
     "council_tax_reduction_relevant_income_based_benefit",
     "tax_credits_applicable_income",
+    "is_benefit_cap_exempt_health_disability",
     "targeted_childcare_entitlement_eligible",
     "would_claim_IS",
     "income_support_eligible",

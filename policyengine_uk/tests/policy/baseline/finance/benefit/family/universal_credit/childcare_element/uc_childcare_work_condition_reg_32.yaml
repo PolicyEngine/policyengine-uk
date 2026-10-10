@@ -67,6 +67,35 @@
     uc_limited_capability_for_WRA: [false, true]
     uc_childcare_work_condition: true
 
+- name: Reg. 32(1)(b)(i) - a partner whose own ESA lacks the support component still has limited capability for work
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 15_000
+      partner:
+        age: 34
+        is_disabled_for_benefits: true
+        has_own_esa_award: true
+        esa_includes_support_component: false
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    # An ESA award without the support component means no limited capability
+    # for work-related activity (UC Regs 2013 reg. 40(1)(a)(ii)), but the
+    # partner still has limited capability for work (reg. 39), so limb (i)
+    # holds.
+    uc_limited_capability_for_WRA: [false, false]
+    uc_limited_capability_for_work: [false, true]
+    uc_unable_to_provide_childcare: [false, true]
+    uc_childcare_work_condition: true
+
 - name: Reg. 32(1)(b)(ii) - ADM F7013 example, a partner caring full time for her disabled mother
   period: 2025
   absolute_error_margin: 0.01

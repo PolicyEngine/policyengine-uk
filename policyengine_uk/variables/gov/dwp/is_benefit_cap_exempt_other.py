@@ -1,14 +1,20 @@
 from policyengine_uk.model_api import *
-from policyengine_uk.utils.uc_work_related_requirements import (
-    other_member_of_single_claim_in_shared_rules,
-)
-from policyengine_uk.utils.benefit_unit import add_for_members
 
 
 class is_benefit_cap_exempt_other(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether exempt from the benefits cap for non-health/disability reasons"
+    label = "Exempt from the benefit cap because of age"
+    documentation = (
+        "Whether the family's Housing Benefit falls under the pension-age "
+        "regulations (HB Regs 2006 reg 5), which have no benefit cap. "
+        "Universal Credit has no age exception apart from SI 2014/1230 reg "
+        "60C, for a claim where every claimant has reached the qualifying age "
+        "for State Pension Credit. "
+        "The armed forces compensation and support-component ESA exceptions "
+        "are in is_benefit_cap_exempt_health_disability, which limits them "
+        "to the claimant and partner."
+    )
     definition_period = YEAR
     reference = (
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",
@@ -20,7 +26,6 @@ class is_benefit_cap_exempt_other(Variable):
     )
 
     def formula(benunit, period, parameters):
-        person = benunit.members
         # The benefit cap applies to a Universal Credit award whatever the
         # claimants' ages (UC Regs 2013 regs 79, 82 and 83), including a
         # mixed-age couple's joint award (reg 3(2)(a)). The one age-based
@@ -30,21 +35,4 @@ class is_benefit_cap_exempt_other(Variable):
         # the working-age regulations (HB Regs 2006 Part 8A). Housing Benefit
         # under the pension-age regulations, which never apply to a family on
         # Universal Credit, has no cap.
-        pension_age_housing_benefit = benunit(
-            "housing_benefit_pension_age_regulations_apply", period
-        )
-
-        # The AFCS and ESA exceptions read "a claimant" (UC Regs 2013
-        # reg. 83(1)(a) and (e)); a partner who cannot be a joint claimant
-        # (reg. 3(3)) is not one.
-        not_a_claimant = other_member_of_single_claim_in_shared_rules(person, period)
-
-        # Check for Armed Forces Compensation Scheme payments
-        afcs = add_for_members(benunit, period, ["afcs"], ~not_a_claimant) > 0
-
-        # ESA contribution-based with support component
-        esa_support_component = (
-            add_for_members(benunit, period, ["esa_contrib"], ~not_a_claimant) > 0
-        )
-
-        return pension_age_housing_benefit | afcs | esa_support_component
+        return benunit("housing_benefit_pension_age_regulations_apply", period)
