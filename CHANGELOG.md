@@ -1,3 +1,10 @@
+## [2.125.2] - 2026-10-10
+
+### Changed
+
+- - Require policyengine-core 3.32.27, which gives each clone its own record of `set_input` values and forgets the record of a value `Holder.delete_arrays` deletes (PolicyEngine/policyengine-core#561), and remove the `Simulation.clone` override that worked around policyengine-core#559. The `Simulation.delete_arrays` override and the `Simulation.calculate` sweep stay, now for the records that rebuilding the populations leaves behind (PolicyEngine/policyengine-core#605).
+
+
 ## [2.125.1] - 2026-10-10
 
 ### Fixed
