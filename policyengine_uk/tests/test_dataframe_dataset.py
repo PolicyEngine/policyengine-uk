@@ -22,12 +22,14 @@ row order, whichever identifier columns name the groups:
 2. Values: every person variable has the value on that person's row, and
    every benefit unit and household variable has the value its members' rows
    hold. Projected back to people, each variable gives its column again.
-3. Dataset: ``dataset`` holds a year for each whole-year period, with the
-   same people, groups and values, and exact identifiers.
+3. Dataset: ``dataset`` holds a year for each whole-year period the frame
+   gives values for (identifier columns add none), with the same people,
+   groups and values, and exact identifiers.
 4. Row order: reordering the rows changes no person's, benefit unit's or
    household's values.
 5. Round trip: the frame a simulation exports loads back to the same people,
-   groups and inputs, and exports the same frame again.
+   groups and inputs, and exports the same frame again; so does that frame
+   saved as CSV, which holds the exported 32-bit identifiers as 64-bit floats.
 6. Differential: a simulation built from a dataset and one built from the
    frame it exports give the same value for every variable of the model.
 7. Exact names: a column is read only if the part of its name before ``__``
@@ -44,7 +46,8 @@ Intended exceptions, each a ``ValueError``: a column not named
 person identifier; missing identifiers; identifiers that are not whole numbers;
 identifier columns that differ between periods; ``<group>_id`` and
 ``person_<group>_id`` columns that name different groups for a person; an
-identifier read from a float that may stand for more than one whole number
+identifier that does not fit in 64 bits; an identifier read from a float
+that may stand for more than one whole number
 (2**24 or more for 32-bit floats: 2**24 + 1 rounds to 2**24), unless the
 group's own integer identifier is given beside it; and members of a group that
 give different values for one of its variables.
@@ -56,6 +59,8 @@ True)`` exports them, and must be taken before the simulation calculates
 anything, since it also exports every calculated value.
 """
 
+import io
+import warnings
 from dataclasses import dataclass
 from typing import Dict
 
@@ -519,6 +524,36 @@ def test_a_months_and_its_years_values_are_set_in_column_order(order, february):
     assert simulation.dataset[2025].person.ni_class_1_employee.tolist() == [1_200.0]
 
 
+def test_the_data_year_is_the_first_year_the_frame_gives_data_for():
+    # The State Pension formulas take the data year from the dataset. An
+    # identifier column named for an earlier year must not become it, or the
+    # reported pension, given for 2027, would be read for 2025 and be zero.
+    frame_ = pd.DataFrame(
+        {
+            "person_id__2025": [1],
+            "benunit_id__2025": [1],
+            "household_id__2025": [1],
+            "person_benunit_id__2025": [1],
+            "person_household_id__2025": [1],
+            "age__2027": [70],
+            "state_pension_reported__2027": [9_000.0],
+            "state_pension_type__2027": ["BASIC"],
+        }
+    )
+
+    simulation = Simulation(dataset=frame_)
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(
+            Simulation, "build_from_dataframe", legacy_build_from_dataframe
+        )
+        previous = Simulation(dataset=frame_)
+
+    assert simulation.dataset.years == [2027]
+    pension = simulation.calculate("state_pension", 2027).tolist()
+    assert pension[0] > 0
+    assert pension == previous.calculate("state_pension", 2027).tolist()
+
+
 def test_a_frame_that_names_no_whole_year_is_held_in_the_default_input_year():
     frame_ = pd.DataFrame(
         {
@@ -829,6 +864,78 @@ def test_whole_number_floats_are_identifiers():
     assert simulation.dataset[2025].household.household_id.dtype == np.int64
 
 
+@pytest.mark.parametrize(
+    "values",
+    [
+        pd.Series([1, 2**63], dtype=object),
+        np.array([1, 2**63], dtype=np.uint64),
+    ],
+    ids=["python int", "uint64"],
+)
+def test_identifiers_too_large_for_64_bits_are_refused(values):
+    refused(
+        pd.DataFrame({"person_id__2025": values}),
+        "'person_id__2025' holds identifiers too large for 64-bit integers",
+    )
+
+
+def test_an_exported_frame_saved_as_csv_loads_back():
+    # The exported person_ columns hold 32-bit floats: 906,000,001 is
+    # 906,000,000. CSV gives them back as 64-bit floats, which still name the
+    # groups the exact benunit_id and household_id columns give.
+    original = Simulation(dataset=dataset())
+    exported = original.to_input_dataframe()
+    from_csv = pd.read_csv(io.StringIO(exported.to_csv(index=False)))
+    assert from_csv["person_benunit_id__2025"].dtype == np.float64
+    assert from_csv["person_benunit_id__2025"].iloc[0] == 906_000_000
+
+    reloaded = Simulation(dataset=from_csv)
+
+    for entity in ("person", "benunit", "household"):
+        assert ids(reloaded, entity) == ids(original, entity)
+    for group in GROUPS:
+        assert group_of_each_person(reloaded, group) == group_of_each_person(
+            original, group
+        )
+    for variable in ("council_tax", "employment_income", "region", "income_tax"):
+        assert (
+            reloaded.calculate(variable, YEAR).tolist()
+            == original.calculate(variable, YEAR).tolist()
+        )
+
+
+def warned(frame_: pd.DataFrame, tax_benefit_system) -> list:
+    """The rounding warnings loading ``frame_`` gives."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+    return [
+        str(each.message) for each in caught if "may share one" in str(each.message)
+    ]
+
+
+def test_large_float_person_columns_alone_give_a_warning(tax_benefit_system):
+    # 64-bit floats hold these identifiers exactly, but if they were saved
+    # from the model's 32-bit person_household_id, neighbouring households
+    # were rounded to one before the frame was made, which no check can see.
+    large = pd.DataFrame(
+        {
+            "person_id__2025": [1, 2],
+            "person_household_id__2025": [900_000_000.0, 900_000_064.0],
+        }
+    )
+    messages = warned(large, tax_benefit_system)
+    assert len(messages) == 1
+    assert "'person_household_id__2025'" in messages[0]
+    assert "'household_id' column" in messages[0]
+
+    with_own = large.assign(household_id__2025=[900_000_001, 900_000_064])
+    small = large.assign(person_household_id__2025=[1.0, 2.0])
+    integers = large.assign(person_household_id__2025=[900_000_001, 900_000_064])
+    for frame_ in (with_own, small, integers):
+        assert warned(frame_, tax_benefit_system) == []
+
+
 def test_rounded_person_columns_are_checked_at_their_own_precision():
     # 900,000,001 and 900,000,030 are the same 32-bit float, so a rounded
     # person_household_id agrees with either; 900,000,128 is a different one.
@@ -964,6 +1071,9 @@ def test_an_exported_frame_loads_back_and_exports_itself(population, id_columns)
             exported[f"person_{group}_id__{YEAR}"].tolist()
             == exact.astype(np.float32).tolist()
         )
+    # Saved as CSV, the rounded person_ columns come back as 64-bit floats.
+    from_csv = pd.read_csv(io.StringIO(exported.to_csv(index=False)))
+    assert_holds(Simulation(dataset=from_csv), population)
 
 
 @TABLE_SETTINGS

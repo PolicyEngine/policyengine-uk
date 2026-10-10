@@ -17,6 +17,7 @@ stand for more than one whole number is refused rather than allowed to merge
 two people or groups.
 """
 
+import warnings
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import numpy as np
@@ -64,6 +65,7 @@ def exact_limit(dtype) -> Optional[int]:
 
 
 FLOAT32_EXACT_LIMIT = exact_limit(np.float32)
+INT64 = np.iinfo(np.int64)
 
 
 def split_column(column) -> Tuple[str, str]:
@@ -104,18 +106,28 @@ def _ambiguous(column, dtype) -> ValueError:
     )
 
 
+def _too_large(column) -> ValueError:
+    return ValueError(
+        f"Column {column!r} holds identifiers too large for 64-bit integers."
+    )
+
+
 def _whole_number(column, value) -> int:
     """One identifier as an integer, if it stands for one whole number."""
     if _is_integer(value):
-        return int(value)
-    if not _is_float(value):
+        number = int(value)
+    elif not _is_float(value):
         raise _not_whole(column, value)
-    if not np.isfinite(value) or value != np.floor(value):
+    elif not np.isfinite(value) or value != np.floor(value):
         raise _not_whole(column, value)
-    dtype = np.asarray(value).dtype
-    if abs(value) >= exact_limit(dtype):
-        raise _ambiguous(column, dtype)
-    return int(value)
+    else:
+        dtype = np.asarray(value).dtype
+        if abs(value) >= exact_limit(dtype):
+            raise _ambiguous(column, dtype)
+        number = int(value)
+    if not INT64.min <= number <= INT64.max:
+        raise _too_large(column)
+    return number
 
 
 def _as_integers(identifiers: pd.Series) -> np.ndarray:
@@ -133,8 +145,8 @@ def _as_integers(identifiers: pd.Series) -> np.ndarray:
     if values.dtype.kind == "i":
         return values.astype(np.int64)
     if values.dtype.kind == "u":
-        if len(values) and values.max() > np.iinfo(np.int64).max:
-            raise ValueError(f"Column {column!r} holds identifiers too large to use.")
+        if len(values) and values.max() > INT64.max:
+            raise _too_large(column)
         return values.astype(np.int64)
     if values.dtype.kind == "f":
         whole = np.isfinite(values) & (values == np.floor(values))
@@ -150,11 +162,25 @@ def _as_integers(identifiers: pd.Series) -> np.ndarray:
     return values.astype(np.int64)
 
 
+def _float_names(groups: np.ndarray, values: np.ndarray) -> np.ndarray:
+    """Whether each float in ``values`` names the matching group: exactly, or
+    as the same 32-bit float as the group's identifier.
+
+    The model stores ``person_<group>_id`` as a 32-bit float, so a frame it
+    exported holds each group's identifier rounded to one. Saved as CSV, that
+    float is written with the fewest digits that give it back at 32 bits
+    (900,000,064 as 9.0000006e+08), so it is read back as a different 64-bit
+    float that rounds to the same 32-bit one.
+    """
+    exact = groups.astype(values.dtype) == values
+    rounded = groups.astype(np.float32) == values.astype(np.float32)
+    return exact | rounded
+
+
 def _names_group(group: int, value) -> bool:
-    """Whether the identifier ``value`` names ``group``, read at the value's
-    own precision: a float stands for every whole number that rounds to it."""
+    """Whether the identifier ``value`` names ``group``."""
     if _is_float(value):
-        return np.asarray(group).astype(np.asarray(value).dtype) == value
+        return bool(_float_names(np.asarray([group]), np.asarray([value]))[0])
     return _is_integer(value) and int(value) == group
 
 
@@ -163,9 +189,7 @@ def _differs(groups: np.ndarray, named: pd.Series) -> np.ndarray:
     ``groups`` gives that person."""
     values = named.to_numpy()
     if values.dtype.kind == "f":
-        # The model stores person_<group>_id as a 32-bit float, so a frame it
-        # exported holds the group's identifier rounded to one.
-        return groups.astype(values.dtype) != values
+        return ~_float_names(groups, values)
     if values.dtype.kind in "iu":
         return groups != values
     return np.array(
@@ -205,6 +229,17 @@ def _group_of_each_person(
         groups = _as_integers(own)
     elif membership is not None:
         groups = _as_integers(membership)
+        if _holds_floats(membership) and (np.abs(groups) >= FLOAT32_EXACT_LIMIT).any():
+            # Exact as given, but perhaps rounded before: by the model's
+            # 32-bit storage of person_<group>_id, then saved as wider floats.
+            warnings.warn(
+                f"Column {membership.name!r} names each person's {group} with "
+                f"float identifiers of {FLOAT32_EXACT_LIMIT:,} or more. If they "
+                f"come from the model's 32-bit person_{group}_id, neighbouring "
+                f"{group}s may share one. Add a '{group}_id' column of integers "
+                "to be sure.",
+                stacklevel=2,
+            )
     else:
         return person_ids
     if own is not None and membership is not None:
@@ -217,6 +252,13 @@ def _group_of_each_person(
                 f"{membership.iloc[row]})."
             )
     return groups
+
+
+def _holds_floats(identifiers: pd.Series) -> bool:
+    values = identifiers.to_numpy()
+    if values.dtype.kind == "O":
+        return any(_is_float(value) for value in values)
+    return values.dtype.kind == "f"
 
 
 def _same(left: np.ndarray, right: np.ndarray) -> np.ndarray:
@@ -232,9 +274,10 @@ def dataset_from_input_dataframe(
 ) -> Tuple[UKMultiYearDataset, List[Input]]:
     """The dataset that an input DataFrame describes.
 
-    The dataset holds a year for each whole-year period the frame names (or
-    ``default_year`` if it names none), each with the same people, benefit
-    units and households, identified by 64-bit integers. Benefit units and
+    The dataset holds a year for each whole-year period the frame gives
+    values for, besides identifiers (or, if there is none, each whole year its
+    identifier columns name, or else ``default_year``), each with the same
+    people, benefit units and households, identified by 64-bit integers. Benefit units and
     households are in order of their identifiers, which is the order
     ``Simulation.build_from_ids`` gives them. Columns that do not name a
     variable of ``tax_benefit_system`` are left out.
@@ -257,8 +300,9 @@ def dataset_from_input_dataframe(
     Raises:
         ValueError: If a column is not named ``variable__period``, the frame
             has no ``person_id`` column or repeats a person's identifier, an
-            identifier is missing, is not a whole number or is a float that may
-            stand for more than one, identifier columns contradict each other,
+            identifier is missing, is not a whole number, does not fit in 64
+            bits or is a float that may stand for more than one, identifier
+            columns contradict each other,
             or the members of a benefit unit or household give different
             values for one of its variables.
     """
@@ -289,8 +333,16 @@ def dataset_from_input_dataframe(
             group_indices[group],
         ) = np.unique(person_groups[group], return_index=True, return_inverse=True)
 
+    def no_tables() -> Dict[str, Dict[str, np.ndarray]]:
+        return {"person": {}, "benunit": {}, "household": {}}
+
     # The columns of each year's person, benefit unit and household tables.
+    # Identifiers hold for every period, so the period an identifier column
+    # names adds no year; the dataset's years are those its data names. The
+    # first of them is the data year that some formulas read from the
+    # dataset (State Pension), so a year with no data must not come first.
     years: Dict[int, Dict[str, Dict[str, np.ndarray]]] = {}
+    identifier_years = set()
     # Every input of the model the frame gives, and whether it is for one
     # whole year, in column order.
     inputs: List[Tuple[Input, bool]] = []
@@ -304,11 +356,9 @@ def dataset_from_input_dataframe(
             and period.size == 1
             and (start.month, start.day) == (1, 1)
         )
-        if whole_year:
-            year = years.setdefault(
-                start.year, {"person": {}, "benunit": {}, "household": {}}
-            )
         if variable in IDENTIFIER_VARIABLES:
+            if whole_year:
+                identifier_years.add(start.year)
             continue
         entity = tax_benefit_system.variables[variable].entity.key
         values = df[column].to_numpy()
@@ -324,7 +374,7 @@ def dataset_from_input_dataframe(
                 )
             values = group_values
         if whole_year:
-            year[entity][variable] = values
+            years.setdefault(start.year, no_tables())[entity][variable] = values
         inputs.append(((variable, period_text, values), whole_year))
 
     in_other_periods = {
@@ -333,7 +383,9 @@ def dataset_from_input_dataframe(
     replayed = [each for each, _ in inputs if each[0] in in_other_periods]
 
     if not years:
-        years[int(default_year)] = {"person": {}, "benunit": {}, "household": {}}
+        # A frame of identifiers alone (and perhaps values for months).
+        for year in sorted(identifier_years) or [int(default_year)]:
+            years[year] = no_tables()
     datasets = [
         UKSingleYearDataset(
             person=pd.DataFrame(

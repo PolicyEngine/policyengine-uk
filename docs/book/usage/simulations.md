@@ -195,17 +195,21 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   which must all hold the same value.
 - Identifiers are whole numbers, and each person's `person_id` is their own.
 - The simulation's `dataset` is the `UKMultiYearDataset` the frame describes,
-  with a year for each year the columns name. Values for a month or another
+  with a year for each year the frame gives values for (identifier columns
+  hold for every year, so they add none). Values for a month or another
   period that is not one year are set on the simulation directly. A variable
   given for both months and the year is set column by column in the frame's
   order, since a year's value is spread over the months not already set.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit
-floats, which round identifiers of 2**24 (16,777,216) or more, so a frame
+floats, which round identifiers of `2**24` (16,777,216) or more, so a frame
 exported from a simulation with large identifiers holds them rounded. The
 loader takes the groups from the exact `household_id` and `benunit_id` columns,
-and refuses a frame that names its groups only with such rounded identifiers.
+which also keeps an exported frame saved as CSV loading correctly. It refuses a
+frame that names its groups only with 32-bit float identifiers that large, and
+warns when it names them only with wider floats that large, which may have
+been rounded before they were saved.
 ```
 
 ### From entity tables with `UKSingleYearDataset` and `UKMultiYearDataset`
