@@ -25,28 +25,45 @@ def is_payee_of_couple_award(person, period, reported):
     return where(person.benunit.any(reports), reports, claimant)
 
 
-def own_report_is_paid(person, period, award):
+def own_report_is_paid(person, period, award, works, capital_limit):
     """Whether income-related ESA or income-based JSA (award: "esa_income" or
     "jsa_income") is paid on this person's own report, for a member who is
     neither the claimant nor the partner and so claims in their own right.
-    It is paid when the award on their report alone is positive: the report
-    exceeds the tariff income from the benefit unit's capital, within the
-    capital limit, as income_related_esa_award and income_related_jsa_award
-    screen it. Their own capital is not observed, so the benefit unit's
-    stands in for it. The benefit unit's award must also be positive, so a
-    reform that removes or zeroes the benefit removes the status too.
 
-    Another member's report never changes this: once this person reports,
-    the capital test reads the household's capital whoever else reports, and
-    the award on their report alone does not depend on other reports. On the
-    formula path a positive award on their report implies a positive benefit
-    unit award, since adding reports never lowers it."""
+    Their claim is screened on them alone. They must not be engaged in
+    remunerative work as its claimant (works), and the award on their report
+    alone must be positive: the report exceeds the tariff income from the
+    benefit unit's capital, within the capital limit (capital_limit). Their
+    own capital is not observed, so the benefit unit's stands in for it.
+    The benefit unit's screen (esa_income_eligible or jsa_income_eligible)
+    cannot stand in for theirs, because when the claimant or partner reports
+    an award it tests only them.
+
+    The benefit unit's award must also be in payment: positive, or nil while
+    the benefit unit's screen fails and the award is not neutralised. When
+    the award on this person's report alone is positive, that screen fails
+    only when the claimant or partner reports an award and fails the work
+    tests, which leaves this person's own claim standing; on the formula
+    path that is the only way the award is nil. A zero cannot say why it is
+    zero, so a reform that replaces the award with nil, or a nil award
+    entered directly, removes the status only while the screen passes. A
+    reform that neutralises the benefit always removes it.
+
+    On the formula path another member's report or work never changes this.
+    Their own tests read only their own work, their own report and the
+    household's capital, and when the award on their report alone is
+    positive, the benefit unit's award is positive exactly when its screen
+    passes."""
     benunit = person.benunit
-    return (
-        benunit(f"{award}_eligible", period)
+    own_award = (
+        ~works
+        & (benunit(f"{award}_assessable_capital", period) <= capital_limit)
         & (
             person(f"{award}_reported", period)
             > benunit(f"{award}_tariff_income", period)
         )
-        & (benunit(award, period) > 0)
     )
+    removed = person.simulation.tax_benefit_system.get_variable(award).is_neutralized
+    paid = benunit(award, period) > 0
+    screen_fails = ~benunit(f"{award}_eligible", period)
+    return own_award & (paid | (screen_fails & (not removed)))

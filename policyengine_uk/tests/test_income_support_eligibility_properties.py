@@ -21,13 +21,17 @@ No adult outside the couple is named, so:
   is a non-carer working 24 hours or more (s.124(1)(aa), (c), (e), (f), (h);
   IS Regs 1987 regs 5(1), 5(1A) and 6(4)(c)); neither has income-related ESA
   or income-based JSA (s.124(1)(h), (f)), meaning the award on their reported
-  amounts after that benefit's capital test, or an esa_income or jsa_income
-  the reported amounts do not explain (one that equals neither the award on
-  everyone's reported amounts nor their plain total); the couple is not
-  taken to be on State Pension Credit (s.124(1)(g)); and capital is within
-  the Income Support limit;
+  amounts after that benefit's capital and remunerative work tests
+  (legacy_award_work_reference), or an esa_income or jsa_income the reported
+  amounts do not explain (one that equals neither the award on everyone's
+  reported amounts nor their plain total); the couple is not taken to be on
+  State Pension Credit (s.124(1)(g)); and capital is within the Income
+  Support limit;
 - raising any claimant's or partner's hours or JSA never makes a family
-  eligible. (c) and (f) only ever bar a claim. The one other path is (g):
+  eligible. (c) and (f) only ever bar a claim, except where the work ends an
+  income-related ESA or income-based JSA award that barred it: a carer is
+  not in remunerative work for Income Support (reg 6(4)(c)) but is for JSA,
+  so a carer's own JSA award ends at 16 hours. The one other path is (g):
   income-based JSA reported by the claimant or partner can end the Housing
   Benefit route to the inferred SI 2019/37 saving
   (has_mixed_age_couple_pension_credit_saving) when neither member reports
@@ -75,6 +79,7 @@ import numpy as np
 from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
+from legacy_award_work_reference import esa_screen, jsa_screen
 from policyengine_uk import Simulation
 
 YEAR = 2025
@@ -430,6 +435,9 @@ def reference_eligibility(
             and not any(works(other, WORK.partner_hours) for other in others)
         )
 
+    # The awards on the claimant's and partner's reports, after the capital
+    # and remunerative work tests. Members outside the family are not
+    # candidates when either of them reports one.
     if esa_income is not None:
         # Within half a penny of zero is no award.
         income_related_esa = esa_income > 0.005
@@ -438,13 +446,17 @@ def reference_eligibility(
             sum(a["esa_income_reported"] for a in adults),
             capital,
             parameters.gov.dwp.ESA.income.capital,
-        )
+        ) and esa_screen(adults, [], capital, parameters)
     if jsa_income is not None:
         # Within half a penny of zero is no award.
         income_based_jsa = jsa_income > 0.005
     else:
-        income_based_jsa = JSA.active and income_related_award(
-            sum(a["jsa_income_reported"] for a in adults), capital, JSA.capital
+        income_based_jsa = (
+            JSA.active
+            and income_related_award(
+                sum(a["jsa_income_reported"] for a in adults), capital, JSA.capital
+            )
+            and jsa_screen(adults, [], capital, parameters)
         )
     return (
         any(is_claimant(i) for i in range(len(adults)))
@@ -457,9 +469,12 @@ def reference_eligibility(
     )
 
 
-def explained_by_reports(esa_income, reported_total, capital, parameters, rules=None):
+def explained_by_reports(
+    esa_income, reported_total, capital, parameters, rules=None, screen=True
+):
     """Whether an esa_income (or, with the JSA capital rules, a jsa_income)
-    equals what the reported amounts give: the award after the capital test,
+    equals what the reported amounts give: the award after the capital and
+    remunerative work tests (screen: whether the reports pass the work test),
     or their plain total. Income-based JSA is active in YEAR."""
     ESA = rules if rules is not None else parameters.gov.dwp.ESA.income.capital
     tariff = (
@@ -471,7 +486,7 @@ def explained_by_reports(esa_income, reported_total, capital, parameters, rules=
     )
     award = (
         max(0, reported_total - tariff)
-        if reported_total > 0 and capital <= ESA.limit
+        if reported_total > 0 and capital <= ESA.limit and screen
         else 0
     )
     return abs(esa_income - award) <= 0.005 or abs(esa_income - reported_total) <= 0.005
@@ -500,12 +515,19 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
         # An esa_income or jsa_income the reported amounts explain is read
         # through them, like a calculated one.
         entered_esa = entered_jsa = None
+        # The award on everyone's reports, which the value rule compares
+        # with, applies the work tests to the whole benefit unit.
+        others = [extra] if extra is not None else []
         if esa_income is not None:
             reported_total = sum(
                 member.get("esa_income_reported", 0) for member in adults + [extra]
             )
             if not explained_by_reports(
-                esa_income[i], reported_total, capital, parameters
+                esa_income[i],
+                reported_total,
+                capital,
+                parameters,
+                screen=esa_screen(adults, others, capital, parameters),
             ):
                 entered_esa = esa_income[i]
         if jsa_income is not None:
@@ -518,6 +540,7 @@ def test_is_eligibility_matches_a_family_by_family_reading(drawn, data):
                 capital,
                 parameters,
                 parameters.gov.dwp.JSA.income.capital,
+                screen=jsa_screen(adults, others, capital, parameters),
             ):
                 entered_jsa = jsa_income[i]
         expected = reference_eligibility(
@@ -555,9 +578,10 @@ def more_work_or_jsa(draw, adults):
 @given(st.lists(families(), min_size=1, max_size=8), st.data())
 def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
     """(c) and (f) only ever bar a claim: raising any claimant's or partner's
-    hours or JSA cannot turn an ineligible family eligible. More JSA can lift
-    the (g) bar only for a couple with no Income Support report, which is
-    never eligible (see the module docstring)."""
+    hours or JSA cannot turn an ineligible family eligible, unless the work
+    ends an income-related ESA or income-based JSA award that barred it. More
+    JSA can lift the (g) bar only for a couple with no Income Support report,
+    which is never eligible (see the module docstring)."""
     capital_as_savings, esa_income, jsa_income = data.draw(input_settings(len(drawn)))
     jsa_income = None if jsa_income is None else jsa_income * 2
     more = [
@@ -578,8 +602,24 @@ def test_more_work_or_jsa_never_makes_a_family_eligible(drawn, data):
         event("some family eligible before")
     if (eligible[: len(drawn)] & ~eligible[len(drawn) :]).any():
         event("more work or JSA removed eligibility")
-    for i in range(len(drawn)):
-        assert not (eligible[len(drawn) + i] and not eligible[i]), (drawn[i], more[i])
+    n = len(drawn)
+    # An award entered directly is the same on both sides. One calculated
+    # from reports can end when the work test fails: these families have no
+    # member outside the couple, so esa_income and jsa_income are the
+    # claimant's and partner's award, after tariff income and while the
+    # scheme is active.
+    lost_award = np.zeros(n, dtype=bool)
+    for variable, direct in [("esa_income", esa_income), ("jsa_income", jsa_income)]:
+        if direct is None:
+            award = sim.calculate(variable, YEAR)
+            lost_award |= (award[:n] > 0) & (award[n:] <= 0)
+    if (eligible[n:] & ~eligible[:n] & lost_award).any():
+        event("more work ended an award that barred Income Support")
+    for i in range(n):
+        assert lost_award[i] or not (eligible[n + i] and not eligible[i]), (
+            drawn[i],
+            more[i],
+        )
 
 
 # One fixed example: situation() records Hypothesis events, so it runs inside

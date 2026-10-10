@@ -31,11 +31,24 @@ adult) claims in their own right, so:
 - the claimant-or-partner awards are bounded by the benefit-unit awards
   (0 <= claimant_or_partner_esa_income <= esa_income, likewise for JSA) and
   equal them when no other member reports an award;
+- the claimant-or-partner awards are the award on the claimant's and
+  partner's reports after tariff income, within the capital limit, and only
+  while the benefit unit passes the remunerative work screen
+  (esa_income_eligible and jsa_income_eligible, read independently from the
+  law in legacy_award_work_reference);
 - a person is on an award exactly when they are the payee of their couple's
   positive award (the claimant or partner who reports it, or the claimant)
-  or, for anyone else, when the award on their own report alone is positive
-  after tariff income from the household's capital and within the capital
-  limit (Income Support: when they report it).
+  or, for anyone else, when their own claim passes: they are not engaged in
+  remunerative work as its claimant (for ESA, earnings above the exempt work
+  limits; for JSA, 16 hours a week or more) and the award on their own report
+  alone is positive after tariff income from the household's capital and
+  within the capital limit (Income Support: when they report it).
+
+Adults, including the adult outside the couple, work some hours and some
+earn pay, so the work screens bite for both awards. Pay of £8,000 is below
+the personal allowance and the primary threshold, and £20,000 is far above
+the higher limit for exempt work, so the work reference, which reads
+England's income tax rates, decides the same in Scotland and Wales.
 
 Roles are given explicitly (is_claimant_or_partner), so the properties test
 the readers rather than role inference. The take-up mode is fixed
@@ -45,9 +58,15 @@ one simulation, in separate households and benefit units.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
+from legacy_award_work_reference import (
+    esa_claimant_in_remunerative_work,
+    esa_screen,
+    jsa_screen,
+    weekly_hours,
+)
 from policyengine_uk import Simulation
 
 YEAR = 2025
@@ -90,6 +109,19 @@ def award_reports(draw):
     }
 
 
+# 0, 15, 16, 24 and 40 hours a week: either side of JSA's 16 hours for a
+# claimant, ESA's 16 for permitted work and 24 for either partner.
+HOURS = [0, 0, 780, 832, 1_248, 2_080]
+
+
+@st.composite
+def work(draw):
+    return {
+        "employment_income": draw(st.sampled_from([0, 0, 8_000, 20_000])),
+        "hours_worked": draw(st.sampled_from(HOURS)),
+    }
+
+
 @st.composite
 def families(draw):
     """A claimant, an optional partner, up to two dependants and sometimes an
@@ -97,7 +129,7 @@ def families(draw):
 
     Qualifying young persons and the existing outside adult may report awards
     of their own, so the properties also cover members who are on an award
-    in their own right.
+    in their own right. The claimant, partner and outside adult may work.
     """
     dependants = []
     for _ in range(draw(st.integers(0, 2))):
@@ -118,7 +150,7 @@ def families(draw):
         adults.append(
             {
                 "age": draw(st.integers(max(18, eldest_dependant + 16), 60)),
-                "employment_income": draw(st.sampled_from([0, 0, 8_000, 20_000])),
+                **draw(work()),
                 "is_parent": bool(dependants),
                 "receives_carer_benefit": draw(st.booleans()),
                 # A disabled claimant or partner gives the family the
@@ -143,6 +175,7 @@ def families(draw):
             {
                 "age": draw(st.integers(20, 60)),
                 "current_education": "NOT_IN_EDUCATION",
+                **draw(work()),
                 **draw(award_reports()),
             }
         )
@@ -160,12 +193,13 @@ def other_members(draw):
     """An adult who is neither claimant, partner nor a dependant.
 
     They are under state pension age and not in education, so a 16 to 19 year
-    old is not a qualifying young person. They have no income other than the
-    awards they report.
+    old is not a qualifying young person. They may work, and have no income
+    other than their pay and the awards they report.
     """
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        **draw(work()),
         **draw(award_reports()),
     }
 
@@ -280,11 +314,21 @@ def reference_award(reported, capital, params):
     )
 
 
-def reference_claimant_or_partner_award(adults, household, report, params):
-    """The award on the claimant's and partner's reports."""
-    return float(
-        reference_award(sum(a[report] for a in adults), household["savings"], params)
-    )
+def outside_members(non_couple, other):
+    """Members of the benefit unit outside the couple, in simulation order."""
+    return list(non_couple) + ([other] if other is not None else [])
+
+
+def reference_claimant_or_partner_award(
+    adults, non_couple, household, other, report, screen, params, parameters
+):
+    """The award on the claimant's and partner's reports, while the benefit
+    unit passes the work screen. When the claimant or partner reports, the
+    screen tests only them; otherwise the award on their reports is nil."""
+    capital = household["savings"]
+    if not screen(adults, outside_members(non_couple, other), capital, parameters):
+        return 0.0
+    return float(reference_award(sum(a[report] for a in adults), capital, params))
 
 
 @SETTINGS
@@ -292,21 +336,31 @@ def reference_claimant_or_partner_award(adults, household, report, params):
 def test_claimant_or_partner_awards_match_reference(drawn):
     units = [(*family, other) for family, other in drawn]
     sim = Simulation(situation=situation(units))
-    dwp = sim.tax_benefit_system.parameters(YEAR).gov.dwp
-    for variable, report, params, active in [
-        ("claimant_or_partner_esa_income", "esa_income_reported", dwp.ESA.income, 1),
+    parameters = sim.tax_benefit_system.parameters(YEAR)
+    dwp = parameters.gov.dwp
+    for variable, report, screen, params, active in [
+        (
+            "claimant_or_partner_esa_income",
+            "esa_income_reported",
+            esa_screen,
+            dwp.ESA.income,
+            1,
+        ),
         (
             "claimant_or_partner_jsa_income",
             "jsa_income_reported",
+            jsa_screen,
             dwp.JSA.income,
             dwp.JSA.income.active,
         ),
     ]:
         award = sim.calculate(variable, YEAR)
-        for i, (adults, _, household, other) in enumerate(units):
+        for i, (adults, non_couple, household, other) in enumerate(units):
             expected = active * reference_claimant_or_partner_award(
-                adults, household, report, params
+                adults, non_couple, household, other, report, screen, params, parameters
             )
+            if expected == 0 and sum(a[report] for a in adults) > 0:
+                event(f"{variable}: a reported award is screened out")
             assert np.isclose(award[i], expected), (variable, units[i])
 
 
@@ -331,6 +385,20 @@ def payee(sim, claimant_or_partner, reports):
     return result
 
 
+def esa_claimant_works(member, parameters):
+    """ESA Regs 2008 reg 41(1) and reg 45: engaged in remunerative work as the
+    claimant of their own claim."""
+    return esa_claimant_in_remunerative_work(member, parameters)
+
+
+def jsa_claimant_works(member, parameters):
+    """Jobseekers Act 1995 s.1(2)(e), JSA Regs 1996 reg 51(1)(a): 16 hours a
+    week or more as the claimant of their own claim."""
+    return (
+        weekly_hours(member) >= parameters.gov.dwp.JSA.remunerative_work.claimant_hours
+    )
+
+
 @SETTINGS
 @given(st.lists(st.tuples(families(), other_members()), min_size=1, max_size=6))
 def test_person_is_on_award_from_couple_or_own_report(drawn):
@@ -338,14 +406,23 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
     sim = Simulation(situation=situation(units))
     claimant_or_partner = sim.calculate("is_claimant_or_partner", YEAR)
     capital = sim.calculate("savings", YEAR, map_to="person")
-    dwp = sim.tax_benefit_system.parameters(YEAR).gov.dwp
-    for person_variable, couple_award, report, params, active in [
+    parameters = sim.tax_benefit_system.parameters(YEAR)
+    dwp = parameters.gov.dwp
+    # Everyone's inputs, in simulation order: the couple, then the members
+    # outside it.
+    members = [
+        member
+        for adults, non_couple, _, other in units
+        for member in adults + outside_members(non_couple, other)
+    ]
+    for person_variable, couple_award, report, params, active, works in [
         (
             "is_on_income_related_esa",
             "claimant_or_partner_esa_income",
             "esa_income_reported",
             dwp.ESA.income,
             True,
+            esa_claimant_works,
         ),
         (
             "is_on_income_based_jsa",
@@ -353,6 +430,7 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
             "jsa_income_reported",
             dwp.JSA.income,
             dwp.JSA.income.active,
+            jsa_claimant_works,
         ),
         (
             "is_on_income_support",
@@ -360,6 +438,7 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
             "income_support_reported",
             None,
             dwp.income_support.active,
+            None,
         ),
     ]:
         on = sim.calculate(person_variable, YEAR)
@@ -374,8 +453,18 @@ def test_person_is_on_award_from_couple_or_own_report(drawn):
             # Income Support: their own report, while it is in payment.
             own = active & (reported > 0)
         else:
-            # The award on their own report alone, on the household's capital.
-            own = active & (reference_award(reported, capital, params) > 0)
+            # Their own claim: the award on their own report alone, on the
+            # household's capital, while they are not in remunerative work
+            # as its claimant. Nobody else's report or work matters.
+            free = np.array(
+                [
+                    member.get(report, 0) == 0 or not works(member, parameters)
+                    for member in members
+                ]
+            )
+            own = active & free & (reference_award(reported, capital, params) > 0)
+            if (~claimant_or_partner & (reported > 0) & ~free).any():
+                event(f"{person_variable}: an outside member's work bars them")
         expected = np.where(claimant_or_partner, couple, own)
         assert np.array_equal(on, expected), (person_variable, units)
 
@@ -646,3 +735,164 @@ def test_late_zero_entry_overrides_the_claimants_reports():
         sim = Simulation(situation=situation)
         sim.set_input(variable, YEAR, np.array([0.0]))
         assert np.isclose(sim.calculate(scoped, YEAR)[0], 0), variable
+
+
+def _situation(people, year=YEAR):
+    names = list(people)
+    return {
+        "people": {
+            n: {k: {year: v} for k, v in inputs.items()} for n, inputs in people.items()
+        },
+        "benunits": {"b": {"members": names}},
+        "households": {"h": {"members": names}},
+    }
+
+
+FULL_TIME_PAY = {"employment_income": 20_000, "hours_worked": 2_080}
+
+
+def test_a_working_claimants_reported_awards_are_screened_out():
+    """WRA 2007 Sch 1 para 6(1)(e); Jobseekers Act 1995 s.1(2)(e).
+
+    A claimant earning £20,000 for 40 hours a week has ESA earnings of about
+    £344.61 a week after PAYE (£1,486) and Class 1 (about £594.40), above the
+    £195.50 higher limit for exempt work in 2025-26, and works 16 hours or
+    more for JSA. Their reported awards are not paid, so the claimant-or-
+    partner awards that the readers use are nil, whichever Hypothesis
+    examples the properties draw."""
+    claimant = {"age": 40, "is_claimant_or_partner": True}
+    reports = {"esa_income_reported": 3_000, "jsa_income_reported": 3_000}
+    idle = Simulation(situation=_situation({"c": {**claimant, **reports}}))
+    working = Simulation(
+        situation=_situation({"c": {**claimant, **reports, **FULL_TIME_PAY}})
+    )
+    for variable in [
+        "claimant_or_partner_esa_income",
+        "claimant_or_partner_jsa_income",
+    ]:
+        assert np.isclose(idle.calculate(variable, YEAR)[0], 3_000), variable
+        assert working.calculate(variable, YEAR)[0] == 0, variable
+    for variable in ["is_on_income_related_esa", "is_on_income_based_jsa"]:
+        assert idle.calculate(variable, YEAR)[0], variable
+        assert not working.calculate(variable, YEAR)[0], variable
+
+
+def _claimant_and_outside_adult(claimant_report, claimant_works, other_works):
+    claimant = {"age": 40, "is_claimant_or_partner": True}
+    other = {
+        "age": 30,
+        "is_claimant_or_partner": False,
+        "current_education": "NOT_IN_EDUCATION",
+        "esa_income_reported": 3_000,
+        "jsa_income_reported": 3_000,
+    }
+    for person, works in [(claimant, claimant_works), (other, other_works)]:
+        if works:
+            person.update(FULL_TIME_PAY)
+    claimant["esa_income_reported"] = claimant_report
+    claimant["jsa_income_reported"] = claimant_report
+    return Simulation(situation=_situation({"c": claimant, "o": other}))
+
+
+def test_an_outside_adults_own_claim_is_screened_on_their_own_work():
+    """An adult outside the couple claims in their own right, so their claim
+    is tested on their own work and never on the claimant's (WRA 2007 Sch 1
+    para 6(1)(e); Jobseekers Act 1995 s.1(2)(e)). The benefit unit's screen
+    tests only the claimant when the claimant reports an award, so it cannot
+    stand in for theirs.
+
+    Working full time, they are never on either award, whether or not the
+    non-working claimant also reports one. Not working, they stay on both
+    when a working claimant's own report fails the screen and leaves the
+    benefit unit's award nil."""
+    readers = [
+        "is_on_income_related_esa",
+        "is_on_income_based_jsa",
+        "maintenance_loan_entitled_to_benefits",
+    ]
+    for claimant_report in [0, 3_000]:
+        working_other = _claimant_and_outside_adult(
+            claimant_report, claimant_works=False, other_works=True
+        )
+        idle_other = _claimant_and_outside_adult(
+            claimant_report, claimant_works=True, other_works=False
+        )
+        for variable in readers:
+            assert not working_other.calculate(variable, YEAR)[1], (
+                variable,
+                claimant_report,
+            )
+            assert idle_other.calculate(variable, YEAR)[1], (variable, claimant_report)
+    # The working claimant's report fails the screen: the benefit unit's
+    # award is nil, and the claimant is on neither award.
+    idle_other = _claimant_and_outside_adult(
+        3_000, claimant_works=True, other_works=False
+    )
+    assert idle_other.calculate("esa_income", YEAR)[0] == 0
+    assert not idle_other.calculate("is_on_income_related_esa", YEAR)[0]
+
+
+def test_an_outside_adults_work_keeps_their_non_dependant_deduction():
+    """Merton's working-age scheme, as modelled from 2027, takes no
+    non-dependant deduction for a non-dependant on income-related ESA, read
+    from is_on_income_related_esa (the common council tax reduction helper).
+
+    In a non-dependant benefit unit of a claimant and an adult outside their
+    couple, the outside adult's own ESA report exempts them only when their
+    own claim passes: working full time, their deduction is the same as if
+    they reported nothing, whatever the claimant reports; not working, they
+    are exempt whatever the working claimant reports."""
+    year = NON_DEP_YEAR
+
+    def deduction(claimant_report, other_report, claimant_works, other_works):
+        def member(age, role, report, works):
+            inputs = {
+                "age": {year: age},
+                "is_claimant_or_partner": {year: role},
+                "current_education": {year: "NOT_IN_EDUCATION"},
+                "esa_income_reported": {year: report},
+            }
+            if works:
+                inputs.update({k: {year: v} for k, v in FULL_TIME_PAY.items()})
+            return inputs
+
+        people = {
+            "applicant": {"age": {year: 50}, "is_claimant_or_partner": {year: True}},
+            "claimant": member(40, True, claimant_report, claimant_works),
+            "other": member(30, False, other_report, other_works),
+        }
+        sim = Simulation(
+            situation={
+                "people": people,
+                "benunits": {
+                    "applicant_unit": {"members": ["applicant"]},
+                    "non_dependant_unit": {
+                        "members": ["claimant", "other"],
+                        "universal_credit": {year: 0},
+                    },
+                },
+                "households": {
+                    "h": {
+                        "members": list(people),
+                        "country": {year: "ENGLAND"},
+                        "local_authority": {year: "MERTON"},
+                        "savings": {year: 0},
+                    }
+                },
+            }
+        )
+        return sim.calculate(
+            "merton_council_tax_reduction_individual_non_dep_deduction", year
+        )[2]
+
+    not_on_esa = deduction(0, 0, claimant_works=False, other_works=True)
+    assert not_on_esa > 0
+    for claimant_report in [0, 3_000]:
+        assert np.isclose(
+            deduction(claimant_report, 3_000, claimant_works=False, other_works=True),
+            not_on_esa,
+        ), claimant_report
+        assert (
+            deduction(claimant_report, 3_000, claimant_works=True, other_works=False)
+            == 0
+        ), claimant_report
