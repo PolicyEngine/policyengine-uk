@@ -143,12 +143,12 @@ class esa_exempt_work_earnings(Variable):
         )
         # Reg 99(3)(a), until 5 April 2024: Class 2 at the weekly rate unless
         # the profit is below the small profits threshold or, from 6 April
-        # 2022, at or below the lower profits threshold (SSCBA 1992 s.11(4),
-        # which the model takes as the Class 4 lower profits limit).
+        # 2022, at or below the lower profits threshold (SSCBA 1992
+        # s.11(4)(a), which reg 99(3)(a) names from 2023).
         class_2_rule = p.gov.dwp.ESA.income.self_employment_class_2
         class_2_due = where(
             class_2_rule.above_lower_profits_threshold,
-            profit > class_4.thresholds.lower_profits_limit,
+            profit > nics.class_2.lower_profits_threshold,
             profit >= nics.class_2.small_profits_threshold,
         )
         notional_class_2 = (

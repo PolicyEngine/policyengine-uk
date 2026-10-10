@@ -109,7 +109,7 @@ def esa_weekly_earnings(adult, parameters):
     )
     rule = parameters.gov.dwp.ESA.income.self_employment_class_2
     if rule.above_lower_profits_threshold:
-        class_2_due = profit > class_4.thresholds.lower_profits_limit
+        class_2_due = profit > nics.class_2.lower_profits_threshold
     else:
         class_2_due = profit >= nics.class_2.small_profits_threshold
     notional_class_2 = (

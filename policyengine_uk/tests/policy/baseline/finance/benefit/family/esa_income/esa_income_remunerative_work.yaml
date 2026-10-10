@@ -772,6 +772,64 @@
     esa_income_eligible: false
     esa_income: 0
 
+# 2022-23 (SI 2022/1329 from 6 April 2022): Class 2 of £3.15 a week only on
+# profits over the £11,908 lower profits threshold, Class 4 at 9.73% from
+# £11,908 (Health and Social Care Levy (Repeal) Act 2022 s.2(2)(a)); the
+# personal allowance is £12,570 and the higher limit £152 (16 x £9.50).
+
+- name: In 2022-23 a profit equal to the lower profits threshold pays no Class 2
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        hours_worked: 780
+        self_employment_income: 11_908
+        personal_pension_contributions: 7_800
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # No tax (under £12,570), Class 4 or Class 2 (profit does not exceed
+    # £11,908). Half the premium, £3,900. (£11,908 - £3,900) / 52 = £154.00,
+    # over £152.
+    esa_exempt_work_earnings: 154
+    esa_income_claimant_remunerative_work: true
+    esa_income_eligible: false
+    esa_income: 0
+
+- name: In 2022-23 £1 over the lower profits threshold brings Class 2 in and the work under the limit
+  # The same intended reg 99(3)(a) cliff as in 2023-24.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        esa_income_reported: 5_000
+        hours_worked: 780
+        self_employment_income: 11_909
+        personal_pension_contributions: 7_800
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    # No tax (under £12,570). Class 4 9.73% x £1 = £0.0973. Class 2
+    # 52 x £3.15 = £163.80. Half the premium, £3,900.
+    # (£11,909 - £0.0973 - £163.80 - £3,900) / 52 = £150.87, within £152.
+    esa_exempt_work_earnings: 150.87
+    esa_income_claimant_remunerative_work: false
+    esa_income_eligible: true
+    esa_income: 5_000
+
 - name: In 2015-16 no Class 2 is due below the small profits threshold
   period: 2015
   absolute_error_margin: 0.01
