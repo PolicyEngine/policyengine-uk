@@ -33,6 +33,8 @@ SUPPLIED_INPUT_VARIABLES = frozenset(
         "ni_class_4_losses_brought_forward",
         "ni_class_4_trading_loss",
         "trading_loss",
+        "uc_carer_element",
+        "uc_LCWRA_element",
     }
 )
 

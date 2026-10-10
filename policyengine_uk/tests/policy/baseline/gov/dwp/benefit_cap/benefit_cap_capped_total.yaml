@@ -140,3 +140,98 @@
     # 9,000 + 6,000 - 14,753 (HB Regs 2006 reg 75D(1))
     benefit_cap_reduction: 247
     housing_benefit: 8_753
+
+# Whose benefits: the couple of the scheme the cap reduces. For a family on
+# Universal Credit, its claimants (is_uc_claimant, or the claimant and
+# partner unless entered; UC Regs 2013 regs 78(2), 80(1)); otherwise Housing
+# Benefit's claimant and partner (HB Regs 2006 reg 75A). Here the second
+# adult is entered as a Universal Credit claimant but is not the Housing
+# Benefit partner. An input entered for one person takes its default for the
+# others, so both claimants are entered.
+
+- name: On Universal Credit, an entered joint claimant's own contributory JSA is in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        is_uc_claimant: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        is_uc_claimant: true
+        current_education: NOT_IN_EDUCATION
+        jsa_contrib_reported: 2_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 20_000
+        housing_benefit_pre_benefit_cap: 0
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    is_uc_assessed_claimant: [true, true]
+    # 20,000 + 2,000 - 14,753 (the cap rate follows is_couple, which reads
+    # the claimant and partner).
+    benefit_cap_reduction: 7_247
+
+- name: On Universal Credit, an entered joint claimant's own income-based JSA is in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        is_uc_claimant: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        is_uc_claimant: true
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 2_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 20_000
+        housing_benefit_pre_benefit_cap: 0
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    jsa_income: 2_000
+    claimant_or_partner_jsa_income: 0
+    # 20,000 + 2,000 - 14,753.
+    benefit_cap_reduction: 7_247
+
+- name: On Housing Benefit alone, the same adult's contributory JSA is not in the capped total
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        is_uc_claimant: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        is_uc_claimant: true
+        current_education: NOT_IN_EDUCATION
+        jsa_contrib_reported: 2_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_pre_benefit_cap: 15_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # The adult is not the claimant's partner (HB Regs 2006 reg 75A):
+    # 15,000 - 14,753.
+    benefit_cap_reduction: 247
+

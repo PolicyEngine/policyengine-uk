@@ -1,4 +1,6 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.benefit_cap import benefit_cap_couple
+from policyengine_uk.utils.supplied_inputs import supplied_input
 from policyengine_uk.utils.uc_work_related_requirements import (
     other_member_of_single_claim_in_shared_rules,
 )
@@ -60,7 +62,9 @@ class is_benefit_cap_exempt_health_disability(Variable):
         "non-dependent adult, does not lift the cap with their own benefit, "
         "and nor does a partner who cannot be a joint claimant, so that the "
         "other member claims Universal Credit as a single person (UC Regs "
-        "2013 reg 3(3)). "
+        "2013 reg 3(3)). For a family on Universal Credit the claimant and "
+        "partner are the award's claimants, otherwise Housing Benefit's "
+        "claimant and partner (benefit_cap_couple). "
         "The model applies one cap to Universal Credit and Housing Benefit, so "
         "an exception in either scheme counts: Universal Credit's LCWRA and "
         "carer elements, and Housing Benefit's wider young-person tests."
@@ -76,13 +80,10 @@ class is_benefit_cap_exempt_health_disability(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        # The claimant and partner (HB Regs 2006 reg 2(1)); the single
-        # claimant or each of joint claimants (Welfare Reform Act 2012 s.40;
-        # is_uc_assessed_claimant). The two sets are the same unless
-        # is_uc_claimant is entered.
-        claimant_or_partner = person("is_claimant_or_partner", period) | person(
-            "is_uc_assessed_claimant", period
-        )
+        # The couple of the scheme the cap reduces (benefit_cap_couple): the
+        # claimants of a Universal Credit award, or Housing Benefit's
+        # claimant and partner (HB Regs 2006 reg 2(1)).
+        claimant_or_partner = benefit_cap_couple(benunit, period)
         # UC reg 83(1) reads "a claimant". A partner who cannot be a joint
         # claimant, so that the other member claims Universal Credit as a
         # single person (reg 3(3)), is a member of the couple but not a
@@ -153,17 +154,28 @@ class is_benefit_cap_exempt_health_disability(Variable):
         # responsibilities (UC Regs 2013 regs 27(1), 29(1)); the model does
         # not have the reg 28 waiting period or regs 29(5)-(6), 30(3). Where
         # reg 29(4) leaves a carer with limited capability only the LCWRA
-        # element, that element exempts. An element is taken as entered
-        # directly, and so included, when it is positive although no member's
-        # circumstances give it (decided by value, as for esa_income in
-        # claimant_or_partner_esa_income).
-        lcwra = person("uc_limited_capability_for_WRA", period)
-        lcwra_element = benunit.any(claimant & lcwra) | (
-            (benunit("uc_LCWRA_element", period) > 0) & ~benunit.any(lcwra)
+        # element, that element exempts. An element entered directly is
+        # included whatever the members' circumstances: one supplied as an
+        # input with a positive amount, or one that is positive although no
+        # member's circumstances give it (decided by value, for a reform that
+        # replaces the element's formula).
+        def element_included(element, circumstance):
+            amount = benunit(element, period)
+            entered = supplied_input(benunit, element, period)
+            entered_positive = (
+                np.zeros_like(amount, dtype=bool) if entered is None else entered > 0
+            )
+            return (
+                benunit.any(claimant & circumstance)
+                | entered_positive
+                | ((amount > 0) & ~benunit.any(circumstance))
+            )
+
+        lcwra_element = element_included(
+            "uc_LCWRA_element", person("uc_limited_capability_for_WRA", period)
         )
-        carer = person("is_carer_for_benefits", period)
-        carer_element = benunit.any(claimant & carer) | (
-            (benunit("uc_carer_element", period) > 0) & ~benunit.any(carer)
+        carer_element = element_included(
+            "uc_carer_element", person("is_carer_for_benefits", period)
         )
 
         # HB reg 75E(2): the claimant is, or the couple are jointly, entitled

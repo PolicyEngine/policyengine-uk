@@ -16,7 +16,8 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
   (75F(1)(ea); UC counts it as attendance allowance, UC Regs 2013 reg 2);
 - a Universal Credit claimant has limited capability for work and
   work-related activity or caring responsibilities, so the award includes the
-  LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)). A person with
+  LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)), or the element is
+  entered for the award, whatever anyone's circumstances. A person with
   ESA of their own whose ESA lacks the support component is inferred not to
   have limited capability for work-related activity (reg 40(1)(a)(ii));
 - the claimant or couple is entitled to working tax credit (HB reg 75E(2)).
@@ -53,7 +54,9 @@ The properties draw families at random; invariant 4 enumerates them. Each
 example builds many families in one simulation, in separate households
 and benefit units. Roles are given explicitly (is_claimant_or_partner). The
 support component is set for every person in a simulation or for none, since
-an input set for some people is given its default for the rest.
+an input set for some people is given its default for the rest. For the same
+reason, a simulation whose families may enter a UC element enters it as nil
+for the families that do not.
 """
 
 import numpy as np
@@ -65,6 +68,8 @@ from policyengine_uk import Simulation
 
 YEAR = 2025
 SINGLE_CAP, FAMILY_CAP = 14_753, 22_020  # Outside London, 2025-26.
+# A month's element times 12, 2025-26: LCWRA 423.27, carer 201.46.
+ENTERED_ELEMENTS = {"uc_LCWRA_element": 5_079.24, "uc_carer_element": 2_417.52}
 
 CLAIMANT_OR_PARTNER = ["attendance_allowance", "iidb_reported", "afcs_reported"]
 CHILD_OR_YOUNG_PERSON = ["dla"]
@@ -147,9 +152,10 @@ def set_circumstance(person, circumstance):
 
 
 @st.composite
-def families(draw, supplied):
+def families(draw, supplied, enter_elements):
     """A claimant, an optional partner, up to three dependants and a
-    non-dependent adult, with at most two circumstances among them."""
+    non-dependent adult, with at most two circumstances among them, and the
+    family's benefit-unit inputs."""
     members = [blank("claimant", draw(st.integers(25, 60)))]
     if draw(st.booleans()):
         members.append(blank("claimant", draw(st.integers(25, 60))))
@@ -177,22 +183,28 @@ def families(draw, supplied):
     if supplied:
         for person in members + [other]:
             person["esa_includes_support_component"] = draw(st.booleans())
-    working_tax_credit = draw(st.sampled_from([0] * 9 + [500]))
-    return members, other, working_tax_credit
+    benunit_inputs = {"working_tax_credit": draw(st.sampled_from([0] * 9 + [500]))}
+    if enter_elements:
+        entered = draw(st.sampled_from([None, *ENTERED_ELEMENTS]))
+        event(f"entered element: {entered}")
+        for element, amount in ENTERED_ELEMENTS.items():
+            benunit_inputs[element] = amount if element == entered else 0
+    return members, other, benunit_inputs
 
 
 @st.composite
 def draws(draw):
     """Families in one simulation, sharing whether the support component is
-    supplied."""
+    supplied and whether UC elements are entered."""
     supplied = draw(st.booleans())
+    enter_elements = draw(st.booleans())
     event(f"support component supplied: {supplied}")
-    return draw(st.lists(families(supplied), min_size=1, max_size=6))
+    return draw(st.lists(families(supplied, enter_elements), min_size=1, max_size=6))
 
 
 def situation(units, year=YEAR, extra_benunit=None):
     people, benunits, households = {}, {}, {}
-    for i, (members, working_tax_credit) in enumerate(units):
+    for i, (members, benunit_inputs) in enumerate(units):
         names = []
         for j, inputs in enumerate(members):
             name = f"p{i}_{j}"
@@ -205,7 +217,7 @@ def situation(units, year=YEAR, extra_benunit=None):
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
-            "working_tax_credit": {year: working_tax_credit},
+            **{k: {year: v} for k, v in benunit_inputs.items()},
             **{k: {year: v} for k, v in (extra_benunit or {}).items()},
         }
         households[f"h{i}"] = {
@@ -220,7 +232,7 @@ def own_esa(m):
     return m["esa_contrib_reported"] > 0 or m["esa_income_reported"] > 0
 
 
-def reference_exempt(members, working_tax_credit):
+def reference_exempt(members, benunit_inputs):
     """HB Regs 2006 regs 75E(2), 75F(1) and UC Regs 2013 reg 83(1), read
     directly, with roles known by construction."""
     claimants = [m for m in members if m["_role"] == "claimant"]
@@ -279,7 +291,9 @@ def reference_exempt(members, working_tax_credit):
         or any_receives(claimants + hb_young_persons, HOUSING_BENEFIT_YOUNG_PERSON)
         or any(lcwra(m) for m in claimants)
         or any(carer(m) for m in claimants)
-        or working_tax_credit > 0
+        # Reg 83(1)(a), (j): an element entered for the award is included.
+        or any(benunit_inputs.get(element, 0) > 0 for element in ENTERED_ELEMENTS)
+        or benunit_inputs["working_tax_credit"] > 0
     )
 
 
@@ -314,8 +328,8 @@ SETTINGS = settings(
 @SETTINGS
 @given(draws())
 def test_non_dependent_adults_never_change_the_exemption(drawn):
-    without = [(members, wtc) for members, _, wtc in drawn]
-    with_other = [(members + [other], wtc) for members, other, wtc in drawn]
+    without = [(members, inputs) for members, _, inputs in drawn]
+    with_other = [(members + [other], inputs) for members, other, inputs in drawn]
     # 30,000 of Universal Credit before the cap; the other family-level
     # capped benefits are nil, so the capped total is UC plus whatever the
     # members' own benefits add.
@@ -349,11 +363,11 @@ def test_non_dependent_adults_never_change_the_exemption(drawn):
 @SETTINGS
 @given(draws())
 def test_exemption_matches_regulations(drawn):
-    units = [(members + [other], wtc) for members, other, wtc in drawn]
+    units = [(members + [other], inputs) for members, other, inputs in drawn]
     sim = Simulation(situation=situation(units))
     exempt = sim.calculate("is_benefit_cap_exempt_health_disability", YEAR)
-    for i, (members, wtc) in enumerate(units):
-        expected = reference_exempt(members, wtc)
+    for i, (members, inputs) in enumerate(units):
+        expected = reference_exempt(members, inputs)
         event(f"reference exempt: {expected}")
         assert exempt[i] == expected, units[i]
 
@@ -361,7 +375,7 @@ def test_exemption_matches_regulations(drawn):
 @SETTINGS
 @given(draws())
 def test_exempt_families_have_no_cap_and_others_the_statutory_cap(drawn):
-    units = [(members + [other], wtc) for members, other, wtc in drawn]
+    units = [(members + [other], inputs) for members, other, inputs in drawn]
     # 30,000 of Universal Credit alone exceeds either cap. The other
     # family-level capped benefits are set to nil; they only add to the excess.
     sim = Simulation(situation=situation(units, extra_benunit=CAPPED_FAMILY))
@@ -404,12 +418,15 @@ def single_head_units(mode):
 @pytest.mark.parametrize("mode", [None, True, False])
 def test_each_head_alone_matches_regulations(mode):
     units = single_head_units(mode)
-    sim = Simulation(situation=situation([(members, 0) for _, members in units]))
+    no_entries = {"working_tax_credit": 0}
+    sim = Simulation(
+        situation=situation([(members, no_entries) for _, members in units])
+    )
     exempt = sim.calculate("is_benefit_cap_exempt_health_disability", YEAR)
     mismatches = [
         (key, bool(exempt[i]))
         for i, (key, members) in enumerate(units)
-        if exempt[i] != reference_exempt(members, 0)
+        if exempt[i] != reference_exempt(members, no_entries)
     ]
     assert not mismatches, mismatches
     # Every role meets every circumstance, and both outcomes occur.

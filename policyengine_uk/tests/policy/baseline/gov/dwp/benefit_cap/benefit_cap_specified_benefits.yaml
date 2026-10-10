@@ -31,8 +31,10 @@
 # A "non-dependent adult" below is a benefit-unit member aged 30 (50 in the
 # attendance allowance case) who is neither the claimant, the partner, nor a
 # child or young person they are responsible for. Their own benefits and
-# circumstances never lift the family's cap. (Their age and earnings still
-# can, through is_benefit_cap_exempt_other and _earnings: out of scope here.)
+# circumstances never lift the family's cap, and nor do their age or
+# earnings: the age exception reads the claimant and partner (Housing
+# Benefit's pension-age regulations, HB Regs 2006 reg 5) and the earnings
+# exception the claimants (UC Regs 2013 reg 82(1)(a)).
 
 # --- ESA with the support component: HB reg 75F(1)(a), UC reg 83(1)(a) ---
 
@@ -1208,6 +1210,88 @@
     is_benefit_cap_exempt_health_disability: true
     benefit_cap_reduction: 0
 
+- name: An LCWRA element entered for the award lifts the cap whatever a non-dependant's limited capability
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: false
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+        uc_LCWRA_element: 5_079.24
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # The award includes the element (reg 83(1)(a)); who else in the benefit
+    # unit has limited capability does not matter.
+    is_benefit_cap_exempt_health_disability: true
+    benefit_cap_reduction: 0
+
+- name: A carer element entered for the award lifts the cap whatever a non-dependant's caring
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        care_hours: 35
+    benunits:
+      family:
+        members: [claimant, adult]
+        uc_carer_element: 2_417.52
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # Reg 83(1)(j): the award includes the carer element.
+    is_benefit_cap_exempt_health_disability: true
+    benefit_cap_reduction: 0
+
+- name: A non-dependant's limited capability does not lift the cap when no element is entered
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: false
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # No claimant has limited capability (reg 27(1)), so the element the
+    # model calculates from the adult's flag is not a claimant's: 18,000 -
+    # 14,753.
+    is_benefit_cap_exempt_health_disability: false
+    benefit_cap_reduction: 3_247
+
 # --- Working tax credit: HB reg 75E(2) ---
 
 - name: The family's working tax credit lifts the cap
@@ -1266,7 +1350,7 @@
     # Below the personal allowance and primary threshold: 9,000 < 10,152.
     is_benefit_cap_exempt_earnings: false
 
-- name: A member over State Pension age keeps the age exception
+- name: A claimant over the qualifying age for State Pension Credit and off Universal Credit is outside the cap (HB pension-age regulations)
   period: 2025
   input:
     people:
@@ -1282,3 +1366,56 @@
   output:
     is_benefit_cap_exempt_other: true
     is_benefit_cap_exempt: true
+
+- name: A non-dependent adult over State Pension age does not lift the cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 70
+        is_claimant_or_partner: false
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # The pension-age regulations read the claimant and partner (HB Regs
+    # 2006 reg 5); Universal Credit has no age exception for a working-age
+    # claimant. 18,000 - 14,753.
+    is_benefit_cap_exempt_other: false
+    is_benefit_cap_exempt: false
+    benefit_cap_reduction: 3_247
+
+- name: A non-dependent adult's earnings do not meet the earnings exception
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      adult:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        employment_income: 20_000
+    benunits:
+      family:
+        members: [claimant, adult]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, adult]
+        region: NORTH_EAST
+  output:
+    # UC Regs 2013 reg 82(1)(a) reads the claimant's earned income. 18,000 -
+    # 14,753.
+    is_benefit_cap_exempt_earnings: false
+    is_benefit_cap_exempt: false
+    benefit_cap_reduction: 3_247
