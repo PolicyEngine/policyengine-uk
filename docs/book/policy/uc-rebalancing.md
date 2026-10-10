@@ -22,12 +22,9 @@ From April 2026, new Universal Credit claimants who qualify for the Limited Capa
 
 Universal Credit Act 2025 s. 3 freezes the element for 2026-27 to 2029-30: it disapplies the annual up-rating in Social Security Administration Act 1992 s. 150(1) and (2) in the tax years ending 5 April 2026 to 5 April 2029, and an up-rating order takes effect from the tax year after the one in which it is made. The new-claimant amount (`elements.disabled.amount`) therefore stays at £217.26 a month to 2029-30. From 2030-31 it is uprated from £217.26 by the benefit uprating index, one year's growth at a time, and never falls. The amount is uprated by `gov.dwp.universal_credit.elements.disabled.uprating`, which `rebalancing/create_health_element_uprating.py` builds when parameters are processed: the benefit uprating index, held flat in each year in which `rebalancing.health_element_freeze` and `rebalancing.active` are both true.
 
-Existing recipients are treated differently. Their LCWRA amount is uprated so that the combined value of:
+Existing recipients are treated differently. Universal Credit Regulations 2013 reg. 36 gives one amount, the protected LCWRA amount, to every pre-2026 claimant, severe conditions criteria claimant or terminally ill claimant, whatever their age or couple status. For 2026-27 it is £429.80 a month ([SI 2026/113](https://www.legislation.gov.uk/uksi/2026/113/made) reg. 3(3)(b)), stored in `gov.dwp.universal_credit.rebalancing.protected_health_element`.
 
-- their standard allowance, and
-- their health element
-
-rises at least in line with CPI inflation. The model implements that protection through the health element itself, preserving the combined award outcome without separately modelling the small administrative split between protected LCWRA amounts and any under-25 standard allowance supplement.
+For a tax year without a legislated amount, the model uses the lowest amount the Universal Credit Act 2025 s. 4 duty allows. For every standard allowance amount, the protected amount plus that allowance must be at least the previous year's sum, increased by the relevant CPI percentage: the CPI 12-month rate in the September before the tax year, never below 0% (s. 4(4)(a)). The model reads that rate from `gov.economic_assumptions.statutory_uprating_inputs.cpi_september`. Section 3 switches off the element's ordinary uprating, so the amount otherwise stays where it was. Run from the 2025-26 amounts at the 3.8% September 2025 CPI rate, this rule gives the legislated £429.80.
 
 The implementation uses transition probabilities based on WPI Economics analysis for the Trussell Trust, derived from administrative Personal Independence Payment data. The probability of being a new claimant varies by year:
 
@@ -53,7 +50,7 @@ These uplifts are applied to the CPI-uprated standard allowance for each year. I
 The reforms are implemented through parameters, scenario modifiers, and scenarios that work together to enable policy analysis.
 ```
 
-- **Parameters**: YAML files define the reform's activation status, the health element amount for new claimants, the health element freeze, and the standard allowance uplift rates.
+- **Parameters**: YAML files define the reform's activation status, the health element amounts for new claimants and for protected (pre-2026) claimants, the health element freeze, and the standard allowance uplift rates.
 - **Scenario modifier**: The `add_universal_credit_reform` function applies the protected existing-claimant health-element path during microsimulation.
 - **Scenario**: The `universal_credit_july_2025_reform` scenario enables the reforms in policy analysis.
 
