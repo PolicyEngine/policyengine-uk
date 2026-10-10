@@ -1,0 +1,18 @@
+description: Pension Age Winter Heating Payment for an individual under 80 who is not entitled to a relevant benefit and lives with another entitled individual. The regulations as made for the 2024 qualifying week had no shared amounts (only individuals entitled to a relevant benefit were entitled), so this amount applies from the 2025 qualifying week.
+values:
+  # SSI 2025/282 came into force on 11 October 2025 and applies to the
+  # qualifying week in September 2025.
+  2025-01-01:
+    value: 101.70
+    reference:
+      - title: The Winter Heating Assistance (Pension Age) (Scotland) Amendment Regulations 2025 (SSI 2025/282), reg. 9 (new reg. 10(5)(b))
+        href: https://www.legislation.gov.uk/ssi/2025/282/regulation/9/made
+  2026-04-01:
+    value: 105.55
+    reference:
+      - title: The Social Security (Up-rating) (Miscellaneous Amendments) (Scotland) Regulations 2026 (SSI 2026/170), reg. 15(3)(d)
+        href: https://www.legislation.gov.uk/ssi/2026/170/regulation/15/made
+metadata:
+  unit: currency-GBP
+  label: PAWHP shared amount under 80
+  uprating: gov.economic_assumptions.indices.obr.consumer_price_index

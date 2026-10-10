@@ -22,6 +22,7 @@
         is_in_non_advanced_education: true
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person0, person1]
         housing_benefit_eligible: true
         benefits_premiums: 0
@@ -61,6 +62,7 @@
         is_in_non_advanced_education: true
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person0, person1, person2]
         housing_benefit_eligible: true
         benefits_premiums: 0
@@ -125,6 +127,7 @@
         is_claimant_or_partner: true
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person0, person1]
         housing_benefit_eligible: true
         benefits_premiums: 0
@@ -159,6 +162,7 @@
         weekly_hours: 0
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [person0, person1]
         housing_benefit_eligible: true
         benefits_premiums: 0

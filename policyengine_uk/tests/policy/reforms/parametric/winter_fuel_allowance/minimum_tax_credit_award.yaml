@@ -1,0 +1,38 @@
+- name: A tax credit minimum of zero does not qualify a pensioner with no tax credits
+  # Lowering minimum_tax_credit_award to 0 means any award counts; a person
+  # with no award still does not qualify.
+  period: 2024
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.minimum_tax_credit_award: 0
+    gov.social_security_scotland.pawhp.eligibility.minimum_tax_credit_award: 0
+    age: 70
+    country: ENGLAND
+    pension_credit: 0
+    tax_credits: 0
+  output:
+    is_on_winter_fuel_payment_relevant_benefit: false
+    winter_fuel_allowance: 0
+
+- name: A tax credit minimum of zero qualifies any positive award
+  period: 2024
+  input:
+    gov.dwp.winter_fuel_payment.eligibility.minimum_tax_credit_award: 0
+    age: 70
+    country: ENGLAND
+    pension_credit: 0
+    tax_credits: 10
+  output:
+    is_on_winter_fuel_payment_relevant_benefit: true
+    winter_fuel_allowance: 200
+
+- name: A tax credit minimum of zero does not qualify a Scottish pensioner with no tax credits
+  period: 2024
+  input:
+    gov.social_security_scotland.pawhp.eligibility.minimum_tax_credit_award: 0
+    age: 70
+    country: SCOTLAND
+    pension_credit: 0
+    tax_credits: 0
+  output:
+    is_on_pawhp_relevant_benefit: false
+    pawhp: 0

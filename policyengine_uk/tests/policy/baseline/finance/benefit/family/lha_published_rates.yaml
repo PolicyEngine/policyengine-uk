@@ -1,0 +1,277 @@
+# LHA rates against the published determinations. Housing Benefit rates are
+# weekly (BRMA_LHA_rate annualises over 52 weeks); Universal Credit rates are
+# monthly (uc_LHA_cap annualises over 12 months, below a rent that exceeds it).
+# England: VOA, Local Housing Allowance (LHA) rates applicable from April <year>,
+# https://www.gov.uk/government/collections/local-housing-allowance-lha-rates
+# Universal Credit: DWP, Universal Credit Local Housing Allowance rates,
+# https://www.gov.uk/government/collections/universal-credit-local-housing-allowance-rates
+
+- name: Maidstone shared accommodation, April 2024 (GBP 102.37 a week)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: A
+  output:
+    BRMA_LHA_rate: 5_323.24
+
+- name: Maidstone one bedroom, April 2024 (GBP 172.60 a week)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: B
+  output:
+    BRMA_LHA_rate: 8_975.20
+
+- name: Maidstone two bedrooms, April 2024 (GBP 208.27 a week; UC GBP 905.00 a month)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: C
+    benunit_rent: 100_000
+  output:
+    BRMA_LHA_rate: 10_830.04
+    uc_LHA_cap: 10_860
+
+- name: Maidstone three bedrooms, April 2024 (GBP 276.16 a week)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: D
+  output:
+    BRMA_LHA_rate: 14_360.32
+
+- name: Maidstone four bedrooms, April 2024 (GBP 356.71 a week)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: E
+  output:
+    BRMA_LHA_rate: 18_548.92
+
+- name: Maidstone two bedrooms, April 2025, held at April 2024 (SI 2025/5)
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: C
+    benunit_rent: 100_000
+  output:
+    BRMA_LHA_rate: 10_830.04
+    uc_LHA_cap: 10_860
+
+- name: Maidstone one bedroom, April 2025, held at April 2024 (SI 2025/5)
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: B
+    benunit_rent: 100_000
+  output:
+    # VOA: 172.60 a week x 52; DWP: 750.00 a month x 12.
+    BRMA_LHA_rate: 8_975.20
+    uc_LHA_cap: 9_000
+
+- name: Maidstone two bedrooms, April 2026, held at April 2024 (SI 2026/5)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: C
+    benunit_rent: 100_000
+  output:
+    BRMA_LHA_rate: 10_830.04
+    uc_LHA_cap: 10_860
+
+- name: Maidstone two bedrooms, April 2023, held at April 2020 (SI 2023/6)
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: C
+    benunit_rent: 100_000
+  output:
+    BRMA_LHA_rate: 9_753.12
+    uc_LHA_cap: 9_779.88
+
+- name: Maidstone two bedrooms, April 2019, as published (GBP 162.29 a week; UC GBP 703.24 a month)
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    brma: MAIDSTONE
+    LHA_category: C
+    benunit_rent: 100_000
+  output:
+    BRMA_LHA_rate: 8_439.08
+    uc_LHA_cap: 8_438.88
+
+- name: Durham one bedroom, April 2024, raised to the shared rate (Sch 3B para 3)
+  # The 30th percentile one-bedroom rent (GBP 80.55) is below the shared
+  # accommodation rate (GBP 90.50), so the one-bedroom rate is raised to it.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    brma: DURHAM
+    LHA_category: B
+    benunit_rent: 100_000
+  output:
+    uncapped_BRMA_LHA_rate: 4_188.60
+    BRMA_LHA_rate: 4_706
+    uc_LHA_cap: 4_719
+
+- name: Central London two bedrooms, April 2024, at the national maximum
+  # 30th percentile GBP 598.36 a week; weekly maximum GBP 412.86 and monthly
+  # maximum GBP 1,793.98 (SI 2024/11).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    brma: CENTRAL_LONDON
+    LHA_category: C
+    benunit_rent: 100_000
+  output:
+    uncapped_BRMA_LHA_rate: 31_114.72
+    BRMA_LHA_rate: 21_468.72
+    uc_LHA_cap: 21_527.76
+
+# Wales: Rent Officers Wales, Local Housing Allowance (LHA) rates from April
+# <year>, https://www.gov.wales/local-housing-allowance-lha-rates
+
+- name: Carmarthenshire one and two bedrooms, April 2024, rising with size
+  # The list-of-rents model gave the two-bedroom rate below the one-bedroom.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+      person_2:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        LHA_category: B
+        benunit_rent: 100_000
+      benunit_2:
+        members: [person_2]
+        LHA_category: C
+        benunit_rent: 100_000
+    households:
+      household:
+        members: [person, person_2]
+        brma: CARMARTHENSHIRE
+  output:
+    # GBP 92.05 and GBP 112.50 a week; UC GBP 400.00 and GBP 488.84 a month.
+    BRMA_LHA_rate: [4_786.60, 5_850]
+    uc_LHA_cap: [4_800, 5_866.08]
+
+- name: Taff Rhondda three bedrooms, April 2025, held at April 2024
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    brma: TAFF_RHONDDA
+    LHA_category: D
+    benunit_rent: 100_000
+  output:
+    # GBP 113.92 a week; UC GBP 495.00 a month.
+    BRMA_LHA_rate: 5_923.84
+    uc_LHA_cap: 5_940
+
+- name: Blaenau Gwent one bedroom, April 2021, held at April 2020
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    brma: BLAENAU_GWENT
+    LHA_category: B
+    benunit_rent: 100_000
+  output:
+    # GBP 66.39 a week; UC GBP 288.49 a month (DWP prints 288.488).
+    BRMA_LHA_rate: 3_452.28
+    uc_LHA_cap: 3_461.88
+
+- name: Blaenau Gwent one bedroom, April 2022, as Rent Officers Wales restated it
+  # The April 2022 table says rates are fixed at the April 2020 rate but gives
+  # GBP 66.74 a week (GBP 290.00 a month for UC), where the April 2020 and
+  # April 2021 tables gave GBP 66.39.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    brma: BLAENAU_GWENT
+    LHA_category: B
+    benunit_rent: 100_000
+  output:
+    BRMA_LHA_rate: 3_470.48
+    uc_LHA_cap: 3_480
+
+# Scotland: Scottish Government (Rent Service Scotland), Local Housing
+# Allowance rates, https://www.gov.scot/publications/local-housing-allowance-rates/
+
+- name: Lothian two bedrooms, April 2026, held at April 2024
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    brma: LOTHIAN
+    LHA_category: C
+    benunit_rent: 100_000
+  output:
+    # GBP 223.23 a week; UC GBP 970.00 a month.
+    BRMA_LHA_rate: 11_607.96
+    uc_LHA_cap: 11_640
+
+- name: Greater Glasgow three bedrooms, April 2020
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    brma: GREATER_GLASGOW
+    LHA_category: D
+    benunit_rent: 100_000
+  output:
+    # GBP 172.60 a week; UC GBP 750.00 a month.
+    BRMA_LHA_rate: 8_975.20
+    uc_LHA_cap: 9_000
+
+# Northern Ireland: NIHE, Current LHA rent levels; Universal Credit rates from
+# nidirect, Universal Credit payments for housing.
+
+- name: North (NI) two and three bedrooms, April 2024, rising with size
+  # The list-of-rents model gave the three-bedroom rate below the two-bedroom.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+      person_2:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        LHA_category: C
+        benunit_rent: 100_000
+      benunit_2:
+        members: [person_2]
+        LHA_category: D
+        benunit_rent: 100_000
+    households:
+      household:
+        members: [person, person_2]
+        brma: NORTH_NI
+  output:
+    # GBP 123.32 and GBP 133.48 a week; UC GBP 535.85 and GBP 580.00 a month.
+    BRMA_LHA_rate: [6_412.64, 6_940.96]
+    uc_LHA_cap: [6_430.20, 6_960]
+
+- name: Lough Neagh Lower three bedrooms, April 2026, held at April 2024 (SR 2026/2)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    brma: LOUGH_NEAGH_LOWER
+    LHA_category: D
+    benunit_rent: 100_000
+  output:
+    # GBP 137.31 a week (April 2024); UC GBP 596.64 a month (nidirect, 2026-27).
+    BRMA_LHA_rate: 7_140.12
+    uc_LHA_cap: 7_159.68
