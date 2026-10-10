@@ -1,3 +1,11 @@
+## [2.126.3] - 2026-10-10
+
+### Fixed
+
+- - Pay pre-2026 Universal Credit health element claimants the legislated protected LCWRA amount (£429.80 a month in 2026-27, one amount for every claimant type), and project later years at the Universal Credit Act 2025 s. 4 floor.
+- - Stopped a negative income source, such as a property loss or a self-employment loss, from reducing a claimant's other Pension Credit income.
+
+
 ## [2.126.2] - 2026-10-10
 
 ### Fixed
