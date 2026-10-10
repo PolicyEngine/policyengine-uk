@@ -1,0 +1,1 @@
+- Stopped counting a benefit unit's own claimant or partner as its child or qualifying young person for Child Benefit, Child Tax Credit and the Pension Credit child addition (SSCBA 1992 ss.141 and 143; CTC Regs 2002 reg. 3; SPC Regs 2002 Sch. IIA para. 3), so a lone 16- to 19-year-old no longer gets Child Benefit or a child addition for themselves.
