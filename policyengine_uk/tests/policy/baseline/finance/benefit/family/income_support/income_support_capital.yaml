@@ -66,7 +66,7 @@
   output:
     income_support_tariff_income: 104
 
-- name: Income Support entitlement is reduced by tariff income above the lower threshold
+- name: Income Support counts tariff income above the lower threshold, here absorbed by the lone-parent disregard
   period: 2021
   absolute_error_margin: 1
   input:

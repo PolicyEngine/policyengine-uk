@@ -27,7 +27,9 @@
   output:
     household_benefits_individual_non_dep_deduction: 101.35 * 52
 
-- name: Exclusive brackets
+- name: Income just above the lower edge of the second band
+  # Passes whether band edges are read inclusively (reg 74(2)) or, as the
+  # formula still does, exclusively; see #2004 and #2007.
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true

@@ -143,8 +143,6 @@
     benunits:
       benunit:
         members: [person]
-        youngest_adult_age: 30
-        eldest_adult_age: 30
         is_single: true
         benefits_premiums: 0
   output:
@@ -162,8 +160,6 @@
     benunits:
       benunit:
         members: [person, partner]
-        youngest_adult_age: 30
-        eldest_adult_age: 30
         is_single: false
         benefits_premiums: 0
   output:
@@ -216,7 +212,7 @@
   output:
     carer_premium: [2_412.80, 4_825.60]  # 46.40 and 2 x 46.40 a week
 
-- name: Attendance Allowance, Disability Living Allowance and Personal Independence Payment lower and middle rates
+- name: Attendance Allowance lower rate, DLA care middle and mobility lower rates, PIP standard rates
   period: 2025
   absolute_error_margin: 0.01
   input:

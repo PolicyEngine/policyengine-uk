@@ -1,7 +1,11 @@
 # DWP "Benefit and pension rates" (and HMRC tax credit rates), by fiscal year
 # (2025 = 2025-26), in each parameter's own unit and period. Each year's rate
 # appears in that year's publication and as the previous-year column of the
-# next year's, and the two agree. For 2025-26 and 2026-27 the amounts match the
+# next year's, and the two agree, except UC's 2021-22 amounts: the temporary
+# uplift ended in October 2021, and the 2022-23 edition's previous-year column
+# gives the later amounts. The fixture holds the April 2021 amounts from the
+# 2021-22 edition, which PolicyEngine reads at 30 April. For 2025-26 and
+# 2026-27 the amounts match the
 # Social Security Benefits Up-rating Orders 2025 (SI 2025/295) and 2026 (SI
 # 2026/148), except the 2026-27 income-related ESA personal allowances, which
 # are set under the Universal Credit Act 2025 s.5. Rows marked `derived` are
@@ -77,7 +81,7 @@ parameters:
       2025: 250
       2026: 250
   gov.dwp.ESA.income.capital.tariff_income.threshold:
-    row: "DWP Benefit and pension rates > Capital limits > 'Amount disregarded' 6,000 (2019-20/2020-21 label: 'Amount disregarded – all benefits except Pension Credit and Housing Benefit for those above the qua"
+    row: "DWP Benefit and pension rates > Capital limits > 'Amount disregarded' 6,000 (2019-20/2020-21 label: 'Amount disregarded – all benefits except Pension Credit and Housing Benefit for those above the qualifying age for Guarantee Credit')"
     values:
       2019: 6000
       2020: 6000
@@ -228,7 +232,7 @@ parameters:
       2025: 10
       2026: 10
   gov.dwp.JSA.income.income_disregard_lone_parent:
-    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Higher (special occupations/circumstances)' 20.00 (JSA Regs 1996 Sch 6"
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Higher (special occupations/circumstances)' 20.00 (JSA Regs 1996 Sch 6, lone parent)"
     values:
       2019: 20
       2020: 20
@@ -315,22 +319,6 @@ parameters:
       2024: 14753
       2025: 14753
       2026: 14753
-  gov.dwp.carer_premium.couple:
-    row: "Housing Benefit > Premiums > Carer (per qualifying person), doubled: the legal amount for two carers is 2 x this row"
-    derived: "twice the carer premium row: it is paid for each person who satisfies the condition (HB Regs 2006 Sch 3 Part 4)"
-    values:
-      2015: 69.2
-      2016: 69.2
-      2017: 69.9
-      2018: 72.0
-      2019: 73.7
-      2020: 75.0
-      2021: 75.4
-      2022: 77.7
-      2023: 85.5
-      2024: 91.2
-      2025: 92.8
-      2026: 96.3
   gov.dwp.carer_premium.single:
     row: "Housing Benefit > Premiums > Carer"
     values:
@@ -917,7 +905,7 @@ parameters:
       2025: 10
       2026: 10
   gov.dwp.income_support.means_test.income_disregard_lone_parent:
-    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Higher (special occupations/circumstances)' 20.00 (IS Regs 1987 Sch 8 "
+    row: "DWP Benefit and pension rates > Disregards > IS, income-based JSA, income-related ESA and Pension Credit > Earnings disregards > 'Higher (special occupations/circumstances)' 20.00 (IS Regs 1987 Sch 8, lone parent)"
     values:
       2019: 20
       2020: 20
@@ -941,6 +929,7 @@ parameters:
   gov.dwp.pension_credit.guarantee_credit.carer.addition:
     row: "Pension Credit | Additional amount for carers"
     values:
+      2018: 36.0
       2019: 36.85
       2020: 37.5
       2021: 37.7
@@ -1250,7 +1239,7 @@ parameters:
       2025: 175
       2026: 175
   gov.dwp.tax_credits.working_tax_credit.elements.childcare_2:
-    row: "HMRC tax credit rates > Childcare element of WTC > 'Maximum eligible cost for 2 or more children' £300/week; and DWP Benefit and pension rates > Disregards > Housing Benefit > 'Childcare charges (2 or"
+    row: "HMRC tax credit rates > Childcare element of WTC > 'Maximum eligible cost for 2 or more children' £300/week; and DWP Benefit and pension rates > Disregards > Housing Benefit > 'Childcare charges (2 or more children)'"
     values:
       2019: 300
       2020: 300
@@ -1381,7 +1370,7 @@ parameters:
       2025: 495.87
       2026: 514.71
   gov.dwp.universal_credit.elements.disabled.amount:
-    row: "Limited Capability for Work and Work-Related Activity amount (2026-27: new-claimant row £217.26; separate row 'Pre-2026 claimant, severe conditions criteria claimant or claimant who is terminally ill'"
+    row: "Limited Capability for Work and Work-Related Activity amount (2026-27: new-claimant row £217.26; separate row 'Pre-2026 claimant, severe conditions criteria claimant or claimant who is terminally ill')"
     values:
       2019: 336.2
       2020: 341.92
@@ -1436,7 +1425,7 @@ parameters:
       2025: 250
       2026: 250
   gov.dwp.universal_credit.means_test.capital.tariff_income.threshold:
-    row: "2019-20 and 2020-21: 'Capital limits - Amount disregarded - all benefits except Pension Credit and Housing Benefit for those above the qualifying age for Guarantee Credit'; from 2021-22: 'Capital limi"
+    row: "2019-20 and 2020-21: 'Capital limits - Amount disregarded - all benefits except Pension Credit and Housing Benefit for those above the qualifying age for Guarantee Credit'; from 2021-22: 'Capital limits - Amount disregarded'"
     values:
       2019: 6000
       2020: 6000

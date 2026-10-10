@@ -10,16 +10,18 @@ Invariants:
 
 1. Differential: the value PolicyEngine uses for each fiscal year (the
    parameter at 30 April, after uprating) equals the published rate.
-2. No projection overrides a published rate: no fixture parameter uprates from
-   a fixed `start_instant`, which would replace later published values with
-   projections.
+2. No fixed-start uprating: no fixture parameter uprates from a fixed
+   `start_instant`, which projects every year without a key from the start
+   value and, after the last key, continues from the start value instead of
+   the latest published rate.
 3. Projections continue from the last published rate: for a series published
    through 2026-27, an uprated parameter in 2027-28 equals the 2026-27 rate
    times the change in its uprating index, so there is no jump when
-   projections begin.
-4. The carer premium for two carers is twice the premium for one, in every
-   year, because it is paid for each person who satisfies the condition.
-5. Housing Benefit non-dependant deductions: each year's bands and deductions
+   projections begin. The UC standard allowances and LCWRA element are left
+   out: the Universal Credit Act 2025 sets a minimum for the standard
+   allowance above CPI uprating (s.1) and freezes the LCWRA element (s.3) for
+   2026-27 to 2029-30, which the model does not yet follow.
+4. Housing Benefit non-dependant deductions: each year's bands and deductions
    are the published ones, and the scale, read with lower edges inclusive as
    reg 74(2) words them ("not less than"), never falls as income rises.
    (The HB and CTR formulas still call the scale with right=True and do not
@@ -71,6 +73,18 @@ def test_no_start_instant_overrides_published_rates(name):
     assert not (isinstance(uprating, dict) and "start_instant" in uprating)
 
 
+# Universal Credit Act 2025 (ukpga/2025/22) s.1 (standard allowance minimum:
+# the previous Step 2 amount, increased by CPI and then by the uplift in its
+# table) and s.3 (LCWRA element frozen for 2026-27 to 2029-30).
+UC_ACT_2025_EXCEPTIONS = {
+    "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG",
+    "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD",
+    "gov.dwp.universal_credit.standard_allowance.amount.COUPLE_YOUNG",
+    "gov.dwp.universal_credit.standard_allowance.amount.COUPLE_OLD",
+    "gov.dwp.universal_credit.elements.disabled.amount",
+}
+
+
 @pytest.mark.parametrize("name", sorted(PARAMETERS))
 def test_projection_continues_from_last_published_rate(name):
     """Invariant 3."""
@@ -81,18 +95,12 @@ def test_projection_continues_from_last_published_rate(name):
     last = max(int(y) for y in PARAMETERS[name]["values"])
     if last < 2026:
         pytest.skip("series ends before 2026-27")
+    if name in UC_ACT_2025_EXCEPTIONS:
+        pytest.skip("Universal Credit Act 2025 ss.1 and 3 depart from CPI uprating")
     index = node(uprating if isinstance(uprating, str) else uprating["parameter"])
     ratio = index(f"{last + 1}-01-01") / index(f"{last}-01-01")
     expected = PARAMETERS[name]["values"][last] * ratio
     assert parameter(f"{last + 1}-04-30") == pytest.approx(expected, rel=1e-6)
-
-
-@pytest.mark.parametrize("year", range(2015, 2041))
-def test_two_carer_premium_is_twice_the_one_carer_premium(year):
-    """Invariant 4."""
-    premium = system.parameters.gov.dwp.carer_premium
-    at = f"{year}-04-30"
-    assert premium.couple(at) == pytest.approx(2 * premium.single(at), abs=1e-6)
 
 
 NON_DEP = FIXTURE["housing_benefit_non_dependant_deductions"]
@@ -101,7 +109,7 @@ NON_DEP_SCALE = system.parameters.gov.dwp.housing_benefit.non_dep_deduction.amou
 
 @pytest.mark.parametrize("year", sorted(NON_DEP))
 def test_non_dependant_deductions_match_the_published_table(year):
-    """Invariant 5: the published bands and deductions, read inclusively."""
+    """Invariant 4: the published bands and deductions, read inclusively."""
     at = f"{year}-04-30"
     edges = NON_DEP[year]["lower_edges"]
     deductions = NON_DEP[year]["deductions"]

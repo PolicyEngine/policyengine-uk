@@ -227,7 +227,7 @@
         benefits_premiums: 0
   output:
     # HB Sch 3 para 1(2): the claimant is under 18, even if responsible
-    # for an older qualifying young person. Younger rate 72.92 * 52.
+    # for an older qualifying young person. Younger 2025-26 rate 72.90 * 52.
     housing_benefit_applicable_amount: 3_790.80
     # The shared CTR allowance calculation also uses only claimant/partner ages.
     council_tax_reduction_applicable_amount: 3_790.80
