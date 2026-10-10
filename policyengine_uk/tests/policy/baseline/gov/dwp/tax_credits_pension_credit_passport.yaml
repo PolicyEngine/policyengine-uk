@@ -205,7 +205,8 @@
   # CTC: £545 + £3,455 = £4,000, not 4,000 - 0.41 x 205 = £3,915.95.
   # SPC Regs 2002 reg 6(6)(d) and (11) give no Schedule IIA child amount to
   # a person awarded a tax credit, and the CTC family element has been £545
-  # since 2011-12; both are entered because the model applies neither.
+  # since 2011-12; both are entered because the model applies neither
+  # (#2050 for the family element).
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -252,7 +253,7 @@
   # Credit, so the child is not eligible through either route.
   # CTC: the family element needs a child "born before 6th April 2017" (CTC
   # Regs 2002 reg 7(2)(a)), so it is nil here (entered, as the model pays
-  # it); the individual element is £3,455 (reg 7(4)(c)).
+  # it: #2050); the individual element is £3,455 (reg 7(4)(c)).
   period: 2024
   absolute_error_margin: 0.01
   input:
