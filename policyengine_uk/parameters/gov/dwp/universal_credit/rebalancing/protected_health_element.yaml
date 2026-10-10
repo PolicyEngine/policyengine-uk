@@ -7,6 +7,9 @@ values:
         href: https://www.legislation.gov.uk/uksi/2026/113/made
       - title: Universal Credit Regulations 2013, reg. 36 table (LCWRA element)
         href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36
+  # Not yet legislated: from here each tax year takes the s. 4 floor. The null
+  # also ends a reform that sets one year, so the next year projects from it.
+  2027-04-01: null
 metadata:
   # Keep the statutory dates: uc_reform.py reads a tax year's legislated amount
   # and projects the years that have none.

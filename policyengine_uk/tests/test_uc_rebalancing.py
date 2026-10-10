@@ -4,7 +4,7 @@ from hypothesis import given, settings
 from hypothesis import strategies as st
 
 import policyengine_uk.scenarios.uc_reform as uc_reform
-from policyengine_uk import Simulation
+from policyengine_uk import Scenario, Simulation
 
 YEARS = range(2025, 2030)
 
@@ -71,10 +71,9 @@ def _standard_allowances(sim: Simulation, year: int) -> dict:
 
 
 def _cpi_factor(sim: Simulation, year: int) -> float:
-    parameters = sim.tax_benefit_system.parameters
-    return float(parameters(str(year)).gov.benefit_uprating_cpi) / float(
-        parameters(str(year - 1)).gov.benefit_uprating_cpi
-    )
+    # s. 4(4)(a): the CPI 12-month rate in the September before the tax year.
+    inputs = sim.tax_benefit_system.parameters.gov.economic_assumptions.statutory_uprating_inputs
+    return 1 + float(inputs.cpi_september(f"{year - 1}-09-01"))
 
 
 @pytest.mark.parametrize("age_2025", [20, 30])
@@ -109,9 +108,9 @@ def test_projected_years_take_the_section_4_floor(monkeypatch, age_2025):
         assert max(shortfalls) <= 1e-3
         assert amount >= previous - 1e-3
         # The lowest such amount: it stayed put, or some pairing binds.
-        assert amount == pytest.approx(previous, abs=1e-3) or max(
+        assert amount == pytest.approx(previous, rel=0, abs=1e-3) or max(
             shortfalls
-        ) == pytest.approx(0, abs=1e-3)
+        ) == pytest.approx(0, rel=0, abs=1e-3)
         previous = amount
 
 
@@ -123,6 +122,60 @@ def test_section_4_floor_reproduces_the_legislated_2026_27_amount():
         LCWRA_2025, STANDARD_ALLOWANCE_2025, STANDARD_ALLOWANCE_2026, CPI_FACTOR_2026
     )
     assert round(floor, 2) == PROTECTED_LCWRA_2026
+
+
+CPI_SEPTEMBER = "gov.economic_assumptions.statutory_uprating_inputs.cpi_september"
+PROTECTED = "gov.dwp.universal_credit.rebalancing.protected_health_element"
+
+
+def _protected_monthly(sim: Simulation, year: int) -> float:
+    return sim.calculate("uc_LCWRA_element", year)[0] / 12
+
+
+def test_projection_uses_the_september_cpi_rate(monkeypatch):
+    # s. 4(4)(a): September 2026 CPI sets the 2027-28 floor. A 9% September
+    # 2026 rate, far above any standard allowance growth, must lift the
+    # protected amount by exactly the floor.
+    _force_uc_seed(monkeypatch, [0.99])
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        # The rebalancing modifier runs when the simulation is built, so the
+        # change must apply before then.
+        scenario=Scenario(
+            parameter_changes={CPI_SEPTEMBER: {"2026-09-01": 0.09}},
+            applied_before_data_load=True,
+        ),
+    )
+    expected = uc_reform.protected_lcwra_floor(
+        PROTECTED_LCWRA_2026,
+        _standard_allowances(sim, 2026),
+        _standard_allowances(sim, 2027),
+        1.09,
+    )
+    assert expected > PROTECTED_LCWRA_2026 * 1.05
+    assert _protected_monthly(sim, 2027) == pytest.approx(expected, rel=0, abs=1e-3)
+
+
+def test_a_one_year_override_is_projected_from(monkeypatch):
+    # A reform that sets 2027-28 only: 2028-29 is not legislated and takes the
+    # floor from the reformed £500, not the carried £429.80.
+    _force_uc_seed(monkeypatch, [0.99])
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={PROTECTED: {"2027": 500}},
+            applied_before_data_load=True,
+        ),
+    )
+    assert _protected_monthly(sim, 2027) == pytest.approx(500, rel=0, abs=1e-3)
+    expected = uc_reform.protected_lcwra_floor(
+        500,
+        _standard_allowances(sim, 2027),
+        _standard_allowances(sim, 2028),
+        _cpi_factor(sim, 2028),
+    )
+    assert _protected_monthly(sim, 2028) == pytest.approx(expected, rel=0, abs=1e-3)
+    assert _protected_monthly(sim, 2028) >= 500 - 1e-3
 
 
 money = st.floats(min_value=0, max_value=5_000, allow_nan=False)
@@ -144,9 +197,9 @@ def test_section_4_floor_properties(previous, before, now, factor):
     tolerance = 1e-9 * max(1.0, previous + max(before.values()))
     assert max(shortfalls) <= tolerance
     assert floor >= previous
-    assert floor == pytest.approx(previous) or max(shortfalls) == pytest.approx(
-        0, abs=tolerance
-    )
+    assert floor == pytest.approx(previous, rel=0, abs=tolerance) or max(
+        shortfalls
+    ) == pytest.approx(0, rel=0, abs=tolerance)
 
 
 @settings(max_examples=200, deadline=None)

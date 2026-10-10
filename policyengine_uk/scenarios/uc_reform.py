@@ -23,7 +23,7 @@ def protected_lcwra_floor(
 
     s. 4(2): for each standard allowance amount, the protected LCWRA amount
     plus that allowance must be at least the previous tax year's sum,
-    increased by the relevant CPI percentage (never below 0%, s. 4(3)). s. 3
+    increased by the relevant CPI percentage (never below 0%, s. 4(4)(a)). s. 3
     switches off the element's ordinary uprating, so the amount otherwise stays
     where it was. All amounts are monthly.
     """
@@ -47,12 +47,11 @@ def _standard_allowances_monthly(sim: Microsimulation, year: int) -> dict:
 
 
 def _relevant_cpi_factor(sim: Microsimulation, year: int) -> float:
-    """1 + the relevant CPI percentage for a tax year (UC Act 2025 s. 4(3)):
-    the September-on-September change in the benefit uprating index."""
-    parameters = sim.tax_benefit_system.parameters
-    return float(parameters(str(year)).gov.benefit_uprating_cpi) / float(
-        parameters(str(year - 1)).gov.benefit_uprating_cpi
-    )
+    """1 + the relevant CPI percentage for a tax year (UC Act 2025 s. 4(4)(a)):
+    the CPI 12-month rate in the September before it. The 0% floor is applied
+    in :func:`protected_lcwra_floor`."""
+    inputs = sim.tax_benefit_system.parameters.gov.economic_assumptions.statutory_uprating_inputs
+    return 1 + float(inputs.cpi_september(f"{year - 1}-09-01"))
 
 
 # The date the fiscal-year annualisation samples a parameter at
