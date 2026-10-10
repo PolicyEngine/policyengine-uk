@@ -20,6 +20,11 @@ the child's parent, or the person themselves:
   71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a) (the
   student is on the award) and (c) (the student's applicable amount would
   include a disability or severe disability premium).
+- Which Housing Benefit regulations apply to a pensioner: HB Regs 2006 reg
+  5(1)(b); SI 2006/214 reg 5(2). The mixed-age couple Pension Credit saving:
+  SI 2019/37 arts 2(3) and 4, through SI 2006/214 reg 5.
+- The extended childcare parent and partner conditions: SI 2022/1134 regs
+  11A(1)(e), 14(4)(b) and 15(4).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -79,6 +84,7 @@ MEMBER_READERS = [
     "is_on_income_related_esa",
     "is_on_income_based_jsa",
     "is_on_income_support",
+    "extended_childcare_entitlement_limited_capability_or_specified_benefit",
 ]
 AWARDS = st.sampled_from([0, 0, 200, 3_000])
 
@@ -241,10 +247,10 @@ def test_other_members_awards_never_change_the_readers(drawn):
 
 # --- Further family shapes (begin) ---
 # Some readers only bite for a claimant over state pension age (the Housing
-# Benefit regulations that apply, the Pension Credit earnings disregard, the
-# mixed-age couple saving) or for a single applicant under 25 (the Scotland
-# and Wales council tax reduction personal allowance). The families above
-# rarely take those shapes, so two more properties check every family reader
+# Benefit regulations that apply, the mixed-age couple saving), for a single
+# applicant under 25, or for parents of a young child of whom only one works
+# (the extended childcare partner condition). The families above rarely take
+# those shapes, so three more properties check every family and member reader
 # on them. The claimant and partner seldom report an award themselves, and the
 # added member's award survives tariff income on the savings drawn, so a
 # reader that wrongly counts it changes. The invariant is about the readers'
@@ -335,6 +341,35 @@ def young_single_families(draw):
     return adults, [], household
 
 
+@st.composite
+def working_parent_families(draw):
+    """Parents of a child aged one to four in England. One parent is in
+    qualifying paid work within the income limits and the other is not, so
+    the other meets the extended childcare partner condition only through
+    limited capability for work or a specified benefit (SI 2022/1134 regs
+    14(4) and 15(4))."""
+    working = {
+        "age": draw(st.integers(25, 45)),
+        "is_parent": True,
+        "in_work": True,
+        "employment_income": draw(st.sampled_from([20_000, 30_000])),
+        "extended_childcare_entitlement_meets_income_requirements": True,
+        **draw(couple_award_reports()),
+    }
+    not_working = {
+        "age": draw(st.integers(25, 45)),
+        "is_parent": True,
+        "in_work": False,
+        "extended_childcare_entitlement_meets_income_requirements": False,
+        **draw(couple_award_reports()),
+    }
+    household = {
+        "country": "ENGLAND",
+        "savings": draw(st.sampled_from([0, 7_000, 20_000])),
+    }
+    return [working, not_working], [{"age": draw(st.integers(1, 4))}], household
+
+
 def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
     without = [(*family, None) for family, _ in drawn]
     with_other = [(*family, other) for family, other in drawn]
@@ -360,6 +395,14 @@ def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
                 variable,
                 drawn[i],
             )
+    for variable in MEMBER_READERS:
+        values = sim.calculate(variable, YEAR)
+        for i in range(k):
+            n = sizes[i]
+            assert np.array_equal(
+                values[starts[i] : starts[i] + n],
+                values[starts[k + i] : starts[k + i] + n],
+            ), (variable, drawn[i])
 
 
 @SETTINGS
@@ -383,6 +426,18 @@ def test_other_members_awards_never_change_the_readers_at_pension_age(drawn):
     )
 )
 def test_other_members_awards_never_change_the_readers_for_young_singles(drawn):
+    _family_readers_never_change(drawn)
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(working_parent_families(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_readers_for_working_parents(drawn):
     _family_readers_never_change(drawn)
 
 
