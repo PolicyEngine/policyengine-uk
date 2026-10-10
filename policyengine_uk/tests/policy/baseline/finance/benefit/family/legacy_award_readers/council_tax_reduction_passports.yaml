@@ -230,6 +230,46 @@
     is_on_income_related_esa: [false, true, false]
     merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 270.40]
 
+- name: A non-dependant couple on ESA with a working partner pays the partner's deduction on their joint income
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      applicant:
+        age: 50
+      payee:
+        age: 30
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+      partner:
+        age: 29
+        is_claimant_or_partner: true
+        current_education: NOT_IN_EDUCATION
+        employment_income: 15_000
+        weekly_hours: 20
+    benunits:
+      applicant_unit:
+        members: [applicant]
+      nondep_unit:
+        members: [payee, partner]
+        universal_credit: 0
+    households:
+      household:
+        members: [applicant, payee, partner]
+        country: ENGLAND
+        local_authority: MERTON
+  output:
+    # Only the payee is on the couple's ESA (Default Scheme Sch para 2(4),
+    # "payable to him"), so only they are exempt (para 30(8)(a)). The partner
+    # works 20 hours, at least Merton's 16, so the deduction follows the
+    # couple's joint gross income (para 30(4)): 15,000 / 52 = £288.46 a week,
+    # in the band from £279, £10.60 a week. One deduction is made for the
+    # couple, the higher of the two (para 30(3)): 10.60 x 52 = 551.20.
+    is_on_income_related_esa: [false, true, false]
+    merton_council_tax_reduction_individual_non_dep_deduction: [0, 0, 551.20]
+    merton_council_tax_reduction_non_dep_deductions: [551.20, 0]
+
 - name: A non-dependant's own ESA report below the tariff income does not exempt them, whatever another member reports
   period: 2027
   absolute_error_margin: 0.01

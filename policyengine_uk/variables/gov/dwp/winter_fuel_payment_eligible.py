@@ -11,7 +11,9 @@ class winter_fuel_payment_eligible(Variable):
     label = "eligible for the Winter Fuel Payment"
     documentation = (
         "Whether this person is entitled to a Winter Fuel Payment: they have "
-        "reached pensionable age and live where the payment is made, they "
+        "reached pensionable age (before the 2024 qualifying week, the "
+        "qualifying age for State Pension Credit) and live where the "
+        "payment is made, they "
         "are not the partner of the person paid for a couple on a relevant "
         "benefit, and they meet the model's means condition. The means "
         "condition is a relevant benefit of their own (or their couple's) "
@@ -37,8 +39,17 @@ class winter_fuel_payment_eligible(Variable):
         p = parameters(period).gov.dwp.winter_fuel_payment.eligibility
         country = person.household("country", period).decode_to_str()
         resident = np.isin(country, p.countries)
-        is_SP_age = person("is_SP_age", period)
-        pension_age = is_SP_age | (not p.state_pension_age_requirement)
+        # SI 2000/729 reg 2(1)(b): "has attained the qualifying age for state
+        # pension credit". From 16 September 2024, SI 2024/869 reg 2(1)(a)
+        # uses "has reached pensionable age" (also SI 2025/969 reg 2(a)).
+        # The statutory ages coincide in these later years, but a reform
+        # can change their timetables independently.
+        age_eligible = where(
+            period.start.year >= 2024,
+            person("is_SP_age", period),
+            person("has_attained_state_pension_credit_qualifying_age", period),
+        )
+        pension_age = age_eligible | (not p.state_pension_age_requirement)
         qualifies = resident & pension_age
         on_relevant_benefit = person(
             "is_on_winter_fuel_payment_relevant_benefit", period
@@ -46,7 +57,7 @@ class winter_fuel_payment_eligible(Variable):
         income_test = p.taxable_income_test
         meets_income_test = (
             person.household.any(
-                is_SP_age
+                age_eligible
                 & (person("total_income", period) < income_test.maximum_taxable_income)
             )
             & np.isin(country, ["ENGLAND", "WALES"])
