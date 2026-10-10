@@ -1,0 +1,100 @@
+# HB Regs 2006 reg 5(1)(b): the working-age regulations apply to a claimant
+# who has reached the qualifying age for State Pension Credit only if "he, or
+# if he has a partner, his partner" is on Universal Credit, Income Support,
+# income-based JSA or income-related ESA. "other" is a member who is neither
+# the claimant, the partner nor a child or young person they are responsible
+# for, so an award they report is their own claim and leaves the claimant
+# under the pension-age regulations. The model stops paying income-based JSA
+# from April 2026 (gov.dwp.JSA.income.active), so the JSA cases are in 2025.
+
+- name: Another member's income-related ESA leaves a pensioner under the pension-age HB regulations
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    housing_benefit_pension_age_regulations_apply: true
+
+- name: Another member's income-based JSA leaves a pensioner under the pension-age HB regulations
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    jsa_income: 4_000
+    claimant_or_partner_jsa_income: 0
+    housing_benefit_pension_age_regulations_apply: true
+
+- name: A younger partner's income-related ESA brings a pensioner under the working-age HB regulations
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      partner:
+        age: 50
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    claimant_or_partner_esa_income: 5_000
+    housing_benefit_pension_age_regulations_apply: false
+
+- name: A younger partner's income-based JSA brings a pensioner under the working-age HB regulations
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      partner:
+        age: 50
+        is_claimant_or_partner: true
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    claimant_or_partner_jsa_income: 4_000
+    housing_benefit_pension_age_regulations_apply: false
