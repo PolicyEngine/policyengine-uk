@@ -63,8 +63,10 @@
   output:
     winter_fuel_allowance: 300
 
-- name: Household in Scotland gets no WFA (handled by Scottish Government)
-  period: 2023
+- name: Household in Scotland gets no WFA from the 2024 qualifying week (Pension Age Winter Heating Payment instead)
+  # SI 2024/869 and SI 2025/969 extend to England and Wales; SI 2000/729
+  # covered Great Britain up to the 2023 qualifying week.
+  period: 2024
   absolute_error_margin: 1
   input:
     age: 67

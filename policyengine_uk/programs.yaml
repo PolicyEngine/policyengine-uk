@@ -355,6 +355,7 @@ programs:
     variable: winter_fuel_payment
     parameter_prefix: gov.dwp.winter_fuel_payment
     verified_start_year: 2022
+    notes: Great Britain to winter 2023-24, then England and Wales; Northern Ireland's mirror scheme uses the same parameters
 
   - id: ssmg
     name: Sure Start Maternity Grant
@@ -584,3 +585,15 @@ programs:
     variable: scottish_child_payment
     parameter_prefix: gov.social_security_scotland.scottish_child_payment
     verified_start_year: 2022
+
+  - id: pawhp
+    name: Pension Age Winter Heating Payment
+    full_name: Pension Age Winter Heating Payment
+    category: Benefits
+    agency: Social Security Scotland
+    status: complete
+    coverage: Scotland
+    variable: pension_age_winter_heating_payment
+    parameter_prefix: gov.social_security_scotland.pawhp
+    verified_start_year: 2024
+    notes: Replaced the Winter Fuel Payment in Scotland from winter 2024-25
