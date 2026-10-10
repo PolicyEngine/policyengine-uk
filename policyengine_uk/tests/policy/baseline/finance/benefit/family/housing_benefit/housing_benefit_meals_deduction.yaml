@@ -171,13 +171,14 @@
       boarder_family:
         members: [boarder]
         meals_included_in_rent: AT_LEAST_THREE_A_DAY
-        uncapped_BRMA_LHA_rate: 9_000
     households:
       home:
         members: [householder, boarder]
         tenure_type: OWNED_OUTRIGHT
+        brma: MAIDSTONE
   output:
     # UC excludes food from service charges only in the social rented
     # sector and for owner-occupiers (UC Sch 1 para 8(1), (6)(c)); a private
-    # renter's whole payment is core rent: min(6,000, 9,000) = 6,000.
+    # renter's whole payment is core rent: min(6,000, Maidstone one-bedroom
+    # rate 750 a month = 9,000) = 6,000.
     uc_housing_costs_element: [0, 6_000]

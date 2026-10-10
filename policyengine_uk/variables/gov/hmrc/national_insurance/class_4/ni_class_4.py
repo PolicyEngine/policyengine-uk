@@ -7,7 +7,7 @@ class ni_class_4(Variable):
     label = "NI Class 4 contributions"
     definition_period = YEAR
     unit = GBP
-    defined_for = "ni_liable"
+    defined_for = "ni_class_4_liable"
     reference = "https://www.legislation.gov.uk/ukpga/1992/4/section/15"
 
     def formula(person, period, parameters):

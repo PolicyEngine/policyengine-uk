@@ -1,4 +1,4 @@
-- name: Dependent young person PIP does not exempt the claimant household
+- name: Dependent young person PIP does not exempt the claimant's family
   period: 2025
   input:
     people:
@@ -21,9 +21,9 @@
         members: [claimant, other_member, non_dependant]
   output:
     # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
-    council_tax_reduction_household_has_non_dep_exemption: false
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, false]
 
-- name: Under-18 partner PIP exempts the claimant household
+- name: Under-18 partner PIP exempts the claimant's family
   period: 2025
   input:
     people:
@@ -50,9 +50,9 @@
   output:
     # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
     is_couple: [true, false]
-    council_tax_reduction_household_has_non_dep_exemption: true
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
 
-- name: Claimant PIP continues to exempt the household
+- name: Claimant PIP continues to exempt the claimant's family
   period: 2025
   input:
     people:
@@ -75,9 +75,9 @@
         members: [claimant, other_member, non_dependant]
   output:
     # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
-    council_tax_reduction_household_has_non_dep_exemption: true
+    council_tax_reduction_applicant_has_non_dep_exemption: [true, false]
 
-- name: Dependent young person blindness does not exempt the claimant household
+- name: Dependent young person blindness does not exempt the claimant's family
   period: 2025
   input:
     people:
@@ -100,4 +100,4 @@
         members: [claimant, other_member, non_dependant]
   output:
     # CTR SI 2012/2885 Sch 1 para 8(6): only applicant/partner benefits count.
-    council_tax_reduction_household_has_non_dep_exemption: false
+    council_tax_reduction_applicant_has_non_dep_exemption: [false, false]
