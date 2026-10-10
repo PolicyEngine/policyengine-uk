@@ -10,11 +10,11 @@ forgets the record of an input that ``Holder.delete_arrays`` deletes, and each
 clone gets its own copy of the record. The helpers also require a stored
 value, so missing arrays do not count as supplied inputs.
 
-``Simulation.build_from_populations``, which ``build_from_situation`` calls,
-replaces every holder but keeps the record (policyengine-core#605). The engine
-could then carry an earlier value into a period whose input the rebuild
-dropped, and the stale record would pass it off as supplied. So
-``Simulation.calculate`` forgets the records of a variable in
+``build_from_situation`` installs fresh populations, and so fresh holders,
+through ``Simulation.build_from_populations``, which keeps the record
+(policyengine-core#605). The engine could then carry an earlier value into a
+period whose input the rebuild dropped, and the stale record would pass it off
+as supplied. So ``Simulation.calculate`` forgets the records of a variable in
 ``SUPPLIED_INPUT_VARIABLES`` whose stored value is gone before the engine can
 refill it, and the helpers only answer for those variables.
 ``Simulation.delete_arrays`` forgets such records too, for any variable it
