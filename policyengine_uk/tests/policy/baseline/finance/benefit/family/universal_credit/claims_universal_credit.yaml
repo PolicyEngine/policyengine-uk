@@ -337,7 +337,9 @@
     housing_benefit_eligible: false
     is_pension_credit_eligible: false
 
-- name: A protected mixed-age couple on Working Tax Credit that does not claim loses its Housing Benefit and the saving
+- name: A protected mixed-age couple on Working Tax Credit that does not claim keeps the pension-age route
+  # SI 2019/37 art. 4(3)(b)(ii) lets it reclaim Housing Benefit and keep the
+  # saving (DWP HB circular A9/2024 paras 12-13).
   period: 2025
   input:
     people:
@@ -362,9 +364,9 @@
   output:
     legacy_benefits_closed: true
     claims_universal_credit: false
-    left_pension_route_at_legacy_closure: true
-    housing_benefit_eligible: false
-    is_pension_credit_eligible: false
+    left_pension_route_at_legacy_closure: false
+    housing_benefit_eligible: true
+    is_pension_credit_eligible: true
     universal_credit: 0
 
 - name: A protected mixed-age couple on Child Tax Credit only takes the Pension Credit route and keeps its Housing Benefit
@@ -493,3 +495,62 @@
     claims_universal_credit: true
     is_WTC_eligible: false
     tax_credits: 0
+
+- name: A pension-age Working Tax Credit recipient refused Universal Credit on capital stays on the pension-age route
+  # The transitional capital disregard (SI 2014/1230 reg 51) is not modelled.
+  period: 2025
+  input:
+    people:
+      adult:
+        age: 70
+        working_tax_credit_reported: 2_000
+        housing_benefit_reported: 4_000
+    benunits:
+      benunit:
+        members: [adult]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+    households:
+      household:
+        members: [adult]
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    claims_universal_credit: true
+    is_uc_eligible: false
+    left_pension_route_at_legacy_closure: false
+    housing_benefit_eligible: true
+
+- name: A closure claim counts the household's non-dependants like any Universal Credit claim
+  # UC Regs 2013 Sch 4 para 9: a non-dependant son aged 24 in the household.
+  # The 2025-26 housing cost contribution is 93.02 a month (12 x 93.02).
+  period: 2025
+  input:
+    people:
+      head:
+        age: 40
+        is_household_head: true
+        working_tax_credit_reported: 2_000
+      son:
+        age: 24
+        employment_income: 20_000
+    benunits:
+      head_family:
+        members: [head]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: true
+      son_family:
+        members: [son]
+        would_claim_uc: false
+        would_claim_uc_at_legacy_closure: false
+    households:
+      home:
+        members: [head, son]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
+  output:
+    claims_universal_credit: [true, false]
+    uc_non_dependants_counted: [true, false]
+    uc_non_dep_deductions: [1_116.24, 0]
+    LHA_allowed_bedrooms: [2, 1]

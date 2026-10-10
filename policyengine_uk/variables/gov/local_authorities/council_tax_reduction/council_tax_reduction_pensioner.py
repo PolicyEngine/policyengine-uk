@@ -70,8 +70,11 @@ class council_tax_reduction_pensioner(Variable):
         # both members reach the qualifying age (SI 2012/2885 reg 3(2);
         # WSI 2013/3029 reg 3(2); SSI 2021/249 reg 3(2)). England, and Wales
         # for schemes from 2026-27, also disregard a tax credit migrant's award
-        # (UC (TP) Regs 2014 reg 60A) and Scotland does not; the model does not
-        # model those migrants.
+        # (UC (TP) Regs 2014 reg 60A) and Scotland does not. The model's reg 60A
+        # migrants (claims_uc_at_legacy_closure) have no applicant or partner
+        # under the qualifying age, so their award is disregarded in every
+        # nation; counting it in Scotland, and in Wales before 2026-27, is not
+        # modelled.
         working_age_applicant = benunit.any(applicant_or_partner & ~over_qualifying_age)
         universal_credit_award = (
             benunit("is_uc_entitled", period)
