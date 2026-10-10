@@ -9,7 +9,7 @@ import pandas as pd
 # PolicyEngine core imports
 from policyengine_core.data import Dataset
 from policyengine_core.enums import Enum as CoreEnum
-from policyengine_core.periods import period as period_
+from policyengine_core.periods import Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
@@ -33,6 +33,10 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.supplied_inputs import (
+    SUPPLIED_INPUT_VARIABLES,
+    drop_missing_supplied_inputs,
+)
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_lsr_parameter_path,
@@ -207,6 +211,9 @@ class Simulation(CoreSimulation):
             "employee_pension_contributions",
             "employee_pension_contributions_reported",
         )
+        # Dataset totals must not mask journey-based fare policy formulas.
+        # The reported amount remains available for legacy data and Wales.
+        self.move_values("bus_fare_spending", "bus_fare_spending_reported")
 
         self.input_variables = self.get_known_variables()
 
@@ -227,6 +234,17 @@ class Simulation(CoreSimulation):
                 scenario.simulation_modifier(self)
             if scenario.parameter_changes is not None:
                 self.apply_parameter_changes(scenario.parameter_changes)
+
+    def delete_arrays(self, variable: str, period: Period = None) -> None:
+        super().delete_arrays(variable, period)
+        # From policyengine-core 3.32.27 (policyengine-core#561) the deletion
+        # forgets the input records of the values it removes, but not records
+        # that a population rebuild left with no stored value
+        # (policyengine-core#605). Drop those too, before carry-over can refill
+        # the period and input export would count the refill as an input.
+        # Inspect storage after core's deletion to honour period containment
+        # and the current branch, ancestor branches and default branch.
+        drop_missing_supplied_inputs(self, variable)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
@@ -626,6 +644,14 @@ class Simulation(CoreSimulation):
             period = self.default_calculation_period
 
         period = period_(period)
+
+        if variable_name in SUPPLIED_INPUT_VARIABLES:
+            # Rebuilding the populations leaves the input records of the
+            # replaced holders behind (policyengine-core#605). Forget a record
+            # whose stored value is gone before the engine can refill the
+            # period with a carried-over value that the record would pass off
+            # as supplied.
+            drop_missing_supplied_inputs(self, variable_name)
 
         return super().calculate(
             variable_name, period, map_to=map_to, decode_enums=decode_enums

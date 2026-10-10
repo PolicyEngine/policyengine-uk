@@ -29,17 +29,18 @@
         tenure_type: RENT_PRIVATELY
   # No BRMA is input, so the household gets London's default BRMA (Inner
   # South East London) rather than Maidstone, which every household without
-  # a BRMA used before brma had a formula. The shared accommodation rate
-  # rises from £5,623.28 to £7,523.36 a year, so the Universal Credit
-  # housing element and net income rise by £1,900.08 (from £3,824.96 and
-  # £14,450.42).
+  # a BRMA used before brma had a formula. A single person under 35 gets the
+  # shared accommodation rate, published for Universal Credit from April
+  # 2024 and held for 2025-26: GBP 650.00 a month for Inner South East
+  # London against GBP 444.83 for Maidstone. Universal Credit and net income
+  # rise by GBP 2,462.04 (from 3,539.64 and 14,165.10).
   output:
     income_tax: 0
     national_insurance: 0
-    universal_credit: 5_725.04
+    universal_credit: 6_001.68
     housing_benefit: 0
     child_benefit: 0
-    household_net_income: 16_350.49
+    household_net_income: 16_627.14
 
 - name: "EntitledTo #2 - couple with 2 children, one earner at £22k, social housing in North West"
   period: 2025

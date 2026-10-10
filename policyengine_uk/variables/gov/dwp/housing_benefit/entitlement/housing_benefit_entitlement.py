@@ -40,10 +40,17 @@ class housing_benefit_entitlement(Variable):
         # Where a maximum rent (LHA) is determined, it is the eligible rent
         # (SI 2006/213 and SI 2006/214 reg 12D(2)(a); NI SR 2006/405 and
         # SR 2006/406 reg 13C(2)(a)). LHA_cap is the LHA rate or, where the
-        # rent is lower, the rent (the cap rent: reg 13D(5); NI reg 14D(5)).
-        rent = benunit("benunit_rent", period)
+        # rent is lower, the rent (the cap rent: reg 13D(5); NI reg 14D(5)),
+        # or the rent less meals after a rent officer's board and attendance
+        # finding (reg 13C(5)(e), 13(7)). Otherwise charges for meals are not
+        # eligible (reg 12B(2)(b) and Sch 1 paras 1(a)(i) and 2).
+        rent_less_meals = max_(
+            0,
+            benunit("benunit_rent", period)
+            - benunit("housing_benefit_meals_deduction", period),
+        )
         lha_eligible = benunit("LHA_eligible", period)
-        eligible_rent = where(lha_eligible, benunit("LHA_cap", period), rent)
+        eligible_rent = where(lha_eligible, benunit("LHA_cap", period), rent_less_meals)
         # The appropriate maximum Housing Benefit is the eligible rent less
         # non-dependant deductions (SI 2006/213 reg 70, SI 2006/214 reg 50;
         # NI regs 68 and 48).

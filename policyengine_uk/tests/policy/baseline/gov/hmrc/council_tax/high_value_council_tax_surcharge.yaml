@@ -2,6 +2,7 @@
   period: 2027
   input:
     region: LONDON
+    tenure_type: OWNED_OUTRIGHT
     main_residence_value: 3_000_000
     main_residential_property_purchased: 0
     council_tax: 0
@@ -13,6 +14,7 @@
   period: 2028
   input:
     region: LONDON
+    tenure_type: OWNED_OUTRIGHT
     main_residence_value: 2_554_326.811538164
     main_residential_property_purchased: 0
     council_tax: 0
@@ -27,6 +29,7 @@
   absolute_error_margin: 0.01
   input:
     region: LONDON
+    tenure_type: OWNED_OUTRIGHT
     main_residence_value: 2_629_940.453174542
     main_residential_property_purchased: 0
     council_tax: 0
@@ -40,6 +43,7 @@
   period: 2028
   input:
     region: SCOTLAND
+    tenure_type: OWNED_OUTRIGHT
     main_residence_value: 7_000_000
     main_residential_property_purchased: 0
     council_tax: 0
@@ -54,6 +58,7 @@
   input:
     gov.contrib.abolish_council_tax: true
     region: LONDON
+    tenure_type: OWNED_OUTRIGHT
     main_residence_value: 2_554_326.811538164
     main_residential_property_purchased: 0
     council_tax: 1_500
@@ -63,3 +68,91 @@
     high_value_council_tax_surcharge: 2_500
     household_tax: 0
     gov_tax: 0
+- name: Owners with a mortgage are liable
+  period: 2028
+  input:
+    region: LONDON
+    tenure_type: OWNED_WITH_MORTGAGE
+    main_residence_value: 2_554_326.811538164
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 2_500
+    household_tax: 2_500
+- name: Private renters owe nothing on their rented home even with a supplied value above £5m
+  period: 2028
+  input:
+    region: LONDON
+    tenure_type: RENT_PRIVATELY
+    main_residence_value: 7_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 0
+    household_tax: 0
+    gov_tax: 0
+- name: Council tenants owe nothing
+  period: 2028
+  input:
+    region: LONDON
+    tenure_type: RENT_FROM_COUNCIL
+    main_residence_value: 3_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 0
+- name: Housing association tenants owe nothing
+  period: 2028
+  input:
+    region: LONDON
+    tenure_type: RENT_FROM_HA
+    main_residence_value: 3_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 0
+- name: A household with no tenure supplied takes the RENT_PRIVATELY default and owes nothing
+  period: 2028
+  input:
+    region: LONDON
+    main_residence_value: 3_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 0
+- name: Ownership condition holds when a reform lowers the first threshold to £1.5m (owner)
+  period: 2028
+  input:
+    gov.hmrc.council_tax.high_value_surcharge.amount[1].threshold: 1_500_000
+    region: LONDON
+    tenure_type: OWNED_OUTRIGHT
+    main_residence_value: 2_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 2_500
+- name: Ownership condition holds when a reform lowers the first threshold to £1.5m (private renter)
+  period: 2028
+  input:
+    gov.hmrc.council_tax.high_value_surcharge.amount[1].threshold: 1_500_000
+    region: LONDON
+    tenure_type: RENT_PRIVATELY
+    main_residence_value: 2_000_000
+    main_residential_property_purchased: 0
+    council_tax: 0
+    household_owns_tv: false
+    gov.hmrc.stamp_duty.property_sale_rate: 0
+  output:
+    high_value_council_tax_surcharge: 0

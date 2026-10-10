@@ -1,0 +1,409 @@
+# Universal Credit deducts from a person's earnings only the income tax and
+# National Insurance that person pays in respect of their own employment
+# (UC Regs 2013 reg. 55(5)(b)) or trade (reg. 57(2) step 3), plus their own
+# relievable pension contributions (reg. 55(5)(a)). Tax on pensions, State
+# Pension, property, savings and dividends is not deducted, and one partner's
+# tax never reduces the other's earnings. Earnings are taken as the lowest
+# slice of the person's non-savings income, after their allowances; savings
+# and dividends sit above it, as ITA 2007 s. 16 ranks them for income tax
+# (apart from the items s. 1012 ranks higher, which the model does not have).
+#
+# Hand calculations use the 2026-27 rates:
+# - personal allowance 12,570; basic rate 20% on the first 37,700 of taxable
+#   income; dividend allowance 500, dividend ordinary rate 10.75%; property
+#   allowance 1,000; trading allowance 1,000 (only for a trade profit within
+#   it when gross receipts are not given, ITTOIA 2005 s. 783AI);
+# - primary Class 1 NI 8% above the primary threshold of 241.73 a week
+#   (12,569.96 a year); Class 4 NI 6% above the lower profits limit of 12,570;
+#   Class 2 NI nil;
+# - UC standard allowance 424.90 a month (single, 25 or over) or 666.97
+#   (couple, one 25 or over); child element 303.94 a month; work allowance
+#   427 a month with housing costs; taper 55%.
+
+- name: Single parent with earnings and property income, only tax on earnings is deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 20_000
+        property_rental_income: 5_000
+        property_income: 5_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # Earnings take the personal allowance first: (20,000 - 12,570) x 20%.
+    # Property income (5,000 of receipts with no expenses) is taxed on
+    # (5,000 - 1,000) x 20% = 800, not deducted.
+    income_tax: [2_286, 0]
+    uc_income_tax_on_earnings: [1_486, 0]
+    # (20,000 - 12,569.96) x 8%.
+    uc_national_insurance_on_earnings: [594.40, 0]
+    # 20,000 - 1,486 - 594.40.
+    uc_individual_earned_income: [17_919.60, 0]
+    # Less the work allowance of 427 x 12 = 5,124.
+    uc_earned_income: 12_795.60
+    # Rent from property is not UC unearned income (reg. 66(1) is a closed
+    # list).
+    uc_unearned_income: 0
+    # 424.90 x 12 + 303.94 x 12 + 9,600 = 5,098.80 + 3,647.28 + 9,600.
+    uc_maximum_amount: 18_346.08
+    # 18,346.08 - 0.55 x 12,795.60. Deducting all of the tax, as before this
+    # fix, gave 11,748.50: 0.55 x 800 = 440 too much.
+    universal_credit: 11_308.50
+
+- name: The finance-cost reduction comes off the tax on property, not on earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 20_000
+        property_rental_income: 5_000
+        property_income: 5_000
+        property_finance_costs: 3_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # Actual expenses beat the allowance: 5,000 x 20% - 20% x 3,000 = 400 of
+    # tax on property, against 800. The 600 reduction (ITTOIA 2005 s. 274AA)
+    # is limited by the property profits, so it does not come off the tax on
+    # earnings, which stays (20,000 - 12,570) x 20%.
+    property_finance_cost_relief: [600, 0]
+    income_tax: [1_886, 0]
+    uc_income_tax_on_earnings: [1_486, 0]
+    uc_individual_earned_income: [17_919.60, 0]
+    uc_earned_income: 12_795.60
+    uc_maximum_amount: 18_346.08
+    # Unchanged by the finance costs. Taking the 600 reduction off the tax on
+    # earnings would give 10,978.50: 0.55 x 600 = 330 less.
+    universal_credit: 11_308.50
+
+- name: Mixed-age couple, the pensioner's tax on State Pension does not reduce the partner's earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        state_pension: 16_000
+      partner:
+        age: 45
+        employment_income: 13_000
+    benunits:
+      benunit:
+        members: [pensioner, partner]
+    households:
+      household:
+        members: [pensioner, partner]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 20_000
+  output:
+    # Pensioner: (16,000 - 12,570) x 20% = 686, on State Pension.
+    # Partner: (13,000 - 12,570) x 20% = 86 and (13,000 - 12,569.96) x 8%
+    # = 34.40. Both are above the personal allowance, so there is no
+    # Marriage Allowance.
+    income_tax: [686, 86]
+    uc_income_tax_on_earnings: [0, 86]
+    uc_national_insurance_on_earnings: [0, 34.40]
+    # 13,000 - 86 - 34.40.
+    uc_earned_income: 12_879.60
+    uc_unearned_income: 16_000
+    # 666.97 x 12 + 20,000.
+    uc_maximum_amount: 28_003.64
+    # 28,003.64 - (0.55 x 12,879.60 + 16,000). Deducting the whole benefit
+    # unit's tax, as before this fix, gave 5,297.16: 0.55 x 686 = 377.30
+    # too much.
+    universal_credit: 4_919.86
+
+- name: Self-employed claimant with pension and dividend income, only tax on the trade is deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 55
+    self_employment_income: 18_000
+    # In a start-up period, so the minimum income floor does not apply.
+    uc_is_in_startup_period: true
+    private_pension_income: 4_000
+    dividend_income: 3_000
+    tenure_type: RENT_FROM_COUNCIL
+    rent: 12_000
+  output:
+    # Trade: a profit of 18,000 is above the trading allowance, so no
+    # allowance applies without gross receipts. It takes the personal
+    # allowance first: (18,000 - 12,570) x 20% = 1,086. Pension: 4,000 x 20%
+    # = 800. Dividends: (3,000 - 500) x 10.75% = 268.75. Neither is deducted.
+    income_tax: 2_154.75
+    uc_income_tax_on_earnings: 1_086
+    # Class 4: (18,000 - 12,570) x 6%.
+    uc_national_insurance_on_earnings: 325.80
+    # 18,000 - 1,086 - 325.80, with no work allowance.
+    uc_earned_income: 16_588.20
+    # The pension counts; dividends are not UC unearned income.
+    uc_unearned_income: 4_000
+    # 424.90 x 12 + 12,000.
+    uc_maximum_amount: 17_098.80
+    # 17,098.80 - (0.55 x 16,588.20 + 4,000). Deducting all of the tax and
+    # NI, as before this fix, gave 4,563.10: 0.55 x 1,068.75 = 587.81 too
+    # much.
+    universal_credit: 3_975.29
+
+- name: Scottish taxpayer, earnings sit below pension income in the Scottish bands
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 20_000
+    private_pension_income: 10_000
+    region: SCOTLAND
+  output:
+    # 2026-27 Scottish bands above the personal allowance: starter 19% on the
+    # first 3,967, basic 20% to 16,956, intermediate 21% to 31,092.
+    # Earnings slice 7,430: 3,967 x 19% + 3,463 x 20% = 753.73 + 692.60.
+    uc_income_tax_on_earnings: 1_446.33
+    # Pension slice 7,430 to 17,430: 9,526 x 20% + 474 x 21% = 2,004.74.
+    income_tax: 3_451.07
+
+- name: Couple with Marriage Allowance, the recipient's reduction lowers the tax on their earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 15_000
+        dividend_income: 5_000
+      transferor:
+        age: 38
+        employment_income: 10_000
+    benunits:
+      benunit:
+        members: [recipient, transferor]
+    households:
+      household:
+        members: [recipient, transferor]
+  output:
+    # The transferor's unused allowance of 2,570 exceeds the 1,257 cap, which
+    # rounds up to 1,260. Tax on the recipient's earnings:
+    # (15,000 - 12,570 - 1,260) x 20% = 234, the same as 486 less the
+    # 20% x 1,260 = 252 reduction. Dividends: (5,000 - 500) x 10.75% = 483.75,
+    # not deducted.
+    marriage_allowance: [1_260, 0]
+    income_tax: [717.75, 0]
+    uc_income_tax_on_earnings: [234, 0]
+    # (15,000 - 12,569.96) x 8%.
+    uc_national_insurance_on_earnings: [194.40, 0]
+    uc_individual_earned_income: [14_571.60, 10_000]
+    uc_earned_income: 24_571.60
+
+- name: Voluntary Class 3 NI is not deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 13_000
+    ni_class_3: 900
+  output:
+    national_insurance: 934.40
+    uc_national_insurance_on_earnings: 34.40
+    # 13,000 - 86 - 34.40.
+    uc_earned_income: 12_879.60
+
+- name: Pension contributions come off only the contributor's own earnings
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      earner:
+        age: 40
+        employment_income: 20_000
+        employee_pension_contributions: 1_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 38
+        personal_pension_contributions: 1_000
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [earner, partner]
+    households:
+      household:
+        members: [earner, partner]
+  output:
+    # Relief on the earner's contributions: (20,000 - 12,570 - 1,000) x 20%.
+    uc_income_tax_on_earnings: [1_286, 0]
+    # 20,000 - 1,000 - 1,286 - 594.40. The partner has no earnings, so their
+    # own contributions reduce nothing.
+    uc_individual_earned_income: [17_119.60, 0]
+    uc_earned_income: 17_119.60
+
+- name: High Income Child Benefit Charge is not deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 70_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    # Child Benefit 27.05 x 52 = 1,406.60; the charge takes
+    # (70,000 - 60,000) / 200 = 50% of it, 703.30.
+    CB_HITC: [703.30, 0]
+    income_tax: [16_135.30, 0]
+    # 37,700 x 20% + (57,430 - 37,700) x 40%.
+    uc_income_tax_on_earnings: [15_432, 0]
+
+- name: From 2027 property income has its own rates, and its tax is still not deducted
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    age: 35
+    employment_income: 20_000
+    property_rental_income: 5_000
+    property_income: 5_000
+  output:
+    # Property: 5,000 of receipts with no expenses, so (5,000 - 1,000) x 22%
+    # = 880.
+    property_income_tax: 880
+    income_tax: 2_366
+    uc_income_tax_on_earnings: 1_486
+
+- name: A tax reduction comes off the tax on earnings first
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # Married couple's allowance reduction: 10% x 11,000 = 1,100.
+    capped_mcad: [1_100, 0]
+    # (20,000 - 12,570) x 20% = 1,486, less 1,100.
+    income_tax: [386, 0]
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: Pension income does not change the tax on earnings when a reduction applies
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        private_pension_income: 5_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # 1,486 on earnings + 5,000 x 20% on the pension - 1,100.
+    income_tax: [1_386, 0]
+    # The reduction still comes off the earnings slice: 1,486 - 1,100.
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: The pension annual allowance charge is not deducted, even with a tax reduction
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 92
+        employment_income: 20_000
+        employer_pension_contributions: 65_000
+        married_couples_allowance: 11_000
+        would_claim_marriage_allowance: false
+      partner:
+        age: 45
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [older, partner]
+    households:
+      household:
+        members: [older, partner]
+  output:
+    # Contributions of 65,000 exceed the 60,000 annual allowance by 5,000,
+    # charged at the basic rate: 1,000.
+    personal_pension_contributions_tax: [1_000, 0]
+    income_tax: [1_386, 0]
+    uc_income_tax_on_earnings: [386, 0]
+
+- name: Pension contributions paid after 75 are not relievable, so are not deducted
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 76
+    employment_income: 15_000
+    employee_pension_contributions: 1_000
+  output:
+    # No relief after 75 (FA 2004 s. 188(3)(a)): (15,000 - 12,570) x 20%.
+    uc_income_tax_on_earnings: 486
+    # Over State Pension age, so no Class 1 NI.
+    uc_national_insurance_on_earnings: 0
+    # 15,000 - 486, with the 1,000 of contributions not deducted.
+    uc_individual_earned_income: 14_514
+
+- name: A reform exempting pensions from income tax leaves the tax on earnings unchanged
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.income_tax.earned_taxable_income_exclusions:
+      - taxable_savings_interest_income
+      - taxable_dividend_income
+      - taxable_property_income
+      - received_allowances_earned_income
+      - marriage_allowance
+      - taxable_pension_income
+    age: 40
+    employment_income: 20_000
+    private_pension_income: 10_000
+  output:
+    # The pension is outside the taxed base, so it is not above earnings
+    # either: (20,000 - 12,570) x 20%.
+    income_tax: 1_486
+    uc_income_tax_on_earnings: 1_486
