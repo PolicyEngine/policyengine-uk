@@ -1,0 +1,19 @@
+description: Monthly LCWRA element for a pre-2026 claimant, a severe conditions criteria claimant or a claimant who is terminally ill (the protected LCWRA amount). Each dated value is the legislated amount for the tax year it falls in; a later tax year without one takes the lowest amount the Universal Credit Act 2025 s. 4 duty allows.
+values:
+  2026-04-01:
+    value: 429.80
+    reference:
+      - title: The Universal Credit and Employment and Support Allowance (Rates of Allowances) (Amendment) Regulations 2026, reg. 3(3)(b)
+        href: https://www.legislation.gov.uk/uksi/2026/113/made
+      - title: Universal Credit Regulations 2013, reg. 36 table (LCWRA element)
+        href: https://www.legislation.gov.uk/uksi/2013/376/regulation/36
+metadata:
+  # Keep the statutory dates: uc_reform.py reads a tax year's legislated amount
+  # and projects the years that have none.
+  preserve_calendar_dates: true
+  unit: currency-GBP
+  period: month
+  label: Universal Credit protected LCWRA element amount
+  reference:
+    - title: Universal Credit Act 2025, s. 4 (increase of the protected LCWRA amount)
+      href: https://www.legislation.gov.uk/ukpga/2025/22/section/4

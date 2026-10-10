@@ -1,55 +1,103 @@
 from policyengine_uk.model_api import Scenario
 from policyengine_uk import Microsimulation
-from policyengine_uk.variables.gov.dwp.universal_credit.standard_allowance.uc_standard_allowance_claimant_type import (
-    UCClaimantType,
-)
 import numpy as np
 
 
-BASELINE_UC_REBALANCING_YEAR = 2025
+# The standard allowance amounts the protected LCWRA amount is paired with in
+# the Universal Credit Act 2025 s. 4(2) duty: every amount of the allowance.
+STANDARD_ALLOWANCE_TYPES = (
+    "SINGLE_YOUNG",
+    "SINGLE_OLD",
+    "COUPLE_YOUNG",
+    "COUPLE_OLD",
+)
 
 
-def _benefit_uprating_ratio(sim: Microsimulation, year: int) -> float:
-    parameters = sim.tax_benefit_system.parameters
-    current_index = float(parameters(str(year)).gov.benefit_uprating_cpi)
-    baseline_index = float(
-        parameters(str(BASELINE_UC_REBALANCING_YEAR)).gov.benefit_uprating_cpi
-    )
-    return current_index / baseline_index
-
-
-def _rebalanced_standard_allowance_monthly(
-    sim: Microsimulation, year: int, claimant_type: str
+def protected_lcwra_floor(
+    previous_amount: float,
+    previous_standard_allowances: dict,
+    standard_allowances: dict,
+    cpi_factor: float,
 ) -> float:
-    current = sim.tax_benefit_system.parameters(str(year))
-    return float(
-        current.gov.dwp.universal_credit.standard_allowance.amount[claimant_type]
+    """The lowest protected LCWRA amount the Universal Credit Act 2025 allows.
+
+    s. 4(2): for each standard allowance amount, the protected LCWRA amount
+    plus that allowance must be at least the previous tax year's sum,
+    increased by the relevant CPI percentage (never below 0%, s. 4(3)). s. 3
+    switches off the element's ordinary uprating, so the amount otherwise stays
+    where it was. All amounts are monthly.
+    """
+    factor = max(float(cpi_factor), 1.0)
+    required = max(
+        (previous_amount + previous_standard_allowances[claimant_type]) * factor
+        - standard_allowances[claimant_type]
+        for claimant_type in STANDARD_ALLOWANCE_TYPES
     )
+    return max(float(previous_amount), required)
+
+
+def _standard_allowances_monthly(sim: Microsimulation, year: int) -> dict:
+    amounts = sim.tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.universal_credit.standard_allowance.amount
+    return {
+        claimant_type: float(amounts[claimant_type])
+        for claimant_type in STANDARD_ALLOWANCE_TYPES
+    }
+
+
+def _relevant_cpi_factor(sim: Microsimulation, year: int) -> float:
+    """1 + the relevant CPI percentage for a tax year (UC Act 2025 s. 4(3)):
+    the September-on-September change in the benefit uprating index."""
+    parameters = sim.tax_benefit_system.parameters
+    return float(parameters(str(year)).gov.benefit_uprating_cpi) / float(
+        parameters(str(year - 1)).gov.benefit_uprating_cpi
+    )
+
+
+# The date the fiscal-year annualisation samples a parameter at
+# (policyengine_uk.utils.parameters).
+FISCAL_YEAR_SAMPLE_DATE = "04-30"
+
+
+def _protected_amount_parameter(sim: Microsimulation):
+    return sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing.protected_health_element
+
+
+def _legislated_protected_years(sim: Microsimulation) -> set:
+    """Tax years with a legislated protected LCWRA amount: the years the
+    parameter's dated values fall in (it keeps its statutory dates)."""
+    return {
+        int(entry.instant_str[:4])
+        for entry in _protected_amount_parameter(sim).values_list
+        if entry.value is not None
+    }
 
 
 def _protected_existing_health_element_monthly(
     sim: Microsimulation, year: int
 ) -> float:
-    baseline = sim.tax_benefit_system.parameters(str(BASELINE_UC_REBALANCING_YEAR))
-    protected_combined_award = _benefit_uprating_ratio(sim, year) * (
-        float(baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD)
-        + float(baseline.gov.dwp.universal_credit.elements.disabled.amount)
-    )
-    return protected_combined_award - _rebalanced_standard_allowance_monthly(
-        sim, year, "SINGLE_OLD"
-    )
+    """The protected LCWRA amount for a tax year, monthly.
 
-
-def _protected_single_young_health_element_monthly(
-    sim: Microsimulation, year: int
-) -> float:
-    baseline = sim.tax_benefit_system.parameters(str(BASELINE_UC_REBALANCING_YEAR))
-    protected_combined_award = _benefit_uprating_ratio(sim, year) * (
-        float(baseline.gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG)
-        + float(baseline.gov.dwp.universal_credit.elements.disabled.amount)
-    )
-    return protected_combined_award - _rebalanced_standard_allowance_monthly(
-        sim, year, "SINGLE_YOUNG"
+    UC Regs 2013 reg. 36 gives one amount to every pre-2026, severe conditions
+    criteria or terminally ill claimant, whatever their age or couple status
+    (£429.80 for 2026-27, SI 2026/113 reg. 3(3)(b)). A tax year with no
+    legislated amount takes the s. 4 floor from the year before.
+    """
+    legislated = _legislated_protected_years(sim)
+    if year in legislated:
+        return float(
+            _protected_amount_parameter(sim)(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+        )
+    if not legislated or year < min(legislated):
+        raise ValueError(
+            f"No protected LCWRA amount is legislated for {year} or earlier."
+        )
+    return protected_lcwra_floor(
+        _protected_existing_health_element_monthly(sim, year - 1),
+        _standard_allowances_monthly(sim, year - 1),
+        _standard_allowances_monthly(sim, year),
+        _relevant_cpi_factor(sim, year),
     )
 
 
@@ -74,18 +122,10 @@ def add_universal_credit_reform(sim: Microsimulation):
         # Copy: calculate returns the simulation's cached array, and the writes
         # below must reach the cache only through set_input.
         current_health_element = np.array(sim.calculate("uc_LCWRA_element", year))
-        claimant_type = sim.calculate("uc_standard_allowance_claimant_type", year)
         has_health_element = current_health_element > 0
-        protected_health_element = np.full(
-            current_health_element.shape,
-            _protected_existing_health_element_monthly(sim, year) * 12,
-            dtype=current_health_element.dtype,
-        )
-        protected_health_element[claimant_type == UCClaimantType.SINGLE_YOUNG.name] = (
-            _protected_single_young_health_element_monthly(sim, year) * 12
-        )
+        # One protected amount for every pre-2026 claimant (reg. 36).
         current_health_element[has_health_element & ~is_post_2025_claimant] = (
-            protected_health_element[has_health_element & ~is_post_2025_claimant]
+            _protected_existing_health_element_monthly(sim, year) * 12
         )
         # Set post-April 2026 claimants to £217.26/month.
         # https://bills.parliament.uk/publications/62123/documents/6889#page=16
