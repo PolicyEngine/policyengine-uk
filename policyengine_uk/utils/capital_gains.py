@@ -5,6 +5,8 @@ import numpy as np
 
 from policyengine_core.simulations import Simulation
 
+from policyengine_uk.utils.measurement_branches import measurement_branch
+
 
 # The response, and the part of it on gains qualifying for Business Asset
 # Disposal Relief, which capital_gains_tax reads to keep those gains apart.
@@ -22,29 +24,19 @@ def measure_mtr(
 ) -> np.ndarray:
     """Measure the capital gains MTR in a simulation, holding gains fixed.
 
-    The branch clones the tax-benefit system because it neutralises the
-    behavioural response variable, which would otherwise recurse back into
-    this measurement. Cloning keeps that neutralisation off the simulation
-    being measured.
+    The measurement branch neutralises the behavioural response and measures
+    from inputs alone, so the rate is taken at ``gains`` even where the
+    simulation has already calculated gains after a response, or at gains of
+    its own (see ``measurement_branch``).
     """
-    # get_branch returns an existing branch of the requested name without
-    # honouring clone_system, and neutralising on a shared system would
-    # permanently disable the response variable for the caller. Take a name
-    # nothing else holds, then require the clone before touching it.
-    while branch_name in simulation.branches:
-        branch_name += "_"
-    branch = simulation.get_branch(branch_name, clone_system=True)
-    if branch.tax_benefit_system is simulation.tax_benefit_system:
-        raise RuntimeError(
-            "Capital gains MTR measurement requires a cloned tax-benefit "
-            "system; refusing to neutralise on the simulation's own."
-        )
-    for variable in RESPONSE_VARIABLES:
-        branch.tax_benefit_system.neutralize_variable(variable)
-    branch.set_input("capital_gains_before_response", period, gains)
-    mtr = branch.populations["person"]("marginal_tax_rate_on_capital_gains", period)
-    del simulation.branches[branch_name]
-    return mtr
+    branch = measurement_branch(
+        simulation,
+        branch_name,
+        period,
+        RESPONSE_VARIABLES,
+        {"capital_gains_before_response": gains},
+    )
+    return branch.populations["person"]("marginal_tax_rate_on_capital_gains", period)
 
 
 def measure_capital_gains_mtrs(person, period) -> tuple[np.ndarray, np.ndarray]:
