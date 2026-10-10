@@ -25,7 +25,13 @@ class pension_credit_income(Variable):
         total = 0
         for source in sources:
             if person.entity.get_variable(source).entity.is_person:
-                total += benunit.sum(person(source, period) * is_claimant_or_partner)
+                # Each prescribed item is a receipt (State Pension Credit Act
+                # 2002 s. 15(1); SPC Regs 2002 reg. 15), and nothing lets a
+                # loss on one be set against another, so a negative source,
+                # such as a property loss, counts as nil.
+                total += benunit.sum(
+                    max_(0, person(source, period)) * is_claimant_or_partner
+                )
             else:
                 total += add(benunit, period, [source])
 

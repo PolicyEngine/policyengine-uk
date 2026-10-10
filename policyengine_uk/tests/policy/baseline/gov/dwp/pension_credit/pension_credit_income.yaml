@@ -123,3 +123,69 @@
         private_pension_wealth: 200_000
   output:
     pension_credit_assessable_capital: 12_000
+
+# Issue #2255. State Pension Credit Act 2002 s. 15(1) and SPC Regulations 2002
+# reg. 15 list receipts; nothing lets a loss on one be set against another
+# (https://www.legislation.gov.uk/uksi/2002/1792/regulation/15). A property
+# loss used to wipe out the pension here and pay the full guarantee credit.
+- name: A property loss does not reduce other Pension Credit income.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 75
+        private_pension_income: 20_000
+        property_income: -30_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: WALES
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    property_income_after_finance_costs: -30_000
+    pension_credit_income: 18_514
+    pension_credit: 0
+
+- name: The same person without the property loss has the same Pension Credit income.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 75
+        private_pension_income: 20_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: WALES
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    pension_credit_income: 18_514
+    pension_credit: 0
+
+- name: Positive property income still counts in Pension Credit income.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 75
+        private_pension_income: 20_000
+        property_income: 3_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: WALES
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    pension_credit: 0
