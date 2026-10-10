@@ -4,17 +4,21 @@ The engine stores more than the inputs it is given. An input variable that is
 not set for a period may inherit a previously known value
 (``auto_carry_over_input_variables``), and calculated values are cached next to
 inputs. A holder's known periods include both. policyengine-core records each
-(variable, branch, period) that ``set_input`` fills in
-``Simulation._user_input_keys``. UK simulations isolate this provenance on
-cloning and remove keys when deleting arrays; the helpers also require a
-stored value, so missing arrays do not count as supplied inputs.
+(variable, branch, period) that ``set_input`` stores in
+``Simulation._user_input_keys``. From 3.32.27 (policyengine-core#561), core
+forgets the record of an input that ``Holder.delete_arrays`` deletes, and each
+clone gets its own copy of the record. The helpers also require a stored
+value, so missing arrays do not count as supplied inputs.
 
-``Holder.delete_arrays`` removes a stored value without removing its record
-(policyengine-core#559). The engine could then carry an earlier value into the
-empty period, and the stale record would pass it off as supplied. So
-``Simulation.calculate`` forgets the records of a variable in
+``build_from_situation`` installs fresh populations, and so fresh holders,
+through ``Simulation.build_from_populations``, which keeps the record
+(policyengine-core#605). The engine could then carry an earlier value into a
+period whose input the rebuild dropped, and the stale record would pass it off
+as supplied. So ``Simulation.calculate`` forgets the records of a variable in
 ``SUPPLIED_INPUT_VARIABLES`` whose stored value is gone before the engine can
 refill it, and the helpers only answer for those variables.
+``Simulation.delete_arrays`` forgets such records too, for any variable it
+deletes.
 """
 
 from typing import List, Optional
@@ -60,7 +64,7 @@ def _visible_branch_names(simulation) -> List[str]:
 
 def drop_missing_supplied_inputs(simulation, variable_name: str) -> None:
     """Forget each record of ``variable_name`` as an input, on this branch
-    or one it was made from, whose stored value has been deleted."""
+    or one it was made from, whose stored value is gone."""
     input_keys = getattr(simulation, "_user_input_keys", None)
     if not input_keys:
         return
@@ -112,7 +116,7 @@ def supplied_input(
         if (variable_name, branch_name, period) in input_keys:
             # Read the stored input itself: Holder.get_array would fall back
             # to other branches' values, including cached calculations.
-            # Holder.delete_arrays leaves provenance keys behind; a missing
+            # A record can outlive its stored array (see above); a missing
             # stored array must be ignored even if its key remains.
             value = holder._get_array_from_storage(period, branch_name)
             if value is not None:

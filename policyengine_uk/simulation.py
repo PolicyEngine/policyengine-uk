@@ -235,26 +235,13 @@ class Simulation(CoreSimulation):
             if scenario.parameter_changes is not None:
                 self.apply_parameter_changes(scenario.parameter_changes)
 
-    def clone(
-        self,
-        debug: bool = False,
-        trace: bool = False,
-        clone_tax_benefit_system: bool = True,
-    ) -> "Simulation":
-        clone = super().clone(debug, trace, clone_tax_benefit_system)
-        # policyengine-core 3.32.9: simulations/simulation.py::Simulation.clone
-        # shallow-copies __dict__, while holders/holder.py::Holder.clone copies
-        # value storage. Holder.set_input's provenance and context must belong
-        # to the same simulation as that storage, including for plain clones.
-        clone._user_input_keys = set(getattr(self, "_user_input_keys", ()))
-        clone._user_input_contexts = list(getattr(self, "_user_input_contexts", ()))
-        return clone
-
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
-        # policyengine-core's Simulation.delete_arrays and
-        # holders/holder.py::Holder.delete_arrays remove storage, but retain
-        # provenance keys. Drop those keys before carry-over can refill storage.
+        # From policyengine-core 3.32.27 (policyengine-core#561) the deletion
+        # forgets the input records of the values it removes, but not records
+        # that a population rebuild left with no stored value
+        # (policyengine-core#605). Drop those too, before carry-over can refill
+        # the period and input export would count the refill as an input.
         # Inspect storage after core's deletion to honour period containment
         # and the current branch, ancestor branches and default branch.
         drop_missing_supplied_inputs(self, variable)
@@ -659,9 +646,11 @@ class Simulation(CoreSimulation):
         period = period_(period)
 
         if variable_name in SUPPLIED_INPUT_VARIABLES:
-            # A value deleted straight from the holder leaves its input record
-            # behind. Forget it before the engine can refill the period with a
-            # carried-over value that the record would pass off as supplied.
+            # Rebuilding the populations leaves the input records of the
+            # replaced holders behind (policyengine-core#605). Forget a record
+            # whose stored value is gone before the engine can refill the
+            # period with a carried-over value that the record would pass off
+            # as supplied.
             drop_missing_supplied_inputs(self, variable_name)
 
         return super().calculate(
