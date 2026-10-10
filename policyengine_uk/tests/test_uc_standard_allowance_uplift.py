@@ -249,3 +249,34 @@ def test_reform_to_the_benefit_index_is_followed():
                 amounts[year - 1][t] * (1 + _uplift(year)) / (1 + _uplift(year - 1)),
                 rel=1e-9,
             )
+
+
+def test_amount_equal_to_the_legislated_one_set_by_a_reform_is_not_rescaled():
+    """A reform that sets the legislated amount itself is still a reform: it
+    is used as given when rebalancing is off."""
+    scenario = Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD": {
+                "year:2026-04-01": 424.9
+            },
+            ACTIVE: False,
+        }
+    )
+    _, amounts, _ = _amounts(scenario)
+    assert amounts[2026]["SINGLE_OLD"] == pytest.approx(424.9, rel=1e-9)
+
+
+def test_fiscal_year_reform_to_the_benefit_index_reaches_that_year():
+    """A benefit index set for one fiscal year moves that year's allowance."""
+    scenario = Scenario(parameter_changes={"gov.benefit_uprating_cpi": {"2027": 300.0}})
+    _, amounts, cpi = _amounts(scenario)
+    assert cpi[2027] == pytest.approx(300.0)
+    for t in CLAIMANT_TYPES:
+        assert amounts[2027][t] == pytest.approx(
+            amounts[2026][t]
+            * cpi[2027]
+            / cpi[2026]
+            * (1 + _uplift(2027))
+            / (1 + _uplift(2026)),
+            rel=1e-9,
+        )
