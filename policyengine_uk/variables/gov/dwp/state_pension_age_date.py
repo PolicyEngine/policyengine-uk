@@ -1,8 +1,7 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.dates import (
     add_months_to_yyyymmdd,
-    exact_age_in_months,
-    grid_month,
+    birth_instant,
     grid_months_to_yyyymmdd,
 )
 
@@ -13,8 +12,9 @@ class state_pension_age_date(Variable):
     label = "date this person attains State Pension age"
     documentation = (
         "The day on which this person attains State Pension age (pensionable "
-        "age), written as a YYYYMMDD number. It is set by their date of birth, "
-        "which comes from age and months_since_last_birthday."
+        "age), written as a YYYYMMDD number. It is set by their date of birth: "
+        "date_of_birth where given, otherwise from age and "
+        "months_since_last_birthday."
     )
     definition_period = YEAR
     unit = "date"
@@ -25,16 +25,9 @@ class state_pension_age_date(Variable):
 
     def formula(person, period, parameters):
         p = parameters(period).gov.dwp.state_pension.age
-        # Dates are in months on a grid whose months start on the 6th, so the
-        # middle of the fiscal year (6 October) is a whole month.
-        age_in_months = exact_age_in_months(
-            person("age", period), person("months_since_last_birthday", period)
-        )
-        # The day of birth: the one starting at or after that instant, so the
-        # person's legal age on 6 October is age.
-        birth_date = grid_months_to_yyyymmdd(
-            grid_month(period.start.year, 10) - age_in_months
-        )
+        # The day of birth, read as state_pension_age reads it: the day
+        # starting at or after the instant of birth (birth_instant).
+        birth_date = grid_months_to_yyyymmdd(birth_instant(person, period))
 
         # Pensions Act 1995 Sch 4 para 1 rule (1): men born before 6 December
         # 1953 attain pensionable age at 65. Everyone else follows the
