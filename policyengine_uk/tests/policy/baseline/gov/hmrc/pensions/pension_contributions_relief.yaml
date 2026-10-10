@@ -65,6 +65,28 @@
   output:
     pension_contributions_relief: 3_600
 
+- name: A net pay arrangement cannot give the basic-amount increase (s. 191(7))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 2_000
+    employee_pension_contributions_reported: 3_000
+  output:
+    pension_contributions_relief: 2_000
+
+- name: Only relief at source fills the basic-amount increase (s. 191(7))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 2_000
+    employee_pension_contributions_reported: 1_500
+    personal_pension_contributions: 1_000
+  output:
+    # 2_000 of earnings relieves all 2_500 up to earnings; the increase to
+    # 3_600 can only come from the 1_000 of relief at source, of which 500 is
+    # left after earnings: 2_000 + 500.
+    pension_contributions_relief: 2_500
+
 - name: Relief up to relevant earnings, not beyond (s. 190(1))
   period: 2024
   absolute_error_margin: 0.01

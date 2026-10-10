@@ -1,17 +1,23 @@
 """Property-based tests for pension contributions relief and the annual
 allowance charge (issue #2237).
 
-Relief runs to the annual limit in FA 2004 s. 190 (the greater of relevant UK
-earnings and the basic amount), not to the annual allowance. The annual
-allowance charge (s. 227) then taxes the pension input amount above the
-allowance, plus any unused allowance brought forward (s. 228A), as the top
-slice of reduced net income at the non-savings rates (s. 227(4A)), or the
-Scottish rates with the starter band at the Scottish basic rate (s. 227(4AA)).
+Relief runs to the annual limit in FA 2004 s. 190 (relevant UK earnings,
+raised to the basic amount where lower, the increase only through relief at
+source, s. 191(7)), not to the annual allowance. The model takes personal
+pension contributions as relief at source and employee contributions as a net
+pay arrangement. The annual allowance charge (s. 227) then taxes the pension
+input amount above the allowance, plus any unused allowance brought forward
+(s. 228A), as the top slice of reduced net income at the non-savings rates
+(s. 227(4A)), with the rate limits raised by relief-at-source contributions
+and grossed-up Gift Aid (s. 227(4C)), or at the Scottish rates with the
+starter band at the Scottish basic rate (s. 227(4AA)).
 
-Invariants, for any generated population of single adults:
+Invariants, for any generated population of single adults with contributions
+split between relief at source and net pay:
 
 1. Relief bounds: relief is the lesser of the contributions and the s. 190
-   limit for anyone under 75, and nil at 75 or over.
+   limit (the basic-amount increase capped at relief-at-source contributions)
+   for anyone under 75, and nil at 75 or over.
 2. The excess is taxed once: raising contributions, up to relevant earnings,
    never raises income tax by more than it raises the charge. So income tax
    before the charge never rises with contributions.
@@ -31,7 +37,11 @@ rates, while s. 227(4A) charges the excess at the non-savings rates, so income
 tax can rise (intended: that is what the statute does). It also stops where
 contributions use up income after allowances: relief beyond that is worth
 nothing, while the charge still falls on the whole input amount (also
-intended).
+intended). And it is restricted to taxpayers outside Scotland. The model gives
+relief at source as a deduction, which relieves a Scottish starter-rate slice
+at 19%, while the charge on that slice is at the Scottish basic rate
+(s. 227(4AA)), so income tax can rise by up to 1% of the starter band
+(a model deviation: relief at source pays 20%; see the YAML example).
 """
 
 import numpy as np
@@ -51,6 +61,13 @@ PROPERTY_SETTINGS = settings(
 YEARS = [2020, 2024, 2026, 2027]
 REGIONS = ["LONDON", "NORTH_EAST", "WALES", "SCOTLAND"]
 TOLERANCE = 0.01
+# Simulated values are float32: allow a relative error on large amounts.
+RELATIVE_TOLERANCE = 1e-6
+
+
+def _close(actual, expected):
+    return abs(actual - expected) <= max(TOLERANCE, RELATIVE_TOLERANCE * abs(expected))
+
 
 person_strategy = st.fixed_dictionaries(
     {
@@ -59,6 +76,9 @@ person_strategy = st.fixed_dictionaries(
         "self_employment_income": st.integers(-20_000, 200_000),
         "employer_pension_contributions": st.integers(0, 80_000),
         "contribution_share": st.floats(0, 1.2),
+        # Share of contributions paid through a net pay arrangement.
+        "net_pay_share": st.sampled_from([0.0, 0.5, 1.0]),
+        "gift_aid": st.integers(0, 5_000),
         "savings_interest_income": st.integers(0, 30_000),
         "dividend_income": st.integers(0, 80_000),
         "unused_pension_annual_allowance": st.integers(0, 120_000),
@@ -82,6 +102,8 @@ def _situation(people, year, overrides=None):
                 "self_employment_income",
                 "employer_pension_contributions",
                 "personal_pension_contributions",
+                "employee_pension_contributions_reported",
+                "gift_aid",
                 "savings_interest_income",
                 "dividend_income",
                 "unused_pension_annual_allowance",
@@ -101,7 +123,12 @@ def _relevant_earnings(person):
 
 def _with_contributions(people, contributions):
     return [
-        {**person, "personal_pension_contributions": float(c)}
+        {
+            **person,
+            "personal_pension_contributions": float(c) * (1 - person["net_pay_share"]),
+            "employee_pension_contributions_reported": float(c)
+            * person["net_pay_share"],
+        }
         for person, c in zip(people, contributions)
     ]
 
@@ -122,13 +149,12 @@ def test_relief_is_the_section_190_limit(people, year):
     out = _calc(people, year, ["pension_contributions_relief"])
     basic_amount = 3_600
     for i, person in enumerate(people):
-        limit = max(_relevant_earnings(person), basic_amount)
-        expected = (
-            min(person["personal_pension_contributions"], limit)
-            if person["age"] < 75
-            else 0
-        )
-        assert abs(out["pension_contributions_relief"][i] - expected) < TOLERANCE
+        earnings = _relevant_earnings(person)
+        relief_at_source = person["personal_pension_contributions"]
+        total = relief_at_source + person["employee_pension_contributions_reported"]
+        limit = earnings + min(max(0, basic_amount - earnings), relief_at_source)
+        expected = min(total, limit) if person["age"] < 75 else 0
+        assert _close(out["pension_contributions_relief"][i], expected)
 
 
 @PROPERTY_SETTINGS
@@ -163,7 +189,9 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
             "age": min(p["age"], 74),
             "savings_interest_income": 0,
             "dividend_income": 0,
+            "gift_aid": 0,
             "unused_pension_annual_allowance": 0,
+            "region": "NORTH_EAST" if p["region"] == "SCOTLAND" else p["region"],
         }
         for p in people
     ]
@@ -191,13 +219,15 @@ def test_contributions_above_the_allowance_are_not_taxed_twice(people, year, ste
     assert np.all(tax_above["income_tax"] <= tax_at["income_tax"] + TOLERANCE)
 
 
-def _reference_charge(chargeable, reduced_net_income, thresholds, rates):
-    """Band-by-band sum of the chargeable amount stacked on income."""
+def _reference_charge(chargeable, reduced_net_income, thresholds, rates, extension):
+    """Band-by-band sum of the chargeable amount stacked on income, with every
+    rate limit raised by ``extension``."""
     bottom = reduced_net_income
     top = reduced_net_income + chargeable
-    upper = list(thresholds[1:]) + [np.inf]
+    lowers = [thresholds[0]] + [t + extension for t in thresholds[1:]]
+    uppers = lowers[1:] + [np.inf]
     charge = 0.0
-    for lower, upper_limit, rate in zip(thresholds, upper, rates):
+    for lower, upper_limit, rate in zip(lowers, uppers, rates):
         charge += rate * max(0.0, min(top, upper_limit) - max(bottom, lower))
     return charge
 
@@ -213,10 +243,17 @@ def test_charge_matches_band_by_band_reference(people, year):
     charge = np.array(
         sim.calculate("personal_pension_contributions_tax", year), dtype=float
     )
+    get = lambda v: np.array(sim.calculate(v, year), dtype=float)  # noqa: E731
+    # s. 227(4B)-(4C): reduced net income keeps relief-at-source contributions
+    # and Gift Aid, which raise the rate limits by their gross amounts.
+    relief_at_source = np.minimum(
+        get("personal_pension_contributions"), get("pension_contributions_relief")
+    )
+    extension = get("gift_aid_grossed_up") + relief_at_source
     reduced_net_income = np.maximum(
         0,
-        np.array(sim.calculate("adjusted_net_income", year), dtype=float)
-        - np.array(sim.calculate("allowances", year), dtype=float),
+        get("adjusted_net_income")
+        - np.maximum(0, get("allowances") - get("gift_aid") - relief_at_source),
     )
     scottish = np.array(sim.calculate("pays_scottish_income_tax", year))
     rates = sim.tax_benefit_system.parameters(year).gov.hmrc.income_tax.rates
@@ -231,9 +268,9 @@ def test_charge_matches_band_by_band_reference(people, year):
             (sco_thresholds, sco_rates) if scottish[i] else (uk_thresholds, uk_rates)
         )
         expected = _reference_charge(
-            chargeable[i], reduced_net_income[i], thresholds, band_rates
+            chargeable[i], reduced_net_income[i], thresholds, band_rates, extension[i]
         )
-        assert abs(charge[i] - expected) < TOLERANCE
+        assert _close(charge[i], expected)
         # Bounds: nil exactly when nothing is chargeable, and between the
         # lowest and highest rate charged.
         assert (charge[i] == 0) == (chargeable[i] == 0)
@@ -268,3 +305,41 @@ def test_unused_allowance_reduces_chargeable_amount_one_for_one(people, year, ex
         after["personal_pension_contributions_tax"]
         <= before["personal_pension_contributions_tax"] + TOLERANCE
     )
+
+
+def test_scottish_basic_band_is_not_lifted_when_the_starter_band_is_removed():
+    """A reform that removes the Scottish starter band (null threshold, basic
+    band from zero) leaves the lowest band at the basic rate: the charge is
+    not lifted to the intermediate rate."""
+    from policyengine_uk.utils.scenario import Scenario
+
+    def remove_starter_band(simulation):
+        system = simulation.tax_benefit_system
+        system.reset_parameters()
+        brackets = system.parameters.gov.hmrc.income_tax.rates.scotland.rates.brackets
+        brackets[0].threshold.update(period="year:2026-01-01:1", value=None)
+        brackets[1].threshold.update(period="year:2026-01-01:1", value=0)
+        system.process_parameters()
+
+    situation = {
+        "people": {
+            "p": {
+                "age": {2026: 45},
+                "employment_income": {2026: 12_570},
+                "employer_pension_contributions": {2026: 70_000},
+            }
+        },
+        "benunits": {"b": {"members": ["p"]}},
+        "households": {"h": {"members": ["p"], "region": {2026: "SCOTLAND"}}},
+    }
+    sim = Simulation(
+        situation=situation,
+        scenario=Scenario(
+            simulation_modifier=remove_starter_band, applied_before_data_load=True
+        ),
+    )
+    rates = sim.tax_benefit_system.parameters(2026).gov.hmrc.income_tax.rates
+    assert float(rates.scotland.rates.rates[0]) == 0.2
+    # Reduced net income 0; chargeable amount 10_000, all in the basic band.
+    charge = float(sim.calculate("personal_pension_contributions_tax", 2026)[0])
+    assert abs(charge - 10_000 * 0.2) < TOLERANCE
