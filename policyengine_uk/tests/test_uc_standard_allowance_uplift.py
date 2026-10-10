@@ -207,3 +207,45 @@ def test_amount_reforms_override_the_uplift():
     assert reformed.calculate("uc_standard_allowance", 2028)[0] == pytest.approx(
         430.0 * 12
     )
+
+
+def test_scalar_activation_matches_baseline():
+    """Switching rebalancing on for all years (a scalar change from 2000)
+    leaves the uplift nil before it starts and matches the baseline."""
+    _, amounts, _ = _amounts(Scenario(parameter_changes={ACTIVE: True}))
+    _, baseline, _ = _amounts()
+    for year in YEARS:
+        for t in CLAIMANT_TYPES:
+            assert amounts[year][t] == pytest.approx(baseline[year][t], rel=1e-9)
+
+
+@pytest.mark.parametrize(
+    "other_change",
+    [{ACTIVE: False}, {UPLIFT: {"2026": 0.10, "2027": 0.10}}],
+)
+def test_amount_set_by_a_reform_is_not_rescaled(other_change):
+    """An amount a reform sets is used as given, whatever the uplift."""
+    scenario = Scenario(
+        parameter_changes={
+            "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD": {
+                "2026": 500.0
+            },
+            **other_change,
+        }
+    )
+    _, amounts, _ = _amounts(scenario)
+    assert amounts[2026]["SINGLE_OLD"] == pytest.approx(500.0, rel=1e-9)
+
+
+def test_reform_to_the_benefit_index_is_followed():
+    """With the benefit uprating index held flat, the allowance moves only
+    with the change in uplift."""
+    scenario = Scenario(parameter_changes={"gov.benefit_uprating_cpi": 300.0})
+    _, amounts, cpi = _amounts(scenario)
+    assert all(cpi[year] == pytest.approx(300.0) for year in YEARS)
+    for t in CLAIMANT_TYPES:
+        for year in range(2027, 2033):
+            assert amounts[year][t] == pytest.approx(
+                amounts[year - 1][t] * (1 + _uplift(year)) / (1 + _uplift(year - 1)),
+                rel=1e-9,
+            )
