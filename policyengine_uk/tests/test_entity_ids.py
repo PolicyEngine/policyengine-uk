@@ -23,9 +23,13 @@ Invariants, for identifiers that are whole numbers from -2**31 to 2**31 - 1
    the size of the identifiers.
 4. A simulation built from a policyengine-core dataset file, which is rebuilt
    from its own export, has that same structure and those same identifiers.
-5. ``check_entity_ids`` accepts exactly the arrays that the storing variable's
-   dtype holds unchanged. So an identifier outside the range, or not a whole
-   number, raises ``ValueError`` rather than being stored as another number.
+5. ``check_entity_ids`` passes exactly the arrays that the storing variable's
+   dtype holds unchanged, and gives an ``EntityIdWarning`` for any other. So
+   building a simulation warns when an identifier is outside the range or not
+   a whole number, and stays silent otherwise (this module turns the warning
+   into an error, so every test above checks that).
+6. Identifiers outside the range still give the entity structure the tables
+   describe: the populations take them as given.
 
 The group tables are sorted by identifier, as ``build_from_ids`` numbers the
 benefit units and households in that order, and every group has a member.
@@ -43,9 +47,20 @@ from hypothesis import strategies as st
 from policyengine_uk import Microsimulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 from policyengine_uk.system import system
-from policyengine_uk.utils.entity_ids import ENTITY_ID_VARIABLES, check_entity_ids
+from policyengine_uk.utils.entity_ids import (
+    ENTITY_ID_VARIABLES,
+    EntityIdWarning,
+    check_entity_ids,
+)
 
-pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+pytestmark = [
+    pytest.mark.usefixtures("cloned_uk_tax_benefit_system"),
+    # An identifier the simulation cannot store exactly warns. Outside the
+    # tests that expect it, the warning fails the test.
+    pytest.mark.filterwarnings(
+        "error::policyengine_uk.utils.entity_ids.EntityIdWarning"
+    ),
+]
 
 YEAR = 2025
 ID_MIN, ID_MAX = -(2**31), 2**31 - 1
@@ -419,91 +434,111 @@ def held_unchanged(values: np.ndarray, dtype) -> bool:
 @pytest.mark.parametrize("variable", ENTITY_ID_VARIABLES)
 @given(data=st.data())
 @settings(max_examples=300, deadline=None)
-def test_check_accepts_exactly_what_the_store_holds_unchanged(variable, data):
+def test_check_warns_exactly_when_the_store_changes_a_value(variable, data):
     """Invariant 5, against the cast that stores the values."""
     definition = system.variables[variable]
     values = data.draw(storable_values(variable))
-    try:
-        check_entity_ids(definition, values)
-        accepted = True
-    except ValueError as error:
-        assert variable in str(error)
-        accepted = False
-    assert accepted == held_unchanged(values, definition.dtype), values
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        exact = check_entity_ids(definition, values)
+    ours = [w for w in caught if issubclass(w.category, EntityIdWarning)]
+    assert exact == held_unchanged(values, definition.dtype), values
+    assert len(ours) == (0 if exact else 1)
+    assert all(variable in str(w.message) for w in ours)
 
 
 def test_check_leaves_other_kinds_of_identifier_to_the_store():
     """Text and other non-numeric identifiers are not checked here;
     policyengine-core reports those it cannot store."""
     definition = system.variables["person_id"]
-    check_entity_ids(definition, np.array(["a", "b"]))
-    check_entity_ids(definition, np.array([True, False]))
-    check_entity_ids(definition, np.array([], dtype=np.float64))
+    assert check_entity_ids(definition, np.array(["a", "b"]))
+    assert check_entity_ids(definition, np.array([True, False]))
+    assert check_entity_ids(definition, np.array([], dtype=np.float64))
 
 
 OUT_OF_RANGE_IDS = [ID_MAX - 1, ID_MAX, ID_MAX + 1]
+MEMBERSHIP_VARIABLES = {
+    "person": {"person_id"},
+    "benunit": {"person_benunit_id", "benunit_id"},
+    "household": {"person_household_id", "household_id"},
+}
 
 
-@pytest.mark.parametrize(
-    "entity, variable",
-    [
-        ("person", "person_id"),
-        ("benunit", "person_benunit_id"),
-        ("household", "person_household_id"),
-    ],
-)
+def warned_variables(build):
+    """Run ``build`` and return it with the variables it warned about."""
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        result = build()
+    messages = [
+        str(w.message) for w in caught if issubclass(w.category, EntityIdWarning)
+    ]
+    return result, {message.split()[0] for message in messages}
+
+
+@pytest.mark.parametrize("entity", ["person", "benunit", "household"])
 @pytest.mark.parametrize("id_dtype", ["int64", "float64"])
-def test_identifier_above_the_range_is_refused(entity, variable, id_dtype):
-    """An identifier one above the range is refused when the entities are
-    built, whichever entity it names."""
+def test_identifier_above_the_range_warns_and_keeps_the_structure(entity, id_dtype):
+    """Invariants 5 and 6 for an identifier one above the range, whichever
+    entity it names. Only the columns that hold it warn."""
     ids = {name: [1, 2, 3] for name in ("person", "benunit", "household")}
     ids[entity] = OUT_OF_RANGE_IDS
     person, benunit, household = tables(
         ids["person"], ids["benunit"], ids["household"], id_dtype=id_dtype
     )
-    with pytest.raises(ValueError, match=f"{variable} ranges from .* to {ID_MAX + 1}"):
-        simulate(person, benunit, household)
+    sim, warned = warned_variables(lambda: simulate(person, benunit, household))
+    assert warned == MEMBERSHIP_VARIABLES[entity]
+    assert_structure_matches_tables(sim, person, benunit, household)
 
 
-def test_identifier_below_the_range_is_refused():
+def test_identifier_below_the_range_warns_and_keeps_the_structure():
     ids = [ID_MIN - 1, ID_MIN, ID_MIN + 1]
-    with pytest.raises(ValueError, match=f"person_id ranges from {ID_MIN - 1} to"):
-        simulate(*tables(ids, ids, ids))
+    person, benunit, household = tables(ids, ids, ids)
+    sim, warned = warned_variables(lambda: simulate(person, benunit, household))
+    assert warned == set(ENTITY_ID_VARIABLES)
+    assert_structure_matches_tables(sim, person, benunit, household)
 
 
-def test_identifier_that_is_not_a_whole_number_is_refused():
+def test_identifier_that_is_not_a_whole_number_warns():
     person, benunit, household = tables([1, 2, 3], [1, 2, 3], [1, 2, 3], "float64")
     person["person_household_id"] = [1.0, 2.5, 3.0]
-    with pytest.raises(ValueError, match="person_household_id must hold whole"):
+    with pytest.warns(EntityIdWarning, match="person_household_id should hold whole"):
         simulate(person, benunit, household)
 
 
-def test_single_year_dataset_refuses_an_identifier_out_of_range():
+def test_single_year_dataset_warns_about_an_identifier_out_of_range():
     person, benunit, household = tables(
         OUT_OF_RANGE_IDS, OUT_OF_RANGE_IDS, OUT_OF_RANGE_IDS
     )
     dataset = UKSingleYearDataset(
-        person=person, benunit=benunit, household=household, fiscal_year=YEAR
+        person=person.copy(),
+        benunit=benunit.copy(),
+        household=household.copy(),
+        fiscal_year=YEAR,
     )
-    with pytest.raises(ValueError, match="person_id ranges from"):
-        Microsimulation(dataset=dataset)
+    sim, warned = warned_variables(lambda: Microsimulation(dataset=dataset))
+    assert warned == set(ENTITY_ID_VARIABLES)
+    assert_structure_matches_tables(sim, person, benunit, household)
 
 
-def test_core_dataset_file_refuses_an_identifier_out_of_range(tmp_path):
+def test_core_dataset_file_warns_about_an_identifier_out_of_range(tmp_path):
+    """The rebuild from the export reads the stored identifiers, which differ
+    from the given ones, but each household keeps its one person."""
     person, benunit, household = tables(
         OUT_OF_RANGE_IDS, OUT_OF_RANGE_IDS, OUT_OF_RANGE_IDS
     )
     path = write_core_dataset_file(tmp_path / "dataset.h5", person, benunit, household)
-    with pytest.raises(ValueError, match="person_id ranges from"):
-        Microsimulation(dataset=path)
+    sim, warned = warned_variables(lambda: Microsimulation(dataset=path))
+    assert warned == set(ENTITY_ID_VARIABLES)
+    for entity in ("benunit", "household"):
+        members = sim.populations[entity].members_entity_id
+        assert np.bincount(members, minlength=3).tolist() == [1, 1, 1]
 
 
-def test_frame_refuses_an_identifier_out_of_range():
+def test_frame_warns_about_an_identifier_out_of_range():
     frame = pd.DataFrame(
-        {
-            f"{variable}__{YEAR}": OUT_OF_RANGE_IDS
-            for variable in (*ENTITY_ID_VARIABLES, "age")
-        }
-    )
-    with pytest.raises(ValueError, match="person_id ranges from"):
-        Microsimulation(dataset=frame)
+        {f"{variable}__{YEAR}": OUT_OF_RANGE_IDS for variable in ENTITY_ID_VARIABLES}
+    ).assign(**{f"age__{YEAR}": 40})
+    sim, warned = warned_variables(lambda: Microsimulation(dataset=frame))
+    assert warned == set(ENTITY_ID_VARIABLES)
+    assert sim.populations["household"].ids.tolist() == OUT_OF_RANGE_IDS
+    assert sim.populations["household"].members_entity_id.tolist() == [0, 1, 2]

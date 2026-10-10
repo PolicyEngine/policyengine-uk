@@ -555,9 +555,10 @@ class Simulation(CoreSimulation):
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
 
-        Raises:
-            ValueError: If an ID is not a whole number, or is outside the
-                range of the variable that stores it.
+        Warns:
+            EntityIdWarning: If an ID is not a whole number, or is outside the
+                range of the variable that stores it, so that the stored ID
+                differs from the one given.
         """
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
@@ -565,6 +566,7 @@ class Simulation(CoreSimulation):
 
         # The callers store these columns as the variables' values after
         # building the entities, and exports and rebuilds read them from there.
+        # The populations below take the arrays as given.
         for variable_name, ids in zip(
             ENTITY_ID_VARIABLES,
             (
