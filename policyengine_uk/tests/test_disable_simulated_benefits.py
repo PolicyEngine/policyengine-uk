@@ -2,14 +2,15 @@
 
 The reform (gov.contrib.policyengine.disable_simulated_benefits) sets each
 listed benefit, in the dataset year and the nine years after it, to the
-amount reported in the dataset year. The *_reported variables are uprated, so
-in a later year a stored esa_income or jsa_income equals neither the award on
-that year's reports nor their plain total. Read by value alone, it would then
+amount reported in the dataset year. esa_income_reported and
+jsa_income_reported are uprated, so in a later year a stored esa_income or
+jsa_income equals neither the award on that year's reports nor their plain
+total. Read by value alone, it would then
 be taken to be wholly the claimant's or partner's, another member's award
 included. So the reform also sets the claimant's and partner's awards
 (claimant_or_partner_esa_income, claimant_or_partner_jsa_income) for each
-year, from their own reports in the dataset year, and Income Support from
-theirs alone. Both of Income Support's income-related limbs (SSCBA 1992
+year, from the dataset-year reports of whoever is the claimant or partner
+that year, and Income Support from theirs alone. Both of Income Support's income-related limbs (SSCBA 1992
 s.124(1)(f) and (h)) and the council tax reduction passport read those
 awards.
 
@@ -17,6 +18,8 @@ Each family below is its own benefit unit and household. Reported amounts are
 entered for the dataset year only, so later years uprate them. Everything
 else is entered for every year.
 """
+
+from types import SimpleNamespace
 
 import numpy as np
 import pandas as pd
@@ -28,12 +31,14 @@ from policyengine_core.periods import period
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.model_api import Reform
 from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
     BENEFITS,
     CLAIMANT_OR_PARTNER_AWARDS,
     CLAIMANT_OR_PARTNER_ONLY,
     PRE_MINIMUM,
     YEARS_IN_FUTURE,
+    disable_simulated_benefits,
 )
 from policyengine_uk.utils.benefit_unit import claimant_or_partner_award
 from policyengine_uk.utils.scenario import Scenario
@@ -314,14 +319,17 @@ def test_each_person_is_on_their_own_award(reformed, year):
 def test_a_multi_year_dataset_uses_its_first_year():
     # A situation's dataset stores its year as text and a multi-year dataset
     # as a number; both start the reform's ten years. Here the second year's
-    # reports differ, but the reform reads the first year's.
+    # reports differ, but the reform reads the first year's. The second
+    # member is 18 and the first 40, so after the data's two years the
+    # model's presumption reads them as the claimant's child, as the data
+    # does, and the roles are the same in every year.
     def year(fiscal_year, esa):
         person = pd.DataFrame(
             {
                 "person_id": [1, 2, 3],
                 "person_benunit_id": [1, 1, 2],
                 "person_household_id": [1, 1, 2],
-                "age": [40, 30, 40],
+                "age": [40, 18, 40],
                 "is_claimant_or_partner": [True, False, True],
                 "esa_income_reported": esa,
             }
@@ -341,6 +349,8 @@ def test_a_multi_year_dataset_uses_its_first_year():
     )
     simulation = Simulation(dataset=dataset, scenario=REFORM)
     for year_ in YEARS:
+        roles = simulation.calculate("is_claimant_or_partner", year_)
+        assert roles.tolist() == [True, False, True]
         assert simulation.calculate("esa_income", year_).tolist() == [3_000, 3_000]
         assert simulation.calculate(
             "claimant_or_partner_esa_income", year_
@@ -439,3 +449,183 @@ def test_the_reform_splits_every_familys_reports_between_the_awards(drawn):
             ),
             esa | jsa | income_support,
         )
+
+
+# The reform class itself, as create_structural_reforms_from_parameters builds
+# it when the parameter is on.
+ON = SimpleNamespace(
+    gov=SimpleNamespace(
+        contrib=SimpleNamespace(
+            policyengine=SimpleNamespace(disable_simulated_benefits=True)
+        )
+    )
+)
+DisableSimulatedBenefits = disable_simulated_benefits(lambda _: ON, None)
+SET_BY_THE_REFORM = [
+    "esa_income",
+    "claimant_or_partner_esa_income",
+    "claimant_or_partner_jsa_income",
+    "income_support",
+]
+
+
+def known_years(simulation, variable):
+    holder = simulation.get_holder(variable)
+    return sorted(int(str(p)[:4]) for p in holder.get_known_periods())
+
+
+def test_a_clone_or_branch_applies_the_reform_to_itself_alone():
+    # A cloned tax-benefit system copies its link to the simulation, and a
+    # branch shares its parent's system. The reform reaches the simulation
+    # through that link, so it must reach the clone or branch applying it,
+    # never the parent.
+    parent = Simulation(situation=situation())
+    clone = parent.clone()
+    assert clone.tax_benefit_system.simulation is clone
+    clone.apply_reform(DisableSimulatedBenefits)
+    branch = parent.get_branch("reformed")
+    assert branch.tax_benefit_system is parent.tax_benefit_system
+    branch.apply_reform(DisableSimulatedBenefits)
+    assert parent.tax_benefit_system.simulation is parent
+    ten_years = list(range(DATASET_YEAR, DATASET_YEAR + YEARS_IN_FUTURE))
+    for variable in SET_BY_THE_REFORM:
+        assert known_years(parent, variable) == [], variable
+        assert known_years(clone, variable) == ten_years, variable
+    excluded = NAMES.index("excluded_adult")
+    for year in YEARS:
+        for simulation in (clone, branch):
+            assert simulation.calculate("esa_income", year)[excluded] == 3_000
+            assert (
+                simulation.calculate("claimant_or_partner_esa_income", year)[excluded]
+                == 0
+            )
+        # The parent still simulates ESA: the excluded adult's uprated report.
+        assert parent.calculate("esa_income", year)[excluded] >= 3_000
+
+
+class RemoveIncomeRelatedAwards(Reform):
+    def apply(self):
+        self.neutralize_variable("esa_income")
+        self.neutralize_variable("jsa_income")
+
+
+def test_neutralizing_an_award_removes_the_claimant_or_partners_award():
+    # The claimant's and partner's award is part of esa_income or
+    # jsa_income: a reform that removes the award removes their part too,
+    # including the part the reform set as an input.
+    simulation = Simulation(situation=situation(), scenario=REFORM)
+    simulation.apply_reform(RemoveIncomeRelatedAwards)
+    for year in YEARS:
+        for variable in [
+            "esa_income",
+            "jsa_income",
+            "claimant_or_partner_esa_income",
+            "claimant_or_partner_jsa_income",
+        ]:
+            assert simulation.calculate(variable, year).tolist() == [0] * len(NAMES), (
+                variable,
+                year,
+            )
+        # Without the income-related awards nothing bars Income Support, and
+        # only Income Support passports council tax reduction.
+        assert by_family(simulation, "income_support_eligible", year) == {
+            "excluded_adult": True,
+            "excluded_adult_no_award": False,
+            "own_esa": True,
+            "own_jsa": True,
+            "own_esa_over_tariff": True,
+            "excluded_income_support": False,
+        }
+        assert by_family(
+            simulation, "council_tax_reduction_relevant_income_based_benefit", year
+        ) == dict(
+            zip(NAMES, (simulation.calculate("income_support", year) > 0).tolist())
+        )
+        assert not simulation.calculate("is_on_income_related_esa", year).any()
+        assert not simulation.calculate("is_on_income_based_jsa", year).any()
+
+
+def test_an_award_neutralized_first_is_not_set():
+    # Neutralized before the reform runs: neither the award nor the
+    # claimant's and partner's part of it takes what the reform sets.
+    def remove(simulation):
+        simulation.tax_benefit_system.neutralize_variable("esa_income")
+
+    scenario = Scenario(
+        applied_before_data_load=True,
+        parameter_changes=REFORM.parameter_changes,
+        simulation_modifier=remove,
+    )
+    simulation = Simulation(situation=situation(), scenario=scenario)
+    assert known_years(simulation, "esa_income") == []
+    assert known_years(simulation, "claimant_or_partner_esa_income") == []
+    assert len(known_years(simulation, "claimant_or_partner_jsa_income")) == (
+        YEARS_IN_FUTURE
+    )
+    for year in YEARS:
+        assert not simulation.calculate("claimant_or_partner_esa_income", year).any()
+        assert (
+            by_family(simulation, "claimant_or_partner_jsa_income", year)["own_jsa"]
+            == 2_000
+        )
+
+
+def test_neutralizing_an_award_removes_an_entered_claimant_or_partner_award():
+    # The same without the reform, for an award entered directly.
+    simulation = Simulation(situation=situation())
+    simulation.set_input(
+        "claimant_or_partner_esa_income", DATASET_YEAR, np.full(len(NAMES), 3_000)
+    )
+    assert simulation.calculate("claimant_or_partner_esa_income", DATASET_YEAR).all()
+    simulation.apply_reform(RemoveIncomeRelatedAwards)
+    assert not simulation.calculate(
+        "claimant_or_partner_esa_income", DATASET_YEAR
+    ).any()
+
+
+@pytest.mark.parametrize("year", YEARS)
+def test_another_members_income_support_is_never_the_familys(reformed, year):
+    # The model pays Income Support only to the claimant's family, so
+    # another member's own report is left out of income_support (and so of
+    # household income) with the reform off, as the reform leaves it out.
+    for simulation in (Simulation(situation=situation()), reformed):
+        income_support = by_family(simulation, "income_support", year)
+        assert income_support["excluded_income_support"] == 0
+
+
+def test_the_claimant_and_partner_are_taken_in_each_year():
+    # The amounts are held at the dataset year, but who the claimant and
+    # partner are is read in each year, as every reader of the awards reads
+    # it. Here the claimant in the dataset year is someone else's
+    # non-dependant afterwards, and the other adult claims instead.
+    first, later = DATASET_YEAR, YEARS[1:]
+
+    def member(age, claimant_or_partner_in_first_year, **reported):
+        person = adult(age, claimant_or_partner_in_first_year, **reported)
+        person["is_claimant_or_partner"] = {
+            first: claimant_or_partner_in_first_year,
+            **{year: not claimant_or_partner_in_first_year for year in later},
+        }
+        return person
+
+    people = {
+        "a": member(40, True, esa_income_reported=3_000, income_support_reported=1_000),
+        "b": member(35, False, esa_income_reported=1_000),
+    }
+    simulation = Simulation(
+        situation={
+            "people": people,
+            "benunits": {"family": {"members": ["a", "b"]}},
+            "households": {"home": {"members": ["a", "b"]}},
+        },
+        scenario=REFORM,
+    )
+    expected = {first: (3_000, 1_000)}
+    expected.update({year: (1_000, 0) for year in later})
+    for year, (claimant_or_partner_esa, income_support) in expected.items():
+        assert simulation.calculate("esa_income", year)[0] == 4_000
+        assert (
+            simulation.calculate("claimant_or_partner_esa_income", year)[0]
+            == claimant_or_partner_esa
+        )
+        assert simulation.calculate("income_support", year)[0] == income_support

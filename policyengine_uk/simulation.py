@@ -201,7 +201,7 @@ class Simulation(CoreSimulation):
         # to the tax-benefit system, so reforms that set inputs (such as
         # disable_simulated_benefits and adjust_budgets) reach the simulation
         # through it. Core's own constructor sets this link; this one does not
-        # call it, so set it here.
+        # call it, so set it here (apply_reform also sets it for each reform).
         self.tax_benefit_system.simulation = self
         structural_reform = create_structural_reforms_from_parameters(
             self.tax_benefit_system.parameters,
@@ -253,7 +253,25 @@ class Simulation(CoreSimulation):
         # to the same simulation as that storage, including for plain clones.
         clone._user_input_keys = set(getattr(self, "_user_input_keys", ()))
         clone._user_input_contexts = list(getattr(self, "_user_input_contexts", ()))
+        if clone_tax_benefit_system:
+            # TaxBenefitSystem.clone copies the link to this simulation. The
+            # copy belongs to the clone, so link it to the clone.
+            clone.tax_benefit_system.simulation = clone
         return clone
+
+    def apply_reform(self, reform) -> None:
+        # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)
+        # reach the simulation through its tax-benefit system's link. A clone
+        # or branch may share its parent's system, so link the system to this
+        # simulation while the reform is applied, then restore the link.
+        system = self.tax_benefit_system
+        linked = getattr(system, "simulation", None)
+        system.simulation = self
+        try:
+            super().apply_reform(reform)
+        finally:
+            if linked is not None:
+                system.simulation = linked
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)

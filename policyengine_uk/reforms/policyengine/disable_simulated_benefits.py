@@ -47,9 +47,13 @@ CLAIMANT_OR_PARTNER_AWARDS = {
     "jsa_income": "claimant_or_partner_jsa_income",
 }
 
-# Income Support is the claimant's family's award (income_support_eligible
-# needs the claimant's or partner's own report), so it is set from the
-# claimant's and partner's reports only.
+# Income Support is the claimant's family's award, so it is set from the
+# claimant's and partner's reports only. That is all the model ever pays as
+# income_support: with the reform off, would_claim_IS and
+# income_support_eligible read only their reports too. Another member's own
+# Income Support report (a non-dependent adult claiming in their own right) is
+# in household income neither with the reform nor without it. ESA and JSA
+# differ: esa_income and jsa_income count every member's award either way.
 CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 
 YEARS_IN_FUTURE = 10
@@ -63,56 +67,64 @@ def disable_simulated_benefits(parameters, period):
 
             Each listed benefit is set, in the dataset year and the nine years
             after it, to its amount reported in the dataset year. The amount
-            is the same in every year: it is not uprated, unlike the
-            *_reported variables, which are.
+            is the same in every year: it is not uprated, while most of the
+            *_reported variables are.
 
             The claimant-or-partner awards are set the same way, from the
-            claimant's and partner's own reports in the dataset year
-            (is_claimant_or_partner). Readers of those awards, including the
+            dataset-year reports of whoever is the claimant or partner in
+            each year (is_claimant_or_partner); Income Support is set from
+            those reports alone. Readers of those awards, including the
             Income Support gate, cannot tell an award set here from one
             entered directly. In a later year, esa_income and jsa_income match
             neither the award on that year's uprated reports nor their total.
             Without the claimant-or-partner awards set here, the readers would
             take the whole of esa_income or jsa_income, including another
             member's award, to be the claimant's or partner's.
+
+            As the amounts are inputs, a reform that changes a benefit's
+            parameters does not change them. A reform that neutralizes a
+            benefit removes it, and neutralizing esa_income or jsa_income
+            also neutralizes its claimant-or-partner award
+            (CountryTaxBenefitSystem.variable_parts). A neutralized variable
+            ignores what the reform sets for it.
             """
 
             def apply(self):
                 simulation = self.simulation
                 system = simulation.tax_benefit_system
                 time_period = int(str(simulation.dataset.time_period)[:4])
-                years = range(time_period, time_period + YEARS_IN_FUTURE)
-                claimant_or_partner = simulation.calculate(
-                    "is_claimant_or_partner", time_period
-                )
 
-                def reported(variable, entity, members=None):
-                    """A benefit's reported amount in the dataset year,
-                    summed over the given members of each entity."""
+                def reported(variable, members=None):
+                    """A benefit's reported amount in the dataset year, for
+                    the given members, summed over the benefit's entity."""
                     amounts = simulation.calculate(variable + "_reported", time_period)
                     if members is not None:
                         amounts = amounts * members
+                    entity = system.variables[variable].entity.key
                     population = simulation.populations[entity]
                     if population.entity.is_person:
                         return amounts
                     return population.sum(amounts)
 
-                for variable in BENEFITS:
-                    entity = system.variables[variable].entity.key
-                    members = (
-                        claimant_or_partner
-                        if variable in CLAIMANT_OR_PARTNER_ONLY
-                        else None
+                for year in range(time_period, time_period + YEARS_IN_FUTURE):
+                    claimant_or_partner = simulation.calculate(
+                        "is_claimant_or_partner", year
                     )
-                    values = {variable: reported(variable, entity, members)}
-                    if variable in PRE_MINIMUM:
-                        values[PRE_MINIMUM[variable]] = values[variable]
-                    if variable in CLAIMANT_OR_PARTNER_AWARDS:
-                        values[CLAIMANT_OR_PARTNER_AWARDS[variable]] = reported(
-                            variable, entity, claimant_or_partner
+                    values = {}
+                    for variable in BENEFITS:
+                        members = (
+                            claimant_or_partner
+                            if variable in CLAIMANT_OR_PARTNER_ONLY
+                            else None
                         )
-                    for year in years:
-                        for target, value in values.items():
-                            simulation.set_input(target, year, value)
+                        values[variable] = reported(variable, members)
+                        if variable in PRE_MINIMUM:
+                            values[PRE_MINIMUM[variable]] = values[variable]
+                        if variable in CLAIMANT_OR_PARTNER_AWARDS:
+                            values[CLAIMANT_OR_PARTNER_AWARDS[variable]] = reported(
+                                variable, claimant_or_partner
+                            )
+                    for target, value in values.items():
+                        simulation.set_input(target, year, value)
 
         return DisableSimulatedBenefits

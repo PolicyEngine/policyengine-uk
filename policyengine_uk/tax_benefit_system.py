@@ -1,7 +1,7 @@
 # Standard library imports
 import copy
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 
 # PolicyEngine core imports
 from policyengine_core.parameters.operations.propagate_parameter_metadata import (
@@ -69,6 +69,20 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
     auto_carry_over_input_variables: bool = True
 
     variables: Dict[str, Variable]
+
+    # Variables that hold part of another variable's value. Neutralizing a
+    # variable neutralizes its parts, so a value entered or set for a part
+    # (as disable_simulated_benefits sets the claimant's and partner's awards
+    # for each year) cannot outlive the award it is part of.
+    variable_parts: Dict[str, Tuple[str, ...]] = {
+        "esa_income": ("claimant_or_partner_esa_income",),
+        "jsa_income": ("claimant_or_partner_jsa_income",),
+    }
+
+    def neutralize_variable(self, variable_name: str) -> None:
+        super().neutralize_variable(variable_name)
+        for part in self.variable_parts.get(variable_name, ()):
+            super().neutralize_variable(part)
 
     def reset_parameter_caches(self):
         """Reset all caches in the tax-benefit system."""
