@@ -1113,6 +1113,72 @@
   output:
     esa_income_eligible: false
 
+- name: A working non-dependent adult is not on ESA, whatever the claimant reports
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 50
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+      lodger:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+        # 40 hours a week for £20,000: about £344.61 a week of earnings,
+        # above the £195.50 higher limit.
+        hours_worked: 2_080
+        employment_income: 20_000
+    benunits:
+      benunit:
+        members: [claimant, lodger]
+    households:
+      household:
+        members: [claimant, lodger]
+  output:
+    # The claimant reports the award, so the benefit unit's screen tests only
+    # the claimant, who passes.
+    esa_income_eligible: true
+    claimant_or_partner_esa_income: 5_000
+    # The lodger claims in their own right and is engaged in remunerative
+    # work as its claimant (WRA 2007 Sch 1 para 6(1)(e)).
+    esa_income_claimant_remunerative_work: [false, true]
+    is_on_income_related_esa: [true, false]
+
+- name: A non-working non-dependent adult stays on ESA when the claimant's claim fails
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 50
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        # 16 hours a week for £100 a week: remunerative work.
+        hours_worked: 832
+        employment_income: 5_200
+      lodger:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, lodger]
+    households:
+      household:
+        members: [claimant, lodger]
+  output:
+    # The benefit unit's award applies the claimant's failed screen to every
+    # report in it, so it is nil.
+    esa_income_eligible: false
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+    # The lodger's own claim passes, so they are on it; the claimant is not.
+    is_on_income_related_esa: [false, true]
+
 # The Income Support gate reads the screened award (s.124(1)(h)).
 
 - name: A partner's ESA lost to remunerative work no longer bars Income Support

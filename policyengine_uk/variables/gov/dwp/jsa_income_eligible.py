@@ -26,7 +26,12 @@ class jsa_income_eligible(Variable):
         "only they are candidates: a member outside the family, such as a "
         "non-dependent adult, claims in their own right, and is tested on "
         "their own work only when neither the claimant nor the partner "
-        "reports an award. This is not a full entitlement model."
+        "reports an award. This one screen decides the benefit unit's award "
+        "(jsa_income) on every report in it, so when the claimant or partner "
+        "reports, another member's report is paid or not with their claim. "
+        "Whether that member is on the award themselves "
+        "(is_on_income_based_jsa) is tested on their own claim. This is not a "
+        "full entitlement model."
     )
     definition_period = YEAR
     reference = (
