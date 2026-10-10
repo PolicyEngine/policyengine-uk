@@ -1,3 +1,38 @@
+## [2.126.1] - 2026-10-10
+
+### Fixed
+
+- - Raised the `Test` job's timeout from 60 to 120 minutes: the suite now takes about an hour, so pull request runs were being cancelled at the limit.
+
+
+## [2.126.0] - 2026-10-10
+
+### Added
+
+- - Add `is_on_pension_credit` and `is_on_universal_credit` (whether the award is payable to the person) and `tax_credit_award` (the tax credit award payable to them). For the claimant and partner they read their couple's award: Pension Credit is paid to one member (the one who reports it, else the claimant, among members who have attained the qualifying age), and Universal Credit and tax credits are joint awards (but not for a partner who cannot be a joint Universal Credit claimant, whose partner claims as a single person). Anyone else is on an award only through their own report.
+  - Add person-level `winter_fuel_payment` and `pension_age_winter_heating_payment`, with `winter_fuel_payment_eligible`, `pawhp_eligible`, `is_on_winter_fuel_payment_relevant_benefit` and `is_on_pawhp_relevant_benefit`. The household `winter_fuel_allowance` and `pawhp` now add up their members' payments.
+
+### Fixed
+
+- - Test receipt of a relevant benefit for the Winter Fuel Payment and the Pension Age Winter Heating Payment person by person. Under SI 2000/729, SI 2025/969 and NISR 2025/142 a person is on a relevant benefit when it is paid to them: Income Support, income-based JSA, income-related ESA and Pension Credit are paid to one member of a couple, while Universal Credit is awarded and paid to the couple jointly. Under SI 2024/869 reg 2(5), NISR 2024/160 reg 2(5) and SSI 2024/351 a member of a couple is also on one when the other member is (`partner_receipt_counts`). A non-dependant's income-related ESA, income-based JSA, Income Support or Pension Credit no longer qualifies a pensioner in the same household, or exempts them from the Winter Fuel Payment income test.
+  - Count Universal Credit as a relevant benefit for both payments, and a tax credit award of at least £26 for the 2024 qualifying week, as SI 2024/869, SI 2025/969 and SSI 2024/351 list them.
+  - Pay each person the amount the regulations set: one payment for a couple on a relevant benefit, the full amount to anyone else living without another entitled person, and the shared amounts (£100, or £200 or £150 over 80, and the PAWHP equivalents) otherwise. Two benefit units in one household can now both be paid.
+  - Pay the Winter Fuel Payment in Scotland up to the 2023 qualifying week (SI 2000/729 covered Great Britain) and the Pension Age Winter Heating Payment only from the 2024 week.
+  - From the 2025 qualifying week, pay the Pension Age Winter Heating Payment to everyone of pensionable age in Scotland at the legislated amounts (SSI 2025/282, SSI 2025/100 and SSI 2026/170) instead of a flat £100 to households not on a relevant benefit.
+  - Cite the Winter Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI 2024/351) in the PAWHP parameters; they cited SSI 2024/250, a planning instrument.
+
+### Removed
+
+- - Remove `gov.social_security_scotland.pawhp.amount.base`: the regulations set no flat amount for households not on a relevant benefit; the new shared amounts replace it.
+
+
+## [2.125.2] - 2026-10-10
+
+### Changed
+
+- - Require policyengine-core 3.32.27, which gives each clone its own record of `set_input` values and forgets the record of a value `Holder.delete_arrays` deletes (PolicyEngine/policyengine-core#561), and remove the `Simulation.clone` override that worked around policyengine-core#559. The `Simulation.delete_arrays` override and the `Simulation.calculate` sweep stay, now for the records that rebuilding the populations leaves behind (PolicyEngine/policyengine-core#605).
+
+
 ## [2.125.1] - 2026-10-10
 
 ### Fixed
