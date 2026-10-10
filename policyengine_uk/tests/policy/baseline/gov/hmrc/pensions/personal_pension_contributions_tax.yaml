@@ -28,10 +28,11 @@
     employee_pension_contributions_reported: 70_000
   output:
     # Total for AA: 70_000, excess = 70_000 - 60_000 = 10_000
-    # pension_contributions_relief = min(100k, 70k) then min(70k, 60k) = 60_000
-    # taxed_income = 100_000 - 12_570 - 60_000 = 27_430
-    # Marginal rate at 27_430 = 20% (basic rate)
+    # pension_contributions_relief = 70_000 (within relevant earnings)
+    # reduced net income = 100_000 - 12_570 - 70_000 = 17_430
+    # 17_430 + 10_000 = 27_430 is within the basic rate band
     # Tax charge: 10_000 * 0.2 = 2_000
+    pension_contributions_relief: 70_000
     personal_pension_contributions_tax: 2_000
 
 - name: Employer contributions push total over AA
@@ -44,8 +45,8 @@
   output:
     # Total for AA: 20_000 + 50_000 = 70_000, excess = 70_000 - 60_000 = 10_000
     # pension_contributions_relief = min(100k, 20k) = 20_000
-    # taxed_income = 100_000 - 12_570 - 20_000 = 67_430
-    # Marginal rate at 67_430 = 40% (higher rate)
+    # reduced net income = 100_000 - 12_570 - 20_000 = 67_430
+    # 67_430 to 77_430 is within the higher rate band
     # Tax charge: 10_000 * 0.4 = 4_000
     personal_pension_contributions_tax: 4_000
 
@@ -58,7 +59,168 @@
   output:
     # Total for AA: 70_000 (all employer), excess = 70_000 - 60_000 = 10_000
     # pension_contributions_relief = 0 (no employee/personal contributions)
-    # taxed_income = 100_000 - 12_570 = 87_430
-    # Marginal rate at 87_430 = 40% (higher rate)
+    # reduced net income = 100_000 - 12_570 = 87_430
+    # 87_430 to 97_430 is within the higher rate band
     # Tax charge: 10_000 * 0.4 = 4_000
     personal_pension_contributions_tax: 4_000
+
+# Issue #2237 reproducer: one adult, £150,000 earnings, London, 2024. Before
+# the fix, relief stopped at the £60,000 allowance and the charge was also
+# levied on the excess, so £80,000 of contributions cost £8,000 more income
+# tax than £60,000. Relief now runs to relevant earnings and the charge
+# recovers it once, so income tax is the same.
+- name: Issue 2237 - contributions at the annual allowance
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150_000
+    personal_pension_contributions: 60_000
+    region: LONDON
+  output:
+    pension_contributions_relief: 60_000
+    personal_pension_contributions_tax: 0
+    income_tax: 28_460
+
+- name: Issue 2237 - contributions £20,000 above the annual allowance
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150_000
+    personal_pension_contributions: 80_000
+    region: LONDON
+  output:
+    pension_contributions_relief: 80_000
+    pension_annual_allowance_chargeable_amount: 20_000
+    # Reduced net income 150_000 - 80_000 = 70_000; 70_000 to 90_000 is all
+    # higher rate.
+    personal_pension_contributions_tax: 8_000
+    income_tax: 28_460
+
+- name: Charge spans bands as the top slice of reduced net income (s. 227(4A))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    employee_pension_contributions_reported: 60_000
+    employer_pension_contributions: 40_000
+  output:
+    # Net pay: relief 60_000 comes off employment income, so reduced net
+    # income is 60_000 - 60_000 floored at 0 (the personal allowance is
+    # unused). Chargeable amount 100_000 - 60_000 = 40_000: 37_700 at 20% and
+    # 2_300 at 40%.
+    pension_contributions_relief: 60_000
+    pension_annual_allowance_chargeable_amount: 40_000
+    personal_pension_contributions_tax: 37_700 * 0.2 + 2_300 * 0.4
+
+- name: Relief at source raises the rate limits instead (s. 227(4C))
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    personal_pension_contributions: 60_000
+    employer_pension_contributions: 40_000
+  output:
+    # Relief at source leaves reduced net income at 60_000 - 12_570 = 47_430
+    # and raises the basic rate limit by 60_000 to 97_700, so all 40_000
+    # falls at 20% (HMRC PTM056120).
+    personal_pension_contributions_tax: 40_000 * 0.2
+
+- name: Gift Aid raises the rate limits by its grossed-up amount (s. 227(4C))
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    personal_pension_contributions: 10_000
+    employer_pension_contributions: 60_000
+    gift_aid: 1_000
+  output:
+    # Reduced net income 60_000 - 12_570 = 47_430. Basic rate limit
+    # 37_700 + 10_000 + 1_250 (Gift Aid grossed up) = 48_950. Chargeable
+    # amount 70_000 - 60_000 = 10_000: 1_520 at 20%, 8_480 at 40%.
+    personal_pension_contributions_tax: 1_520 * 0.2 + 8_480 * 0.4
+
+- name: Scottish taxpayer pays Scottish rates on the chargeable amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150_000
+    personal_pension_contributions: 80_000
+    region: SCOTLAND
+  output:
+    # Reduced net income 70_000; 70_000 to 90_000 is in the 45% advanced band.
+    personal_pension_contributions_tax: 20_000 * 0.45
+
+- name: Scottish starter band is charged at the Scottish basic rate (s. 227(4AA))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 100_000
+    employee_pension_contributions_reported: 100_000
+    region: SCOTLAND
+  output:
+    # Net pay: reduced net income 100_000 - 100_000 floored at 0. Chargeable
+    # amount 40_000: 20% up to the 16_956 basic rate limit (the starter band
+    # included), 21% to 31_092, then 42%.
+    personal_pension_contributions_tax: 16_956 * 0.2 + (31_092 - 16_956) * 0.21 + (40_000 - 31_092) * 0.42
+
+# A model deviation, documented: the model gives relief at source as a
+# deduction, so a Scottish starter-rate slice is relieved at 19%, while relief
+# at source pays 20% and the charge on that slice is at the Scottish basic rate
+# (s. 227(4AA)). Contributing beyond the allowance therefore costs this taxpayer
+# 1% of the 3_967 starter band (£39.67) more income tax.
+- name: Scottish relief at source at the annual allowance (model deviation, see comment)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 80_000
+    personal_pension_contributions: 60_000
+    region: SCOTLAND
+  output:
+    # Taxable income 80_000 - 12_570 - 60_000 = 7_430: 3_967 at 19%, 3_463 at 20%.
+    income_tax: 3_967 * 0.19 + 3_463 * 0.2
+
+- name: Scottish relief at source beyond the annual allowance (model deviation, see comment)
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 80_000
+    personal_pension_contributions: 67_430
+    region: SCOTLAND
+  output:
+    # No taxable income after relief; the 7_430 chargeable amount sits within
+    # the raised Scottish basic rate limit, at 20%.
+    personal_pension_contributions_tax: 7_430 * 0.2
+    income_tax: 7_430 * 0.2
+
+- name: Unused annual allowance brought forward covers the excess (s. 228A)
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150_000
+    personal_pension_contributions: 80_000
+    unused_pension_annual_allowance: 20_000
+    region: LONDON
+  output:
+    pension_annual_allowance_chargeable_amount: 0
+    personal_pension_contributions_tax: 0
+    income_tax: 28_460 - 8_000
+
+- name: Unused annual allowance brought forward covers part of the excess
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 150_000
+    personal_pension_contributions: 80_000
+    unused_pension_annual_allowance: 5_000
+    region: LONDON
+  output:
+    pension_annual_allowance_chargeable_amount: 15_000
+    personal_pension_contributions_tax: 15_000 * 0.4
