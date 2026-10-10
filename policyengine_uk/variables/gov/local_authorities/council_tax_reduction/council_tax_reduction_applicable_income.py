@@ -40,7 +40,7 @@ class council_tax_reduction_applicable_income(Variable):
         # Anyone else in the benefit unit does not count.
         person = benunit.members
         members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_young_person_for_legacy_benefits", period
+            "is_child_or_young_person_for_council_tax_reduction", period
         )
         # Only the claimant's and partner's income-related awards: the scheme
         # counts the applicant's and partner's income (Sch 1 para 11 above). A
