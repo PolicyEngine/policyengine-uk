@@ -45,7 +45,7 @@ from fractions import Fraction
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.periods import period as period_
 from policyengine_core.reforms import Reform
@@ -754,9 +754,12 @@ def test_class_4_does_not_count_a_deleted_loss_after_recalculation(on_branch):
 def test_supplied_input_helpers_ignore_missing_stored_arrays():
     sim = single_person({"trading_loss": {2025: 10_000, 2026: 5_000}})
     population = sim.get_variable_population("trading_loss")
-    # Direct holder deletion leaves core's provenance keys behind. Neither
-    # helper may identify the missing stored value as an effective input.
     population.get_holder("trading_loss").delete_arrays(period_(2026))
+    # Core forgets the deleted input's record (policyengine-core#561). Put it
+    # back, as a population rebuild would leave it (policyengine-core#605):
+    # neither helper may identify the missing stored value as an effective
+    # input.
+    sim._user_input_keys.add(("trading_loss", "default", period_(2026)))
     assert supplied_input(population, "trading_loss", period_(2026)) is None
     assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
 
@@ -773,10 +776,11 @@ def test_class_4_does_not_count_a_loss_deleted_from_its_holder(on_branch, delete
     )
     sim = original.get_branch("deleted_loss") if on_branch else original
     sim.set_input("trading_loss", 2026, np.array([deleted_loss]))
-    # Holder.delete_arrays removes the stored value but not core's record of
-    # it. The engine then carries the 2025 loss into 2026; with the stale
-    # record that 10,000 would count as a second loss (profits of 20,000 and
-    # contributions of 445.80), also when the deleted loss was 10,000 too.
+    # The engine carries the 2025 loss into the emptied 2026. Before
+    # policyengine-core 3.32.27, Holder.delete_arrays kept core's record of
+    # the deleted input (policyengine-core#559), and that 10,000 would count
+    # as a second loss (profits of 20,000 and contributions of 445.80), also
+    # when the deleted loss was 10,000 too.
     sim.get_holder("trading_loss").delete_arrays(period_(2026), sim.branch_name)
     assert sim.calculate("trading_loss", 2026)[0] == 10_000
     population = sim.get_variable_population("trading_loss")
@@ -790,6 +794,145 @@ def test_class_4_does_not_count_a_loss_deleted_from_its_holder(on_branch, delete
     assert sim.calculate("ni_class_4_profits", 2027)[0] == 40_000
     if on_branch:
         assert original.calculate("ni_class_4_profits", 2026)[0] == 30_000
+
+
+def test_class_4_does_not_count_a_loss_a_rebuild_drops():
+    def situation(losses):
+        person = {
+            "age": {2025: 40},
+            "self_employment_income": {2026: 40_000},
+            "trading_loss": losses,
+        }
+        return {
+            "people": {"person": person},
+            "benunits": {"benunit": {"members": ["person"]}},
+            "households": {"household": {"members": ["person"]}},
+        }
+
+    sim = Simulation(situation=situation({2025: 10_000, 2026: 5_000}))
+    # Rebuilding the populations replaces every holder but keeps core's
+    # record of the 2026 loss (policyengine-core#605). The engine carries the
+    # 2025 loss into 2026; with the stale record that 10,000 would count as a
+    # second loss (profits of 20,000 and contributions of 445.80).
+    sim.build_from_situation(situation({2025: 10_000}))
+    assert sim.calculate("trading_loss", 2026)[0] == 10_000
+    population = sim.get_variable_population("trading_loss")
+    assert supplied_input(population, "trading_loss", period_(2026)) is None
+    assert supplied_input_periods(population, "trading_loss") == [period_(2025)]
+    observed = (
+        float(sim.calculate("ni_class_4_profits", 2026)[0]),
+        round(float(sim.calculate("ni_class_4", 2026)[0]), 2),
+    )
+    assert observed == (30_000, 1_045.80)
+
+
+LIFECYCLE_YEARS = (2024, 2025, 2026)
+lifecycle_loss = st.integers(min_value=0, max_value=3).map(lambda k: 1_000.0 * k)
+# Each step names the simulation it acts on (modulo the number made so far),
+# so an original keeps changing after it has been cloned.
+lifecycle_step = st.tuples(
+    st.integers(min_value=0, max_value=3),
+    st.one_of(
+        st.tuples(st.just("set"), st.sampled_from(LIFECYCLE_YEARS), lifecycle_loss),
+        st.tuples(
+            st.sampled_from(
+                ["delete", "delete_from_holder", "calculate", "calculate_profits"]
+            ),
+            st.sampled_from(LIFECYCLE_YEARS),
+        ),
+        st.tuples(st.just("clone")),
+        st.tuples(st.just("rebuild"), st.frozensets(st.sampled_from(LIFECYCLE_YEARS))),
+    ),
+)
+
+
+def lifecycle_situation(losses):
+    person = {
+        "age": {2024: 40},
+        "self_employment_income": {year: 20_000 for year in LIFECYCLE_YEARS},
+        "trading_loss": losses,
+    }
+    return {
+        "people": {"person": person},
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {"household": {"members": ["person"]}},
+    }
+
+
+_lifecycle_templates = []
+
+
+def lifecycle_simulation(losses):
+    # Rebuild a clone of one template, as the State Pension age properties do,
+    # so each example also starts from a population rebuild.
+    if not _lifecycle_templates:
+        _lifecycle_templates.append(
+            Simulation(situation=lifecycle_situation({2025: 2_000.0}))
+        )
+    sim = _lifecycle_templates[0].clone(clone_tax_benefit_system=False)
+    sim.build_from_situation(lifecycle_situation(losses))
+    return sim
+
+
+def assert_supplied_losses(sim, expected):
+    population = sim.get_variable_population("trading_loss")
+    for year in LIFECYCLE_YEARS:
+        value = supplied_input(population, "trading_loss", period_(year))
+        assert (None if value is None else value.tolist()) == (
+            [expected[year]] if year in expected else None
+        )
+    assert supplied_input_periods(population, "trading_loss") == [
+        period_(year) for year in sorted(expected)
+    ]
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.dictionaries(st.sampled_from(LIFECYCLE_YEARS), lifecycle_loss),
+    st.lists(lifecycle_step, max_size=6),
+)
+# The rebuild leaves the template's 2025 record behind, and building the
+# dataset calculates 2025 (policyengine-core#605).
+@example(initial={2024: 0.0}, steps=[])
+# With one record between a simulation and its clone, the input set on one
+# passes off the other's calculated 2025 as supplied (policyengine-core#559).
+@example(initial={2024: 0.0}, steps=[(0, ("clone",)), (0, ("set", 2025, 0.0))])
+def test_only_losses_set_and_kept_count_as_supplied(initial, steps):
+    # A loss counts as supplied exactly while the last value set for it, by
+    # set_input or a rebuild, has not been deleted or dropped by a rebuild,
+    # whatever the engine has carried over or calculated meanwhile. A clone
+    # starts with its original's supplied losses, and what either does
+    # afterwards does not reach the other.
+    sim = lifecycle_simulation(initial)
+    simulations = [(sim, dict(initial))]
+    assert_supplied_losses(sim, initial)
+    for which, step in steps:
+        sim, expected = simulations[which % len(simulations)]
+        kind = step[0]
+        if kind == "set":
+            sim.set_input("trading_loss", step[1], np.array([step[2]]))
+            expected[step[1]] = step[2]
+        elif kind == "delete":
+            sim.delete_arrays("trading_loss", step[1])
+            expected.pop(step[1], None)
+        elif kind == "delete_from_holder":
+            sim.get_holder("trading_loss").delete_arrays(period_(step[1]))
+            expected.pop(step[1], None)
+        elif kind == "calculate":
+            sim.calculate("trading_loss", step[1])
+        elif kind == "calculate_profits":
+            sim.calculate("ni_class_4_profits", step[1])
+        elif kind == "clone":
+            simulations.append(
+                (sim.clone(clone_tax_benefit_system=False), dict(expected))
+            )
+        elif kind == "rebuild":
+            kept = {year: expected[year] for year in step[1] if year in expected}
+            sim.build_from_situation(lifecycle_situation(kept))
+            expected.clear()
+            expected.update(kept)
+        for simulation, supplied in simulations:
+            assert_supplied_losses(simulation, supplied)
 
 
 def test_supplied_input_helpers_refuse_an_unregistered_variable():
