@@ -36,14 +36,16 @@ The implementation uses transition probabilities based on WPI Economics analysis
 
 ## Standard allowance uplifts
 
-The standard allowance receives additional percentage uplifts beyond the normal inflationary increase:
+Universal Credit Act 2025 s. 1 sets the minimum standard allowance for 2026-27 to 2029-30. Each year's minimum is the previous year's CPI-uprated amount (the 2025-26 amount for 2026-27), increased by September CPI (never below 0%), and then by that year's uplift:
 
-- 2026: 2.3% additional uplift
-- 2027: 3.1% additional uplift (cumulative)
-- 2028: 4.0% additional uplift (cumulative)
-- 2029: 4.8% additional uplift (cumulative)
+- 2026-27: 2.3%
+- 2027-28: 3.1%
+- 2028-29: 4.0%
+- 2029-30: 4.8%
 
-These uplifts are applied to the CPI-uprated standard allowance for each year. In other words, the model first applies the usual CPI uprating and then applies the rebalancing uplift on top.
+Each uplift is measured against the CPI-only path from 2025-26, not compounded on the previous one, so from one year to the next the allowance grows by CPI times (1 + this year's uplift) / (1 + last year's uplift). After 2029-30 the uplift stays at 4.8% and the allowance grows with CPI alone.
+
+The 2026-27 amounts are the legislated rates in `standard_allowance/amount.yaml`. Later years are uprated by `gov.dwp.universal_credit.standard_allowance.uprating`, the benefit uprating CPI index times (1 + the year's uplift), which `rebalancing/create_standard_allowance_uprating.py` builds when parameters are processed. A legislated rate for one of these years includes that year's statutory uplift; if the uplift in force differs, through a reform or with `rebalancing.active` false (no uplift), the rate is rescaled by (1 + uplift in force) / (1 + statutory uplift).
 
 ## Implementation
 
@@ -51,7 +53,7 @@ These uplifts are applied to the CPI-uprated standard allowance for each year. I
 The reforms are implemented through parameters, scenario modifiers, and scenarios that work together to enable policy analysis.
 ```
 
-- **Parameters**: Three YAML files define the reform's activation status, health element amount for new claimants, and standard allowance uplift rates.
+- **Parameters**: Three YAML files define the reform's activation status, health element amount for new claimants, and standard allowance uplift rates. The uplift reaches the standard allowance through its uprating index.
 - **Scenario modifier**: The `add_universal_credit_reform` function applies the protected existing-claimant health-element path during microsimulation.
 - **Scenario**: The `universal_credit_july_2025_reform` scenario enables the reforms in policy analysis.
 
@@ -79,20 +81,23 @@ sim = Simulation(scenario=scenario)
 ```python
 from policyengine_uk import Simulation, Scenario
 
-# Set different uplift rates - e.g. 5% in 2026, 7% in 2027
+# Set different uplift rates - e.g. 5% in 2026-27, 7% from 2027-28.
+# A bare year names the fiscal year from 6 April.
 scenario = Scenario(
     parameter_changes={
         "gov.dwp.universal_credit.rebalancing.standard_allowance_uplift": {
-            "2026-01-01": 0.05,
-            "2027-01-01": 0.07,
-            "2028-01-01": 0.07,
-            "2029-01-01": 0.07,
+            "2026": 0.05,
+            "2027": 0.07,
+            "2028": 0.07,
+            "2029": 0.07,
         }
     }
 )
 
 sim = Simulation(scenario=scenario)
 ```
+
+The uplift reaches the allowance through parameter processing, which `Scenario(parameter_changes=...)` re-runs. A `reform=` dictionary is applied after processing, so to change the allowance that way set `gov.dwp.universal_credit.standard_allowance.amount` directly.
 
 ### Changing the health element amount for new claimants
 
@@ -113,8 +118,9 @@ sim = Simulation(scenario=scenario)
 
 ## Legislative reference
 
-The reforms are based on the Universal Credit Bill and its impact assessment:
+The reforms are based on the Universal Credit Act 2025, the Bill and its impact assessment:
 
+- https://www.legislation.gov.uk/ukpga/2025/22/section/1
 - https://bills.parliament.uk/publications/62123/documents/6889
 - https://bills.parliament.uk/publications/62124/documents/6892
 - https://assets.publishing.service.gov.uk/media/689ca49e1c63de6de5bb1298/withdrawn-universal-credit-bill-uc-rebalancing-impact-assessment.pdf
