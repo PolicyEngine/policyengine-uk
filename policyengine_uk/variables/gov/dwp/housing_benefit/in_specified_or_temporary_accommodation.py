@@ -17,6 +17,10 @@ class in_specified_or_temporary_accommodation(Variable):
         "from tenure or a generic supported-housing label. It protects "
         "working-age awards from abolition and permits new Housing Benefit "
         "claims, subject to the model's other entitlement and take-up rules. "
+        "The working-age "
+        "Housing Benefit earnings disregard for specified or temporary "
+        "accommodation (SI 2006/213 Sch 4 para 18; NI SR 2006/405 Sch 5 para "
+        "18), which refers to the same paragraphs, reads it. "
         "It defaults to False when absent from household or dataset inputs."
     )
     definition_period = YEAR

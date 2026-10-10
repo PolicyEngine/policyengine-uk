@@ -21,9 +21,10 @@ Invariants, for any generated population of families in 2024 to 2027:
    closure claim flag; Universal Credit is paid only to claiming families.
 3. Migration ends every legacy award: a family moved off legacy benefits gets
    no tax credits, Income Support, income-related ESA or income-based JSA.
-   It gets no Housing Benefit unless it is a wholly pension-age family that
-   does not claim Universal Credit and so keeps the pension-age route.
-   A family that leaves that route gets no Pension Credit either.
+   It gets no Housing Benefit unless it keeps the pension-age route by not
+   claiming (or by being refused Universal Credit). A family that leaves
+   that route gets no Pension Credit either, and any closure claimant
+   within the capital limit is eligible for Universal Credit.
 4. Exclusive: no family gets Universal Credit with Pension Credit or with
    Housing Benefit.
 5. Metamorphic, the flag is inert unless it decides a claim: negating
@@ -94,6 +95,8 @@ OUTPUTS = BENEFITS + [
     "left_pension_route_at_legacy_closure",
     "meets_pension_credit_age_conditions",
     "is_mixed_age_couple",
+    "is_uc_eligible",
+    "uc_assessable_capital",
 ]
 award = st.sampled_from([0.0, 0.0, 2_000.0, 6_000.0])
 
@@ -213,7 +216,13 @@ def test_closure_claims_and_the_end_of_legacy_awards(units):
                 "jsa_income",
             ]:
                 assert v[benefit][i] == 0, (year, benefit, unit)
-            left = pension_age_route and (claims_at_closure or mixed_age)
+            uc_eligible = bool(v["is_uc_eligible"][i])
+            # Any closure claimant within the capital limit is eligible for
+            # Universal Credit: on the pension-age route through a joint claim
+            # (reg 3(2)(a)) or the reg 60A waiver.
+            if claims_at_closure and v["uc_assessable_capital"][i] <= 16_000:
+                assert uc_eligible, (year, unit)
+            left = pension_age_route and claims_at_closure and uc_eligible
             assert bool(v["left_pension_route_at_legacy_closure"][i]) == left
             if left or not pension_age_route:
                 assert v["housing_benefit"][i] == 0, (year, unit)

@@ -38,7 +38,6 @@ class housing_benefit_eligible(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        sp_age = person("is_SP_age", period)
         # Apart from the accommodation exception, new claims are barred
         # except where the claimant, and any partner,
         # has reached the qualifying age for State Pension Credit
@@ -51,10 +50,11 @@ class housing_benefit_eligible(Variable):
         # the claimant and partner (is_claimant_or_partner), so a pensioner
         # with an 18 or 19 year old dependant can claim Housing Benefit and
         # not Universal Credit.
-        # A family DWP moved to Universal Credit leaves this route: it claims
-        # Universal Credit, or, as a protected mixed-age couple that does not,
-        # loses its award at the notice's deadline (reg 46(1)(a)) and with it
-        # the saving (left_pension_route_at_legacy_closure).
+        # A family DWP moved to Universal Credit leaves this route if it
+        # claims Universal Credit and is eligible for it
+        # (left_pension_route_at_legacy_closure). One that does not claim
+        # keeps it; a protected mixed-age couple can reclaim Housing Benefit
+        # and keep its saving (SI 2019/37 art. 4(3)(b)(ii)).
         pension_age = benunit("meets_pension_credit_age_conditions", period) & ~benunit(
             "left_pension_route_at_legacy_closure", period
         )
@@ -83,11 +83,13 @@ class housing_benefit_eligible(Variable):
         )
         social = benunit.any(person("in_social_housing", period))
         lha_eligible = benunit("LHA_eligible", period)
-        any_over_SP_age = benunit.any(sp_age)
+        pension_age_regulations = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
+        )
         capital = benunit("housing_benefit_assessable_capital", period)
         hb_capital = parameters(period).gov.dwp.housing_benefit.means_test.capital
         limit = where(
-            any_over_SP_age,
+            pension_age_regulations,
             hb_capital.pension_age.limit,
             hb_capital.working_age.limit,
         )

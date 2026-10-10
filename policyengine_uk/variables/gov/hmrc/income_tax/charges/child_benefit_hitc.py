@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.child_benefit import child_benefit_charge_share
 
 
 class CB_HITC(Variable):
@@ -14,7 +15,7 @@ class CB_HITC(Variable):
         CB_received = person.benunit("child_benefit", period)
         hitc = parameters(period).gov.hmrc.income_tax.charges.CB_HITC
         income = person("adjusted_net_income", period)
-        percentage = max_(income - hitc.phase_out_start, 0) / (
-            hitc.phase_out_end - hitc.phase_out_start
+        percentage = child_benefit_charge_share(
+            income, hitc.phase_out_start, hitc.phase_out_end
         )
-        return min_(percentage, 1) * CB_received
+        return percentage * CB_received

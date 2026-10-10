@@ -4,44 +4,40 @@
 
 - name: Social housing eligible
   period: 2021
-  absolute_error_margin: 0
   input:
+    would_claim_uc: false  # continuing award route: not claiming Universal Credit
     in_social_housing: true
     housing_benefit_reported: 1
-    would_claim_uc: false
     LHA_eligible: false
   output:
     housing_benefit_eligible: true
 
 - name: LHA eligible
   period: 2021
-  absolute_error_margin: 0
   input:
+    would_claim_uc: false  # continuing award route: not claiming Universal Credit
     in_social_housing: false
     housing_benefit_reported: 1
-    would_claim_uc: false
     LHA_eligible: true
   output:
     housing_benefit_eligible: true
 
 - name: Not already enrolled
   period: 2021
-  absolute_error_margin: 0
   input:
+    would_claim_uc: false  # continuing award route: not claiming Universal Credit
     in_social_housing: false
     housing_benefit_reported: 0
-    would_claim_uc: false
     LHA_eligible: true
   output:
     housing_benefit_eligible: false
 
 - name: Not eligible
   period: 2021
-  absolute_error_margin: 0
   input:
+    would_claim_uc: false  # continuing award route: not claiming Universal Credit
     in_social_housing: false
     housing_benefit_reported: 1
-    would_claim_uc: false
     LHA_eligible: false
   output:
     housing_benefit_eligible: false

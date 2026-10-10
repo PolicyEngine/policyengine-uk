@@ -511,11 +511,11 @@
         members: [first, second, third]
   output:
     # A couple has two members, so three flagged claimants are a data error,
-    # not a legal claim. The formula generalises reg. 32(1) as: some claimant
-    # meets limb (a) and every other claimant meets limb (b).
+    # not a legal claim. The two eldest are the claimants
+    # (is_uc_assessed_claimant): one meets limb (a) and the other limb (b).
     uc_childcare_work_condition: true
 
-- name: Reg. 32(1) - three flagged claimants, one of whom neither works nor meets an exception
+- name: Reg. 32(1) - three flagged claimants; the youngest neither works nor meets an exception
   period: 2025
   absolute_error_margin: 0
   input:
@@ -538,6 +538,37 @@
       household:
         members: [first, second, third]
   output:
+    # Three flagged claimants are a data error. The two eldest are the
+    # claimants (is_uc_assessed_claimant), as for their income, so the
+    # youngest's work is not tested: one claimant works and the other has
+    # limited capability for work.
+    is_uc_assessed_claimant: [true, true, false]
+    uc_childcare_work_condition: true
+
+- name: Reg. 32(1) - three flagged claimants; the second eldest neither works nor meets an exception
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      first:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 15_000
+      second:
+        age: 39
+        is_claimant_or_partner: true
+      third:
+        age: 38
+        is_claimant_or_partner: true
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [first, second, third]
+    households:
+      household:
+        members: [first, second, third]
+  output:
+    is_uc_assessed_claimant: [true, true, false]
     uc_childcare_work_condition: false
 
 - name: Reg. 32(1)(a) - self-employment is paid work
