@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
 
 
 class uc_minimum_income_floor_national_insurance(Variable):
@@ -41,11 +42,13 @@ class uc_minimum_income_floor_national_insurance(Variable):
         ) + class_1.rates.employee.additional * max_(
             0, threshold - upper_earnings_limit
         )
-        # Class 2 and Class 4 on profits equal to the threshold.
+        # Class 2 and Class 4 on profits equal to the threshold, by the same
+        # s.11(2) test and contribution weeks as ni_class_2: from 2022-23
+        # profits up to the lower profits threshold are treated as paid.
         class_2 = (
-            (threshold >= ni.class_2.small_profits_threshold)
+            class_2_liable(threshold, ni.class_2)
             * ni.class_2.flat_rate
-            * WEEKS_IN_YEAR
+            * class_2_contribution_weeks(period.start.year)
         )
         class_4 = ni.class_4
         class_4_amount = class_4.rates.main * max_(
