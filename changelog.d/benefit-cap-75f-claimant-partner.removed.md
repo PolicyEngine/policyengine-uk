@@ -1,1 +1,2 @@
-- Remove the unused benefit sums from `is_benefit_cap_exempt_earnings` and `is_benefit_cap_exempt_other`; the age exception keeps its result and the armed forces and ESA exceptions move, limited to the claimant and partner, into `is_benefit_cap_exempt_health_disability`.
+- Remove the unused benefit sums from `is_benefit_cap_exempt_earnings` and `is_benefit_cap_exempt_other`; the earnings and age exceptions keep their results and the armed forces and ESA exceptions move, limited to the claimant and partner, into `is_benefit_cap_exempt_health_disability`.
+- Remove the input `uc_has_limited_capability_for_work`. The work preparation group reads `uc_limited_capability_for_work`, which datasets and users can set instead.

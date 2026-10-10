@@ -97,7 +97,7 @@ bumps = st.floats(1, 10_000)
 rarely = st.integers(0, 5).map(lambda n: n == 0)
 CIRCUMSTANCES = [
     "uc_limited_capability_for_WRA",
-    "uc_has_limited_capability_for_work",
+    "uc_limited_capability_for_work",
     "uc_is_in_pregnancy_or_post_confinement_period",
     "uc_is_adopter_in_first_year",
     "uc_is_student_with_no_work_related_requirements",

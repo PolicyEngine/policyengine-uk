@@ -12,11 +12,13 @@ class uc_unable_to_provide_childcare(Variable):
         "for work, (ii) have regular and substantial caring responsibilities "
         "for a severely disabled person, or (iii) are temporarily absent from "
         "the claimant's household. Each limb is an approximation. Limb (i) "
-        "reads uc_limited_capability_for_WRA, which defaults to "
-        "is_disabled_for_benefits (disability benefit receipt in survey "
-        "data), not an observed work capability assessment; limited "
-        "capability for work and work-related activity includes limited "
-        "capability for work. Limb (ii), defined in regulation 30, reads "
+        "reads uc_limited_capability_for_work, which is limited capability "
+        "for work and work-related activity (uc_limited_capability_for_WRA) "
+        "or else is_disabled_for_benefits (disability benefit receipt in "
+        "survey data), not an observed work capability assessment. An ESA "
+        "award without the support component removes limited capability for "
+        "work-related activity but not for work, so it still meets limb (i). "
+        "Limb (ii), defined in regulation 30, reads "
         "is_carer_for_benefits: receipt of Carer's Allowance or Carer Support "
         "Payment, or at least the Carer's Allowance qualifying hours of care "
         "a week. Its hours branch does not check that the person cared for "
@@ -47,7 +49,7 @@ class uc_unable_to_provide_childcare(Variable):
 
     def formula(person, period, parameters):
         return (
-            person("uc_limited_capability_for_WRA", period)
+            person("uc_limited_capability_for_work", period)
             | person("is_carer_for_benefits", period)
             | person("uc_is_temporarily_absent_from_claimant_household", period)
         )
