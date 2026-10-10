@@ -1,12 +1,75 @@
+# Expected values come from s.15(3) and (3ZA) SSCBA 1992 as in force for
+# each tax year and, where Class 1 or Class 2 is also payable, the regulation
+# 100 annual maximum of SI 2001/1004 (worked through below; it never binds in
+# these sole-trader cases).
+
 - name: NI Class 4 - under UPL.
-  # SSCBA 1992 s.15(3) and (3ZA) as at 6 April 2023: 9% of profits between
-  # £12,570 and £50,270. (30,000 - 12,570) x 0.09 = 1,568.70.
+  # 2023-24: 9% between £12,570 and £50,270 (s.15(3)(a), (3ZA)(a) as at
+  # 6 April 2023). (30,000 - 12,570) x 9% = 1,568.70.
+  # Reg 100: Class 2 is 52 x £3.45 = £179.40. Step 4 = 37,700 x 9%
+  # + 53 x 3.45 - 179.40 = 3,396.45, which exceeds 179.40 + 1,568.70, so
+  # Case 1 caps Class 4 at 3,396.45; it does not bind.
   period: 2023
   absolute_error_margin: 0.01
   input:
     self_employment_income: 30_000
   output:
     ni_class_4: 1_568.70
+
+- name: NI Class 4 - 2022-23 main rate of 9.73% on profits over £11,908.
+  # Health and Social Care Levy (Repeal) Act 2022 s.2(2)(a); NICs (Increase
+  # of Thresholds) Act 2022 s.2(1). (30,000 - 11,908) x 9.73% = 1,760.35.
+  # Reg 100 (as modified for 2022-23): Class 2 is 52 x £3.15 = £163.80.
+  # Step 4 = 38,362 x 9.73% + 53 x 3.15 - 163.80 = 3,735.77, more than
+  # 163.80 + 1,760.35, so Case 1 caps at 3,735.77; it does not bind.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 30_000
+  output:
+    ni_class_4: 1_760.35
+
+- name: NI Class 4 - 2022-23 additional rate of 2.73% over the UPL.
+  # s.2(2)(b) of the 2022 Repeal Act. 38,362 x 9.73% + 9,730 x 2.73%
+  # = 3,732.62 + 265.63 = 3,998.25.
+  # Reg 100: Step 4 = 3,735.77 does not exceed 163.80 + 3,732.62 (Case 2).
+  # Step 5 = 3,735.77 / 9.73% = 38,394.37, more than Step 6 (38,362), so
+  # Steps 7 and 8 are 0. Step 9 = 9,730 x 2.73% = 265.63. Maximum
+  # = 3,735.77 + 265.63 = 4,001.40, which does not bind.
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 60_000
+  output:
+    ni_class_4: 3_998.25
+
+- name: NI Class 4 - 2015-16 upper profits limit of £42,385.
+  # SI 2015/588 art 3: limits £8,060 and £42,385; rates 9% and 2%.
+  # (42,385 - 8,060) x 9% + (50,000 - 42,385) x 2% = 3,089.25 + 152.30
+  # = 3,241.55.
+  # Reg 100: Class 2 is 52 x £2.80 = £145.60. Step 4 = 3,089.25
+  # + 53 x 2.80 - 145.60 = 3,092.05, below 145.60 + 3,089.25 (Case 2).
+  # Step 5 = 34,356.11 exceeds Step 6 (34,325), so Step 8 is 0. Step 9
+  # = 7,615 x 2% = 152.30. Maximum 3,244.35, which does not bind.
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 50_000
+  output:
+    ni_class_4: 3_241.55
+
+- name: NI Class 4 - 2016-17 upper profits limit of £43,000.
+  # SI 2016/343 reg 2. (43,000 - 8,060) x 9% + 7,000 x 2% = 3,144.60
+  # + 140 = 3,284.60.
+  # Reg 100: Step 4 = 3,144.60 + 148.40 - 145.60 = 3,147.40 (Case 2).
+  # Step 5 = 34,971.11 exceeds Step 6 (34,940); Step 9 = 140. Maximum
+  # 3,287.40, which does not bind.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    self_employment_income: 50_000
+  output:
+    ni_class_4: 3_284.60
 
 - name: NI Class 4 - 2026 lower profits limit is frozen.
   period: 2026

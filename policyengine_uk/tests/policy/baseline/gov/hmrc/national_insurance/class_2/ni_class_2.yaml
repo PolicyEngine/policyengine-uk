@@ -1,15 +1,239 @@
-- name: NI Class 2 - under LPL.
+# Expected values come from s.11 SSCBA 1992 as in force for each tax year
+# (legislation.gov.uk point-in-time text) and the SIs that set its figures.
+
+# 2023-24: £3.45 a week (SI 2023/236 reg 3(a)) on profits that exceed the
+# £12,570 lower profits threshold (reg 3(b)). Profits from the £6,725 small
+# profits threshold up to it are treated as paid (s.11(5A)-(5B)).
+- name: NI Class 2 - 2023-24, below the small profits threshold.
   period: 2023
   input:
     self_employment_income: 5_000
   output:
     ni_class_2: 0
 
-- name: NI Class 2 - over LPL.
-  # SSCBA 1992 s.11(2) as at 6 April 2023: profits over the £12,570 lower
-  # profits threshold pay £3.45 a week.
+- name: NI Class 2 - 2023-24, at the small profits threshold, treated as paid.
+  period: 2023
+  input:
+    self_employment_income: 6_725
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - 2023-24, between the thresholds, treated as paid.
+  period: 2023
+  input:
+    self_employment_income: 10_000
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - 2023-24, at the lower profits threshold, not liable.
+  period: 2023
+  input:
+    self_employment_income: 12_570
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - 2023-24, just above the lower profits threshold.
+  period: 2023
+  input:
+    self_employment_income: 12_571
+  output:
+    ni_class_2: 3.45 * 52
+
+- name: NI Class 2 - 2023-24, above the lower profits threshold.
   period: 2023
   input:
     self_employment_income: 15_000
   output:
     ni_class_2: 3.45 * 52
+
+- name: NI Class 2 - 2023-24, above the upper profits limit.
+  period: 2023
+  input:
+    self_employment_income: 60_000
+  output:
+    ni_class_2: 179.4
+
+- name: NI Class 2 - 2023-24, over State Pension age.
+  period: 2023
+  input:
+    age: 70
+    self_employment_income: 60_000
+  output:
+    ni_class_2: 0
+
+# 2022-23: £3.15 a week (SI 2022/232 reg 3(a)) on profits that exceed the
+# £11,908 lower profits threshold, with effect from 6 April 2022
+# (SI 2022/1329 regs 1 and 2).
+- name: NI Class 2 - 2022-23, between the thresholds, treated as paid.
+  period: 2022
+  input:
+    self_employment_income: 8_000
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - 2022-23, at the lower profits threshold, not liable.
+  period: 2022
+  input:
+    self_employment_income: 11_908
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - 2022-23, above the lower profits threshold.
+  period: 2022
+  input:
+    self_employment_income: 11_909
+  output:
+    ni_class_2: 3.15 * 52
+
+# 2021-22: £3.05 a week (unchanged from SI 2020/299) on profits of, or
+# exceeding, the £6,515 small profits threshold (SI 2021/157 reg 3).
+- name: NI Class 2 - 2021-22, just below the small profits threshold.
+  period: 2021
+  input:
+    self_employment_income: 6_514
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - 2021-22, at the small profits threshold.
+  period: 2021
+  input:
+    self_employment_income: 6_515
+  output:
+    ni_class_2: 3.05 * 52
+
+# 2020-21: £3.05 a week from £6,475 (SI 2020/299 reg 3).
+- name: NI Class 2 - 2020-21, at the small profits threshold.
+  period: 2020
+  input:
+    self_employment_income: 6_475
+  output:
+    ni_class_2: 3.05 * 52
+
+# 2015-16: £2.80 a week from £5,965 (NICA 2015 Sch 1 para 3).
+- name: NI Class 2 - 2015-16, just below the small profits threshold.
+  period: 2015
+  input:
+    self_employment_income: 5_964
+  output:
+    ni_class_2: 0
+
+- name: NI Class 2 - 2015-16, at the small profits threshold.
+  period: 2015
+  input:
+    self_employment_income: 5_965
+  output:
+    ni_class_2: 2.8 * 52
+
+# 2024-25: s.11(2) omitted from 6 April 2024 (NICs (Reduction in Rates) Act
+# 2023 s.3); no compulsory Class 2.
+- name: NI Class 2 - 2024-25, abolished.
+  period: 2024
+  input:
+    self_employment_income: 60_000
+  output:
+    ni_class_2: 0
+
+# Relevant profits (s.11(3)) are the profits on which Class 4 is payable
+# under s.15, computed under Schedule 2: after capital allowances (CAA 2001
+# s.247), the trading allowance (ITTOIA 2005 s.783AI) and loss relief (Sch 2
+# para 3). The thresholds are tested on those profits, not on
+# self_employment_income.
+- name: NI Class 2 - 2023-24, capital allowances take profits to the lower profits threshold.
+  period: 2023
+  input:
+    self_employment_income: 13_570
+    capital_allowances: 1_000
+  output:
+    # 13,570 - 1,000 = 12,570, which does not exceed £12,570.
+    ni_class_4_profits: 12_570
+    ni_class_2: 0
+
+- name: NI Class 2 - 2023-24, capital allowances leave profits above the lower profits threshold.
+  period: 2023
+  input:
+    self_employment_income: 13_571
+    capital_allowances: 1_000
+  output:
+    ni_class_4_profits: 12_571
+    ni_class_2: 3.45 * 52
+
+- name: NI Class 2 - 2023-24, the trading allowance takes profits below the lower profits threshold.
+  period: 2023
+  input:
+    # No expenses, so the £1,000 allowance is deducted from receipts instead.
+    self_employment_gross_receipts: 13_000
+    self_employment_income: 13_000
+  output:
+    ni_class_4_profits: 12_000
+    ni_class_2: 0
+
+- name: NI Class 2 - 2023-24, a loss brought forward takes profits below the lower profits threshold.
+  period: 2023
+  input:
+    self_employment_income:
+      2022: 0
+      2023: 13_000
+    trading_loss:
+      2022: 1_000
+      2023: 0
+  output:
+    ni_class_4_losses_brought_forward: 1_000
+    ni_class_4_profits: 12_000
+    ni_class_2: 0
+
+- name: NI Class 2 - 2022-23, capital allowances take profits below the lower profits threshold.
+  period: 2022
+  input:
+    self_employment_income: 12_500
+    capital_allowances: 1_000
+  output:
+    # 11,500 does not exceed £11,908.
+    ni_class_4_profits: 11_500
+    ni_class_2: 0
+
+- name: NI Class 2 - 2021-22, capital allowances take profits below the small profits threshold.
+  period: 2021
+  input:
+    self_employment_income: 7_514
+    capital_allowances: 1_000
+  output:
+    ni_class_4_profits: 6_514
+    ni_class_2: 0
+
+- name: NI Class 2 - 2021-22, capital allowances leave profits at the small profits threshold.
+  period: 2021
+  input:
+    self_employment_income: 7_515
+    capital_allowances: 1_000
+  output:
+    ni_class_4_profits: 6_515
+    ni_class_2: 3.05 * 52
+
+- name: NI Class 2 - 2015-16, the year's own trading loss takes profits below the small profits threshold.
+  period: 2015
+  input:
+    self_employment_income: 6_464
+    trading_loss: 500
+  output:
+    ni_class_4_profits: 5_964
+    ni_class_2: 0
+
+# A full year is every contribution week in it. A contribution week starts at
+# midnight between Saturday and Sunday (SI 2001/1004 reg. 1(2)), and the year's
+# first week starts on the first Sunday after 5 April (HMRC NIM70200), so
+# 2019-20 has 53: Sundays from 7 April 2019 to 5 April 2020.
+- name: NI Class 2 - 2019-20, 53 contribution weeks.
+  period: 2019
+  input:
+    self_employment_income: 10_000
+  output:
+    # SI 2019/262 reg 3: £3.00 a week from £6,365.
+    ni_class_2: 3 * 53
+
+- name: NI Class 2 - 2020-21, 52 contribution weeks.
+  period: 2020
+  input:
+    self_employment_income: 10_000
+  output:
+    # Sundays from 12 April 2020 to 4 April 2021.
+    ni_class_2: 3.05 * 52

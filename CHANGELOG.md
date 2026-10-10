@@ -1,3 +1,11 @@
+## [2.125.1] - 2026-10-10
+
+### Fixed
+
+- - Fix Class 2 National Insurance for 2015-16 to 2023-24 against s.11 SSCBA 1992: charge £3.45 a week in 2023-24; from 2022-23 charge only profits above the Class 2 lower profits threshold (£11,908, then £12,570), with profits from the small profits threshold up to it treated as paid; keep the small profits threshold at £6,725 in 2023-24 and 2024-25 and correct it to £5,965 in 2015-16 and 2016-17; date the abolition 6 April 2024. Class 2 now tests its thresholds on the profits Class 4 is charged on (s.11(3)), after capital allowances, the trading allowance and loss relief, not on self-employment income. A full year of Class 2 is every contribution week in it, so 53 weeks in 2019-20. The Universal Credit minimum income floor's notional Class 2 follows the same rule, so it deducts no Class 2 in 2022-23 and 2023-24 on a threshold the lower profits threshold covers. Every value now cites its amending instrument.
+- - Fixed Class 4 NICs against s.15 SSCBA 1992: the 2023-24 lower profits limit is £12,570 (it was £11,908), the 2022-23 rates are 9.73% and 2.73% for the whole year (they were 10.25% and 3.5%), the 2023-24 additional rate is 2% (it was 3.5%), and the 2015-16 upper profits limit is £42,385. Every Class 4 limit and rate from 2015-16 to 2025-26 now cites its legal source.
+
+
 ## [2.125.0] - 2026-10-09
 
 ### Added

@@ -61,9 +61,10 @@ PROPERTY_SETTINGS = settings(
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
 )
-# 2020 has 12% Class 1 NI and the temporary UC uplift; 2026 current rates;
-# 2027 the Finance Act 2026 rates.
-YEARS = [2020, 2026, 2027]
+# 2019 has 53 Class 2 contribution weeks; 2020 has 12% Class 1 NI and the
+# temporary UC uplift; 2022 and 2023 have the Class 2 lower profits
+# threshold; 2026 current rates; 2027 the Finance Act 2026 rates.
+YEARS = [2019, 2020, 2022, 2023, 2026, 2027]
 TENURES = ["RENT_FROM_COUNCIL", "RENT_PRIVATELY", "OWNED_OUTRIGHT"]
 REGIONS = ["LONDON", "NORTH_EAST", "WALES", "SCOTLAND"]
 WORKING_AGE = st.integers(18, 64)
@@ -320,6 +321,28 @@ SPA_DURING_2026 = [
 ]
 
 
+# A lone parent of a child aged 3 has a 16-hour threshold, which in 2022-23
+# and 2023-24 lies between the Class 2 small profits threshold and the lower
+# profits threshold: Class 2 is treated as paid and costs nothing.
+LONE_PARENT_16_HOURS = [
+    dict(
+        adults=[
+            dict(
+                age=30,
+                self_employment_income=3_000.0,
+                employment_income=0.0,
+                pension_contributions=0.0,
+                uc_is_in_startup_period=False,
+            )
+        ],
+        children=[3],
+        tenure="RENT_PRIVATELY",
+        rent=7_200.0,
+        region="NORTH_EAST",
+    )
+]
+
+
 @PROPERTY_SETTINGS
 @given(
     units=populations,
@@ -328,6 +351,9 @@ SPA_DURING_2026 = [
 )
 @example(units=SPA_DURING_2026, year=2026, self_employed=True)
 @example(units=SPA_DURING_2026, year=2026, self_employed=False)
+@example(units=LONE_PARENT_16_HOURS, year=2022, self_employed=True)
+@example(units=LONE_PARENT_16_HOURS, year=2023, self_employed=True)
+@example(units=LONE_PARENT_16_HOURS, year=2019, self_employed=True)
 def test_notional_deductions_equal_tax_on_threshold_as_only_income(
     units, year, self_employed
 ):
