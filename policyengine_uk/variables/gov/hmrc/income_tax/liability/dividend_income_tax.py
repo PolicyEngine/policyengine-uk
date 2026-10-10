@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax import calc_income_tax_with_gift_aid
 
 
 class dividend_income_tax(Variable):
@@ -28,10 +29,11 @@ class dividend_income_tax(Variable):
             parameters(period).gov.hmrc.income_tax.allowances.dividend_allowance,
             dividends_after_allowances,
         )
-        tax_with_dividends = rates.dividends.calc(
-            other_income + dividends_after_allowances
+        gross_gift = person("gift_aid_grossed_up", period)
+        tax_with_dividends = calc_income_tax_with_gift_aid(
+            rates.dividends, other_income + dividends_after_allowances, gross_gift
         )
-        tax_with_dividend_allowance = rates.dividends.calc(
-            other_income + dividend_allowance
+        tax_with_dividend_allowance = calc_income_tax_with_gift_aid(
+            rates.dividends, other_income + dividend_allowance, gross_gift
         )
         return max_(0, tax_with_dividends - tax_with_dividend_allowance)

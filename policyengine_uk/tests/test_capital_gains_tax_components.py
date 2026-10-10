@@ -40,11 +40,13 @@ def legacy_capital_gains_tax(sim, year):
     basic_rate_band_extension = (
         get("gift_aid_grossed_up") + personal_pension_band_extension
     )
+    # Gift Aid is no longer in allowances; the pre-Gift-Aid income base
+    # reproduces the old income/allowance add-backs without double relief.
     allowances_for_cgt_income = max_(
         0,
-        get("allowances") - get("gift_aid") - personal_pension_band_extension,
+        get("allowances") - personal_pension_band_extension,
     )
-    taxable_income = max_(0, get("adjusted_net_income") - allowances_for_cgt_income)
+    taxable_income = max_(0, get("net_income") - allowances_for_cgt_income)
     gains = max_(0, get("capital_gains"))
     aea = cgt.annual_exempt_amount
     gains_less_aea = max_(0, gains - aea)

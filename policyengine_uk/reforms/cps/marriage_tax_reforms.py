@@ -153,9 +153,11 @@ def create_marriage_neutral_income_tax_reform(
                 COMPONENTS.append("basic_income")
             return max_(0, add(person, period, COMPONENTS))
 
-    class adjusted_net_income(Variable):
-        label = "Optimised adjusted net income"
-        documentation = "Adjusted net income, but split equally between partners if they are married"
+    class net_income(Variable):
+        label = "Optimised net income"
+        documentation = (
+            "Income before Gift Aid adjustments, split equally between married partners"
+        )
         entity = Person
         definition_period = YEAR
         value_type = float
@@ -171,9 +173,7 @@ def create_marriage_neutral_income_tax_reform(
             originally_split_income_branch = person.simulation.get_branch(
                 "originally_split_income", clone_system=True
             )
-            originally_split_income_branch.set_input(
-                "adjusted_net_income", period, income
-            )
+            originally_split_income_branch.set_input("net_income", period, income)
             originally_split_income_tax = person.benunit.sum(
                 originally_split_income_branch.calculate("income_tax", period)
             )
@@ -186,7 +186,7 @@ def create_marriage_neutral_income_tax_reform(
             split_income_branch = person.simulation.get_branch(
                 "split_income", clone_system=True
             )
-            split_income_branch.set_input("adjusted_net_income", period, split_income)
+            split_income_branch.set_input("net_income", period, split_income)
             split_income_tax = person.benunit.sum(
                 split_income_branch.calculate("income_tax", period)
             )
@@ -200,7 +200,7 @@ def create_marriage_neutral_income_tax_reform(
     class reform(Reform):
         def apply(self):
             self.add_variable(meets_ma_neutral_tax_conditions)
-            self.update_variable(adjusted_net_income)
+            self.update_variable(net_income)
             self.add_variable(unadjusted_net_income)
 
     return reform

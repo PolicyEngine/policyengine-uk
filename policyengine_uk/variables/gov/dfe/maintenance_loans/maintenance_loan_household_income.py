@@ -42,7 +42,7 @@ class maintenance_loan_household_income(Variable):
             else np.zeros_like(has_sponsor, dtype=bool)
         )
         benunit_income = person.benunit.sum(
-            person.benunit.members("adjusted_net_income", period)
+            person.benunit.members("net_income", period)
         )
         dependent_student_proxy = (
             in_higher_education
