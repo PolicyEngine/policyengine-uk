@@ -17,7 +17,7 @@ import tomllib
 from pathlib import Path
 
 import pytest
-from hypothesis import given
+from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -103,6 +103,9 @@ def test_a_missing_or_repeated_entry_is_an_error(copies):
         bump_version.set_lock_version(text, PACKAGE, "1.0.1")
 
 
+# Generating unique names with a filter can be slow on a loaded runner; that
+# says nothing about the rewrite, so don't fail on it.
+@settings(suppress_health_check=[HealthCheck.too_slow], deadline=None)
 @given(
     st.lists(st.tuples(other_names, versions), max_size=6, unique_by=lambda e: e[0]),
     st.integers(0, 6),
