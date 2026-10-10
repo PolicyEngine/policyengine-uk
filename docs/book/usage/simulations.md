@@ -442,7 +442,9 @@ print(f"Total with 10% higher weights: £{weighted_total / 1e9:.1f}bn")
 `subsample` cuts a simulation built from a dataset down to a weighted random sample of its households:
 
 ```python
-sim = Microsimulation(dataset="hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5")
+sim = Microsimulation(
+    dataset="hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
+)
 sim.subsample(n=10_000, seed=0, time_period=2026)
 ```
 
