@@ -84,7 +84,12 @@ def families(draw):
     children = [
         {"age": draw(st.integers(0, 15))} for _ in range(draw(st.integers(0, 2)))
     ]
-    benunit = {"would_claim_pc": draw(st.sampled_from([True, True, True, False]))}
+    benunit = {
+        "would_claim_pc": draw(st.sampled_from([True, True, True, False])),
+        # Whether a mixed-age couple keeps Pension Credit under the SI 2019/37
+        # art. 4 saving (no effect on any other family).
+        "has_mixed_age_couple_pension_credit_saving": draw(st.booleans()),
+    }
     household = {"savings": draw(st.sampled_from([0, 5_000, 12_000, 20_000]))}
     return members, children, benunit, household
 
@@ -186,14 +191,28 @@ YAML_FAMILIES = [
         },
         {"savings": 10_000},
     ),
-    # A mixed-age couple: no Pension Credit, no passport.
+    # A mixed-age couple without the SI 2019/37 saving: no Pension Credit, no
+    # passport.
     (
         [
             {**_PENSIONER, "state_pension": 6_000},
             {"age": 40},
         ],
         [],
-        {},
+        {"has_mixed_age_couple_pension_credit_saving": False},
+        {"savings": 10_000},
+    ),
+    # The same couple with the saving: Guarantee Credit, passported.
+    (
+        [
+            {**_PENSIONER, "state_pension": 6_000},
+            {"age": 40},
+        ],
+        [],
+        {
+            "has_mixed_age_couple_pension_credit_saving": True,
+            "pension_credit_earnings": 2_080,
+        },
         {"savings": 10_000},
     ),
 ]
@@ -359,11 +378,14 @@ def test_yaml_families_reach_every_case():
     passported = (on["tax_credits_applicable_income"] == 0) & (
         off["tax_credits_applicable_income"] > 0
     )
-    assert passported.tolist() == [True, False, True, False]
-    # The passport raises WTC (first) and CTC (third).
+    assert passported.tolist() == [True, False, True, False, True]
+    # The passport raises WTC (first and fifth) and CTC (third).
     assert on["working_tax_credit"][0] > off["working_tax_credit"][0]
     assert on["child_tax_credit"][2] > off["child_tax_credit"][2]
+    assert on["working_tax_credit"][4] > off["working_tax_credit"][4]
     # The third row: Pension Credit paid without the passport.
     assert on["pension_credit"][1] > 0 and not passported[1]
-    # The mixed-age couple gets no Pension Credit.
+    # The mixed-age couple gets Pension Credit, and so the passport, only
+    # under the saving.
     assert on["pension_credit"][3] == 0
+    assert on["pension_credit"][4] > 0

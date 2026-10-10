@@ -294,11 +294,12 @@
     meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
     targeted_childcare_entitlement_eligible: false
 
-- name: A mixed-age couple cannot get Pension Credit, so the income test applies
+- name: A mixed-age couple without the SI 2019/37 saving cannot get Pension Credit, so the income test applies
   # SPCA 2002 s.4(1A) (from 15 May 2019): no Pension Credit where the other
-  # member of the couple is under the qualifying age. The SI 2019/37 art. 4
-  # saving is not modelled here. A couple both over that age with this income
-  # would get Guarantee Credit with the passport.
+  # member of the couple is under the qualifying age. This couple reports
+  # neither Pension Credit nor Housing Benefit, so they have no SI 2019/37
+  # art. 4 saving; the next case has it. A couple both over that age with
+  # this income would get Guarantee Credit with the passport.
   # The older partner works 20 hours, which meets the WTC hours condition for
   # a joint claim with no child: "aged at least 60 and undertakes work for not
   # less than 16 hours per week" (WTC Regs 2002 reg 4(1), Second condition,
@@ -329,9 +330,54 @@
         members: [older, younger]
         savings: 10_000
   output:
+    has_mixed_age_couple_pension_credit_saving: false
     pension_credit: 0
     tax_credits_applicable_income: 8_600
     working_tax_credit: 4_670.55
+
+- name: A mixed-age couple who keep Pension Credit under the SI 2019/37 saving get the passport
+  # The couple of the previous case, but entitled to Pension Credit as that
+  # couple on 14 May 2019 and on every day since, so s.4(1A) does not apply
+  # to them (SI 2019/37 art. 4(1)-(2)). The older partner is entitled to
+  # Pension Credit, and TCA 2002 s.7(2) lifts the income test for the joint
+  # claim while "either of the persons" is entitled to it.
+  # Passported WTC: £2,435 + £2,500 = £4,935. Pension Credit income: earnings
+  # of 2,600 - 10 x 52 = £2,080 (SPC Regs 2002 Sch VI para 5(b), a claimant
+  # with a partner), plus £6,000 and £4,935, is £13,015, against a couple's
+  # guarantee of 332.95 x 52 = £17,313.40. So Guarantee Credit is £4,298.40
+  # and the passport holds. No savings credit: neither partner "attained
+  # pensionable age before 6 April 2016" (SPCA 2002 s.3(1)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        is_claimant_or_partner: true
+        state_pension: 6_000
+        savings_interest_income: 300
+        employment_income: 2_600
+        weekly_hours: 20
+        working_tax_credit_reported: 1
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        has_mixed_age_couple_pension_credit_saving: true
+        pension_credit_earnings: 2_080  # 2,600 - 10 x 52
+    households:
+      household:
+        members: [older, younger]
+        savings: 10_000
+  output:
+    tax_credits_current_year_income: 8_600
+    tax_credits_applicable_income: 0
+    working_tax_credit: 4_935
+    savings_credit: 0
+    pension_credit: 4_298.40
 
 - name: With no tax credit awards in payment, Pension Credit still lifts the income test
   # Tax credits ended on 5 April 2025, so no award is paid in 2025-26 and
