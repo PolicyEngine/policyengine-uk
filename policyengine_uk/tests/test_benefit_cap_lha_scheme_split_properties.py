@@ -33,7 +33,14 @@ Invariants, each over generated families and the explicit examples:
    exceptions of both schemes here), the old category is the new category
    of the scheme the family claims under (legacy: Housing Benefit,
    otherwise Universal Credit), and with no reg. 3(3) single claim the two
-   new categories are equal.
+   new categories are equal. Housing Benefit's comparisons need the two
+   schemes' size criteria to give the same number of bedrooms. The old
+   category read the Universal Credit count (``LHA_allowed_bedrooms``);
+   #2006 gave Housing Benefit its own (HB Regs 2006 reg. 13D(3),
+   ``housing_benefit_LHA_allowed_bedrooms``), which counts a young person
+   in the family whom the Universal Credit count leaves out, such as one
+   who is not a qualifying young person for Universal Credit. This change
+   leaves both counts as main has them.
 4. Reductions. 0 <= each scheme's reduction <= the excess of the welfare
    benefits over that scheme's cap; the UC reduction is the excess less
    the childcare costs element (reg. 81); Housing Benefit after the cap
@@ -613,6 +620,8 @@ BENUNIT_VARIABLES = [
     "reference_universal_credit",
     "reference_housing_benefit",
     "benunit_rent",
+    "LHA_allowed_bedrooms",
+    "housing_benefit_LHA_allowed_bedrooms",
     "LHA_cap",
     "housing_benefit_LHA_rate",
     "BRMA_LHA_rate",
@@ -719,14 +728,18 @@ def test_lha_category_is_the_claimed_schemes_old_category(population):
     )
     legacy = v["claims_legacy_benefits"].astype(bool)
     no_afip = ~v["afip"]
+    # Each scheme's size criteria (see invariant 3).
+    same_bedrooms = (
+        v["LHA_allowed_bedrooms"] == v["housing_benefit_LHA_allowed_bedrooms"]
+    )
     claimed = np.where(legacy, hb, uc)
+    compared = no_afip & (~legacy | same_bedrooms)
     np.testing.assert_array_equal(
-        ref[no_afip], claimed[no_afip], err_msg=str(population)
+        ref[compared], claimed[compared], err_msg=str(population)
     )
     no_single_claim = ~v["uc_member_of_couple_claims_as_single_person"].astype(bool)
-    np.testing.assert_array_equal(
-        uc[no_single_claim], hb[no_single_claim], err_msg=str(population)
-    )
+    compared = no_single_claim & same_bedrooms
+    np.testing.assert_array_equal(uc[compared], hb[compared], err_msg=str(population))
 
 
 @PROPERTY_SETTINGS
@@ -846,6 +859,13 @@ def test_examples_reach_the_cases():
     assert v["is_uc_benefit_cap_single_claimant_rate"][lone_parent]
     assert not v["is_housing_benefit_benefit_cap_single_claimant_rate"][lone_parent]
     assert not v["reference_is_benefit_cap_single_claimant_rate"][lone_parent]
+    # HB's size criteria give the young person a bedroom (reg. 13D(3)(b)),
+    # so the LHA comparisons leave this family out (invariant 3).
+    assert v["housing_benefit_LHA_category"][lone_parent] == "C"
+    assert (
+        v["LHA_allowed_bedrooms"][lone_parent]
+        != v["housing_benefit_LHA_allowed_bedrooms"][lone_parent]
+    )
     # AFIP: excepted from both shared rates, and lifts both caps, which the
     # old lists did not do.
     assert v["LHA_category"][afip] == v["housing_benefit_LHA_category"][afip] == "B"
