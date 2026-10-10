@@ -20,6 +20,11 @@ the child's parent, or the person themselves:
   71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a) (the
   student is on the award) and (c) (the student's applicable amount would
   include a disability or severe disability premium).
+- Which Housing Benefit regulations apply to a pensioner: HB Regs 2006 reg
+  5(1)(b); SI 2006/214 reg 5(2). The mixed-age couple Pension Credit saving:
+  SI 2019/37 arts 2(3) and 4, through SI 2006/214 reg 5.
+- The extended childcare parent and partner conditions: SI 2022/1134 regs
+  11A(1)(e), 14(4)(b) and 15(4).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -70,6 +75,8 @@ FAMILY_READERS = [
     "targeted_childcare_entitlement_eligible",
     "would_claim_IS",
     "income_support_eligible",
+    "housing_benefit_pension_age_regulations_apply",
+    "has_mixed_age_couple_pension_credit_saving",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -77,6 +84,7 @@ MEMBER_READERS = [
     "is_on_income_related_esa",
     "is_on_income_based_jsa",
     "is_on_income_support",
+    "extended_childcare_entitlement_limited_capability_or_specified_benefit",
 ]
 AWARDS = st.sampled_from([0, 0, 200, 3_000])
 
@@ -235,6 +243,207 @@ def test_other_members_awards_never_change_the_readers(drawn):
                 values[starts[i] : starts[i] + n],
                 values[starts[k + i] : starts[k + i] + n],
             ), (variable, drawn[i])
+
+
+# --- Further family shapes (begin) ---
+# Some readers only bite for a claimant over state pension age (the Housing
+# Benefit regulations that apply, the mixed-age couple saving), for a single
+# applicant under 25, or for parents of a young child of whom only one works
+# (the extended childcare partner condition). The families above rarely take
+# those shapes, so three more properties check every family and member reader
+# on them. The claimant and partner seldom report an award themselves, and on
+# the savings drawn below the £16,000 capital limit the added member's award
+# survives tariff income, so a reader that wrongly counts it changes (£20,000
+# of savings screens income-related ESA and income-based JSA to nil). The
+# invariant is about the readers' own scoping: the shapes pay no rent, so
+# Universal Credit stays far below the benefit cap. The cap still counts every
+# member's award (benefit_cap_reduction reads the benefit-unit totals), so
+# with a binding cap another member's award can reach a reader through
+# Universal Credit.
+PENSION_AGE = 68
+# Whether the pension-age property enters is_mixed_age_couple, so that a
+# reader of the couple's award reports is tested on those reports alone.
+ENTER_IS_MIXED_AGE_COUPLE = True
+AWARD_REPORTS = [
+    "esa_income_reported",
+    "jsa_income_reported",
+    "income_support_reported",
+]
+
+
+@st.composite
+def couple_award_reports(draw):
+    """Usually no award; otherwise £3,000 of one of them."""
+    reports = dict.fromkeys(AWARD_REPORTS, 0)
+    award = draw(st.sampled_from([None] * 4 + AWARD_REPORTS))
+    if award is not None:
+        reports[award] = 3_000
+    return reports
+
+
+@st.composite
+def other_members_with_awards(draw):
+    """As other_members, with at least one award of £3,000 or more."""
+    awards = {
+        "esa_income_reported": draw(st.sampled_from([0, 3_000, 5_000])),
+        "jsa_income_reported": draw(st.sampled_from([0, 3_000, 5_000])),
+        "income_support_reported": draw(st.sampled_from([0, 3_000, 5_000])),
+    }
+    if not any(awards.values()):
+        awards[draw(st.sampled_from(sorted(awards)))] = 5_000
+    return {
+        "age": draw(st.integers(16, 60)),
+        "current_education": "NOT_IN_EDUCATION",
+        **awards,
+    }
+
+
+@st.composite
+def pension_age_families(draw):
+    """A claimant over state pension age, usually with a partner of working or
+    pension age (so many couples are mixed-age), and no dependants. Ages are
+    listed rather than ranged so that both sides of the 14 May 2019 cut-off
+    for the mixed-age couple saving (born by 1954) are drawn."""
+    ages = [
+        draw(st.sampled_from([PENSION_AGE, 72, 76, 81])),
+        draw(st.sampled_from([45, 58, 63, 70, 79])),
+    ]
+    adults = []
+    for age in ages[: 1 + draw(st.sampled_from([0, 1, 1]))]:
+        adults.append(
+            {
+                "age": age,
+                "employment_income": draw(st.sampled_from([0, 3_000, 12_000])),
+                "housing_benefit_reported": draw(st.sampled_from([0, 3_000, 3_000])),
+                **draw(couple_award_reports()),
+            }
+        )
+    household = {
+        "country": draw(st.sampled_from(["ENGLAND", "SCOTLAND", "WALES"])),
+        "savings": draw(st.sampled_from([0, 7_000, 20_000])),
+    }
+    return adults, [], household
+
+
+@st.composite
+def young_single_families(draw):
+    """A single applicant aged 18 to 24 in Scotland or Wales, no dependants."""
+    adults = [
+        {
+            "age": draw(st.integers(18, 24)),
+            "employment_income": draw(st.sampled_from([0, 3_000, 12_000])),
+            "current_education": "NOT_IN_EDUCATION",
+            **draw(couple_award_reports()),
+        }
+    ]
+    household = {
+        "country": draw(st.sampled_from(["SCOTLAND", "WALES"])),
+        "savings": draw(st.sampled_from([0, 7_000])),
+    }
+    return adults, [], household
+
+
+@st.composite
+def working_parent_families(draw):
+    """Parents of a child aged one to four in England. One parent is in
+    qualifying paid work within the income limits and the other is not, so
+    the other meets the extended childcare partner condition only through
+    limited capability for work or a specified benefit (SI 2022/1134 regs
+    14(4) and 15(4))."""
+    working = {
+        "age": draw(st.integers(25, 45)),
+        "is_parent": True,
+        "in_work": True,
+        "employment_income": draw(st.sampled_from([20_000, 30_000])),
+        "extended_childcare_entitlement_meets_income_requirements": True,
+        **draw(couple_award_reports()),
+    }
+    not_working = {
+        "age": draw(st.integers(25, 45)),
+        "is_parent": True,
+        "in_work": False,
+        "extended_childcare_entitlement_meets_income_requirements": False,
+        **draw(couple_award_reports()),
+    }
+    household = {
+        "country": "ENGLAND",
+        "savings": draw(st.sampled_from([0, 7_000, 20_000])),
+    }
+    return [working, not_working], [{"age": draw(st.integers(1, 4))}], household
+
+
+def _family_readers_never_change(drawn, enter_is_mixed_age_couple=False):
+    without = [(*family, None) for family, _ in drawn]
+    with_other = [(*family, other) for family, other in drawn]
+    units = without + with_other
+    inputs = situation(units)
+    if enter_is_mixed_age_couple:
+        for i, (adults, _, _, _) in enumerate(units):
+            pension_age = [a["age"] >= PENSION_AGE for a in adults]
+            inputs["benunits"][f"b{i}"]["is_mixed_age_couple"] = {
+                YEAR: len(adults) == 2 and sum(pension_age) == 1
+            }
+    sim = Simulation(situation=inputs)
+    flags = sim.calculate("is_claimant_or_partner", YEAR)
+    sizes = [len(a) + len(d) + (o is not None) for a, d, _, o in units]
+    starts = np.cumsum([0] + sizes[:-1])
+    k = len(drawn)
+    for i in range(k):
+        assert not flags[starts[k + i] + sizes[k + i] - 1], drawn[i]
+    for variable in FAMILY_READERS:
+        values = sim.calculate(variable, YEAR)
+        for i in range(k):
+            assert np.isclose(values[i], values[k + i], atol=0.01), (
+                variable,
+                drawn[i],
+            )
+    for variable in MEMBER_READERS:
+        values = sim.calculate(variable, YEAR)
+        for i in range(k):
+            n = sizes[i]
+            assert np.array_equal(
+                values[starts[i] : starts[i] + n],
+                values[starts[k + i] : starts[k + i] + n],
+            ), (variable, drawn[i])
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(pension_age_families(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_readers_at_pension_age(drawn):
+    _family_readers_never_change(drawn, ENTER_IS_MIXED_AGE_COUPLE)
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(young_single_families(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_readers_for_young_singles(drawn):
+    _family_readers_never_change(drawn)
+
+
+@SETTINGS
+@given(
+    st.lists(
+        st.tuples(working_parent_families(), other_members_with_awards()),
+        min_size=1,
+        max_size=6,
+    )
+)
+def test_other_members_awards_never_change_the_readers_for_working_parents(drawn):
+    _family_readers_never_change(drawn)
+
+
+# --- Further family shapes (end) ---
 
 
 @SETTINGS
