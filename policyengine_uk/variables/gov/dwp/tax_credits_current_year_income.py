@@ -34,7 +34,7 @@ class tax_credits_current_year_income(Variable):
             "private_pension_income",
             "savings_interest_income",
             "dividend_income",
-            "property_income",
+            "property_income_after_finance_costs",
         ]
         income = add_for_members(benunit, period, STEP_1_COMPONENTS, members)
         income = max_(income - TC.means_test.non_earned_disregard, 0)

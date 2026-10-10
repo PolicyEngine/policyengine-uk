@@ -1,0 +1,218 @@
+# HB(SPC) Regs 2006 Sch 3 para 6, with the non-dependant definition in
+# reg 3: these cases assert final awards without a Guarantee Credit passport.
+# The final HB and CTR awards include the model's current income rules,
+# including a known defect outside this file: no non-dependant deduction
+# exemption for a claimant on Attendance Allowance (#2007). The premium and
+# applicable-amount assertions do not depend on it. Each HB award is the
+# rent less 65% of income after tax, plus the savings credit where the award
+# is savings credit only (HB (SPC) Regs 2006 reg 27(4)(a)), above the
+# applicable amount; State Pension gets no earnings disregard (#1908).
+
+- name: One qualifying pensioner and a non-blind partner get no HB or CTR severe premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        state_pension: 13_000
+        aa_category: HIGHER
+      partner:
+        age: 78
+        state_pension: 13_000
+    benunits:
+      pensioners:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 2_000
+  output:
+    guarantee_credit: 0
+    severe_disability_minimum_guarantee_addition: 0
+    pension_age_severe_disability_premium: 0
+    housing_benefit: 2_409.03
+    council_tax_benefit: 821.24
+
+- name: Both qualifying pensioners keep two rates in their final HB and CTR awards
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        state_pension: 15_000
+        aa_category: HIGHER
+      partner:
+        age: 78
+        state_pension: 15_000
+        aa_category: LOWER
+    benunits:
+      pensioners:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 2_000
+  output:
+    guarantee_credit: 0
+    pension_age_severe_disability_premium: 172.10 * 52
+    # Savings credit only (569.28): HB income is Pension Credit income plus
+    # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 569.28 =
+    # 370.03 below the figure without it.
+    housing_benefit: 5_775.98
+    council_tax_benefit: 1_857.22
+
+- name: A qualifying pensioner with a blind non-qualifying partner gets one HB and CTR rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        state_pension: 13_000
+        aa_category: HIGHER
+      partner:
+        age: 78
+        state_pension: 13_000
+        is_blind: true
+    benunits:
+      pensioners:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 2_000
+  output:
+    guarantee_credit: 0
+    pension_age_severe_disability_premium: 86.05 * 52
+    # Savings credit only (59.44): HB income is Pension Credit income plus
+    # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 59.44 =
+    # 38.64 below the figure without it.
+    housing_benefit: 5_278.88
+    council_tax_benefit: 1_704.27
+
+- name: A non-ignored adult resident blocks the pensioner's HB and CTR severe premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        state_pension: 6_000
+        private_pension_income: 12_000
+        aa_category: HIGHER
+      resident:
+        age: 40
+    benunits:
+      pensioner:
+        members: [claimant]
+      other_family:
+        members: [resident]
+    households:
+      household:
+        members: [claimant, resident]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 2_000
+  output:
+    guarantee_credit: [0, 0]
+    has_non_dependant_for_severe_disability_premium: [true, false]
+    pension_age_severe_disability_premium: [0, 0]
+    housing_benefit: [3_898.70, 0]
+    council_tax_benefit: [1_279.60, 0]
+
+- name: An 18-year-old of another family blocks HB and CTR although Pension Credit ignores him
+  # The daughter is ignored under para 6(6)(a); her son is not part of
+  # the claimant's family under reg 3(2)(a). SPC Sch I para 2(2)(f) differs.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        state_pension: 6_000
+        private_pension_income: 12_000
+        aa_category: HIGHER
+      daughter:
+        age: 50
+        pip_dl_category: STANDARD
+      grandson:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      pensioner:
+        members: [claimant]
+      other_family:
+        members: [daughter, grandson]
+    households:
+      household:
+        members: [claimant, daughter, grandson]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 2_000
+  output:
+    guarantee_credit: [0, 0]
+    # 86.05 * 52 for each family; expected vectors use numeric literals.
+    severe_disability_minimum_guarantee_addition: [4_474.60, 4_474.60]
+    has_non_dependant_for_severe_disability_premium: [true, false]
+    pension_age_severe_disability_premium: [0, 0]
+    housing_benefit_applicable_amount: [13_312, 0]
+    # Savings credit only (908.46): HB income is Pension Credit income plus
+    # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 908.46 =
+    # 590.50 below the figure without it.
+    housing_benefit: [3_308.20, 0]
+    council_tax_benefit: [1_097.91, 0]
+
+- name: A qualifying-benefit resident in another benefit unit can still be the pensioner's paid carer
+  # The carer's disability benefit exempts her from the residence test;
+  # withholding is therefore due to attribution, rather than residence.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 80
+        state_pension: 6_000
+        private_pension_income: 12_000
+        aa_category: HIGHER
+      carer:
+        age: 50
+        pip_dl_category: STANDARD
+        care_hours: 40
+        carers_allowance_reported: 4_000
+    benunits:
+      pensioner:
+        members: [claimant]
+        # HB(SPC) reg 55(6) and England CTR Sch 1 para 8(6): AA exempts
+        # the claimant from deductions. Supply these independently of the
+        # current generic deduction formulas to isolate the premium rule.
+        housing_benefit_non_dep_deductions: 0
+        council_tax_reduction_non_dep_deductions: 0
+      other_family:
+        members: [carer]
+    households:
+      household:
+        members: [claimant, carer]
+        country: ENGLAND
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 6_240
+        council_tax: 2_000
+  output:
+    guarantee_credit: [0, 0]
+    has_non_dependant_for_severe_disability_premium: [false, false]
+    is_cared_for_by_carer_benefit_recipient: [true, false]
+    pension_age_severe_disability_premium: [0, 0]
+    housing_benefit: [3_898.70, 0]
+    council_tax_benefit: [1_279.60, 0]

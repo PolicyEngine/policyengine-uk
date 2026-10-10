@@ -8,13 +8,18 @@ the child's parent, or the person themselves:
 - Housing Benefit and council tax reduction income: SSCBA 1992 s.136(1), HB
   Regs 2006 reg 25(1); CTR (Prescribed Requirements) (England) Regs 2012
   Sch 1 para 11.
+- The Housing Benefit passport, which disregards the earnings, income and
+  capital of a claimant on Income Support, income-based JSA or income-related
+  ESA: HB Regs 2006 Sch 4 para 12, Sch 5 para 4 and Sch 6 para 5.
 - The working-age council tax reduction passport and non-dependant
   exemption: CTR (Default Scheme) (England) Regs 2012, Schedule.
 - The tax credit income test: TCA 2002 s.7(2), SI 2002/2008 reg 4.
 - Scottish Child Payment: SSI 2020/351 reg 18(e)-(f).
 - Targeted childcare: SI 2014/2147 reg 1(2).
 - Maintenance loans for students entitled to benefits: SI 2011/1986 reg
-  71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a).
+  71(1)(h)(iii), through reg 61(2)(b) and HB Regs 2006 reg 56(2)(a) (the
+  student is on the award) and (c) (the student's applicable amount would
+  include a disability or severe disability premium).
 
 A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
@@ -55,6 +60,10 @@ FAMILY_READERS = [
     "claimant_or_partner_esa_income",
     "claimant_or_partner_jsa_income",
     "housing_benefit_applicable_income",
+    "in_receipt_of_income_support_jsa_ib_or_esa_ir",
+    "housing_benefit_on_passporting_benefit",
+    "housing_benefit_applicable_income_disregard",
+    "housing_benefit_assessable_capital",
     "council_tax_reduction_applicable_income",
     "council_tax_reduction_relevant_income_based_benefit",
     "tax_credits_applicable_income",
@@ -497,17 +506,16 @@ OTHER = {
 }
 
 
-def test_claimant_and_partner_awards_count_in_full_as_their_income():
-    """HB Regs 2006 reg 25(1): the partner's income is the claimant's.
+def test_claimant_and_partner_awards_count_in_full_as_their_ctr_income():
+    """CTR (Prescribed Requirements) (England) Regs 2012 Sch 1 para 11: the
+    partner's income is the applicant's.
 
-    The claimant earns £10,000, below the tax and NI thresholds and above any
-    disregard, so each award adds exactly its amount.
+    The claimant earns £10,000, below the tax and NI thresholds, so each
+    award adds exactly its amount.
     """
-    hb = "housing_benefit_applicable_income"
     ctr = "council_tax_reduction_applicable_income"
     no_uc = {"universal_credit": 0}
     claimant_esa = {"claimant": {**CLAIMANT, "esa_income_reported": 5_000}}
-    assert np.isclose(_difference(hb, {"claimant": CLAIMANT}, claimant_esa), 5_000)
     assert np.isclose(
         _difference(ctr, {"claimant": CLAIMANT}, claimant_esa, no_uc), 5_000
     )
@@ -517,7 +525,6 @@ def test_claimant_and_partner_awards_count_in_full_as_their_income():
         "claimant": CLAIMANT,
         "partner": {**partner, "jsa_income_reported": 3_000},
     }
-    assert np.isclose(_difference(hb, couple, couple_jsa), 3_000)
     assert np.isclose(_difference(ctr, couple, couple_jsa, no_uc), 3_000)
     # Another member's award adds nothing.
     other_esa = {
@@ -525,8 +532,53 @@ def test_claimant_and_partner_awards_count_in_full_as_their_income():
         "other": {**OTHER, "esa_income_reported": 5_000},
     }
     with_other = {"claimant": CLAIMANT, "other": OTHER}
-    assert np.isclose(_difference(hb, with_other, other_esa), 0)
     assert np.isclose(_difference(ctr, with_other, other_esa, no_uc), 0)
+
+
+def _value(variable, people):
+    # Not claiming Universal Credit, so the Universal Credit limb of the
+    # Housing Benefit passport cannot apply: only the legacy awards can.
+    names = list(people)
+    situation = {
+        "people": {
+            n: {k: {YEAR: v} for k, v in inputs.items()} for n, inputs in people.items()
+        },
+        "benunits": {"b": {"members": names, "would_claim_uc": {YEAR: False}}},
+        "households": {"h": {"members": names}},
+    }
+    return Simulation(situation=situation).calculate(variable, YEAR)[0]
+
+
+def test_claimant_and_partner_awards_passport_housing_benefit_income():
+    """HB Regs 2006 Sch 5 para 4: the whole income of a claimant on
+    income-related ESA or income-based JSA is disregarded. The partner's
+    award is the couple's (reg 25(1)), so it passports them too, and another
+    member's award passports nobody.
+
+    The claimant earns £10,000, below the tax and NI thresholds. Without an
+    award their income is assessed, less the £5 a week single or £10 a week
+    couple disregard (Sch 4 paras 10 and 7): 10,000 - 260 = 9,740 and
+    10,000 - 520 = 9,480.
+    """
+    hb = "housing_benefit_applicable_income"
+    assert np.isclose(_value(hb, {"claimant": CLAIMANT}), 9_740)
+    claimant_esa = {"claimant": {**CLAIMANT, "esa_income_reported": 5_000}}
+    assert np.isclose(_value(hb, claimant_esa), 0)
+    partner = {"age": 38, "is_claimant_or_partner": True}
+    assert np.isclose(_value(hb, {"claimant": CLAIMANT, "partner": partner}), 9_480)
+    couple_jsa = {
+        "claimant": CLAIMANT,
+        "partner": {**partner, "jsa_income_reported": 3_000},
+    }
+    assert np.isclose(_value(hb, couple_jsa), 0)
+    # Another member's award: the claimant's income is assessed as before.
+    with_other = {"claimant": CLAIMANT, "other": OTHER}
+    other_esa = {
+        "claimant": CLAIMANT,
+        "other": {**OTHER, "esa_income_reported": 5_000},
+    }
+    assert np.isclose(_value(hb, with_other), 9_740)
+    assert np.isclose(_value(hb, other_esa), 9_740)
 
 
 def _claimant_and_other(other_report):

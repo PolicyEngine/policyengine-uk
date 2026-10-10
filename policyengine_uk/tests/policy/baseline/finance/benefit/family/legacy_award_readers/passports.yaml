@@ -474,7 +474,7 @@
     is_on_income_related_esa: [false, true]
     maintenance_loan_entitled_to_benefits: [true, true]
 
-- name: A parent's disability premium does not put a dependent student on the benefits schedule
+- name: A parent's disability premium does not put a student who is not the claimant or partner on the benefits schedule
   period: 2025
   input:
     people:

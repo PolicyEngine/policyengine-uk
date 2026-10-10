@@ -17,18 +17,20 @@
 - name: Property income partially taxable
   period: 2024
   input:
+    property_rental_income: 10000
     property_income: 10000
     gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:
     taxable_property_income: 9000
 
-- name: High property income with standard allowance
+- name: High property income with standard allowance, receipts unknown
   period: 2024
   input:
     property_income: 50000
     gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:
-    taxable_property_income: 49000
+    # The profit is already net of expenses, so the allowance does not stack.
+    taxable_property_income: 50000
 
 - name: Property income with no allowance
   period: 2024
@@ -57,6 +59,7 @@
 - name: High values for both income and allowance
   period: 2024
   input:
+    property_rental_income: 100000
     property_income: 100000
     gov.hmrc.income_tax.allowances.property_allowance: 50000
   output:
@@ -65,6 +68,7 @@
 - name: Decimal values
   period: 2024
   input:
+    property_rental_income: 1234.56
     property_income: 1234.56
     gov.hmrc.income_tax.allowances.property_allowance: 1000.00
   output:
