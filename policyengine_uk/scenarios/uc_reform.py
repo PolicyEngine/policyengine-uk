@@ -71,7 +71,9 @@ def add_universal_credit_reform(sim: Microsimulation):
         if not rebalancing.active(year):
             continue
         is_post_2025_claimant = uc_seed < post_2025_claimant_share[year]
-        current_health_element = sim.calculate("uc_LCWRA_element", year)
+        # Copy: calculate returns the simulation's cached array, and the writes
+        # below must reach the cache only through set_input.
+        current_health_element = np.array(sim.calculate("uc_LCWRA_element", year))
         claimant_type = sim.calculate("uc_standard_allowance_claimant_type", year)
         has_health_element = current_health_element > 0
         protected_health_element = np.full(

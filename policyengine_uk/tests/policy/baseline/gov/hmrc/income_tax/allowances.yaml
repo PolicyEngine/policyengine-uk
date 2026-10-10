@@ -48,14 +48,23 @@
   output:
     trading_allowance_deduction: 500
     taxable_self_employment_income: 0
-- name: Trading allowance partial deduction
+- name: Trading allowance partial deduction with no expenses
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    self_employment_income: 5000
+    self_employment_gross_receipts: 5000
+  output:
+    trading_allowance_deduction: 1000
+    taxable_self_employment_income: 4000
+- name: Trading allowance does not stack on a profit already net of expenses
   period: 2020
   absolute_error_margin: 0
   input:
     self_employment_income: 5000
   output:
-    trading_allowance_deduction: 1000
-    taxable_self_employment_income: 4000
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 5000
 - name: Property allowance full deduction
   period: 2020
   absolute_error_margin: 0
@@ -64,10 +73,19 @@
   output:
     property_allowance_deduction: 100
     taxable_property_income: 0
-- name: Property allowance partial deduction
+- name: Property allowance does not stack on a profit already net of expenses
   period: 2020
   absolute_error_margin: 0
   input:
+    property_income: 1001
+  output:
+    property_allowance_deduction: 0
+    taxable_property_income: 1001
+- name: Property allowance partial deduction with receipts and no expenses
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    property_rental_income: 1001
     property_income: 1001
   output:
     property_allowance_deduction: 1000

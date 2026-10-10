@@ -1,6 +1,7 @@
 description: Whether the triple lock should include inflation.
 values:
-  2012-01-01: true
+  2011-01-01: true
 metadata:
+  documentation: Changes take effect through Scenario(parameter_changes=...), which rebuilds the uprating rates; a reform dictionary changes this parameter but not the rates.
   unit: bool
   label: Include inflation in triple lock

@@ -2,6 +2,10 @@
 
 import numpy as np
 
+# The tolerance for reading a stored award: values within half a penny of
+# each other are the same, and an award within half a penny of zero is none.
+HALF_PENNY = 0.005
+
 
 def add_for_members(benunit, period, variables, members):
     """Sum variables over the benefit-unit members a means test counts.
@@ -45,11 +49,15 @@ def claimant_or_partner_award(benunit, period, award, reported, award_on_reports
     - anything else (an award entered directly, or a reform that replaces or
       scales it) is taken to be wholly the claimant's or partner's.
 
-    A stored award of zero or less gives zero. The claimant_or_partner_*
-    variables use this as their formula, and every reader of the claimant's
-    or partner's award, the Income Support gate included, reads those
-    variables. So an award set on them directly (as disable_simulated_benefits
-    does for each year) is read the same way everywhere.
+    An award within half a penny of zero is no award, whether stored or
+    worked out here: a stored zero gives zero, and so does the float residual
+    of about £0.000002 left by reports that exactly match the tariff income.
+
+    The claimant_or_partner_* variables use this as their formula, and every
+    reader of the claimant's or partner's award, the Income Support gate
+    included, reads those variables. So an award set on them directly (as
+    disable_simulated_benefits does for each year) is read the same way
+    everywhere.
     """
     person = benunit.members
     stored = benunit(award, period)
@@ -65,14 +73,14 @@ def claimant_or_partner_award(benunit, period, award, reported, award_on_reports
         stored,
         award_on_reports(benunit, period, reported_total).astype(precision),
         rtol=0,
-        atol=0.005,
+        atol=HALF_PENNY,
     )
     as_reported_total = np.isclose(
-        stored, reported_total.astype(precision), rtol=0, atol=0.005
+        stored, reported_total.astype(precision), rtol=0, atol=HALF_PENNY
     )
     scoped = np.where(
         as_formula,
         award_on_reports(benunit, period, claimant_or_partner_reported),
         np.where(as_reported_total, claimant_or_partner_reported, stored),
     )
-    return np.where(stored > 0, scoped, 0)
+    return np.where((stored > HALF_PENNY) & (scoped > HALF_PENNY), scoped, 0)

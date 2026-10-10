@@ -19,7 +19,11 @@ class is_on_income_support(Variable):
         "neither does, and only while it is positive. Any other member of the "
         "benefit unit, such as a non-dependent adult, claims in their own "
         "right and is on it only if they report an award themselves while "
-        "Income Support is in payment and no reform removes it."
+        "Income Support is in payment (gov.dwp.income_support.active) and not "
+        "neutralised. A reform that removes Income Support must do one of "
+        "those for the status to follow: replacing its formula with zero "
+        "leaves another member's own report standing, because the model "
+        "calculates the award only for the claimant and partner."
     )
     definition_period = YEAR
     reference = (

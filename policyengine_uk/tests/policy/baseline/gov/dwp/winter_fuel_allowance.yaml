@@ -8,6 +8,51 @@
   output:
     winter_fuel_allowance: 200
 
+# Controlled age-status inputs distinguish the statutory predicates when a
+# reform separates the timetables. SI 2000/729 reg 2(1)(b) tests qualifying
+# age; from September 2024 SI 2024/869 reg 2(1)(a) tests pensionable age.
+- name: Before 2024 Winter Fuel Payment follows qualifying age before pensionable age
+  period: 2023
+  input:
+    age: 70
+    country: ENGLAND
+    has_attained_state_pension_credit_qualifying_age: true
+    is_SP_age: false
+  output:
+    winter_fuel_allowance: 200
+
+- name: Before 2024 pensionable-age status alone does not satisfy the Winter Fuel qualifying-age test
+  period: 2023
+  input:
+    age: 70
+    country: ENGLAND
+    has_attained_state_pension_credit_qualifying_age: false
+    is_SP_age: true
+  output:
+    winter_fuel_allowance: 0
+
+- name: From 2024 qualifying-age status alone does not satisfy the Winter Fuel pensionable-age test
+  period: 2024
+  input:
+    age: 70
+    country: ENGLAND
+    pension_credit: 100
+    has_attained_state_pension_credit_qualifying_age: true
+    is_SP_age: false
+  output:
+    winter_fuel_allowance: 0
+
+- name: From 2024 Winter Fuel Payment follows pensionable age independently of qualifying-age status
+  period: 2024
+  input:
+    age: 70
+    country: ENGLAND
+    pension_credit: 100
+    has_attained_state_pension_credit_qualifying_age: false
+    is_SP_age: true
+  output:
+    winter_fuel_allowance: 200
+
 - name: Single pensioner aged 80+ gets higher rate WFA
   period: 2023
   absolute_error_margin: 1

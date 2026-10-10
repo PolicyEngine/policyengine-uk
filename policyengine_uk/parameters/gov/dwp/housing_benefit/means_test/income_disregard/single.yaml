@@ -1,11 +1,16 @@
-description: This amount of earnings is disreagrded for single filers under the Housing Benefit.
+description: Housing Benefit disregards this much of the weekly net earnings of a claimant who has no partner and is not a lone parent.
 values:
-  2015-04-01: 5
+  2006-03-06: 5
 metadata:
   period: week
   unit: currency-GBP
   label: Housing benefit single person earnings disregard
-  uprating: gov.benefit_uprating_cpi
-  reference: 
-    - title: The Housing Benefit Regulations 2006 Schedule 4 sec. 9
-      href: https://www.legislation.gov.uk/uksi/2006/213/data.pdf#page=242
+  reference:
+    - title: The Housing Benefit Regulations 2006, Schedule 4 paragraph 10
+      href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/10
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations 2006, Schedule 4 paragraph 7(a)
+      href: https://www.legislation.gov.uk/uksi/2006/214/schedule/4/paragraph/7
+    - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 5 paragraph 10
+      href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/10
+    - title: The Housing Benefit (Persons who have attained the qualifying age for state pension credit) Regulations (Northern Ireland) 2006, Schedule 5 paragraph 7(a)
+      href: https://www.legislation.gov.uk/nisr/2006/406/schedule/5/paragraph/7

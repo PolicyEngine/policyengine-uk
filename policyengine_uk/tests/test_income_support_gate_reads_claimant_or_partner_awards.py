@@ -6,7 +6,8 @@ value rule that claimant_or_partner_esa_income and
 claimant_or_partner_jsa_income also apply. They now read those variables, so
 every reader shares one award, including one entered directly or set by the
 disable_simulated_benefits reform. This file checks the switch against the
-code it replaced (policyengine-uk #2025 at 081ec1460, comments removed).
+code it replaced (policyengine-uk main at e89b8abcf, with #2013, #2025
+and #2027 merged; comments removed).
 
 The two agree in formula mode, for awards entered directly, set later, set on
 a branch, and recalculated after deletion. They differ, by design, in one
@@ -42,6 +43,7 @@ from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_awar
 from policyengine_uk.variables.gov.dwp.jsa_income import income_related_jsa_award
 
 YEAR = 2025
+HALF_PENNY = 0.005
 LIMBS = {
     "esa_income": (
         "esa_income_reported",
@@ -77,7 +79,9 @@ def pre_switch_income_support_eligible(benunit, period, parameters):
     prescribed_category = person("is_carer_for_benefits", period) | benunit.project(
         lone_parent_with_young_child | single_with_placed_child
     )
-    under_qualifying_age = ~person("is_SP_age", period)
+    under_qualifying_age = ~person(
+        "has_attained_state_pension_credit_qualifying_age", period
+    )
     WORK = IS.eligibility.remunerative_work
     hours = person("income_support_remunerative_work_hours", period)
     not_treated_as_working = person("is_carer_for_benefits", period)
@@ -108,11 +112,12 @@ def pre_switch_income_support_eligible(benunit, period, parameters):
         benunit.sum(person("esa_income_reported", period) * claimant_or_partner),
     )
     stored = esa_income.dtype
+    half_penny = 0.005
     as_reported = np.isclose(
-        esa_income, award_on_all_reports.astype(stored), rtol=0, atol=0.005
-    ) | np.isclose(esa_income, reported_total.astype(stored), rtol=0, atol=0.005)
-    income_related_esa = (esa_income > 0) & (
-        ~as_reported | (award_on_claimant_or_partner_reports > 0)
+        esa_income, award_on_all_reports.astype(stored), rtol=0, atol=half_penny
+    ) | np.isclose(esa_income, reported_total.astype(stored), rtol=0, atol=half_penny)
+    income_related_esa = (esa_income > half_penny) & (
+        ~as_reported | (award_on_claimant_or_partner_reports > half_penny)
     )
     jsa_income = benunit("jsa_income", period)
     jsa_reported_total = add(benunit, period, ["jsa_income_reported"])
@@ -128,16 +133,23 @@ def pre_switch_income_support_eligible(benunit, period, parameters):
         jsa_income,
         jsa_award_on_all_reports.astype(jsa_income.dtype),
         rtol=0,
-        atol=0.005,
+        atol=half_penny,
     ) | np.isclose(
-        jsa_income, jsa_reported_total.astype(jsa_income.dtype), rtol=0, atol=0.005
+        jsa_income,
+        jsa_reported_total.astype(jsa_income.dtype),
+        rtol=0,
+        atol=half_penny,
     )
-    income_based_jsa = (jsa_income > 0) & (
-        ~jsa_as_reported | (jsa_award_on_claimant_or_partner_reports > 0)
+    income_based_jsa = (jsa_income > half_penny) & (
+        ~jsa_as_reported | (jsa_award_on_claimant_or_partner_reports > half_penny)
     )
+    on_pension_credit = benunit(
+        "meets_pension_credit_age_conditions", period
+    ) & benunit("would_claim_pc", period)
     capital = benunit("income_support_assessable_capital", period)
     return (
         benunit.any(claimant)
+        & ~on_pension_credit
         & ~income_related_esa
         & ~income_based_jsa
         & (capital <= IS.means_test.capital.limit)
@@ -161,19 +173,22 @@ def pre_switch_limb(benunit, period, award):
         benunit, period, claimant_or_partner_reported
     )
     as_formula = np.isclose(
-        stored, on_all_reports.astype(stored.dtype), rtol=0, atol=0.005
+        stored, on_all_reports.astype(stored.dtype), rtol=0, atol=HALF_PENNY
     )
     as_reported_total = np.isclose(
-        stored, reported_total.astype(stored.dtype), rtol=0, atol=0.005
+        stored, reported_total.astype(stored.dtype), rtol=0, atol=HALF_PENNY
     )
-    limb = (stored > 0) & (
-        ~(as_formula | as_reported_total) | (on_claimant_or_partner_reports > 0)
+    limb = (stored > HALF_PENNY) & (
+        ~(as_formula | as_reported_total)
+        | (on_claimant_or_partner_reports > HALF_PENNY)
     )
     # The intended reading in the plain-total case: the claimant's and
     # partner's reports paid in full.
     plain_total_only = as_reported_total & ~as_formula
     intended = np.where(
-        plain_total_only, (stored > 0) & (claimant_or_partner_reported > 0), limb
+        plain_total_only,
+        (stored > HALF_PENNY) & (claimant_or_partner_reported > HALF_PENNY),
+        limb,
     )
     return limb, intended, plain_total_only
 
