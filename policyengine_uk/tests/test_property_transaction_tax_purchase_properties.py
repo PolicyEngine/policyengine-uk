@@ -5,16 +5,20 @@ Stamp Duty Land Tax, Land and Buildings Transaction Tax and Land Transaction
 Tax are charged on a purchase's price. A household's stocks of other
 residential and non-residential property are not purchases:
 property_purchased sets only the main-residence purchase, and an
-additional-dwelling or non-residential purchase is its own input.
+additional-dwelling or non-residential purchase is its own input. The
+additional-dwelling input is a purchase already classified as a higher-rates
+transaction: a new main home bought while keeping another dwelling, with no
+replacement of a main residence, belongs there rather than in the
+main-residence price (Finance Act 2003 Schedule 4ZA).
 
 Invariants, for any generated population of households across the four
 nations, with or without a main-residence purchase:
 
 1. Stocks are not purchases: zeroing a household's other residential and
    non-residential property never changes any transaction tax.
-2. A main-residence purchase alone never pays the higher rates for
-   additional dwellings: SDLT on residential property is the main-rates tax
-   on the main-residence price.
+2. The main-residence flag alone never creates an additional-dwelling
+   purchase: with that input unset, SDLT on residential property is the
+   main-rates tax on the main-residence price.
 3. An additional-dwelling purchase is charged on its own price at the higher
    rates (nil below the £40,000 minimum), on top of the main-residence tax,
    and the higher rates are never below the main rates.
@@ -96,7 +100,7 @@ def test_property_stocks_are_never_purchases(households, year):
 
 @PROPERTY_SETTINGS
 @given(population_strategy, st.sampled_from(YEARS))
-def test_main_residence_purchase_never_pays_the_higher_rates(households, year):
+def test_main_residence_flag_never_creates_an_additional_purchase(households, year):
     # Leave the additional-dwelling purchase unset, so a main-residence
     # purchase alone decides it.
     households = [
