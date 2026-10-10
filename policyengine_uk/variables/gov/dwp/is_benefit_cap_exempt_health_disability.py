@@ -1,8 +1,19 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.benefit_cap import benefit_cap_couple
+from policyengine_uk.utils.benefit_unit import award_of_members
 from policyengine_uk.utils.supplied_inputs import supplied_input
 from policyengine_uk.utils.uc_work_related_requirements import (
     other_member_of_single_claim_in_shared_rules,
+)
+from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
+    is_payee_of_couple_award,
+)
+from policyengine_uk.variables.gov.dwp.esa_income import income_related_esa_award
+from policyengine_uk.variables.gov.dwp.universal_credit.carer_element.uc_carer_element import (
+    carer_element_from_circumstances,
+)
+from policyengine_uk.variables.gov.dwp.universal_credit.disability_element.limited_work_ability.uc_LCWRA_element import (
+    lcwra_element_from_circumstances,
 )
 
 # HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) name, for each benefit,
@@ -140,42 +151,66 @@ class is_benefit_cap_exempt_health_disability(Variable):
         # partner is receiving an employment and support allowance ... which
         # includes a support component"; UC reg 83(1)(a) "the claimant".
         # Contributory and income-related allowances both carry it; another
-        # member's allowance does not count.
-        receiving_esa = (person("esa_contrib", period) > 0) | person(
-            "is_on_income_related_esa", period
+        # member's allowance does not count. The couple's income-related
+        # award is the part of the family's award on the couple's reports, as
+        # in claimant_or_partner_esa_income, and it is received by its payee
+        # (HB Regs 2006 reg 2(3A); is_on_income_related_esa reads the same for
+        # Housing Benefit's claimant and partner).
+        couple_esa_award = award_of_members(
+            benunit,
+            period,
+            "esa_income",
+            "esa_income_reported",
+            income_related_esa_award,
+            claimant_or_partner,
+        )
+        receiving_income_related_esa = benunit.project(
+            couple_esa_award > 0
+        ) & is_payee_of_couple_award(
+            person, period, "esa_income_reported", couple=claimant_or_partner
+        )
+        receiving_esa = (person("esa_contrib", period) > 0) | (
+            receiving_income_related_esa
         )
         esa_support_component = benunit.any(
             claimant & receiving_esa & person("esa_includes_support_component", period)
         )
 
         # UC reg 83(1)(a), (j): the LCWRA or carer element is included in the
-        # award. For calculated elements that is a claimant who has limited
-        # capability for work and work-related activity or caring
-        # responsibilities (UC Regs 2013 regs 27(1), 29(1)); the model does
-        # not have the reg 28 waiting period or regs 29(5)-(6), 30(3). Where
-        # reg 29(4) leaves a carer with limited capability only the LCWRA
-        # element, that element exempts. An element entered directly is
-        # included whatever the members' circumstances: one supplied as an
-        # input with a positive amount, or one that is positive although no
-        # member's circumstances give it (decided by value, for a reform that
-        # replaces the element's formula).
-        def element_included(element, circumstance):
+        # award. An element entered for the award is included exactly when it
+        # is positive, whatever the members' circumstances (an entry of nil
+        # means the award does not include it). Otherwise the element is
+        # decided by value. Where it is what its own formula gives on the
+        # members' circumstances, it is a claimant's element when a claimant
+        # has limited capability for work and work-related activity or
+        # caring responsibilities (UC Regs 2013 regs 27(1), 29(1)): the
+        # formula still reads every member, so another member's flag would
+        # otherwise give it. Any other amount (a reform that replaces the
+        # formula) is included when positive. The model does not have the
+        # reg 28 waiting period or regs 29(5)-(6), 30(3). Where reg 29(4)
+        # leaves a carer with limited capability only the LCWRA element, that
+        # element exempts.
+        def element_included(element, circumstance, from_circumstances):
             amount = benunit(element, period)
+            calculated = from_circumstances(benunit, period, parameters)
+            as_formula = np.isclose(
+                amount, calculated.astype(amount.dtype), rtol=0, atol=0.005
+            )
+            included = where(
+                as_formula, benunit.any(claimant & circumstance), amount > 0
+            )
             entered = supplied_input(benunit, element, period)
-            entered_positive = (
-                np.zeros_like(amount, dtype=bool) if entered is None else entered > 0
-            )
-            return (
-                benunit.any(claimant & circumstance)
-                | entered_positive
-                | ((amount > 0) & ~benunit.any(circumstance))
-            )
+            return included if entered is None else entered > 0
 
         lcwra_element = element_included(
-            "uc_LCWRA_element", person("uc_limited_capability_for_WRA", period)
+            "uc_LCWRA_element",
+            person("uc_limited_capability_for_WRA", period),
+            lcwra_element_from_circumstances,
         )
         carer_element = element_included(
-            "uc_carer_element", person("is_carer_for_benefits", period)
+            "uc_carer_element",
+            person("is_carer_for_benefits", period),
+            carer_element_from_circumstances,
         )
 
         # HB reg 75E(2): the claimant is, or the couple are jointly, entitled

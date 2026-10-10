@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.benefit_cap import benefit_cap_couple
 from policyengine_uk.utils.uc_work_related_requirements import (
     single_claim_in_rules_shared_with_legacy_benefits,
 )
@@ -12,7 +13,10 @@ class is_benefit_cap_single_claimant_rate(Variable):
         "Whether the claimant is a single claimant, not responsible for a "
         "child or young person. The model uses one benefit cap for Universal "
         "Credit and Housing Benefit, so the family rate applies if either "
-        "scheme's child or young-person test is met. Couple status stands for "
+        "scheme's child or young-person test is met. The couple is the "
+        "scheme's (benefit_cap_couple): a Universal Credit award's two "
+        "claimants, otherwise Housing Benefit's claimant and partner, which "
+        "is is_couple's test. Couple status stands for "
         "joint-claim status, except that a member of a couple who claims "
         "Universal Credit as a single person (regulation 3(3)) is a single "
         "claimant: regulation 80A sets the limits by single claimant and "
@@ -33,9 +37,10 @@ class is_benefit_cap_single_claimant_rate(Variable):
     )
 
     def formula(benunit, period, parameters):
-        single_claimant = ~benunit(
-            "is_couple", period
-        ) | single_claim_in_rules_shared_with_legacy_benefits(benunit, period)
+        couple = benunit.sum(benefit_cap_couple(benunit, period)) >= 2
+        single_claimant = ~couple | single_claim_in_rules_shared_with_legacy_benefits(
+            benunit, period
+        )
         return single_claimant & ~benunit(
             "is_responsible_for_child_or_young_person_for_uc_or_housing_benefit",
             period,

@@ -16,8 +16,9 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
   (75F(1)(ea); UC counts it as attendance allowance, UC Regs 2013 reg 2);
 - a Universal Credit claimant has limited capability for work and
   work-related activity or caring responsibilities, so the award includes the
-  LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)), or the element is
-  entered for the award, whatever anyone's circumstances. A person with
+  LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)). An element
+  entered for the award decides it alone: included when positive, whatever
+  anyone's circumstances, and not included when entered as nil. A person with
   ESA of their own whose ESA lacks the support component is inferred not to
   have limited capability for work-related activity (reg 40(1)(a)(ii));
 - the claimant or couple is entitled to working tax credit (HB reg 75E(2)).
@@ -64,7 +65,10 @@ import pytest
 from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
+from policyengine_core.periods import YEAR as YEAR_PERIOD
+from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
+from policyengine_uk.model_api import BenUnit, Variable
 
 YEAR = 2025
 SINGLE_CAP, FAMILY_CAP = 14_753, 22_020  # Outside London, 2025-26.
@@ -282,6 +286,14 @@ def reference_exempt(members, benunit_inputs):
     def any_receives(people, benefits):
         return any(m[b] > 0 for m in people for b in benefits)
 
+    def element_included(element, circumstance):
+        # Reg 83(1)(a), (j): the element is included in the award. An element
+        # entered for the award decides it; otherwise a claimant's
+        # circumstances give it (regs 27(1), 29(1)).
+        if element in benunit_inputs:
+            return benunit_inputs[element] > 0
+        return any(circumstance(m) for m in claimants)
+
     return (
         any(receives_esa_with_support_component(m) for m in claimants)
         or any_receives(claimants, CLAIMANT_OR_PARTNER)
@@ -289,10 +301,8 @@ def reference_exempt(members, benunit_inputs):
         or any_receives(claimants + young_persons, ["pip_dl"])
         or any(entitled_to_carer_benefit(m) for m in claimants + young_persons)
         or any_receives(claimants + hb_young_persons, HOUSING_BENEFIT_YOUNG_PERSON)
-        or any(lcwra(m) for m in claimants)
-        or any(carer(m) for m in claimants)
-        # Reg 83(1)(a), (j): an element entered for the award is included.
-        or any(benunit_inputs.get(element, 0) > 0 for element in ENTERED_ELEMENTS)
+        or element_included("uc_LCWRA_element", lcwra)
+        or element_included("uc_carer_element", carer)
         or benunit_inputs["working_tax_credit"] > 0
     )
 
@@ -432,3 +442,65 @@ def test_each_head_alone_matches_regulations(mode):
     # Every role meets every circumstance, and both outcomes occur.
     assert len(units) == len(SINGLE_HEAD_ROLES) * len(CIRCUMSTANCES)
     assert exempt.any() and not exempt.all()
+
+
+def element_reform(element, amount):
+    """A reform whose formula for ``element`` gives ``amount`` to every family."""
+    replacement = type(
+        element,
+        (Variable,),
+        {
+            "value_type": float,
+            "entity": BenUnit,
+            "definition_period": YEAR_PERIOD,
+            "label": f"{element} (test reform)",
+            "formula": lambda benunit, period, parameters: benunit.filled_array(amount),
+        },
+    )
+
+    class ReplaceElement(Reform):
+        def apply(self):
+            self.update_variable(replacement)
+
+    return ReplaceElement
+
+
+# The circumstance that gives each element (UC Regs 2013 regs 27(1), 29(1)).
+# The carer flag is set directly, with no hours of care, so that no
+# entitlement to Carer's Allowance lifts the cap by another route.
+ELEMENT_CIRCUMSTANCES = {
+    "uc_LCWRA_element": "uc_limited_capability_for_WRA",
+    "uc_carer_element": "is_carer_for_benefits",
+}
+
+
+@pytest.mark.parametrize("element", sorted(ELEMENT_CIRCUMSTANCES))
+def test_an_element_a_reform_gives_is_decided_by_its_value(element):
+    """Reg 83(1)(a), (j): an element a reform's formula puts in the award lifts
+    the cap whatever another member's circumstances, and a reform that gives
+    nil removes the exception the claimant's circumstance would give."""
+    circumstance = ELEMENT_CIRCUMSTANCES[element]
+    claimant, other = blank("claimant", 40), blank("other", 30)
+    other[circumstance] = True
+    positive = Simulation(
+        situation=situation([([claimant, other], {"working_tax_credit": 0})]),
+        reform=element_reform(element, 6_000),
+    )
+    assert positive.calculate(element, YEAR)[0] == 6_000
+    assert positive.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+
+    claimant = blank("claimant", 40)
+    claimant[circumstance] = True
+    nil = Simulation(
+        situation=situation([([claimant], {"working_tax_credit": 0})]),
+        reform=element_reform(element, 0),
+    )
+    assert nil.calculate(element, YEAR)[0] == 0
+    assert not nil.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+    # Without the reform the claimant's circumstance gives the element and
+    # lifts the cap.
+    baseline = Simulation(
+        situation=situation([([claimant], {"working_tax_credit": 0})])
+    )
+    assert baseline.calculate(element, YEAR)[0] > 0
+    assert baseline.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]

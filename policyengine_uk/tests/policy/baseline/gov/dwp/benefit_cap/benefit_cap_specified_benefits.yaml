@@ -1264,6 +1264,28 @@
     is_benefit_cap_exempt_health_disability: true
     benefit_cap_reduction: 0
 
+- name: An LCWRA element entered as nil means the award does not include it, though the claimant has limited capability
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        uc_limited_capability_for_WRA: true
+    benunits:
+      family:
+        members: [claimant]
+        uc_LCWRA_element: 0
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+  output:
+    # Reg 83(1)(a) asks whether the element is included in the award (for
+    # example, not during the reg 28 waiting period). 18,000 - 14,753.
+    is_benefit_cap_exempt_health_disability: false
+    benefit_cap_reduction: 3_247
+
 - name: A non-dependant's limited capability does not lift the cap when no element is entered
   period: 2025
   input:
