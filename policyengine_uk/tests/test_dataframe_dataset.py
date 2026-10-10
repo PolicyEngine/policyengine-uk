@@ -16,7 +16,9 @@ row order, whichever identifier columns name the groups:
 1. People and groups: the simulation holds the frame's people in row order.
    Its benefit units and households are the distinct identifiers the frame
    names, in ascending order, and each person is in the ones their row names.
-   This holds for identifiers that 32-bit floats cannot tell apart.
+   This holds for identifiers that 32-bit floats cannot tell apart, and for
+   columns that mix integer and float identifiers: a frame either loads its
+   people and groups exactly or is refused.
 2. Values: every person variable has the value on that person's row, and
    every benefit unit and household variable has the value its members' rows
    hold. Projected back to people, each variable gives its column again.
@@ -31,15 +33,21 @@ row order, whichever identifier columns name the groups:
 7. Exact names: a column is read only if the part of its name before ``__``
    is exactly a variable of the model.
 8. The frame is not changed.
+9. Previous loader (differential): for every frame the previous loader read
+   correctly (each benefit unit and household of one person, rows in order of
+   identifier), both give every input the same value in every period they
+   set. This includes a variable given for months and for the year, whose
+   columns are set in the frame's order, as the previous loader set them.
 
 Intended exceptions, each a ``ValueError``: a column not named
 ``variable__period``; a repeated column; no ``person_id`` column; a repeated
-person identifier; missing identifiers; identifier columns that differ between
-periods; ``<group>_id`` and ``person_<group>_id`` columns that name different
-groups for a person; identifiers of 2**24 or more held only as 32-bit floats,
-which may each stand for more than one identifier (2**24 + 1 rounds to
-2**24); and members of a group that give different values for one of its
-variables.
+person identifier; missing identifiers; identifiers that are not whole numbers;
+identifier columns that differ between periods; ``<group>_id`` and
+``person_<group>_id`` columns that name different groups for a person; an
+identifier read from a float that may stand for more than one whole number
+(2**24 or more for 32-bit floats: 2**24 + 1 rounds to 2**24), unless the
+group's own integer identifier is given beside it; and members of a group that
+give different values for one of its variables.
 
 Limit of the default export, which is not the loader's: ``to_input_dataframe()``
 leaves out values a dataset supplies for a variable that has a formula, such
@@ -61,6 +69,7 @@ from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 from policyengine_uk.data.input_dataframe import (
     FLOAT32_EXACT_LIMIT,
+    IDENTIFIER_VARIABLES,
     dataset_from_input_dataframe,
     split_column,
 )
@@ -480,6 +489,36 @@ def test_a_value_for_a_month_is_set_on_its_group():
     assert "ebr_energy_bills_credit_eligible" not in simulation.dataset[2025].household
 
 
+@pytest.mark.parametrize(
+    "order, february",
+    [(["2025-01", "2025"], 1_000 / 11), (["2025", "2025-01"], 100)],
+    ids=["month then year", "year then month"],
+)
+def test_a_months_and_its_years_values_are_set_in_column_order(order, february):
+    # A year's value spreads over the months not yet set. Given first, the
+    # January value stays and the year's other 1,000 is split over eleven
+    # months; given after the year, it replaces January's twelfth. Setting
+    # each column in turn, as the previous loader did, gives the same.
+    given = {"2025-01": [200.0], "2025": [1_200.0]}
+    frame_ = pd.DataFrame(
+        {
+            "person_id__2025": [1],
+            **{f"ni_class_1_employee__{period}": given[period] for period in order},
+        }
+    )
+
+    simulation = Simulation(dataset=frame_)
+
+    def month(number):
+        return simulation.calculate("ni_class_1_employee", f"2025-{number:02d}")
+
+    assert month(1).tolist() == [200.0]
+    assert month(2).tolist() == pytest.approx([february])
+    assert month(12).tolist() == pytest.approx([february])
+    # The year's value stays in the dataset, which holds whole years.
+    assert simulation.dataset[2025].person.ni_class_1_employee.tolist() == [1_200.0]
+
+
 def test_a_frame_that_names_no_whole_year_is_held_in_the_default_input_year():
     frame_ = pd.DataFrame(
         {
@@ -645,6 +684,33 @@ def test_a_reform_on_an_exported_frame_gives_the_results_of_its_dataset():
     )
 
 
+@pytest.mark.parametrize("budget", ["nhs", "education", "other_public_spending"])
+def test_spending_on_a_small_frame_goes_to_the_deciles_it_holds(budget):
+    # With a dataset, each income decile's share of extra spending goes to
+    # its households. Seven households leave some deciles empty; those shares
+    # go to nobody, rather than raising KeyError.
+    reform = {f"gov.contrib.policyengine.budget.{budget}": 1}
+    variable = f"{budget}_budget_change"
+    original = Microsimulation(dataset=dataset(), reform=reform)
+    reloaded = Microsimulation(
+        dataset=Simulation(dataset=dataset()).to_input_dataframe(), reform=reform
+    )
+
+    def values(simulation, name) -> np.ndarray:
+        return np.asarray(simulation.calculate(name, YEAR, unweighted=True))
+
+    change = values(reloaded, variable)
+    weights = values(reloaded, "household_weight")
+    deciles = values(reloaded, "pre_budget_change_ons_household_income_decile")
+
+    assert change.tolist() == values(original, variable).tolist()
+    assert np.isfinite(change).all() and (change > 0).all()
+    assert len(set(deciles.tolist())) < 10
+    assert 0 < (change * weights).sum() < 1e9
+    for decile in set(deciles.tolist()):
+        assert len(set(change[deciles == decile].tolist())) == 1
+
+
 # Refusals.
 
 
@@ -710,6 +776,44 @@ def test_identifiers_that_32_bit_floats_round_are_refused(column):
     )
     assert frame_[column].nunique() == 1
     refused(frame_, f"'{column}' holds identifiers of 16,777,216 or more")
+
+
+@pytest.mark.parametrize(
+    "column", ["person_id__2025", "benunit_id__2025", "household_id__2025"]
+)
+def test_mixed_identifiers_that_32_bit_floats_round_are_refused(column):
+    # In an object column each identifier keeps its own type, and
+    # np.float32(2**24) compares equal to 2**24 + 1, so read together they
+    # would be one person or group.
+    mixed = pd.Series(
+        [np.float32(FLOAT32_EXACT_LIMIT), FLOAT32_EXACT_LIMIT + 1], dtype=object
+    )
+    frame_ = pd.DataFrame({"person_id__2025": [1, 2], "age__2025": [25, 45]})
+    frame_[column] = mixed
+    refused(frame_, f"'{column}' holds identifiers of 16,777,216 or more as 32-bit")
+
+
+@pytest.mark.parametrize(
+    "values",
+    [[1.5, 2.0], ["a", "b"], [True, False], pd.Series([1, "2"], dtype=object)],
+    ids=["fraction", "text", "booleans", "mixed text"],
+)
+def test_identifiers_that_are_not_whole_numbers_are_refused(values):
+    refused(couple(**{"household_id__2025": values}), "which is not a whole number")
+
+
+def test_whole_number_floats_are_identifiers():
+    frame_ = couple(
+        **{
+            "household_id__2025": [7.0, 7.0],
+            "person_household_id__2025": pd.Series([np.float32(7), 7], dtype=object),
+        }
+    )
+
+    simulation = Simulation(dataset=frame_)
+
+    assert ids(simulation, "household") == [7]
+    assert simulation.dataset[2025].household.household_id.dtype == np.int64
 
 
 def test_rounded_person_columns_are_checked_at_their_own_precision():
@@ -936,3 +1040,156 @@ def test_rounded_identifiers_alone_never_merge_groups(tax_benefit_system, popula
     else:
         with pytest.raises(ValueError, match="as 32-bit floats"):
             dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+
+
+# Each way an identifier can be written in an object column.
+REPRESENTATIONS = {
+    "int": int,
+    "int32": np.int32,
+    "int64": np.int64,
+    "float64": float,
+    "float32": np.float32,
+}
+
+
+@TABLE_SETTINGS
+@given(
+    population=populations(),
+    id_columns=st.sampled_from(["both", "own", "person"]),
+    data=st.data(),
+)
+def test_identifiers_of_mixed_types_never_merge_people_or_groups(
+    tax_benefit_system, population, id_columns, data
+):
+    # 1. Each identifier is written as a Python or NumPy integer or float, in
+    # object columns. The frame loads its people and groups exactly, or is
+    # refused, just when an identifier it reads them from is a 32-bit float
+    # that may stand for more than one whole number.
+    frame_ = frame(population, id_columns)
+    people = len(population.person_ids)
+    group_source = "" if id_columns in ("both", "own") else "person_"
+    sources = {"person_id"} | {f"{group_source}{group}_id" for group in GROUPS}
+    ambiguous = False
+    for column in list(frame_.columns):
+        variable, _ = split_column(column)
+        if variable not in IDENTIFIER_VARIABLES:
+            continue
+        kinds = data.draw(
+            st.lists(
+                st.sampled_from(sorted(REPRESENTATIONS)),
+                min_size=people,
+                max_size=people,
+            )
+        )
+        written = [
+            REPRESENTATIONS[kind](value)
+            for kind, value in zip(kinds, frame_[column].tolist())
+        ]
+        frame_[column] = pd.Series(written, dtype=object)
+        ambiguous |= variable in sources and any(
+            kind == "float32" and abs(value) >= FLOAT32_EXACT_LIMIT
+            for kind, value in zip(kinds, written)
+        )
+
+    if ambiguous:
+        with pytest.raises(ValueError, match="as 32-bit floats"):
+            dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+    else:
+        tables, _ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+        assert_tables_hold(tables[YEAR], population)
+
+
+def legacy_build_from_dataframe(self, df: pd.DataFrame) -> None:
+    """``Simulation.build_from_dataframe`` before #2266, unchanged."""
+
+    def get_first_array(variable_name: str) -> pd.Series:
+        columns = df.columns[df.columns.str.contains(variable_name + "__")]
+        return df[columns[0]]
+
+    self.build_from_ids(
+        *map(
+            get_first_array,
+            [
+                "person_id",
+                "person_benunit_id",
+                "person_household_id",
+                "benunit_id",
+                "household_id",
+            ],
+        )
+    )
+    for column in df:
+        variable, time_period = column.split("__")
+        if variable not in self.tax_benefit_system.variables:
+            continue
+        self.set_input(variable, time_period, df[column])
+
+
+MONTHS = [f"{YEAR}-{month:02d}" for month in range(1, 13)]
+# Monthly inputs: one whose yearly value is divided between the months not
+# yet set, and one whose yearly value is given to each of them.
+MONTHLY_VARIABLES = {
+    "ni_class_1_employee": st.integers(0, 400).map(float),
+    "ebr_energy_bills_credit_eligible": st.booleans(),
+}
+
+
+@st.composite
+def frames_the_previous_loader_read(draw) -> pd.DataFrame:
+    """Frames of single-person benefit units and households, with rows in
+    order of identifier, and monthly inputs given for some months and perhaps
+    the year, in any column order."""
+    people = draw(st.integers(1, 4))
+    person_ids = np.array(
+        sorted(draw(st.sets(st.integers(1, 60), min_size=people, max_size=people)))
+    )
+    columns = {
+        f"person_id__{YEAR}": person_ids,
+        f"person_benunit_id__{YEAR}": person_ids + 100,
+        f"person_household_id__{YEAR}": person_ids + 200,
+        f"benunit_id__{YEAR}": person_ids + 100,
+        f"household_id__{YEAR}": person_ids + 200,
+    }
+
+    def given(strategy) -> list:
+        return draw(st.lists(strategy, min_size=people, max_size=people))
+
+    inputs = {
+        f"age__{YEAR}": given(st.integers(0, 90)),
+        f"council_tax__{YEAR}": given(st.integers(0, 5_000).map(float)),
+        f"would_claim_uc__{YEAR}": given(st.booleans()),
+        f"region__{YEAR}": given(st.sampled_from(REGIONS)),
+        f"age__{YEAR + 1}": given(st.integers(0, 90)),
+    }
+    for variable, strategy in MONTHLY_VARIABLES.items():
+        months = draw(st.lists(st.sampled_from(MONTHS), max_size=4, unique=True))
+        periods = months + ([str(YEAR)] if draw(st.booleans()) else [])
+        for period in periods:
+            inputs[f"{variable}__{period}"] = given(strategy)
+    order = draw(st.permutations(sorted(inputs)))
+    columns.update({column: inputs[column] for column in order})
+    return pd.DataFrame(columns)
+
+
+@SIMULATION_SETTINGS
+@given(frame_=frames_the_previous_loader_read())
+def test_frames_the_previous_loader_read_give_the_same_inputs(frame_):
+    # 9. Differential against the previous loader, on the frames it read
+    # correctly.
+    current = Simulation(dataset=frame_)
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(
+            Simulation, "build_from_dataframe", legacy_build_from_dataframe
+        )
+        previous = Simulation(dataset=frame_)
+
+    for column in frame_.columns:
+        variable, period = split_column(column)
+        periods = [period]
+        if variable in MONTHLY_VARIABLES and f"{variable}__{YEAR}" in frame_:
+            # The yearly value set every month.
+            periods = MONTHS
+        for each in periods:
+            ours = np.asarray(current.calculate(variable, each))
+            theirs = np.asarray(previous.calculate(variable, each))
+            assert ours.tolist() == theirs.tolist(), (variable, each)

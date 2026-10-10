@@ -193,9 +193,12 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   benefit unit and household of their own.
 - A benefit unit or household variable takes the value on its members' rows,
   which must all hold the same value.
+- Identifiers are whole numbers, and each person's `person_id` is their own.
 - The simulation's `dataset` is the `UKMultiYearDataset` the frame describes,
   with a year for each year the columns name. Values for a month or another
-  period that is not one year are set on the simulation directly.
+  period that is not one year are set on the simulation directly. A variable
+  given for both months and the year is set column by column in the frame's
+  order, since a year's value is spread over the months not already set.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit

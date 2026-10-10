@@ -8,9 +8,13 @@ Each person's benefit unit and household come from the ``benunit_id`` and
 ``household_id`` columns. ``person_benunit_id`` and ``person_household_id``
 give them when those columns are absent, and a frame with neither puts each
 person in a group of their own. The model stores the two ``person_`` variables
-as 32-bit floats, which round identifiers above 2**24
+as 32-bit floats, which round identifiers of 2**24 or more
 (PolicyEngine/policyengine-uk#2267), so an exported frame can hold them
 rounded. The group's own identifier is stored as an integer and is exact.
+
+Identifiers are read as whole numbers, value by value, and a float that may
+stand for more than one whole number is refused rather than allowed to merge
+two people or groups.
 """
 
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
@@ -37,16 +41,29 @@ IDENTIFIER_VARIABLES = frozenset(
     | {f"{group}_id" for group in GROUP_ENTITIES}
     | {f"person_{group}_id" for group in GROUP_ENTITIES}
 )
-# A 32-bit float smaller than this in size stands for one whole number. From
-# this size on, neighbouring whole numbers round to the same float: 2**24 + 1
-# rounds to 2**24.
-FLOAT32_EXACT_LIMIT = 2**24
 
 # The variable and the period each column is named for, by column.
 Columns = Dict[object, Tuple[str, str]]
-# A value to set for a period that is not one whole year: its variable, the
-# period as the column named it, and one value per member of its entity.
-OtherInput = Tuple[str, str, np.ndarray]
+# A value to set on the simulation: its variable, the period as the column
+# named it, and one value per member of its entity.
+Input = Tuple[str, str, np.ndarray]
+
+
+def exact_limit(dtype) -> Optional[int]:
+    """The size from which floats of ``dtype`` stop telling neighbouring whole
+    numbers apart, or None if ``dtype`` is not a float type.
+
+    A float smaller than this in size stands for one whole number. From this
+    size on, neighbouring whole numbers round to the same float: for 32-bit
+    floats the limit is 2**24, and 2**24 + 1 rounds to 2**24.
+    """
+    dtype = np.dtype(dtype)
+    if dtype.kind != "f":
+        return None
+    return 2 ** (np.finfo(dtype).nmant + 1)
+
+
+FLOAT32_EXACT_LIMIT = exact_limit(np.float32)
 
 
 def split_column(column) -> Tuple[str, str]:
@@ -58,6 +75,103 @@ def split_column(column) -> Tuple[str, str]:
             f"such as 'age{COLUMN_SEPARATOR}2025'."
         )
     return variable, period
+
+
+def _is_integer(value) -> bool:
+    return isinstance(value, (int, np.integer)) and not isinstance(
+        value, (bool, np.bool_)
+    )
+
+
+def _is_float(value) -> bool:
+    return isinstance(value, (float, np.floating))
+
+
+def _not_whole(column, value) -> ValueError:
+    return ValueError(
+        f"Column {column!r} holds {value!r}, which is not a whole number. "
+        "Identifiers must be whole numbers."
+    )
+
+
+def _ambiguous(column, dtype) -> ValueError:
+    dtype = np.dtype(dtype)
+    return ValueError(
+        f"Column {column!r} holds identifiers of {exact_limit(dtype):,} or more "
+        f"as {8 * dtype.itemsize}-bit floats, which cannot tell neighbouring "
+        "identifiers apart. Give identifiers as integers, and name each "
+        "person's groups in 'benunit_id' and 'household_id' columns."
+    )
+
+
+def _whole_number(column, value) -> int:
+    """One identifier as an integer, if it stands for one whole number."""
+    if _is_integer(value):
+        return int(value)
+    if not _is_float(value):
+        raise _not_whole(column, value)
+    if not np.isfinite(value) or value != np.floor(value):
+        raise _not_whole(column, value)
+    dtype = np.asarray(value).dtype
+    if abs(value) >= exact_limit(dtype):
+        raise _ambiguous(column, dtype)
+    return int(value)
+
+
+def _as_integers(identifiers: pd.Series) -> np.ndarray:
+    """``identifiers`` as 64-bit integers.
+
+    A column can mix types (an ``object`` column of integers and floats of
+    different sizes), so each value is read at its own precision.
+
+    Raises:
+        ValueError: If a value is not a whole number, or is a float that may
+            stand for more than one whole number.
+    """
+    column = identifiers.name
+    values = identifiers.to_numpy()
+    if values.dtype.kind == "i":
+        return values.astype(np.int64)
+    if values.dtype.kind == "u":
+        if len(values) and values.max() > np.iinfo(np.int64).max:
+            raise ValueError(f"Column {column!r} holds identifiers too large to use.")
+        return values.astype(np.int64)
+    if values.dtype.kind == "f":
+        whole = np.isfinite(values) & (values == np.floor(values))
+        if not whole.all():
+            raise _not_whole(column, values[~whole][0])
+        if (np.abs(values) >= exact_limit(values.dtype)).any():
+            raise _ambiguous(column, values.dtype)
+        return values.astype(np.int64)
+    if values.dtype.kind == "O":
+        return np.array([_whole_number(column, value) for value in values], np.int64)
+    if len(values):
+        raise _not_whole(column, values[0])
+    return values.astype(np.int64)
+
+
+def _names_group(group: int, value) -> bool:
+    """Whether the identifier ``value`` names ``group``, read at the value's
+    own precision: a float stands for every whole number that rounds to it."""
+    if _is_float(value):
+        return np.asarray(group).astype(np.asarray(value).dtype) == value
+    return _is_integer(value) and int(value) == group
+
+
+def _differs(groups: np.ndarray, named: pd.Series) -> np.ndarray:
+    """Whether each identifier in ``named`` names a group other than the one
+    ``groups`` gives that person."""
+    values = named.to_numpy()
+    if values.dtype.kind == "f":
+        # The model stores person_<group>_id as a 32-bit float, so a frame it
+        # exported holds the group's identifier rounded to one.
+        return groups.astype(values.dtype) != values
+    if values.dtype.kind in "iu":
+        return groups != values
+    return np.array(
+        [not _names_group(group, value) for group, value in zip(groups, values)],
+        dtype=bool,
+    )
 
 
 def _identifier(
@@ -82,32 +196,19 @@ def _identifier(
 
 
 def _group_of_each_person(
-    df: pd.DataFrame, columns: Columns, group: str, person_ids: pd.Series
+    df: pd.DataFrame, columns: Columns, group: str, person_ids: np.ndarray
 ) -> np.ndarray:
     """The identifier of each person's ``group`` (benefit unit or household)."""
     own = _identifier(df, columns, f"{group}_id")
     membership = _identifier(df, columns, f"person_{group}_id")
-    source = next(
-        identifiers
-        for identifiers in (own, membership, person_ids)
-        if identifiers is not None
-    )
-    groups = source.to_numpy()
-    if _rounded(groups):
-        raise ValueError(
-            f"Column {source.name!r} holds identifiers of {FLOAT32_EXACT_LIMIT:,} "
-            "or more as 32-bit floats, which cannot tell neighbouring "
-            f"identifiers apart, so it cannot say which {group} each person is "
-            f"in. Add a '{group}_id' column of integers."
-        )
+    if own is not None:
+        groups = _as_integers(own)
+    elif membership is not None:
+        groups = _as_integers(membership)
+    else:
+        return person_ids
     if own is not None and membership is not None:
-        named = membership.to_numpy()
-        if named.dtype == np.float32:
-            # The model stores person_<group>_id as a 32-bit float, so a frame
-            # it exported holds the group's identifier rounded to one.
-            differs = groups.astype(np.float32) != named
-        else:
-            differs = groups != named
+        differs = _differs(groups, membership)
         if differs.any():
             row = int(np.flatnonzero(differs)[0])
             raise ValueError(
@@ -116,14 +217,6 @@ def _group_of_each_person(
                 f"{membership.iloc[row]})."
             )
     return groups
-
-
-def _rounded(identifiers: np.ndarray) -> bool:
-    """Whether 32-bit float ``identifiers`` may each stand for more than one
-    whole number."""
-    return identifiers.dtype == np.float32 and bool(
-        (np.abs(identifiers) >= FLOAT32_EXACT_LIMIT).any()
-    )
 
 
 def _same(left: np.ndarray, right: np.ndarray) -> np.ndarray:
@@ -136,14 +229,15 @@ def dataset_from_input_dataframe(
     df: pd.DataFrame,
     tax_benefit_system: "TaxBenefitSystem",
     default_year: int,
-) -> Tuple[UKMultiYearDataset, List[OtherInput]]:
+) -> Tuple[UKMultiYearDataset, List[Input]]:
     """The dataset that an input DataFrame describes.
 
     The dataset holds a year for each whole-year period the frame names (or
     ``default_year`` if it names none), each with the same people, benefit
-    units and households. Benefit units and households are in order of their
-    identifiers, which is the order ``Simulation.build_from_ids`` gives them.
-    Columns that do not name a variable of ``tax_benefit_system`` are left out.
+    units and households, identified by 64-bit integers. Benefit units and
+    households are in order of their identifiers, which is the order
+    ``Simulation.build_from_ids`` gives them. Columns that do not name a
+    variable of ``tax_benefit_system`` are left out.
 
     Args:
         df: One row per person and a column per input, named
@@ -153,39 +247,38 @@ def dataset_from_input_dataframe(
             column names a whole year.
 
     Returns:
-        The dataset, and the values the frame gives for periods that are not
-        one whole year, which a dataset cannot hold.
+        The dataset, and the inputs to set after loading it: every column of
+        each variable the frame also gives for a period that is not one whole
+        year (such as a month), which a dataset cannot hold, in the frame's
+        column order. A year's value spreads over the months that are not
+        already set, so the order decides the months' values, as it did when
+        each column was set in turn.
 
     Raises:
         ValueError: If a column is not named ``variable__period``, the frame
-            has no ``person_id`` column or repeats a person's identifier, its
-            identifier columns contradict each other or hold 32-bit floats
-            that may stand for more than one identifier, or the members of a
-            benefit unit or household give different values for one of its
-            variables.
+            has no ``person_id`` column or repeats a person's identifier, an
+            identifier is missing, is not a whole number or is a float that may
+            stand for more than one, identifier columns contradict each other,
+            or the members of a benefit unit or household give different
+            values for one of its variables.
     """
     if not df.columns.is_unique:
         duplicated = df.columns[df.columns.duplicated()][0]
         raise ValueError(f"Column {duplicated!r} appears more than once.")
     columns = {column: split_column(column) for column in df.columns}
 
-    person_ids = _identifier(df, columns, "person_id")
-    if person_ids is None:
+    person_column = _identifier(df, columns, "person_id")
+    if person_column is None:
         raise ValueError(
             "The DataFrame needs a person_id column, such as "
             f"'person_id{COLUMN_SEPARATOR}{default_year}'."
         )
-    if _rounded(person_ids.to_numpy()):
+    person_ids = _as_integers(person_column)
+    unique_people, counts = np.unique(person_ids, return_counts=True)
+    if (counts > 1).any():
         raise ValueError(
-            f"Column {person_ids.name!r} holds identifiers of "
-            f"{FLOAT32_EXACT_LIMIT:,} or more as 32-bit floats, which cannot "
-            "tell neighbouring identifiers apart. Give them as integers."
-        )
-    repeated = person_ids[person_ids.duplicated()]
-    if len(repeated):
-        raise ValueError(
-            f"Column {person_ids.name!r} repeats {repeated.iloc[0]}. Each row is "
-            "one person with an identifier of their own."
+            f"Column {person_column.name!r} repeats {unique_people[counts > 1][0]}. "
+            "Each row is one person with an identifier of their own."
         )
     person_groups, group_ids, first_members, group_indices = {}, {}, {}, {}
     for group in GROUP_ENTITIES:
@@ -198,7 +291,9 @@ def dataset_from_input_dataframe(
 
     # The columns of each year's person, benefit unit and household tables.
     years: Dict[int, Dict[str, Dict[str, np.ndarray]]] = {}
-    other_inputs: List[OtherInput] = []
+    # Every input of the model the frame gives, and whether it is for one
+    # whole year, in column order.
+    inputs: List[Tuple[Input, bool]] = []
     for column, (variable, period_text) in columns.items():
         if variable not in tax_benefit_system.variables:
             continue
@@ -230,8 +325,12 @@ def dataset_from_input_dataframe(
             values = group_values
         if whole_year:
             year[entity][variable] = values
-        else:
-            other_inputs.append((variable, period_text, values))
+        inputs.append(((variable, period_text, values), whole_year))
+
+    in_other_periods = {
+        variable for (variable, _, _), whole_year in inputs if not whole_year
+    }
+    replayed = [each for each, _ in inputs if each[0] in in_other_periods]
 
     if not years:
         years[int(default_year)] = {"person": {}, "benunit": {}, "household": {}}
@@ -239,7 +338,7 @@ def dataset_from_input_dataframe(
         UKSingleYearDataset(
             person=pd.DataFrame(
                 {
-                    "person_id": person_ids.to_numpy(),
+                    "person_id": person_ids,
                     "person_benunit_id": person_groups["benunit"],
                     "person_household_id": person_groups["household"],
                     **tables["person"],
@@ -255,4 +354,4 @@ def dataset_from_input_dataframe(
         )
         for fiscal_year, tables in sorted(years.items())
     ]
-    return UKMultiYearDataset(datasets=datasets), other_inputs
+    return UKMultiYearDataset(datasets=datasets), replayed
