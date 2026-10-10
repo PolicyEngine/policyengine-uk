@@ -197,6 +197,9 @@
       benunit:
         members: [older, younger]
         housing_benefit_eligible: true
+        # A protected mixed-age couple with no Universal Credit, so the
+        # pension-age regulations apply (HB (SPC) Regs 2006 reg 5).
+        housing_benefit_pension_age_regulations_apply: true
         benefits_premiums: 0
   output:
     housing_benefit_attained_pension_age_before_cutoff: false
@@ -219,6 +222,9 @@
       benunit:
         members: [older, younger]
         housing_benefit_eligible: true
+        # A protected mixed-age couple with no Universal Credit, so the
+        # pension-age regulations apply (HB (SPC) Regs 2006 reg 5).
+        housing_benefit_pension_age_regulations_apply: true
         benefits_premiums: 0
   output:
     housing_benefit_attained_pension_age_before_cutoff: true

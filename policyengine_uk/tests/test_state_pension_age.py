@@ -315,11 +315,11 @@ def test_attainment_date_agrees_with_state_pension_age(year):
     attained = yyyymmdd_to_grid_months(sim.calculate("state_pension_age_date", year))
     birth = birth_instant_from_age(
         year,
-        sim.calculate("age", year).values,
-        sim.calculate("months_since_last_birthday", year).values,
+        sim.calculate("age", year),
+        sim.calculate("months_since_last_birthday", year),
     )
     implied = (attained - birth) / 12
-    model = sim.calculate("state_pension_age", year).values
+    model = sim.calculate("state_pension_age", year)
     np.testing.assert_allclose(implied, model, atol=1e-9)
 
 
