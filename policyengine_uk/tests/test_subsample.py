@@ -306,6 +306,7 @@ def test_supplied_values_are_kept_and_calculated_values_are_not():
     for variable in ("income_tax", "household_net_income", "universal_credit"):
         simulation.calculate(variable, 2026)
     simulation.calculate("age", 2035)
+    income_tax = by_id(simulation, "income_tax", 2026)
 
     simulation.subsample(n=4, seed=4)
 
@@ -315,6 +316,10 @@ def test_supplied_values_are_kept_and_calculated_values_are_not():
     assert period_(2035) not in simulation.get_holder("age").get_known_periods()
     people = ids(simulation, "person")
     households = ids(simulation, "household")
+    # A result calculated before is calculated again, on the sample.
+    assert by_id(simulation, "income_tax", 2026) == {
+        person: income_tax[person] for person in people
+    }
     assert by_id(simulation, "hours_worked", 2027) == {
         person: hours_by_person[person] for person in people
     }
@@ -328,6 +333,29 @@ def test_supplied_values_are_kept_and_calculated_values_are_not():
     assert by_id(simulation, "region", 2025) == {
         household: regions[household] for household in households
     }
+
+
+def test_a_calculated_value_that_replaced_an_input_is_not_kept():
+    """The record of an input outlives a calculated value stored over it.
+    The subsample must not keep the record: the next calculation would fill
+    the period again, and the record would pass the result off as supplied."""
+    simulation = Microsimulation(dataset=dataset())
+    people = len(ids(simulation, "person"))
+    simulation.set_input("hours_worked", 2027, np.full(people, 1_000.0))
+    simulation.get_holder("hours_worked").put_in_cache(
+        np.full(people, 500.0), period_(2027)
+    )
+    assert ("hours_worked", "2027") not in supplied(simulation)
+
+    simulation.subsample(n=4, seed=4)
+    simulation.calculate("hours_worked", 2027)
+
+    assert ("hours_worked", "2027") not in supplied(simulation)
+    assert "2027" not in simulation.to_input_dict().get("hours_worked", {})
+    assert not any(
+        name == "hours_worked" and str(period) == "2027"
+        for name, _, period in simulation._user_input_keys
+    )
 
 
 def test_results_match_the_same_households_in_the_full_simulation():
