@@ -9,7 +9,7 @@ import pandas as pd
 # PolicyEngine core imports
 from policyengine_core.data import Dataset
 from policyengine_core.enums import Enum as CoreEnum
-from policyengine_core.periods import period as period_
+from policyengine_core.periods import Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
@@ -234,6 +234,17 @@ class Simulation(CoreSimulation):
                 scenario.simulation_modifier(self)
             if scenario.parameter_changes is not None:
                 self.apply_parameter_changes(scenario.parameter_changes)
+
+    def delete_arrays(self, variable: str, period: Period = None) -> None:
+        super().delete_arrays(variable, period)
+        # From policyengine-core 3.32.27 (policyengine-core#561) the deletion
+        # forgets the input records of the values it removes, but not records
+        # that a population rebuild left with no stored value
+        # (policyengine-core#605). Drop those too, before carry-over can refill
+        # the period and input export would count the refill as an input.
+        # Inspect storage after core's deletion to honour period containment
+        # and the current branch, ancestor branches and default branch.
+        drop_missing_supplied_inputs(self, variable)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:

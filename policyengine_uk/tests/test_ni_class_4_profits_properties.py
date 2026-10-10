@@ -828,10 +828,12 @@ def test_class_4_does_not_count_a_loss_a_rebuild_drops():
 
 LIFECYCLE_YEARS = (2024, 2025, 2026)
 lifecycle_loss = st.integers(min_value=0, max_value=3).map(lambda k: 1_000.0 * k)
-# Each step names the simulation it acts on (modulo the number made so far),
-# so an original keeps changing after it has been cloned.
+LIFECYCLE_STEPS = 6
+# Each step names the simulation it acts on, modulo the number made so far
+# (at most one more than the steps), so an original keeps changing after it
+# has been cloned.
 lifecycle_step = st.tuples(
-    st.integers(min_value=0, max_value=3),
+    st.integers(min_value=0, max_value=LIFECYCLE_STEPS),
     st.one_of(
         st.tuples(st.just("set"), st.sampled_from(LIFECYCLE_YEARS), lifecycle_loss),
         st.tuples(
@@ -889,7 +891,7 @@ def assert_supplied_losses(sim, expected):
 @PROPERTY_SETTINGS
 @given(
     st.dictionaries(st.sampled_from(LIFECYCLE_YEARS), lifecycle_loss),
-    st.lists(lifecycle_step, max_size=6),
+    st.lists(lifecycle_step, max_size=LIFECYCLE_STEPS),
 )
 # The rebuild leaves the template's 2025 record behind, and building the
 # dataset calculates 2025 (policyengine-core#605).

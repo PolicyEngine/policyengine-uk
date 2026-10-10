@@ -17,6 +17,8 @@ dropped, and the stale record would pass it off as supplied. So
 ``Simulation.calculate`` forgets the records of a variable in
 ``SUPPLIED_INPUT_VARIABLES`` whose stored value is gone before the engine can
 refill it, and the helpers only answer for those variables.
+``Simulation.delete_arrays`` forgets such records too, for any variable it
+deletes.
 """
 
 from typing import List, Optional
