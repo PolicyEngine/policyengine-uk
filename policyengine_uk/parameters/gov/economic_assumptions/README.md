@@ -1,10 +1,17 @@
 # Economic assumptions
 
 Year-on-year growth series for the UK economy used to uprate parameters and
-calibrate the input dataset. The single source of truth is
+calibrate the input dataset. The source of the default economic series is
 [`yoy_growth.yaml`](./yoy_growth.yaml); downstream cumulative indices are
 generated from it by
 [`create_economic_assumption_indices.py`](./create_economic_assumption_indices.py).
+
+The dedicated `capital_gains` growth/index paths copy GDP per capita by
+default. A simulation can instead supply a versioned aggregate gains
+projection, converted to per-record factors using population growth after
+fiscal-year parameter processing. See the
+[capital gains projection guide](../../../../docs/capital-gains-projection.md)
+for its measurement contract, experimental scenario and remaining validation.
 
 ## Series
 

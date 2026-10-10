@@ -1,4 +1,8 @@
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.capital_gains_projection import (
+    CGT_DATASET_INPUTS,
+    CGT_INDEX_PATH,
+)
 
 import yaml
 from policyengine_core.parameters import ParameterNode
@@ -100,10 +104,16 @@ def _unmapped_uprating_indices(uprating):
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
     tax_benefit_system_parameters: ParameterNode,
-    end_year: int = PROJECTION_END_YEAR,
+    end_year: int | None = None,
 ) -> UKMultiYearDataset:
+    """Project a supplied year, defaulting to 2030 within the CGT horizon."""
     # Extend years and uprate
     start_year = int(dataset.time_period)
+    if end_year is None:
+        projection = tax_benefit_system_parameters.get_child(CGT_INDEX_PATH).metadata[
+            "projection"
+        ]
+        end_year = max(start_year, min(2030, projection.get("end_year", 2030)))
     datasets = [dataset]
     for year in range(start_year, end_year + 1):
         next_year = dataset.copy()
@@ -148,6 +158,24 @@ def apply_single_year_uprating(
     parameters: ParameterNode,
 ):
     # Apply uprating to a single year dataset.
+
+    projection = parameters.get_child(CGT_INDEX_PATH).metadata["projection"]
+    if "base_year" in projection and any(
+        variable in previous_year.person.columns for variable in CGT_DATASET_INPUTS
+    ):
+        source_year = int(previous_year.time_period)
+        target_year = int(current_year.time_period)
+        if (
+            not projection["base_year"]
+            <= source_year
+            < target_year
+            <= projection["end_year"]
+        ):
+            raise ValueError(
+                f"Capital gains projection {projection['name']!r} supports "
+                f"{projection['base_year']}–{projection['end_year']}, "
+                f"not {source_year}–{target_year}."
+            )
 
     # First, apply standard variable-YoY growth based uprating.
 

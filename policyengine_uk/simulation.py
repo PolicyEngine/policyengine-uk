@@ -1,5 +1,7 @@
 # Standard library imports
 import os
+import copy
+from importlib.metadata import version
 from typing import Dict, Optional, Union, Type, List
 
 # Third-party imports
@@ -37,6 +39,12 @@ from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
     with_identifiers_in_each_year,
 )
+from policyengine_uk.data.capital_gains_projection import (
+    CapitalGainsProjection,
+    CGT_INPUTS,
+    CGT_INDEX_PATH,
+    add_capital_gains_projection,
+)
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
@@ -65,7 +73,8 @@ def _canonical_parameter_paths(changes: dict) -> dict:
 from microdf import MicroDataFrame
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
-# by URL. Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
+# by URL and, when selected, the CGT projection fingerprint and runtime.
+# Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
 # encoding (0.67s) on every Simulation() call after the first.
 _url_dataset_cache: dict = {}
 
@@ -150,6 +159,7 @@ class Simulation(CoreSimulation):
         ] = None,
         trace: bool = False,
         reform: Dict | Type[Reform] | tuple = None,
+        capital_gains_projection: CapitalGainsProjection | None = None,
     ):
         """Initialize a UK simulation.
 
@@ -160,9 +170,17 @@ class Simulation(CoreSimulation):
             trace: Whether to enable detailed tracing of calculations
             reform: A parameter-change dict, a structural Reform class, or
                 a tuple of these applied in order (see Scenario.from_reform)
+            capital_gains_projection: Optional common baseline gains projection,
+                shared with the reform's baseline. Omit to retain GDP per capita.
         """
         # Initialize tax-benefit rules
-        self.tax_benefit_system = CountryTaxBenefitSystem()
+        self.tax_benefit_system = (
+            CountryTaxBenefitSystem()
+            if capital_gains_projection is None
+            else CountryTaxBenefitSystem(
+                capital_gains_projection=capital_gains_projection
+            )
+        )
 
         # Migrate Reform to Scenario
 
@@ -189,6 +207,7 @@ class Simulation(CoreSimulation):
             self.apply_scenario_parameters(scenario)
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
+        self._refresh_capital_gains_projection()
         # Build simulation from appropriate source
         if situation is not None:
             self.build_from_situation(situation)
@@ -258,6 +277,7 @@ class Simulation(CoreSimulation):
                 situation=situation,
                 dataset=dataset,
                 trace=trace,
+                capital_gains_projection=capital_gains_projection,
             )
         else:
             self.baseline = self.clone()
@@ -267,6 +287,19 @@ class Simulation(CoreSimulation):
         if scenario is not None and not scenario.applied_before_data_load:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
+        self._refresh_capital_gains_projection()
+
+    def _refresh_capital_gains_projection(self) -> None:
+        projection = self.tax_benefit_system.capital_gains_projection
+        if self.disable_economic_assumptions and projection is not None:
+            raise ValueError(
+                "An explicit capital gains projection cannot be combined with "
+                "no_economic_assumptions. Omit the projection to freeze economic assumptions."
+            )
+        # Scenario modifiers may edit growth or generated indices after the
+        # normal processing, including plain-dict Reform overrides.
+        add_capital_gains_projection(self.tax_benefit_system.parameters, projection)
+        self.tax_benefit_system.reset_parameter_caches()
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
@@ -304,6 +337,31 @@ class Simulation(CoreSimulation):
         new = super().clone(*args, **kwargs)
         copy_model_values(self, new)
         return new
+
+    @property
+    def capital_gains_projection_metadata(self) -> dict:
+        """Projection and runtime provenance for output metadata/cache fingerprints.
+
+        Callers must additionally record dataset identity and the policy scenario.
+        Pre-materialised annual inputs remain authoritative over these assumptions.
+        """
+        parameter = self.tax_benefit_system.parameters.get_child(CGT_INDEX_PATH)
+        return {
+            **copy.deepcopy(parameter.metadata["projection"]),
+            "policyengine_uk_version": version("policyengine-uk"),
+            "policyengine_core_version": version("policyengine-core"),
+        }
+
+    def _dataset_cache_key(self, source: str):
+        if self.tax_benefit_system.capital_gains_projection is None:
+            return source
+        metadata = self.capital_gains_projection_metadata
+        return (
+            source,
+            metadata["fingerprint"],
+            metadata["policyengine_uk_version"],
+            metadata["policyengine_core_version"],
+        )
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
@@ -385,8 +443,9 @@ class Simulation(CoreSimulation):
             self.build_from_url(dataset_source)
             return
         if dataset_source.startswith("gs://"):
-            if dataset_source in _url_dataset_cache:
-                multi_year_dataset = _url_dataset_cache[dataset_source]
+            cache_key = self._dataset_cache_key(dataset_source)
+            if cache_key in _url_dataset_cache:
+                multi_year_dataset = _url_dataset_cache[cache_key]
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self.dataset = multi_year_dataset
                 return
@@ -425,7 +484,7 @@ class Simulation(CoreSimulation):
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
         if cache_key is not None:
-            _url_dataset_cache[cache_key] = multi_year_dataset
+            _url_dataset_cache[self._dataset_cache_key(cache_key)] = multi_year_dataset
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self.dataset = multi_year_dataset
@@ -444,8 +503,9 @@ class Simulation(CoreSimulation):
 
         # Return early from in-memory cache if available: skips HDF5 reading,
         # uprating and enum encoding (~2.2s on the first load).
-        if url in _url_dataset_cache:
-            multi_year_dataset = _url_dataset_cache[url]
+        cache_key = self._dataset_cache_key(url)
+        if cache_key in _url_dataset_cache:
+            multi_year_dataset = _url_dataset_cache[cache_key]
             self.build_from_multi_year_dataset(multi_year_dataset)
             self.dataset = multi_year_dataset
             return
@@ -740,6 +800,22 @@ class Simulation(CoreSimulation):
             period = self.default_calculation_period
 
         period = period_(period)
+
+        projection = self.tax_benefit_system.capital_gains_projection
+        if projection is not None and variable_name in CGT_INPUTS:
+            holder = self.get_holder(variable_name)
+            annual_period = period.this_year
+            if holder.get_array(annual_period, self.branch_name) is None:
+                earlier_inputs = [
+                    p
+                    for p in holder.get_input_periods(self.branch_name)
+                    if p.unit == "year"
+                    and p.start < annual_period.start
+                    and holder.get_array(p, self.branch_name) is not None
+                ]
+                if earlier_inputs:
+                    source_year = max(p.start.year for p in earlier_inputs)
+                    projection.validate_span(source_year, annual_period.start.year)
 
         if variable_name in SUPPLIED_INPUT_VARIABLES:
             # Rebuilding the populations leaves the input records of the
