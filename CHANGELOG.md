@@ -1,3 +1,25 @@
+## [2.125.1] - 2026-10-10
+
+### Fixed
+
+- - Fix Class 2 National Insurance for 2015-16 to 2023-24 against s.11 SSCBA 1992: charge £3.45 a week in 2023-24; from 2022-23 charge only profits above the Class 2 lower profits threshold (£11,908, then £12,570), with profits from the small profits threshold up to it treated as paid; keep the small profits threshold at £6,725 in 2023-24 and 2024-25 and correct it to £5,965 in 2015-16 and 2016-17; date the abolition 6 April 2024. Class 2 now tests its thresholds on the profits Class 4 is charged on (s.11(3)), after capital allowances, the trading allowance and loss relief, not on self-employment income. A full year of Class 2 is every contribution week in it, so 53 weeks in 2019-20. The Universal Credit minimum income floor's notional Class 2 follows the same rule, so it deducts no Class 2 in 2022-23 and 2023-24 on a threshold the lower profits threshold covers. Every value now cites its amending instrument.
+- - Fixed Class 4 NICs against s.15 SSCBA 1992: the 2023-24 lower profits limit is £12,570 (it was £11,908), the 2022-23 rates are 9.73% and 2.73% for the whole year (they were 10.25% and 3.5%), the 2023-24 additional rate is 2% (it was 3.5%), and the 2015-16 upper profits limit is £42,385. Every Class 4 limit and rate from 2015-16 to 2025-26 now cites its legal source.
+
+
+## [2.125.0] - 2026-10-09
+
+### Added
+
+- - Add `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income`: the income-related award of the claimant and partner. When `esa_income` or `jsa_income` holds what the reported awards give (its formula, or their plain total), this is the same on the claimant's and partner's reports; any other stored value is taken to be theirs, and a stored zero is zero. An entered award equal to either reported amount, to within half a penny at stored precision, is read through the reports, so enter these variables directly to state the claimant's or partner's award.
+  - Add `is_on_income_related_esa`, `is_on_income_based_jsa` and `is_on_income_support`: whether the award is payable to the person. Of the claimant and partner, that is the payee of their award (the one who reports it, or the claimant); for anyone else, the award on their own report alone, after tariff income from the benefit unit's capital and within the capital limit, while the benefit unit's award is positive (for Income Support: their own report while Income Support is active and not neutralised), so another member's report never changes it.
+
+### Fixed
+
+- - Count only the claimant's and partner's income-related ESA and income-based JSA in Housing Benefit, council tax reduction and tax credit income, and in the passports for Housing Benefit (`in_receipt_of_income_support_jsa_ib_or_esa_ir`), working-age council tax reduction, Scottish Child Payment and targeted childcare. Another member of the benefit unit, such as a non-dependent adult, who reports an award claims in their own right; their award still counts in household income.
+  - Exempt a council tax reduction non-dependant in the local working-age schemes only when Income Support, income-based JSA or income-related ESA is payable to them, not to their partner or another benefit-unit member. A non-dependant couple on one of these benefits therefore pays the partner's deduction. The maintenance loan schedule for students entitled to benefits now reads whether income-related ESA is payable to the student (HB Regs 2006 reg 56(2)(a)), alongside the existing parent and disability tests, and adds reg 56(2)(c): a student who is the claimant or partner qualifies when their applicable amount would include the disability or severe disability premium, as when their partner receives a disability benefit.
+  - Treat a family as claiming Income Support (`would_claim_IS`) when the claimant or partner reports it, or when every entitled benefit is claimed (`claims_all_entitled_benefits`); another member's report no longer counts.
+
+
 ## [2.124.0] - 2026-10-09
 
 ### Added
