@@ -1,0 +1,268 @@
+# UC Regs 2013 reg. 5(1)(a) and SPC Regs 2002 reg. 4A(1)(a): a person who has
+# reached 16 is a qualifying young person "up to, but not including, the 1st
+# September following" their 16th birthday, whatever their education. The
+# model counts the route for a year that starts (6 April) before that date.
+# Ages are ages on 6 October; with no date of birth, a whole age places the
+# birthday on 6 April (months_since_last_birthday 6).
+
+- name: A 16-year-old outside education is a qualifying young person for UC and Pension Credit.
+  # 16th birthday 6 April 2026; the route runs to 31 August 2026.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_in_non_advanced_education: [false, false]
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, true]
+
+- name: A 16-year-old apprentice qualifies through reg. 5(1)(a), which has no contract-of-employment exclusion.
+  # Reg. 5(3) excludes training under a contract of employment from the
+  # education route (b) only.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: POST_SECONDARY
+        is_apprentice: true
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_in_non_advanced_education: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+
+- name: A 16-year-old outside education whose route has ended for the year is not a qualifying young person.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_before_first_september_following_16th_birthday: false
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: The education route still applies after the 1 September following the 16th birthday.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: UPPER_SECONDARY
+        is_before_first_september_following_16th_birthday: false
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+
+- name: A 17-year-old with a 16th birthday on 15 September 2025 is in the route until 31 August 2026.
+  # Born 15 September 2009: aged 17 on 6 October 2026. The 1 September
+  # following the 16th birthday is 1 September 2026, after 6 April 2026.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        date_of_birth: 20090915
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+
+- name: A 16th birthday on 1 September runs the route to the 17th birthday.
+  # Born 1 September 2009: the 1 September following the 16th birthday (1
+  # September 2025) is 1 September 2026, after 6 April 2026.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        date_of_birth: 20090901
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_before_first_september_following_16th_birthday: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+
+- name: A 16th birthday on 31 August ends the route that day.
+  # Born 31 August 2009: the route ran only on 31 August 2025, before the
+  # 2026-27 fiscal year starts.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        date_of_birth: 20090831
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_before_first_september_following_16th_birthday: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: A 16-year-old receiving Universal Credit in their own right is not a qualifying young person.
+  # Reg. 5(5) and reg. 4A(5) apply to both routes.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        receives_benefits_in_own_right: true
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: A looked-after 16-year-old is a qualifying young person but not the family's.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_looked_after_by_local_authority: true
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    is_child_or_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: Neither 15- nor 18-year-olds outside education are qualifying young persons.
+  # A 15-year-old is a child (Welfare Reform Act 2012 s. 40); an 18-year-old's
+  # 1 September following their 16th birthday has passed.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+      child:
+        age: 15
+        current_education: NOT_IN_EDUCATION
+      adult_child:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, child, adult_child]
+  output:
+    is_before_first_september_following_16th_birthday: [false, true, false]
+    is_qualifying_young_person_for_universal_credit: [false, false, false]
+    is_child_or_qualifying_young_person_for_universal_credit: [false, true, false]
+    is_qualifying_young_person_for_pension_credit: [false, false, false]
+
+- name: A lone parent with a 16-year-old outside education gets the child element and a work allowance.
+  # 2026-27: born 6 April 2010, before 6 April 2017, so the higher first-child
+  # amount: GBP 351.88 a month x 12 = GBP 4,222.56. Responsibility for a
+  # qualifying young person gives the work allowance (reg. 22(1)(b)): no
+  # housing element, so GBP 710 a month x 12 = GBP 8,520. Maximum amount: the
+  # single 25-or-over standard allowance GBP 424.90 x 12 = GBP 5,098.80, plus
+  # the child element, = GBP 9,321.36.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+  output:
+    uc_individual_child_element: [0, 4_222.56]
+    uc_child_element: 4_222.56
+    is_responsible_for_child_or_qualifying_young_person_for_universal_credit: true
+    is_uc_work_allowance_eligible: true
+    uc_work_allowance: 8_520
+    uc_maximum_amount: 9_321.36
+    is_benefit_cap_single_claimant_rate: false
+
+- name: A pensioner with a 16-year-old outside education gets the Pension Credit child addition.
+  # 2026-27: born 6 April 2010, before 6 April 2017, so the first child
+  # addition (Sch. IIA para. 10): GBP 81.07 a week x 52 = GBP 4,215.64. The
+  # single standard minimum guarantee is GBP 238.00 x 52 = GBP 12,376, so the
+  # minimum guarantee is GBP 16,591.64.
+  period: 2026
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_SP_age: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit:
+        members: [pensioner, young_person]
+    households:
+      household:
+        members: [pensioner, young_person]
+  output:
+    child_minimum_guarantee_addition: 4_215.64
+    standard_minimum_guarantee: 12_376
+    minimum_guarantee: 16_591.64
