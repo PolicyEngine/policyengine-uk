@@ -40,8 +40,10 @@ class EntityIdWarning(UserWarning):
 def check_entity_ids(variable: Variable, values) -> bool:
     """Warn if ``variable`` cannot store ``values`` exactly.
 
-    Only integer and float arrays are checked against an integer variable.
-    policyengine-core reports any other mismatch when it stores the values.
+    Integer and float arrays are checked against an integer variable, and so
+    are object arrays of numbers, such as a pandas column that mixes integers
+    and floats. Anything else, such as text, is left to policyengine-core's
+    own conversion when it stores the values.
 
     Args:
         variable: The variable that will store the identifiers.
@@ -52,6 +54,10 @@ def check_entity_ids(variable: Variable, values) -> bool:
         an ``EntityIdWarning``.
     """
     values = np.asarray(values)
+    if values.dtype.kind == "O":
+        # Python numbers in an object array take the NumPy type that holds
+        # them all; core's ``astype`` would otherwise truncate a float.
+        values = np.array(values.tolist())
     if values.size == 0 or values.dtype.kind not in "iuf":
         return True
     if not np.issubdtype(variable.dtype, np.integer):

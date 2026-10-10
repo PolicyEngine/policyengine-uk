@@ -28,8 +28,11 @@ Invariants, for identifiers that are whole numbers from -2**31 to 2**31 - 1
    building a simulation warns when an identifier is outside the range or not
    a whole number, and stays silent otherwise (this module turns the warning
    into an error, so every test above checks that).
-6. Identifiers outside the range still give the entity structure the tables
-   describe: the populations take them as given.
+6. Identifiers outside the range, given in UK dataset tables or a
+   DataFrame, still give the entity structure the tables describe: the
+   populations take them as given. A policyengine-core dataset file is not
+   covered: ``build_from_dataset`` rebuilds it from the stored identifiers,
+   which differ from the given ones, so only the warning is checked there.
 
 The group tables are sorted by identifier, as ``build_from_ids`` numbers the
 benefit units and households in that order, and every group has a member.
@@ -410,6 +413,17 @@ def storable_values(variable: str):
             max_size=6,
         ).map(lambda values: np.array(values, dtype=dtype))
 
+    # A pandas column that mixes integers and floats holds Python numbers.
+    python_numbers = st.lists(
+        st.one_of(
+            near_limits,
+            st.integers(-(2**63), 2**63 - 1),
+            st.floats(min_value=-(2.0**33), max_value=2.0**33),
+            st.floats(allow_nan=True, allow_infinity=True),
+        ),
+        max_size=6,
+    ).map(lambda values: np.array(values, dtype=object))
+
     return st.one_of(
         integers(np.int64),
         integers(np.int32),
@@ -417,16 +431,20 @@ def storable_values(variable: str):
         integers(np.uint64),
         floats(np.float64),
         floats(np.float32),
+        python_numbers,
     )
 
 
 def held_unchanged(values: np.ndarray, dtype) -> bool:
     """Whether policyengine-core's cast to the variable's dtype
-    (``Holder._to_array``) keeps every value."""
+    (``Holder._to_array``) keeps every value. A cast that fails keeps none."""
     with warnings.catch_warnings():
         # NumPy warns when a float is outside the integer range.
         warnings.simplefilter("ignore", RuntimeWarning)
-        cast = values.astype(dtype)
+        try:
+            cast = values.astype(dtype)
+        except (OverflowError, ValueError):
+            return False
     # Python compares integers with floats exactly; NaN equals nothing.
     return cast.tolist() == values.tolist()
 
@@ -448,12 +466,22 @@ def test_check_warns_exactly_when_the_store_changes_a_value(variable, data):
 
 
 def test_check_leaves_other_kinds_of_identifier_to_the_store():
-    """Text and other non-numeric identifiers are not checked here;
-    policyengine-core reports those it cannot store."""
+    """Text and other non-numeric identifiers are not checked here; they are
+    left to policyengine-core's own conversion."""
     definition = system.variables["person_id"]
     assert check_entity_ids(definition, np.array(["a", "b"]))
     assert check_entity_ids(definition, np.array([True, False]))
     assert check_entity_ids(definition, np.array([], dtype=np.float64))
+    assert check_entity_ids(definition, np.array(["a", 1], dtype=object))
+
+
+def test_object_column_with_a_fraction_warns():
+    """A pandas column that mixes integers and floats is an object array,
+    which core's cast would truncate."""
+    person, benunit, household = tables([1, 2, 3], [1, 2, 3], [1, 2, 3])
+    person["person_household_id"] = pd.Series([1, 2.5, 3], dtype=object)
+    with pytest.warns(EntityIdWarning, match="person_household_id should hold whole"):
+        simulate(person, benunit, household)
 
 
 OUT_OF_RANGE_IDS = [ID_MAX - 1, ID_MAX, ID_MAX + 1]
@@ -522,16 +550,15 @@ def test_single_year_dataset_warns_about_an_identifier_out_of_range():
 
 def test_core_dataset_file_warns_about_an_identifier_out_of_range(tmp_path):
     """The rebuild from the export reads the stored identifiers, which differ
-    from the given ones, but each household keeps its one person."""
+    from the given ones and are no longer in order, so group inputs can land
+    on other groups (invariant 6 does not cover this path). The first build
+    warns about every column."""
     person, benunit, household = tables(
         OUT_OF_RANGE_IDS, OUT_OF_RANGE_IDS, OUT_OF_RANGE_IDS
     )
     path = write_core_dataset_file(tmp_path / "dataset.h5", person, benunit, household)
-    sim, warned = warned_variables(lambda: Microsimulation(dataset=path))
+    _, warned = warned_variables(lambda: Microsimulation(dataset=path))
     assert warned == set(ENTITY_ID_VARIABLES)
-    for entity in ("benunit", "household"):
-        members = sim.populations[entity].members_entity_id
-        assert np.bincount(members, minlength=3).tolist() == [1, 1, 1]
 
 
 def test_frame_warns_about_an_identifier_out_of_range():
