@@ -13,6 +13,9 @@ installed without one.
 """
 
 import importlib.util
+import shutil
+import subprocess
+import sys
 import tomllib
 from pathlib import Path
 
@@ -125,3 +128,49 @@ def test_rewrite_sets_only_this_package_and_is_idempotent(
     assert lock_versions(updated) == expected
     assert bump_version.set_lock_version(updated, PACKAGE, new_version) == updated
     assert bump_version.set_lock_version(updated, PACKAGE, old_version) == text
+
+
+def run_bump(tmp_path, lock_text):
+    """Run the real script on a scratch repository with a patch fragment."""
+    (tmp_path / ".github").mkdir()
+    script = tmp_path / ".github" / "bump_version.py"
+    shutil.copy(SCRIPT, script)
+    (tmp_path / "pyproject.toml").write_text(
+        f'[project]\nname = "{PACKAGE}"\nversion = "1.2.3"\n'
+    )
+    (tmp_path / "changelog.d").mkdir()
+    (tmp_path / "changelog.d" / "change.fixed.md").write_text("- A fix.\n")
+    if lock_text is not None:
+        (tmp_path / "uv.lock").write_text(lock_text)
+    return subprocess.run([sys.executable, str(script)], capture_output=True, text=True)
+
+
+def test_main_moves_pyproject_and_lock_together(tmp_path):
+    # The lock's own entry starts stale, as on main before this change.
+    lock = make_lock([("numpy", "1.2.3", False), (PACKAGE, "1.2.0", True)])
+    result = run_bump(tmp_path, lock)
+    assert result.returncode == 0, result.stderr
+    assert 'version = "1.2.4"' in (tmp_path / "pyproject.toml").read_text()
+    assert lock_versions((tmp_path / "uv.lock").read_text()) == {
+        "numpy": "1.2.3",
+        PACKAGE: "1.2.4",
+    }
+
+
+@pytest.mark.parametrize(
+    "lock_text",
+    [None, make_lock([("numpy", "1.2.3", False)])],
+    ids=["no-lock", "no-entry"],
+)
+def test_main_stops_before_changing_anything(tmp_path, lock_text):
+    result = run_bump(tmp_path, lock_text)
+    assert result.returncode != 0
+    assert 'version = "1.2.3"' in (tmp_path / "pyproject.toml").read_text()
+    if lock_text is not None:
+        assert (tmp_path / "uv.lock").read_text() == lock_text
+
+
+def test_a_registry_entry_with_this_name_is_not_rewritten():
+    text = make_lock([(PACKAGE, "1.0.0", False)])
+    with pytest.raises(ValueError):
+        bump_version.set_lock_version(text, PACKAGE, "1.0.1")

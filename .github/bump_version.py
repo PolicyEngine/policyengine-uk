@@ -72,9 +72,11 @@ def set_lock_version(text: str, package: str, new_version: str) -> str:
     CI installs with `uv sync --locked`, which refuses a lock whose entry for
     the project disagrees with pyproject.toml, so the two must move together.
     Only that entry changes: a dependency can share the old version string.
+    The entry must be the editable project itself, as uv writes it.
     """
     pattern = re.compile(
-        rf'^(\[\[package\]\]\nname = "{re.escape(package)}"\nversion = ")[^"\n]*(")$',
+        rf'^(\[\[package\]\]\nname = "{re.escape(package)}"\nversion = ")[^"\n]*(")$'
+        r'(?=\nsource = \{ editable = "\." \}$)',
         re.MULTILINE,
     )
     updated, count = pattern.subn(rf"\g<1>{new_version}\g<2>", text)
@@ -85,7 +87,8 @@ def set_lock_version(text: str, package: str, new_version: str) -> str:
 
 def update_lock(path: Path, package: str, new_version: str):
     if not path.exists():
-        return
+        print(f"{path} not found; it must move with pyproject.toml", file=sys.stderr)
+        sys.exit(1)
     text = path.read_text()
     try:
         updated = set_lock_version(text, package, new_version)
@@ -108,8 +111,10 @@ def main():
 
     print(f"Version: {current} -> {new} ({bump})")
 
-    update_file(pyproject, current, new)
+    # The lock first: if it is missing or has no entry for this package, stop
+    # before pyproject.toml changes.
     update_lock(root / "uv.lock", get_project_name(pyproject), new)
+    update_file(pyproject, current, new)
 
 
 if __name__ == "__main__":
