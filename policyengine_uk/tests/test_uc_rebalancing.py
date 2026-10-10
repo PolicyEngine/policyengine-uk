@@ -178,6 +178,41 @@ def test_a_one_year_override_is_projected_from(monkeypatch):
     assert _protected_monthly(sim, 2028) >= 500 - 1e-3
 
 
+def test_a_scalar_override_applies_in_every_year(monkeypatch):
+    _force_uc_seed(monkeypatch, [0.99])
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={PROTECTED: 500}, applied_before_data_load=True
+        ),
+    )
+    for year in range(2026, 2030):
+        assert _protected_monthly(sim, year) == pytest.approx(500, rel=0, abs=1e-3)
+
+
+def test_a_two_year_override_is_used_then_projected_from(monkeypatch):
+    _force_uc_seed(monkeypatch, [0.99])
+    sim = Simulation(
+        situation=_uc_claimant(30),
+        scenario=Scenario(
+            parameter_changes={PROTECTED: {"2027": 500, "2028": 520}},
+            applied_before_data_load=True,
+        ),
+    )
+    assert _protected_monthly(sim, 2026) == pytest.approx(
+        PROTECTED_LCWRA_2026, rel=0, abs=1e-3
+    )
+    assert _protected_monthly(sim, 2027) == pytest.approx(500, rel=0, abs=1e-3)
+    assert _protected_monthly(sim, 2028) == pytest.approx(520, rel=0, abs=1e-3)
+    expected = uc_reform.protected_lcwra_floor(
+        520,
+        _standard_allowances(sim, 2028),
+        _standard_allowances(sim, 2029),
+        _cpi_factor(sim, 2029),
+    )
+    assert _protected_monthly(sim, 2029) == pytest.approx(expected, rel=0, abs=1e-3)
+
+
 money = st.floats(min_value=0, max_value=5_000, allow_nan=False)
 allowances = st.fixed_dictionaries(
     {claimant_type: money for claimant_type in uc_reform.STANDARD_ALLOWANCE_TYPES}

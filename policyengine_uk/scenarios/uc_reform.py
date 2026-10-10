@@ -63,16 +63,6 @@ def _protected_amount_parameter(sim: Microsimulation):
     return sim.tax_benefit_system.parameters.gov.dwp.universal_credit.rebalancing.protected_health_element
 
 
-def _legislated_protected_years(sim: Microsimulation) -> set:
-    """Tax years with a legislated protected LCWRA amount: the years the
-    parameter's dated values fall in (it keeps its statutory dates)."""
-    return {
-        int(entry.instant_str[:4])
-        for entry in _protected_amount_parameter(sim).values_list
-        if entry.value is not None
-    }
-
-
 def _protected_existing_health_element_monthly(
     sim: Microsimulation, year: int
 ) -> float:
@@ -80,17 +70,22 @@ def _protected_existing_health_element_monthly(
 
     UC Regs 2013 reg. 36 gives one amount to every pre-2026, severe conditions
     criteria or terminally ill claimant, whatever their age or couple status
-    (£429.80 for 2026-27, SI 2026/113 reg. 3(3)(b)). A tax year with no
-    legislated amount takes the s. 4 floor from the year before.
+    (£429.80 for 2026-27, SI 2026/113 reg. 3(3)(b)). A tax year whose amount is
+    null (not yet legislated) takes the s. 4 floor from the year before; any
+    other amount, legislated or set by a reform, is used as given.
     """
-    legislated = _legislated_protected_years(sim)
-    if year in legislated:
-        return float(
-            _protected_amount_parameter(sim)(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
-        )
-    if not legislated or year < min(legislated):
+    parameter = _protected_amount_parameter(sim)
+    amount = parameter(f"{year}-{FISCAL_YEAR_SAMPLE_DATE}")
+    if amount is not None:
+        return float(amount)
+    first = min(
+        int(entry.instant_str[:4])
+        for entry in parameter.values_list
+        if entry.value is not None
+    )
+    if year <= first:
         raise ValueError(
-            f"No protected LCWRA amount is legislated for {year} or earlier."
+            f"No protected LCWRA amount is set for {year} or any earlier year."
         )
     return protected_lcwra_floor(
         _protected_existing_health_element_monthly(sim, year - 1),
