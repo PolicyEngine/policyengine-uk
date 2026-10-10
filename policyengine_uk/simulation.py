@@ -33,6 +33,7 @@ from policyengine_uk.data.economic_assumptions import (
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.subsample import subsample_simulation
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     drop_missing_supplied_inputs,
@@ -579,6 +580,56 @@ class Simulation(CoreSimulation):
         )
 
         self.build_from_populations(builder.populations)
+
+    def subsample(
+        self,
+        n: Optional[int] = None,
+        frac: Optional[float] = None,
+        seed=None,
+        time_period=None,
+        quantize_weights: bool = True,
+    ) -> "Simulation":
+        """Cut the simulation down to a weighted random sample of households.
+
+        Draws ``n`` households with replacement, each with probability
+        proportional to its weight in ``time_period``, and keeps each
+        household drawn at least once, with its benefit units and people. So
+        the sample holds at most ``n`` households.
+
+        Every value the simulation was given (from its dataset or through
+        ``set_input``) is kept for the sampled records, for every period.
+        Calculated values are dropped and recalculated on the sample. Each
+        supplied weight is replaced so that its total is unchanged in every
+        period: a household's new weight is proportional to the number of
+        times it was drawn.
+
+        The baseline and ``dataset`` are subsampled to the same households,
+        and each simulation keeps its own policy.
+
+        Args:
+            n: The number of households to draw.
+            frac: The number to draw as a share of all households, used when
+                ``n`` is not given.
+            seed: A number or text that fixes the draw. The same seed always
+                draws the same households; without one, a fixed seed is used.
+            time_period: Draw households by their weight in this period.
+                Defaults to the default calculation period.
+            quantize_weights: If false, draw households with a positive
+                weight with equal probability, and make a household's new
+                weight proportional to its old weight times the number of
+                times it was drawn.
+
+        Returns:
+            This simulation, subsampled.
+        """
+        return subsample_simulation(
+            self,
+            n=n,
+            frac=frac,
+            seed=seed,
+            time_period=time_period,
+            quantize_weights=quantize_weights,
+        )
 
     def move_values(self, variable_donor: str, variable_target: str) -> None:
         """Move values from one variable to another across all branches.

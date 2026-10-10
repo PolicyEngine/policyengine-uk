@@ -19,9 +19,13 @@ as supplied. So ``Simulation.calculate`` forgets the records of a variable in
 refill it, and the helpers only answer for those variables.
 ``Simulation.delete_arrays`` forgets such records too, for any variable it
 deletes.
+
+``supplied_input_arrays`` answers for every variable. It reads only a record
+whose supplied value is still stored, which the holder tells apart from a
+value the engine carried over or calculated into the same period.
 """
 
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 import numpy as np
 from policyengine_core.periods import Period
@@ -129,3 +133,26 @@ def supplied_input(
                     return holder.default_array()
                 return value
     return None
+
+
+def supplied_input_arrays(simulation) -> List[Tuple[str, Period, np.ndarray]]:
+    """Every value ``simulation`` was given as an input and still stores, on
+    its own branch, with its variable and the period it is stored for.
+
+    Ordered by variable and period, so that the same simulation always gives
+    the same list.
+    """
+    input_keys = getattr(simulation, "_user_input_keys", None) or ()
+    arrays = []
+    for variable_name, branch_name, period in input_keys:
+        if branch_name != simulation.branch_name:
+            continue
+        holder = simulation.get_holder(variable_name)
+        # A record can outlive its stored value (see above), and a carried
+        # over or calculated value can then take its place.
+        if not holder._stores_user_input(period, branch_name):
+            continue
+        value = holder._get_array_from_storage(period, branch_name)
+        if value is not None:
+            arrays.append((variable_name, period, value))
+    return sorted(arrays, key=lambda item: (item[0], item[1].start, str(item[1])))
