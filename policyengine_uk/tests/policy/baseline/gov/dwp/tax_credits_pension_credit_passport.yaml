@@ -23,11 +23,13 @@
 # Tax credit income (SI 2002/2006 reg 3): State Pension is step-one pension
 # income (reg 5(1)(a); ITEPA 2003 s.577) and savings interest step-one
 # investment income (reg 10); step one counts only its excess over £300.
-# Earnings are step two. Each pensioner has £300 of interest on £10,000 of
-# savings, so step one's excess is the State Pension. (The model counts State
-# Pension in step two, which gives the same total once the interest uses the
-# £300.) £10,000 of capital gives no Pension Credit tariff income (SPC Regs
-# 2002 reg 15(6)), and savings interest is not Pension Credit income.
+# Earnings are step two. In each case the claimants have £10,000 of savings
+# and at least £300 of savings interest between them, so the interest uses up
+# step one's £300 and step one's excess is the State Pension plus any interest
+# above £300. (The model counts State Pension in step two, which gives the
+# same total once the interest uses the £300.) £10,000 of capital gives no
+# Pension Credit tariff income (SPC Regs 2002 reg 15(6)), and savings interest
+# is not Pension Credit income.
 #
 # Pension Credit earnings are entered net of the SPC Regs 2002 Sch VI para 5
 # disregard (£5 a week single, £10 a couple), which the model does not apply.
@@ -299,8 +301,11 @@
   # SPCA 2002 s.4(1A) (from 15 May 2019): no Pension Credit where the other
   # member of the couple is under the qualifying age. This couple reports
   # neither Pension Credit nor Housing Benefit, so they have no SI 2019/37
-  # art. 4 saving; the next case has it. A couple both over that age with
-  # this income would get Guarantee Credit with the passport.
+  # art. 4 saving; the next case has it. The older partner is 70 and 9 months
+  # at 6 October 2024, so born on 6 January 1954, early enough to have reached
+  # the qualifying age (on 6 May 2019) before the saving's 14 May 2019 date;
+  # it is the missing entitlement that denies the saving. A couple both over
+  # that age with this income would get Guarantee Credit with the passport.
   # The older partner works 20 hours, which meets the WTC hours condition for
   # a joint claim with no child: "aged at least 60 and undertakes work for not
   # less than 16 hours per week" (WTC Regs 2002 reg 4(1), Second condition,
@@ -313,6 +318,7 @@
     people:
       older:
         age: 70
+        months_since_last_birthday: 9
         is_claimant_or_partner: true
         state_pension: 6_000
         savings_interest_income: 300
@@ -337,11 +343,12 @@
     working_tax_credit: 4_670.55
 
 - name: A mixed-age couple who keep Pension Credit under the SI 2019/37 saving get the passport
-  # The couple of the previous case, but entitled to Pension Credit as that
-  # couple on 14 May 2019 and on every day since, so s.4(1A) does not apply
-  # to them (SI 2019/37 art. 4(1)-(2)). The older partner is entitled to
-  # Pension Credit, and TCA 2002 s.7(2) lifts the income test for the joint
-  # claim while "either of the persons" is entitled to it.
+  # The couple of the previous case (the older partner born on 6 January
+  # 1954, so over the qualifying age by 6 May 2019), but entitled to Pension
+  # Credit as that couple on 14 May 2019 and on every day since, so s.4(1A)
+  # does not apply to them (SI 2019/37 art. 4(1)-(2)). The older partner is
+  # entitled to Pension Credit, and TCA 2002 s.7(2) lifts the income test for
+  # the joint claim while "either of the persons" is entitled to it.
   # Passported WTC: £2,435 + £2,500 = £4,935. Pension Credit income: earnings
   # of 2,600 - 10 x 52 = £2,080 (SPC Regs 2002 Sch VI para 5(b), a claimant
   # with a partner), plus £6,000 and £4,935, is £13,015, against a couple's
@@ -354,6 +361,7 @@
     people:
       older:
         age: 70
+        months_since_last_birthday: 9
         is_claimant_or_partner: true
         state_pension: 6_000
         savings_interest_income: 300

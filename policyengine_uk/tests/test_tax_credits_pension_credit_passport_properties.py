@@ -192,10 +192,11 @@ YAML_FAMILIES = [
         {"savings": 10_000},
     ),
     # A mixed-age couple without the SI 2019/37 saving: no Pension Credit, no
-    # passport.
+    # passport. The older partner was born on 6 January 1954, early enough
+    # for the saving.
     (
         [
-            {**_PENSIONER, "state_pension": 6_000},
+            {**_PENSIONER, "state_pension": 6_000, "months_since_last_birthday": 9},
             {"age": 40},
         ],
         [],
@@ -205,7 +206,7 @@ YAML_FAMILIES = [
     # The same couple with the saving: Guarantee Credit, passported.
     (
         [
-            {**_PENSIONER, "state_pension": 6_000},
+            {**_PENSIONER, "state_pension": 6_000, "months_since_last_birthday": 9},
             {"age": 40},
         ],
         [],
