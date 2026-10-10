@@ -1,0 +1,567 @@
+# Pension Age Winter Heating Payment: who is on a relevant benefit, and what
+# each individual is paid. Expected values are worked from the Winter
+# Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI
+# 2024/351):
+# - 2024 qualifying week: as made (regs 5, 7, 9 and 10);
+# - 2025: as amended by SSI 2025/282 (no relevant benefit condition; new
+#   reg. 10) with the amounts uprated by SSI 2025/100;
+# - 2026: amounts uprated by SSI 2026/170.
+# Pension Credit and the other benefit-unit awards are entered on the benefit
+# unit so that each case turns only on the receipt test.
+
+- name: 2024 a non-dependant's income-related ESA does not entitle the pensioner
+  # Reg. 7: the pensioner is not entitled to a relevant benefit, nor is any
+  # partner (reg. 7(2)); the son's ESA is his own award. No payment.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 70
+      son:
+        age: 40
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+        pension_credit: 0
+        tax_credits: 0
+      son_unit:
+        members: [son]
+        esa_income: 4_000
+    households:
+      household:
+        members: [pensioner, son]
+        country: SCOTLAND
+  output:
+    is_on_pawhp_relevant_benefit: [false, true]
+    pawhp_eligible: [false, false]
+    pension_age_winter_heating_payment: [0, 0]
+    pawhp: 0
+    winter_fuel_allowance: 0
+
+- name: 2024 a pensioner on Pension Credit gets £200
+  # Regs 5 to 8 met; reg. 10(c).
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 70
+      son:
+        age: 40
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+        pension_credit: 1_000
+      son_unit:
+        members: [son]
+        esa_income: 4_000
+    households:
+      household:
+        members: [pensioner, son]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [200, 0]
+    pawhp: 200
+
+- name: 2024 a Pension Credit couple gets one payment of £300 when one partner is 80
+  # Reg. 10(a) and (b); the other member is not entitled once one is paid
+  # (reg. 9(1)(d)).
+  period: 2024
+  input:
+    people:
+      partner_1:
+        age: 75
+      partner_2:
+        age: 81
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 1_500
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [0, 300]
+    pawhp: 300
+
+- name: 2024 a pensioner in a mixed-age couple on Universal Credit gets £200
+  # Universal Credit is a relevant benefit (reg. 2); the pensioner is entitled
+  # through the couple's joint award (reg. 7(2)).
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 67
+      partner:
+        age: 60
+    benunits:
+      couple:
+        members: [pensioner, partner]
+        universal_credit: 2_000
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner, partner]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [200, 0]
+    pawhp: 200
+
+- name: 2024 a pensioner with a tax credit award of at least £26 gets £200
+  # Reg. 2 "relevant benefit" as made: child tax credit or working tax credit
+  # where the award is not less than £26 for 2024-25.
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 67
+    benunits:
+      unit:
+        members: [pensioner]
+        tax_credits: 500
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [200]
+    pawhp: 200
+
+- name: 2024 a tax credit award of £25 is below the £26 minimum
+  # Reg. 2 "relevant benefit" as made: "where the award is not less than £26".
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 67
+    benunits:
+      unit:
+        members: [pensioner]
+        tax_credits: 25
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    is_on_pawhp_relevant_benefit: [false]
+    pension_age_winter_heating_payment: [0]
+    pawhp: 0
+
+- name: 2024 a tax credit award of exactly £26 qualifies
+  period: 2024
+  input:
+    people:
+      pensioner:
+        age: 67
+    benunits:
+      unit:
+        members: [pensioner]
+        tax_credits: 26
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    is_on_pawhp_relevant_benefit: [true]
+    pension_age_winter_heating_payment: [200]
+
+- name: 2024 a pensioner who is neither claimant nor partner reporting a tax credit award of £25
+  # The pensioner is neither claimant nor partner in a 40-year-old's benefit
+  # unit, so only their own award counts; £25 is below the
+  # £26 minimum (reg. 2 as made).
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 40
+        is_claimant_or_partner: true
+      pensioner:
+        age: 70
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 25
+    benunits:
+      unit:
+        members: [adult, pensioner]
+        tax_credits: 0
+        pension_credit: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [adult, pensioner]
+        country: SCOTLAND
+  output:
+    tax_credit_award: [0, 25]
+    pension_age_winter_heating_payment: [0, 0]
+
+- name: 2024 a pensioner who is neither claimant nor partner reporting a tax credit award of £26
+  # The pensioner is neither claimant nor partner in a 40-year-old's benefit
+  # unit, so only their own award counts; £26 meets the
+  # minimum (reg. 2 as made) and reg. 10(c) gives £200.
+  period: 2024
+  input:
+    people:
+      adult:
+        age: 40
+        is_claimant_or_partner: true
+      pensioner:
+        age: 70
+        is_claimant_or_partner: false
+        working_tax_credit_reported: 26
+    benunits:
+      unit:
+        members: [adult, pensioner]
+        tax_credits: 0
+        pension_credit: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [adult, pensioner]
+        country: SCOTLAND
+  output:
+    tax_credit_award: [0, 26]
+    pension_age_winter_heating_payment: [0, 200]
+
+- name: 2025 a single pensioner not on a relevant benefit gets £203.40
+  # Reg. 10(5)(a): under 80, not entitled to a relevant benefit and not
+  # living with another entitled individual.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [203.40]
+    pawhp: 203.40
+
+- name: 2025 a pensioner living with a non-dependant on ESA gets the single amount
+  # The son is under pensionable age, so not an entitled individual: reg.
+  # 10(5)(a), £203.40. His ESA is his own award and does not make the
+  # pensioner entitled to a relevant benefit.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+      son:
+        age: 40
+    benunits:
+      pensioner_unit:
+        members: [pensioner]
+        pension_credit: 0
+      son_unit:
+        members: [son]
+        esa_income: 4_000
+    households:
+      household:
+        members: [pensioner, son]
+        country: SCOTLAND
+  output:
+    is_on_pawhp_relevant_benefit: [false, true]
+    pension_age_winter_heating_payment: [203.40, 0]
+    pawhp: 203.40
+
+- name: 2025 a couple under 80 not on a relevant benefit gets £101.70 each
+  # Reg. 10(5)(b)(i).
+  period: 2025
+  input:
+    people:
+      partner_1:
+        age: 70
+      partner_2:
+        age: 72
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [101.70, 101.70]
+    pawhp: 203.40
+
+- name: 2025 a couple aged 70 and 82 not on a relevant benefit
+  # 70: reg. 10(5)(b)(i), £101.70. 82: living with an entitled individual
+  # under 80, reg. 10(6)(b), £203.40.
+  period: 2025
+  input:
+    people:
+      partner_1:
+        age: 70
+      partner_2:
+        age: 82
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [101.70, 203.40]
+    pawhp: 305.10
+
+- name: 2025 a couple both over 80 not on a relevant benefit gets £152.55 each
+  # Reg. 10(6)(c)(i).
+  period: 2025
+  input:
+    people:
+      partner_1:
+        age: 82
+      partner_2:
+        age: 85
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [152.55, 152.55]
+    pawhp: 305.10
+
+- name: 2025 an 82-year-old on Pension Credit gets £305.10
+  # Reg. 10(2) and (4)(a)(i).
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 82
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [305.10]
+    pawhp: 305.10
+
+- name: 2025 a pensioner on Pension Credit and one who is not, in separate benefit units
+  # On Pension Credit: reg. 10(4)(b), £203.40 whoever they live with. The
+  # other: living with an entitled individual, reg. 10(5)(b)(i), £101.70.
+  period: 2025
+  input:
+    people:
+      on_pension_credit:
+        age: 70
+      not_on_pension_credit:
+        age: 72
+    benunits:
+      unit_1:
+        members: [on_pension_credit]
+        pension_credit: 1_000
+      unit_2:
+        members: [not_on_pension_credit]
+        pension_credit: 0
+    households:
+      household:
+        members: [on_pension_credit, not_on_pension_credit]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [203.40, 101.70]
+    pawhp: 305.10
+
+- name: 2025 the couple's payment goes to the Pension Credit claimant, which sets a lodger's shared amount
+  # The claimant, aged 70, is entitled to Pension Credit; reg. 10(4)(a)(ii):
+  # £305.10 (partner aged 85). The partner is not paid, on the model's
+  # reading of reg. 9(d) for the 2025 week (see pawhp_eligible). The
+  # lodger, aged 82, lives with an entitled individual under 80 and none
+  # aged 80: reg. 10(6)(b), £203.40.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        pension_credit_reported: 1_000
+      partner:
+        age: 85
+      lodger:
+        age: 82
+    benunits:
+      couple:
+        members: [claimant, partner]
+        pension_credit: 1_000
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [305.10, 0, 203.40]
+    pawhp: 508.50
+
+- name: 2026 a couple under 80 not on a relevant benefit gets £105.55 each
+  # Reg. 10(5)(b)(i) as uprated by SSI 2026/170 reg. 15(3)(d): two shared
+  # amounts make £211.10, 5p less than the single amount of £211.15.
+  period: 2026
+  input:
+    people:
+      partner_1:
+        age: 70
+      partner_2:
+        age: 72
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 0
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [105.55, 105.55]
+    pawhp: 211.10
+
+- name: 2026 a single pensioner not on a relevant benefit gets £211.15
+  # Reg. 10(5)(a) as uprated by SSI 2026/170 reg. 15(3)(c).
+  period: 2026
+  input:
+    people:
+      pensioner:
+        age: 70
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [211.15]
+    pawhp: 211.15
+
+- name: 2026 a Pension Credit couple with a partner over 80 gets one payment of £316.70
+  # Reg. 2A and 10(4)(a)(ii) as uprated by SSI 2026/170 reg. 15(3)(a); the
+  # other member is not entitled (reg. 9(d)).
+  period: 2026
+  input:
+    people:
+      partner_1:
+        age: 70
+      partner_2:
+        age: 82
+    benunits:
+      couple:
+        members: [partner_1, partner_2]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [partner_1, partner_2]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [0, 316.70]
+    pawhp: 316.70
+
+- name: 2025 the partner of an income-related ESA claimant under pensionable age is treated as entitled
+  # Reg. 10(8) as substituted by SSI 2025/282: the partner is treated as
+  # entitled to a relevant benefit, so reg. 10(2) and (4)(b): £203.40, even
+  # beside an entitled lodger. The lodger, under 80, on no relevant benefit
+  # and living with another entitled individual: reg. 10(5)(b), £101.70.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 60
+        is_benunit_head: true
+      partner:
+        age: 72
+        is_benunit_head: false
+      lodger:
+        age: 75
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        esa_income: 1_000
+        pension_credit: 0
+        universal_credit: 0
+        income_support: 0
+        jsa_income: 0
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: SCOTLAND
+  output:
+    is_on_pawhp_relevant_benefit: [true, true, false]
+    pension_age_winter_heating_payment: [0, 203.40, 101.70]
+    pawhp: 305.10
+
+- name: 2024 the partner of an income-related ESA claimant under pensionable age is entitled through the couple
+  # Reg. 7(2) as made counts the claimant's ESA for the partner: reg. 10(c)
+  # as made, £200. The lodger is on no relevant benefit: nothing.
+  period: 2024
+  input:
+    people:
+      claimant:
+        age: 60
+        is_benunit_head: true
+      partner:
+        age: 72
+        is_benunit_head: false
+      lodger:
+        age: 75
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        esa_income: 1_000
+        pension_credit: 0
+        universal_credit: 0
+        income_support: 0
+        jsa_income: 0
+        tax_credits: 0
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+        tax_credits: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: SCOTLAND
+  output:
+    pension_age_winter_heating_payment: [0, 200, 0]
+    pawhp: 200
+
+- name: The Winter Fuel Payment is not paid in Scotland from 2024
+  # SI 2024/869 and SI 2025/969 extend to England and Wales only.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+    benunits:
+      unit:
+        members: [pensioner]
+        pension_credit: 0
+    households:
+      household:
+        members: [pensioner]
+        country: SCOTLAND
+  output:
+    winter_fuel_payment: [0]
+    winter_fuel_allowance: 0

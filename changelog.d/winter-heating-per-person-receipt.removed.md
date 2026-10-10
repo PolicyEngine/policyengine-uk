@@ -1,0 +1,1 @@
+- Remove `gov.social_security_scotland.pawhp.amount.base`: the regulations set no flat amount for households not on a relevant benefit; the new shared amounts replace it.

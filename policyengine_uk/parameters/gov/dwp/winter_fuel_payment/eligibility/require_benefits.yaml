@@ -1,7 +1,7 @@
-description: Whether receipt of means-tested benefits is required to qualify for the Winter Fuel Payment.
+description: Whether a relevant benefit is a condition of the Winter Fuel Payment. It was for the 2024 qualifying week. From the 2025 qualifying week the regulations pay everyone of pensionable age, and the winter fuel payment charge (ITEPA 2003 s.681I) recovers the payment from people with total income over £35,000 who are not on a relevant benefit. The model keeps this true from 2025 and lets people who are not on a relevant benefit through the income test in taxable_income_test, which stands in for the charge.
 values:
   2000-01-01: false
-  2024-01-01: 
+  2024-01-01:
     value: true
     metadata:
       reference:
@@ -13,3 +13,7 @@ metadata:
   reference:
     - href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2
       title: The Social Fund Winter Fuel Payment Regulations 2000
+    - title: The Social Fund Winter Fuel Payment Regulations 2025, reg. 2
+      href: https://www.legislation.gov.uk/uksi/2025/969/regulation/2/made
+    - title: Finance Act 2026, Sch. 10 (ITEPA 2003 s.681I, winter fuel payment charge)
+      href: https://www.legislation.gov.uk/ukpga/2026/11/schedule/10
