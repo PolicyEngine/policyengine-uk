@@ -475,6 +475,9 @@ def test_a_value_for_a_month_is_set_on_its_group():
     assert calculated_by_id(
         simulation, "ebr_energy_bills_credit_eligible", "2025-02"
     ) == {10: True, 20: False}
+    # The dataset holds whole years only, so a January value is not taken
+    # for the year.
+    assert "ebr_energy_bills_credit_eligible" not in simulation.dataset[2025].household
 
 
 def test_a_frame_that_names_no_whole_year_is_held_in_the_default_input_year():
