@@ -684,16 +684,27 @@ def test_a_reform_on_an_exported_frame_gives_the_results_of_its_dataset():
     )
 
 
+def without_corporate_wealth() -> UKSingleYearDataset:
+    """``dataset()`` without corporate wealth. In seven households, that
+    wealth carries the corporate tax of a whole population, which makes most
+    of their incomes negative."""
+    data = dataset()
+    data.household = data.household.drop(columns="corporate_wealth")
+    return data
+
+
 @pytest.mark.parametrize("budget", ["nhs", "education", "other_public_spending"])
 def test_spending_on_a_small_frame_goes_to_the_deciles_it_holds(budget):
     # With a dataset, each income decile's share of extra spending goes to
     # its households. Seven households leave some deciles empty; those shares
-    # go to nobody, rather than raising KeyError.
+    # go to nobody, rather than raising KeyError. A household with negative
+    # income is in decile -1, which gets nothing.
     reform = {f"gov.contrib.policyengine.budget.{budget}": 1}
     variable = f"{budget}_budget_change"
-    original = Microsimulation(dataset=dataset(), reform=reform)
+    original = Microsimulation(dataset=without_corporate_wealth(), reform=reform)
     reloaded = Microsimulation(
-        dataset=Simulation(dataset=dataset()).to_input_dataframe(), reform=reform
+        dataset=Simulation(dataset=without_corporate_wealth()).to_input_dataframe(),
+        reform=reform,
     )
 
     def values(simulation, name) -> np.ndarray:
@@ -702,12 +713,14 @@ def test_spending_on_a_small_frame_goes_to_the_deciles_it_holds(budget):
     change = values(reloaded, variable)
     weights = values(reloaded, "household_weight")
     deciles = values(reloaded, "pre_budget_change_ons_household_income_decile")
+    occupied = set(deciles.tolist()) - {-1}
 
     assert change.tolist() == values(original, variable).tolist()
-    assert np.isfinite(change).all() and (change > 0).all()
-    assert len(set(deciles.tolist())) < 10
+    assert 1 < len(occupied) < 10
+    assert np.isfinite(change).all()
+    assert ((change > 0) == np.isin(deciles, list(occupied))).all()
     assert 0 < (change * weights).sum() < 1e9
-    for decile in set(deciles.tolist()):
+    for decile in occupied:
         assert len(set(change[deciles == decile].tolist())) == 1
 
 
