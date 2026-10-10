@@ -43,7 +43,15 @@ class benefit_cap_reduction(Variable):
     )
 
     def formula(benunit, period, parameters):
-        claimant = benunit.members("is_claimant_or_partner", period)
+        # The claimant and partner (HB Regs 2006 reg 2(1)), or the single
+        # claimant or joint claimants of a Universal Credit award
+        # (is_uc_assessed_claimant, WRA 2012 s.40), which include the other
+        # member of a couple claiming as a single person (UC Regs 2013 reg
+        # 78(2)). The two sets are the same unless is_uc_claimant is entered.
+        person = benunit.members
+        claimant = person("is_claimant_or_partner", period) | person(
+            "is_uc_assessed_claimant", period
+        )
         capped = add_for_members(
             benunit,
             period,

@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.uc_work_related_requirements import (
+    other_member_of_single_claim_in_shared_rules,
+)
 
 # HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) name, for each benefit,
 # whose receipt (or entitlement) lifts the cap.
@@ -24,11 +27,13 @@ CHILD_OR_YOUNG_PERSON_BENEFITS = [
 # "the claimant, the claimant's partner or a young person for whom the
 # claimant or the claimant's partner is responsible" (HB reg 75F(1)(ea), (h),
 # (ha)); "a claimant, or a qualifying young person for whom a claimant is
-# responsible" (UC reg 83(1)(g), (i), (ia)).
+# responsible" (UC reg 83(1)(g), (i), (ia)). Carer's allowance and carer
+# support payment count by entitlement, not payment: (h)-(ha) and (i)-(ia)
+# name a person "entitled to" them, even if an overlapping benefit reduces
+# the payment to nil.
 YOUNG_PERSON_BENEFITS = [
     "pip",
-    "carers_allowance",
-    "carer_support_payment",
+    "is_entitled_to_carer_benefit",
 ]
 
 # Armed forces independence payment: Housing Benefit lists it with personal
@@ -52,7 +57,10 @@ class is_benefit_cap_exempt_health_disability(Variable):
         "HB Regs 2006 reg 75F(1) or UC Regs 2013 reg 83(1), or because the "
         "claimant or couple is entitled to working tax credit (HB Regs 2006 "
         "reg 75E(2)). Another member of the benefit unit, such as a "
-        "non-dependent adult, does not lift the cap with their own benefit. "
+        "non-dependent adult, does not lift the cap with their own benefit, "
+        "and nor does a partner who cannot be a joint claimant, so that the "
+        "other member claims Universal Credit as a single person (UC Regs "
+        "2013 reg 3(3)). "
         "The model applies one cap to Universal Credit and Housing Benefit, so "
         "an exception in either scheme counts: Universal Credit's LCWRA and "
         "carer elements, and Housing Benefit's wider young-person tests."
@@ -62,14 +70,28 @@ class is_benefit_cap_exempt_health_disability(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/75F",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/75E",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/83",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/3",
         "https://www.gov.uk/benefit-cap/when-youre-not-affected",
     )
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        # The claimant and partner (HB Regs 2006 reg 2(1)); each of joint
-        # claimants (Welfare Reform Act 2012 s.40).
-        claimant = person("is_claimant_or_partner", period)
+        # The claimant and partner (HB Regs 2006 reg 2(1)); the single
+        # claimant or each of joint claimants (Welfare Reform Act 2012 s.40;
+        # is_uc_assessed_claimant). The two sets are the same unless
+        # is_uc_claimant is entered.
+        claimant_or_partner = person("is_claimant_or_partner", period) | person(
+            "is_uc_assessed_claimant", period
+        )
+        # UC reg 83(1) reads "a claimant". A partner who cannot be a joint
+        # claimant, so that the other member claims Universal Credit as a
+        # single person (reg 3(3)), is a member of the couple but not a
+        # claimant: their own benefits and limited capability do not lift the
+        # cap. Housing Benefit has no such claim, so a family that stays on
+        # legacy benefits keeps both members.
+        claimant = claimant_or_partner & ~other_member_of_single_claim_in_shared_rules(
+            person, period
+        )
 
         # A child or young person the claimant or partner is responsible for.
         # Housing Benefit counts a child under 16 or a Child Benefit
@@ -88,13 +110,13 @@ class is_benefit_cap_exempt_health_disability(Variable):
         housing_benefit_young_person = legacy_child_or_young_person & person(
             "is_qualifying_young_person_for_child_benefit", period
         )
-        uc_child_or_young_person = ~claimant & person(
+        uc_child_or_young_person = ~claimant_or_partner & person(
             "is_child_or_qualifying_young_person_for_universal_credit", period
         )
         uc_sixteen = (
             (age >= 16)
             & (age < 17)
-            & ~claimant
+            & ~claimant_or_partner
             & ~person("is_looked_after_by_local_authority", period)
             & ~person("receives_benefits_in_own_right", period)
         )
@@ -115,8 +137,9 @@ class is_benefit_cap_exempt_health_disability(Variable):
 
         # HB reg 75F(1)(a), UC reg 83(1)(a): "the claimant or the claimant's
         # partner is receiving an employment and support allowance ... which
-        # includes a support component". Contributory and income-related
-        # allowances both carry it; another member's allowance does not count.
+        # includes a support component"; UC reg 83(1)(a) "the claimant".
+        # Contributory and income-related allowances both carry it; another
+        # member's allowance does not count.
         receiving_esa = (person("esa_contrib", period) > 0) | person(
             "is_on_income_related_esa", period
         )

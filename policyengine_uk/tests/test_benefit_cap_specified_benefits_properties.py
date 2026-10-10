@@ -9,7 +9,9 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
   receives disability living allowance (75F(1)(e); 83(1)(f));
 - the claimant, partner or a young person they are responsible for receives
   personal independence payment, or is entitled to Carer's Allowance or
-  Carer Support Payment (75F(1)(ea), (h), (ha); 83(1)(g), (i), (ia)), or,
+  Carer Support Payment (75F(1)(ea), (h), (ha); 83(1)(g), (i), (ia)): an
+  award, or the model's Carer's Allowance conditions, 35 hours of care a
+  week, whether or not it is paid (is_entitled_to_carer_benefit), or,
   for a Housing Benefit young person, armed forces independence payment
   (75F(1)(ea); UC counts it as attendance allowance, UC Regs 2013 reg 2);
 - a Universal Credit claimant has limited capability for work and
@@ -33,10 +35,11 @@ Invariants:
    disability or carer benefits, ESA, JSA, incapacity benefit, SDA,
    disability flag or caring that member has. The cap counts only the
    welfare benefits "to which the single person or couple is entitled" (UC
-   Regs 2013 reg 80(1); HB Regs 2006 reg 75A). (Their age and earnings can: the State
-   Pension age and earnings exceptions read every member. The draws keep the
-   member under State Pension age and without earnings; see #1944, #1907,
-   #1999 and #1820.)
+   Regs 2013 reg 80(1); HB Regs 2006 reg 75A). Nor do their age or earnings:
+   the age exception reads the claimant and partner (Housing Benefit's
+   pension-age regulations, HB Regs 2006 reg 5) and the earnings exception
+   the claimants (UC Regs 2013 reg 82(1)(a)), so the draws give the member
+   State Pension age or earnings at times.
 2. The exemption equals a reference written directly from the regulations,
    with roles fixed by construction (differential test).
 3. An exempt family has no cap and no reduction; any other family has the
@@ -113,6 +116,7 @@ def blank(role, age):
             "esa_income_reported": 0,
             **{report: 0 for report in CAPPED_REPORTS.values()},
             "care_hours": 0,
+            "employment_income": 0,
             "is_disabled_for_benefits": False,
             "current_education": "NOT_IN_EDUCATION",
             "_role": role,
@@ -162,7 +166,10 @@ def families(draw, supplied):
     for member in members:
         if member["_role"] == "claimant":
             member["is_parent"] = has_dependants
-    other = blank("other", draw(st.integers(17, 60)))
+    other = blank("other", draw(st.one_of(st.integers(17, 60), st.integers(67, 80))))
+    other["employment_income"] = draw(st.sampled_from([0, 0, 0, 25_000]))
+    event(f"other aged 67+: {other['age'] >= 67}")
+    event(f"other earns: {other['employment_income'] > 0}")
     for _ in range(draw(st.integers(0, 2))):
         give(draw(st.sampled_from(members)), draw(st.sampled_from(CIRCUMSTANCES)))
     for _ in range(draw(st.integers(1, 2))):
@@ -241,12 +248,24 @@ def reference_exempt(members, working_tax_credit):
         no_support = own_esa(m) and not support_component(m)
         return m["is_disabled_for_benefits"] and not no_support
 
-    def carer(m):
+    def entitled_to_carer_benefit(m):
+        # "Entitled to" Carer's Allowance or Carer Support Payment (75F(1)(h),
+        # (ha); 83(1)(i), (ia)): an award, or the 35 hours of care a week that
+        # the model's Carer's Allowance conditions test (in England, where
+        # every family here lives, and for anyone who would claim, the
+        # default). Those conditions do not apply the full-time education
+        # exclusion (SSCBA 1992 s.70(3)), so a young person in education who
+        # cares 35 hours counts as entitled.
         return (
             m["care_hours"] >= 35
             or m["carers_allowance"] > 0
             or m["carer_support_payment"] > 0
         )
+
+    def carer(m):
+        # Caring responsibilities for the UC carer element (UC Regs 2013 reg
+        # 30): the same 35 hours, or a carer benefit.
+        return entitled_to_carer_benefit(m)
 
     def any_receives(people, benefits):
         return any(m[b] > 0 for m in people for b in benefits)
@@ -255,7 +274,8 @@ def reference_exempt(members, working_tax_credit):
         any(receives_esa_with_support_component(m) for m in claimants)
         or any_receives(claimants, CLAIMANT_OR_PARTNER)
         or any_receives(claimants + children + young_persons, CHILD_OR_YOUNG_PERSON)
-        or any_receives(claimants + young_persons, YOUNG_PERSON)
+        or any_receives(claimants + young_persons, ["pip_dl"])
+        or any(entitled_to_carer_benefit(m) for m in claimants + young_persons)
         or any_receives(claimants + hb_young_persons, HOUSING_BENEFIT_YOUNG_PERSON)
         or any(lcwra(m) for m in claimants)
         or any(carer(m) for m in claimants)

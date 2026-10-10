@@ -1,0 +1,176 @@
+# Expected values are hand-computed from SPC Regs 2002 reg 15(6): deemed income
+# is 1 pound a week for every 500 pounds, or part of 500 pounds, of capital
+# above 10,000 pounds, times 52 weeks a year.
+
+- name: With no reported capital (the default, -1), household capital is the proxy.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        savings: 50_000
+  output:
+    pension_credit_reported_capital: -1
+    pension_credit_assessable_capital: 50_000
+    # (50,000 - 10,000) / 500 = 80 a week
+    pension_credit_deemed_income: 80 * 52
+
+- name: Reported capital replaces the household proxy.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit_reported_capital: 3_000
+    households:
+      household:
+        members: [person]
+        savings: 50_000
+        owned_land: 20_000
+  output:
+    pension_credit_assessable_capital: 3_000
+    pension_credit_deemed_income: 0
+
+- name: Reported capital of zero records no capital.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit_reported_capital: 0
+    households:
+      household:
+        members: [person]
+        savings: 50_000
+  output:
+    pension_credit_assessable_capital: 0
+    pension_credit_deemed_income: 0
+
+- name: Reported capital above the disregard gives deemed income, rounding part of 500 pounds up.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 70
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit_reported_capital: 15_001
+    households:
+      household:
+        members: [person]
+  output:
+    pension_credit_assessable_capital: 15_001
+    # 5,001 above the disregard is 11 steps of 500 or part of 500
+    pension_credit_deemed_income: 11 * 52
+
+- name: A couple's reported capital is the whole unit's.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 72
+      partner:
+        age: 70
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        pension_credit_reported_capital: 12_000
+    households:
+      household:
+        members: [claimant, partner]
+        savings: 90_000
+  output:
+    pension_credit_assessable_capital: 12_000
+    pension_credit_deemed_income: 4 * 52
+
+- name: Reported capital replaces the person-level sources too.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 70
+        lifetime_isa_countable_capital: 30_000
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit_reported_capital: 2_000
+    households:
+      household:
+        members: [person]
+  output:
+    pension_credit_assessable_capital: 2_000
+
+- name: A unit with no one over State Pension age has no Pension Credit capital, reported or not.
+  period: 2025
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit_reported_capital: 50_000
+    households:
+      household:
+        members: [person]
+  output:
+    pension_credit_assessable_capital: 0
+
+- name: Another unit's reported capital leaves an unreported unit's household proxy unchanged.
+  period: 2025
+  input:
+    people:
+      older:
+        age: 80
+      parent:
+        age: 75
+      other:
+        age: 72
+    benunits:
+      reporting:
+        members: [older]
+        pension_credit_reported_capital: 1_000
+      unreported:
+        members: [parent, other]
+    households:
+      household:
+        members: [older, parent, other]
+        savings: 30_000
+  output:
+    # The unreported unit keeps its share of the household's pension-age
+    # adults: 30,000 x 2 / 3.
+    pension_credit_assessable_capital: [1_000, 20_000]
+
+- name: Reported capital lifts a reporter out of the deemed income that imputed household capital would give.
+  period: 2024
+  input:
+    people:
+      person:
+        age: 75
+        state_pension: 9_000
+    benunits:
+      benunit:
+        members: [person]
+        pension_credit_reported_capital: 4_000
+    households:
+      household:
+        members: [person]
+        savings: 120_000
+  output:
+    pension_credit_deemed_income: 0
+    pension_credit_income: 9_000
+    # minimum guarantee 218.15 a week (2024-25, SI 2024/242) x 52 - 9,000
+    guarantee_credit: 218.15 * 52 - 9_000

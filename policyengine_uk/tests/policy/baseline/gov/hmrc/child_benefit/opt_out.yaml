@@ -1,0 +1,209 @@
+# HMRC: opting out stops payments, not registration or entitlement.
+# https://www.gov.uk/child-benefit-tax-charge/stop-child-benefit
+- name: Case 1, a charge-driven opt-out stops payment and the tax charge.
+  period: 2026
+  input:
+    adjusted_net_income: 90_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+    would_claim_child_benefit: true
+  output:
+    child_benefit: 0
+    CB_HITC: 0
+    child_benefit_entitlement: 1_000
+
+- name: Case 2, a claimant who has not opted out receives the benefit and pays the charge.
+  period: 2026
+  input:
+    adjusted_net_income: 90_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: false
+  output:
+    child_benefit: 1_000
+    CB_HITC: 1_000
+
+- name: Case 3, the default behavioural threshold restores payment below a full charge.
+  period: 2026
+  input:
+    adjusted_net_income: 70_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+  output:
+    child_benefit: 1_000
+    CB_HITC: 500
+
+- name: Case 4, charge-driven opt-outs resume payment when a reform raises the threshold.
+  period: 2026
+  input:
+    adjusted_net_income: 90_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_start: 100_000
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: 120_000
+  output:
+    child_benefit: 1_000
+    CB_HITC: 0
+
+- name: Case 5, a family exactly at the charge threshold has no charge-driven opt-out.
+  period: 2026
+  input:
+    adjusted_net_income: 60_000
+    child_benefit_entitlement: 1_000
+    child_benefit_opts_out: true
+  output:
+    child_benefit: 1_000
+    CB_HITC: 0
+
+- name: Case 6, removing the charge does not make a non-claimant claim.
+  period: 2026
+  input:
+    adjusted_net_income: 40_000
+    child_benefit_entitlement: 1_000
+    # The independent claim flag determines nonclaimant status.
+    child_benefit_opts_out: false
+    would_claim_child_benefit: false
+  output:
+    child_benefit: 0
+
+- name: Case 7, an opted-out couple is tested against the higher earner.
+  period: 2026
+  input:
+    people:
+      person1: {age: 35, adjusted_net_income: 20_000}
+      person2: {age: 36, adjusted_net_income: 90_000}
+    benunits:
+      family:
+        members: [person1, person2]
+        child_benefit_entitlement: 1_000
+        child_benefit_opts_out: true
+  output:
+    child_benefit: 0
+    CB_HITC: [0, 0]
+
+# The opt-out charge share is a behavioural assumption, not a statutory rule.
+# https://github.com/PolicyEngine/policyengine-uk/pull/2140#issuecomment-5992591745
+- name: Case 8, a finite softer taper restores payment despite a positive charge.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, adjusted_net_income: 100_000}
+      person2: {age: 8}
+      person3: {age: 5}
+    benunits:
+      family:
+        members: [person1, person2, person3]
+        child_benefit_opts_out: true
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: 10_000_000
+  output:
+    child_benefit_entitlement: 2_337.40
+    child_benefit: 2_337.40
+    # (100,000 - 60,000) / (10,000,000 - 60,000) * 2,337.40.
+    CB_HITC: [9.406036, 0, 0]
+
+- name: Case 9, the configurable opt-out threshold includes its exact boundary.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: [69_999, 70_000, 70_001]
+    child_benefit_entitlement: [1_000, 1_000, 1_000]
+    child_benefit_opts_out: [true, true, true]
+    gov.hmrc.child_benefit.opt_out_charge_share: 0.5
+  output:
+    child_benefit: [1_000, 0, 0]
+    CB_HITC: [499.95, 0, 0]
+
+- name: Case 10, a zero behavioural threshold still requires a positive charge.
+  period: 2026
+  input:
+    adjusted_net_income: [59_999, 60_000, 60_001]
+    child_benefit_entitlement: [1_000, 1_000, 1_000]
+    child_benefit_opts_out: [true, true, true]
+    gov.hmrc.child_benefit.opt_out_charge_share: 0
+  output:
+    child_benefit: [1_000, 1_000, 0]
+    CB_HITC: [0, 0, 0]
+
+- name: Case 11, a zero-width taper applies as a cliff strictly above the start.
+  period: 2026
+  input:
+    adjusted_net_income: [59_999, 60_000, 60_001]
+    child_benefit_entitlement: [1_000, 1_000, 1_000]
+    child_benefit_opts_out: [true, true, true]
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: 60_000
+  output:
+    child_benefit: [1_000, 1_000, 0]
+    CB_HITC: [0, 0, 0]
+
+- name: Case 12, an unflagged family receives payment and pays the cliff charge.
+  period: 2026
+  input:
+    adjusted_net_income: [59_999, 60_000, 60_001]
+    child_benefit_entitlement: [1_000, 1_000, 1_000]
+    child_benefit_opts_out: [false, false, false]
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: 60_000
+  output:
+    child_benefit: [1_000, 1_000, 1_000]
+    CB_HITC: [0, 0, 1_000]
+
+- name: Case 13, a reversed taper also uses a cliff at the start.
+  period: 2026
+  input:
+    adjusted_net_income: [59_999, 60_000, 60_001]
+    child_benefit_entitlement: [1_000, 1_000, 1_000]
+    child_benefit_opts_out: [true, true, true]
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: 50_000
+  output:
+    child_benefit: [1_000, 1_000, 0]
+    CB_HITC: [0, 0, 0]
+
+- name: Case 14, a registered opted-out claim resumes when the charge is removed.
+  period: 2026
+  input:
+    adjusted_net_income: 90_000
+    child_benefit_entitlement: 1_000
+    would_claim_child_benefit: true
+    child_benefit_opts_out: true
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: .inf
+  output:
+    child_benefit: 1_000
+    CB_HITC: 0
+
+# EnhancedFRS draws the opt-out flag independently of its claim flag.
+# https://github.com/PolicyEngine/policyengine-uk/pull/2140#issuecomment-5993831707
+- name: Case 15, an independent opt-out draw does not register a nonclaimant.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, adjusted_net_income: 30_000}
+      person2: {age: 8}
+      person3: {age: 5}
+    benunits:
+      family:
+        members: [person1, person2, person3]
+        would_claim_child_benefit: false
+        child_benefit_opts_out: true
+  output:
+    child_benefit_entitlement: 2_337.40
+    child_benefit: 0
+    CB_HITC: [0, 0, 0]
+
+- name: Case 16, charge removal does not revive an independent nonclaimant opt-out draw.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1: {age: 40, adjusted_net_income: 30_000}
+      person2: {age: 8}
+      person3: {age: 5}
+    benunits:
+      family:
+        members: [person1, person2, person3]
+        would_claim_child_benefit: false
+        child_benefit_opts_out: true
+    gov.hmrc.income_tax.charges.CB_HITC.phase_out_end: .inf
+  output:
+    child_benefit_entitlement: 2_337.40
+    child_benefit: 0
+    CB_HITC: [0, 0, 0]

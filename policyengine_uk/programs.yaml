@@ -177,8 +177,10 @@ programs:
     agency: HMRC
     status: complete
     coverage: UK
-    parameter_prefix: gov.hmrc
-    verified_start_year: 2022
+    variable: minimum_wage
+    parameter_prefix: gov.hmrc.minimum_wage
+    verified_start_year: 2017
+    notes: Rates from 2015 are the 30 April values; the October 2015 and October 2016 changes fall mid fiscal year
 
   # --- DWP programs ---
   - id: universal_credit
@@ -285,6 +287,7 @@ programs:
     variable: carers_allowance
     parameter_prefix: gov.dwp.carers_allowance
     verified_start_year: 2022
+    notes: Reduced by overlapping benefits such as State Pension and contributory ESA
 
   - id: dla
     name: DLA
@@ -521,7 +524,7 @@ programs:
     variable: council_tax_reduction
     parameter_prefix: gov.local_authorities
     verified_start_year: 2013
-    notes: First-pass national support for Scotland, Wales, and England pensioner schemes, with reported CTB/CTR retained for unsupported English working-age local schemes.
+    notes: First-pass national support for Scotland, Wales, and England pensioner schemes (including the Pension Credit guarantee credit disregard and savings-credit-only rules), with reported CTB/CTR retained for unsupported English working-age local schemes.
 
   # --- Treasury programs ---
   - id: cost_of_living_support
@@ -546,8 +549,8 @@ programs:
     coverage: UK
     parameter_prefix: gov.ofgem
     verified_start_year: 2022
-    verified_end_year: 2023
-    notes: Temporary program, ended October 2023
+    verified_end_year: 2024
+    notes: Temporary program, ended 31 March 2024
 
   # --- Scotland programs ---
   - id: scottish_income_tax

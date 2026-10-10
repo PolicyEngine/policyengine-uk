@@ -20,8 +20,9 @@ class meets_uc_minimum_age_condition(Variable):
     LCW or a pending assessment supported by medical evidence under regulation
     8(1)(a)-(b).
     is_carer_for_benefits means receipt of Carer's Allowance or Scottish Carer
-    Support Payment, or at least the Carer's Allowance qualifying hours of
-    care (currently 35 weekly). Its hours limb does not verify the recipient's
+    Support Payment, underlying entitlement to either benefit, or at least
+    the Carer's Allowance qualifying hours of care (currently 35 weekly).
+    Its hours limb does not verify the recipient's
     qualifying disability benefit, and it does not exclude paid care.
 
     For regulation 8(1)(d), responsibility is proxied by being a claimant in a

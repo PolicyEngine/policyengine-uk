@@ -108,7 +108,10 @@
   output:
    tax_free_childcare_work_condition: false
 
-- name: Couple both with disability one working - eligible
+# SI 2015/448 reg 13(3): a partner paid a reg 13(1)(b) benefit is not in
+# qualifying paid work for reg 13(1)(a), so the non-working spouse cannot rely
+# on reg 13 when the working one also receives incapacity benefit.
+- name: Couple both on incapacity benefit, one working - ineligible under reg 13(3)
   period: 2025
   input:
    people:
@@ -122,7 +125,7 @@
      benunit:
        members: [person, spouse]
   output:
-   tax_free_childcare_work_condition: true
+   tax_free_childcare_work_condition: false
 
 - name: Single working adult with disability - eligible
   period: 2025
@@ -318,6 +321,217 @@
   output:
     tax_free_childcare_work_condition: [false, false, false]
 
+# SI 2015/448 reg 13(1): a person whose partner is in qualifying paid work is
+# regarded as in qualifying paid work while paid or entitled to incapacity
+# benefit, severe disablement allowance, carer's allowance, contributory ESA,
+# credits for incapacity or limited capability for work, or (from 1 December
+# 2022) Scottish carer's assistance, or while on carer's leave (from 6 April
+# 2024). Disability Living Allowance, Personal Independence Payment and
+# income-related ESA are not on the list.
+
+- name: Couple one working one on Carer's Allowance - eligible under reg 13(1)(b)(iv)
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        carers_allowance: 4000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: true
+
+- name: Couple one working one on severe disablement allowance - eligible under reg 13(1)(b)(ii)
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        sda: 4000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: true
+
+- name: Couple one working one on contributory ESA - eligible under reg 13(1)(b)(v)
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        esa_contrib: 4000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: true
+
+- name: Couple one working one with credits for limited capability for work - eligible under reg 13(1)(b)(vi)
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        receives_limited_capability_for_work_credits: true
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: true
+
+- name: Couple one working one on Carer Support Payment in 2025 - eligible under reg 13(1)(b)(vii)
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        carer_support_payment: 4000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: true
+
+- name: Couple one working one on Scottish carer's assistance in 2022 - reg 13(1)(b)(vii) not yet in force
+  period: 2022
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        carer_support_payment: 4000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: false
+
+- name: Couple one working one on carer's leave in 2024 - eligible under reg 13(1)(c)
+  period: 2024
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        tax_free_childcare_on_carers_leave: true
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: true
+
+- name: Couple one working one on carer's leave in 2023 - reg 13(1)(c) not yet in force
+  period: 2023
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        tax_free_childcare_on_carers_leave: true
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: false
+
+- name: Couple one working one on Disability Living Allowance only - ineligible
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        dla: 4000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: false
+
+- name: Couple one working one on Personal Independence Payment only - ineligible
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+        pip: 4000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_work_condition: false
+
+- name: Couple one working, the family on income-related ESA only - ineligible
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+      spouse:
+        in_work: false
+    benunits:
+      benunit:
+        members: [person, spouse]
+        esa_income: 4000
+  output:
+    tax_free_childcare_work_condition: false
+
+# Reg 13(1)(a): a lone parent has no partner in qualifying paid work.
+- name: Lone parent on Carer's Allowance, not working - ineligible
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 30
+        is_parent: true
+        in_work: false
+        carers_allowance: 4_000
+      child:
+        age: 3
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    tax_free_childcare_work_condition: [false, false]
+
+# Reg 13(3) excludes a working partner who receives a reg 13(1)(b) benefit, not
+# one on carer's leave under reg 13(1)(c): the spouse on Carer's Allowance is
+# still regarded as in qualifying paid work.
+- name: Working partner on carer's leave does not stop the other partner qualifying under reg 13
+  period: 2025
+  input:
+    people:
+      person:
+        in_work: true
+        tax_free_childcare_on_carers_leave: true
+      spouse:
+        in_work: false
+        carers_allowance: 4_000
+    benunits:
+      benunit:
+        members: [person, spouse]
+  output:
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_work_condition: true
+
 - name: A working lone parent with an 18-year-old and a toddler meets the work condition
   # Default inputs: the 18-year-old is the parent's child, not a partner who
   # would also have to work.
@@ -340,3 +554,73 @@
         members: [parent, student, toddler]
   output:
     tax_free_childcare_work_condition: [true, false, false]
+
+# Reg 13(3) excludes a working partner who is "paid" a (1)(b) benefit or
+# allowance. Maternity allowance overlaps the worker's Carer's Allowance to nil,
+# so the worker is entitled to it but not paid it, and still counts as the
+# partner in qualifying paid work for the spouse on Carer's Allowance.
+- name: Working partner entitled to Carer's Allowance reduced to nil does not stop the other qualifying under reg 13
+  period: 2025
+  input:
+    people:
+      worker:
+        in_work: true
+        care_hours: 35
+        maternity_allowance_reported: 5_000
+      spouse:
+        in_work: false
+        carers_allowance: 4_000
+    benunits:
+      benunit:
+        members: [worker, spouse]
+    households:
+      household:
+        members: [worker, spouse]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 4_000]
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_work_condition: true
+
+# Reg 13(1)(b)(iv): "paid or entitled to" carer's allowance. Entitlement reduced
+# to nil by maternity allowance still regards the carer as in paid work.
+- name: Carer entitled to Carer's Allowance reduced to nil is regarded as in paid work under reg 13
+  period: 2025
+  input:
+    people:
+      worker:
+        in_work: true
+      carer:
+        in_work: false
+        care_hours: 35
+        maternity_allowance_reported: 5_000
+    benunits:
+      benunit:
+        members: [worker, carer]
+    households:
+      household:
+        members: [worker, carer]
+        country: ENGLAND
+  output:
+    carers_allowance: [0, 0]
+    tax_free_childcare_regarded_as_in_paid_work: [false, true]
+    tax_free_childcare_work_condition: true
+
+# Reg 13(3): a working partner supplied as receiving Carer's Allowance, with no
+# amount, is paid it, so the spouse on contributory ESA cannot use reg 13.
+- name: Working partner supplied as receiving Carer's Allowance excludes the other under reg 13(3)
+  period: 2025
+  input:
+    people:
+      worker:
+        in_work: true
+        receives_carers_allowance: true
+      spouse:
+        in_work: false
+        esa_contrib: 4_000
+    benunits:
+      benunit:
+        members: [worker, spouse]
+  output:
+    tax_free_childcare_regarded_as_in_paid_work: [false, false]
+    tax_free_childcare_work_condition: false

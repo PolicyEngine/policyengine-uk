@@ -1,25 +1,65 @@
-description: Flat rate National Insurance contribution for self-employed earners.
+description: Weekly Class 2 National Insurance contribution that self-employed earners are liable to pay under section 11(2) of the Social Security Contributions and Benefits Act 1992. Compulsory Class 2 ended on 6 April 2024; voluntary Class 2 is not modelled.
 values:
-  2015-04-01: 2.8
-  2017-04-01: 2.85
-  2018-04-01: 2.95
-  2019-04-01: 3
-  2020-04-01: 3.05
+  2015-04-06:
+    value: 2.8
+    metadata:
+      reference:
+        - title: National Insurance Contributions Act 2015 Sch 1 para 3 (substituting s 11(2) of the Social Security Contributions and Benefits Act 1992)
+          href: https://www.legislation.gov.uk/ukpga/2015/5/schedule/1/paragraph/3/enacted
+        - title: Social Security Contributions and Benefits Act 1992 s 11(2) (as at 6 April 2016, unchanged for 2016-17)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/11/2016-04-06
+  2017-04-06:
+    value: 2.85
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2017 reg 3(a)
+          href: https://www.legislation.gov.uk/uksi/2017/415/regulation/3/made
+  2018-04-06:
+    value: 2.95
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2018 reg 3(a)
+          href: https://www.legislation.gov.uk/uksi/2018/337/regulation/3/made
+  2019-04-06:
+    value: 3
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2019 reg 3(a)
+          href: https://www.legislation.gov.uk/uksi/2019/262/regulation/3/made
+  2020-04-06:
+    value: 3.05
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2020 reg 3(a)
+          href: https://www.legislation.gov.uk/uksi/2020/299/regulation/3/made
+        - title: Social Security Contributions and Benefits Act 1992 s 11(2) (as at 6 April 2021, unchanged for 2021-22)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/11/2021-04-06
   2022-04-06:
     value: 3.15
     metadata:
       reference:
-        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022(3)(a)
-          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made#regulation-3-a
-  2024-01-01:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2022 reg 3(a)
+          href: https://www.legislation.gov.uk/uksi/2022/232/regulation/3/made
+  2023-04-06:
+    value: 3.45
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) (Rates, Limits and Thresholds Amendments and National Insurance Funds Payments) Regulations 2023 reg 3(a)
+          href: https://www.legislation.gov.uk/uksi/2023/236/regulation/3/made
+        - title: Social Security Contributions and Benefits Act 1992 s 11(2) (as at 6 April 2023)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/11/2023-04-06
+  2024-04-06:
     value: 0
     metadata:
       reference:
-        - title: "Autumn Statement 2023: National Insurance Factsheet"
-          href: https://www.gov.uk/government/publications/autumn-statement-2023-national-insurance-factsheet/autumn-statement-2023-national-insurance-factsheet
+        - title: National Insurance Contributions (Reduction in Rates) Act 2023 s 3(1)(a) and (3) (omitting s 11(2) of the Social Security Contributions and Benefits Act 1992 from 6 April 2024)
+          href: https://www.legislation.gov.uk/ukpga/2023/57/section/3/enacted
 metadata:
   unit: currency-GBP
+  period: week
   label: NI class 2 flat rate
   reference:
-    - https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
-    - https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions
+    - title: Social Security Contributions and Benefits Act 1992 s 11
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/11
+    - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

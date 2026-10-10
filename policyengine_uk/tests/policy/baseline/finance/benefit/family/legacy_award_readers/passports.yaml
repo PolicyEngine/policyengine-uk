@@ -463,6 +463,63 @@
   output:
     maintenance_loan_entitled_to_benefits: [false, true]
 
+- name: A student whose partner receives PIP qualifies through the disability premium
+  period: 2025
+  input:
+    people:
+      student:
+        age: 22
+        is_claimant_or_partner: true
+        current_education: TERTIARY
+      partner:
+        age: 23
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+        pip_dl: 2_000
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [student, partner]
+    households:
+      household:
+        members: [student, partner]
+        country: ENGLAND
+  output:
+    # ESA is payable to the partner, not the student (reg 2(3A)). But the
+    # partner is under State Pension Credit age and receives PIP, so the
+    # couple's applicable amount includes the disability premium (HB Regs 2006
+    # Sch 3 paras 12(b)(ii) and 13(1)(a)(i)), and reg 56(2)(c) lifts the
+    # student exclusion for the student too.
+    is_on_income_related_esa: [false, true]
+    maintenance_loan_entitled_to_benefits: [true, true]
+
+- name: A parent's disability premium does not put a student who is not the claimant or partner on the benefits schedule
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 50
+        is_claimant_or_partner: true
+        is_parent: false
+        pip_dl: 2_000
+        is_disabled_for_benefits: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: TERTIARY
+    benunits:
+      benunit:
+        members: [parent, student]
+    households:
+      household:
+        members: [parent, student]
+        country: ENGLAND
+  output:
+    # The disability premium is in the parent's applicable amount, not the
+    # student's: reg 56(2)(c) asks about the student's own applicable amount
+    # as a claimant.
+    maintenance_loan_entitled_to_benefits: [true, false]
+
 - name: A student's own ESA report below the tariff income is not paid, whatever another member reports
   period: 2025
   input:
