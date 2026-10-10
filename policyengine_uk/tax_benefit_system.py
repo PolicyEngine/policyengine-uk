@@ -21,11 +21,17 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
+    add_september_cpi_uprating,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_economic_assumption_indices import (
     create_economic_assumption_indices,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.create_statutory_uprating_inputs import (
     add_statutory_uprating_inputs,
+)
+from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
+    add_threshold_indexation,
 )
 from policyengine_uk.parameters.gov.economic_assumptions.lag_average_earnings import (
     add_lagged_earnings,
@@ -91,7 +97,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         - Lagged earnings and CPI indices
         - Statutory uprating inputs (September CPI, May-July earnings)
         - Triple lock calculations for state pensions
+        - September CPI uprating
         - Economic assumption indices
+        - Income tax and NICs threshold indexation after the freeze
         - Parameter uprating and backdating
         - Conversion to fiscal year parameters
         """
@@ -102,7 +110,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters = add_lagged_cpi(self.parameters)
         self.parameters = add_statutory_uprating_inputs(self.parameters)
         self.parameters = add_triple_lock(self.parameters)
+        self.parameters = add_september_cpi_uprating(self.parameters)
         self.parameters = create_economic_assumption_indices(self.parameters)
+        self.parameters = add_threshold_indexation(self.parameters)
         self.parameters = add_lsr_deprecation_aliases(self.parameters)
 
         # Create baseline parameters for reform comparisons

@@ -1,3 +1,11 @@
+## [2.126.2] - 2026-10-10
+
+### Fixed
+
+- - Counted salary sacrifice pension contributions only for people with pay, so from 2029 the excess over the £2,000 cap no longer gives employment income to people without pay.
+- - From 2031-32, index the personal allowance and basic rate limit by the previous September's CPI with the statutory round-ups (Income Tax Act 2007 ss57 and 21), keep the primary threshold, upper earnings limit and Class 4 profits limits aligned with them, and raise the secondary threshold by September CPI. Before, they followed calendar-year CPI series without rounding.
+
+
 ## [2.126.1] - 2026-10-10
 
 ### Fixed
