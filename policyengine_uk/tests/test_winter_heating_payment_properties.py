@@ -266,13 +266,16 @@ def reference_payments(household, year):
 
     def scheme(resident, relevant, means_test, amounts, partner_counts):
         lower, higher, shared, shared_80_with_under_80, shared_80_with_80 = amounts
-        couple = through_couple(paid(relevant))
-        on_relevant = couple if partner_counts else paid(relevant)
+        paid_to = paid(relevant)
+        couple = through_couple(paid_to)
+        on_relevant = couple if partner_counts else paid_to
         qualifies = [resident and p[0]["age"] >= 67 for p in people]
         eligible = [q and (r or means_test) for q, r in zip(qualifies, on_relevant)]
-        # One payment for a couple on a relevant benefit, to the claimant: the
-        # member who reports the award, else the benefit-unit head, else the
-        # elder (first listed if the same age). The other is not entitled.
+        # One payment for a couple on a relevant benefit, to the member it is
+        # paid to. Between two it is paid to (a joint award), or two it is
+        # paid to neither of, the member who reports the award paid to them,
+        # else the benefit-unit head, else the elder (first listed if the same
+        # age). The other is not entitled.
         for u in range(len(units)):
             members = [
                 i
@@ -284,11 +287,14 @@ def reference_payments(household, year):
                     members,
                     key=lambda i: (
                         0
-                        if people[i][0]["reports"]
+                        if paid_to[i]
+                        and people[i][0]["reports"]
                         and units[people[i][1]]["award"] in relevant
                         else 1
+                        if paid_to[i]
+                        else 2
                         if people[i][0]["head"]
-                        else 2,
+                        else 3,
                         -people[i][0]["age"],
                         i,
                     ),

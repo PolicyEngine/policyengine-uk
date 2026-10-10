@@ -901,3 +901,75 @@
     is_on_pension_credit: [true, false, false]
     winter_fuel_payment: [200, 0, 100]
     winter_fuel_allowance: 300
+
+- name: 2025 a report of an award that is not paid does not move the couple's payment from the Pension Credit payee
+  # Pension Credit is paid to the 80-year-old head (no one reports it). The
+  # partner, 67, reports income-related ESA, but none is paid. So the
+  # payment goes to the Pension Credit payee: reg. 3(4), £300. The partner
+  # is excluded: reg. 4(2)(a).
+  period: 2025
+  input:
+    people:
+      pension_credit_payee:
+        age: 80
+        is_benunit_head: true
+      partner:
+        age: 67
+        is_benunit_head: false
+        esa_income_reported: 1
+    benunits:
+      couple:
+        members: [pension_credit_payee, partner]
+        pension_credit: 1_000
+        esa_income: 0
+        jsa_income: 0
+        income_support: 0
+        universal_credit: 0
+    households:
+      household:
+        members: [pension_credit_payee, partner]
+        country: ENGLAND
+  output:
+    is_on_pension_credit: [true, false]
+    is_on_income_related_esa: [false, false]
+    winter_fuel_payment: [300, 0]
+    winter_fuel_allowance: 300
+
+- name: 2025 Universal Credit claimed as a single person is not paid to the partner who cannot be a joint claimant
+  # The 60-year-old claims as a single person (Universal Credit Regulations
+  # 2013 reg. 3(3)), so the award is not paid to the 72-year-old partner,
+  # who lives with a person entitled (the lodger): reg. 3(2), £100. The
+  # partner is not excluded, as the claimant has not reached pensionable age
+  # (reg. 4(2)(a)). The lodger: reg. 3(2), £100.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 60
+        is_benunit_head: true
+      partner:
+        age: 72
+        is_benunit_head: false
+        uc_is_ineligible_partner: true
+      lodger:
+        age: 75
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [claimant, partner]
+        universal_credit: 1_000
+        pension_credit: 0
+        esa_income: 0
+        income_support: 0
+        jsa_income: 0
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [claimant, partner, lodger]
+        country: ENGLAND
+  output:
+    is_on_universal_credit: [true, false, false]
+    winter_fuel_payment: [0, 100, 100]
+    winter_fuel_allowance: 200

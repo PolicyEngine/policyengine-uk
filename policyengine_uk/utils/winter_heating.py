@@ -65,20 +65,28 @@ def couple_receipt(person, period, receipt):
     return where(claimant_or_partner, couple, receipt)
 
 
-def is_on_relevant_benefit(person, period, eligibility):
-    """Whether the person is on a relevant benefit for the scheme.
+def paid_relevant_benefit(person, period, eligibility):
+    """Whether a relevant benefit for the scheme is paid to the person.
 
     ``eligibility`` is the scheme's eligibility parameter node: the benefits
-    in ``relevant_benefits``, a tax credit award of at least
-    ``minimum_tax_credit_award`` (infinite when tax credits do not count),
-    and ``partner_receipt_counts``: whether a member of a couple is on a
-    relevant benefit when the other member is. Without it, the person is on
-    one only if it is paid to them.
+    in ``relevant_benefits`` (read through the is_on_* variables, which name
+    the member of a couple an award is paid to), and a tax credit award of at
+    least ``minimum_tax_credit_award`` (infinite when tax credits do not
+    count).
     """
     listed = add(person, period, eligibility.relevant_benefits) > 0
     award = person("tax_credit_award", period)
     tax_credits = (award > 0) & (award >= eligibility.minimum_tax_credit_award)
-    paid = listed | tax_credits
+    return listed | tax_credits
+
+
+def is_on_relevant_benefit(person, period, eligibility):
+    """Whether the person is on a relevant benefit for the scheme: it is paid
+    to them, or, where the scheme's ``partner_receipt_counts`` says a member
+    of a couple is on one when the other member is, to the other member of
+    their couple.
+    """
+    paid = paid_relevant_benefit(person, period, eligibility)
     return where(
         eligibility.partner_receipt_counts,
         couple_receipt(person, period, paid),
@@ -86,21 +94,25 @@ def is_on_relevant_benefit(person, period, eligibility):
     )
 
 
-def reports_relevant_benefit(person, period, eligibility):
-    """Whether the person reports a relevant-benefit award of their own."""
-    reports = [
-        report
-        for variable in eligibility.relevant_benefits
-        for report in REPORTED_AWARDS[variable]
-    ]
-    own_award = add(person, period, reports) > 0 if reports else False
-    reported = add(person, period, TAX_CREDIT_REPORTS)
-    tax_credits = (reported > 0) & (reported >= eligibility.minimum_tax_credit_award)
-    return own_award | tax_credits
+def reports_paid_relevant_benefit(person, period, eligibility):
+    """Whether the person reports a relevant-benefit award that is paid to
+    them. A report of an award that is not paid (one the benefit's own tests
+    reduce to nothing, say) says nothing about who claims."""
+    reports = False
+    for variable in eligibility.relevant_benefits:
+        reported = add(person, period, REPORTED_AWARDS[variable]) > 0
+        reports = reports | (person(variable, period) & reported)
+    award = person("tax_credit_award", period)
+    tax_credits = (
+        (award > 0)
+        & (award >= eligibility.minimum_tax_credit_award)
+        & (add(person, period, TAX_CREDIT_REPORTS) > 0)
+    )
+    return reports | tax_credits
 
 
 def is_excluded_relevant_benefit_partner(
-    person, period, qualifies, on_relevant_benefit, reports
+    person, period, qualifies, on_relevant_benefit, eligibility
 ):
     """Whether the person is the partner of the person paid for their couple.
 
@@ -110,23 +122,30 @@ def is_excluded_relevant_benefit_partner(
     SI 2000/729 reg 3(1)(a)(i) and SI 2025/969 reg 4(2)(a) the partner is
     excluded when the person the benefit is paid to has reached pensionable
     age, so the couple's receipt decides this whichever instrument applies.
-    The model takes the claimant to be the member of the couple who reports
-    the award; failing that, the benefit-unit head; failing that, the elder,
-    as the legacy award readers do. The choice matters beyond the couple:
-    whether someone else in the household lives with an entitled person aged
-    80 or over depends on whom the couple's payment is made to (SI 2000/729
-    reg 2(2)(b); SI 2025/969 reg 3(5) and (6); SSI 2024/351 reg 10(6) as
-    substituted by SSI 2025/282).
+
+    The payment goes to the member a relevant benefit is paid to. Where it is
+    paid to both (a joint award), or to neither of those who qualify, the
+    model takes the claimant to be the member who reports the award paid to
+    them; failing that, the benefit-unit head; failing that, the elder. A
+    report of an award that is not paid does not count. The choice matters
+    beyond the couple: whether someone else in the household lives with an
+    entitled person aged 80 or over depends on whom the couple's payment is
+    made to (SI 2000/729 reg 2(2)(b); SI 2025/969 reg 3(5) and (6); SSI
+    2024/351 reg 10(6) as substituted by SSI 2025/282).
     """
     age = person("age", period)
     on_relevant_benefit = couple_receipt(person, period, on_relevant_benefit)
     couple_member = (
         qualifies & person("is_claimant_or_partner", period) & on_relevant_benefit
     )
-    precedence = where(
-        reports,
-        0,
-        where(person("is_benunit_head", period), 1, 2),
+    precedence = select(
+        [
+            reports_paid_relevant_benefit(person, period, eligibility),
+            paid_relevant_benefit(person, period, eligibility),
+            person("is_benunit_head", period),
+        ],
+        [0, 1, 2],
+        default=3,
     )
     payee = couple_member & (
         person.get_rank(
