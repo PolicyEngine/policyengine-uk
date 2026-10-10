@@ -1,3 +1,10 @@
+## [2.126.1] - 2026-10-10
+
+### Fixed
+
+- - Raised the `Test` job's timeout from 60 to 120 minutes: the suite now takes about an hour, so pull request runs were being cancelled at the limit.
+
+
 ## [2.126.0] - 2026-10-10
 
 ### Added
