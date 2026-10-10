@@ -1,0 +1,21 @@
+description: >-
+  Age below which a child too old for the work-focused interview only group
+  puts their responsible carer in the Universal Credit group subject to the
+  work preparation requirement. From 28 April 2014 the group took the
+  responsible carer of a child aged 3 or 4, and since 3 April 2017 it takes
+  the responsible carer of a child aged 2. Before 28 April 2014 a child's age
+  did not put anyone in this group.
+values:
+  2013-04-29: 5
+  2014-04-28: 5
+  2017-04-03: 3
+metadata:
+  unit: year
+  label: Universal Credit responsible carer work preparation child age limit
+  reference:
+    - title: Welfare Reform Act 2012 s. 21(1)(aa)
+      href: https://www.legislation.gov.uk/ukpga/2012/5/section/21
+    - title: The Universal Credit Regulations 2013 reg. 91A, as inserted from 28 April 2014 (a child aged 3 or 4)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/91A/2014-04-28
+    - title: Welfare Reform and Work Act 2016 s. 17(1)(b) and (2)(b) (a child aged 2, from 3 April 2017)
+      href: https://www.legislation.gov.uk/ukpga/2016/7/section/17

@@ -8,18 +8,26 @@ class housing_benefit_applicable_amount(Variable):
     definition_period = YEAR
     unit = GBP
     defined_for = "housing_benefit_eligible"
-    reference = "https://www.legislation.gov.uk/uksi/2006/213/schedule/3"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2006/213/schedule/3",
+        "https://www.legislation.gov.uk/uksi/2006/214/schedule/3",
+    )
 
     def formula(benunit, period, parameters):
         p = parameters(period).gov.dwp.housing_benefit.allowances
-        any_over_SP_age = benunit.any(benunit.members("is_SP_age", period))
+        # Each regulation set has its own Schedule 3 allowance table. Reg 5
+        # keeps qualifying-age UC and specified legacy recipients in the
+        # working-age regulations, so age alone does not choose the table.
+        pension_age_regulations = benunit(
+            "housing_benefit_pension_age_regulations_apply", period
+        )
         eldest_age = benunit("eldest_claimant_or_partner_age", period)
         older_age_threshold = p.age_threshold.older
         younger_age_threshold = p.age_threshold.younger
         u_18 = eldest_age < younger_age_threshold
         u_25 = eldest_age < older_age_threshold
-        o_25 = (eldest_age >= older_age_threshold) & ~any_over_SP_age
-        o_18 = (eldest_age >= younger_age_threshold) * ~any_over_SP_age
+        o_25 = (eldest_age >= older_age_threshold) & ~pension_age_regulations
+        o_18 = (eldest_age >= younger_age_threshold) * ~pension_age_regulations
         single = benunit("is_single_person", period)
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_lone_parent", period)
@@ -45,17 +53,17 @@ class housing_benefit_applicable_amount(Variable):
         single_personal_allowance = (
             u_25 * p.single.younger
             + o_25 * p.single.older
-            + any_over_SP_age * single_aged
+            + pension_age_regulations * single_aged
         )
         couple_personal_allowance = (
             u_18 * p.couple.younger
             + o_18 * p.couple.older
-            + any_over_SP_age * couple_aged
+            + pension_age_regulations * couple_aged
         )
         lone_parent_personal_allowance = (
             u_18 * p.lone_parent.younger
             + o_18 * p.lone_parent.older
-            + any_over_SP_age * lone_parent_aged
+            + pension_age_regulations * lone_parent_aged
         )
         personal_allowance = (
             single * single_personal_allowance

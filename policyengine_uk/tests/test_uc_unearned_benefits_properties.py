@@ -17,23 +17,20 @@ Invariants, for any generated population of working-age families:
    families that already received the benefit; starting to receive
    contributory ESA or industrial injuries benefit can lift the cap, because
    receipt exempts the family from it.
-2. Pound for pound: with no earnings in the family, raising one of the
-   benefits by d lowers the award before the benefit cap by exactly
-   min(counted increase, award).
-3. Equivalence: with no earnings in the family, UC before the benefit cap
-   with x of the benefit equals UC with the counted amount of private pension
-   received by the same person instead. For carer support payment both
-   families keep the carer's caring hours, so both get the carer element.
+2. Pound for pound: raising one of the benefits by d lowers the award before
+   the benefit cap by exactly min(counted increase, award), whatever the
+   partner earns, because tax on a benefit never comes off anyone's earnings
+   (reg. 55(5)(b), reg. 57(2) step 3).
+3. Equivalence: UC before the benefit cap with x of the benefit equals UC with
+   the counted amount of private pension received by the same person instead.
+   For carer support payment both families keep the carer's caring hours, so
+   both get the carer element.
 
-Invariants 2 and 3, and invariant 1 for carer support payment, are
-restricted to families without earnings because the model deducts the whole
-benefit unit's income tax from its earnings
-(PolicyEngine/policyengine-uk#1942), so tax on a taxable benefit or pension
-reduces earned income. Carer support payment is taxable, so above the cap,
-where more of it adds nothing to unearned income, the carer's extra tax
-lowers the partner's earned income and raises the award. The strict xfail
-below pins that case and will flip when #1942 is fixed; widen these
-invariants to all families then. They compare the award before the benefit cap because
+Marriage Allowance is switched off for invariants 2 and 3, and for invariant
+1 for carer support payment. The model books it on the recipient as the
+transferor's unused personal allowance (PolicyEngine/policyengine-uk#1947),
+so a taxable benefit that uses up the first adult's allowance raises the
+earning partner's tax on earnings. Invariants 2 and 3 compare the award before the benefit cap because
 contributory ESA and industrial injuries benefit trigger benefit cap
 exemptions and ESA counts towards the cap, which private pension does not.
 """
@@ -90,8 +87,8 @@ UC_VARIABLES = [
 
 
 @st.composite
-def families(draw, with_earnings=True):
-    earnings = draw(st.one_of(st.just(0.0), money)) if with_earnings else 0.0
+def families(draw):
+    earnings = draw(st.one_of(st.just(0.0), money))
     return dict(
         ages=[draw(WORKING_AGE) for _ in range(draw(st.integers(1, 2)))],
         children=[draw(st.integers(0, 15)) for _ in range(draw(st.integers(0, 2)))],
@@ -103,14 +100,17 @@ def families(draw, with_earnings=True):
     )
 
 
-def situation(units, year, income_variable, bump=0.0, carer=False):
+def situation(
+    units, year, income_variable, bump=0.0, carer=False, marriage_allowance=True
+):
     """Build one simulation holding every family.
 
     The first adult receives the family's ``amount`` (plus ``bump``) under
     ``income_variable``; a partner receives the family's earnings. With
     ``carer``, the first adult cares for 40 hours a week in Scotland and has
     carer support payment set explicitly (zero unless it is the income
-    variable), so the carer element applies whatever the income.
+    variable), so the carer element applies whatever the income. With
+    ``marriage_allowance=False`` no one claims Marriage Allowance.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
@@ -122,6 +122,8 @@ def situation(units, year, income_variable, bump=0.0, carer=False):
             # head's child) does not apply. Setting it for anyone makes it an
             # input for everyone, so children get False below.
             person = {"age": {year: age}, "is_claimant_or_partner": {year: True}}
+            if not marriage_allowance:
+                person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
                 if carer:
                     person["care_hours"] = {year: 40}
@@ -207,13 +209,14 @@ def test_uc_is_non_increasing_in_each_benefit(units, benefit, bump, year):
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(CSP_YEARS),
 )
 def test_uc_is_non_increasing_in_carer_support_payment(units, bump, year):
-    low = calculate(units, year, "carer_support_payment", carer=True)
-    high = calculate(units, year, "carer_support_payment", bump=bump, carer=True)
+    kwargs = dict(carer=True, marriage_allowance=False)
+    low = calculate(units, year, "carer_support_payment", **kwargs)
+    high = calculate(units, year, "carer_support_payment", bump=bump, **kwargs)
     increase = high["counted_csp"] - low["counted_csp"]
     assert np.all(increase >= -0.01), units
     assert_monotone(low, high, increase, units)
@@ -221,14 +224,14 @@ def test_uc_is_non_increasing_in_carer_support_payment(units, bump, year):
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     benefit=st.sampled_from(BENEFITS),
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(YEARS),
 )
 def test_uc_falls_pound_for_pound_in_each_benefit(units, benefit, bump, year):
-    low = calculate(units, year, benefit)
-    high = calculate(units, year, benefit, bump=bump)
+    low = calculate(units, year, benefit, marriage_allowance=False)
+    high = calculate(units, year, benefit, bump=bump, marriage_allowance=False)
     award = low["universal_credit_pre_benefit_cap"]
     np.testing.assert_allclose(
         high["universal_credit_pre_benefit_cap"],
@@ -240,13 +243,14 @@ def test_uc_falls_pound_for_pound_in_each_benefit(units, benefit, bump, year):
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     bump=st.floats(0, 20_000, allow_nan=False, allow_infinity=False),
     year=st.sampled_from(CSP_YEARS),
 )
 def test_uc_falls_pound_for_pound_in_counted_carer_support_payment(units, bump, year):
-    low = calculate(units, year, "carer_support_payment", carer=True)
-    high = calculate(units, year, "carer_support_payment", bump=bump, carer=True)
+    kwargs = dict(carer=True, marriage_allowance=False)
+    low = calculate(units, year, "carer_support_payment", **kwargs)
+    high = calculate(units, year, "carer_support_payment", bump=bump, **kwargs)
     award = low["universal_credit_pre_benefit_cap"]
     increase = high["counted_csp"] - low["counted_csp"]
     np.testing.assert_allclose(
@@ -259,14 +263,14 @@ def test_uc_falls_pound_for_pound_in_counted_carer_support_payment(units, bump, 
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     benefit=st.sampled_from(BENEFITS),
     year=st.sampled_from(YEARS),
 )
 def test_each_benefit_counts_like_private_pension(units, benefit, year):
     assert_same(
-        calculate(units, year, benefit),
-        calculate(units, year, "private_pension_income"),
+        calculate(units, year, benefit, marriage_allowance=False),
+        calculate(units, year, "private_pension_income", marriage_allowance=False),
         [v for v in UC_VARIABLES if v != "universal_credit"],
         str(units),
     )
@@ -274,15 +278,16 @@ def test_each_benefit_counts_like_private_pension(units, benefit, year):
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     year=st.sampled_from(CSP_YEARS),
 )
 def test_carer_support_payment_counts_like_capped_private_pension(units, year):
-    with_csp = calculate(units, year, "carer_support_payment", carer=True)
+    kwargs = dict(carer=True, marriage_allowance=False)
+    with_csp = calculate(units, year, "carer_support_payment", **kwargs)
     # The same family with the counted amount of Carer Support Payment
     # received as private pension instead.
     counted = [dict(unit, amount=c) for unit, c in zip(units, with_csp["counted_csp"])]
-    with_pension = calculate(counted, year, "private_pension_income", carer=True)
+    with_pension = calculate(counted, year, "private_pension_income", **kwargs)
     assert_same(
         with_csp,
         with_pension,
@@ -291,14 +296,6 @@ def test_carer_support_payment_counts_like_capped_private_pension(units, year):
     )
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "PolicyEngine/policyengine-uk#1942: uc_earned_income deducts the whole "
-        "benefit unit's income tax, including the carer's tax on Carer Support "
-        "Payment, from the partner's earnings"
-    ),
-)
 def test_carer_support_payment_above_the_cap_does_not_change_uc():
     # 2026, Scotland: a carer aged 40 caring 40 hours a week with private
     # pension of 9,000 and a partner aged 38 earning 4,000 (under the personal

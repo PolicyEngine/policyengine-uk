@@ -1,6 +1,6 @@
 # Expected values are hand-computed from SPC Regs 2002 reg 15(6): deemed income
 # is 1 pound a week for every 500 pounds, or part of 500 pounds, of capital
-# above 10,000 pounds (2025: 52 weeks a year).
+# above 10,000 pounds, times 52 weeks a year.
 
 - name: With no reported capital (the default, -1), household capital is the proxy.
   period: 2025
