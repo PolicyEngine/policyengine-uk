@@ -1,0 +1,106 @@
+# SI 2019/37 arts 2(3) and 4: a mixed-age couple keeps Pension Credit while it
+# stays entitled to Pension Credit or to Housing Benefit under the pension-age
+# regulations (SI 2006/214). Those regulations do not apply where the claimant
+# "or, if he has a partner, his partner" is on Income Support, income-based
+# JSA or income-related ESA (reg 5). The saving is inferred from reported
+# receipt. "other" is a member who is neither the claimant, the partner nor a
+# child or young person they are responsible for, so an award they report is
+# their own claim and leaves the couple's Housing Benefit under the
+# pension-age regulations. is_mixed_age_couple is entered so the cases test
+# the award reports alone. The older member, 75 in 2026, was born in 1951 and
+# had reached the qualifying age by 14 May 2019.
+
+- name: Another member's income-related ESA leaves a mixed-age couple's Housing Benefit saving in place
+  period: 2026
+  input:
+    people:
+      older:
+        age: 75
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+      younger:
+        age: 60
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [older, younger, other]
+        is_mixed_age_couple: true
+    households:
+      household:
+        members: [older, younger, other]
+  output:
+    has_mixed_age_couple_pension_credit_saving: true
+
+- name: Another member's Income Support leaves a mixed-age couple's Housing Benefit saving in place
+  period: 2026
+  input:
+    people:
+      older:
+        age: 75
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+      younger:
+        age: 60
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 4_000
+    benunits:
+      benunit:
+        members: [older, younger, other]
+        is_mixed_age_couple: true
+    households:
+      household:
+        members: [older, younger, other]
+  output:
+    has_mixed_age_couple_pension_credit_saving: true
+
+- name: The younger partner's income-related ESA puts the couple under the working-age regulations, so no saving
+  period: 2026
+  input:
+    people:
+      older:
+        age: 75
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+      younger:
+        age: 60
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [older, younger]
+        is_mixed_age_couple: true
+    households:
+      household:
+        members: [older, younger]
+  output:
+    has_mixed_age_couple_pension_credit_saving: false
+
+- name: A mixed-age couple reporting pension-age Housing Benefit and no income-related award keeps the saving
+  period: 2026
+  input:
+    people:
+      older:
+        age: 75
+        is_claimant_or_partner: true
+        housing_benefit_reported: 3_000
+      younger:
+        age: 60
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        is_mixed_age_couple: true
+    households:
+      household:
+        members: [older, younger]
+  output:
+    has_mixed_age_couple_pension_credit_saving: true

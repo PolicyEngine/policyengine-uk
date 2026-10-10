@@ -71,6 +71,7 @@ FAMILY_READERS = [
     "would_claim_IS",
     "income_support_eligible",
     "housing_benefit_pension_age_regulations_apply",
+    "has_mixed_age_couple_pension_credit_saving",
 ]
 MEMBER_READERS = [
     "is_scp_eligible",
@@ -254,7 +255,7 @@ def test_other_members_awards_never_change_the_readers(drawn):
 PENSION_AGE = 68
 # Whether the pension-age property enters is_mixed_age_couple, so that a
 # reader of the couple's award reports is tested on those reports alone.
-ENTER_IS_MIXED_AGE_COUPLE = False
+ENTER_IS_MIXED_AGE_COUPLE = True
 AWARD_REPORTS = [
     "esa_income_reported",
     "jsa_income_reported",
