@@ -19,10 +19,14 @@ Who is "on" a relevant benefit differs between the instruments:
 
 - SI 2000/729, SI 2025/969 and NISR 2025/142 ask whether the benefit "has
   been, or falls to be, paid to" the person. Income Support, income-based
-  JSA, income-related ESA and Pension Credit are paid to one member of a
-  couple (is_on_income_support and the other readers name that member);
-  Universal Credit and tax credits are joint awards, so both members are on
-  them.
+  JSA, income-related ESA and Pension Credit are the claimant's awards,
+  paid to one member of a couple (is_on_income_support and the other readers
+  name that member). Universal Credit is awarded to a couple jointly (WRA
+  2012 s.1(2)(b)) and paid into an account the joint claimants nominate
+  (Universal Credit etc. (Claims and Payments) Regulations 2013 reg 47(4));
+  reg 47(6) pays it wholly to one member only by special arrangement. So it
+  falls to be paid to both members. Tax credits are relevant only under the
+  2024 instruments below, so who they are paid to does not arise.
 - SI 2024/869 reg 2(5), NISR 2024/160 reg 2(5) and SSI 2024/351 (reg 7(2) as
   made, reg 10(8) as substituted by SSI 2025/282, reg 2A from April 2026)
   treat a member of a couple as entitled when the other member is.

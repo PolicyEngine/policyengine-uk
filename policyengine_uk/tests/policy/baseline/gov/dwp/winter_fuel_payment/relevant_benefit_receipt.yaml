@@ -642,10 +642,13 @@
     winter_fuel_allowance: 200
 
 # A couple whose claimant is under pensionable age and whose partner is over
-# it. Income-related ESA and income-based JSA are paid to the claimant (the
-# benefit-unit head here), Universal Credit to the couple jointly. The
-# lodger, aged 75, is in a benefit unit of their own and on no relevant
-# benefit.
+# it. Income-related ESA and income-based JSA are the claimant's own awards,
+# paid to the claimant (the benefit-unit head here). Universal Credit is
+# awarded to the couple jointly (WRA 2012 s.1(2)(b)) and paid into an
+# account the joint claimants nominate (Universal Credit etc. (Claims and
+# Payments) Regulations 2013 reg. 47(4)); reg. 47(6) pays it wholly to one
+# member only by special arrangement. The lodger, aged 75, is in a benefit
+# unit of their own and on no relevant benefit.
 
 - name: 2025 the partner of an income-related ESA claimant under pensionable age is paid at their own rate
   # The partner is not excluded: reg. 4(2)(a) needs the person the benefit is
@@ -686,10 +689,12 @@
     winter_fuel_payment: [0, 100, 100]
     winter_fuel_allowance: 200
 
-- name: 2025 Universal Credit is paid to both members, so the partner keeps the full amount beside a lodger
-  # A joint award: the partner is on Universal Credit and gets £200 (reg.
-  # 3(1); reg. 3(2) applies only where no relevant benefit is paid to P).
-  # The lodger: reg. 3(2), £100.
+- name: 2025 Universal Credit falls to be paid to both joint claimants, so the partner keeps the full amount beside a lodger
+  # A joint award falls to be paid to both joint claimants, so it falls to
+  # be paid to the partner, who gets £200 (reg. 3(1); reg. 3(2) applies only
+  # where no relevant benefit has been, nor falls to be, paid to P). Unlike
+  # the ESA case above, the partner is a claimant of the award. The lodger:
+  # reg. 3(2), £100.
   period: 2025
   input:
     people:
@@ -796,3 +801,103 @@
     is_on_income_based_jsa: [true, false, false]
     winter_fuel_payment: [0, 100, 100]
     winter_fuel_allowance: 200
+
+# Pension Credit is paid to the claimant, who must have attained the
+# qualifying age (SPCA 2002 s.1(2)(b)).
+
+- name: 2025 Pension Credit is paid only to the member of a couple who claims it
+  # Both have reached pensionable age and the 70-year-old reports the award,
+  # so it is paid to them, not to the partner who heads the benefit unit:
+  # reg. 3(1), £200. The partner is excluded: reg. 4(2)(a).
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 70
+        is_benunit_head: false
+        pension_credit_reported: 1_000
+      partner:
+        age: 72
+        is_benunit_head: true
+    benunits:
+      couple:
+        members: [claimant, partner]
+        pension_credit: 1_000
+    households:
+      household:
+        members: [claimant, partner]
+        country: ENGLAND
+  output:
+    is_on_pension_credit: [true, false]
+    is_on_winter_fuel_payment_relevant_benefit: [true, false]
+    winter_fuel_payment: [200, 0]
+    winter_fuel_allowance: 200
+
+- name: 2025 Pension Credit reported by a partner under the qualifying age is paid to the member over it
+  # A couple aged 75 and 60 on Pension Credit (a mixed-age couple whose award
+  # began before 15 May 2019). Only the 75-year-old can be the claimant, so
+  # Pension Credit is paid to them whoever reports it: reg. 3(1), £200. The
+  # 60-year-old has not reached pensionable age: nothing. The lodger, aged 70
+  # and on no relevant benefit, lives with a person entitled: reg. 3(2),
+  # £100.
+  period: 2025
+  input:
+    people:
+      older:
+        age: 75
+        is_benunit_head: true
+        total_income: 20_000
+      younger:
+        age: 60
+        is_benunit_head: false
+        pension_credit_reported: 1_000
+      lodger:
+        age: 70
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [older, younger]
+        pension_credit: 1_000
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [older, younger, lodger]
+        country: ENGLAND
+  output:
+    is_on_pension_credit: [true, false, false]
+    winter_fuel_payment: [200, 0, 100]
+    winter_fuel_allowance: 300
+
+- name: 2025 with no report, Pension Credit is paid to the member over the qualifying age even when the other heads the benefit unit
+  # As above, with the award entered for the couple and the 60-year-old as
+  # the benefit-unit head: £200, nothing and £100.
+  period: 2025
+  input:
+    people:
+      older:
+        age: 75
+        is_benunit_head: false
+        total_income: 20_000
+      younger:
+        age: 60
+        is_benunit_head: true
+      lodger:
+        age: 70
+        total_income: 20_000
+    benunits:
+      couple:
+        members: [older, younger]
+        pension_credit: 1_000
+      lodger_unit:
+        members: [lodger]
+        pension_credit: 0
+    households:
+      household:
+        members: [older, younger, lodger]
+        country: ENGLAND
+  output:
+    is_on_pension_credit: [true, false, false]
+    winter_fuel_payment: [200, 0, 100]
+    winter_fuel_allowance: 300

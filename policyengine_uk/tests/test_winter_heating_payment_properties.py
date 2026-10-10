@@ -8,7 +8,13 @@ person is on a relevant benefit depends on the instrument:
 - "paid to" the person (SI 2000/729, SI 2025/969): Income Support,
   income-based JSA, income-related ESA and Pension Credit are paid to one
   member of a couple, the one who reports the award or else the benefit-unit
-  head; Universal Credit and tax credits are joint awards, paid to both;
+  head (for Pension Credit, among the members who have attained the
+  qualifying age, SPCA 2002 s.1(2)(b)). Universal Credit is awarded to the
+  couple jointly and paid into an account the joint claimants nominate
+  (Universal Credit etc. (Claims and Payments) Regulations 2013 reg 47(4);
+  reg 47(6) pays it wholly to one member only by special arrangement), so it
+  is paid to both. Tax credits count only under the 2024 instruments, which
+  count the couple either way;
 - through the couple (SI 2024/869 reg 2(5); SSI 2024/351 reg 7(2), 10(8) and
   2A): a member of a couple is on one when the other member is.
 
@@ -19,8 +25,9 @@ Either way a couple on one receives a single payment. Properties:
   units, in every country and in the 2023 to 2026 qualifying weeks;
 - adding a non-dependant under pensionable age, with or without a relevant
   benefit of their own, never changes what anyone else is paid;
-- from the 2025 qualifying week, a household whose pension-age members all
-  belong to one benefit unit receives the full amount for that unit
+- from the 2025 qualifying week, a household of a single person or a couple
+  (one benefit unit's claimant and partner, with no one else) receives the
+  full amount for that unit
   (higher if anyone is 80 or over), whether or not they are on a relevant
   benefit: the shared amounts are halves (or, for two people over 80, a
   half of the higher amount each). The one exception is PAWHP from April
@@ -77,7 +84,9 @@ OWN_AWARD_INPUTS = {
 # also draws income-related ESA: whether or not it is paid, it must never
 # change anyone else's payment.
 OWN_REPORT_INPUTS = {**OWN_AWARD_INPUTS, "ESA": "esa_income_reported"}
-# Awards paid jointly to both members of a couple.
+# Awards made to a couple jointly and paid to both: Universal Credit (WRA 2012
+# s.1(2)(b); Claims and Payments Regulations 2013 reg 47(4) and (6)). Tax
+# credits count only in the 2024 week, where the couple counts either way.
 JOINT_AWARDS = {"UC", "TC"}
 
 # Relevant benefits by scheme and qualifying week, as listed in the
@@ -221,12 +230,22 @@ def reference_payments(household, year):
 
     def is_payee(i):
         """Whether the couple's award is paid to this claimant or partner:
-        the member who reports it, else the benefit-unit head."""
-        inputs, u, _ = people[i]
-        reporter = units[u].get("reporter")
-        if reporter is not None:
-            return bool(inputs["reports"])
-        return bool(inputs["head"])
+        the member who reports it, else the benefit-unit head. A Pension
+        Credit claimant must have attained the qualifying age (SPCA 2002
+        s.1(2)(b)), so where either member has, only such a member can be
+        paid it: the reporter or head among them, else the only one."""
+        u = people[i][1]
+        couple = [j for j, q in enumerate(people) if q[1] == u and q[2]]
+        if units[u]["award"] == "PC":
+            able = [j for j in couple if people[j][0]["age"] >= 67]
+            couple = able or couple
+        if i not in couple:
+            return False
+        for role in ("reports", "head"):
+            chosen = [j for j in couple if people[j][0][role]]
+            if chosen:
+                return i in chosen
+        return i == max(couple, key=lambda j: (people[j][0]["age"], -j))
 
     def paid(relevant):
         """Whether a relevant benefit is paid to each person."""
