@@ -499,6 +499,35 @@ def test_subsampling_a_single_year_dataset_keeps_its_type():
     assert len(data.household) == 6
 
 
+def test_a_simulation_built_from_a_dataframe_has_no_dataset_to_subsample():
+    households = np.arange(4)
+    frame = pd.DataFrame(
+        {
+            "person_id__2025": FIRST_PERSON_ID + households,
+            "person_benunit_id__2025": FIRST_BENUNIT_ID + households,
+            "person_household_id__2025": FIRST_HOUSEHOLD_ID + households,
+            "benunit_id__2025": FIRST_BENUNIT_ID + households,
+            "household_id__2025": FIRST_HOUSEHOLD_ID + households,
+            "household_weight__2025": [10.0, 20.0, 30.0, 40.0],
+            "age__2025": [30, 40, 50, 60],
+        }
+    )
+    simulation = Microsimulation(dataset=frame)
+    assert simulation.dataset is None
+    ages = by_id(simulation, "age", 2025)
+
+    simulation.subsample(n=3, seed=1)
+
+    assert simulation.dataset is None
+    kept = ids(simulation, "household")
+    assert 1 <= len(kept) <= 3
+    assert ids(simulation.baseline, "household") == kept
+    assert sum(weights_by_id(simulation, 2025).values()) == pytest.approx(100.0)
+    assert by_id(simulation, "age", 2025) == {
+        person: ages[person] for person in ids(simulation, "person")
+    }
+
+
 # Refusals.
 
 
