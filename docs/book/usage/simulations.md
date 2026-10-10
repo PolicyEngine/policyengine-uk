@@ -160,30 +160,49 @@ print(f"Childcare support: £{childcare_support:.2f} per month")
 
 ### From pandas DataFrames
 
-If you have data in a DataFrame, convert it to the right format:
+A DataFrame holds one row per person and one column per input and year, named
+`variable_name__year` (note the double underscore `__`). This is the format
+`Simulation.to_input_dataframe()` exports, so an exported frame loads back.
 
 ```python
 import pandas as pd
 
-# Your data needs specific column naming
+from policyengine_uk import Simulation
+
 df = pd.DataFrame(
     {
-        "person_id__2025": [1, 2, 3],
-        "age__2025": [25, 45, 65],
-        "employment_income__2025": [20000, 40000, 0],
-        "state_pension__2025": [0, 0, 180],  # Weekly pension
+        "person_id__2025": [1, 2, 3, 4],
+        "benunit_id__2025": [1, 1, 1, 2],
+        "household_id__2025": [1, 1, 1, 2],
+        "age__2025": [38, 36, 7, 70],
+        "employment_income__2025": [32_000, 18_000, 0, 0],
+        # A household value repeats on the row of each member.
+        "region__2025": ["LONDON", "LONDON", "LONDON", "WALES"],
+        "council_tax__2025": [1_800, 1_800, 1_800, 1_400],
     }
 )
 
-# Create simulation from the DataFrame
-sim_from_df = Simulation(dataset=df)
-# Calculate total income tax across all people in the dataset
-total_tax = sim_from_df.calculate("income_tax", 2025).sum()
-print(f"Total income tax from all people: £{total_tax:.2f}")
+sim = Simulation(dataset=df)
+print(sim.calculate("income_tax", 2025))  # One value per person
+print(sim.calculate("council_tax", 2025))  # One value per household
 ```
 
+- `benunit_id__<year>` and `household_id__<year>` name each person's benefit
+  unit and household. Without them, `person_benunit_id__<year>` and
+  `person_household_id__<year>` name them; with neither, each person is a
+  benefit unit and household of their own.
+- A benefit unit or household variable takes the value on its members' rows,
+  which must all hold the same value.
+- The simulation's `dataset` is the `UKMultiYearDataset` the frame describes,
+  with a year for each year the columns name. Values for a month or another
+  period that is not one year are set on the simulation directly.
+
 ```{important}
-The column naming follows the pattern `variable_name__year` for time-varying variables. Note the double underscore `__` between the variable name and year.
+The model stores `person_household_id` and `person_benunit_id` as 32-bit
+floats, which round identifiers of 2**24 (16,777,216) or more, so a frame
+exported from a simulation with large identifiers holds them rounded. The
+loader takes the groups from the exact `household_id` and `benunit_id` columns,
+and refuses a frame that names its groups only with such rounded identifiers.
 ```
 
 ### From entity tables with `UKSingleYearDataset` and `UKMultiYearDataset`
