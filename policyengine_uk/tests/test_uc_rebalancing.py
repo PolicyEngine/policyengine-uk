@@ -350,3 +350,26 @@ def test_standard_allowance_reforms_still_change_standard_allowance(monkeypatch)
     reformed_standard_allowance = reformed.calculate("uc_standard_allowance", 2026)[0]
 
     assert reformed_standard_allowance / baseline_standard_allowance > 1.5
+
+
+def test_a_branch_can_state_its_own_status():
+    sim = Simulation(situation=_uc_claimant(30))
+    parent = sim.calculate("uc_LCWRA_element", 2026)[0]
+    branch = sim.get_branch("new_claimant")
+    branch.set_input("uc_receives_new_claimant_health_element", 2026, [True])
+    branch.delete_arrays("uc_LCWRA_element", 2026)
+    uc_reform.universal_credit_july_2025_reform.simulation_modifier(branch)
+
+    assert branch.calculate("uc_LCWRA_element", 2026)[0] / 12 == pytest.approx(
+        _new_claimant_rate(sim, 2026)
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(parent)
+
+    # A branch of that branch inherits its status.
+    nested = branch.get_branch("nested")
+    nested.delete_arrays("uc_LCWRA_element", 2026)
+    uc_reform.universal_credit_july_2025_reform.simulation_modifier(nested)
+    assert nested.calculate("uc_LCWRA_element", 2026)[0] / 12 == pytest.approx(
+        _new_claimant_rate(sim, 2026)
+    )
+    assert sim.calculate("uc_LCWRA_element", 2026)[0] == pytest.approx(parent)

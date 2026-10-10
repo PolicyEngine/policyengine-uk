@@ -114,7 +114,9 @@ def _new_claimant_health_element_status(
     there would make a household's award depend on its position among the
     other benefit units in the simulation.
     """
-    supplied = sim.get_holder(NEW_CLAIMANT_STATUS).get_array(year)
+    # sim.get_array reads the simulation's own branch (and the branches it
+    # inherits from); the holder's get_array reads only the default branch.
+    supplied = sim.get_array(NEW_CLAIMANT_STATUS, year)
     if supplied is not None:
         return np.asarray(supplied, dtype=bool)
     if built_from_data:
