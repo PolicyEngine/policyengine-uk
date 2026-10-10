@@ -1,0 +1,1 @@
+- Hold the Universal Credit LCWRA element at £217.26 a month for 2026-27 to 2029-30, as Universal Credit Act 2025 s. 3 freezes it, and uprate it from that amount by the benefit uprating index from 2030-31. It was CPI-uprated from 2027-28. The freeze is `gov.dwp.universal_credit.rebalancing.health_element_freeze` and applies while the rebalancing reforms are active.

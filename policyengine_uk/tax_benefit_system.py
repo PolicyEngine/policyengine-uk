@@ -21,6 +21,9 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_health_element_uprating import (
+    add_uc_health_element_uprating,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
 )
@@ -100,6 +103,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         - September CPI uprating
         - Economic assumption indices
         - Income tax and NICs threshold indexation after the freeze
+        - Universal Credit LCWRA element uprating (UC Act 2025 s. 3 freeze)
         - Parameter uprating and backdating
         - Conversion to fiscal year parameters
         """
@@ -113,6 +117,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters = add_september_cpi_uprating(self.parameters)
         self.parameters = create_economic_assumption_indices(self.parameters)
         self.parameters = add_threshold_indexation(self.parameters)
+        self.parameters = add_uc_health_element_uprating(self.parameters)
         self.parameters = add_lsr_deprecation_aliases(self.parameters)
 
         # Create baseline parameters for reform comparisons
