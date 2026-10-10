@@ -437,8 +437,13 @@ def test_default_gains_track_gdp_index_after_late_reform(reform_type):
     )
 
 
+@pytest.mark.parametrize(
+    "source",
+    ["hf://fixture/synthetic/cgt.h5", "gs://fixture/synthetic/cgt.h5@1"],
+    ids=["huggingface", "gcs"],
+)
 def test_remote_dataset_cache_separates_projection_paths(
-    projection, dataset, monkeypatch, tmp_path
+    projection, dataset, monkeypatch, tmp_path, source
 ):
     import policyengine_uk.simulation as simulation_module
 
@@ -448,7 +453,9 @@ def test_remote_dataset_cache_separates_projection_paths(
     monkeypatch.setattr(
         simulation_module, "download_huggingface_dataset", lambda **kwargs: str(path)
     )
-    source = "hf://fixture/synthetic/cgt.h5"
+    monkeypatch.setattr(
+        simulation_module, "materialize_gcs_dataset_url", lambda url: str(path)
+    )
     default = Simulation(dataset=source)
     projected = Simulation(dataset=source, capital_gains_projection=projection)
     different = replace(projection, annual_growth={2025: 0.30, 2026: 0.10, 2027: 0.10})
