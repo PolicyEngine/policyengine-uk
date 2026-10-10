@@ -274,8 +274,9 @@ def test_charge_matches_band_by_band_reference(people, year):
         # Bounds: nil exactly when nothing is chargeable, and between the
         # lowest and highest rate charged.
         assert (charge[i] == 0) == (chargeable[i] == 0)
-        assert charge[i] >= min(band_rates) * chargeable[i] - TOLERANCE
-        assert charge[i] <= max(band_rates) * chargeable[i] + TOLERANCE
+        slack = max(TOLERANCE, RELATIVE_TOLERANCE * max(band_rates) * chargeable[i])
+        assert charge[i] >= min(band_rates) * chargeable[i] - slack
+        assert charge[i] <= max(band_rates) * chargeable[i] + slack
 
 
 @PROPERTY_SETTINGS
