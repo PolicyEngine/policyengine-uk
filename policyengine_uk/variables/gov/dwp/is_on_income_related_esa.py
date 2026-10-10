@@ -25,10 +25,13 @@ class is_on_income_related_esa(Variable):
         "is positive, the report exceeding the tariff income from the benefit "
         "unit's capital, within the capital limit. On the formula path the "
         "claimant's or partner's claim and work never change this. The "
-        "benefit unit's "
-        "modelled award must also be in payment: positive, or nil only "
-        "because the claimant's or partner's own claim fails "
-        "esa_income_eligible, so neutralising esa_income removes the status."
+        "benefit unit's modelled award must also be in payment: positive, or "
+        "nil while esa_income_eligible fails and esa_income is not "
+        "neutralised. On the formula path that nil comes only from the "
+        "claimant's or partner's own claim failing the screen. Neutralising "
+        "esa_income removes the status; a nil esa_income entered directly, or "
+        "a reform that replaces it with nil, removes it only while the screen "
+        "passes."
     )
     definition_period = YEAR
     reference = (

@@ -39,13 +39,15 @@ def own_report_is_paid(person, period, award, works, capital_limit):
     cannot stand in for theirs, because when the claimant or partner reports
     an award it tests only them.
 
-    The benefit unit's award must also be in payment: positive, or nil only
-    because the benefit unit's screen fails. When the award on this person's
-    report alone is positive, that screen fails only when the claimant or
-    partner reports an award and fails the work tests, which leaves this
-    person's own claim standing. So a reform that neutralises the benefit
-    removes the status, as does one that replaces the award with nil, or a
-    nil award entered directly, while the screen passes.
+    The benefit unit's award must also be in payment: positive, or nil while
+    the benefit unit's screen fails and the award is not neutralised. When
+    the award on this person's report alone is positive, that screen fails
+    only when the claimant or partner reports an award and fails the work
+    tests, which leaves this person's own claim standing; on the formula
+    path that is the only way the award is nil. A zero cannot say why it is
+    zero, so a reform that replaces the award with nil, or a nil award
+    entered directly, removes the status only while the screen passes. A
+    reform that neutralises the benefit always removes it.
 
     On the formula path another member's report or work never changes this.
     Their own tests read only their own work, their own report and the

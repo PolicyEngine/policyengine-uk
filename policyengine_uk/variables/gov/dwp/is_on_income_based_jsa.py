@@ -25,11 +25,13 @@ class is_on_income_based_jsa(Variable):
         "report alone is positive, the report exceeding the tariff income "
         "from the benefit unit's capital, within the capital limit. On the "
         "formula path the claimant's or partner's claim and work never change "
-        "this. Income-"
-        "based JSA must be open (gov.dwp.JSA.income.active), and the benefit "
-        "unit's modelled award in payment: positive, or nil only because the "
-        "claimant's or partner's own claim fails jsa_income_eligible, so "
-        "neutralising jsa_income removes the status."
+        "this. Income-based JSA must be open (gov.dwp.JSA.income.active), and "
+        "the benefit unit's modelled award in payment: positive, or nil while "
+        "jsa_income_eligible fails and jsa_income is not neutralised. On the "
+        "formula path that nil comes only from the claimant's or partner's "
+        "own claim failing the screen. Neutralising jsa_income removes the "
+        "status; a nil jsa_income entered directly, or a reform that replaces "
+        "it with nil, removes it only while the screen passes."
     )
     definition_period = YEAR
     reference = (
