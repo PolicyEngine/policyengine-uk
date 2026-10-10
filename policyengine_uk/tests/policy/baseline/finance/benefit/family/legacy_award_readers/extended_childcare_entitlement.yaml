@@ -1,7 +1,7 @@
-# SI 2022/1134 reg 15(4): a partner who is not in qualifying paid work meets
-# the partner condition if they are "a person entitled to a specified
-# benefit" and the parent meets reg 14(3) (likewise reg 14(4) for the
-# parent). Reg 11A(1)(e) lists employment and support allowance. The model
+# SI 2022/1134 reg 15(4)(c): the partner of a parent who meets reg 14(3)
+# meets the partner condition, without working, if they are "entitled to a
+# specified benefit" (reg 14(4)(b)(iii) likewise for the parent). Reg
+# 11A(1)(e) lists employment and support allowance. The model
 # reads income-related ESA as the claimant's and partner's award
 # (claimant_or_partner_esa_income), which counts for both members of the
 # couple. "other" is a member who is neither the claimant, the partner nor a
