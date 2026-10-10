@@ -194,7 +194,8 @@
     is_entitled_to_carer_benefit: true
     # HB Regs 2006 reg 75F(1)(h) and UC Regs 2013 reg 83(1)(i) exempt a
     # person "entitled to" Carer's Allowance.
-    is_benefit_cap_exempt_health_disability: true
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
 
 - name: Case 13, Severe Disablement Allowance at its maximum rate exceeds the allowance.
   period: 2026
@@ -255,7 +256,8 @@
     carers_allowance_pre_overlap: 0
     receives_carers_allowance: true
     is_entitled_to_carer_benefit: true
-    is_benefit_cap_exempt_health_disability: true
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
 
 - name: Case 17, Pension Credit counts the allowance after the overlap.
   period: 2026

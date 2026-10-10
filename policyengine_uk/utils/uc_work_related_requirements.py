@@ -7,17 +7,24 @@ apply to claimants.
 """
 
 
+def couple_members(person, period):
+    """The claimant and any partner: at most two people in a benefit unit.
+
+    Where the data flag more (an adult child in the parents' benefit unit),
+    the two eldest are the couple.
+    """
+    age = person("age", period)
+    flagged = person("is_uc_claimant", period)
+    return flagged & (person.get_rank(person.benunit, -age, condition=flagged) < 2)
+
+
 def claimants(person, period):
     """The single claimant or the joint claimants.
 
-    The members of the couple are `is_uc_assessed_claimant`: at most two
-    people in a benefit unit. A partner who cannot be a joint claimant (reg.
-    3(3)) is a member of the couple but not a claimant: no work-related group
-    or floor applies to them.
+    A partner who cannot be a joint claimant (reg. 3(3)) is a member of the
+    couple but not a claimant: no work-related group or floor applies to them.
     """
-    return person("is_uc_assessed_claimant", period) & ~person(
-        "uc_is_ineligible_partner", period
-    )
+    return couple_members(person, period) & ~person("uc_is_ineligible_partner", period)
 
 
 def other_member_of_single_claim(person, period):
@@ -31,39 +38,4 @@ def other_member_of_single_claim(person, period):
     """
     return person("uc_is_ineligible_partner", period) & person.benunit(
         "uc_member_of_couple_claims_as_single_person", period
-    )
-
-
-def stays_on_legacy_benefits(benunit, period):
-    """Whether the family stays on legacy benefits rather than claiming UC.
-
-    A family that reports a legacy benefit (`claims_legacy_benefits`) and
-    would not claim Universal Credit keeps its legacy awards; this is the
-    route `housing_benefit_eligible` gives a continuing working-age Housing
-    Benefit award. A family that would claim Universal Credit is calculated
-    on Universal Credit whatever it reports.
-    """
-    return benunit("claims_legacy_benefits", period) & ~benunit(
-        "would_claim_uc", period
-    )
-
-
-def single_claim_in_rules_shared_with_legacy_benefits(benunit, period):
-    """Whether a reg. 3(3) single claim sets the rules the model shares.
-
-    The benefit cap rate and exceptions and the LHA shared accommodation
-    test serve Housing Benefit as well as Universal Credit. Housing Benefit
-    and the other legacy benefits have no single claim by a member of a
-    couple, so a family that stays on legacy benefits keeps the couple rules;
-    a family claiming Universal Credit gets the Universal Credit rule.
-    """
-    return benunit(
-        "uc_member_of_couple_claims_as_single_person", period
-    ) & ~stays_on_legacy_benefits(benunit, period)
-
-
-def other_member_of_single_claim_in_shared_rules(person, period):
-    """`other_member_of_single_claim`, for the rules shared with legacy benefits."""
-    return other_member_of_single_claim(person, period) & ~stays_on_legacy_benefits(
-        person.benunit, period
     )

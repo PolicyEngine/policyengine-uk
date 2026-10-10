@@ -1,0 +1,400 @@
+# Each scheme's own benefit cap exceptions and reduction.
+#
+# Universal Credit (UC Regs 2013): reg 79(1) "Unless regulation 82 or 83
+# applies, the benefit cap applies"; reg 82 earnings; reg 83(1) "a claimant"
+# receiving listed benefits, or the LCWRA or carer element in the award; no
+# exception for age; reg 81 reduction "the excess; minus any amount included
+# in the award for the childcare costs element".
+# Housing Benefit (HB Regs 2006): reg 75A "Unless regulation 75E or 75F
+# applies"; reg 75E(2) "the claimant is, or the claimant and the claimant's
+# partner are jointly, entitled to working tax credit"; reg 75F(1) the
+# claimant or partner receiving listed benefits; reg 75D(2) the reduction
+# leaves the reg 75 minimum (50 pence a week); reg 5 the HB Regs 2006, and so
+# the cap, do not apply where the claimant or partner has reached the
+# qualifying age for state pension credit unless on UC, IS, income-based JSA
+# or income-related ESA.
+# Annual limits (UC reg 80A(2), HB reg 75CA(2)): single 14,753 / family
+# 22,020 outside London.
+
+- name: UC reg 83(1)(a) - the LCWRA element lifts the UC cap; HB has no LCWRA exception
+  period: 2025
+  input:
+    age: 30
+    region: NORTH_EAST
+    uc_limited_capability_for_WRA: true
+    esa_income: 0
+    esa_contrib: 0
+    working_tax_credit: 0
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_uc_benefit_cap_exempt: true
+    # HB reg 75F(1)(a) needs an employment and support allowance with the
+    # support component; limited capability alone is not on the list.
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: false
+    is_housing_benefit_benefit_cap_exempt: false
+    housing_benefit_benefit_cap: 14_753
+
+- name: UC reg 83(1)(j) - the carer element lifts the UC cap; HB needs carer's allowance
+  period: 2025
+  input:
+    age: 30
+    care_hours: 35
+    # No entitlement to carer's allowance or carer support payment.
+    carers_allowance_pre_overlap: 0
+    carer_support_payment_pre_overlap: 0
+    carers_allowance: 0
+    carer_support_payment: 0
+    working_tax_credit: 0
+  output:
+    is_entitled_to_carer_benefit: false
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_uc_benefit_cap_exempt: true
+    # HB reg 75F(1)(h)-(ha): entitlement to carer's allowance or carer
+    # support payment, which this carer does not have.
+    is_housing_benefit_benefit_cap_exempt: false
+
+- name: UC reg 83(1)(i) and HB reg 75F(1)(h) - carer's allowance lifts both caps
+  period: 2025
+  input:
+    age: 30
+    care_hours: 35
+    carers_allowance: 4_000
+    working_tax_credit: 0
+  output:
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt: true
+
+- name: UC reg 83(1)(c) with reg 2, and HB reg 75F(1)(ea) - armed forces independence payment lifts both caps
+  period: 2025
+  input:
+    age: 30
+    region: NORTH_EAST
+    armed_forces_independence_payment: 6_000
+    working_tax_credit: 0
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_housing_benefit_benefit_cap_exempt_specified_benefit: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: true
+
+- name: UC reg 82(1)(a) - earnings lift the UC cap; HB has no earnings exception
+  period: 2025
+  input:
+    age: 30
+    region: NORTH_EAST
+    employment_income: 15_000
+    working_tax_credit: 0
+  output:
+    # 2025-26: income tax 20% x (15,000 - 12,570) = 486; Class 1 NI 8% x
+    # (15,000 - 12,570) = 194.40; earned income 14,319.60, above the model's
+    # 10,152 a year (846 a month).
+    is_uc_benefit_cap_exempt_earnings: true
+    is_uc_benefit_cap_exempt: true
+    is_housing_benefit_benefit_cap_exempt: false
+    housing_benefit_benefit_cap: 14_753
+
+- name: HB reg 75E(2) - working tax credit lifts the HB cap; it is no UC exception
+  period: 2025
+  input:
+    age: 30
+    region: NORTH_EAST
+    working_tax_credit: 1_000
+  output:
+    is_housing_benefit_benefit_cap_exempt_working_tax_credit: true
+    is_housing_benefit_benefit_cap_exempt: true
+    is_uc_benefit_cap_exempt: false
+    uc_benefit_cap: 14_753
+
+- name: HB reg 5 - a pension-age claimant's HB is under the pension-age regulations, which have no cap
+  period: 2025
+  input:
+    age: 70
+    working_tax_credit: 0
+  output:
+    housing_benefit_pension_age_regulations_apply: true
+    is_housing_benefit_benefit_cap_exempt: true
+    # UC regs 79, 82 and 83 have no age exception. A claimant over the
+    # qualifying age can claim UC only on a qualifying claim (SI 2014/1230
+    # reg 60A), for which reg 60C disapplies the cap.
+    is_uc_benefit_cap_exempt_earnings: false
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+
+- name: SI 2014/1230 reg 60C - joint claimants who have both reached the qualifying age are not capped
+  # Reg 60C: "Where a qualifying claim is made by a single claimant who has,
+  # or joint claimants both of whom have, reached the qualifying age for state
+  # pension credit, regulation 79 ... is not to apply". Reg 60A makes such a
+  # claim possible for tax credit migrants; the model's own eligibility test
+  # does not, so the award is an input.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 72
+      younger:
+        age: 68
+    benunits:
+      benunit:
+        members: [older, younger]
+        universal_credit_pre_benefit_cap: 30_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [older, younger]
+        region: LONDON
+  output:
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    uc_benefit_cap_reduction: 0
+    universal_credit: 30_000
+
+- name: SI 2014/1230 reg 60C with UC reg 3(3) - a single claimant at the qualifying age whose partner cannot be a joint claimant is not capped
+  # The partner (say, subject to immigration control: reg 3(3)(e)) is not a
+  # claimant, so the claim is a single claimant's, and reg 60C asks only
+  # whether that claimant has reached the qualifying age. The award is an
+  # input, as above.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      partner:
+        age: 50
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        universal_credit_pre_benefit_cap: 30_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    is_uc_single_or_joint_claimant: [true, false]
+    is_uc_benefit_cap_exempt_qualifying_age: true
+    is_uc_benefit_cap_exempt: true
+    uc_benefit_cap_reduction: 0
+    universal_credit: 30_000
+
+- name: SI 2014/1230 reg 60C - the same award to joint claimants of whom only one has reached the qualifying age is capped
+  # Reg 60C needs both joint claimants to have reached the qualifying age.
+  # London couple cap 25,323 (reg 80A(2)(b)(i)); excess 30,000 - 25,323 =
+  # 4,677; no childcare costs element (reg 81).
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      partner:
+        age: 50
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        universal_credit_pre_benefit_cap: 30_000
+        uc_deductions: 0
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    is_uc_single_or_joint_claimant: [true, true]
+    is_uc_benefit_cap_exempt_qualifying_age: false
+    is_uc_benefit_cap_exempt: false
+    uc_benefit_cap: 25_323
+    uc_benefit_cap_reduction: 4_677
+    universal_credit: 25_323
+
+- name: UC regs 79-83 - a mixed-age couple on UC is capped; under reg 5(1)(b) so is their HB
+  period: 2025
+  input:
+    people:
+      older:
+        age: 70
+        is_claimant_or_partner: true
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: true
+        working_tax_credit: 0
+    households:
+      household:
+        members: [older, younger]
+        region: NORTH_EAST
+        tenure_type: RENT_PRIVATELY
+        rent: 9_000
+  output:
+    is_uc_entitled: true
+    is_uc_benefit_cap_exempt: false
+    uc_benefit_cap: 22_020
+    # The younger member is on UC, so the HB Regs 2006 apply (reg 5(1)(b)).
+    housing_benefit_pension_age_regulations_apply: false
+    is_housing_benefit_benefit_cap_exempt: false
+
+- name: HB reg 5(3) - a mixed-age couple not on UC or an income-related benefit claims under the pension-age regulations
+  period: 2025
+  input:
+    people:
+      older:
+        age: 70
+        is_claimant_or_partner: true
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        working_tax_credit: 0
+        income_support: 0
+        jsa_income: 0
+        esa_income: 0
+    households:
+      household:
+        members: [older, younger]
+        region: NORTH_EAST
+  output:
+    housing_benefit_pension_age_regulations_apply: true
+    is_housing_benefit_benefit_cap_exempt: true
+
+- name: HB reg 5(1)(b) - a pension-age claimant whose partner is on income-based JSA claims under the working-age regulations
+  period: 2025
+  input:
+    people:
+      older:
+        age: 70
+        is_claimant_or_partner: true
+      younger:
+        age: 50
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        working_tax_credit: 0
+        income_support: 0
+        jsa_income: 1_000
+        esa_income: 0
+    households:
+      household:
+        members: [older, younger]
+        region: NORTH_EAST
+  output:
+    housing_benefit_pension_age_regulations_apply: false
+    # Income-based JSA is not a reg 75F exception.
+    is_housing_benefit_benefit_cap_exempt: false
+    housing_benefit_benefit_cap: 22_020
+
+- name: UC reg 81(1) - the reduction is the excess less the childcare costs element
+  period: 2025
+  input:
+    benefit_cap_welfare_benefits: 30_000
+    uc_benefit_cap: 22_020
+    uc_childcare_element: 3_000
+    universal_credit_pre_benefit_cap: 15_000
+    housing_benefit_pre_benefit_cap: 0
+  output:
+    # Excess 30,000 - 22,020 = 7,980; less childcare 3,000 = 4,980.
+    uc_benefit_cap_reduction: 4_980
+    housing_benefit_benefit_cap_reduction: 0
+    benefit_cap_reduction: 4_980
+
+- name: UC reg 81(2) - no reduction where the childcare costs element exceeds the excess
+  period: 2025
+  input:
+    benefit_cap_welfare_benefits: 30_000
+    uc_benefit_cap: 22_020
+    uc_childcare_element: 9_000
+    universal_credit_pre_benefit_cap: 15_000
+  output:
+    # Excess 7,980 < childcare 9,000.
+    uc_benefit_cap_reduction: 0
+
+- name: UC reg 78(1) - the cap reduces an award of UC, so no award means no reduction
+  period: 2025
+  input:
+    benefit_cap_welfare_benefits: 30_000
+    uc_benefit_cap: 22_020
+    uc_childcare_element: 0
+    universal_credit_pre_benefit_cap: 0
+    housing_benefit_pre_benefit_cap: 0
+  output:
+    uc_benefit_cap_reduction: 0
+    benefit_cap_reduction: 0
+
+- name: HB reg 75D(1) - Housing Benefit is reduced by the excess
+  period: 2025
+  input:
+    benefit_cap_welfare_benefits: 30_000
+    housing_benefit_benefit_cap: 22_020
+    housing_benefit_pre_benefit_cap: 10_000
+    would_claim_housing_benefit: true
+    universal_credit_pre_benefit_cap: 0
+  output:
+    # Excess 7,980 is below 10,000 - 0.50 x 52 = 9,974.
+    housing_benefit_benefit_cap_reduction: 7_980
+    housing_benefit: 2_020
+    uc_benefit_cap_reduction: 0
+    benefit_cap_reduction: 7_980
+
+- name: HB reg 75D(2) - the reduction leaves the reg 75 minimum of 50 pence a week
+  period: 2025
+  input:
+    benefit_cap_welfare_benefits: 30_000
+    housing_benefit_benefit_cap: 22_020
+    housing_benefit_pre_benefit_cap: 5_000
+    would_claim_housing_benefit: true
+  output:
+    # min(7,980, 5,000 - 26) = 4,974, leaving 0.50 x 52 = 26.
+    housing_benefit_benefit_cap_reduction: 4_974
+    housing_benefit: 26
+
+- name: HB reg 75D(2) - Housing Benefit already below 50 pence a week is not reduced
+  period: 2025
+  input:
+    benefit_cap_welfare_benefits: 30_000
+    housing_benefit_benefit_cap: 22_020
+    housing_benefit_pre_benefit_cap: 20
+    would_claim_housing_benefit: true
+  output:
+    # max(20 - 26, 0) = 0. Reg 75 itself (no award below 50 pence a week) is
+    # not modelled.
+    housing_benefit_benefit_cap_reduction: 0
+    housing_benefit: 20
+
+- name: Reg 80A(2)(a) and reg 75CA(2)(b) - in London a member of a couple claiming UC as a single person has the single UC cap and the family HB cap
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 30
+        is_claimant_or_partner: true
+        uc_is_ineligible_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        is_uc_benefit_cap_exempt: false
+        is_housing_benefit_benefit_cap_exempt: false
+    households:
+      household:
+        members: [claimant, partner]
+        region: LONDON
+  output:
+    uc_member_of_couple_claims_as_single_person: true
+    uc_benefit_cap: 16_967
+    housing_benefit_benefit_cap: 25_323

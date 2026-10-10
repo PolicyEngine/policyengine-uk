@@ -36,7 +36,7 @@ class uc_has_deduction(Variable):
         adjusted_incidence = clip(incidence * p.region_incidence_factor[region], 0, 1)
         award = max_(
             benunit("universal_credit_pre_benefit_cap", period)
-            - benunit("benefit_cap_reduction", period),
+            - benunit("uc_benefit_cap_reduction", period),
             0,
         )
         on_uc = benunit("would_claim_uc", period) & (award > 0)

@@ -240,7 +240,9 @@
     is_uc_eligible: false
     is_uc_entitled: false
     housing_benefit_pension_age_regulations_apply: true
-    is_benefit_cap_exempt: true
+    # Housing Benefit under the pension-age regulations has no cap; there is
+    # no Universal Credit award to cap.
+    is_housing_benefit_benefit_cap_exempt: true
     benefit_cap_reduction: 0
     council_tax_reduction_pensioner: true
     council_tax_reduction_scheme_supported: true

@@ -318,9 +318,10 @@ programs:
     agency: DWP
     status: complete
     coverage: UK
-    variable: benefit_cap
+    variable: benefit_cap_reduction
     parameter_prefix: gov.dwp
     verified_start_year: 2022
+    notes: Universal Credit (uc_benefit_cap) and Housing Benefit (housing_benefit_benefit_cap) each apply their own cap; benefit_cap_reduction is the sum of their reductions
 
   - id: tax_credits
     name: Tax credits

@@ -87,7 +87,7 @@ UC_VARIABLES = [
     "uc_maximum_amount",
     "uc_assessable_capital",
     "is_uc_eligible",
-    "is_benefit_cap_exempt",
+    "is_uc_benefit_cap_exempt",
 ]
 
 
@@ -256,10 +256,10 @@ def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, yea
     # The cap's earnings exception can change with the income (#1986), so
     # the capped award is compared only where the exemption is the same.
     same_cap = unchanged & (
-        scaled["is_benefit_cap_exempt"] == base["is_benefit_cap_exempt"]
+        scaled["is_uc_benefit_cap_exempt"] == base["is_uc_benefit_cap_exempt"]
     )
     for variable in UC_VARIABLES:
-        if variable == "is_benefit_cap_exempt":
+        if variable == "is_uc_benefit_cap_exempt":
             continue
         compared = same_cap if variable == "universal_credit" else unchanged
         np.testing.assert_allclose(

@@ -1,7 +1,11 @@
-# UC Regulations 2013, Schedule 4 paragraphs 9 and 27-28:
+# UC Regulations 2013, Schedule 4 paragraphs 9 and 27-29 (LHA_category):
 # https://www.legislation.gov.uk/uksi/2013/376/schedule/4/paragraph/28
+# HB Regulations 2006 reg 13D(2)(a)(i) and reg 2(1) "young individual"
+# (housing_benefit_LHA_category):
+# https://www.legislation.gov.uk/uksi/2006/213/regulation/13D
 # The existing bedroom calculation is unchanged: B = 1 bedroom, C = 2;
 # A is the shared accommodation rate, overriding the bedroom calculation.
+# Where the schemes agree, each case asserts both categories.
 - name: Single 17-year-old renter is not their own dependent child
   period: 2025
   input:
@@ -13,6 +17,7 @@
     is_lha_shared_accommodation_rate_specified_renter: true
     # Single; 17 < 35; no dependant or non-dependant: A (previously B).
     LHA_category: A
+    housing_benefit_LHA_category: A
 
 - name: Single 30-year-old renter remains subject to the shared rate
   period: 2025
@@ -23,6 +28,7 @@
     is_lha_shared_accommodation_rate_specified_renter: true
     # Single; 30 < 35; no other occupants: A.
     LHA_category: A
+    housing_benefit_LHA_category: A
 
 - name: Single renter immediately below the shared rate age threshold
   period: 2025
@@ -32,6 +38,7 @@
     is_lha_shared_accommodation_rate_specified_renter: true
     # 34 < 35: A.
     LHA_category: A
+    housing_benefit_LHA_category: A
 
 - name: Single renter at the shared rate age threshold
   period: 2025
@@ -41,6 +48,7 @@
     is_lha_shared_accommodation_rate_specified_renter: false
     # 35 is not below 35; 1 bedroom: B.
     LHA_category: B
+    housing_benefit_LHA_category: B
 
 - name: A 17-year-old apprentice in the renter's benefit unit is a non-dependant
   period: 2025
@@ -65,6 +73,9 @@
     is_lha_shared_accommodation_rate_specified_renter: false
     # No UC QYP, but a non-dependant blocks A. Existing bedroom formula = 1: B.
     LHA_category: B
+    # HB reg 13D(3)(a)-(b): a bedroom for the renter and one for the
+    # 17-year-old, who is not a child (reg 2(1): under 16): 2 bedrooms, C.
+    housing_benefit_LHA_category: C
 
 - name: Lone parent with an 18-year-old qualifying young person
   period: 2025
@@ -89,8 +100,11 @@
     is_lha_shared_accommodation_rate_specified_renter: false
     # Responsibility for a UC QYP blocks A. Existing bedroom formula = 1: B.
     LHA_category: B
+    # HB reg 13D(3)(a)-(b): a bedroom for the renter and one for the
+    # 18-year-old, who is not a child (reg 2(1): under 16): 2 bedrooms, C.
+    housing_benefit_LHA_category: C
 
-- name: Renter aged 30 whose partner is 17 claims as a single person and is a specified renter
+- name: Renter aged 30 whose partner is 17 claims UC as a single person and is a specified renter; for HB they are a couple
   period: 2025
   input:
     people:
@@ -118,6 +132,11 @@
     uc_member_of_couple_claims_as_single_person: true
     is_lha_shared_accommodation_rate_specified_renter: true
     LHA_category: A
+    # HB has no single claim by a member of a couple: a claimant with a
+    # partner is not a "single claimant", so not a young individual (HB reg
+    # 2(1)); the couple's one bedroom (reg 13D(3)(a)) gives B.
+    is_housing_benefit_young_individual: false
+    housing_benefit_LHA_category: B
 
 - name: Couple aged 30 and 17 where the partner is within reg. 8 is not a specified renter
   period: 2025
@@ -143,6 +162,7 @@
     is_lha_shared_accommodation_rate_specified_renter: false
     # Joint renters have one bedroom (Sch 4 para 10(1)(a)): B.
     LHA_category: B
+    housing_benefit_LHA_category: B
 
 - name: A 17-year-old in another family is a non-dependant of the household head only
   period: 2025
@@ -246,6 +266,7 @@
     # Single, 30 < 35, nobody else in this household: A.
     # Other renter 40 >= 35; 1 bedroom: B.
     LHA_category: [A, B]
+    housing_benefit_LHA_category: [A, B]
 
 - name: Actual shared accommodation gives the shared rate for Housing Benefit only
   period: 2025
@@ -271,6 +292,7 @@
   output:
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_category: B
+    housing_benefit_LHA_category: B
 
 - name: A disabled 16-year-old renter is excepted from the shared accommodation rate
   # UC Sch 4 para 29(5)(a): the DLA care component at the middle or highest
@@ -282,6 +304,7 @@
   output:
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_category: B
+    housing_benefit_LHA_category: B
 
 - name: A 16-year-old renter without a disability benefit gets the shared rate
   period: 2025
@@ -290,6 +313,7 @@
   output:
     is_lha_shared_accommodation_rate_specified_renter: true
     LHA_category: A
+    housing_benefit_LHA_category: A
 
 - name: A renter under 35 on attendance allowance is excepted from the shared rate
   period: 2025
@@ -299,3 +323,4 @@
   output:
     is_lha_shared_accommodation_rate_specified_renter: false
     LHA_category: B
+    housing_benefit_LHA_category: B

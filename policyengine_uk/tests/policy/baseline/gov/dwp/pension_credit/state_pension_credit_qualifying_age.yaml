@@ -39,7 +39,9 @@
     is_pension_credit_eligible: true
     is_uc_eligible: false
     council_tax_reduction_pensioner: true
-    is_benefit_cap_exempt_other: true
+    # HB Regs 2006 reg 5: the pension-age regulations, which have no cap.
+    housing_benefit_pension_age_regulations_apply: true
+    is_housing_benefit_benefit_cap_exempt: true
     # SI 2000/729 reg 2(1)(i): 200 for a person under 80 not in residential care.
     winter_fuel_allowance: 200
 
@@ -161,7 +163,9 @@
     is_pension_credit_eligible: false
     is_uc_eligible: true
     council_tax_reduction_pensioner: false
-    is_benefit_cap_exempt_other: false
+    # HB Regs 2006 reg 5: the pension-age regulations, which have no cap.
+    housing_benefit_pension_age_regulations_apply: false
+    is_housing_benefit_benefit_cap_exempt: false
     winter_fuel_allowance: 0
 
 - name: Case 7, the same man is over both ages in 2018-19.

@@ -184,7 +184,11 @@ def assert_consumers_follow_the_qualifying_age(births, male, year):
     assert np.array_equal(
         sim.calculate("council_tax_reduction_pensioner", year), attained
     )
-    assert np.array_equal(sim.calculate("is_benefit_cap_exempt_other", year), attained)
+    # HB Regs 2006 reg 5: Housing Benefit under the pension-age regulations
+    # has no cap.
+    assert np.array_equal(
+        sim.calculate("is_housing_benefit_benefit_cap_exempt", year), attained
+    )
     aged = sim.tax_benefit_system.parameters(
         f"{year}-06-01"
     ).gov.dwp.housing_benefit.allowances.single.aged
