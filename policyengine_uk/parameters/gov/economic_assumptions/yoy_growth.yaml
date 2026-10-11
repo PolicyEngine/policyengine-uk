@@ -647,19 +647,22 @@ obr:
             href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
 
   # Receipts used to project the statistics behind corporate incidence.
-  # Each is the OBR's growth in a receipts line: 2024 is outturn growth
-  # (2024-25 outturn in the March 2026 EFO over 2023-24 outturn in the March
-  # 2025 EFO), 2025-2030 the March 2026 EFO forecast, and 2031 onwards the
-  # average_earnings long-run path (the OBR forecasts receipts only to
-  # 2030-31). Values are ratios of the published levels, to six decimals.
-  # The 2024 value never enters a projection: indices start at 1.0 in a
-  # series' first year, so it only anchors the index at 2024, where the
+  # Each is the OBR's growth in a receipts line, the ratio of consecutive
+  # published levels to six decimals. The latest EFO supplies outturn growth
+  # for its outturn year (its outturn over the previous year's outturn in an
+  # earlier EFO) and growth for each forecast year. After the OBR's receipts
+  # forecast, each series follows the average_earnings long-run path. The
+  # comments in each series name the EFOs and tables behind its values.
+  # policyengine_uk/utils/import_obr_forecasts.py rewrites these series from
+  # a new EFO's receipts tables and keeps the years before its outturn year.
+  # The first value, 2024, never enters a projection: indices start at 1.0
+  # in a series' first year, so it only anchors the index at 2024, where the
   # statistics with 2024-25 as their latest outturn are uprated from.
   stamp_duty_land_tax:
     residential:
       description: Growth in stamp duty land tax receipts from residential property (England and Northern Ireland).
       values:
-        # Outturn (2024-25 over 2023-24), Table 3.7 "SDLT from residential property"
+        # Outturn (2024-25 over 2023-24) from OBR EFO March 2026 over March 2025, receipts Table 3.7 "SDLT from residential property"
         2024-01-01: 0.211202
         # Forecast (2025-2030) from OBR EFO March 2026, receipts Table 3.7
         2025-01-01: 0.1302
@@ -686,7 +689,7 @@ obr:
     non_residential:
       description: Growth in stamp duty land tax receipts from non-residential property (England and Northern Ireland).
       values:
-        # Outturn (2024-25 over 2023-24), Table 3.7 "SDLT from non-residential property"
+        # Outturn (2024-25 over 2023-24) from OBR EFO March 2026 over March 2025, receipts Table 3.7 "SDLT from non-residential property"
         2024-01-01: 0.151067
         # Forecast (2025-2030) from OBR EFO March 2026, receipts Table 3.7
         2025-01-01: 0.048515
@@ -714,7 +717,7 @@ obr:
     great_britain:
       description: Growth in business rates receipts in England, Scotland and Wales (the OBR "Business rates" line, cash basis).
       values:
-        # Outturn (2024-25 over 2023-24), Table 3.8 (March 2025: Table 3.9) "Business rates"
+        # Outturn (2024-25 over 2023-24) from OBR EFO March 2026 over March 2025, receipts Table 3.8 (March 2025: Table 3.9) "Business rates"
         2024-01-01: 0.093818
         # Forecast (2025-2030) from OBR EFO March 2026, receipts Table 3.8
         2025-01-01: 0.051739
@@ -741,7 +744,7 @@ obr:
     northern_ireland:
       description: Growth in Northern Ireland business rates receipts (the OBR "Northern Ireland business rates" line in other taxes).
       values:
-        # Outturn (2024-25 over 2023-24), Table 3.2 "Northern Ireland business rates"
+        # Outturn (2024-25 over 2023-24) from OBR EFO March 2026 over March 2025, receipts Table 3.2 "Northern Ireland business rates"
         2024-01-01: 0.032513
         # Forecast (2025-2030) from OBR EFO March 2026, receipts Table 3.2
         2025-01-01: 0.032388

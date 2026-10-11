@@ -1,0 +1,1 @@
+- `import_obr_forecasts.py` now refreshes the OBR receipts growth series that project corporate SDLT and business rates (`yoy_growth.obr.stamp_duty_land_tax.*` and `.business_rates.*`) from a new EFO's receipts tables, with the previous EFO's tables (`--previous-receipts-file`) as the base for outturn growth, and refuses receipts tables from a different EFO.
