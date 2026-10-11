@@ -26,20 +26,41 @@ Three variables under `gov/dwp/`:
     current law but tracked separately in PolicyEngine so the reform
     surface stays clean.
   - Both are the reported weekly amount above the type's full rate in the
-    data year, `max(reported - flat_max_for_type, 0)`, uprated as described
-    below and multiplied by `WEEKS_IN_YEAR`.
+    data year, `max(reported - flat_max_for_type, 0)`, uprated by September
+    CPI as described below and multiplied by `WEEKS_IN_YEAR`.
 
 All three split the amount a person reported in the data year (the
 dataset's first year) by the person's `state_pension_type` in the year
-simulated. The part up to that type's full rate in the data year is basic
-or new State Pension, and the part above it is additional State Pension.
-Both parts are uprated by the type's full rate (the year's over the data
-year's), so together they pay the reported amount uprated by the flat rate,
-for anyone over State Pension age. In law, additional pensions and
-protected payments rise with prices instead: the Social Security Benefits
-Up-rating Order 2026 raised them by 3.8% in April 2026 (articles 4(3) and
-6(3)), and the full rates by 4.8%. This is tracked in
-[#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941).
+simulated, for anyone over State Pension age:
+
+- The part up to that type's full rate in the data year is basic or new
+  State Pension. It is uprated by the type's full rate: the year's over the
+  data year's.
+- The part above it is additional State Pension. It is uprated by September
+  CPI: `gov.economic_assumptions.indices.september_cpi_uprating` in the year
+  over the data year.
+
+That follows the law. Each year's Up-rating Order raises the full rates by
+the triple lock (Social Security Administration Act 1992 s.150A), but raises
+additional pensions (s.150(1)(c)), increments for deferring the pension and
+the amounts of new State Pension above the full rate (protected payments,
+s.151A) by the September CPI of the year before. In April 2026 the full
+rates rose 4.8% and the rest 3.8%
+([Social Security Benefits Up-rating Order 2026](https://www.legislation.gov.uk/uksi/2026/148/made),
+articles 4(2), 4(3), 6(1) and 6(3)); in April 2025, 4.1% and 1.7%
+([2025 Order](https://www.legislation.gov.uk/uksi/2025/295/made), the same
+articles). Graduated retirement benefit, paid with the pension, also rose by
+September CPI (article 11 of each Order). Until the fix for
+[#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941) the
+model uprated the part above the full rate by the full rate too.
+
+So a reform to the full rates, or to the triple lock, moves only basic and
+new State Pension. A reform that sets a full rate to zero leaves additional
+pensions and protected payments in place; `gov.contrib.abolish_state_pension`
+removes all State Pension. The September CPI index is read from the
+simulation's own parameters, so a scenario applied before the data load that
+changes September CPI, or the calendar-year CPI growth its forecast follows,
+moves the part above the full rate.
 
 Survey ages are held fixed in the years a dataset is projected to, so a
 record's birth cohort moves one year later for each year projected, and its
@@ -166,6 +187,19 @@ State Pension flat-rate parameters live in
 to 2026-27; later years are uprated by
 `gov.economic_assumptions.indices.triple_lock`, built from the yearly rates
 in `gov.economic_assumptions.yoy_growth.triple_lock`.
+
+The part of a reported State Pension above the full rate is uprated by
+`gov.economic_assumptions.indices.september_cpi_uprating` instead (see
+Components). Its yearly rises,
+`gov.economic_assumptions.yoy_growth.september_cpi_uprating`, are the
+September CPI of the year before from `statutory_uprating_inputs.cpi_september`
+(below), rounded to the 0.1 percentage points the ONS publishes, and zero
+when prices fall (`create_september_cpi_uprating.py`). They equal the rise
+each Up-rating Order gave additional pensions from April 2011 to April 2026,
+including none in April 2016, when September 2015 CPI was -0.1%
+(`policyengine_uk/tests/test_state_pension_components.py`). The index is
+rounded to five decimal places each year, so it differs from the exact
+product of the rises by less than 0.001%.
 
 ### The triple lock
 
@@ -360,8 +394,9 @@ tracked in [#1929](https://github.com/PolicyEngine/policyengine-uk/issues/1929):
   population keeps the data year's age structure. From 2025-26 to 2030-31
   the model's State Pension recipients fall 3.0%, as State Pension age rises
   to 67, while DWP's caseload less those paid abroad rises 4.8%.
-- **Awards.** Each record keeps its reported amount, uprated by the flat
-  rate, including records whose cohort moves from basic to new State
+- **Awards.** Each record keeps its reported amount, the part up to the
+  full rate uprated by the flat rate and the part above it by September CPI,
+  including records whose cohort moves from basic to new State
   Pension. The model's State Pension per recipient grows 17.0% over those
   years. DWP's spending per recipient, less those paid abroad, grows 18.3%,
   as its new State Pension spending grows from £56.1bn to £102.4bn and its
@@ -382,6 +417,7 @@ part of the widening.
 | `new_state_pension` returned flat max for every NEW retiree, ignoring partial NI records | Fixed | #1634 |
 | Protected Payment only computed for BASIC-type recipients | Fixed | #1634 (ASP now extends to NEW) |
 | `additional_state_pension` split the reported amount by the data year's State Pension type, paying part of it twice for records moving from basic to new cohorts | Fixed | #1921 |
+| `additional_state_pension` uprated additional pensions and protected payments by the full rate (the triple lock), not September CPI | Fixed | #1941 |
 
 ### What's still open
 
