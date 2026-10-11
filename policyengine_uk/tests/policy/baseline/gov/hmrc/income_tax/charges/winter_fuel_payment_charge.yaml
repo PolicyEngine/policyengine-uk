@@ -285,6 +285,10 @@
       couple:
         members: [claimant, partner]
         income_support: 1_000
+        # Only the Income Support award: a Universal Credit award would make
+        # both members joint claimants, entitled to a relevant benefit.
+        universal_credit: 0
+        pension_credit: 0
     households:
       household:
         members: [claimant, partner]
