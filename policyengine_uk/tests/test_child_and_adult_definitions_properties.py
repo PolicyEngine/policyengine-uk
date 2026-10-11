@@ -45,19 +45,21 @@ Invariants:
    qualifying young person whatever the education inputs; without it the
    education route is unchanged. Own-right benefits exclude both routes. UC
    and PC agree below 19, where only UC's terminal date differs. Child
-   Benefit reg 4 (until the 31 August after the 16th birthday) counts for
-   the same years.
+   Benefit reg 4 and CTC reg 4 (until the 31 August after the 16th birthday)
+   count for the same years.
 
 Scope: these are tests of the ENCODED statutory limbs, not full entitlement.
 Education status proxies full-time non-advanced study: hours, employment
-contracts, approved providers and interruptions are unobserved. The CTC
-leaver extensions are omitted; Child Benefit's extension period and terminal
-date (regs 5 and 7) are inputs, false here, with their own tests in
-test_child_benefit_school_leaver_routes_properties.py. The route to the 1
+contracts, approved providers and interruptions are unobserved. Child
+Benefit's extension period and terminal date (regs 5 and 7) and CTC's 20
+weeks after leaving (reg 5(3)(b)) are inputs, false here, with their own
+tests in test_child_benefit_school_leaver_routes_properties.py and
+test_child_tax_credit_school_leaver_routes_properties.py. The route to the 1
 September after the 16th birthday (UC, PC) or the 31 August before it (Child
-Benefit reg 4), which has no education condition, counts for a year that
-starts before that date (invariant 5). UC's terminal date is an input; PC's
-September terminal date is absent.
+Benefit reg 4, CTC reg 4), which has no education condition, counts for a
+year that starts before that date (invariant 5). Nobody here is in
+remunerative work, which ends CTC's route. UC's terminal date is an input;
+PC's September terminal date is absent.
 Own-benefit receipt collapses different programme-specific benefit lists.
 UC/CTC/PC blanket looked-after exclusions omit statutory exceptions. HBAI's
 fallback assumes dependence at 16--17 regardless of study, requires an
@@ -202,23 +204,24 @@ def in_route_to_first_september_after_16th_birthday(p):
 
 
 def qualifying_young_person(p, programme):
-    # CTC: education/training routes only (see omissions in module
-    # docstring). UC, PC and CB: also the route with no education condition.
+    # Every programme: the education/training route, and the route with no
+    # education condition.
     # CB: https://www.legislation.gov.uk/uksi/2006/223/regulation/3
     # CB at 16: https://www.legislation.gov.uk/uksi/2006/223/regulation/4
+    # CTC at 16: https://www.legislation.gov.uk/uksi/2002/2007/regulation/4
     # CB own-benefit restriction: https://www.legislation.gov.uk/uksi/2006/223/regulation/8
     # UC: https://www.legislation.gov.uk/uksi/2013/376/regulation/5
     # CTC: https://www.legislation.gov.uk/uksi/2002/2007/regulation/5
     # PC: https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A
     if not 16 <= p["age"] < 20 or p["receives_benefits_in_own_right"]:
         return False
-    if programme in {
-        "universal_credit",
-        "pension_credit",
-        "child_benefit",
-    } and in_route_to_first_september_after_16th_birthday(p):
-        return True
-    if not (non_advanced_education(p) or p["is_in_approved_training"]):
+    studying = non_advanced_education(p) or p["is_in_approved_training"]
+    if in_route_to_first_september_after_16th_birthday(p):
+        # CTC reg 4 lifts only the first condition, for a person who has left
+        # education; one still in it is tested as a student below.
+        if programme != "child_tax_credit" or not studying:
+            return True
+    if not studying:
         return False
     if (
         p["age"] >= 19
