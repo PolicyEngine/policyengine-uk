@@ -32,7 +32,10 @@ from policyengine_uk.data.economic_assumptions import (
     reset_growthfactor_uprating,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
-from policyengine_uk.data.input_dataframe import dataset_from_input_dataframe
+from policyengine_uk.data.input_dataframe import (
+    dataset_from_input_dataframe,
+    with_identifiers_in_each_year,
+)
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
@@ -425,6 +428,29 @@ class Simulation(CoreSimulation):
             self.delete_arrays(variable)
         for variable, time_period, values in replayed:
             self.set_input(variable, time_period, values)
+
+    def to_input_dataframe(
+        self, include_computed_variables: bool = False
+    ) -> pd.DataFrame:
+        """Export the simulation's inputs as a DataFrame that
+        ``Simulation(dataset=...)`` loads back.
+
+        policyengine-core exports each input for the periods it was set for.
+        The identifiers are also given for every year the frame gives other
+        values for, as the dataset the frame loads as holds them, so that the
+        frame loads back to a simulation that exports the same frame. See
+        ``policyengine_uk.data.input_dataframe.with_identifiers_in_each_year``.
+
+        Args:
+            include_computed_variables: If True, export every stored value,
+                calculated ones included, as policyengine-core does.
+        """
+        return with_identifiers_in_each_year(
+            super().to_input_dataframe(
+                include_computed_variables=include_computed_variables
+            ),
+            self.tax_benefit_system,
+        )
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.

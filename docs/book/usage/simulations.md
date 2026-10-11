@@ -200,6 +200,12 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   period that is not one year are set on the simulation directly. A variable
   given for both months and the year is set column by column in the frame's
   order, since a year's value is spread over the months not already set.
+- `to_input_dataframe()` gives the identifier columns for every year it gives
+  other values for, which is where the dataset the frame loads as holds them.
+  So an exported frame loads back to a simulation that exports the same frame,
+  even when the simulation was given inputs for years after its data, such as
+  the Universal Credit health element status the rebalancing records for 2026
+  to 2029.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit
