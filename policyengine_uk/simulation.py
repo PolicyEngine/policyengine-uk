@@ -585,13 +585,22 @@ class Simulation(CoreSimulation):
 
         Every value the simulation was given (from its dataset or through
         ``set_input``) is kept for the sampled records, for every period.
-        Calculated values are dropped and recalculated on the sample. Each
-        supplied weight is replaced so that its total is unchanged in every
-        period: a household's new weight is proportional to the number of
-        times it was drawn.
+        Calculated values are dropped and recalculated on the sample, and the
+        tracer starts again. Each supplied weight is replaced so that its
+        total is unchanged in every period: a household's new weight is
+        proportional to the number of times it was drawn. Averaged over
+        draws, a household's new weight in ``time_period`` is its old one; in
+        another period that holds only if the household's share of the total
+        weight is the same there.
 
-        The baseline and ``dataset`` are subsampled to the same households,
-        and each simulation keeps its own policy.
+        ``baseline`` is replaced with a copy subsampled to the same
+        households, which keeps its own policy and inputs. The baseline the
+        simulation held before is left as it was, since another simulation
+        (a clone of this one) can hold it too. ``dataset`` is replaced with
+        the rows of the dataset the simulation was built from for the
+        sampled records, with its weights rescaled in the same way. Like the
+        dataset before, it does not hold values set with ``set_input`` after
+        the simulation was built.
 
         Args:
             n: The number of households to draw.

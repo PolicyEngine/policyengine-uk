@@ -19,32 +19,53 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
    whole number of draws.
 4. Links: a kept household or benefit unit has exactly the people it had, a
    kept person keeps their household and benefit unit, and no other record is
-   kept. This holds for identifiers that 32-bit floats cannot tell apart.
+   kept. This holds for identifiers that 32-bit floats cannot tell apart, and
+   whatever the stored ``person_household_id`` and ``person_benunit_id``
+   inputs hold.
 5. Inputs: every supplied value other than a weight is unchanged for the kept
    records, in every period, and the subsample supplies the same variables
    and periods as before. Calculated values are not kept.
 6. Determinism: the same seed keeps the same households with the same weights.
-7. Baseline: the baseline holds the same households and weights, and each
-   simulation keeps its own policy.
-8. Dataset (differential): ``dataset`` holds the same records and weights as
-   the populations, and a simulation built from it gives the same results as
-   the subsampled simulation.
-9. Unbiasedness: over many seeds, a household's mean quantized weight is its
-   old weight. Intended exception: unquantized weights keep the total exactly
-   and are therefore a ratio estimate, whose mean is off by a few per cent in
-   a small sample and closes on the old weight as the sample grows.
+7. Baseline: the baseline is replaced with a copy that holds the same
+   households and weights and keeps its own policy. The baseline held before
+   is unchanged, so subsampling a clone leaves the source simulation and its
+   baseline as they were.
+8. Dataset (differential): ``dataset`` holds the same records as the
+   populations, from the rows of the dataset the simulation was built from,
+   with weights rescaled in the same way. For a simulation given no inputs
+   after it was built, a simulation built from that dataset gives the same
+   results as the subsampled simulation. Intended: an input set with
+   ``set_input`` after the build stays out of the dataset, as it was out of
+   the dataset before subsampling.
+9. Unbiasedness: over many seeds, a household's mean quantized weight in the
+   sampling period is its old weight. Intended exceptions: in another period,
+   the mean is the household's share of the sampling period's total times
+   that period's total, which is its old weight only if its share is the same
+   in both periods; and unquantized weights keep the total exactly, so they
+   are a ratio estimate, whose mean is off by a few per cent in a small
+   sample and closes on the old weight as the sample grows.
+10. Trace and inputs: the tracer starts again, and a supplied input stored on
+    disk is kept, not a value calculated later and cached over it in memory.
+
+The properties are generated for datasets of one year, which the model
+projects, and of several years whose weights change differently from
+household to household.
 
 Intended exceptions: a simulation built from a situation, one given no
 household weights, a branch, and a baseline holding other households raise
 ``ValueError`` and are left unchanged.
 """
 
+from types import SimpleNamespace
+
 import numpy as np
 import pandas as pd
 import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
+from policyengine_core.data_storage import OnDiskStorage
 from policyengine_core.periods import period as period_
+from policyengine_core.tracers import FullTracer
 
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
@@ -54,13 +75,15 @@ from policyengine_uk.utils.subsample import (
     rescale_weights,
     subsample_dataset,
 )
-from policyengine_uk.utils.supplied_inputs import supplied_input_arrays
+from policyengine_uk.utils.supplied_inputs import (
+    stored_supplied_value,
+    supplied_input_arrays,
+)
 
 pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEARS = range(2025, 2031)
 # Neighbouring identifiers of the size the UK datasets use. As 32-bit floats,
-# which is how the model stores person_household_id and person_benunit_id,
 # identifiers this large are exact only at multiples of 64.
 FIRST_HOUSEHOLD_ID = 900_000_001
 FIRST_BENUNIT_ID = 906_000_001
@@ -184,9 +207,6 @@ def test_identifiers_beyond_float32_precision_keep_their_households():
     simulation = Microsimulation(dataset=dataset())
     households = members(simulation, "household")
     benunits = members(simulation, "benunit")
-    # The stored membership inputs cannot tell these households apart.
-    stored = values(simulation, "person_household_id", 2025)
-    assert len(set(stored.tolist())) < len(households)
 
     simulation.subsample(n=5, seed=3, time_period=2025)
 
@@ -201,6 +221,24 @@ def test_identifiers_beyond_float32_precision_keep_their_households():
     }
     assert kept_people == set().union(*(households[household] for household in kept))
     assert values(simulation, "household_id", 2025).tolist() == kept
+
+
+def test_memberships_come_from_the_populations_not_the_stored_identifiers():
+    simulation = Microsimulation(dataset=dataset())
+    households = members(simulation, "household")
+    benunits = members(simulation, "benunit")
+    people = len(ids(simulation, "person"))
+    for variable in ("person_household_id", "person_benunit_id"):
+        simulation.set_input(variable, 2025, np.zeros(people))
+
+    simulation.subsample(n=5, seed=3)
+
+    for entity, before in (("household", households), ("benunit", benunits)):
+        assert members(simulation, entity) == {
+            group: before[group] for group in ids(simulation, entity)
+        }
+    # Intended: the stored values are supplied inputs, so they are kept.
+    assert set(values(simulation, "person_household_id", 2025).tolist()) == {0}
 
 
 def test_zero_weight_households_are_never_kept():
@@ -358,6 +396,80 @@ def test_a_calculated_value_that_replaced_an_input_is_not_kept():
     )
 
 
+def input_on_disk_under_a_cached_value(simulation, folder):
+    """Store household_net_income for 2025 as an input on disk, then cache a
+    calculated value over it in memory. Returns the input."""
+    period = period_(2025)
+    holder = simulation.get_holder("household_net_income")
+    holder._disk_storage = OnDiskStorage(str(folder), preserve_storage_dir=True)
+    holder._on_disk_storable = True
+    # A memory limit no simulation can stay under sends the input to disk.
+    simulation.memory_config = SimpleNamespace(max_memory_occupation_pc=-1)
+    supplied_value = np.full(len(HOUSEHOLDS), 111.0)
+    simulation.set_input("household_net_income", period, supplied_value)
+    holder._on_disk_storable = False
+    simulation.memory_config = None
+    holder.put_in_cache(np.full(len(HOUSEHOLDS), 999.0), period)
+    return supplied_value
+
+
+def test_an_input_on_disk_is_kept_not_a_value_cached_over_it(tmp_path):
+    simulation = Microsimulation(dataset=dataset())
+    supplied_value = input_on_disk_under_a_cached_value(simulation, tmp_path)
+    holder = simulation.get_holder("household_net_income")
+    assert holder._memory_storage.get(period_(2025)).tolist() == [999.0] * 6
+
+    assert stored_supplied_value(holder, period_(2025), "default").tolist() == (
+        supplied_value.tolist()
+    )
+    simulation.subsample(n=2, seed=1)
+    assert set(values(simulation, "household_net_income", 2025).tolist()) == {111.0}
+
+
+def test_supplied_values_match_policyengine_cores_recorded_inputs(tmp_path):
+    """Differential: policyengine-core 3.33 reads a recorded input from its
+    tier in ``Simulation._get_recorded_input_array``; earlier versions have
+    no such method, and ``stored_supplied_value`` follows the same rule."""
+    simulation = Microsimulation(dataset=dataset())
+    if not hasattr(simulation, "_get_recorded_input_array"):
+        pytest.skip("policyengine-core reads recorded inputs from 3.33")
+    input_on_disk_under_a_cached_value(simulation, tmp_path)
+    people = len(ids(simulation, "person"))
+    simulation.set_input("hours_worked", 2027, np.full(people, 1_000.0))
+    simulation.get_holder("hours_worked").put_in_cache(
+        np.full(people, 500.0), period_(2027)
+    )
+    simulation.calculate("income_tax", 2026)
+
+    keys = sorted(simulation._user_input_keys, key=lambda key: (key[0], str(key[2])))
+    assert keys
+    for variable, branch, period in keys:
+        ours = stored_supplied_value(simulation.get_holder(variable), period, branch)
+        cores = simulation._get_recorded_input_array(variable, period)
+        if cores is None:
+            assert ours is None, (variable, period)
+        else:
+            assert np.asarray(ours).tolist() == np.asarray(cores).tolist(), (
+                variable,
+                period,
+            )
+
+
+def test_a_trace_starts_again_on_the_sample():
+    simulation = Microsimulation(dataset=dataset(), trace=True)
+    simulation.calculate("household_net_income", 2025)
+    # A baseline traced in its simulation stays traced in it.
+    simulation.baseline.tracer = simulation.tracer
+
+    simulation.subsample(n=1, seed=1)
+    simulation.calculate("household_net_income", 2025)
+
+    assert isinstance(simulation.tracer, FullTracer)
+    assert simulation.baseline.tracer is simulation.tracer
+    flat = simulation.tracer.get_serialized_flat_trace()
+    assert len(flat["household_net_income<2025, (default)>"]["value"]) == 1
+
+
 def test_results_match_the_same_households_in_the_full_simulation():
     """Subsampling changes which households are held and their weights,
     not what the model calculates for a household."""
@@ -442,6 +554,47 @@ def test_a_reform_and_its_baseline_keep_the_same_households():
     )
 
 
+@pytest.mark.parametrize("reform", [None, {PERSONAL_ALLOWANCE: 0}])
+def test_subsampling_a_clone_leaves_the_source_and_its_baseline_alone(reform):
+    """policyengine-core's ``clone`` shares a separate baseline between the
+    source and the clone, so the clone must not subsample it in place."""
+    source = Microsimulation(dataset=dataset(), reform=reform)
+    baselines = []
+    held = source
+    while getattr(held, "baseline", None) is not None:
+        held = held.baseline
+        baselines.append((held, held.dataset, weights_by_id(held, 2026)))
+    clone = source.clone()
+    assert clone.baseline is source.baseline
+
+    clone.subsample(n=2, seed=1)
+
+    assert len(ids(clone, "household")) <= 2
+    assert ids(clone.baseline, "household") == ids(clone, "household")
+    assert len(ids(source, "household")) == len(HOUSEHOLDS)
+    held = source
+    for baseline, data, weights in baselines:
+        assert held.baseline is baseline
+        assert len(ids(baseline, "household")) == len(HOUSEHOLDS)
+        assert baseline.dataset is data
+        assert weights_by_id(baseline, 2026) == weights
+        held = baseline
+    # The source can still be subsampled on its own.
+    source.subsample(n=3, seed=2)
+    assert ids(source.baseline, "household") == ids(source, "household")
+
+
+def test_the_baseline_held_before_is_left_as_it_was():
+    simulation = Microsimulation(dataset=dataset())
+    before = simulation.baseline
+
+    simulation.subsample(n=2, seed=1)
+
+    assert simulation.baseline is not before
+    assert len(ids(before, "household")) == len(HOUSEHOLDS)
+    assert ids(simulation.baseline, "household") == ids(simulation, "household")
+
+
 def test_a_baseline_holding_other_households_is_refused_and_nothing_changes():
     simulation = Microsimulation(dataset=dataset())
     simulation.baseline.subsample(n=2, seed=1)
@@ -485,6 +638,35 @@ def test_the_dataset_holds_the_sample():
         )
 
 
+def test_inputs_set_after_the_build_stay_out_of_the_dataset():
+    """Intended: ``dataset`` is the subsample of the dataset the simulation
+    was built from, which held no values set afterwards either. So a later
+    input stays in the simulation only, and a weight set on the simulation
+    alone is rescaled to its own total there, while the baseline and the
+    dataset keep the dataset's weights."""
+    simulation = Microsimulation(dataset=dataset())
+    people = len(ids(simulation, "person"))
+    simulation.set_input("hours_worked", 2025, np.full(people, 1_234.0))
+    simulation.set_input("household_weight", 2025, np.ones(len(HOUSEHOLDS)))
+    hours_in_data = Microsimulation(dataset=simulation.dataset).calculate(
+        "hours_worked", 2025
+    )
+
+    simulation.subsample(n=2, seed=1)
+
+    rebuilt = Microsimulation(dataset=simulation.dataset)
+    assert set(values(simulation, "hours_worked", 2025).tolist()) == {1_234.0}
+    assert set(values(rebuilt, "hours_worked", 2025).tolist()) <= set(
+        np.asarray(hours_in_data).tolist()
+    )
+    assert values(simulation, "household_weight", 2025).sum() == pytest.approx(
+        len(HOUSEHOLDS)
+    )
+    total = sum(weight for weight, _ in HOUSEHOLDS)
+    for held in (simulation.baseline, rebuilt):
+        assert values(held, "household_weight", 2025).sum() == pytest.approx(total)
+
+
 def test_subsampling_a_single_year_dataset_keeps_its_type():
     data = dataset()
     counts = np.array([0, 2, 0, 1, 0, 0])
@@ -499,7 +681,7 @@ def test_subsampling_a_single_year_dataset_keeps_its_type():
     assert len(data.household) == 6
 
 
-def test_a_simulation_built_from_a_dataframe_has_no_dataset_to_subsample():
+def test_a_simulation_built_from_a_dataframe_subsamples_its_dataset():
     households = np.arange(4)
     frame = pd.DataFrame(
         {
@@ -513,12 +695,10 @@ def test_a_simulation_built_from_a_dataframe_has_no_dataset_to_subsample():
         }
     )
     simulation = Microsimulation(dataset=frame)
-    assert simulation.dataset is None
     ages = by_id(simulation, "age", 2025)
 
     simulation.subsample(n=3, seed=1)
 
-    assert simulation.dataset is None
     kept = ids(simulation, "household")
     assert 1 <= len(kept) <= 3
     assert ids(simulation.baseline, "household") == kept
@@ -526,6 +706,10 @@ def test_a_simulation_built_from_a_dataframe_has_no_dataset_to_subsample():
     assert by_id(simulation, "age", 2025) == {
         person: ages[person] for person in ids(simulation, "person")
     }
+    assert isinstance(simulation.dataset, UKMultiYearDataset)
+    tables = simulation.dataset[2025]
+    assert tables.household.household_id.tolist() == kept
+    assert tables.household.household_weight.sum() == pytest.approx(100.0)
 
 
 # Refusals.
@@ -747,6 +931,25 @@ def test_unquantized_weights_are_a_ratio_estimate():
     assert error(400) < 0.02
 
 
+def test_another_periods_mean_weight_follows_the_sampling_periods_shares():
+    """Intended: households are drawn by their weights in the sampling period
+    only, so in another period a household's mean new weight is its share of
+    the sampling period's total times that period's total. That is its old
+    weight there only if its share is the same in both periods."""
+    sampling = np.array([1.0, 2.0, 3.0, 4.0, 10.0])
+    other = np.array([5.0, 1.0, 3.0, 4.0, 2.0])
+    expected = sampling / sampling.sum() * other.sum()
+    mean = np.mean(
+        [
+            rescale_weights(other, draw_household_counts(sampling, 40, seed))
+            for seed in range(3_000)
+        ],
+        axis=0,
+    )
+    assert mean == pytest.approx(expected, rel=0.03)
+    assert not np.allclose(mean, other, rtol=0.2)
+
+
 # Properties of a subsampled simulation.
 
 SIMULATION_SETTINGS = settings(
@@ -765,32 +968,76 @@ household_specs = st.lists(
 ).filter(lambda households: any(weight > 0 for weight, _ in households))
 
 
+MULTI_YEARS = (2025, 2026, 2027)
+
+
+def multi_year_dataset(households, factors) -> UKMultiYearDataset:
+    """A dataset of ``households`` for each of MULTI_YEARS, with each
+    household's weight multiplied by its own factor in each year."""
+    return UKMultiYearDataset(
+        datasets=[
+            dataset(
+                [
+                    (weight * factor, units)
+                    for (weight, units), factor in zip(households, year_factors)
+                ],
+                year=year,
+            )
+            for year, year_factors in zip(MULTI_YEARS, factors)
+        ]
+    )
+
+
 @SIMULATION_SETTINGS
 @given(
     households=household_specs,
     n=st.integers(1, 10),
     seed=st.integers(0, 10_000),
-    year=st.sampled_from(list(YEARS)),
     quantize=st.booleans(),
+    multi_year=st.booleans(),
+    data=st.data(),
 )
-def test_subsample_properties(households, n, seed, year, quantize):
+def test_subsample_properties(households, n, seed, quantize, multi_year, data):
+    if multi_year:
+        factors = data.draw(
+            st.lists(
+                st.lists(
+                    st.floats(min_value=0.5, max_value=2.0),
+                    min_size=len(households),
+                    max_size=len(households),
+                ),
+                min_size=len(MULTI_YEARS),
+                max_size=len(MULTI_YEARS),
+            ),
+            label="factors",
+        )
+        years = list(MULTI_YEARS)
+    else:
+        years = list(YEARS)
+    year = data.draw(st.sampled_from(years), label="year")
+
+    def build():
+        if multi_year:
+            return Microsimulation(dataset=multi_year_dataset(households, factors))
+        return Microsimulation(dataset=dataset(households))
+
     def subsample():
-        simulation = Microsimulation(dataset=dataset(households))
-        return simulation.subsample(
+        return build().subsample(
             n=n, seed=seed, time_period=year, quantize_weights=quantize
         )
 
-    full = Microsimulation(dataset=dataset(households))
+    full = build()
     sample = subsample()
     kept = ids(sample, "household")
     people = ids(sample, "person")
 
     # 1. Size.
     assert 1 <= len(kept) <= n
-    full_weights = {period: weights_by_id(full, period) for period in YEARS}
+    full_weights = {period: weights_by_id(full, period) for period in years}
     assert all(full_weights[year][household] > 0 for household in kept)
 
-    for period in YEARS:
+    draws_by_period = {}
+    for period in years:
         weights = weights_by_id(sample, period)
         total = sum(full_weights[period].values())
         # 2. Weight totals.
@@ -807,6 +1054,9 @@ def test_subsample_properties(households, n, seed, year, quantize):
         draws = shares * n / shares.sum()
         assert np.abs(draws - draws.round()).max() < 1e-2
         assert draws.round().sum() == n
+        draws_by_period[period] = draws.round().tolist()
+    # The same draws set the weights of every period.
+    assert len({tuple(draws) for draws in draws_by_period.values()}) == 1
 
     # 4. Links.
     for entity in ("household", "benunit"):
@@ -822,7 +1072,7 @@ def test_subsample_properties(households, n, seed, year, quantize):
 
     # 5. Inputs.
     assert supplied(sample) == supplied(full)
-    for period in YEARS:
+    for period in years:
         for variable in ("age", "employment_income", "region", "council_tax"):
             expected = by_id(full, variable, period)
             assert by_id(sample, variable, period) == {
@@ -835,7 +1085,7 @@ def test_subsample_properties(households, n, seed, year, quantize):
     # 6. Determinism.
     again = subsample()
     assert ids(again, "person") == people
-    for period in YEARS:
+    for period in years:
         assert weights_by_id(again, period) == weights_by_id(sample, period)
 
     # 7. Baseline.
@@ -850,7 +1100,7 @@ def test_subsample_properties(households, n, seed, year, quantize):
         assert getattr(sample.dataset[year], entity)[f"{entity}_id"].tolist() == ids(
             sample, entity
         )
-    for period in YEARS:
+    for period in years:
         assert list(weights_by_id(rebuilt, period).values()) == pytest.approx(
             list(weights_by_id(sample, period).values()), rel=1e-5
         )

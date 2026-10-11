@@ -21,8 +21,9 @@ refill it, and the helpers only answer for those variables.
 deletes.
 
 ``supplied_input_arrays`` answers for every variable. It reads only a record
-whose supplied value is still stored, which the holder tells apart from a
-value the engine carried over or calculated into the same period.
+whose supplied value is still stored, from the storage tier (memory or disk)
+the holder records it in. A value the engine carried over or calculated into
+the same period, in either tier, is not read as supplied.
 """
 
 from typing import List, Optional, Tuple
@@ -147,12 +148,38 @@ def supplied_input_arrays(simulation) -> List[Tuple[str, Period, np.ndarray]]:
     for variable_name, branch_name, period in input_keys:
         if branch_name != simulation.branch_name:
             continue
-        holder = simulation.get_holder(variable_name)
-        # A record can outlive its stored value (see above), and a carried
-        # over or calculated value can then take its place.
-        if not holder._stores_user_input(period, branch_name):
-            continue
-        value = holder._get_array_from_storage(period, branch_name)
+        value = stored_supplied_value(
+            simulation.get_holder(variable_name), period, branch_name
+        )
         if value is not None:
             arrays.append((variable_name, period, value))
     return sorted(arrays, key=lambda item: (item[0], item[1].start, str(item[1])))
+
+
+def stored_supplied_value(holder, period: Period, branch_name: str):
+    """The supplied value ``holder`` still stores for ``period``, or None.
+
+    A record can outlive its stored value (see above), and a value calculated
+    later can take its place in one tier while the input survives in the
+    other. So read only a tier that the holder records the input in (either
+    tier when it records none) and that holds a value it did not calculate,
+    as ``Holder._stores_user_input`` decides whether an input survives.
+    Reading memory before disk instead could return a calculated value cached
+    over an input stored on disk.
+    """
+    recorded = (getattr(holder, "_user_input_storage", None) or {}).get(
+        (branch_name, str(period))
+    )
+    locations = recorded[1] if recorded is not None else {"memory", "disk"}
+    for location, storage in (
+        ("memory", holder._memory_storage),
+        ("disk", holder._disk_storage),
+    ):
+        if (
+            location in locations
+            and storage is not None
+            and storage.has(period, branch_name)
+            and not storage.is_derived(period, branch_name)
+        ):
+            return storage.get(period, branch_name)
+    return None

@@ -5,14 +5,16 @@ gives the sample weights with the same totals as before. policyengine-core's
 ``subsample`` cannot do this for a UK simulation:
 
 - it rebuilds through ``Simulation.build_from_dataset()`` with no arguments,
-  and the UK builder takes the dataset to load, which it projects to later
-  years again;
+  and the UK builder takes the dataset to load;
+- given that dataset, the UK builder still cannot load what core rebuilds
+  from: core's flat-file ``Dataset``, which ``Dataset.load_dataset`` does not
+  read. The UK builder would also rebuild every year from the first one,
+  projected forward, rather than keep each year's inputs;
 - it reads each person's household and benefit unit back from the stored
-  ``person_household_id`` and ``person_benunit_id`` inputs. The UK model stores
-  those as 32-bit floats, which hold integers exactly only up to 2**24, so
-  larger identifiers would merge households and benefit units;
-- it leaves ``Simulation.dataset`` as a policyengine-core ``Dataset``, while UK
-  formulas read ``dataset.years``;
+  ``person_household_id`` and ``person_benunit_id`` inputs, which need not be
+  exact: the UK model has stored them as 32-bit floats, which hold integers
+  exactly only up to 2**24, so larger identifiers would merge households and
+  benefit units (policyengine-uk#2267);
 - it rebuilds a ``baseline`` branch, while a UK simulation's baseline is a
   simulation of its own.
 
@@ -29,6 +31,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 from policyengine_core.periods import Period, period as period_
+from policyengine_core.tracers import SimpleTracer
 
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
@@ -314,9 +317,11 @@ def _plan(
     )
 
 
-def _apply(subsample: _Subsample) -> None:
-    """Rebuild a simulation on its subsample."""
-    simulation = subsample.simulation
+def _apply(
+    subsample: _Subsample, simulation: "Simulation", tracer: SimpleTracer
+) -> None:
+    """Rebuild ``simulation`` on ``subsample``, which was worked out for it
+    or for the simulation it is a copy of."""
     start_instant = simulation.start_instant
     # Branches hold the populations the subsample replaces; formulas make
     # them again when they next ask for them.
@@ -325,6 +330,9 @@ def _apply(subsample: _Subsample) -> None:
     # of what was calculated from them, starts again with the inputs it sets.
     simulation._user_input_keys = set()
     simulation._store_history = None
+    # A trace of calculations on the replaced populations would otherwise be
+    # reported for the sample: a flat trace keeps a variable's first value.
+    simulation.tracer = tracer
     simulation.build_from_ids(*subsample.ids)
     for name, period, values in subsample.inputs:
         simulation.set_input(name, period, values)
@@ -391,14 +399,42 @@ def subsample_simulation(
         simulations.append(simulation)
         simulation = getattr(simulation, "baseline", None)
 
-    # Work out every subsample before applying any, so that a simulation
-    # that cannot be subsampled leaves them all as they were.
+    # Work out every subsample before changing anything, so that a
+    # simulation that cannot be subsampled leaves them all as they were.
     household_ids = np.asarray(simulations[0].populations["household"].ids)
     datasets: Dict[int, UKDataset] = {}
     subsamples = [
         _plan(each, household_ids, counts, quantize_weights, datasets)
         for each in simulations
     ]
-    for subsample in subsamples:
-        _apply(subsample)
-    return simulations[0]
+
+    # Each simulation gets a new tracer of the same kind. Simulations that
+    # shared a tracer share the new one. The old tracer is kept with its
+    # replacement so that its id is not reused while this runs.
+    tracers: Dict[int, Tuple[SimpleTracer, SimpleTracer]] = {}
+
+    def new_tracer(old: SimpleTracer) -> SimpleTracer:
+        if id(old) not in tracers:
+            tracers[id(old)] = (old, type(old)())
+        return tracers[id(old)][1]
+
+    first = simulations[0]
+    _apply(subsamples[0], first, new_tracer(first.tracer))
+
+    # Replace each baseline with a subsampled copy rather than subsample it
+    # in place: policyengine-core's ``clone`` shares a separate baseline, so
+    # another simulation can hold this one and still hold every household.
+    # Copying each baseline after the simulation that holds it is cut down
+    # keeps the memory in use to about what the simulations held before.
+    copies = {id(first): first}
+    for subsample in subsamples[1:]:
+        baseline = subsample.simulation
+        copy = baseline.clone(debug=baseline.debug, trace=baseline.trace)
+        _apply(subsample, copy, new_tracer(baseline.tracer))
+        copies[id(baseline)] = copy
+    for each in simulations:
+        holder = copies[id(each)]
+        baseline = getattr(holder, "baseline", None)
+        if baseline is not None and id(baseline) in copies:
+            holder.baseline = copies[id(baseline)]
+    return first
