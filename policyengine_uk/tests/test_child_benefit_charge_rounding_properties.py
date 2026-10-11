@@ -5,7 +5,8 @@ The charge is the appropriate percentage of the Child Benefit concerned:
 from 2024-25). Subsection (3) rounds the Child Benefit total and the charge
 down to whole pounds, and the percentage down to a whole number.
 
-Invariants, for any finite, nonnegative adjusted net income and Child Benefit:
+Invariants, for adjusted net income in whole pounds and Child Benefit totals in whole
+pence (the amounts the model produces), including their float32 storage:
 
 1. The charge is a whole number of pounds.
 2. Bounds: 0 <= charge <= Child Benefit rounded down to pounds.
@@ -14,8 +15,9 @@ Invariants, for any finite, nonnegative adjusted net income and Child Benefit:
    statute in integer arithmetic.
 4. Monotonic: with the Child Benefit fixed, a higher income never lowers the
    charge.
-5. Precision: every exact £200 step, held as float32 as in a microsimulation,
-   gives exactly that many points.
+5. Precision: every exact step, held as float32 as in a microsimulation,
+   gives exactly that many points, under the statutory band and under wider
+   tapers a reform can set; a penny below a step gives one point fewer.
 6. The model's charge from a full simulation matches the statute, with one to
    four children.
 """
@@ -145,3 +147,36 @@ def test_the_household_based_reform_charges_on_combined_income():
     combined the reform takes the whole Child Benefit, in whole pounds."""
     assert _charge([50_000, 30_000]) == 0
     assert _charge([50_000, 30_000], HOUSEHOLD_BASED) == 1_406
+
+
+WIDE_TAPER_ENDS = [END, 2_000_000, 10_000_000]
+
+
+def test_exact_steps_and_the_income_just_below_under_wide_tapers():
+    """A reform can widen the band (tests use £2,000,000 and £10,000,000).
+    Each step is width / 100. The largest float32 income below a step stays
+    one point lower: no slack rounds it up. (Above about £524,288, float32
+    cannot hold a penny below a step, so the nearest float32 below it is
+    used.)"""
+    for end in WIDE_TAPER_ENDS:
+        step = (end - L) / 100
+        for points in [1, 2, 37, 99, 100]:
+            on_step = np.float32(L + step * points)
+            below = np.nextafter(on_step, np.float32(0))
+            assert (
+                child_benefit_charge_percentage(np.array([on_step]), L, end)[0]
+                == points / 100
+            )
+            assert (
+                child_benefit_charge_percentage(np.array([below]), L, end)[0]
+                == (points - 1) / 100
+            )
+
+
+def test_a_penny_below_the_first_wide_taper_step_is_not_charged():
+    # £79,399.99 is £79,399.9921875 in float32: 0 points under a £60,000 to
+    # £2,000,000 band, so no charge on one child's £1,406.
+    income = np.array([79_399.99], dtype=np.float32)
+    percentage = child_benefit_charge_percentage(income, L, 2_000_000)
+    assert percentage[0] == 0
+    assert round_down_to_pounds(percentage * round_down_to_pounds(1_406.60))[0] == 0
