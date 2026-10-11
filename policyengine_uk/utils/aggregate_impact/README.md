@@ -21,9 +21,7 @@ runs it on every pull request and keeps one comment on the PR up to date.
 ```bash
 export HUGGING_FACE_TOKEN=...   # read access to policyengine-uk-data-private
 uv run python -m policyengine_uk.utils.aggregate_impact measure --label head \
-    --pin policyengine_uk/tests/certified_dataset.yaml \
-    --reforms policyengine_uk/tests/microsimulation/reforms_config.yaml \
-    --out out/head
+    --pin policyengine_uk/tests/certified_dataset.yaml --out out/head
 # ... the same for a base checkout, into out/base, then:
 uv run python -m policyengine_uk.utils.aggregate_impact compare \
     --base out/base --head out/head --markdown comment.md --summary summary.json
@@ -77,7 +75,23 @@ The checks are:
 - **signs, bounds and finiteness**, and **determinism:** a rebuilt
   simulation reproduces the baseline exactly;
 - **inert heads:** a head that is zero for every unit is a warning, unless the
-  partition marks it `zero_at_baseline: expected`.
+  partition marks it `zero_at_baseline: expected`;
+- **reform responsiveness:** each standard reform must move the variable it
+  targets in the stated direction, by at least its stated minimum, in every
+  year.
+
+## The standard reforms
+
+`standard_reforms.yaml` lists the reforms costed on each side: the eight
+reform-cost fixtures, plus a 10% rise in the Universal Credit standard
+allowance and a 10% rise in the State Pension. Each says what it must move
+(`responds`). A reform that the model ignores, or that moves its target the
+wrong way, fails `responsive:<id>` instead of passing as a small number.
+
+A relative reform (`scale`) is built from each side's own baseline: every
+listed parameter gets that model year's baseline value times the factor, for
+each year of the horizon. Pass `--reforms` to cost a different file, or
+`--no-reforms` to cost none.
 
 ## The fiscal partition
 

@@ -18,6 +18,7 @@ import numpy as np
 from . import TOOL_SCHEMA
 from .guard import counted_once, snapshot_inputs
 from .partition import Partition, closure_problems, group_label, read_model_lists
+from .reforms import StandardReform, parse_reforms, reform_parameters, responsiveness
 from .spec import Spec, fiscal_year_label
 
 ENTITIES = ("person", "benunit", "household")
@@ -530,14 +531,35 @@ def _finite_metrics_check(rec: Recorder):
     )
 
 
+def weighted_total(sim, variable: str, year: int) -> float:
+    """The household-weighted total of a variable of any entity."""
+    hw = array(sim, "household_weight", year).astype(np.float64)
+    values = array(sim, variable, year).astype(np.float64)
+    return float(np.sum(hw * to_household(sim, values, entity_of(sim, variable))))
+
+
+def as_standard_reforms(reforms) -> list:
+    """Accept parsed reforms or raw ``{name, parameters, ...}`` mappings."""
+    reforms = list(reforms or [])
+    if all(isinstance(r, StandardReform) for r in reforms):
+        return reforms
+    return parse_reforms({"reforms": reforms})
+
+
 def measure_reforms(
     factory: Callable,
+    baseline_parameters,
     baseline_balance: Mapping[int, float],
-    reforms: Sequence[Mapping],
+    baseline_targets: Mapping[int, Mapping[str, float]],
+    reforms: Sequence[StandardReform],
     years: Sequence[int],
     rec: Recorder,
 ) -> list:
-    """Each reform's change in gov_balance against the baseline run, by year.
+    """Cost each reform against the baseline run, and check it responds.
+
+    Records each reform's change in gov_balance by year and, where the
+    reform declares what it must move, the change in that variable's total
+    and whether it moved enough in the right direction every year.
 
     First rebuilds an unreformed simulation the same way, which must
     reproduce the baseline exactly: otherwise reform costings would include
@@ -547,10 +569,7 @@ def measure_reforms(
     first = years[0]
     try:
         fresh = factory(reform=None)
-        hw = array(fresh, "household_weight", first).astype(np.float64)
-        again = float(
-            np.sum(hw * array(fresh, "gov_balance", first).astype(np.float64))
-        )
+        again = weighted_total(fresh, "gov_balance", first)
         rec.check(
             "determinism:rebuilt_baseline",
             "A rebuilt unreformed simulation reproduces the baseline gov_balance exactly",
@@ -569,32 +588,65 @@ def measure_reforms(
         )
     gc.collect()
     for reform in reforms:
-        name = str(reform["name"])
-        reform_id = slug(name)
         outcome = {
-            "id": reform_id,
-            "name": name,
-            "parameters": reform.get("parameters", {}),
+            "id": reform.id,
+            "name": reform.name,
+            "parameters": None,
+            "responds": None,
             "error": None,
         }
+        target_changes = {}
         try:
-            reformed = factory(reform=reform.get("parameters"))
+            parameters = reform_parameters(reform, baseline_parameters, years)
+            outcome["parameters"] = parameters
+            reformed = factory(reform=parameters)
             for year in years:
-                hw = array(reformed, "household_weight", year).astype(np.float64)
-                balance = float(
-                    np.sum(hw * array(reformed, "gov_balance", year).astype(np.float64))
-                )
                 rec.metric(
-                    f"reforms.{reform_id}",
-                    name,
+                    f"reforms.{reform.id}",
+                    reform.name,
                     "reforms",
                     "gbp",
                     year,
-                    balance - baseline_balance[year],
+                    weighted_total(reformed, "gov_balance", year)
+                    - baseline_balance[year],
                 )
+                if reform.responds is not None:
+                    variable = reform.responds.variable
+                    change = (
+                        weighted_total(reformed, variable, year)
+                        - baseline_targets[year][variable]
+                    )
+                    target_changes[year] = change
+                    rec.metric(
+                        f"reform_targets.{reform.id}",
+                        f"{reform.name}: change in {variable}",
+                        "reform_targets",
+                        "gbp",
+                        year,
+                        change,
+                    )
             del reformed
         except Exception as error:  # noqa: BLE001 - one reform's failure is reported, not fatal
             outcome["error"] = f"{type(error).__name__}: {error}"
+        if reform.responds is not None:
+            outcome["responds"] = {
+                "variable": reform.responds.variable,
+                "direction": reform.responds.direction,
+                "minimum": reform.responds.minimum,
+            }
+            if outcome["error"] is None:
+                ok, detail = responsiveness(reform.responds, target_changes)
+            else:
+                ok, detail = False, "the reform did not run"
+            rec.check(
+                f"responsive:{reform.id}",
+                f"'{reform.name}' moves {reform.responds.variable} "
+                f"{reform.responds.direction} by at least "
+                f"£{reform.responds.minimum / 1e9:,.2f}bn in every year",
+                ok,
+                detail,
+                section="reforms",
+            )
         gc.collect()
         outcomes.append(outcome)
     return outcomes
@@ -633,16 +685,19 @@ def measure(
     )
     snapshot = snapshot_inputs(sim, partition.component_variables())
 
+    reforms = as_standard_reforms(reforms)
+    target_variables = sorted({r.responds.variable for r in reforms if r.responds})
     households = {}
-    baseline_balance = {}
+    baseline_balance, baseline_targets = {}, {}
     reset = getattr(sim, "_invalidate_all_caches", None)
     for year in spec.years:
         t = time.time()
         measure_year(sim, partition, spec, year, rec, households)
-        hw = array(sim, "household_weight", year).astype(np.float64)
-        baseline_balance[year] = float(
-            np.sum(hw * array(sim, "gov_balance", year).astype(np.float64))
-        )
+        baseline_balance[year] = weighted_total(sim, "gov_balance", year)
+        baseline_targets[year] = {
+            variable: weighted_total(sim, variable, year)
+            for variable in target_variables
+        }
         timings[f"year_{year}"] = round(time.time() - t, 2)
         if reset is not None:
             # Keep memory flat across the horizon; supplied inputs survive.
@@ -702,7 +757,13 @@ def measure(
 
     t = time.time()
     reform_outcomes = measure_reforms(
-        factory, baseline_balance, reforms, spec.years, rec
+        factory,
+        sim.tax_benefit_system.parameters,
+        baseline_balance,
+        baseline_targets,
+        reforms,
+        spec.years,
+        rec,
     )
     timings["reforms"] = round(time.time() - t, 2)
     for outcome in reform_outcomes:

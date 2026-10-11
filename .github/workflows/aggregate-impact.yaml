@@ -136,7 +136,6 @@ jobs:
           PYTHONPATH="$tool" .venv/bin/python -m pe_uk_aggregate_impact measure \
             --label "$SIDE" \
             --pin ../tool-source/policyengine_uk/tests/certified_dataset.yaml \
-            --reforms ../tool-source/policyengine_uk/tests/microsimulation/reforms_config.yaml \
             --fallback-partition ../tool-source/policyengine_uk/data/fiscal_partition.yaml \
             --git-sha "$(git rev-parse HEAD)" \
             --git-ref "$MODEL_NAME" \

@@ -1,9 +1,7 @@
 """Command line: ``measure`` one checkout, then ``compare`` two measurements.
 
     python -m policyengine_uk.utils.aggregate_impact measure --label head \\
-        --pin policyengine_uk/tests/certified_dataset.yaml \\
-        --reforms policyengine_uk/tests/microsimulation/reforms_config.yaml \\
-        --out out/head
+        --pin policyengine_uk/tests/certified_dataset.yaml --out out/head
     python -m policyengine_uk.utils.aggregate_impact compare \\
         --base out/base --head out/head --markdown comment.md --summary summary.json
 
@@ -19,8 +17,6 @@ import json
 import sys
 import traceback
 from pathlib import Path
-
-import yaml
 
 from . import TOOL_SCHEMA
 
@@ -79,11 +75,13 @@ def cmd_measure(args) -> int:
         partition = load_partition(partition_path)
         provenance["partition_source"] = partition_source
 
+        from .reforms import DEFAULT_REFORMS_PATH, load_reforms
+
         reforms = []
-        if args.reforms:
-            with open(args.reforms) as f:
-                reforms = (yaml.safe_load(f) or {}).get("reforms", [])
-            provenance["reforms_sha256"] = _sha256(args.reforms)
+        if not args.no_reforms:
+            reforms_path = Path(args.reforms) if args.reforms else DEFAULT_REFORMS_PATH
+            reforms = load_reforms(reforms_path)
+            provenance["reforms_sha256"] = _sha256(reforms_path)
 
         from policyengine_uk import Microsimulation
 
@@ -167,7 +165,11 @@ def main(argv=None) -> int:
     )
     m.add_argument("--spec", help="report spec YAML")
     m.add_argument("--years", help="override the horizon, e.g. 2025-2031")
-    m.add_argument("--reforms", help="reform regression YAML (a 'reforms' list)")
+    m.add_argument(
+        "--reforms",
+        help="reform YAML to cost instead of the standard set (standard_reforms.yaml)",
+    )
+    m.add_argument("--no-reforms", action="store_true", help="cost no reforms")
     m.add_argument("--git-sha", default="")
     m.add_argument("--git-ref", default="")
     m.add_argument(

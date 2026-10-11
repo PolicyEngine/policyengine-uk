@@ -22,6 +22,7 @@ SECTIONS = (
     ("inequality", "Inequality"),
     ("deciles", "Mean household net income in each side's own deciles"),
     ("reforms", "Standard reform costings (change in gov_balance)"),
+    ("reform_targets", "Standard reforms: change in each reform's target"),
 )
 MAX_FLAG_ROWS = 40
 

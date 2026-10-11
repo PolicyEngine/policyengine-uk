@@ -1,0 +1,106 @@
+# The standard reforms the aggregate-impact report costs on each side.
+#
+# Each reform is either absolute (`parameters`: values applied from 2023, as
+# the reform-cost fixtures in tests/microsimulation/reforms_config.yaml do) or
+# relative (`scale`: each listed parameter is multiplied by the factor in
+# every year of the horizon, starting from that year's baseline value).
+#
+# `responds` states what the reform must do: the model variable whose
+# weighted total it must move, the direction, and the least it must move it
+# in every year of the horizon. A reform that moves its target by less, by
+# nothing or the wrong way fails the `responsive:<id>` check, so a reform the
+# model silently ignores cannot pass as a small number. Each minimum is well
+# below the reform's smallest yearly effect on uk-data 1.58.0 in October 2026
+# (about a fifth of it for most), and is a proposal awaiting the
+# numerical-acceptance ruling (cos d1344). An absolute reform shrinks as the
+# baseline is uprated towards it: the 13,000 personal allowance is worth £4.4bn
+# in 2030-31 but £1.8bn in 2031-32, when the baseline allowance rises to
+# 12,830. From 2032-33 the baseline (13,090) exceeds it, so before the horizon
+# reaches that year, make that reform relative.
+schema_version: 1
+
+reforms:
+  - id: basic_rate_plus_1pp
+    name: Raise basic rate by 1pp
+    parameters:
+      gov.hmrc.income_tax.rates.uk[0].rate: 0.21
+    responds:
+      variable: income_tax
+      direction: up
+      minimum: 1500000000
+  - id: higher_rate_plus_1pp
+    name: Raise higher rate by 1pp
+    parameters:
+      gov.hmrc.income_tax.rates.uk[1].rate: 0.42
+    responds:
+      variable: income_tax
+      direction: up
+      minimum: 1000000000
+  - id: personal_allowance_13000
+    name: Raise personal allowance by ~800GBP/year
+    parameters:
+      gov.hmrc.income_tax.allowances.personal_allowance.amount: 13000
+    responds:
+      variable: income_tax
+      direction: down
+      minimum: 1000000000
+  - id: child_benefit_additional_25
+    name: Raise child benefit by 25GBP/week per additional child
+    parameters:
+      gov.hmrc.child_benefit.amount.additional: 25
+    responds:
+      variable: child_benefit
+      direction: up
+      minimum: 300000000
+  - id: uc_taper_20pc
+    name: Reduce Universal Credit taper rate to 20%
+    parameters:
+      gov.dwp.universal_credit.means_test.reduction_rate: 0.2
+    responds:
+      variable: universal_credit
+      direction: up
+      minimum: 4000000000
+  - id: employee_nics_main_10pc
+    name: Raise Class 1 main employee NICs rate to 10%
+    parameters:
+      gov.hmrc.national_insurance.class_1.rates.employee.main: 0.1
+    responds:
+      variable: national_insurance
+      direction: up
+      minimum: 2500000000
+  - id: vat_standard_plus_2pp
+    name: Raise VAT standard rate by 2pp
+    parameters:
+      gov.hmrc.vat.standard_rate: 0.22
+    responds:
+      variable: vat
+      direction: up
+      minimum: 4000000000
+  - id: additional_rate_plus_3pp
+    name: Raise additional rate by 3pp
+    parameters:
+      gov.hmrc.income_tax.rates.uk[2].rate: 0.48
+    responds:
+      variable: income_tax
+      direction: up
+      minimum: 750000000
+  - id: uc_standard_allowance_plus_10pc
+    name: Raise the Universal Credit standard allowance by 10%
+    scale:
+      gov.dwp.universal_credit.standard_allowance.amount.SINGLE_YOUNG: 1.1
+      gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD: 1.1
+      gov.dwp.universal_credit.standard_allowance.amount.COUPLE_YOUNG: 1.1
+      gov.dwp.universal_credit.standard_allowance.amount.COUPLE_OLD: 1.1
+    responds:
+      variable: universal_credit
+      direction: up
+      minimum: 600000000
+  - id: state_pension_plus_10pc
+    name: Raise the State Pension by 10%
+    scale:
+      gov.dwp.state_pension.new_state_pension.amount: 1.1
+      gov.dwp.state_pension.basic_state_pension.amount: 1.1
+    responds:
+      variable: state_pension
+      direction: up
+      minimum: 2500000000

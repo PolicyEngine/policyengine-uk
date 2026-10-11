@@ -21,6 +21,7 @@ ALWAYS_BLOCKING_PREFIXES = ("finite:", "weights:")
 
 FLAG_KIND_BY_SECTION = {
     "reforms": "reform_gbp",
+    "reform_targets": "reform_gbp",
 }
 
 DECILES = tuple(range(1, 11))

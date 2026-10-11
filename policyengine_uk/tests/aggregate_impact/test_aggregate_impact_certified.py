@@ -14,6 +14,7 @@ from policyengine_uk.utils.aggregate_impact.partition import (
     default_partition_path,
     load_partition,
 )
+from policyengine_uk.utils.aggregate_impact.reforms import load_reforms, parameter_node
 from policyengine_uk.utils.aggregate_impact.spec import load_spec
 
 pytestmark = pytest.mark.microsimulation
@@ -51,6 +52,7 @@ def measured():
         partition,
         spec,
         label="test",
+        reforms=[r for r in load_reforms() if r.scale],
         guard_variables=tax_components | SPENDING_SAMPLE,
     )
     return result, households, partition, Microsimulation(dataset=dataset)
@@ -142,3 +144,24 @@ def test_household_detail_is_complete(measured):
     assert all(len(v) == n for v in columns.values())
     assert np.all(np.isfinite(columns["income"]))
     assert set(np.unique(columns["decile"])) <= set(range(-1, 11))
+
+
+def test_relative_reforms_scale_their_parameters_and_move_their_targets(measured):
+    result, _, _, sim = measured
+    passing = {c["id"] for c in result["checks"] if c["status"] == "pass"}
+    relative = [r for r in load_reforms() if r.scale]
+    assert {r.id for r in relative} == {
+        "uc_standard_allowance_plus_10pc",
+        "state_pension_plus_10pc",
+    }
+    outcomes = {o["id"]: o for o in result["reforms"]}
+    for reform in relative:
+        assert f"reform_runs:{reform.id}" in passing
+        assert f"responsive:{reform.id}" in passing
+        for path, factor in reform.scale.items():
+            baseline = parameter_node(sim.tax_benefit_system.parameters, path)(
+                f"{YEAR}-01-01"
+            )
+            assert outcomes[reform.id]["parameters"][path][str(YEAR)] == pytest.approx(
+                baseline * factor
+            )

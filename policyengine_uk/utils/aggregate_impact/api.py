@@ -21,6 +21,7 @@ from typing import Callable, Optional, Sequence
 from . import TOOL_SCHEMA
 from .measure import measure, tool_digest
 from .partition import Partition, default_partition_path, load_partition
+from .reforms import load_reforms
 from .spec import DEFAULT_SPEC_PATH, Spec, load_spec
 
 KIND_BY_SECTION = {
@@ -37,6 +38,7 @@ KIND_BY_SECTION = {
     "household_totals": "household_total",
     "population": "population",
     "reforms": "reform",
+    "reform_targets": "reform_target",
 }
 PARTITIONED_SECTIONS = {"receipts", "spending", "caseloads"}
 
@@ -103,7 +105,7 @@ def compute_budget_metrics(
     years: Optional[Sequence[int]] = None,
     partition: Optional[Partition] = None,
     spec: Optional[Spec] = None,
-    reforms: Sequence[dict] = (),
+    reforms: Optional[Sequence] = None,
     run_guard: bool = True,
     label: str = "candidate",
     provenance: Optional[dict] = None,
@@ -111,7 +113,9 @@ def compute_budget_metrics(
     """Measure ``sim`` (a fresh ``Microsimulation``) and return the report.
 
     ``factory(reform=None)`` builds another simulation on the same data; by
-    default it rebuilds ``type(sim)`` from ``sim.dataset``. A failed identity
+    default it rebuilds ``type(sim)`` from ``sim.dataset``. ``reforms``
+    defaults to the standard set (``standard_reforms.yaml``), each costed and
+    checked for responsiveness; pass ``[]`` to cost none. A failed identity
     has status ``fail``; ``warn`` rows (a head that is zero everywhere) are
     observations, not failures.
     """
@@ -130,6 +134,8 @@ def compute_budget_metrics(
         def factory(reform=None):
             return simulation_class(dataset=dataset, reform=reform or None)
 
+    if reforms is None:
+        reforms = load_reforms()
     provenance = dict(provenance or {})
     provenance.setdefault("metrics_version", f"{TOOL_SCHEMA}+{tool_digest()[:16]}")
     result, _ = measure(
