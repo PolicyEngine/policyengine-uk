@@ -237,3 +237,21 @@
     carers_allowance_earnings: 10_700
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
+
+- name: Case 17, before April 2024 trading earnings are also net of Class 2.
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: 7_000
+    personal_pension_contributions: 1_400
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 2018-19: no tax or Class 4 under the £11,850 allowance and lower
+    # profits limit; Class 2 at £2.95 for 52 weeks (reg. 14(2)(a)) = 153.40;
+    # half the pension 700. 7,000 - 153.40 - 700 = 6,146.60, £118.20 a week,
+    # under the £120 limit. Without Class 2 it would be £121.15, over it.
+    carers_allowance_earnings: 6_146.60
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 64.60 * 52

@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.class_2 import class_2_contribution_weeks, class_2_liable
 
 
 class carers_allowance_earnings(Variable):
@@ -25,7 +26,10 @@ class carers_allowance_earnings(Variable):
         "upper profits limits. Regulation 14(1) deducts the personal reliefs "
         "the claimant is entitled to, with no reduction for any allowance the "
         "pay uses, and capital expenditure is not deducted (reg. 13(6)(a)). "
-        "Regulation 14 deducts no Class 2 contribution.\n\n"
+        "Until 6 April 2024 reg. 14(2)(a) also deducted the Class 2 "
+        "contributions payable on the chargeable profit; that paragraph was "
+        "omitted with compulsory Class 2, whose flat rate is nil from "
+        "2024-25.\n\n"
         "Not modelled: the deduction for care charges (Schedule 3, up to half "
         "of net earnings) and the Schedule 1 disregards, so this can overstate "
         "earnings for a carer who pays for care while at work."
@@ -88,6 +92,16 @@ class carers_allowance_earnings(Variable):
             min_(profit, class_4.thresholds.upper_profits_limit)
             - class_4.thresholds.lower_profits_limit,
         )
+        # Reg. 14(2)(a), omitted from 6 April 2024: the Class 2 contributions
+        # payable on the chargeable profit (SSCBA 1992 s. 11), on the
+        # profit itself rather than ni_class_2's base after capital
+        # allowances. The flat rate is nil from 2024-25.
+        class_2 = p.national_insurance.class_2
+        trading_class_2 = (
+            class_2_liable(profit, class_2)
+            * class_2.flat_rate
+            * class_2_contribution_weeks(period.start.year)
+        )
 
         half_pension_contributions = 0.5 * person("pension_contributions", period)
         return max_(
@@ -98,5 +112,6 @@ class carers_allowance_earnings(Variable):
             + profit
             - trading_tax
             - trading_class_4
+            - trading_class_2
             - half_pension_contributions,
         )

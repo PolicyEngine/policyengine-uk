@@ -28,6 +28,7 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.utils.class_2 import class_2_contribution_weeks
 
 LIMIT = 204
 RATE = 86.45
@@ -129,7 +130,9 @@ def test_trading_profit_takes_the_basic_rate_in_every_year(year, country):
     """Reg. 14(1): the basic rate, or for a Scottish taxpayer the Scottish
     basic rate, which were both 20% in each of these years. Before 2018-19 the
     Scottish scale has no starter rate, so reading its second bracket by
-    position at an instant would pick the higher rate."""
+    position at an instant would pick the higher rate. Before 2024-25 reg.
+    14(2)(a) also deducted Class 2: £30,000 is above the small profits
+    threshold in each year, so a full year of the flat rate."""
     profit = 30_000
     simulation = Simulation(
         situation={
@@ -147,9 +150,12 @@ def test_trading_profit_takes_the_basic_rate_in_every_year(year, country):
     hmrc = simulation.tax_benefit_system.parameters(year).gov.hmrc
     allowance = hmrc.income_tax.allowances.personal_allowance.amount
     class_4 = hmrc.national_insurance.class_4
+    class_2 = hmrc.national_insurance.class_2
+    class_2_weeks = class_2_contribution_weeks(year)
     expected = (
         profit
         - 0.20 * (profit - allowance)
+        - class_2.flat_rate * class_2_weeks
         - class_4.rates.main
         * (
             min(profit, class_4.thresholds.upper_profits_limit)
