@@ -8,10 +8,13 @@ class marriage_allowance_tax_reduction_limit(Variable):
     documentation = (
         "Tax at Step 5 of the income tax calculation left after the person's "
         "other tax reductions. The Marriage Allowance tax reduction cannot "
-        "exceed it. Deducting the other reductions first gives the same total "
-        "as the order that most reduces the person's liability. Double "
-        "taxation relief should come after the Marriage Allowance (s. 27(6)), "
-        "but other_tax_credits does not separate it out."
+        "exceed it. Each reduction is limited to the tax left after those "
+        "before it, so the order changes how the total is split between "
+        "them but not the total, which is the greatest reduction in "
+        "liability. Deducting this one last makes it exactly the tax an "
+        "election saves the gaining spouse. Double taxation relief should "
+        "come after the Marriage Allowance (s. 27(6)), but other_tax_credits "
+        "does not separate it out."
     )
     definition_period = YEAR
     reference = [
@@ -27,6 +30,11 @@ class marriage_allowance_tax_reduction_limit(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
+        income_tax = parameters(period).gov.hmrc.income_tax
+        other_reductions = [
+            variable
+            for variable in income_tax.income_tax_subtractions
+            if variable != "marriage_allowance_tax_reduction"
+        ]
         step_5_tax = person("income_tax_pre_charges", period)
-        other_reductions = add(person, period, ["capped_mcad", "other_tax_credits"])
-        return max_(0, step_5_tax - other_reductions)
+        return max_(0, step_5_tax - add(person, period, other_reductions))

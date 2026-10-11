@@ -7,7 +7,7 @@ reduction of the appropriate percentage of it, capped at their Step 5 tax
 conditions allow it and it lowers their combined income tax.
 
 Invariants, for any generated population of couples with every kind of
-taxable income, in England, Wales or Scotland:
+taxable income and residential finance costs, in England, Wales or Scotland:
 
 1. The couple's income tax is never higher than with no election.
 2. Differential against brute force: the model's election gives the lowest
@@ -52,6 +52,9 @@ INCOMES = {
     "dividend_income": 15_000,
     "property_income": 10_000,
 }
+# Residential finance costs give the landlord a Step 6 reduction of their own
+# (ITTOIA 2005 s. 274AA), deducted before the Marriage Allowance reduction.
+FINANCE_COSTS = 10_000
 ELECTION = "makes_marriage_allowance_election"
 VARIABLES = [
     ELECTION,
@@ -82,6 +85,7 @@ def adults(draw):
         if variable == "state_pension" and age < 67:
             continue
         adult[variable] = draw(amounts(cap))
+    adult["property_finance_costs"] = draw(amounts(FINANCE_COSTS))
     return adult
 
 

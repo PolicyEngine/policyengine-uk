@@ -676,3 +676,60 @@
       members: [parent_1, parent_2, student]
   output:
     marriage_allowance: [0, 0, 0]
+
+- name: A landlord whose finance-cost reduction clears their tax gains nothing, so the couple does not elect
+  # ITA 2007 s. 29(2)-(3): a reduction is deducted only from Step 5 tax left
+  # after the reductions before it. The finance-cost reduction (ITTOIA 2005
+  # s. 274AA) is deducted first; s. 27(2) gives the same total either way.
+  period: 2026
+  input:
+    people:
+      landlord:
+        age: 40
+        property_rental_income: 20_000
+        property_income: 20_000
+        property_finance_costs: 15_000
+      earner:
+        age: 38
+        employment_income: 12_000
+    benunits:
+      benunit:
+        members: [landlord, earner]
+        is_married: true
+  output:
+    # Landlord: Step 5 tax (20,000 - 12,570) x 20% = 1,486. Costs relieved
+    # min(15,000, 20,000, 7,430) = 7,430, so the reduction is 1,486 and no tax
+    # is left for a Marriage Allowance reduction. The earner electing would
+    # pay (12,000 - 11,310) x 20% = 138 and save the landlord nothing.
+    uses_property_allowance: [false, false]
+    property_finance_cost_relief: [1_486, 0]
+    marriage_allowance_tax_reduction_limit: [0, 0]
+    makes_marriage_allowance_election: [false, false]
+    marriage_allowance_tax_reduction: [0, 0]
+    income_tax: [0, 0]
+
+- name: A landlord's Marriage Allowance reduction is limited to the tax the finance-cost reduction leaves
+  period: 2026
+  input:
+    people:
+      landlord:
+        age: 40
+        property_rental_income: 20_000
+        property_income: 20_000
+        property_finance_costs: 6_700
+      earner:
+        age: 38
+        employment_income: 12_000
+    benunits:
+      benunit:
+        members: [landlord, earner]
+        is_married: true
+  output:
+    # Landlord: Step 5 tax 1,486, finance-cost reduction 20% x 6,700 = 1,340,
+    # leaving 146. The earner electing pays (12,000 - 11,310) x 20% = 138 and
+    # saves the landlord 146, so the couple elects and pays 138 against 146.
+    property_finance_cost_relief: [1_340, 0]
+    marriage_allowance_tax_reduction_limit: [146, 138]
+    makes_marriage_allowance_election: [false, true]
+    marriage_allowance_tax_reduction: [146, 0]
+    income_tax: [0, 138]
