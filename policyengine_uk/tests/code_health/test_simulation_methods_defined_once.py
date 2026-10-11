@@ -6,9 +6,10 @@ method, added at different places in the class, merge without a git conflict,
 and the later definition replaces the earlier one: whatever the earlier one
 did is lost without an error. Combine them into one method instead.
 
-``ruff check`` reports this as F811, but CI checks formatting only, so this
-test does. Property setters and deleters, and ``typing.overload`` stubs, name
-a method again on purpose and are left out.
+``ruff check`` reports this as F811 when it runs. This test guards the merged
+class with the tests themselves, wherever lint is not run. Property setters
+and deleters, and ``typing.overload`` stubs, name a method again on purpose
+and are left out.
 """
 
 import ast
