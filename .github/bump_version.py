@@ -32,6 +32,9 @@ TOWNCRIER_IGNORED_NAMES = (
     "readme.rst",
 )
 
+# A template given as "package:resource" (towncrier._settings.load).
+TOWNCRIER_RESOURCE_TEMPLATE = re.compile(r"[-\w.]+:[-\w.]+$")
+
 MAJOR_TYPES = {"breaking"}
 MINOR_TYPES = {"added", "removed"}
 
@@ -43,6 +46,7 @@ class TowncrierConfig:
     directory: str
     types: tuple[str, ...]
     ignore: tuple[str, ...]
+    orphan_prefix: str = "+"
 
 
 def parse_towncrier_config(pyproject_text: str) -> TowncrierConfig:
@@ -65,12 +69,15 @@ def parse_towncrier_config(pyproject_text: str) -> TowncrierConfig:
         )
     ignore = [name.lower() for name in TOWNCRIER_IGNORED_NAMES]
     ignore += [pattern.lower() for pattern in config.get("ignore") or []]
-    template = config.get("template")
-    if isinstance(template, str) and not template.startswith("towncrier:"):
-        # towncrier does not lower-case this one.
+    template = config.get("template", "towncrier:default")
+    if not TOWNCRIER_RESOURCE_TEMPLATE.match(template):
+        # A template file in the repository; towncrier does not lower-case it.
         ignore.append(Path(template).name)
     return TowncrierConfig(
-        directory=Path(directory).as_posix(), types=types, ignore=tuple(ignore)
+        directory=Path(directory).as_posix(),
+        types=types,
+        ignore=tuple(ignore),
+        orphan_prefix=config.get("orphan_prefix", "+"),
     )
 
 
@@ -83,17 +90,31 @@ def is_ignored(name: str, config: TowncrierConfig) -> bool:
     return any(fnmatch.fnmatch(name.lower(), pattern) for pattern in config.ignore)
 
 
-def towncrier_fragment_type(name: str, types) -> str | None:
-    """The type towncrier reads from a fragment's name, or None if it has none.
+def parse_fragment_name(name: str, types) -> tuple[str, str, int] | None:
+    """(issue, type, counter) as towncrier reads a fragment's name, or None.
 
-    Mirrors towncrier._builder.parse_newfragment_basename: the last
-    dot-separated part after the first that is a configured type.
+    Mirrors towncrier._builder.parse_newfragment_basename: the type is the
+    last dot-separated part, after the first, that is a configured type; the
+    parts before it are the issue (an all-digit issue loses leading zeros);
+    a number right after it is the counter.
     """
     parts = name.split(".")
-    for part in reversed(parts[1:]):
-        if part in types:
-            return part
+    for i in reversed(range(1, len(parts))):
+        if parts[i] in types:
+            issue = ".".join(parts[:i]).strip()
+            if issue.isdigit():
+                issue = str(int(issue))
+            counter = 0
+            if len(parts) > i + 1 and parts[i + 1].isdigit():
+                counter = int(parts[i + 1])
+            return issue, parts[i], counter
     return None
+
+
+def towncrier_fragment_type(name: str, types) -> str | None:
+    """The type towncrier reads from a fragment's name, or None if it has none."""
+    parsed = parse_fragment_name(name, types)
+    return parsed[1] if parsed else None
 
 
 def classify_fragments(

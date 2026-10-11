@@ -17,7 +17,10 @@ Each file the pull request adds or changes in the fragment directory must:
 - be named ``<slug>.<type>.md``, with a type configured in pyproject.toml at
   ``--head``, and a slug of letters, digits, ``.``, ``_`` and ``-``
   (optionally after towncrier's orphan prefix ``+``);
-- be UTF-8 text that is not blank.
+- be UTF-8 text that is not blank;
+- not share towncrier's (issue, type, counter) key with another fragment,
+  such as ``7.fixed.md`` and ``007.fixed.md``, which stops ``towncrier
+  build`` and so the release.
 
 Files towncrier ignores (.gitkeep, README and the configured ``ignore``) are
 not fragments and pass. Every name this accepts is one towncrier consumes,
@@ -42,11 +45,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from bump_version import (  # noqa: E402
     TowncrierConfig,
     is_ignored,
+    parse_fragment_name,
     parse_towncrier_config,
-    towncrier_fragment_type,
 )
 
-SLUG = re.compile(r"\+?[A-Za-z0-9][A-Za-z0-9._-]*")
+SLUG = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 LIST_MARKER = re.compile(r"[-*+]\s")
 
 
@@ -56,16 +59,18 @@ class Report:
     warnings: list[tuple[str | None, str]] = field(default_factory=list)
 
 
-def name_problem(name: str, types) -> str | None:
+def name_problem(name: str, config: TowncrierConfig) -> str | None:
     """Why a fragment's name is not ``<slug>.<type>.md``, or None if it is."""
     if not name.endswith(".md"):
         return "does not end in .md"
     slug, dot, fragment_type = name.removesuffix(".md").rpartition(".")
-    if not dot or fragment_type not in types:
+    if not dot or fragment_type not in config.types:
         return (
             "has no towncrier type, so towncrier never writes it to CHANGELOG.md "
             "and never deletes it"
         )
+    if config.orphan_prefix:
+        slug = slug.removeprefix(config.orphan_prefix)
     if not SLUG.fullmatch(slug):
         return (
             f"has the slug {slug!r}; use letters, digits, '.', '_' and '-' "
@@ -103,7 +108,7 @@ def check_fragment(
         )
     if is_ignored(name, config):
         return None, None
-    problem = name_problem(name, config.types)
+    problem = name_problem(name, config)
     if problem:
         types = ", ".join(config.types)
         return f"{problem}. Name it <slug>.<type>.md with a type from {types}.", None
@@ -143,30 +148,61 @@ def changed_files(repo: Path, base: str, head: str, directory: str) -> list[str]
     return paths
 
 
+def fragment_key(name: str, config: TowncrierConfig) -> tuple[str, str, int] | None:
+    """The key towncrier files a fragment under; None for an orphan or no type.
+
+    towncrier stops with "multiple files for ..." when two fragments share one.
+    """
+    parsed = parse_fragment_name(name, config.types)
+    if parsed is None or (
+        config.orphan_prefix and parsed[0].startswith(config.orphan_prefix)
+    ):
+        return None
+    return parsed
+
+
 def check(repo: Path, base: str, head: str) -> Report:
     config = parse_towncrier_config(
         git(repo, "show", f"{head}:pyproject.toml").decode()
     )
     report = Report()
     changed = changed_files(repo, base, head, config.directory)
+    tree = git(repo, "ls-tree", "--name-only", "-z", head, "--", f"{config.directory}/")
+    names = [
+        path.rpartition("/")[2] for path in filter(None, tree.decode().split("\0"))
+    ]
+    keys = {}
+    for name in names:
+        if not is_ignored(name, config):
+            keys.setdefault(fragment_key(name, config), []).append(name)
     added_fragment = False
     for path in changed:
         error, warning = check_fragment(
             path, git(repo, "show", f"{head}:{path}"), config
         )
+        name = path.rpartition("/")[2]
+        key = fragment_key(name, config)
+        if not error and key is not None and len(keys.get(key, [])) > 1:
+            others = ", ".join(other for other in keys[key] if other != name)
+            error = (
+                f"has the same towncrier key as {others} ({key[0]}.{key[1]}), so "
+                "towncrier build stops with 'multiple files' and the release fails. "
+                "Use a different slug."
+            )
         if error:
             report.errors.append((path, error))
         elif warning:
             report.warnings.append((path, warning))
-        name = path.rpartition("/")[2]
         if not error and not is_ignored(name, config):
             added_fragment = True
-    tree = git(repo, "ls-tree", "--name-only", "-z", head, "--", f"{config.directory}/")
-    for path in filter(None, tree.decode().split("\0")):
-        name = path.rpartition("/")[2]
-        if path in changed or is_ignored(name, config):
+    for name in names:
+        path = f"{config.directory}/{name}"
+        touched = any(
+            other == path or other.startswith(f"{path}/") for other in changed
+        )
+        if touched or is_ignored(name, config):
             continue
-        if towncrier_fragment_type(name, config.types) is None:
+        if parse_fragment_name(name, config.types) is None:
             report.warnings.append(
                 (
                     path,
