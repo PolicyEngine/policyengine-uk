@@ -462,8 +462,9 @@ def hold_identifiers_in(simulation, variable_name: str, period) -> None:
     household identifier there as zero, the default. Yet once the frame it
     exports gives a whole year's value for that year, the frame loads back to
     a simulation that holds the people and groups there: each whole year a
-    column names is a year of the dataset, which holds them
-    (``dataset_from_input_dataframe``).
+    column of another variable names is a year of the dataset, which holds
+    them, and each other year an identifier column names gets the identifiers
+    as inputs (``dataset_from_input_dataframe``).
 
     So each identifier that ``simulation`` holds as an input for some period,
     but for none that starts by the first day of the year ``period`` starts
@@ -472,9 +473,12 @@ def hold_identifiers_in(simulation, variable_name: str, period) -> None:
     value names the same ones. From that year on the identifier carries
     forward, so the simulation holds its identifiers in each year it holds an
     input for. An identifier the simulation does not hold as an input, as in
-    one built from a situation, is left alone. So is an input core does not
-    store, for a period after its variable ends, and an identifier core would
-    not store for that year.
+    one built from a situation, is left alone.
+
+    An input core does not store, for a period after its variable ends, gives
+    none. Each identifier is set through ``simulation.set_input``, which
+    calls this again for the identifier. That call finds the identifier held
+    for the year, or returns here if core did not store it, so the calls end.
     """
     period = period_(period)
     variables = simulation.tax_benefit_system.variables
@@ -483,8 +487,6 @@ def hold_identifiers_in(simulation, variable_name: str, period) -> None:
     year = period_(str(period.start.year))
     branch = simulation.branch_name
     for identifier in sorted(IDENTIFIER_VARIABLES):
-        if _ignored(variables[identifier], year):
-            continue
         holder = simulation.get_holder(identifier)
         held = holder.get_input_periods(branch)
         if not held:

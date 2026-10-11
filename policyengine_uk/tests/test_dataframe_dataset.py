@@ -1625,8 +1625,9 @@ def test_an_input_core_stores_nothing_for_gives_no_identifiers(ending):
 
 
 def test_an_identifier_core_would_not_store_is_left_out(ending):
-    # Setting it would store nothing, and hold_identifiers_in would try
-    # again without end.
+    # Core stores nothing for an identifier that has ended. The attempt to
+    # give it ends there, since an input core ignores gives no identifiers,
+    # and the other identifiers are still given.
     simulation = Simulation(dataset=frame(TWINS))
     ending(simulation, "household_id", YEAR - 3)
 
