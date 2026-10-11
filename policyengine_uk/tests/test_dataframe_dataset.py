@@ -788,6 +788,31 @@ def test_spending_on_a_small_frame_goes_to_the_deciles_it_holds(budget):
         assert len(set(change[deciles == decile].tolist())) == 1
 
 
+@pytest.mark.parametrize("budget", ["nhs", "education", "other_public_spending"])
+def test_spending_skips_a_decile_whose_households_have_no_weight(budget):
+    # The deciles are given as inputs here, so that one holds only a
+    # household of zero weight: its share has nobody to go to, and dividing
+    # it by that weight must not give an infinite or missing amount.
+    frame_ = pd.DataFrame(
+        {
+            "person_id__2025": [1, 2, 3],
+            "household_weight__2025": [0.0, 2.0, 2.0],
+            "pre_budget_change_ons_household_income_decile__2025": [1, 2, 2],
+        }
+    )
+
+    simulation = Simulation(
+        dataset=frame_, reform={f"gov.contrib.policyengine.budget.{budget}": 1}
+    )
+    change = np.asarray(simulation.calculate(f"{budget}_budget_change", YEAR))
+
+    assert np.isfinite(change).all()
+    assert change[0] == 0
+    assert change[1] == change[2] > 0
+    # Decile 2's share is under the whole budget, split over its weight of 4.
+    assert change[1] * 4 < 1e9
+
+
 # Refusals.
 
 
@@ -872,8 +897,22 @@ def test_mixed_identifiers_that_32_bit_floats_round_are_refused(column):
 
 @pytest.mark.parametrize(
     "values",
-    [[1.5, 2.0], ["a", "b"], [True, False], pd.Series([1, "2"], dtype=object)],
-    ids=["fraction", "text", "booleans", "mixed text"],
+    [
+        [1.5, 2.0],
+        ["a", "b"],
+        [True, False],
+        pd.Series([1, "2"], dtype=object),
+        pd.Series([1, 2.5], dtype=object),
+        pd.Series([1, np.float32(2.5)], dtype=object),
+    ],
+    ids=[
+        "fraction",
+        "text",
+        "booleans",
+        "mixed text",
+        "mixed fraction",
+        "mixed float32",
+    ],
 )
 def test_identifiers_that_are_not_whole_numbers_are_refused(values):
     refused(couple(**{"household_id__2025": values}), "which is not a whole number")

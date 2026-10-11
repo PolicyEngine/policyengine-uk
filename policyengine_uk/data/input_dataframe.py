@@ -283,10 +283,10 @@ def dataset_from_input_dataframe(
     The dataset holds a year for each whole-year period the frame gives
     values for, besides identifiers (or, if there is none, each whole year its
     identifier columns name, or else ``default_year``), each with the same
-    people, benefit units and households, identified by 64-bit integers. Benefit units and
-    households are in order of their identifiers, which is the order
-    ``Simulation.build_from_ids`` gives them. Columns that do not name a
-    variable of ``tax_benefit_system`` are left out.
+    people, benefit units and households, identified by 64-bit integers.
+    Benefit units and households are in order of their identifiers, which is
+    the order ``Simulation.build_from_ids`` gives them. Columns that do not
+    name a variable of ``tax_benefit_system`` are left out.
 
     Args:
         df: One row per person and a column per input, named
