@@ -329,7 +329,7 @@ A scenario that gradually increases the personal allowance over four years - thi
 # This kind of phasing helps manage fiscal costs and economic adjustment
 phased_scenario = Scenario(
     parameter_changes={
-        "gov.hmrc.income_tax.personal_allowance": {
+        "gov.hmrc.income_tax.allowances.personal_allowance.amount": {
             "2025": 13_000,
             "2026": 14_000,
             "2027": 15_000,
@@ -353,6 +353,46 @@ for year in [2025, 2026, 2027, 2028]:
     tax = sim.calculate("income_tax", year).mean()
     print(f"{year}: Personal allowance £{allowance:.0f}, annual tax £{tax:.2f}")
 ```
+
+### Dated changes
+
+Budgets date their measures: a rate from 6 April, a freeze extended to a later tax year, a change that ends. Every way of passing a reform writes its changes onto each parameter's statutory timeline, the dated values in the YAML files. That covers `Scenario(parameter_changes=...)`, `Simulation(reform=dict)`, `Scenario.from_reform` and policyengine-core's `Reform.from_dict`. The parameters are then processed as current law is:
+
+- uprating and the income tax and NICs threshold indexation project each parameter forward;
+- each parameter is annualised to UK fiscal years by its rule: its value on 30 April, or a day-weighted average over 6 April to 5 April for `fiscal_year_blend` parameters such as the CGT rates. Parameters marked `preserve_calendar_dates` keep their dates.
+
+So a change from 6 April 2027 sets fiscal year 2027. A change to the personal allowance after 2030-31 moves the NICs thresholds aligned with it. A change to a CPI forecast moves everything uprated from it.
+
+```python
+from policyengine_uk import Simulation
+
+rate = "gov.hmrc.income_tax.rates.uk[0].rate"
+situation = {
+    "people": {"person": {"age": {2027: 40}, "employment_income": {2027: 30_000}}},
+    "benunits": {"benunit": {"members": ["person"]}},
+    "households": {"household": {"members": ["person"]}},
+}
+
+# A basic rate of 21% from 6 April 2027 onwards.
+from_april = Simulation(situation=situation, reform={rate: {"2027-04-06.2100-12-31": 0.21}})
+# The same rate for 2027-28 only: 2028-29 is back to current law.
+one_year = Simulation(situation=situation, reform={rate: {"2027-04-06.2028-04-05": 0.21}})
+```
+
+Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where the parameter's future is projected by uprating or indexation, prior law's projected path resumes after a change that ends: a one-year change to the UC standard allowance returns to the uprated amounts the next year. A change "from a date onwards" is held flat to the end of 2100 and is not uprated.
+
+Each way of passing a reform reads period keys as it always has:
+
+| Key | `reform=` dict | `parameter_changes` | `Reform.from_dict` |
+|---|---|---|---|
+| `"2027-04-06.2028-04-05"` | those dates | those dates | those dates |
+| `"2027"` or `2027` | fiscal year 2027 only | fiscal year 2027 only | from 1 January 2027 onwards |
+| `"2027-04-06"` | that one day of the annualised value | that one day | from that day onwards |
+| a value with no period | from 1 January 2023 onwards | 2000 to 2099 | 2000 to 2099 |
+
+A single-date key in a `reform=` dict overrides the annualised value on that day only. Formulas read annual values on 1 January, so `"2027-01-01"` sets fiscal year 2027 and `"2027-04-06"` changes nothing. The model logs a warning when a key can change nothing. Use `"start.stop"` keys for dated measures.
+
+Changes applied after the data is loaded (the default) leave the data as built, so a changed economic assumption does not re-uprate incomes. They still come before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Set `applied_before_data_load=True` on a scenario to project the data with changed economic assumptions too.
 
 ### Creating complex scenarios with simulation modifiers
 
