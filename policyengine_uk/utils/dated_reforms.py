@@ -21,14 +21,15 @@ parameters on the baseline.
 Prior law after a bounded change
 --------------------------------
 
-A change over ``[start, stop]`` restores prior law from the day after
-``stop``:
+Outside ``[start, stop]`` a change leaves prior law in force:
 
-- where the timeline states later values, the value in force at ``stop``
-  resumes and the later values apply on their dates;
+- where the timeline states values, they apply on their dates, and the
+  value in force at ``stop`` resumes the day after it;
 - where it states none (the parameter's future is projected by uprating or
-  indexation), prior law's projected path resumes: the values the parameter
-  takes, with every other change in the reform, without its own changes.
+  indexation), prior law's projected path applies: the values the parameter
+  takes with every other change in the reform but without its own. That
+  covers both the years between the last stated value and a change that
+  starts after it, and the years after a bounded change.
 
 ``Parameter.update`` instead restores the last stated value as a new stated
 value, so a one-year change to an uprated parameter froze the next year at
@@ -73,6 +74,7 @@ parameters, after the structural reforms that come before it.
 from __future__ import annotations
 
 import datetime
+import logging
 import warnings
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
@@ -91,6 +93,8 @@ REFORM_DICT_SCALAR_START = instant("2023-01-01")
 # policyengine-core's scalar window, ``year:2000:100``.
 CORE_SCALAR_PERIOD = "year:2000:100"
 EARLIEST = Instant((1, 1, 1))
+
+logger = logging.getLogger(__name__)
 
 REFORM_DICT = "reform_dict"
 PARAMETER_CHANGES = "parameter_changes"
@@ -230,15 +234,16 @@ def _warn_sub_year_key(path: str, key: str) -> None:
     parsed = period(key)
     if parsed.unit == "day" and str(parsed.start)[5:] == "01-01":
         return
-    warnings.warn(
+    message = (
         f"Reform key '{key}' for {path} overrides the annualised parameter on "
         f"that {parsed.unit} only, and formulas read annual parameters at "
         f"1 January, so it may change nothing. For a change from that date "
         f"use '{parsed.start}.{FLAT_STOP}'; for one fiscal year use the bare "
-        "year.",
-        ReformPeriodWarning,
-        stacklevel=4,
+        "year."
     )
+    # Logged as well: some variable modules switch warnings off when loaded.
+    logger.warning(message)
+    warnings.warn(message, ReformPeriodWarning, stacklevel=4)
 
 
 def read_parameter_changes(
@@ -364,12 +369,23 @@ def _value_in_force(values: Timeline, instant_str: str) -> Any:
     return None
 
 
+def _last_stated(values: Timeline) -> Optional[str]:
+    return max((entry.instant_str for entry in values), default=None)
+
+
 def requires_projection(parameter: Parameter, assignment: ParameterAssignment) -> bool:
-    """Whether prior law after the change comes from the projected path."""
-    if assignment.stop >= FLAT_STOP:
+    """Whether a change reaches the part of the timeline projection fills.
+
+    That is a change starting after the parameter's last stated value, whose
+    prior law before it is projected, or a bounded change with no stated
+    value after it, whose prior law after it is projected.
+    """
+    last = _last_stated(parameter.values_list)
+    if last is None:
         return False
-    stop_str = str(assignment.stop)
-    return not any(entry.instant_str > stop_str for entry in parameter.values_list)
+    if str(assignment.start) > last:
+        return True
+    return assignment.stop < FLAT_STOP and str(assignment.stop) >= last
 
 
 def write_assignment(
@@ -379,43 +395,34 @@ def write_assignment(
 ) -> None:
     """Write a change onto a parameter's statutory timeline.
 
-    Entries before ``start`` are kept and entries within the change are
-    replaced by its value. After ``stop``: stated later entries are kept,
-    with the value in force at ``stop`` restored on the next day unless an
-    entry already starts then; with no later entry, ``projected(name)``
-    supplies prior law's projected timeline, whose entries after ``stop``
-    are copied (with its value on the next day). Without a projection the
-    value in force at ``stop`` is restored, as ``Parameter.update`` does.
+    Where the change reaches past the parameter's last stated value (see
+    ``requires_projection``), ``projected(name)`` supplies prior law's
+    projected timeline, whose values after the last stated one are first
+    written in as stated values: uprating and indexation extend a timeline
+    only from its last stated value, so without them the years between that
+    value and the change, or after a bounded change, would lose their
+    projection. Then, as ``Parameter.update`` does, entries within the
+    change are replaced by its value and the value in force at ``stop`` is
+    restored on the next day unless an entry already starts then.
     """
     name = parameter.name
     start_str = str(assignment.start)
     stop_str = str(assignment.stop)
     next_str = str(assignment.stop.offset(1, "day"))
-    old: Timeline = sorted(
-        parameter.values_list, key=lambda entry: entry.instant_str, reverse=True
-    )
+    old: Timeline = list(parameter.values_list)
+    path = projected(name) if projected is not None else None
+    if path is not None and requires_projection(parameter, assignment):
+        last = _last_stated(old)
+        old += [
+            _entry(name, entry.instant_str, entry.value)
+            for entry in path
+            if entry.instant_str > last
+        ]
+    old.sort(key=lambda entry: entry.instant_str, reverse=True)
     later = [entry for entry in old if entry.instant_str > stop_str]
     earlier = [entry for entry in old if entry.instant_str < start_str]
     resumed: Timeline = []
-    if assignment.stop < FLAT_STOP or later:
-        if later:
-            if later[-1].instant_str != next_str:
-                resumed.append(_entry(name, next_str, _value_in_force(old, stop_str)))
-        else:
-            path = projected(name) if projected is not None else None
-            if path is None:
-                resumed.append(_entry(name, next_str, _value_in_force(old, stop_str)))
-            else:
-                copied = [
-                    _entry(name, entry.instant_str, entry.value)
-                    for entry in path
-                    if entry.instant_str > next_str
-                ]
-                resumed.extend(copied)
-                resumed.append(_entry(name, next_str, _value_in_force(path, next_str)))
-    else:
-        # A change held flat to the end of the horizon: what follows it is
-        # the value in force at its stop, as Parameter.update leaves it.
+    if not later or later[-1].instant_str != next_str:
         resumed.append(_entry(name, next_str, _value_in_force(old, stop_str)))
     values = later + resumed + [_entry(name, start_str, assignment.value)] + earlier
     values.sort(key=lambda entry: entry.instant_str, reverse=True)
