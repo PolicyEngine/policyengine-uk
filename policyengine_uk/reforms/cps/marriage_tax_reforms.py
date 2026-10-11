@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.supplied_inputs import supplied_input
 from typing import Union, Optional
 
 
@@ -163,6 +164,13 @@ def create_marriage_neutral_income_tax_reform(
         value_type = float
 
         def formula(person, period, parameters):
+            # A supplied adjusted net income already includes the s.58 Gift
+            # Aid step, and it took precedence over this reform's split before
+            # the reform moved to net_income. Keep that: restore the gift for
+            # the taxable base, as the baseline net_income does.
+            supplied_ani = supplied_input(person, "adjusted_net_income", period)
+            if supplied_ani is not None:
+                return supplied_ani + person("gift_aid_grossed_up", period)
             income = person("unadjusted_net_income", period)
             # Split between the spouses or civil partners only, never their
             # children.

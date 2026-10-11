@@ -23,8 +23,11 @@ SCHEDULE_INPUTS = (
 def legacy_capital_gains_tax(sim, year):
     """The single-schedule formula as it stood before #1858, on the same arrays.
 
-    Copied operation for operation so that any difference in the result is a
-    difference in the new formula, not in the comparison.
+    Its schedule allocation is copied operation for operation, so a difference
+    there is a difference in the new formula. Its income and allowance inputs
+    follow the current model (#2253 moved Gift Aid out of the allowances), so
+    it checks how gains are allocated to the schedules, not equivalence with
+    any earlier treatment of Gift Aid.
     """
     hmrc = sim.tax_benefit_system.parameters(str(year)).gov.hmrc
     cgt = hmrc.cgt

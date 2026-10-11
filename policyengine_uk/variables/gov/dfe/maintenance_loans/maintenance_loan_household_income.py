@@ -10,7 +10,7 @@ class maintenance_loan_household_income(Variable):
         "Student Finance England-style household income for maintenance loan assessment. "
         "This can be set explicitly in simulations. By default, the model uses a proxy: "
         "dependent students use sponsor income from a selected older household benefit unit, "
-        "plus their own benefit-unit income; otherwise the model uses benefit-unit adjusted net income. "
+        "plus their own benefit-unit income; otherwise the model uses benefit-unit net income before Gift Aid adjustments. "
         "A student is dependent only if none of the independence tests the model can see applies "
         "(Education (Student Support) Regulations 2011 Sch 4 para 2(1)): aged under 25 on the first "
         "day of the academic year (para 2(1)(a)), not in a couple (a proxy for para 2(1)(b)), and "

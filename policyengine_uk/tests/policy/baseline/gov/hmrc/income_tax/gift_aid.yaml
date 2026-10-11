@@ -302,3 +302,96 @@
     adjusted_net_income: [50_000, 50_000]
     earned_taxable_income: [37_430, 37_430]
     income_tax: [7_486, 7_486]
+
+# Before 2018-19 the Scottish scale had three rates (basic, higher, additional),
+# so s.414(2)(b) raises its first limit, not the second.
+- name: Gift Aid raises the three-rate Scottish basic rate limit in 2017-18
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        employment_income: 60_000
+        gift_aid: 800
+      control:
+        age: 40
+        employment_income: 60_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: SCOTLAND
+      control_household:
+        members: [control]
+        region: SCOTLAND
+  output:
+    # Taxable £48,500 with a £31,500 basic rate limit; the gift raises it to
+    # £32,500, moving £1,000 from 40% to 20%.
+    income_tax: [12_900, 13_100]
+
+- name: Gift Aid raises the three-rate Scottish higher rate limit in 2017-18
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        employment_income: 160_000
+        gift_aid: 800
+      control:
+        age: 40
+        employment_income: 160_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: SCOTLAND
+      control_household:
+        members: [control]
+        region: SCOTLAND
+  output:
+    # No personal allowance either way. £1,000 moves from 40% to 20% (£200)
+    # and £1,000 from 45% to 40% (£50).
+    income_tax: [57_950, 58_200]
+
+- name: Gift Aid leaves capital gains tax as it was, with its band extension
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        employment_income: 45_000
+        capital_gains: 20_000
+        gift_aid: 800
+      control:
+        age: 40
+        employment_income: 45_000
+        capital_gains: 20_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: NORTH_WEST
+      control_household:
+        members: [control]
+        region: NORTH_WEST
+  output:
+    # Frozen from main a3752304e, which gave the same CGT: £17,000 taxable
+    # gains above the £3,000 exempt amount. With the gift, £6,270 of basic
+    # band remains (£5,270 without), at 18%, and the rest at 24%.
+    capital_gains_tax: [3_703.80, 3_763.80]
+    income_tax: [6_486, 6_486]

@@ -407,3 +407,72 @@ def test_explicit_adjusted_net_income_preserves_tax_base(ani, net_gift):
     assert supplied.calculate("net_income", YEAR)[0] == 50_000
     assert supplied.calculate("earned_taxable_income", YEAR)[0] == 37_430
     assert supplied.calculate("income_tax", YEAR)[0] == 7_486
+
+
+# The helper on its own, against each scale shape a caller passes it. Raising
+# a threshold must equal recomputing the scale with that threshold raised;
+# thresholds outside the range must not move, which a zero rate step (the
+# model's extra UK bracket repeats 45%) would not reveal.
+HELPER_SCALES = {
+    "UK, with an extra bracket at a distinct rate": (
+        [0, 37_700, 125_140, 10_000_000],
+        [0.20, 0.40, 0.45, 0.50],
+        None,
+    ),
+    "Scotland, three rates (before 2018-19)": (
+        [0, 31_500, 150_000],
+        [0.20, 0.40, 0.45],
+        "scottish",
+    ),
+    "Scotland, six rates": (
+        [0, 3_967, 16_956, 31_092, 62_430, 112_570],
+        [0.19, 0.20, 0.21, 0.42, 0.45, 0.48],
+        "scottish",
+    ),
+}
+
+
+def _scale(thresholds, rates):
+    from policyengine_core.taxscales import MarginalRateTaxScale
+
+    scale = MarginalRateTaxScale()
+    for threshold, rate in zip(thresholds, rates):
+        scale.add_bracket(threshold, rate)
+    return scale
+
+
+@pytest.mark.parametrize("name", list(HELPER_SCALES))
+@settings(max_examples=200, deadline=None, derandomize=True)
+@given(
+    income=st.floats(0, 12_000_000, allow_nan=False, allow_infinity=False),
+    gross_gift=st.floats(0, 2_000_000, allow_nan=False, allow_infinity=False),
+)
+def test_helper_equals_the_scale_with_its_limits_raised(name, income, gross_gift):
+    from policyengine_uk.utils.income_tax import (
+        calc_income_tax_with_gift_aid,
+        first_extended_scottish_threshold,
+    )
+
+    thresholds, rates, kind = HELPER_SCALES[name]
+    scale = _scale(thresholds, rates)
+    if kind == "scottish":
+        first = first_extended_scottish_threshold(scale)
+        last = len(scale.thresholds)
+        # Three rates: raise the basic rate limit and above. Six: keep the
+        # starter limit and raise the basic rate's upper limit and above.
+        assert first == (1 if len(thresholds) == 3 else 2)
+        tax = calc_income_tax_with_gift_aid(
+            scale, np.array([income]), np.array([gross_gift]), first, last
+        )
+    else:
+        # UK default: the basic and higher rate limits only.
+        first, last = 1, 3
+        tax = calc_income_tax_with_gift_aid(
+            scale, np.array([income]), np.array([gross_gift])
+        )
+    raised = [
+        threshold + gross_gift if first <= index < last else threshold
+        for index, threshold in enumerate(thresholds)
+    ]
+    expected = _scale(raised, rates).calc(np.array([income]))
+    assert tax[0] == pytest.approx(expected[0], rel=1e-9, abs=1e-6)
