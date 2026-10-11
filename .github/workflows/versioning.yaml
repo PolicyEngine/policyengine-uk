@@ -184,7 +184,11 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v8.1.0
       - name: Build the wheel and sdist once
-        run: uv build --python 3.13 --out-dir dist
+        run: |
+          uv build --python 3.13 --out-dir dist
+          # uv writes a .gitignore into its output directory; only the
+          # wheel and sdist are release files.
+          rm -f dist/.gitignore
       - name: Check they hold exactly the version commit's files
         id: check
         env:

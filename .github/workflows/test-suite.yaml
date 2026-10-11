@@ -144,6 +144,12 @@ jobs:
           if [ -n "$HF_TOKEN_VALUE" ]; then
             export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
           fi
+          # Log memory each minute, so a runner lost to memory pressure
+          # ("The runner has received a shutdown signal") shows it.
+          (while sleep 60; do
+            free -m | awk 'NR == 2 { print "memory: " $3 " MB used, " $7 " MB available" }'
+          done) &
+          trap 'kill $! 2>/dev/null' EXIT
           coverage=()
           if [ "$MODE" = source ]; then
             coverage=(--cov=policyengine_uk --cov-report=xml)
