@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import weakref
+from importlib.machinery import SourceFileLoader
 
 import pytest
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
@@ -234,3 +235,42 @@ def release_dead_variable_modules(max_owners: int = 8) -> int:
 def _release_variable_modules_of_dead_systems():
     yield
     release_dead_variable_modules()
+
+
+# Coverage on CI is measured with sys.monitoring (COVERAGE_CORE=sysmon). That
+# core keeps every code object it has seen alive until the process exits, so
+# that it can key its records by id(code) (SysMonitor.code_objects in
+# coverage/sysmon.py). policyengine-core compiles a system's variable files
+# again for every new system, into new code objects, and every Simulation
+# builds a new system, so each Simulation left about 2,500 code objects and
+# 4 MB that were never freed. On CI the four workers of a shard grew to the
+# whole runner's memory (15.3 of 15.6 GiB).
+#
+# A file's code object does not depend on the system that runs it, so each
+# process compiles each variable file once and every later system runs that
+# code object. Systems still get their own modules, classes and functions;
+# only the immutable code is shared. Remove this once policyengine-core
+# shares the code itself.
+_variable_code = {}
+_get_code = SourceFileLoader.get_code
+
+
+def _get_shared_variable_code(loader, fullname):
+    """``SourceFileLoader.get_code``, compiling each variable file only once."""
+    if not _VARIABLE_MODULE_NAME.match(fullname):
+        return _get_code(loader, fullname)
+    path = loader.get_filename(fullname)
+    stat = os.stat(path)
+    key = (path, stat.st_mtime_ns, stat.st_size)
+    code = _variable_code.get(key)
+    if code is None:
+        code = _variable_code[key] = _get_code(loader, fullname)
+    return code
+
+
+def pytest_sessionstart(session):
+    SourceFileLoader.get_code = _get_shared_variable_code
+
+
+def pytest_unconfigure(config):
+    SourceFileLoader.get_code = _get_code
