@@ -88,6 +88,10 @@ def adults(draw):
         property_income=draw(amounts(15_000)),
         property_finance_costs=draw(amounts(10_000)),
     )
+    # Gross receipts are the profit plus expenses; with expenses under the
+    # 1,000 property allowance, and finance costs, the route is a choice
+    # weighed in branches (ITTOIA 2005 s. 783BH, s. 783BL).
+    adult["property_rental_income"] = adult["property_income"] + draw(amounts(1_500))
     if adult["age"] >= 67:
         adult["state_pension"] = draw(amounts(15_000))
     return adult
@@ -105,8 +109,8 @@ def families(draw):
     )
 
 
-# Small populations: every adult may have finance costs, so each simulation
-# runs both kinds of branch.
+# Small populations: every adult may have property receipts and finance
+# costs, so most simulations run both kinds of branch.
 populations = st.lists(families(), min_size=1, max_size=3)
 
 
@@ -206,18 +210,20 @@ def test_reform_leaves_the_baseline_unchanged(units, year):
 
 
 def test_no_branch_is_left_after_any_year():
-    # A couple who elect (12,000 and 30,000 of earnings), one of them a
-    # landlord whose finance costs make the property allowance a choice, so
-    # both the election's and the property route's branches run each year.
+    # A couple who elect every year: 30,000 and 9,000 of earnings, so electing
+    # costs the lower earner nothing and saves the other 252 (s. 55B). The
+    # lower earner's property receipts are within the property allowance and
+    # carry finance costs, so the property route is weighed in branches too.
     units = [
         dict(
             adults=[
                 dict(age=40, employment_income=30_000.0),
                 dict(
                     age=38,
-                    employment_income=12_000.0,
-                    property_income=3_000.0,
-                    property_finance_costs=2_000.0,
+                    employment_income=9_000.0,
+                    property_rental_income=800.0,
+                    property_income=800.0,
+                    property_finance_costs=200.0,
                 ),
             ],
             married=True,
