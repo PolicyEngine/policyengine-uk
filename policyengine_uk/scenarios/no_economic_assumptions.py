@@ -9,16 +9,22 @@ def remove_economic_assumptions(simulation: Simulation):
     simulation.tax_benefit_system.reset_parameters()
 
     cutoff = f"{simulation.default_input_period}-01-01"
-    yoy_growth = (
-        simulation.tax_benefit_system.parameters.gov.economic_assumptions.yoy_growth
+    economic_assumptions = (
+        simulation.tax_benefit_system.parameters.gov.economic_assumptions
     )
 
-    for parameter in yoy_growth.get_descendants():
-        if not isinstance(parameter, Parameter):
-            continue
-        for value_at_instant in parameter.values_list:
-            if value_at_instant.instant_str >= cutoff:
-                value_at_instant.value = 0
+    # Growth series and the statutory uprating inputs derived from growth
+    # (September CPI and May-July earnings, including their forecast gaps).
+    for node in (
+        economic_assumptions.yoy_growth,
+        economic_assumptions.statutory_uprating_inputs,
+    ):
+        for parameter in node.get_descendants():
+            if not isinstance(parameter, Parameter):
+                continue
+            for value_at_instant in parameter.values_list:
+                if value_at_instant.instant_str >= cutoff:
+                    value_at_instant.value = 0
 
     simulation.tax_benefit_system.process_parameters()
 

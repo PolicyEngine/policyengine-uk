@@ -48,5 +48,5 @@
   output:
     child_benefit: 2_337.40
     CB_HITC: [2_337.40, 0, 0, 0]
-    income_tax_pre_charges: [35_142, 4_486, 0, 0]
-    income_tax: [37_479.40, 4_486, 0, 0]
+    income_tax_pre_charges: [35_742, 4_486, 0, 0]
+    income_tax: [38_079.40, 4_486, 0, 0]

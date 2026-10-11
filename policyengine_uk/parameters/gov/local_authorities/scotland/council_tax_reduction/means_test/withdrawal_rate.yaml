@@ -6,5 +6,9 @@ metadata:
   period: year
   label: Scotland Council Tax Reduction withdrawal rate
   reference:
-    - title: The Council Tax Reduction (Scotland) Regulations 2012
+    - title: The Council Tax Reduction (State Pension Credit) (Scotland) Regulations 2012 reg. 14(5)(b) (pensioners; 2 6/7 per cent a day of weekly excess income)
+      href: https://www.legislation.gov.uk/ssi/2012/319/regulation/14
+    - title: The Council Tax Reduction (Scotland) Regulations 2021 reg. 13 (persons under pension age)
+      href: https://www.legislation.gov.uk/ssi/2021/249/regulation/13
+    - title: The Council Tax Reduction (Scotland) Regulations 2012 (persons under pension age, to 31 March 2022)
       href: https://www.legislation.gov.uk/ssi/2012/303/contents/made

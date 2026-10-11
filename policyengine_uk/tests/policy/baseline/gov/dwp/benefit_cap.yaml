@@ -217,7 +217,7 @@
     # Same 25,323 as before, now because of responsibility rather than two 18+ members.
     benefit_cap: 25_323
 
-- name: Couple aged 30 and 17 receives the family cap without counting the partner as a child.
+- name: Couple aged 30 and 17 claims as a single person, so the single cap applies without counting the partner as a child.
   period: 2025
   input:
     people:
@@ -239,9 +239,43 @@
   output:
     is_couple: true
     is_responsible_for_child_or_qualifying_young_person_for_universal_credit: false
+    # The partner is under 18 with no UC Regs 2013 reg. 8 circumstance, so
+    # the claimant claims as a single person (reg. 3(3)(a); ADM E2017).
+    uc_is_ineligible_partner: [false, true]
+    uc_member_of_couple_claims_as_single_person: true
+    is_benefit_cap_single_claimant_rate: true
+    # Reg. 80A(2)(c): 14,753 for a single claimant outside Greater London
+    # who is not responsible for a child or qualifying young person (ADM
+    # E5007 note 3 applies it to a member of a couple claiming as single).
+    benefit_cap: 14_753
+
+- name: Couple aged 30 and 17 where the partner is within reg. 8 claim jointly and receive the couple cap.
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 17
+        is_claimant_or_partner: true
+        current_education: POST_SECONDARY
+        # Reg. 8(1)(c): regular and substantial caring responsibilities, so
+        # the minimum age is 16 and the couple claim jointly.
+        care_hours: 35
+    benunits:
+      family:
+        members: [claimant, partner]
+        is_benefit_cap_exempt: false
+    households:
+      home:
+        members: [claimant, partner]
+        region: SOUTH_EAST
+  output:
+    uc_is_ineligible_partner: [false, false]
+    uc_member_of_couple_claims_as_single_person: false
     is_benefit_cap_single_claimant_rate: false
-    # Couple composition selects 22,020. This is not a UC eligibility test:
-    # UC reg 3(3) permits some couples to claim as singles, not modelled here.
+    # Reg. 80A(2)(d)(i): 22,020 for joint claimants outside Greater London.
     benefit_cap: 22_020
 
 - name: Explicitly identified 19-year-old non-dependant does not imply a partner.

@@ -2,17 +2,32 @@
 each person's own receipt of a relevant benefit.
 
 Both schemes entitle and pay a person (SI 2000/729 reg 2; SI 2024/869 regs
-2 to 4; SI 2025/969 regs 2 to 4; SSI 2024/351 regs 5, 9 and 10). A person is
-on a relevant benefit through their own award or, for the claimant and
-partner, their couple's award. Properties:
+2 to 4; SI 2025/969 regs 2 to 4; SSI 2024/351 regs 5, 9 and 10). Whether a
+person is on a relevant benefit depends on the instrument:
+
+- "paid to" the person (SI 2000/729, SI 2025/969): Income Support,
+  income-based JSA, income-related ESA and Pension Credit are paid to one
+  member of a couple, the one who reports the award or else the benefit-unit
+  head (for Pension Credit, among the members who have attained the
+  qualifying age, SPCA 2002 s.1(2)(b)). Universal Credit is awarded to the
+  couple jointly and paid into an account the joint claimants nominate
+  (Universal Credit etc. (Claims and Payments) Regulations 2013 reg 47(4);
+  reg 47(6) pays it wholly to one member only by special arrangement), so it
+  is paid to both. Tax credits count only under the 2024 instruments, which
+  count the couple either way;
+- through the couple (SI 2024/869 reg 2(5); SSI 2024/351 reg 7(2), 10(8) and
+  2A): a member of a couple is on one when the other member is.
+
+Either way a couple on one receives a single payment. Properties:
 
 - the model matches a reference implementation written directly from the
   regulations, person by person, over households of up to three benefit
   units, in every country and in the 2023 to 2026 qualifying weeks;
 - adding a non-dependant under pensionable age, with or without a relevant
   benefit of their own, never changes what anyone else is paid;
-- from the 2025 qualifying week, a household whose pension-age members all
-  belong to one benefit unit receives the full amount for that unit
+- from the 2025 qualifying week, a household of a single person or a couple
+  (one benefit unit's claimant and partner, with no one else) receives the
+  full amount for that unit
   (higher if anyone is 80 or over), whether or not they are on a relevant
   benefit: the shared amounts are halves (or, for two people over 80, a
   half of the higher amount each). The one exception is PAWHP from April
@@ -56,12 +71,23 @@ REPORTED_INPUTS = {
     "UC": "universal_credit_reported",
     "TC": "working_tax_credit_reported",
 }
-# An award reported by a member who is neither claimant nor partner.
+# An award reported by a member who is neither claimant nor partner. (An
+# outside member's own income-related ESA or income-based JSA counts only if
+# the award on their report is paid after the benefit unit's capital and
+# eligibility screens, which the legacy award tests cover; the YAML tests
+# cover the winter payments' side of it.)
 OWN_AWARD_INPUTS = {
     "PC": "pension_credit_reported",
-    "ESA": "esa_income_reported",
     "UC": "universal_credit_reported",
 }
+# Inputs for an award an outside member reports. The non-dependant property
+# also draws income-related ESA: whether or not it is paid, it must never
+# change anyone else's payment.
+OWN_REPORT_INPUTS = {**OWN_AWARD_INPUTS, "ESA": "esa_income_reported"}
+# Awards made to a couple jointly and paid to both: Universal Credit (WRA 2012
+# s.1(2)(b); Claims and Payments Regulations 2013 reg 47(4) and (6)). Tax
+# credits count only in the 2024 week, where the couple counts either way.
+JOINT_AWARDS = {"UC", "TC"}
 
 # Relevant benefits by scheme and qualifying week, as listed in the
 # regulations (not read from the model's parameters).
@@ -167,7 +193,7 @@ def situation(drawn, year):
             }
             own = inputs.get("own_award")
             if own is not None:
-                person[OWN_AWARD_INPUTS[own]] = {year: AWARD}
+                person[OWN_REPORT_INPUTS[own]] = {year: AWARD}
             people[name] = person
         for name, (inputs, u, cp) in zip(names, members):
             if cp and inputs.get("reports"):
@@ -202,35 +228,78 @@ def reference_payments(household, year):
             return units[u]["award"]
         return inputs.get("own_award")
 
-    def scheme(resident, relevant, means_test, amounts):
+    def is_payee(i):
+        """Whether the couple's award is paid to this claimant or partner:
+        the member who reports it, else the benefit-unit head. A Pension
+        Credit claimant must have attained the qualifying age (SPCA 2002
+        s.1(2)(b)), so where either member has, only such a member can be
+        paid it: the reporter or head among them, else the only one."""
+        u = people[i][1]
+        couple = [j for j, q in enumerate(people) if q[1] == u and q[2]]
+        if units[u]["award"] == "PC":
+            able = [j for j in couple if people[j][0]["age"] >= 67]
+            couple = able or couple
+        if i not in couple:
+            return False
+        for role in ("reports", "head"):
+            chosen = [j for j in couple if people[j][0][role]]
+            if chosen:
+                return i in chosen
+        return i == max(couple, key=lambda j: (people[j][0]["age"], -j))
+
+    def paid(relevant):
+        """Whether a relevant benefit is paid to each person."""
+        return [
+            award_of(p) in relevant
+            and (not p[2] or award_of(p) in JOINT_AWARDS or is_payee(i))
+            for i, p in enumerate(people)
+        ]
+
+    def through_couple(receipt):
+        """Each claimant or partner is on one when either of them is."""
+        return [
+            any(receipt[j] for j, q in enumerate(people) if q[1] == p[1] and q[2])
+            if p[2]
+            else receipt[i]
+            for i, p in enumerate(people)
+        ]
+
+    def scheme(resident, relevant, means_test, amounts, partner_counts):
         lower, higher, shared, shared_80_with_under_80, shared_80_with_80 = amounts
-        on_relevant = [award_of(p) in relevant for p in people]
+        paid_to = paid(relevant)
+        couple = through_couple(paid_to)
+        on_relevant = couple if partner_counts else paid_to
         qualifies = [resident and p[0]["age"] >= 67 for p in people]
         eligible = [q and (r or means_test) for q, r in zip(qualifies, on_relevant)]
-        # One payment for a couple on a relevant benefit, to the claimant: the
-        # member who reports the award, else the benefit-unit head, else the
-        # elder (first listed if the same age). The other is not entitled.
+        # One payment for a couple on a relevant benefit, to the member it is
+        # paid to. Between two it is paid to (a joint award), or two it is
+        # paid to neither of, the member who reports the award paid to them,
+        # else the benefit-unit head, else the elder (first listed if the same
+        # age). The other is not entitled.
         for u in range(len(units)):
-            couple = [
+            members = [
                 i
                 for i, p in enumerate(people)
-                if p[1] == u and p[2] and qualifies[i] and on_relevant[i]
+                if p[1] == u and p[2] and qualifies[i] and couple[i]
             ]
-            if couple:
+            if members:
                 payee = min(
-                    couple,
+                    members,
                     key=lambda i: (
                         0
-                        if people[i][0]["reports"]
+                        if paid_to[i]
+                        and people[i][0]["reports"]
                         and units[people[i][1]]["award"] in relevant
                         else 1
+                        if paid_to[i]
+                        else 2
                         if people[i][0]["head"]
-                        else 2,
+                        else 3,
                         -people[i][0]["age"],
                         i,
                     ),
                 )
-                for i in couple:
+                for i in members:
                     if i != payee:
                         eligible[i] = False
         payments = []
@@ -270,9 +339,12 @@ def reference_payments(household, year):
                 p[0]["age"] >= 67 and p[0]["total_income"] < INCOME_LIMIT
                 for p in people
             )
-    wfp = scheme(wfp_resident, WFP_RELEVANT[year], wfp_means, WFP_AMOUNTS)
+    # Only SI 2024/869 (reg 2(5)) counts the other member's benefit.
+    wfp = scheme(wfp_resident, WFP_RELEVANT[year], wfp_means, WFP_AMOUNTS, year == 2024)
     if year >= 2024 and country == "SCOTLAND":
-        pawhp = scheme(True, PAWHP_RELEVANT[year], year >= 2025, PAWHP_AMOUNTS[year])
+        pawhp = scheme(
+            True, PAWHP_RELEVANT[year], year >= 2025, PAWHP_AMOUNTS[year], True
+        )
     else:
         pawhp = [0.0] * len(people)
     return wfp, pawhp
