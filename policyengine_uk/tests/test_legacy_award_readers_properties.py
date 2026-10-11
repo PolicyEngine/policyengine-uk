@@ -25,9 +25,15 @@ A member of the benefit unit who is neither the claimant, the partner nor a
 child or young person they are responsible for (for example a non-dependent
 adult) claims in their own right, so:
 
-- adding such a member, whatever Income Support, income-based JSA or
-  income-related ESA they report, never changes any of these readers for the
-  claimant's family or for its existing members;
+- whatever Income Support, income-based JSA or income-related ESA such a
+  member reports never changes any of these readers for the claimant's family
+  or for its existing members;
+- adding such a member changes a reader only by ending the family's severe
+  disability premium, which a non-dependant aged 18 or over does (IS Regs
+  1987 Sch 2 para 13(2)(a)(ii); HB Regs 2006 Sch 3 para 14(2)(a)(ii)). The
+  family's Income Support then falls by the premium, and so does the council
+  tax reduction income that counts it. A member under 18 never changes a
+  reader;
 - the claimant-or-partner awards are bounded by the benefit-unit awards
   (0 <= claimant_or_partner_esa_income <= esa_income, likewise for JSA) and
   equal them when no other member reports an award;
@@ -45,10 +51,11 @@ one simulation, in separate households and benefit units.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+from policyengine_uk.tax_benefit_system import system
 
 YEAR = 2025
 # Merton's working-age council tax reduction scheme has parameters from
@@ -204,37 +211,132 @@ SETTINGS = settings(
 )
 
 
+NO_AWARDS = {
+    "esa_income_reported": 0,
+    "jsa_income_reported": 0,
+    "income_support_reported": 0,
+}
+# A disabled carer aged 18 on Income Support, who has the severe disability
+# premium until an adult non-dependant joins the household. Hypothesis found
+# this family (PolicyEngine/policyengine-uk#2293).
+SEVERELY_DISABLED_CLAIMANT = (
+    [
+        {
+            "age": 18,
+            "employment_income": 0,
+            "is_parent": False,
+            "receives_carer_benefit": True,
+            "is_disabled_for_benefits": True,
+            "pip_dl": 2_000,
+            "care_hours": 0,
+            "current_education": "NOT_IN_EDUCATION",
+            "esa_income_reported": 0,
+            "jsa_income_reported": 0,
+            "income_support_reported": 200,
+        }
+    ],
+    [],
+    {"country": "ENGLAND", "savings": 0},
+)
+
+
+def outside_adult(age, **awards):
+    return {"age": age, "current_education": "NOT_IN_EDUCATION", **NO_AWARDS, **awards}
+
+
 @SETTINGS
+@example([(SEVERELY_DISABLED_CLAIMANT, outside_adult(18))])
+@example(
+    [(SEVERELY_DISABLED_CLAIMANT, outside_adult(18, income_support_reported=3_000))]
+)
+@example([(SEVERELY_DISABLED_CLAIMANT, outside_adult(17, esa_income_reported=3_000))])
 @given(st.lists(st.tuples(families(), other_members()), min_size=1, max_size=6))
 def test_other_members_awards_never_change_the_readers(drawn):
+    # Each family three ways: without the other member, with them reporting
+    # no award, and with them as drawn.
     without = [(*family, None) for family, _ in drawn]
+    silent = [(*family, {**other, **NO_AWARDS}) for family, other in drawn]
     with_other = [(*family, other) for family, other in drawn]
-    sim = Simulation(situation=situation(without + with_other))
+    units = without + silent + with_other
+    sim = Simulation(situation=situation(units))
     flags = sim.calculate("is_claimant_or_partner", YEAR)
     dependant = sim.calculate("is_child_or_young_person_for_legacy_benefits", YEAR)
-    sizes = [len(a) + len(d) + (o is not None) for a, d, _, o in without + with_other]
+    sizes = [len(a) + len(d) + (o is not None) for a, d, _, o in units]
     starts = np.cumsum([0] + sizes[:-1])
     k = len(drawn)
-    for i in range(k):
+    for i in range(k, 3 * k):
         # The added member is the last of its benefit unit: neither claimant,
         # partner nor a dependant.
-        last = starts[k + i] + sizes[k + i] - 1
-        assert not flags[last] and not dependant[last], drawn[i]
+        last = starts[i] + sizes[i] - 1
+        assert not flags[last] and not dependant[last], drawn[i % k]
+    # A non-dependant aged 18 or over ends the family's severe disability
+    # premium (IS Regs 1987 Sch 2 para 13(2)(a)(ii)); nobody younger does, and
+    # what the member reports makes no difference.
+    non_dependant_age = system.parameters(
+        f"{YEAR}-06-01"
+    ).gov.dwp.disability_premia.severe_non_dependant_age
+    premium = sim.calculate("severe_disability_premium", YEAR)
+    premium_ended = [
+        not np.isclose(premium[i], premium[k + i], atol=0.01) for i in range(k)
+    ]
+    for i, (_, other) in enumerate(drawn):
+        assert np.isclose(premium[k + i], premium[2 * k + i], atol=0.01), drawn[i]
+        if premium_ended[i]:
+            assert premium[k + i] == 0 < premium[i], drawn[i]
+            assert other["age"] >= non_dependant_age, drawn[i]
     for variable in FAMILY_READERS:
         values = sim.calculate(variable, YEAR)
         for i in range(k):
-            assert np.isclose(values[i], values[k + i], atol=0.01), (
+            # What the other member reports never changes a reader.
+            assert np.isclose(values[k + i], values[2 * k + i], atol=0.01), (
                 variable,
                 drawn[i],
             )
+            # Their presence changes one only by ending the premium.
+            if not premium_ended[i]:
+                assert np.isclose(values[i], values[k + i], atol=0.01), (
+                    variable,
+                    drawn[i],
+                )
     for variable in MEMBER_READERS:
         values = sim.calculate(variable, YEAR)
         for i in range(k):
             n = sizes[i]
-            assert np.array_equal(
-                values[starts[i] : starts[i] + n],
-                values[starts[k + i] : starts[k + i] + n],
-            ), (variable, drawn[i])
+            existing = [
+                values[starts[j] : starts[j] + n] for j in (i, k + i, 2 * k + i)
+            ]
+            assert np.array_equal(existing[1], existing[2]), (variable, drawn[i])
+            if not premium_ended[i]:
+                assert np.array_equal(existing[0], existing[1]), (variable, drawn[i])
+
+
+def test_adult_non_dependant_ends_the_severe_disability_premium():
+    # The family Hypothesis found, with an added member aged 17, then 18.
+    # Only the 18-year-old is a non-dependant who ends the premium; Income
+    # Support falls by exactly the premium, and so does the council tax
+    # reduction income that counts Income Support.
+    units = [
+        (*SEVERELY_DISABLED_CLAIMANT, None),
+        (*SEVERELY_DISABLED_CLAIMANT, outside_adult(17)),
+        (*SEVERELY_DISABLED_CLAIMANT, outside_adult(18)),
+    ]
+    sim = Simulation(situation=situation(units))
+    premium = sim.calculate("severe_disability_premium", YEAR)
+    income_support = sim.calculate("income_support", YEAR)
+    council_tax_reduction_income = sim.calculate(
+        "council_tax_reduction_applicable_income", YEAR
+    )
+    assert premium[0] > 0
+    assert premium[1] == premium[0] and premium[2] == 0
+    for values in (income_support, council_tax_reduction_income):
+        assert np.isclose(values[1], values[0], atol=0.01)
+        assert np.isclose(values[0] - values[2], premium[0], atol=0.01)
+    # Every other reader is the same in all three.
+    for variable in FAMILY_READERS:
+        if variable == "council_tax_reduction_applicable_income":
+            continue
+        values = sim.calculate(variable, YEAR)
+        assert np.allclose(values, values[0], atol=0.01), variable
 
 
 @SETTINGS
