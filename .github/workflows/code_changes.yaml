@@ -28,6 +28,10 @@ concurrency:
 
 jobs:
   Lint:
+    # The release workflow tests each version commit itself, on the wheel it
+    # publishes. Version commits only trigger this workflow when the GitHub
+    # App pushes them (see versioning.yaml); skip them.
+    if: github.event.head_commit.message != 'Update package version'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -38,6 +42,7 @@ jobs:
           run: uvx ruff format --check .
   # The same suite as pull requests (test-suite.yaml), on the merged commit.
   Test:
+    if: github.event.head_commit.message != 'Update package version'
     uses: ./.github/workflows/test-suite.yaml
     permissions:
       contents: read

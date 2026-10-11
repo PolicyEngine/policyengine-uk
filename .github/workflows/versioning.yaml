@@ -67,8 +67,8 @@ jobs:
   Versioning:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    # The version commit itself (pushed with GITHUB_TOKEN, so it does not
-    # normally trigger workflows) never starts another release.
+    # The version commit itself never starts another release. (Pushed with
+    # GITHUB_TOKEN it triggers no workflows; pushed by the App it does.)
     if: github.event_name != 'push' || github.event.head_commit.message != 'Update package version'
     # One versioning run at a time, never cancelled once started. A run that
     # is still queued is replaced by a newer one; that is safe, because each
@@ -84,10 +84,24 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       publish: ${{ steps.version.outputs.publish }}
     steps:
+      # A branch rule that requires status checks also blocks the version
+      # commit's direct push to main, unless the pusher may bypass it.
+      # GITHUB_TOKEN pushes today. With the repository variable
+      # RELEASE_PUSH_AS_APP set to true, the org's GitHub App pushes instead,
+      # so that App can be the rule's bypass actor. Set the variable before
+      # making such a rule active.
+      - name: Generate GitHub App token
+        id: app-token
+        if: vars.RELEASE_PUSH_AS_APP == 'true' && github.event_name != 'pull_request'
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token || github.token }}
       - name: Install uv
         uses: astral-sh/setup-uv@v8.1.0
       - name: Setup Python
