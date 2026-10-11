@@ -100,8 +100,10 @@ jobs:
       - name: Smoke-import
         run: python -c "import policyengine_uk; print('import OK')"
   Lint:
-    needs: Changes
-    if: needs.Changes.outputs.code == 'true'
+    # On every pull request, whatever it changes: ruff formats and checks
+    # notebooks under docs/ and scripts/ too, so a documentation-only change
+    # can break Lint for every later pull request (#1696 landed a notebook
+    # that failed the format check; #1743 fixed it).
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

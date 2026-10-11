@@ -727,6 +727,8 @@ def test_every_pull_request_reports_the_test_result():
     assert "concurrency" not in main
     code_paths = pull_request["jobs"]["Changes"]["steps"][1]["env"]["CODE_PATHS"]
     assert code_paths.split() == main_triggers["push"]["paths"]
+    # Lint runs on every pull request: ruff also checks docs/ and scripts/.
+    assert "if" not in pull_request["jobs"]["Lint"]
     # The suite is always called, and skips only when no code changed.
     test = pull_request["jobs"]["Test"]
     assert test["uses"] == "./.github/workflows/test-suite.yaml"
