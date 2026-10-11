@@ -1,3 +1,10 @@
+## [2.126.4] - 2026-10-11
+
+### Fixed
+
+- - Place a household with no BRMA input in its region's BRMA with the most private-rented households, from the 2021 and 2022 censuses (Maidstone if the region is unknown), instead of Maidstone in every region. A household that sets no region is in London, the region default, so it now gets Inner South East London's LHA rates. A BRMA input still carries forward to later years while the household stays in the same region.
+
+
 ## [2.126.3] - 2026-10-10
 
 ### Fixed
