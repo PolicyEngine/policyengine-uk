@@ -120,13 +120,18 @@ def test_no_system_dies_before_the_freeze(request):
     )
 
 
-def test_dead_systems_modules_are_released_while_a_test_runs(request):
-    variable_module_owners = _conftest(request)._variable_module_owners
-    max_owners = 8
-    owners = set()
-    for _ in range(3 * max_owners):
+def test_dead_systems_modules_are_released_while_a_test_runs(request, monkeypatch):
+    conftest = _conftest(request)
+    max_new = 8
+    # Find the systems alive now; other test modules may keep many (caches).
+    monkeypatch.setattr(conftest, "_live_owners", 0)
+    conftest.release_after_new_systems(max_new=0)
+    live = len(conftest._variable_module_owners())
+    owners = []
+    for _ in range(max_new + 3):
         Simulation(situation=SITUATION).calculate("income_tax", 2026)
-        owners.add(len(variable_module_owners()))
-    # The release runs as each new system starts loading, and keeps at most
-    # max_owners systems' modules plus the new system's.
-    assert max(owners) <= max_owners + 1, sorted(owners)
+        owners.append(len(conftest._variable_module_owners()))
+    # Released as each new system starts adding its variables, so at most
+    # max_new dead systems' modules beyond the live ones, plus the newest
+    # system's. Without the release the last count would be live + 11.
+    assert max(owners) <= live + max_new + 1, (live, owners)

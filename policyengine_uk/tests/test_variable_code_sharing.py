@@ -6,9 +6,9 @@ it has seen alive, so each Simulation used to leave its code objects behind.
 The conftest makes every system run the code object compiled the first time.
 
 Systems must still get their own modules, classes and functions, run the code
-of the file's current source, and compute the same results. If
-policyengine-core starts sharing the code itself, the upstream check skips
-with a note to remove the workaround.
+of the file's current source, and compute the same results. Once
+policyengine-core shares the code itself (PolicyEngine/policyengine-core#608),
+the tests of the workaround skip with a note to remove it.
 """
 
 import sys
@@ -32,6 +32,27 @@ def _conftest(request):
         if getattr(plugin, "__file__", None) and Path(plugin.__file__) == path:
             return plugin
     raise AssertionError(f"{path} is not loaded as a plugin")
+
+
+@pytest.fixture(scope="module")
+def core_shares_code(request):
+    """Whether policyengine-core itself gives two systems the same code."""
+    from policyengine_uk.tax_benefit_system import CountryTaxBenefitSystem
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(SourceFileLoader, "get_code", _conftest(request)._get_code)
+        first, second = CountryTaxBenefitSystem(), CountryTaxBenefitSystem()
+    first = first.variables["income_tax"].get_formula().__code__
+    second = second.variables["income_tax"].get_formula().__code__
+    return first is second
+
+
+def _skip_if_core_shares(core_shares_code):
+    if core_shares_code:
+        pytest.skip(
+            "policyengine-core now shares variable code between systems; "
+            "remove _get_variable_code from conftest.py and the tests of it"
+        )
 
 
 def _income_tax_formula(simulation):
@@ -74,7 +95,8 @@ def test_systems_share_code_but_not_modules_classes_or_functions():
     assert first.calculate("income_tax", 2026) == second.calculate("income_tax", 2026)
 
 
-def test_shared_code_is_compiled_from_the_current_source(request):
+def test_shared_code_is_compiled_from_the_current_source(request, core_shares_code):
+    _skip_if_core_shares(core_shares_code)
     Simulation(situation=SITUATION)
     shared = _conftest(request)._variable_code
     variables_dir = Path(sys.modules["policyengine_uk"].__file__).parent / "variables"
@@ -92,19 +114,14 @@ def test_shared_code_is_compiled_from_the_current_source(request):
     assert {path for path, _, _ in shared} >= files
 
 
-def test_policyengine_core_still_compiles_each_system_again(request, monkeypatch):
-    monkeypatch.setattr(SourceFileLoader, "get_code", _conftest(request)._get_code)
-    first = _income_tax_formula(Simulation(situation=SITUATION))
-    second = _income_tax_formula(Simulation(situation=SITUATION))
-    if first.__code__ is second.__code__:
-        pytest.skip(
-            "policyengine-core now shares variable code between systems; "
-            "remove _get_shared_variable_code from conftest.py and this file"
-        )
-    assert first.__code__ == second.__code__
+def test_policyengine_core_still_compiles_each_system_again(core_shares_code):
+    _skip_if_core_shares(core_shares_code)
 
 
-def test_a_simulation_leaves_coverage_no_new_code_objects(request, monkeypatch):
+def test_a_simulation_leaves_coverage_no_new_code_objects(
+    request, monkeypatch, core_shares_code
+):
+    _skip_if_core_shares(core_shares_code)
     if _coverage_code_objects() is None:
         pytest.skip("coverage is not measuring with sys.monitoring")
     Simulation(situation=SITUATION).calculate("income_tax", 2026)

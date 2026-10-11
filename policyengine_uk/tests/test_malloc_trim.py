@@ -1,11 +1,11 @@
 """The conftest hands freed memory back to the system after each test file.
 
 It calls glibc's malloc_trim(0) once a file's last test has been torn down,
-and only then. On Linux it must find the function, or the release would
+and only then. With glibc it must find the function, or the release would
 silently do nothing.
 """
 
-import sys
+import platform
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -20,8 +20,8 @@ def _conftest(request):
     raise AssertionError(f"{path} is not loaded as a plugin")
 
 
-def test_malloc_trim_is_found_on_linux(request):
-    if not sys.platform.startswith("linux"):
+def test_malloc_trim_is_found_with_glibc(request):
+    if platform.libc_ver()[0] != "glibc":
         pytest.skip("malloc_trim is part of glibc")
     assert _conftest(request)._malloc_trim is not None
 

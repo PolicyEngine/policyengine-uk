@@ -16,6 +16,9 @@ set, via the ``microsimulation`` marker configured in ``conftest.py``.
 
 from __future__ import annotations
 
+import os
+from collections.abc import Iterator
+
 import numpy as np
 import pytest
 
@@ -30,7 +33,7 @@ YEAR = 2025
 
 
 @pytest.fixture(scope="module")
-def sim() -> Microsimulation:
+def sim() -> Iterator[Microsimulation]:
     """Simulation built against the unpinned latest dataset.
 
     Overrides any pinned-version dataset set in conftest.py so the test
@@ -42,9 +45,11 @@ def sim() -> Microsimulation:
         monkeypatch.setenv("POLICYENGINE_UK_DEFAULT_DATASET", LATEST_DATASET_URL)
         simulation = Microsimulation()
     yield simulation
-    # Only this file uses the unpinned dataset, so don't keep it cached (about
-    # 0.7 GiB) beside the pinned one for the rest of the test process.
-    _url_dataset_cache.pop(LATEST_DATASET_URL, None)
+    # Only this file uses the unpinned dataset, so don't keep it cached beside
+    # the pinned one for the rest of the test process (a cached copy of the
+    # pinned 2023-24 dataset held 0.74 GiB, measured locally).
+    if os.environ.get("POLICYENGINE_UK_DEFAULT_DATASET") != LATEST_DATASET_URL:
+        _url_dataset_cache.pop(LATEST_DATASET_URL, None)
 
 
 def _weighted(sim: Microsimulation, variable: str, period: int = YEAR) -> float:

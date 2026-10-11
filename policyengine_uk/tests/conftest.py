@@ -154,9 +154,10 @@ def pytest_configure(config):
     _owners_at_start.update(_variable_module_owners())
     _threshold_before = gc.get_threshold()
     gc.set_threshold(GC_FIRST_GENERATION_THRESHOLD, *_threshold_before[1:])
-    # Below. pytest_configure, unlike pytest_sessionstart, also reaches this
-    # conftest when pytest finds it only while collecting (bare `pytest`).
-    SourceFileLoader.get_code = _get_variable_code
+    # The variable code and module hooks defined below. pytest_configure, unlike
+    # pytest_sessionstart, also reaches a conftest that pytest finds only while
+    # collecting (a bare `pytest` from the repository root).
+    _install_variable_hooks()
 
 
 @pytest.hookimpl(trylast=True)
@@ -187,7 +188,7 @@ def pytest_unconfigure(config):
     _owners_at_start.clear()
     if _threshold_before is not None:
         gc.set_threshold(*_threshold_before)
-    SourceFileLoader.get_code = _get_code
+    _remove_variable_hooks()
 
 
 # policyengine-core loads every variable file of each new tax-benefit system as
@@ -236,10 +237,28 @@ def release_dead_variable_modules(max_owners: int = 8) -> int:
     return released
 
 
+# A test or a new system triggers the release only once ``max_new`` systems
+# have been built since the last release found the live ones, so a process
+# that keeps more than eight systems alive (an lru_cache of systems in a test
+# module) doesn't scan every tracked object after every test and every build.
+_live_owners = 0
+
+
+def release_after_new_systems(max_new: int = 8) -> int:
+    """Release dead systems' variable modules once ``max_new`` more systems own
+    modules than were alive at the last release. Returns the number removed."""
+    global _live_owners
+    if len(_variable_module_owners()) <= _live_owners + max_new:
+        return 0
+    released = release_dead_variable_modules(max_owners=0)
+    _live_owners = len(_variable_module_owners())
+    return released
+
+
 @pytest.fixture(autouse=True)
 def _release_variable_modules_of_dead_systems():
     yield
-    release_dead_variable_modules()
+    release_after_new_systems()
 
 
 # Coverage on CI is measured with sys.monitoring (COVERAGE_CORE=sysmon). That
@@ -257,29 +276,17 @@ def _release_variable_modules_of_dead_systems():
 # code object. Systems still get their own modules, classes and functions;
 # only the immutable code is shared. In the same run this lowered the shards'
 # peaks to 10.2 to 12.2 GiB with no swap, cut their pytest time by 15 to 21%,
-# and left every test's outcome unchanged. Remove this once policyengine-core
-# shares the code itself (PolicyEngine/policyengine-core#608).
-#
-# The same hook also releases dead systems' variable modules whenever a new
-# system starts loading its variables, not only after each test: in that run
-# one property test had 165 systems' modules loaded at once, and Hypothesis
-# builds hundreds of systems while it shrinks a failing example. With this the
-# shards peaked at 10.0 to 10.4 GiB (run 38165445604).
+# and left every test's outcome unchanged. Remove _get_variable_code once
+# policyengine-core shares the code itself (PolicyEngine/policyengine-core#608).
 _variable_code = {}
 _get_code = SourceFileLoader.get_code
-_loading_owner = None
+_get_code_was_own = "get_code" in SourceFileLoader.__dict__
 
 
 def _get_variable_code(loader, fullname):
     """``SourceFileLoader.get_code``, compiling each variable file only once."""
-    global _loading_owner
-    match = _VARIABLE_MODULE_NAME.match(fullname)
-    if not match:
+    if not _VARIABLE_MODULE_NAME.match(fullname):
         return _get_code(loader, fullname)
-    if match.group(1) != _loading_owner:
-        # A system loads all its variable files in turn, so this is a new one.
-        _loading_owner = match.group(1)
-        release_dead_variable_modules()
     path = loader.get_filename(fullname)
     stat = os.stat(path)
     key = (path, stat.st_mtime_ns, stat.st_size)
@@ -289,17 +296,56 @@ def _get_variable_code(loader, fullname):
     return code
 
 
+# Dead systems' variable modules are also released as each new system starts
+# adding its variables, not only after each test: in that run one property
+# test had 165 systems' modules loaded at once, and Hypothesis can build many
+# more while it shrinks a failing example. With this the shards peaked at 10.0
+# to 10.4 GiB (run 38165445604). Keep this until policyengine-core stops
+# leaking the modules (PolicyEngine/policyengine-core#520).
+_add_variables_from_file = TaxBenefitSystem.add_variables_from_file
+_adding_system = None
+
+
+def _add_variables_from_file_releasing(system, file_path):
+    """``TaxBenefitSystem.add_variables_from_file``, releasing dead systems'
+    modules when a new system starts adding its variables."""
+    global _adding_system
+    if id(system) != _adding_system:
+        # A system adds all its variable files in turn, so this is a new one.
+        _adding_system = id(system)
+        release_after_new_systems()
+    return _add_variables_from_file(system, file_path)
+
+
+def _install_variable_hooks():
+    SourceFileLoader.get_code = _get_variable_code
+    TaxBenefitSystem.add_variables_from_file = _add_variables_from_file_releasing
+
+
+def _remove_variable_hooks():
+    if _get_code_was_own:
+        SourceFileLoader.get_code = _get_code
+    elif "get_code" in SourceFileLoader.__dict__:
+        # Inherited from SourceLoader: leave no copy on the subclass.
+        del SourceFileLoader.get_code
+    TaxBenefitSystem.add_variables_from_file = _add_variables_from_file
+
+
 # Freed memory stays in the worker: on CI the worker that ran the
 # microsimulation tests kept about 4 GiB of RSS after their simulations were
 # gone (run 38159894687), though locally only the 0.74 GiB cached dataset was
 # still referenced once they were deleted (tracemalloc). So after each test
 # file's fixtures are torn down, ask glibc to return free heap memory to the
-# system (malloc_trim(0)); elsewhere this does nothing. With this, and
+# system (malloc_trim(0)); memory still awaiting the cycle collector goes back
+# at a later file. Elsewhere this does nothing. With this, and
 # test_latest_data_smoke.py no longer keeping its dataset cached, the shards
-# peaked at 8.0 to 8.2 GiB instead of 10.0 to 10.4, in no more time, and two
-# shards would peak at 8.1 (run 38165445604).
+# peaked at 8.0 to 8.2 GiB instead of 10.0 to 10.4, in about the same time
+# (pytest wall 776 / 952 / 637 s against 788 / 902 / 581), and two shards
+# would peak at 8.1 (run 38165445604).
 try:
     _malloc_trim = ctypes.CDLL("libc.so.6").malloc_trim
+    _malloc_trim.argtypes = [ctypes.c_size_t]
+    _malloc_trim.restype = ctypes.c_int
 except (OSError, AttributeError):
     _malloc_trim = None
 
