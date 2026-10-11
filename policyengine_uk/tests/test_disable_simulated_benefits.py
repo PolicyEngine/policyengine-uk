@@ -560,6 +560,59 @@ def test_a_reform_applied_later_keeps_what_it_sets_through_a_reset(route):
         )
 
 
+@pytest.mark.parametrize("route", ["itself", "clone", "branch"])
+def test_a_reform_that_replaces_inputs_set_after_the_build_keeps_them(route):
+    # Inputs set after the build are recorded as inputs, but input_variables
+    # does not name them. A reform applied to the same simulation, or to a
+    # clone, that replaces one adds no new record, so the reform's inputs are
+    # named by what it sets. A branch stores its inputs under its own name,
+    # so there every record is new.
+    entered = situation()
+    for benunit in entered["benunits"].values():
+        benunit["esa_income"] = {DATASET_YEAR: 3_000}
+    parent = Simulation(situation=entered)
+    for year in range(DATASET_YEAR, DATASET_YEAR + YEARS_IN_FUTURE):
+        parent.set_input(
+            "claimant_or_partner_esa_income", year, np.full(len(NAMES), 100)
+        )
+    # Set after the build and not by the reform, so the reform does not name it.
+    parent.set_input(
+        "housing_benefit_applicable_income", YEARS[1], np.zeros(len(NAMES))
+    )
+    names = parent.input_variables
+    recorded = list(names)
+    assert "claimant_or_partner_esa_income" not in recorded
+    if route == "itself":
+        simulation = parent
+    elif route == "clone":
+        simulation = parent.clone()
+    else:
+        simulation = parent.get_branch("reformed")
+    simulation.apply_reform(DisableSimulatedBenefits)
+    if route != "itself":
+        assert parent.input_variables is names
+        assert parent.input_variables == recorded
+    for variable in SET_BY_THE_REFORM:
+        assert variable in simulation.input_variables, variable
+    assert "housing_benefit_applicable_income" not in simulation.input_variables
+    excluded = NAMES.index("excluded_adult")
+    year = YEARS[1]
+    before = {
+        variable: simulation.calculate(variable, year)
+        for variable in [*SET_BY_THE_REFORM, "income_support_eligible"]
+    }
+    assert before["claimant_or_partner_esa_income"][excluded] == 0
+    assert before["income_support_eligible"][excluded]
+    assert not simulation.derivative(
+        "claimant_or_partner_esa_income", "employment_income", year
+    ).any()
+    simulation.reset_calculations()
+    for variable, value in before.items():
+        np.testing.assert_array_equal(
+            simulation.calculate(variable, year), value, err_msg=variable
+        )
+
+
 class RemoveIncomeRelatedAwards(Reform):
     def apply(self):
         self.neutralize_variable("esa_income")
