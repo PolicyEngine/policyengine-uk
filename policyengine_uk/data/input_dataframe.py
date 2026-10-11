@@ -452,10 +452,10 @@ def hold_identifiers_in(simulation, period) -> None:
     back (``Simulation._calculate``). So a simulation given an input for a
     year before its data, such as 2023 for a frame of 2025, would hold no
     identifiers there. Formulas would read every person, benefit unit and
-    household identifier there as zero, the default. Yet the simulation it
-    exports to holds them there, since the dataset a frame loads as holds the
-    people and groups in each year the frame gives values for
-    (``dataset_from_input_dataframe``).
+    household identifier there as zero, the default. Yet the simulation its
+    exported frame loads back to holds them there, since the dataset a frame
+    loads as holds the people and groups in each year the frame gives values
+    for (``dataset_from_input_dataframe``).
 
     So each identifier that ``simulation`` holds as an input for some period,
     but for none that starts by the first day of the year ``period`` starts
