@@ -7,9 +7,11 @@ fragment out. Neither tells the author. On 11 October 2026 main held 93 such
 files, and every one of their notes was missing from CHANGELOG.md.
 
 The Changelog workflow (.github/workflows/pr_changelog.yaml) runs this on the
-pull request's merge commit:
+pull request's merge commit, whose first parent is main:
 
     python .github/check_changelog_fragments.py --base HEAD^1 --head HEAD
+
+and on a merge queue group against the group's base.
 
 Each file the pull request adds or changes in the fragment directory must:
 

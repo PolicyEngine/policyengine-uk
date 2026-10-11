@@ -5,18 +5,21 @@
 # or deletes any other file in changelog.d. This fails a pull request that
 # adds or changes such a file, or an empty fragment
 # (.github/check_changelog_fragments.py). It has no path filter, so it
-# reports on every pull request and can be a required check.
+# reports on every pull request and can be a required check. It also runs for
+# merge queue groups, so a queue never waits on it.
 
 name: Changelog
 on:
   pull_request:
     branches:
       - main
+  merge_group:
 
-# A new push to a pull request supersedes the run on its previous head.
+# A new push to a pull request supersedes the run on its previous head, so
+# cancel that run. Merge groups are never cancelled.
 concurrency:
   group: pr-changelog-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -37,4 +40,15 @@ jobs:
         with:
           python-version: '3.13'
       - name: Check changelog fragments
-        run: python .github/check_changelog_fragments.py --base HEAD^1 --head HEAD
+        env:
+          EVENT: ${{ github.event_name }}
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
+        run: |
+          # A pull request's checkout is its merge into main, whose first
+          # parent is main. A merge group's base can be several commits back.
+          base=HEAD^1
+          if [ "$EVENT" = merge_group ]; then
+            git fetch --no-tags --depth=1 origin "$MERGE_GROUP_BASE"
+            base=$MERGE_GROUP_BASE
+          fi
+          python .github/check_changelog_fragments.py --base "$base" --head HEAD
