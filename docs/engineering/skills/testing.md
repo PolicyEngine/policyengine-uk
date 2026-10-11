@@ -25,6 +25,22 @@ Use this skill whenever adding, moving, or reviewing tests.
   private H5 files in unit-style tests. Mock those seams or skip cleanly when the
   external artifact is unavailable.
 
+## Microsimulation Data
+
+Microsimulation tests run on one certified dataset, pinned by Hugging Face
+commit and SHA-256 in `policyengine_uk/tests/certified_dataset.yaml`. With
+`HUGGING_FACE_TOKEN` set, `conftest.py` selects that dataset and verifies its
+bytes before the first data test runs. Without a token, data tests skip.
+
+Set `POLICYENGINE_UK_REQUIRE_TEST_DATA=1` in jobs that must run the data tests.
+Each data test then fails at setup when the dataset is unavailable, instead of
+skipping, and runs only on the pinned dataset. Credential-free tests are
+unaffected.
+
+The reform fixtures in `microsimulation/reforms_config.yaml` record the dataset
+they were computed on. When the pin moves, recompute them on the new dataset,
+and add each new value under `receipts` rather than overwriting the old ones.
+
 ## Commands
 
 Run lint and formatting before committing:
