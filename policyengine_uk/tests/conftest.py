@@ -1,4 +1,5 @@
 import argparse
+import ctypes
 import gc
 import hashlib
 import os
@@ -289,3 +290,23 @@ def pytest_sessionstart(session):
 
 def pytest_unconfigure(config):
     SourceFileLoader.get_code = _get_code
+
+
+# Freed memory stays in the worker: on CI the worker that ran the
+# microsimulation tests kept about 4 GiB of RSS after their simulations were
+# gone (run 38159894687), though locally only the 0.74 GiB cached dataset was
+# still referenced once they were deleted (tracemalloc). After each test
+# file's fixtures are torn down, glibc's malloc_trim(0) hands free heap memory
+# back to the system. Elsewhere this does nothing.
+try:
+    _malloc_trim = ctypes.CDLL("libc.so.6").malloc_trim
+except (OSError, AttributeError):
+    _malloc_trim = None
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_runtest_teardown(item, nextitem):
+    # trylast: after pytest's own teardown, which finalizes the file's fixtures
+    # when the next test is in another file.
+    if _malloc_trim is not None and (nextitem is None or nextitem.path != item.path):
+        _malloc_trim(0)

@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 
 from policyengine_uk import Microsimulation
+from policyengine_uk.simulation import _url_dataset_cache
 
 
 LATEST_DATASET_URL = (
@@ -39,7 +40,11 @@ def sim() -> Microsimulation:
     """
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setenv("POLICYENGINE_UK_DEFAULT_DATASET", LATEST_DATASET_URL)
-        return Microsimulation()
+        simulation = Microsimulation()
+    yield simulation
+    # Only this file uses the unpinned dataset, so don't keep it cached (about
+    # 0.7 GiB) beside the pinned one for the rest of the test process.
+    _url_dataset_cache.pop(LATEST_DATASET_URL, None)
 
 
 def _weighted(sim: Microsimulation, variable: str, period: int = YEAR) -> float:
