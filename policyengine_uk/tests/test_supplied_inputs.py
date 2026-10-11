@@ -25,7 +25,9 @@ made from and on the default branch, in memory or on disk:
 3. Differential: for every recorded input, the helpers count it as supplied
    exactly when policyengine-core's ``Holder._stores_user_input`` does. On
    policyengine-core 3.33.1 and later, ``supplied_input`` returns what
-   ``Simulation._get_recorded_input_array`` returns.
+   ``Simulation._get_recorded_input_array`` returns, and from 3.33.2
+   ``supplied_input_periods`` lists the periods
+   ``Simulation._get_set_input_periods`` does.
 4. Calculation: calculating, on the default branch and on a branch, leaves
    every supplied value of every variable in ``SUPPLIED_INPUT_VARIABLES``
    supplied and unchanged. No calculation caches a value over a supplied
@@ -428,9 +430,10 @@ def test_only_inputs_still_stored_are_supplied(tmp_path_factory, steps):
             if hasattr(child, "_get_recorded_input_array"):
                 assert recorded_input_array(child, "trading_loss", year) == expected
         # Invariant 2.
-        assert supplied_input_periods(population, "trading_loss") == [
-            period_(year) for year in supplied_years
-        ]
+        periods = supplied_input_periods(population, "trading_loss")
+        assert periods == [period_(year) for year in supplied_years]
+        if hasattr(child, "_get_set_input_periods"):
+            assert set(child._get_set_input_periods("trading_loss")) == set(periods)
         # Invariant 3, for every recorded input of the variable.
         for variable, branch_name, period in child._user_input_keys:
             if variable == "trading_loss":
