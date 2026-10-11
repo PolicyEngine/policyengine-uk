@@ -30,11 +30,16 @@ INDEPENDENT_OF_ELECTION = [
 ]
 
 
-def tax_position(simulation, name, period, relinquished):
+def tax_position(simulation, name, period, relinquished, property_route):
     """Each person's tax with no election in force and the given allowance cut.
 
     The branch holds the election off, so no one gains a reduction, and cuts
     each person's personal allowance by ``relinquished`` (ITA 2007 s. 55B(6)).
+    It also holds each person's property allowance route at
+    ``property_route``, the route the simulation uses. Inputs set on a branch
+    invalidate the values derived from them (policyengine-core 3.33), so
+    without it the branch would choose a route of its own for the
+    counterfactual it represents.
     The branch shares the simulation's cached arrays until it writes, and is
     dropped afterwards so a later period starts from a fresh branch.
     """
@@ -48,6 +53,7 @@ def tax_position(simulation, name, period, relinquished):
             np.zeros(len(relinquished), dtype=bool),
         )
         branch.set_input("marriage_allowance_relinquished", period, relinquished)
+        branch.set_input("uses_property_allowance", period, property_route)
         population = branch.populations["person"]
         return {variable: population(variable, period) for variable in BRANCH_OUTPUTS}
     finally:
@@ -89,18 +95,24 @@ class makes_marriage_allowance_election(Variable):
             person(variable, period)
         spouse = person("is_marriage_allowance_spouse", period)
         transferable = person("marriage_allowance_transferable_amount", period)
+        # The property allowance route (ITTOIA 2005 s. 783BL) is settled
+        # first, each route weighed with the election it would bring. The
+        # election is then weighed under that route.
+        property_route = person("uses_property_allowance", period)
         simulation = person.simulation
         without = tax_position(
             simulation,
             "marriage_allowance_without_election",
             period,
             np.zeros_like(transferable),
+            property_route,
         )
         relinquishing = tax_position(
             simulation,
             "marriage_allowance_relinquishing",
             period,
             spouse * transferable,
+            property_route,
         )
 
         def partner(values):
