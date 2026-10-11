@@ -37,7 +37,9 @@ class savings_starter_rate_income(Variable):
                 - person("received_allowances_savings_income", period),
             ),
         )
-        earned_taxable_income = person("earned_taxable_income", period)
+        # The starting rate band is reduced by non-savings income, property
+        # income included (ITA 2007 ss. 12, 16).
+        earned_taxable_income = person("non_savings_taxable_income", period)
 
         removed_amount = max_(
             0,

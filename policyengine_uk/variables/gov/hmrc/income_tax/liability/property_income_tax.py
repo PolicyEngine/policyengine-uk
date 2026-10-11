@@ -34,7 +34,6 @@ class property_income_tax(Variable):
         determining which tax band it falls into.
         """
         rates = parameters(period).gov.hmrc.income_tax.rates
-        taxable_property = person("taxable_property_income", period)
         non_savings_after_allowances = max_(
             0,
             person("adjusted_net_income", period)
@@ -42,7 +41,9 @@ class property_income_tax(Variable):
             - person("taxable_dividend_income", period)
             - person("allowances", period),
         )
-        property_after_allowances = min_(taxable_property, non_savings_after_allowances)
+        property_after_allowances = person(
+            "taxable_property_income_after_allowances", period
+        )
         other_earned_taxable = max_(
             0, non_savings_after_allowances - property_after_allowances
         )

@@ -1,0 +1,99 @@
+# Savings and dividend income are the highest part of total income (ITA 2007
+# s. 16), so property income, like pay, fills the bands below them. 2026-27,
+# single adult: personal allowance £12,570, basic rate limit £37,700, savings
+# allowance £500 for a higher-rate taxpayer, dividend allowance £500 at
+# 10.75% / 35.75%.
+
+- name: Case 1, dividends sit above property income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 45
+        property_income: 40_000
+        dividend_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # Non-savings taxable income 40,000 - 12,570 = 27,430. The £500 dividend
+    # allowance and 9,770 fill the basic-rate band (9,770 x 10.75% =
+    # 1,050.275); 9,730 is at 35.75% (3,478.475). Total 4,528.75, as for pay.
+    non_savings_taxable_income: 27_430
+    dividend_income_tax: 4_528.75
+    income_tax: 5_486 + 4_528.75
+
+- name: Case 2, savings sit above property income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 45
+        property_income: 40_000
+        savings_interest_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # £500 savings allowance, then 9,770 at 20% (1,954) to the basic rate
+    # limit and 9,730 at 40% (3,892).
+    savings_income_tax: 5_846
+
+- name: Case 3, pay and property income together form the band base.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 45
+        employment_income: 10_000
+        property_income: 30_000
+        dividend_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # The allowance covers the pay first: 0 earned and 27,430 property
+    # income taxable, so dividends sit on 27,430 as in Case 1.
+    taxable_property_income_after_allowances: 27_430
+    non_savings_taxable_income: 27_430
+    dividend_income_tax: 4_528.75
+
+- name: Case 4, a Scottish taxpayer's dividends use UK bands above the property income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 45
+        property_income: 40_000
+        dividend_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    dividend_income_tax: 4_528.75
+
+- name: Case 5, from 2027-28 property income has its own rates but still sits below dividends.
+  period: 2027
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 45
+        property_income: 40_000
+        dividend_income: 20_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # Property income at the 22% property basic rate: 27,430 x 22% = 6,034.60.
+    property_income_tax: 6_034.60
+    dividend_income_tax: 4_528.75
