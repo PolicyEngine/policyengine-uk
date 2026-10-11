@@ -765,6 +765,12 @@ def test_every_pull_request_reports_the_test_result():
     # Merge groups must run the microsimulation tests; so must main.
     assert test["with"]["require-data"] == "${{ github.event_name == 'merge_group' }}"
     assert main["jobs"]["Test"]["with"]["require-data"] is True
+    release, _ = load("versioning.yaml")
+    assert release["jobs"]["Test"]["with"]["require-data"] is True
+    # A manual dispatch of the main workflow always tests.
+    lookup = main["jobs"]["Tested"]["steps"][0]["run"]
+    assert '"$GITHUB_EVENT_NAME" != push' in lookup
+    assert "event=merge_group&status=success" in lookup
 
 
 # Invariant 11: deciding whether a pull request changes code.

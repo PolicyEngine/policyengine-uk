@@ -89,6 +89,7 @@ jobs:
           HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
           TESTS: ${{ steps.env.outputs.tests }}
           ROOTDIR: ${{ steps.env.outputs.rootdir }}
+          POLICYENGINE_UK_REQUIRE_TEST_DATA: ${{ inputs.require-data && '1' || '' }}
         run: |
           # Only export token if non-empty (avoids 'Bearer ' error for Dependabot PRs)
           if [ -n "$HF_TOKEN_VALUE" ]; then
@@ -149,6 +150,9 @@ jobs:
           TESTS: ${{ steps.env.outputs.tests }}
           ROOTDIR: ${{ steps.env.outputs.rootdir }}
           MODE: ${{ steps.env.outputs.mode }}
+          # The tests' own mandatory-data mode (conftest.py): a test that
+          # needs the dataset fails, rather than skips, when it is missing.
+          POLICYENGINE_UK_REQUIRE_TEST_DATA: ${{ inputs.require-data && '1' || '' }}
           SHARD: ${{ matrix.shard }}/${{ strategy.job-total }}
           OUTCOMES: outcomes-${{ matrix.shard }}.jsonl
           # Measure coverage with sys.monitoring instead of the C trace

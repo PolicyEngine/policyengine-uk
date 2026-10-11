@@ -122,6 +122,8 @@ jobs:
             uvx ruff check .
             uvx ruff check --select F811,F821 policyengine_uk
   Docs:
+    # The documentation, built against a pull request's code changes. A
+    # pull request that changes only docs/ builds it in pr_docs_changes.yaml.
     name: Documentation build
     needs: Changes
     if: needs.Changes.outputs.code == 'true'

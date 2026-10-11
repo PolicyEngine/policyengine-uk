@@ -162,7 +162,10 @@ jobs:
             # "Re-run all jobs" after this run's first attempt pushed a version
             # commit: main's tip is that commit, untagged because it was never
             # published. prepare_release.py would see a versioned tip and
-            # release nothing, so release the tip instead.
+            # release nothing, so release the tip instead. A re-run of an
+            # older run does this too if main ends in another run's unpublished
+            # version commit: it still builds and tests that commit itself
+            # before publishing, and Publish runs one at a time per version.
             sha=$(git rev-parse FETCH_HEAD)
             {
               echo "release=true"
