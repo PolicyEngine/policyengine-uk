@@ -63,6 +63,7 @@ jobs:
       # queued for hours; the parameter tree and every test result are
       # identical on both.
       runs-on: ubuntu-24.04-arm
+      # About 4 minutes on 10 October (run 38085920460).
       timeout-minutes: 30
       permissions:
         contents: "read"
@@ -119,6 +120,9 @@ jobs:
       # a number to the list.
       name: Test (Python ${{ matrix.shard }}/${{ strategy.job-total }})
       runs-on: ubuntu-24.04-arm
+      # The shards took 15, 20 and 15 minutes on 10 October (run
+      # 38085920460). 60 minutes leaves room for a slow runner and still
+      # stops a hung shard.
       timeout-minutes: 60
       strategy:
         fail-fast: false
@@ -182,20 +186,28 @@ jobs:
       # if the shards did not run every collected Python test exactly once.
       needs: [Test-YAML, Test-Python]
       if: ${{ !cancelled() }}
-      runs-on: ubuntu-latest
+      # The shards' runners, not ubuntu-latest: on 10 October this 5-second
+      # job waited 32 minutes for an ubuntu-latest runner after the shards
+      # had finished (run 38085920460).
+      runs-on: ubuntu-24.04-arm
       timeout-minutes: 10
       steps:
-          - name: Checkout repo
-            uses: actions/checkout@v6
-          - name: Download the test lists and results
-            uses: actions/download-artifact@v8
-            with:
-              pattern: test-*
-              merge-multiple: true
-          - name: Check that every Python test ran in exactly one shard
-            run: python3 .github/check_test_shards.py --collected collected.txt --junit junit-*.xml
           - name: Check that every test job passed
             run: |
               echo "YAML: ${{ needs.Test-YAML.result }}; Python: ${{ needs.Test-Python.result }}"
               test "${{ needs.Test-YAML.result }}" = success
               test "${{ needs.Test-Python.result }}" = success
+          - name: Checkout repo
+            if: ${{ !cancelled() }}
+            uses: actions/checkout@v6
+          - name: Download the test lists and results
+            if: ${{ !cancelled() }}
+            uses: actions/download-artifact@v8
+            with:
+              pattern: test-*
+              merge-multiple: true
+          - name: Check that every Python test ran in exactly one shard
+            # Runs even when a test job failed, so its report names the
+            # failed tests.
+            if: ${{ !cancelled() }}
+            run: python3 .github/check_test_shards.py --collected collected.txt --junit junit-*.xml
