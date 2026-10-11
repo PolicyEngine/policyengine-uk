@@ -374,9 +374,13 @@ situation = {
 }
 
 # A basic rate of 21% from 6 April 2027 onwards.
-from_april = Simulation(situation=situation, reform={rate: {"2027-04-06.2100-12-31": 0.21}})
+from_april = Simulation(
+    situation=situation, reform={rate: {"2027-04-06.2100-12-31": 0.21}}
+)
 # The same rate for 2027-28 only: 2028-29 is back to current law.
-one_year = Simulation(situation=situation, reform={rate: {"2027-04-06.2028-04-05": 0.21}})
+one_year = Simulation(
+    situation=situation, reform={rate: {"2027-04-06.2028-04-05": 0.21}}
+)
 ```
 
 Outside a change's dates, prior law stays in force. Where the timeline states later values, they apply on their dates. Where the parameter's future is projected by uprating or indexation, prior law's projected path resumes after a change that ends: a one-year change to the UC standard allowance returns to the uprated amounts the next year. A change "from a date onwards" is held flat to the end of 2100 and is not uprated.
