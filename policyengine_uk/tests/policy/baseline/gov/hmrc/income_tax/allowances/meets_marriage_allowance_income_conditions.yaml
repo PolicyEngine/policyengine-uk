@@ -149,3 +149,24 @@
     dividend_income: 5_000
   output:
     meets_marriage_allowance_income_conditions: false
+
+- name: Dividends that reach the basic rate limit exactly meet the conditions (s. 55B(2)(ba))
+  period: 2026
+  input:
+    # 50,070 - 12,570 = 37,500 of earnings, then 200 of dividends to 37,700:
+    # even without the dividend nil rate (s. 13A) none would be at the
+    # dividend upper rate. Companion case B of TheAxiomFoundation/rulespec-uk#437.
+    employment_income: 50_070
+    dividend_income: 200
+  output:
+    meets_marriage_allowance_income_conditions: true
+
+- name: One pound of dividends above the basic rate limit fails the conditions (s. 55B(2)(ba))
+  period: 2026
+  input:
+    # 37,500 + 201 = 37,701: without s. 13A, 1 would be at the dividend upper
+    # rate. Companion case C of TheAxiomFoundation/rulespec-uk#437.
+    employment_income: 50_070
+    dividend_income: 201
+  output:
+    meets_marriage_allowance_income_conditions: false
