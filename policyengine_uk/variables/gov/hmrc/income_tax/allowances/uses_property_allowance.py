@@ -22,11 +22,12 @@ MAX_ROUNDS = 3
 def income_tax_with_route(simulation, name, period, uses_allowance):
     """Each person's income tax with the given choices of property allowance.
 
-    The tax is before the winter fuel payment charge: the charge depends on
-    receipt of Pension Credit and Universal Credit, which depend on property
-    income and so on this choice. The branch shares the simulation's cached
-    arrays until it writes, and is dropped afterwards so a later period
-    starts from a fresh branch.
+    The tax is before the winter fuel payment charge. The charge turns on
+    total_income, which is before the property allowance and so the same on
+    either route, and on receipt of means-tested benefits, which reading it
+    here would compute again in each route's branch. The branch shares the
+    simulation's cached arrays until it writes, and is dropped afterwards so
+    a later period starts from a fresh branch.
     """
     while name in simulation.branches or name == simulation.branch_name:
         name += "_"

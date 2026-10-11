@@ -512,16 +512,14 @@
     household_benefits: 203.40
     hbai_benefits: 203.40
 
-- name: 2025 the property allowance election compares tax before the charge
-  # Private pension £32,000; property receipts £3,500, expenses £200, finance
-  # costs £1,500. With expenses: total income £35,300, tax 22,730 x 20% =
-  # £4,546 less the finance-cost reduction 20% x £1,500 = £300, so £4,246.
-  # With partial relief (£1,000 allowance, no reduction): total income
-  # £34,500, tax 21,930 x 20% = £4,386. The election lowers the tax before the
-  # charge only by keeping expenses, so they are kept. The charge depends on
-  # Pension Credit, which depends on property income and so on this choice,
-  # so the election does not weigh it: total income £35,300 is charged £200,
-  # which partial relief would have avoided.
+- name: 2025 a landlord's property allowance election is made before the charge
+  # Private pension £32,000; property receipts £3,500, expenses £200 (profit
+  # £3,300), finance costs £1,500. With expenses: (35,300 - 12,570) x 20% =
+  # £4,546, less the finance-cost reduction 20% x £1,500 = £300, so £4,246.
+  # With partial relief (£1,000 allowance for £200 of expenses, no
+  # reduction): (34,500 - 12,570) x 20% = £4,386. Expenses are kept. The
+  # model's total_income is before the property allowance, £35,300 on either
+  # route, so the £200 charge is added on either.
   period: 2025
   input:
     people:
