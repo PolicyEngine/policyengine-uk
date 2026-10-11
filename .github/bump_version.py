@@ -1,8 +1,128 @@
-"""Infer semver bump from towncrier fragment types and update version."""
+"""Infer semver bump from towncrier fragment types and update version.
 
+Only the fragments towncrier consumes count: files in the fragment directory
+whose names carry a fragment type configured under ``[tool.towncrier]`` in
+pyproject.toml, as towncrier parses them. towncrier never writes any other
+file there to CHANGELOG.md and never deletes it, so such a file cannot justify
+a release. This script warns about each one and ignores it.
+``.github/check_changelog_fragments.py`` uses the same rules to reject them in
+pull requests.
+
+Standard library only.
+"""
+
+import fnmatch
 import re
 import sys
+import tomllib
+from dataclasses import dataclass
 from pathlib import Path
+
+# towncrier's fragment types when [tool.towncrier] configures none
+# (towncrier._settings.fragment_types.DefaultFragmentTypesLoader).
+TOWNCRIER_DEFAULT_TYPES = ("feature", "bugfix", "doc", "removal", "misc")
+# Names towncrier always skips in the fragment directory
+# (towncrier._builder.find_fragments), besides the configured `ignore`.
+TOWNCRIER_IGNORED_NAMES = (
+    ".gitignore",
+    ".gitkeep",
+    ".keep",
+    "readme",
+    "readme.md",
+    "readme.rst",
+)
+
+MAJOR_TYPES = {"breaking"}
+MINOR_TYPES = {"added", "removed"}
+
+
+@dataclass(frozen=True)
+class TowncrierConfig:
+    """The parts of [tool.towncrier] that decide which files are fragments."""
+
+    directory: str
+    types: tuple[str, ...]
+    ignore: tuple[str, ...]
+
+
+def parse_towncrier_config(pyproject_text: str) -> TowncrierConfig:
+    """Read [tool.towncrier] from pyproject.toml text the way towncrier does."""
+    config = tomllib.loads(pyproject_text).get("tool", {}).get("towncrier")
+    if config is None:
+        raise ValueError("pyproject.toml has no [tool.towncrier] table")
+    if config.get("fragment"):
+        types = tuple(sorted(config["fragment"]))
+    elif config.get("type"):
+        types = tuple(
+            entry.get("directory", entry["name"].lower()) for entry in config["type"]
+        )
+    else:
+        types = TOWNCRIER_DEFAULT_TYPES
+    directory = config.get("directory")
+    if directory is None:
+        directory = str(
+            Path(config.get("package_dir", ".")) / config["package"] / "newsfragments"
+        )
+    ignore = [name.lower() for name in TOWNCRIER_IGNORED_NAMES]
+    ignore += [pattern.lower() for pattern in config.get("ignore") or []]
+    template = config.get("template")
+    if isinstance(template, str) and not template.startswith("towncrier:"):
+        # towncrier does not lower-case this one.
+        ignore.append(Path(template).name)
+    return TowncrierConfig(
+        directory=Path(directory).as_posix(), types=types, ignore=tuple(ignore)
+    )
+
+
+def load_towncrier_config(pyproject_path: Path) -> TowncrierConfig:
+    return parse_towncrier_config(pyproject_path.read_text())
+
+
+def is_ignored(name: str, config: TowncrierConfig) -> bool:
+    """Whether towncrier skips this name in the fragment directory."""
+    return any(fnmatch.fnmatch(name.lower(), pattern) for pattern in config.ignore)
+
+
+def towncrier_fragment_type(name: str, types) -> str | None:
+    """The type towncrier reads from a fragment's name, or None if it has none.
+
+    Mirrors towncrier._builder.parse_newfragment_basename: the last
+    dot-separated part after the first that is a configured type.
+    """
+    parts = name.split(".")
+    for part in reversed(parts[1:]):
+        if part in types:
+            return part
+    return None
+
+
+def classify_fragments(
+    changelog_dir: Path, config: TowncrierConfig
+) -> tuple[list[tuple[Path, str]], list[Path]]:
+    """Split the directory's files into (fragment, type) pairs and untyped files.
+
+    Files towncrier ignores (.gitkeep, README and the configured `ignore`)
+    are in neither list.
+    """
+    typed, untyped = [], []
+    for path in sorted(changelog_dir.iterdir()):
+        if not path.is_file() or is_ignored(path.name, config):
+            continue
+        fragment_type = towncrier_fragment_type(path.name, config.types)
+        if fragment_type is None:
+            untyped.append(path)
+        else:
+            typed.append((path, fragment_type))
+    return typed, untyped
+
+
+def bump_for_types(fragment_types) -> str:
+    fragment_types = set(fragment_types)
+    if fragment_types & MAJOR_TYPES:
+        return "major"
+    if fragment_types & MINOR_TYPES:
+        return "minor"
+    return "patch"
 
 
 def get_current_version(pyproject_path: Path) -> str:
@@ -17,25 +137,23 @@ def get_current_version(pyproject_path: Path) -> str:
     return match.group(1)
 
 
-def infer_bump(changelog_dir: Path) -> str:
-    fragments = [
-        f for f in changelog_dir.iterdir() if f.is_file() and f.name != ".gitkeep"
-    ]
-    if not fragments:
-        print("No changelog fragments found", file=sys.stderr)
+def infer_bump(changelog_dir: Path, config: TowncrierConfig) -> str:
+    typed, untyped = classify_fragments(changelog_dir, config)
+    for path in untyped:
+        relative = f"{config.directory}/{path.name}"
+        print(
+            f"::warning file={relative}::{relative} has no towncrier type, so "
+            "towncrier leaves it out of CHANGELOG.md and this release ignores it. "
+            f"Fragments are named <slug>.<type>.md with a type from "
+            f"{', '.join(config.types)}."
+        )
+    if not typed:
+        print(
+            f"No changelog fragments with a towncrier type in {config.directory}",
+            file=sys.stderr,
+        )
         sys.exit(1)
-
-    categories = {f.suffix.lstrip(".") for f in fragments}
-    for f in fragments:
-        parts = f.stem.split(".")
-        if len(parts) >= 2:
-            categories.add(parts[-1])
-
-    if "breaking" in categories:
-        return "major"
-    if "added" in categories or "removed" in categories:
-        return "minor"
-    return "patch"
+    return bump_for_types(fragment_type for _, fragment_type in typed)
 
 
 def bump_version(version: str, bump: str) -> str:
@@ -62,10 +180,10 @@ def update_file(path: Path, old_version: str, new_version: str):
 def main():
     root = Path(__file__).resolve().parent.parent
     pyproject = root / "pyproject.toml"
-    changelog_dir = root / "changelog.d"
+    config = load_towncrier_config(pyproject)
 
     current = get_current_version(pyproject)
-    bump = infer_bump(changelog_dir)
+    bump = infer_bump(root / config.directory, config)
     new = bump_version(current, bump)
 
     print(f"Version: {current} -> {new} ({bump})")

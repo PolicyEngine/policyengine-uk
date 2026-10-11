@@ -1,0 +1,40 @@
+# Workflow that checks a pull request's changelog fragments.
+#
+# towncrier writes a fragment to CHANGELOG.md only when it is named
+# <slug>.<type>.md with a type configured in pyproject.toml, and never reads
+# or deletes any other file in changelog.d. This fails a pull request that
+# adds or changes such a file, or an empty fragment
+# (.github/check_changelog_fragments.py). It has no path filter, so it
+# reports on every pull request and can be a required check.
+
+name: Changelog
+on:
+  pull_request:
+    branches:
+      - main
+
+# A new push to a pull request supersedes the run on its previous head.
+concurrency:
+  group: pr-changelog-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  Fragments:
+    name: Changelog fragments
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          # The merge commit and its parents: the base branch and the PR head.
+          fetch-depth: 2
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Check changelog fragments
+        run: python .github/check_changelog_fragments.py --base HEAD^1 --head HEAD
