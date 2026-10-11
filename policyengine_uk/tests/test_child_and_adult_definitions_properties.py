@@ -6,8 +6,10 @@ Invariants:
    approved training, own-benefit receipt and looked-after status, the four
    programmes' child predicates mean under 16. Their young-person predicates
    agree with the statutory age/education/entry conditions the model encodes.
-   Legacy children are Child Benefit children/QYPs other than claimants,
-   partners and children placed by a local authority; the HBAI fallback and
+   Child Benefit, Child Tax Credit and Pension Credit children/QYPs exclude
+   the benefit unit's claimant and partner, as do legacy children, which are
+   Child Benefit children/QYPs other than children placed by a local
+   authority; UC's consumers apply their own claimant filter. The HBAI fallback and
    the claimant-or-partner presumption follow their documented assumptions.
    An unflagged member at least 16 years younger than a claimant flagged as
    a parent is never their partner, at any age, unless a member under 20 and
@@ -220,12 +222,18 @@ def qualifying_young_person(p, programme):
     return True
 
 
-def child_or_young_person(p, programme):
+def child_or_young_person(p, programme, claimant=False):
     # Encoded responsibility filters, without their statutory exceptions:
     # https://www.legislation.gov.uk/uksi/2013/376/regulation/4
     # https://www.legislation.gov.uk/uksi/2002/2007/regulation/3
     # https://www.legislation.gov.uk/uksi/2002/1792/schedule/IIA
+    # No one is responsible for themselves or their partner (SSCBA s.143;
+    # CTC reg 3 Rule 1 and Cases G-H; SPC Sch IIA para 3). UC's flag keeps the
+    # claimant and its consumers filter them (UC reg 4).
+    # https://www.legislation.gov.uk/ukpga/1992/4/section/143
     eligible = statutory_child(p["age"]) or qualifying_young_person(p, programme)
+    if programme != "universal_credit" and claimant:
+        return False
     if programme != "child_benefit" and p["is_looked_after_by_local_authority"]:
         return False
     return eligible
@@ -291,10 +299,8 @@ def legacy_child_or_young_person(p, claimant):
     # anyone placed by a local authority (IS reg16(4), HB reg21(3)):
     # https://www.legislation.gov.uk/uksi/1987/1967/regulation/16
     # https://www.legislation.gov.uk/uksi/2006/213/regulation/21
-    return (
-        not claimant
-        and not p["is_looked_after_by_local_authority"]
-        and child_or_young_person(p, "child_benefit")
+    return not p["is_looked_after_by_local_authority"] and child_or_young_person(
+        p, "child_benefit", claimant
     )
 
 
@@ -334,6 +340,11 @@ def assert_definitions(families, year=YEAR):
         [non_advanced_education(p) for p in people],
         year,
     )
+    hbai = [hbai_dependent_child(p, family) for family in families for p in family]
+    assert_values(sim, "is_hbai_dependent_child", hbai, year)
+    assert_values(sim, "is_hbai_adult", [not child for child in hbai], year)
+    claimants = [c for family in families for c in claimants_or_partners(family)]
+    assert_values(sim, "is_claimant_or_partner", claimants, year)
     for programme in PROGRAMMES:
         assert_values(sim, f"is_child_for_{programme}", children, year)
         assert_values(
@@ -345,14 +356,9 @@ def assert_definitions(families, year=YEAR):
         assert_values(
             sim,
             f"is_child_or_qualifying_young_person_for_{programme}",
-            [child_or_young_person(p, programme) for p in people],
+            [child_or_young_person(p, programme, c) for p, c in zip(people, claimants)],
             year,
         )
-    hbai = [hbai_dependent_child(p, family) for family in families for p in family]
-    assert_values(sim, "is_hbai_dependent_child", hbai, year)
-    assert_values(sim, "is_hbai_adult", [not child for child in hbai], year)
-    claimants = [c for family in families for c in claimants_or_partners(family)]
-    assert_values(sim, "is_claimant_or_partner", claimants, year)
     # SSCBA s137 and IS reg14 / HB reg19, projected to the encoded family:
     # https://www.legislation.gov.uk/ukpga/1992/4/section/137
     # https://www.legislation.gov.uk/uksi/1987/1967/regulation/14
