@@ -7,7 +7,9 @@ from the OBR classification and the variables' formulas, not from the
 model's lists, so these tests compare two specifications:
 
 1. Schema: ids and variables are unique, every reference resolves, and no
-   variable is both a head and an exclusion.
+   variable is both a head and an exclusion. Every tax row of the OBR's
+   current receipts table (EFO November 2025, Table A.5) is either a head's
+   ``obr_line`` or listed under ``uncovered_receipts``, never both.
 2. Differential: for each total, the heads the partition assigns to it are
    exactly the variables the model sums (``GOV_TAX_VARIABLES``,
    ``HOUSEHOLD_TAX_VARIABLES``, ``PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES``),
@@ -17,7 +19,8 @@ model's lists, so these tests compare two specifications:
    eligibility or imputation route) under the head's ``reads``; every
    declared read occurs. Component and baseline-measure exclusions are reached
    from their head; composite, duplicate and measure-within exclusions are
-   reached from no head.
+   reached from no head. (Assessment and change-measure exclusions may be
+   read by means tests and incomes, so only the differential test binds them.)
 4. Coefficient one (perturbation): raising one head by delta, with every
    other input unchanged, raises each total that includes it by exactly
    delta per member and leaves every other head of those totals unchanged.
@@ -67,6 +70,41 @@ EXCLUSION_KINDS = {
     "composite",
     "duplicate",
     "baseline_measure",
+    "assessment",
+    "change_measure",
+}
+# The tax rows of OBR EFO November 2025 Table A.5, "Current receipts".
+OBR_TABLE_A5_TAX_ROWS = {
+    "Income tax",
+    "National insurance contributions",
+    "Value added tax",
+    "Corporation tax",
+    "Petroleum revenue tax",
+    "Fuel duties",
+    "Business rates",
+    "Council tax",
+    "VAT refunds",
+    "Capital gains tax",
+    "Inheritance tax",
+    "Property transaction taxes",
+    "Stamp taxes on shares",
+    "Tobacco duties",
+    "Alcohol duties",
+    "Air passenger duty",
+    "Insurance premium tax",
+    "Climate change levy",
+    "Bank levy",
+    "Bank surcharge",
+    "Apprenticeship levy",
+    "Digital services tax",
+    "Other HMRC taxes",
+    "Vehicle excise duties",
+    "Licence fee receipts",
+    "Environmental levies",
+    "Emissions Trading Scheme",
+    "Energy profits levy",
+    "Electricity generator levy",
+    "Other taxes",
 }
 OBR_TABLE_3_1_LINES = {
     "Income tax",
@@ -133,11 +171,12 @@ def test_partition_schema():
         assert set(head["totals"]) <= set(MODEL_LISTS), head["id"]
         assert head["sign"] in {"nonnegative", "any"}, head["id"]
         assert head.get("zero_at_baseline", "expected") == "expected", head["id"]
-        assert head["obr_line"], head["id"]
         table_line = head["obr_table_3_1"]
         assert table_line is None or table_line in OBR_TABLE_3_1_LINES, head["id"]
         if head["obr_line"] == "not_an_obr_current_receipt":
             assert table_line is None and head["obr_line_note"], head["id"]
+        else:
+            assert head["obr_line"] in OBR_TABLE_A5_TAX_ROWS, head["id"]
         assert head["report_group"], head["id"]
         for read in head.get("reads", []):
             assert read["head"] in head_by_id(), (head["id"], read)
@@ -158,6 +197,13 @@ def test_partition_schema():
     for guard in p["overlap_guards"]:
         assert set(guard["heads"]) <= set(ids), guard["id"]
     assert p["model_double_counts"] == []
+    # Every tax row of Table A.5 is either measured by a head or declared
+    # uncovered, never both.
+    covered = {head["obr_line"] for head in heads()} - {"not_an_obr_current_receipt"}
+    uncovered = [row["obr_line"] for row in p["uncovered_receipts"]]
+    assert len(uncovered) == len(set(uncovered))
+    assert not covered & set(uncovered)
+    assert covered | set(uncovered) == OBR_TABLE_A5_TAX_ROWS
 
 
 # 2. Differential against the model's lists
@@ -348,7 +394,7 @@ def test_exclusions_sit_where_the_partition_says():
         if x["kind"] in ("component", "baseline_measure"):
             owner = head_by_id()[x["head"]]["variable"]
             assert owner in readers, f"{x['variable']} is not inside {owner}"
-        else:
+        elif x["kind"] in ("composite", "duplicate", "measure_within"):
             assert not readers, (
                 f"{x['variable']} ({x['kind']}) is read by heads {sorted(readers)}"
             )
