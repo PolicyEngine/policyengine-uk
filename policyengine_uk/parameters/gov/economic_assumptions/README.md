@@ -20,6 +20,19 @@ generated from it by
 | `petrol_spending_litre_proxy` | Spending growth that preserves road-fuel litres    | HMRC + OBR              |
 | `diesel_spending_litre_proxy` | Same, for diesel                                   | HMRC + OBR              |
 | `finance_ni.domestic_rates` | Average Northern Ireland domestic rates bill (regional plus district poundage) | DoF rate poundages, LPS rates paid, NI draft Budget 2026-29 |
+| `stamp_duty_land_tax.residential` | SDLT receipts from residential property          | EFO receipts Table 3.7  |
+| `stamp_duty_land_tax.non_residential` | SDLT receipts from non-residential property  | EFO receipts Table 3.7  |
+| `business_rates.great_britain` | Business rates receipts, England, Scotland and Wales (cash) | EFO receipts, current receipts (cash basis): Table 3.8 in March 2026 |
+| `business_rates.northern_ireland` | Northern Ireland business rates receipts      | EFO receipts Table 3.2  |
+
+The four receipts series project the corporate SDLT and business rates
+statistics (`gov.hmrc.stamp_duty.statistics`,
+`gov.hmrc.business_rates.statistics`) from their latest outturn. Each is the
+ratio of consecutive published receipts levels, to six decimals: outturn
+growth for the EFO's outturn year (its outturn over the year before's outturn
+in an earlier EFO), the EFO's forecast years, and after them the
+`average_earnings` path. Years before the outturn year are kept, so each
+index keeps its base year.
 
 ## Time horizons
 
@@ -118,6 +131,26 @@ threshold by the same rises, up to the last year of
    `yoy_growth.yaml`; pass the receipts tables with `--receipts-file` or
    `--receipts-url` so September CPI uses the OBR's September forecast. If
    you edit `yoy_growth.yaml` by hand instead, rerun it with `--gaps-only`.
+6. Refresh the receipts series (`stamp_duty_land_tax.*`,
+   `business_rates.*`). The importer does this in the same run when it also
+   gets the receipts tables of the EFO whose outturn year is one earlier
+   (March 2025 for March 2026), with `--previous-receipts-file` or
+   `--previous-receipts-url`; their outturn is the base for the outturn
+   year's growth. It finds each line by table title and row label, so table
+   renumbering does not matter, and it refuses receipts tables from another
+   EFO. Then update the published levels in
+   `policyengine_uk/tests/test_corporate_receipts_statistics.py`
+   (`OBR_RECEIPTS_BN`), which pin the series to the OBR's tables. Pass
+   `--skip-receipts-growth` only to leave them on the previous EFO.
+
+For example, for March 2026:
+
+```bash
+uv run python -m policyengine_uk.utils.import_obr_forecasts \
+  --file economy_tables_march_2026.xlsx \
+  --receipts-file receipts_tables_march_2026.xlsx \
+  --previous-receipts-file receipts_tables_march_2025.xlsx
+```
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).
