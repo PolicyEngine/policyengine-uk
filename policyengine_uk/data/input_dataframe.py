@@ -137,8 +137,8 @@ def _as_integers(identifiers: pd.Series) -> np.ndarray:
     different sizes), so each value is read at its own precision.
 
     Raises:
-        ValueError: If a value is not a whole number, or is a float that may
-            stand for more than one whole number.
+        ValueError: If a value is not a whole number, does not fit in 64 bits,
+            or is a float that may stand for more than one whole number.
     """
     column = identifiers.name
     values = identifiers.to_numpy()
@@ -164,17 +164,23 @@ def _as_integers(identifiers: pd.Series) -> np.ndarray:
 
 def _float_names(groups: np.ndarray, values: np.ndarray) -> np.ndarray:
     """Whether each float in ``values`` names the matching group: exactly, or
-    as the same 32-bit float as the group's identifier.
+    as the group's identifier rounded to a 32-bit float.
 
     The model stores ``person_<group>_id`` as a 32-bit float, so a frame it
-    exported holds each group's identifier rounded to one. Saved as CSV, that
-    float is written with the fewest digits that give it back at 32 bits
-    (900,000,064 as 9.0000006e+08), so it is read back as a different 64-bit
-    float that rounds to the same 32-bit one.
+    exported holds each group's identifier rounded to one. A wider float names
+    the group in that way only if it is that 32-bit float, as held or as CSV
+    writes it: with the fewest digits that give it back at 32 bits
+    (900,000,064 as 900000060.0, a different 64-bit float). Any other float
+    that merely rounds to the same 32-bit one names another group.
     """
     exact = groups.astype(values.dtype) == values
-    rounded = groups.astype(np.float32) == values.astype(np.float32)
-    return exact | rounded
+    as_float32 = values.astype(np.float32)
+    rounded = (groups.astype(np.float32) == as_float32) & ~exact
+    held = rounded & (as_float32.astype(values.dtype) == values)
+    written = np.zeros(len(values), dtype=bool)
+    for index in np.flatnonzero(rounded & ~held):
+        written[index] = float(str(as_float32[index])) == values[index]
+    return exact | held | written
 
 
 def _names_group(group: int, value) -> bool:
@@ -271,7 +277,7 @@ def dataset_from_input_dataframe(
     df: pd.DataFrame,
     tax_benefit_system: "TaxBenefitSystem",
     default_year: int,
-) -> Tuple[UKMultiYearDataset, List[Input]]:
+) -> Tuple[UKMultiYearDataset, List[Input], List[Input]]:
     """The dataset that an input DataFrame describes.
 
     The dataset holds a year for each whole-year period the frame gives
@@ -290,12 +296,17 @@ def dataset_from_input_dataframe(
             column names a whole year.
 
     Returns:
-        The dataset, and the inputs to set after loading it: every column of
-        each variable the frame also gives for a period that is not one whole
-        year (such as a month), which a dataset cannot hold, in the frame's
-        column order. A year's value spreads over the months that are not
+        The dataset, and two lists of inputs to set after loading it.
+
+        The first is every column of each variable the frame also gives for a
+        period that is not one whole year (such as a month), which a dataset
+        cannot hold, in the frame's column order. Clear those variables, then
+        set these. A year's value spreads over the months that are not
         already set, so the order decides the months' values, as it did when
         each column was set in turn.
+
+        The second is the identifiers for each whole year an identifier
+        column names that is not a year of the dataset.
 
     Raises:
         ValueError: If a column is not named ``variable__period``, the frame
@@ -386,16 +397,23 @@ def dataset_from_input_dataframe(
         # A frame of identifiers alone (and perhaps values for months).
         for year in sorted(identifier_years) or [int(default_year)]:
             years[year] = no_tables()
+    person_identifiers = {
+        "person_id": person_ids,
+        "person_benunit_id": person_groups["benunit"],
+        "person_household_id": person_groups["household"],
+    }
+    group_identifiers = {f"{group}_id": group_ids[group] for group in GROUP_ENTITIES}
+    # The dataset holds the identifiers in each of its years, and inputs carry
+    # forward but not back. So a year an identifier column names that comes
+    # before the data, or between its years, needs them set as well.
+    identifier_inputs = [
+        (variable, str(year), values)
+        for year in sorted(identifier_years - set(years))
+        for variable, values in {**person_identifiers, **group_identifiers}.items()
+    ]
     datasets = [
         UKSingleYearDataset(
-            person=pd.DataFrame(
-                {
-                    "person_id": person_ids,
-                    "person_benunit_id": person_groups["benunit"],
-                    "person_household_id": person_groups["household"],
-                    **tables["person"],
-                }
-            ),
+            person=pd.DataFrame({**person_identifiers, **tables["person"]}),
             benunit=pd.DataFrame(
                 {"benunit_id": group_ids["benunit"], **tables["benunit"]}
             ),
@@ -406,4 +424,4 @@ def dataset_from_input_dataframe(
         )
         for fiscal_year, tables in sorted(years.items())
     ]
-    return UKMultiYearDataset(datasets=datasets), replayed
+    return UKMultiYearDataset(datasets=datasets), replayed, identifier_inputs

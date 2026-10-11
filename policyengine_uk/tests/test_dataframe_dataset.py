@@ -554,6 +554,35 @@ def test_the_data_year_is_the_first_year_the_frame_gives_data_for():
     assert pension == previous.calculate("state_pension", 2027).tolist()
 
 
+@pytest.mark.parametrize("identifier_year, data_year", [(2025, 2027), (2027, 2025)])
+def test_identifiers_hold_in_the_years_their_columns_name(identifier_year, data_year):
+    # The dataset's years are those with data, where it holds the
+    # identifiers too. A year only an identifier column names is not one of
+    # them, but the identifiers are set for it, as the previous loader set
+    # them: inputs carry forward, not back, so they would otherwise be zero
+    # in a year before the data.
+    frame_ = pd.DataFrame(
+        {
+            f"person_id__{identifier_year}": [5, 6, 7],
+            f"benunit_id__{identifier_year}": [50, 50, 70],
+            f"household_id__{identifier_year}": [500, 500, 500],
+            f"age__{data_year}": [40, 38, 70],
+        }
+    )
+
+    simulation = Simulation(dataset=frame_)
+
+    assert simulation.dataset.years == [data_year]
+    for year in (identifier_year, data_year):
+        assert simulation.calculate("person_id", year).tolist() == [5, 6, 7]
+        assert simulation.calculate("benunit_id", year).tolist() == [50, 70]
+        assert simulation.calculate("household_id", year).tolist() == [500]
+        assert simulation.calculate("person_benunit_id", year).tolist() == [50, 50, 70]
+        assert simulation.calculate("person_household_id", year).tolist() == [500] * 3
+    exported = simulation.to_input_dataframe()
+    assert exported[f"person_id__{identifier_year}"].tolist() == [5, 6, 7]
+
+
 def test_a_frame_that_names_no_whole_year_is_held_in_the_default_input_year():
     frame_ = pd.DataFrame(
         {
@@ -962,6 +991,44 @@ def test_rounded_person_columns_are_checked_at_their_own_precision():
     )
 
 
+def test_exact_floats_that_share_a_32_bit_float_must_still_agree():
+    # 900,000,001 and 900,000,002 are the same 32-bit float, but these 64-bit
+    # floats hold them exactly, and neither is that 32-bit float (900,000,000)
+    # as the model exports it or as CSV writes it. So they name the other
+    # household, not a rounded copy of the person's own.
+    refused(
+        couple(
+            **{
+                "household_id__2025": [900_000_001, 900_000_002],
+                "person_household_id__2025": [900_000_002.0, 900_000_001.0],
+            }
+        ),
+        "put the person in row 0 in different groups",
+    )
+
+
+def test_object_person_columns_are_checked_value_by_value():
+    # Each value of a mixed column is read at its own precision: the 32-bit
+    # float agrees with household 900,000,001 as its rounded copy, and the
+    # other values must name the person's household too.
+    households = {"household_id__2025": [900_000_001, 900_000_002]}
+    agreeing = pd.Series([np.float32(900_000_001), 900_000_002], dtype=object)
+    simulation = Simulation(
+        dataset=couple(**households, **{"person_household_id__2025": agreeing})
+    )
+    assert group_of_each_person(simulation, "household") == [
+        900_000_001,
+        900_000_002,
+    ]
+
+    for wrong in (np.float32(900_000_128), 900_000_128.0, 900_000_001, "a"):
+        named = pd.Series([np.float32(900_000_001), wrong], dtype=object)
+        refused(
+            couple(**households, **{"person_household_id__2025": named}),
+            "put the person in row 1 in different groups",
+        )
+
+
 def test_integer_group_columns_must_agree_exactly():
     # Integer columns hold identifiers exactly (as they will once #2267 makes
     # the person_ variables integers), so they must name the same group.
@@ -1015,7 +1082,7 @@ def test_members_that_give_different_values_for_their_group_are_refused(
 def test_members_may_all_leave_a_group_value_missing(tax_benefit_system):
     frame_ = couple(**{"council_tax__2025": [np.nan, np.nan]})
 
-    tables, _ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+    tables, *_ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
 
     assert tables[YEAR].household.council_tax.isna().tolist() == [True]
 
@@ -1084,10 +1151,10 @@ def test_tables_hold_the_frame_in_any_row_order(
     order = data.draw(st.permutations(range(len(population.person_ids))))
     reordered = population.reordered(order)
 
-    tables, other_inputs = dataset_from_input_dataframe(
+    tables, other_inputs, _ = dataset_from_input_dataframe(
         frame(population, id_columns), tax_benefit_system, YEAR
     )
-    reordered_tables, _ = dataset_from_input_dataframe(
+    reordered_tables, *_ = dataset_from_input_dataframe(
         frame(reordered, id_columns), tax_benefit_system, YEAR
     )
 
@@ -1135,8 +1202,10 @@ def test_columns_that_name_no_variable_are_left_out(
         )
         frame_.insert(position, f"{name}__{YEAR}", values)
 
-    tables, _ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
-    plain, _ = dataset_from_input_dataframe(frame(population), tax_benefit_system, YEAR)
+    tables, *_ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+    plain, *_ = dataset_from_input_dataframe(
+        frame(population), tax_benefit_system, YEAR
+    )
 
     for entity in ("person", "benunit", "household"):
         pd.testing.assert_frame_equal(
@@ -1158,7 +1227,7 @@ def test_rounded_identifiers_alone_never_merge_groups(tax_benefit_system, popula
     )
 
     if exact:
-        tables, _ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+        tables, *_ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
         assert_tables_hold(tables[YEAR], population)
     else:
         with pytest.raises(ValueError, match="as 32-bit floats"):
@@ -1218,7 +1287,7 @@ def test_identifiers_of_mixed_types_never_merge_people_or_groups(
         with pytest.raises(ValueError, match="as 32-bit floats"):
             dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
     else:
-        tables, _ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
+        tables, *_ = dataset_from_input_dataframe(frame_, tax_benefit_system, YEAR)
         assert_tables_hold(tables[YEAR], population)
 
 

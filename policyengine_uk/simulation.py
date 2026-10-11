@@ -409,10 +409,14 @@ class Simulation(CoreSimulation):
         Args:
             df: DataFrame with columns in format "variable_name__time_period"
         """
-        dataset, replayed = dataset_from_input_dataframe(
+        dataset, replayed, identifiers = dataset_from_input_dataframe(
             df, self.tax_benefit_system, self.default_input_period
         )
         self.build_from_multi_year_dataset(dataset)
+        # Identifiers for the years the frame names them in that hold no
+        # data, and so are not years of the dataset.
+        for variable, time_period, values in identifiers:
+            self.set_input(variable, time_period, values)
         # A dataset holds whole years only. Set each variable that the frame
         # also gives for other periods, such as months, from its columns in
         # the frame's order: a year's value spreads over the months not yet
