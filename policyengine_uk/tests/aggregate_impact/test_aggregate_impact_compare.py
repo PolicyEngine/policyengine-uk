@@ -309,3 +309,11 @@ def test_the_comment_carries_the_marker_and_fits_its_limit(values, limit):
     assert text.startswith(COMMENT_MARKER)
     assert len(text) <= limit + 1
     assert render(summary, spec) == text
+
+
+def test_a_skipped_head_passes_with_a_note():
+    skipped = {"schema": TOOL_SCHEMA, "status": "skipped", "reason": "no data access"}
+    summary = compare(None, skipped, SPEC)
+    assert summary["status"] == "skipped" and summary["failures"] == []
+    text = render(summary, SPEC)
+    assert text.startswith(COMMENT_MARKER) and "no data access" in text

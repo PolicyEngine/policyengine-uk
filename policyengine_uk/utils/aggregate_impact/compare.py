@@ -234,6 +234,23 @@ def compare(
     strict: bool = False,
 ) -> dict:
     failures, warnings = [], []
+    if head and head.get("status") == "skipped":
+        return {
+            "schema": TOOL_SCHEMA + "/comparison",
+            "status": "skipped",
+            "failures": [],
+            "warnings": [f"Not measured: {head.get('reason', 'no reason recorded')}"],
+            "years": spec.years,
+            "checks": [],
+            "rows": [],
+            "flags": [],
+            "deciles": {},
+            "decile_notes": [],
+            "decile_flags": [],
+            "runtime_differences": [],
+            "base": _side_summary(base),
+            "head": _side_summary(head),
+        }
     head_ok = bool(head) and head.get("status") == "ok"
     base_ok = bool(base) and base.get("status") == "ok"
     if not head:

@@ -1,0 +1,238 @@
+# Measure a pull request's base and head on the certified dataset and post
+# the comparison: receipts by tax head, spending and caseloads, poverty,
+# inequality, deciles and the standard reform costings, 2025-26 to 2031-32.
+#
+# Both sides run the pull request head's copy of the measurement tool
+# (policyengine_uk/utils/aggregate_impact), each in an environment synced
+# from its own uv.lock, on the dataset pinned in
+# policyengine_uk/tests/certified_dataset.yaml (bytes verified on each side).
+# Each side reads its own fiscal partition. The report job fails on a crash,
+# a different dataset, non-finite figures or a check the head breaks that the
+# base passes; moves above the flag thresholds are listed, not failed.
+
+name: Aggregate impact
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - policyengine_uk/**
+      - pyproject.toml
+      - uv.lock
+      - .github/workflows/aggregate-impact.yaml
+  workflow_dispatch:
+    inputs:
+      base:
+        description: Base commit, branch or tag
+        default: main
+      head:
+        description: Head commit, branch or tag (default the dispatched ref)
+        default: ""
+
+concurrency:
+  group: aggregate-impact-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  UV_PYTHON: "3.13"
+  PYTHONUNBUFFERED: "1"
+
+jobs:
+  measure:
+    name: Measure ${{ matrix.side }}
+    # Fork pull requests cannot read the private certified dataset.
+    if: >-
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.head.repo.full_name == github.repository
+    # The same runner image for both sides, as for the Test job.
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        side: [base, head]
+    steps:
+      - name: Choose the commits
+        id: commits
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          INPUT_BASE: ${{ inputs.base }}
+          INPUT_HEAD: ${{ inputs.head }}
+        run: |
+          # A pull request's head is its merge commit, whose first parent is
+          # the base, so the comparison is exactly what merging would change.
+          if [ "$EVENT" = "pull_request" ]; then
+            base="$PR_BASE"; head="$GITHUB_SHA"
+          else
+            base="${INPUT_BASE:-main}"; head="${INPUT_HEAD:-$GITHUB_SHA}"
+          fi
+          echo "base=$base" >> "$GITHUB_OUTPUT"
+          echo "head=$head" >> "$GITHUB_OUTPUT"
+          if [ "${{ matrix.side }}" = "base" ]; then
+            echo "model=$base" >> "$GITHUB_OUTPUT"
+          else
+            echo "model=$head" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Check out the head (tool, pin, partition fallback)
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.commits.outputs.head }}
+          path: tool-source
+
+      - name: Check out the ${{ matrix.side }} model
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ steps.commits.outputs.model }}
+          path: model
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+
+      - name: Sync the ${{ matrix.side }} environment from its lock
+        working-directory: model
+        run: uv sync --frozen --no-dev
+
+      - name: Restore the certified dataset
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub/models--policyengine--policyengine-uk-data-private
+          key: certified-data-${{ hashFiles('tool-source/policyengine_uk/tests/certified_dataset.yaml') }}
+
+      - name: Measure
+        working-directory: model
+        env:
+          HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+          ACTOR: ${{ github.actor }}
+          SIDE: ${{ matrix.side }}
+          MODEL_SHA: ${{ steps.commits.outputs.model }}
+        run: |
+          if [ -z "$HUGGING_FACE_TOKEN" ]; then
+            if [ "$ACTOR" = "dependabot[bot]" ]; then
+              echo "::notice::Dependabot runs have no data access; the aggregate impact report is skipped."
+              mkdir -p "$GITHUB_WORKSPACE/out/$SIDE"
+              echo '{"schema": "policyengine-uk-aggregate-impact/1", "status": "skipped", "reason": "Dependabot runs have no access to the certified dataset"}' \
+                > "$GITHUB_WORKSPACE/out/$SIDE/result.json"
+              exit 0
+            fi
+            echo "::error::HUGGING_FACE_TOKEN is not available, so the certified dataset cannot be read."
+            exit 1
+          fi
+          tool="$RUNNER_TEMP/tool"
+          mkdir -p "$tool"
+          cp -R ../tool-source/policyengine_uk/utils/aggregate_impact "$tool/pe_uk_aggregate_impact"
+          set +e
+          PYTHONPATH="$tool" .venv/bin/python -m pe_uk_aggregate_impact measure \
+            --label "$SIDE" \
+            --pin ../tool-source/policyengine_uk/tests/certified_dataset.yaml \
+            --reforms ../tool-source/policyengine_uk/tests/microsimulation/reforms_config.yaml \
+            --fallback-partition ../tool-source/policyengine_uk/data/fiscal_partition.yaml \
+            --git-sha "$(git rev-parse HEAD)" \
+            --git-ref "$MODEL_SHA" \
+            --out "$GITHUB_WORKSPACE/out/$SIDE"
+          status=$?
+          set -e
+          # A crash is recorded in result.json for the report to judge; only
+          # a run that wrote nothing fails here.
+          if [ ! -f "$GITHUB_WORKSPACE/out/$SIDE/result.json" ]; then
+            echo "::error::The measurement wrote no result (exit $status)."
+            exit 1
+          fi
+
+      - name: Upload the ${{ matrix.side }} measurement
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregate-impact-${{ matrix.side }}
+          path: out/${{ matrix.side }}
+          if-no-files-found: ignore
+          retention-days: 30
+
+  report:
+    name: Report
+    needs: measure
+    if: >-
+      always() && (
+        github.event_name != 'pull_request' ||
+        github.event.pull_request.head.repo.full_name == github.repository
+      )
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Check out the head
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.sha || inputs.head || github.sha }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+
+      - name: Download the measurements
+        uses: actions/download-artifact@v4
+        with:
+          pattern: aggregate-impact-*
+          path: out
+
+      - name: Compare base with head
+        id: compare
+        run: |
+          tool="$RUNNER_TEMP/tool"
+          mkdir -p "$tool"
+          cp -R policyengine_uk/utils/aggregate_impact "$tool/pe_uk_aggregate_impact"
+          uv venv -q "$RUNNER_TEMP/compare-env"
+          uv pip install -q --python "$RUNNER_TEMP/compare-env" numpy pyyaml
+          base_args=()
+          if [ -f out/aggregate-impact-base/result.json ]; then
+            base_args=(--base out/aggregate-impact-base)
+          fi
+          mkdir -p out/aggregate-impact-head report
+          set +e
+          PYTHONPATH="$tool" "$RUNNER_TEMP/compare-env/bin/python" -m pe_uk_aggregate_impact compare \
+            "${base_args[@]}" \
+            --head out/aggregate-impact-head \
+            --markdown report/comment.md \
+            --summary report/summary.json \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          set -e
+          cat report/comment.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post or update the pull request comment
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          marker='<!-- policyengine-uk-aggregate-impact -->'
+          existing=$(gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR/comments" \
+            --jq ".[] | select(.user.login == \"github-actions[bot]\") | select(.body | startswith(\"$marker\")) | .id" \
+            | tail -n 1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$existing" -F body=@report/comment.md > /dev/null
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@report/comment.md > /dev/null
+          fi
+
+      - name: Upload the report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregate-impact-report
+          path: report
+          if-no-files-found: ignore
+          retention-days: 30
+
+      - name: Fail on a structural failure
+        if: steps.compare.outputs.status != '0'
+        run: |
+          echo "::error::The aggregate impact report found failures; see the job summary."
+          exit 1

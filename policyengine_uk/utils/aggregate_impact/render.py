@@ -281,6 +281,9 @@ def _provenance(summary) -> str:
 def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> str:
     """The full comment; sections are dropped from the end to fit GitHub's limit."""
     context = context or {}
+    if summary["status"] == "skipped":
+        notes = "\n".join(f"- {w}" for w in summary.get("warnings") or [])
+        return f"{COMMENT_MARKER}\n## Aggregate impact on certified data: skipped\n\n{notes}\n"
     years = summary.get("years") or spec.years
     regressions = [c for c in summary["checks"] if c["classification"] == "regression"]
     pre_existing = [
