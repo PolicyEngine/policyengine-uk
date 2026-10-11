@@ -1,0 +1,169 @@
+# Higher category only: Schedule 3 paragraph 1, age 65 or over.
+
+- name: Higher pension-age single allowance in 2015
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: true
+    is_couple: false
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 166.05 * 52
+
+- name: Higher pension-age single allowance in 2016
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: true
+    is_couple: false
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 168.7 * 52
+
+- name: Higher pension-age single allowance in 2017
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: true
+    is_couple: false
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 172.55 * 52
+
+- name: Higher pension-age single allowance in 2018
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: true
+    is_couple: false
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 176.4 * 52
+
+- name: Higher pension-age lone parent allowance in 2015
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: false
+    is_lone_parent: true
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 166.05 * 52
+
+- name: Higher pension-age lone parent allowance in 2016
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: false
+    is_lone_parent: true
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 168.7 * 52
+
+- name: Higher pension-age lone parent allowance in 2017
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: false
+    is_lone_parent: true
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 172.55 * 52
+
+- name: Higher pension-age lone parent allowance in 2018
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: false
+    is_lone_parent: true
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 176.4 * 52
+
+- name: Higher pension-age couple allowance in 2015
+  period: 2015
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: true
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 248.3 * 52
+
+- name: Higher pension-age couple allowance in 2016
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: true
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 252.3 * 52
+
+- name: Higher pension-age couple allowance in 2017
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: true
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 258.15 * 52
+
+- name: Higher pension-age couple allowance in 2018
+  period: 2018
+  absolute_error_margin: 0.01
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 70
+    is_single_person: false
+    is_couple: true
+    is_lone_parent: false
+    benefits_premiums: 0
+  output:
+    housing_benefit_applicable_amount: 263.8 * 52

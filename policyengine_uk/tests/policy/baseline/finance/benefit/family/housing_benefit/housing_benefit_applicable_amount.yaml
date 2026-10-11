@@ -115,3 +115,106 @@
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 108.3 * 52
+
+- name: "Historical 2015 lower/higher pensioner allowances in GB and NI"
+  period: 2015
+  absolute_error_margin: 0.02
+  input:
+    country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
+    housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
+    is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
+    is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
+    is_couple: [false,false,false,false,true,true,false,false,false,false,true,true]
+    benefits_premiums: [0,0,0,0,0,0,0,0,0,0,0,0]
+  output:
+    housing_benefit_applicable_amount: [7862.4,8634.6,7862.4,8634.6,12004.199999999999,12911.6,7862.4,8634.6,7862.4,8634.6,12004.199999999999,12911.6]
+
+- name: "Historical 2016 lower/higher pensioner allowances in GB and NI"
+  period: 2016
+  absolute_error_margin: 0.02
+  input:
+    country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
+    housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
+    is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
+    is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
+    is_couple: [false,false,false,false,true,true,false,false,false,false,true,true]
+    benefits_premiums: [0,0,0,0,0,0,0,0,0,0,0,0]
+  output:
+    housing_benefit_applicable_amount: [8091.2,8772.4,8091.2,8772.4,12352.6,13119.6,8091.2,8772.4,8091.2,8772.4,12352.6,13119.6]
+
+- name: "Historical 2017 lower/higher pensioner allowances in GB and NI"
+  period: 2017
+  absolute_error_margin: 0.02
+  input:
+    country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
+    housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
+    is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
+    is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
+    is_couple: [false,false,false,false,true,true,false,false,false,false,true,true]
+    benefits_premiums: [0,0,0,0,0,0,0,0,0,0,0,0]
+  output:
+    housing_benefit_applicable_amount: [8286.199999999999,8972.6,8286.199999999999,8972.6,12649,13423.8,8286.199999999999,8972.6,8286.199999999999,8972.6,12649,13423.8]
+
+- name: "Historical 2018 lower/higher pensioner allowances in GB and NI"
+  period: 2018
+  absolute_error_margin: 0.02
+  input:
+    country: ["ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","ENGLAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND","NORTHERN_IRELAND"]
+    housing_benefit_eligible: [true,true,true,true,true,true,true,true,true,true,true,true]
+    housing_benefit_pension_age_regulations_apply: [true,true,true,true,true,true,true,true,true,true,true,true]
+    eldest_claimant_or_partner_age: [64,65,64,65,64,65,64,65,64,65,64,65]
+    is_single_person: [true,true,false,false,false,false,true,true,false,false,false,false]
+    is_lone_parent: [false,false,true,true,false,false,false,false,true,true,false,false]
+    is_couple: [false,false,false,false,true,true,false,false,false,false,true,true]
+    benefits_premiums: [0,0,0,0,0,0,0,0,0,0,0,0]
+  output:
+    housing_benefit_applicable_amount: [8476,9172.800000000001,8476,9172.800000000001,12937.6,13717.6,8476,9172.800000000001,8476,9172.800000000001,12937.6,13717.6]
+
+- name: "Both jurisdictions use the higher category after abolition under annual sampling"
+  period: 2019
+  absolute_error_margin: 0.02
+  input:
+    country: ["ENGLAND","NORTHERN_IRELAND"]
+    housing_benefit_eligible: [true,true]
+    housing_benefit_pension_age_regulations_apply: [true,true]
+    eldest_claimant_or_partner_age: [64,64]
+    is_single_person: [true,true]
+    is_lone_parent: [false,false]
+    is_couple: [false,false]
+    benefits_premiums: [0,0]
+  output:
+    housing_benefit_applicable_amount: [9412,9412]
+
+- name: "A zero lower amount reform is not overwritten by the higher allowance"
+  period: 2017
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: true
+    eldest_claimant_or_partner_age: 64
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 0
+    gov.dwp.housing_benefit.allowances.single.aged_under_65.amount: 0
+  output:
+    housing_benefit_applicable_amount: 0
+
+- name: "A working-age family does not use the historical pensioner category"
+  period: 2017
+  input:
+    housing_benefit_eligible: true
+    housing_benefit_pension_age_regulations_apply: false
+    eldest_claimant_or_partner_age: 64
+    is_single_person: true
+    is_lone_parent: false
+    is_couple: false
+    benefits_premiums: 0
+    gov.dwp.housing_benefit.allowances.single.older: 100
+  output:
+    housing_benefit_applicable_amount: 5200

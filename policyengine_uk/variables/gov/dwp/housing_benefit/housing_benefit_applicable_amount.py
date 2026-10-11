@@ -11,6 +11,8 @@ class housing_benefit_applicable_amount(Variable):
     reference = (
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/3",
         "https://www.legislation.gov.uk/uksi/2006/214/schedule/3",
+        "https://www.legislation.gov.uk/uksi/2017/1187/regulation/7",
+        "https://www.legislation.gov.uk/nisr/2019/58/schedule/4/made",
     )
 
     def formula(benunit, period, parameters):
@@ -31,20 +33,36 @@ class housing_benefit_applicable_amount(Variable):
         single = benunit("is_single_person", period)
         couple = benunit("is_couple", period)
         lone_parent = benunit("is_lone_parent", period)
+        country = benunit.household("country", period)
+        northern_ireland = country == country.possible_values.NORTHERN_IRELAND
+
+        def pensioner_allowance(category):
+            # Existing 30-April fiscal-year convention: the raw GB category
+            # ends on 6 December 2018; NI's replacement table is April 2019.
+            # Neither date is a new claimant-history input. A zero reform of
+            # the lower amount must remain zero, not fall back to the higher.
+            lower = category.aged_under_65
+            age_limit = where(
+                northern_ireland,
+                lower.age_limit_northern_ireland,
+                lower.age_limit_great_britain,
+            )
+            return where(eldest_age < age_limit, lower.amount, category.aged)
+
         single_personal_allowance = (
             u_25 * p.single.younger
             + o_25 * p.single.older
-            + pension_age_regulations * p.single.aged
+            + pension_age_regulations * pensioner_allowance(p.single)
         )
         couple_personal_allowance = (
             u_18 * p.couple.younger
             + o_18 * p.couple.older
-            + pension_age_regulations * p.couple.aged
+            + pension_age_regulations * pensioner_allowance(p.couple)
         )
         lone_parent_personal_allowance = (
             u_18 * p.lone_parent.younger
             + o_18 * p.lone_parent.older
-            + pension_age_regulations * p.lone_parent.aged
+            + pension_age_regulations * pensioner_allowance(p.lone_parent)
         )
         personal_allowance = (
             single * single_personal_allowance

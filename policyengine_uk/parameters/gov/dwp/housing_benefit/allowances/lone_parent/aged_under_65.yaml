@@ -1,0 +1,60 @@
+description: Historical lower Housing Benefit pensioner allowance for lone parent families below age 65.
+amount:
+  description: Weekly allowance for the former qualifying under-65 pensioner category.
+  values:
+    2015-04-01:
+      value: 151.2
+      reference:
+        - title: GB pensioner Housing Benefit allowances, 2015
+          href: https://www.legislation.gov.uk/uksi/2015/457/schedule/7/made
+        - title: NI pensioner Housing Benefit allowances, 2015
+          href: https://www.legislation.gov.uk/nisr/2015/124/schedule/7/made
+    2016-04-01:
+      value: 155.6
+      reference:
+        - title: GB pensioner Housing Benefit allowances, 2016
+          href: https://www.legislation.gov.uk/uksi/2016/242/regulation/6/made
+        - title: NI pensioner Housing Benefit allowances, 2016
+          href: https://www.legislation.gov.uk/nisr/2016/110/regulation/6/made
+    2017-04-01:
+      value: 159.35
+      reference:
+        - title: GB pensioner Housing Benefit allowances, 2017
+          href: https://www.legislation.gov.uk/uksi/2017/260/schedule/7/made
+        - title: NI pensioner Housing Benefit allowances, 2017
+          href: https://www.legislation.gov.uk/nisr/2017/56/schedule/7/made
+    2018-04-01:
+      value: 163
+      reference:
+        - title: GB pensioner Housing Benefit allowances, 2018
+          href: https://www.legislation.gov.uk/uksi/2018/281/schedule/6/made
+        - title: NI pensioner Housing Benefit allowances, 2018
+          href: https://www.legislation.gov.uk/nisr/2018/58/schedule/6/made
+  metadata:
+    unit: currency-GBP
+    period: week
+    label: Housing Benefit historical lower lone parent allowance
+age_limit_great_britain:
+  description: Upper age boundary for the former GB pensioner allowance category; zero after its removal.
+  values:
+    2015-04-01: 65
+    2018-12-06:
+      value: 0
+      reference:
+        - title: Social Security (Miscellaneous Amendments No. 5) Regulations 2017, regulations 1(2)(b) and 7(7)
+          href: https://www.legislation.gov.uk/uksi/2017/1187/made
+  metadata:
+    unit: year
+    label: Historical lower GB pensioner allowance age limit
+age_limit_northern_ireland:
+  description: Upper age boundary for the former NI pensioner allowance category; zero in the April 2019 replacement table.
+  values:
+    2015-04-01: 65
+    2019-04-01:
+      value: 0
+      reference:
+        - title: NI Social Security Benefits Up-rating Order 2019, articles 1 and 24 and Schedule 4
+          href: https://www.legislation.gov.uk/nisr/2019/58/made
+  metadata:
+    unit: year
+    label: Historical lower NI pensioner allowance age limit
