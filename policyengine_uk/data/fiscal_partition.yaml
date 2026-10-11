@@ -368,8 +368,9 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_ltt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246).
+      expected_ltt is land_transaction_tax, which charges the year's purchases
+      and rent increments, with no further scaling (issue 2246 removed a
+      second discount by the property sale rate).
   - id: land_and_buildings_transaction_tax
     label: Land and buildings transaction tax (Scotland)
     variable: expected_lbtt
@@ -381,8 +382,9 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_lbtt multiplies an already purchase-drawn liability by
-      property_sale_rate, discounting it twice (issue 2246).
+      expected_lbtt is land_and_buildings_transaction_tax, which charges the year's purchases
+      and rent increments, with no further scaling (issue 2246 removed a
+      second discount by the property sale rate).
 
   # Reform-only heads
   - id: corporate_incident_tax_change
@@ -467,14 +469,14 @@ exclusions:
   - {variable: sdlt_on_non_residential_property_transactions, kind: component, head: sdlt_household}
   - {variable: sdlt_on_residential_property_rent, kind: component, head: sdlt_household}
   - {variable: sdlt_on_non_residential_property_rent, kind: component, head: sdlt_household}
-  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_transaction_tax, kind: component, head: land_transaction_tax, note: "Equal to expected_ltt (issue 2246); report the head, not this."}
   - {variable: ltt_on_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_transactions, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_residential_property_rent, kind: component, head: land_transaction_tax}
   - {variable: ltt_on_non_residential_property_rent, kind: component, head: land_transaction_tax}
-  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "The liability before the property_sale_rate scaling (issue 2246)."}
+  - {variable: land_and_buildings_transaction_tax, kind: component, head: land_and_buildings_transaction_tax, note: "Equal to expected_lbtt (issue 2246); report the head, not this."}
   - {variable: lbtt_on_transactions, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_rent, kind: component, head: land_and_buildings_transaction_tax}
   - {variable: lbtt_on_residential_property_transactions, kind: component, head: land_and_buildings_transaction_tax}
