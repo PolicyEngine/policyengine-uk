@@ -1,0 +1,25 @@
+description: Education, vocational training and closely related board and lodging supplied by a private school are exempt from VAT if this is true. From 1 January 2025 they are not exempt, so the fees bear VAT at the standard rate.
+values:
+  1994-09-01:
+    value: true
+    metadata:
+      reference:
+        - title: Value Added Tax Act 1994, Schedule 9, Group 6, item 1 and note 1(a) (as enacted)
+          href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/9/enacted
+        - title: Value Added Tax Act 1994, section 101(1) (commencement on 1 September 1994)
+          href: https://www.legislation.gov.uk/ukpga/1994/23/section/101/enacted
+  2025-01-01:
+    value: false
+    metadata:
+      reference:
+        - title: Finance Act 2025, section 47 (removal of exemption for private school fees; inserts Value Added Tax Act 1994, Schedule 9, Part 3)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/47/enacted
+        - title: Finance Act 2025, section 49 (effect for supplies on or after 1 January 2025)
+          href: https://www.legislation.gov.uk/ukpga/2025/8/section/49/enacted
+metadata:
+  unit: bool
+  period: year
+  label: Private school fees exempt from VAT
+  reference:
+    - title: Value Added Tax Act 1994, Schedule 9 (exemptions)
+      href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/9
