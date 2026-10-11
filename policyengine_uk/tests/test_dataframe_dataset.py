@@ -715,7 +715,12 @@ def test_an_exported_frame_gives_the_results_of_its_dataset(
     # 6. Differential, over every variable of the model, in the data year and
     # a later one.
     assert differing_variables(original, reloaded, [YEAR, YEAR + 2]) == []
-    pd.testing.assert_frame_equal(exported, before)
+    # 8. The frame is not changed. From policyengine-core 3.33 the default
+    # export holds an enum input as the stored EnumArray, which pandas 3
+    # keeps until a copy makes it a plain array, and assert_frame_equal
+    # compares array classes; so compare a copy, which still shows any
+    # change the loader made to the values.
+    pd.testing.assert_frame_equal(exported.copy(), before)
     if state_pension:
         # The State Pension formulas read the data year from the dataset.
         assert original.calculate("state_pension", YEAR + 2).sum() > 0
