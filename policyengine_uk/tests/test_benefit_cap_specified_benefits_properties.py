@@ -73,7 +73,7 @@ from policyengine_core.periods import period
 from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import BenUnit, Variable
-from policyengine_uk.utils.supplied_inputs import supplied_input
+from policyengine_uk.utils.supplied_inputs import set_model_value, supplied_input
 
 YEAR = 2025
 SINGLE_CAP, FAMILY_CAP = 14_753, 22_020  # Outside London, 2025-26.
@@ -551,3 +551,173 @@ def test_the_rebalancing_adds_no_entry_and_keeps_one():
     benunit = entered.populations["benunit"]
     assert supplied_input(benunit, "uc_LCWRA_element", period(year)) is not None
     assert entered.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+
+
+# An element is an entry only while the value stored is one: the model's own
+# value (set_model_value) stops counting as the model's once anything else is
+# stored for the period, so an entry equal to it is still an entry.
+
+
+def element_situation(year, element=None):
+    """A claimant and a non-claimant adult with limited capability: the
+    model's formula gives the element, which does not lift the cap."""
+    claimant, other = blank(role="claimant", age=40), blank(role="other", age=30)
+    other["uc_limited_capability_for_WRA"] = True
+    inputs = {"working_tax_credit": 0}
+    if element is not None:
+        inputs["uc_LCWRA_element"] = element
+    return situation([([claimant, other], inputs)], year)
+
+
+def is_entered(simulation, year):
+    benunit = simulation.populations["benunit"]
+    return supplied_input(benunit, "uc_LCWRA_element", period(year)) is not None
+
+
+def enter_with_set_input(simulation, year, amount):
+    simulation.set_input("uc_LCWRA_element", year, [amount])
+
+
+def enter_after_deleting(simulation, year, amount):
+    simulation.delete_arrays("uc_LCWRA_element", year)
+    simulation.set_input("uc_LCWRA_element", year, [amount])
+
+
+def enter_by_rebuilding_from_a_situation(simulation, year, amount):
+    simulation.build_from_situation(element_situation(year, amount))
+
+
+def enter_by_rebuilding_from_a_frame(simulation, year, amount):
+    frame = Simulation(situation=element_situation(year)).to_input_dataframe()
+    frame[f"uc_LCWRA_element__{year}"] = amount
+    simulation.build_from_dataframe(frame)
+
+
+@pytest.mark.parametrize(
+    "enter",
+    [
+        enter_with_set_input,
+        enter_after_deleting,
+        enter_by_rebuilding_from_a_situation,
+        enter_by_rebuilding_from_a_frame,
+    ],
+)
+def test_an_entry_equal_to_the_model_value_is_an_entry(enter):
+    """Reg 83(1)(a): an element entered for the award decides the exception,
+    even one equal to the amount the rebalancing stored as the model's in the
+    same simulation, however it is entered."""
+    year = 2026
+    without_entry = Simulation(situation=element_situation(year))
+    assert not without_entry.calculate("is_benefit_cap_exempt_health_disability", year)[
+        0
+    ]
+    simulation = Simulation(situation=element_situation(year))
+    model_amount = float(simulation.calculate("uc_LCWRA_element", year)[0])
+    assert model_amount > 0
+    assert not is_entered(simulation, year)
+
+    # The exemption is calculated only after the entry: the engine does not
+    # recalculate a cached value when an input it depends on changes.
+    enter(simulation, year, model_amount)
+    assert simulation.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
+        model_amount
+    )
+    assert is_entered(simulation, year)
+    assert simulation.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+    # As in a simulation built with the entry.
+    fresh = Simulation(situation=element_situation(year, model_amount))
+    assert is_entered(fresh, year)
+    assert fresh.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+
+
+def test_clones_and_branches_keep_their_own_record_of_model_values():
+    year = 2026
+    simulation = Simulation(situation=element_situation(year))
+    model_amount = float(simulation.calculate("uc_LCWRA_element", year)[0])
+
+    clone = simulation.clone()
+    assert not is_entered(clone, year)
+    set_model_value(clone, "uc_LCWRA_element", year, np.array([1_000.0]))
+    assert not is_entered(clone, year)
+    clone.set_input("uc_LCWRA_element", year, [model_amount])
+    assert is_entered(clone, year)
+
+    branch = simulation.get_branch("entry")
+    assert not is_entered(branch, year)
+    branch.set_input("uc_LCWRA_element", year, [model_amount])
+    assert is_entered(branch, year)
+
+    # Nothing the clone or the branch stored changes what the simulation reads.
+    assert not is_entered(simulation, year)
+    assert simulation.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
+        model_amount
+    )
+    assert not simulation.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+
+
+@pytest.fixture(scope="module")
+def rebalanced():
+    year = 2026
+    simulation = Simulation(situation=element_situation(year))
+    return simulation, float(simulation.calculate("uc_LCWRA_element", year)[0])
+
+
+AMOUNT_NAMES = st.sampled_from(["model", "nil", "other"])
+OPERATIONS = st.lists(
+    st.one_of(
+        st.tuples(st.just("model"), AMOUNT_NAMES),
+        st.tuples(st.just("input"), AMOUNT_NAMES),
+        st.just(("delete",)),
+        st.just(("rebuild",)),
+        st.just(("clone",)),
+    ),
+    min_size=1,
+    max_size=6,
+)
+
+
+@settings(
+    max_examples=30,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow],
+)
+@given(operations=OPERATIONS)
+def test_an_element_is_entered_exactly_when_its_last_store_was_supplied(
+    rebalanced, operations
+):
+    """Whatever the order of stores, deletions, rebuilds and clones, the
+    element is an entry exactly when its value was last set as an input, or
+    adjusted by the model after an input (set_model_value keeps an entry an
+    entry). Stores in a clone never change what the simulation it was cloned
+    from reads. The amounts include the model's own, so an entry equal to it
+    is drawn."""
+    year = 2026
+    base, model_amount = rebalanced
+    amounts = {"model": model_amount, "nil": 0.0, "other": 4_321.0}
+    simulation, entered = base.clone(), False
+    earlier = []
+    for operation in operations:
+        event(operation[0])
+        if operation[0] == "model":
+            set_model_value(
+                simulation,
+                "uc_LCWRA_element",
+                year,
+                np.array([amounts[operation[1]]]),
+            )
+        elif operation[0] == "input":
+            simulation.set_input("uc_LCWRA_element", year, [amounts[operation[1]]])
+            entered = True
+        elif operation[0] == "delete":
+            simulation.delete_arrays("uc_LCWRA_element", year)
+            entered = False
+        elif operation[0] == "rebuild":
+            simulation.build_from_situation(element_situation(year))
+            entered = False
+        else:
+            earlier.append((simulation, entered))
+            simulation = simulation.clone()
+        assert is_entered(simulation, year) == entered, operations
+    for clone_source, was_entered in earlier:
+        assert is_entered(clone_source, year) == was_entered, operations

@@ -19,6 +19,13 @@ as supplied. So ``Simulation.calculate`` forgets the records of a variable in
 refill it, and the helpers only answer for those variables.
 ``Simulation.delete_arrays`` forgets such records too, for any variable it
 deletes.
+
+A scenario that stores a value the model calculated (``set_model_value``)
+records it as the model's, and the helpers do not return it. The record of
+such a value lasts only while it is the value stored: ``Simulation`` forgets
+it when ``set_input`` stores another value for the period, when
+``delete_arrays`` removes it, and when the populations are rebuilt, and a
+clone or branch gets its own copy of the record.
 """
 
 from typing import List, Optional
@@ -160,9 +167,12 @@ def set_model_value(simulation, variable_name: str, period, value) -> None:
     recorded inputs when a reform is applied, so a scenario that adjusts a
     calculated amount must store it that way. ``supplied_input`` and
     ``supplied_input_periods`` do not return the stored value while it is
-    the one stored here; a later ``set_input`` of another value is supplied
-    again. If the value was supplied before (a scenario adjusting a user's
-    entry), the new value stays supplied."""
+    the one stored here. A later ``Simulation.set_input`` for the period is
+    supplied, whatever its value, and so is any value stored after
+    ``delete_arrays`` removes this one or the populations are rebuilt (see
+    ``forget_model_value``, ``drop_missing_model_values`` and
+    ``forget_model_values``). If the value was supplied before (a scenario
+    adjusting a user's entry), the new value stays supplied."""
     _check_registered(variable_name)
     period = periods.period(period)
     population = simulation.get_variable_population(variable_name)
@@ -180,3 +190,59 @@ def set_model_value(simulation, variable_name: str, period, value) -> None:
             model_values = {}
             simulation._model_values = model_values
         model_values[(variable_name, branch_name, period)] = np.array(stored)
+
+
+# ``Simulation`` keeps the record of model values in step with what it stores
+# through the helpers below. Each simulation, clone or branch has its own
+# record, as core gives each its own record of inputs.
+
+
+def forget_model_value(simulation, variable_name: str, period) -> None:
+    """Forget that the model stored this branch's value of ``variable_name``
+    for any period that overlaps ``period``: a value set there now is
+    supplied, even one equal to the model's."""
+    model_values = getattr(simulation, "_model_values", None)
+    if not model_values:
+        return
+    period = periods.period(period)
+    for key in [
+        key
+        for key in model_values
+        if key[0] == variable_name
+        and key[1] == simulation.branch_name
+        and (key[2].contains(period) or period.contains(key[2]))
+    ]:
+        del model_values[key]
+
+
+def drop_missing_model_values(simulation, variable_name: str) -> None:
+    """Forget each model value of ``variable_name``, on this branch or one it
+    was made from, whose stored value is gone, so that a value stored there
+    later is supplied, even one equal to the model's."""
+    model_values = getattr(simulation, "_model_values", None)
+    if not model_values:
+        return
+    branch_names = set(_visible_branch_names(simulation))
+    holder = simulation.get_holder(variable_name)
+    for key in [
+        key
+        for key in model_values
+        if key[0] == variable_name
+        and key[1] in branch_names
+        and holder._get_array_from_storage(key[2], key[1]) is None
+    ]:
+        del model_values[key]
+
+
+def forget_model_values(simulation) -> None:
+    """Forget every model value: rebuilt populations hold none of them."""
+    if getattr(simulation, "_model_values", None):
+        simulation._model_values = {}
+
+
+def copy_model_values(simulation, clone) -> None:
+    """Give a clone of ``simulation`` its own copy of the record, so that what
+    either stores later does not change what the other reads as supplied."""
+    model_values = getattr(simulation, "_model_values", None)
+    if model_values is not None:
+        clone._model_values = dict(model_values)

@@ -36,7 +36,11 @@ from policyengine_uk.data.input_dataframe import dataset_from_input_dataframe
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
+    copy_model_values,
+    drop_missing_model_values,
     drop_missing_supplied_inputs,
+    forget_model_value,
+    forget_model_values,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
@@ -246,6 +250,27 @@ class Simulation(CoreSimulation):
         # Inspect storage after core's deletion to honour period containment
         # and the current branch, ancestor branches and default branch.
         drop_missing_supplied_inputs(self, variable)
+        # A value stored later in a period whose model value (set_model_value)
+        # is gone is supplied, even one equal to the deleted value.
+        drop_missing_model_values(self, variable)
+
+    def build_from_populations(self, populations) -> None:
+        super().build_from_populations(populations)
+        # The new populations hold none of the values set_model_value stored,
+        # so an equal value a rebuild stores (from a situation or a frame) is
+        # supplied.
+        forget_model_values(self)
+
+    def set_input(self, variable_name: str, period, value) -> None:
+        super().set_input(variable_name, period, value)
+        # What is set here is supplied, even a value equal to the model's own.
+        # set_model_value records its value as the model's after this call.
+        forget_model_value(self, variable_name, period)
+
+    def clone(self, *args, **kwargs) -> "Simulation":
+        new = super().clone(*args, **kwargs)
+        copy_model_values(self, new)
+        return new
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
