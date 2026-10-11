@@ -206,8 +206,10 @@ def families(draw):
 def excluded_members(draw):
     """An adult who is neither claimant, partner nor in the family.
 
-    They are not in education, so a 16 to 19 year old is not a qualifying
-    young person. Most are primed with what barred or opened the claim when
+    They are not in education and past the 31 August following their 16th
+    birthday (Child Benefit (General) Regulations 2006 reg. 4), so a 16 to 19
+    year old is not a qualifying young person. Most are primed with what
+    barred or opened the claim when
     every member counted: over state pension age, income-related ESA, an
     Income Support report, or caring. Some are primed with what the
     s.124(1)(g) proxy reads for a couple: over the qualifying age, with
@@ -216,6 +218,7 @@ def excluded_members(draw):
     adult = {
         **draw(adult_inputs(min_age=16)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
     }
     primed = draw(
         st.sampled_from(["random", "elderly", "esa", "award", "carer", "pension"])

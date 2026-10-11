@@ -219,8 +219,9 @@
     num_relevant_children_for_housing_benefit_childcare: 0
     housing_benefit_applicable_income_childcare_element: 0
 
-- name: Disabled 16-year-old outside education and training is not a relevant young person
+- name: Disabled 16-year-old outside education and training is a relevant young person until the 31 August after their 16th birthday
   period: 2025
+  absolute_error_margin: 0.01
   input:
     people:
       claimant:
@@ -236,7 +237,34 @@
       benunit:
         members: [claimant, young_person]
   output:
+    # A 16-year-old who has left education is a young person until that 31
+    # August (Child Benefit (General) Regulations 2006 reg. 4; HB reg 19(1)),
+    # in any year that starts before it. HB reg 28(6) then counts a disabled
+    # one: min(9,000, one-child cap * 52).
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    num_relevant_children_for_housing_benefit_childcare: 1
+    housing_benefit_applicable_income_childcare_element: 9_000
+
+- name: Disabled 16-year-old outside education and training is not a relevant young person after that 31 August
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_parent: true
+        childcare_expenses: 9_000
+      young_person:
+        age: 16
+        is_disabled_for_benefits: true
+        is_in_non_advanced_education: false
+        is_in_approved_training: false
+        is_before_first_september_following_16th_birthday: false
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+  output:
     # HB reg 28(6) requires a child of the family, including a qualifying
     # young person; the disability age extension does not create that status.
+    is_child_or_young_person_for_legacy_benefits: [false, false]
     num_relevant_children_for_housing_benefit_childcare: 0
     housing_benefit_applicable_income_childcare_element: 0
