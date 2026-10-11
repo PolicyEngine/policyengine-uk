@@ -1,3 +1,10 @@
+## [2.126.10] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation.to_input_dataframe()` leaving out the person, benefit unit and household identifiers for years in which a simulation was given inputs after it was built, such as the Universal Credit health element status for 2026 to 2029, so that an exported frame loads back to a simulation that exports the same frame.
+
+
 ## [2.126.9] - 2026-10-11
 
 ### Fixed
