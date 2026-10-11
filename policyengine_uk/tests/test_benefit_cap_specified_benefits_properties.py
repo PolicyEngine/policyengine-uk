@@ -18,7 +18,10 @@ HB Regs 2006 reg 75F(1) and UC Regs 2013 reg 83(1) lift the cap where:
   work-related activity or caring responsibilities, so the award includes the
   LCWRA or carer element (83(1)(a), (j); regs 27(1), 29(1)). An element
   entered for the award decides it alone: included when positive, whatever
-  anyone's circumstances, and not included when entered as nil. A person with
+  anyone's circumstances, and not included when entered as nil. So does the
+  amount of an element a reform's formula gives, and the model's own
+  element is included when positive unless only members who are not
+  claimants have the circumstance. A person with
   ESA of their own whose ESA lacks the support component is inferred not to
   have limited capability for work-related activity (reg 40(1)(a)(ii));
 - the claimant or couple is entitled to working tax credit (HB reg 75E(2)).
@@ -66,9 +69,11 @@ from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
 from policyengine_core.periods import YEAR as YEAR_PERIOD
+from policyengine_core.periods import period
 from policyengine_core.reforms import Reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import BenUnit, Variable
+from policyengine_uk.utils.supplied_inputs import supplied_input
 
 YEAR = 2025
 SINGLE_CAP, FAMILY_CAP = 14_753, 22_020  # Outside London, 2025-26.
@@ -160,9 +165,9 @@ def families(draw, supplied, enter_elements):
     """A claimant, an optional partner, up to three dependants and a
     non-dependent adult, with at most two circumstances among them, and the
     family's benefit-unit inputs."""
-    members = [blank("claimant", draw(st.integers(25, 60)))]
+    members = [blank(role="claimant", age=draw(st.integers(25, 60)))]
     if draw(st.booleans()):
-        members.append(blank("claimant", draw(st.integers(25, 60))))
+        members.append(blank(role="claimant", age=draw(st.integers(25, 60))))
     for _ in range(draw(st.integers(0, 3))):
         role = draw(st.sampled_from(sorted(ROLES)))
         if role in ("child", "looked_after_child"):
@@ -176,7 +181,9 @@ def families(draw, supplied, enter_elements):
     for member in members:
         if member["_role"] == "claimant":
             member["is_parent"] = has_dependants
-    other = blank("other", draw(st.one_of(st.integers(17, 60), st.integers(67, 80))))
+    other = blank(
+        role="other", age=draw(st.one_of(st.integers(17, 60), st.integers(67, 80)))
+    )
     other["employment_income"] = draw(st.sampled_from([0, 0, 0, 25_000]))
     event(f"other aged 67+: {other['age'] >= 67}")
     event(f"other earns: {other['employment_income'] > 0}")
@@ -409,7 +416,7 @@ def single_head_units(mode):
     units = []
     for role in SINGLE_HEAD_ROLES:
         for circumstance in CIRCUMSTANCES:
-            claimant = blank("claimant", 40)
+            claimant = blank(role="claimant", age=40)
             if role == "claimant":
                 holder, members = claimant, [claimant]
             else:
@@ -480,7 +487,7 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
     the cap whatever another member's circumstances, and a reform that gives
     nil removes the exception the claimant's circumstance would give."""
     circumstance = ELEMENT_CIRCUMSTANCES[element]
-    claimant, other = blank("claimant", 40), blank("other", 30)
+    claimant, other = blank(role="claimant", age=40), blank(role="other", age=30)
     other[circumstance] = True
     positive = Simulation(
         situation=situation([([claimant, other], {"working_tax_credit": 0})]),
@@ -488,8 +495,21 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
     )
     assert positive.calculate(element, YEAR)[0] == 6_000
     assert positive.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+    # A reform's amount that equals the model's own (here, what the model's
+    # formula gives for the other member's circumstance) is still the
+    # reform's.
+    model_amount = Simulation(
+        situation=situation([([claimant, other], {"working_tax_credit": 0})])
+    ).calculate(element, YEAR)[0]
+    assert model_amount > 0
+    same = Simulation(
+        situation=situation([([claimant, other], {"working_tax_credit": 0})]),
+        reform=element_reform(element, model_amount),
+    )
+    assert same.calculate(element, YEAR)[0] == model_amount
+    assert same.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
 
-    claimant = blank("claimant", 40)
+    claimant = blank(role="claimant", age=40)
     claimant[circumstance] = True
     nil = Simulation(
         situation=situation([([claimant], {"working_tax_credit": 0})]),
@@ -504,3 +524,30 @@ def test_an_element_a_reform_gives_is_decided_by_its_value(element):
     )
     assert baseline.calculate(element, YEAR)[0] > 0
     assert baseline.calculate("is_benefit_cap_exempt_health_disability", YEAR)[0]
+
+
+def test_the_rebalancing_adds_no_entry_and_keeps_one():
+    """From 2026 the Universal Credit rebalancing rescales uc_LCWRA_element
+    (scenarios/uc_reform.py). An element it rescales from the model's own
+    formula is not an entry, so the other member's limited capability still
+    does not lift the cap; an element entered for the award stays entered."""
+    year = 2026
+    claimant, other = blank(role="claimant", age=40), blank(role="other", age=30)
+    other["uc_limited_capability_for_WRA"] = True
+    calculated = Simulation(
+        situation=situation([([claimant, other], {"working_tax_credit": 0})], year)
+    )
+    assert calculated.calculate("uc_LCWRA_element", year)[0] > 0
+    benunit = calculated.populations["benunit"]
+    assert supplied_input(benunit, "uc_LCWRA_element", period(year)) is None
+    assert not calculated.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+
+    entered = Simulation(
+        situation=situation(
+            [([claimant, other], {"working_tax_credit": 0, "uc_LCWRA_element": 5_000})],
+            year,
+        )
+    )
+    benunit = entered.populations["benunit"]
+    assert supplied_input(benunit, "uc_LCWRA_element", period(year)) is not None
+    assert entered.calculate("is_benefit_cap_exempt_health_disability", year)[0]

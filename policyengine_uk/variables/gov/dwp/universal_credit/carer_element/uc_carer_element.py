@@ -4,24 +4,6 @@ from policyengine_uk.utils.uc_work_related_requirements import (
 )
 
 
-def carer_element_from_circumstances(benunit, period, parameters):
-    """The carer element the members' circumstances give: what
-    uc_carer_element returns, its defined_for (benunit_has_carer) included."""
-    p = parameters(period).gov.dwp.universal_credit.elements.carer
-    person = benunit.members
-    # The element is for "a claimant" with regular and substantial caring
-    # responsibilities (reg. 29(1)). A partner who cannot be a joint
-    # claimant, so that the other member claims as a single person
-    # (reg. 3(3)), is not a claimant: their caring gives no element.
-    not_a_claimant = other_member_of_single_claim(person, period)
-    carer = person("is_carer_for_benefits", period)
-    only_carer_is_not_a_claimant = benunit.any(carer & not_a_claimant) & ~benunit.any(
-        carer & ~not_a_claimant
-    )
-    has_carer = benunit("benunit_has_carer", period)
-    return has_carer * ~only_carer_is_not_a_claimant * p.amount * MONTHS_IN_YEAR
-
-
 class uc_carer_element(Variable):
     value_type = float
     entity = BenUnit
@@ -41,4 +23,15 @@ class uc_carer_element(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        return carer_element_from_circumstances(benunit, period, parameters)
+        p = parameters(period).gov.dwp.universal_credit.elements.carer
+        person = benunit.members
+        # The element is for "a claimant" with regular and substantial caring
+        # responsibilities (reg. 29(1)). A partner who cannot be a joint
+        # claimant, so that the other member claims as a single person
+        # (reg. 3(3)), is not a claimant: their caring gives no element.
+        not_a_claimant = other_member_of_single_claim(person, period)
+        carer = person("is_carer_for_benefits", period)
+        only_carer_is_not_a_claimant = benunit.any(
+            carer & not_a_claimant
+        ) & ~benunit.any(carer & ~not_a_claimant)
+        return ~only_carer_is_not_a_claimant * p.amount * MONTHS_IN_YEAR

@@ -4,21 +4,6 @@ from policyengine_uk.utils.uc_work_related_requirements import (
 )
 
 
-def lcwra_element_from_circumstances(benunit, period, parameters):
-    """The LCWRA element the members' circumstances give: what the formula of
-    uc_LCWRA_element returns."""
-    p = parameters(period).gov.dwp.universal_credit.elements.disabled
-    person = benunit.members
-    limited_capability = person("uc_limited_capability_for_WRA", period)
-    # The element is for "a claimant" with limited capability for work and
-    # work-related activity (reg. 27(1)). A partner who cannot be a joint
-    # claimant, so that the other member claims as a single person
-    # (reg. 3(3)), is not a claimant.
-    not_a_claimant = other_member_of_single_claim(person, period)
-    person_amounts = (limited_capability & ~not_a_claimant) * p.amount
-    return benunit.sum(person_amounts) * MONTHS_IN_YEAR
-
-
 class uc_LCWRA_element(Variable):
     value_type = float
     entity = BenUnit
@@ -37,4 +22,13 @@ class uc_LCWRA_element(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        return lcwra_element_from_circumstances(benunit, period, parameters)
+        p = parameters(period).gov.dwp.universal_credit.elements.disabled
+        person = benunit.members
+        limited_capability = person("uc_limited_capability_for_WRA", period)
+        # The element is for "a claimant" with limited capability for work and
+        # work-related activity (reg. 27(1)). A partner who cannot be a joint
+        # claimant, so that the other member claims as a single person
+        # (reg. 3(3)), is not a claimant.
+        not_a_claimant = other_member_of_single_claim(person, period)
+        person_amounts = (limited_capability & ~not_a_claimant) * p.amount
+        return benunit.sum(person_amounts) * MONTHS_IN_YEAR

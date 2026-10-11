@@ -238,3 +238,59 @@
     # the single rate and none of the adult's benefits: 15,000 - 14,753.
     benefit_cap: 14_753
     benefit_cap_reduction: 247
+
+# The rate's couple: is_couple (relation_type, which can be entered), unless
+# the entered claimants of a Universal Credit award are other members.
+
+- name: On Housing Benefit alone, a couple entered as such has the couple limit though the model would presume the younger member a child
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [claimant, partner]
+        relation_type: COUPLE
+        universal_credit_pre_benefit_cap: 0
+        housing_benefit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_claimant_or_partner: [true, false]
+    is_couple: true
+    # A couple outside London: 22,020, as is_couple gives.
+    is_benefit_cap_single_claimant_rate: false
+    benefit_cap: 22_020
+    benefit_cap_reduction: 0
+
+- name: On Universal Credit, a couple entered as such has the couple limit when no claimant is entered
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+      partner:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      family:
+        members: [claimant, partner]
+        relation_type: COUPLE
+        universal_credit_pre_benefit_cap: 18_000
+        housing_benefit_pre_benefit_cap: 0
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    is_couple: true
+    # Joint claimants outside London: 22,020 (UC Regs 2013 reg 80A(2)(d)(i)).
+    is_benefit_cap_single_claimant_rate: false
+    benefit_cap: 22_020
+    benefit_cap_reduction: 0

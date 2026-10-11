@@ -24,6 +24,7 @@ deletes.
 from typing import List, Optional
 
 import numpy as np
+from policyengine_core import periods
 from policyengine_core.periods import Period
 
 
@@ -98,6 +99,11 @@ def supplied_input_periods(population, variable_name: str) -> List[Period]:
             if name == variable_name
             and branch_name in branch_names
             and holder._get_array_from_storage(period, branch_name) is not None
+            and not _is_model_value(
+                simulation,
+                (name, branch_name, period),
+                holder._get_array_from_storage(period, branch_name),
+            )
         },
         key=lambda period: period.start,
     )
@@ -122,6 +128,12 @@ def supplied_input(
             # stored array must be ignored even if its key remains.
             value = holder._get_array_from_storage(period, branch_name)
             if value is not None:
+                # A value the model stored itself (set_model_value) is not
+                # supplied, though the engine keeps it like an input.
+                if _is_model_value(
+                    simulation, (variable_name, branch_name, period), value
+                ):
+                    return None
                 # A neutralized variable reads as its default, as it does
                 # through the engine. (PolicyEngine-UK builds no
                 # gov.abolitions parameters, so there is no abolition switch
@@ -131,3 +143,40 @@ def supplied_input(
                     return holder.default_array()
                 return value
     return None
+
+
+def _is_model_value(simulation, key, value) -> bool:
+    model_values = getattr(simulation, "_model_values", None) or {}
+    written = model_values.get(key)
+    return written is not None and np.array_equal(written, value)
+
+
+def set_model_value(simulation, variable_name: str, period, value) -> None:
+    """Store ``value`` for ``variable_name`` and ``period`` with ``set_input``,
+    as the model's own value rather than a supplied one, unless the period's
+    value was supplied already.
+
+    ``set_input`` records the value as an input, and the engine keeps
+    recorded inputs when a reform is applied, so a scenario that adjusts a
+    calculated amount must store it that way. ``supplied_input`` and
+    ``supplied_input_periods`` do not return the stored value while it is
+    the one stored here; a later ``set_input`` of another value is supplied
+    again. If the value was supplied before (a scenario adjusting a user's
+    entry), the new value stays supplied."""
+    _check_registered(variable_name)
+    period = periods.period(period)
+    population = simulation.get_variable_population(variable_name)
+    already_supplied = supplied_input(population, variable_name, period) is not None
+    simulation.set_input(variable_name, period, value)
+    if already_supplied:
+        return
+    branch_name = simulation.branch_name
+    stored = population.get_holder(variable_name)._get_array_from_storage(
+        period, branch_name
+    )
+    if stored is not None:
+        model_values = getattr(simulation, "_model_values", None)
+        if model_values is None:
+            model_values = {}
+            simulation._model_values = model_values
+        model_values[(variable_name, branch_name, period)] = np.array(stored)
