@@ -30,10 +30,11 @@ class savings_allowance(Variable):
             "allowances", period
         )
         # thresholds[1] is the basic rate limit and thresholds[2] the higher
-        # rate limit. Income at or above a limit counts as reaching that band,
-        # as in tax_band.
+        # rate limit. Income up to a limit is charged at the lower rate and
+        # only income above it at the higher one (ITA 2007 s. 10(2)-(3)), so
+        # taxable income exactly at a limit has none in the band above.
         return select(
-            [taxable_income >= thresholds[2], taxable_income >= thresholds[1]],
+            [taxable_income > thresholds[2], taxable_income > thresholds[1]],
             [amounts.additional, amounts.higher],
             default=amounts.basic,
         )

@@ -10,15 +10,15 @@ dividends drawn freely:
 1. Country: the allowance is the same for a Scottish and an English taxpayer
    with the same income.
 2. Differential: it equals the statute computed independently here: £1,000
-   when taxable income is under the £37,700 basic rate limit, £500 under the
-   £125,140 higher rate limit, and nil above, with taxable income as total
-   income less the personal allowance, tapered by £1 for every £2 of income
-   over £100,000.
+   when taxable income is at or under the £37,700 basic rate limit, £500 at
+   or under the £125,140 higher rate limit, and nil above (ITA 2007 s. 10(2)-
+   (3)), with taxable income as total income less the personal allowance,
+   tapered by £1 for every £2 of income over £100,000.
 3. Monotonic: a higher pay never raises the allowance.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -49,13 +49,21 @@ def _allowances(rows, country):
     return np.asarray(simulation.calculate("savings_allowance", YEAR))
 
 
+BOUNDARY_ROWS = [
+    (49_270, 1_000, 0),  # taxable 37,700: at the basic rate limit
+    (49_271, 1_000, 0),  # taxable 37,701
+    (124_140, 1_000, 0),  # taxable 125,140 (allowance tapered to nil)
+    (124_141, 1_000, 0),  # taxable 125,141
+] + [(0, 0, 0)] * (PEOPLE - 4)
+
+
 def _statute(pay, savings, dividends):
     income = pay + savings + dividends
     allowance = max(0, 12_570 - max(0, income - 100_000) / 2)
     taxable = income - allowance
-    if taxable >= 125_140:
+    if taxable > 125_140:
         return 0
-    if taxable >= 37_700:
+    if taxable > 37_700:
         return 500
     return 1_000
 
@@ -66,6 +74,7 @@ def _statute(pay, savings, dividends):
     suppress_health_check=[HealthCheck.too_slow],
 )
 @given(rows=incomes)
+@example(rows=BOUNDARY_ROWS)
 def test_scottish_and_english_taxpayers_get_the_same_allowance(rows):
     scottish = _allowances(rows, "SCOTLAND")
     english = _allowances(rows, "ENGLAND")

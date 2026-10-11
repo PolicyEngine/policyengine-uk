@@ -94,7 +94,7 @@
   period: 2020
   absolute_error_margin: 0
   input:
-    # 2019-20 rules: taxable income £27,500, under the £37,500 basic rate limit.
+    # 2020 parameters: taxable income £27,500, under the £37,500 basic rate limit.
     adjusted_net_income: 40_000
     allowances: 12_500
   output:
