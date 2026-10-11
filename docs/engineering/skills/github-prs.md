@@ -47,8 +47,12 @@ visible change:
 - Added model-agnostic AI engineering guidance for UK model work.
 ```
 
-The versioning workflow runs on pushes to `main` that touch `changelog.d/**` or
-`pyproject.toml`. It runs `.github/bump_version.py`, then `towncrier build`.
+The release workflow (`.github/workflows/versioning.yaml`) runs on pushes to
+`main` that touch `changelog.d/**` or `pyproject.toml`. It makes the version
+commit on the latest `main` with `.github/bump_version.py` and `towncrier build`,
+builds the wheel and sdist once from that commit, and runs the full test suite
+on the installed wheel. It publishes those same files to PyPI only if every
+check passed, then tags the version commit.
 Do not manually edit `CHANGELOG.md` or bump `pyproject.toml` in an ordinary PR
 unless the user or maintainer explicitly asks. The type controls the inferred
 version bump: `breaking` is major, `added` and `removed` are minor, and other

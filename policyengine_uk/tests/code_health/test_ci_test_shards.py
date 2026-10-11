@@ -1,31 +1,44 @@
-"""The Test job's shards run every test exactly once.
+"""The Test job runs every test exactly once, and goes red unless it passed.
 
 CI runs ``pytest policyengine_uk/tests`` as several jobs, each with
-``--shard K/N`` (conftest.py), and then runs ``.github/check_test_shards.py``
-over their JUnit files and an unsharded ``pytest --collect-only -q`` listing.
-These tests hold the two halves to the invariants the split relies on:
+``--shard K/N`` (conftest.py) and ``.github/pytest_outcome_log.py`` recording
+each test's outcome. ``.github/check_test_shards.py`` then compares those
+records with an unsharded ``pytest --collect-only -q`` listing and the
+accepted outcomes in ``.github/test_outcome_allowlist.toml``. These tests hold
+the pieces to the invariants the Test job relies on:
 
 1. ``shard_of(nodeid, N)`` is between 1 and N and depends only on its
    arguments, so it is the same in every process and on every runner.
 2. For any set of node ids and any N, the N shards are disjoint and their
    union is the whole set.
 3. ``parse_shard`` accepts exactly ``K/N`` with 1 <= K <= N.
-4. ``junit_key`` gives a node id the name pytest gives it in JUnit XML.
-5. The check passes when every collected test ran in exactly one shard and
-   none failed, and reports a test that is missing, repeated, not collected
-   or failed.
-6. With real pytest runs, the collection listing and the shards' JUnit files
-   pass the check, with and without pytest-xdist, and fail it if a shard's
-   file is left out.
+4. ``read_collected`` returns exactly the listed node ids, or refuses.
+5. The check's verdict on any collection, sharding, outcomes and allowlist
+   equals an independent model of the rule: every collected test ran in
+   exactly one shard, nothing else ran, nothing failed or was left
+   unfinished, and every skip, expected failure, XPASS and skipped module is
+   accepted by an allowlist entry for this mode and dataset (differential).
+6. An allowlist entry can never accept a failure, must say why, and an entry
+   that matches nothing is a warning, never a failure.
+7. The outcome log records what pytest did, by raw node id, the same with
+   and without pytest-xdist: passes, failures in setup, call and teardown,
+   skips with their reasons, expected failures, XPASSes and skipped modules.
+8. With real pytest runs over three shards, with and without xdist, the
+   check passes exactly when the allowlist covers the sample suite's skips,
+   and fails if a shard's log is left out, repeated, or a test fails.
+9. The checked-in allowlist parses, and each entry naming one test names a
+   test function that exists.
 """
 
-import argparse
+import ast
+import fnmatch
 import importlib.util
+import json
 import os
-import shutil
+import re
 import subprocess
 import sys
-import xml.etree.ElementTree as ElementTree
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -34,7 +47,9 @@ from hypothesis import strategies as st
 
 TESTS_DIR = Path(__file__).resolve().parents[1]
 REPO_ROOT = TESTS_DIR.parents[1]
-CHECKER = REPO_ROOT / ".github" / "check_test_shards.py"
+GITHUB_DIR = REPO_ROOT / ".github"
+CHECKER = GITHUB_DIR / "check_test_shards.py"
+ALLOWLIST = GITHUB_DIR / "test_outcome_allowlist.toml"
 
 if not CHECKER.exists():
     pytest.skip(
@@ -83,13 +98,9 @@ nodeids = st.builds(
     _identifier,
     _params,
 )
-# Node ids that could come from one collection: distinct, and with distinct
-# JUnit names, which pytest's own naming guarantees for real suites.
-collections = st.lists(nodeids, max_size=30, unique_by=checker.junit_key)
 
 
-def junit_cases(ids, outcome="passed"):
-    return [(checker.junit_key(nodeid), outcome) for nodeid in ids]
+# Invariants 1 to 3: sharding.
 
 
 @PROPERTY_SETTINGS
@@ -119,7 +130,6 @@ def test_shards_partition_any_collection(conftest, ids, shards):
         for shard in range(1, shards + 1)
     }
     assert sorted(sum(members.values(), [])) == sorted(ids)
-    assert sum(len(group) for group in members.values()) == len(ids)
 
 
 @PROPERTY_SETTINGS
@@ -147,74 +157,13 @@ def test_parse_shard_accepts_k_of_n(conftest, shards, data):
     ],
 )
 def test_parse_shard_rejects_anything_else(conftest, value):
+    import argparse
+
     with pytest.raises(argparse.ArgumentTypeError):
         conftest.parse_shard(value)
 
 
-@PROPERTY_SETTINGS
-@given(nodeid=nodeids)
-@example(nodeid="policyengine_uk/tests/test_x.py::TestA::test_y[a/b.yaml-1]")
-@example(nodeid="policyengine_uk/tests/test_x.py::test_y[a::b[c]-d e]")
-def test_junit_key_matches_pytest(nodeid):
-    # Differential test against pytest's own naming, written out to XML and
-    # read back as the check reads it.
-    junitxml = pytest.importorskip("_pytest.junitxml")
-    names = junitxml.mangle_test_address(nodeid)
-    element = ElementTree.Element(
-        "testcase",
-        classname=".".join(names[:-1]),
-        name=junitxml.bin_xml_escape(names[-1]),
-    )
-    read_back = ElementTree.fromstring(ElementTree.tostring(element))
-    assert checker.junit_key(nodeid) == (
-        read_back.get("classname"),
-        read_back.get("name"),
-    )
-
-
-@PROPERTY_SETTINGS
-@given(ids=collections, shards=st.integers(1, 5), data=st.data())
-def test_check_passes_exactly_when_every_test_ran_once(conftest, ids, shards, data):
-    ran = [
-        junit_cases(i for i in ids if conftest.shard_of(i, shards) == shard)
-        for shard in range(1, shards + 1)
-    ]
-    problems, summary = checker.check(ids, ran)
-    assert problems == []
-    assert summary.startswith(f"{len(ids)} tests collected")
-
-    if not ids:
-        return
-    victim = data.draw(st.sampled_from(ids))
-    key = checker.junit_key(victim)
-    home = conftest.shard_of(victim, shards) - 1
-
-    missing = [list(cases) for cases in ran]
-    missing[home].remove((key, "passed"))
-    problems, _ = checker.check(ids, missing)
-    assert [names for title, names in problems if "ran in no shard" in title] == [
-        [victim]
-    ]
-
-    repeated = [list(cases) for cases in ran]
-    repeated[data.draw(st.integers(0, shards - 1))].append((key, "passed"))
-    problems, _ = checker.check(ids, repeated)
-    assert [names for title, names in problems if "more than once" in title] == [
-        [victim]
-    ]
-
-    failed = [list(cases) for cases in ran]
-    failed[home][failed[home].index((key, "passed"))] = (key, "failed")
-    problems, _ = checker.check(ids, failed)
-    assert [names for title, names in problems if "failed" in title] == [
-        [f"shard {home + 1}: {victim}"]
-    ]
-
-    uncollected = [nodeid for nodeid in ids if nodeid != victim]
-    problems, _ = checker.check(uncollected, ran)
-    assert [names for title, names in problems if "not collected" in title] == [
-        [f"{key[0]}::{key[1]}"]
-    ]
+# Invariant 4: the collection listing.
 
 
 def test_read_collected_requires_the_listed_count():
@@ -240,11 +189,237 @@ def test_read_collected_requires_the_listed_count():
             checker.read_collected(bad)
 
 
+# Invariant 5: the check against an independent model of its rule.
+
+OUTCOMES = ["passed", "failed", "skipped", "xfailed", "xpassed", "incomplete"]
+REASONS = ["", "because", "#1986 known", "Requires the dataset", "could not import x"]
+modes = st.sampled_from(sorted(checker.MODES))
+datas = st.sampled_from(sorted(checker.DATA))
+
+
+@st.composite
+def allowances(draw, ids):
+    """An allowlist entry: an exact id, a wildcard or an unrelated path."""
+    patterns = st.sampled_from(["*", "mod*.py", "mod_a.py"]) | _path
+    if ids:
+        patterns = st.sampled_from(ids) | patterns
+    reason = draw(st.sampled_from([None, "#1986", "^Requires", "x$"]))
+    return checker.Allowance(
+        nodeid=draw(patterns),
+        outcome=draw(st.sampled_from(sorted(checker.ALLOWABLE_OUTCOMES))),
+        why="test",
+        reason=None if reason is None else re.compile(reason),
+        modes=frozenset(draw(st.sets(modes, min_size=1))),
+        data=frozenset(draw(st.sets(datas, min_size=1))),
+    )
+
+
+@st.composite
+def runs(draw):
+    """A collection, what each shard recorded, an allowlist, a mode and data."""
+    collected = draw(st.lists(nodeids, max_size=12, unique=True))
+    shards = draw(st.integers(1, 4))
+    records = [[] for _ in range(shards)]
+    for nodeid in collected:
+        # Usually once, sometimes never or twice.
+        times = draw(st.sampled_from([1, 1, 1, 1, 0, 2]))
+        for _ in range(times):
+            records[draw(st.integers(0, shards - 1))].append(
+                checker.Record(
+                    nodeid,
+                    draw(st.sampled_from(OUTCOMES)),
+                    draw(st.sampled_from(REASONS)),
+                )
+            )
+    # Tests nobody collected, and skipped or broken modules.
+    for nodeid in draw(st.lists(nodeids, max_size=2)):
+        if nodeid not in collected:
+            records[draw(st.integers(0, shards - 1))].append(
+                checker.Record(nodeid, "passed")
+            )
+    modules = draw(st.lists(st.sampled_from(["mod_a.py", "mod_b.py"]), max_size=2))
+    for module in modules:
+        outcome = draw(st.sampled_from(["collect-skipped", "collect-failed"]))
+        for shard in range(shards):
+            records[shard].append(checker.Record(module, outcome, "gone"))
+    allowlist = draw(st.lists(allowances(collected + modules), max_size=4))
+    return collected, records, allowlist, draw(modes), draw(datas)
+
+
+def model_passes(collected, records, allowlist, mode, data):
+    """The rule, written independently of the check."""
+    flat = [r for shard in records for r in shard]
+    tests = [r for r in flat if r.outcome not in checker.COLLECTOR_OUTCOMES]
+    counts = Counter(r.nodeid for r in tests)
+    if any(counts[nodeid] != 1 for nodeid in collected):
+        return False
+    if any(nodeid not in collected for nodeid in counts):
+        return False
+    for record in flat:
+        if record.outcome == "passed":
+            continue
+        if record.outcome in {"failed", "incomplete", "collect-failed"}:
+            return False
+        accepted = any(
+            mode in a.modes
+            and data in a.data
+            and a.outcome == record.outcome
+            and fnmatch.fnmatchcase(record.nodeid, a.nodeid)
+            and (a.reason is None or a.reason.search(record.reason))
+            for a in allowlist
+        )
+        if not accepted:
+            return False
+    return True
+
+
+@settings(PROPERTY_SETTINGS, max_examples=400)
+@given(run=runs())
+def test_the_check_agrees_with_a_model_of_its_rule(run):
+    collected, records, allowlist, mode, data = run
+    result = checker.check(collected, records, allowlist, mode, data)
+    assert (not result.problems) == model_passes(*run), result.problems
+
+
+@PROPERTY_SETTINGS
+@given(ids=st.lists(nodeids, min_size=1, max_size=20, unique=True), data=st.data())
+def test_any_single_fault_turns_a_clean_run_red(conftest, ids, data):
+    shards = data.draw(st.integers(1, 4))
+    clean = [
+        [checker.Record(i, "passed") for i in ids if conftest.shard_of(i, shards) == k]
+        for k in range(1, shards + 1)
+    ]
+    assert checker.check(ids, clean).problems == []
+
+    victim = data.draw(st.sampled_from(ids))
+    home = conftest.shard_of(victim, shards) - 1
+    fault = data.draw(
+        st.sampled_from(
+            ["missing", "repeated", "uncollected", *OUTCOMES[1:], "collect-failed"]
+        )
+    )
+    faulty = [list(cases) for cases in clean]
+    collected = ids
+    if fault == "missing":
+        faulty[home].remove(checker.Record(victim, "passed"))
+    elif fault == "repeated":
+        faulty[data.draw(st.integers(0, shards - 1))].append(
+            checker.Record(victim, "passed")
+        )
+    elif fault == "uncollected":
+        collected = [i for i in ids if i != victim]
+    elif fault == "collect-failed":
+        faulty[0].append(checker.Record("broken_module.py", "collect-failed"))
+    else:
+        position = faulty[home].index(checker.Record(victim, "passed"))
+        faulty[home][position] = checker.Record(victim, fault, "why")
+    result = checker.check(collected, faulty)
+    assert result.problems, fault
+    if fault not in {"collect-failed", "uncollected"}:
+        assert any(victim in line for _, lines in result.problems for line in lines)
+
+
+# Invariant 6: the allowlist.
+
+
+def allowlist_entry(**fields):
+    entry = {"nodeid": "a.py::t", "outcome": "skipped", "why": "because"}
+    entry.update(fields)
+    lines = ["[[allow]]"]
+    for key, value in entry.items():
+        if value is not None:
+            lines.append(f"{key} = {json.dumps(value)}")
+    return "\n".join(lines) + "\n"
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"outcome": "failed"},
+        {"outcome": "incomplete"},
+        {"outcome": "collect-failed"},
+        {"outcome": "passed"},
+        {"why": ""},
+        {"why": "   "},
+        {"why": None},
+        {"nodeid": ""},
+        {"reason": "("},
+        {"modes": ["installed"]},
+        {"modes": []},
+        {"data": ["maybe"]},
+        {"unexpected": 1},
+    ],
+)
+def test_the_allowlist_rejects_invalid_entries(fields):
+    with pytest.raises(checker.ShardCheckError):
+        checker.read_allowlist(allowlist_entry(**fields))
+
+
+def test_the_allowlist_rejects_unknown_tables():
+    with pytest.raises(checker.ShardCheckError):
+        checker.read_allowlist('[[accept]]\nnodeid = "a"\n')
+
+
+@PROPERTY_SETTINGS
+@given(
+    outcome=st.sampled_from(["failed", "incomplete", "collect-failed"]),
+    mode=modes,
+    data=datas,
+)
+def test_no_allowlist_entry_accepts_a_failure(outcome, mode, data):
+    allowlist = [
+        checker.Allowance(nodeid="*", outcome=allowed, why="everything")
+        for allowed in sorted(checker.ALLOWABLE_OUTCOMES)
+    ]
+    records = [[checker.Record("a.py::t", outcome, "x")]]
+    collected = [] if outcome == "collect-failed" else ["a.py::t"]
+    if outcome == "collect-failed":
+        records[0][0] = checker.Record("a.py", outcome)
+    assert checker.check(collected, records, allowlist, mode, data).problems
+
+
+def test_an_unused_entry_is_a_warning_not_a_failure():
+    allowlist = checker.read_allowlist(
+        allowlist_entry(nodeid="gone.py::t")
+        + allowlist_entry(nodeid="a.py::t", modes=["wheel"])
+    )
+    result = checker.check(
+        ["a.py::t"], [[checker.Record("a.py::t", "passed")]], allowlist, "source"
+    )
+    assert result.problems == []
+    # Only entries that apply to this mode count as unused.
+    [(title, lines)] = result.warnings
+    assert lines == ["skipped gone.py::t"]
+
+
+def test_a_skip_is_accepted_only_in_the_mode_and_data_its_entry_names():
+    allowlist = checker.read_allowlist(
+        allowlist_entry(
+            nodeid="policyengine_uk/tests/*",
+            reason="^Requires",
+            data=["absent"],
+        )
+    )
+    record = checker.Record(
+        "policyengine_uk/tests/test_x.py::t", "skipped", "Requires X"
+    )
+    collected = [record.nodeid]
+    assert (
+        checker.check(collected, [[record]], allowlist, "source", "absent").problems
+        == []
+    )
+    assert checker.check(collected, [[record]], allowlist, "source", "present").problems
+    other = checker.Record(record.nodeid, "skipped", "something else")
+    assert checker.check(collected, [[other]], allowlist, "source", "absent").problems
+
+
+# Invariants 7 and 8: real pytest runs.
+
 SAMPLE_SUITE = """
 import pytest
 
 
-@pytest.mark.parametrize("value", range(40))
+@pytest.mark.parametrize("value", range(30))
 def test_number(value):
     assert value >= 0
 
@@ -261,24 +436,109 @@ class TestGroup:
     def test_member(self, value):
         assert value
 
-    @pytest.mark.skip(reason="skipped tests still count as run")
+    @pytest.mark.skip(reason="sample skip")
     def test_skipped(self):
         raise AssertionError
 
-    @pytest.mark.xfail(strict=True)
+    @pytest.mark.xfail(strict=True, reason="sample bug #1")
     def test_expected_failure(self):
         raise AssertionError
+
+    @pytest.mark.xfail(strict=False, reason="sample stale marker")
+    def test_unexpected_pass(self):
+        pass
+
+
+def test_skips_itself():
+    pytest.skip("sample runtime skip")
+"""
+
+SKIPPED_MODULE = """
+import pytest
+
+pytest.skip("sample skipped module", allow_module_level=True)
+
+
+def test_never_runs():
+    raise AssertionError
+"""
+
+FAILING_SUITE = """
+import pytest
+
+
+@pytest.fixture
+def broken_setup():
+    raise RuntimeError("setup fails")
+
+
+@pytest.fixture
+def broken_teardown():
+    yield
+    raise RuntimeError("teardown fails")
+
+
+def test_fails():
+    assert 1 == 2
+
+
+def test_setup_errors(broken_setup):
+    pass
+
+
+def test_teardown_errors(broken_teardown):
+    pass
+
+
+@pytest.mark.xfail(strict=True, reason="strict")
+def test_strict_unexpected_pass():
+    pass
+
+
+def test_passes():
+    pass
+"""
+
+SAMPLE_ALLOWLIST = """
+[[allow]]
+nodeid = "suite/test_sample.py::TestGroup::test_skipped"
+outcome = "skipped"
+why = "sample"
+
+[[allow]]
+nodeid = "suite/test_sample.py::TestGroup::test_expected_failure"
+outcome = "xfailed"
+reason = "#1"
+why = "sample"
+
+[[allow]]
+nodeid = "suite/test_sample.py::TestGroup::test_unexpected_pass"
+outcome = "xpassed"
+why = "sample"
+
+[[allow]]
+nodeid = "suite/test_sample.py::test_skips_itself"
+outcome = "skipped"
+reason = "runtime skip"
+why = "sample"
+
+[[allow]]
+nodeid = "suite/test_skipped_module.py"
+outcome = "collect-skipped"
+why = "sample"
 """
 
 
 def _pytest(cwd, *args):
     # A clean run of pytest: no options, plugins or coverage settings carried
-    # over from the session that runs this test.
+    # over from the session that runs this test, and the outcome log plugin
+    # importable as CI makes it.
     env = {
         name: value
         for name, value in os.environ.items()
         if not name.startswith(("PYTEST_", "COV_CORE_", "COVERAGE_"))
     }
+    env["PYTHONPATH"] = str(GITHUB_DIR)
     return subprocess.run(
         [sys.executable, "-m", "pytest", "-p", "no:cacheprovider", *args],
         cwd=cwd,
@@ -289,44 +549,150 @@ def _pytest(cwd, *args):
     )
 
 
-@pytest.mark.parametrize("xdist", [(), ("-n", "2", "--dist", "worksteal")])
-def test_real_pytest_shards_pass_the_check(tmp_path, xdist):
+def _suite(tmp_path, **modules):
     suite = tmp_path / "suite"
     suite.mkdir()
     # The suite's real conftest.py, so this runs the --shard CI uses.
-    shutil.copy(TESTS_DIR / "conftest.py", suite / "conftest.py")
-    (suite / "test_sample.py").write_text(SAMPLE_SUITE, encoding="utf-8")
+    (suite / "conftest.py").write_text(
+        (TESTS_DIR / "conftest.py").read_text(encoding="utf-8"), encoding="utf-8"
+    )
+    for name, source in modules.items():
+        (suite / f"{name}.py").write_text(source, encoding="utf-8")
+    return suite
 
-    listing = _pytest(tmp_path, "suite", "--collect-only", "-q")
-    assert listing.returncode == 0, listing.stdout + listing.stderr
-    collected = tmp_path / "collected.txt"
-    collected.write_text(listing.stdout, encoding="utf-8")
-    assert len(checker.read_collected(listing.stdout)) == 51
 
-    shards = 3
-    junit = []
+def _run_shards(tmp_path, shards, *extra):
+    logs = []
     for shard in range(1, shards + 1):
-        junit.append(tmp_path / f"junit-{shard}.xml")
-        run = _pytest(
+        logs.append(tmp_path / f"outcomes-{shard}.jsonl")
+        _pytest(
             tmp_path,
             "suite",
             "--shard",
             f"{shard}/{shards}",
-            f"--junitxml={junit[-1]}",
-            *xdist,
+            "-p",
+            "pytest_outcome_log",
+            f"--outcome-log={logs[-1]}",
+            *extra,
         )
-        assert run.returncode == 0, run.stdout + run.stderr
-        assert f"shard: {shard} of {shards}" in run.stdout
+    return logs
 
-    sizes = [len(checker.read_junit(path)) for path in junit]
-    assert sum(sizes) == 51 and all(sizes)
 
-    def check(*paths):
-        return checker.main(
-            ["--collected", str(collected), "--junit", *map(str, paths)]
-        )
+def _records(path):
+    return sorted(
+        (r.nodeid, r.outcome, r.reason)
+        for r in checker.read_outcomes(path.read_text(encoding="utf-8"))
+    )
 
-    assert check(*junit) == 0
-    assert check(*junit[:-1]) == 1
-    assert check(*junit, junit[0]) == 1
-    assert check(tmp_path / "absent.xml") == 2
+
+def test_the_outcome_log_records_what_pytest_did(tmp_path):
+    _suite(tmp_path, test_failing=FAILING_SUITE, test_skipped_module=SKIPPED_MODULE)
+    serial, parallel = tmp_path / "serial.jsonl", tmp_path / "parallel.jsonl"
+    _pytest(tmp_path, "suite", "-p", "pytest_outcome_log", f"--outcome-log={serial}")
+    _pytest(
+        tmp_path,
+        "suite",
+        "-p",
+        "pytest_outcome_log",
+        f"--outcome-log={parallel}",
+        "-n",
+        "2",
+    )
+    expected = sorted(
+        [
+            ("suite/test_failing.py::test_fails", "failed", ""),
+            ("suite/test_failing.py::test_setup_errors", "failed", ""),
+            ("suite/test_failing.py::test_teardown_errors", "failed", ""),
+            ("suite/test_failing.py::test_strict_unexpected_pass", "failed", ""),
+            ("suite/test_failing.py::test_passes", "passed", ""),
+            (
+                "suite/test_skipped_module.py",
+                "collect-skipped",
+                "sample skipped module",
+            ),
+        ]
+    )
+    assert _records(serial) == expected
+    # The same with pytest-xdist, where the controller writes the log.
+    assert _records(parallel) == expected
+
+
+@pytest.mark.parametrize("xdist", [(), ("-n", "2", "--dist", "worksteal")])
+def test_real_pytest_shards_pass_the_check_only_when_allowed(tmp_path, xdist):
+    _suite(tmp_path, test_sample=SAMPLE_SUITE, test_skipped_module=SKIPPED_MODULE)
+    listing = _pytest(tmp_path, "suite", "--collect-only", "-q")
+    assert listing.returncode == 0, listing.stdout + listing.stderr
+    collected = tmp_path / "collected.txt"
+    collected.write_text(listing.stdout, encoding="utf-8")
+    assert len(checker.read_collected(listing.stdout)) == 43
+
+    logs = _run_shards(tmp_path, 3, *xdist)
+    sizes = [
+        sum(not r.is_collector for r in checker.read_outcomes(log.read_text()))
+        for log in logs
+    ]
+    assert sum(sizes) == 43 and all(sizes)
+    allowlist = tmp_path / "allow.toml"
+    allowlist.write_text(SAMPLE_ALLOWLIST, encoding="utf-8")
+
+    def check(*paths, allow=allowlist):
+        args = ["--collected", str(collected), "--outcomes", *map(str, paths)]
+        if allow is not None:
+            args += ["--allowlist", str(allow)]
+        return checker.main(args)
+
+    assert check(*logs) == 0
+    # Without the allowlist, the skips, xfail, XPASS and skipped module fail.
+    assert check(*logs, allow=None) == 1
+    assert check(*logs[:-1]) == 1
+    assert check(*logs, logs[0]) == 1
+    assert check(tmp_path / "absent.jsonl") == 2
+
+
+def test_real_pytest_failures_fail_the_check(tmp_path, capsys):
+    _suite(tmp_path, test_failing=FAILING_SUITE)
+    listing = _pytest(tmp_path, "suite", "--collect-only", "-q")
+    collected = tmp_path / "collected.txt"
+    collected.write_text(listing.stdout, encoding="utf-8")
+    logs = _run_shards(tmp_path, 2)
+    assert (
+        checker.main(["--collected", str(collected), "--outcomes", *map(str, logs)])
+        == 1
+    )
+    report = capsys.readouterr().out
+    for name in (
+        "test_fails",
+        "test_setup_errors",
+        "test_teardown_errors",
+        "test_strict_unexpected_pass",
+    ):
+        assert f"suite/test_failing.py::{name}" in report
+    assert "4 tests failed" in report
+
+
+# Invariant 9: the checked-in allowlist.
+
+
+def test_the_checked_in_allowlist_names_tests_that_exist():
+    allowlist = checker.read_allowlist(ALLOWLIST.read_text(encoding="utf-8"))
+    assert allowlist
+    for entry in allowlist:
+        if any(char in entry.nodeid for char in "*?["):
+            continue
+        path, _, rest = entry.nodeid.partition("::")
+        file = REPO_ROOT / path
+        assert file.exists(), entry.nodeid
+        if not rest:
+            continue
+        names = rest.split("::")
+        tree = ast.parse(file.read_text(encoding="utf-8"))
+        scope = tree.body
+        for name in names[:-1]:
+            [cls] = [n for n in scope if isinstance(n, ast.ClassDef) and n.name == name]
+            scope = cls.body
+        functions = {
+            n.name
+            for n in scope
+            if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
+        }
+        assert names[-1].split("[")[0] in functions, entry.nodeid
