@@ -137,3 +137,31 @@
         state_pension_reported: 9_188.4
   output:
     overlapping_state_pension: 9_175.4
+
+- name: Case 11, State Pension components supplied directly also bring the age addition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 82
+        state_pension_type: BASIC
+        basic_state_pension: 2_000
+  output:
+    state_pension_age_addition: 13
+    state_pension: 2_013
+
+- name: Case 12, a reported amount of exactly the age addition is the age addition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 85
+        state_pension_type: BASIC
+        state_pension_reported: 13
+  output:
+    basic_state_pension: 0
+    additional_state_pension: 0
+    state_pension_age_addition: 13
+    state_pension: 13

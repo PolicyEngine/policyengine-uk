@@ -1,6 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.variables.gov.dwp.state_pension_age_addition import (
-    receives_age_addition,
+    over_age_on_basic_state_pension,
 )
 
 
@@ -34,9 +34,8 @@ class state_pension_reported_excluding_age_addition(Variable):
             else parameters
         )
         p = legislated(period).gov.dwp.state_pension.age_addition
-        included = (
-            receives_age_addition(person, period, p.age, period)
-            * p.amount
-            * WEEKS_IN_YEAR
+        receives = over_age_on_basic_state_pension(person, period, p.age) & (
+            reported > 0
         )
+        included = receives * p.amount * WEEKS_IN_YEAR
         return max_(reported - included, 0)
