@@ -20,9 +20,13 @@
 # running (runs 38136097710 and 38136097762), and Versioning failed 20 times
 # in two weeks when two runs raced to push.
 #
-# A failed run can be re-run from the Actions page: Build's files are kept, so
-# a re-run tests and publishes the same bytes. To release a version commit
-# whose run is gone, dispatch this workflow with its SHA.
+# A failed run can be re-run from the Actions page. "Re-run failed jobs" keeps
+# Build's files, so it tests and publishes the same bytes. "Re-run all jobs"
+# rebuilds them from the same commit (builds are reproducible: a rebuild of
+# 6d89338ab matched PyPI's 2.126.8 byte for byte) and tests the rebuild; if
+# the first attempt pushed a version commit that main still ends with,
+# untagged, the re-run releases it. To release a version commit whose run is
+# gone, dispatch this workflow with its SHA.
 #
 # Pull requests that change the release machinery (the files under
 # pull_request.paths) run steps 2 and 3 on the PR's own commit, without
@@ -113,6 +117,7 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           RELEASE_SHA: ${{ inputs.release-sha }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
         run: |
           set -euo pipefail
           version_at() {
@@ -148,6 +153,21 @@ jobs:
               echo "publish=true"
               echo "sha=$RELEASE_SHA"
               echo "version=$(version_at "$RELEASE_SHA")"
+            } | tee -a "$GITHUB_OUTPUT"
+          elif [ "$RUN_ATTEMPT" -gt 1 ] \
+            && git fetch --no-tags origin main \
+            && [ "$(git log -1 --format=%s FETCH_HEAD)" = "Update package version" ] \
+            && [ -z "$(git ls-remote --tags origin "refs/tags/$(version_at FETCH_HEAD)")" ]; then
+            # "Re-run all jobs" after this run's first attempt pushed a version
+            # commit: main's tip is that commit, untagged because it was never
+            # published. prepare_release.py would see a versioned tip and
+            # release nothing, so release the tip instead.
+            sha=$(git rev-parse FETCH_HEAD)
+            {
+              echo "release=true"
+              echo "publish=true"
+              echo "sha=$sha"
+              echo "version=$(version_at "$sha")"
             } | tee -a "$GITHUB_OUTPUT"
           else
             # The towncrier the lockfile pins, without installing the package.
@@ -209,6 +229,8 @@ jobs:
           name: release-dist
           path: dist/
           if-no-files-found: error
+          # A re-run of this job replaces the earlier attempt's files.
+          overwrite: true
           retention-days: 30
       - name: Upload the release manifest
         uses: actions/upload-artifact@v7
@@ -216,6 +238,8 @@ jobs:
           name: release-manifest
           path: release/
           if-no-files-found: error
+          # A re-run of this job replaces the earlier attempt's files.
+          overwrite: true
           retention-days: 90
       - name: Attest the release files' provenance
         if: needs.Versioning.outputs.publish == 'true'

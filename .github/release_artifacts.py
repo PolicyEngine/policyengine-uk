@@ -225,12 +225,21 @@ def check_sdist(path: Path, version: str, tracked: dict, problems: list) -> None
     outside = {
         rest: data for rest, data in files.items() if not rest.startswith(PACKAGE + "/")
     }
-    for rest, data in sorted(outside.items())[:CAP]:
-        entry = tracked.get(rest)
-        if entry is None:
-            problems.append(f"sdist: {rest} is not tracked at this commit")
-        elif git_blob_hash(data) != entry[2]:
-            problems.append(f"sdist: {rest} differs from the commit")
+    # Check every file; CAP limits only how many are listed.
+    untracked = sorted(rest for rest in outside if rest not in tracked)
+    differing = sorted(
+        rest
+        for rest, data in outside.items()
+        if rest in tracked and git_blob_hash(data) != tracked[rest][2]
+    )
+    for kind, paths in (
+        ("is not tracked at this commit", untracked),
+        ("differs from the commit", differing),
+    ):
+        for rest in paths[:CAP]:
+            problems.append(f"sdist: {rest} {kind}")
+        if len(paths) > CAP:
+            problems.append(f"sdist: ... and {len(paths) - CAP} more that {kind}")
     check_package_files(
         {rest: data for rest, data in files.items() if rest.startswith(PACKAGE + "/")},
         tracked,

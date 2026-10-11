@@ -334,6 +334,28 @@ def test_each_fault_fails_check_dist(commit, tmp_path, fault, capsys):
     assert "do not match" in capsys.readouterr().out
 
 
+def test_every_sdist_file_is_checked_not_only_the_first_fifty(commit, tmp_path, capsys):
+    # The listing is capped; the check is not. Sixty untracked files sorted
+    # before a changed tracked one: the changed one must still fail.
+    repo, sha = commit
+    sdist = sdist_members()
+    root = f"policyengine_uk-{VERSION}"
+    for number in range(60):
+        sdist[f"{root}/a{number:02}.txt"] = b"untracked\n"
+    dist = build(tmp_path / "dist", sdist=sdist)
+    assert check_dist(dist, repo, sha) == 1
+    report = capsys.readouterr().out
+    assert "and 10 more that is not tracked" in report
+
+    only_changed = sdist_members()
+    only_changed[f"{root}/README.md"] = b"# changed\n"
+    for number in range(60):
+        only_changed[f"{root}/0{number:02}.md"] = TREE["README.md"]
+    dist = build(tmp_path / "dist2", sdist=only_changed)
+    assert check_dist(dist, repo, sha) == 1
+    assert "README.md differs from the commit" in capsys.readouterr().out
+
+
 def test_other_files_and_wrong_names_are_unusable_input(commit, tmp_path):
     repo, sha = commit
     dist = build(tmp_path / "dist")
