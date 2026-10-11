@@ -130,3 +130,39 @@
     corporate_sdlt: [0, 0]
     household_tax: [0, 0]
     gov_tax: [0, 0]
+# Abolition removes SDLT and nothing else. Corporate SDLT reaches shareholders
+# wherever they live; business rates, the other corporate tax allocated by
+# shareholding, stays.
+- name: A Welsh shareholder bears corporate SDLT and business rates, each once
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    region: WALES
+    shareholding: 0.000001
+    business_rates: 500
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    expected_sdlt: 0
+    corporate_sdlt: 3_130
+    corporate_tax_incidence: 3_630
+    household_tax: 3_630
+    gov_tax: 3_630
+    pre_budget_change_household_tax: 3_630
+- name: Abolishing SDLT removes the Welsh shareholder's corporate SDLT and keeps business rates
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    gov.hmrc.stamp_duty.abolish: true
+    region: WALES
+    shareholding: 0.000001
+    business_rates: 500
+    council_tax: 0
+    household_owns_tv: false
+  output:
+    expected_sdlt: 0
+    corporate_sdlt: 0
+    corporate_tax_incidence: 500
+    household_tax: 500
+    gov_tax: 500
+    pre_budget_change_household_tax: 500

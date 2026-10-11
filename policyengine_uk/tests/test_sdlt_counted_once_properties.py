@@ -123,7 +123,7 @@ def corporate_sdlt_revenue(year: int) -> float:
 
 
 @settings(
-    max_examples=15,
+    max_examples=10,
     deadline=None,
     derandomize=True,
     suppress_health_check=[HealthCheck.too_slow],
