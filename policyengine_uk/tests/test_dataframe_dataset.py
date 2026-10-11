@@ -1634,6 +1634,61 @@ def test_a_dataset_gives_the_identifiers_for_its_own_years_only(descending):
 
 
 @TABLE_SETTINGS
+@given(
+    population=populations(),
+    id_columns=id_columns,
+    identifier_years=st.sets(st.sampled_from(YEARS), min_size=1, max_size=2),
+    data_years=st.sets(st.sampled_from(YEARS), max_size=3),
+    month_years=st.sets(st.sampled_from(YEARS), max_size=1),
+)
+def test_the_export_and_the_loader_find_the_same_years(
+    tax_benefit_system,
+    population,
+    id_columns,
+    identifier_years,
+    data_years,
+    month_years,
+):
+    # The export gives each identifier for the years a simulation built from
+    # the frame holds it in: the dataset's years and the years only an
+    # identifier column names. The loader and the export each work these out
+    # from the frame's columns, so the round trip relies on them agreeing.
+    # Months name no year in either.
+    frame_ = multi_year_frame(population, id_columns, identifier_years, data_years)
+    for year in sorted(month_years):
+        frame_[f"ebr_energy_bills_credit_eligible__{year}-01"] = True
+
+    dataset, _, identifier_inputs = dataset_from_input_dataframe(
+        frame_, tax_benefit_system, YEAR
+    )
+    exported = with_identifiers_in_each_year(frame_, tax_benefit_system)
+
+    held = {int(year) for year in dataset.years} | {
+        int(period) for _, period, _ in identifier_inputs
+    }
+    assert held == set(identifier_years) | set(data_years)
+    named = {split_column(column)[0] for column in frame_}
+    for identifier in IDENTIFIER_VARIABLES:
+        given_for = {
+            int(split_column(column)[1]) for column in columns_of(exported, identifier)
+        }
+        assert given_for == (held if identifier in named else set())
+
+
+@pytest.mark.parametrize("year", [YEAR - 2, YEAR + 2])
+def test_an_export_whose_identifiers_differ_between_years_is_refused(year):
+    # The export copies an identifier into the years it does not give it
+    # for; that never makes columns that differ agree, so the loader still
+    # refuses them.
+    simulation = Simulation(dataset=frame(TWINS))
+    simulation.set_input("person_id", year, np.array([1, 3]))
+    exported = simulation.to_input_dataframe()
+
+    with pytest.raises(ValueError, match="differ"):
+        Simulation(dataset=exported)
+
+
+@TABLE_SETTINGS
 @given(population=populations(), id_columns=id_columns, data=st.data())
 def test_tables_hold_the_frame_in_any_row_order(
     tax_benefit_system, population, id_columns, data

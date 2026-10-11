@@ -509,13 +509,17 @@ def with_identifiers_in_each_year(
     identifier names the same ones (the loader refuses a frame whose columns
     differ). An identifier added for a year copies its column for the latest
     year before it the frame gives, or else the earliest year it gives. Each
-    goes beside the identifier's other columns, in order of period, which is
-    where the default export (sorted by period) puts an input set for that
-    year.
+    goes beside the identifier's other columns, before the first whose period
+    sorts after its own. The default export sorts each variable's periods, so
+    that is where it puts an input set for that year. (With
+    ``include_computed_variables=True``, policyengine-core exports each
+    variable's periods in the order they are stored, and the frame is not
+    expected to load back to the same frame.)
 
     Only columns that name a variable of ``tax_benefit_system`` count, and an
     identifier the frame does not give for any year is not added. ``df`` is
-    not changed.
+    not changed: if every identifier it gives is given for each such year,
+    ``df`` itself is returned, and otherwise a new frame.
     """
     named: Dict[str, Dict[int, object]] = {}
     years = set()
