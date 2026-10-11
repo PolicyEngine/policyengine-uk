@@ -2,38 +2,135 @@
 # These expected impacts are derived from current model output and are used to
 # catch unintended behavior changes. They are not external fiscal estimates
 # unless a reform entry is explicitly annotated otherwise.
+#
+# Each impact is the change in weighted gov_balance in 2029, in £bn, on the
+# dataset below, which must be the one tests/certified_dataset.yaml pins.
+# `receipts` keeps every earlier value with the model and data that produced
+# it, so a change of dataset and a change of model stay separable. Tests ran
+# on whatever enhanced FRS was latest until 2026-04-05, then on uk-data 1.40.3
+# (enhanced_frs_2023_24), and from 2026-10-11 on the certified 1.58.0 pair. The
+# 2026-10-11 receipts on 1.40.3 show how much of each move is the data rather
+# than the model.
+dataset:
+  data_version: 1.58.0
+  path: enhanced_frs_2024_25.h5
+  revision: 47bbb58d3f6467aa4a7059bc6110d2bdcf699b29
+  sha256: 5ba399ea5ab9a6c7d4e9aaf6c623080beb34d9ad5f330f6244dbad72b8d960b6
 reforms:
 - name: Raise basic rate by 1pp
-  expected_impact: 7.8
+  expected_impact: 7.1
   parameters:
     gov.hmrc.income_tax.rates.uk[0].rate: 0.21
+  receipts:
+  - impact: 7.8
+    data: enhanced_frs_2022_23, unpinned (latest at the time)
+    model: 2.34.5 (a1832dc77, #1205, 2025-07-11)
+  - impact: 7.346
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: 7.132
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)
 - name: Raise higher rate by 1pp
-  expected_impact: 4.8
+  expected_impact: 4.6
   parameters:
     gov.hmrc.income_tax.rates.uk[1].rate: 0.42
+  receipts:
+  - impact: 4.8
+    data: enhanced_frs_2022_23, unpinned (latest at the time)
+    model: 2.38.1 (fa6eb613e, #1231, 2025-07-15)
+  - impact: 3.961
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: 4.609
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)
 - name: Raise personal allowance by ~800GBP/year
-  expected_impact: -4.2
+  expected_impact: -4.1
   parameters:
     gov.hmrc.income_tax.allowances.personal_allowance.amount: 13000
+  receipts:
+  - impact: -4.2
+    data: enhanced_frs_2023_24, unpinned (latest at the time)
+    model: 2.59.0 (53c38d229, #1396, 2025-11-27)
+  - impact: -4.305
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: -4.135
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)
 - name: Raise child benefit by 25GBP/week per additional child
-  expected_impact: -1.2
+  expected_impact: -1.4
   parameters:
     gov.hmrc.child_benefit.amount.additional: 25
+  receipts:
+  - impact: -1.2
+    data: enhanced_frs_2022_23, unpinned (latest at the time)
+    model: 2.38.0 (bda6d2ddf, #1228, 2025-07-14)
+  - impact: -1.222
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: -1.428
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)
 - name: Reduce Universal Credit taper rate to 20%
-  expected_impact: -18.1
+  expected_impact: -21.3
   tolerance: 3.0
   parameters:
     gov.dwp.universal_credit.means_test.reduction_rate: 0.2
+  receipts:
+  - impact: -18.1
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.78.0 (e4be118a7, #1572, 2026-04-11)
+  - impact: -18.354
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: -21.266
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)
 - name: Raise Class 1 main employee NICs rate to 10%
-  expected_impact: 13.0
+  expected_impact: 12.6
   parameters:
     gov.hmrc.national_insurance.class_1.rates.employee.main: 0.1
+  receipts:
+  - impact: 13.0
+    data: enhanced_frs_2023_24, unpinned (latest at the time)
+    model: 2.59.0 (53c38d229, #1396, 2025-11-27)
+  - impact: 13.263
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: 12.566
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)
 - name: Raise VAT standard rate by 2pp
-  expected_impact: 21.3
+  expected_impact: 34.5
   tolerance: 1.5
   parameters:
     gov.hmrc.vat.standard_rate: 0.22
+  # The move from 21.3 is the data: on 1.58.0 recorded full-rate consumption
+  # is 62% higher than on 1.40.3, and the VAT coverage factor (#1996, #2187)
+  # was set on older data.
+  receipts:
+  - impact: 21.3
+    data: enhanced_frs_2023_24, unpinned (latest at the time)
+    model: 2.75.3 (bc59ba950, #1540, 2026-03-29)
+  - impact: 21.222
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: 34.478
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)
 - name: Raise additional rate by 3pp
-  expected_impact: 4.4
+  expected_impact: 3.8
   parameters:
     gov.hmrc.income_tax.rates.uk[2].rate: 0.48
+  receipts:
+  - impact: 4.4
+    data: enhanced_frs_2022_23, unpinned (latest at the time)
+    model: 2.35.0 (88bdf190b, #1207, 2025-07-11)
+  - impact: 3.993
+    data: 1.40.3 enhanced_frs_2023_24
+    model: 2.126.8 (6d89338ab, 2026-10-11)
+  - impact: 3.756
+    data: 1.58.0 enhanced_frs_2024_25
+    model: 2.126.8 (6d89338ab, 2026-10-11)

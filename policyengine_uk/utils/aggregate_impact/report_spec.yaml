@@ -1,0 +1,88 @@
+# What the aggregate-impact report measures and when it flags a move.
+schema_version: 1
+
+# Model periods are fiscal years: 2026 is 2026-27. The horizon spans the
+# current fiscal year's predecessor (2025-26, the last year of outturn the
+# Budget compares against) through 2031-32, the last year of the Autumn
+# Budget 2026 scorecard. Every year is a full microsimulation run.
+horizon:
+  first_year: 2025
+  last_year: 2031
+
+# Year of the counted-once check, which perturbs every component once.
+guard_year: 2026
+
+poverty:
+  measures:
+    - id: absolute_bhc
+      label: Absolute poverty, before housing costs
+      variable: in_poverty_bhc
+    - id: absolute_ahc
+      label: Absolute poverty, after housing costs
+      variable: in_poverty_ahc
+    - id: relative_bhc
+      label: Relative poverty, before housing costs
+      variable: in_relative_poverty_bhc
+    - id: relative_ahc
+      label: Relative poverty, after housing costs
+      variable: in_relative_poverty_ahc
+  groups:
+    - id: all
+      label: Everyone
+    - id: children
+      label: Children
+      variable: is_hbai_dependent_child
+    - id: working_age_adults
+      label: Working-age adults
+      variable: is_hbai_working_age_adult
+    - id: pensioners
+      label: Pensioners
+      variable: is_hbai_pensioner
+
+inequality:
+  - id: gini_equiv_hbai_bhc
+    label: Gini coefficient, equivalised HBAI income before housing costs
+    variable: equiv_hbai_household_net_income
+
+deciles:
+  # Households are placed in deciles by the base run's own decile variable
+  # (person-weighted equivalised HBAI income); head incomes are compared
+  # household by household within those base deciles.
+  decile_variable: household_income_decile
+  income_variable: household_net_income
+
+# A move is flagged for review when |head - base| exceeds
+# max(absolute, relative * |base|). Flags never fail the job: intended policy
+# changes move numbers. These thresholds are proposals awaiting the
+# numerical-acceptance ruling (cos d1344).
+flags:
+  gbp:
+    absolute: 100000000
+    relative: 0.001
+  count:
+    absolute: 5000
+    relative: 0.005
+  rate:
+    absolute: 0.001
+  index:
+    absolute: 0.001
+  decile_relative:
+    absolute: 0.001
+  gbp_household:
+    absolute: 10
+    relative: 0.001
+  reform_gbp:
+    absolute: 100000000
+    relative: 0.01
+
+# Relative tolerance for accounting identities between weighted totals. The
+# model stores values as float32, so totals summed in different orders differ
+# by a few parts in ten million.
+identity_relative_tolerance: 0.000001
+identity_absolute_tolerance_gbp: 1000000
+
+# Tolerance on the counted-once coefficient (1 per unit perturbed).
+counted_once_tolerance: 0.001
+
+comment:
+  max_characters: 60000
