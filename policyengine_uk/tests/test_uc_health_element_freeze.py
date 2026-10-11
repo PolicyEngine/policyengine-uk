@@ -23,6 +23,11 @@ Invariants:
    changed value; switching the freeze or the rebalancing reforms off
    restores CPI uprating; a different CPI forecast leaves the frozen years
    alone and moves the later ones.
+5. One path: ``rebalancing.new_claimant_health_element``, the copy of the
+   amount the rebalancing scenario pays new claimants for 2026-27 to
+   2029-30, equals the element amount in every year from 2026-27, under any
+   freeze schedule or CPI path. So a lifted freeze reaches a simulated new
+   claimant.
 """
 
 import pytest
@@ -33,6 +38,7 @@ from policyengine_core.parameters.operations.uprate_parameters import (
     uprate_parameters,
 )
 
+import policyengine_uk.scenarios.uc_reform as uc_reform
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import Scenario
 from policyengine_uk.parameters.gov.dwp.universal_credit.rebalancing.create_health_element_uprating import (
@@ -43,6 +49,7 @@ from policyengine_uk.system import system
 AMOUNT = "gov.dwp.universal_credit.elements.disabled.amount"
 FREEZE = "gov.dwp.universal_credit.rebalancing.health_element_freeze"
 ACTIVE = "gov.dwp.universal_credit.rebalancing.active"
+NEW_CLAIMANT_AMOUNT = "gov.dwp.universal_credit.rebalancing.new_claimant_health_element"
 OBR_CPI = "gov.economic_assumptions.yoy_growth.obr.consumer_price_index"
 # Universal Credit Act 2025 s. 2: the 2026-27 amount, a month.
 ACT_AMOUNT = 217.26
@@ -63,6 +70,14 @@ def amount_path(parameters, years) -> dict:
 
 def benefit_index(parameters, year: int) -> float:
     return parameters.gov.benefit_uprating_cpi(at(year))
+
+
+def assert_one_path(parameters, years) -> None:
+    """Invariant 5: the scenario's new-claimant amount equals the element
+    amount."""
+    new_claimant = parameters.get_child(NEW_CLAIMANT_AMOUNT)
+    for year, amount in amount_path(parameters, years).items():
+        assert new_claimant(at(year)) == pytest.approx(amount, rel=1e-12)
 
 
 # A single claimant aged 30 with LCWRA in 2030-31.
@@ -139,6 +154,11 @@ def test_household_element_after_the_freeze():
     )
 
 
+def test_the_scenario_pays_new_claimants_the_element_amount():
+    """Invariant 5 on the baseline."""
+    assert_one_path(system.parameters, range(2026, HORIZON + 1))
+
+
 # Reforms on the full pipeline (invariant 4).
 
 
@@ -150,6 +170,7 @@ def test_switching_the_freeze_off_restores_cpi_uprating(parameter):
     for year in range(2027, 2032):
         growth = benefit_index(parameters, year) / benefit_index(parameters, 2026)
         assert path[year] == pytest.approx(ACT_AMOUNT * growth, rel=1e-12)
+    assert_one_path(parameters, range(2026, 2032))
 
 
 def test_unfreezing_one_year_uprates_that_year_and_holds_the_rest():
@@ -159,6 +180,67 @@ def test_unfreezing_one_year_uprates_that_year_and_holds_the_rest():
     assert path[2027] == pytest.approx(ACT_AMOUNT)
     assert path[2028] == pytest.approx(ACT_AMOUNT * growth, rel=1e-12)
     assert path[2029] == pytest.approx(path[2028], rel=1e-12)
+    assert_one_path(parameters, range(2026, 2031))
+
+
+class _NewClaimantDraw:
+    """Stands in for the scenario's random draw: every benefit unit draws 0,
+    below each year's new-claimant share."""
+
+    def random(self, size):
+        return uc_reform.np.zeros(size)
+
+
+def new_claimant_situation(years) -> dict:
+    """A single claimant aged 30 with LCWRA who is a new claimant."""
+    benunit = {"members": ["person"]}
+    # Where the claim status is an input, state it; the draw then has no say.
+    if "uc_receives_new_claimant_health_element" in system.variables:
+        benunit["uc_receives_new_claimant_health_element"] = {
+            year: True for year in years
+        }
+    return {
+        "people": {
+            "person": {
+                "age": {year: 30 for year in years},
+                "employment_income": {year: 0 for year in years},
+                "uc_limited_capability_for_WRA": {year: True for year in years},
+            }
+        },
+        "benunits": {"benunit": benunit},
+        "households": {"household": {"members": ["person"]}},
+    }
+
+
+def test_lifting_the_freeze_reaches_a_simulated_new_claimant(monkeypatch):
+    """Invariant 5 in a simulation: for 2026-27 to 2029-30 the rebalancing
+    scenario sets the element, and a new claimant's follows the freeze."""
+    monkeypatch.setattr(
+        uc_reform.np.random, "default_rng", lambda seed: _NewClaimantDraw()
+    )
+    years = range(2026, 2030)
+    frozen = Simulation(situation=new_claimant_situation(years))
+    for year in years:
+        assert frozen.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
+            12 * ACT_AMOUNT, rel=1e-6
+        )
+    lifted = Simulation(
+        situation=new_claimant_situation(years),
+        scenario=Scenario(
+            parameter_changes={FREEZE: {"2028": False, "2029": False}},
+            applied_before_data_load=True,
+        ),
+    )
+    parameters = lifted.tax_benefit_system.parameters
+    assert lifted.calculate("uc_LCWRA_element", 2027)[0] == pytest.approx(
+        12 * ACT_AMOUNT, rel=1e-6
+    )
+    for year in (2028, 2029):
+        growth = benefit_index(parameters, year) / benefit_index(parameters, 2027)
+        assert growth > 1
+        assert lifted.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
+            12 * ACT_AMOUNT * growth, rel=1e-6
+        )
 
 
 def test_a_changed_amount_is_held_through_the_freeze():
@@ -205,6 +287,7 @@ def test_any_cpi_forecast_leaves_the_frozen_years_alone(growth):
         ratio = benefit_index(parameters, year) / benefit_index(parameters, year - 1)
         assert path[year] == pytest.approx(path[year - 1] * max(1.0, ratio), rel=1e-12)
         assert path[year] >= path[year - 1]
+    assert_one_path(parameters, range(2026, 2034))
 
 
 # Properties on a small parameter tree run through the same builder and core
@@ -251,6 +334,12 @@ def uprated_tree(
                                 "2026-04-06": True,
                                 "2030-04-06": False,
                             }
+                        },
+                        "new_claimant_health_element": {
+                            "values": {"2026-01-01": ACT_AMOUNT},
+                            "metadata": {
+                                "uprating": "gov.dwp.universal_credit.elements.disabled.uprating"
+                            },
                         },
                     },
                     "elements": {
@@ -304,6 +393,7 @@ def test_frozen_years_hold_for_any_cpi_path(growth):
     for year in FROZEN_YEARS:
         assert amount(at(year)) == pytest.approx(ACT_AMOUNT, abs=1e-9)
     tree_rule_holds(root, lambda year: year in FROZEN_YEARS, 2026, ACT_AMOUNT)
+    assert_one_path(root, range(2026, INDEX_LAST_YEAR + 1))
 
 
 @TREE_SETTINGS
@@ -340,6 +430,7 @@ def test_any_freeze_schedule_holds_exactly_its_years(growth, frozen, inactive):
         2026,
         ACT_AMOUNT,
     )
+    assert_one_path(root, range(2026, INDEX_LAST_YEAR + 1))
 
 
 @TREE_SETTINGS

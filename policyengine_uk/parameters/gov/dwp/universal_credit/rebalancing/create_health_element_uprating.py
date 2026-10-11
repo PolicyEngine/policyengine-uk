@@ -32,9 +32,18 @@ holds the amount through the frozen years and then raises it by each later
 year's increase in the benefit index, from the frozen amount rather than
 with the frozen years' increases added back.
 
+``rebalancing/new_claimant_health_element.yaml``, the copy of the s. 2 amount
+that ``scenarios/uc_reform.py`` pays new claimants for 2026-27 to 2029-30, is
+uprated by the same index, so a simulation sees the same path as the element
+amount when the freeze or the CPI forecast changes. A reform to one of the two
+amounts does not move the other.
+
 The pre-2026 (protected) amount of the element is also frozen by s. 3 and
 raised under s. 4; ``scenarios/uc_reform.py`` sets it for 2026-27 to
 2029-30. The LCW element is not modelled.
+
+Other Universal Credit amounts are uprated by ``gov.benefit_uprating_cpi``
+directly and would fall with it; the two agree whenever the index rises.
 
 This runs in ``process_parameters`` before uprating, so a change made through
 ``Scenario(parameter_changes=...)``, which re-runs that pipeline, reaches the
@@ -166,7 +175,10 @@ def add_uc_health_element_uprating(parameters: ParameterNode) -> ParameterNode:
                     "Uprating index for the Universal Credit LCWRA element: "
                     "the benefit uprating index, held flat in the tax years "
                     "for which the Universal Credit Act 2025 freezes the "
-                    "element and never falling."
+                    "element and never falling. It is built when parameters "
+                    "are processed; to change it, change "
+                    "gov.dwp.universal_credit.rebalancing."
+                    "health_element_freeze or the benefit uprating index."
                 ),
                 "values": health_element_index_values(parameters),
                 "metadata": {
