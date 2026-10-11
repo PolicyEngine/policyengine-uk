@@ -1,3 +1,48 @@
+## [2.126.7] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation(dataset=<DataFrame>)` for frames in which a benefit unit or household has more than one person. Each benefit unit and household now takes the value on its members' rows, single-person groups no longer take each other's values when the rows are not in identifier order, identifier columns are matched by exact name, an exported frame saved as CSV loads back, and the simulation's `dataset` holds the multi-year dataset the frame describes. Identifiers are read as whole numbers, value by value; frames whose identifier columns contradict each other, repeat a person, or name people or groups only with floats that may stand for more than one identifier (32-bit floats of `2**24` or more) are refused instead of merging households.
+  - Fixed the NHS, education and other public spending budget reforms (`gov.contrib.policyengine.budget`) raising `KeyError` when a simulation's data leaves an income decile empty, as a small sample does. An empty decile's share now goes to nobody.
+
+
+## [2.126.6] - 2026-10-11
+
+### Fixed
+
+- - Defined the young person in Scotland's working-age Council Tax Reduction scheme as a Universal Credit qualifying young person from 2022-23 (Council Tax Reduction (Scotland) Regulations 2021 reg. 6), for lone-parent status and for the members whose income counts; other schemes keep the Child Benefit definition.
+
+
+## [2.126.5] - 2026-10-11
+
+### Fixed
+
+- - Stopped counting a benefit unit's own claimant or partner as its child or qualifying young person for Child Benefit, Child Tax Credit and Pension Credit (SSCBA 1992 ss.141 and 143 and Child Benefit (General) Regulations 2006 regs 12-13; CTC Regs 2002 reg. 3; SPC Regs 2002 Sch. IIA para. 3), so a lone 16- to 19-year-old no longer gets Child Benefit, a Child Tax Credit child element or a Pension Credit child addition for themselves.
+
+
+## [2.126.4] - 2026-10-11
+
+### Fixed
+
+- - Place a household with no BRMA input in its region's BRMA with the most private-rented households, from the 2021 and 2022 censuses (Maidstone if the region is unknown), instead of Maidstone in every region. A household that sets no region is in London, the region default, so it now gets Inner South East London's LHA rates. A BRMA input still carries forward to later years while the household stays in the same region.
+
+
+## [2.126.3] - 2026-10-10
+
+### Fixed
+
+- - Pay pre-2026 Universal Credit health element claimants the legislated protected LCWRA amount (£429.80 a month in 2026-27, one amount for every claimant type), and project later years at the Universal Credit Act 2025 s. 4 floor.
+- - Stopped a negative income source, such as a property loss or a self-employment loss, from reducing a claimant's other Pension Credit income.
+
+
+## [2.126.2] - 2026-10-10
+
+### Fixed
+
+- - Counted salary sacrifice pension contributions only for people with pay, so from 2029 the excess over the £2,000 cap no longer gives employment income to people without pay.
+- - From 2031-32, index the personal allowance and basic rate limit by the previous September's CPI with the statutory round-ups (Income Tax Act 2007 ss57 and 21), keep the primary threshold, upper earnings limit and Class 4 profits limits aligned with them, and raise the secondary threshold by September CPI. Before, they followed calendar-year CPI series without rounding.
+
+
 ## [2.126.1] - 2026-10-10
 
 ### Fixed
