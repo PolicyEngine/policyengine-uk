@@ -178,8 +178,12 @@ def runtime_identity() -> dict:
     }
 
 
-def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec):
-    """Household-level accounting identity: components add up to the total."""
+def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec, weights):
+    """Household-level accounting identity: components add up to the total.
+
+    The detail gives counts and weighted totals only: results may be public,
+    so they never quote one household's value.
+    """
     difference = components_hh - total_hh
     scale = np.abs(total_hh) + 1.0
     tolerance = 1.0 + spec.identity_relative_tolerance * scale
@@ -188,10 +192,10 @@ def _identity_check(rec, check_id, label, components_hh, total_hh, year, spec):
     ok = bool(finite and not bad.any())
     detail = ""
     if not ok:
-        worst = int(np.nanargmax(np.abs(difference))) if difference.size else 0
+        gap = float(np.nansum(weights * np.where(bad, difference, 0.0)))
         detail = (
-            f"{fiscal_year_label(year)}: {int(bad.sum())} households differ; "
-            f"largest gap £{float(difference[worst]):,.2f}"
+            f"{fiscal_year_label(year)}: {int(bad.sum())} households differ, "
+            f"by a weighted £{gap:,.0f} in total"
         )
     rec.check(check_id, label, ok, detail, section="identities")
 
@@ -259,7 +263,7 @@ def measure_year(
                 f"{head.label} is never negative",
                 not bool(negative.any()),
                 f"{fiscal_year_label(year)}: {int(negative.sum())} units below zero, "
-                f"minimum £{float(np.nanmin(values)):,.2f}",
+                f"a weighted £{float(np.sum(hw * np.where(hh < 0, hh, 0.0))):,.0f} in total",
                 section="signs",
             )
         if not head.zero_at_baseline:
@@ -311,6 +315,7 @@ def measure_year(
             hh,
             year,
             spec,
+            hw,
         )
 
     def partition_sum(total):
@@ -377,6 +382,7 @@ def measure_year(
             gov_balance,
             year,
             spec,
+            hw,
         )
     for variable, label in HOUSEHOLD_TOTALS.items():
         if variable in tbs_variables:
@@ -415,6 +421,7 @@ def measure_year(
             array(sim, "household_net_income", year).astype(np.float64),
             year,
             spec,
+            hw,
         )
 
     pw = weights["person"]
@@ -793,7 +800,17 @@ def measure(
     return result, households
 
 
+PRIVATE_DIRECTORY = "private"
+HOUSEHOLDS_FILE = "households.npz"
+
+
 def write_result(out_dir, result: Mapping, households: Optional[Mapping] = None):
+    """Write the aggregates to result.json and household detail to private/.
+
+    ``result.json`` holds only aggregates and may be published. Everything
+    under ``private/`` is household-level detail from licensed microdata: it
+    exists for the decile comparison and must never be uploaded or shared.
+    """
     out_dir = Path(out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
     with open(out_dir / "result.json", "w") as f:
@@ -804,7 +821,9 @@ def write_result(out_dir, result: Mapping, households: Optional[Mapping] = None)
             for year, columns in households.items()
             for name, values in columns.items()
         }
-        np.savez_compressed(out_dir / "households.npz", **arrays)
+        private = out_dir / PRIVATE_DIRECTORY
+        private.mkdir(exist_ok=True)
+        np.savez_compressed(private / HOUSEHOLDS_FILE, **arrays)
 
 
 def read_result(out_dir) -> tuple:
@@ -816,7 +835,7 @@ def read_result(out_dir) -> tuple:
     with open(path) as f:
         result = json.load(f)
     households = None
-    npz = out_dir / "households.npz"
+    npz = out_dir / PRIVATE_DIRECTORY / HOUSEHOLDS_FILE
     if npz.exists():
         households = {}
         with np.load(npz) as data:

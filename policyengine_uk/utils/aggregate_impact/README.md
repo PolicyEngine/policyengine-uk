@@ -16,6 +16,17 @@ The report covers:
 The `Aggregate impact` workflow (`.github/workflows/aggregate-impact.yaml`)
 runs it on every pull request and keeps one comment on the PR up to date.
 
+## Data protection
+
+The certified dataset is licensed survey microdata. Only aggregates may be
+published: `result.json`, the comment and the comparison summary. `measure`
+also writes household-level detail for the decile comparison to
+`private/households.npz`. Never upload, attach, commit or share anything
+under `private/`, and never put the dataset in a shared cache. The workflow
+measures both sides in one job so that this detail stays on the runner, and
+`test_aggregate_impact_workflow.py` fails if the workflow could publish it.
+Check details give counts and weighted totals, never one household's value.
+
 ## Running it
 
 ```bash
@@ -28,8 +39,8 @@ uv run python -m policyengine_uk.utils.aggregate_impact compare \
 ```
 
 `measure` downloads the pinned file if it isn't cached, checks its SHA-256, and
-writes `result.json` (figures, checks, provenance) and `households.npz`
-(household detail for the decile comparison). If it crashes, it still writes a
+writes `result.json` (figures, checks, provenance) and
+`private/households.npz` (household detail for the decile comparison). If it crashes, it still writes a
 `result.json` recording the crash, so the comparison can report it.
 
 To measure an older checkout with this version of the tool, copy this

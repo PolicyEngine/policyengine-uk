@@ -165,3 +165,24 @@ def test_relative_reforms_scale_their_parameters_and_move_their_targets(measured
             assert outcomes[reform.id]["parameters"][path][str(YEAR)] == pytest.approx(
                 baseline * factor
             )
+
+
+def test_the_published_result_holds_aggregates_only(measured):
+    """result.json may be public: no household-length arrays, no single values."""
+    result, households, _, _ = measured
+    n_households = len(households[str(YEAR)]["household_id"])
+
+    def numeric_lists(node):
+        if isinstance(node, dict):
+            for value in node.values():
+                yield from numeric_lists(value)
+        elif isinstance(node, list):
+            if node and all(isinstance(v, (int, float)) for v in node):
+                yield node
+            for value in node:
+                yield from numeric_lists(value)
+
+    longest = max((len(values) for values in numeric_lists(result)), default=0)
+    assert longest <= 50 < n_households
+    details = " ".join(d for c in result["checks"] for d in c["details"])
+    assert "minimum £" not in details and "largest gap" not in details
