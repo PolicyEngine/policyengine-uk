@@ -115,7 +115,7 @@
     # 49.995% is rounded down to 49% (s. 681C(3)): £490.
     CB_HITC: [490, 0, 0]
 
-- name: Case 10, a zero behavioural threshold still requires a positive charge.
+- name: Case 10, a zero behavioural threshold still requires a positive continuous charge share.
   period: 2026
   input:
     adjusted_net_income: [59_999, 60_000, 60_001]

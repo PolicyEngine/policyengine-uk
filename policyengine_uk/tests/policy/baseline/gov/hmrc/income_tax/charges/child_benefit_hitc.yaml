@@ -156,3 +156,41 @@
     # (79,800 - 60,000) / 200 = 99%; 99% of £1,406 is £1,391.94, so £1,391.
     # Rounding only the charge (99% of £1,406.60 = £1,392.53) would give £1,392.
     CB_HITC: [1_391, 0]
+
+- name: Case 12, an income on an exact £200 step gets that many points.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 60_200
+      child:
+        age: 5
+    benunit:
+      members: [parent, child]
+  output:
+    # 1% of £1,406 is £14.06, so £14.
+    CB_HITC: [14, 0]
+
+- name: Case 13, four children's £4,199 is not rounded down to £4,198.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 90_000
+      child1:
+        age: 2
+      child2:
+        age: 4
+      child3:
+        age: 6
+      child4:
+        age: 8
+    benunit:
+      members: [parent, child1, child2, child3, child4]
+  output:
+    # 52 x (27.05 + 3 x 17.90) = 4,199.
+    CB_HITC: [4_199, 0, 0, 0, 0]

@@ -1,8 +1,9 @@
 import numpy as np
 
-# Floating-point slack, so an exact whole number computed as 55.999999...
-# is not rounded down to the number below.
-ROUNDING_TOLERANCE = 1e-9
+# Slack for floating-point error, so an exact whole number held as, say,
+# 55.999999 (float32 storage, or a fraction such as 0.01 that binary floats
+# cannot hold exactly) is not rounded down to the number below.
+ROUNDING_TOLERANCE = 1e-6
 
 
 def child_benefit_charge_share(
@@ -25,15 +26,25 @@ def child_benefit_charge_percentage(
 ) -> np.ndarray:
     """The appropriate percentage of ITEPA 2003 s. 681C(2), as a fraction.
 
-    The share of the phase-out band crossed is a percentage of one point per
-    hundredth of the band (one point per £200 from 2024-25), which s. 681C(3)(b)
-    rounds down to a whole number.
+    One percentage point per hundredth of the phase-out band crossed (per £200
+    from 2024-25), capped at 100 and rounded down to a whole number
+    (s. 681C(3)(b)). Worked in float64, multiplying before dividing, so that
+    an income on an exact step gives exactly that many points; a nonpositive
+    band width is a cliff (100 points above the start).
     """
-    share = child_benefit_charge_share(income, phase_out_start, phase_out_end)
-    return np.floor(share * 100 + ROUNDING_TOLERANCE) / 100
+    income = np.asarray(income, dtype=np.float64)
+    width = float(phase_out_end) - float(phase_out_start)
+    excess = np.maximum(income - float(phase_out_start), 0)
+    if width > 0:
+        points = np.minimum(excess * 100 / width, 100)
+    else:
+        points = np.where(income > float(phase_out_start), 100.0, 0.0)
+    return np.floor(points + ROUNDING_TOLERANCE) / 100
 
 
 def round_down_to_pounds(amount: np.ndarray) -> np.ndarray:
     """ITEPA 2003 s. 681C(3)(a): amounts not a whole number of pounds are
-    rounded down."""
-    return np.floor(np.asarray(amount) + ROUNDING_TOLERANCE)
+    rounded down. The amount is first taken to the nearest penny in float64,
+    so that £4,199 stored as 4,198.9995 is not rounded down to £4,198."""
+    pence = np.round(np.asarray(amount, dtype=np.float64) * 100)
+    return np.floor(pence / 100 + ROUNDING_TOLERANCE)
