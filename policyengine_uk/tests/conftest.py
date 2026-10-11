@@ -120,11 +120,16 @@ def pytest_collection_modifyitems(config, items):
 #   never scans or frees frozen objects. Objects created by tests are collected
 #   as before.
 #
-# On test_ni_class_1_age_properties.py (52 examples, no coverage) this cut CPU
-# time from 88-96 seconds to 61, and raised peak memory from 0.79 GB to 0.89 GB
-# (measured locally on 10 October 2026; freezing alone gave 77 seconds, the
-# threshold alone 67). It changes when memory is reclaimed, not which tests run
-# or what they compute.
+# Measured on CI on 11 October 2026 (PR #2317: runs 38155711978 and
+# 38158313028, each running the three shards under several settings at once
+# from one commit): the workers' CPU time, summed over the shards, fell from
+# 204 to 172 minutes, and their time in the collector from 83 to 55; the
+# slowest shard took 20 minutes instead of 24. Peak runner memory did not
+# change (15.3 GiB of 15.6). In the first run, freezing alone saved nothing,
+# the threshold alone saved 13 minutes, and with a threshold of 25,000 two of
+# the three shards stalled. Every test had the same outcome under each
+# setting: this changes when memory is reclaimed, not which tests run or what
+# they compute.
 GC_THRESHOLD = (10_000, 10, 10)
 
 # gc.get_objects() leaves out frozen objects, so release_dead_variable_modules
