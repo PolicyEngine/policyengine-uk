@@ -23,9 +23,10 @@ model's lists, so these tests compare two specifications:
    delta per member and leaves every other head of those totals unchanged.
    A head counted twice, as corporate SDLT was through ``expected_sdlt``
    (#2159), moves its totals by 2 x delta.
-5. Identity (property-based): on random households, years 2025-2030, and
-   under SDLT abolition and council tax abolition, each total equals the sum
-   of its heads, less the heads ``dropped_when`` names. Heads marked
+5. Identity (property-based): on random households, some with a child at
+   private school, years 2025-2030, and under SDLT abolition, council tax
+   abolition and a restored private school VAT exemption, each total equals
+   the sum of its heads, less the heads ``dropped_when`` names. Heads marked
    ``sign: nonnegative`` are non-negative and heads marked
    ``zero_at_baseline: expected`` are zero at current law; at most one of
    SDLT, LTT and LBTT is non-zero per household.
@@ -442,6 +443,9 @@ SCENARIOS = {
     "baseline": None,
     "sdlt_abolished": {"gov.hmrc.stamp_duty.abolish": {ALWAYS: True}},
     "council_tax_abolished": {"gov.contrib.abolish_council_tax": {ALWAYS: True}},
+    "private_school_exemption_restored": {
+        "gov.hmrc.vat.private_school_fees_exempt": {ALWAYS: True}
+    },
 }
 REGIONS = ["LONDON", "NORTH_WEST", "WALES", "SCOTLAND", "NORTHERN_IRELAND"]
 amount = lambda top: st.one_of(st.just(0.0), st.floats(1_000, top))  # noqa: E731
@@ -458,6 +462,8 @@ random_household = st.fixed_dictionaries(
         "consumption": amount(80_000),
         "main_residence_value": amount(5_000_000),
         "owner": st.booleans(),
+        # A child at private school, so private school VAT is non-zero.
+        "pupil": st.booleans(),
     }
 )
 PERSON_INPUTS = {"age", "employment_income", "self_employment_income", "capital_gains"}
@@ -468,16 +474,23 @@ def random_situation(drawn: list, year: int) -> dict:
     for i, inputs in enumerate(drawn):
         person = f"person_{i}"
         people[person] = {key: {year: inputs[key]} for key in PERSON_INPUTS}
-        benunits[f"benunit_{i}"] = {"members": [person]}
+        members = [person]
+        if inputs["pupil"]:
+            people[f"child_{i}"] = {
+                "age": {year: 10},
+                "attends_private_school": {year: True},
+            }
+            members.append(f"child_{i}")
+        benunits[f"benunit_{i}"] = {"members": members}
         household = {
             key: {year: value}
             for key, value in inputs.items()
-            if key not in PERSON_INPUTS and key != "owner"
+            if key not in PERSON_INPUTS and key not in ("owner", "pupil")
         }
         household["tenure_type"] = {
             year: "OWNED_OUTRIGHT" if inputs["owner"] else "RENT_PRIVATELY"
         }
-        households[f"household_{i}"] = {"members": [person], **household}
+        households[f"household_{i}"] = {"members": members, **household}
     return {"people": people, "benunits": benunits, "households": households}
 
 
@@ -528,6 +541,10 @@ def test_each_total_is_the_sum_of_its_heads(drawn, year):
                     assert (values[head["id"]] >= 0).all(), head["id"]
                 if head.get("zero_at_baseline") == "expected":
                     np.testing.assert_array_equal(values[head["id"]], 0, head["id"])
+            # Exercise the head: it is positive wherever a pupil's fees are
+            # charged at current law.
+            pupils = np.array([h["pupil"] for h in drawn])
+            np.testing.assert_array_equal(values["private_school_vat"] > 0, pupils)
         if scenario == "sdlt_abolished":
             np.testing.assert_array_equal(values["sdlt_household"], 0)
             np.testing.assert_array_equal(values["sdlt_corporate"], 0)

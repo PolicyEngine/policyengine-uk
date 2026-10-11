@@ -43,9 +43,14 @@
 #     analytical decomposition already inside `head` through its inputs),
 #     composite (spans several heads), duplicate (same value as `head`),
 #     baseline_measure.
-#   model_double_counts[]: known violations still in the model (none).
+#   model_double_counts[]: known violations still in the model's formulas
+#     (none). An overlap that comes from the data, not the formulas, is
+#     recorded under the guard it belongs to.
 #   overlap_guards[]: the places double counting could occur, and the
-#     property the tests check for each.
+#     property the tests check for each. kind: payer_split,
+#     geographic_exclusivity, level_and_change, shared_allocation_key,
+#     overlapping_base (the heads read separate inputs but their bases are
+#     not separated household by household), read_not_inclusion.
 schema_version: 1
 
 sources:
@@ -595,20 +600,28 @@ overlap_guards:
       household_tax, as for vat and vat_change. private_school_vat_change
       reads private_school_vat.
   - id: private_school_vat_and_vat
-    kind: disjoint_bases
+    kind: overlapping_base
     heads: [vat, private_school_vat]
     property: >-
-      Neither head reads the other or the other's inputs and parameters
-      (tested in test_private_school_vat_properties.py). vat applies one
-      household full-rate share to all imputed consumption, education
-      included. The share (full_rate_vat_expenditure_rate) is trained on ETB
-      VAT paid in the financial year ending 2024, when private school fees
-      were exempt (policyengine-uk-data datasets/imputations/vat.py), and is
-      the same in every year, so vat never charges the fees at the standard
-      rate. private_school_vat charges them once, at the higher of the
-      statutory and contributed reform rates. Outside the model,
-      policyengine-uk-data calibrates weighted vat to the OBR VAT receipts
-      line, which includes VAT on private school fees from 2025-26.
+      The two heads read separate inputs and parameters (tested in
+      test_private_school_vat_properties.py), but their bases are not
+      separated household by household. vat applies one household full-rate
+      share (full_rate_vat_expenditure_rate) to all imputed consumption,
+      education included. On the microdata the share is trained on ETB VAT
+      paid in the financial year ending 2024, when private school fees were
+      exempt, and predicted from household composition and income only
+      (policyengine-uk-data datasets/imputations/vat.py): in aggregate it
+      prices the fees as exempt, and a fee-paying household's fees are
+      charged at its blended share. In a household calculation with the
+      default share of 0.5, education consumption entered as an input is
+      charged in vat as well as in private_school_vat, where attendance is
+      an input. private_school_vat charges the fees once, at the higher of
+      the statutory and contributed reform rates. On calibrated data the two
+      overlap in aggregate: policyengine-uk-data calibrates weighted vat to
+      the OBR VAT receipts line, which includes VAT on private school fees
+      from 2025-26 (costed at 1,505m pounds for 2025-26), so gov_tax counts
+      that VAT in both heads until the target nets it out
+      (policyengine-uk-data issue 567).
   - id: eligibility_reads
     kind: read_not_inclusion
     heads: [tv_licence, private_school_vat, private_school_vat_change]
