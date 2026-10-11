@@ -1,0 +1,1 @@
+- Placed the 1 September following a qualifying young person's 19th birthday from their date of birth, for Universal Credit and Pension Credit (UC Regs 2013 reg. 5(1)(b); SPC Regs 2002 reg. 4A(1)(b)). A 19-year-old in education now counts for Universal Credit by default in household calculations, as in the microdata, and Pension Credit applies the date, which it did not model.
