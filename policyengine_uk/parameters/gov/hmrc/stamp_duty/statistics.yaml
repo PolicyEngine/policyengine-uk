@@ -16,7 +16,12 @@ metadata:
 # buyer type's 2024-25 share of that property type's receipts. The OBR's
 # 2024-25 outturn equals HMRC's all-buyer totals here (£10,380m residential,
 # £3,505m non-residential), so the projection is that share times the OBR
-# forecast. Transactions and values are outturn only.
+# forecast. Holding the 2024-25 shares means the projection ignores later
+# policy or market changes that fall unevenly on buyer types. Transactions
+# and values are outturn only. corporate_sdlt allocates the corporate receipts
+# to UK households by shareholding, a modelling convention: HMRC's "other
+# buyers" are all non-natural persons, including partnerships and collective
+# investment schemes as well as companies.
 non_residential:
   corporate:
     revenue:

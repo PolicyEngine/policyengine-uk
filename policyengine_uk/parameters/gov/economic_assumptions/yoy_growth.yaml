@@ -652,6 +652,9 @@ obr:
   # 2025 EFO), 2025-2030 the March 2026 EFO forecast, and 2031 onwards the
   # average_earnings long-run path (the OBR forecasts receipts only to
   # 2030-31). Values are ratios of the published levels, to six decimals.
+  # The 2024 value never enters a projection: indices start at 1.0 in a
+  # series' first year, so it only anchors the index at 2024, where the
+  # statistics with 2024-25 as their latest outturn are uprated from.
   stamp_duty_land_tax:
     residential:
       description: Growth in stamp duty land tax receipts from residential property (England and Northern Ireland).

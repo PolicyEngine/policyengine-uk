@@ -11,7 +11,7 @@ import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import Microsimulation, parameters
+from policyengine_uk import Microsimulation, Simulation, parameters
 from policyengine_uk.data import UKSingleYearDataset
 from policyengine_uk.scenarios import no_economic_assumptions
 
@@ -33,20 +33,32 @@ SDLT_RECEIPTS_M = {
 }
 SDLT_FROM = 2019
 
-# Non-domestic rates, £ (first year in brackets): MHCLG NNDR3 non-domestic
-# rating income (2019; 2019-20 and 2020-21 from the 2023-24 release, later
-# years from the 2025-26 release); Scottish Government NDRI contributable
-# amount, latest outturn return (2019); StatsWales contribution to the pool,
-# published in £ thousand (2019); LPS non-domestic rates paid (2020).
+# Non-domestic rates, £ (first year in brackets):
+# - England local lists: MHCLG NNDR3 non-domestic rating income (2019;
+#   2019-20 and 2020-21 from the November 2025 revised data, later years
+#   from the 2025-26 release, published in £m to four decimals).
+# - England central list: Main Non-Domestic Rating Accounts, amounts received
+#   from ratepayers on the central list, published in £ thousand (2019).
+# - Scotland: NDRI contributable amount, latest outturn return (2019).
+# - Wales local lists: StatsWales contribution to the pool, published in
+#   £ thousand (2019); central list: StatsWales total rates received (2019).
+#   Values published in pounds and pence are rounded to the pound (half to even).
+# - Northern Ireland: LPS non-domestic rates paid (2020).
 BUSINESS_RATES_OUTTURN = {
-    "ENGLAND": (2019, (25_344_250_093, 12_967_918_437, 20_447_905_400,
+    "ENGLAND": (2019, (25_332_567_663, 13_115_709_138, 20_447_905_400,
                        22_923_982_400, 25_079_394_900, 26_397_345_600,
                        27_591_022_700)),
+    "ENGLAND_CENTRAL_LIST": (2019, (1_764_413_000, 1_822_745_000,
+                                    1_776_808_000, 1_770_409_000,
+                                    1_954_686_000, 2_064_205_000,
+                                    2_102_772_000)),
     "SCOTLAND": (2019, (2_752_830_731, 1_816_120_309, 2_108_180_163,
                         2_791_962_750, 3_033_471_284, 3_146_317_233,
                         3_079_138_735)),
     "WALES": (2019, (990_231_844, 952_827_214, 991_820_618, 986_435_966,
                      893_667_788, 980_085_115)),
+    "WALES_CENTRAL_LIST": (2019, (100_671_014, 102_668_488, 100_212_013,
+                                  101_438_110, 96_926_991, 104_685_854)),
     "NORTHERN_IRELAND": (2020, (380_876_615, 446_688_825, 609_651_544,
                                 702_804_905, 741_337_437, 766_153_718)),
 }  # fmt: skip
@@ -97,8 +109,10 @@ PROJECTED = {
     "non_residential.corporate": ("stamp_duty_land_tax.non_residential", 2024),
     "non_residential.household": ("stamp_duty_land_tax.non_residential", 2024),
     "ENGLAND": ("business_rates.great_britain", 2025),
+    "ENGLAND_CENTRAL_LIST": ("business_rates.great_britain", 2025),
     "SCOTLAND": ("business_rates.great_britain", 2025),
     "WALES": ("business_rates.great_britain", 2024),
+    "WALES_CENTRAL_LIST": ("business_rates.great_britain", 2024),
     "NORTHERN_IRELAND": ("business_rates.northern_ireland", 2025),
 }
 
@@ -125,11 +139,45 @@ def test_business_rates_match_published_outturn(nation):
         assert getattr(BUSINESS_RATES, nation)(INSTANT(first_year + offset)) == value
 
 
-def test_northern_ireland_business_rates_exclude_domestic_rates():
+# LPS rates paid, Northern Ireland, £: total and domestic ("Rates collected by
+# District Council and Sector"), 2020-21 to 2025-26.
+NI_TOTAL_RATES_PAID = (1_101_723_078, 1_195_019_197, 1_380_794_919,
+                       1_540_739_422, 1_630_880_597, 1_714_042_296)  # fmt: skip
+NI_DOMESTIC_RATES_PAID = (720_846_463, 748_330_372, 771_143_375, 837_934_517,
+                          889_543_160, 947_888_579)  # fmt: skip
+
+
+@pytest.mark.parametrize("offset", range(len(NI_TOTAL_RATES_PAID)))
+def test_northern_ireland_business_rates_are_total_rates_less_domestic(offset):
     # The previous value, £1,334m, was total NI rates (district £590m plus
-    # regional £744m, domestic and non-domestic). LPS records £1,631m of total
-    # rates paid in 2024-25, £889.5m of it domestic.
-    assert BUSINESS_RATES.NORTHERN_IRELAND(INSTANT(2024)) == 741_337_437
+    # regional £744m, domestic and non-domestic together), so business_rates
+    # repeated NI domestic rates, which domestic_rates already charges.
+    year = 2020 + offset
+    business_rates = BUSINESS_RATES.NORTHERN_IRELAND(INSTANT(year))
+    # LPS publishes each column to the pound, so the difference can be £1 off.
+    assert business_rates == pytest.approx(
+        NI_TOTAL_RATES_PAID[offset] - NI_DOMESTIC_RATES_PAID[offset], abs=1
+    )
+
+
+# OBR's Business rates line (cash basis, receipts Table 3.8, £bn): 2024-25
+# outturn and 2025-26 forecast. England, Scotland and Wales, local and
+# central lists together, should cover the same receipts.
+GB_SERIES = (
+    "ENGLAND",
+    "ENGLAND_CENTRAL_LIST",
+    "SCOTLAND",
+    "WALES",
+    "WALES_CENTRAL_LIST",
+)
+
+
+@pytest.mark.parametrize("year", [2024, 2025])
+def test_great_britain_statistics_cover_the_obr_business_rates_line(year):
+    total = sum(getattr(BUSINESS_RATES, n)(INSTANT(year)) for n in GB_SERIES)
+    assert total / 1e9 == pytest.approx(
+        _obr("business_rates.great_britain", year), rel=0.02
+    )
 
 
 @pytest.mark.parametrize("series", list(OBR_RECEIPTS_BN))
@@ -155,17 +203,22 @@ def test_projection_tracks_obr_receipts(name):
         assert statistic(INSTANT(year)) == pytest.approx(expected, rel=2e-5)
 
 
+# The economic-assumption indices run to 2039, so the projections do too.
+LAST_INDEXED_YEAR = 2039
+
+
 @settings(max_examples=200, deadline=None, derandomize=True)
 @given(
-    year=st.integers(2025, 2045),
-    other_year=st.integers(2025, 2045),
+    year=st.integers(2025, LAST_INDEXED_YEAR),
+    other_year=st.integers(2025, LAST_INDEXED_YEAR),
 )
 def test_projection_preserves_shares(year, other_year):
     """Uprating scales a whole receipts line, so shares within it never move.
 
     Each buyer type keeps its 2024-25 share of its property type's SDLT, and
-    England, Scotland and Wales keep their shares of the three-nation total
-    from 2025-26 on (Wales's 2024-25 outturn is grown by the same index).
+    the England, Scotland and Wales series (local and central lists) keep
+    their shares of the Great Britain total from 2025-26 on (the Welsh
+    series' 2024-25 outturn is grown by the same index).
     """
 
     def shares(t):
@@ -174,15 +227,21 @@ def test_projection_preserves_shares(year, other_year):
             node = getattr(SDLT, property_type)
             corporate = node.corporate.revenue(INSTANT(t))
             out.append(corporate / (corporate + node.household.revenue(INSTANT(t))))
-        gb = [
-            getattr(BUSINESS_RATES, n)(INSTANT(t))
-            for n in ("ENGLAND", "SCOTLAND", "WALES")
-        ]
+        gb = [getattr(BUSINESS_RATES, n)(INSTANT(t)) for n in GB_SERIES]
         out += [value / sum(gb) for value in gb]
         return np.array(out)
 
     np.testing.assert_allclose(shares(year), shares(other_year), rtol=1e-9)
     np.testing.assert_allclose(shares(year)[:2], shares(2024)[:2], rtol=1e-9)
+
+
+@pytest.mark.parametrize("name", list(PROJECTED))
+def test_projection_is_flat_after_the_last_indexed_year(name):
+    statistic = _statistic(name)
+    last = statistic(INSTANT(LAST_INDEXED_YEAR))
+    assert statistic(INSTANT(LAST_INDEXED_YEAR - 1)) < last
+    for year in range(LAST_INDEXED_YEAR + 1, 2050):
+        assert statistic(INSTANT(year)) == last
 
 
 @pytest.mark.parametrize("name", list(PROJECTED))
@@ -254,6 +313,11 @@ def test_microsimulation_allocates_each_statistic_once(year):
 
 
 def test_no_economic_assumptions_holds_statistics_at_latest_outturn():
+    # The scenario runs before the dataset loads, so it zeroes growth from the
+    # class default input period, not the dataset's year. Every statistic's
+    # latest outturn is 2024-25 or 2025-26, so the projection holds at that
+    # outturn only while the cutoff is 2025 or earlier.
+    assert Simulation.default_input_period <= 2025
     sim = Microsimulation(dataset=_dataset(), scenario=no_economic_assumptions)
     weights = sim.calculate("household_weight", 2030).values
 
