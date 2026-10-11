@@ -458,10 +458,9 @@ def with_identifiers_in_each_year(
     to 2029, holds its identifiers in that year only by carrying them forward
     from an earlier one; and in a year before its data, where inputs do not
     carry back, its identifiers are the default, zero. policyengine-core
-    exports an
-    input only for the periods it was set for. Giving every identifier for
-    each year makes the frame load back to a simulation that exports the
-    same frame.
+    exports an input only for the periods it was set for. Giving every
+    identifier for each year makes the frame load back to a simulation that
+    exports the same frame.
 
     A simulation holds one set of people and groups, so every column of an
     identifier names the same ones (the loader refuses a frame whose columns
