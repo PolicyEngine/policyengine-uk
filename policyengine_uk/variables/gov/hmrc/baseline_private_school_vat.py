@@ -18,6 +18,10 @@ class baseline_private_school_vat(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
+        # parameters.baseline is cloned before the fiscal-year conversion, so
+        # it reads the exemption and rates at 1 January where the level reads
+        # them at 30 April. They agree while none changes between those
+        # dates; baseline_vat has the same property.
         return private_school_vat_liability(
             household,
             period,

@@ -25,6 +25,12 @@ def private_school_vat_liability(household, period, policy, assumptions):
     fees that bears VAT net of the schools' input tax. The two are separate
     so that baseline_private_school_vat can apply baseline policy to this
     simulation's assumptions.
+
+    Every imputed pupil is charged. The law excepts education in a nursery
+    class (Sch 9 Part 3 item 1(b)) and charges 18-year-olds in sixth forms,
+    but attends_private_school imputes pupils over all under-18s, calibrated
+    to the total pupil count; policyengine-uk-data issue 568 moves the
+    imputation to school ages.
     """
     pupils = add(household, period, ["attends_private_school"])
     return (

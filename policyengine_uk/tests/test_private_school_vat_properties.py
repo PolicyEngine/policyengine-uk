@@ -47,7 +47,6 @@ from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
-from policyengine_uk.system import system
 
 ALWAYS = "2000-01-01.2100-12-31"
 CONTRIB = "gov.contrib.labour.private_school_vat"
@@ -127,7 +126,8 @@ def statutory_rate(p: dict) -> float:
         return 0.0
     if p["standard_rate"] is not None:
         return p["standard_rate"]
-    return float(system.parameters.gov.hmrc.vat.standard_rate(f"{year}-01-01"))
+    # VATA 1994 s.2(1): 20 per cent since 4 January 2011.
+    return 0.2
 
 
 def calc(households, p, variable, **overrides):

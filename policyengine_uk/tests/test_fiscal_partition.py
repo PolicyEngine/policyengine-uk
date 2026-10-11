@@ -42,7 +42,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import yaml
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 import policyengine_uk
@@ -494,6 +494,24 @@ def random_situation(drawn: list, year: int) -> dict:
     return {"people": people, "benunits": benunits, "households": households}
 
 
+# Always one household with a pupil, so the private school checks are never
+# vacuous.
+PUPIL_HOUSEHOLD = {
+    "region": "LONDON",
+    "age": 45,
+    "employment_income": 120_000.0,
+    "self_employment_income": 0.0,
+    "capital_gains": 0.0,
+    "main_residential_property_purchased": 0.0,
+    "shareholding": 0.0,
+    "council_tax": 2_500.0,
+    "consumption": 50_000.0,
+    "main_residence_value": 900_000.0,
+    "owner": True,
+    "pupil": True,
+}
+
+
 @settings(
     max_examples=10,
     deadline=None,
@@ -504,6 +522,7 @@ def random_situation(drawn: list, year: int) -> dict:
     drawn=st.lists(random_household, min_size=2, max_size=2),
     year=st.integers(2025, 2030),
 )
+@example(drawn=[PUPIL_HOUSEHOLD, {**PUPIL_HOUSEHOLD, "pupil": False}], year=2026)
 def test_each_total_is_the_sum_of_its_heads(drawn, year):
     for scenario, reform in SCENARIOS.items():
         sim = Simulation(situation=random_situation(drawn, year), reform=reform)
@@ -545,6 +564,18 @@ def test_each_total_is_the_sum_of_its_heads(drawn, year):
             # charged at current law.
             pupils = np.array([h["pupil"] for h in drawn])
             np.testing.assert_array_equal(values["private_school_vat"] > 0, pupils)
+        if scenario == "private_school_exemption_restored":
+            # Restoring the exemption removes the charge, and household taxes
+            # fall by the baseline charge wherever a pupil's fees bore it.
+            pupils = np.array([h["pupil"] for h in drawn])
+            np.testing.assert_array_equal(values["private_school_vat"], 0)
+            change = values["private_school_vat_change"]
+            np.testing.assert_array_equal(change < 0, pupils)
+            np.testing.assert_allclose(
+                change,
+                -household_values(sim, "baseline_private_school_vat", year),
+                rtol=1e-6,
+            )
         if scenario == "sdlt_abolished":
             np.testing.assert_array_equal(values["sdlt_household"], 0)
             np.testing.assert_array_equal(values["sdlt_corporate"], 0)

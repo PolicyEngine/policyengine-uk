@@ -43,9 +43,10 @@
 #     analytical decomposition already inside `head` through its inputs),
 #     composite (spans several heads), duplicate (same value as `head`),
 #     baseline_measure.
-#   model_double_counts[]: known violations still in the model's formulas
-#     (none). An overlap that comes from the data, not the formulas, is
-#     recorded under the guard it belongs to.
+#   model_double_counts[]: heads whose formulas count the same receipt
+#     twice (none). Where two heads read separate inputs but their bases are
+#     not separated, the overlap, in the formulas or in the data, is
+#     recorded under its guard.
 #   overlap_guards[]: the places double counting could occur, and the
 #     property the tests check for each. kind: payer_split,
 #     geographic_exclusivity, level_and_change, shared_allocation_key,
@@ -629,3 +630,7 @@ overlap_guards:
       These heads reach other heads of the same total only through
       eligibility or imputation (see each head's reads). Raising the other
       head by a small amount leaves them unchanged on the test population.
+      For the private school heads that check is vacuous: attendance is
+      imputed only on a dataset (on a situation it is zero or an input), so
+      a tax change moves them only through re-imputed attendance on the
+      microdata (policyengine-uk-data issue 568).
