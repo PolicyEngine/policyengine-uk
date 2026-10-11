@@ -26,6 +26,7 @@ Standard library only.
 """
 
 import argparse
+import importlib.util
 import os
 import re
 import shlex
@@ -77,7 +78,28 @@ class Git:
 
 
 def find_fragments(repo: Path) -> list[str]:
-    """The changelog fragments, as .github/bump_version.py counts them."""
+    """The changelog fragments, as the tip's own .github/bump_version.py counts them.
+
+    A bump_version.py that classifies fragments (load_towncrier_config and
+    classify_fragments, from #2324) counts only those towncrier consumes, so
+    a file without a towncrier type is not something to release. An older
+    one counts every file but .gitkeep, and so does this.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "bump_version", repo / ".github" / "bump_version.py"
+    )
+    bump = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(bump)
+    if hasattr(bump, "load_towncrier_config") and hasattr(bump, "classify_fragments"):
+        try:
+            config = bump.load_towncrier_config(repo / "pyproject.toml")
+        except ValueError as error:
+            raise ReleaseError(f"cannot read the towncrier settings: {error}") from None
+        directory = repo / config.directory
+        if not directory.is_dir():
+            return []
+        typed, _ = bump.classify_fragments(directory, config)
+        return sorted(path.name for path, _ in typed)
     directory = repo / "changelog.d"
     if not directory.is_dir():
         return []
@@ -177,9 +199,7 @@ def prepare_release(
         current = version_text(parse_version((repo / "pyproject.toml").read_text()))
         fragments = find_fragments(repo)
         # A run that was queued behind another finds main already versioned:
-        # the earlier run's commit took this run's changes too. (changelog.d
-        # holds untyped files towncrier never consumes, so it is never empty
-        # and cannot show this on its own.)
+        # the earlier run's commit took this run's changes too.
         already_versioned = git.out("log", "-1", "--format=%s") == COMMIT_MESSAGE
         if already_versioned or not fragments:
             reason = (

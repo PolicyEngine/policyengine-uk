@@ -7,6 +7,8 @@ stand-in for towncrier, and hold them to:
 
 1. With no changelog fragments, or when main's tip is already a version
    commit (a run queued behind another), nothing is committed or pushed.
+   Fragments are counted as this tree's bump_version.py counts them: only
+   those towncrier consumes once #2324 is in, every file before.
 2. After a release, the remote branch's tip is the version commit, whose only
    parent is the tip the run fetched: history is extended, never rewritten.
    The commit deletes the fragments, adds them to the changelog and raises
@@ -63,15 +65,36 @@ GIT_ENV = {
     "GIT_COMMITTER_EMAIL": "t@example.com",
 }
 
-# Stands in for towncrier: moves the fragments into CHANGELOG.md.
+_bump_spec = importlib.util.spec_from_file_location(
+    "bump_version_under_test", GITHUB_DIR / "bump_version.py"
+)
+_bump = importlib.util.module_from_spec(_bump_spec)
+_bump_spec.loader.exec_module(_bump)
+# Whether this tree's bump_version.py counts only the fragments towncrier
+# consumes (#2324) or every file. prepare_release.py follows it either way.
+TYPED_FRAGMENTS_ONLY = hasattr(_bump, "classify_fragments")
+
+# Stands in for towncrier: moves the fragments towncrier consumes (the typed
+# ones, where bump_version.py can tell) into CHANGELOG.md.
 FAKE_TOWNCRIER = """
 import pathlib, subprocess, sys
+sys.path.insert(0, ".github")
+import bump_version
 version = sys.argv[sys.argv.index("--version") + 1]
-fragments = sorted(p for p in pathlib.Path("changelog.d").iterdir() if p.name != ".gitkeep")
+if hasattr(bump_version, "classify_fragments"):
+    config = bump_version.load_towncrier_config(pathlib.Path("pyproject.toml"))
+    typed, _ = bump_version.classify_fragments(pathlib.Path(config.directory), config)
+    fragments = sorted(path for path, _ in typed)
+else:
+    fragments = sorted(
+        p for p in pathlib.Path("changelog.d").iterdir()
+        if p.name != ".gitkeep" and p.name.count(".") >= 2
+    )
 entries = "".join(p.read_text() for p in fragments)
 changelog = pathlib.Path("CHANGELOG.md")
 changelog.write_text(f"## [{version}]\\n\\n{entries}\\n" + changelog.read_text())
-subprocess.run(["git", "rm", "-q", *map(str, fragments)], check=True)
+if fragments:
+    subprocess.run(["git", "rm", "-q", *map(str, fragments)], check=True)
 """
 
 
@@ -96,7 +119,10 @@ def remote(tmp_path):
     (seed / ".github").mkdir()
     shutil.copy(GITHUB_DIR / "bump_version.py", seed / ".github" / "bump_version.py")
     (seed / "pyproject.toml").write_text(
-        '[project]\nname = "demo"\nversion = "1.2.3"\n\n[tool.x]\nkeep = 1\n'
+        '[project]\nname = "demo"\nversion = "1.2.3"\n\n[tool.x]\nkeep = 1\n\n'
+        '[tool.towncrier]\ndirectory = "changelog.d"\n\n'
+        '[[tool.towncrier.type]]\ndirectory = "added"\nname = "Added"\n\n'
+        '[[tool.towncrier.type]]\ndirectory = "fixed"\nname = "Fixed"\n'
     )
     (seed / "CHANGELOG.md").write_text("## [1.2.3]\n")
     (seed / "changelog.d").mkdir()
@@ -141,17 +167,40 @@ def test_no_fragments_means_no_release(remote, tmp_path):
     assert result["version"] == "1.2.3"
 
 
+def test_untyped_files_alone_mean_no_release(remote, tmp_path):
+    work = clone(remote, tmp_path / "work")
+    git(work, "rm", "-q", "changelog.d/one.fixed.md")
+    (work / "changelog.d" / "1005.md").write_text("Untyped.\n")
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "only an untyped file")
+    git(work, "push", "-q", "origin", "HEAD:main")
+    tip = git(remote, "rev-parse", "main")
+
+    result = run(work)
+
+    if TYPED_FRAGMENTS_ONLY:
+        # towncrier would consume nothing, so there is nothing to release.
+        assert result["committed"] == result["pushed"] == "false"
+        assert result["sha"] == tip == git(remote, "rev-parse", "main")
+        assert result["version"] == "1.2.3"
+    else:
+        # An older bump_version.py counts the untyped file: a patch release
+        # with an empty changelog entry, as the old workflow made.
+        assert result["committed"] == result["pushed"] == "true"
+        assert result["version"] == "1.2.4"
+
+
 def test_a_versioned_tip_means_no_release(remote, tmp_path):
     work = clone(remote, tmp_path / "work")
     first = run(work)
     assert first["pushed"] == "true"
-    # changelog.d still holds a file towncrier does not consume, as main's
-    # does, so only the version commit at the tip says nothing is new.
-    (work / "changelog.d" / "1005.md").write_text("- untyped\n")
+    # A new merge with a fragment, and a file towncrier does not consume,
+    # which the release leaves behind.
     other = clone(remote, tmp_path / "other")
-    (other / "changelog.d" / "1005.md").write_text("- untyped\n")
+    (other / "changelog.d" / "two.fixed.md").write_text("Fixed two.\n")
+    (other / "changelog.d" / "1005.md").write_text("Untyped.\n")
     git(other, "add", "-A")
-    git(other, "commit", "-qm", "an untyped fragment")
+    git(other, "commit", "-qm", "a merge with a fragment")
     git(other, "push", "-q", "origin", "HEAD:main")
     second = run(work)
     assert second["pushed"] == "true"  # a new merge: released as a patch
