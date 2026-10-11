@@ -8,6 +8,12 @@ a release. This script warns about each one and ignores it.
 ``.github/check_changelog_fragments.py`` uses the same rules to reject them in
 pull requests.
 
+It reads the towncrier options that decide which files are fragments:
+``directory`` (or ``package`` and ``package_dir``), the fragment types,
+``ignore``, ``template`` and ``orphan_prefix``. It refuses a configuration it
+would read differently from towncrier: a ``towncrier.toml`` file, sections,
+or an ``issue_pattern``.
+
 Standard library only.
 """
 
@@ -47,13 +53,26 @@ class TowncrierConfig:
     types: tuple[str, ...]
     ignore: tuple[str, ...]
     orphan_prefix: str = "+"
+    # towncrier build stops at a file without a type, instead of skipping it,
+    # whenever `ignore` is configured.
+    strict: bool = False
 
 
 def parse_towncrier_config(pyproject_text: str) -> TowncrierConfig:
     """Read [tool.towncrier] from pyproject.toml text the way towncrier does."""
-    config = tomllib.loads(pyproject_text).get("tool", {}).get("towncrier")
+    pyproject = tomllib.loads(pyproject_text)
+    config = pyproject.get("tool", {}).get("towncrier")
     if config is None:
         raise ValueError("pyproject.toml has no [tool.towncrier] table")
+    for option, effect in (
+        ("section", "towncrier would read a fragment directory per section"),
+        ("issue_pattern", "towncrier would stop at fragments whose issue differs"),
+    ):
+        if config.get(option):
+            raise ValueError(
+                f"[tool.towncrier] sets `{option}`, which .github/bump_version.py "
+                f"does not read: {effect}"
+            )
     if config.get("fragment"):
         types = tuple(sorted(config["fragment"]))
     elif config.get("type"):
@@ -64,8 +83,10 @@ def parse_towncrier_config(pyproject_text: str) -> TowncrierConfig:
         types = TOWNCRIER_DEFAULT_TYPES
     directory = config.get("directory")
     if directory is None:
+        # towncrier falls back to the project's name for the package.
+        package = config.get("package") or pyproject.get("project", {}).get("name", "")
         directory = str(
-            Path(config.get("package_dir", ".")) / config["package"] / "newsfragments"
+            Path(config.get("package_dir", ".")) / package / "newsfragments"
         )
     ignore = [name.lower() for name in TOWNCRIER_IGNORED_NAMES]
     ignore += [pattern.lower() for pattern in config.get("ignore") or []]
@@ -78,10 +99,16 @@ def parse_towncrier_config(pyproject_text: str) -> TowncrierConfig:
         types=types,
         ignore=tuple(ignore),
         orphan_prefix=config.get("orphan_prefix", "+"),
+        strict=config.get("ignore") is not None,
     )
 
 
 def load_towncrier_config(pyproject_path: Path) -> TowncrierConfig:
+    if (pyproject_path.parent / "towncrier.toml").exists():
+        raise ValueError(
+            "towncrier.toml exists, and towncrier reads it instead of "
+            "pyproject.toml; .github/bump_version.py reads only pyproject.toml"
+        )
     return parse_towncrier_config(pyproject_path.read_text())
 
 
@@ -146,6 +173,21 @@ def bump_for_types(fragment_types) -> str:
     return "patch"
 
 
+def escape_data(text: str) -> str:
+    return text.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def escape_property(text: str) -> str:
+    return escape_data(text).replace(":", "%3A").replace(",", "%2C")
+
+
+def annotation(level: str, path: str | None, message: str) -> str:
+    """A GitHub Actions workflow command that annotates the file."""
+    location = f" file={escape_property(path)}" if path else ""
+    text = f"{path} {message}" if path else message
+    return f"::{level}{location}::{escape_data(text)}"
+
+
 def get_current_version(pyproject_path: Path) -> str:
     text = pyproject_path.read_text()
     match = re.search(r'^version\s*=\s*"(\d+\.\d+\.\d+)"', text, re.MULTILINE)
@@ -160,13 +202,29 @@ def get_current_version(pyproject_path: Path) -> str:
 
 def infer_bump(changelog_dir: Path, config: TowncrierConfig) -> str:
     typed, untyped = classify_fragments(changelog_dir, config)
+    names = ", ".join(config.types)
+    if untyped and config.strict:
+        # towncrier build would stop at these; say so before changing anything.
+        for path in untyped:
+            print(
+                annotation(
+                    "error",
+                    f"{config.directory}/{path.name}",
+                    "has no towncrier type, and towncrier build stops at it "
+                    "because [tool.towncrier] sets `ignore`. Fragments are "
+                    f"named <slug>.<type>.md with a type from {names}.",
+                )
+            )
+        sys.exit(1)
     for path in untyped:
-        relative = f"{config.directory}/{path.name}"
         print(
-            f"::warning file={relative}::{relative} has no towncrier type, so "
-            "towncrier leaves it out of CHANGELOG.md and this release ignores it. "
-            f"Fragments are named <slug>.<type>.md with a type from "
-            f"{', '.join(config.types)}."
+            annotation(
+                "warning",
+                f"{config.directory}/{path.name}",
+                "has no towncrier type, so towncrier leaves it out of "
+                "CHANGELOG.md and this release ignores it. Fragments are named "
+                f"<slug>.<type>.md with a type from {names}.",
+            )
         )
     if not typed:
         print(
