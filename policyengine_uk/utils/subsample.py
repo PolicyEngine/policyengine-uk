@@ -33,6 +33,17 @@ import pandas as pd
 from policyengine_core.periods import Period, period as period_
 from policyengine_core.tracers import SimpleTracer
 
+try:
+    # How ``get_branch`` makes a clone that shares the cached arrays instead
+    # of copying them (policyengine-core 3.32.27 and later). See
+    # ``_copy_sharing_arrays``.
+    from policyengine_core.simulations.simulation import (
+        _BranchClone,
+        _branch_clone,
+    )
+except ImportError:  # pragma: no cover - a core without shared clones
+    _BranchClone = _branch_clone = None
+
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
     UKSingleYearDataset,
@@ -65,9 +76,10 @@ UKDataset = Union[UKSingleYearDataset, UKMultiYearDataset]
 def _random_state(seed) -> np.random.RandomState:
     """A generator for ``seed``, which may be a number or text.
 
-    ``RandomState`` keeps the same stream in every NumPy version, so a seed
-    chooses the same households wherever it runs. The digest gives the same
-    number in every process, which the built-in ``hash`` does not.
+    NumPy's compatibility guarantee keeps ``RandomState``'s results for a
+    fixed seed and calls the same, up to roundoff, so a seed chooses the same
+    households wherever it runs. The digest gives the same number in every
+    process, which the built-in ``hash`` does not.
     """
     digest = hashlib.sha256(str(seed).encode("utf-8")).digest()
     return np.random.RandomState(int.from_bytes(digest[:4], "big"))
@@ -89,6 +101,8 @@ def draw_household_counts(
     if n < 1:
         raise ValueError(f"A subsample needs at least one household, not {n}.")
     weights = np.asarray(weights, dtype=float)
+    if (weights < 0).any():
+        raise ValueError("Household weights must not be negative to sample by them.")
     eligible = np.flatnonzero(weights > 0)
     if eligible.size == 0:
         raise ValueError("No household has a positive weight to sample by.")
@@ -118,6 +132,8 @@ def rescale_weights(
     total = weights.sum()
     if not np.isfinite(total):
         raise ValueError("the weights do not have a finite total")
+    if (weights < 0).any():
+        raise ValueError("the weights include negative values")
     if total == 0:
         return np.zeros_like(weights)
     drawn = counts.astype(float) if quantize_weights else weights * counts
@@ -342,6 +358,27 @@ def _apply(
     simulation.dataset = subsample.dataset
 
 
+def _copy_sharing_arrays(simulation: "Simulation") -> "Simulation":
+    """A clone of ``simulation`` that shares its cached arrays.
+
+    ``clone`` copies every cached array, and the subsample discards them all
+    at once, so for a full-size baseline that doubles its memory for nothing.
+    Announce the clone as ``get_branch`` does: the copy then reads views of
+    the arrays and copies one only if it reads it, which it never does. The
+    simulation is not changed; with a core that cannot share, the arrays are
+    copied.
+    """
+    if _branch_clone is None:  # pragma: no cover - a core without shared clones
+        return simulation.clone(debug=simulation.debug, trace=simulation.trace)
+    request = _BranchClone(simulation)
+    token = _branch_clone.set(request)
+    try:
+        return simulation.clone(debug=simulation.debug, trace=simulation.trace)
+    finally:
+        request.pending = False
+        _branch_clone.reset(token)
+
+
 def _sampling_weights(simulation: "Simulation", time_period) -> np.ndarray:
     """Household weights for ``time_period``, to draw the sample by.
 
@@ -424,12 +461,13 @@ def subsample_simulation(
     # Replace each baseline with a subsampled copy rather than subsample it
     # in place: policyengine-core's ``clone`` shares a separate baseline, so
     # another simulation can hold this one and still hold every household.
-    # Copying each baseline after the simulation that holds it is cut down
-    # keeps the memory in use to about what the simulations held before.
+    # The copy shares the baseline's arrays rather than copying them, so it
+    # costs little memory; the old baselines stay in memory until nothing
+    # holds them.
     copies = {id(first): first}
     for subsample in subsamples[1:]:
         baseline = subsample.simulation
-        copy = baseline.clone(debug=baseline.debug, trace=baseline.trace)
+        copy = _copy_sharing_arrays(baseline)
         _apply(subsample, copy, new_tracer(baseline.tracer))
         copies[id(baseline)] = copy
     for each in simulations:

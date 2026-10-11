@@ -578,20 +578,25 @@ class Simulation(CoreSimulation):
     ) -> "Simulation":
         """Cut the simulation down to a weighted random sample of households.
 
-        Draws ``n`` households with replacement, each with probability
-        proportional to its weight in ``time_period``, and keeps each
-        household drawn at least once, with its benefit units and people. So
-        the sample holds at most ``n`` households.
+        Draws ``n`` households with replacement and keeps each household
+        drawn at least once, with its benefit units and people. So the sample
+        holds at most ``n`` households. Only households with a positive
+        weight in ``time_period`` can be drawn: with ``quantize_weights``
+        (the default), each with probability proportional to that weight;
+        without it, each with equal probability. A period before the first
+        one the simulation was given household weights for has none, so the
+        first given weights are used instead.
 
         Every value the simulation was given (from its dataset or through
         ``set_input``) is kept for the sampled records, for every period.
         Calculated values are dropped and recalculated on the sample, and the
         tracer starts again. Each supplied weight is replaced so that its
         total is unchanged in every period: a household's new weight is
-        proportional to the number of times it was drawn. Averaged over
-        draws, a household's new weight in ``time_period`` is its old one; in
-        another period that holds only if the household's share of the total
-        weight is the same there.
+        proportional to the number of times it was drawn, and also to its old
+        weight without ``quantize_weights``. With ``quantize_weights``, a
+        household's new weight in ``time_period``, averaged over draws, is
+        its old one; in another period that holds only if the household's
+        share of the total weight is the same there.
 
         ``baseline`` is replaced with a copy subsampled to the same
         households, which keeps its own policy and inputs. The baseline the
@@ -599,8 +604,8 @@ class Simulation(CoreSimulation):
         (a clone of this one) can hold it too. ``dataset`` is replaced with
         the rows of the dataset the simulation was built from for the
         sampled records, with its weights rescaled in the same way. Like the
-        dataset before, it does not hold values set with ``set_input`` after
-        the simulation was built.
+        dataset before, it holds whole years only, and not values set with
+        ``set_input`` after the simulation was built.
 
         Args:
             n: The number of households to draw.

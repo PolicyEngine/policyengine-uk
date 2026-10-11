@@ -32,11 +32,13 @@ Invariants, for every dataset, sample size ``n``, seed, sampling period and
    baseline as they were.
 8. Dataset (differential): ``dataset`` holds the same records as the
    populations, from the rows of the dataset the simulation was built from,
-   with weights rescaled in the same way. For a simulation given no inputs
-   after it was built, a simulation built from that dataset gives the same
-   results as the subsampled simulation. Intended: an input set with
-   ``set_input`` after the build stays out of the dataset, as it was out of
-   the dataset before subsampling.
+   with weights rescaled in the same way. For a simulation whose inputs are
+   all in its dataset, a simulation built from that dataset gives the same
+   results as the subsampled simulation. Intended: an input the dataset does
+   not hold stays out of it, as it was out of the dataset before
+   subsampling. That is an input set with ``set_input`` after the build, or
+   one for a part of a year, which a DataFrame can give and a dataset of
+   whole years cannot hold.
 9. Unbiasedness: over many seeds, a household's mean quantized weight in the
    sampling period is its old weight. Intended exceptions: in another period,
    the mean is the household's share of the sampling period's total times
@@ -52,8 +54,8 @@ projects, and of several years whose weights change differently from
 household to household.
 
 Intended exceptions: a simulation built from a situation, one given no
-household weights, a branch, and a baseline holding other households raise
-``ValueError`` and are left unchanged.
+household weights or a negative one, a branch, and a baseline holding other
+households raise ``ValueError`` and are left unchanged.
 """
 
 from types import SimpleNamespace
@@ -61,7 +63,7 @@ from types import SimpleNamespace
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 from policyengine_core.data_storage import OnDiskStorage
 from policyengine_core.periods import period as period_
@@ -595,6 +597,32 @@ def test_the_baseline_held_before_is_left_as_it_was():
     assert ids(simulation.baseline, "household") == ids(simulation, "household")
 
 
+def test_a_baseline_copy_does_not_copy_the_baselines_arrays(monkeypatch):
+    """The copy of a baseline rebuilds its arrays at once, so copying the
+    baseline's cached arrays first would only double its memory."""
+    from policyengine_core.data_storage import InMemoryStorage
+
+    from policyengine_uk.utils import subsample as module
+
+    if module._branch_clone is None:
+        pytest.skip("this policyengine-core cannot share a clone's arrays")
+    simulation = Microsimulation(dataset=dataset(), reform={PERSONAL_ALLOWANCE: 0})
+    simulation.baseline.calculate("household_net_income", 2026)
+    calls = []
+    clone = InMemoryStorage.clone
+
+    def recording_clone(self, share_arrays=False):
+        calls.append(share_arrays)
+        return clone(self, share_arrays=share_arrays)
+
+    monkeypatch.setattr(InMemoryStorage, "clone", recording_clone)
+
+    simulation.subsample(n=3, seed=1)
+
+    assert calls
+    assert all(calls)
+
+
 def test_a_baseline_holding_other_households_is_refused_and_nothing_changes():
     simulation = Microsimulation(dataset=dataset())
     simulation.baseline.subsample(n=2, seed=1)
@@ -667,6 +695,28 @@ def test_inputs_set_after_the_build_stay_out_of_the_dataset():
         assert values(held, "household_weight", 2025).sum() == pytest.approx(total)
 
 
+def test_an_input_for_part_of_a_year_stays_out_of_the_dataset():
+    """Intended: a DataFrame can give a monthly input, which the simulation
+    keeps and a dataset of whole years cannot hold, so a simulation built
+    from the subsampled dataset does not have it."""
+    frame = pd.DataFrame(
+        {
+            "person_id__2025": [1, 2],
+            "household_id__2025": [1, 2],
+            "household_weight__2025": [1.0, 1.0],
+            "ebr_energy_bills_credit_eligible__2025-01": [False, False],
+        }
+    )
+    simulation = Microsimulation(dataset=frame)
+
+    simulation.subsample(n=1, seed=1)
+
+    monthly = ("ebr_energy_bills_credit_eligible", "2025-01")
+    assert monthly in supplied(simulation)
+    assert values(simulation, *monthly).tolist() == [False]
+    assert monthly not in supplied(Microsimulation(dataset=simulation.dataset))
+
+
 def test_subsampling_a_single_year_dataset_keeps_its_type():
     data = dataset()
     counts = np.array([0, 2, 0, 1, 0, 0])
@@ -733,6 +783,28 @@ def test_a_simulation_without_weights_is_refused():
     simulation = Microsimulation(dataset=dataset(weights=False))
     with pytest.raises(ValueError, match="household_weight"):
         simulation.subsample(n=2)
+
+
+def test_a_negative_household_weight_is_refused_and_nothing_changes():
+    simulation = Microsimulation(dataset=dataset([(1.0, [1]), (-2.0, [1])]))
+    weights = weights_by_id(simulation, 2025)
+
+    with pytest.raises(ValueError, match="negative"):
+        simulation.subsample(n=1, seed=0)
+
+    assert weights_by_id(simulation, 2025) == weights
+
+
+def test_another_negative_weight_is_refused():
+    data = dataset()
+    data.household["original_weight"] = [1.0, 2.0, 3.0, -4.0, 5.0, 6.0]
+    simulation = Microsimulation(dataset=data)
+    households = ids(simulation, "household")
+
+    with pytest.raises(ValueError, match="original_weight for 2025.*negative"):
+        simulation.subsample(n=3)
+
+    assert ids(simulation, "household") == households
 
 
 def test_a_simulation_with_no_positive_weight_is_refused():
@@ -952,6 +1024,7 @@ def test_another_periods_mean_weight_follows_the_sampling_periods_shares():
 
 # Properties of a subsampled simulation.
 
+MAX_HOUSEHOLDS = 7
 SIMULATION_SETTINGS = settings(
     max_examples=10,
     deadline=None,
@@ -964,7 +1037,7 @@ household_specs = st.lists(
         st.lists(st.integers(1, 3), min_size=1, max_size=2),
     ),
     min_size=2,
-    max_size=7,
+    max_size=MAX_HOUSEHOLDS,
 ).filter(lambda households: any(weight > 0 for weight, _ in households))
 
 
@@ -988,6 +1061,26 @@ def multi_year_dataset(households, factors) -> UKMultiYearDataset:
     )
 
 
+FACTORS = st.lists(
+    st.lists(
+        st.sampled_from([0.5, 0.8, 1.0, 1.25, 2.0]),
+        min_size=MAX_HOUSEHOLDS,
+        max_size=MAX_HOUSEHOLDS,
+    ),
+    min_size=len(MULTI_YEARS),
+    max_size=len(MULTI_YEARS),
+)
+# Households whose shares of the total weight change from year to year.
+CHANGING_SHARES = dict(
+    households=[(100.0, [1]), (300.0, [2]), (0.0, [1]), (50.0, [1, 2])],
+    n=6,
+    seed=11,
+    multi_year=True,
+    factors=[[1.0] * MAX_HOUSEHOLDS, [2.0, 0.5, 1.0, 1.25, 1, 1, 1], [0.5] + [2.0] * 6],
+    year_index=1,
+)
+
+
 @SIMULATION_SETTINGS
 @given(
     households=household_specs,
@@ -995,26 +1088,20 @@ def multi_year_dataset(households, factors) -> UKMultiYearDataset:
     seed=st.integers(0, 10_000),
     quantize=st.booleans(),
     multi_year=st.booleans(),
-    data=st.data(),
+    factors=FACTORS,
+    year_index=st.integers(0, len(YEARS) - 1),
 )
-def test_subsample_properties(households, n, seed, quantize, multi_year, data):
+@example(quantize=True, **CHANGING_SHARES)
+@example(quantize=False, **CHANGING_SHARES)
+def test_subsample_properties(
+    households, n, seed, quantize, multi_year, factors, year_index
+):
     if multi_year:
-        factors = data.draw(
-            st.lists(
-                st.lists(
-                    st.floats(min_value=0.5, max_value=2.0),
-                    min_size=len(households),
-                    max_size=len(households),
-                ),
-                min_size=len(MULTI_YEARS),
-                max_size=len(MULTI_YEARS),
-            ),
-            label="factors",
-        )
+        factors = [year_factors[: len(households)] for year_factors in factors]
         years = list(MULTI_YEARS)
     else:
         years = list(YEARS)
-    year = data.draw(st.sampled_from(years), label="year")
+    year = years[year_index % len(years)]
 
     def build():
         if multi_year:
