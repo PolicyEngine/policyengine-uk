@@ -23,8 +23,10 @@ Invariants, for identifiers that are whole numbers from -2**31 to 2**31 - 1
    the size of the identifiers.
 4. A simulation built from a policyengine-core dataset file, which is rebuilt
    from its own export, has that same structure and those same identifiers.
-5. ``check_entity_ids`` passes exactly the arrays that the storing variable's
-   dtype holds unchanged, and gives an ``EntityIdWarning`` for any other. So
+5. For integer and float arrays, and object arrays of Python floats and of
+   integers within 64 bits, ``check_entity_ids`` passes exactly the arrays
+   that the storing variable's dtype holds unchanged, and gives an
+   ``EntityIdWarning`` for any other, including those whose cast fails. So
    building a simulation warns when an identifier is outside the range or not
    a whole number, and stays silent otherwise (this module turns the warning
    into an error, so every test above checks that).
@@ -44,7 +46,7 @@ import h5py
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import example, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Microsimulation
@@ -280,7 +282,7 @@ def test_identifier_variables_are_stored_as_integers(variable):
     ),
     id_dtype="int64",
 )
-@settings(max_examples=30, deadline=None)
+@settings(max_examples=30, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 def test_identifiers_in_range_read_back_exactly(members, id_dtype):
     """Invariants 1 to 3 for a simulation built from entity tables."""
     person, benunit, household = tables(*members, id_dtype=id_dtype)
@@ -292,7 +294,7 @@ def test_identifiers_in_range_read_back_exactly(members, id_dtype):
 
 @given(members=memberships(), id_dtype=st.sampled_from(["int64", "float64"]))
 @example(members=(ISSUE_IDS, ISSUE_IDS, ISSUE_IDS), id_dtype="float64")
-@settings(max_examples=10, deadline=None)
+@settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 def test_core_dataset_file_builds_the_tables_structure(
     members, id_dtype, tmp_path_factory
 ):
@@ -451,7 +453,7 @@ def held_unchanged(values: np.ndarray, dtype) -> bool:
 
 @pytest.mark.parametrize("variable", ENTITY_ID_VARIABLES)
 @given(data=st.data())
-@settings(max_examples=300, deadline=None)
+@settings(max_examples=300, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 def test_check_warns_exactly_when_the_store_changes_a_value(variable, data):
     """Invariant 5, against the cast that stores the values."""
     definition = system.variables[variable]
@@ -473,6 +475,9 @@ def test_check_leaves_other_kinds_of_identifier_to_the_store():
     assert check_entity_ids(definition, np.array([True, False]))
     assert check_entity_ids(definition, np.array([], dtype=np.float64))
     assert check_entity_ids(definition, np.array(["a", 1], dtype=object))
+    nested = np.empty(2, dtype=object)
+    nested[:] = [1, np.array([2])]
+    assert check_entity_ids(definition, nested)
 
 
 def test_object_column_with_a_fraction_warns():
