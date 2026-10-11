@@ -61,8 +61,10 @@ When a command is not run, record why.
 
 ## How CI Runs The Tests
 
-Pull requests (`.github/workflows/pr_code_changes.yaml`), pushes to `main`
-(`code_changes.yaml`) and releases (`versioning.yaml`) all run the same suite,
+Pull requests and merge queue groups (`.github/workflows/pr_code_changes.yaml`),
+pushes to `main` (`code_changes.yaml`, never cancelled, and skipped for a
+commit the merge queue already tested) and releases (`versioning.yaml`) all run
+the same suite,
 `.github/workflows/test-suite.yaml`, in the locked environment
 (`uv sync --frozen --extra dev`). Pull requests and `main` test the source
 tree; a release tests the wheel it is about to publish, installed on its own.

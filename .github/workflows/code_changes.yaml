@@ -17,21 +17,49 @@ on:
       - Makefile
   workflow_dispatch:
 
-# This workflow only lints and tests (versioning, publishing and the docs
-# deploy are separate workflows), so when a newer commit lands on main the
-# older run's result is superseded. Cancel it instead of letting a 50-minute
-# Test job hold a shared runner. From 2026-10-06 to 10-08, 8 of 17 push runs
-# were superseded mid-run and finishing them used 357 runner-minutes.
-concurrency:
-  group: code-changes-push-${{ github.ref }}
-  cancel-in-progress: true
+# No concurrency group: every commit that lands on main finishes its run. The
+# runs used to be cancelled when a newer commit landed, so 83001d51 and
+# cfa0c556 never finished a Test on 11 October 2026, and a conflict between
+# #2251 and #2270, each green alone, showed only at 7343f948.
+#
+# With a merge queue, main moves only to a commit the queue already tested
+# with this suite (pr_code_changes.yaml on merge_group), so the Tested job
+# skips the tests for such a commit rather than run them twice.
 
 jobs:
-  Lint:
+  Tested:
     # The release workflow tests each version commit itself, on the wheel it
     # publishes. Version commits only trigger this workflow when the GitHub
     # App pushes them (see versioning.yaml); skip them.
     if: github.event.head_commit.message != 'Update package version'
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    permissions:
+      checks: read
+    outputs:
+      tested: ${{ steps.check.outputs.tested }}
+    steps:
+      - name: Did the merge queue already test this commit?
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          # A passed "Test / Result" on this exact commit can only come from
+          # a merge group: a pull request's own runs are on its merge commit,
+          # a different commit. If the lookup fails, run the tests.
+          passed=$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=Test%20%2F%20Result&per_page=100" \
+            --jq '[.check_runs[] | select(.conclusion == "success")] | length' || echo 0)
+          if [ "${passed:-0}" -gt 0 ]; then
+            echo "The merge queue already tested $SHA; not running the suite again."
+            echo "tested=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tested=false" >> "$GITHUB_OUTPUT"
+          fi
+  Lint:
+    needs: Tested
+    if: needs.Tested.outputs.tested != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -42,7 +70,8 @@ jobs:
           run: uvx ruff format --check .
   # The same suite as pull requests (test-suite.yaml), on the merged commit.
   Test:
-    if: github.event.head_commit.message != 'Update package version'
+    needs: Tested
+    if: needs.Tested.outputs.tested != 'true'
     uses: ./.github/workflows/test-suite.yaml
     permissions:
       contents: read

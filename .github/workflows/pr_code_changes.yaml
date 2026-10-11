@@ -8,17 +8,25 @@
 # runs both. The Changes job decides instead. When no code changed, the jobs
 # below are skipped, which a required check counts as passing, and the test
 # suite reports Result as a pass without running.
+#
+# It also runs for merge queue groups (merge_group): with a merge queue on
+# main, each pull request is tested again merged onto the latest main, with
+# any pull requests queued ahead of it, and main moves only to a commit that
+# passed. Each pull request was green on its own while #2251 and #2270
+# together broke main on 11 October 2026 (7343f948).
 
 name: Code changes
 on:
   pull_request:
     branches:
       - main
+  merge_group:
   workflow_dispatch:
 
 # A new push to a pull request supersedes the run on its previous head, so
-# cancel that run instead of letting it hold runners. Manual dispatches are
-# grouped by ref and never cancelled.
+# cancel that run instead of letting it hold runners. Merge groups and manual
+# dispatches are grouped by ref (each merge group has its own) and never
+# cancelled.
 concurrency:
   group: pr-code-changes-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -39,6 +47,7 @@ jobs:
         id: diff
         env:
           EVENT: ${{ github.event_name }}
+          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
           # The paths that make a change "code": the same list as the push
           # filter in code_changes.yaml (a test keeps them equal).
           CODE_PATHS: |
@@ -50,13 +59,22 @@ jobs:
             Makefile
         run: |
           set -euo pipefail
-          if [ "$EVENT" != pull_request ]; then
-            echo "code=true" | tee -a "$GITHUB_OUTPUT"
-            exit 0
-          fi
+          case "$EVENT" in
+            pull_request)
+              # The merge commit's first parent is the base branch.
+              base=HEAD^1 ;;
+            merge_group)
+              # The group may hold several pull requests: compare with the
+              # main it is merged onto.
+              git fetch --no-tags --depth=1 origin "$MERGE_GROUP_BASE"
+              base=$MERGE_GROUP_BASE ;;
+            *)
+              echo "code=true" | tee -a "$GITHUB_OUTPUT"
+              exit 0 ;;
+          esac
           # NUL-separated and unquoted, with a rename listed as its old and
           # new paths, so a file moved out of policyengine_uk/ still counts.
-          git -c core.quotePath=false diff --name-only --no-renames -z HEAD^1 HEAD \
+          git -c core.quotePath=false diff --name-only --no-renames -z "$base" HEAD \
             > "$RUNNER_TEMP/changed.txt"
           python3 .github/changed_code.py "$RUNNER_TEMP/changed.txt" | tee -a "$GITHUB_OUTPUT"
   Python-Compat:

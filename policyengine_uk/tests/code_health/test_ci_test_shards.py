@@ -28,9 +28,10 @@ the pieces to the invariants the Test job relies on:
    and fails if a shard's log is left out, repeated, or a test fails.
 9. The checked-in allowlist parses, and each entry naming one test names a
    test function that exists.
-10. Every pull request reports the required "Test / Result" check: the pull
-    request workflow has no path filter, and the paths its Changes job counts
-    as code are the main push workflow's paths.
+10. Every pull request and merge queue group reports the required
+    "Test / Result" check: the pull request workflow has no path filter and
+    runs on merge_group, and the paths its Changes job counts as code are the
+    main push workflow's paths. Main push runs are never cancelled.
 11. ``changed_code.py`` calls a change code exactly when a path matches a
     pattern as a workflow ``paths`` filter would (``dir/**`` is every file
     under ``dir/``), and calls an empty change list code.
@@ -719,7 +720,11 @@ def test_every_pull_request_reports_the_test_result():
 
     pull_request, triggers = load("pr_code_changes.yaml")
     assert triggers["pull_request"] == {"branches": ["main"]}
-    _, main_triggers = load("code_changes.yaml")
+    # A merge queue's groups get the same checks.
+    assert "merge_group" in triggers
+    main, main_triggers = load("code_changes.yaml")
+    # Every commit that lands on main finishes its run: nothing cancels it.
+    assert "concurrency" not in main
     code_paths = pull_request["jobs"]["Changes"]["steps"][1]["env"]["CODE_PATHS"]
     assert code_paths.split() == main_triggers["push"]["paths"]
     # The suite is always called, and skips only when no code changed.
