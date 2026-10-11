@@ -10,12 +10,18 @@ class is_child_or_qualifying_young_person_for_child_tax_credit(Variable):
     Rule 1), which a claimant cannot be to themselves. No one is responsible
     for a qualifying young person who is the responsible person's partner, or
     who lives with a partner not in full-time education or approved training
-    (Cases G and H). Nor for one who claims and is awarded child tax credit
-    in their own right for a child they are responsible for (Case D), or who
-    claims and receives working tax credit in their own right (Case F). So
-    the benefit unit's claimant and partner (Tax Credits Act 2002 s.3) are
-    never its children or qualifying young persons. Nor is a child or
-    qualifying young person looked after by a local authority (Case A).
+    (Rule 4, Cases G and H). Nor for one who claims and is awarded child tax
+    credit in their own right for a child they are responsible for (Case D),
+    or who claims and receives working tax credit in their own right
+    (Case F). So the benefit unit's claimant and partner (Tax Credits Act
+    2002 s.3) are never its children or qualifying young persons.
+
+    The model also leaves out every child or qualifying young person looked
+    after by a local authority. That is broader than the law. Case A needs
+    accommodation provided under the children's legislation with its cost
+    met wholly or partly from local authority or other public funds, and
+    Case B a placement for adoption with a maintenance payment. The model
+    has no input for either condition.
     """
 
     value_type = bool

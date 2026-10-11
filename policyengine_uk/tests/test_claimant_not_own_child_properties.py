@@ -28,12 +28,21 @@ Invariants, for Child Benefit, Child Tax Credit and Pension Credit:
 4. Child Benefit entitlement equals an independent count: the eldest such
    member at the eldest-child rate, each other at the additional rate, for
    52 weeks.
+5. The disability amounts count dependants only. With a disabled child and
+   a disabled qualifying young person in the unit, the CTC disabled and
+   severely disabled child elements and the Pension Credit disabled child
+   additions equal the rates times the disabled dependants, whatever the
+   claimant's and partner's own disability.
 
 The household structure is supplied (is_claimant_or_partner), so the tests
 exercise the programme rules and not the structural presumption, which
-test_child_and_adult_definitions_properties.py covers.
+test_child_and_adult_definitions_properties.py covers. Tax credit
+eligibility is supplied too (is_CTC_eligible): without it both CTC disabled
+child elements are zero and invariants 2 and 5 would hold for them
+trivially.
 """
 
+from itertools import product
 from unittest.mock import patch
 
 import numpy as np
@@ -73,6 +82,10 @@ member = st.fixed_dictionaries(
         "is_looked_after_by_local_authority": st.booleans(),
         "is_disabled_for_benefits": st.booleans(),
         "is_severely_disabled_for_benefits": st.booleans(),
+        # Pension Credit reads a child's disability from these (Sch. IIA
+        # para. 9), not from the two flags above.
+        "dla": st.sampled_from([0, 3_000]),
+        "receives_highest_dla_sc": st.booleans(),
         "age_started_or_accepted_current_education_or_training": st.sampled_from(
             [17, 1000]
         ),
@@ -110,7 +123,10 @@ def simulate(units, year):
         sim = Simulation(situation=situation)
     for variable in people[0]:
         sim.set_input(variable, year, [p[variable] for p in people])
-    sim.input_variables = list(people[0])
+    # Both CTC disabled child elements are zero for a unit that is not
+    # eligible, and no generated unit reports a tax credit award.
+    sim.set_input("is_CTC_eligible", year, [True] * len(units))
+    sim.input_variables = [*people[0], "is_CTC_eligible"]
     sim.reset_calculations()
     return sim
 
@@ -200,9 +216,22 @@ def test_child_benefit_entitlement_counts_only_other_members(units, year):
         np.testing.assert_allclose(actual, weekly * 52, rtol=1e-6)
 
 
+LEVELS = ("none", "standard", "severe")
+
+
+def disability(level):
+    return {
+        "is_disabled_for_benefits": level != "none",
+        "is_severely_disabled_for_benefits": level == "severe",
+        "dla": 0 if level == "none" else 3_000,
+        "receives_highest_dla_sc": level == "severe",
+    }
+
+
 def test_lone_qualifying_young_person_gets_no_child_amount_for_themselves():
-    # Exhaustive over ages 15-20, every education value and training flag:
-    # a lone claimant gets nothing for themselves, whatever their status.
+    # Exhaustive over ages 15-20, every education value, training flag and
+    # disability level: a lone claimant gets nothing for themselves, whatever
+    # their status.
     units = [
         [
             {
@@ -211,8 +240,7 @@ def test_lone_qualifying_young_person_gets_no_child_amount_for_themselves():
                 "is_in_approved_training": training,
                 "receives_benefits_in_own_right": False,
                 "is_looked_after_by_local_authority": False,
-                "is_disabled_for_benefits": False,
-                "is_severely_disabled_for_benefits": False,
+                **disability(level),
                 "age_started_or_accepted_current_education_or_training": 17,
                 "is_claimant_or_partner": True,
             }
@@ -220,6 +248,7 @@ def test_lone_qualifying_young_person_gets_no_child_amount_for_themselves():
         for age in range(15, 21)
         for education in EDUCATIONS
         for training in (False, True)
+        for level in LEVELS
     ]
     for year in YEARS:
         sim = simulate(units, year)
@@ -229,4 +258,86 @@ def test_lone_qualifying_young_person_gets_no_child_amount_for_themselves():
         for variable in CHILD_AMOUNTS:
             np.testing.assert_array_equal(
                 sim.calculate(variable, year), 0, err_msg=variable
+            )
+
+
+def test_disability_amounts_count_disabled_dependants_and_never_claimants():
+    # Invariant 5. A claimant aged 17 at school or 40, a partner aged 18 at
+    # school, a child of 10 and a 17-year-old at school, over every
+    # combination of the four members' disability levels. The claimant at 17
+    # and the partner are qualifying young persons by status.
+    def unit_member(age, level, claimant):
+        return {
+            "age": age,
+            "current_education": "UPPER_SECONDARY" if age < 20 else "NOT_IN_EDUCATION",
+            "is_in_approved_training": False,
+            "receives_benefits_in_own_right": False,
+            "is_looked_after_by_local_authority": False,
+            **disability(level),
+            "age_started_or_accepted_current_education_or_training": 17,
+            "is_claimant_or_partner": claimant,
+        }
+
+    cases = [
+        (claimant_age, levels)
+        for claimant_age in (17, 40)
+        for levels in product(LEVELS, repeat=4)
+    ]
+    units = [
+        [
+            unit_member(claimant_age, claimant, True),
+            unit_member(18, partner, True),
+            unit_member(10, child, False),
+            unit_member(17, young_person, False),
+        ]
+        for claimant_age, (claimant, partner, child, young_person) in cases
+    ]
+    dependants = [levels[2:] for _, levels in cases]
+    disabled = np.array([sum(d != "none" for d in ds) for ds in dependants])
+    severe = np.array([sum(d == "severe" for d in ds) for ds in dependants])
+    for year in YEARS:
+        sim = simulate(units, year)
+        gov = sim.tax_benefit_system.parameters(f"{year}-06-01").gov
+        elements = gov.dwp.tax_credits.child_tax_credit.elements
+        child = gov.dwp.pension_credit.guarantee_credit.child
+        # Sch. IIA para. 10: the 17-year-old is the eldest, born before 6
+        # April 2017, so takes the first-child amount; the child of 10 takes
+        # the standard one.
+        weekly_addition = np.array(
+            [
+                child.first.addition
+                + child.addition
+                + sum(
+                    {
+                        "none": 0,
+                        "standard": child.disability.addition,
+                        "severe": child.disability.severe.addition,
+                    }[d]
+                    for d in ds
+                )
+                for ds in dependants
+            ]
+        )
+        expected = {
+            "child_benefit_entitlement": np.full(
+                len(units),
+                (
+                    gov.hmrc.child_benefit.amount.eldest
+                    + gov.hmrc.child_benefit.amount.additional
+                )
+                * 52,
+            ),
+            "CTC_child_element": np.full(len(units), 2 * elements.child_element),
+            "CTC_disabled_child_element": elements.dis_child_element * disabled,
+            "CTC_severely_disabled_child_element": (
+                elements.severe_dis_child_element * severe
+            ),
+            "child_minimum_guarantee_addition": weekly_addition * 52,
+        }
+        assert set(expected) == set(CHILD_AMOUNTS)
+        for variable, amounts in expected.items():
+            # Not vacuous: the amount is paid for a disabled dependant.
+            assert amounts.max() > 0, variable
+            np.testing.assert_allclose(
+                sim.calculate(variable, year), amounts, rtol=1e-6, err_msg=variable
             )

@@ -183,8 +183,8 @@
 # flagged a parent. The model then treats the two as a couple everywhere,
 # and so pays no Child Benefit for the 18-year-old. Supplying the roles, or
 # flagging the parent, restores it. In law the head can claim for a young
-# person who lives with them, whatever their relationship (SSCBA 1992
-# s.143(1)(a)).
+# person who lives with them and is not their partner (SSCBA 1992
+# s.143(1)(a); Child Benefit (General) Regulations 2006 regs 12-13).
 - name: Case 9, with no roles supplied an 18-year-old at school 15 years younger than the head is read as their partner.
   period: 2026
   absolute_error_margin: 0.01
