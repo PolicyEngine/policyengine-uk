@@ -1,0 +1,139 @@
+# The age addition: 25p a week for a person over the age of 80 who is entitled
+# to a retirement pension under the Social Security Contributions and Benefits
+# Act 1992 (s.79(1) and (3), Sch 4 Part III para 8), never uprated (each
+# Up-rating Order excludes it, e.g. SI 2026/148 art 3(2)(a)). A person is over
+# an age once they have attained it (s.173). A new State Pension, under Part 1
+# of the Pensions Act 2014, is not a pension under that Act (s.79(1) as amended
+# by the Pensions Act 2014 Sch 12 para 85). Annual amount: 0.25 x 52 = 13.
+
+- name: Case 1, aged 80 on the basic State Pension gets the age addition.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension_type: BASIC
+        state_pension_reported: 9_100
+  output:
+    state_pension_age_addition: 13
+    is_SP_age: true
+
+- name: Case 2, aged 79 gets no age addition.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 79
+        state_pension_type: BASIC
+        state_pension_reported: 9_100
+  output:
+    state_pension_age_addition: 0
+
+- name: Case 3, aged 85 on the new State Pension gets no age addition.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 85
+        state_pension_type: NEW
+        state_pension_reported: 12_000
+  output:
+    state_pension_age_addition: 0
+
+- name: Case 4, below State Pension age gets no age addition.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 60
+        state_pension_reported: 9_100
+  output:
+    state_pension_type: NONE
+    state_pension_age_addition: 0
+
+- name: Case 5, the age addition stays 25p a week in 2026-27.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension_type: BASIC
+        state_pension_reported: 9_100
+  output:
+    state_pension_age_addition: 13
+
+- name: Case 6, the age addition stays 25p a week in 2030-31.
+  period: 2030
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension_type: BASIC
+        state_pension_reported: 9_100
+  output:
+    state_pension_age_addition: 13
+
+- name: Case 7, no State Pension means no age addition.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 85
+        state_pension_type: BASIC
+        state_pension_reported: 0
+  output:
+    state_pension_age_addition: 0
+    state_pension: 0
+
+- name: Case 8, the computed State Pension type of a man aged 80 is basic.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        gender: MALE
+        state_pension_reported: 9_100
+  output:
+    state_pension_type: BASIC
+    state_pension_age_addition: 13
+
+- name: Case 9, a reported full basic rate plus 25p is the full rate and the addition.
+  # 2025-26 basic State Pension £176.45 a week (SI 2025/295 art 4(2)(b)). The
+  # reported £176.70 a week is the full rate and the age addition, so there is
+  # no additional State Pension.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 85
+        state_pension_type: BASIC
+        state_pension_reported: 9_188.4
+  output:
+    basic_state_pension: 9_175.4
+    additional_state_pension: 0
+    state_pension_age_addition: 13
+    state_pension: 9_188.4
+    state_pension_reported_excluding_age_addition: 9_175.4
+
+- name: Case 10, the age addition does not reduce Carer's Allowance.
+  # Overlapping Benefits Regulations 1979 reg 4(3) and Sch 1 row 4: an age
+  # addition is adjusted only by reference to another age addition.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 85
+        state_pension_type: BASIC
+        state_pension_reported: 9_188.4
+  output:
+    overlapping_state_pension: 9_175.4

@@ -8,7 +8,10 @@ period can differ from its type in the data year. All three components split
 by the period's type, so together they split the reported amount with no
 overlap and no gap: the part up to the type's full rate is uprated by the full
 rate, and the part above it (additional pension, protected payments) by
-September CPI, as the Up-rating Orders raise it (see add_on_uprating).
+September CPI, as the Up-rating Orders raise it (see add_on_uprating). The
+age addition, 25p a week from 80 on a basic State Pension, is paid on its own
+and never uprated, so the components split the reported amount without it
+(see net_weekly).
 
 The YAML runner builds simulations without a dataset, where the data year is
 the period by construction, so these cases build simulations from data.
@@ -165,6 +168,32 @@ def approx(expected: float):
     return pytest.approx(expected, rel=INDEX_ROUNDING, abs=0.01)
 
 
+# The age addition: 25p a week for a person over the age of 80 entitled to a
+# retirement pension under the Social Security Contributions and Benefits Act
+# 1992, which a new State Pension is not (s.79(1) and (3), Sch 4 Part III
+# para 8), never uprated (e.g. SI 2026/148 art 3(2)(a)). The reported amount
+# is taken to include it.
+AGE_ADDITION_WEEKLY = 0.25
+AGE_ADDITION_AGE = 80
+AGE_ADDITION = AGE_ADDITION_WEEKLY * WEEKS_IN_YEAR
+
+
+def receives_age_addition(pension_type, age, weekly):
+    """Basic State Pension type, aged 80 or over and some State Pension."""
+    return (
+        (np.asarray(pension_type) == "BASIC")
+        & (np.asarray(age) >= AGE_ADDITION_AGE)
+        & (np.asarray(weekly) > 0)
+    )
+
+
+def net_weekly(person: dict, data_year_type: str) -> float:
+    """The weekly amount the components split: the reported amount less the
+    age addition it includes in the data year."""
+    receives = receives_age_addition(data_year_type, person["age"], person["weekly"])
+    return max(person["weekly"] - AGE_ADDITION_WEEKLY * bool(receives), 0)
+
+
 def calculate(sim, variable: str, year: int) -> np.ndarray:
     return np.asarray(sim.calculate(variable, year))
 
@@ -222,13 +251,16 @@ def test_protected_payment_above_new_state_pension_follows_period_type():
     ],
 )
 def test_unchanged_type_splits_at_its_own_flat_rate(person, pension_type):
+    """The 90-year-old's reported amount includes the 25p age addition, which
+    is paid on its own; the 70-year-old, on the new State Pension, gets none."""
     sim = projected_simulation([person])
+    weekly = net_weekly(person, pension_type)
+    addition = AGE_ADDITION if pension_type == "BASIC" else 0
     for year in YEARS:
         assert calculate(sim, "state_pension_type", year)[0] == pension_type
         total = sum(calculate(sim, v, year)[0] for v in COMPONENTS)
-        assert total == approx(
-            uprated_reported(sim, year, pension_type, person["weekly"])
-        )
+        assert total == approx(uprated_reported(sim, year, pension_type, weekly))
+        assert calculate(sim, "state_pension_age_addition", year)[0] == addition
 
 
 def test_nothing_is_paid_once_the_record_falls_below_state_pension_age():
@@ -275,19 +307,20 @@ def test_new_in_data_year_and_basic_in_period_is_paid_in_full():
 def test_additional_pension_rises_with_september_cpi_not_the_basic_rate():
     """A man aged 90 in 2024-25 reached State Pension age in 1999, on the basic
     State Pension, as does a man aged 90 in any later year. He reports £200 a
-    week, £30.50 above the 2024-25 full basic rate. The Up-rating Orders raised
-    the basic State Pension by 4.1% and 4.8% and additional pensions by 1.7%
-    and 3.8% (SI 2025/295 and SI 2026/148, arts 4(2) and 4(3)(a)), so in
-    2026-27 he gets £184.90 a week of basic State Pension and £30.50 x 1.017 x
-    1.038 of additional State Pension."""
+    week: the 25p age addition and £30.25 above the 2024-25 full basic rate.
+    The Up-rating Orders raised the basic State Pension by 4.1% and 4.8% and
+    additional pensions by 1.7% and 3.8% (SI 2025/295 and SI 2026/148, arts
+    4(2) and 4(3)(a)), and left the age addition at 25p (art 3(2)(a)), so in
+    2026-27 he gets £184.90 a week of basic State Pension, £30.25 x 1.017 x
+    1.038 of additional State Pension and 25p."""
     person = {"age": 90, "male": True, "months": 3, "weekly": 200}
     sim = projected_simulation([person])
     for year in (DATA_YEAR, 2025, 2026):
         assert calculate(sim, "state_pension_type", year)[0] == "BASIC"
-    additional_2025 = (200 - 169.50) * WEEKS_IN_YEAR * 1.017
-    additional_2026 = (200 - 169.50) * WEEKS_IN_YEAR * 1.017 * 1.038
+    additional_2025 = (199.75 - 169.50) * WEEKS_IN_YEAR * 1.017
+    additional_2026 = (199.75 - 169.50) * WEEKS_IN_YEAR * 1.017 * 1.038
     assert calculate(sim, "additional_state_pension", DATA_YEAR)[0] == approx(
-        (200 - 169.50) * WEEKS_IN_YEAR
+        (199.75 - 169.50) * WEEKS_IN_YEAR
     )
     assert calculate(sim, "additional_state_pension", 2025)[0] == approx(
         additional_2025
@@ -298,8 +331,9 @@ def test_additional_pension_rises_with_september_cpi_not_the_basic_rate():
     assert calculate(sim, "basic_state_pension", 2026)[0] == approx(
         184.90 * WEEKS_IN_YEAR
     )
+    assert calculate(sim, "state_pension_age_addition", 2026)[0] == AGE_ADDITION
     assert calculate(sim, "state_pension", 2026)[0] == approx(
-        184.90 * WEEKS_IN_YEAR + additional_2026
+        184.90 * WEEKS_IN_YEAR + additional_2026 + AGE_ADDITION
     )
 
 
@@ -443,10 +477,11 @@ PEOPLE = st.lists(
             "age": st.integers(min_value=55, max_value=100),
             "male": st.booleans(),
             "months": st.floats(min_value=0, max_value=12, exclude_max=True),
-            # Include each data-year flat rate, where the split changes.
+            # Include each data-year flat rate, where the split changes, the
+            # age addition alone, and the basic rate with the age addition.
             "weekly": st.one_of(
                 st.floats(min_value=0, max_value=600),
-                st.sampled_from([0, 169.5, 221.2]),
+                st.sampled_from([0, 0.25, 169.5, 169.75, 221.2]),
             ),
         }
     ),
@@ -459,13 +494,30 @@ def by_type(pension_type: np.ndarray, basic, new) -> np.ndarray:
     return np.select([pension_type == "BASIC", pension_type == "NEW"], [basic, new], 0)
 
 
+def data_year_net_weekly(sim, people: list) -> np.ndarray:
+    """Each record's reported weekly amount less the age addition it includes
+    in the data year."""
+    weekly = np.array([p["weekly"] for p in people])
+    included = receives_age_addition(
+        calculate(sim, "state_pension_type", DATA_YEAR).astype(str),
+        calculate(sim, "age", DATA_YEAR),
+        weekly,
+    )
+    return np.maximum(weekly - AGE_ADDITION_WEEKLY * included, 0)
+
+
 def assert_components_add_up(sim, people: list, years) -> None:
     """For each person and year: below State Pension age, no component and type
     NONE. Over it, only the period type's flat-rate component, which is the
-    reported amount up to the type's full rate, uprated by the full rate; and,
-    deflating each component by its own uprating, the three components add up
-    to exactly the reported amount, with no overlap and no gap."""
-    weekly = np.array([p["weekly"] for p in people])
+    reported amount net of the age addition up to the type's full rate,
+    uprated by the full rate; and, deflating each component by its own
+    uprating, the three components add up to exactly that net amount, with no
+    overlap and no gap. The age addition is 25p a week exactly when the record
+    is on the basic State Pension, aged 80 or over and has a State Pension, in
+    every year; in the data year the four parts add up to the reported amount
+    whenever it is at least 25p a week."""
+    reported_weekly = np.array([p["weekly"] for p in people])
+    weekly = data_year_net_weekly(sim, people)
     for year in years:
         pension_type = calculate(sim, "state_pension_type", year).astype(str)
         over_spa = calculate(sim, "is_SP_age", year).astype(bool)
@@ -495,6 +547,20 @@ def assert_components_add_up(sim, people: list, years) -> None:
         assert np.all(additional >= 0)
         assert np.all(basic <= rates["BASIC"] * WEEKS_IN_YEAR * (1 + 1e-6))
         assert np.all(new <= rates["NEW"] * WEEKS_IN_YEAR * (1 + 1e-6))
+        addition = calculate(sim, "state_pension_age_addition", year)
+        receives = receives_age_addition(
+            pension_type, calculate(sim, "age", year), reported_weekly
+        )
+        assert np.array_equal(addition, receives * AGE_ADDITION), year
+        if year == DATA_YEAR:
+            total = basic + new + additional + addition
+            full_record = over_spa & (reported_weekly >= AGE_ADDITION_WEEKLY)
+            assert np.allclose(
+                total[full_record],
+                reported_weekly[full_record] * WEEKS_IN_YEAR,
+                rtol=1e-9,
+                atol=1e-6,
+            )
 
 
 @PROPERTY_SETTINGS
@@ -566,9 +632,10 @@ def test_add_on_follows_september_cpi_and_nothing_else_changes(people, data):
     - the add-on is never negative, and never falls as the reported amount rises;
     - from one year to the next, with the type unchanged, it grows by that
       year's September CPI rise;
-    - differential against main: the flat-rate parts are unchanged, the add-on
-      is unchanged in the data year, and otherwise differs only by uprating with
-      September CPI instead of the full rate."""
+    - differential against main, applied to the reported amount net of the age
+      addition: the flat-rate parts are unchanged, the add-on is unchanged in
+      the data year, and otherwise differs only by uprating with September CPI
+      instead of the full rate."""
     extra = data.draw(
         st.lists(
             st.floats(min_value=0, max_value=300),
@@ -578,7 +645,7 @@ def test_add_on_follows_september_cpi_and_nothing_else_changes(people, data):
     )
     records = paired(people, extra)
     sim = projected_simulation(records)
-    weekly = np.array([p["weekly"] for p in records])
+    weekly = data_year_net_weekly(sim, records)
     n = len(people)
     previous = None
     for year in YEARS:
@@ -729,14 +796,17 @@ def test_situation_new_state_pension_follows_a_dated_rate_reform(reformed):
 
 
 def test_situation_basic_state_pension_follows_a_dated_rate_reform():
+    """Aged 90, reporting the full basic rate and the 25p age addition."""
     year = 2026
-    weekly = LEGISLATED[(year, "BASIC")]
+    weekly = LEGISLATED[(year, "BASIC")] + AGE_ADDITION_WEEKLY
     sit = situation(90, "BASIC", weekly, year)
     reform = {BSP: {f"{year}-01-01.{year}-12-31": 170.0}}
     result = situation_components(sit, reform, year)
     assert result["basic_state_pension"] == pytest.approx(170 * WEEKS_IN_YEAR, abs=0.01)
     assert result["additional_state_pension"] == 0
-    assert result["state_pension"] == pytest.approx(170 * WEEKS_IN_YEAR, abs=0.01)
+    assert result["state_pension"] == pytest.approx(
+        170 * WEEKS_IN_YEAR + AGE_ADDITION, abs=0.01
+    )
 
 
 def test_situation_protected_payment_stays_additional_under_a_rate_reform():
@@ -783,11 +853,12 @@ def test_undated_rate_reform_moves_only_the_flat_rate_part(
     year = 2027
     assert calculate(sim, "state_pension_type", year)[0] == pension_type
     expected = expected_under_rate(
-        person["weekly"],
+        net_weekly(person, pension_type),
         LEGISLATED[(DATA_YEAR, pension_type)],
         reformed,
         add_on_uprating(sim, year),
     )
+    addition = AGE_ADDITION if pension_type == "BASIC" else 0
     flat_variable = (
         "new_state_pension" if pension_type == "NEW" else "basic_state_pension"
     )
@@ -798,7 +869,7 @@ def test_undated_rate_reform_moves_only_the_flat_rate_part(
         expected["additional"]
     )
     assert calculate(sim, "state_pension", year)[0] == approx(
-        expected["flat"] + expected["additional"]
+        expected["flat"] + expected["additional"] + addition
     )
 
 
@@ -831,3 +902,51 @@ def test_dated_reform_after_the_data_year_is_unchanged_by_the_baseline_split():
     assert calculate(sim, "state_pension", 2027)[0] == approx(
         expected["flat"] + expected["additional"]
     )
+
+
+# The age addition (PolicyEngine/policyengine-uk#2139).
+
+
+def test_full_basic_rate_plus_age_addition_is_never_additional_pension():
+    """A man aged 85 in 2024-25 reports £169.75 a week: the full basic State
+    Pension (£169.50, Social Security Benefits Up-rating Order 2024 art 4(2))
+    and the 25p age addition. In every year he gets the full basic rate and
+    25p, never uprated, and no additional State Pension. Before #2139 the 25p
+    was additional pension, uprated with it."""
+    person = {"age": 85, "male": True, "months": 3, "weekly": 169.75}
+    sim = projected_simulation([person])
+    for year in YEARS:
+        assert calculate(sim, "state_pension_type", year)[0] == "BASIC"
+        basic = flat_rates(sim, year)["BASIC"] * WEEKS_IN_YEAR
+        assert calculate(sim, "basic_state_pension", year)[0] == approx(basic)
+        assert calculate(sim, "additional_state_pension", year)[0] == 0
+        assert calculate(sim, "state_pension_age_addition", year)[0] == AGE_ADDITION
+        assert calculate(sim, "state_pension", year)[0] == approx(basic + AGE_ADDITION)
+
+
+def test_age_addition_reforms_leave_the_reported_split_alone():
+    """An undated reform paying £10 a week from 75 pays it to both records in
+    every year, but the reported amounts were observed under the legislated
+    25p from 80: the 85-year-old's is still split net of 25p, and the
+    77-year-old's in full, so the other components do not change."""
+    people = [
+        {"age": 85, "male": True, "months": 3, "weekly": 169.75},
+        {"age": 77, "male": True, "months": 3, "weekly": 169.5},
+    ]
+    baseline = projected_simulation(people)
+    reformed = Microsimulation(
+        dataset=year_dataset(people, DATA_YEAR),
+        reform={
+            "gov.dwp.state_pension.age_addition.amount": 10.0,
+            "gov.dwp.state_pension.age_addition.age": 75,
+        },
+    )
+    for year in (DATA_YEAR, 2027, 2030):
+        assert (
+            list(calculate(reformed, "state_pension_age_addition", year))
+            == [10 * WEEKS_IN_YEAR] * 2
+        )
+        for variable in COMPONENTS:
+            assert calculate(reformed, variable, year) == pytest.approx(
+                calculate(baseline, variable, year), abs=1e-6
+            ), (variable, year)

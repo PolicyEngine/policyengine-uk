@@ -1,0 +1,12 @@
+description: The Department for Work and Pensions adds this weekly amount, the age addition, to the retirement pension of a person over the age of 80. Up-rating Orders leave it out of the annual uprating, so it has stayed at 25p.
+values:
+  1992-07-01: 0.25
+metadata:
+  period: week
+  unit: currency-GBP
+  label: State Pension age addition
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s.79(3) and Sch 4 Part III para 8
+      href: https://www.legislation.gov.uk/ukpga/1992/4/schedule/4
+    - title: Social Security Benefits Up-rating Order 2026 art 3(2)(a) (the age addition is not increased)
+      href: https://www.legislation.gov.uk/uksi/2026/148/article/3/made

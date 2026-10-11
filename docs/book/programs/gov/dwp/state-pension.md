@@ -1,6 +1,6 @@
 # State Pension
 
-The State Pension is modelled in PolicyEngine UK as three composable
+The State Pension is modelled in PolicyEngine UK as four composable
 person-level variables, summed into the `state_pension` aggregate that
 flows into household benefits. This page describes the current model
 and the residual aggregate gap against OBR outturn tracked under
@@ -8,7 +8,7 @@ and the residual aggregate gap against OBR outturn tracked under
 
 ## Components
 
-Three variables under `gov/dwp/`:
+Four variables under `gov/dwp/`:
 
 - **`basic_state_pension`** — the pre-2016 flat-rate State Pension paid
   to people who reached State Pension age before 6 April 2016
@@ -28,10 +28,50 @@ Three variables under `gov/dwp/`:
   - Both are the reported weekly amount above the type's full rate in the
     data year, `max(reported - flat_max_for_type, 0)`, uprated by September
     CPI as described below and multiplied by `WEEKS_IN_YEAR`.
+- **`state_pension_age_addition`** — the age addition: 25p a week
+  (`gov.dwp.state_pension.age_addition.amount`) for a person over the age of
+  80 (`age_addition.age`) who is entitled to a retirement pension under the
+  Social Security Contributions and Benefits Act 1992
+  ([s.79](https://www.legislation.gov.uk/ukpga/1992/4/section/79) and
+  [Sch 4 Part III para 8](https://www.legislation.gov.uk/ukpga/1992/4/schedule/4)),
+  read as a `BASIC` type with a State Pension reported in the data year. It
+  is never uprated: each Up-rating Order excludes it (for example
+  [SI 2026/148 art 3(2)(a)](https://www.legislation.gov.uk/uksi/2026/148/article/3/made)).
+  A new State Pension gets none, because s.79(1) covers only a retirement
+  pension "under this Act", words the Pensions Act 2014 inserted
+  ([Sch 12 para 85](https://www.legislation.gov.uk/ukpga/2014/19/schedule/12/paragraph/85)).
+  A person is over an age once they have attained it (SSCBA 1992 s.173).
+  The model reads age on 6 October, the middle of the fiscal year, as it
+  does for State Pension age, so a person who turns 80 by then gets the
+  year's £13 in full and one who turns 80 later in the year gets none until
+  the next.
 
-All three split the amount a person reported in the data year (the
-dataset's first year) by the person's `state_pension_type` in the year
-simulated, for anyone over State Pension age:
+The survey records the State Pension in payment. For Family Resources
+Survey respondents, `state_pension_reported` is the benefits table's weekly
+State Pension amount (benefit code 5) times 52, and policyengine-uk-data maps
+no separate code for the age addition (`datasets/frs.py`), so the model
+assumes the reported amount of a basic State Pension recipient over 80
+includes it. `state_pension_reported_excluding_age_addition` takes the data
+year's addition off, at the legislated 25p from 80, and the other three
+components split what is left. The addition is part of `state_pension`, so
+it is taxed and means-tested as the pension is: it is an increase of the
+pension (s.79(1)), which income tax charges as pension income under
+[ITEPA 2003 s.577](https://www.legislation.gov.uk/ukpga/2003/1/section/577)
+(the pre-2003 charge in ICTA 1988 s.617(1) reached every benefit under Parts
+II to IV of the 1992 Act not excepted, and the age addition was not), and
+Pension Credit counts it as retirement pension income
+([State Pension Credit Act 2002 s.16(1)(e)](https://www.legislation.gov.uk/ukpga/2002/16/section/16)),
+as do Universal Credit (Universal Credit Regulations 2013 regs 66(1)(a) and 67) and
+pension-age Housing Benefit (Housing Benefit (State Pension Credit)
+Regulations 2006 reg 29(1)(c)). It never reduces Carer's Allowance: an age
+addition is adjusted only by reference to another age addition
+([Overlapping Benefits Regulations 1979 reg 4(3)](https://www.legislation.gov.uk/uksi/1979/597/regulation/4)
+and Sch 1 row 4).
+
+The basic, new and additional State Pension split the amount a person
+reported in the data year (the dataset's first year), less any age addition,
+by the person's `state_pension_type` in the year simulated, for anyone over
+State Pension age:
 
 - The part up to that type's full rate in the data year is basic or new
   State Pension. It is uprated by the type's full rate: the year's over the
@@ -418,8 +458,13 @@ part of the widening.
 | Protected Payment only computed for BASIC-type recipients | Fixed | #1634 (ASP now extends to NEW) |
 | `additional_state_pension` split the reported amount by the data year's State Pension type, paying part of it twice for records moving from basic to new cohorts | Fixed | #1921 |
 | `additional_state_pension` uprated additional pensions and protected payments by the full rate (the triple lock), not September CPI | Fixed | #1941 |
+| The 25p age addition at 80 was not modelled: in the reported amount it was uprated as additional pension, and no one who turned 80 later got it | Fixed | #2139 |
 
 ### What's still open
+
+- The Category D retirement pension, for people over 80 with no other
+  retirement pension or one below its rate (SSCBA 1992 s.78(3)), is not
+  modelled: [#2339](https://github.com/PolicyEngine/policyengine-uk/issues/2339).
 
 - The data year's shortfall in the enhanced FRS:
   [policyengine-uk-data#493](https://github.com/PolicyEngine/policyengine-uk-data/issues/493).
