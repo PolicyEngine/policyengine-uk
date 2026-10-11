@@ -18,7 +18,9 @@ Invariants:
    (s. 150(2) provides only for increases). So it never falls, and with
    non-negative CPI it grows exactly with the benefit index.
 3. Differential: on the full parameter pipeline, the amount equals an
-   independent recursion over the processed benefit index.
+   independent recursion over the processed benefit index, read at the
+   30 April sampling date, including a benefit index value dated after
+   30 April.
 4. Reforms take effect: a change to the amount is held or uprated from the
    changed value; switching the freeze or the rebalancing reforms off
    restores CPI uprating; a different CPI forecast leaves the frozen years
@@ -126,15 +128,23 @@ def test_2030_31_is_uprated_by_one_year_of_the_benefit_index():
     assert parameters.get_child(AMOUNT)(at(2030)) < ACT_AMOUNT * four_years
 
 
+def statutory_path(parameters, last_year: int) -> dict:
+    """Invariant 3's independent recursion: £217.26 for 2026-27, then each
+    year the previous year's amount, held in the frozen years and otherwise
+    raised by the processed benefit index's growth, never down."""
+    expected = {2026: ACT_AMOUNT}
+    for year in range(2027, last_year + 1):
+        growth = benefit_index(parameters, year) / benefit_index(parameters, year - 1)
+        frozen = year in FROZEN_YEARS
+        expected[year] = expected[year - 1] * (1 if frozen else max(1.0, growth))
+    return expected
+
+
 def test_differential_against_the_processed_benefit_index():
     """Invariant 3: an independent recursion over the benefit index as the
     full pipeline uprated it, for the baseline and the unconverted copy."""
     parameters = system.parameters
-    expected = {2026: ACT_AMOUNT}
-    for year in range(2027, HORIZON + 1):
-        growth = benefit_index(parameters, year) / benefit_index(parameters, year - 1)
-        frozen = year in FROZEN_YEARS
-        expected[year] = expected[year - 1] * (1 if frozen else max(1.0, growth))
+    expected = statutory_path(parameters, HORIZON)
     actual = amount_path(parameters, range(2026, HORIZON + 1))
     assert actual == pytest.approx(expected, rel=1e-12)
     # parameters.baseline is not fiscal-year converted and keys uprated values
@@ -142,6 +152,23 @@ def test_differential_against_the_processed_benefit_index():
     baseline = parameters.baseline.get_child(AMOUNT)
     for year in range(2027, HORIZON + 1):
         assert baseline(f"{year}-01-01") == pytest.approx(expected[year], rel=1e-12)
+
+
+def test_a_benefit_index_change_after_30_april_reaches_the_next_tax_year():
+    """Review round 2: a one-year change to the benefit index from 1 June
+    2038 ends on 1 June 2039, when the stated value comes back. That first
+    shows in the 30 April 2040 sample, a year after the last uprating entry,
+    and the element must follow it there."""
+    parameters = scenario_parameters(
+        {"gov.benefit_uprating_cpi": {"year:2038-06-01": 57.24}}
+    )
+    assert benefit_index(parameters, 2039) == pytest.approx(57.24)
+    assert benefit_index(parameters, 2040) > benefit_index(parameters, 2039)
+    expected = statutory_path(parameters, HORIZON)
+    actual = amount_path(parameters, range(2026, HORIZON + 1))
+    assert actual == pytest.approx(expected, rel=1e-12)
+    assert actual[2040] > actual[2039]
+    assert_one_path(parameters, range(2026, HORIZON + 1))
 
 
 def test_household_element_after_the_freeze():
@@ -303,10 +330,12 @@ def uprated_tree(
     freeze_values=None,
     active_values=None,
     amount_values=None,
+    benefit_values=None,
 ):
     """A tree with the parameters the builder reads, after the builder and
     core uprating have run. ``cpi_growth`` gives the lagged CPI index's
-    growth into each year from 2011."""
+    growth into each year from 2011; ``benefit_values`` adds stated values
+    of the benefit index at any dates."""
     lagged_cpi = {f"{INDEX_FIRST_YEAR}-01-01": 1.0}
     level = 1.0
     for year, rate in zip(range(INDEX_FIRST_YEAR + 1, INDEX_LAST_YEAR + 1), cpi_growth):
@@ -315,7 +344,11 @@ def uprated_tree(
     data = {
         "gov": {
             "benefit_uprating_cpi": {
-                "values": {"2005-01-01": 100, "2010-01-01": 114.48},
+                "values": {
+                    "2005-01-01": 100,
+                    "2010-01-01": 114.48,
+                    **(benefit_values or {}),
+                },
                 "metadata": {
                     "uprating": "gov.economic_assumptions.indices.obr.lagged_cpi"
                 },
@@ -363,12 +396,12 @@ def uprated_tree(
     return root
 
 
-def tree_rule_holds(root, frozen, start_year, start_amount):
+def tree_rule_holds(root, frozen, start_year, start_amount, last_year=None):
     """Each year after ``start_year`` is the previous year's amount, held when
     frozen and otherwise uprated by the benefit index, never down."""
     amount = root.get_child(AMOUNT)
     assert amount(at(start_year)) == pytest.approx(start_amount, rel=1e-12)
-    for year in range(start_year + 1, INDEX_LAST_YEAR + 1):
+    for year in range(start_year + 1, (last_year or INDEX_LAST_YEAR) + 1):
         previous = amount(at(year - 1))
         ratio = benefit_index(root, year) / benefit_index(root, year - 1)
         expected = previous if frozen(year) else previous * max(1.0, ratio)
@@ -449,6 +482,39 @@ def test_a_reformed_amount_is_held_or_uprated_from_its_value(growth, year, value
     }
     root = uprated_tree(growth, amount_values=amount_values)
     tree_rule_holds(root, lambda y: y in FROZEN_YEARS, year, value)
-    # Years before the change keep the statutory path.
+    # Core uprating projects only from a parameter's latest stated value, so a
+    # value stated from a later year leaves the earlier years at the last
+    # stated amount (£217.26) rather than uprating them. This is core's rule
+    # for every uprated parameter, not the statutory path for 2030-31 on.
     for earlier in range(2026, year):
         assert root.get_child(AMOUNT)(at(earlier)) == pytest.approx(ACT_AMOUNT)
+
+
+BENEFIT_INDEX_ENTRIES = st.dictionaries(
+    st.builds(
+        lambda year, month, day: f"{year}-{month:02d}-{day:02d}",
+        st.integers(2026, INDEX_LAST_YEAR + 1),
+        st.integers(1, 12),
+        st.integers(1, 28),
+    ),
+    st.floats(50, 300, allow_nan=False),
+    max_size=3,
+)
+
+
+@TREE_SETTINGS
+@given(GROWTH_PATHS, BENEFIT_INDEX_ENTRIES)
+def test_any_dated_benefit_index_values_are_followed(growth, benefit_values):
+    """Invariants 1 to 3 when the benefit index has stated values on any
+    date, including after 30 April and after the last uprating entry: the
+    amount follows the processed index, read at 30 April, to the first tax
+    year that sees the last value."""
+    root = uprated_tree(growth, benefit_values=benefit_values)
+    tree_rule_holds(
+        root,
+        lambda year: year in FROZEN_YEARS,
+        2026,
+        ACT_AMOUNT,
+        last_year=INDEX_LAST_YEAR + 3,
+    )
+    assert_one_path(root, range(2026, INDEX_LAST_YEAR + 4))

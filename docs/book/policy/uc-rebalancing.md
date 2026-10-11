@@ -27,6 +27,8 @@ Two parameters hold this amount, and both are uprated by `gov.dwp.universal_cred
 - `gov.dwp.universal_credit.elements.disabled.amount` is the LCWRA element the `uc_LCWRA_element` formula pays. A simulation uses it from 2030-31, and whenever the rebalancing reforms are inactive.
 - `gov.dwp.universal_credit.rebalancing.new_claimant_health_element` is the amount the rebalancing scenario pays new claimants for 2026-27 to 2029-30.
 
+A change to the freeze or to the benefit uprating index moves both. A reform to either amount itself does not change the other.
+
 `rebalancing/create_health_element_uprating.py` builds the index when parameters are processed: the benefit uprating index, held flat in each year in which `rebalancing.health_element_freeze` and `rebalancing.active` are both true.
 
 Existing recipients are treated differently. Universal Credit Regulations 2013 reg. 36 gives one amount, the protected LCWRA amount, to every pre-2026 claimant, severe conditions criteria claimant or terminally ill claimant, whatever their age or couple status. For 2026-27 it is £429.80 a month ([SI 2026/113](https://www.legislation.gov.uk/uksi/2026/113/made) reg. 3(3)(b)), stored in `gov.dwp.universal_credit.rebalancing.protected_health_element`.

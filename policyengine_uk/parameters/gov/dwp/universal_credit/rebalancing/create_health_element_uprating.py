@@ -57,6 +57,10 @@ from typing import Dict
 
 from policyengine_core.parameters import Parameter, ParameterNode, get_parameter
 
+from policyengine_uk.parameters.gov.hmrc.create_threshold_indexation import (
+    first_tax_year,
+)
+
 INDEX_NAME = "gov.dwp.universal_credit.elements.disabled.uprating"
 BENEFIT_INDEX_NAME = "gov.benefit_uprating_cpi"
 # Fiscal-year conversion reads each tax year's value at 30 April.
@@ -121,16 +125,19 @@ def projected_value(parameter: Parameter, parameters: ParameterNode, at: str):
 
 
 def index_years(parameters: ParameterNode) -> range:
-    """Years the benefit index covers once uprated: its own stated years and
-    those of the index that uprates it."""
+    """Tax years in which the benefit index, once uprated, can change: from the
+    first year of its own values or its uprater's to the first tax year whose
+    30 April sample sees the last of them. A value dated after 30 April, such
+    as the one a one-year reform restores, first reaches the next tax year."""
     benefit_index = get_parameter(parameters, BENEFIT_INDEX_NAME)
     instants = [value.instant_str for value in benefit_index.values_list]
     uprater_name = uprating_parameter_name(benefit_index)
     if uprater_name is not None:
         uprater = get_parameter(parameters, uprater_name)
         instants += [value.instant_str for value in uprater.values_list]
-    years = [int(instant[:4]) for instant in instants]
-    return range(min(years), max(years) + 1)
+    first = min(int(instant[:4]) for instant in instants)
+    last = max(first_tax_year(instant) for instant in instants)
+    return range(first, last + 1)
 
 
 def is_frozen(rebalancing: ParameterNode, year: int) -> bool:
