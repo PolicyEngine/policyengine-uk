@@ -442,3 +442,25 @@
     is_benefit_cap_exempt_earnings: false
     is_benefit_cap_exempt: false
     benefit_cap: 25_323
+
+# --- Miscellaneous income: one definition for the award and the cap ---
+
+- name: Miscellaneous income counts as earned for the cap, as it does for the award
+  # The UC award counts miscellaneous_income as earned income
+  # (uc_individual_earned_income_before_mif), and the cap shares that
+  # definition. In the FRS the input mixes paid work, which is earned (reg.
+  # 52(a)(iii)), with royalties, trust income and overseas pensions, which
+  # reg. 66(1) treats as unearned; PolicyEngine/policyengine-uk#1961 tracks
+  # the split. This case pins today's shared treatment, so the #1961 fix
+  # moves the award and the cap together. 11,000 is under the personal
+  # allowance and carries no NI.
+  period: 2026
+  input:
+    people:
+      person:
+        age: 30
+        miscellaneous_income: 11_000
+  output:
+    uc_earned_income_before_work_allowance: 11_000
+    benefit_cap_earned_income: 11_000
+    is_benefit_cap_exempt_earnings: true
