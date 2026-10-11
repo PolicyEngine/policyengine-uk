@@ -36,6 +36,7 @@ def _calc(misc, pay, savings, dividends, pension):
         for name in (
             "income_tax",
             "adjusted_net_income",
+            "total_income",
             "taxable_miscellaneous_income",
         )
     }
