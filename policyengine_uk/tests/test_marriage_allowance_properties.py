@@ -7,7 +7,8 @@ reduction of the appropriate percentage of it, capped at their Step 5 tax
 conditions allow it and it lowers their combined income tax.
 
 Invariants, for any generated population of couples with every kind of
-taxable income and residential finance costs, in England, Wales or Scotland:
+taxable income, some with residential finance costs, in England, Wales or
+Scotland:
 
 1. The couple's income tax is never higher than with no election.
 2. Differential against brute force: the model's election gives the lowest
@@ -27,7 +28,7 @@ taxable income and residential finance costs, in England, Wales or Scotland:
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -54,7 +55,24 @@ INCOMES = {
 }
 # Residential finance costs give the landlord a Step 6 reduction of their own
 # (ITTOIA 2005 s. 274AA), deducted before the Marriage Allowance reduction.
+# They also make the property allowance a choice that income tax weighs in
+# branches of its own, which is slow, so about a quarter of the generated
+# populations have them, and LANDLORD_COUPLE is always tried.
 FINANCE_COSTS = 10_000
+# A landlord whose finance-cost reduction clears their tax, married to a
+# low earner who would pay 138 to elect: electing saves the landlord nothing.
+LANDLORD_COUPLE = [
+    dict(
+        adults=[
+            dict(age=40, property_income=20_000.0, property_finance_costs=15_000.0),
+            dict(age=38, employment_income=12_000.0),
+        ],
+        married=True,
+        children=[],
+        region="LONDON",
+        married_couples_allowance=0.0,
+    )
+]
 ELECTION = "makes_marriage_allowance_election"
 VARIABLES = [
     ELECTION,
@@ -78,21 +96,25 @@ def amounts(cap):
 
 
 @st.composite
-def adults(draw):
+def adults(draw, finance_costs=False):
     age = draw(st.integers(18, 100))
     adult = dict(age=age)
     for variable, cap in INCOMES.items():
         if variable == "state_pension" and age < 67:
             continue
         adult[variable] = draw(amounts(cap))
-    adult["property_finance_costs"] = draw(amounts(FINANCE_COSTS))
+    if finance_costs:
+        adult["property_finance_costs"] = draw(amounts(FINANCE_COSTS))
     return adult
 
 
 @st.composite
-def families(draw):
+def families(draw, finance_costs=False):
     return dict(
-        adults=[draw(adults()) for _ in range(draw(st.sampled_from([1, 2, 2, 2])))],
+        adults=[
+            draw(adults(finance_costs))
+            for _ in range(draw(st.sampled_from([1, 2, 2, 2])))
+        ],
         married=draw(st.sampled_from([True, True, True, False])),
         children=[draw(st.integers(0, 15)) for _ in range(draw(st.integers(0, 2)))],
         region=draw(st.sampled_from(REGIONS)),
@@ -179,11 +201,18 @@ def spouses_by_order(values):
     return first, second
 
 
-couple_populations = st.lists(families(), min_size=1, max_size=8)
+@st.composite
+def populations(draw):
+    finance_costs = draw(st.sampled_from([False, False, False, True]))
+    return draw(st.lists(families(finance_costs), min_size=1, max_size=8))
+
+
+couple_populations = populations()
 
 
 @PROPERTY_SETTINGS
 @given(units=couple_populations, year=st.sampled_from(YEARS))
+@example(units=LANDLORD_COUPLE, year=2026)
 def test_election_never_raises_the_couples_tax(units, year):
     model = calculate(units, year)
     none = calculate(units, year, election=np.zeros_like(model[ELECTION]))
@@ -197,6 +226,7 @@ def test_election_never_raises_the_couples_tax(units, year):
 
 @PROPERTY_SETTINGS
 @given(units=couple_populations, year=st.sampled_from(YEARS))
+@example(units=LANDLORD_COUPLE, year=2026)
 def test_election_is_the_best_allowed_choice(units, year):
     model = calculate(units, year)
     none = calculate(units, year, election=np.zeros_like(model[ELECTION]))
@@ -233,7 +263,7 @@ def test_election_is_the_best_allowed_choice(units, year):
 
 @st.composite
 def bumped(draw):
-    units = draw(st.lists(families(), min_size=1, max_size=8))
+    units = draw(populations())
     i = draw(st.integers(0, len(units) - 1))
     j = draw(st.integers(0, len(units[i]["adults"]) - 1))
     variables = [
