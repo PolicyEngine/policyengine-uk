@@ -1,0 +1,142 @@
+# Carer's Allowance earnings limit. SSCBA 1992 s. 70(1)(b) bars anyone
+# gainfully employed; reg. 8(1) of the Social Security (Invalid Care
+# Allowance) Regulations 1976 treats a person as gainfully employed when net
+# earnings exceed £204 a week from 6 April 2026 (SI 2026/218). Net earnings
+# are gross pay less income tax, primary Class 1 contributions and half of
+# pension contributions (Computation of Earnings Regulations 1996 reg.
+# 10(4)), and trading profit less tax, Class 2 and Class 4 (reg. 13).
+# 2026-27: personal allowance and NI primary threshold £12,570, employee
+# Class 1 main rate 8%, Class 4 lower profits limit £12,570 at 6%, basic rate
+# 20%. Carer's Allowance £86.45 a week.
+
+- name: Case 1, pay of £8,000 (£153.85 a week, no tax or NI) is under the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 8_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    carers_allowance_earnings: 8_000
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: Case 2, pay of £15,000 is £275.38 a week net, over the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 15_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Tax 20% x 2,430 = 486; NI 8% x 2,430 = 194.40.
+    carers_allowance_earnings: 15_000 - 486 - 194.40
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance_pre_overlap: 0
+    carers_allowance: 0
+
+- name: Case 3, earnings of exactly £204 a week have not exceeded the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 204 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: Case 4, one pound a year more is over the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 204 * 52 + 1
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 5, half of pension contributions comes off earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 11_000
+    employee_pension_contributions: 1_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 11,000 - 500 = 10,500, or £201.92 a week; without the deduction it
+    # would be £211.54 and over the limit.
+    carers_allowance_earnings: 10_500
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: Case 6, trading profit of £14,000 is £262.08 a week net, over the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: 14_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Tax 20% x 1,430 = 286; Class 4 6% x 1,430 = 85.80.
+    carers_allowance_earnings: 14_000 - 286 - 85.80
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 7, a trading loss counts as nil earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: -5_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    carers_allowance_earnings: 0
+    carers_allowance: 86.45 * 52
+
+- name: Case 8, a reported recipient over the limit is not entitled either.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 15_000
+    carers_allowance_reported: 4_000
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 9, savings and pension income are not earnings.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    savings_interest_income: 20_000
+    private_pension_income: 20_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    carers_allowance_earnings: 0
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: Case 10, the 2025-26 limit was £196.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 200 * 52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
