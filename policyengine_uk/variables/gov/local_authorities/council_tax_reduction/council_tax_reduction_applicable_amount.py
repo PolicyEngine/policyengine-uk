@@ -15,6 +15,7 @@ class council_tax_reduction_applicable_amount(Variable):
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/7",
         "https://www.legislation.gov.uk/ssi/2012/319/schedule/1",
         "https://www.legislation.gov.uk/ssi/2021/249/schedule/1",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/6",
     )
 
     def formula(benunit, period, parameters):
@@ -30,9 +31,12 @@ class council_tax_reduction_applicable_amount(Variable):
         u_25 = eldest_age < older_age_threshold
         o_25 = (eldest_age >= older_age_threshold) & ~pensioner
         o_18 = (eldest_age >= younger_age_threshold) & ~pensioner
-        single = benunit("is_single_person", period)
+        # Each scheme's own young person decides who is a lone parent: the
+        # Universal Credit definition in Scotland's working-age scheme (SSI
+        # 2021/249 regs 4 and 6), the Child Benefit definition elsewhere.
         couple = benunit("is_couple", period)
-        lone_parent = benunit("is_lone_parent", period)
+        lone_parent = benunit("is_council_tax_reduction_lone_parent", period)
+        single = ~couple & ~lone_parent
         # Pension-age personal allowances. England's prescribed requirements
         # (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29 for schemes for
         # financial years from 2021-22) split them by when State Pension age
