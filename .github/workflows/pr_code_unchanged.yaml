@@ -1,0 +1,41 @@
+# Pull requests that change none of the paths pr_code_changes.yaml runs on,
+# such as a documentation-only change, get its required checks from here, as
+# passes. GitHub leaves a required check pending forever when a path filter
+# skips the workflow that reports it, so without this a branch rule requiring
+# "Test / Result" or "Lint" would block such a pull request.
+#
+# The paths must stay the complement of pr_code_changes.yaml's: a pull
+# request that changes any of them runs that workflow, not this one.
+
+name: Code changes
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - policyengine_uk/**
+      - tests/**
+      - .github/**
+      - pyproject.toml
+      - uv.lock
+      - Makefile
+
+permissions:
+  contents: read
+
+jobs:
+  Lint:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    steps:
+      - name: Nothing to lint
+        run: echo "This pull request changes no code; formatting is checked when it does."
+  Test:
+    uses: ./.github/workflows/test-suite.yaml
+    # The suite's own permissions; none of its steps run.
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      skip: true

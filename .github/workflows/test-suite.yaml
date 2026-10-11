@@ -29,6 +29,12 @@ on:
         description: The sha256 the wheel in dist-artifact must have.
         type: string
         default: ""
+      skip:
+        description: >
+          Run nothing and pass Result. For pull requests that change no
+          code (pr_code_unchanged.yaml), so the required check still reports.
+        type: boolean
+        default: false
     secrets:
       HUGGING_FACE_TOKEN:
         required: false
@@ -40,6 +46,7 @@ permissions:
 jobs:
   YAML:
     name: YAML
+    if: ${{ !inputs.skip }}
     # Linux arm64 keeps the CPU architecture of the macOS runners the tests
     # used to run on. GitHub-hosted macOS runners are scarce, so PR runs
     # queued for hours; the parameter tree and every test result are
@@ -97,6 +104,7 @@ jobs:
     # shard. N is the number of jobs this matrix makes: to add a shard, add
     # a number to the list.
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
+    if: ${{ !inputs.skip }}
     runs-on: ubuntu-24.04-arm
     # The shards took 15, 20 and 15 minutes on 10 October (run
     # 38085920460). 60 minutes leaves room for a slow runner and still
@@ -180,19 +188,23 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 10
     steps:
+      - name: Nothing to test
+        if: ${{ inputs.skip }}
+        run: echo "This pull request changes no code, so no tests ran."
       - name: Check that every test job passed
+        if: ${{ !inputs.skip }}
         run: |
           echo "YAML: ${{ needs.YAML.result }}; Python: ${{ needs.Python.result }}"
           test "${{ needs.YAML.result }}" = success
           test "${{ needs.Python.result }}" = success
       - name: Checkout repo
-        if: ${{ !cancelled() }}
+        if: ${{ !inputs.skip && !cancelled() }}
         uses: actions/checkout@v6
         with:
           ref: ${{ inputs.ref }}
           sparse-checkout: .github
       - name: Download the test lists and outcomes
-        if: ${{ !cancelled() }}
+        if: ${{ !inputs.skip && !cancelled() }}
         uses: actions/download-artifact@v8
         with:
           pattern: test-*
@@ -200,7 +212,7 @@ jobs:
       - name: Check that every Python test ran in exactly one shard and passed
         # Runs even when a test job failed, so its report names the failed
         # tests.
-        if: ${{ !cancelled() }}
+        if: ${{ !inputs.skip && !cancelled() }}
         env:
           MODE: ${{ inputs.dist-artifact == '' && 'source' || 'wheel' }}
           DATA: ${{ secrets.HUGGING_FACE_TOKEN != '' && 'present' || 'absent' }}

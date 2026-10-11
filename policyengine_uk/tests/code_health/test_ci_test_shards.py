@@ -28,6 +28,9 @@ the pieces to the invariants the Test job relies on:
    and fails if a shard's log is left out, repeated, or a test fails.
 9. The checked-in allowlist parses, and each entry naming one test names a
    test function that exists.
+10. Every pull request reports the required "Test / Result" check: the
+    workflow that runs the suite and the one that reports it as skipped for
+    other changes trigger on exactly complementary paths.
 """
 
 import ast
@@ -696,3 +699,22 @@ def test_the_checked_in_allowlist_names_tests_that_exist():
             if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
         }
         assert names[-1].split("[")[0] in functions, entry.nodeid
+
+
+# Invariant 10: every pull request reports "Test / Result".
+
+
+def test_code_and_no_code_workflows_cover_every_pull_request():
+    import yaml
+    workflows = GITHUB_DIR / "workflows"
+
+    def trigger(name):
+        document = yaml.safe_load((workflows / name).read_text(encoding="utf-8"))
+        # PyYAML reads the key "on" as True.
+        return document.get("on", document.get(True))["pull_request"]
+
+    code = trigger("pr_code_changes.yaml")
+    no_code = trigger("pr_code_unchanged.yaml")
+    assert code["branches"] == no_code["branches"] == ["main"]
+    assert "paths-ignore" not in code and "paths" not in no_code
+    assert code["paths"] == no_code["paths-ignore"]
