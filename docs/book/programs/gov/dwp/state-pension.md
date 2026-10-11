@@ -370,6 +370,14 @@ abroad.
 The model also includes Northern Ireland, which DWP's figures do not, so the
 like-for-like gap is larger by Northern Ireland's State Pension.
 
+These runs predate the fix for
+[#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941), which
+uprates additional pensions and protected payments by September CPI instead of
+the triple lock. On the enhanced FRS 2024-25 (policyengine-uk-data-private
+1.58.0) it leaves 2024-25 unchanged and lowers the model's State Pension by
+£0.3bn in 2025-26, £0.5bn in 2026-27 and £0.8bn in 2030-31, so the gap to DWP
+widens by as much.
+
 **The data year.** In 2024-25 the model has 11.36m State Pension recipients
 averaging £201.6 a week, for the UK. The FRS's own grossed figures for Great
 Britain are 11.53m recipients averaging £212 a week, and DWP's administrative
