@@ -280,3 +280,24 @@ def test_fiscal_year_reform_to_the_benefit_index_reaches_that_year():
             / (1 + _uplift(2026)),
             rel=1e-9,
         )
+
+
+def test_amounts_restored_after_a_bounded_reform_carry_the_uplift_in_force():
+    """A reform to one year's amount leaves later years on the legislated
+    series, which still takes the uplift in force (none, with rebalancing
+    off)."""
+    _, inactive, _ = _amounts(Scenario(parameter_changes={ACTIVE: False}))
+    scenario = Scenario(
+        parameter_changes={
+            ACTIVE: False,
+            "gov.dwp.universal_credit.standard_allowance.amount.SINGLE_OLD": {
+                "2025": 500.0
+            },
+        }
+    )
+    _, amounts, _ = _amounts(scenario)
+    assert amounts[2025]["SINGLE_OLD"] == pytest.approx(500.0, rel=1e-9)
+    for year in range(2026, 2030):
+        assert amounts[year]["SINGLE_OLD"] == pytest.approx(
+            inactive[year]["SINGLE_OLD"], rel=1e-9
+        )

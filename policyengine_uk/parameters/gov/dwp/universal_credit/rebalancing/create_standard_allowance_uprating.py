@@ -30,9 +30,11 @@ year's uplift from the s. 1(4) table. If the uplift in force differs (a
 reform, or ``rebalancing.active`` false, which means no uplift), the amount is
 rescaled by (1 + uplift in force) / (1 + legislated uplift), so every year's
 allowance carries the uplift in force and keeps the CPI growth already in the
-legislated rate. Only entries loaded from ``amount.yaml`` are rescaled; an
-amount set by a reform, even one equal to the legislated amount, is used as
-given.
+legislated rate. An amount a ``Scenario(parameter_changes=...)`` reform set,
+even one equal to the legislated amount, is used as given. Every other entry
+carries the legislated series, including the entry ``Parameter.update`` writes
+after a bounded reform to restore it, and is rescaled by the uplift of the
+legislated amount it carries.
 
 This runs in ``process_parameters`` before uprating, so a parameter change
 made through ``Scenario(parameter_changes=...)``, which re-runs that pipeline,
@@ -40,9 +42,16 @@ reaches the allowance. A ``reform=`` dict applied after processing does not
 re-run uprating; set ``standard_allowance.amount`` directly instead.
 """
 
+from functools import lru_cache
+from pathlib import Path
+
+import yaml
 from policyengine_core.parameters import Parameter, ParameterNode, get_parameter
 
+from policyengine_uk.utils.parameters import is_set_by_reform
+
 INDEX_NAME = "gov.dwp.universal_credit.standard_allowance.uprating"
+AMOUNT_FILE = Path(__file__).parents[1] / "standard_allowance" / "amount.yaml"
 # Universal Credit Act 2025 s. 1(1): tax years 2026-27 to 2029-30.
 FIRST_ACT_YEAR = 2026
 LAST_ACT_YEAR = 2029
@@ -75,6 +84,33 @@ def legislated_tax_year(instant_str: str) -> int:
     return year if month >= 4 else year - 1
 
 
+@lru_cache(maxsize=1)
+def legislated_amounts() -> dict:
+    """The amounts in amount.yaml by claimant type, as sorted (date, amount)
+    pairs."""
+    data = yaml.safe_load(AMOUNT_FILE.read_text())
+    amounts = {}
+    for claimant_type, node in data.items():
+        if not isinstance(node, dict) or "values" not in node:
+            continue
+        amounts[claimant_type] = sorted(
+            (str(instant), float(value["value"] if isinstance(value, dict) else value))
+            for instant, value in node["values"].items()
+            if value is not None
+        )
+    return amounts
+
+
+def legislated_amount_at(claimant_type: str, instant_str: str):
+    """The latest amount.yaml entry for a claimant type at or before an
+    instant, as (date, amount), or None."""
+    source = None
+    for entry_instant, amount in legislated_amounts().get(claimant_type, []):
+        if entry_instant <= instant_str:
+            source = (entry_instant, amount)
+    return source
+
+
 def benefit_index_values(parameters: ParameterNode) -> dict:
     """``gov.benefit_uprating_cpi`` for each year of its uprating index, as
     uprating will extend it: its own values up to its latest one, then that
@@ -104,16 +140,22 @@ def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNo
     for amount in standard_allowance.amount.get_descendants():
         if not isinstance(amount, Parameter):
             continue
+        claimant_type = amount.name.split(".")[-1]
         for value in amount.values_list:
-            year = legislated_tax_year(value.instant_str)
-            # Entries loaded from amount.yaml carry its path; entries a reform
-            # writes do not.
             if (
-                year in LEGISLATED_UPLIFT
-                and value.value is not None
-                and value.file_path is not None
-                and not getattr(value, RESCALED, False)
+                value.value is None
+                or getattr(value, RESCALED, False)
+                or is_set_by_reform(amount, value.instant_str)
             ):
+                continue
+            # The legislated amount this entry carries: itself for an entry
+            # loaded from amount.yaml, or the one an entry written after a
+            # bounded reform restores.
+            source = legislated_amount_at(claimant_type, value.instant_str)
+            if source is None or abs(value.value - source[1]) > 1e-9:
+                continue
+            year = legislated_tax_year(source[0])
+            if year in LEGISLATED_UPLIFT:
                 value.value *= (1 + uplift_in_force(rebalancing, year)) / (
                     1 + LEGISLATED_UPLIFT[year]
                 )
