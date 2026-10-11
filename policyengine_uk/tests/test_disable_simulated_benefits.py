@@ -475,7 +475,7 @@ def known_years(simulation, variable):
 
 
 def test_a_clone_or_branch_applies_the_reform_to_itself_alone():
-    # A cloned tax-benefit system copies its link to the simulation, and a
+    # A clone's copy of the tax-benefit system links to the clone, and a
     # branch shares its parent's system. The reform reaches the simulation
     # through that link, so it must reach the clone or branch applying it,
     # never the parent.
@@ -501,6 +501,63 @@ def test_a_clone_or_branch_applies_the_reform_to_itself_alone():
             )
         # The parent still simulates ESA: the excluded adult's uprated report.
         assert parent.calculate("esa_income", year)[excluded] >= 3_000
+
+
+# Applied after the simulation is built: passed as reform=, or applied to a
+# clone or a branch.
+LATER = ["reform=", "clone", "branch"]
+
+
+@pytest.mark.parametrize("route", LATER)
+def test_a_reform_applied_later_keeps_what_it_sets_through_a_reset(route):
+    # input_variables is taken when a simulation is built, and
+    # reset_calculations and derivative delete every other variable's values.
+    # A reform applied later names what it sets, or a reset deletes the
+    # claimant-or-partner awards and recalculates them. esa_income is entered
+    # here too, so a reset kept it while deleting its claimant-or-partner
+    # part, and the formula then read the excluded adult's ESA as the couple's.
+    entered = situation()
+    for benunit in entered["benunits"].values():
+        benunit["esa_income"] = {DATASET_YEAR: 3_000}
+    if route == "reform=":
+        parent = None
+        simulation = Simulation(situation=entered, reform=DisableSimulatedBenefits)
+    else:
+        parent = Simulation(situation=entered)
+        names = parent.input_variables
+        recorded = list(names)
+        simulation = (
+            parent.clone() if route == "clone" else parent.get_branch("reformed")
+        )
+        simulation.apply_reform(DisableSimulatedBenefits)
+        # A clone or branch shares its parent's list until it names more.
+        assert parent.input_variables is names
+        assert parent.input_variables == recorded
+        assert "claimant_or_partner_esa_income" not in recorded
+    set_by_the_reform = [
+        *BENEFITS,
+        *PRE_MINIMUM.values(),
+        *CLAIMANT_OR_PARTNER_AWARDS.values(),
+    ]
+    for variable in set_by_the_reform:
+        assert variable in simulation.input_variables, variable
+    excluded = NAMES.index("excluded_adult")
+    year = YEARS[1]
+    before = {
+        variable: simulation.calculate(variable, year)
+        for variable in [*set_by_the_reform, "income_support_eligible"]
+    }
+    assert before["claimant_or_partner_esa_income"][excluded] == 0
+    assert before["income_support_eligible"][excluded]
+    # derivative recalculates on a clone after the same deletions.
+    assert not simulation.derivative(
+        "claimant_or_partner_esa_income", "employment_income", year
+    ).any()
+    simulation.reset_calculations()
+    for variable, value in before.items():
+        np.testing.assert_array_equal(
+            simulation.calculate(variable, year), value, err_msg=variable
+        )
 
 
 class RemoveIncomeRelatedAwards(Reform):

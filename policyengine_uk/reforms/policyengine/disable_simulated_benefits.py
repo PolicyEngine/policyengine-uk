@@ -67,13 +67,14 @@ def disable_simulated_benefits(parameters, period):
 
             Each listed benefit is set, in the dataset year and the nine years
             after it, to its amount reported in the dataset year. The amount
-            is the same in every year: it is not uprated, while most of the
-            *_reported variables are.
+            is not uprated, while most of the *_reported variables are.
 
             The claimant-or-partner awards are set the same way, from the
             dataset-year reports of whoever is the claimant or partner in
             each year (is_claimant_or_partner); Income Support is set from
-            those reports alone. Readers of those awards, including the
+            those reports alone. So every amount is the same in every year,
+            except that these three change when who is the claimant or
+            partner changes. Readers of those awards, including the
             Income Support gate, cannot tell an award set here from one
             entered directly. In a later year, esa_income and jsa_income match
             neither the award on that year's uprated reports nor their total.

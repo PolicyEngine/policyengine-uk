@@ -248,11 +248,30 @@ class Simulation(CoreSimulation):
         system = self.tax_benefit_system
         linked = getattr(system, "simulation", None)
         system.simulation = self
+        recorded = self._recorded_inputs()
         try:
             super().apply_reform(reform)
         finally:
             if linked is not None:
                 system.simulation = linked
+        # input_variables is taken when the simulation is built, and
+        # reset_calculations, derivative and the marginal rate formulas keep
+        # only what it names. A reform applied afterwards (a Reform class
+        # passed as reform=, or one applied to a clone or branch) can supply
+        # inputs of its own; name them too, or a reset would delete them and
+        # recalculate their formulas. Assign a new list: a clone or branch
+        # shares its parent's.
+        input_variables = getattr(self, "input_variables", None)
+        if input_variables is not None:
+            supplied = {key[0] for key in self._recorded_inputs() - recorded}
+            added = sorted(supplied - set(input_variables))
+            if added:
+                self.input_variables = list(input_variables) + added
+
+    def _recorded_inputs(self) -> set:
+        # policyengine-core records each (variable, branch, period) that
+        # set_input stores in _user_input_keys.
+        return set(getattr(self, "_user_input_keys", None) or ())
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
