@@ -184,7 +184,8 @@ def test_scheme_selection_over_every_combination():
     # Ages 14 to 21, every education value, training, own-right benefits,
     # looked-after status, the Universal Credit terminal date and the entry
     # age, under each country and pensioner test, in each year: 2,048
-    # subjects * 8 schemes * 3 years, each with a claimant aged 45.
+    # subjects * 8 schemes * 3 years, each with a claimant aged 45, and again
+    # as the claimant of a benefit unit of their own.
     adult = {
         "age": 45,
         "current_education": "NOT_IN_EDUCATION",
@@ -222,6 +223,18 @@ def test_scheme_selection_over_every_combination():
         for country in COUNTRIES
         for pensioner in (False, True)
     ]
+    # The same subjects as the claimant of a benefit unit of their own: never
+    # their own child or young person, under any scheme (invariant 2).
+    alone = [
+        {
+            "country": country,
+            "pensioner": pensioner,
+            "members": [dict(subject, is_claimant_or_partner=True)],
+        }
+        for subject in subjects
+        for country in COUNTRIES
+        for pensioner in (False, True)
+    ]
     for year in YEARS:
         flag, legacy, scottish = assert_scheme_selection(units, year)
         differs = flag != legacy
@@ -230,6 +243,17 @@ def test_scheme_selection_over_every_combination():
         assert not differs[~scottish].any()
         # Not vacuous: from 2022-23 the two definitions do part there.
         assert differs.any() == (year >= 2022)
+        own_flag, _, _ = assert_scheme_selection(alone, year)
+        assert not own_flag.any()
+        # Not vacuous: some of those lone claimants are qualifying young
+        # persons by status, in Scotland's working-age scheme too.
+        sim = simulate(alone, year)
+        status = sim.calculate("is_qualifying_young_person_for_universal_credit", year)
+        scottish_alone = np.array(
+            [follows_universal_credit(unit, year) for unit in alone]
+        )
+        assert status.any()
+        assert (status & scottish_alone).any() == (year >= 2022)
 
 
 @SETTINGS
