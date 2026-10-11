@@ -290,8 +290,12 @@ JSA_COUPLE_WITH_LODGER = (
 # income-related ESA, not only the claimant's and partner's
 # (PolicyEngine/policyengine-uk#2298). The cap is not one of the readers this
 # file tests, so it is held at zero here until that is fixed; drop the hold
-# when it is.
-CAP_HELD = {"benefit_cap_reduction": 0}
+# when it is. Universal Credit and Housing Benefit each read their own
+# scheme's reduction, so both are held.
+CAP_HELD = {
+    "uc_benefit_cap_reduction": 0,
+    "housing_benefit_benefit_cap_reduction": 0,
+}
 
 
 @SETTINGS
