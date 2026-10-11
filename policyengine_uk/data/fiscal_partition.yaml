@@ -368,9 +368,12 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_ltt is land_transaction_tax, which charges the year's purchases
-      and rent increments, with no further scaling (issue 2246 removed a
-      second discount by the property sale rate).
+      Equal to land_transaction_tax, with no property sale rate scaling
+      (issue 2246). On policyengine-uk-data 1.58.0 (enhanced_frs_2024_25),
+      £0.070bn in 2026, all on main-residence purchases: no Welsh record has
+      an additional-dwelling or non-residential purchase or a rent charge.
+      Measured 2026-10-11. The main residential schedule predates the 10
+      October 2022 bands (issue 1796).
   - id: land_and_buildings_transaction_tax
     label: Land and buildings transaction tax (Scotland)
     variable: expected_lbtt
@@ -382,9 +385,12 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      expected_lbtt is land_and_buildings_transaction_tax, which charges the year's purchases
-      and rent increments, with no further scaling (issue 2246 removed a
-      second discount by the property sale rate).
+      Equal to land_and_buildings_transaction_tax, with no property sale rate
+      scaling (issue 2246). On policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in 2026, £0.385bn on main-residence purchases.
+      Before PR 2241 (issue 2238) it is £2.310bn: the main-residence purchase
+      flag also charges £15.2bn of other residential property as
+      additional-dwelling purchases. Measured 2026-10-11.
 
   # Reform-only heads
   - id: corporate_incident_tax_change
