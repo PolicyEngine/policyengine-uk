@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp._legacy_award_payee import (
+    is_payee_of_couple_award,
+)
 
 
 class is_on_income_support(Variable):
@@ -10,12 +13,17 @@ class is_on_income_support(Variable):
         'income support", HB Regs 2006 reg 2(1); the council tax reduction '
         "schemes use the same definition). Income Support is calculated for "
         "the claimant's family and needs the claimant's or partner's own "
-        "award (income_support_eligible). A couple's award covers both "
-        "partners, and the model treats the claimant and the partner as both "
-        "on it when it is positive. Any other member of the benefit unit, "
-        "such as a non-dependent adult, claims in their own right and is on "
-        "it only if they report an award themselves while Income Support is "
-        "in payment."
+        "award (income_support_eligible). It is paid to the claimant, not "
+        "the partner: of the claimant and partner, only the payee is in "
+        "receipt, meaning the one who reports it, or the claimant where "
+        "neither does, and only while it is positive. Any other member of the "
+        "benefit unit, such as a non-dependent adult, claims in their own "
+        "right and is on it only if they report an award themselves while "
+        "Income Support is in payment (gov.dwp.income_support.active) and not "
+        "neutralised. A reform that removes Income Support must do one of "
+        "those for the status to follow: replacing its formula with zero "
+        "leaves another member's own report standing, because the model "
+        "calculates the award only for the claimant and partner."
     )
     definition_period = YEAR
     reference = (
@@ -25,6 +33,16 @@ class is_on_income_support(Variable):
 
     def formula(person, period, parameters):
         active = parameters(period).gov.dwp.income_support.active
-        couple_award = person.benunit("income_support", period) > 0
-        own_award = active & (person("income_support_reported", period) > 0)
+        removed = person.simulation.tax_benefit_system.get_variable(
+            "income_support"
+        ).is_neutralized
+        couple_award = (person.benunit("income_support", period) > 0) & (
+            is_payee_of_couple_award(person, period, "income_support_reported")
+        )
+        # Their own report, while Income Support is in payment and no reform
+        # removes it. The model calculates the award only for the claimant
+        # and partner, so it cannot gate another member's own claim.
+        own_award = (
+            active & (not removed) & (person("income_support_reported", period) > 0)
+        )
         return where(person("is_claimant_or_partner", period), couple_award, own_award)

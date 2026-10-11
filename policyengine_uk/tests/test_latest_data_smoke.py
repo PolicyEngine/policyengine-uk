@@ -16,8 +16,6 @@ set, via the ``microsimulation`` marker configured in ``conftest.py``.
 
 from __future__ import annotations
 
-import os
-
 import numpy as np
 import pytest
 
@@ -35,10 +33,13 @@ def sim() -> Microsimulation:
     """Simulation built against the unpinned latest dataset.
 
     Overrides any pinned-version dataset set in conftest.py so the test
-    exercises whatever is on HuggingFace ``main`` right now.
+    exercises whatever is on HuggingFace ``main`` right now. The override
+    lasts only while the simulation is built, so tests that run later in the
+    same process still get the pinned dataset whatever order they run in.
     """
-    os.environ["POLICYENGINE_UK_DEFAULT_DATASET"] = LATEST_DATASET_URL
-    return Microsimulation()
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setenv("POLICYENGINE_UK_DEFAULT_DATASET", LATEST_DATASET_URL)
+        return Microsimulation()
 
 
 def _weighted(sim: Microsimulation, variable: str, period: int = YEAR) -> float:

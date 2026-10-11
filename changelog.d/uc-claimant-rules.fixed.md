@@ -1,1 +1,0 @@
-- Apply Universal Credit age conditions, childcare work conditions, and household capital allocation to claimants and partners, with documented proxies for the observable minimum-age exceptions from age 16. Rename the capital allocation helper to `household_uc_unreported_claimants`.

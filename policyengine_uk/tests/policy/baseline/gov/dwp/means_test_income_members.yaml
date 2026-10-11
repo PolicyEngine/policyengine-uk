@@ -93,7 +93,9 @@
         members: [claimant, young_adult]
   output:
     is_claimant_or_partner: [true, false]
-    housing_benefit_applicable_income: 9_655.42
+    # 10,000 less the £5 a week earnings disregard (SI 2006/213 Sch 4 para
+    # 10): 10,000 - 260. The 10,000 is below the tax and NI thresholds.
+    housing_benefit_applicable_income: 9_740
     income_support_applicable_income: 9_740
     tax_credits_applicable_income: 10_000
     council_tax_reduction_applicable_income: 10_000
@@ -114,7 +116,7 @@
       household:
         members: [claimant]
   output:
-    housing_benefit_applicable_income: 9_655.42
+    housing_benefit_applicable_income: 9_740
     income_support_applicable_income: 9_740
     tax_credits_applicable_income: 10_000
     council_tax_reduction_applicable_income: 10_000
@@ -124,13 +126,16 @@
   # HB Sch 4 para 17 tests the claimant's or partner's work. The 19-year-old
   # (not in education, presumed the claimant's child, not a young person)
   # works 35 hours; only the single-claimant disregard applies, as for the
-  # claimant alone.
+  # claimant alone. The claimant earns 10,000 (below the tax and NI
+  # thresholds) so there are earnings to disregard: £5 x 52 = 260, not
+  # (£5 + £17.10) x 52 = 1,149.20.
   period: 2024
   absolute_error_margin: 0.01
   input:
     people:
       claimant:
         age: 40
+        employment_income: 10_000
       young_adult:
         age: 19
         weekly_hours: 35
@@ -143,7 +148,7 @@
         members: [claimant, young_adult]
   output:
     is_claimant_or_partner: [true, false]
-    housing_benefit_applicable_income_disregard: 344.58
+    housing_benefit_applicable_income_disregard: 260
 
 - name: The same claimant alone gets the same HB disregard
   period: 2024
@@ -152,6 +157,7 @@
     people:
       claimant:
         age: 40
+        employment_income: 10_000
     benunits:
       benunit:
         members: [claimant]
@@ -159,4 +165,4 @@
       household:
         members: [claimant]
   output:
-    housing_benefit_applicable_income_disregard: 344.58
+    housing_benefit_applicable_income_disregard: 260

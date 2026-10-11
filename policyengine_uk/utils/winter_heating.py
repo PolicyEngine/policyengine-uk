@@ -4,7 +4,7 @@ Winter Heating Payment.
 Both schemes entitle and pay a person, and set the amount from that person's
 own circumstances:
 
-- a person to whom a relevant benefit is paid receives the full amount, the
+- a person on a relevant benefit receives the full amount, the
   higher amount if they or their partner have reached 80 (SI 2000/729 reg
   2(1)(i) and 2(3); SI 2024/869 reg 3; SI 2025/969 reg 3(1), (3) and (4);
   SSI 2024/351 reg 10, as made and as substituted by SSI 2025/282);
@@ -14,6 +14,28 @@ own circumstances:
 - anyone else receives a shared amount when they live with another person
   entitled to a payment (SI 2000/729 reg 2(1)(ii) and 2(2)(b); SI 2025/969
   reg 3(2), (5) and (6); SSI 2024/351 reg 10(5) and (6) as substituted).
+
+Who is "on" a relevant benefit differs between the instruments:
+
+- SI 2000/729, SI 2025/969 and NISR 2025/142 ask whether the benefit "has
+  been, or falls to be, paid to" the person. Income Support, income-based
+  JSA, income-related ESA and Pension Credit are the claimant's awards,
+  paid to one member of a couple (is_on_income_support and the other readers
+  name that member). Universal Credit is awarded to a couple jointly (WRA
+  2012 s.1(2)(b)) and paid into an account the joint claimants nominate
+  (Universal Credit etc. (Claims and Payments) Regulations 2013 reg 47(4));
+  reg 47(6) pays it wholly to one member only by special arrangement. So it
+  falls to be paid to both members. Tax credits are relevant only under the
+  2024 instruments below, so who they are paid to does not arise.
+- SI 2024/869 reg 2(5), NISR 2024/160 reg 2(5) and SSI 2024/351 (reg 7(2) as
+  made, reg 10(8) as substituted by SSI 2025/282, reg 2A from April 2026)
+  treat a member of a couple as entitled when the other member is.
+
+Each scheme's eligibility node says which applies (partner_receipt_counts).
+Either way a couple on a relevant benefit receives one payment, to the member
+the benefit is paid to, or to the other member when only the other has
+reached pensionable age (SI 2000/729 reg 3(1)(a)(i); SI 2024/869 reg
+4(1)(a)(i); SI 2025/969 reg 4(2)(a); SSI 2024/351 reg 9(d)).
 
 Benefit units model couples and households model living together: everyone
 in a household is taken to share it as their mutual home. Residential care,
@@ -34,12 +56,23 @@ REPORTED_AWARDS = {
 TAX_CREDIT_REPORTS = ["child_tax_credit_reported", "working_tax_credit_reported"]
 
 
-def is_on_relevant_benefit(person, period, eligibility):
-    """Whether a relevant benefit is paid to the person, or to their couple.
+def couple_receipt(person, period, receipt):
+    """The receipt of the person's couple: for the claimant and the partner,
+    whether either of them is on a relevant benefit; for anyone else, their
+    own receipt."""
+    claimant_or_partner = person("is_claimant_or_partner", period)
+    couple = person.benunit.any(claimant_or_partner & receipt)
+    return where(claimant_or_partner, couple, receipt)
+
+
+def paid_relevant_benefit(person, period, eligibility):
+    """Whether a relevant benefit for the scheme is paid to the person.
 
     ``eligibility`` is the scheme's eligibility parameter node: the benefits
-    in ``relevant_benefits``, and a tax credit award of at least
-    ``minimum_tax_credit_award`` (infinite when tax credits do not count).
+    in ``relevant_benefits`` (read through the is_on_* variables, which name
+    the member of a couple an award is paid to), and a tax credit award of at
+    least ``minimum_tax_credit_award`` (infinite when tax credits do not
+    count).
     """
     listed = add(person, period, eligibility.relevant_benefits) > 0
     award = person("tax_credit_award", period)
@@ -47,42 +80,72 @@ def is_on_relevant_benefit(person, period, eligibility):
     return listed | tax_credits
 
 
-def reports_relevant_benefit(person, period, eligibility):
-    """Whether the person reports a relevant-benefit award of their own."""
-    reports = [
-        report
-        for variable in eligibility.relevant_benefits
-        for report in REPORTED_AWARDS[variable]
-    ]
-    own_award = add(person, period, reports) > 0 if reports else False
-    reported = add(person, period, TAX_CREDIT_REPORTS)
-    tax_credits = (reported > 0) & (reported >= eligibility.minimum_tax_credit_award)
-    return own_award | tax_credits
+def is_on_relevant_benefit(person, period, eligibility):
+    """Whether the person is on a relevant benefit for the scheme: it is paid
+    to them, or, where the scheme's ``partner_receipt_counts`` says a member
+    of a couple is on one when the other member is, to the other member of
+    their couple.
+    """
+    paid = paid_relevant_benefit(person, period, eligibility)
+    return where(
+        eligibility.partner_receipt_counts,
+        couple_receipt(person, period, paid),
+        paid,
+    )
+
+
+def reports_paid_relevant_benefit(person, period, eligibility):
+    """Whether the person reports a relevant-benefit award that is paid to
+    them. A report of an award that is not paid (one the benefit's own tests
+    reduce to nothing, say) says nothing about who claims."""
+    reports = False
+    for variable in eligibility.relevant_benefits:
+        reported = add(person, period, REPORTED_AWARDS[variable]) > 0
+        reports = reports | (person(variable, period) & reported)
+    award = person("tax_credit_award", period)
+    tax_credits = (
+        (award > 0)
+        & (award >= eligibility.minimum_tax_credit_award)
+        & (add(person, period, TAX_CREDIT_REPORTS) > 0)
+    )
+    return reports | tax_credits
 
 
 def is_excluded_relevant_benefit_partner(
-    person, period, qualifies, on_relevant_benefit, reports
+    person, period, qualifies, on_relevant_benefit, eligibility
 ):
     """Whether the person is the partner of the person paid for their couple.
 
     A couple on a relevant benefit receives one payment, made to the person
     the benefit is paid to (the claimant), or to their partner when only the
-    partner qualifies; the partner of the person paid is not entitled. The
-    model takes the claimant to be the member of the couple who reports the
-    award; failing that, the benefit-unit head; failing that, the elder. The
-    choice matters beyond the couple: whether someone else in the household
-    lives with an entitled person aged 80 or over depends on whom the couple's
-    payment is made to (SI 2000/729 reg 2(2)(b); SI 2025/969 reg 3(5) and (6);
-    SSI 2024/351 reg 10(6) as substituted by SSI 2025/282).
+    partner qualifies; the partner of the person paid is not entitled. Under
+    SI 2000/729 reg 3(1)(a)(i) and SI 2025/969 reg 4(2)(a) the partner is
+    excluded when the person the benefit is paid to has reached pensionable
+    age, so the couple's receipt decides this whichever instrument applies.
+
+    The payment goes to the member a relevant benefit is paid to. Where it is
+    paid to both (a joint award), or to neither of those who qualify, the
+    model takes the claimant to be the member who reports the award paid to
+    them; failing that, the benefit-unit head; failing that, the elder. A
+    report of an award that is not paid does not count. The choice matters
+    beyond the couple: whether someone else in the household lives with an
+    entitled person aged 80 or over depends on whom the couple's payment is
+    made to (SI 2000/729 reg 2(2)(b); SI 2025/969 reg 3(5) and (6); SSI
+    2024/351 reg 10(6) as substituted by SSI 2025/282).
     """
     age = person("age", period)
+    on_relevant_benefit = couple_receipt(person, period, on_relevant_benefit)
     couple_member = (
         qualifies & person("is_claimant_or_partner", period) & on_relevant_benefit
     )
-    precedence = where(
-        reports,
-        0,
-        where(person("is_benunit_head", period), 1, 2),
+    precedence = select(
+        [
+            reports_paid_relevant_benefit(person, period, eligibility),
+            paid_relevant_benefit(person, period, eligibility),
+            person("is_benunit_head", period),
+        ],
+        [0, 1, 2],
+        default=3,
     )
     payee = couple_member & (
         person.get_rank(

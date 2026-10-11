@@ -1,0 +1,146 @@
+# Class 4 National Insurance stops from the tax year after State Pension age.
+# Social Security (Contributions) Regulations 2001 reg 91(a) excepts an earner
+# who "at the beginning of a year of assessment is over pensionable age"; HMRC
+# NIM24510: "A person who attains State pension age during the course of the
+# year of assessment remains liable for Class 4 NICs for the whole of that
+# year."
+#
+# age and months_since_last_birthday place the date of birth: the person was
+# born that many years and months before 6 October of the fiscal year.
+# Class 4 for 2016-17: 9% of profits between 8,060 and 43,000. For 2024-25 to
+# 2026-27: 6% of profits between 12,570 and 50,270.
+
+- name: Case 1, born 6 June 1960 reaches State Pension age on 6 September 2026 and pays Class 4 for 2026-27.
+  # Table 3: born 6 June to 5 July 1960, 66 years and 3 months. Over it on 6
+  # October 2026 but not on 6 April 2026. (30,000 - 12,570) x 6% = 1,045.80.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 66
+        months_since_last_birthday: 4
+        self_employment_income: 30_000
+  output:
+    is_SP_age: true
+    ni_class_4_liable: true
+    ni_class_4_main: 1_045.80
+    ni_class_4: 1_045.80
+
+- name: Case 2, the same person is over State Pension age on 6 April 2027 and pays no Class 4 for 2027-28.
+  period: 2027
+  input:
+    people:
+      person1:
+        age: 67
+        months_since_last_birthday: 4
+        self_employment_income: 30_000
+  output:
+    ni_class_4_liable: false
+    ni_class_4_main: 0
+    ni_class_4: 0
+
+- name: Case 3, reaching State Pension age after 6 October still leaves the whole year liable.
+  # Born 6 September 1960: 66 years and 6 months, so 6 March 2027. Under it on
+  # both 6 April and 6 October 2026.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 66
+        months_since_last_birthday: 1
+        self_employment_income: 30_000
+  output:
+    is_SP_age: false
+    ni_class_4_liable: true
+    ni_class_4: 1_045.80
+
+- name: Case 4, the same person is excepted for 2027-28.
+  period: 2027
+  input:
+    people:
+      person1:
+        age: 67
+        months_since_last_birthday: 1
+        self_employment_income: 30_000
+  output:
+    ni_class_4_liable: false
+    ni_class_4: 0
+
+- name: Case 5, reaching State Pension age on 6 April itself excepts that year.
+  # Born 6 April 1959: rule (6), 66, so the commencement of 6 April 2025, the
+  # first day of 2025-26. Pensionable age is attained at the commencement of
+  # the day, so the model reads the person as over it at the beginning of the
+  # year (an interpretation: reg 91 and NIM24510 do not address this day).
+  period: 2025
+  input:
+    people:
+      person1:
+        age: 66
+        months_since_last_birthday: 6
+        self_employment_income: 30_000
+  output:
+    ni_class_4_liable: false
+    ni_class_4: 0
+
+- name: Case 6, the same person paid Class 4 for 2024-25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 65
+        months_since_last_birthday: 6
+        self_employment_income: 30_000
+  output:
+    ni_class_4_liable: true
+    ni_class_4: 1_045.80
+
+- name: Case 7, reaching State Pension age a few days into the year leaves that year liable.
+  # 5.9 months since the last birthday on 6 October 2025 places the birth on
+  # 9 April 1959, so State Pension age is 9 April 2025.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 66
+        months_since_last_birthday: 5.9
+        self_employment_income: 30_000
+  output:
+    ni_class_4_liable: true
+    ni_class_4: 1_045.80
+
+- name: Case 8, a man reaching 65 in June 2016 pays Class 4 for 2016-17.
+  # Born 6 June 1951: rule (1), 65, so 6 June 2016.
+  # (30,000 - 8,060) x 9% = 1,974.60.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 65
+        months_since_last_birthday: 4
+        is_male: true
+        self_employment_income: 30_000
+  output:
+    is_SP_age: true
+    ni_class_4_liable: true
+    ni_class_4: 1_974.60
+
+- name: Case 9, Class 1 employee contributions still stop at State Pension age within the year.
+  # SSCBA 1992 s.6(3): no primary Class 1 contributions on earnings paid after
+  # pensionable age. The annual model treats the person as over it for the
+  # year from 6 October; Class 4 follows reg 91 instead.
+  period: 2026
+  input:
+    people:
+      person1:
+        age: 66
+        months_since_last_birthday: 4
+        employment_income: 30_000
+  output:
+    ni_liable: false
+    ni_class_1_employee: 0
+    ni_class_4_liable: true

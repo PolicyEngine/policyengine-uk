@@ -1,7 +1,6 @@
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.winter_heating import (
     is_excluded_relevant_benefit_partner,
-    reports_relevant_benefit,
 )
 
 
@@ -49,6 +48,6 @@ class pawhp_eligible(Variable):
             period,
             qualifies,
             on_relevant_benefit,
-            reports_relevant_benefit(person, period, p.eligibility),
+            p.eligibility,
         )
         return qualifies & meets_benefit_condition & ~excluded

@@ -381,8 +381,10 @@ def phase_out_pip_gradually(sim: Simulation):
 
     # Apply phase-out year by year
     for year in range(start_year, end_year + 1):
-        # Get current PIP payments
-        current_pip = sim.calculate("pip", year)
+        # Get a copy of current PIP payments. calculate returns the
+        # simulation's cached array, so write only to a copy and store it
+        # with set_input.
+        current_pip = np.array(sim.calculate("pip", year))
 
         # Calculate how far through the phase-out we are
         phase_progress = (year - start_year) / (end_year - start_year)
@@ -466,8 +468,9 @@ def modify_uc_for_new_claimants(sim: Microsimulation):
         # Identify new claimants
         is_new_claimant = uc_seed < new_claimant_rates[year]
 
-        # Modify health element for new claimants
-        current_health_element = sim.calculate("uc_LCWRA_element", year)
+        # Modify a copy of the health element for new claimants (calculate
+        # returns the cached array; set_input stores the new values)
+        current_health_element = np.array(sim.calculate("uc_LCWRA_element", year))
         new_health_amount = rebalancing_params.new_claimant_health_element(year) * 12
 
         # Set new amount for new claimants who get health element

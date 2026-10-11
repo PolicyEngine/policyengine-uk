@@ -1,11 +1,27 @@
-description: Rate after income threshold reached by which Child Tax Credit is reduced per £1.
+description: Rate at which Working Tax Credit and Child Tax Credit are reduced for each £1 of income above the applicable threshold.
 values:
   2002-08-01: 0.37
   2008-04-06: 0.39
-  2012-04-06: 0.41
+  2011-04-06:
+    value: 0.41
+    metadata:
+      reference:
+        - title: The Tax Credits Up-rating Regulations 2011, regulations 1(2) and 4(5)(b)
+          href: https://www.legislation.gov.uk/uksi/2011/1035
+        - title: Welfare Reform Act 2012, section 76
+          href: https://www.legislation.gov.uk/ukpga/2012/5/section/76
+        - title: The Tax Credits Up-rating Regulations 2012, regulations 4(4) and 5(c)
+          href: https://www.legislation.gov.uk/uksi/2012/849
 metadata:
   unit: /1
+  period: year
   reference:
-    title: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002, Section 7
-    # (3) step 5
-    href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/7
+    - title: The Tax Credits (Income Thresholds and Determination of Rates) Regulations 2002, regulation 7
+      href: https://www.legislation.gov.uk/uksi/2002/2008/regulation/7
+    - title: The Tax Credits Up-rating Regulations 2008, regulation 4
+      href: https://www.legislation.gov.uk/uksi/2008/796/regulation/4/made
+    - title: The Tax Credits Up-rating Regulations 2011, regulation 4
+      href: https://www.legislation.gov.uk/uksi/2011/1035/regulation/4/made
+    - title: Welfare Reform Act 2012, section 76
+      href: https://www.legislation.gov.uk/ukpga/2012/5/section/76
+  label: Tax Credits withdrawal rate
