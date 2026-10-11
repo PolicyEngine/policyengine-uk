@@ -300,9 +300,11 @@ def _get_variable_code(loader, fullname):
 # Dead systems' variable modules are also released as each new system starts
 # adding its variables, not only after each test: in that run one property
 # test had 165 systems' modules loaded at once, and Hypothesis can build many
-# more while it shrinks a failing example. With this the shards peaked at 10.0
-# to 10.4 GiB (run 38165445604). Keep this until policyengine-core stops
-# leaking the modules (PolicyEngine/policyengine-core#520).
+# more while it shrinks a failing example. In run 38165445604 an earlier form
+# of this release, which scanned at every new system once more than eight
+# systems owned modules, brought the shards' peaks from 10.2-12.2 GiB to
+# 10.0-10.4. Keep this until policyengine-core stops leaking the modules
+# (PolicyEngine/policyengine-core#520).
 _add_variables_from_file = TaxBenefitSystem.add_variables_from_file
 _adding_system = None
 
@@ -342,7 +344,8 @@ def _remove_variable_hooks():
 # test_latest_data_smoke.py no longer keeping its dataset cached, the shards
 # peaked at 8.0 to 8.2 GiB instead of 10.0 to 10.4, in about the same time
 # (pytest wall 776 / 952 / 637 s against 788 / 902 / 581), and two shards
-# would peak at 8.1 (run 38165445604).
+# would peak at 8.1 (run 38165445604). With everything in this file the three
+# shards peaked at 7.6 to 8.7 GiB (run 38173323996).
 try:
     _malloc_trim = ctypes.CDLL("libc.so.6").malloc_trim
     _malloc_trim.argtypes = [ctypes.c_size_t]
