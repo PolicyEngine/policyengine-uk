@@ -558,8 +558,7 @@ def assert_components_add_up(sim, people: list, years) -> None:
             assert np.allclose(
                 total[full_record],
                 reported_weekly[full_record] * WEEKS_IN_YEAR,
-                rtol=1e-9,
-                atol=1e-6,
+                **FLOAT32,
             )
 
 
