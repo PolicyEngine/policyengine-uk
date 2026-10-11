@@ -140,6 +140,10 @@
     simulated_council_tax_reduction_benunit: [759.60]
 
 - name: The young couple's income-based Jobseeker's Allowance does not passport the grandmother head
+  # Provisional until in-unit non-dependants land (#2017): the 19-year-old
+  # parents are her non-dependants (SI 2012/2885 reg 9(1); they are not in
+  # her family), but the model charges a deduction only for non-dependants
+  # in another benefit unit, so this case has none.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -319,6 +323,10 @@
     merton_council_tax_reduction: [1_800, 0]
 
 - name: The young couple's Universal Credit does not put a grandmother head on Newham's Universal Credit route
+  # Provisional until in-unit non-dependants land (#2017): the 19-year-old
+  # parents are her non-dependants (SI 2012/2885 reg 9(1); they are not in
+  # her family), but the model charges a deduction only for non-dependants
+  # in another benefit unit, so this case has none.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -487,6 +495,10 @@
     council_tax_reduction_applicable_amount: [7_807.80]
 
 - name: The young couple's Universal Credit does not remove a grandmother head's tariff income from capital in Kingston upon Thames
+  # Provisional until in-unit non-dependants land (#2017): the 19-year-old
+  # parents are her non-dependants (SI 2012/2885 reg 9(1); they are not in
+  # her family), but the model charges a deduction only for non-dependants
+  # in another benefit unit, so this case has none.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -589,3 +601,84 @@
     # Each claim covers half the £1,800; neither has income above its
     # allowance.
     merton_council_tax_reduction: [900, 554.20, 0]
+
+- name: A disabled pensioner head who applies alone gets no working-age disability premiums
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+        is_disabled_for_benefits: true
+        is_enhanced_disabled_for_benefits: true
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    council_tax_reduction_pensioner: [true]
+    # The pension-age schedule has no adult disability premium, and its
+    # enhanced disability premium is for a child or young person (SI 2012/2885
+    # Sch 2 Part 3, paras 6-9).
+    council_tax_reduction_premiums: [0]
+    council_tax_reduction_applicable_amount: [13_312]
+    simulated_council_tax_reduction_benunit: [1_800]
+
+- name: A pensioner head who applies alone and receives Attendance Allowance gets the pension-age severe disability premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 80
+        is_household_head: true
+        is_disabled_for_benefits: true
+        attendance_allowance: 4_000
+      young_mother:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      young_father:
+        age: 17
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # The single severe disability premium only: 86.05 * 52 = 4,474.60. The
+    # parents are 17, so not non-dependants who bar it.
+    council_tax_reduction_premiums: [4_474.60]
+    council_tax_reduction_applicable_amount: [17_786.60]
