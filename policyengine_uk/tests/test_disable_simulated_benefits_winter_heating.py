@@ -62,6 +62,7 @@ NOT_IN_BENEFITS = {
     "maternity_allowance": "already the reported amount (adds maternity_allowance_reported)",
     "employee_pension_contributions": "not a benefit",
     "tax": "not a benefit",
+    "bus_fare_spending": "not a benefit (household bus and coach spending)",
 }
 PROPERTY_SETTINGS = settings(
     max_examples=4,
