@@ -1,15 +1,15 @@
 """A miscellaneous loss is relieved only against miscellaneous income
 (ITA 2007 s. 152(4)).
 
-Invariants, for any pay, savings, dividends and pension income:
+Invariants:
 
-1. A miscellaneous loss leaves Income Tax and adjusted net income exactly as
-   they are with no miscellaneous income.
-2. taxable_miscellaneous_income is never negative and equals the income when
-   it is positive.
+1. For any pay, savings, dividends and pension income, a miscellaneous loss
+   leaves Income Tax, adjusted net income and total income exactly as they are
+   with no miscellaneous income.
+2. For any pay, positive miscellaneous income is taxable in full.
 """
 
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -44,7 +44,8 @@ def _calc(misc, pay, savings, dividends, pension):
 amounts = st.floats(min_value=0, max_value=150_000, allow_nan=False)
 
 
-@settings(max_examples=10, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@settings(max_examples=25, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@example(loss=20_000, pay=110_000, savings=0, dividends=0, pension=0)
 @given(
     loss=st.floats(min_value=1, max_value=500_000, allow_nan=False),
     pay=amounts,
@@ -60,6 +61,7 @@ def test_a_miscellaneous_loss_changes_nothing_else(
     assert with_loss["taxable_miscellaneous_income"] == 0
     assert abs(with_loss["income_tax"] - without["income_tax"]) < 0.01
     assert abs(with_loss["adjusted_net_income"] - without["adjusted_net_income"]) < 0.01
+    assert abs(with_loss["total_income"] - without["total_income"]) < 0.01
 
 
 @settings(max_examples=6, deadline=None, suppress_health_check=[HealthCheck.too_slow])
