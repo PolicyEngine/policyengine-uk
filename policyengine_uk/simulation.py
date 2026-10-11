@@ -9,14 +9,17 @@ import pandas as pd
 # PolicyEngine core imports
 from policyengine_core.data import Dataset
 from policyengine_core.enums import Enum as CoreEnum
-from policyengine_core.periods import period as period_
+from policyengine_core.periods import Period, period as period_
 from policyengine_core.parameters import Parameter
 from policyengine_core.reforms import Reform
 from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
-from policyengine_uk.utils.parameters import uk_fiscal_year_period
+from policyengine_uk.utils.parameters import (
+    check_parameter_not_removed,
+    uk_fiscal_year_period,
+)
 
 # PolicyEngine UK imports
 from policyengine_uk.data.dataset_schema import (
@@ -29,7 +32,12 @@ from policyengine_uk.data.economic_assumptions import (
     reset_growthfactor_uprating,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.input_dataframe import dataset_from_input_dataframe
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.supplied_inputs import (
+    SUPPLIED_INPUT_VARIABLES,
+    drop_missing_supplied_inputs,
+)
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
     canonicalize_lsr_parameter_path,
@@ -102,6 +110,11 @@ class Simulation(CoreSimulation):
     calculated_periods: List[str] = []
     _variable_dependencies: Dict[str, List[str]] = None
     dataset = None
+    # True when built from survey or other microdata rather than a situation
+    # dictionary. Variables that impute unobserved detail across a population
+    # (such as months_since_last_birthday) read it; unlike the sum of weights,
+    # it stays true for a region or constituency filtered from the data.
+    built_from_dataset: bool = False
 
     def __init__(
         self,
@@ -173,6 +186,7 @@ class Simulation(CoreSimulation):
             self.build_from_dataset_source(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
+        self.built_from_dataset = situation is None
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -198,6 +212,9 @@ class Simulation(CoreSimulation):
             "employee_pension_contributions",
             "employee_pension_contributions_reported",
         )
+        # Dataset totals must not mask journey-based fare policy formulas.
+        # The reported amount remains available for legacy data and Wales.
+        self.move_values("bus_fare_spending", "bus_fare_spending_reported")
 
         self.input_variables = self.get_known_variables()
 
@@ -219,6 +236,17 @@ class Simulation(CoreSimulation):
             if scenario.parameter_changes is not None:
                 self.apply_parameter_changes(scenario.parameter_changes)
 
+    def delete_arrays(self, variable: str, period: Period = None) -> None:
+        super().delete_arrays(variable, period)
+        # From policyengine-core 3.32.27 (policyengine-core#561) the deletion
+        # forgets the input records of the values it removes, but not records
+        # that a population rebuild left with no stored value
+        # (policyengine-core#605). Drop those too, before carry-over can refill
+        # the period and input export would count the refill as an input.
+        # Inspect storage after core's deletion to honour period containment
+        # and the current branch, ancestor branches and default branch.
+        drop_missing_supplied_inputs(self, variable)
+
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
             if variable not in self.input_variables:
@@ -232,6 +260,8 @@ class Simulation(CoreSimulation):
         return variables
 
     def apply_parameter_changes(self, changes: dict):
+        for parameter in changes:
+            check_parameter_not_removed(canonicalize_lsr_parameter_path(parameter))
         self.tax_benefit_system.reset_parameters()
 
         for parameter in changes:
@@ -367,48 +397,34 @@ class Simulation(CoreSimulation):
     def build_from_dataframe(self, df: pd.DataFrame) -> None:
         """Build simulation from a pandas DataFrame.
 
+        The frame has one row per person, in the format
+        ``to_input_dataframe()`` exports. A benefit unit or household value
+        sits on the row of each member, and the benefit unit or household
+        takes that value. See ``policyengine_uk.data.input_dataframe`` for
+        how the frame names each person's benefit unit and household.
+
+        The simulation loads the frame as the multi-year dataset it
+        describes, which ``dataset`` then holds.
+
         Args:
             df: DataFrame with columns in format "variable_name__time_period"
         """
-
-        def get_first_array(variable_name: str) -> pd.Series:
-            """Extract the first array for a given variable name pattern."""
-            columns = df.columns[df.columns.str.contains(variable_name + "__")]
-            return df[columns[0]]
-
-        # Extract ID columns
-        (
-            person_id,
-            person_benunit_id,
-            person_household_id,
-            benunit_id,
-            household_id,
-        ) = map(
-            get_first_array,
-            [
-                "person_id",
-                "person_benunit_id",
-                "person_household_id",
-                "benunit_id",
-                "household_id",
-            ],
+        dataset, replayed, identifiers = dataset_from_input_dataframe(
+            df, self.tax_benefit_system, self.default_input_period
         )
-
-        # Build entity structure
-        self.build_from_ids(
-            person_id,
-            person_benunit_id,
-            person_household_id,
-            benunit_id,
-            household_id,
-        )
-
-        # Set input values for each variable and time period
-        for column in df:
-            variable, time_period = column.split("__")
-            if variable not in self.tax_benefit_system.variables:
-                continue
-            self.set_input(variable, time_period, df[column])
+        self.build_from_multi_year_dataset(dataset)
+        # Identifiers for the years the frame names them in that hold no
+        # data, and so are not years of the dataset.
+        for variable, time_period, values in identifiers:
+            self.set_input(variable, time_period, values)
+        # A dataset holds whole years only. Set each variable that the frame
+        # also gives for other periods, such as months, from its columns in
+        # the frame's order: a year's value spreads over the months not yet
+        # set, so the order decides the months' values.
+        for variable in dict.fromkeys(name for name, _, _ in replayed):
+            self.delete_arrays(variable)
+        for variable, time_period, values in replayed:
+            self.set_input(variable, time_period, values)
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
@@ -615,6 +631,14 @@ class Simulation(CoreSimulation):
             period = self.default_calculation_period
 
         period = period_(period)
+
+        if variable_name in SUPPLIED_INPUT_VARIABLES:
+            # Rebuilding the populations leaves the input records of the
+            # replaced holders behind (policyengine-core#605). Forget a record
+            # whose stored value is gone before the engine can refill the
+            # period with a carried-over value that the record would pass off
+            # as supplied.
+            drop_missing_supplied_inputs(self, variable_name)
 
         return super().calculate(
             variable_name, period, map_to=map_to, decode_enums=decode_enums

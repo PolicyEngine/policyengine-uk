@@ -126,7 +126,11 @@ def test_partner_csp_for_caring_gives_couple_severe_disability_single_rate_or_ni
 
 
 def test_csp_counts_for_uc_non_dep_exemption_and_housing_benefit_income():
-    sim = Simulation(situation=_situation(YEAR_2025))
+    situation = _situation(YEAR_2025)
+    # Not claiming Universal Credit: on it, the whole of the Housing Benefit
+    # income would be disregarded (SI 2006/213 Sch 5 para 4).
+    situation["benunits"]["benunit"]["would_claim_uc"] = {YEAR_2025: False}
+    sim = Simulation(situation=situation)
 
     csp_amount = sim.calculate("carer_support_payment", YEAR_2025)[0]
     hb_disregard = sim.calculate(

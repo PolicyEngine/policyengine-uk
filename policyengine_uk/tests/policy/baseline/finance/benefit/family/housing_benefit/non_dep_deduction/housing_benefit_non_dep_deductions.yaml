@@ -1,9 +1,15 @@
+# Non-dependant deductions fall on the household head's family only: joint
+# tenants and other sharers of the rent, boarders and lodgers are not
+# non-dependants, and a sharer, boarder or lodger has no non-dependants from
+# the household head's family (UC Regs 2013 Sch 4 para 9(2)(d)-(f); HB Regs
+# 2006 reg 3(2)(d)-(e) and 3(4)).
 - name: Single family, no deductions
   period: 2025
   absolute_error_margin: 0
   input:
     people:
       person_1:
+        is_household_head: true
         household_benefits_individual_non_dep_deduction: 1
       person_2:
         household_benefits_individual_non_dep_deduction: 2
@@ -16,12 +22,13 @@
   output:
     housing_benefit_non_dep_deductions: 0
 
-- name: Two families, each affecting only the other
+- name: Two families, the household head's family bears the other's deduction
   period: 2025
   absolute_error_margin: 0
   input:
     people:
       person_1:
+        is_household_head: true
         household_benefits_individual_non_dep_deduction: 1
       person_2:
         household_benefits_individual_non_dep_deduction: 2
@@ -34,9 +41,10 @@
       household:
         members: [person_1, person_2]
   output:
-    housing_benefit_non_dep_deductions: [2, 1]
+    # Only the head's family has non-dependants: 2; the other family has none.
+    housing_benefit_non_dep_deductions: [2, 0]
 
-- name: Three families, each affecting only the other
+- name: Three families, the household head's family bears both others
   period: 2025
   absolute_error_margin: 0
   input:
@@ -44,6 +52,7 @@
       person_1:
         household_benefits_individual_non_dep_deduction: 1
       person_2:
+        is_household_head: true
         household_benefits_individual_non_dep_deduction: 2
       person_3:
         household_benefits_individual_non_dep_deduction: 3
@@ -58,4 +67,33 @@
       household:
         members: [person_1, person_2, person_3]
   output:
-    housing_benefit_non_dep_deductions: [5, 4, 3]
+    # The head's family: 1 + 3 = 4.
+    housing_benefit_non_dep_deductions: [0, 4, 0]
+
+- name: A family liable for rent is not a non-dependant
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      person_1:
+        is_household_head: true
+        household_benefits_individual_non_dep_deduction: 1
+      person_2:
+        household_benefits_individual_non_dep_deduction: 2
+      person_3:
+        household_benefits_individual_non_dep_deduction: 3
+    benunits:
+      benunit_1:
+        members: person_1
+      benunit_2:
+        members: person_2
+        # A lodger or a sharer of the rent.
+        benunit_is_rent_liable: true
+      benunit_3:
+        members: person_3
+    households:
+      household:
+        members: [person_1, person_2, person_3]
+  output:
+    # Only person 3 is a non-dependant of the head's family: 3.
+    housing_benefit_non_dep_deductions: [3, 0, 0]

@@ -1,0 +1,403 @@
+# Savings-credit-only cases: "In determining the income and capital of a
+# claimant who has, or whose partner has, an award of state pension credit
+# comprising only the savings credit, the relevant authority shall ... use the
+# calculation or estimate of the claimant's or, as the case may be, the
+# claimant's partner's income and capital made by the Secretary of State for
+# the purpose of determining that award." (SI 2006/214 reg 27(1); NI: SR
+# 2006/406 reg 25(1).) The authority modifies that net income only for the
+# items in reg 27(4), the first being "the amount of the savings credit
+# payable"; Housing Benefit's own income rules (regs 29 to 49) do not apply to
+# it (reg 27(5)); and capital is the Secretary of State's calculation, with the
+# £16,000 limit applied to it (reg 27(6)).
+#
+# 2026 parameters: Pension Credit standard minimum guarantee £238.00 a week
+# single (12,376 a year) and £363.25 couple (18,889); savings credit threshold
+# £208.07 single (10,819.64) and £329.75 couple (17,147); savings credit
+# phase-in 60% and withdrawal 40%, so the maximum savings credit is
+# 0.6 x (12,376 - 10,819.64) = 933.82 single and 0.6 x (18,889 - 17,147) =
+# 1,045.20 couple; the Pension Credit child addition £69.98 (3,638.96) for a
+# child born after 5 April 2017;
+# Pension Credit deemed income and pension-age Housing Benefit tariff income
+# both £1 a week for each £500 (or part) of capital over £10,000; Housing
+# Benefit capital limit £16,000; aged personal allowance £256.00 a week single
+# (13,312); taper 65%; income tax personal allowance 12,570 and basic rate 20%.
+# Every Pension Credit claimant and partner is over State Pension age and
+# reached it before April 2016, so can have savings credit, and pays no
+# National Insurance.
+#
+# Robustness to the other Housing Benefit fixes: the tenants rent from the
+# council, so the Local Housing Allowance order cannot apply; cases 1 to 8
+# set housing_benefit_applicable_income_disregard to the value the earnings
+# disregard fix (PolicyEngine/policyengine-uk#1908, merged) gives, 0 for a
+# family with no earnings, and case 9 leaves it to the model; and no claimant
+# has a disability benefit, so the severe disability premium fix (#1938) does
+# not change the applicable amount.
+
+- name: Case 1, savings credit only, the savings credit payable is added to the Pension Credit income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 11_000
+        private_pension_income: 2_000
+    benunits:
+      benunit:
+        members: [person1]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 0
+  output:
+    # (13,000 - 12,570) x 0.2 = 86.
+    income_tax: 86
+    # 13,000 - 86 = 12,914, above the minimum guarantee of 12,376.
+    pension_credit_income: 12_914
+    guarantee_credit: 0
+    # 933.82 - 0.4 x (12,914 - 12,376) = 933.82 - 215.20 = 718.62.
+    savings_credit: 718.62
+    pension_credit: 718.62
+    in_receipt_of_savings_credit_only: true
+    # Reg 27(4)(a): 12,914 + 718.62 = 13,632.62.
+    housing_benefit_savings_credit_only_income: 13_632.62
+    housing_benefit_applicable_income: 13_632.62
+    housing_benefit_applicable_amount: 13_312
+    # 7,800 - 0.65 x (13,632.62 - 13,312) = 7,800 - 208.40 = 7,591.60. On
+    # the Housing Benefit rules the income, 12,914, is below the applicable
+    # amount, and Housing Benefit would be the full 7,800.
+    housing_benefit: 7_591.60
+
+- name: Case 2, savings credit only with capital, the Pension Credit deemed income is counted once.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 11_000
+        private_pension_income: 2_000
+    benunits:
+      benunit:
+        members: [person1]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 12_300
+  output:
+    # (12,300 - 10,000) / 500 = 4.6, so 5 steps; 5 x 52 = 260.
+    pension_credit_assessable_capital: 12_300
+    pension_credit_deemed_income: 260
+    # 13,000 - 86 + 260 = 13,174.
+    pension_credit_income: 13_174
+    # 933.82 - 0.4 x (13,174 - 12,376) = 933.82 - 319.20 = 614.62.
+    savings_credit: 614.62
+    in_receipt_of_savings_credit_only: true
+    # Reg 27(6): the Pension Credit assessment of capital.
+    housing_benefit_assessable_capital: 12_300
+    # Reg 27(5): no Housing Benefit tariff income on top of the deemed income.
+    housing_benefit_tariff_income: 0
+    # 13,174 + 614.62 = 13,788.62.
+    housing_benefit_applicable_income: 13_788.62
+    # 7,800 - 0.65 x (13,788.62 - 13,312) = 7,800 - 309.80 = 7,490.20.
+    housing_benefit: 7_490.20
+
+- name: Case 3, savings credit only couple with a non-dependant, the 16,000 limit applies to the Pension Credit capital.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 9_000
+      person2:
+        age: 78
+        state_pension: 9_000
+      person3:
+        age: 40
+        employment_income: 20_000
+    benunits:
+      benunit1:
+        members: [person1, person2]
+        housing_benefit_applicable_income_disregard: 0
+      benunit2:
+        members: [person3]
+    households:
+      household:
+        members: [person1, person2, person3]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    # Pension Credit splits household capital across the two pension-age
+    # adults only, so the couple has all 20,000: 20 steps, 20 x 52 = 1,040 of
+    # deemed income. Each State Pension is below the personal allowance.
+    pension_credit_assessable_capital: [20_000, 0]
+    # 18,000 + 1,040 = 19,040, above the couple minimum guarantee of 18,889.
+    # The non-dependant's is computed but he cannot have Pension Credit:
+    # 20,000 - 1,486 income tax - 594.40 National Insurance = 17,919.60.
+    pension_credit_income: [19_040, 17_919.60]
+    guarantee_credit: [0, 0]
+    # 1,045.20 - 0.4 x (19,040 - 18,889) = 1,045.20 - 60.40 = 984.80.
+    savings_credit: [984.80, 0]
+    in_receipt_of_savings_credit_only: [true, false]
+    # Reg 27(6): the couple's capital is the Pension Credit's 20,000, not the
+    # household adult share of 20,000 x 2 / 3 = 13,333.33 used otherwise; the
+    # non-dependant keeps the adult share of 6,666.67.
+    housing_benefit_assessable_capital: [20_000, 6_666.67]
+    # 20,000 is over the 16,000 limit (reg 43, applied by reg 27(6)).
+    housing_benefit_eligible: [false, false]
+    housing_benefit: [0, 0]
+
+- name: Case 4, savings credit only with earnings, the earnings disregard is deducted.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 11_000
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [person1]
+        # £5 a week for a single claimant with earnings (Sch 4 para 7(a)),
+        # the same as the Pension Credit disregard (SPC Regs 2002 Sch VI
+        # para 5(a)); 5 x 52 = 260. Pension Credit income in the model
+        # disregards no earnings, so deducting it gives the Secretary of
+        # State's figure.
+        housing_benefit_applicable_income_disregard: 260
+    households:
+      household:
+        members: [person1]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 0
+  output:
+    # 13,000 - 86 = 12,914, as in case 1.
+    pension_credit_income: 12_914
+    savings_credit: 718.62
+    in_receipt_of_savings_credit_only: true
+    # 12,914 + 718.62 - 260 = 13,372.62.
+    housing_benefit_applicable_income: 13_372.62
+    # 7,800 - 0.65 x (13,372.62 - 13,312) = 7,800 - 39.40 = 7,760.60.
+    housing_benefit: 7_760.60
+
+- name: Case 5, savings credit only lone parent in work, childcare charges and the lone parent and additional earnings disregards are deducted.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 78
+        state_pension: 11_000
+        employment_income: 7_000
+        # 20 hours a week, so remunerative work (reg 6) and the reg 31
+        # condition for deducting childcare charges are met.
+        hours_worked: 1_040
+      person2:
+        age: 8
+        childcare_expenses: 2_600
+    benunits:
+      benunit:
+        members: [person1, person2]
+        # Reg 27(4)(c)(i): the higher amount disregarded for a lone parent's
+        # earnings, £25 a week (Sch 4 para 2) against Pension Credit's £20
+        # (SPC Regs 2002 Sch VI para 1); and (d): the additional £17.10 (Sch
+        # 4 para 9(1)) for a lone parent working 16 hours or more whose net
+        # earnings cover the disregards and childcare. Pension Credit income
+        # in the model disregards no earnings, so the whole of both is
+        # deducted: (25 + 17.10) x 52 = 2,189.20, the value #1908 gives.
+        housing_benefit_applicable_income_disregard: 2_189.20
+    households:
+      household:
+        members: [person1, person2]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 0
+  output:
+    # (18,000 - 12,570) x 0.2 = 1,086; 18,000 - 1,086 = 16,914.
+    pension_credit_income: 16_914
+    # 12,376 + 3,638.96 = 16,014.96.
+    minimum_guarantee: 16_014.96
+    guarantee_credit: 0
+    # 933.82 - 0.4 x (16,914 - 16,014.96) = 933.82 - 359.62 = 574.20.
+    savings_credit: 574.20
+    in_receipt_of_savings_credit_only: true
+    # Reg 27(4)(b): 2,600 of childcare (£50 a week), below the weekly
+    # maximum and the earnings.
+    housing_benefit_applicable_income_childcare_element: 2_600
+    # 16,914 + 574.20 - 2,600 - 2,189.20 = 12,699.
+    housing_benefit_savings_credit_only_income: 12_699
+    housing_benefit_applicable_income: 12_699
+
+- name: Case 6, guarantee credit and savings credit together, the award is not savings credit only and the guarantee credit passport applies.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 12_000
+    benunits:
+      benunit:
+        members: [person1]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 0
+  output:
+    # 12,000 is below the personal allowance, so no income tax.
+    pension_credit_income: 12_000
+    # 12,376 - 12,000 = 376.
+    guarantee_credit: 376
+    # min(933.82, 0.6 x (12,000 - 10,819.64)) = 708.22.
+    savings_credit: 708.22
+    in_receipt_of_savings_credit_only: false
+    housing_benefit_applicable_income: 0
+    housing_benefit: 7_800
+
+- name: Case 7, no Pension Credit, the Housing Benefit rules apply.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 11_000
+        private_pension_income: 6_000
+    benunits:
+      benunit:
+        members: [person1]
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 12_300
+  output:
+    # (17,000 - 12,570) x 0.2 = 886; 17,000 - 886 + 260 = 16,374.
+    pension_credit_income: 16_374
+    # 933.82 - 0.4 x (16,374 - 12,376) is negative.
+    savings_credit: 0
+    in_receipt_of_savings_credit_only: false
+    housing_benefit_assessable_capital: 12_300
+    housing_benefit_tariff_income: 260
+    # 17,000 - 886 + 260 = 16,374.
+    housing_benefit_applicable_income: 16_374
+    # 7,800 - 0.65 x (16,374 - 13,312) = 7,800 - 1,990.30 = 5,809.70.
+    housing_benefit: 5_809.70
+
+- name: Case 8, savings credit computed but Pension Credit not claimed, the Housing Benefit rules apply.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+        state_pension: 11_000
+        private_pension_income: 2_000
+    benunits:
+      benunit:
+        members: [person1]
+        would_claim_pc: false
+        housing_benefit_applicable_income_disregard: 0
+    households:
+      household:
+        members: [person1]
+        rent: 7_800
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 0
+  output:
+    savings_credit: 718.62
+    pension_credit: 0
+    # There is no award, so reg 27 does not apply.
+    in_receipt_of_savings_credit_only: false
+    # 12,914, below the applicable amount of 13,312.
+    housing_benefit_applicable_income: 12_914
+    housing_benefit: 7_800
+
+- name: Case 9, savings credit only, no earnings, built from age, pensions, rent, tenure and capital alone, with nothing overridden.
+  period: 2026
+  absolute_error_margin: 0.01
+  # A regression guard for the integrated route (reviewer request on #1945, 1
+  # and 5 October 2026). The inputs are only age, pensions, rent, tenure and
+  # savings: no Housing Benefit disregard, no childcare, and no Pension Credit
+  # or Housing Benefit income intermediate is set, so every figure below is
+  # the model's own. Cases 1 to 8 set the earnings disregard directly.
+  #
+  # Law, SI 2006/214 reg 27 (NI: SR 2006/406 reg 25), read on
+  # legislation.gov.uk on 5 October 2026: (1) the authority uses the Secretary
+  # of State's calculation of income and capital for the savings-credit-only
+  # award; (4) it modifies the net income "only in so far as necessary to take
+  # into account" (a) the savings credit payable, (b) childcare charges, (c)
+  # and (d) the higher earnings and additional disregards, (e) to (g) items
+  # outside this household; (5) its own income rules, tariff income included,
+  # do not apply to the Secretary of State's figure; (6) capital is the
+  # Secretary of State's, with the £16,000 limit applied to it.
+  #
+  # 2026 parameters, as in the cases above: minimum guarantee £238.00 a week
+  # single (12,376 a year); savings credit threshold £208.07 (10,819.64),
+  # phase-in 60% and withdrawal 40%; Housing Benefit aged personal allowance
+  # £256.00 (13,312); taper 65%; personal allowance 12,570 and basic rate 20%.
+  input:
+    people:
+      person1:
+        age: 83
+        state_pension: 10_200
+        private_pension_income: 3_100
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 13_900
+  output:
+    # (10,200 + 3,100 - 12,570) x 0.2 = 730 x 0.2 = 146.
+    income_tax: 146
+    # (13,900 - 10,000) / 500 = 7.8, so 8 steps of £1 a week; 8 x 52 = 416.
+    pension_credit_assessable_capital: 13_900
+    pension_credit_deemed_income: 416
+    # The Secretary of State's net income: 13,300 - 146 + 416 = 13,570. Above
+    # the minimum guarantee of 12,376, so no guarantee credit.
+    pension_credit_income: 13_570
+    guarantee_credit: 0
+    # Savings credit payable: the maximum is 0.6 x (12,376 - 10,819.64) =
+    # 933.816, below 0.6 x (13,570 - 10,819.64) = 1,650.216, so it is the
+    # maximum; less 0.4 x (13,570 - 12,376) = 477.60; 933.816 - 477.60 =
+    # 456.216.
+    savings_credit: 456.22
+    pension_credit: 456.22
+    in_receipt_of_savings_credit_only: true
+    # The reg 27(4) modification to the net income of 13,570: (a) adds the
+    # savings credit payable, 456.216. There is no (b) childcare, and with no
+    # earnings no (c) or (d) disregard, so the modification is +456.216.
+    housing_benefit_applicable_income_childcare_element: 0
+    housing_benefit_applicable_income_disregard: 0
+    # 13,570 + 456.216 - 0 - 0 = 14,026.216. Without (a) it would be 13,570.
+    housing_benefit_savings_credit_only_income: 14_026.22
+    # Reg 27(5): no Housing Benefit tariff income on top of the deemed income
+    # inside the 13,570.
+    housing_benefit_tariff_income: 0
+    housing_benefit_applicable_income: 14_026.22
+    housing_benefit_applicable_amount: 13_312
+    # Reg 27(6): the Secretary of State's capital, 13,900, within the limit.
+    housing_benefit_assessable_capital: 13_900
+    housing_benefit_eligible: true
+    # 6,240 - 0.65 x (14,026.216 - 13,312) = 6,240 - 0.65 x 714.216 =
+    # 6,240 - 464.2404 = 5,775.7596. Without (a), 6,240 - 0.65 x (13,570 -
+    # 13,312) = 6,240 - 167.70 = 6,072.30.
+    housing_benefit: 5_775.76

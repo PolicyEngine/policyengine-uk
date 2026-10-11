@@ -30,7 +30,10 @@ the personal allowance taper (100,000) and no one claims Marriage Allowance
 (see test_uc_state_pension_properties.py for the Marriage Allowance
 deviation). Tax reductions are covered: adults born before 6 April 1935 can
 have a married couple's allowance, which comes off the tax on earnings
-first. Invariant 4 runs with Marriage Allowance claimed.
+first. Invariant 4 runs with Marriage Allowance claimed, and with everyone in
+a start-up period: the minimum income floor now compares net earned income
+with a net threshold (test_uc_minimum_income_floor_properties.py), which
+moves earned income either way, so it is held off here.
 """
 
 import numpy as np
@@ -284,7 +287,11 @@ def _use_formula_before_1942(simulation):
         unit = GBP
 
         def formula(benunit, period, parameters):
-            gross = add(benunit, period, ["uc_mif_capped_earned_income"])
+            gross = add(
+                benunit,
+                period,
+                ["employment_income", "self_employment_income", "miscellaneous_income"],
+            )
             disregards = add(
                 benunit,
                 period,
@@ -304,6 +311,13 @@ BEFORE_1942 = Scenario(simulation_modifier=_use_formula_before_1942)
     year=st.sampled_from(YEARS),
 )
 def test_fix_only_removes_deductions(units, year):
+    units = [
+        dict(
+            unit,
+            adults=[dict(a, uc_is_in_startup_period=True) for a in unit["adults"]],
+        )
+        for unit in units
+    ]
     after = calculate(units, year, marriage_allowance=True)
     before = calculate(units, year, scenario=BEFORE_1942, marriage_allowance=True)
     assert np.all(after["uc_earned_income"] >= before["uc_earned_income"] - 0.01), units
