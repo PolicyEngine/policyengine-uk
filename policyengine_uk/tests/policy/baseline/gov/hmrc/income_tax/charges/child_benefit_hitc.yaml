@@ -139,3 +139,20 @@
   output:
     # (55,550 - 50,000) / 100 = 55.5%, so 55%; 55% of £1,000 is £550.
     CB_HITC: [550, 0]
+
+- name: Case 11, the Child Benefit total is rounded down before the percentage applies.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        employment_income: 79_800
+      child:
+        age: 5
+    benunit:
+      members: [parent, child]
+  output:
+    # (79,800 - 60,000) / 200 = 99%; 99% of £1,406 is £1,391.94, so £1,391.
+    # Rounding only the charge (99% of £1,406.60 = £1,392.53) would give £1,392.
+    CB_HITC: [1_391, 0]
