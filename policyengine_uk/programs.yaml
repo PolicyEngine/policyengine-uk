@@ -166,9 +166,9 @@ programs:
     coverage: UK
     variable: business_rates
     parameter_prefix: gov.hmrc.business_rates
-    verified_start_year: 2019
-    verified_end_year: 2021
-    notes: Parameters need updating beyond 2021
+    verified_start_year: 2020
+    verified_end_year: 2030
+    notes: Receipts allocated to households by shareholding. Local and central rating lists; outturn from 2020-21 (Northern Ireland's first year) to 2025-26 (Wales 2024-25), then OBR March 2026 receipts forecasts to 2030-31.
 
   - id: minimum_wage
     name: National Minimum Wage
