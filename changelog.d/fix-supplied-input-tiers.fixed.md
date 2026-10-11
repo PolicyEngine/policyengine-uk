@@ -1,0 +1,1 @@
+- `supplied_input` and `supplied_input_periods` no longer count a value cached over a supplied input as supplied, and read an input stored on disk from disk when a value is cached over it in memory (#2307).
