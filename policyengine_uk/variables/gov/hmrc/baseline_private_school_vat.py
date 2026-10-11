@@ -6,7 +6,12 @@ from policyengine_uk.variables.gov.hmrc.private_school_vat import (
 
 class baseline_private_school_vat(Variable):
     label = "baseline private school VAT"
-    documentation = "private_school_vat under baseline parameters."
+    documentation = (
+        "private_school_vat under baseline policy (the exemption, the standard "
+        "rate and the reform rate), with this simulation's attendance, mean "
+        "fee and share of fees bearing VAT. Holding the assumptions fixed "
+        "means private_school_vat_change measures policy alone."
+    )
     entity = Household
     definition_period = YEAR
     value_type = float
@@ -14,5 +19,8 @@ class baseline_private_school_vat(Variable):
 
     def formula(household, period, parameters):
         return private_school_vat_liability(
-            household, period, parameters(period).baseline.gov
+            household,
+            period,
+            parameters(period).baseline.gov,
+            parameters(period).gov.simulation.private_school_vat,
         )

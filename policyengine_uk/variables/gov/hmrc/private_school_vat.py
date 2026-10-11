@@ -17,14 +17,21 @@ def private_school_vat_rate(gov):
     return max_(statutory_rate, gov.contrib.labour.private_school_vat)
 
 
-def private_school_vat_liability(household, period, gov):
+def private_school_vat_liability(household, period, policy, assumptions):
+    """VAT on the household's fees.
+
+    `policy` (a `gov` parameter node) sets the rate; `assumptions`
+    (gov.simulation.private_school_vat) sets the mean fee and the share of
+    fees that bears VAT net of the schools' input tax. The two are separate
+    so that baseline_private_school_vat can apply baseline policy to this
+    simulation's assumptions.
+    """
     pupils = add(household, period, ["attends_private_school"])
-    p = gov.simulation.private_school_vat
     return (
         pupils
-        * p.private_school_fees
-        * p.private_school_vat_basis
-        * private_school_vat_rate(gov)
+        * assumptions.private_school_fees
+        * assumptions.private_school_vat_basis
+        * private_school_vat_rate(policy)
     )
 
 
@@ -45,4 +52,7 @@ class private_school_vat(Variable):
     ]
 
     def formula(household, period, parameters):
-        return private_school_vat_liability(household, period, parameters(period).gov)
+        gov = parameters(period).gov
+        return private_school_vat_liability(
+            household, period, gov, gov.simulation.private_school_vat
+        )

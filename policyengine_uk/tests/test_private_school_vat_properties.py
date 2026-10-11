@@ -19,19 +19,30 @@ rate, with the exemption at current law, restored or removed:
   private_school_vat unchanged, so the fees are never taxed twice;
 - monotone: private_school_vat never falls when the reform rate or the
   standard rate rises;
-- disjoint: vat (VAT on imputed consumption) is the same whatever the
+- separate inputs: vat (VAT on imputed consumption) is the same whatever the
   private school parameters, and private_school_vat is the same whatever the
-  household's consumption, including education consumption;
+  household's consumption, including education consumption. This shows
+  neither head reads the other's parameters or inputs; it does not show the
+  bases are separate, since vat's base includes education consumption (see
+  the private_school_vat_and_vat guard in data/fiscal_partition.yaml);
 - level and change: private_school_vat_change equals private_school_vat
   minus baseline_private_school_vat; baseline_private_school_vat equals
-  private_school_vat in a simulation without the reform; and the change is
-  zero at current law.
+  private_school_vat under baseline policy with this simulation's mean fee
+  and share of fees bearing VAT; so a reform that changes only those
+  assumptions changes nothing, and the change is zero at current law.
+
+A grid test checks the differential exhaustively over years either side of
+the commencement, every setting of the exemption, reform rates below, at
+and above the standard rate, and two standard rates.
 
 Every household in an example is built in one simulation per parameter
 set, so the comparisons hold attendance fixed.
 """
 
 import numpy as np
+import itertools
+
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -186,7 +197,7 @@ def test_private_school_vat_never_falls_as_a_rate_rises(households, p, rise):
 
 @SETTINGS
 @given(households=st.lists(household, min_size=1, max_size=3), p=parameter_set)
-def test_vat_and_private_school_vat_are_disjoint(households, p):
+def test_vat_and_private_school_vat_read_separate_inputs(households, p):
     vat = calc(households, p, "vat")
     for overrides in (
         {"exempt": True, "contrib": 0.0},
@@ -215,11 +226,50 @@ def test_level_and_change(households, p):
         )
     )
     assert_close(change, level - baseline)
-    current_law = Simulation(situation=situation(households, p["year"]))
+    # Baseline policy with this simulation's assumptions.
+    assumptions_only = Simulation(
+        situation=situation(households, p["year"]),
+        reform={FEES: {ALWAYS: p["fees"]}, BASIS: {ALWAYS: p["basis"]}},
+    )
     assert_close(
         baseline,
-        np.asarray(current_law.calculate("private_school_vat", p["year"]), dtype=float),
+        np.asarray(
+            assumptions_only.calculate("private_school_vat", p["year"]), dtype=float
+        ),
     )
-    np.testing.assert_array_equal(
-        current_law.calculate("private_school_vat_change", p["year"]), 0
+    for current_policy in (
+        assumptions_only,
+        Simulation(situation=situation(households, p["year"])),
+    ):
+        np.testing.assert_array_equal(
+            current_policy.calculate("private_school_vat_change", p["year"]), 0
+        )
+
+
+GRID_HOUSEHOLDS = [
+    {"pupils": n, "other_children": 1, "consumption": 20_000.0, "education_share": 0.2}
+    for n in (0, 1, 3)
+]
+GRID = list(
+    itertools.product(
+        (2024, 2025),
+        (None, True, False),
+        (0.0, 0.1, 0.2, 0.3),
+        (None, 0.25),
     )
+)
+
+
+@pytest.mark.parametrize("year, exempt, contrib, standard_rate", GRID)
+def test_private_school_vat_grid(year, exempt, contrib, standard_rate):
+    p = {
+        "year": year,
+        "fees": 12_000.0,
+        "basis": 0.75,
+        "standard_rate": standard_rate,
+        "exempt": exempt,
+        "contrib": contrib,
+    }
+    pupils = np.array([h["pupils"] for h in GRID_HOUSEHOLDS], dtype=float)
+    expected = pupils * 12_000 * 0.75 * max(statutory_rate(p), contrib)
+    assert_close(calc(GRID_HOUSEHOLDS, p, "private_school_vat"), expected, str(p))
