@@ -1,0 +1,38 @@
+# A miscellaneous loss is relieved only against miscellaneous income
+# (ITA 2007 s. 152(4)). 2026-27: personal allowance £12,570, basic rate 20%
+# to £50,270, higher rate 40%.
+
+- name: Case 1, miscellaneous income is taxed with other income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 30_000
+    miscellaneous_income: 5_000
+  output:
+    taxable_miscellaneous_income: 5_000
+    # (35,000 - 12,570) x 20%.
+    income_tax: 4_486
+
+- name: Case 2, a miscellaneous loss does not reduce tax on pay.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 50_000
+    miscellaneous_income: -10_000
+  output:
+    taxable_miscellaneous_income: 0
+    # (50,000 - 12,570) x 20%, as with no loss.
+    income_tax: 7_486
+
+- name: Case 3, nor adjusted net income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 110_000
+    miscellaneous_income: -20_000
+  output:
+    taxable_miscellaneous_income: 0
+    adjusted_net_income: 110_000
