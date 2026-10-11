@@ -23,6 +23,9 @@
 #     entity            household or person
 #     obr_line          OBR current-receipts line the head belongs to, or
 #                       not_an_obr_current_receipt
+#     obr_table_3_1     the line of EFO Table 3.1 ("Public sector receipts
+#                       as a share of GDP") that holds it, where the table's
+#                       footnotes say so; null where they don't (see sources)
 #     report_group      grouping for reports
 #     payer             who bears it in the model: household (the household
 #                       or its members pay it directly), employer, consumer
@@ -44,6 +47,20 @@
 #   overlap_guards[]: the places double counting could occur, and the
 #     property the tests check for each.
 schema_version: 1
+
+sources:
+  obr_table_3_1: >-
+    OBR, Economic and fiscal outlook, March 2026, Table 3.1. Its footnotes put
+    capital gains tax, inheritance tax, property transaction taxes and stamp
+    taxes on shares in "Capital taxes", and council tax in "PSNB-neutral
+    receipts". They do not place vehicle excise duty, the licence fee or
+    Northern Ireland domestic rates. Read 2026-10-11 from
+    https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
+  obr_line: >-
+    obr_line is a plain label for the receipt, one tax per line, at the level
+    of the EFO's tax-by-tax analysis; it carries no figures. Student loan
+    repayments are not a receipt in the EFO; only accrued interest on the
+    loans enters receipts (in "Interest and dividend receipts").
 
 totals:
   gov_tax:
@@ -83,6 +100,7 @@ tax_heads:
     variable: income_tax
     entity: person
     obr_line: Income tax
+    obr_table_3_1: Income tax
     report_group: income_tax
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -92,6 +110,7 @@ tax_heads:
     variable: national_insurance
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -101,6 +120,7 @@ tax_heads:
     variable: ni_employer
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: employer
     totals: [gov_tax]
@@ -110,6 +130,7 @@ tax_heads:
     variable: employer_ni_response_capital_incidence
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: corporate incidence
     totals: [household_tax]
@@ -120,6 +141,7 @@ tax_heads:
     variable: employer_ni_response_consumer_incidence
     entity: person
     obr_line: National insurance contributions
+    obr_table_3_1: NICs
     report_group: national_insurance
     payer: consumer incidence
     totals: [household_tax]
@@ -130,6 +152,7 @@ tax_heads:
     variable: capital_gains_tax
     entity: person
     obr_line: Capital gains tax
+    obr_table_3_1: Capital taxes
     report_group: capital_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -139,6 +162,7 @@ tax_heads:
     variable: student_loan_repayments
     entity: person
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: >-
       A financial transaction: repayments reduce the student loan book, not
       borrowing, so they are outside current receipts. The model counts them
@@ -154,6 +178,7 @@ tax_heads:
     variable: vat
     entity: household
     obr_line: Value added tax
+    obr_table_3_1: Value added tax
     report_group: vat
     payer: consumer incidence
     totals: [gov_tax]
@@ -163,6 +188,7 @@ tax_heads:
     variable: vat_change
     entity: household
     obr_line: Value added tax
+    obr_table_3_1: Value added tax
     report_group: vat
     payer: consumer incidence
     totals: [household_tax, pre_budget_change_household_tax]
@@ -177,6 +203,7 @@ tax_heads:
     variable: private_school_vat
     entity: household
     obr_line: Value added tax
+    obr_table_3_1: Value added tax
     report_group: vat
     payer: household
     totals: [gov_tax, household_tax]
@@ -200,6 +227,7 @@ tax_heads:
     variable: fuel_duty
     entity: household
     obr_line: Fuel duties
+    obr_table_3_1: Fuel duties
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -209,6 +237,7 @@ tax_heads:
     variable: alcohol_duty
     entity: household
     obr_line: Alcohol duties
+    obr_table_3_1: Alcohol and tobacco duties
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax]
@@ -216,12 +245,13 @@ tax_heads:
     data_note: >-
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
-      2026-10-11.
+      2026-10-11. Issue 1872.
   - id: tobacco_duty
     label: Tobacco duties
     variable: tobacco_duty
     entity: household
     obr_line: Tobacco duties
+    obr_table_3_1: Alcohol and tobacco duties
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax]
@@ -229,12 +259,13 @@ tax_heads:
     data_note: >-
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
-      2026-10-11.
+      2026-10-11. Issue 1873.
   - id: vehicle_excise_duty
     label: Vehicle excise duties
     variable: vehicle_excise_duty
     entity: household
     obr_line: Vehicle excise duties
+    obr_table_3_1: null
     report_group: excise_duties
     payer: household
     totals: [gov_tax, household_tax]
@@ -242,12 +273,13 @@ tax_heads:
     data_note: >-
       Zero for every household on policyengine-uk-data 1.58.0
       (enhanced_frs_2024_25) in every year from 2025 to 2030, measured
-      2026-10-11.
+      2026-10-11. Issue 1874.
   - id: tv_licence
     label: TV licence fee
     variable: tv_licence
     entity: household
     obr_line: Licence fee receipts
+    obr_table_3_1: null
     report_group: other_receipts
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -266,6 +298,7 @@ tax_heads:
     variable: council_tax
     entity: household
     obr_line: Council tax
+    obr_table_3_1: PSNB-neutral receipts
     report_group: local_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -275,6 +308,7 @@ tax_heads:
     variable: high_value_council_tax_surcharge
     entity: household
     obr_line: Council tax
+    obr_table_3_1: PSNB-neutral receipts
     report_group: local_taxes
     payer: household
     totals: [gov_tax, household_tax]
@@ -284,6 +318,7 @@ tax_heads:
     variable: domestic_rates
     entity: household
     obr_line: Council tax
+    obr_table_3_1: null
     obr_line_note: >-
       Northern Ireland's domestic rates are its counterpart to council tax;
       check the line against the OBR table in use before publishing a
@@ -297,6 +332,7 @@ tax_heads:
     variable: business_rates
     entity: household
     obr_line: Business rates
+    obr_table_3_1: Business rates
     report_group: business_rates
     payer: corporate incidence
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -306,6 +342,7 @@ tax_heads:
     variable: expected_sdlt
     entity: household
     obr_line: Stamp duty land tax
+    obr_table_3_1: Capital taxes
     report_group: property_transaction_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -315,6 +352,7 @@ tax_heads:
     variable: corporate_sdlt
     entity: household
     obr_line: Stamp duty land tax
+    obr_table_3_1: Capital taxes
     report_group: property_transaction_taxes
     payer: corporate incidence
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -324,6 +362,7 @@ tax_heads:
     variable: expected_ltt
     entity: household
     obr_line: Land transaction tax
+    obr_table_3_1: Capital taxes
     report_group: property_transaction_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -336,6 +375,7 @@ tax_heads:
     variable: expected_lbtt
     entity: household
     obr_line: Land and buildings transaction tax
+    obr_table_3_1: Capital taxes
     report_group: property_transaction_taxes
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
@@ -350,6 +390,7 @@ tax_heads:
     variable: corporate_incident_tax_revenue_change
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A lump-sum revenue change allocated by shareholding.
     report_group: incidence_changes
     payer: corporate incidence
@@ -361,6 +402,7 @@ tax_heads:
     variable: consumer_incident_tax_revenue_change
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A lump-sum revenue change allocated by consumption.
     report_group: incidence_changes
     payer: consumer incidence
@@ -372,6 +414,7 @@ tax_heads:
     variable: wealth_tax
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: household
@@ -383,6 +426,7 @@ tax_heads:
     variable: non_primary_residence_wealth_tax
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: household
@@ -394,6 +438,7 @@ tax_heads:
     variable: LVT
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: mixed
@@ -405,6 +450,7 @@ tax_heads:
     variable: carbon_tax
     entity: household
     obr_line: not_an_obr_current_receipt
+    obr_table_3_1: null
     obr_line_note: A hypothetical tax.
     report_group: hypothetical_taxes
     payer: mixed

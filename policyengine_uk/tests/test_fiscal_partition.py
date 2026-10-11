@@ -68,6 +68,20 @@ EXCLUSION_KINDS = {
     "duplicate",
     "baseline_measure",
 }
+OBR_TABLE_3_1_LINES = {
+    "Income tax",
+    "NICs",
+    "Value added tax",
+    "Onshore corporation tax",
+    "Capital taxes",
+    "Business rates",
+    "Fuel duties",
+    "Alcohol and tobacco duties",
+    "PSNB-neutral receipts",
+    "Other taxes",
+    "Interest and dividend receipts",
+    "Other receipts",
+}
 ULPS = 64
 ALWAYS = "2000-01-01.2100-12-31"
 
@@ -113,6 +127,10 @@ def test_partition_schema():
         assert head["sign"] in {"nonnegative", "any"}, head["id"]
         assert head.get("zero_at_baseline", "expected") == "expected", head["id"]
         assert head["obr_line"], head["id"]
+        table_line = head["obr_table_3_1"]
+        assert table_line is None or table_line in OBR_TABLE_3_1_LINES, head["id"]
+        if head["obr_line"] == "not_an_obr_current_receipt":
+            assert table_line is None and head["obr_line_note"], head["id"]
         assert head["report_group"], head["id"]
         for read in head.get("reads", []):
             assert read["head"] in head_by_id(), (head["id"], read)
