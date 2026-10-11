@@ -117,6 +117,8 @@ def _deciles(summary, years) -> str:
     if not deciles:
         return "Not available: both sides need household detail."
     present = [y for y in years if str(y) in deciles]
+    if all(row["mean_change"] == 0 for y in present for row in deciles[str(y)]):
+        return "No household's net income changes in any year."
     labels = [row["decile"] for row in deciles[str(present[0])]]
     body = []
     for index, decile in enumerate(labels):
@@ -215,29 +217,39 @@ def _guard(summary) -> str:
     guard = (summary.get("head") or {}).get("guard") or {}
     if guard.get("status") != "ran":
         return f"Counted-once check not run: {guard.get('reason', 'unknown reason')}."
+    tolerance = guard.get("tolerance", 1e-3)
+    tax_totals = {"gov_tax", "household_tax", "pre_budget_change_household_tax"}
     components = guard.get("components", [])
     tested = [c for c in components if c["status"] != "skipped"]
     failed = [c for c in tested if c["status"] == "fail"]
     lines = [
-        f"{len(tested)} components perturbed in {fiscal_year_label(guard['year'])}; "
-        f"{len(failed)} counted other than once in the partition; "
-        f"{len(components) - len(tested)} skipped (zero for every unit, or not money)."
+        f"Each of {len(tested)} components was raised by £1 per unit in "
+        f"{fiscal_year_label(guard['year'])}: tax totals must rise by exactly £1 "
+        "per unit and spending totals by at most £1. "
+        f"{len(failed)} failed; {len(components) - len(tested)} were skipped "
+        "(zero for every unit, or not money)."
     ]
+    for c in failed:
+        moves = ", ".join(f"`{t}` {k:.4f}" for t, k in c["coefficients"].items())
+        lines.append(f"- `{c['variable']}`: {moves}")
+
+    def violates(total, k):
+        return abs(k - 1) > tolerance if total in tax_totals else k > 1 + tolerance
+
     model = [
         (c["variable"], total, k)
         for c in tested
         for total, k in c.get("model_coefficients", {}).items()
-        if abs(k - 1) > guard.get("tolerance", 1e-3)
+        if violates(total, k)
     ]
     if model:
-        lines.append("")
-        lines.append("Components the model's own totals count other than once:")
-        lines += [f"- `{v}` moves `{t}` by {k:.3f} per unit" for v, t, k in model]
+        lines += ["", "In the model's own totals:"]
+        lines += [f"- `{v}` moves `{t}` by {k:.4f} per unit" for v, t, k in model]
     for dc in guard.get("double_counts", []):
         state = "still contained" if dc["status"] == "pass" else "NO LONGER contained"
         lines.append(
-            f"- declared double count `{dc['variable']}` is {state} in `{dc['contained_in']}` "
-            f"(coefficient {dc['coefficient']:.3f}; {dc['issue']})"
+            f"- declared double count `{dc['variable']}` is {state} in "
+            f"`{dc['contained_in']}` (coefficient {dc['coefficient']:.3f}; {dc['issue']})"
         )
     return "\n".join(lines)
 
@@ -336,12 +348,18 @@ def render(summary: Mapping, spec: Spec, context: Optional[Mapping] = None) -> s
         )
     parts += ["", "### Moves flagged for review", "", _flags(summary)]
 
+    unchanged = []
     for section, title in SECTIONS:
         rows = _section_rows(summary, section)
         if not rows:
             continue
+        if not any(row["changed"] for row in rows):
+            unchanged.append(title[:1].lower() + title[1:])
+            continue
         parts += ["", f"### {title}", "", _changes_table(rows, years)]
     parts += ["", "### Household net income by decile", "", _deciles(summary, years)]
+    if unchanged:
+        parts += ["", "**No change in any year:** " + "; ".join(unchanged) + "."]
 
     optional = []
     if pre_existing:
