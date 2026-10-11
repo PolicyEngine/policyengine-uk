@@ -3,9 +3,10 @@
 SSCBA 1992 s. 70(1)(b) bars a person who is gainfully employed, and reg. 8(1)
 of the Social Security (Invalid Care Allowance) Regulations 1976 treats a
 person as gainfully employed when their earnings exceed the limit (£204 a
-week from 6 April 2026). Earnings are net of income tax, primary Class 1 (and
-Class 2 and 4) contributions and half of pension contributions (Computation of
-Earnings Regulations 1996 regs. 10(4) and 13).
+week from 6 April 2026). Earnings are net of income tax, primary Class 1 (or,
+for trading profit, Class 4) contributions and half of pension contributions
+(Computation of Earnings Regulations 1996 regs. 10(4), 13 and 14; reg. 14(2)(a),
+which deducted Class 2, was omitted from 6 April 2024).
 
 Invariants, for a carer in England in 2026 caring 35 hours or more, with pay,
 trading profit, employee pension contributions and unearned income drawn
@@ -22,6 +23,7 @@ freely:
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
@@ -118,4 +120,45 @@ def test_unearned_income_is_not_earnings(pay, savings, private_pension):
             - with_unearned["carers_allowance_earnings"]
         )
         < 0.01
+    )
+
+
+@pytest.mark.parametrize("year", [2016, 2017, 2018, 2026])
+@pytest.mark.parametrize("country", ["ENGLAND", "SCOTLAND"])
+def test_trading_profit_takes_the_basic_rate_in_every_year(year, country):
+    """Reg. 14(1): the basic rate, or for a Scottish taxpayer the Scottish
+    basic rate, which were both 20% in each of these years. Before 2018-19 the
+    Scottish scale has no starter rate, so reading its second bracket by
+    position at an instant would pick the higher rate."""
+    profit = 30_000
+    simulation = Simulation(
+        situation={
+            "people": {
+                "carer": {
+                    "age": {year: 45},
+                    "self_employment_income": {year: profit},
+                    "care_hours": {year: 40},
+                }
+            },
+            "benunits": {"family": {"members": ["carer"]}},
+            "households": {"home": {"members": ["carer"], "country": {year: country}}},
+        }
+    )
+    hmrc = simulation.tax_benefit_system.parameters(year).gov.hmrc
+    allowance = hmrc.income_tax.allowances.personal_allowance.amount
+    class_4 = hmrc.national_insurance.class_4
+    expected = (
+        profit
+        - 0.20 * (profit - allowance)
+        - class_4.rates.main
+        * (
+            min(profit, class_4.thresholds.upper_profits_limit)
+            - class_4.thresholds.lower_profits_limit
+        )
+    )
+    assert bool(simulation.calculate("pays_scottish_income_tax", year)[0]) == (
+        country == "SCOTLAND"
+    )
+    assert simulation.calculate("carers_allowance_earnings", year)[0] == pytest.approx(
+        expected, abs=0.01
     )

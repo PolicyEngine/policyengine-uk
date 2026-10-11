@@ -165,12 +165,14 @@
   input:
     age: 45
     self_employment_income: 15_000
+    capital_allowances: 5_000
     personal_pension_contributions: 7_700
     care_hours: 40
     country: ENGLAND
   output:
     # 15,000 - 20% x 2,430 (486) - 6% x 2,430 (145.80) - 7,700 / 2 (3,850)
-    # = 10,518.20, or £202.27 a week.
+    # = 10,518.20, or £202.27 a week. Capital allowances are not deducted
+    # (reg. 13(6)(a)), though they cut the actual Class 4 to nil.
     carers_allowance_earnings: 10_518.20
     is_gainfully_employed_for_carers_allowance: false
     carers_allowance: 86.45 * 52
@@ -201,7 +203,7 @@
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
 
-- name: Case 15, pay and trading profit share one personal allowance.
+- name: Case 15, pay and trading profit each take the full personal allowance.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -211,8 +213,27 @@
     care_hours: 40
     country: ENGLAND
   output:
-    # Pay uses £10,000 of the allowance, leaving £2,570: trading tax
-    # 20% x (5,000 - 2,570) = 486. No Class 1 on £10,000; no Class 4 under
-    # £12,570. 15,000 - 486 = 14,514.
-    carers_allowance_earnings: 14_514
+    # No tax or Class 1 on £10,000 of pay; no notional tax or Class 4 on
+    # £5,000 of profit under the full £12,570 (reg. 14(1)). £15,000 is
+    # £288.46 a week.
+    carers_allowance_earnings: 15_000
     is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 16, the pay's use of the allowance does not shrink the profit's.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 6_000
+    self_employment_income: 8_000
+    personal_pension_contributions: 6_600
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 6,000 + 8,000 - 6,600 / 2 = 10,700, or £205.76 a week: over the limit.
+    # Sharing one allowance would deduct 20% x (8,000 - 6,570) = 286 and
+    # give £200.27, under it.
+    carers_allowance_earnings: 10_700
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0

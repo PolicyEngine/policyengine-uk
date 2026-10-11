@@ -20,10 +20,12 @@ class carers_allowance_earnings(Variable):
         "irrelevant here by assumption.\n\n"
         "Self-employment (regs. 13(4) and 14): trading profit less a notional "
         "income tax at the basic rate (the Scottish basic rate for a Scottish "
-        "taxpayer) on the profit above whatever personal allowance the pay "
-        "leaves unused, and Class 4 contributions at the main rate on the "
-        "profit between the lower and upper profits limits. Regulation 14 "
-        "deducts no Class 2 contribution.\n\n"
+        "taxpayer) on the profit above the full personal allowance, and Class 4 "
+        "contributions at the main rate on the profit between the lower and "
+        "upper profits limits. Regulation 14(1) deducts the personal reliefs "
+        "the claimant is entitled to, with no reduction for any allowance the "
+        "pay uses, and capital expenditure is not deducted (reg. 13(6)(a)). "
+        "Regulation 14 deducts no Class 2 contribution.\n\n"
         "Not modelled: the deduction for care charges (Schedule 3, up to half "
         "of net earnings) and the Schedule 1 disregards, so this can overstate "
         "earnings for a carer who pays for care while at work."
@@ -65,16 +67,22 @@ class carers_allowance_earnings(Variable):
         primary_class_1 = person("ni_class_1_employee", period)
 
         # Self-employment: notional basic-rate tax and main-rate Class 4
-        # (reg. 14(1)-(2)), with one set of personal reliefs, used by the pay
-        # first.
+        # (reg. 14(1)-(2)). The tax is on the profit as if it were the only
+        # income, less the full personal allowance.
         profit = max_(0, person("self_employment_income", period))
-        unused_allowance = max_(0, personal_allowance - taxable_pay)
+        # The basic rate is the first band of the rest-of-UK scale (ITA 2007
+        # s. 6(2)). The Scottish basic rate is the second bracket of the
+        # Scottish scale, after the starter rate; read it from the parameter
+        # tree, which keeps the null starter bracket of years before 2018-19 in
+        # place. The scale at an instant drops null brackets, so its index 1
+        # was the higher rate in 2016-17 and 2017-18.
+        scottish_scale = person.simulation.tax_benefit_system.parameters.gov.hmrc.income_tax.rates.scotland.rates
         basic_rate = where(
             scottish,
-            income_tax.rates.scotland.rates.rates[1],
+            scottish_scale.brackets[1].rate(period.start),
             income_tax.rates.uk.rates[0],
         )
-        trading_tax = basic_rate * max_(0, profit - unused_allowance)
+        trading_tax = basic_rate * max_(0, profit - personal_allowance)
         trading_class_4 = class_4.rates.main * max_(
             0,
             min_(profit, class_4.thresholds.upper_profits_limit)
