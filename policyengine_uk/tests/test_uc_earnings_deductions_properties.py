@@ -30,10 +30,13 @@ the personal allowance taper (100,000). Tax reductions are covered: adults
 born before 6 April 1935 can have a married couple's allowance, and couples
 claim Marriage Allowance; both come off the tax on earnings first. Each
 couple's Marriage Allowance election is held at its choice in the first run:
-the gaining partner's reduction then does not depend on anyone's unearned
-income, but the couple's choice to elect responds to it (see
-test_uc_state_pension_properties.py). Invariant 4 compares runs that elect
-alike, since the tax is the same in both.
+the tax on the gaining partner's earnings then does not depend on anyone's
+unearned income, but the couple's choice to elect responds to it (see
+test_uc_state_pension_properties.py). Invariant 4 runs with everyone in a
+start-up period: the minimum income floor now compares net earned income
+with a net threshold (test_uc_minimum_income_floor_properties.py), which
+moves earned income either way, so it is held off here. Its two runs elect
+alike, since the formula it compares against changes no one's tax.
 """
 
 import numpy as np
@@ -296,7 +299,11 @@ def _use_formula_before_1942(simulation):
         unit = GBP
 
         def formula(benunit, period, parameters):
-            gross = add(benunit, period, ["uc_mif_capped_earned_income"])
+            gross = add(
+                benunit,
+                period,
+                ["employment_income", "self_employment_income", "miscellaneous_income"],
+            )
             disregards = add(
                 benunit,
                 period,
@@ -316,6 +323,13 @@ BEFORE_1942 = Scenario(simulation_modifier=_use_formula_before_1942)
     year=st.sampled_from(YEARS),
 )
 def test_fix_only_removes_deductions(units, year):
+    units = [
+        dict(
+            unit,
+            adults=[dict(a, uc_is_in_startup_period=True) for a in unit["adults"]],
+        )
+        for unit in units
+    ]
     after = calculate(units, year)
     before = calculate(units, year, scenario=BEFORE_1942)
     assert np.all(after["uc_earned_income"] >= before["uc_earned_income"] - 0.01), units

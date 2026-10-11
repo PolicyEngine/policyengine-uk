@@ -228,8 +228,10 @@
         lifetime_isa_balance: 10_000
     benunits:
       parents:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent_1, parent_2]
       child:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: adult_child
     households:
       household:
@@ -370,6 +372,7 @@
         lifetime_isa_balance: 10_000
     benunits:
       family:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, young_person]
     households:
       household:
@@ -398,6 +401,7 @@
         lifetime_isa_balance: 10_000
     benunits:
       family:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, dependant]
     households:
       household:
@@ -421,6 +425,7 @@
         lifetime_isa_balance: 10_000
     benunits:
       family:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: [parent, dependant]
     households:
       household:
@@ -509,6 +514,7 @@
         lifetime_isa_balance: 10_000
     benunits:
       benunit:
+        would_claim_uc: false  # not on Universal Credit, which passports the means test
         members: person
     households:
       household:

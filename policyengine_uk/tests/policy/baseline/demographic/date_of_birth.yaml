@@ -1,0 +1,114 @@
+# The date of birth is age years and months_since_last_birthday months before
+# 6 October of the fiscal year, on a grid whose months start on the 6th; the
+# day of birth is the one starting at or after that instant.
+
+- name: A whole age in a household situation is the middle of the year of age.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+  output:
+    months_since_last_birthday: 6
+    # 6 October 2025 less 8 years and 6 months.
+    date_of_birth: 20170406
+    birth_year: 2017
+
+- name: One day more since the last birthday is born the day before.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+    # The grid month from 6 March to 5 April 2017 has 31 days.
+    months_since_last_birthday: 6.032258064516129
+  output:
+    date_of_birth: 20170405
+    birth_year: 2017
+
+- name: A birthday in December falls in the year before period less age.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+    months_since_last_birthday: 10
+  output:
+    # 6 October 2025 less 8 years and 10 months.
+    date_of_birth: 20161206
+    birth_year: 2016
+
+- name: A fractional age is the exact age on 6 October.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8.25
+  output:
+    months_since_last_birthday: 3
+    date_of_birth: 20170706
+    birth_year: 2017
+
+- name: A birthday on 6 October itself.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 0
+    months_since_last_birthday: 0
+  output:
+    date_of_birth: 20251006
+    birth_year: 2025
+
+- name: A date of birth from the age and birthday places the Universal Credit cutoff exactly, born 5 April 2017.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+    months_since_last_birthday: 6.032258064516129
+  output:
+    uc_is_child_born_before_child_limit: true
+    is_CTC_child_limit_exempt: true
+
+- name: A date of birth from the age and birthday places the Universal Credit cutoff exactly, born 6 April 2017.
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 8
+  output:
+    uc_is_child_born_before_child_limit: false
+    is_CTC_child_limit_exempt: false
+
+- name: A date of birth set for one person leaves the others placed by age.
+  period: 2025
+  absolute_error_margin: 0.001
+  input:
+    people:
+      parent:
+        age: 35
+      child:
+        age: 8
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    # The parent's date_of_birth input is 0 (not given), so the rules place
+    # them on 6 April 1990, as with no input at all: State Pension age 68.
+    birth_year: [1990, 2017]
+    state_pension_age: [68, 68]
+    is_SP_age: [false, false]
+    uc_is_child_born_before_child_limit: [false, true]
+
+- name: A date of birth sets State Pension age exactly.
+  period: 2026
+  absolute_error_margin: 0.001
+  input:
+    age: 66
+    date_of_birth: 19600105
+  output:
+    # Pensions Act 1995 Sch 4 para 1: born 6 October 1954 to 5 April 1960,
+    # State Pension age is 66, attained on 5 January 2026. From then to 6
+    # October 2026 is 9 grid months and the 1 day of the grid month from 6
+    # December 2025 to 5 January 2026 that falls after it: 10 - 30/31.
+    state_pension_age: 66
+    is_SP_age: true
+    months_since_state_pension_age: 9.032

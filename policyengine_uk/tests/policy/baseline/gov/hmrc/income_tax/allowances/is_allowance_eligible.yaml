@@ -47,6 +47,7 @@
 - name: Property Allowance Deduction
   period: 2024
   input:
+    property_rental_income: 3000
     property_income: 3000
     gov.hmrc.income_tax.allowances.property_allowance: 1000
   output:

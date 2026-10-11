@@ -15,6 +15,8 @@ class pension_credit_earnings(Variable):
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/5",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B",
+        "https://www.legislation.gov.uk/uksi/1996/2745/regulation/13",
     )
 
     def formula(benunit, period, parameters):
@@ -22,5 +24,8 @@ class pension_credit_earnings(Variable):
             period
         ).gov.dwp.pension_credit.guarantee_credit.earnings_sources
         person = benunit.members
-        earnings = add(person, period, sources)
+        # A loss in one employment is not set against earnings in another
+        # (Computation of Earnings Regs 1996 reg. 13(12), applied by SPC
+        # Regs 2002 reg. 17B(5)(b)), so a negative source counts as nil.
+        earnings = sum(max_(0, person(source, period)) for source in sources)
         return benunit.sum(earnings * person("is_claimant_or_partner", period))

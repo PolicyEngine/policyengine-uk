@@ -25,12 +25,13 @@ Invariants, for any generated population of families:
    income.
 
 Invariant 2's award clause holds each couple's Marriage Allowance election
-at its choice in the base run: capital income can change whether the couple
-elects, and so the gaining partner's tax on earnings
-(PolicyEngine/policyengine-uk#1947). The clause also compares only families whose personal allowances the income leaves
-unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
-s. 35), which raises the tax a person pays on their earnings and so changes
-the deduction from them (see test_uc_earnings_deductions_properties.py).
+at its choice in the base run: capital income can change whether an election
+is allowed or lowers the couple's tax, and so the gaining partner's tax on
+earnings. The clause also compares only families whose personal
+allowances the income leaves unchanged: above 100,000 of adjusted net income
+the allowance tapers (ITA 2007 s. 35), which raises the tax a person pays on
+their earnings and so changes the deduction from them (see
+test_uc_earnings_deductions_properties.py).
 The award after the benefit cap is compared only where the cap exemption is
 also unchanged: the model's earnings exception to the cap still nets tax on
 all of a person's income off their earnings
@@ -125,9 +126,9 @@ def situation(units, year, income_scale=1.0, capital_bump=None, election=None):
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            # The generated adults are the claimant and partner, as the FRS
-            # would record them; without this an adult under 20 who is 16 or
-            # more years younger is presumed to be the other's child.
+            # The generated adults are the claimant and partner; say so, so the
+            # claimant-or-partner presumption (a member under 20 and much
+            # younger is the head's child) does not apply. Children get False.
             person = {"age": {year: age}, "is_claimant_or_partner": {year: True}}
             if j == 0:
                 person["employment_income"] = {year: unit["earnings"]}
