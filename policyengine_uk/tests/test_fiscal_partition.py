@@ -114,16 +114,23 @@ def tolerance(*arrays) -> np.ndarray:
 def test_partition_schema():
     p = partition()
     assert p["schema_version"] == 1
-    totals = set(p["totals"])
-    assert totals == set(MODEL_LISTS)
+    # The tax totals are this file's subject; the spending totals and
+    # spending_heads (the aggregate impact report's) share the file and must
+    # not borrow tax heads or variables.
+    assert set(MODEL_LISTS) <= set(p["totals"])
+    spending_heads = p.get("spending_heads", [])
+    spending_totals = {t for head in spending_heads for t in head["totals"]}
+    assert not spending_totals & set(MODEL_LISTS)
     ids = [head["id"] for head in heads()]
     variables = [head["variable"] for head in heads()]
     assert len(ids) == len(set(ids)), "duplicate head id"
     assert len(variables) == len(set(variables)), "a variable is in two heads"
+    assert not set(variables) & {h["variable"] for h in spending_heads}
+    assert not set(ids) & {h["id"] for h in spending_heads}
     for head in heads():
         variable = system.variables[head["variable"]]
         assert head["entity"] == variable.entity.key, head["id"]
-        assert set(head["totals"]) <= totals, head["id"]
+        assert set(head["totals"]) <= set(MODEL_LISTS), head["id"]
         assert head["sign"] in {"nonnegative", "any"}, head["id"]
         assert head.get("zero_at_baseline", "expected") == "expected", head["id"]
         assert head["obr_line"], head["id"]
@@ -144,8 +151,8 @@ def test_partition_schema():
             assert set(x["spans"]) <= set(ids), x
         else:
             assert x["head"] in ids, x
-    for total, spec in p["totals"].items():
-        for switch, dropped in spec.get("dropped_when", {}).items():
+    for total in MODEL_LISTS:
+        for switch, dropped in p["totals"][total].get("dropped_when", {}).items():
             system.parameters.get_child(switch)
             assert set(dropped) <= {h["variable"] for h in heads_of(total)}
     for guard in p["overlap_guards"]:
@@ -488,7 +495,8 @@ def test_each_total_is_the_sum_of_its_heads(drawn, year):
     for scenario, reform in SCENARIOS.items():
         sim = Simulation(situation=random_situation(drawn, year), reform=reform)
         values = {h["id"]: household_values(sim, h["variable"], year) for h in heads()}
-        for total, spec in partition()["totals"].items():
+        for total in MODEL_LISTS:
+            spec = partition()["totals"][total]
             dropped = set()
             for switch, names in spec.get("dropped_when", {}).items():
                 if reform and switch in reform:
