@@ -80,7 +80,9 @@ class FakeSim:
         self.cache = {}
 
 
-def partition(tax_heads, spending_heads=(), double_counts=()):
+def partition(tax_heads, spending_heads=(), double_counts=(), reads=None):
+    reads = reads or {}
+
     def heads(spec, total):
         return [
             {
@@ -89,6 +91,7 @@ def partition(tax_heads, spending_heads=(), double_counts=()):
                 "variable": v,
                 "totals": [total],
                 "entity": "household",
+                "reads": [{"head": r} for r in reads.get(v, [])],
             }
             for v in spec
         ]
@@ -151,25 +154,80 @@ def test_stale_double_count_declaration_fails():
     assert result["double_counts"][0]["coefficient"] == pytest.approx(0)
 
 
-def test_undeclared_containment_fails_with_coefficient_two():
+def test_undeclared_containment_fails_because_another_head_moves():
     _, result = run(model(contains=True), partition(["tax_a", "tax_b"]))
     rows = by_variable(result)
     assert rows["tax_b"]["status"] == "fail"
-    assert rows["tax_b"]["coefficients"]["gov_tax"] == pytest.approx(2)
+    assert "tax_a moves by +1.0000" in rows["tax_b"]["detail"]
+    assert rows["tax_b"]["responses"]["gov_tax"]["tax_a"] == pytest.approx(1)
     assert rows["tax_a"]["status"] == "pass"
 
 
 def test_means_tested_offset_passes_but_a_benefit_rising_with_income_fails():
     _, offset = run(model(interaction=-0.5), partition(["tax_a"], ["ben_c", "ben_d"]))
-    assert by_variable(offset)["ben_c"]["coefficients"][
-        "gov_spending"
-    ] == pytest.approx(0.5)
-    assert by_variable(offset)["ben_c"]["status"] == "pass"
+    row = by_variable(offset)["ben_c"]
+    assert row["coefficients"]["gov_spending"] == pytest.approx(0.5)
+    assert row["status"] == "pass"
     _, rising = run(model(interaction=0.2), partition(["tax_a"], ["ben_c", "ben_d"]))
-    assert by_variable(rising)["ben_c"]["coefficients"][
-        "gov_spending"
-    ] == pytest.approx(1.2)
-    assert by_variable(rising)["ben_c"]["status"] == "fail"
+    row = by_variable(rising)["ben_c"]
+    assert row["status"] == "fail" and "ben_d rises by 0.2000" in row["detail"]
+
+
+def test_a_total_that_adds_a_zero_component_twice_fails():
+    """Baseline identities hold while tax_b is zero; the response gives it away."""
+    formulas = model(contains=False)
+    formulas["tax_b"] = lambda f: 0 * f("x")
+    formulas["gov_tax"] = lambda f: f("tax_a") + 2 * f("tax_b")
+    _, result = run(formulas, partition(["tax_a", "tax_b"]))
+    row = by_variable(result)["tax_b"]
+    assert row["coefficients"]["gov_tax"] == pytest.approx(1)
+    assert row["model_coefficients"]["gov_tax"] == pytest.approx(2)
+    assert (
+        row["status"] == "fail"
+        and "the model's gov_tax moves by 2.0000" in row["detail"]
+    )
+
+
+def test_a_means_test_fall_cannot_hide_a_benefit_that_contains_another():
+    """ben_e contains ben_c while ben_d falls pound for pound: the net is 1."""
+    formulas = model(interaction=-1.0)
+    formulas["ben_e"] = lambda f: 50 + f("ben_c")
+    formulas["gov_spending"] = lambda f: f("ben_c") + f("ben_d") + f("ben_e")
+    _, result = run(formulas, partition(["tax_a"], ["ben_c", "ben_d", "ben_e"]))
+    row = by_variable(result)["ben_c"]
+    assert row["coefficients"]["gov_spending"] == pytest.approx(1)
+    assert row["status"] == "fail" and "ben_e rises by 1.0000" in row["detail"]
+
+
+def test_an_eligibility_loss_in_the_same_household_cannot_hide_a_double_count():
+    """One household's ben_e contains ben_c and it loses £100 of ben_f at once."""
+    formulas = model(interaction=0.0)
+    first = np.array([1.0, 0.0, 0.0])
+    formulas["ben_e"] = lambda f: 50 + first * f("ben_c")
+    formulas["ben_f"] = lambda f: np.where(
+        (f("ben_c") > 100.5) & (first == 1), 0.0, 100.0
+    )
+    formulas["gov_spending"] = lambda f: (
+        f("ben_c") + f("ben_d") + f("ben_e") + f("ben_f")
+    )
+    _, result = run(
+        formulas, partition(["tax_a"], ["ben_c", "ben_d", "ben_e", "ben_f"])
+    )
+    row = by_variable(result)["ben_c"]
+    assert row["status"] == "fail" and "ben_e rises" in row["detail"]
+
+
+def test_a_declared_read_may_respond_but_not_one_for_one():
+    formulas = model(contains=False)
+    formulas["tax_a"] = lambda f: 0.1 * f("x") + 0.3 * f("tax_b")
+    reading = partition(["tax_a", "tax_b"], reads={"tax_a": ["tax_b"]})
+    _, result = run(formulas, reading)
+    assert by_variable(result)["tax_b"]["status"] == "pass"
+    _, undeclared = run(formulas, partition(["tax_a", "tax_b"]))
+    assert by_variable(undeclared)["tax_b"]["status"] == "fail"
+    _, containing = run(model(contains=True), reading)
+    row = by_variable(containing)["tax_b"]
+    assert row["status"] == "fail" and "contains it" in row["detail"]
 
 
 def test_supplied_inputs_are_restored_after_perturbation():
@@ -184,14 +242,29 @@ def test_supplied_inputs_are_restored_after_perturbation():
     assert by_variable(result)["tax_b"]["units"] == 2
 
 
-def test_zero_spending_component_is_skipped_but_zero_tax_is_tested():
+def test_zero_components_are_perturbed_everywhere():
     formulas = model(contains=False)
     formulas["tax_b"] = lambda f: 0 * f("x")
     formulas["ben_c"] = lambda f: 0 * f("x")
     _, result = run(formulas, partition(["tax_a", "tax_b"], ["ben_c", "ben_d"]))
     rows = by_variable(result)
-    assert rows["ben_c"]["status"] == "skipped"
     assert rows["tax_b"]["status"] == "pass" and rows["tax_b"]["units"] == 3
+    assert rows["ben_c"]["status"] == "pass" and rows["ben_c"]["units"] == 3
+
+
+def test_a_formula_result_computed_earlier_is_not_frozen_as_an_input():
+    """On real policyengine-core, a holder's known periods include results."""
+    from policyengine_core.country_template import CountryTaxBenefitSystem
+    from policyengine_core.simulations import SimulationBuilder
+
+    system = CountryTaxBenefitSystem()
+    sim = SimulationBuilder().build_from_dict(
+        system, {"persons": {"a": {"salary": {"2026-01": 3000}}}}
+    )
+    sim.calculate("income_tax", "2026-01")
+    assert sim.get_holder("income_tax").get_known_periods()
+    snapshot = snapshot_inputs(sim, ["salary", "income_tax"])
+    assert set(snapshot) == {"salary"}
 
 
 @settings(max_examples=40, deadline=None)
@@ -200,13 +273,18 @@ def test_zero_spending_component_is_skipped_but_zero_tax_is_tested():
     weight=st.floats(0.1, 1e4),
     contains=st.booleans(),
 )
-def test_coefficient_is_two_exactly_when_a_head_contains_another(x, weight, contains):
+def test_the_model_coefficient_is_two_exactly_when_a_head_contains_another(
+    x, weight, contains
+):
     _, result = run(
         model(contains=contains),
         partition(["tax_a", "tax_b"]),
         x=x,
         weights=[weight] * len(x),
     )
-    k = by_variable(result)["tax_b"]["coefficients"]["gov_tax"]
-    assert k == pytest.approx(2 if contains else 1, rel=1e-6)
+    row = by_variable(result)["tax_b"]
+    assert row["model_coefficients"]["gov_tax"] == pytest.approx(
+        2 if contains else 1, rel=1e-6
+    )
+    assert (row["status"] == "fail") == contains
     assert result["reset_reproduces_baseline"]

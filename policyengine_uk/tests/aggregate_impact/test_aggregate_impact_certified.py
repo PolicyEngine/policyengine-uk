@@ -186,3 +186,13 @@ def test_the_published_result_holds_aggregates_only(measured):
     assert longest <= 50 < n_households
     details = " ".join(d for c in result["checks"] for d in c["details"])
     assert "minimum £" not in details and "largest gap" not in details
+
+
+def test_geographic_guards_hold_except_where_a_double_count_is_declared(measured):
+    """Council tax and domestic rates never meet. SDLT, LTT and LBTT overlap
+    only while expected_sdlt carries corporate SDLT (#2159)."""
+    result, _, partition, _ = measured
+    status = {c["id"]: c["status"] for c in result["checks"]}
+    assert status["overlap_guard:local_tax_geography"] == "pass"
+    overlapping = status["overlap_guard:property_transaction_tax_geography"] == "fail"
+    assert overlapping == bool(partition.double_counts)

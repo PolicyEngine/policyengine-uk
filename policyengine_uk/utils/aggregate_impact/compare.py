@@ -1,14 +1,17 @@
 """Compare a base and a head measurement.
 
-The comparison fails when the head did not run, ran on different data, or
-broke a check the base passes; it reports, without failing, checks both sides
-fail (pre-existing) and moves above the flag thresholds.
+The comparison fails when either side did not run, when they ran on
+different data, when the head has a non-finite figure, when a check the base
+ran is missing from the head, or when the head fails a check in a scope (a
+year) where the base passes it. It reports, without failing, checks that
+fail in the same scopes on both sides (pre-existing) and moves above the
+flag thresholds.
 """
 
 from __future__ import annotations
 
 import math
-from typing import Mapping, Optional
+from typing import Iterable, Mapping, Optional
 
 import numpy as np
 
@@ -18,6 +21,15 @@ from .spec import Spec, fiscal_year_label
 # Failing these on the head blocks the change whatever the base did: a
 # non-finite or crashed result cannot be compared at all.
 ALWAYS_BLOCKING_PREFIXES = ("finite:", "weights:")
+
+# Every head measurement must have run these.
+REQUIRED_CHECKS = (
+    "closure",
+    "finite:metrics",
+    "weights:person",
+    "weights:benunit",
+    "weights:household",
+)
 
 FLAG_KIND_BY_SECTION = {
     "reforms": "reform_gbp",
@@ -46,23 +58,33 @@ def _finite(value) -> bool:
 
 
 def classify_check(
-    base_status: Optional[str], head_status: Optional[str], blocking: bool
+    base_status: Optional[str],
+    head_status: Optional[str],
+    blocking: bool,
+    base_failing: Iterable[str] = (),
+    head_failing: Iterable[str] = (),
 ) -> str:
     """How a check's outcome on the head relates to the base.
 
+    ``base_failing`` and ``head_failing`` are the scopes (years) each side
+    failed in. A failure is pre-existing only if the base fails in every
+    scope the head fails in; a newly failing year is a regression.
+
     Returns one of: ``pass``, ``regression``, ``pre_existing``, ``fixed``,
-    ``new_warning``, ``warning``, ``removed``.
+    ``new_warning``, ``warning``, ``skipped``, ``removed``.
     """
     if head_status is None:
         return "removed"
+    if head_status == "skipped":
+        return "skipped"
     if head_status == "pass":
         return "fixed" if base_status in ("fail", "warn") else "pass"
     if head_status == "warn":
         return "warning" if base_status == "warn" else "new_warning"
     # head failed
-    if blocking or base_status in (None, "pass"):
+    if blocking or base_status != "fail":
         return "regression"
-    if base_status == "warn":
+    if set(head_failing) - set(base_failing):
         return "regression"
     return "pre_existing"
 
@@ -81,7 +103,8 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
             "kind": template["kind"],
             "unit": template.get("unit"),
             "values": {},
-            "changed": False,
+            # A figure measured on one side only is a change, never "no change".
+            "changed": not (head_metric and base_metric),
             "only_in": None
             if head_metric and base_metric
             else ("head" if head_metric else "base"),
@@ -115,12 +138,23 @@ def compare_metrics(base: Mapping, head: Mapping, spec: Spec, years) -> tuple:
 
 
 def _match(base_ids: np.ndarray, head_ids: np.ndarray) -> Optional[np.ndarray]:
-    """Indices into head arrays that line up with base households, or None."""
-    if base_ids.shape == head_ids.shape and np.array_equal(base_ids, head_ids):
+    """Indices into head arrays that line up with base households, or None.
+
+    The two sides must hold exactly the same households, each once.
+    """
+    base_ids, head_ids = np.asarray(base_ids), np.asarray(head_ids)
+    if base_ids.shape != head_ids.shape:
+        return None
+    if np.array_equal(base_ids, head_ids):
+        if len(np.unique(base_ids)) != len(base_ids):
+            return None
         return np.arange(len(head_ids))
+    if len(np.unique(base_ids)) != len(base_ids) or len(np.unique(head_ids)) != len(
+        head_ids
+    ):
+        return None
     order = np.argsort(head_ids, kind="stable")
-    positions = np.searchsorted(head_ids[order], base_ids)
-    positions = np.clip(positions, 0, len(order) - 1)
+    positions = np.clip(np.searchsorted(head_ids[order], base_ids), 0, len(order) - 1)
     matched = order[positions]
     if not np.array_equal(head_ids[matched], base_ids):
         return None
@@ -233,7 +267,13 @@ def compare(
     base_households: Optional[Mapping] = None,
     head_households: Optional[Mapping] = None,
     strict: bool = False,
+    require_base: bool = True,
 ) -> dict:
+    """Compare two measurements.
+
+    With ``require_base`` (the default) a missing or crashed base fails the
+    comparison: without it there is nothing to show the change against.
+    """
     failures, warnings = [], []
     if head and head.get("status") == "skipped":
         return {
@@ -262,15 +302,15 @@ def compare(
         failures.append(
             "The head measurement crashed: " + _last_line(head.get("error"))
         )
+    base_problem = None
     if not base:
-        warnings.append(
-            "The base measurement produced no result, so nothing is compared against it."
-        )
+        base_problem = "The base measurement produced no result"
     elif not base_ok:
-        warnings.append(
-            "The base measurement crashed, so the head's own checks decide: "
-            + _last_line(base.get("error"))
-        )
+        base_problem = "The base measurement crashed: " + _last_line(base.get("error"))
+    if base_problem and require_base:
+        failures.append(base_problem + "; the change cannot be compared without it.")
+    elif base_problem:
+        warnings.append(base_problem + "; the head's own checks decide.")
 
     years = (head or base or {}).get("years") or spec.years
     if head_ok and base_ok:
@@ -300,15 +340,48 @@ def compare(
         runtime_differences = []
 
     base_checks, head_checks = _check_map(base), _check_map(head)
+    same_partition = (
+        base_ok
+        and head_ok
+        and (base.get("partition") or {}).get("sha256")
+        == (head.get("partition") or {}).get("sha256")
+    )
     checks = []
+    if head_ok:
+        missing = [c for c in REQUIRED_CHECKS if c not in head_checks]
+        if missing:
+            failures.append(
+                "The head measurement did not run: " + ", ".join(missing) + "."
+            )
     for check_id in dict.fromkeys(list(head_checks) + list(base_checks)):
         b, h = base_checks.get(check_id), head_checks.get(check_id)
         blocking = check_id.startswith(ALWAYS_BLOCKING_PREFIXES) or not base_ok
         classification = classify_check(
-            b["status"] if b else None, h["status"] if h else None, blocking
+            b["status"] if b else None,
+            h["status"] if h else None,
+            blocking,
+            (b or {}).get("failing", {}),
+            (h or {}).get("failing", {}),
         )
         if strict and classification == "pre_existing":
             classification = "regression"
+        if classification == "skipped" and b and b["status"] != "skipped":
+            warnings.append(
+                f"The check {check_id} no longer applies on the head: "
+                + "; ".join((h or {}).get("details", [])[:1])
+            )
+        if classification == "removed" and head_ok:
+            # A check can disappear with the head it checked; otherwise its
+            # disappearance would let a failure pass unseen.
+            if same_partition:
+                failures.append(
+                    f"The check {check_id} ran on the base but not on the head."
+                )
+            else:
+                warnings.append(
+                    f"The check {check_id} ran on the base but not on the head "
+                    "(the partition changed)."
+                )
         template = h or b
         checks.append(
             {
@@ -329,11 +402,30 @@ def compare(
         )
 
     rows, flags = compare_metrics(_metric_map(base), _metric_map(head), spec, years)
+    non_finite = []
     for row in rows:
         if row["only_in"] == "base" and head_ok:
             warnings.append(
                 f"{row['label']} ({row['id']}) is measured on the base only."
             )
+        elif row["only_in"] == "head" and base_ok:
+            warnings.append(
+                f"{row['label']} ({row['id']}) is measured on the head only."
+            )
+        if row["only_in"] != "base":
+            non_finite += [
+                f"{row['id']} {fiscal_year_label(int(year))}"
+                for year, cell in row["values"].items()
+                if not _finite(cell["head"])
+            ]
+    if non_finite and head_ok:
+        more = f" and {len(non_finite) - 10} more" if len(non_finite) > 10 else ""
+        failures.append(
+            "The head has figures that are missing or not finite: "
+            + "; ".join(non_finite[:10])
+            + more
+            + "."
+        )
 
     deciles, decile_notes, decile_flags = {}, [], []
     if head_ok and base_ok and base_households and head_households:

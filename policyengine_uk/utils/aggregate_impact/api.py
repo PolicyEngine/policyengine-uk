@@ -3,7 +3,8 @@
 ``compute_budget_metrics`` measures one simulation and returns a long-format
 report: one row per metric and year, plus the identity and partition checks.
 Two pairs are comparable when their reports share ``metrics_version`` (the
-same tool code and spec), whatever model each pair runs; each model's own
+same tool code, and the same effective spec, horizon and reforms), whatever
+model each pair runs; each model's own
 fiscal partition is read from the measured package, and its digest is
 ``partition_version``.
 
@@ -19,7 +20,7 @@ from pathlib import Path
 from typing import Callable, Optional, Sequence
 
 from . import TOOL_SCHEMA
-from .measure import measure, tool_digest
+from .measure import measure
 from .partition import Partition, default_partition_path, load_partition
 from .reforms import load_reforms
 from .spec import DEFAULT_SPEC_PATH, Spec, load_spec
@@ -137,7 +138,6 @@ def compute_budget_metrics(
     if reforms is None:
         reforms = load_reforms()
     provenance = dict(provenance or {})
-    provenance.setdefault("metrics_version", f"{TOOL_SCHEMA}+{tool_digest()[:16]}")
     result, _ = measure(
         sim,
         factory,

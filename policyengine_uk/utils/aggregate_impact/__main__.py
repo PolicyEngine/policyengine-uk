@@ -35,14 +35,9 @@ def cmd_measure(args) -> int:
         "tool": str(Path(__file__).resolve().parent),
     }
     try:
-        from .measure import measure, tool_digest
+        from .measure import measure
         from .partition import default_partition_path, load_partition
         from .spec import DEFAULT_SPEC_PATH, load_spec
-
-        provenance["tool_sha256"] = tool_digest()
-        provenance["metrics_version"] = (
-            f"{TOOL_SCHEMA}+{provenance['tool_sha256'][:16]}"
-        )
 
         spec_path = Path(args.spec) if args.spec else DEFAULT_SPEC_PATH
         spec = load_spec(spec_path, years=args.years)

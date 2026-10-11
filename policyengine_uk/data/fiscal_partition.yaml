@@ -8,9 +8,11 @@
 # The heads were specified from the OBR receipts classification and from each
 # variable's formula, not copied from the model's own lists
 # (GOV_TAX_VARIABLES, HOUSEHOLD_TAX_VARIABLES,
-# PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES). policyengine_uk/tests/
-# test_fiscal_partition.py checks the two against each other and checks the
-# accounting properties below on simulated households.
+# PRE_BUDGET_CHANGE_HOUSEHOLD_TAX_VARIABLES).
+# policyengine_uk/tests/aggregate_impact/test_aggregate_impact_partition.py
+# checks the two against each other without data, and the aggregate-impact
+# report checks the accounting properties on the certified dataset. The #2159
+# fix adds tests of them on simulated households.
 #
 # Spending heads divide gov_spending and household_benefits the same way:
 # one benefit or service per head, one variable each.
@@ -53,7 +55,9 @@
 #   spending_heads[]: as tax_heads, without obr_line and payer, plus
 #     caseload (default true): whether reports count recipients.
 #   overlap_guards[]: the places double counting could occur, and the
-#     property the tests check for each.
+#     property that should hold for each. The aggregate-impact report checks
+#     the geographic_exclusivity guards on the certified dataset; the #2159
+#     fix's tests check the others.
 schema_version: 1
 
 totals:
@@ -437,7 +441,7 @@ tax_heads:
 
 exclusions:
   # Property transaction taxes
-  - {variable: stamp_duty_land_tax, kind: component, head: sdlt_household, note: "Equal to expected_sdlt, but not zeroed by gov.hmrc.stamp_duty.abolish; report the head, not this."}
+  - {variable: stamp_duty_land_tax, kind: component, head: sdlt_household, note: "Summed inside expected_sdlt, which until the #2159 fix also adds corporate_sdlt and a stray 0.045; not zeroed by gov.hmrc.stamp_duty.abolish. Report the head, not this."}
   - {variable: sdlt_on_transactions, kind: component, head: sdlt_household}
   - {variable: sdlt_on_rent, kind: component, head: sdlt_household}
   - {variable: sdlt_on_residential_property_transactions, kind: component, head: sdlt_household}
@@ -513,7 +517,11 @@ overlap_guards:
   - id: property_transaction_tax_geography
     kind: geographic_exclusivity
     heads: [sdlt_household, land_transaction_tax, land_and_buildings_transaction_tax]
-    property: At most one is non-zero for any household (England and Northern Ireland, Wales, Scotland).
+    property: >-
+      At most one is non-zero for any household (England and Northern Ireland,
+      Wales, Scotland). Until the #2159 fix this does not hold: expected_sdlt
+      carries a stray 0.045, and corporate SDLT for shareholders, in every
+      nation.
   - id: local_tax_geography
     kind: geographic_exclusivity
     heads: [council_tax, domestic_rates]

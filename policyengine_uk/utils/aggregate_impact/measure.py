@@ -37,6 +37,9 @@ class Recorder:
     def __init__(self):
         self.metrics: dict = {}
         self.checks: dict = {}
+        # The year being measured; a check records which scopes it failed
+        # in, so a comparison can tell a newly failing year from an old one.
+        self.scope: str = ""
 
     def metric(
         self, metric_id, label, section, kind, year, value, group=None, unit=None
@@ -55,9 +58,20 @@ class Recorder:
         )
         record["values"][str(year)] = float(value)
 
-    def check(self, check_id, label, ok, detail="", severity="fail", section=""):
-        """Record a check; repeated ids (one per year) merge into one result."""
-        status = "pass" if ok else ("warn" if severity == "warn" else "fail")
+    def check(
+        self, check_id, label, ok, detail="", severity="fail", section="", scope=None
+    ):
+        """Record a check; repeated ids (one per year) merge into one result.
+
+        ``failing`` maps each scope the check failed in (a year, or "" for a
+        check that is not per year) to its detail. ``ok=None`` records that
+        the check did not apply (``skipped``), which is not a pass.
+        """
+        if ok is None:
+            status = "skipped"
+        else:
+            status = "pass" if ok else ("warn" if severity == "warn" else "fail")
+        scope = self.scope if scope is None else scope
         record = self.checks.get(check_id)
         if record is None:
             record = {
@@ -67,12 +81,20 @@ class Recorder:
                 "severity": severity,
                 "status": status,
                 "details": [],
+                "failing": {},
             }
             self.checks[check_id] = record
-        elif status != "pass" and record["status"] == "pass":
+        elif status in ("fail", "warn") and record["status"] in ("pass", "skipped"):
             record["status"] = status
-        if not ok and detail:
-            record["details"].append(detail)
+        elif status == "pass" and record["status"] == "skipped":
+            record["status"] = status
+        if ok is None:
+            if detail and detail not in record["details"]:
+                record["details"].append(detail)
+        elif not ok:
+            record["failing"][scope] = detail
+            if detail:
+                record["details"].append(detail)
 
 
 def array(sim, variable: str, period, map_to: Optional[str] = None) -> np.ndarray:
@@ -147,6 +169,32 @@ def tool_digest() -> str:
             digest.update(path.relative_to(root).as_posix().encode() + b"\0")
             digest.update(path.read_bytes() + b"\0")
     return digest.hexdigest()
+
+
+def definitions_digest(spec: Spec, reforms: Sequence) -> str:
+    """SHA-256 of what was actually measured: the effective spec and reforms.
+
+    ``tool_digest`` covers the files as shipped; this covers a spec or reform
+    set passed in instead, and a horizon overridden at the call.
+    """
+    payload = {
+        "spec": spec.raw,
+        "years": spec.years,
+        "guard_year": spec.guard_year,
+        "reforms": [
+            {
+                "id": r.id,
+                "parameters": dict(r.parameters),
+                "scale": dict(r.scale),
+                "responds": None
+                if r.responds is None
+                else [r.responds.variable, r.responds.direction, r.responds.minimum],
+            }
+            for r in reforms
+        ],
+    }
+    text = json.dumps(payload, sort_keys=True, default=str)
+    return hashlib.sha256(text.encode()).hexdigest()
 
 
 def runtime_identity() -> dict:
@@ -275,6 +323,25 @@ def measure_year(
                 severity="warn",
                 section="coverage",
             )
+
+    variable_of = {head.id: head.variable for head in partition.heads}
+    for guard in partition.overlap_guards:
+        if (
+            not isinstance(guard, Mapping)
+            or guard.get("kind") != "geographic_exclusivity"
+        ):
+            continue
+        members = [variable_of[h] for h in guard.get("heads") or [] if h in variable_of]
+        nonzero = sum((head_hh[v] != 0).astype(int) for v in members)
+        overlapping = nonzero > 1
+        rec.check(
+            f"overlap_guard:{guard.get('id')}",
+            "At most one of " + ", ".join(members) + " is non-zero for any household",
+            not bool(overlapping.any()),
+            f"{fiscal_year_label(year)}: {int(overlapping.sum())} households have more "
+            f"than one, a weighted {float(np.sum(hw * overlapping)):,.0f}",
+            section="partition",
+        )
 
     double_count_hh = {}
     for dc in partition.double_counts:
@@ -439,6 +506,12 @@ def measure_year(
                 section="coverage",
             )
             continue
+        rec.check(
+            f"available:{measure_spec['id']}",
+            f"{measure_spec['label']} can be computed",
+            True,
+            section="coverage",
+        )
         for group in spec.poverty_groups:
             if group.get("variable"):
                 try:
@@ -452,6 +525,12 @@ def measure_year(
                         section="coverage",
                     )
                     continue
+                rec.check(
+                    f"available:{group['id']}",
+                    f"{group['label']} can be identified",
+                    True,
+                    section="coverage",
+                )
             else:
                 members = np.ones_like(in_poverty, dtype=bool)
             population = float(np.sum(pw * members))
@@ -573,17 +652,18 @@ def measure_reforms(
     differences that no reform caused.
     """
     outcomes = []
-    first = years[0]
     try:
         fresh = factory(reform=None)
-        again = weighted_total(fresh, "gov_balance", first)
-        rec.check(
-            "determinism:rebuilt_baseline",
-            "A rebuilt unreformed simulation reproduces the baseline gov_balance exactly",
-            again == baseline_balance[first],
-            f"{fiscal_year_label(first)}: £{again:,.0f} against £{baseline_balance[first]:,.0f}",
-            section="determinism",
-        )
+        for year in years:
+            again = weighted_total(fresh, "gov_balance", year)
+            rec.check(
+                "determinism:rebuilt_baseline",
+                "A rebuilt unreformed simulation reproduces the baseline gov_balance exactly",
+                again == baseline_balance[year],
+                f"{fiscal_year_label(year)}: £{again:,.0f} against £{baseline_balance[year]:,.0f}",
+                section="determinism",
+                scope=str(year),
+            )
         del fresh
     except Exception as error:  # noqa: BLE001
         rec.check(
@@ -699,7 +779,9 @@ def measure(
     reset = getattr(sim, "_invalidate_all_caches", None)
     for year in spec.years:
         t = time.time()
+        rec.scope = str(year)
         measure_year(sim, partition, spec, year, rec, households)
+        rec.scope = ""
         baseline_balance[year] = weighted_total(sim, "gov_balance", year)
         baseline_targets[year] = {
             variable: weighted_total(sim, variable, year)
@@ -710,7 +792,6 @@ def measure(
             # Keep memory flat across the horizon; supplied inputs survive.
             reset()
             gc.collect()
-    _finite_metrics_check(rec)
 
     guard = {"status": "skipped", "reason": "not requested"}
     if run_guard:
@@ -726,13 +807,11 @@ def measure(
         )
         timings["counted_once"] = round(time.time() - t, 2)
         for result in guard.get("components", []):
-            if result["status"] == "skipped":
-                continue
             rec.check(
                 f"counted_once:{result['variable']}",
-                f"Adding £1 to {result['variable']} adds exactly £1 to each tax total it is in, "
-                "and at most £1 to each spending total",
-                result["status"] == "pass",
+                f"Raising {result['variable']} by £1 raises its own head by £1, moves no "
+                "other tax head and raises no other benefit",
+                None if result["status"] == "skipped" else result["status"] == "pass",
                 result["detail"],
                 section="counted_once",
             )
@@ -752,15 +831,14 @@ def measure(
                 "recomputed baseline totals differ from the first run",
                 section="counted_once",
             )
-        if guard.get("status") == "skipped":
-            rec.check(
-                "counted_once:ran",
-                "The counted-once check ran",
-                False,
-                guard.get("reason", ""),
-                severity="warn",
-                section="counted_once",
-            )
+        rec.check(
+            "counted_once:ran",
+            "The counted-once check ran",
+            guard.get("status") == "ran",
+            guard.get("reason", ""),
+            severity="warn",
+            section="counted_once",
+        )
 
     t = time.time()
     reform_outcomes = measure_reforms(
@@ -781,14 +859,23 @@ def measure(
             outcome["error"] or "",
             section="reforms",
         )
+    # After the reform costings, so that they are covered too.
+    _finite_metrics_check(rec)
     timings["total"] = round(time.time() - started, 2)
 
+    provenance = dict(provenance or {})
+    provenance["tool_sha256"] = tool_digest()
+    provenance["definitions_sha256"] = definitions_digest(spec, reforms)
+    provenance["metrics_version"] = (
+        f"{TOOL_SCHEMA}+{provenance['tool_sha256'][:16]}"
+        f"+{provenance['definitions_sha256'][:16]}"
+    )
     result = {
         "schema": TOOL_SCHEMA,
         "status": "ok",
         "label": label,
         "years": spec.years,
-        "provenance": dict(provenance or {}),
+        "provenance": provenance,
         "runtime": runtime_identity(),
         "partition": partition.as_dict(),
         "metrics": list(rec.metrics.values()),

@@ -11,6 +11,8 @@ from hypothesis import strategies as st
 
 from policyengine_uk.utils.aggregate_impact import COMMENT_MARKER, TOOL_SCHEMA
 from policyengine_uk.utils.aggregate_impact.compare import (
+    REQUIRED_CHECKS,
+    _match,
     classify_check,
     compare,
     decile_impacts,
@@ -32,8 +34,25 @@ KINDS = {
 finite = st.floats(-1e12, 1e12, allow_nan=False, allow_infinity=False)
 
 
-def result(values, checks=(), sha=SHA, status="ok", partition_sha="p"):
+def check(check_id, status="pass", failing=()):
+    return {
+        "id": check_id,
+        "label": check_id,
+        "section": "s",
+        "severity": "fail",
+        "status": status,
+        "details": ["d"] if status != "pass" else [],
+        "failing": {
+            scope: "d" for scope in (failing or ([""] if status == "fail" else []))
+        },
+    }
+
+
+def result(values, checks=(), sha=SHA, status="ok", partition_sha="p", required=True):
     """A measurement with one metric per (section, name) and the given checks."""
+    all_checks = [check(c) for c in REQUIRED_CHECKS] if required else []
+    for entry in checks:
+        all_checks.append(check(*entry) if isinstance(entry, tuple) else entry)
     return {
         "schema": TOOL_SCHEMA,
         "status": status,
@@ -61,17 +80,7 @@ def result(values, checks=(), sha=SHA, status="ok", partition_sha="p"):
             }
             for (section, name), series in values.items()
         ],
-        "checks": [
-            {
-                "id": cid,
-                "label": cid,
-                "section": "s",
-                "severity": "fail",
-                "status": s,
-                "details": ["d"],
-            }
-            for cid, s in checks
-        ],
+        "checks": all_checks,
         "guard": {"status": "skipped", "reason": "test"},
         "reforms": [],
         "timings": {"total": 1},
@@ -95,11 +104,13 @@ metric_values = st.dictionaries(
         (None, "pass", False, "pass"),
         ("pass", "fail", False, "regression"),
         (None, "fail", False, "regression"),
+        ("skipped", "fail", False, "regression"),
         ("fail", "fail", False, "pre_existing"),
         ("fail", "fail", True, "regression"),
         ("warn", "fail", False, "regression"),
         ("pass", "warn", False, "new_warning"),
         ("warn", "warn", False, "warning"),
+        ("pass", "skipped", False, "skipped"),
         ("pass", None, False, "removed"),
     ],
 )
@@ -107,12 +118,24 @@ def test_check_classification(base, head, blocking, expected):
     assert classify_check(base, head, blocking) == expected
 
 
+@settings(max_examples=200, deadline=None)
+@given(
+    base=st.sets(st.sampled_from(["2025", "2026", "2027", ""])),
+    head=st.sets(st.sampled_from(["2025", "2026", "2027", ""]), min_size=1),
+)
+def test_a_failure_is_pre_existing_only_if_the_base_fails_everywhere_the_head_does(
+    base, head
+):
+    verdict = classify_check("fail" if base else "pass", "fail", False, base, head)
+    assert verdict == ("pre_existing" if base and head <= base else "regression")
+
+
 @settings(max_examples=60, deadline=None)
 @given(values=metric_values)
 def test_identical_sides_change_nothing(values):
     side = result(values, checks=[("identity:x", "pass"), ("sign:y", "fail")])
     summary = compare(side, copy.deepcopy(side), SPEC)
-    assert summary["status"] == "pass"
+    assert summary["status"] == "pass", summary["failures"]
     assert summary["flags"] == []
     assert all(not row["changed"] for row in summary["rows"])
     assert {c["classification"] for c in summary["checks"]} == {"pass", "pre_existing"}
@@ -150,51 +173,127 @@ def test_flags_follow_the_spec_thresholds():
     assert len(compare(result(base), result(large), SPEC)["flags"]) == len(YEARS)
 
 
+CRASHED = {
+    "schema": TOOL_SCHEMA,
+    "status": "crashed",
+    "error": "Traceback\nValueError: boom",
+}
+ONE = {("receipts", "a"): [1.0] * len(YEARS)}
+
+
 def test_a_crashed_or_missing_head_fails():
-    base = result({("receipts", "a"): [1.0] * len(YEARS)})
-    crashed = {
-        "schema": TOOL_SCHEMA,
-        "status": "crashed",
-        "error": "Traceback\nValueError: boom",
-    }
-    summary = compare(base, crashed, SPEC)
+    summary = compare(result(ONE), CRASHED, SPEC)
     assert summary["status"] == "fail" and "boom" in summary["failures"][0]
-    assert compare(base, None, SPEC)["status"] == "fail"
+    assert compare(result(ONE), None, SPEC)["status"] == "fail"
+
+
+def test_a_crashed_or_missing_base_fails_unless_it_is_not_required():
+    for base in (CRASHED, None):
+        assert compare(base, result(ONE), SPEC)["status"] == "fail"
+        relaxed = compare(base, result(ONE), SPEC, require_base=False)
+        assert relaxed["status"] == "pass" and relaxed["warnings"]
 
 
 def test_without_a_base_the_heads_own_failing_checks_block():
-    head = result(
-        {("receipts", "a"): [1.0] * len(YEARS)}, checks=[("identity:x", "fail")]
-    )
-    summary = compare(None, head, SPEC)
+    head = result(ONE, checks=[("identity:x", "fail")])
+    summary = compare(None, head, SPEC, require_base=False)
     assert summary["status"] == "fail"
     assert any("identity:x" in f for f in summary["failures"])
 
 
 def test_different_datasets_fail():
-    values = {("receipts", "a"): [1.0] * len(YEARS)}
-    summary = compare(result(values), result(values, sha="6" * 64), SPEC)
+    summary = compare(result(ONE), result(ONE, sha="6" * 64), SPEC)
     assert summary["status"] == "fail"
 
 
 def test_non_finite_head_figures_block_even_when_the_base_shares_them():
-    values = {("receipts", "a"): [1.0] * len(YEARS)}
-    checks = [("finite:metrics", "fail")]
-    summary = compare(result(values, checks), result(values, checks), SPEC)
+    checks = [check("finite:x", "fail")]
+    summary = compare(result(ONE, checks), result(ONE, checks), SPEC)
     assert summary["status"] == "fail"
 
 
+def test_a_non_finite_head_figure_fails_even_if_no_check_caught_it():
+    """Reform costings are measured after most checks; compare looks itself."""
+    bad = {("receipts", "a"): [1.0] * (len(YEARS) - 1) + [float("nan")]}
+    summary = compare(result(ONE), result(bad), SPEC)
+    assert summary["status"] == "fail"
+    assert any("not finite" in f for f in summary["failures"])
+
+
+def test_a_newly_failing_year_is_a_regression_not_pre_existing():
+    base = result(ONE, checks=[check("identity:x", "fail", ["2025"])])
+    same = result(ONE, checks=[check("identity:x", "fail", ["2025"])])
+    worse = result(ONE, checks=[check("identity:x", "fail", ["2025", "2026"])])
+    assert compare(base, same, SPEC)["status"] == "pass"
+    summary = compare(base, worse, SPEC)
+    assert summary["status"] == "fail"
+    assert any("identity:x" in f for f in summary["failures"])
+
+
+def test_a_check_that_vanishes_fails_unless_the_partition_changed():
+    base = result(ONE, checks=[("sign:vat", "pass")])
+    summary = compare(base, result(ONE), SPEC)
+    assert summary["status"] == "fail"
+    assert any("sign:vat" in f for f in summary["failures"])
+    edited = compare(base, result(ONE, partition_sha="q"), SPEC)
+    assert edited["status"] == "pass"
+    assert any("sign:vat" in w for w in edited["warnings"])
+
+
+def test_a_head_without_the_required_checks_fails():
+    summary = compare(result(ONE), result(ONE, required=False), SPEC)
+    assert summary["status"] == "fail"
+    assert any("finite:metrics" in f for f in summary["failures"])
+
+
+def test_a_check_that_no_longer_applies_is_noted_not_failed():
+    base = result(ONE, checks=[("counted_once:x", "pass")])
+    head = result(ONE, checks=[check("counted_once:x", "skipped")])
+    summary = compare(base, head, SPEC)
+    assert summary["status"] == "pass"
+    assert any("counted_once:x" in w for w in summary["warnings"])
+
+
+def test_a_figure_on_one_side_only_is_a_change():
+    two = {**ONE, ("receipts", "b"): [2.0] * len(YEARS)}
+    removed = compare(result(two), result(ONE), SPEC)
+    row = next(r for r in removed["rows"] if r["id"] == "receipts.b")
+    assert row["changed"] and row["only_in"] == "base"
+    text = render(removed, SPEC)
+    assert "removed: base levels" in text
+    assert "No change in any year:** receipts" not in text
+    added = compare(result(ONE), result(two), SPEC)
+    assert "new: head levels" in render(added, SPEC)
+
+
 def test_strict_mode_fails_pre_existing_failures():
-    values = {("receipts", "a"): [1.0] * len(YEARS)}
-    side = result(values, checks=[("sign:vat", "fail")])
+    side = result(ONE, checks=[("sign:vat", "fail")])
     assert compare(side, copy.deepcopy(side), SPEC)["status"] == "pass"
     assert compare(side, copy.deepcopy(side), SPEC, strict=True)["status"] == "fail"
 
 
 def test_a_partition_edit_is_noted():
-    values = {("receipts", "a"): [1.0] * len(YEARS)}
-    summary = compare(result(values), result(values, partition_sha="q"), SPEC)
+    summary = compare(result(ONE), result(ONE, partition_sha="q"), SPEC)
     assert any("partition" in w for w in summary["warnings"])
+
+
+def test_households_match_only_one_to_one():
+    assert _match(np.array([1, 2]), np.array([1, 2, 3])) is None
+    assert _match(np.array([1, 2]), np.array([1, 1])) is None
+    assert _match(np.array([1, 1]), np.array([1, 1])) is None
+    assert np.array_equal(_match(np.array([1, 2, 3]), np.array([3, 1, 2])), [1, 2, 0])
+
+
+@settings(max_examples=100, deadline=None)
+@given(
+    ids=st.lists(st.integers(0, 10_000), min_size=1, max_size=60, unique=True),
+    data=st.data(),
+)
+def test_matching_recovers_any_permutation(ids, data):
+    base = np.array(ids)
+    head = np.array(data.draw(st.permutations(ids)))
+    matched = _match(base, head)
+    assert matched is not None and np.array_equal(head[matched], base)
 
 
 def households(n, rng, decile=None, income=None, weight=None):

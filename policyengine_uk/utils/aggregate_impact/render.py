@@ -92,11 +92,24 @@ def _changes_table(rows, years) -> str:
         return "No change in any year."
     body = []
     for row in changed:
-        label = row["label"] if not row.get("group") else f"{row['label']}"
-        body.append(
-            [label]
-            + [fmt_change(row["values"][str(y)]["delta"], row["kind"]) for y in years]
-        )
+        if row["only_in"] == "head":
+            cells = [
+                fmt_level(row["values"][str(y)]["head"], row["kind"]) for y in years
+            ]
+            body.append([f"{row['label']} (new: head levels)"] + cells)
+        elif row["only_in"] == "base":
+            cells = [
+                fmt_level(row["values"][str(y)]["base"], row["kind"]) for y in years
+            ]
+            body.append([f"{row['label']} (removed: base levels)"] + cells)
+        else:
+            body.append(
+                [row["label"]]
+                + [
+                    fmt_change(row["values"][str(y)]["delta"], row["kind"])
+                    for y in years
+                ]
+            )
     return _table(["Measure"] + _year_header(years), body)
 
 

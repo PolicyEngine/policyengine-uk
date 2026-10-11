@@ -130,16 +130,34 @@ def verify_certified_dataset() -> Optional[str]:
     return _verification["problem"]
 
 
+# Test files that read the unpinned latest dataset on purpose, to notice when
+# a new data release breaks the model. They are data tests (they need
+# credentials, and fail without them in mandatory mode), but what they run on
+# is by design not the pinned certified dataset.
+UNPINNED_BY_DESIGN = ("test_latest_data_smoke.py",)
+
+
 def needs_data(item) -> bool:
-    # The keyword also matches every test in the microsimulation directory.
-    return "microsimulation" in item.keywords
+    """Whether a test carries the microsimulation marker.
+
+    The marker, not the keyword: keywords include directory names, which
+    would sweep in the data-free tests under ``microsimulation/``.
+    """
+    return item.get_closest_marker("microsimulation") is not None
+
+
+def runs_on_unpinned_data(item) -> bool:
+    return item.path.name in UNPINNED_BY_DESIGN
 
 
 def pytest_report_header(config):
     plan = TEST_DATA_PLAN
     mode = "mandatory" if plan.mandatory else "optional"
     target = CERTIFIED_DATASET.describe() if plan.pinned else (plan.dataset or "none")
-    return f"microsimulation data ({mode}): {plan.action} on {target} ({plan.reason})"
+    return [
+        f"microsimulation data ({mode}): {plan.action} on {target} ({plan.reason})",
+        "unpinned by design: " + ", ".join(UNPINNED_BY_DESIGN),
+    ]
 
 
 @pytest.fixture(scope="module")
@@ -165,11 +183,14 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip)
 
 
+@pytest.hookimpl(tryfirst=True)
 def pytest_runtest_setup(item):
     """Fail data tests in mandatory mode without data; verify pinned bytes.
 
     A failure here is reported as an error in the test's setup, so the run
-    fails rather than passing with the test unexecuted.
+    fails rather than passing with the test unexecuted. The hook runs before
+    pytest's own skip handling, so a skip marker on a data test cannot turn
+    missing data into a skip.
     """
     if not needs_data(item):
         return
@@ -180,7 +201,7 @@ def pytest_runtest_setup(item):
             "dataset and must not be skipped.",
             pytrace=False,
         )
-    if plan.action == "run" and plan.pinned:
+    if plan.action == "run" and plan.pinned and not runs_on_unpinned_data(item):
         problem = verify_certified_dataset()
         if problem:
             pytest.fail(problem, pytrace=False)
