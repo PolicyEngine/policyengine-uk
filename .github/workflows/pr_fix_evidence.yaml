@@ -1,0 +1,59 @@
+# Fix pull requests must change an executable test and name the test that
+# reproduces the bug (.github/check_fix_pr.py; docs/engineering/skills/github-prs.md).
+#
+# It also reports on merge queue groups (merge_group), so a branch rule can
+# require it with a merge queue on: a group passes, because each pull
+# request's evidence was checked on the pull request before it could join
+# the queue, and a group has no pull request text to check.
+
+name: Fix evidence
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review]
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fix-evidence-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  Fix-evidence:
+    name: Fix evidence
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    steps:
+      - name: Merge queue group
+        if: github.event_name == 'merge_group'
+        run: echo "Each pull request in this group passed Fix evidence before it joined the queue."
+      - name: Check out the pull request head
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - name: Collect pull request evidence
+        if: github.event_name == 'pull_request'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_BODY: ${{ github.event.pull_request.body }}
+          PR_LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          # PR text stays in environment variables so shell syntax in it cannot run.
+          printf '%s' "$PR_TITLE" > title.txt
+          printf '%s' "$PR_BODY" > body.md
+          python3 -c 'import json, os; print("\n".join(json.loads(os.environ["PR_LABELS_JSON"])), end="")' > labels.txt
+          merge_base=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
+          git diff --name-status --no-renames "$merge_base" "$PR_HEAD_SHA" > changes.txt
+      - name: Check fix evidence
+        if: github.event_name == 'pull_request'
+        run: |
+          python3 .github/check_fix_pr.py \
+            --title-file title.txt --body-file body.md --labels-file labels.txt \
+            --changes-file changes.txt --repo-root . \
+            --summary-file "$GITHUB_STEP_SUMMARY"

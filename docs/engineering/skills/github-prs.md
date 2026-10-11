@@ -54,6 +54,32 @@ unless the user or maintainer explicitly asks. The type controls the inferred
 version bump: `breaking` is major, `added` and `removed` are minor, and other
 types are patch.
 
+## Fix evidence
+
+The **Fix evidence** pull request check applies when a PR adds or modifies a
+`changelog.d/*.fixed.md` fragment or has the `bug` or `bug-fix` label. A fix PR
+must add or modify an executable test under `policyengine_uk/tests/` and name
+its reproducer in the PR description:
+
+```text
+Reproducer: policyengine_uk/tests/path/to/test_file.py::test_name
+```
+
+Accepted ids are pytest node ids (`file.py::test_name` or
+`file.py::Class::test_name`) and YAML policy tests under
+`policyengine_uk/tests/policy/` (`file.yaml` or `file.yaml::test name`, also
+accepting `.yml`). Each named file must be added or modified in the PR, and
+each named test must exist in that file. Python files must match `test_*.py`
+or `*_test.py`. Separate multiple ids with commas or semicolons. Backticks
+around each id are optional; use them when a name or reason contains these
+separators.
+
+For CI/docs-only fixes, use `Reproducer: n/a: <reason>` with a non-empty reason.
+This exempts the PR from changing a test only when no file under
+`policyengine_uk/` outside `policyengine_uk/tests/` is added, modified or deleted.
+The check validates the named reproducer at the PR head; it does not run the
+reproducer against the old code.
+
 ## Required Axiom Line
 
 Every PR that adds, updates or fixes policy (programmes, parameters, eligibility
