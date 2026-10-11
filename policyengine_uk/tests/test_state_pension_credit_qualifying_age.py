@@ -83,12 +83,12 @@ def property_simulation(people: dict):
 
 @pytest.fixture(scope="module", autouse=True)
 def release_cached_simulations():
-    # The import above loads policyengine_uk.tests.test_state_pension_age, a
-    # separate module from the test_state_pension_age that pytest collects by
-    # bare name (this directory has no __init__.py). Its differential_simulation
-    # cache is filled here, so it is cleared here. Drop the cached simulations
-    # once this module's tests are done, instead of for the rest of the test
-    # process.
+    # Under pytest's default import mode, the import above loads
+    # policyengine_uk.tests.test_state_pension_age, a separate module from the
+    # test_state_pension_age that pytest collects by bare name (this directory
+    # has no __init__.py). Its differential_simulation cache is filled here, so
+    # it is cleared here. Drop the cached simulations once this module's tests
+    # are done, instead of for the rest of the test process.
     yield
     differential_simulation.cache_clear()
     one_person_units_template.cache_clear()
