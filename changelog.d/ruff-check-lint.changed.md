@@ -1,0 +1,1 @@
+- Run `ruff check` in the Lint job, with the pyflakes rules for a definition silently replaced by a later one (F811) and an undefined name (F821) on for the package, so two merged PRs that each define the same method fail Lint.

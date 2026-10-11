@@ -51,6 +51,16 @@ jobs:
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
           run: uvx ruff format --check .
+        - name: Lint
+          # The ruff rules pyproject.toml selects, then two pyflakes rules it
+          # ignores, checked in the package: F811, a definition that a later
+          # one of the same name silently replaces (two PRs that each add a
+          # Simulation.set_input merge cleanly, and the second wins; uk hub
+          # notice 16), and F821, an undefined name. Neither has a finding
+          # in the package today.
+          run: |
+            uvx ruff check .
+            uvx ruff check --select F811,F821 policyengine_uk
   Test:
       # Linux arm64 keeps the CPU architecture of the macOS runners this job
       # used to run on. GitHub-hosted macOS runners are scarce, so PR runs
