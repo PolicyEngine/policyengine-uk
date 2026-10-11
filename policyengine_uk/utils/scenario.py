@@ -52,8 +52,13 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
         _, legacy = dated.read(statutory_parameter_defines(), warn=True)
         if not legacy:
             return
-        apply_legacy_overrides(simulation.tax_benefit_system.parameters, legacy)
-        simulation.tax_benefit_system.reset_parameter_caches()
+        system = simulation.tax_benefit_system
+        if hasattr(system, "add_legacy_overrides"):
+            # Kept by the system, so a later rebuild applies them again.
+            system.add_legacy_overrides(legacy)
+        else:
+            apply_legacy_overrides(system.parameters, legacy)
+            system.reset_parameter_caches()
         if getattr(simulation, "populations", None) is not None:
             simulation._invalidate_all_caches()
 

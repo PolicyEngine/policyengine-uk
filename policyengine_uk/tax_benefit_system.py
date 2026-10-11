@@ -1,5 +1,8 @@
 # Standard library imports
 import copy
+import logging
+from collections import OrderedDict
+from dataclasses import replace
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -44,8 +47,12 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
     add_lsr_deprecation_aliases,
 )
 from policyengine_uk.utils.dated_reforms import (
+    BACKDATED_FROM,
+    LegacyOverride,
     ParameterAssignment,
     Timeline,
+    apply_legacy_overrides,
+    copy_timelines,
     requires_projection,
     snapshot_timelines,
     tree_defines,
@@ -56,6 +63,8 @@ from policyengine_uk.utils.parameters import (
     backdate_parameters,
     convert_to_fiscal_year_parameters,
 )
+
+logger = logging.getLogger(__name__)
 
 # Module constants
 COUNTRY_DIR = Path(__file__).parent
@@ -74,9 +83,22 @@ _statutory_parameters_cache = None
 _projected_timelines_cache = None
 
 
+def _add_generated_parameters(parameters: ParameterNode) -> ParameterNode:
+    parameters = add_private_pension_uprating_factor(parameters)
+    parameters = add_lagged_earnings(parameters)
+    parameters = add_lagged_cpi(parameters)
+    parameters = add_statutory_uprating_inputs(parameters)
+    parameters = add_triple_lock(parameters)
+    parameters = add_september_cpi_uprating(parameters)
+    parameters = create_economic_assumption_indices(parameters)
+    parameters = add_threshold_indexation(parameters)
+    parameters = add_lsr_deprecation_aliases(parameters)
+    return parameters
+
+
 def process_parameter_tree(
     parameters: ParameterNode,
-    baseline_parameters: Optional[ParameterNode] = None,
+    unreformed: Optional[ParameterNode] = None,
     annualise: bool = True,
 ) -> Tuple[ParameterNode, Dict[str, Timeline]]:
     """Project and annualise a statutory parameter tree.
@@ -95,38 +117,32 @@ def process_parameter_tree(
     Returns the tree and each gov parameter's timeline just before the
     conversion to fiscal years.
 
-    ``parameters.baseline`` is the current-law copy that ``baseline_vat``
-    and the budget adjustments compare against. Without
-    ``baseline_parameters`` it is a copy of this tree taken before uprating,
-    which is current law only when the tree carries no reform. A reformed
-    tree passes the processed current-law parameters as
-    ``baseline_parameters``, whose ``baseline`` child it takes (#2188).
-    ``annualise=False`` stops after the projection and adds no baseline.
+    ``parameters.baseline`` is the copy of the parameters without reforms
+    that ``baseline_vat`` and the budget adjustments compare against, taken
+    after the generated series are added and then uprated with the rest. A
+    tree carrying dated reform changes passes ``unreformed``, the same tree
+    without them, which the copy is taken from instead (#2188).
+    ``annualise=False`` stops after the projection and adds no copy.
     """
-    parameters = add_private_pension_uprating_factor(parameters)
-    parameters = add_lagged_earnings(parameters)
-    parameters = add_lagged_cpi(parameters)
-    parameters = add_statutory_uprating_inputs(parameters)
-    parameters = add_triple_lock(parameters)
-    parameters = add_september_cpi_uprating(parameters)
-    parameters = create_economic_assumption_indices(parameters)
-    parameters = add_threshold_indexation(parameters)
-    parameters = add_lsr_deprecation_aliases(parameters)
+    parameters = _add_generated_parameters(parameters)
 
     # Create baseline parameters for reform comparisons
-    if annualise and baseline_parameters is None:
-        parameters.add_child("baseline", parameters.clone())
+    if annualise:
+        baseline = (
+            parameters.clone()
+            if unreformed is None
+            else _add_generated_parameters(unreformed)
+        )
+        parameters.add_child("baseline", baseline)
 
     # Apply general parameter operations
     parameters = propagate_parameter_metadata(parameters)
     parameters = uprate_parameters(parameters)
-    parameters = backdate_parameters(parameters, "2015-01-01")
+    parameters = backdate_parameters(parameters, BACKDATED_FROM)
     projected = snapshot_timelines(parameters.gov)
     if not annualise:
         return parameters, projected
     parameters.gov = convert_to_fiscal_year_parameters(parameters.gov)
-    if baseline_parameters is not None:
-        parameters.add_child("baseline", baseline_parameters.baseline.clone())
     return parameters, projected
 
 
@@ -162,46 +178,88 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.load_parameters(self.parameters_dir)
         self.parameters = add_removed_parameter_aliases(self.parameters)
 
-    def process_parameters(
-        self, baseline_parameters: Optional[ParameterNode] = None
-    ) -> None:
+    def process_parameters(self) -> None:
         """Process and transform parameters with UK-specific adjustments.
 
         See ``process_parameter_tree``, which this runs on the system's
         parameters. ``projected_timelines`` keeps each gov parameter's
         timeline from before the conversion to fiscal years.
+
+        The system's dated reform changes (``dated_assignments``) are written
+        onto the parameters first, so a modifier that reloads and edits the
+        parameters before processing them again (as ``no_economic_assumptions``
+        does) keeps the reform. Its legacy overrides of the annualised
+        parameters are then applied again.
         """
         self._parameters_at_instant_cache = {}
-        self.parameters, self.projected_timelines = process_parameter_tree(
-            self.parameters, baseline_parameters
-        )
+        self._rebuild(self.parameters, statutory=False)
+        self._apply_legacy_overrides()
         self.reset_parameter_caches()
 
     def apply_parameter_assignments(
         self, assignments: List[ParameterAssignment]
     ) -> None:
-        """Rebuild the parameters with changes on the statutory timeline.
+        """Rebuild the parameters with more changes on the statutory timeline.
 
-        Writes each change, in ``order``, onto a fresh copy of the
-        parameters as loaded from the YAML files, then processes them as
-        current law is processed, so each change is uprated, indexed and
-        annualised by its parameter's rule. ``parameters.baseline`` stays
-        current law. Where a bounded change has no stated value after it,
-        prior law resumes along the path the parameter takes under the
-        reform's other changes (see ``policyengine_uk.utils.dated_reforms``).
+        Adds the changes to the system's ``dated_assignments`` and writes
+        them all, in order, onto a fresh copy of the parameters as loaded
+        from the YAML files. The parameters are then processed as current law
+        is, so each change is uprated, indexed and annualised by its
+        parameter's rule, and ``parameters.baseline`` stays current law.
+        Where a change reaches the part of a parameter's timeline that
+        projection fills, prior law there follows the path the parameter
+        takes under the reform's other changes (see
+        ``policyengine_uk.utils.dated_reforms``).
         """
         if not assignments:
             return
-        baseline = processed_parameters()
-        ordered = sorted(assignments, key=lambda assignment: assignment.order)
-        projected = prior_law_projection(ordered)
-        parameters = statutory_parameters()
-        for assignment in ordered:
-            write_assignment(
-                parameters.get_child(assignment.path), assignment, projected
+        offset = len(self.dated_assignments)
+        self.dated_assignments = self.dated_assignments + [
+            replace(assignment, order=offset + index)
+            for index, assignment in enumerate(
+                sorted(assignments, key=lambda assignment: assignment.order)
             )
-        self.parameters = parameters
-        self.process_parameters(baseline_parameters=baseline)
+        ]
+        self._parameters_at_instant_cache = {}
+        key = _assignments_key(self.dated_assignments)
+        cached = _rebuilt_parameters_cache.get(key)
+        if cached is not None:
+            self.parameters = cached[0].clone()
+            self.projected_timelines = cached[1]
+        else:
+            self._rebuild(statutory_parameters(), statutory=True)
+            _remember_rebuilt(key, self.parameters.clone(), self.projected_timelines)
+        self._apply_legacy_overrides()
+        self.reset_parameter_caches()
+
+    def add_legacy_overrides(self, overrides: List[LegacyOverride]) -> None:
+        """Apply changes to the annualised parameters and keep them.
+
+        Kept so a later rebuild of the parameters applies them again, after
+        the dated changes.
+        """
+        if not overrides:
+            return
+        self.legacy_overrides = self.legacy_overrides + list(overrides)
+        apply_legacy_overrides(self.parameters, overrides)
+        self.reset_parameter_caches()
+
+    def _rebuild(self, raw: ParameterNode, statutory: bool) -> None:
+        assignments = self.dated_assignments
+        if not assignments:
+            self.parameters, self.projected_timelines = process_parameter_tree(raw)
+            return
+        unreformed = raw.clone()
+        projected = prior_law_projection(assignments, unreformed, statutory)
+        for assignment in assignments:
+            write_assignment(raw.get_child(assignment.path), assignment, projected)
+        self.parameters, self.projected_timelines = process_parameter_tree(
+            raw, unreformed
+        )
+
+    def _apply_legacy_overrides(self) -> None:
+        if self.legacy_overrides:
+            apply_legacy_overrides(self.parameters, self.legacy_overrides)
 
     def __init__(self):
         """Initialize the UK tax-benefit system with entities and parameters."""
@@ -230,6 +288,13 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         # Load all variables from the variables directory
         self.add_variables_from_directory(COUNTRY_DIR / "variables")
 
+        # Dated reform changes on the statutory timeline, and legacy
+        # overrides of the annualised parameters, that every rebuild of the
+        # parameters applies again. Replaced, never appended to in place, so a
+        # cloned system does not share later additions.
+        self.dated_assignments: List[ParameterAssignment] = []
+        self.legacy_overrides: List[LegacyOverride] = []
+
         # Set up and process parameters
         self.parameters_dir = COUNTRY_DIR / "parameters"
         global _processed_parameters_cache, _statutory_parameters_cache
@@ -247,7 +312,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             _statutory_parameters_cache = self.parameters.clone()
             self.process_parameters()
             _processed_parameters_cache = self.parameters.clone()
-            _projected_timelines_cache = self.projected_timelines
+            # A copy: these timelines are prior law for every later reform,
+            # and the lists just captured belong to this system's own tree.
+            _projected_timelines_cache = copy_timelines(self.projected_timelines)
 
 
 def _ensure_caches() -> None:
@@ -279,34 +346,97 @@ def projected_timelines() -> Dict[str, Timeline]:
     return _projected_timelines_cache
 
 
+# Fixed-point passes for prior law's projection; dependencies between the
+# changes that need it (a frozen allowance and an aligned NICs threshold, say)
+# settle in two.
+PRIOR_LAW_PASSES = 4
+
+
+def _same_timelines(a: Dict[str, Timeline], b: Dict[str, Timeline]) -> bool:
+    def key(timeline):
+        return [(entry.instant_str, entry.value) for entry in timeline or []]
+
+    return a.keys() == b.keys() and all(key(a[name]) == key(b[name]) for name in a)
+
+
 def prior_law_projection(
     assignments: List[ParameterAssignment],
+    unreformed: ParameterNode,
+    statutory: bool = True,
 ) -> Callable[[str], Optional[Timeline]]:
     """Prior law's projected timeline, by parameter name, for a reform.
 
-    A bounded change with no stated value after it resumes along the path
-    its parameter takes under the reform's other changes. That is current
-    law's projection unless the reform also changes something else (a CPI
-    forecast, say); then the other changes are projected first. Changes
-    that themselves need the projection are left out of that first pass,
-    so two such changes do not see each other.
+    Where a change reaches the part of a parameter's timeline that
+    projection fills (see ``requires_projection``), prior law there is the
+    path that parameter takes with every other change in the reform but
+    without its own. Each such parameter is projected with the others'
+    changes, which are written with the previous pass's projections, until
+    the projections stop changing. ``unreformed`` is the tree the changes are
+    written onto; ``statutory`` says it is the YAML as loaded, whose
+    projection without changes is cached.
     """
-    current_law = projected_timelines()
-    statutory = statutory_parameters()
-    needing = [
-        assignment
-        for assignment in assignments
-        if requires_projection(statutory.get_child(assignment.path), assignment)
-    ]
-    others = [assignment for assignment in assignments if assignment not in needing]
-    if not needing or not others:
-        return current_law.get
-    for assignment in others:
-        write_assignment(
-            statutory.get_child(assignment.path), assignment, current_law.get
+    needing = sorted(
+        {
+            assignment.path
+            for assignment in assignments
+            if requires_projection(unreformed.get_child(assignment.path), assignment)
+        }
+    )
+    if not needing:
+        return lambda name: None
+    start = (
+        projected_timelines()
+        if statutory
+        else process_parameter_tree(unreformed.clone(), annualise=False)[1]
+    )
+    environment = {path: start.get(path) for path in needing}
+
+    def lookup(name: str) -> Optional[Timeline]:
+        found = environment.get(name)
+        return found if found is not None else start.get(name)
+
+    for _ in range(PRIOR_LAW_PASSES):
+        updated = {}
+        for path in needing:
+            tree = unreformed.clone()
+            for assignment in assignments:
+                if assignment.path != path:
+                    write_assignment(
+                        tree.get_child(assignment.path), assignment, lookup
+                    )
+            updated[path] = process_parameter_tree(tree, annualise=False)[1].get(path)
+        if _same_timelines(updated, environment):
+            break
+        environment = updated
+    else:
+        logger.warning(
+            "Prior law's projection for %s did not settle in %d passes.",
+            ", ".join(needing),
+            PRIOR_LAW_PASSES,
         )
-    _, environment = process_parameter_tree(statutory, annualise=False)
-    return environment.get
+    return lookup
+
+
+# Recently rebuilt parameters, by their dated changes, so simulations of the
+# same reform (one per year or region, say) skip the rebuild. Entries are
+# cloned on the way in and out and never changed.
+_REBUILT_CACHE_SIZE = 4
+_rebuilt_parameters_cache: "OrderedDict[tuple, Tuple[ParameterNode, Dict[str, Timeline]]]" = OrderedDict()
+
+
+def _assignments_key(assignments: List[ParameterAssignment]) -> tuple:
+    return tuple(
+        (a.path, str(a.start), str(a.stop), repr(a.value), a.order) for a in assignments
+    )
+
+
+def _remember_rebuilt(
+    key: tuple, parameters: ParameterNode, projected: Dict[str, Timeline]
+) -> None:
+    _rebuilt_parameters_cache[key] = (parameters, projected)
+    _rebuilt_parameters_cache.move_to_end(key)
+    while len(_rebuilt_parameters_cache) > _REBUILT_CACHE_SIZE:
+        _rebuilt_parameters_cache.popitem(last=False)
 
 
 # Create system instance for module-level access

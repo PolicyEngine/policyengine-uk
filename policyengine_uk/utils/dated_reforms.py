@@ -68,7 +68,17 @@ nothing; ``ReformPeriodWarning`` says so. Use ``"2027-04-06.2100-12-31"``
 for a change from 6 April 2027. A reform-dict path the statutory tree does
 not define (one added by a structural reform, or a generated series such as
 ``gov.economic_assumptions.indices.*``) is also applied to the annualised
-parameters, after the structural reforms that come before it.
+parameters, after the structural reforms that come before it. Changes to the
+annualised parameters always follow the statutory-timeline changes, so a
+reform-dict parameter that mixes single-day keys with other keys gets the
+single-day keys last, whatever their order (``ReformPeriodWarning`` says
+so), and a structural reform class that edits a parameter overrides a dict
+change to it even when the dict comes later in a tuple.
+
+The tax-benefit system keeps every dated change and legacy override it has
+been given. Any later rebuild of its parameters (another reform,
+``Scenario.apply``, or a modifier that reloads and reprocesses the
+parameters, as ``no_economic_assumptions`` does) writes them all again.
 """
 
 from __future__ import annotations
@@ -93,6 +103,8 @@ REFORM_DICT_SCALAR_START = instant("2023-01-01")
 # policyengine-core's scalar window, ``year:2000:100``.
 CORE_SCALAR_PERIOD = "year:2000:100"
 EARLIEST = Instant((1, 1, 1))
+# Where process_parameter_tree backdates each parameter's first value to.
+BACKDATED_FROM = "2015-01-01"
 
 logger = logging.getLogger(__name__)
 
@@ -227,23 +239,37 @@ def read_reform_dict(
                 order += 1
             else:
                 legacy.append(LegacyOverride(path, text, value))
+    if warn:
+        mixed = sorted(
+            {override.path for override in legacy}
+            & {assignment.path for assignment in assignments}
+        )
+        for path in mixed:
+            _warn(
+                f"Reform for {path} mixes single-day keys with other keys. The "
+                "single-day keys apply to the annualised parameter after the "
+                "others, whatever their order in the dict."
+            )
     return assignments, legacy
+
+
+def _warn(message: str) -> None:
+    # Logged as well: some variable modules switch warnings off when loaded.
+    logger.warning(message)
+    warnings.warn(message, ReformPeriodWarning, stacklevel=4)
 
 
 def _warn_sub_year_key(path: str, key: str) -> None:
     parsed = period(key)
     if parsed.unit == "day" and str(parsed.start)[5:] == "01-01":
         return
-    message = (
+    _warn(
         f"Reform key '{key}' for {path} overrides the annualised parameter on "
         f"that {parsed.unit} only, and formulas read annual parameters at "
         f"1 January, so it may change nothing. For a change from that date "
         f"use '{parsed.start}.{FLAT_STOP}'; for one fiscal year use the bare "
         "year."
     )
-    # Logged as well: some variable modules switch warnings off when loaded.
-    logger.warning(message)
-    warnings.warn(message, ReformPeriodWarning, stacklevel=4)
 
 
 def read_parameter_changes(
@@ -395,7 +421,9 @@ def write_assignment(
 ) -> None:
     """Write a change onto a parameter's statutory timeline.
 
-    Where the change reaches past the parameter's last stated value (see
+    A change starting before the parameter's first stated value first gets
+    that value written at ``BACKDATED_FROM``, as processing would backdate
+    it. Where the change reaches past the parameter's last stated value (see
     ``requires_projection``), ``projected(name)`` supplies prior law's
     projected timeline, whose values after the last stated one are first
     written in as stated values: uprating and indexation extend a timeline
@@ -410,6 +438,15 @@ def write_assignment(
     stop_str = str(assignment.stop)
     next_str = str(assignment.stop.offset(1, "day"))
     old: Timeline = list(parameter.values_list)
+    first = min((entry.instant_str for entry in old), default=None)
+    if first is not None and start_str < first and BACKDATED_FROM < first:
+        # Processing backdates a parameter's first stated value to
+        # BACKDATED_FROM. Written here, it stays prior law for the years
+        # before a change that starts before that first value; otherwise the
+        # change's own value would be backdated, or the years after an early
+        # change left empty.
+        earliest = min(old, key=lambda entry: entry.instant_str)
+        old.append(_entry(name, BACKDATED_FROM, earliest.value))
     path = projected(name) if projected is not None else None
     if path is not None and requires_projection(parameter, assignment):
         last = _last_stated(old)
@@ -443,6 +480,14 @@ def snapshot_timelines(node: ParameterNode) -> Dict[str, Timeline]:
         parameter.name: parameter.values_list
         for parameter in node.get_descendants()
         if isinstance(parameter, Parameter)
+    }
+
+
+def copy_timelines(timelines: Dict[str, Timeline]) -> Dict[str, Timeline]:
+    """Copies of the timelines, sharing no list or entry with any tree."""
+    return {
+        name: [_entry(name, entry.instant_str, entry.value) for entry in timeline]
+        for name, timeline in timelines.items()
     }
 
 

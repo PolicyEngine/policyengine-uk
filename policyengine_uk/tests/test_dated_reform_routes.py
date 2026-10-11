@@ -602,7 +602,7 @@ def test_rebuilding_from_the_statutory_cache_matches_loading_the_yaml():
     fresh.process_parameters()
     rebuilt = CountryTaxBenefitSystem()
     rebuilt.parameters = tbs_module.statutory_parameters()
-    rebuilt.process_parameters(baseline_parameters=tbs_module.processed_parameters())
+    rebuilt.process_parameters()
     for parameter in fresh.parameters.gov.get_descendants():
         if not isinstance(parameter, Parameter):
             continue
@@ -672,3 +672,168 @@ def test_a_schedule_of_two_changes_matches_the_oracle(change, reverse):
         assert annual(simulation, path, year) == pytest.approx(
             oracle_annual(expected, year, blend), abs=1e-9
         ), year
+
+
+# Review round 1 (GPT-6.1 Sol): rebuilds keep every change.
+
+
+@pytest.mark.parametrize("name", ["no_economic_assumptions", "reindex_benefit_cap"])
+def test_a_modifier_that_reprocesses_the_parameters_keeps_the_reform(name):
+    import importlib
+
+    module = importlib.import_module(f"policyengine_uk.scenarios.{name}")
+    reprocessing = getattr(module, name)
+    reform = Scenario.from_reform(as_dict(BASIC_RATE, "2027-04-06", FAR, 0.21))
+    for scenario in (reprocessing + reform, reform + reprocessing):
+        simulation = Simulation(situation=SITUATION, scenario=scenario)
+        assert annual(simulation, BASIC_RATE, 2028) == 0.21, name
+        assert annual(simulation, BASIC_RATE, 2026) == 0.20, name
+        assert (
+            simulation.tax_benefit_system.parameters.baseline.gov.hmrc.income_tax.rates.uk.brackets[
+                0
+            ].rate("2028-06-01")
+            == pytest.approx(0.20)
+        )
+    if name == "no_economic_assumptions":
+        # The scenario's own effect also holds: thresholds stay frozen.
+        assert annual(simulation, PERSONAL_ALLOWANCE, 2035) == 12_570
+
+
+def test_scenario_apply_adds_to_the_changes_a_simulation_already_has():
+    simulation = via_reform_dict(as_dict(BASIC_RATE, "2027-04-06", FAR, 0.21))
+    Scenario.from_reform({UC_SINGLE_OLD: {"2027": 500}}).apply(simulation)
+    assert annual(simulation, BASIC_RATE, 2028) == 0.21
+    assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
+    assert len(simulation.tax_benefit_system.dated_assignments) == 2
+
+
+def test_two_changes_that_need_projection_see_each_other():
+    # A one-year primary threshold change inside an allowance freeze: after
+    # it, prior law is the threshold aligned with the frozen allowance.
+    simulation = via_reform_dict(
+        {
+            PERSONAL_ALLOWANCE: {"2031-04-06.2035-04-05": 12_570},
+            PRIMARY_THRESHOLD: {"2031": 250},
+        }
+    )
+    assert annual(simulation, PRIMARY_THRESHOLD, 2031) == 250
+    for year in (2032, 2033, 2034):
+        assert annual(simulation, PRIMARY_THRESHOLD, year) == pytest.approx(241.73), (
+            year
+        )
+
+
+def test_mixed_single_day_and_dated_keys_warn_and_apply_single_days_last(caplog):
+    with caplog.at_level("WARNING", logger="policyengine_uk.utils.dated_reforms"):
+        simulation = via_reform_dict(
+            {BASIC_RATE: {"2027-01-01": 0.21, "2026-01-01.2100-12-31": 0.22}}
+        )
+    assert "mixes single-day keys" in caplog.text
+    assert annual(simulation, BASIC_RATE, 2027) == 0.21
+    assert annual(simulation, BASIC_RATE, 2028) == 0.22
+
+
+def test_the_projected_timelines_cache_is_a_copy_and_reforms_leave_it_alone():
+    cache = tbs_module.projected_timelines()
+    live = tbs_module.system.parameters
+    for name in (CPI_SEPTEMBER, UC_SINGLE_OLD):
+        assert cache[name] is not live.get_child(name).values_list
+    before = {
+        name: [(e.instant_str, e.value) for e in cache[name]]
+        for name in (CPI_SEPTEMBER, UC_SINGLE_OLD, PERSONAL_ALLOWANCE)
+    }
+    via_reform_dict(as_dict(UC_SINGLE_OLD, "2027-04-06", "2028-04-05", 500))
+    via_reform_dict({PERSONAL_ALLOWANCE: {"2031": 12_570}})
+    after = {name: [(e.instant_str, e.value) for e in cache[name]] for name in before}
+    assert after == before
+
+
+def test_a_repeated_reform_reuses_the_rebuilt_parameters():
+    reform = as_dict(BASIC_RATE, "2027-04-06", "2029-04-05", 0.23)
+    first = via_reform_dict(reform)
+    second = via_reform_dict(reform)
+    for year in YEARS:
+        assert annual(first, BASIC_RATE, year) == annual(second, BASIC_RATE, year)
+    # Each simulation has its own parameter objects.
+    assert first.tax_benefit_system.parameters.get_child(
+        BASIC_RATE
+    ) is not second.tax_benefit_system.parameters.get_child(BASIC_RATE)
+
+
+# Differential: calendar-year changes give each changed parameter the annual
+# values that editing the annualised parameters (the old reform-dict route)
+# gave it. Blended and preserve_calendar_dates parameters are left out: the
+# first are now day-weighted and the second never were annualised.
+
+
+def legacy_annual(path, start, stop, value, year):
+    parameters = tbs_module.processed_parameters().clone()
+    parameters.get_child(path).update(
+        start=instant_(start), stop=instant_(stop), value=value
+    )
+    return float(parameters.get_child(path)(f"{year}-01-01"))
+
+
+from policyengine_core.periods import instant as instant_  # noqa: E402
+
+
+@PROPERTY_SETTINGS
+@given(
+    path=st.sampled_from([BASIC_RATE, UC_SINGLE_OLD, PERSONAL_ALLOWANCE]),
+    first=st.integers(2024, 2034),
+    years=st.integers(1, 6),
+    open_ended=st.booleans(),
+    value=st.sampled_from([0.17, 450.0, 14_000]),
+)
+def test_calendar_year_changes_match_the_annualised_route(
+    path, first, years, open_ended, value
+):
+    start = f"{first}-01-01"
+    stop = FAR if open_ended else f"{first + years - 1}-12-31"
+    simulation = via_reform_dict(as_dict(path, start, stop, value))
+    for year in YEARS:
+        assert annual(simulation, path, year) == pytest.approx(
+            legacy_annual(path, start, stop, value, year)
+        ), year
+
+
+# More parameter kinds for the oracle: a boolean, a null-valued
+# preserve_calendar_dates amount, and changes that start before a
+# parameter's first stated value.
+
+REBALANCING_ACTIVE = "gov.dwp.universal_credit.rebalancing.active"
+
+
+@PROPERTY_SETTINGS
+@given(
+    start=st.dates(datetime.date(2010, 1, 1), datetime.date(2032, 12, 31)),
+    length=st.integers(0, 2_000),
+    value=st.booleans(),
+)
+def test_boolean_changes_match_the_oracle(start, length, value):
+    stop = start + datetime.timedelta(days=length)
+    simulation = via_reform_dict(as_dict(REBALANCING_ACTIVE, start, stop, value))
+    expected = overlay(projected_entries(REBALANCING_ACTIVE), start, stop, value)
+    for year in YEARS:
+        assert bool(annual(simulation, REBALANCING_ACTIVE, year)) == bool(
+            oracle_annual(expected, year, blend=False)
+        ), year
+
+
+@PROPERTY_SETTINGS
+@given(
+    start=st.dates(datetime.date(2025, 1, 1), datetime.date(2031, 12, 31)),
+    length=st.integers(0, 900),
+    value=st.sampled_from([400.0, 450.0]),
+)
+def test_preserve_calendar_dates_changes_keep_their_dates(start, length, value):
+    # The protected LCWRA amount keeps statutory dates and holds nulls for
+    # years not yet legislated.
+    stop = start + datetime.timedelta(days=length)
+    simulation = via_reform_dict(as_dict(PROTECTED_LCWRA, start, stop, value))
+    expected = overlay(projected_entries(PROTECTED_LCWRA), start, stop, value)
+    parameter = simulation.tax_benefit_system.parameters.get_child(PROTECTED_LCWRA)
+    day = datetime.date(2024, 1, 1)
+    while day < datetime.date(2035, 1, 1):
+        assert parameter(day.isoformat()) == timeline_value(expected, day), day
+        day += datetime.timedelta(days=37)
