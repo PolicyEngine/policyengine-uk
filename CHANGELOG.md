@@ -1,3 +1,24 @@
+## [2.126.6] - 2026-10-11
+
+### Fixed
+
+- - Defined the young person in Scotland's working-age Council Tax Reduction scheme as a Universal Credit qualifying young person from 2022-23 (Council Tax Reduction (Scotland) Regulations 2021 reg. 6), for lone-parent status and for the members whose income counts; other schemes keep the Child Benefit definition.
+
+
+## [2.126.5] - 2026-10-11
+
+### Fixed
+
+- - Stopped counting a benefit unit's own claimant or partner as its child or qualifying young person for Child Benefit, Child Tax Credit and Pension Credit (SSCBA 1992 ss.141 and 143 and Child Benefit (General) Regulations 2006 regs 12-13; CTC Regs 2002 reg. 3; SPC Regs 2002 Sch. IIA para. 3), so a lone 16- to 19-year-old no longer gets Child Benefit, a Child Tax Credit child element or a Pension Credit child addition for themselves.
+
+
+## [2.126.4] - 2026-10-11
+
+### Fixed
+
+- - Place a household with no BRMA input in its region's BRMA with the most private-rented households, from the 2021 and 2022 censuses (Maidstone if the region is unknown), instead of Maidstone in every region. A household that sets no region is in London, the region default, so it now gets Inner South East London's LHA rates. A BRMA input still carries forward to later years while the household stays in the same region.
+
+
 ## [2.126.3] - 2026-10-10
 
 ### Fixed
