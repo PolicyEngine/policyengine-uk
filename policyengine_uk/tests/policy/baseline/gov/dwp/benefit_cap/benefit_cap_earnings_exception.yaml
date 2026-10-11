@@ -235,6 +235,7 @@
         employee_pension_contributions: 1_000
   output:
     benefit_cap_earned_income: 10_000
+    is_benefit_cap_exempt_earnings: false # 10,000 < 881 x 12 = 10,572
 
 - name: Pension contributions paid at 75 are not deducted
   # Finance Act 2004 s. 188(3)(a): contributions paid once the person has
@@ -251,6 +252,7 @@
         employee_pension_contributions: 1_000
   output:
     benefit_cap_earned_income: 11_000
+    is_benefit_cap_exempt_earnings: true # 11,000 >= 10,572
 
 - name: Voluntary Class 3 contributions are not deducted
   period: 2026
