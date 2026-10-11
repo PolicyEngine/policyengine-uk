@@ -2,8 +2,11 @@ description: Universal Credit standard allowance.
 SINGLE_YOUNG:
   description: Standard allowance for single claimants under 25
   values:
+    # 2020-21 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+    # year's rate as listed in that year's publication.
     2015-04-01: 251.77
-    2020-04-06: 344    # From gov.uk and entitledto
+    2020-04-06: 342.72  # From gov.uk and entitledto
+    2021-04-01: 344
     2021-10-06: 257.33
     2022-04-06: 265.31
     2023-04-01: 292.11
@@ -22,8 +25,11 @@ SINGLE_YOUNG:
 SINGLE_OLD:
   description: Standard allowance for single claimants over 25.
   values:
+    # 2020-21 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+    # year's rate as listed in that year's publication.
     2015-04-01: 317.82
-    2020-04-06: 411.51 # From gov.uk and entitledto
+    2020-04-06: 409.89  # From gov.uk and entitledto
+    2021-04-01: 411.51
     2021-10-06: 324.84
     2022-04-06: 334.91
     2023-04-01: 368.74
@@ -42,8 +48,11 @@ SINGLE_OLD:
 COUPLE_YOUNG:
   description: Standard allowance for couples where both are under 25.
   values:
+    # 2020-21 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+    # year's rate as listed in that year's publication.
     2015-04-01: 395.2
-    2020-04-06: 490.6  # From gov.uk and entitledto
+    2020-04-06: 488.59  # From gov.uk and entitledto
+    2021-04-01: 490.6
     2021-10-06: 403.93
     2022-04-06: 416.45
     2023-04-01: 458.51
@@ -62,9 +71,12 @@ COUPLE_YOUNG:
 COUPLE_OLD:
   description: Standard allowance for couples where one is over 25.
   values:
+    # 2020-21 to 2026-27: DWP Benefit and pension rates (gov.uk), each
+    # year's rate as listed in that year's publication.
     2013-04-29: 489.06
     2015-04-01: 498.89
-    2020-04-06: 596.58 # From gov.uk/entitledto
+    2020-04-06: 594.04  # From gov.uk/entitledto
+    2021-04-01: 596.58
     2021-10-06: 509.91
     2022-04-06: 525.72
     2023-04-01: 578.82
@@ -84,6 +96,16 @@ metadata:
   uprating: gov.benefit_uprating_cpi
   propagate_metadata_to_children: true
   reference:
+    - title: Benefit and pension rates 2020 to 2021 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2020-to-2021/benefit-and-pension-rates-2020-to-2021
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
     # Values.
     - https://www.legislation.gov.uk/uksi/2013/376/regulation/36
     # As-of date.
