@@ -183,6 +183,13 @@ tax_heads:
     payer: consumer incidence
     totals: [gov_tax]
     sign: nonnegative
+    data_note: >-
+      Negative for 76 households on policyengine-uk-data 1.58.0
+      (enhanced_frs_2024_25) in every year from 2025 to 2030, -£72m weighted
+      in 2026: full_rate_vat_consumption is negative there because the
+      dataset's consumption (44 households) or full_rate_vat_expenditure_rate
+      (32 households, as low as -1.02) is negative. policyengine-uk-data
+      issue 565. Measured 2026-10-11.
   - id: vat_change
     label: Change in VAT from its baseline
     variable: vat_change
