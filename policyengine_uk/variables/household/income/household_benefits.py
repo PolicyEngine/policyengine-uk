@@ -21,7 +21,6 @@ HOUSEHOLD_BENEFIT_VARIABLES = [
     "dla",
     "iidb",
     "incapacity_benefit",
-    "jsa_contrib",
     "pip",
     "sda",
     "state_pension",
@@ -52,6 +51,7 @@ HOUSEHOLD_BENEFIT_VARIABLES = [
     "two_child_limit_payment",
     "scottish_child_payment",
     "carer_support_payment",
+    "scottish_carer_supplement",
     "disability_basic_income",
 ]
 

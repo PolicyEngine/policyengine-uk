@@ -14,7 +14,8 @@ Invariants, for any generated population of households: heads alone, in a
 couple (with partners aged 16 and over), or sharing a benefit unit with two
 parents aged 16 to 30 and their baby; another family, sometimes a sharer;
 income-based Jobseeker's Allowance and Universal Credit supplied for the
-head's benefit unit; disability and caring flags; all eight modelled schemes.
+head's benefit unit; the head's disability, Attendance Allowance, Carer's
+Allowance and blindness; all eight modelled schemes.
 
 1. Head's income counts: raising the liable household head's own private
    pension by £5,000 raises their family's applicable income. Raising a
@@ -36,10 +37,11 @@ head's benefit unit; disability and caring flags; all eight modelled schemes.
    reduction as the same head entered as her own benefit unit, with the young
    family as another. The two inputs describe the same people, so the law
    gives the same answer. Two limits keep the inputs comparable: no one
-   claims Universal Credit or Income Support by take-up (a head inside
-   another couple's benefit unit cannot be given her own award), and the
-   parents are under 18 (older ones would be her non-dependants, which the
-   model charges only when they are in another benefit unit).
+   claims Universal Credit, Income Support or Pension Credit by take-up (a
+   head inside another couple's benefit unit cannot be given her own award),
+   and the parents are under 18 (older ones would be her non-dependants,
+   which the model charges a deduction for only when they are in another
+   benefit unit).
 """
 
 import numpy as np
@@ -66,12 +68,19 @@ SCHEMES = [
     ("WALES", "CARDIFF"),
 ]
 SHAPES = ["alone", "couple", "young_parents"]
-FLAGS = [
-    "is_disabled_for_benefits",
-    "is_severely_disabled_for_benefits",
-    "is_carer_for_benefits",
-    "is_blind",
-]
+# The head's own circumstances that the premiums and the exemption read:
+# disability, Attendance Allowance (a severe disability premium qualifying
+# benefit, which also exempts her from non-dependant deductions), Carer's
+# Allowance (the carer premium) and blindness.
+head_circumstances = st.fixed_dictionaries(
+    dict(
+        is_disabled_for_benefits=st.booleans(),
+        is_enhanced_disabled_for_benefits=st.booleans(),
+        attendance_allowance=st.sampled_from([0, 0, 4_000]),
+        carers_allowance=st.sampled_from([0, 0, 4_000]),
+        is_blind=st.booleans(),
+    )
+)
 money = st.floats(0, 40_000, allow_nan=False, allow_infinity=False)
 # Incomes, bills and savings around the means-test thresholds, so awards are
 # often part-withdrawn rather than nil or full in both representations.
@@ -92,7 +101,7 @@ def households(draw):
         shape=draw(st.sampled_from(SHAPES)),
         head_age=draw(head_age),
         head_pension=draw(pension),
-        head_flags=draw(st.fixed_dictionaries({f: st.booleans() for f in FLAGS})),
+        head_flags=draw(head_circumstances),
         partner_age=draw(st.integers(16, 100)),
         parent_age=draw(st.integers(16, 30)),
         other_earnings=draw(st.lists(money, min_size=2, max_size=2)),
@@ -256,7 +265,7 @@ def test_council_tax_reduction_assesses_the_liable_head(population):
 
     # 4. Identity.
     liable = sim.calculate("council_tax_reduction_liable_person", YEAR)
-    head = sim.calculate("council_tax_reduction_household_head", YEAR)
+    head = sim.calculate("is_resolved_household_head", YEAR)
     applicant = sim.calculate("is_council_tax_reduction_applicant_or_partner", YEAR)
     claimant_or_partner = sim.calculate("is_claimant_or_partner", YEAR)
     alone = sim.populations["person"].benunit(
@@ -283,7 +292,7 @@ def grandmother_households(draw):
         scheme=draw(st.sampled_from(SCHEMES)),
         head_age=draw(head_age),
         head_pension=draw(pension),
-        head_flags=draw(st.fixed_dictionaries({f: st.booleans() for f in FLAGS})),
+        head_flags=draw(head_circumstances),
         parent_age=draw(st.integers(16, 17)),
         parent_earnings=draw(st.lists(money, min_size=2, max_size=2)),
         jsa_income=draw(st.sampled_from([None, 3_000])),
@@ -326,6 +335,7 @@ def add_grandmother_household(people, benunits, homes, name, house, split):
         claims_all_entitled_benefits={YEAR: True},
         would_claim_uc={YEAR: False},
         would_claim_IS={YEAR: False},
+        would_claim_pc={YEAR: False},
     )
     if split:
         benunits[f"{name}_family"] = dict(members=[head], **common)

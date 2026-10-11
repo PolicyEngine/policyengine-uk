@@ -1,0 +1,399 @@
+# Welfare Reform Act 2012 ss. 19 to 22 put each Universal Credit claimant in
+# one of four groups. The tests follow the order of the Act: section 19 (no
+# work-related requirements), section 20 (work-focused interview requirement
+# only), section 21 for a claimant who "does not fall within section 19 or
+# 20" (work preparation requirement), and section 22 for a claimant "not
+# falling within any of sections 19 to 21" (all work-related requirements).
+# The variable leaves out the earnings routes of UC Regs 2013 reg. 90, as
+# reg. 62(1)(b) and reg. 90(2) both ask where the claimant "would otherwise"
+# fall.
+
+- name: A claimant with no special circumstances is subject to all work-related requirements
+  period: 2026
+  input:
+    age: 30
+  output:
+    uc_work_related_group_apart_from_earnings: ALL_REQUIREMENTS
+
+- name: Earnings above the individual threshold do not change the group apart from earnings
+  period: 2026
+  input:
+    age: 30
+    employment_income: 50_000
+  output:
+    # Reg. 90(1) would put this claimant in section 19; reg. 62(1)(b) asks
+    # where they would fall "apart from ... regulation 90".
+    uc_work_related_group_apart_from_earnings: ALL_REQUIREMENTS
+
+- name: Limited capability for work and work-related activity, section 19(2)(a)
+  period: 2026
+  input:
+    age: 30
+    uc_limited_capability_for_WRA: true
+  output:
+    uc_work_related_group_apart_from_earnings: NO_REQUIREMENTS
+
+- name: Regular and substantial caring responsibilities, section 19(2)(b)
+  period: 2026
+  input:
+    age: 30
+    care_hours: 35
+  output:
+    is_carer_for_benefits: true
+    uc_work_related_group_apart_from_earnings: NO_REQUIREMENTS
+
+- name: Caring for fewer than 35 hours a week leaves the claimant in section 22
+  period: 2026
+  input:
+    age: 30
+    care_hours: 34
+  output:
+    uc_work_related_group_apart_from_earnings: ALL_REQUIREMENTS
+
+- name: Lone parent of a child under 1, section 19(2)(c)
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 0
+  output:
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, NOT_A_CLAIMANT]
+
+- name: Lone parent of a child aged 1, section 20(1)(a)
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 1
+  output:
+    uc_work_related_group_apart_from_earnings: [INTERVIEW_ONLY, NOT_A_CLAIMANT]
+
+- name: Lone parent of a child aged 2, section 21(1)(aa)
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 2
+  output:
+    uc_work_related_group_apart_from_earnings: [WORK_PREPARATION, NOT_A_CLAIMANT]
+
+- name: Lone parent of a child aged 3 is subject to all work-related requirements
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 3
+  output:
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, NOT_A_CLAIMANT]
+
+- name: The youngest child sets the lone parent's group
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      older_child:
+        age: 9
+      baby:
+        age: 0
+  output:
+    uc_youngest_child_age: 0
+    uc_work_related_group_apart_from_earnings:
+      [NO_REQUIREMENTS, NOT_A_CLAIMANT, NOT_A_CLAIMANT]
+
+- name: In a couple only the nominated responsible carer takes the child's group
+  period: 2026
+  input:
+    people:
+      nominated:
+        age: 30
+        uc_is_responsible_carer: true
+      partner:
+        age: 32
+        uc_is_responsible_carer: false
+      child:
+        age: 1
+  output:
+    # Section 19(6)(b): the member of the couple "nominated by the couple
+    # jointly as responsible for the child". The partner is in section 22.
+    uc_work_related_group_apart_from_earnings:
+      [INTERVIEW_ONLY, ALL_REQUIREMENTS, NOT_A_CLAIMANT]
+
+- name: A claimant over State Pension Credit qualifying age, regulation 89(1)(a)
+  period: 2026
+  input:
+    people:
+      older:
+        age: 70
+      younger:
+        age: 40
+  output:
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+
+# Reg. 89(1)(a) reads "the qualifying age for state pension credit": State
+# Pension Credit Act 2002 s. 1(6), a woman's pensionable age, and for a man the
+# pensionable age of a woman born on the same day. That is the meaning the
+# phrase has in Welfare Reform Act 2012 s. 4(4), and Interpretation Act 1978
+# s. 11 gives it the same meaning in the regulations. A man born before
+# 6 December 1953 has a pensionable age of 65 (Pensions Act 1995 Sch. 4 para. 1
+# rule (1)) but reaches the qualifying age on the day a woman born the same day
+# reaches pensionable age: her 60th birthday if born before 6 April 1950
+# (rule (2)), otherwise the table 1 day (rule (3)). UC Regs 2013 reg. 3(2)(a)
+# let such a man claim jointly with a partner under the qualifying age. Ages
+# and months place the date of birth that many years and months before
+# 6 October of the fiscal year; every expected day is from Sch. 4 para. 1 as it
+# stood on 6 October 2016.
+
+- name: A man past the qualifying age but under State Pension age has no work-related requirements, regulation 89(1)(a)
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 April 1952. Table 1, "6th April 1952 to 5th May 1952": the
+        # qualifying age on 6 May 2014. His own State Pension age is 65, on 6
+        # April 2017, after 6 October 2016.
+        age: 64
+        months_since_last_birthday: 6
+        gender: MALE
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [true, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: A man under the qualifying age is subject to all work-related requirements
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 June 1953. Table 1, "6th June 1953 to 5th July 1953": the
+        # qualifying age on 6 March 2017, after 6 October 2016.
+        age: 63
+        months_since_last_birthday: 4
+        gender: MALE
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [false, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: The same man a year later, past the qualifying age on 6 March 2017 and under State Pension age until 6 June 2018
+  period: 2017
+  input:
+    people:
+      older:
+        age: 64
+        months_since_last_birthday: 4
+        gender: MALE
+      younger:
+        age: 41
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [true, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: A woman born the same day reached both ages together
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 April 1952: pensionable age, and so the qualifying age, on 6
+        # May 2014 (rule (3), table 1).
+        age: 64
+        months_since_last_birthday: 6
+        gender: FEMALE
+      younger:
+        age: 40
+        gender: MALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [true, false]
+    is_SP_age: [true, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: A man born on 6 December 1953 reaches both ages on 6 March 2019
+  period: 2018
+  input:
+    people:
+      older:
+        # Rule (1) covers only men born before 6 December 1953. Table 2,
+        # "6th December 1953 to 5th January 1954", applies to any person: 6
+        # March 2019, after 6 October 2018.
+        age: 64
+        months_since_last_birthday: 10
+        gender: MALE
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    has_attained_state_pension_credit_qualifying_age: [false, false]
+    is_SP_age: [false, false]
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, ALL_REQUIREMENTS]
+
+- name: The minimum income floor does not reach a self-employed man past the qualifying age, regulation 62(1)(b)
+  period: 2016
+  input:
+    people:
+      older:
+        # Born 6 April 1952, as above: section 19 by reg. 89(1)(a), so not
+        # within section 22, which reg. 62(1)(b) requires.
+        age: 64
+        months_since_last_birthday: 6
+        gender: MALE
+        self_employment_income: 5_000
+      younger:
+        age: 40
+        gender: FEMALE
+  output:
+    uc_is_in_gainful_self_employment: [true, false]
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, ALL_REQUIREMENTS]
+    uc_mif_applies: [false, false]
+
+- name: Pregnancy within 11 weeks of the expected week of confinement, regulation 89(1)(c)
+  period: 2026
+  input:
+    age: 30
+    uc_is_in_pregnancy_or_post_confinement_period: true
+  output:
+    uc_work_related_group_apart_from_earnings: NO_REQUIREMENTS
+
+- name: An adopter within 12 months of the placement, regulation 89(1)(d)
+  period: 2026
+  input:
+    age: 30
+    uc_is_adopter_in_first_year: true
+  output:
+    uc_work_related_group_apart_from_earnings: NO_REQUIREMENTS
+
+- name: A student with student income taken into account, regulation 89(1)(e)
+  period: 2026
+  input:
+    age: 30
+    uc_is_student_with_no_work_related_requirements: true
+  output:
+    uc_work_related_group_apart_from_earnings: NO_REQUIREMENTS
+
+- name: The responsible foster parent of a child under 1, regulation 89(1)(f)
+  period: 2026
+  input:
+    age: 30
+    uc_is_responsible_foster_parent_of_child_under_one: true
+  output:
+    uc_work_related_group_apart_from_earnings: NO_REQUIREMENTS
+
+- name: A foster parent of a child aged at least 1, regulation 91(2)
+  period: 2026
+  input:
+    age: 30
+    uc_is_foster_parent_or_new_friend_or_family_carer: true
+  output:
+    uc_work_related_group_apart_from_earnings: INTERVIEW_ONLY
+
+- name: Limited capability for work, section 21(1)(a)
+  period: 2026
+  input:
+    age: 30
+    uc_has_limited_capability_for_work: true
+  output:
+    uc_work_related_group_apart_from_earnings: WORK_PREPARATION
+
+- name: Section 21 takes only a claimant who does not fall within section 19 or 20
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+        uc_has_limited_capability_for_work: true
+      child:
+        age: 1
+  output:
+    # Limited capability for work (section 21) and the responsible carer of
+    # a child aged 1 (section 20): section 20 comes first.
+    uc_work_related_group_apart_from_earnings: [INTERVIEW_ONLY, NOT_A_CLAIMANT]
+
+- name: Section 19 comes before section 20
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+        uc_limited_capability_for_WRA: true
+      child:
+        age: 1
+  output:
+    uc_work_related_group_apart_from_earnings: [NO_REQUIREMENTS, NOT_A_CLAIMANT]
+
+- name: A partner who cannot be a joint claimant is in no group
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 30
+      partner:
+        age: 32
+        uc_is_ineligible_partner: true
+  output:
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, NOT_A_CLAIMANT]
+
+- name: A qualifying young person is not a child for the responsible carer rules
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 40
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+  output:
+    # Welfare Reform Act 2012 s. 40: a child is a person under the age of 16.
+    uc_is_responsible_carer: [false, false]
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, NOT_A_CLAIMANT]
+
+- name: From 28 April 2014 to 2 April 2017 a child aged 4 put the responsible carer in section 21
+  period: 2016
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 4
+  output:
+    # UC Regs reg. 91A as then in force: "the responsible carer for a child
+    # aged 3 or 4".
+    uc_work_related_group_apart_from_earnings: [WORK_PREPARATION, NOT_A_CLAIMANT]
+
+- name: From 28 April 2014 to 2 April 2017 a child aged 2 put the responsible carer in section 20
+  period: 2016
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 2
+  output:
+    # Section 20(1)(a) as then in force: "a child who is aged at least 1 and
+    # is under a prescribed age", prescribed as 3 (reg. 91(1)).
+    uc_work_related_group_apart_from_earnings: [INTERVIEW_ONLY, NOT_A_CLAIMANT]
+
+- name: In 2016 a child aged 5 left the responsible carer subject to all work-related requirements
+  period: 2016
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 5
+  output:
+    uc_work_related_group_apart_from_earnings: [ALL_REQUIREMENTS, NOT_A_CLAIMANT]

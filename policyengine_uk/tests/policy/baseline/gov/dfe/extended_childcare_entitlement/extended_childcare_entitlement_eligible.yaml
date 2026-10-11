@@ -1,3 +1,6 @@
+# Eligibility needs a qualifying young child (Childcare Act 2016 s.1(2)(a)-(c);
+# SI 2022/1134 reg 13) and each parent and partner meeting regs 14 and 15
+# (extended_childcare_entitlement_work_condition, tested in its own file).
 - name: Eligible - Lives in England with all conditions met
   period: 2025
   input:
@@ -8,15 +11,12 @@
     people:
       parent1:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: true
       parent2:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
-        extended_childcare_entitlement_work_condition: false
+        extended_childcare_entitlement_work_condition: true
       child1:
         age: 3
-        extended_childcare_entitlement_work_condition: false
     benunits:
       benunit1:
         members: [parent1, parent2, child1]
@@ -33,22 +33,19 @@
     people:
       parent1:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: true
       parent2:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
-        extended_childcare_entitlement_work_condition: false
+        extended_childcare_entitlement_work_condition: true
       child1:
         age: 3
-        extended_childcare_entitlement_work_condition: false
     benunits:
       benunit1:
         members: [parent1, parent2, child1]
   output:
     extended_childcare_entitlement_eligible: false
 
-- name: Not eligible - Lives in England but income condition not met
+- name: Not eligible - one parent does not meet the parent or partner conditions
   period: 2025
   input:
     households:
@@ -58,40 +55,12 @@
     people:
       parent1:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: false
         extended_childcare_entitlement_work_condition: true
       parent2:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: false
       child1:
         age: 3
-        extended_childcare_entitlement_work_condition: false
-    benunits:
-      benunit1:
-        members: [parent1, parent2, child1]
-  output:
-    extended_childcare_entitlement_eligible: false
-
-- name: Not eligible - Lives in England but work condition not met
-  period: 2025
-  input:
-    households:
-      household1:
-        members: [parent1, parent2, child1]
-        country: ENGLAND
-    people:
-      parent1:
-        age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
-        extended_childcare_entitlement_work_condition: false
-      parent2:
-        age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
-        extended_childcare_entitlement_work_condition: false
-      child1:
-        age: 3
-        extended_childcare_entitlement_work_condition: false
     benunits:
       benunit1:
         members: [parent1, parent2, child1]
@@ -108,11 +77,9 @@
     people:
       parent1:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: true
       child1:
         age: 3
-        extended_childcare_entitlement_work_condition: false
     benunits:
       benunit1:
         members: [parent1, child1]
@@ -129,20 +96,19 @@
     people:
       parent1:
         age: 35
-        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: true
       child1:
         age: 3
-        extended_childcare_entitlement_work_condition: false
     benunits:
       benunit1:
         members: [parent1, child1]
   output:
     extended_childcare_entitlement_eligible: false
-# The income conditions apply to the parent and the parent's partner
-# (Childcare Act 2016 s.1(2)(d); SI 2022/1134 regs 14, 15 and 18), not to an
-# older child still at school.
-- name: Eligible - an 18-year-old at school does not have to meet the income test
+
+# The conditions apply to the parent and the parent's partner (Childcare Act
+# 2016 s.1(2)(d); SI 2022/1134 regs 14 and 15), not to an older child still at
+# school.
+- name: Eligible - an 18-year-old at school does not have to meet the parent conditions
   period: 2025
   input:
     households:
@@ -153,21 +119,16 @@
       parent1:
         age: 35
         is_parent: true
-        extended_childcare_entitlement_meets_income_requirements: true
         extended_childcare_entitlement_work_condition: true
       parent2:
         age: 35
         is_parent: true
-        extended_childcare_entitlement_meets_income_requirements: true
-        extended_childcare_entitlement_work_condition: false
+        extended_childcare_entitlement_work_condition: true
       student:
         age: 18
         current_education: UPPER_SECONDARY
-        extended_childcare_entitlement_meets_income_requirements: false
-        extended_childcare_entitlement_work_condition: false
       child1:
         age: 3
-        extended_childcare_entitlement_work_condition: false
     benunits:
       benunit1:
         members: [parent1, parent2, student, child1]
@@ -185,11 +146,206 @@
       parent1:
         age: 17
         is_parent: true
+        in_work: true
         extended_childcare_entitlement_meets_income_requirements: false
+      child1:
+        age: 1
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+# SI 2022/1134 reg 13(2)(a) and s.1(2)(a): the entitlement is for young children
+# of the minimum age who are under compulsory school age. A working family whose
+# only child is at school is not eligible.
+- name: Not eligible - the only child is of compulsory school age
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 7
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+- name: Not eligible - no children
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+    benunits:
+      benunit1:
+        members: [parent1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+# A benefit unit with no claimant or partner cannot meet regs 14 and 15.
+- name: Not eligible - a benefit unit of a lone young child
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [child1]
+        country: ENGLAND
+    people:
+      child1:
+        age: 3
+    benunits:
+      benunit1:
+        members: [child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+# Reg 13(2)(a): "nine months" from 1 September 2024 (SI 2023/1330 reg 2(5)(b)).
+# PolicyEngine reads a year's parameters on 30 April, so this applies from 2025.
+- name: Eligible - a child aged exactly nine months in 2025
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 0.75
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: true
+
+- name: Not eligible - a child aged six months in 2025
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 0.5
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+# Reg 13(2)(a): "two" from 1 April 2024 to 31 August 2024 (SI 2023/1330
+# reg 2(5)(a)), which is the value on 30 April 2024.
+- name: Eligible - a two-year-old in 2024
+  period: 2024
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 2
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: true
+
+- name: Not eligible - a one-year-old in 2024
+  period: 2024
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
         extended_childcare_entitlement_work_condition: true
       child1:
         age: 1
-        extended_childcare_entitlement_work_condition: false
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+# Reg 13(2)(a) as made: "three".
+- name: Not eligible - a two-year-old in 2023
+  period: 2023
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 2
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: false
+
+- name: Eligible - a three-year-old in 2023
+  period: 2023
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 3
+    benunits:
+      benunit1:
+        members: [parent1, child1]
+  output:
+    extended_childcare_entitlement_eligible: true
+
+# Reg 13(2)(b): the young child must not be looked after by a local authority.
+- name: Not eligible - the only young child is looked after by a local authority
+  period: 2025
+  input:
+    households:
+      household1:
+        members: [parent1, child1]
+        country: ENGLAND
+    people:
+      parent1:
+        age: 35
+        extended_childcare_entitlement_work_condition: true
+      child1:
+        age: 3
+        is_looked_after_by_local_authority: true
     benunits:
       benunit1:
         members: [parent1, child1]

@@ -4,15 +4,15 @@ from policyengine_uk.model_api import *
 class lha_renter_has_non_dependant(Variable):
     value_type = bool
     entity = BenUnit
-    label = "LHA renter has a non-dependant"
+    label = "LHA renter has a non-dependant (Universal Credit)"
     documentation = (
-        "Someone in this benefit unit who is neither a claimant or partner "
-        "nor a child or young person, or, for the household head's family, a "
-        "claimant or partner of another family who is a non-dependant of the "
-        "household head (see is_non_dependant_of_household_head): joint "
-        "tenants and other sharers of the rent, boarders and lodgers are not "
-        "non-dependants, and a sharer, boarder or lodger has none from the "
-        "household head's family. Foster children are not identified."
+        "Universal Credit: someone in this benefit unit who is neither a "
+        "claimant or partner nor a child or young person, or, for the claim "
+        "that counts the household's non-dependants (see "
+        "uc_non_dependants_counted), a claimant or partner of a family not "
+        "liable for rent. Joint tenants and other sharers of the rent, "
+        "boarders and lodgers are not non-dependants. Foster children are not "
+        "identified. Housing Benefit uses housing_benefit_has_non_dependant."
     )
     definition_period = YEAR
     reference = (
@@ -36,8 +36,8 @@ class lha_renter_has_non_dependant(Variable):
         non_dependant_claimants = claimant_or_partner & person(
             "is_non_dependant_of_household_head", period
         )
-        head_family = benunit.any(person("is_household_head", period))
-        other_family_non_dependants = head_family * benunit.max(
+        counted = benunit("uc_non_dependants_counted", period)
+        other_family_non_dependants = counted * benunit.max(
             person.household.sum(non_dependant_claimants)
         )
         return within_benefit_unit | (other_family_non_dependants > 0)

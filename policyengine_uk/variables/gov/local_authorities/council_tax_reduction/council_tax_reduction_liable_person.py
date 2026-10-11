@@ -32,7 +32,7 @@ class council_tax_reduction_liable_person(Variable):
 
     def formula(person, period, parameters):
         adult = person("age", period) >= 18  # s.6(5), s.99(1)
-        head = person("council_tax_reduction_household_head", period)
+        head = person("is_resolved_household_head", period)
         claimant_or_partner = person("is_claimant_or_partner", period)
         head_is_claimant_or_partner = person.benunit.any(head & claimant_or_partner)
         head_family = person.benunit.any(head)

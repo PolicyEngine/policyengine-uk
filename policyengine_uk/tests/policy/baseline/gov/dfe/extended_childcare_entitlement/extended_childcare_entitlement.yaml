@@ -220,3 +220,22 @@
         extended_childcare_entitlement_eligible: true
   output:
     extended_childcare_entitlement: 17108.518
+# SI 2022/1134 reg 13(2)(b): a child looked after by a local authority is not a
+# qualifying child, so only the other three-year-old's 30 hours count
+# (the same £6,872.805 as the single three-year-old above).
+- name: A looked-after child's hours do not count
+  period: 2025
+  absolute_error_margin: 3
+  input:
+    people:
+      child1:
+        age: 3
+        is_looked_after_by_local_authority: true
+      child2:
+        age: 3
+    benunits:
+      benunit1:
+        members: [child1, child2]
+        extended_childcare_entitlement_eligible: true
+  output:
+    extended_childcare_entitlement: 6872.805

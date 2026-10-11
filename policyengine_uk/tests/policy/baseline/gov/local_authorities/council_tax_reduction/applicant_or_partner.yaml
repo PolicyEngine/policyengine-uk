@@ -190,13 +190,13 @@
         age: 60
         is_household_head: true
         is_disabled_for_benefits: true
-        is_severely_disabled_for_benefits: true
+        # Attendance Allowance qualifies her for the severe disability premium.
+        attendance_allowance: 4_000
       young_mother:
         age: 17
         is_parent: true
         is_household_head: false
         is_disabled_for_benefits: true
-        is_carer_for_benefits: true
       young_father:
         age: 17
         is_parent: true
@@ -218,11 +218,55 @@
         savings: 0
   output:
     # Disability (44.85) and severe disability (86.05) premiums at the single
-    # rate: (44.85 + 86.05) * 52. The young mother's disability and caring
-    # do not give the grandmother a premium.
+    # rate: (44.85 + 86.05) * 52. The young mother's disability does not give
+    # the grandmother a premium, and at 17 neither parent is a non-dependant
+    # who bars the severe disability premium.
     council_tax_reduction_premiums: [6_806.80]
     # Single aged 25 or over, 95.55 * 52 = 4,968.60, plus the premiums.
     council_tax_reduction_applicable_amount: [11_775.40]
+
+- name: Adult parents in a lone-applying head's benefit unit are her non-dependants and bar her severe disability premium
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandmother:
+        age: 60
+        is_household_head: true
+        is_disabled_for_benefits: true
+        # Attendance Allowance qualifies her for the severe disability premium.
+        attendance_allowance: 4_000
+      young_mother:
+        age: 19
+        is_parent: true
+        is_household_head: false
+        is_disabled_for_benefits: true
+      young_father:
+        age: 19
+        is_parent: true
+        is_household_head: false
+      baby:
+        age: 0
+        is_household_head: false
+    benunits:
+      family:
+        members: [grandmother, young_mother, young_father, baby]
+        claims_all_entitled_benefits: true
+        would_claim_uc: false
+    households:
+      home:
+        members: [grandmother, young_mother, young_father, baby]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+        savings: 0
+  output:
+    # At 19 the parents are residents aged 18 or over outside her family, so
+    # the severe disability premium is not payable (HB Regs 2006 Sch 3 para
+    # 14(2)(a)(ii), which the model applies to Council Tax Reduction too).
+    # Only the disability premium remains: 44.85 * 52.
+    council_tax_reduction_premiums: [2_332.20]
+    council_tax_reduction_applicable_amount: [7_300.80]
 
 - name: A blind grandmother head who applies alone has no non-dependant deduction in Merton
   period: 2026

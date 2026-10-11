@@ -30,7 +30,8 @@ class simulated_council_tax_reduction_benunit(Variable):
         wales_ctr = local_authority_parameters.wales.council_tax_reduction
 
         country = benunit.household("country", period)
-        # Each claim's scheme follows the applicant's own family.
+        # Each claim's scheme follows the applicant's own family (SI 2012/2885
+        # reg 3).
         has_pensioner = benunit("council_tax_reduction_pensioner", period)
         england_pensioners = is_england_pensioner_scheme(country, has_pensioner)
         scotland = is_scotland_scheme(country)
@@ -83,7 +84,8 @@ class simulated_council_tax_reduction_benunit(Variable):
             - excess_income * withdrawal_rate
             - non_dep_deductions,
         )
-        capital_eligible = benunit.household("savings", period) <= capital_limit
+        capital = benunit("council_tax_reduction_assessable_capital", period)
+        capital_eligible = capital <= capital_limit
         national_ctr = (
             national_scheme
             * is_household_head_benunit

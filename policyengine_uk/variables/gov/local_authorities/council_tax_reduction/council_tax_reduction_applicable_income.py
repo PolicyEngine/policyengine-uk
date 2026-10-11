@@ -6,49 +6,91 @@ class council_tax_reduction_applicable_income(Variable):
     entity = BenUnit
     label = "relevant income for Council Tax Reduction means test"
     documentation = (
-        "The income of the Council Tax Reduction applicant and partner "
-        "(is_council_tax_reduction_applicant_or_partner), with, as the model "
-        "did before, the income of the family's children or young persons. "
-        "The benefit unit's own benefits (Child Benefit, Income Support, "
-        "income-based Jobseeker's Allowance, income-related Employment and "
-        "Support Allowance, Universal Credit and tax credits) count only where "
-        "the applicant is the benefit unit's claimant: where the household "
-        "head applies alone, those awards and children belong to the benefit "
-        "unit's claimant and partner, not to the head."
+        "Income taken into account in the Council Tax Reduction means test. The "
+        "pensioner schemes disregard the whole income of an applicant who, or "
+        "whose partner, is in receipt of Pension Credit guarantee credit, and "
+        "use the Secretary of State's Pension Credit assessment of income, plus "
+        "the savings credit payable, where the award is savings credit only. "
+        "Otherwise a pension-age family's net earnings are reduced by the "
+        "pensioner earnings disregards. The other adjustments those "
+        "provisions allow (childcare charges, the £20 earnings disregards, "
+        "maintenance disregards and the rest) are not modelled. "
+        "The income counted is the Council Tax Reduction applicant's and "
+        "partner's (is_council_tax_reduction_applicant_or_partner), with, as "
+        "the model did before, the income of the family's children or young "
+        "persons. Where the household head applies alone "
+        "(council_tax_reduction_head_applies_alone), the benefit unit's own "
+        "awards (Child Benefit, Income Support, income-based JSA, "
+        "income-related ESA, Universal Credit, tax credits, Pension Credit) "
+        "and its children belong to its claimant and partner, not to the "
+        "head, so none of them counts."
     )
     definition_period = YEAR
     unit = GBP
-    reference = (
-        "https://www.legislation.gov.uk/ssi/2012/319/regulation/21",
+    reference = [
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/13",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/14",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/7",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/8",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/24",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/25",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/27",
+        "https://www.legislation.gov.uk/ssi/2021/249/regulation/57",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/4",
+        "https://www.legislation.gov.uk/wsi/2013/3029/schedule/3",
+        "https://www.legislation.gov.uk/ssi/2012/319/schedule/2",
         "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/11",
+        "https://www.legislation.gov.uk/ssi/2012/319/regulation/21",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/1/paragraph/5",
         "https://www.legislation.gov.uk/wsi/2013/3029/schedule/6/paragraph/7",
         "https://www.legislation.gov.uk/ssi/2021/249/regulation/36",
-    )
+    ]
 
     def formula(benunit, period, parameters):
         # Members whose income counts: the applicant and partner and, as the model
         # did before, the programme's own children or young persons. The regulations
         # count only the applicant's and partner's (CTR (Prescribed Requirements)
-        # (England) Regs 2012 Sch 1 para 11; SSI 2012/319 reg 21(3) and SSI
-        # 2021/249 reg 36(2) exclude a child's); dropping dependants' own income is
-        # a follow-up. Anyone else in the benefit unit does not count.
+        # (England) Regs 2012 Sch 1 para 11; SSI 2012/319 reg 21 and SSI 2021/249
+        # reg 36, which also exclude a child's); dropping dependants' own income is
+        # a follow-up. Anyone else in the benefit unit does not count. A household
+        # head who applies alone is the applicant, whatever else the benefit unit
+        # reads her as, and the benefit unit's children are its claimant's.
         person = benunit.members
         head_applies_alone = benunit("council_tax_reduction_head_applies_alone", period)
         applicant_family = ~head_applies_alone
         members = person("is_council_tax_reduction_applicant_or_partner", period) | (
-            person("is_child_or_young_person_for_legacy_benefits", period)
+            person("is_child_or_young_person_for_council_tax_reduction", period)
             & benunit.project(applicant_family)
         )
+        # Only the claimant's and partner's income-related awards: the scheme
+        # counts the applicant's and partner's income (Sch 1 para 11 above). A
+        # member outside the family who has an award of their own claims in their
+        # own right. Income Support already needs the claimant's or partner's own
+        # award (income_support_eligible).
         benunit_means_tested_benefits = [
             "child_benefit",
             "income_support",
-            "jsa_income",
-            "esa_income",
+            "claimant_or_partner_jsa_income",
+            "claimant_or_partner_esa_income",
             "universal_credit",
         ]
         personal_benefits = [
             "carers_allowance",
+            # Scottish carers receive Carer Support Payment in place of Carer's
+            # Allowance. Scottish Council Tax Reduction counts it, with no cap at
+            # the Carer's Allowance amount:
+            # SSI 2021/249 reg 57(1)(b)(iva) at working age and SSI 2012/319
+            # reg 27(1)(j) at pension age. Neither counts the Scottish Carer
+            # Supplement (reg 57(1) does not list it; reg 27(1)(j)(xxib)
+            # excepts it), so scottish_carer_supplement is not listed.
+            # Whether CTR counts CSP before or after the CSP Regs reg 16(2)
+            # overlapping-benefit reduction is unsettled: SSI 2012/319 reg
+            # 27(3) grosses up deductions other than the reg 27(5)
+            # adjustments, which do not list reg 16(2), while SSI 2021/249 reg
+            # 57(1)(b) counts the amount the applicant is entitled to. Until
+            # that is decided, the amount before the reduction is counted, as
+            # it was before the reduction was modelled.
+            "carer_support_payment_pre_overlap",
             "esa_contrib",
             "jsa_contrib",
             "state_pension",
@@ -60,7 +102,7 @@ class council_tax_reduction_applicable_income(Variable):
         income_components = [
             "employment_income",
             "self_employment_income",
-            "property_income",
+            "property_income_after_finance_costs",
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
@@ -86,4 +128,35 @@ class council_tax_reduction_applicable_income(Variable):
         tax = add_for_members(
             benunit, period, ["income_tax", "national_insurance"], members
         )
-        return max_(0, increased_income - tax - pension_contributions)
+        # SI 2012/2885 Sch 1 para 17(9) and Sch 4; WSI 2013/3029 Sch 1 para
+        # 11(9) and Sch 3; SSI 2012/319 reg 31(8) and Sch 2: the pensioner
+        # earnings disregards, capped at net earnings. Zero for working-age
+        # families.
+        earnings_disregard = benunit(
+            "council_tax_reduction_pensioner_earnings_disregard", period
+        )
+        income_under_general_rules = max_(
+            0, increased_income - tax - pension_contributions - earnings_disregard
+        )
+        # SI 2012/2885 Sch 1 para 13, WSI 2013/3029 Sch 1 para 7 and SSI
+        # 2012/319 reg 24: a guarantee credit recipient's whole income is
+        # disregarded. Para 14, para 8 and reg 25: in savings-credit-only cases
+        # the Secretary of State's assessment of net income is used, adjusted
+        # to take account of the savings credit payable. The Pension Credit
+        # paid on a savings-credit-only award is that savings credit (under the
+        # Pension Credit freeze, the frozen amount).
+        # The benefit unit's Pension Credit is its claimant's and partner's.
+        in_receipt_of_guarantee_credit = applicant_family & benunit(
+            "in_receipt_of_guarantee_credit", period
+        )
+        has_savings_credit_only_award = applicant_family & benunit(
+            "in_receipt_of_savings_credit_only", period
+        )
+        savings_credit_only_income = benunit("pension_credit_income", period) + benunit(
+            "pension_credit", period
+        )
+        return select(
+            [in_receipt_of_guarantee_credit, has_savings_credit_only_award],
+            [0, savings_credit_only_income],
+            default=income_under_general_rules,
+        )

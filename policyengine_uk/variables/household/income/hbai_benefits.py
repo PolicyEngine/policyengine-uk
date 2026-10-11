@@ -44,4 +44,5 @@ class hbai_benefits(Variable):
         "bursary_fund_16_to_19",
         "healthy_start_vouchers",
         "carer_support_payment",
+        "scottish_carer_supplement",
     ]
