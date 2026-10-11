@@ -733,3 +733,41 @@
     makes_marriage_allowance_election: [false, true]
     marriage_allowance_tax_reduction: [146, 0]
     income_tax: [0, 138]
+
+- name: Take-up follows the gaining spouse when the electing spouse is older
+  # The draw that decides the couple's take-up is the gaining spouse's, not
+  # the elder spouse's.
+  period: 2026
+  input:
+    people:
+      recipient:
+        age: 38
+        employment_income: 30_000
+        would_claim_marriage_allowance: false
+      transferor:
+        age: 40
+    benunits:
+      benunit:
+        members: [recipient, transferor]
+        is_married: true
+  output:
+    makes_marriage_allowance_election: [false, false]
+    income_tax: [3_486, 0]
+
+- name: An older electing spouse's take-up value does not stop the election
+  period: 2026
+  input:
+    people:
+      recipient:
+        age: 38
+        employment_income: 30_000
+      transferor:
+        age: 40
+        would_claim_marriage_allowance: false
+    benunits:
+      benunit:
+        members: [recipient, transferor]
+        is_married: true
+  output:
+    makes_marriage_allowance_election: [false, true]
+    income_tax: [3_234, 0]
