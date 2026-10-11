@@ -74,9 +74,9 @@ totals:
     label: Taxes borne by the household
     description: >-
       Taxes subtracted from household net income. VAT and employer NI enter
-      only as reform-induced changes (vat_change and the employer NI response
-      incidence), because baseline VAT and employer NI are not deducted from
-      the incomes the model starts from.
+      only as reform-induced changes (vat_change, private_school_vat_change
+      and the employer NI response incidence), because baseline VAT and
+      employer NI are not deducted from the incomes the model starts from.
     dropped_when:
       gov.contrib.abolish_council_tax:
         - council_tax
@@ -205,6 +205,11 @@ tax_heads:
       - head: vat
         route: vat_change adds vat and subtracts baseline_vat
         why: a change measure built from the level; the two are never in the same total
+  # Standard-rated from 1 January 2025: Finance Act 2025 s.47 inserts VATA
+  # 1994 Sch 9 Part 3, taking private school education, vocational training
+  # and closely related board and lodging out of the Group 6 exemption, for
+  # supplies on or after that date (s.49). Before it the head is zero unless
+  # the contributed reform rate is set.
   - id: private_school_vat
     label: VAT on private school fees
     variable: private_school_vat
@@ -213,12 +218,8 @@ tax_heads:
     obr_table_3_1: Value added tax
     report_group: vat
     payer: household
-    totals: [gov_tax, household_tax]
+    totals: [gov_tax]
     sign: nonnegative
-    zero_at_baseline: expected
-    zero_at_baseline_note: >-
-      gov.contrib.labour.private_school_vat is 0 at current law in this
-      model, so the head is reform-only here.
     reads:
       - head: income_tax
         route: private_school_vat -> attends_private_school -> income_tax
@@ -228,6 +229,30 @@ tax_heads:
         why: as above
       - head: council_tax
         route: private_school_vat -> attends_private_school -> household_benefits -> council_tax_benefit -> council_tax
+        why: as above
+  - id: private_school_vat_change
+    label: Change in private school VAT from its baseline
+    variable: private_school_vat_change
+    entity: household
+    obr_line: Value added tax
+    obr_table_3_1: Value added tax
+    report_group: vat
+    payer: household
+    totals: [household_tax]
+    sign: any
+    zero_at_baseline: expected
+    reads:
+      - head: private_school_vat
+        route: private_school_vat_change adds private_school_vat and subtracts baseline_private_school_vat
+        why: a change measure built from the level; the two are never in the same total
+      - head: income_tax
+        route: private_school_vat_change -> private_school_vat -> attends_private_school -> income_tax
+        why: attendance is imputed from income; it decides who attends, not how much tax is counted
+      - head: nics_individual
+        route: private_school_vat_change -> private_school_vat -> attends_private_school -> (net income) -> national_insurance
+        why: as above
+      - head: council_tax
+        route: private_school_vat_change -> private_school_vat -> attends_private_school -> household_benefits -> council_tax_benefit -> council_tax
         why: as above
   - id: fuel_duty
     label: Fuel duties
@@ -516,6 +541,7 @@ exclusions:
   - {variable: student_loan_repayment, kind: component, head: student_loan_repayments}
   # Consumption
   - {variable: baseline_vat, kind: baseline_measure, head: vat_change, note: "Subtracted inside vat_change."}
+  - {variable: baseline_private_school_vat, kind: baseline_measure, head: private_school_vat_change, note: "Subtracted inside private_school_vat_change."}
   - {variable: beer_duty, kind: component, head: alcohol_duty}
   - {variable: cider_duty, kind: component, head: alcohol_duty}
   - {variable: sparkling_cider_duty, kind: component, head: alcohol_duty}
@@ -561,17 +587,31 @@ overlap_guards:
     property: >-
       Each allocates a different receipt by shareholding; none reads another.
       corporate_tax_incidence sums two of them and is excluded.
+  - id: private_school_vat_level_and_change
+    kind: level_and_change
+    heads: [private_school_vat, private_school_vat_change]
+    property: >-
+      Never in the same total: the level is in gov_tax and the change in
+      household_tax, as for vat and vat_change. private_school_vat_change
+      reads private_school_vat.
   - id: private_school_vat_and_vat
-    kind: possible_base_overlap
+    kind: disjoint_bases
     heads: [vat, private_school_vat]
     property: >-
-      vat applies to imputed consumption; if that consumption includes school
-      fees, turning on private_school_vat would tax them twice. The head is
-      zero at baseline, so baseline totals are unaffected; check the
-      consumption imputation before costing a reform that sets it.
+      Neither head reads the other or the other's inputs and parameters
+      (tested in test_private_school_vat_properties.py). vat applies one
+      household full-rate share to all imputed consumption, education
+      included. The share (full_rate_vat_expenditure_rate) is trained on ETB
+      VAT paid in the financial year ending 2024, when private school fees
+      were exempt (policyengine-uk-data datasets/imputations/vat.py), and is
+      the same in every year, so vat never charges the fees at the standard
+      rate. private_school_vat charges them once, at the higher of the
+      statutory and contributed reform rates. Outside the model,
+      policyengine-uk-data calibrates weighted vat to the OBR VAT receipts
+      line, which includes VAT on private school fees from 2025-26.
   - id: eligibility_reads
     kind: read_not_inclusion
-    heads: [tv_licence, private_school_vat]
+    heads: [tv_licence, private_school_vat, private_school_vat_change]
     property: >-
       These heads reach other heads of the same total only through
       eligibility or imputation (see each head's reads). Raising the other
