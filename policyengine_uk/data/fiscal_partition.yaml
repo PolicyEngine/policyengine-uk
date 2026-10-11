@@ -337,6 +337,14 @@ tax_heads:
     payer: corporate incidence
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    data_note: >-
+      Allocates each nation's published non-domestic rates outturn, projected
+      with OBR receipts (gov.hmrc.business_rates.statistics). It includes
+      Northern Ireland, which the OBR records as "Northern Ireland business
+      rates" under other taxes (receipts Table 3.2), not on its Business
+      rates line. On policyengine-uk-data 1.58.0 it totals £35.61bn in
+      2026-27 against £37.82bn for the OBR's two lines together, measured
+      2026-10-11.
   - id: sdlt_household
     label: Stamp duty land tax on the household's own purchases
     variable: expected_sdlt
@@ -347,6 +355,12 @@ tax_heads:
     payer: household
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
+    data_note: >-
+      policyengine-uk-data 1.58.0 calibrates stamp_duty_land_tax to the OBR's
+      total SDLT, which includes the companies' share that sdlt_corporate
+      allocates by shareholding (policyengine-uk-data issue 564). In 2026-27
+      the two heads total £23.29bn against the OBR's £18.15bn, measured
+      2026-10-11.
   - id: sdlt_corporate
     label: Stamp duty land tax paid by companies
     variable: corporate_sdlt
