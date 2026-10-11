@@ -300,10 +300,11 @@ def _get_variable_code(loader, fullname):
 # Dead systems' variable modules are also released as each new system starts
 # adding its variables, not only after each test: in that run one property
 # test had 165 systems' modules loaded at once, and Hypothesis can build many
-# more while it shrinks a failing example. In run 38165445604 an earlier form
-# of this release, which scanned at every new system once more than eight
-# systems owned modules, brought the shards' peaks from 10.2-12.2 GiB to
-# 10.0-10.4. Keep this until policyengine-core stops leaking the modules
+# more while it shrinks a failing example. With an earlier form of this
+# release, which scanned at every new system once more than eight systems
+# owned modules, the shards peaked at 10.0-10.4 GiB (run 38165445604), against
+# 10.2-12.2 with code sharing alone (run 38159894687). Keep this until
+# policyengine-core stops leaking the modules
 # (PolicyEngine/policyengine-core#520).
 _add_variables_from_file = TaxBenefitSystem.add_variables_from_file
 _adding_system = None
