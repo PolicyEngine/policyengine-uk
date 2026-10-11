@@ -585,7 +585,7 @@ def update_forecast_gap_yaml(
 
 
 TABLE_TITLE_RE = re.compile(r"^(\d+\.\d+)\s+(.+)$")
-FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$")
+FOOTNOTE_RE = re.compile(r"(?<=[a-z])\d+$", re.IGNORECASE)
 VALUE_LINE_RE = re.compile(r"^\s*(\d{4})-\d{2}-\d{2}:")
 
 
@@ -763,15 +763,20 @@ def find_receipts_line(
     where = f"Table {table} (sheet {sheet})"
     levels = {}
     for column, year in years.items():
-        if row.get(column) in (None, ""):
-            raise ValueError(f"{where} has no {fiscal_year_label(year)} {name} value")
-        levels[year] = float(row[column])
+        text = row.get(column)
+        try:
+            levels[year] = float(text)
+        except (TypeError, ValueError):
+            raise ValueError(
+                f"{where} has no numeric {fiscal_year_label(year)} {name} value: "
+                f"{text!r}"
+            ) from None
     ordered = sorted(levels)
     if ordered != list(range(ordered[0], ordered[-1] + 1)):
         raise ValueError(f"{where} skips a year: {ordered}")
     return ReceiptsLine(
         table=table,
-        label=" ".join(str(label).split()).rstrip("0123456789"),
+        label=FOOTNOTE_RE.sub("", " ".join(str(label).split())),
         levels=levels,
         outturn_years=_outturn_years(years, markers, where),
     )
@@ -1379,6 +1384,10 @@ def main(argv: list[str] | None = None) -> int:
     series_values = extract_annual_series_from_xlsx(workbook_bytes)
 
     if args.release_month and args.release_year:
+        if args.release_month.lower() not in MONTHS:
+            raise ValueError(
+                f"--release-month must be a month name, not {args.release_month!r}"
+            )
         month = args.release_month.capitalize()
         year = args.release_year
     elif args.release_month or args.release_year:

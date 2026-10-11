@@ -1067,7 +1067,7 @@ def test_receipts_growth_rejects_a_missing_or_non_positive_level():
             ("SDLT from non-residential property", (4.0, 5.0, 4.5)),
         ]
     )
-    with pytest.raises(ValueError, match="no 2026-27"):
+    with pytest.raises(ValueError, match="no numeric 2026-27 .* value: None"):
         compute_receipts_growth(missing, make_previous_receipts_xlsx())
     zero = make_receipts_xlsx(
         sdlt_rows=[
@@ -1077,6 +1077,32 @@ def test_receipts_growth_rejects_a_missing_or_non_positive_level():
     )
     with pytest.raises(ValueError, match="cannot grow from 2025-26"):
         compute_receipts_growth(zero, make_previous_receipts_xlsx())
+
+
+def test_receipts_labels_lose_footnote_markers_only():
+    line = find_receipts_line(
+        read_workbook_sheets(
+            make_receipts_xlsx(
+                sdlt_rows=[
+                    ("SDLT from residential property2", (10.0, 11.0, 12.1)),
+                    ("SDLT from non-residential property", (4.0, 5.0, 4.5)),
+                ]
+            )
+        ),
+        RECEIPTS_SERIES_SPECS[0],
+    )
+    assert line.label == "SDLT from residential property"
+
+
+def test_a_non_numeric_level_is_refused():
+    text = make_receipts_xlsx(
+        sdlt_rows=[
+            ("SDLT from residential property", (10.0, "[x]", 12.1)),
+            ("SDLT from non-residential property", (4.0, 5.0, 4.5)),
+        ]
+    )
+    with pytest.raises(ValueError, match="no numeric 2025-26 .* value: '\\[x\\]'"):
+        compute_receipts_growth(text, make_previous_receipts_xlsx())
 
 
 def test_render_rewrites_values_and_references():
