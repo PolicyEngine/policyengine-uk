@@ -4,7 +4,8 @@
 # earnings exceed £204 a week from 6 April 2026 (SI 2026/218). Net earnings
 # are gross pay less income tax, primary Class 1 contributions and half of
 # pension contributions (Computation of Earnings Regulations 1996 reg.
-# 10(4)), and trading profit less tax, Class 2 and Class 4 (reg. 13).
+# 10(4)), and trading profit less a notional basic-rate tax and main-rate
+# Class 4 (regs. 13(4) and 14). A fraction of a penny is disregarded (reg. 5).
 # 2026-27: personal allowance and NI primary threshold £12,570, employee
 # Class 1 main rate 8%, Class 4 lower profits limit £12,570 at 6%, basic rate
 # 20%. Carer's Allowance £86.45 a week.
@@ -103,7 +104,7 @@
     carers_allowance_earnings: 0
     carers_allowance: 86.45 * 52
 
-- name: Case 8, a reported recipient over the limit is not entitled either.
+- name: Case 8, a reported recipient over the limit is not entitled either, but stays a carer for Universal Credit.
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -114,6 +115,8 @@
   output:
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
+    # UC regulation 30 does not apply the Carer's Allowance earnings limit.
+    is_carer_for_benefits: true
 
 - name: Case 9, savings and pension income are not earnings.
   period: 2026
@@ -140,3 +143,76 @@
   output:
     is_gainfully_employed_for_carers_allowance: true
     carers_allowance: 0
+
+- name: Case 11, trading profit takes notional basic-rate tax and main-rate Class 4 only.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: 60_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Reg. 14: 20% x (60,000 - 12,570) = 9,486, not the progressive tax;
+    # 6% x (50,270 - 12,570) = 2,262, with no additional-rate Class 4.
+    carers_allowance_earnings: 60_000 - 9_486 - 2_262
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 12, half of personal pension contributions brings trading earnings under the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    self_employment_income: 15_000
+    personal_pension_contributions: 7_700
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 15,000 - 20% x 2,430 (486) - 6% x 2,430 (145.80) - 7,700 / 2 (3,850)
+    # = 10,518.20, or £202.27 a week.
+    carers_allowance_earnings: 10_518.20
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: Case 13, a fraction of a penny over £204 is disregarded.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 10_608.26
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 10,608.26 / 52 = £204.005, which counts as £204.00 (reg. 5).
+    is_gainfully_employed_for_carers_allowance: false
+    carers_allowance: 86.45 * 52
+
+- name: Case 14, a whole penny over £204 is over the limit.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 10_608.52
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # 10,608.52 / 52 = £204.01.
+    is_gainfully_employed_for_carers_allowance: true
+    carers_allowance: 0
+
+- name: Case 15, pay and trading profit share one personal allowance.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 45
+    employment_income: 10_000
+    self_employment_income: 5_000
+    care_hours: 40
+    country: ENGLAND
+  output:
+    # Pay uses £10,000 of the allowance, leaving £2,570: trading tax
+    # 20% x (5,000 - 2,570) = 486. No Class 1 on £10,000; no Class 4 under
+    # £12,570. 15,000 - 486 = 14,514.
+    carers_allowance_earnings: 14_514
+    is_gainfully_employed_for_carers_allowance: true

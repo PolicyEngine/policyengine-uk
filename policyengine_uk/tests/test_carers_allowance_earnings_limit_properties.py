@@ -76,7 +76,8 @@ def test_bounds_and_differential(pay, profit, pension_share):
     result = _person(pay, profit, pension)
     earnings = result["carers_allowance_earnings"]
     assert -0.01 <= earnings <= pay + max(0, profit) + 0.01
-    over = earnings / WEEKS > LIMIT
+    # Regulation 5: a fraction of a penny is disregarded.
+    over = np.floor(earnings / WEEKS * 100 + 1e-6) / 100 > LIMIT
     assert bool(result["is_gainfully_employed_for_carers_allowance"]) == over
     expected = 0 if over else RATE * WEEKS
     assert abs(result["carers_allowance"] - expected) < 0.01

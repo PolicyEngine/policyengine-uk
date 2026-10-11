@@ -27,8 +27,17 @@ class is_carer_for_benefits(Variable):
     def formula(person, period, parameters):
         min_hours = parameters(period).gov.dwp.carers_allowance.min_hours
         meets_hours = person("care_hours", period) >= min_hours
+        # A reported Carer's Allowance award the person would claim is
+        # evidence of the caring itself, where no hours are recorded. It still
+        # counts when the earnings limit (which the Universal Credit carer
+        # element does not apply) stops the allowance being paid. An award the
+        # person would not claim counts no more than it did before.
+        reports_carers_allowance = (
+            person("carers_allowance_reported", period) > 0
+        ) & person("would_claim_carers_allowance", period)
         return (
             person("receives_carer_benefit", period)
             | person("is_entitled_to_carer_benefit", period)
             | meets_hours
+            | reports_carers_allowance
         )
