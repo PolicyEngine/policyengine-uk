@@ -18,9 +18,10 @@ head's benefit unit; the head's disability, Attendance Allowance, Carer's
 Allowance and blindness; all eight modelled schemes.
 
 1. Head's income counts: raising the liable household head's own private
-   pension by £5,000 raises their family's applicable income. Raising a
-   young parent's earnings by £5,000 leaves the family's applicable income
-   unchanged where the head applies alone.
+   pension by £5,000 raises their family's applicable income, unless the
+   family is on Pension Credit, whose assessment the pensioner schemes use
+   instead. Raising a young parent's earnings by £5,000 leaves the family's
+   applicable income unchanged where the head applies alone.
 2. Monotone: raising the head's pension never raises any family's simulated
    reduction.
 3. High income: with £250,000 more pension, the head's family gets no
@@ -236,9 +237,17 @@ def test_council_tax_reduction_assesses_the_liable_head(population):
     head_alone = family("council_tax_reduction_head_applies_alone", "base")
 
     # 1. The head's pension counts; a young parent's earnings do not where
-    # the head applies alone.
+    # the head applies alone. A family on Pension Credit is assessed through
+    # Pension Credit instead (guarantee credit: its whole income disregarded;
+    # savings credit only: Pension Credit's assessment of income; SI 2012/2885
+    # Sch 1 paras 13-14), so it is outside the first part.
     income = family("council_tax_reduction_applicable_income", "base")
-    assert (family("council_tax_reduction_applicable_income", "pension") > income).all()
+    on_pension_credit = np.zeros(len(population), dtype=bool)
+    for variant in ["base", "pension"]:
+        on_pension_credit |= family("in_receipt_of_guarantee_credit", variant)
+        on_pension_credit |= family("in_receipt_of_savings_credit_only", variant)
+    raised = family("council_tax_reduction_applicable_income", "pension")
+    assert (raised > income)[~on_pension_credit].all()
     parent_income = family("council_tax_reduction_applicable_income", "parent_earnings")
     assert np.allclose(parent_income[head_alone], income[head_alone])
 
