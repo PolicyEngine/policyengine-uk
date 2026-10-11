@@ -4,33 +4,42 @@ from policyengine_uk.model_api import *
 class is_benefit_cap_exempt_earnings(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether excepted from the benefit cap because of earnings"
-    documentation = (
-        "The Universal Credit earnings exception: the benefit cap does not "
-        "apply to an award of Universal Credit where the claimant's earned "
-        "income, or a couple's combined earned income, reaches the pay for "
-        "16 hours a week at the national living wage. It does not apply to "
-        "Housing Benefit, whose cap has its own exceptions (HB Regs 2006 "
-        "regs. 75E and 75F; entitlement to Working Tax Credit is in "
-        "is_benefit_cap_exempt_health_disability). The nine-month grace "
-        "period is not modelled."
-    )
+    label = "Whether exempt from the benefits cap because of earnings"
     definition_period = YEAR
-    reference = [
-        dict(
-            title="Universal Credit Regulations 2013 reg. 82(1)(a)",
-            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/82",
-        ),
-        dict(
-            title="Housing Benefit Regulations 2006 reg. 75E",
-            href="https://www.legislation.gov.uk/uksi/2006/213/regulation/75E",
-        ),
-    ]
+    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/82"
 
     def formula(benunit, period, parameters):
-        # Reg. 82(1): "The benefit cap does not apply to an award of
-        # universal credit ...". The award before the cap is read, since the
-        # award after it depends on this exception.
-        has_uc_award = benunit("universal_credit_pre_benefit_cap", period) > 0
-        threshold_met = benunit("uc_benefit_cap_earnings_threshold_met", period)
-        return has_uc_award & threshold_met
+        # Regulation 82 of the Universal Credit Regulations 2013 excepts a
+        # claimant (or couple, on their combined income) from the benefit cap
+        # where their earned income reaches 16 hours a week at the National
+        # Living Wage. Earned income here is employed and self-employed
+        # earnings net of the income tax, National Insurance and relievable
+        # pension contributions attributable to those earnings (reg. 55(5),
+        # reg. 57), not net of total tax on all income.
+        #
+        # Reg. 82(1)(a) tests "the claimant's earned income or, if the
+        # claimant is a member of a couple, the couple's combined earned
+        # income": a dependant's earnings do not count.
+        #
+        # Only earned income is read, not the Universal Credit award itself,
+        # to avoid a circular dependency with the cap.
+        person = benunit.members
+        claimant = person("is_uc_assessed_claimant", period)
+        earnings = person("employment_income", period) + person(
+            "self_employment_income", period
+        )
+        # earned_income_tax is the tax on non-savings, non-dividend income,
+        # which excludes property, savings and dividend income. It is the
+        # closest available measure of tax on earnings; it still includes tax
+        # on private and state pension income, which is the approximation we
+        # accept here (households with pension income are generally already
+        # exempt through the state pension age exception).
+        deductions = (
+            person("earned_income_tax", period)
+            + person("national_insurance", period)
+            + person("pension_contributions", period)
+        )
+        net_earnings = max_(0, benunit.sum((earnings - deductions) * claimant))
+
+        monthly_threshold = parameters(period).gov.dwp.benefit_cap_earnings_exemption
+        return net_earnings >= monthly_threshold * MONTHS_IN_YEAR

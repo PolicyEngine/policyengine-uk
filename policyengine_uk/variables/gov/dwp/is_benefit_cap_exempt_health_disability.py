@@ -22,7 +22,6 @@ class is_benefit_cap_exempt_health_disability(Variable):
         # not lift the cap.
         not_a_claimant = other_member_of_single_claim_in_shared_rules(person, period)
 
-        # UC-specific exemptions
         # Limited capability for work and work-related activity
         has_lcwra = benunit.any(
             person("uc_limited_capability_for_WRA", period) & ~not_a_claimant
@@ -30,17 +29,6 @@ class is_benefit_cap_exempt_health_disability(Variable):
 
         # Carer element in UC indicates caring for someone with disability
         gets_uc_carer_element = benunit("uc_carer_element", period) > 0
-
-        # Earnings exemption for UC (£846/month = £10,152/year)
-        # Note: Only check earned income, not UC amount itself to avoid circular dependency
-        uc_earned = benunit.sum(
-            benunit.members("employment_income", period)
-            + benunit.members("self_employment_income", period)
-            - benunit.members("income_tax", period)
-            - benunit.members("national_insurance", period)
-        )
-        earnings_threshold = 10_152
-        meets_earnings_test = uc_earned >= earnings_threshold
 
         # Disability and carer benefits that exempt from cap
         QUAL_PERSONAL_BENEFITS = [
@@ -54,6 +42,8 @@ class is_benefit_cap_exempt_health_disability(Variable):
             "pip_dl",  # PIP daily living component
             "pip_m",  # PIP mobility component
             "iidb",  # Industrial injuries disability benefit
+            # Armed Forces Independence Payment is a statutory exemption
+            "armed_forces_independence_payment",
         ]
 
         # ESA and Working Tax Credit
