@@ -61,6 +61,8 @@ jobs:
         env:
           EVENT: ${{ github.event_name }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           INPUT_BASE: ${{ inputs.base }}
           INPUT_HEAD: ${{ inputs.head }}
         run: |
@@ -68,15 +70,19 @@ jobs:
           # the base, so the comparison is exactly what merging would change.
           if [ "$EVENT" = "pull_request" ]; then
             base="$PR_BASE"; head="$GITHUB_SHA"
+            base_name="$PR_BASE_REF"; head_name="#$PR_NUMBER merged into $PR_BASE_REF"
           else
             base="${INPUT_BASE:-main}"; head="${INPUT_HEAD:-$GITHUB_SHA}"
+            base_name="$base"; head_name="${INPUT_HEAD:-$GITHUB_REF_NAME}"
           fi
           echo "base=$base" >> "$GITHUB_OUTPUT"
           echo "head=$head" >> "$GITHUB_OUTPUT"
           if [ "${{ matrix.side }}" = "base" ]; then
             echo "model=$base" >> "$GITHUB_OUTPUT"
+            echo "name=$base_name" >> "$GITHUB_OUTPUT"
           else
             echo "model=$head" >> "$GITHUB_OUTPUT"
+            echo "name=$head_name" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Check out the head (tool, pin, partition fallback)
@@ -110,7 +116,7 @@ jobs:
           HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
           ACTOR: ${{ github.actor }}
           SIDE: ${{ matrix.side }}
-          MODEL_SHA: ${{ steps.commits.outputs.model }}
+          MODEL_NAME: ${{ steps.commits.outputs.name }}
         run: |
           if [ -z "$HUGGING_FACE_TOKEN" ]; then
             if [ "$ACTOR" = "dependabot[bot]" ]; then
@@ -133,7 +139,7 @@ jobs:
             --reforms ../tool-source/policyengine_uk/tests/microsimulation/reforms_config.yaml \
             --fallback-partition ../tool-source/policyengine_uk/data/fiscal_partition.yaml \
             --git-sha "$(git rev-parse HEAD)" \
-            --git-ref "$MODEL_SHA" \
+            --git-ref "$MODEL_NAME" \
             --out "$GITHUB_WORKSPACE/out/$SIDE"
           status=$?
           set -e
