@@ -10,8 +10,14 @@ class is_child_or_qualifying_young_person_for_pension_credit(Variable):
     not for a qualifying young person they live with as a couple (State
     Pension Credit Regulations 2002 Sch. IIA para. 3(1)-(2)). So the benefit
     unit's claimant and partner are never its children or qualifying young
-    persons, whatever their age or education. Nor is a child or qualifying
-    young person looked after by a local authority (para. 4).
+    persons, whatever their age or education.
+
+    The model also leaves out every child or qualifying young person looked
+    after by a local authority (para. 4(1)). That is broader than the law:
+    para. 4(3) keeps the claimant responsible during a planned short break
+    for respite, while the child is placed with or still lives with a parent
+    or a person with parental responsibility, and during a placement for
+    adoption. The model has no input for those exceptions.
     """
 
     value_type = bool
