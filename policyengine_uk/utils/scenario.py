@@ -1,12 +1,63 @@
 from pydantic import BaseModel, ConfigDict
-from typing import Optional, Callable, Dict, Type, Union
+from typing import Any, Literal, List, Optional, Callable, Dict, Type, Union
 from policyengine_core.simulations import Simulation
 from policyengine_core.reforms import Reform
-from policyengine_core.periods import period, instant
-from policyengine_uk.utils.parameters import (
-    check_parameter_not_removed,
-    uk_fiscal_year_period,
+from policyengine_uk.utils.dated_reforms import (
+    REFORM_DICT,
+    REFORM_FROM_DICT,
+    ParameterAssignment,
+    apply_legacy_overrides,
+    read_reform_dict,
+    read_reform_from_dict,
 )
+from policyengine_uk.utils.parameters import check_parameter_not_removed
+
+
+class DatedReform(BaseModel):
+    """A parameter reform dict and the route whose key reading it takes.
+
+    ``reading`` is ``"reform_dict"`` for a dict passed as a reform and
+    ``"reform_from_dict"`` for the dict behind a policyengine-core
+    ``Reform.from_dict`` class. See ``policyengine_uk.utils.dated_reforms``.
+    """
+
+    reading: Literal["reform_dict", "reform_from_dict"]
+    changes: Dict[str, Any]
+
+    def read(self, defines, order_start: int = 0, warn: bool = False):
+        if self.reading == REFORM_DICT:
+            return read_reform_dict(self.changes, defines, order_start, warn=warn)
+        return read_reform_from_dict(self.changes, defines, order_start)
+
+
+def _is_reform_from_dict(reform: Type[Reform]) -> bool:
+    """Whether a Reform class was built by ``Reform.from_dict``."""
+    return reform.__qualname__ == "Reform.from_dict.<locals>.reform" and isinstance(
+        getattr(reform, "parameter_values", None), dict
+    )
+
+
+def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None]:
+    """Apply what a dated reform leaves to the annualised parameters.
+
+    That is single-day or single-month reform-dict keys and paths the
+    statutory tree does not define, such as a parameter a structural reform
+    in the same tuple adds. The simulation applies the rest from the
+    statutory timeline before any modifier runs.
+    """
+
+    def modifier(simulation: Simulation) -> None:
+        from policyengine_uk.tax_benefit_system import statutory_parameter_defines
+
+        _, legacy = dated.read(statutory_parameter_defines(), warn=True)
+        if not legacy:
+            return
+        apply_legacy_overrides(simulation.tax_benefit_system.parameters, legacy)
+        simulation.tax_benefit_system.reset_parameter_caches()
+        if getattr(simulation, "populations", None) is not None:
+            simulation._invalidate_all_caches()
+
+    return modifier
 
 
 def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
@@ -53,6 +104,9 @@ class Scenario(BaseModel):
         ]
     ] = None
     """A dictionary of parameter changes to apply to the simulation. These are applied *before* parameter operations."""
+
+    dated_reforms: Optional[List[DatedReform]] = None
+    """Reform dicts written onto the statutory timeline, in order, after ``parameter_changes``. ``Scenario.from_reform`` builds these from a dict or a ``Reform.from_dict`` class."""
 
     simulation_modifier: Optional[Callable[["Simulation"], None]] = None
     """A function that modifies the simulation before running it."""
@@ -101,11 +155,25 @@ class Scenario(BaseModel):
         elif other.simulation_modifier:
             combined_modifier = other.simulation_modifier
 
+        dated_reforms = (self.dated_reforms or []) + (other.dated_reforms or [])
+
         # Return new scenario with merged configuration
         return Scenario(
             parameter_changes=merged_params if merged_params else None,
+            dated_reforms=dated_reforms or None,
             simulation_modifier=combined_modifier,
         )
+
+    def dated_assignments(self, order_start: int = 0) -> List[ParameterAssignment]:
+        """The statutory-timeline changes of ``dated_reforms``, in order."""
+        from policyengine_uk.tax_benefit_system import statutory_parameter_defines
+
+        defines = statutory_parameter_defines()
+        assignments: List[ParameterAssignment] = []
+        for dated in self.dated_reforms or []:
+            read, _ = dated.read(defines, order_start + len(assignments))
+            assignments += read
+        return assignments
 
     @classmethod
     def from_reform(cls, reform: Union[tuple, dict, Type[Reform]]) -> "Scenario":
@@ -120,12 +188,17 @@ class Scenario(BaseModel):
                 - A tuple of any of these (nested tuples allowed), applied
                   in order
 
-        A dict keeps this module's reading of its keys, including inside a
-        tuple: a bare-year key such as ``"2026"`` changes that fiscal year
-        only, and a scalar value applies from 2023. ``Reform.from_dict``
-        (and policyengine-core's ``Simulation.apply_reform``, which turns a
-        dict into one) reads a bare year as that year onwards. The two agree
-        for ``"YYYY-MM-DD.YYYY-MM-DD"`` keys.
+        A dict, or the dict behind a ``Reform.from_dict`` class, is written
+        onto the statutory timeline and the parameters are processed as
+        current law is, so a change dated 6 April sets that fiscal year and
+        derived parameters (uprating, the indexed thresholds) follow it. Each
+        keeps its reading of period keys, including inside a tuple: in a
+        dict, a bare-year key such as ``"2026"`` changes that fiscal year
+        only, a single-day key overrides the annualised parameter on that
+        day only, and a scalar value applies from 2023. ``Reform.from_dict``
+        reads a bare year or a date as that instant onwards. The two agree
+        for ``"YYYY-MM-DD.YYYY-MM-DD"`` keys. See
+        ``policyengine_uk.utils.dated_reforms``.
 
         Returns:
             A new Scenario configured with the reform
@@ -144,6 +217,15 @@ class Scenario(BaseModel):
             )
 
         if isinstance(reform, type) and issubclass(reform, Reform):
+            if _is_reform_from_dict(reform):
+                dated = DatedReform(
+                    reading=REFORM_FROM_DICT, changes=reform.parameter_values
+                )
+                return cls(
+                    dated_reforms=[dated],
+                    simulation_modifier=_legacy_override_modifier(dated),
+                )
+
             reform_class = reform
 
             def modifier(simulation: Simulation) -> None:
@@ -154,47 +236,12 @@ class Scenario(BaseModel):
             )
 
         elif isinstance(reform, dict):
-            # Dictionary of parameter changes
-            # Make sure to capture YYYY-MM-DD.YYYY-MM-DD.
-
-            def modifier(sim: Simulation):
-                for parameter in reform:
-                    check_parameter_not_removed(parameter)
-                    target = sim.tax_benefit_system.parameters.get_child(parameter)
-                    if isinstance(reform[parameter], dict):
-                        for period_str, value in reform[parameter].items():
-                            if "." in period_str:
-                                start = instant(period_str.split(".")[0])
-                                stop = instant(period_str.split(".")[1])
-                                period_ = None
-                            else:
-                                start = None
-                                stop = None
-                                period_ = (
-                                    uk_fiscal_year_period(period_str)
-                                    if target.metadata.get("preserve_calendar_dates")
-                                    else period(period_str)
-                                )
-                            target.update(
-                                start=start,
-                                stop=stop,
-                                period=period_,
-                                value=value,
-                            )
-                    else:
-                        start = instant("2023-01-01")
-                        stop = None
-                        period_ = None
-
-                        target.update(
-                            start=start,
-                            stop=stop,
-                            period=period_,
-                            value=reform[parameter],
-                        )
-
-            return Scenario(
-                simulation_modifier=modifier,
+            for parameter in reform:
+                check_parameter_not_removed(parameter)
+            dated = DatedReform(reading=REFORM_DICT, changes=dict(reform))
+            return cls(
+                dated_reforms=[dated],
+                simulation_modifier=_legacy_override_modifier(dated),
             )
 
         elif isinstance(reform, tuple):
@@ -231,9 +278,15 @@ class Scenario(BaseModel):
 
         First applies parameter changes, then runs the simulation modifier if present.
 
+        A scenario's ``dated_reforms`` rebuild the simulation's parameters
+        from the statutory tree first, which discards earlier edits to them.
+
         Args:
             simulation: The simulation to modify
         """
+        if self.dated_reforms:
+            simulation.apply_parameter_assignments(self.dated_assignments())
+
         # Apply parameter changes first
         if self.parameter_changes:
             for path, value in self.parameter_changes.items():
@@ -275,6 +328,8 @@ class Scenario(BaseModel):
         parts = []
         if self.parameter_changes:
             parts.append(f"parameter_changes={len(self.parameter_changes)} items")
+        if self.dated_reforms:
+            parts.append(f"dated_reforms={len(self.dated_reforms)} items")
         if self.simulation_modifier:
             parts.append("simulation_modifier=<function>")
         return f"Scenario({', '.join(parts)})"
