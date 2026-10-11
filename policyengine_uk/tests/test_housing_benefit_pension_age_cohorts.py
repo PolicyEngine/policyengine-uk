@@ -22,8 +22,9 @@ Invariants, for any pension-age single person or couple in any year:
    earlier date of birth never gives a lower allowance.
 4. Before April 2021 there was one pension-age rate, which every pension-age
    unit gets.
-5. The lower rates and the cutoff equal the statute's table for every year
-   2021-22 to 2026-27 (hard-coded below from legislation.gov.uk).
+5. The lower rates, the higher rates and the cutoff equal the statute's table
+   for every year 2021-22 to 2026-27 (hard-coded below from legislation.gov.uk
+   and DWP's Benefit and pension rates).
 6. Council Tax Reduction: England's pensioner scheme has the same split and
    amounts (SI 2012/2885 Sch 2 para 1, amended by SI 2021/29), so its
    allowance equals Housing Benefit's; the Scottish and Welsh schemes have
@@ -222,3 +223,27 @@ def test_lower_rates_and_cutoff_match_the_statute(year):
     assert P.lone_parent.aged_from_cutoff(at) == pytest.approx(single, abs=1e-6)
     assert P.couple.aged_from_cutoff(at) == pytest.approx(couple, abs=1e-6)
     assert P.pension_age_cutoff(at) == 20210401
+
+
+# SI 2006/214 Sch 3 para 1(1)(b) and (2)(b), weekly, for those who attained State
+# Pension age before 1 April 2021, set by the Up-rating Orders SI 2021/162,
+# 2022/292, 2023/316, 2024/242, 2025/295 and 2026/148; the same amounts are in
+# DWP's Benefit and pension rates for each year.
+STATUTE_HIGHER_RATES = {
+    2021: (191.15, 286.05),
+    2022: (197.10, 294.90),
+    2023: (217.00, 324.70),
+    2024: (235.20, 352.00),
+    2025: (244.40, 366.00),
+    2026: (256.00, 383.35),
+}
+
+
+@pytest.mark.parametrize("year", sorted(STATUTE_HIGHER_RATES))
+def test_higher_rates_match_the_statute(year):
+    """Invariant 5."""
+    single, couple = STATUTE_HIGHER_RATES[year]
+    at = f"{year}-06-01"
+    assert P.single.aged(at) == pytest.approx(single, abs=1e-6)
+    assert P.lone_parent.aged(at) == pytest.approx(single, abs=1e-6)
+    assert P.couple.aged(at) == pytest.approx(couple, abs=1e-6)
