@@ -20,7 +20,11 @@ Invariants, for Child Benefit, Child Tax Credit and Pension Credit:
 3. Every other member keeps the programme's status test: they are the
    unit's child or qualifying young person exactly when they are a child or
    qualifying young person for the programme (and, for CTC and Pension
-   Credit, not looked after by a local authority).
+   Credit, not looked after by a local authority). This restates the
+   formula from the status variables, to hold the composition in place;
+   invariants 2 and 4 and the oracle in
+   test_child_and_adult_definitions_properties.py are the independent
+   checks.
 4. Child Benefit entitlement equals an independent count: the eldest such
    member at the eldest-child rate, each other at the additional rate, for
    52 weeks.

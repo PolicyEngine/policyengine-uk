@@ -156,3 +156,89 @@
   output:
     is_child_or_qualifying_young_person_for_child_tax_credit: [false, true]
     CTC_child_element: 3_455
+
+- name: Case 8, Child Tax Credit counts no child element for a partner aged 18 at school (Case H).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 30
+        is_claimant_or_partner: true
+      partner:
+        age: 18
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    is_child_or_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+# Known limitation, not a rule of law. When a household is entered with no
+# roles, is_claimant_or_partner reads an 18- or 19-year-old at school as the
+# head's partner unless the head is at least 16 years older or someone is
+# flagged a parent. The model then treats the two as a couple everywhere,
+# and so pays no Child Benefit for the 18-year-old. Supplying the roles, or
+# flagging the parent, restores it. In law the head can claim for a young
+# person who lives with them, whatever their relationship (SSCBA 1992
+# s.143(1)(a)).
+- name: Case 9, with no roles supplied an 18-year-old at school 15 years younger than the head is read as their partner.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 33
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [head, student]
+  output:
+    is_claimant_or_partner: [true, true]
+    is_couple: true
+    is_child_or_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit_entitlement: 0
+
+- name: Case 10, the same family with the head flagged a parent gets Child Benefit for the 18-year-old.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 33
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [head, student]
+  output:
+    is_claimant_or_partner: [true, false]
+    is_couple: false
+    is_child_or_qualifying_young_person_for_child_benefit: [false, true]
+    child_benefit_entitlement: 1_406.60
+
+- name: Case 11, the same family with the roles supplied gets Child Benefit for the 18-year-old.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 33
+        is_claimant_or_partner: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [head, student]
+  output:
+    is_child_or_qualifying_young_person_for_child_benefit: [false, true]
+    child_benefit_entitlement: 1_406.60
