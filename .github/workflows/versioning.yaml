@@ -313,8 +313,9 @@ jobs:
           # absent or partial: upload. complete: a re-run after a successful
           # upload; nothing to do. conflict (exit 3): PyPI has other bytes
           # under this version, so stop.
-          state=$(python3 .github/release_artifacts.py pypi-state --dist dist --version "$VERSION" | tee /dev/stderr | head -n 1)
-          echo "state=$state" >> "$GITHUB_OUTPUT"
+          python3 .github/release_artifacts.py pypi-state --dist dist \
+            --version "$VERSION" | tee "$RUNNER_TEMP/pypi-state.txt"
+          echo "state=$(head -n 1 "$RUNNER_TEMP/pypi-state.txt")" >> "$GITHUB_OUTPUT"
       - name: Publish to PyPI
         if: steps.pypi.outputs.state != 'complete'
         uses: pypa/gh-action-pypi-publish@release/v1
