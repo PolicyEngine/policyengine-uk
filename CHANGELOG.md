@@ -1,3 +1,11 @@
+## [2.126.8] - 2026-10-11
+
+### Fixed
+
+- - Let a household situation state whether its Universal Credit health element is at the new-claimant rate (`uc_receives_new_claimant_health_element`, default false), so a household's award no longer depends on its position among the other benefit units in a simulation; simulations built from data keep the seeded draw.
+- - Corrected a property test that claimed adding an adult outside the claimant's family never changes the legacy award readers: an adult non-dependant ends the family's severe disability premium, so the test now checks that what such a member reports never changes a reader, that their presence changes one only through that premium, and that Income Support then falls by at most the premium. The benefit cap, which counts such a member's own awards, is held at zero in that test until #2298 is fixed.
+
+
 ## [2.126.7] - 2026-10-11
 
 ### Fixed
