@@ -589,6 +589,11 @@ def enter_by_rebuilding_from_a_situation(simulation, year, amount):
 
 def enter_by_rebuilding_from_a_frame(simulation, year, amount):
     frame = Simulation(situation=element_situation(year)).to_input_dataframe()
+    # A situation sets no identifiers. The two people share a benefit unit
+    # and a household.
+    frame[f"person_id__{year}"] = [1, 2]
+    frame[f"benunit_id__{year}"] = 1
+    frame[f"household_id__{year}"] = 1
     frame[f"uc_LCWRA_element__{year}"] = amount
     simulation.build_from_dataframe(frame)
 
