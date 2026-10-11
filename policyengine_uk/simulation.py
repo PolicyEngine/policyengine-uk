@@ -1,6 +1,5 @@
 # Standard library imports
 import os
-from contextvars import ContextVar
 from typing import Dict, Optional, Union, Type, List
 
 # Third-party imports
@@ -51,9 +50,31 @@ from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
 
 from microdf import MicroDataFrame
 
-# While Simulation.apply_reform runs: the simulation applying the reform, and
-# the names of the variables the reform sets inputs for on it.
-_reform_inputs: ContextVar = ContextVar("reform_inputs", default=None)
+
+class _InputKeyLog(set):
+    """A simulation's record of its inputs while Simulation.apply_reform runs.
+
+    policyengine-core records each input in the simulation's
+    ``_user_input_keys`` as (variable, branch, period). ``Holder._set`` adds
+    the key once it has stored the value, again when it replaces one, and on
+    every route: ``Simulation.set_input``, ``Holder.set_input``, a
+    ``set_input`` helper, another thread. A value core does not store adds
+    no key: one ``Simulation.set_input`` gets for a period after the
+    variable's end, one for a neutralized variable, or one for a sub-period
+    that a ``set_input`` helper skips because it already holds an input.
+    This set also adds each key to every set in ``logs``: one for each
+    reform being applied to the simulation, the innermost last.
+    """
+
+    def __init__(self, keys, logs: list):
+        super().__init__(keys)
+        self.logs = logs
+
+    def add(self, key) -> None:
+        super().add(key)
+        for log in self.logs:
+            log.add(key)
+
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
 # by URL. Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
@@ -257,13 +278,20 @@ class Simulation(CoreSimulation):
         system = self.tax_benefit_system
         linked = getattr(system, "simulation", None)
         system.simulation = self
-        recorded = self._recorded_inputs()
-        written = set()
-        token = _reform_inputs.set((self, written))
+        # Log the inputs the reform stores (see _InputKeyLog). Within another
+        # reform applied to this simulation (a tuple's parts, or a reform
+        # that applies one), log them for that one too.
+        keys = getattr(self, "_user_input_keys", None)
+        enclosing = keys.logs if isinstance(keys, _InputKeyLog) else []
+        stored = set()
+        self._user_input_keys = _InputKeyLog(keys or (), enclosing + [stored])
         try:
             super().apply_reform(reform)
         finally:
-            _reform_inputs.reset(token)
+            # Core rebuilds the record as a plain set once the reform is
+            # applied, but not if it raised. Resume the enclosing reform's log.
+            keys = set(self._user_input_keys)
+            self._user_input_keys = _InputKeyLog(keys, enclosing) if enclosing else keys
             if linked is not None:
                 system.simulation = linked
         # input_variables is taken when the simulation is built.
@@ -271,36 +299,23 @@ class Simulation(CoreSimulation):
         # variable it does not name, and the marginal rate formulas those of
         # every such variable that has a formula. A reform applied afterwards
         # (a Reform class passed as reform=, or one applied to a clone or
-        # branch) can set inputs: new ones, or ones that replace an input set
-        # since the build. Name every variable it sets, or a reset would
-        # delete what it set and recalculate the formula. Assign a new list:
-        # a clone or branch shares its parent's.
+        # branch) can store inputs: new ones, or ones that replace an input
+        # set since the build. Name every variable with an input the reform
+        # stored that this simulation still holds, under a branch name it
+        # reads and a reset deletes, or a reset would delete what the reform
+        # stored and recalculate the formula. Assign a new list: a clone or
+        # branch shares its parent's.
         input_variables = getattr(self, "input_variables", None)
         if input_variables is not None:
-            inputs = self._recorded_inputs()
-            supplied = {key[0] for key in inputs - recorded}
-            # Replacing an input already recorded adds no record, so also
-            # name what the reform set through set_input that is still an
-            # input of this simulation.
-            supplied |= written & {
-                key[0] for key in inputs if key[1] == self.branch_name
+            branches = set(self._get_visible_branch_names())
+            supplied = {
+                name
+                for name, branch, _ in stored & self._user_input_keys
+                if branch in branches
             }
             added = sorted(supplied - set(input_variables))
             if added:
                 self.input_variables = list(input_variables) + added
-
-    def set_input(self, variable_name: str, period: Period, value) -> None:
-        super().set_input(variable_name, period, value)
-        # Record what a reform being applied to this simulation sets (see
-        # apply_reform). A clone or branch made meanwhile records nothing.
-        applying = _reform_inputs.get()
-        if applying is not None and applying[0] is self:
-            applying[1].add(variable_name)
-
-    def _recorded_inputs(self) -> set:
-        # policyengine-core records each (variable, branch, period) that
-        # set_input stores in _user_input_keys.
-        return set(getattr(self, "_user_input_keys", None) or ())
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
