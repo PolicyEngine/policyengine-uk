@@ -11,8 +11,10 @@ from policyengine_uk.utils.aggregate_impact.api import to_report
 from policyengine_uk.utils.aggregate_impact.measure import (
     Recorder,
     _finite_metrics_check,
+    _digest_tool_files,
     definitions_digest,
     measure_reforms,
+    tool_digest,
 )
 from policyengine_uk.utils.aggregate_impact.reforms import load_reforms, parse_reforms
 from policyengine_uk.utils.aggregate_impact.spec import load_spec
@@ -142,3 +144,8 @@ def test_the_long_format_report_carries_each_checks_failing_years():
         and metric["partition"] == "income_tax"
     )
     assert metric["kind"] == "receipt" and metric["year"] == 2025
+
+
+def test_the_tool_digest_is_taken_at_load_and_matches_the_files():
+    assert tool_digest() == _digest_tool_files()
+    assert len(tool_digest()) == 64

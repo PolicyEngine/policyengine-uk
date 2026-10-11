@@ -160,8 +160,7 @@ def slug(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
 
 
-def tool_digest() -> str:
-    """SHA-256 of this package's code and spec, independent of where it lives."""
+def _digest_tool_files() -> str:
     root = Path(__file__).resolve().parent
     digest = hashlib.sha256()
     for path in sorted(root.rglob("*")):
@@ -169,6 +168,16 @@ def tool_digest() -> str:
             digest.update(path.relative_to(root).as_posix().encode() + b"\0")
             digest.update(path.read_bytes() + b"\0")
     return digest.hexdigest()
+
+
+# Taken when this module loads, so a result is stamped with the code that
+# produced it even if the files change while a measurement runs.
+_TOOL_DIGEST = _digest_tool_files()
+
+
+def tool_digest() -> str:
+    """SHA-256 of this package's code and spec, independent of where it lives."""
+    return _TOOL_DIGEST
 
 
 def definitions_digest(spec: Spec, reforms: Sequence) -> str:
