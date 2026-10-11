@@ -34,6 +34,7 @@ from policyengine_uk.data.economic_assumptions import (
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
+    hold_identifiers_in,
     with_identifiers_in_each_year,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
@@ -451,6 +452,14 @@ class Simulation(CoreSimulation):
             ),
             self.tax_benefit_system,
         )
+
+    def set_input(self, variable_name: str, period, value) -> None:
+        """Set an input as policyengine-core does, then give the simulation
+        its identifiers for the year the input starts in if it holds them
+        only for later years, since inputs do not carry back. See
+        ``policyengine_uk.data.input_dataframe.hold_identifiers_in``."""
+        super().set_input(variable_name, period, value)
+        hold_identifiers_in(self, period)
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.

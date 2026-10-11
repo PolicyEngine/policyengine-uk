@@ -20,7 +20,11 @@ The identifiers hold for every period, and a simulation built from a frame
 holds them all as inputs in each whole year a column names.
 ``Simulation.to_input_dataframe`` gives them for each such year too
 (``with_identifiers_in_each_year``), so that an exported frame loads back to
-a simulation that exports it again.
+a simulation that exports it again. Inputs carry forward but not back, so
+``Simulation.set_input`` gives a simulation its identifiers for a year
+before every year it holds them for when it is given an input there
+(``hold_identifiers_in``). Formulas that read them then read the same people
+and groups in that year as the simulation the frame loads back to.
 """
 
 import warnings
@@ -28,7 +32,7 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from policyengine_core.periods import period as period_
+from policyengine_core.periods import ETERNITY, period as period_
 
 from policyengine_uk.data.dataset_schema import (
     UKMultiYearDataset,
@@ -440,6 +444,45 @@ def dataset_from_input_dataframe(
     return UKMultiYearDataset(datasets=datasets), replayed, identifier_inputs
 
 
+def hold_identifiers_in(simulation, period) -> None:
+    """Give ``simulation`` its identifiers for the year ``period`` starts in,
+    if they start later.
+
+    policyengine-core carries an input forward to later periods but never
+    back (``Simulation._calculate``). So a simulation given an input for a
+    year before its data, such as 2023 for a frame of 2025, would hold no
+    identifiers there. Formulas would read every person, benefit unit and
+    household identifier there as zero, the default. Yet the simulation it
+    exports to holds them there, since the dataset a frame loads as holds the
+    people and groups in each year the frame gives values for
+    (``dataset_from_input_dataframe``).
+
+    So each identifier that ``simulation`` holds as an input for some period,
+    but for none that starts by the first day of the year ``period`` starts
+    in, is set for that year to its value in the period it is held for that
+    starts first. A simulation holds one set of people and groups, so that
+    value names the same ones. From that year on the identifier carries
+    forward, so the simulation holds its identifiers in each year it holds an
+    input for. An identifier the simulation does not hold as an input, as in
+    one built from a situation, is left alone.
+    """
+    period = period_(period)
+    if period.unit == ETERNITY:
+        return
+    year = period_(str(period.start.year))
+    branch = simulation.branch_name
+    for identifier in sorted(IDENTIFIER_VARIABLES):
+        holder = simulation.get_holder(identifier)
+        held = holder.get_input_periods(branch)
+        if not held:
+            continue
+        first = min(held, key=lambda held_period: held_period.start)
+        if first.start > year.start:
+            simulation.set_input(
+                identifier, year, np.array(holder.get_array(first, branch))
+            )
+
+
 def with_identifiers_in_each_year(
     df: pd.DataFrame, tax_benefit_system: "TaxBenefitSystem"
 ) -> pd.DataFrame:
@@ -456,11 +499,11 @@ def with_identifiers_in_each_year(
     for a year after its data once it was built, as the Universal Credit
     rebalancing records each benefit unit's health element status for 2026
     to 2029, holds its identifiers in that year only by carrying them forward
-    from an earlier one; and in a year before its data, where inputs do not
-    carry back, its identifiers are the default, zero. policyengine-core
-    exports an input only for the periods it was set for. Giving every
-    identifier for each year makes the frame load back to a simulation that
-    exports the same frame.
+    from an earlier one. (In a year before its data, where inputs do not
+    carry back, ``hold_identifiers_in`` gives it them as inputs.)
+    policyengine-core exports an input only for the periods it was set for.
+    Giving every identifier for each year makes the frame load back to a
+    simulation that exports the same frame.
 
     A simulation holds one set of people and groups, so every column of an
     identifier names the same ones (the loader refuses a frame whose columns

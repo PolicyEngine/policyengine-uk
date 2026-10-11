@@ -207,6 +207,12 @@ print(sim.calculate("council_tax", 2025))  # One value per household
   simulation was given inputs for years outside its data, such as the
   Universal Credit health element status the rebalancing records for 2026 to
   2029.
+- Inputs carry forward to later years but not back to earlier ones. So when
+  `set_input` gives a simulation an input for a year before every year it
+  holds the identifiers for, it also gives the identifiers for that year.
+  Formulas that read identifiers, such as the draws that place each person in
+  their year of age, then read the same people and groups there as in the
+  simulation its exported frame loads back to.
 
 ```{important}
 The model stores `person_household_id` and `person_benunit_id` as 32-bit
