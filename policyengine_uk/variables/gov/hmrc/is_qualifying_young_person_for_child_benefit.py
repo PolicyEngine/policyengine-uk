@@ -19,10 +19,10 @@ class is_qualifying_young_person_for_child_benefit(Variable):
         "August (1 September for a 16th birthday on 31 August) falls in the "
         "same fiscal year as Universal Credit's 1 September, so a year that "
         "starts before one starts before the other. Interruptions (reg. 6) "
-        "are not modelled. The own-right benefits input covers Universal "
-        "Credit, Employment and Support Allowance and Jobseeker's Allowance "
-        "but not the Income Support, incapacity benefit and tax credits that "
-        "reg. 8 also lists."
+        "are not modelled. Reg. 8 is read from the own-right inputs for "
+        "Universal Credit, Employment and Support Allowance, Jobseeker's "
+        "Allowance and Income Support; the incapacity benefit and tax credits "
+        "it also lists are not."
     )
     definition_period = YEAR
     reference = [
@@ -67,5 +67,7 @@ class is_qualifying_young_person_for_child_benefit(Variable):
                 | in_extension_period
                 | before_terminal_date
             )
+            # Reg. 8.
             & ~person("receives_benefits_in_own_right", period)
+            & ~person("receives_income_support_in_own_right", period)
         )

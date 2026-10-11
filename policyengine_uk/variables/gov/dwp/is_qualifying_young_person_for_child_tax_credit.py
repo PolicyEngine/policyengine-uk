@@ -20,10 +20,11 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
         "until 30 August, and not the year after. The second condition "
         "(reg. 5(4)) always applies: a young person who has left education or "
         "training must not be in remunerative work, and no one may be "
-        "receiving a benefit in their own right. The own-right benefits "
-        "input covers Universal Credit, Employment and Support Allowance and "
-        "Jobseeker's Allowance, where reg. 5(4)(c) lists Universal Credit, "
-        "Income Support and the income-related and income-based allowances. "
+        "receiving a benefit in their own right. That is read from the "
+        "own-right inputs for Universal Credit, Employment and Support "
+        "Allowance, Jobseeker's Allowance and Income Support; reg. 5(4)(c) "
+        "lists Universal Credit, Income Support and only the income-related "
+        "and income-based allowances, which the inputs do not separate. "
         "Interruptions (reg. 5(7)) are not modelled."
     )
     definition_period = YEAR
@@ -70,4 +71,5 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
             )
             # Reg. 5(4)(c).
             & ~person("receives_benefits_in_own_right", period)
+            & ~person("receives_income_support_in_own_right", period)
         )
