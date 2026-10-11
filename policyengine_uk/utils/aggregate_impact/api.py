@@ -93,6 +93,9 @@ def to_report(result: dict) -> dict:
                 "year": None,
                 "status": check["status"],
                 "severity": check["severity"],
+                # The years the check failed in ("" for a check with no year),
+                # so a consumer can tell a newly failing year from an old one.
+                "failing_scopes": sorted(check.get("failing") or {}),
                 "detail": "; ".join(check["details"]),
             }
         )

@@ -7,6 +7,7 @@ import numpy as np
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
+from policyengine_uk.utils.aggregate_impact.api import to_report
 from policyengine_uk.utils.aggregate_impact.measure import (
     Recorder,
     _finite_metrics_check,
@@ -107,3 +108,37 @@ def test_the_digest_separates_different_horizons_and_reform_sets(first, length, 
     assert definitions_digest(a, reforms) != definitions_digest(b, reforms)
     fewer = reforms[:drop] + reforms[drop + 1 :]
     assert definitions_digest(a, fewer) != definitions_digest(a, reforms)
+
+
+def test_the_long_format_report_carries_each_checks_failing_years():
+    rec = Recorder()
+    rec.scope = "2025"
+    rec.check("identity:x", "x", False, "broken in 2025")
+    rec.scope = "2026"
+    rec.check("identity:x", "x", False, "broken in 2026")
+    rec.scope = ""
+    rec.check("closure", "closure", True)
+    rec.check("counted_once:y", "y", None, "zero for every unit")
+    rec.metric("receipts.income_tax", "Income tax", "receipts", "gbp", 2025, 1.0)
+    report = to_report(
+        {
+            "status": "ok",
+            "years": [2025, 2026],
+            "provenance": {"metrics_version": "v"},
+            "partition": {"sha256": "p"},
+            "metrics": list(rec.metrics.values()),
+            "checks": list(rec.checks.values()),
+        }
+    )
+    rows = {row["identity_id"]: row for row in report["identities"]}
+    assert rows["identity:x"]["failing_scopes"] == ["2025", "2026"]
+    assert rows["identity:x"]["status"] == "fail"
+    assert rows["closure"]["failing_scopes"] == []
+    assert rows["counted_once:y"]["status"] == "skipped"
+    assert rows["counted_once:y"]["failing_scopes"] == []
+    metric = report["metrics"][0]
+    assert (
+        metric["metric_id"] == "receipts.income_tax"
+        and metric["partition"] == "income_tax"
+    )
+    assert metric["kind"] == "receipt" and metric["year"] == 2025
