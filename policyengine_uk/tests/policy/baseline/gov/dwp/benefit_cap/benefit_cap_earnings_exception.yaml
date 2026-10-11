@@ -5,98 +5,158 @@
 # the claimant is a member of a couple, the couple's combined earned income"
 # is at least the pay for 16 hours a week at the reg. 4 National Minimum
 # Wage Regulations rate (the national living wage), times 52 and divided by
-# 12. Reg. 6(1A)(za) disregards a fraction of a pound in that amount.
+# 12. Reg. 6(1A)(za) disregards a fraction of a pound in that amount. Before
+# 1 April 2017 the amount was 430 a month. The monthly amounts are the
+# parameter gov.dwp.benefit_cap_earnings_exemption.
 # (4): earned income excludes income treated as earned under reg. 62 (the
 # minimum income floor).
-# The exception applies "to an award of universal credit": the income test is
-# uc_benefit_cap_earnings_threshold_met, and is_benefit_cap_exempt_earnings
-# also needs a UC award. Cases without one test the income test only.
+# The exception applies "to an award of universal credit": it does not except
+# a Housing Benefit award (HB Regs 2006 reg. 75E). Cases with no Housing
+# Benefit test the income test through is_benefit_cap_exempt_earnings.
 # Earned income is net of the person's own income tax, NI and relievable
 # pension contributions on their earnings (regs. 55(5), 57(2)); Class 3 is not
 # on earnings. In 2025-26 and 2026-27 the personal allowance and the primary
-# threshold are both 12,570 a year.
+# threshold are both 12,570 a year. In the earlier years tested here the
+# earnings are below both.
 
 # --- Threshold: 16 x national living wage x 52 / 12, whole pounds ---
 
-- name: Before 1 April 2017 the threshold was 430 a month
-  # Reg. 82(1)(a) as made; SI 2017/138 substituted the hours formula.
+- name: 2016-17 earnings of 5,160 meet the 430 a month threshold
+  # Reg. 82(1)(a) as made; S.I. 2017/138 substituted the hours formula
+  # from 1 April 2017.
+  # 430 x 12 = 5,160; "equal to or exceeds".
   period: 2016
   input:
     people:
       person:
         age: 30
+        employment_income: 5160
   output:
-    benefit_cap_earnings_threshold: 5_160 # 430 x 12
+    benefit_cap_earned_income: 5160
+    is_benefit_cap_exempt_earnings: true
 
-- name: 2017-18 threshold from the 7.50 national living wage
-  # 7.50 x 16 x 52 / 12 = 520.00.
+- name: 2016-17 earnings of 5,159 fall short of the 430 a month threshold
+  period: 2016
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 5159
+  output:
+    benefit_cap_earned_income: 5159
+    is_benefit_cap_exempt_earnings: false
+
+- name: 2017-18 earnings of 6,240 meet the 520 a month threshold
+  # National living wage 7.50: 7.50 x 16 x 52 / 12 = 520.00.
+  # 520 x 12 = 6,240; "equal to or exceeds".
   period: 2017
   input:
     people:
       person:
         age: 30
+        employment_income: 6240
   output:
-    benefit_cap_earnings_threshold: 6_240 # 520 x 12
+    benefit_cap_earned_income: 6240
+    is_benefit_cap_exempt_earnings: true
 
-- name: 2020-21 threshold rounds 604.59 down to 604 a month
-  # 8.72 x 16 x 52 / 12 = 604.59.
-  period: 2020
+- name: 2017-18 earnings of 6,239 fall short of the 520 a month threshold
+  period: 2017
   input:
     people:
       person:
         age: 30
+        employment_income: 6239
   output:
-    benefit_cap_earnings_threshold: 7_248 # 604 x 12
+    benefit_cap_earned_income: 6239
+    is_benefit_cap_exempt_earnings: false
 
-- name: 2022-23 threshold rounds 658.67 down to 658 a month
-  # 9.50 x 16 x 52 / 12 = 658.67.
-  period: 2022
+- name: 2018-19 earnings of 6,504 meet the 542 a month threshold
+  # National living wage 7.83: 7.83 x 16 x 52 / 12 = 542.88, rounded
+  # down to 542 (reg. 6(1A)(za)).
+  # 542 x 12 = 6,504; "equal to or exceeds".
+  period: 2018
   input:
     people:
       person:
         age: 30
+        employment_income: 6504
   output:
-    benefit_cap_earnings_threshold: 7_896 # 658 x 12
+    benefit_cap_earned_income: 6504
+    is_benefit_cap_exempt_earnings: true
 
-- name: 2024-25 threshold rounds 793.17 down to 793 a month
-  # 11.44 x 16 x 52 / 12 = 793.17.
-  period: 2024
+- name: 2018-19 earnings of 6,503 fall short of the 542 a month threshold
+  period: 2018
   input:
     people:
       person:
         age: 30
+        employment_income: 6503
   output:
-    benefit_cap_earnings_threshold: 9_516 # 793 x 12
+    benefit_cap_earned_income: 6503
+    is_benefit_cap_exempt_earnings: false
 
-- name: 2025-26 threshold is 846 a month
-  # 12.21 x 16 x 52 / 12 = 846.56; GOV.UK gives 846 to 31 March 2026.
-  period: 2025
+- name: 2019-20 earnings of 6,828 meet the 569 a month threshold
+  # National living wage 8.21: 8.21 x 16 x 52 / 12 = 569.23, rounded
+  # down to 569.
+  # 569 x 12 = 6,828; "equal to or exceeds".
+  period: 2019
   input:
     people:
       person:
         age: 30
+        employment_income: 6828
   output:
-    benefit_cap_earnings_threshold: 10_152 # 846 x 12
+    benefit_cap_earned_income: 6828
+    is_benefit_cap_exempt_earnings: true
 
-- name: 2026-27 threshold is 881 a month
-  # 12.71 x 16 x 52 / 12 = 881.23; GOV.UK gives 881 from 1 April 2026.
-  period: 2026
+- name: 2019-20 earnings of 6,827 fall short of the 569 a month threshold
+  period: 2019
   input:
     people:
       person:
         age: 30
+        employment_income: 6827
   output:
-    benefit_cap_earnings_threshold: 10_572 # 881 x 12
+    benefit_cap_earned_income: 6827
+    is_benefit_cap_exempt_earnings: false
+
+- name: 2023-24 earnings of 8,664 meet the 722 a month threshold
+  # National living wage 10.42 (S.I. 2023/354): 10.42 x 16 x 52 / 12 =
+  # 722.45, rounded down to 722. GOV.UK gave 722 for 2023-24.
+  # 722 x 12 = 8,664; "equal to or exceeds".
+  period: 2023
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 8664
+  output:
+    benefit_cap_earned_income: 8664
+    is_benefit_cap_exempt_earnings: true
+
+- name: 2023-24 earnings of 8,663 fall short of the 722 a month threshold
+  period: 2023
+  input:
+    people:
+      person:
+        age: 30
+        employment_income: 8663
+  output:
+    benefit_cap_earned_income: 8663
+    is_benefit_cap_exempt_earnings: false
 
 - name: The threshold uses the national living wage whatever the claimant's age
-  # Reg. 82(1)(a) refers to the reg. 4 rate, not the claimant's own rate.
+  # Reg. 82(1)(a) refers to the reg. 4 rate, not the claimant's own rate. A
+  # claimant aged 19 earning 10,572 meets the 2026-27 threshold of 881 x 12.
   period: 2026
   input:
     people:
       person:
         age: 19
+        employment_income: 10_572
   output:
-    benefit_cap_earnings_threshold: 10_572
+    benefit_cap_earned_income: 10_572
+    is_benefit_cap_exempt_earnings: true
 
 # --- Earned income at the threshold ---
 
@@ -111,7 +171,7 @@
         employment_income: 10_573
   output:
     benefit_cap_earned_income: 10_573
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: Earnings exactly at the 2026-27 threshold meet it
   # "equal to or exceeds": 10,572 >= 10,572.
@@ -123,7 +183,7 @@
         employment_income: 10_572
   output:
     benefit_cap_earned_income: 10_572
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: Earnings of 10,571 fall short of the 2026-27 threshold
   period: 2026
@@ -134,7 +194,7 @@
         employment_income: 10_571
   output:
     benefit_cap_earned_income: 10_571
-    uc_benefit_cap_earnings_threshold_met: false
+    is_benefit_cap_exempt_earnings: false
 
 - name: Earned income is net of the person's income tax and NI on the earnings
   # Tax (14,000 - 12,570) x 20% = 286; Class 1 (14,000 - 12,570) x 8% =
@@ -148,7 +208,7 @@
         employment_income: 14_000
   output:
     benefit_cap_earned_income: 13_599.60
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: Pension contributions are deducted from earned income
   # Reg. 55(5)(a): 11,500 - 1,000 = 10,500 < 10,572.
@@ -161,7 +221,7 @@
         employee_pension_contributions: 1_000
   output:
     benefit_cap_earned_income: 10_500
-    uc_benefit_cap_earnings_threshold_met: false
+    is_benefit_cap_exempt_earnings: false
 
 - name: Pension contributions paid at 74 are deducted
   # Under 75 the contribution is relievable (Finance Act 2004 s. 188(3)(a)):
@@ -202,7 +262,7 @@
         ni_class_3: 900
   output:
     benefit_cap_earned_income: 10_600
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: Tax on the person's property income is not deducted from their earnings
   # Earnings are the lowest slice of income and sit inside the personal
@@ -216,7 +276,7 @@
         property_income: 40_000
   output:
     benefit_cap_earned_income: 10_600
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: A partner's tax on property income does not reduce the couple's earned income
   period: 2026
@@ -233,7 +293,7 @@
         members: [earner, partner]
   output:
     benefit_cap_earned_income: 10_600
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: A couple's earned income is combined
   # Reg. 82(1)(a): 6,000 + 6,000 = 12,000 >= 10,572.
@@ -251,7 +311,7 @@
         members: [person1, person2]
   output:
     benefit_cap_earned_income: 12_000
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: Income treated as earned under the minimum income floor does not count
   # Reg. 82(4). Profits of 3,000 are below the Class 4 lower profits limit, so
@@ -267,7 +327,7 @@
   output:
     uc_mif_applies: true
     benefit_cap_earned_income: 3_000
-    uc_benefit_cap_earnings_threshold_met: false
+    is_benefit_cap_exempt_earnings: false
 
 - name: Earnings of 5,200 in 2016-17 meet the 430 a month threshold
   period: 2016
@@ -277,7 +337,7 @@
         age: 30
         employment_income: 5_200
   output:
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: Earnings of 9,520 in 2024-25 meet the 793 a month threshold
   period: 2024
@@ -287,7 +347,7 @@
         age: 30
         employment_income: 9_520
   output:
-    uc_benefit_cap_earnings_threshold_met: true
+    is_benefit_cap_exempt_earnings: true
 
 - name: Earnings of 9,500 in 2024-25 fall short of the 793 a month threshold
   period: 2024
@@ -297,7 +357,7 @@
         age: 30
         employment_income: 9_500
   output:
-    uc_benefit_cap_earnings_threshold_met: false
+    is_benefit_cap_exempt_earnings: false
 
 # --- #1986 counterexample ---
 
@@ -336,10 +396,9 @@
         rent: 36_000
   output:
     benefit_cap_earned_income: 10_300
-    benefit_cap_earnings_threshold: 10_152
+    is_uc_entitled: true
     is_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
-    uc_benefit_cap_earnings_threshold_met: true
 
 # --- The exception is for Universal Credit only ---
 
@@ -377,7 +436,8 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 36_000
   output:
-    uc_benefit_cap_earnings_threshold_met: true
+    # 9,600 >= 793 x 12 = 9,516: the reg. 82 income test is met.
+    benefit_cap_earned_income: 9_600
     universal_credit_pre_benefit_cap: 0
     is_benefit_cap_exempt_earnings: false
     is_benefit_cap_exempt: false

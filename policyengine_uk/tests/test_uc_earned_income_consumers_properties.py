@@ -23,11 +23,15 @@ taxable unearned income:
 2. Differential against the UC means test: benefit cap earned income equals
    the UC earned income before the work allowance when no one's minimum
    income floor applies, and never exceeds it; and switching every floor off
-   never changes it (reg. 82(4)). The exception is the income test plus a
-   UC award (reg. 82(1)), so it never applies to Housing Benefit alone.
-3. The threshold is 12 x floor(12.71 x 16 x 52 / 12) in 2026-27 and the same
-   formula on the national living wage parameter in every year, for every
-   family.
+   never changes it (reg. 82(4)). The exception is the income test, unless
+   the family has Housing Benefit and no UC award (reg. 82(1) excepts only
+   "an award of universal credit"), so it never applies to Housing Benefit
+   alone.
+3. Differential against the minimum wage: every dated value of the
+   threshold parameter (gov.dwp.benefit_cap_earnings_exemption) from 1 April
+   2017 is floor(16 x national living wage x 52 / 12), with the national
+   living wage read from gov.hmrc.minimum_wage, and 430 before then; the
+   fiscal-year values the model reads agree for every year.
 4. Monotone in earnings: the benefit cap income test is non-decreasing, and
    the childcare criterion non-increasing, in any adult's employment income.
    A fixed example crosses the childcare limit with a UC award throughout.
@@ -47,13 +51,21 @@ against employment income in uc_individual_earned_income but not in the
 benefit cap measure.
 """
 
+from pathlib import Path
+
+import yaml
+
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 from policyengine_uk.model_api import *
 from policyengine_uk.utils.scenario import Scenario
+
+# Load the model once; each simulation gets its own clone of it.
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 PROPERTY_SETTINGS = settings(
     max_examples=10,
@@ -158,9 +170,9 @@ def situation(units, year, bump=None, earnings_only=False, no_floor=False):
 
 BENUNIT_VARIABLES = [
     "benefit_cap_earned_income",
-    "benefit_cap_earnings_threshold",
     "is_benefit_cap_exempt_earnings",
-    "uc_benefit_cap_earnings_threshold_met",
+    "is_uc_entitled",
+    "housing_benefit_pre_benefit_cap",
     "universal_credit_pre_benefit_cap",
     "uc_earned_income_before_work_allowance",
     "uc_earned_income",
@@ -184,6 +196,11 @@ def calculate(units, year, scenario=None, **kwargs):
             sim.calculate("uc_mif_applies", year), "person", "benunit", "any"
         )
     )
+    # The reg. 82(1)(a) income test, recomputed from the threshold parameter.
+    monthly = sim.tax_benefit_system.parameters(
+        year
+    ).gov.dwp.benefit_cap_earnings_exemption
+    values["income_test"] = values["benefit_cap_earned_income"] >= monthly * 12
     return values
 
 
@@ -252,8 +269,8 @@ def test_benefit_cap_exception_ignores_tax_not_on_earnings(year, data):
         err_msg=f"{bump} {units}",
     )
     np.testing.assert_array_equal(
-        high["uc_benefit_cap_earnings_threshold_met"],
-        low["uc_benefit_cap_earnings_threshold_met"],
+        high["income_test"],
+        low["income_test"],
         err_msg=f"{bump} {units}",
     )
     # Unearned income can end the UC award, and with it the exception; where
@@ -279,11 +296,14 @@ def test_benefit_cap_earned_income_matches_uc_without_the_floor(units, year):
     uc = v["uc_earned_income_before_work_allowance"]
     no_floor = ~v["floor_applies"]
     np.testing.assert_allclose(cap[no_floor], uc[no_floor], atol=0.01, err_msg=units)
-    # The exception is the income test plus an award of UC (reg. 82(1)).
+    # The exception is the income test, except for a Housing Benefit award
+    # without a UC award (reg. 82(1) excepts "an award of universal credit").
+    uc_award = v["universal_credit_pre_benefit_cap"] > 0
+    np.testing.assert_array_equal(v["is_uc_entitled"], uc_award)
+    housing_benefit_only = (v["housing_benefit_pre_benefit_cap"] > 0) & ~uc_award
     np.testing.assert_array_equal(
         v["is_benefit_cap_exempt_earnings"],
-        v["uc_benefit_cap_earnings_threshold_met"]
-        & (v["universal_credit_pre_benefit_cap"] > 0),
+        v["income_test"] & ~housing_benefit_only,
         err_msg=str(units),
     )
     assert np.all(cap <= uc + 0.01), units
@@ -305,20 +325,72 @@ def test_minimum_income_floor_never_counts_for_the_benefit_cap(units, year):
     )
 
 
-@PROPERTY_SETTINGS
-@given(
-    units=st.lists(families(), min_size=1, max_size=8),
-    year=st.sampled_from(YEARS),
-)
-def test_benefit_cap_threshold_is_16_hours_at_the_living_wage(units, year):
-    v = calculate(units, year)
-    nlw = Simulation(situation={"people": {"p": {"age": {year: 30}}}}).calculate(
-        "minimum_wage", year
-    )[0]
-    expected = 12 * np.floor(nlw * 16 * 52 / 12)
-    np.testing.assert_allclose(v["benefit_cap_earnings_threshold"], expected)
-    if year == 2026:
-        np.testing.assert_allclose(v["benefit_cap_earnings_threshold"], 10_572)
+PARAMETERS = Path(__file__).parents[1] / "parameters" / "gov"
+THRESHOLD_FILE = PARAMETERS / "dwp" / "benefit_cap_earnings_exemption.yaml"
+MINIMUM_WAGE_FILE = PARAMETERS / "hmrc" / "minimum_wage" / "non_apprentice.yaml"
+
+
+def _dated(values):
+    """{date: value} from a parameter's values, plain or with references."""
+    return {
+        str(date): value["value"] if isinstance(value, dict) else value
+        for date, value in values.items()
+    }
+
+
+def _value_at(values, date):
+    return values[max(d for d in values if d <= date)]
+
+
+def test_benefit_cap_threshold_parameter_matches_the_living_wage():
+    # Reg. 82(1)(a): 16 hours a week at the reg. 4 rate (the national living
+    # wage, the top age band of the minimum wage schedule), x 52 / 12, with
+    # any fraction of a pound disregarded (reg. 6(1A)(za)). Before 1 April
+    # 2017 the amount was 430 (reg. 82(1)(a) as made; S.I. 2017/138).
+    # Read from the YAML files, so every dated value is checked, not only the
+    # fiscal-year values the model reads.
+    threshold = _dated(yaml.safe_load(THRESHOLD_FILE.read_text())["values"])
+    living_wage = _dated(
+        yaml.safe_load(MINIMUM_WAGE_FILE.read_text())["brackets"][-1]["amount"]
+    )
+    checked = 0
+    for date, monthly in threshold.items():
+        if date < "2017-04-01":
+            assert monthly == 430, (date, monthly)
+            continue
+        # Each threshold date must be a date the living wage changed, so the
+        # value cannot be stale.
+        assert date in living_wage, date
+        rate = _value_at(living_wage, date)
+        assert monthly == np.floor(rate * 16 * 52 / 12), (date, monthly, rate)
+        checked += 1
+    # 2017-18 to 2026-27.
+    assert checked == 10
+    # Every living wage change since April 2017 has a threshold value.
+    assert {d for d in living_wage if d >= "2017-04-01"} <= set(threshold)
+
+
+def test_model_reads_the_threshold_for_each_fiscal_year():
+    sim = Simulation(situation={"people": {"p": {"age": {2026: 30}}}})
+    expected = {
+        2016: 430,
+        2017: 520,
+        2018: 542,
+        2019: 569,
+        2020: 604,
+        2021: 617,
+        2022: 658,
+        2023: 722,
+        2024: 793,
+        2025: 846,
+        2026: 881,
+    }
+    for year, monthly in expected.items():
+        parameters = sim.tax_benefit_system.parameters(year).gov
+        assert parameters.dwp.benefit_cap_earnings_exemption == monthly, year
+        rate = parameters.hmrc.minimum_wage.non_apprentice.amounts[-1]
+        if year >= 2017:
+            assert monthly == np.floor(rate * 16 * 52 / 12), (year, rate)
 
 
 CHILDCARE_LIMIT_CROSSING = (
@@ -346,10 +418,7 @@ def test_monotone_in_earnings(case, year):
     low = calculate(units, year)
     high = calculate(units, year, bump=bump)
     # More earnings never take away the benefit cap income test...
-    assert np.all(
-        high["uc_benefit_cap_earnings_threshold_met"]
-        >= low["uc_benefit_cap_earnings_threshold_met"]
-    ), (bump, units)
+    assert np.all(high["income_test"] >= low["income_test"]), (bump, units)
     # ...and never bring a family within the childcare earnings limit. Where
     # the minimum income floor applies, the floor stands in for gross
     # earnings while the person's actual tax and NI are still deducted, so
@@ -376,6 +445,15 @@ def _use_formulas_before_1986(simulation):
             earned_income = benunit("uc_earned_income", period)
             return (uc > 0) & (earned_income <= p.income_limit.universal_credit)
 
+    def earned_income_after_work_allowance(benunit, period):
+        # uc_earned_income as main computed it before #1986.
+        claimants = benunit.members("is_uc_assessed_claimant", period)
+        earned_income = add_for_members(
+            benunit, period, ["uc_individual_earned_income"], claimants
+        )
+        work_allowance = benunit("uc_work_allowance", period)
+        return max_(0, earned_income - work_allowance)
+
     class uc_earned_income_before_work_allowance(Variable):
         # Only the local CTR schemes read this variable apart from
         # uc_earned_income and the childcare criterion, so swapping it for the
@@ -387,9 +465,7 @@ def _use_formulas_before_1986(simulation):
         unit = GBP
 
         def formula(benunit, period, parameters):
-            earned_income = add(benunit, period, ["uc_individual_earned_income"])
-            work_allowance = benunit("uc_work_allowance", period)
-            return max_(0, earned_income - work_allowance)
+            return earned_income_after_work_allowance(benunit, period)
 
     class uc_earned_income(Variable):
         value_type = float
@@ -399,9 +475,7 @@ def _use_formulas_before_1986(simulation):
         unit = GBP
 
         def formula(benunit, period, parameters):
-            earned_income = add(benunit, period, ["uc_individual_earned_income"])
-            work_allowance = benunit("uc_work_allowance", period)
-            return max_(0, earned_income - work_allowance)
+            return earned_income_after_work_allowance(benunit, period)
 
     system = simulation.tax_benefit_system
     system.update_variable(

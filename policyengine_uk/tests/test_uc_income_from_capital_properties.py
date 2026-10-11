@@ -33,12 +33,13 @@ unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
 s. 35), which raises the tax a person pays on their earnings and so changes
 the deduction from them (see test_uc_earnings_deductions_properties.py).
 The award after the benefit cap is compared only where the cap exemption is
-also unchanged. The cap's earnings exception now nets only the tax on
-non-savings, non-dividend income off earnings (PolicyEngine/policyengine-uk#1986),
-so savings and dividend income leave it alone, but property income is taxed in
-that same band and can still switch the cap on.
-test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception pins
-the dividend case.
+also unchanged. The cap's earnings exception now nets only each claimant's
+own tax and NI on their earnings off them (PolicyEngine/policyengine-uk#1986),
+so interest, dividends and rent leave its earned income alone; the exemption
+also turns on awards other than Universal Credit, such as Housing Benefit.
+test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception and
+test_tax_on_rent_does_not_remove_the_benefit_cap_earnings_exception pin the
+dividend and property cases.
 """
 
 import numpy as np
@@ -356,5 +357,39 @@ def test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception():
         without["uc_earned_income"][0], abs=0.01
     )
     assert with_dividends["universal_credit"][0] == pytest.approx(
+        without["universal_credit"][0], abs=0.01
+    )
+
+
+def test_tax_on_rent_does_not_remove_the_benefit_cap_earnings_exception():
+    # The dividend case above with 10,000 of property income instead. Rent
+    # is taxed as non-savings income, in the same band as earnings, but the
+    # earnings are the lowest slice of it and sit within the personal
+    # allowance, so no tax is paid in respect of the employment (reg.
+    # 55(5)(b)). Earned income stays 11,000, over the 2026-27 threshold of
+    # 881 x 12 = 10,572, and the exception (reg. 82(1)(a)) still applies.
+    unit = dict(
+        ages=[30],
+        children=[],
+        tenure="RENT_FROM_COUNCIL",
+        region="LONDON",
+        rent=20_000.0,
+        capital={source: 0.0 for source in CAPITAL_SOURCES},
+        main_residence_value=0.0,
+        reported_capital=-1.0,
+        earnings=11_000.0,
+        private_pension_income=0.0,
+        capital_income={
+            "savings_interest_income": 0.0,
+            "dividend_income": 0.0,
+            "property_income": 10_000.0,
+        },
+        recipient=0,
+    )
+    with_rent = calculate([unit], 2026, marriage_allowance=False)
+    without = calculate([unit], 2026, income_scale=0.0, marriage_allowance=False)
+    assert without["is_benefit_cap_exempt"][0]
+    assert with_rent["is_benefit_cap_exempt"][0]
+    assert with_rent["universal_credit"][0] == pytest.approx(
         without["universal_credit"][0], abs=0.01
     )

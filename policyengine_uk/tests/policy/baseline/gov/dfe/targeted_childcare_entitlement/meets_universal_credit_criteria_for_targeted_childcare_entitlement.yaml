@@ -147,6 +147,9 @@
   # partner who is not the child's carer has profits of 3,000 and is subject
   # to the floor (35 hours at the national living wage), so the couple's
   # earned income is far above 15,400, although actual earnings are 3,000.
+  # The couple nominate the other partner as the child's responsible carer
+  # (reg. 86); the responsible carer of a child under 3 is not subject to
+  # the floor (uc_work_related_group_apart_from_earnings).
   period: 2026
   input:
     people:
@@ -154,8 +157,10 @@
         age: 30
         self_employment_income: 3_000
         uc_is_in_startup_period: false
+        uc_is_responsible_carer: false
       carer:
         age: 30
+        uc_is_responsible_carer: true
       child:
         age: 2
     benunits:

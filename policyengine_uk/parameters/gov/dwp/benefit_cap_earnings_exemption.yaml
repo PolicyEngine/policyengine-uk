@@ -1,5 +1,27 @@
-description: Monthly earned income at or above which a Universal Credit claimant (or couple, jointly) is excepted from the benefit cap. Set by regulation 82 of the Universal Credit Regulations 2013 as 16 hours per week at the National Living Wage rate in regulation 4 of the National Minimum Wage Regulations 2015, converted to a monthly amount by multiplying by 52 and dividing by 12, and rounded down to whole pounds by DWP. Earned income for this test is net of income tax, National Insurance contributions and relievable pension contributions on the earnings, and excludes income treated as earned under the minimum income floor.
+description: Monthly earned income at or above which a Universal Credit claimant (or couple, jointly) is excepted from the benefit cap. Set by regulation 82 of the Universal Credit Regulations 2013, from 1 April 2017 as 16 hours per week at the National Living Wage rate in regulation 4 of the National Minimum Wage Regulations 2015, converted to a monthly amount by multiplying by 52 and dividing by 12, with any fraction of a pound disregarded (regulation 6(1A)(za)), and before then as 430. Earned income for this test is net of income tax, National Insurance contributions and relievable pension contributions on the earnings, and excludes income treated as earned under the minimum income floor.
 values:
+  2013-04-29:
+    value: 430
+    reference:
+      - title: The Universal Credit Regulations 2013 reg. 82(1)(a) as made ("equal to or exceeds £430"); in force 29 April 2013 (reg. 1)
+        href: https://www.legislation.gov.uk/uksi/2013/376/regulation/82/made
+  2017-04-01:
+    value: 520
+    reference:
+      - title: The Universal Credit (Benefit Cap Earnings Exception) Amendment Regulations 2017 (S.I. 2017/138) reg. 2(3)(a), in force 1 April 2017; National Minimum Wage Regulations 2015 reg. 4 at 1 April 2017, £7.50; 7.50 x 16 x 52 / 12 = 520
+        href: https://www.legislation.gov.uk/uksi/2017/138/made
+      - title: The National Minimum Wage Regulations 2015 reg. 4 (1 April 2017)
+        href: https://www.legislation.gov.uk/uksi/2015/621/regulation/4/2017-04-01
+  2018-04-01:
+    value: 542
+    reference:
+      - title: The National Minimum Wage Regulations 2015 reg. 4 at 1 April 2018, £7.83; 7.83 x 16 x 52 / 12 = 542.88, fraction disregarded (UC Regs 2013 reg. 6(1A)(za))
+        href: https://www.legislation.gov.uk/uksi/2015/621/regulation/4/2018-04-01
+  2019-04-01:
+    value: 569
+    reference:
+      - title: The National Minimum Wage Regulations 2015 reg. 4 at 1 April 2019, £8.21; 8.21 x 16 x 52 / 12 = 569.23, fraction disregarded (UC Regs 2013 reg. 6(1A)(za))
+        href: https://www.legislation.gov.uk/uksi/2015/621/regulation/4/2019-04-01
   2020-04-01: 604
   2021-04-01: 617
   2022-04-01: 658
@@ -14,6 +36,8 @@ metadata:
   reference:
     - title: The Universal Credit Regulations 2013 reg. 82 (Exceptions - earnings)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/82
+    - title: The Universal Credit Regulations 2013 reg. 6(1A)(za) (Rounding)
+      href: https://www.legislation.gov.uk/uksi/2013/376/regulation/6
     - title: The Universal Credit Regulations 2013 reg. 55 (Employed earnings)
       href: https://www.legislation.gov.uk/uksi/2013/376/regulation/55
     - title: GOV.UK - Benefit cap - When you're not affected
