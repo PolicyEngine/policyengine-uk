@@ -958,6 +958,13 @@ def test_a_second_weight_keeps_its_own_total(weights, counts, quantize):
     assert (rescaled[counts == 0] == 0).all()
 
 
+def test_negative_sampling_weights_are_refused_before_drawing():
+    """A negative weight would otherwise just never be drawn, and the total
+    it lowers would be shared out among the drawn households."""
+    with pytest.raises(ValueError, match="must not be negative to sample"):
+        draw_household_counts(np.array([1.0, -2.0, 3.0]), 2, 0)
+
+
 def test_weights_without_a_total_are_refused_or_stay_zero():
     counts = np.array([1, 2])
     assert rescale_weights(np.zeros(2), counts).tolist() == [0.0, 0.0]
