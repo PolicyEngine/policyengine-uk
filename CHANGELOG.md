@@ -1,3 +1,26 @@
+## [2.126.8] - 2026-10-11
+
+### Fixed
+
+- - Let a household situation state whether its Universal Credit health element is at the new-claimant rate (`uc_receives_new_claimant_health_element`, default false), so a household's award no longer depends on its position among the other benefit units in a simulation; simulations built from data keep the seeded draw.
+- - Corrected a property test that claimed adding an adult outside the claimant's family never changes the legacy award readers: an adult non-dependant ends the family's severe disability premium, so the test now checks that what such a member reports never changes a reader, that their presence changes one only through that premium, and that Income Support then falls by at most the premium. The benefit cap, which counts such a member's own awards, is held at zero in that test until #2298 is fixed.
+
+
+## [2.126.7] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation(dataset=<DataFrame>)` for frames in which a benefit unit or household has more than one person. Each benefit unit and household now takes the value on its members' rows, single-person groups no longer take each other's values when the rows are not in identifier order, identifier columns are matched by exact name, an exported frame saved as CSV loads back, and the simulation's `dataset` holds the multi-year dataset the frame describes. Identifiers are read as whole numbers, value by value; frames whose identifier columns contradict each other, repeat a person, or name people or groups only with floats that may stand for more than one identifier (32-bit floats of `2**24` or more) are refused instead of merging households.
+  - Fixed the NHS, education and other public spending budget reforms (`gov.contrib.policyengine.budget`) raising `KeyError` when a simulation's data leaves an income decile empty, as a small sample does. An empty decile's share now goes to nobody.
+
+
+## [2.126.6] - 2026-10-11
+
+### Fixed
+
+- - Defined the young person in Scotland's working-age Council Tax Reduction scheme as a Universal Credit qualifying young person from 2022-23 (Council Tax Reduction (Scotland) Regulations 2021 reg. 6), for lone-parent status and for the members whose income counts; other schemes keep the Child Benefit definition.
+
+
 ## [2.126.5] - 2026-10-11
 
 ### Fixed

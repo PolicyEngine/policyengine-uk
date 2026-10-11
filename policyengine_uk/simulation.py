@@ -32,6 +32,7 @@ from policyengine_uk.data.economic_assumptions import (
     reset_growthfactor_uprating,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
+from policyengine_uk.data.input_dataframe import dataset_from_input_dataframe
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
@@ -434,48 +435,34 @@ class Simulation(CoreSimulation):
     def build_from_dataframe(self, df: pd.DataFrame) -> None:
         """Build simulation from a pandas DataFrame.
 
+        The frame has one row per person, in the format
+        ``to_input_dataframe()`` exports. A benefit unit or household value
+        sits on the row of each member, and the benefit unit or household
+        takes that value. See ``policyengine_uk.data.input_dataframe`` for
+        how the frame names each person's benefit unit and household.
+
+        The simulation loads the frame as the multi-year dataset it
+        describes, which ``dataset`` then holds.
+
         Args:
             df: DataFrame with columns in format "variable_name__time_period"
         """
-
-        def get_first_array(variable_name: str) -> pd.Series:
-            """Extract the first array for a given variable name pattern."""
-            columns = df.columns[df.columns.str.contains(variable_name + "__")]
-            return df[columns[0]]
-
-        # Extract ID columns
-        (
-            person_id,
-            person_benunit_id,
-            person_household_id,
-            benunit_id,
-            household_id,
-        ) = map(
-            get_first_array,
-            [
-                "person_id",
-                "person_benunit_id",
-                "person_household_id",
-                "benunit_id",
-                "household_id",
-            ],
+        dataset, replayed, identifiers = dataset_from_input_dataframe(
+            df, self.tax_benefit_system, self.default_input_period
         )
-
-        # Build entity structure
-        self.build_from_ids(
-            person_id,
-            person_benunit_id,
-            person_household_id,
-            benunit_id,
-            household_id,
-        )
-
-        # Set input values for each variable and time period
-        for column in df:
-            variable, time_period = column.split("__")
-            if variable not in self.tax_benefit_system.variables:
-                continue
-            self.set_input(variable, time_period, df[column])
+        self.build_from_multi_year_dataset(dataset)
+        # Identifiers for the years the frame names them in that hold no
+        # data, and so are not years of the dataset.
+        for variable, time_period, values in identifiers:
+            self.set_input(variable, time_period, values)
+        # A dataset holds whole years only. Set each variable that the frame
+        # also gives for other periods, such as months, from its columns in
+        # the frame's order: a year's value spreads over the months not yet
+        # set, so the order decides the months' values.
+        for variable in dict.fromkeys(name for name, _, _ in replayed):
+            self.delete_arrays(variable)
+        for variable, time_period, values in replayed:
+            self.set_input(variable, time_period, values)
 
     def build_from_dataset(self, dataset: Dataset) -> None:
         """Build simulation from a Dataset object.
