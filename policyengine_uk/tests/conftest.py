@@ -263,7 +263,8 @@ def _release_variable_modules_of_dead_systems():
 # The same hook also releases dead systems' variable modules whenever a new
 # system starts loading its variables, not only after each test: in that run
 # one property test had 165 systems' modules loaded at once, and Hypothesis
-# builds hundreds of systems while it shrinks a failing example.
+# builds hundreds of systems while it shrinks a failing example. With this the
+# shards peaked at 10.0 to 10.4 GiB (run 38165445604).
 _variable_code = {}
 _get_code = SourceFileLoader.get_code
 _loading_owner = None
@@ -291,9 +292,12 @@ def _get_variable_code(loader, fullname):
 # Freed memory stays in the worker: on CI the worker that ran the
 # microsimulation tests kept about 4 GiB of RSS after their simulations were
 # gone (run 38159894687), though locally only the 0.74 GiB cached dataset was
-# still referenced once they were deleted (tracemalloc). After each test
-# file's fixtures are torn down, glibc's malloc_trim(0) hands free heap memory
-# back to the system. Elsewhere this does nothing.
+# still referenced once they were deleted (tracemalloc). So after each test
+# file's fixtures are torn down, ask glibc to return free heap memory to the
+# system (malloc_trim(0)); elsewhere this does nothing. With this, and
+# test_latest_data_smoke.py no longer keeping its dataset cached, the shards
+# peaked at 8.0 to 8.2 GiB instead of 10.0 to 10.4, in no more time, and two
+# shards would peak at 8.1 (run 38165445604).
 try:
     _malloc_trim = ctypes.CDLL("libc.so.6").malloc_trim
 except (OSError, AttributeError):
