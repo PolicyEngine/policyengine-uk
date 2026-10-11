@@ -363,12 +363,12 @@ def test_september_cpi_uprating_matches_the_up_rating_orders():
 
 
 @pytest.mark.parametrize(
-    "scenario",
+    "change",
     [
         # Full rates set by reform from 2026-27: the add-on is not scaled with
         # them.
-        Scenario(
-            parameter_changes={
+        {
+            "reform": {
                 "gov.dwp.state_pension.basic_state_pension.amount": {
                     "2026-01-01.2100-12-31": 300.0
                 },
@@ -376,29 +376,29 @@ def test_september_cpi_uprating_matches_the_up_rating_orders():
                     "2026-01-01.2100-12-31": 300.0
                 },
             }
-        ),
+        },
         # A 10% triple-lock floor from April 2027 raises the full rates, not
         # the add-on.
-        Scenario(
-            parameter_changes={
-                "gov.dwp.state_pension.triple_lock.minimum_rate": {
-                    "year:2027-01-01:100": 0.1
+        {
+            "scenario": Scenario(
+                parameter_changes={
+                    "gov.dwp.state_pension.triple_lock.minimum_rate": {
+                        "year:2027-01-01:100": 0.1
+                    },
                 },
-            },
-            applied_before_data_load=True,
-        ),
+                applied_before_data_load=True,
+            )
+        },
     ],
     ids=["full_rates", "triple_lock_floor"],
 )
-def test_full_rate_reforms_leave_the_add_on_alone(scenario):
+def test_full_rate_reforms_leave_the_add_on_alone(change):
     people = [
         {"age": 90, "male": True, "months": 3, "weekly": 250},
         {"age": 70, "male": True, "months": 3, "weekly": 240},
     ]
     baseline = projected_simulation(people)
-    reformed = Microsimulation(
-        dataset=year_dataset(people, DATA_YEAR), scenario=scenario
-    )
+    reformed = Microsimulation(dataset=year_dataset(people, DATA_YEAR), **change)
     for year in (2027, 2028, 2030):
         assert calculate(reformed, "state_pension", year).sum() != pytest.approx(
             calculate(baseline, "state_pension", year).sum()
@@ -550,6 +550,10 @@ def main_components(sim, weekly: np.ndarray, year: int) -> tuple:
     return tuple(WEEKS_IN_YEAR * x for x in (basic, new, additional))
 
 
+# The model computes in float32 and the reference in float64.
+FLOAT32 = dict(rtol=1e-6, atol=0.01)
+
+
 def paired(people: list, extra: list) -> list:
     """Each person, then the same person reporting ``extra`` more a week."""
     return people + [
@@ -587,10 +591,10 @@ def test_add_on_follows_september_cpi_and_nothing_else_changes(people, data):
         assert np.all(additional >= 0)
         assert np.all(additional[n:] >= additional[:n] - 1e-9)
         main_basic, main_new, main_additional = main_components(sim, weekly, year)
-        assert np.allclose(basic, main_basic, rtol=1e-12, atol=1e-9)
-        assert np.allclose(new, main_new, rtol=1e-12, atol=1e-9)
+        assert np.allclose(basic, main_basic, **FLOAT32)
+        assert np.allclose(new, main_new, **FLOAT32)
         if year == DATA_YEAR:
-            assert np.allclose(additional, main_additional, rtol=1e-12, atol=1e-9)
+            assert np.allclose(additional, main_additional, **FLOAT32)
         flat_up = by_type(
             pension_type,
             flat_uprating(sim, year, "BASIC"),
@@ -611,7 +615,7 @@ def test_add_on_follows_september_cpi_and_nothing_else_changes(people, data):
                 additional[same],
                 previous_additional[same] * rise,
                 rtol=INDEX_ROUNDING,
-                atol=0,
+                atol=1e-6,
             )
         previous = (pension_type, additional)
 
