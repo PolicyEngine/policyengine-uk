@@ -185,16 +185,18 @@ def assert_consumers_follow_the_qualifying_age(births, male, year):
         sim.calculate("council_tax_reduction_pensioner", year), attained
     )
     assert np.array_equal(sim.calculate("is_benefit_cap_exempt_other", year), attained)
-    aged = sim.tax_benefit_system.parameters(
+    allowances = sim.tax_benefit_system.parameters(
         f"{year}-06-01"
-    ).gov.dwp.housing_benefit.allowances.single.aged
-    assert np.array_equal(
-        np.isclose(
-            sim.calculate("council_tax_reduction_applicable_amount", year),
-            aged * WEEKS_IN_YEAR,
-        ),
-        attained,
-    )
+    ).gov.dwp.housing_benefit.allowances
+    amount = sim.calculate("council_tax_reduction_applicable_amount", year)
+    at_pension_age_rate = np.isclose(amount, allowances.single.aged * WEEKS_IN_YEAR)
+    if allowances.pension_age_cutoff is not None:
+        # England's lower rate for those who attained State Pension age on or
+        # after 1 April 2021 (SI 2012/2885 Sch 2 para 1).
+        at_pension_age_rate |= np.isclose(
+            amount, allowances.single.aged_from_cutoff * WEEKS_IN_YEAR
+        )
+    assert np.array_equal(at_pension_age_rate, attained)
     if year <= 2023:
         assert np.array_equal(
             sim.calculate("winter_fuel_allowance", year) > 0, attained

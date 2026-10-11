@@ -56,7 +56,13 @@ def rates(year: int, couple: bool) -> tuple:
 
 def build(units: list, year: int, region: str = "LONDON") -> Simulation:
     """Each unit is a list of (birth, male). Units are eligible with no
-    premiums, so the applicable amount is 52 times the personal allowance."""
+    premiums, so the applicable amount is 52 times the personal allowance.
+
+    Which table applies is set here, not left to the model: a unit with a
+    member over State Pension age is under the pension-age Housing Benefit
+    regulations and is a Council Tax Reduction pensioner. That leaves the
+    cohort rule as the only thing under test (a mixed-age couple on Universal
+    Credit would otherwise be in the working-age tables)."""
     people, benunits = {}, {}
     mid_year = grid_months(date(year, 10, 6))
     for u, members in enumerate(units):
@@ -71,9 +77,12 @@ def build(units: list, year: int, region: str = "LONDON") -> Simulation:
                 "is_male": {year: male},
             }
             names.append(name)
+        pension_age = at_pension_age(members, year)
         benunits[f"u{u}"] = {
             "members": names,
             "housing_benefit_eligible": {year: True},
+            "housing_benefit_pension_age_regulations_apply": {year: pension_age},
+            "council_tax_reduction_pensioner": {year: pension_age},
             "benefits_premiums": {year: 0},
         }
     return Simulation(
