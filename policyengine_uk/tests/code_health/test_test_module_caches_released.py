@@ -63,8 +63,8 @@ def _is_module_autouse_fixture(function: ast.FunctionDef) -> bool:
 
 
 def released_caches(tree: ast.Module) -> set[str]:
-    """Names whose cache_clear() runs after the yield of a module-scoped
-    autouse fixture."""
+    """Names whose cache_clear() comes after the yield of a module-scoped
+    autouse fixture, including a yield inside ``with`` or ``try``."""
     released = set()
     for function in tree.body:
         if not (
@@ -72,23 +72,20 @@ def released_caches(tree: ast.Module) -> set[str]:
             and _is_module_autouse_fixture(function)
         ):
             continue
-        after_yield = False
-        for statement in function.body:
-            if isinstance(statement, ast.Expr) and isinstance(
-                statement.value, ast.Yield
+        yields = [
+            node.lineno for node in ast.walk(function) if isinstance(node, ast.Yield)
+        ]
+        if not yields:
+            continue
+        for node in ast.walk(function):
+            if (
+                isinstance(node, ast.Call)
+                and isinstance(node.func, ast.Attribute)
+                and node.func.attr == "cache_clear"
+                and isinstance(node.func.value, ast.Name)
+                and node.lineno > min(yields)
             ):
-                after_yield = True
-                continue
-            if not after_yield:
-                continue
-            for node in ast.walk(statement):
-                if (
-                    isinstance(node, ast.Call)
-                    and isinstance(node.func, ast.Attribute)
-                    and node.func.attr == "cache_clear"
-                    and isinstance(node.func.value, ast.Name)
-                ):
-                    released.add(node.func.value.id)
+                released.add(node.func.value.id)
     return released
 
 
@@ -128,8 +125,9 @@ def test_every_test_module_cache_is_released():
     )
 
 
-def test_the_scan_finds_caches_and_releases(tmp_path):
+def test_the_scan_finds_caches_and_releases():
     source = """
+import functools
 from functools import cache, lru_cache
 
 import pytest
@@ -145,15 +143,50 @@ def simulation():
     return 1
 
 
+@functools.lru_cache
+def template():
+    return 2
+
+
+def not_cached():
+    return 3
+
+
 @pytest.fixture(scope="module", autouse=True)
 def release():
     systems.cache_clear()  # before the yield: does not count
     yield
     simulation.cache_clear()
+
+
+@pytest.fixture(autouse=True, scope="module")
+def release_after_a_yield_inside_with():
+    with open(__file__):
+        try:
+            yield
+        finally:
+            template.cache_clear()
 """
     tree = ast.parse(source)
-    assert cached_functions(tree) == {"systems", "simulation"}
-    assert released_caches(tree) == {"simulation"}
+    assert cached_functions(tree) == {"systems", "simulation", "template"}
+    assert released_caches(tree) == {"simulation", "template"}
 
-    function_scoped = source.replace('scope="module", ', "")
+    function_scoped = source.replace('scope="module"', 'scope="function"')
     assert released_caches(ast.parse(function_scoped)) == set()
+    not_autouse = source.replace("autouse=True", "autouse=False")
+    assert released_caches(ast.parse(not_autouse)) == set()
+
+
+def test_the_scan_follows_imports_from_other_test_files():
+    tree = ast.parse(
+        "from policyengine_uk.tests.test_state_pension_age import (\n"
+        "    YEARS,\n"
+        "    differential_simulation,\n"
+        ")\n"
+    )
+    imported = imported_test_modules(tree)
+    assert imported == {
+        TESTS / "test_state_pension_age.py": ["YEARS", "differential_simulation"]
+    }
+    caches = cached_functions(parse(TESTS / "test_state_pension_age.py"))
+    assert "differential_simulation" in caches
