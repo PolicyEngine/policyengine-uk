@@ -4,10 +4,10 @@
 # publish. All three run the same jobs in the same locked environment.
 #
 # Jobs: the YAML policy tests (which also list every Python test), the Python
-# tests split over three runners, and Result, which fails unless every listed
+# tests split over four runners, and Result, which fails unless every listed
 # Python test ran in exactly one shard and passed, apart from the outcomes
 # accepted in .github/test_outcome_allowlist.toml. A caller that names its job
-# Test gets the checks "Test / YAML", "Test / Python K/3" and "Test / Result";
+# Test gets the checks "Test / YAML", "Test / Python K/4" and "Test / Result";
 # "Test / Result" is the one to require.
 
 name: Test suite
@@ -103,6 +103,12 @@ jobs:
     # policyengine_uk/tests/conftest.py), so each test is in exactly one
     # shard. N is the number of jobs this matrix makes: to add a shard, add
     # a number to the list.
+    #
+    # Four shards, not three, for memory: each pytest-xdist worker's memory
+    # grows with the tests it runs, and with three shards of four workers
+    # the 16 GB runners peaked at 15.6 GB, 283 MB short of running out
+    # (run 38156967136; two shards of an earlier run lost their runners).
+    # With four, each worker runs about a quarter fewer tests.
     name: Python ${{ matrix.shard }}/${{ strategy.job-total }}
     if: ${{ !inputs.skip }}
     runs-on: ubuntu-24.04-arm
@@ -113,7 +119,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2, 3, 4]
     steps:
       - name: Checkout repo
         uses: actions/checkout@v6
@@ -157,8 +163,9 @@ jobs:
           # .github/pytest_outcome_log.py records each test's outcome for
           # Result. xfail_strict makes an xfail marker without strict= fail
           # when its test passes, so a fixed bug cannot hide behind it.
-          # Four pytest-xdist workers, one per core; together they peak at
-          # about 9 GB of the runner's 16 GB.
+          # Four pytest-xdist workers, one per core. Their memory grows with
+          # each test they run (#2330): with three shards they peaked at
+          # 15.6 GB of the runner's 16 GB (run 38156967136).
           PYTHONPATH="$GITHUB_WORKSPACE/.github" pytest "$TESTS" \
             --rootdir "$ROOTDIR" -c pyproject.toml -p no:cacheprovider \
             -p pytest_outcome_log --outcome-log="$OUTCOMES" \

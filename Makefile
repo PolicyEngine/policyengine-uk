@@ -21,7 +21,7 @@ test-yaml:
 
 # Every Python test, serially. To spread them over four cores add
 # PYTEST_ARGS="-n 4 --dist worksteal" (pytest-xdist); to run what one CI
-# shard runs, add "--shard K/3" (policyengine_uk/tests/conftest.py). CI runs
+# shard runs, add "--shard K/4" (policyengine_uk/tests/conftest.py). CI runs
 # these tests through .github/workflows/test-suite.yaml, in the locked
 # environment (uv sync --frozen --extra dev), and also checks each test's
 # outcome against .github/test_outcome_allowlist.toml.

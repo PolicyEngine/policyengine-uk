@@ -131,7 +131,7 @@ jobs:
         run: uv pip install policyengine --system
       - name: Test documentation builds
         run: make documentation
-  # The YAML tests, the Python tests on three runners, and the check that
+  # The YAML tests, the Python tests on four runners, and the check that
   # every test ran once and passed, in the locked environment. As one job
   # they took 59 minutes on 10 October 2026 (run 38075384588), and runs were
   # cancelled at a 60-minute limit (issues #2099 and #2257). The release
