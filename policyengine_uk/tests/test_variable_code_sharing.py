@@ -49,7 +49,8 @@ def _coverage_code_objects():
     collector = getattr(cov, "_collector", None)
     if collector is None:
         return None
-    lists = [getattr(tracer, "code_objects", None) for tracer in collector.tracers]
+    tracers = getattr(collector, "tracers", ())
+    lists = [getattr(tracer, "code_objects", None) for tracer in tracers]
     lists = [objects for objects in lists if objects is not None]
     return sum(len(objects) for objects in lists) if lists else None
 

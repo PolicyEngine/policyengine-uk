@@ -154,6 +154,9 @@ def pytest_configure(config):
     _owners_at_start.update(_variable_module_owners())
     _threshold_before = gc.get_threshold()
     gc.set_threshold(GC_FIRST_GENERATION_THRESHOLD, *_threshold_before[1:])
+    # Below. pytest_configure, unlike pytest_sessionstart, also reaches this
+    # conftest when pytest finds it only while collecting (bare `pytest`).
+    SourceFileLoader.get_code = _get_variable_code
 
 
 @pytest.hookimpl(trylast=True)
@@ -184,6 +187,7 @@ def pytest_unconfigure(config):
     _owners_at_start.clear()
     if _threshold_before is not None:
         gc.set_threshold(*_threshold_before)
+    SourceFileLoader.get_code = _get_code
 
 
 # policyengine-core loads every variable file of each new tax-benefit system as
@@ -282,14 +286,6 @@ def _get_variable_code(loader, fullname):
     if code is None:
         code = _variable_code[key] = _get_code(loader, fullname)
     return code
-
-
-def pytest_sessionstart(session):
-    SourceFileLoader.get_code = _get_variable_code
-
-
-def pytest_unconfigure(config):
-    SourceFileLoader.get_code = _get_code
 
 
 # Freed memory stays in the worker: on CI the worker that ran the
