@@ -237,3 +237,29 @@
     is_before_first_september_following_19th_birthday: [false, true]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: Case 11, born 1 September 2006, the 1 September following the 19th birthday is in 2026, not the birthday itself.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 20
+        date_of_birth: 20060901
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    # The 19th birthday is 1 September 2025; the 1 September that follows it
+    # is in 2026, inside the year.
+    is_before_first_september_following_19th_birthday: [false, true]
+    # The age limit, read on 6 October, excludes them.
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, false]
