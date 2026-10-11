@@ -8,10 +8,16 @@ modules (PolicyEngine/policyengine-core#520), the first test skips with a
 note to remove the workaround, rather than failing every PR after a core
 upgrade. If core keeps leaking but names the modules differently, it fails,
 because the release would then silently do nothing.
+
+The conftest also freezes the objects that exist once the tests are collected
+(gc.freeze()). gc.get_objects() leaves frozen objects out, so the release must
+still count a frozen system as live, and systems the tests build afterwards
+must still be collected.
 """
 
 import gc
 import sys
+import weakref
 from pathlib import Path
 
 import pytest
@@ -72,3 +78,31 @@ def test_dead_systems_modules_are_released_and_live_ones_kept(request):
 def test_release_waits_until_enough_systems_own_modules(request):
     release_dead_variable_modules = _conftest(request).release_dead_variable_modules
     assert release_dead_variable_modules(max_owners=10**9) == 0
+
+
+def test_frozen_systems_keep_their_modules(request):
+    conftest = _conftest(request)
+    # Built when policyengine_uk was imported, during collection, so frozen.
+    from policyengine_uk.tax_benefit_system import system
+
+    assert gc.get_threshold() == conftest.GC_THRESHOLD
+    assert gc.get_freeze_count() > 0
+    assert not any(obj is system for obj in gc.get_objects())
+    module = type(system.variables["income_tax"]).__module__
+    built_later = Simulation(situation=SITUATION).tax_benefit_system
+    if type(built_later.variables["income_tax"]).__module__ not in sys.modules:
+        pytest.skip("policyengine-core no longer keeps variable modules")
+
+    conftest.release_dead_variable_modules(max_owners=0)
+
+    kept = module in sys.modules
+    assert kept, f"{module}, of a live frozen system, was released"
+
+
+def test_systems_built_after_the_freeze_are_still_collected():
+    simulation = Simulation(situation=SITUATION)
+    system = weakref.ref(simulation.tax_benefit_system)
+    assert any(obj is system() for obj in gc.get_objects())
+    del simulation
+    gc.collect()
+    assert system() is None

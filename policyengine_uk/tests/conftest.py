@@ -4,6 +4,7 @@ import hashlib
 import os
 import re
 import sys
+import weakref
 
 import pytest
 from policyengine_core.taxbenefitsystems import TaxBenefitSystem
@@ -102,6 +103,53 @@ def pytest_collection_modifyitems(config, items):
             item.add_marker(skip_microsimulation)
 
 
+# Garbage collection. Most of the suite's time is in the property tests (the 51
+# *_properties.py files took 74% of pytest worker time on 10 October 2026), and
+# each of their examples builds a Simulation, which loads about 1,100 variable
+# modules again and clones the parameter tree. Python's cycle collector starts
+# a collection every 2,000 net allocations of tracked objects (its default
+# threshold), and its full collections walk every tracked object in the
+# process, including the 430,000 or so present once policyengine_uk is
+# imported. Each process that runs tests (every pytest-xdist worker) therefore:
+#
+# - starts a collection every 10,000 net allocations instead (GC_THRESHOLD,
+#   set at start-up; the older generations keep Python's defaults);
+# - freezes every object that exists once the tests are collected
+#   (gc.freeze()): the modules, the import-time tax-benefit systems and the
+#   collected tests, all of which live for the whole session. The collector
+#   never scans or frees frozen objects. Objects created by tests are collected
+#   as before.
+#
+# On test_ni_class_1_age_properties.py (52 examples, no coverage) this cut CPU
+# time from 88-96 seconds to 61, and raised peak memory from 0.79 GB to 0.89 GB
+# (measured locally on 10 October 2026; freezing alone gave 77 seconds, the
+# threshold alone 67). It changes when memory is reclaimed, not which tests run
+# or what they compute.
+GC_THRESHOLD = (10_000, 10, 10)
+
+# gc.get_objects() leaves out frozen objects, so release_dead_variable_modules
+# looks up the systems that were frozen here.
+_FROZEN_SYSTEMS = weakref.WeakSet()
+_heap_frozen = False
+
+
+def pytest_configure(config):
+    gc.set_threshold(*GC_THRESHOLD)
+
+
+@pytest.hookimpl(trylast=True)
+def pytest_collection_finish(session):
+    global _heap_frozen
+    if _heap_frozen:
+        return
+    gc.collect()
+    _FROZEN_SYSTEMS.update(
+        obj for obj in gc.get_objects() if isinstance(obj, TaxBenefitSystem)
+    )
+    gc.freeze()
+    _heap_frozen = True
+
+
 # policyengine-core loads every variable file of each new tax-benefit system as
 # a module named "<id(system)>_<path hash>_<file name>" and registers it in
 # sys.modules, where it stays after the system is garbage collected. Every
@@ -132,6 +180,7 @@ def release_dead_variable_modules(max_owners: int = 8) -> int:
     live = {
         str(id(obj)) for obj in gc.get_objects() if isinstance(obj, TaxBenefitSystem)
     }
+    live.update(str(id(system)) for system in _FROZEN_SYSTEMS)
     released = 0
     for owner, names in owners.items():
         if owner not in live:
