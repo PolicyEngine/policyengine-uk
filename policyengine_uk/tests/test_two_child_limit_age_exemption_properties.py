@@ -44,10 +44,10 @@ def baseline_system():
     return CountryTaxBenefitSystem()
 
 
-# Each example uses the repealed limit and one threshold. A reform clones only
-# the baseline's parameters, and Hypothesis draws the same threshold several
-# examples in a row, so keeping the last two reforms builds 16 over the 60
-# examples instead of holding one system per threshold drawn.
+# Each example uses the repealed limit, then one threshold, so the last two
+# reforms are the repealed limit's and the latest threshold's: a reform is
+# built only when the threshold changes, instead of one system being held per
+# threshold drawn. A reform clones only the baseline's parameters.
 @lru_cache(maxsize=2)
 def reformed_system(parameter, value):
     modifier = set_parameter(
