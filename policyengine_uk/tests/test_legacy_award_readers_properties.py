@@ -36,8 +36,11 @@ adult) claims in their own right, so:
   members here are none of those. The family's Income Support then falls by
   at most the premium: less where the award is already below it, since an
   award is never negative, and not at all where the family is not entitled.
-  The awards the family's own members report never change, and nor does
-  whether a member is on one. A member under 18 never changes a reader;
+  The family's income-related ESA and income-based JSA awards never change,
+  and nor does whether a member is on one of them: they read the reports and
+  capital only. Whether a member is on Income Support can change, when the
+  lost premium takes the award to zero. A member under 18 never changes a
+  reader;
 - the claimant-or-partner awards are bounded by the benefit-unit awards
   (0 <= claimant_or_partner_esa_income <= esa_income, likewise for JSA) and
   equal them when no other member reports an award;
@@ -89,8 +92,10 @@ MEMBER_READERS = [
     "is_on_income_based_jsa",
     "is_on_income_support",
 ]
-# Readers built from the members' own reports and the household's capital
-# alone, which the severe disability premium cannot reach.
+# Readers built from the members' own ESA and JSA reports and the
+# household's capital alone, which the severe disability premium cannot reach.
+# Income Support is not among them: losing the premium can take its award to
+# zero, and is_on_income_support with it.
 PREMIUM_FREE_READERS = [
     "claimant_or_partner_esa_income",
     "claimant_or_partner_jsa_income",
