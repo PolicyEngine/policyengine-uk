@@ -343,9 +343,13 @@ tax_heads:
       projected with OBR receipts (gov.hmrc.business_rates.statistics). In
       2026-27 the England, Scotland and Wales series total £37.26bn against
       £37.41bn on the OBR's Business rates line (receipts Table 3.8).
-      Northern Ireland's £0.78bn (LPS non-domestic rates paid) compares with
-      £0.40bn on the OBR's "Northern Ireland business rates" line, which the
-      OBR records under other taxes (Table 3.2). Measured 2026-10-11.
+      Northern Ireland's £0.78bn (LPS non-domestic rates paid, regional and
+      district rates together) compares with £0.40bn on the OBR's "Northern
+      Ireland business rates" line, which the OBR records under other taxes
+      (Table 3.2) and which covers the regional rate only. ONS records NI
+      regional non-domestic rates (central government, £327m in 2024-25) and
+      district non-domestic rates (local government, £378m) separately.
+      Measured 2026-10-11.
   - id: sdlt_household
     label: Stamp duty land tax on the household's own purchases
     variable: expected_sdlt
