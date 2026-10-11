@@ -338,13 +338,14 @@ tax_heads:
     totals: [gov_tax, household_tax, pre_budget_change_household_tax]
     sign: nonnegative
     data_note: >-
-      Allocates each nation's published non-domestic rates outturn, projected
-      with OBR receipts (gov.hmrc.business_rates.statistics). It includes
-      Northern Ireland, which the OBR records as "Northern Ireland business
-      rates" under other taxes (receipts Table 3.2), not on its Business
-      rates line. On policyengine-uk-data 1.58.0 it totals £35.61bn in
-      2026-27 against £37.82bn for the OBR's two lines together, measured
-      2026-10-11.
+      Allocates each nation's published non-domestic rates outturn (England
+      and Wales local and central rating lists, Scotland, Northern Ireland),
+      projected with OBR receipts (gov.hmrc.business_rates.statistics). In
+      2026-27 the England, Scotland and Wales series total £37.26bn against
+      £37.41bn on the OBR's Business rates line (receipts Table 3.8).
+      Northern Ireland's £0.78bn (LPS non-domestic rates paid) compares with
+      £0.40bn on the OBR's "Northern Ireland business rates" line, which the
+      OBR records under other taxes (Table 3.2). Measured 2026-10-11.
   - id: sdlt_household
     label: Stamp duty land tax on the household's own purchases
     variable: expected_sdlt
