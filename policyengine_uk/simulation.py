@@ -436,9 +436,9 @@ class Simulation(CoreSimulation):
         ``Simulation(dataset=...)`` loads back.
 
         policyengine-core exports each input for the periods it was set for.
-        The identifiers are also given for every year the frame gives other
-        values for, as the dataset the frame loads as holds them, so that the
-        frame loads back to a simulation that exports the same frame. See
+        The identifiers are also given for every whole year a column names,
+        where a simulation built from the frame holds them, so that the frame
+        loads back to a simulation that exports the same frame. See
         ``policyengine_uk.data.input_dataframe.with_identifiers_in_each_year``.
 
         Args:

@@ -16,10 +16,11 @@ Identifiers are read as whole numbers, value by value, and a float that may
 stand for more than one whole number is refused rather than allowed to merge
 two people or groups.
 
-The identifiers hold for every period, and the dataset a frame loads as holds
-them in each year the frame gives data for. ``Simulation.to_input_dataframe``
-writes them for each of those years too (``with_identifiers_in_each_year``),
-so that an exported frame loads back to a simulation that exports it again.
+The identifiers hold for every period, and a simulation built from a frame
+holds them all as inputs in each whole year a column names.
+``Simulation.to_input_dataframe`` gives them for each such year too
+(``with_identifiers_in_each_year``), so that an exported frame loads back to
+a simulation that exports it again.
 """
 
 import warnings
@@ -443,28 +444,36 @@ def with_identifiers_in_each_year(
     df: pd.DataFrame, tax_benefit_system: "TaxBenefitSystem"
 ) -> pd.DataFrame:
     """``df``, an exported frame, with each identifier it gives for some year
-    given for every year it gives other values for.
+    given for every whole calendar year a column of the frame names.
 
-    The dataset a frame loads as holds the people and groups in each year the
-    frame gives values for (``dataset_from_input_dataframe``), so a simulation
-    built from it holds the identifiers as inputs in those years, and exports
-    them there. A simulation that records an input for a later year once it
-    is built, as the Universal Credit rebalancing records each benefit unit's
-    health element status for 2026 to 2029, holds its identifiers in that
-    year only by carrying them forward, and policyengine-core exports only
-    the periods an input was set for. Giving the identifiers for that year
-    makes the frame load back to a simulation that exports the same frame.
+    ``dataset_from_input_dataframe`` holds every identifier in each such year:
+    a year a column of another variable names is a year of the dataset, which
+    holds the people and groups, and each other year an identifier column
+    names gets them all as inputs. So a simulation built from the frame holds
+    the identifiers as inputs in those years, and exports them there.
+
+    The simulation that exported the frame may not have. One given an input
+    for a year after its data once it was built, as the Universal Credit
+    rebalancing records each benefit unit's health element status for 2026
+    to 2029, holds its identifiers in that year only by carrying them forward
+    from an earlier one; and in a year before its data, where inputs do not
+    carry back, its identifiers are the default, zero. policyengine-core
+    exports an
+    input only for the periods it was set for. Giving every identifier for
+    each year makes the frame load back to a simulation that exports the
+    same frame.
 
     A simulation holds one set of people and groups, so every column of an
     identifier names the same ones (the loader refuses a frame whose columns
     differ). An identifier added for a year copies its column for the latest
     year before it the frame gives, or else the earliest year it gives. Each
-    goes beside the identifier's other columns, in order of period, where
-    policyengine-core exports an input set for that year.
+    goes beside the identifier's other columns, in order of period, which is
+    where the default export (sorted by period) puts an input set for that
+    year.
 
-    Years are those ``dataset_from_input_dataframe`` makes dataset years: the
-    whole calendar years that columns of other variables of
-    ``tax_benefit_system`` name. ``df`` is not changed.
+    Only columns that name a variable of ``tax_benefit_system`` count, and an
+    identifier the frame does not give for any year is not added. ``df`` is
+    not changed.
     """
     named: Dict[str, Dict[int, object]] = {}
     years = set()
@@ -477,8 +486,7 @@ def with_identifiers_in_each_year(
             continue
         if variable in IDENTIFIER_VARIABLES:
             named.setdefault(variable, {})[period.start.year] = column
-        else:
-            years.add(period.start.year)
+        years.add(period.start.year)
     added = {
         variable: sorted(years - set(columns))
         for variable, columns in named.items()
