@@ -37,8 +37,10 @@ class savings_starter_rate_income(Variable):
                 - person("received_allowances_savings_income", period),
             ),
         )
-        # The starting rate band is reduced by non-savings income, property
-        # income included (ITA 2007 ss. 12, 16).
+        # The taper reads all non-savings income, property income included
+        # (ITA 2007 s. 16). Where the taper starts is a separate, known defect:
+        # s. 12 shrinks the band from the first pound of taxable non-savings
+        # income, not from the personal allowance plus the band (#1799).
         earned_taxable_income = person("non_savings_taxable_income", period)
 
         removed_amount = max_(

@@ -10,9 +10,12 @@ interest and dividends drawn freely:
    amount leaves savings and dividend tax unchanged, in England and in
    Scotland. (The taxable amount, because the £1,000 property allowance can
    relieve small property income in full.)
-2. Accounting: non_savings_taxable_income equals adjusted net income less
-   savings, dividends and allowances, floored at nil.
+2. Accounting: with no Marriage Allowance, non_savings_taxable_income equals
+   adjusted net income less savings, dividends and allowances, floored at nil
+   (earned_taxable_income also subtracts Marriage Allowance; #1947).
 3. Monotonic: more property income never lowers savings or dividend tax.
+   (Main passes this too; the differential and the higher-rate check below
+   are what catch the bug.)
 """
 
 import numpy as np
@@ -113,3 +116,12 @@ def test_more_property_income_never_lowers_savings_or_dividend_tax(rows, rise):
     )
     for name in ["savings_income_tax", "dividend_income_tax"]:
         assert np.all(after[name] >= before[name] - 0.01)
+
+
+def test_savings_above_property_income_past_the_basic_rate_limit_pay_the_higher_rate():
+    """£40,000 of property income leaves £10,270 of the basic-rate band, so
+    some of £20,000 of savings must pay 40%: savings tax exceeds 20% of
+    everything above the £500 savings allowance (£3,900). Main banded the
+    savings as if the property income were not there and charged £2,900."""
+    v = _calculate([(0, 40_000, 20_000, 0)] + [(0, 0, 0, 0)] * (PEOPLE - 1), "ENGLAND")
+    assert v["savings_income_tax"][0] > (20_000 - 500) * 0.20
