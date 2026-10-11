@@ -17,6 +17,7 @@ than the threshold age. For any family, year and positive threshold:
 from functools import lru_cache
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 from policyengine_core.reforms import Reform, set_parameter
@@ -38,12 +39,17 @@ PROPERTY_SETTINGS = settings(
 TOLERANCE = 0.01
 
 
-@lru_cache(maxsize=None)
-def tax_benefit_system(parameter, value):
-    """The UK system, with one parameter overridden for all years if given."""
-    system = CountryTaxBenefitSystem()
-    if parameter is None:
-        return system
+@lru_cache(maxsize=1)
+def baseline_system():
+    return CountryTaxBenefitSystem()
+
+
+# Each example uses the repealed limit and one threshold. A reform clones only
+# the baseline's parameters, and Hypothesis draws the same threshold several
+# examples in a row, so keeping the last two reforms builds 16 over the 60
+# examples instead of holding one system per threshold drawn.
+@lru_cache(maxsize=2)
+def reformed_system(parameter, value):
     modifier = set_parameter(
         parameter, value, return_modifier=True, period="year:2000:100"
     )
@@ -52,7 +58,23 @@ def tax_benefit_system(parameter, value):
         def apply(self):
             self.parameters = modifier(self.parameters)
 
-    return override(system)
+    return override(baseline_system())
+
+
+def tax_benefit_system(parameter, value):
+    """The UK system, with one parameter overridden for all years if given."""
+    if parameter is None:
+        return baseline_system()
+    return reformed_system(parameter, value)
+
+
+@pytest.fixture(scope="module", autouse=True)
+def release_systems():
+    # Each system also keeps its last simulation alive. Drop them once this
+    # module's tests are done, instead of for the rest of the test process.
+    yield
+    reformed_system.cache_clear()
+    baseline_system.cache_clear()
 
 
 @st.composite

@@ -81,6 +81,18 @@ def property_simulation(people: dict):
     return sim
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_simulations():
+    # Pytest imports test files here by bare name (the directory has no
+    # __init__.py), so the import above loads test_state_pension_age a second
+    # time and this module fills its own differential_simulation cache. Drop
+    # the cached simulations once this module's tests are done, instead of for
+    # the rest of the test process.
+    yield
+    differential_simulation.cache_clear()
+    one_person_units_template.cache_clear()
+
+
 @pytest.mark.parametrize("year", YEARS)
 def test_qualifying_age_matches_statute_for_every_birth_date(year):
     """For births every third day from 1945 to 1984 and on both sides of every

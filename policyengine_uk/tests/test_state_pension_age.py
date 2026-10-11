@@ -256,6 +256,16 @@ def differential_simulation() -> tuple:
     return Simulation(situation=situation(people)), keys
 
 
+@pytest.fixture(scope="module", autouse=True)
+def release_cached_simulations():
+    # The differential simulation keeps every year it has calculated. Drop
+    # the cached simulations once this module's tests are done, instead of
+    # for the rest of the test process.
+    yield
+    differential_simulation.cache_clear()
+    situation_template.cache_clear()
+
+
 @pytest.mark.parametrize("year", YEARS)
 def test_status_matches_statute_for_every_birth_date(year):
     """State Pension age status, type, the Savings Credit age test and the day
