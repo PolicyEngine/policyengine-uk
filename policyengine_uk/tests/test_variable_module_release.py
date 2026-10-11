@@ -11,8 +11,9 @@ because the release would then silently do nothing.
 
 The conftest also freezes the objects that exist once the tests are collected
 (gc.freeze()). gc.get_objects() leaves frozen objects out, so the release must
-still count a frozen system as live, and systems the tests build afterwards
-must still be collected.
+still count a frozen system as live. A frozen object that later becomes
+garbage is never freed, so no system may die before the freeze: its variable
+modules would be frozen, then released and leaked.
 """
 
 import gc
@@ -85,7 +86,7 @@ def test_frozen_systems_keep_their_modules(request):
     # Built when policyengine_uk was imported, during collection, so frozen.
     from policyengine_uk.tax_benefit_system import system
 
-    assert gc.get_threshold() == conftest.GC_THRESHOLD
+    assert gc.get_threshold()[0] == conftest.GC_FIRST_GENERATION_THRESHOLD
     assert gc.get_freeze_count() > 0
     assert not any(obj is system for obj in gc.get_objects())
     module = type(system.variables["income_tax"]).__module__
@@ -106,3 +107,14 @@ def test_systems_built_after_the_freeze_are_still_collected():
     del simulation
     gc.collect()
     assert system() is None
+
+
+def test_no_system_dies_before_the_freeze(request):
+    dead = _conftest(request)._DEAD_AT_FREEZE
+    assert not dead, (
+        f"{len(dead)} tax-benefit system(s) were built and dropped while the "
+        "tests were collected, so conftest.py froze their variable modules "
+        "and they will never be freed. A test module probably builds a "
+        "Simulation or CountryTaxBenefitSystem at import: build it in a "
+        "fixture or on first use instead."
+    )

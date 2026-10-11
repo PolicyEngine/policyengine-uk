@@ -107,39 +107,51 @@ def pytest_collection_modifyitems(config, items):
 # *_properties.py files took 74% of pytest worker time on 10 October 2026), and
 # each of their examples builds a Simulation, which loads about 1,100 variable
 # modules again and clones the parameter tree. Python's cycle collector starts
-# a collection every 2,000 net allocations of tracked objects (its default
-# threshold), and its full collections walk every tracked object in the
-# process, including the 430,000 or so present once policyengine_uk is
-# imported. Each process that runs tests (every pytest-xdist worker) therefore:
+# a collection every 2,000 net allocations of tracked objects (the default in
+# CPython 3.13, which CI uses), and its full collections walk every tracked
+# object in the process, including the 430,000 or so present once
+# policyengine_uk is imported. Each process that runs tests (every
+# pytest-xdist worker) therefore:
 #
-# - starts a collection every 10,000 net allocations instead (GC_THRESHOLD,
-#   set at start-up; the older generations keep Python's defaults);
+# - starts a collection every 10,000 net allocations instead
+#   (GC_FIRST_GENERATION_THRESHOLD, set at start-up; the other thresholds keep
+#   the interpreter's defaults);
 # - freezes every object that exists once the tests are collected
-#   (gc.freeze()): the modules, the import-time tax-benefit systems and the
-#   collected tests, all of which live for the whole session. The collector
-#   never scans or frees frozen objects. Objects created by tests are collected
-#   as before.
+#   (gc.freeze(), about 1.6 million objects per worker): the modules, the
+#   tax-benefit systems built at import and the collected tests. The collector
+#   never scans frozen objects, so a frozen object that later becomes garbage
+#   is never freed. No tax-benefit system may therefore die before the freeze
+#   (test_variable_module_release.py checks this); build one in a fixture or on
+#   first use, not at import. Objects created by tests are collected as before.
 #
-# Measured on CI on 11 October 2026 (PR #2317: runs 38155711978 and
-# 38158313028, each running the three shards under several settings at once
-# from one commit): the workers' CPU time, summed over the shards, fell from
-# 204 to 172 minutes, and their time in the collector from 83 to 55; the
-# slowest shard took 20 minutes instead of 24. Peak runner memory did not
-# change (15.3 GiB of 15.6). In the first run, freezing alone saved nothing,
-# the threshold alone saved 13 minutes, and with a threshold of 25,000 two of
-# the three shards stalled. Every test had the same outcome under each
-# setting: this changes when memory is reclaimed, not which tests run or what
-# they compute.
-GC_THRESHOLD = (10_000, 10, 10)
+# Measured on CI on 11 October 2026 (runs and numbers in PR #2317): the
+# workers' CPU time, summed over the three shards, fell from 204 to 172
+# minutes, and their time in the collector from 83 to 55; the slowest shard
+# took 20 minutes instead of 24. The runner's memory was already full on two
+# shards under every setting; on the third, the largest worker's peak rose from
+# 5.3 to 5.7 GiB. Freezing alone saved nothing, the threshold alone saved 13
+# minutes of worker CPU, and with a threshold of 25,000 two of the three
+# runners shut down. Every test had the same outcome under each setting: this
+# changes when memory is reclaimed, not which tests run or what they compute.
+GC_FIRST_GENERATION_THRESHOLD = 10_000
 
 # gc.get_objects() leaves out frozen objects, so release_dead_variable_modules
 # looks up the systems that were frozen here.
 _FROZEN_SYSTEMS = weakref.WeakSet()
+# Owners of variable modules whose system was built and had died by the
+# freeze, and the owners already loaded when the session started (a process
+# that runs pytest more than once keeps the previous session's).
+_DEAD_AT_FREEZE = set()
+_owners_at_start = set()
 _heap_frozen = False
+_threshold_before = None
 
 
 def pytest_configure(config):
-    gc.set_threshold(*GC_THRESHOLD)
+    global _threshold_before
+    _owners_at_start.update(_variable_module_owners())
+    _threshold_before = gc.get_threshold()
+    gc.set_threshold(GC_FIRST_GENERATION_THRESHOLD, *_threshold_before[1:])
 
 
 @pytest.hookimpl(trylast=True)
@@ -148,11 +160,28 @@ def pytest_collection_finish(session):
     if _heap_frozen:
         return
     gc.collect()
-    _FROZEN_SYSTEMS.update(
-        obj for obj in gc.get_objects() if isinstance(obj, TaxBenefitSystem)
+    systems = [obj for obj in gc.get_objects() if isinstance(obj, TaxBenefitSystem)]
+    _FROZEN_SYSTEMS.update(systems)
+    _DEAD_AT_FREEZE.update(
+        set(_variable_module_owners())
+        - {str(id(system)) for system in systems}
+        - _owners_at_start
     )
     gc.freeze()
     _heap_frozen = True
+
+
+def pytest_unconfigure(config):
+    # Leave a process that runs pytest in-process (an IDE, a REPL) as it was.
+    global _heap_frozen
+    if _heap_frozen:
+        gc.unfreeze()
+        _FROZEN_SYSTEMS.clear()
+        _heap_frozen = False
+    _DEAD_AT_FREEZE.clear()
+    _owners_at_start.clear()
+    if _threshold_before is not None:
+        gc.set_threshold(*_threshold_before)
 
 
 # policyengine-core loads every variable file of each new tax-benefit system as
@@ -167,6 +196,16 @@ def pytest_collection_finish(session):
 _VARIABLE_MODULE_NAME = re.compile(r"(\d+)_-?\d+_")
 
 
+def _variable_module_owners() -> dict:
+    """Map each owner id in loaded variable module names to those names."""
+    owners = {}
+    for name in list(sys.modules):
+        match = _VARIABLE_MODULE_NAME.match(name)
+        if match:
+            owners.setdefault(match.group(1), []).append(name)
+    return owners
+
+
 def release_dead_variable_modules(max_owners: int = 8) -> int:
     """Remove dead tax-benefit systems' variable modules from sys.modules.
 
@@ -174,11 +213,7 @@ def release_dead_variable_modules(max_owners: int = 8) -> int:
     modules, since finding the live systems scans every tracked object.
     Returns the number of modules removed.
     """
-    owners = {}
-    for name in list(sys.modules):
-        match = _VARIABLE_MODULE_NAME.match(name)
-        if match:
-            owners.setdefault(match.group(1), []).append(name)
+    owners = _variable_module_owners()
     if len(owners) <= max_owners:
         return 0
     gc.collect()
