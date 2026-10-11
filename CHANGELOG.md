@@ -1,3 +1,91 @@
+## [2.126.8] - 2026-10-11
+
+### Fixed
+
+- - Let a household situation state whether its Universal Credit health element is at the new-claimant rate (`uc_receives_new_claimant_health_element`, default false), so a household's award no longer depends on its position among the other benefit units in a simulation; simulations built from data keep the seeded draw.
+- - Corrected a property test that claimed adding an adult outside the claimant's family never changes the legacy award readers: an adult non-dependant ends the family's severe disability premium, so the test now checks that what such a member reports never changes a reader, that their presence changes one only through that premium, and that Income Support then falls by at most the premium. The benefit cap, which counts such a member's own awards, is held at zero in that test until #2298 is fixed.
+
+
+## [2.126.7] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation(dataset=<DataFrame>)` for frames in which a benefit unit or household has more than one person. Each benefit unit and household now takes the value on its members' rows, single-person groups no longer take each other's values when the rows are not in identifier order, identifier columns are matched by exact name, an exported frame saved as CSV loads back, and the simulation's `dataset` holds the multi-year dataset the frame describes. Identifiers are read as whole numbers, value by value; frames whose identifier columns contradict each other, repeat a person, or name people or groups only with floats that may stand for more than one identifier (32-bit floats of `2**24` or more) are refused instead of merging households.
+  - Fixed the NHS, education and other public spending budget reforms (`gov.contrib.policyengine.budget`) raising `KeyError` when a simulation's data leaves an income decile empty, as a small sample does. An empty decile's share now goes to nobody.
+
+
+## [2.126.6] - 2026-10-11
+
+### Fixed
+
+- - Defined the young person in Scotland's working-age Council Tax Reduction scheme as a Universal Credit qualifying young person from 2022-23 (Council Tax Reduction (Scotland) Regulations 2021 reg. 6), for lone-parent status and for the members whose income counts; other schemes keep the Child Benefit definition.
+
+
+## [2.126.5] - 2026-10-11
+
+### Fixed
+
+- - Stopped counting a benefit unit's own claimant or partner as its child or qualifying young person for Child Benefit, Child Tax Credit and Pension Credit (SSCBA 1992 ss.141 and 143 and Child Benefit (General) Regulations 2006 regs 12-13; CTC Regs 2002 reg. 3; SPC Regs 2002 Sch. IIA para. 3), so a lone 16- to 19-year-old no longer gets Child Benefit, a Child Tax Credit child element or a Pension Credit child addition for themselves.
+
+
+## [2.126.4] - 2026-10-11
+
+### Fixed
+
+- - Place a household with no BRMA input in its region's BRMA with the most private-rented households, from the 2021 and 2022 censuses (Maidstone if the region is unknown), instead of Maidstone in every region. A household that sets no region is in London, the region default, so it now gets Inner South East London's LHA rates. A BRMA input still carries forward to later years while the household stays in the same region.
+
+
+## [2.126.3] - 2026-10-10
+
+### Fixed
+
+- - Pay pre-2026 Universal Credit health element claimants the legislated protected LCWRA amount (£429.80 a month in 2026-27, one amount for every claimant type), and project later years at the Universal Credit Act 2025 s. 4 floor.
+- - Stopped a negative income source, such as a property loss or a self-employment loss, from reducing a claimant's other Pension Credit income.
+
+
+## [2.126.2] - 2026-10-10
+
+### Fixed
+
+- - Counted salary sacrifice pension contributions only for people with pay, so from 2029 the excess over the £2,000 cap no longer gives employment income to people without pay.
+- - From 2031-32, index the personal allowance and basic rate limit by the previous September's CPI with the statutory round-ups (Income Tax Act 2007 ss57 and 21), keep the primary threshold, upper earnings limit and Class 4 profits limits aligned with them, and raise the secondary threshold by September CPI. Before, they followed calendar-year CPI series without rounding.
+
+
+## [2.126.1] - 2026-10-10
+
+### Fixed
+
+- - Raised the `Test` job's timeout from 60 to 120 minutes: the suite now takes about an hour, so pull request runs were being cancelled at the limit.
+
+
+## [2.126.0] - 2026-10-10
+
+### Added
+
+- - Add `is_on_pension_credit` and `is_on_universal_credit` (whether the award is payable to the person) and `tax_credit_award` (the tax credit award payable to them). For the claimant and partner they read their couple's award: Pension Credit is paid to one member (the one who reports it, else the claimant, among members who have attained the qualifying age), and Universal Credit and tax credits are joint awards (but not for a partner who cannot be a joint Universal Credit claimant, whose partner claims as a single person). Anyone else is on an award only through their own report.
+  - Add person-level `winter_fuel_payment` and `pension_age_winter_heating_payment`, with `winter_fuel_payment_eligible`, `pawhp_eligible`, `is_on_winter_fuel_payment_relevant_benefit` and `is_on_pawhp_relevant_benefit`. The household `winter_fuel_allowance` and `pawhp` now add up their members' payments.
+
+### Fixed
+
+- - Test receipt of a relevant benefit for the Winter Fuel Payment and the Pension Age Winter Heating Payment person by person. Under SI 2000/729, SI 2025/969 and NISR 2025/142 a person is on a relevant benefit when it is paid to them: Income Support, income-based JSA, income-related ESA and Pension Credit are paid to one member of a couple, while Universal Credit is awarded and paid to the couple jointly. Under SI 2024/869 reg 2(5), NISR 2024/160 reg 2(5) and SSI 2024/351 a member of a couple is also on one when the other member is (`partner_receipt_counts`). A non-dependant's income-related ESA, income-based JSA, Income Support or Pension Credit no longer qualifies a pensioner in the same household, or exempts them from the Winter Fuel Payment income test.
+  - Count Universal Credit as a relevant benefit for both payments, and a tax credit award of at least £26 for the 2024 qualifying week, as SI 2024/869, SI 2025/969 and SSI 2024/351 list them.
+  - Pay each person the amount the regulations set: one payment for a couple on a relevant benefit, the full amount to anyone else living without another entitled person, and the shared amounts (£100, or £200 or £150 over 80, and the PAWHP equivalents) otherwise. Two benefit units in one household can now both be paid.
+  - Pay the Winter Fuel Payment in Scotland up to the 2023 qualifying week (SI 2000/729 covered Great Britain) and the Pension Age Winter Heating Payment only from the 2024 week.
+  - From the 2025 qualifying week, pay the Pension Age Winter Heating Payment to everyone of pensionable age in Scotland at the legislated amounts (SSI 2025/282, SSI 2025/100 and SSI 2026/170) instead of a flat £100 to households not on a relevant benefit.
+  - Cite the Winter Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI 2024/351) in the PAWHP parameters; they cited SSI 2024/250, a planning instrument.
+
+### Removed
+
+- - Remove `gov.social_security_scotland.pawhp.amount.base`: the regulations set no flat amount for households not on a relevant benefit; the new shared amounts replace it.
+
+
+## [2.125.2] - 2026-10-10
+
+### Changed
+
+- - Require policyengine-core 3.32.27, which gives each clone its own record of `set_input` values and forgets the record of a value `Holder.delete_arrays` deletes (PolicyEngine/policyengine-core#561), and remove the `Simulation.clone` override that worked around policyengine-core#559. The `Simulation.delete_arrays` override and the `Simulation.calculate` sweep stay, now for the records that rebuilding the populations leaves behind (PolicyEngine/policyengine-core#605).
+
+
 ## [2.125.1] - 2026-10-10
 
 ### Fixed

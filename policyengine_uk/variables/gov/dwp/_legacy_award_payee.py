@@ -3,7 +3,7 @@
 from policyengine_uk.model_api import *
 
 
-def is_payee_of_couple_award(person, period, reported):
+def is_payee_of_couple_award(person, period, reported, can_claim=None):
     """Whether the claimant's or partner's family award is payable to this
     person. A person is on income-based JSA or income-related ESA on a day
     the allowance "is payable to him" (HB Regs 2006 reg 2(3) and (3A)); a
@@ -11,8 +11,16 @@ def is_payee_of_couple_award(person, period, reported):
     award is paid to the claimant, not the partner. The payee is the
     claimant or partner who reports the award, or the claimant where neither
     does (an award entered directly). Another member's report never moves
-    the payee."""
+    the payee.
+
+    can_claim, if given, limits the payee to the members of the couple who
+    can be the claimant (for Pension Credit, those who have attained the
+    qualifying age). Where neither can, both are considered, so a positive
+    award entered for the couple is still paid to one of them."""
     claimant_or_partner = person("is_claimant_or_partner", period)
+    if can_claim is not None:
+        able = claimant_or_partner & can_claim
+        claimant_or_partner = where(person.benunit.any(able), able, claimant_or_partner)
     reports = (person(reported, period) > 0) & claimant_or_partner
     head = claimant_or_partner & person("is_benunit_head", period)
     eldest = claimant_or_partner & (
