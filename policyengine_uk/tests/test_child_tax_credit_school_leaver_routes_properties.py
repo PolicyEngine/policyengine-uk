@@ -20,13 +20,15 @@ Invariants:
    a year exactly when they are 16 to 19 on 6 October and some of the year,
    from 6 April, falls on or before the last day they are a child or in the
    reg. 4 period. For a 16th birthday on 31 August that day is 30 August.
-2. Over every combination of age, education, training, own-right benefits,
-   the two leaver facts and hours: the status is the education condition, or
-   a leaver fact for a person who has left and is not in remunerative work,
-   within ages 16 to 19 and without own-right benefits. So remunerative work
-   ends both leaver routes and neither a student's status, the 20 weeks end
-   at 18, and with the leaver facts off the status is the education
-   condition's alone, as before.
+2. Over every combination of age, education, training, apprenticeship,
+   own-right benefits, the age the course began, the two leaver facts and
+   hours: the status is the education condition, or a leaver fact for a
+   person who has left and is not in remunerative work, within ages 16 to 19
+   and without own-right benefits. So remunerative work ends both leaver
+   routes and neither a student's status, the 20 weeks end at 18, a leaver
+   fact never reaches a student whose course began at 19, and with the
+   leaver facts off the status is the education condition's alone, as
+   before.
 3. Switching a leaver fact on never removes the status.
 4. The benefit unit's child or qualifying young person is a child or
    qualifying young person who is not its claimant or partner.
@@ -199,15 +201,19 @@ GRID = [
         is_apprentice=apprentice,
         receives_benefits_in_own_right=own_right,
         weekly_hours=hours,
+        age_started_or_accepted_current_education_or_training=entry_age,
         **{ROUTE: route, EXTENSION: extension},
     )
-    for age, education, training, apprentice, own_right, hours in product(
+    for age, education, training, apprentice, own_right, hours, entry_age in product(
         range(14, 22),
         EDUCATIONS,
         (False, True),
         (False, True),
         (False, True),
         (0, 23, 24),
+        # A course begun at 19 fails reg. 5(3A). Such a student has not left
+        # education, so neither leaver fact reaches them.
+        (17, 1000),
     )
     for route, extension in product((False, True), repeat=2)
 ]
@@ -227,6 +233,17 @@ def test_status_is_the_first_condition_or_a_leaver_fact_under_the_second():
     own_right = np.array([p["receives_benefits_in_own_right"] for p in GRID])
     assert not status[(age < 16) | (age >= 20)].any()
     assert not status[own_right].any()
+    # A student whose course began at 19 does not qualify, whatever the
+    # leaver facts say.
+    late_student = np.array(
+        [
+            receiving_education_or_training(p)
+            and p["age"] >= 19
+            and p["age_started_or_accepted_current_education_or_training"] >= 19
+            for p in GRID
+        ]
+    )
+    assert late_student.any() and not status[late_student].any()
     # Remunerative work ends a leaver's status and not a student's.
     assert not status[~student & (hours >= 24)].any()
     assert status[student & (hours >= 24)].any()
