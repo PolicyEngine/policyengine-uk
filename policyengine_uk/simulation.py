@@ -257,7 +257,7 @@ class Simulation(CoreSimulation):
         only for later years, since inputs do not carry back. See
         ``policyengine_uk.data.input_dataframe.hold_identifiers_in``."""
         super().set_input(variable_name, period, value)
-        hold_identifiers_in(self, period)
+        hold_identifiers_in(self, variable_name, period)
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:

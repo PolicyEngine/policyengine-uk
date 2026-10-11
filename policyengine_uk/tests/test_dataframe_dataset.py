@@ -66,6 +66,7 @@ True)`` exports them, and must be taken before the simulation calculates
 anything, since it also exports every calculated value.
 """
 
+import datetime
 import inspect
 import io
 import re
@@ -1593,6 +1594,48 @@ def test_a_branch_given_an_input_before_the_data_holds_the_identifiers_itself():
     # identifier.
     assert identifier_inputs(simulation)["person_id"][0] == str(YEAR)
     assert simulation.calculate("person_id", YEAR - 1).tolist() == [0, 0]
+
+
+@pytest.fixture
+def ending():
+    """Give a variable of a simulation an end date for one test, then take
+    it away: ``ending(simulation, variable, year)`` ends it on the last day
+    of ``year``."""
+    ended = []
+
+    def end(simulation, name: str, year: int) -> None:
+        variable = simulation.tax_benefit_system.get_variable(name)
+        ended.append((variable, variable.end))
+        variable.end = datetime.date(year, 12, 31)
+
+    yield end
+    for variable, end in ended:
+        variable.end = end
+
+
+def test_an_input_core_stores_nothing_for_gives_no_identifiers(ending):
+    # policyengine-core ignores an input for a period after its variable
+    # ends, so the simulation holds no input in that year.
+    simulation = Simulation(dataset=frame(TWINS))
+    ending(simulation, "hours_worked", YEAR - 3)
+
+    simulation.set_input("hours_worked", YEAR - 2, np.array([1, 2]))
+
+    assert set(map(tuple, identifier_inputs(simulation).values())) == {(str(YEAR),)}
+
+
+def test_an_identifier_core_would_not_store_is_left_out(ending):
+    # Setting it would store nothing, and hold_identifiers_in would try
+    # again without end.
+    simulation = Simulation(dataset=frame(TWINS))
+    ending(simulation, "household_id", YEAR - 3)
+
+    simulation.set_input("hours_worked", YEAR - 2, np.array([1, 2]))
+
+    held = identifier_inputs(simulation)
+    assert held.pop("household_id") == [str(YEAR)]
+    for periods in held.values():
+        assert periods == [str(YEAR - 2), str(YEAR)]
 
 
 def test_a_simulation_that_holds_no_identifiers_is_given_none():

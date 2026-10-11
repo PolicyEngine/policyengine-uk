@@ -444,18 +444,26 @@ def dataset_from_input_dataframe(
     return UKMultiYearDataset(datasets=datasets), replayed, identifier_inputs
 
 
-def hold_identifiers_in(simulation, period) -> None:
-    """Give ``simulation`` its identifiers for the year ``period`` starts in,
-    if they start later.
+def _ignored(variable, period) -> bool:
+    """Whether policyengine-core's ``Simulation.set_input`` stores nothing
+    for ``variable`` in ``period``, as it does for a period that starts after
+    the variable ends."""
+    return variable.end is not None and period.start.date > variable.end
+
+
+def hold_identifiers_in(simulation, variable_name: str, period) -> None:
+    """Give ``simulation`` its identifiers for the year an input of
+    ``variable_name`` for ``period`` starts in, if they start later.
 
     policyengine-core carries an input forward to later periods but never
     back (``Simulation._calculate``). So a simulation given an input for a
     year before its data, such as 2023 for a frame of 2025, would hold no
     identifiers there. Formulas would read every person, benefit unit and
-    household identifier there as zero, the default. Yet the simulation its
-    exported frame loads back to holds them there, since the dataset a frame
-    loads as holds the people and groups in each year the frame gives values
-    for (``dataset_from_input_dataframe``).
+    household identifier there as zero, the default. Yet once the frame it
+    exports gives a whole year's value for that year, the frame loads back to
+    a simulation that holds the people and groups there: each whole year a
+    column names is a year of the dataset, which holds them
+    (``dataset_from_input_dataframe``).
 
     So each identifier that ``simulation`` holds as an input for some period,
     but for none that starts by the first day of the year ``period`` starts
@@ -464,14 +472,19 @@ def hold_identifiers_in(simulation, period) -> None:
     value names the same ones. From that year on the identifier carries
     forward, so the simulation holds its identifiers in each year it holds an
     input for. An identifier the simulation does not hold as an input, as in
-    one built from a situation, is left alone.
+    one built from a situation, is left alone. So is an input core does not
+    store, for a period after its variable ends, and an identifier core would
+    not store for that year.
     """
     period = period_(period)
-    if period.unit == ETERNITY:
+    variables = simulation.tax_benefit_system.variables
+    if period.unit == ETERNITY or _ignored(variables[variable_name], period):
         return
     year = period_(str(period.start.year))
     branch = simulation.branch_name
     for identifier in sorted(IDENTIFIER_VARIABLES):
+        if _ignored(variables[identifier], year):
+            continue
         holder = simulation.get_holder(identifier)
         held = holder.get_input_periods(branch)
         if not held:
