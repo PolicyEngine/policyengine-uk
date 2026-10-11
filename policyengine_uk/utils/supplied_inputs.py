@@ -7,8 +7,18 @@ inputs. A holder's known periods include both. policyengine-core records each
 (variable, branch, period) that ``set_input`` stores in
 ``Simulation._user_input_keys``. From 3.32.27 (policyengine-core#561), core
 forgets the record of an input that ``Holder.delete_arrays`` deletes, and each
-clone gets its own copy of the record. The helpers also require a stored
-value, so missing arrays do not count as supplied inputs.
+clone gets its own copy of the record.
+
+The record can still outlive the value it names. A value cached over an input
+takes that storage tier (memory or disk) off the holder's record of where the
+input is (``Holder._user_input_storage``), but leaves the entry in
+``_user_input_keys``. So every helper here reads a supplied value only if it is
+still stored, and only from a tier that the holder records the input in and
+that holds a value the engine did not calculate, as
+``Holder._stores_user_input`` decides whether an input survives (see
+``stored_supplied_value``). A missing value, or one carried over, calculated or
+cached into the same tier, is not supplied; an input stored on disk under a
+value cached in memory still is.
 
 ``build_from_situation`` installs fresh populations, and so fresh holders,
 through ``Simulation.build_from_populations``, which keeps the record
@@ -20,10 +30,7 @@ refill it, and the helpers only answer for those variables.
 ``Simulation.delete_arrays`` forgets such records too, for any variable it
 deletes.
 
-``supplied_input_arrays`` answers for every variable. It reads only a record
-whose supplied value is still stored, from the storage tier (memory or disk)
-the holder records it in. A value the engine carried over or calculated into
-the same period, in either tier, is not read as supplied.
+``supplied_input_arrays`` answers for every variable.
 """
 
 from typing import List, Optional, Tuple
@@ -88,7 +95,9 @@ def drop_missing_supplied_inputs(simulation, variable_name: str) -> None:
 
 def supplied_input_periods(population, variable_name: str) -> List[Period]:
     """Periods for which ``variable_name`` was supplied as an input, on this
-    branch or one it was made from, earliest first."""
+    branch or one it was made from, and the supplied value is still stored,
+    earliest first. A period whose input a value carried over, calculated or
+    cached in its place has replaced is left out."""
     _check_registered(variable_name)
     simulation = population.simulation
     branch_names = set(_visible_branch_names(simulation))
@@ -100,7 +109,8 @@ def supplied_input_periods(population, variable_name: str) -> List[Period]:
             for name, branch_name, period in input_keys
             if name == variable_name
             and branch_name in branch_names
-            and holder._get_array_from_storage(period, branch_name) is not None
+            # Checked without reading the value, which may be on disk.
+            and _supplied_value_storage(holder, period, branch_name) is not None
         },
         key=lambda period: period.start,
     )
@@ -110,9 +120,10 @@ def supplied_input(
     population, variable_name: str, period: Period
 ) -> Optional[np.ndarray]:
     """The value of ``variable_name`` for ``period`` if it was supplied as an
-    input, on this branch or the nearest one it was made from; otherwise
-    None. A value the engine carried over from an earlier period, or cached
-    after a calculation, is not an input."""
+    input, on this branch or the nearest one it was made from, and is still
+    stored; otherwise None. A value the engine carried over from an earlier
+    period, or cached after a calculation, is not an input, including one
+    cached over the input."""
     _check_registered(variable_name)
     simulation = population.simulation
     input_keys = getattr(simulation, "_user_input_keys", None) or ()
@@ -120,10 +131,12 @@ def supplied_input(
     for branch_name in _visible_branch_names(simulation):
         if (variable_name, branch_name, period) in input_keys:
             # Read the stored input itself: Holder.get_array would fall back
-            # to other branches' values, including cached calculations.
-            # A record can outlive its stored array (see above); a missing
-            # stored array must be ignored even if its key remains.
-            value = holder._get_array_from_storage(period, branch_name)
+            # to other branches' values, including cached calculations, and
+            # reads memory before disk whatever each holds. A record can
+            # outlive its input (see above); then look on the branch this one
+            # was made from, as policyengine-core's
+            # Simulation._get_recorded_input_array does.
+            value = stored_supplied_value(holder, period, branch_name)
             if value is not None:
                 # A neutralized variable reads as its default, as it does
                 # through the engine. (PolicyEngine-UK builds no
@@ -167,6 +180,13 @@ def stored_supplied_value(holder, period: Period, branch_name: str):
     Reading memory before disk instead could return a calculated value cached
     over an input stored on disk.
     """
+    storage = _supplied_value_storage(holder, period, branch_name)
+    return None if storage is None else storage.get(period, branch_name)
+
+
+def _supplied_value_storage(holder, period: Period, branch_name: str):
+    """The storage (memory or disk) from which ``stored_supplied_value``
+    reads, or None if the supplied value is gone."""
     recorded = (getattr(holder, "_user_input_storage", None) or {}).get(
         (branch_name, str(period))
     )
@@ -181,5 +201,5 @@ def stored_supplied_value(holder, period: Period, branch_name: str):
             and storage.has(period, branch_name)
             and not storage.is_derived(period, branch_name)
         ):
-            return storage.get(period, branch_name)
+            return storage
     return None
