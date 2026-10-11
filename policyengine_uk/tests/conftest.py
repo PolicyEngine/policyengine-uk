@@ -242,23 +242,38 @@ def _release_variable_modules_of_dead_systems():
 # that it can key its records by id(code) (SysMonitor.code_objects in
 # coverage/sysmon.py). policyengine-core compiles a system's variable files
 # again for every new system, into new code objects, and every Simulation
-# builds a new system, so each Simulation left about 2,500 code objects and
-# 4 MB that were never freed. On CI the four workers of a shard grew to the
-# whole runner's memory (15.3 of 15.6 GiB).
+# builds a new system, so each Simulation left about 2,500 code objects that
+# were never freed. By the end of a CI shard each pytest-xdist worker's
+# coverage held 0.8 to 1.5 million of them, and the shards peaked at 14.4 to
+# 15.3 GiB of the runner's 15.6, using up to 1.8 GiB of swap (run 38159894687).
 #
 # A file's code object does not depend on the system that runs it, so each
 # process compiles each variable file once and every later system runs that
 # code object. Systems still get their own modules, classes and functions;
-# only the immutable code is shared. Remove this once policyengine-core
-# shares the code itself.
+# only the immutable code is shared. In the same run this lowered the shards'
+# peaks to 10.2 to 12.2 GiB with no swap, cut their pytest time by 15 to 21%,
+# and left every test's outcome unchanged. Remove this once policyengine-core
+# shares the code itself (PolicyEngine/policyengine-core#608).
+#
+# The same hook also releases dead systems' variable modules whenever a new
+# system starts loading its variables, not only after each test: in that run
+# one property test had 165 systems' modules loaded at once, and Hypothesis
+# builds hundreds of systems while it shrinks a failing example.
 _variable_code = {}
 _get_code = SourceFileLoader.get_code
+_loading_owner = None
 
 
-def _get_shared_variable_code(loader, fullname):
+def _get_variable_code(loader, fullname):
     """``SourceFileLoader.get_code``, compiling each variable file only once."""
-    if not _VARIABLE_MODULE_NAME.match(fullname):
+    global _loading_owner
+    match = _VARIABLE_MODULE_NAME.match(fullname)
+    if not match:
         return _get_code(loader, fullname)
+    if match.group(1) != _loading_owner:
+        # A system loads all its variable files in turn, so this is a new one.
+        _loading_owner = match.group(1)
+        release_dead_variable_modules()
     path = loader.get_filename(fullname)
     stat = os.stat(path)
     key = (path, stat.st_mtime_ns, stat.st_size)
@@ -269,7 +284,7 @@ def _get_shared_variable_code(loader, fullname):
 
 
 def pytest_sessionstart(session):
-    SourceFileLoader.get_code = _get_shared_variable_code
+    SourceFileLoader.get_code = _get_variable_code
 
 
 def pytest_unconfigure(config):

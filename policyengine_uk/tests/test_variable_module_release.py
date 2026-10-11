@@ -118,3 +118,15 @@ def test_no_system_dies_before_the_freeze(request):
         "Simulation or CountryTaxBenefitSystem at import: build it in a "
         "fixture or on first use instead."
     )
+
+
+def test_dead_systems_modules_are_released_while_a_test_runs(request):
+    variable_module_owners = _conftest(request)._variable_module_owners
+    max_owners = 8
+    owners = set()
+    for _ in range(3 * max_owners):
+        Simulation(situation=SITUATION).calculate("income_tax", 2026)
+        owners.add(len(variable_module_owners()))
+    # The release runs as each new system starts loading, and keeps at most
+    # max_owners systems' modules plus the new system's.
+    assert max(owners) <= max_owners + 1, sorted(owners)
