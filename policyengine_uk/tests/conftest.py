@@ -237,16 +237,17 @@ def release_dead_variable_modules(max_owners: int = 8) -> int:
     return released
 
 
-# A test or a new system triggers the release only once ``max_new`` systems
-# have been built since the last release found the live ones, so a process
+# A test or a new system triggers the release only once more than ``max_new``
+# systems own modules beyond those alive at the last release, so a process
 # that keeps more than eight systems alive (an lru_cache of systems in a test
 # module) doesn't scan every tracked object after every test and every build.
 _live_owners = 0
 
 
 def release_after_new_systems(max_new: int = 8) -> int:
-    """Release dead systems' variable modules once ``max_new`` more systems own
-    modules than were alive at the last release. Returns the number removed."""
+    """Release dead systems' variable modules once more than ``max_new`` systems
+    own modules beyond those alive at the last release. Returns the number
+    removed."""
     global _live_owners
     if len(_variable_module_owners()) <= _live_owners + max_new:
         return 0
