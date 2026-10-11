@@ -86,7 +86,10 @@
     # Lone parent aged 18 or over: 95.55 * 52.
     council_tax_reduction_applicable_amount: 4_968.60
     # Child Benefit 1,406.60 plus the young person's earnings of 2,000, which
-    # are below the income tax and National Insurance thresholds.
+    # are below the income tax and National Insurance thresholds. Counting a
+    # young person's own earnings is an older approximation of the model's,
+    # not the law (reg. 36(2) leaves them out); this pins that the member is
+    # in the family, not a statutory income figure.
     council_tax_reduction_applicable_income: 3_406.60
 
 - name: Case 3, England keeps the Child Benefit young person past the Universal Credit terminal date.
@@ -263,3 +266,88 @@
     is_council_tax_reduction_lone_parent: false
     # Single and under 25: 75.65 * 52.
     council_tax_reduction_applicable_amount: 3_933.80
+
+# The applicant's own income always counts (SSI 2021/249 reg. 36(1)). A
+# household head who is liable for the council tax and applies alone is not
+# the benefit unit's claimant, and the income mask reached them only as a
+# Child Benefit young person. Past the Universal Credit terminal date they are
+# not a young person under Scotland's working-age scheme, and their earnings
+# must still count.
+- name: Case 9, Scotland working age, a 19-year-old household head who applies alone keeps their earnings in the means test.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 19
+        is_household_head: true
+        is_claimant_or_partner: false
+        is_in_approved_training: true
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        employment_income: 10_000
+      father:
+        age: 45
+        is_household_head: false
+        is_claimant_or_partner: true
+      mother:
+        age: 46
+        is_household_head: false
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [head, father, mother]
+        would_claim_uc: false
+        would_claim_child_benefit: false
+    households:
+      household:
+        members: [head, father, mother]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    council_tax_reduction_head_applies_alone: true
+    is_council_tax_reduction_applicant_or_partner: [true, false, false]
+    is_qualifying_young_person_for_child_benefit: [true, false, false]
+    is_qualifying_young_person_for_universal_credit: [false, false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, false, false]
+    # The head's earnings of 10,000, below the income tax and National
+    # Insurance thresholds. No benefit is claimed.
+    council_tax_reduction_applicable_income: 10_000
+
+- name: Case 10, the same family in England, where the head is a Child Benefit young person.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 19
+        is_household_head: true
+        is_claimant_or_partner: false
+        is_in_approved_training: true
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        employment_income: 10_000
+      father:
+        age: 45
+        is_household_head: false
+        is_claimant_or_partner: true
+      mother:
+        age: 46
+        is_household_head: false
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [head, father, mother]
+        would_claim_uc: false
+        would_claim_child_benefit: false
+    households:
+      household:
+        members: [head, father, mother]
+        country: ENGLAND
+        council_tax: 1_800
+  output:
+    council_tax_reduction_head_applies_alone: true
+    is_council_tax_reduction_applicant_or_partner: [true, false, false]
+    is_child_or_young_person_for_council_tax_reduction: [true, false, false]
+    council_tax_reduction_applicable_income: 10_000

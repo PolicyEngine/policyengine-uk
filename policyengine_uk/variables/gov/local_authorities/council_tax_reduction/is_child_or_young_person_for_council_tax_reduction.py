@@ -20,6 +20,12 @@ class is_child_or_young_person_for_council_tax_reduction(Variable):
 
     The scheme follows the family's own pensioner status
     (council_tax_reduction_pensioner).
+
+    Both branches leave out every child or young person looked after by a
+    local authority, as the Universal Credit and legacy flags do. That is
+    broader than Scotland's working-age rule, which names only a child or
+    young person placed with a foster carer under the Looked After Children
+    (Scotland) Regulations 2009 (reg. 7(8)).
     """
 
     value_type = bool

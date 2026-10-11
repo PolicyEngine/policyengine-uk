@@ -28,11 +28,18 @@ Invariants:
    working-age applicable amount of a family with no premiums is the personal
    allowance the table gives for a couple, a lone parent or a single person,
    for 52 weeks.
+6. The applicant's own earnings count under every scheme (SSI 2021/249 reg.
+   36(1)). A household head aged 18 or 19 who applies alone was reached by
+   the income mask only as a Child Benefit young person; they stay in the
+   means test where Scotland's working-age scheme does not read them as a
+   young person. A member who is not the applicant counts only as that
+   scheme's young person.
 
 The pensioner test and the claimant and partner are supplied, so these tests
 exercise the young person rule alone; the YAML cases use the derived tests.
 """
 
+from itertools import product
 from unittest.mock import patch
 
 import numpy as np
@@ -331,8 +338,10 @@ def test_lone_parent_and_working_age_personal_allowance(units, year):
 
 
 def test_scottish_working_age_differs_from_child_benefit_at_19():
-    # Not vacuous: the two definitions do differ, in both directions, so the
-    # Scottish working-age flag is a different rule from the legacy flag.
+    # Not vacuous: past the Universal Credit terminal date a 19-year-old at
+    # school is a Child Benefit young person and not a Universal Credit one,
+    # so the Scottish working-age flag is a different rule from the legacy
+    # flag. Before the date the two agree.
     base = {
         "current_education": "UPPER_SECONDARY",
         "is_in_approved_training": False,
@@ -377,3 +386,77 @@ def test_scottish_working_age_differs_from_child_benefit_at_19():
     ]
     np.testing.assert_array_equal(young, expected)
     assert not all(expected) and any(expected)
+
+
+def test_applicants_own_earnings_count_under_every_scheme():
+    # Invariant 6. Parents aged 45 and 46 are the benefit unit's claimant and
+    # partner; with them lives a member aged 18 or 19 at school or in approved
+    # training. Either that member heads the household, is liable for the
+    # council tax and applies alone, or the father heads it and the member is
+    # only a possible young person of the family. No benefit is claimed, and
+    # the earnings are below the income tax and National Insurance thresholds,
+    # so the applicable income is the earnings that count.
+    year, earnings = 2026, 9_000
+    cases = list(
+        product(
+            ("ENGLAND", "WALES", "SCOTLAND"),
+            (18, 19),
+            (False, True),  # approved training, or school
+            (False, True),  # before the Universal Credit terminal date
+            (False, True),  # the member heads the household
+        )
+    )
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    for i, (country, age, training, before, heads) in enumerate(cases):
+        situation["people"][f"member{i}"] = {
+            "age": {year: age},
+            "is_household_head": {year: heads},
+            "is_claimant_or_partner": {year: False},
+            "current_education": {
+                year: "NOT_IN_EDUCATION" if training else "UPPER_SECONDARY"
+            },
+            "is_in_approved_training": {year: training},
+            "age_started_or_accepted_current_education_or_training": {year: 17},
+            "is_before_universal_credit_qualifying_young_person_terminal_date": {
+                year: before
+            },
+            "employment_income": {year: earnings},
+        }
+        for parent, parent_age in (("father", 45), ("mother", 46)):
+            situation["people"][f"{parent}{i}"] = {
+                "age": {year: parent_age},
+                "is_household_head": {year: parent == "father" and not heads},
+                "is_claimant_or_partner": {year: True},
+            }
+        names = [f"member{i}", f"father{i}", f"mother{i}"]
+        situation["benunits"][f"b{i}"] = {
+            "members": names,
+            "would_claim_uc": {year: False},
+            "would_claim_child_benefit": {year: False},
+        }
+        situation["households"][f"h{i}"] = {
+            "members": names,
+            "country": {year: country},
+        }
+    with patch(
+        "policyengine_uk.simulation.CountryTaxBenefitSystem",
+        side_effect=_PROPERTY_SYSTEM.clone,
+    ):
+        sim = Simulation(situation=situation)
+    applicant = sim.calculate("is_council_tax_reduction_applicant_or_partner", year)
+    heads = np.array([case[4] for case in cases])
+    # Where the member heads the household they are the applicant, alone.
+    np.testing.assert_array_equal(applicant[0::3], heads)
+    np.testing.assert_array_equal(applicant[1::3], ~heads)
+    young_person = sim.calculate(
+        "is_child_or_young_person_for_council_tax_reduction", year
+    )[0::3]
+    income = sim.calculate("council_tax_reduction_applicable_income", year)
+    np.testing.assert_allclose(income, earnings * (heads | young_person), atol=0.01)
+    # The applicant's earnings count in every case.
+    np.testing.assert_allclose(income[heads], earnings, atol=0.01)
+    # Not vacuous: some applicants are not young persons under their scheme,
+    # and a member who is neither does not count.
+    assert (heads & ~young_person).any()
+    assert (income[~heads & ~young_person] == 0).all()
+    assert (~heads & ~young_person).any() and (~heads & young_person).any()
