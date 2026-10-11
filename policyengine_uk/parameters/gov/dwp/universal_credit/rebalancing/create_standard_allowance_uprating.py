@@ -14,27 +14,24 @@ on the previous uplift, because Step 1 takes the previous year's amount before
 its Step 3. From one year to the next the allowance therefore grows by CPI
 times (1 + this year's uplift) / (1 + last year's uplift).
 
-The 2026-27 amounts are written into ``standard_allowance/amount.yaml`` as
-legislated. That file is uprated by the index built here,
-``gov.dwp.universal_credit.standard_allowance.uprating``: the benefit uprating
-index ``gov.benefit_uprating_cpi``, with s. 1(3)'s 0% floor in 2026-27 to
-2029-30, times (1 + that year's uplift). Uprating the 2026-27 amounts by it
-gives each later year's amount the CPI growth and the change in uplift. After
-2029-30 the uplift stays at 4.8%, so the allowance grows with CPI alone. The
-benefit index is the model's measure of CPI for benefit uprating; s. 1(3)
-names September CPI. Because it is the same index, the difference from a
-CPI-only path is exactly the uplift.
+The legislated amounts (2026-27 so far) are written into
+``standard_allowance/amount.yaml`` and used as they are. Later years are
+uprated by the index built here, ``gov.dwp.universal_credit.standard_allowance
+.uprating``: the benefit uprating index ``gov.benefit_uprating_cpi``, with
+s. 1(3)'s 0% floor in 2026-27 to 2029-30, times one plus the uplift. For a
+year with legislated amounts the uplift is the one those amounts include, from
+the s. 1(4) table; for later years it is the uplift in force (nil with
+``rebalancing.active`` false). Uprating the legislated amounts by the index
+gives each later year the CPI growth and the change in uplift, so switching
+rebalancing off, or changing a later year's uplift, reaches every year after
+the legislated ones; changing a legislated year needs its amount set. After
+2029-30 the uplift stays at 4.8%, so the allowance grows with CPI alone.
 
-A legislated amount in ``amount.yaml`` for 2026-27 to 2029-30 includes that
-year's uplift from the s. 1(4) table. If the uplift in force differs (a
-reform, or ``rebalancing.active`` false, which means no uplift), the amount is
-rescaled by (1 + uplift in force) / (1 + legislated uplift), so every year's
-allowance carries the uplift in force and keeps the CPI growth already in the
-legislated rate. An amount a ``Scenario(parameter_changes=...)`` reform set,
-even one equal to the legislated amount, is used as given. Every other entry
-carries the legislated series, including the entry ``Parameter.update`` writes
-after a bounded reform to restore it, and is rescaled by the uplift of the
-legislated amount it carries.
+The benefit index is the model's measure of CPI for benefit uprating; s. 1(3)
+names September CPI. Because it is the same index, the difference from a
+CPI-only path is exactly the uplift. It is read on 30 April of each year, the
+date fiscal-year conversion samples, as uprating will extend it, so a reform to
+the benefit index reaches the allowance in the fiscal year it covers.
 
 This runs in ``process_parameters`` before uprating, so a parameter change
 made through ``Scenario(parameter_changes=...)``, which re-runs that pipeline,
@@ -48,8 +45,6 @@ from pathlib import Path
 import yaml
 from policyengine_core.parameters import Parameter, ParameterNode, get_parameter
 
-from policyengine_uk.utils.parameters import is_set_by_reform
-
 INDEX_NAME = "gov.dwp.universal_credit.standard_allowance.uprating"
 AMOUNT_FILE = Path(__file__).parents[1] / "standard_allowance" / "amount.yaml"
 # Universal Credit Act 2025 s. 1(1): tax years 2026-27 to 2029-30.
@@ -57,15 +52,19 @@ FIRST_ACT_YEAR = 2026
 LAST_ACT_YEAR = 2029
 # s. 1(4): the uplift included in a legislated amount for each tax year.
 LEGISLATED_UPLIFT = {2026: 0.023, 2027: 0.031, 2028: 0.040, 2029: 0.048}
-# Marks an amount entry already rescaled, so processing twice cannot rescale
-# it again.
-RESCALED = "_rescaled_to_uplift_in_force"
 
 
 def tax_year_instant(year: int) -> str:
     """Date at which policy parameters are read for the tax year from April
     ``year``: 30 April, the date fiscal-year conversion samples."""
     return f"{year}-04-30"
+
+
+def tax_year(instant_str: str) -> int:
+    """Tax year of a dated amount. Rates are dated from the start of April,
+    before the 6 April start of the tax year they apply to."""
+    year, month = int(instant_str[:4]), int(instant_str[5:7])
+    return year if month >= 4 else year - 1
 
 
 def uplift_in_force(rebalancing: ParameterNode, year: int) -> float:
@@ -77,46 +76,28 @@ def uplift_in_force(rebalancing: ParameterNode, year: int) -> float:
     return 0.0 if uplift is None else uplift
 
 
-def legislated_tax_year(instant_str: str) -> int:
-    """Tax year of a legislated amount. Rates are dated from the start of
-    April, before the 6 April start of the tax year they apply to."""
-    year, month = int(instant_str[:4]), int(instant_str[5:7])
-    return year if month >= 4 else year - 1
-
-
 @lru_cache(maxsize=1)
-def legislated_amounts() -> dict:
-    """The amounts in amount.yaml by claimant type, as sorted (date, amount)
-    pairs."""
+def last_legislated_year() -> int:
+    """The latest tax year with a legislated amount in amount.yaml for every
+    claimant type. Read from the file, so a reform that replaces an amount
+    does not change which years are legislated."""
     data = yaml.safe_load(AMOUNT_FILE.read_text())
-    amounts = {}
-    for claimant_type, node in data.items():
-        if not isinstance(node, dict) or "values" not in node:
-            continue
-        amounts[claimant_type] = sorted(
-            (str(instant), float(value["value"] if isinstance(value, dict) else value))
+    return min(
+        max(
+            tax_year(str(instant))
             for instant, value in node["values"].items()
             if value is not None
         )
-    return amounts
-
-
-def legislated_amount_at(claimant_type: str, instant_str: str):
-    """The latest amount.yaml entry for a claimant type at or before an
-    instant, as (date, amount), or None."""
-    source = None
-    for entry_instant, amount in legislated_amounts().get(claimant_type, []):
-        if entry_instant <= instant_str:
-            source = (entry_instant, amount)
-    return source
+        for node in data.values()
+        if isinstance(node, dict) and "values" in node
+    )
 
 
 def benefit_index_values(parameters: ParameterNode) -> dict:
     """``gov.benefit_uprating_cpi`` for each year of its uprating index, as
     uprating will extend it: its own values up to its latest one, then that
-    value moved with its uprating index. Each year is read on 30 April, the
-    date fiscal-year conversion samples, so a reform to the benefit index for
-    a fiscal year reaches that year. Keyed by 1 January, as the index is."""
+    value moved with its uprating index. Each year is read on 30 April and
+    keyed by 1 January, as the index is."""
     benefit_index = parameters.gov.benefit_uprating_cpi
     cpi_index = get_parameter(parameters, benefit_index.metadata["uprating"])
     last_instant = benefit_index.values_list[0].instant_str
@@ -136,30 +117,7 @@ def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNo
     universal_credit = parameters.gov.dwp.universal_credit
     rebalancing = universal_credit.rebalancing
     standard_allowance = universal_credit.standard_allowance
-
-    for amount in standard_allowance.amount.get_descendants():
-        if not isinstance(amount, Parameter):
-            continue
-        claimant_type = amount.name.split(".")[-1]
-        for value in amount.values_list:
-            if (
-                value.value is None
-                or getattr(value, RESCALED, False)
-                or is_set_by_reform(amount, value.instant_str)
-            ):
-                continue
-            # The legislated amount this entry carries: itself for an entry
-            # loaded from amount.yaml, or the one an entry written after a
-            # bounded reform restores.
-            source = legislated_amount_at(claimant_type, value.instant_str)
-            if source is None or abs(value.value - source[1]) > 1e-9:
-                continue
-            year = legislated_tax_year(source[0])
-            if year in LEGISLATED_UPLIFT:
-                value.value *= (1 + uplift_in_force(rebalancing, year)) / (
-                    1 + LEGISLATED_UPLIFT[year]
-                )
-                setattr(value, RESCALED, True)
+    legislated_through = last_legislated_year()
 
     values = {}
     cpi_path = 1.0
@@ -174,7 +132,12 @@ def add_uc_standard_allowance_uprating(parameters: ParameterNode) -> ParameterNo
                 growth = max(1.0, growth)
             cpi_path *= growth
         previous_cpi = cpi
-        values[instant] = cpi_path * (1 + uplift_in_force(rebalancing, year))
+        if year <= legislated_through and year in LEGISLATED_UPLIFT:
+            # The uplift the legislated amounts for this year include.
+            uplift = LEGISLATED_UPLIFT[year]
+        else:
+            uplift = uplift_in_force(rebalancing, year)
+        values[instant] = cpi_path * (1 + uplift)
 
     standard_allowance.add_child(
         "uprating",

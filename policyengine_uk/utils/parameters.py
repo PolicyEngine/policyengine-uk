@@ -75,32 +75,6 @@ def uk_fiscal_year_period(time_period):
     return periods.Period(("day", start, days))
 
 
-REFORM_PERIODS = "_reform_periods"
-
-
-def record_reform_period(parameter, period) -> None:
-    """Note a period a parameter change set on ``parameter``.
-
-    ``Parameter.update`` writes the new value at the start of the period and,
-    after it, an entry restoring the value that applied before, with nothing to
-    tell the two apart. Processing steps that adjust legislated values use
-    these spans to leave the values a reform set as given while still treating
-    restored values as legislated.
-    """
-    period = periods.period(period)
-    spans = getattr(parameter, REFORM_PERIODS, [])
-    spans.append((str(period.start), str(period.stop)))
-    setattr(parameter, REFORM_PERIODS, spans)
-
-
-def is_set_by_reform(parameter, instant_str: str) -> bool:
-    """Whether a recorded parameter change set ``parameter`` at an instant."""
-    return any(
-        start <= instant_str <= stop
-        for start, stop in getattr(parameter, REFORM_PERIODS, [])
-    )
-
-
 def convert_to_fiscal_year_parameters(parameters):
     """
     Convert parameters to use UK fiscal year values.

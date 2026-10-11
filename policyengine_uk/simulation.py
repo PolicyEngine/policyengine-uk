@@ -18,7 +18,6 @@ from policyengine_core.tracers import FullTracer, SimpleTracer
 
 from policyengine_uk.utils.parameters import (
     check_parameter_not_removed,
-    record_reform_period,
     uk_fiscal_year_period,
 )
 
@@ -275,12 +274,12 @@ class Simulation(CoreSimulation):
                 # fiscal year, so the override covers 6 April to 5 April and
                 # survives fiscal-year conversion at full strength.
                 for time_period in changes[parameter]:
-                    period = uk_fiscal_year_period(time_period)
-                    p.update(period=period, value=changes[parameter][time_period])
-                    record_reform_period(p, period)
+                    p.update(
+                        period=uk_fiscal_year_period(time_period),
+                        value=changes[parameter][time_period],
+                    )
             else:
                 p.update(period="year:2000:100", value=changes[parameter])
-                record_reform_period(p, "year:2000:100")
 
         self.tax_benefit_system.process_parameters()
 

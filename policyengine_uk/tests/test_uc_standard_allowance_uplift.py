@@ -15,10 +15,12 @@ Invariants:
 2. Differential: the amounts equal an independent step-by-step
    implementation of s. 1(2), started from the 2026-27 Step 2 amounts (the
    legislated amounts less the 2.3% uplift).
-3. The uplift in force: a reform to any year's uplift, or switching
-   rebalancing off (no uplift), scales that year's amount by
-   (1 + uplift) / (1 + statutory uplift), including the legislated 2026-27
-   amounts, and leaves the CPI path alone.
+3. The uplift in force: the legislated 2026-27 amounts stay as legislated;
+   a reform to a later year's uplift, or switching rebalancing off (no
+   uplift), scales each later year by (1 + uplift in force) / (1 + statutory
+   uplift) and leaves the CPI path alone.
+4. Reforms: an amount a reform sets is used as given, and a reform to the
+   benefit index reaches the allowance in the fiscal year it covers.
 """
 
 import pytest
@@ -130,17 +132,16 @@ def test_growth_is_cpi_times_the_change_in_uplift(schedule):
     _, amounts, cpi = _amounts(scenario)
     _, baseline, _ = _amounts()
     for t in CLAIMANT_TYPES:
-        # The legislated 2026-27 amounts carry the uplift in force.
-        assert amounts[2026][t] == pytest.approx(
-            baseline[2026][t] * (1 + schedule[2026]) / (1 + ACT_UPLIFT[2026]),
-            rel=1e-9,
-        )
+        # The legislated 2026-27 amounts stay as legislated, with the 2.3%
+        # uplift they include; later years follow the uplift in force.
+        assert amounts[2026][t] == pytest.approx(baseline[2026][t], rel=1e-9)
         for year in range(2027, 2030):
+            previous_uplift = ACT_UPLIFT[2026] if year == 2027 else schedule[year - 1]
             assert amounts[year][t] == pytest.approx(
                 amounts[year - 1][t]
                 * max(1.0, cpi[year] / cpi[year - 1])
                 * (1 + schedule[year])
-                / (1 + schedule[year - 1]),
+                / (1 + previous_uplift),
                 rel=1e-9,
             )
         # Keyed to fiscal years, the reform ends with 2029-30, when the
@@ -164,26 +165,28 @@ def test_switching_rebalancing_off_removes_the_uplift_from_that_year(first_off):
     _, baseline, _ = _amounts()
     for t in CLAIMANT_TYPES:
         for year in YEARS:
-            in_force = 0.0 if year == first_off else _uplift(year)
+            # 2026-27 is legislated, so only later years can lose the uplift.
+            in_force = 0.0 if year == first_off and year > 2026 else _uplift(year)
             assert amounts[year][t] == pytest.approx(
                 baseline[year][t] * (1 + in_force) / (1 + _uplift(year)),
                 rel=1e-9,
             )
 
 
-def test_rebalancing_off_throughout_is_cpi_only_from_2025_26():
+def test_rebalancing_off_throughout_follows_cpi_after_the_legislated_year():
     scenario = Scenario(parameter_changes={ACTIVE: False})
     _, amounts, cpi = _amounts(scenario)
+    _, baseline, _ = _amounts()
     for t in CLAIMANT_TYPES:
-        # The legislated 2026-27 rates less their 2.3% uplift are the 2025-26
-        # rates uprated by September 2025 CPI (3.8%) and rounded to the
-        # penny, as the rates were set at each step. The single under-25 rate
-        # was set above the Act's minimum, so is left out.
-        if t != "SINGLE_YOUNG":
-            assert amounts[2026][t] == pytest.approx(
-                round(amounts[2025][t] * 1.038, 2), abs=0.01
-            )
-        for year in range(2027, 2033):
+        # 2026-27 is legislated. From 2027-28 the allowance is the 2026-27
+        # Step 2 amount (the legislated amount less its 2.3% uplift) moved
+        # with CPI alone.
+        assert amounts[2026][t] == pytest.approx(baseline[2026][t], rel=1e-9)
+        assert amounts[2027][t] == pytest.approx(
+            amounts[2026][t] / (1 + ACT_UPLIFT[2026]) * cpi[2027] / cpi[2026],
+            rel=1e-9,
+        )
+        for year in range(2028, 2033):
             assert amounts[year][t] == pytest.approx(
                 amounts[year - 1][t] * cpi[year] / cpi[year - 1], rel=1e-9
             )
@@ -223,7 +226,7 @@ def test_scalar_activation_matches_baseline():
     "other_change",
     [{ACTIVE: False}, {UPLIFT: {"2026": 0.10, "2027": 0.10}}],
 )
-def test_amount_set_by_a_reform_is_not_rescaled(other_change):
+def test_amount_set_by_a_reform_is_used_as_given(other_change):
     """An amount a reform sets is used as given, whatever the uplift."""
     scenario = Scenario(
         parameter_changes={
@@ -251,7 +254,7 @@ def test_reform_to_the_benefit_index_is_followed():
             )
 
 
-def test_amount_equal_to_the_legislated_one_set_by_a_reform_is_not_rescaled():
+def test_amount_equal_to_the_legislated_one_set_by_a_reform_is_used_as_given():
     """A reform that sets the legislated amount itself is still a reform: it
     is used as given when rebalancing is off."""
     scenario = Scenario(
@@ -282,10 +285,10 @@ def test_fiscal_year_reform_to_the_benefit_index_reaches_that_year():
         )
 
 
-def test_amounts_restored_after_a_bounded_reform_carry_the_uplift_in_force():
-    """A reform to one year's amount leaves later years on the legislated
-    series, which still takes the uplift in force (none, with rebalancing
-    off)."""
+def test_amounts_after_a_bounded_reform_follow_the_uplift_in_force():
+    """A reform to one year's amount before the legislated year leaves the
+    legislated amounts and the later uprating as they would be without it
+    (with rebalancing off, the CPI-only path)."""
     _, inactive, _ = _amounts(Scenario(parameter_changes={ACTIVE: False}))
     scenario = Scenario(
         parameter_changes={

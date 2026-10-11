@@ -42,7 +42,7 @@ Universal Credit Act 2025 s. 1 sets the minimum standard allowance for 2026-27 t
 
 Each uplift is measured against the CPI-only path from 2025-26, not compounded on the previous one, so from one year to the next the allowance grows by CPI times (1 + this year's uplift) / (1 + last year's uplift). After 2029-30 the uplift stays at 4.8% and the allowance grows with CPI alone.
 
-The 2026-27 amounts are the legislated rates in `standard_allowance/amount.yaml`. Later years are uprated by `gov.dwp.universal_credit.standard_allowance.uprating`, the benefit uprating CPI index times (1 + the year's uplift), which `rebalancing/create_standard_allowance_uprating.py` builds when parameters are processed. A legislated rate for one of these years includes that year's statutory uplift; if the uplift in force differs, through a reform or with `rebalancing.active` false (no uplift), the rate is rescaled by (1 + uplift in force) / (1 + statutory uplift).
+The 2026-27 amounts are the legislated rates in `standard_allowance/amount.yaml`, used as they are. Later years are uprated by `gov.dwp.universal_credit.standard_allowance.uprating`, which `rebalancing/create_standard_allowance_uprating.py` builds when parameters are processed: the benefit uprating CPI index times one plus the uplift. For a legislated year the uplift is the one its rates include (2.3% for 2026-27); for later years it is the uplift in force. So switching `rebalancing.active` off, or changing a later year's uplift, moves every year after 2026-27, which stays at its legislated rates. To change 2026-27 itself, set `gov.dwp.universal_credit.standard_allowance.amount`.
 
 ## Implementation
 
@@ -73,17 +73,18 @@ scenario = Scenario(
 sim = Simulation(scenario=scenario)
 ```
 
+The 2026-27 standard allowance stays at its legislated rates, which include the 2.3% uplift; from 2027-28 it follows CPI alone from the 2026-27 rates less that uplift.
+
 ### Changing the standard allowance uplift parameters
 
 ```python
 from policyengine_uk import Simulation, Scenario
 
-# Set different uplift rates - e.g. 5% in 2026-27, 7% from 2027-28.
+# Set different uplift rates from 2027-28 (2026-27 is legislated), e.g. 7%.
 # A bare year names the fiscal year from 6 April.
 scenario = Scenario(
     parameter_changes={
         "gov.dwp.universal_credit.rebalancing.standard_allowance_uplift": {
-            "2026": 0.05,
             "2027": 0.07,
             "2028": 0.07,
             "2029": 0.07,
