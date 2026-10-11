@@ -1,18 +1,19 @@
 # Workflow that runs on code changes to a pull request.
+#
+# It runs on every pull request to main, with no path filter, so its checks,
+# "Test / Result" above all, report on every pull request and a branch rule
+# can require them: GitHub leaves a required check pending forever when a
+# path filter skips its workflow, and a second workflow on the other paths
+# cannot stand in, because a pull request that touches both kinds of path
+# runs both. The Changes job decides instead. When no code changed, the jobs
+# below are skipped, which a required check counts as passing, and the test
+# suite reports Result as a pass without running.
 
 name: Code changes
 on:
   pull_request:
     branches:
       - main
-
-    paths:
-      - policyengine_uk/**
-      - tests/**
-      - .github/**
-      - pyproject.toml
-      - uv.lock
-      - Makefile
   workflow_dispatch:
 
 # A new push to a pull request supersedes the run on its previous head, so
@@ -23,8 +24,45 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  Changes:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          # The pull request's merge commit and its first parent, the base.
+          fetch-depth: 2
+      - name: Did the pull request change code?
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          # The paths that make a change "code": the same list as the push
+          # filter in code_changes.yaml (a test keeps them equal).
+          CODE_PATHS: |
+            policyengine_uk/**
+            tests/**
+            .github/**
+            pyproject.toml
+            uv.lock
+            Makefile
+        run: |
+          set -euo pipefail
+          if [ "$EVENT" != pull_request ]; then
+            echo "code=true" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # NUL-separated and unquoted, with a rename listed as its old and
+          # new paths, so a file moved out of policyengine_uk/ still counts.
+          git -c core.quotePath=false diff --name-only --no-renames -z HEAD^1 HEAD \
+            > "$RUNNER_TEMP/changed.txt"
+          python3 .github/changed_code.py "$RUNNER_TEMP/changed.txt" | tee -a "$GITHUB_OUTPUT"
   Python-Compat:
     name: Install + smoke-import (py${{ matrix.python-version }})
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -44,6 +82,8 @@ jobs:
       - name: Smoke-import
         run: python -c "import policyengine_uk; print('import OK')"
   Lint:
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -53,7 +93,9 @@ jobs:
         - name: Check formatting
           run: uvx ruff format --check .
   Docs:
-    name: Test documentation builds
+    name: Documentation build
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -78,9 +120,12 @@ jobs:
   # workflow runs the same suite on the wheel it publishes. Require
   # "Test / Result".
   Test:
+    needs: Changes
     uses: ./.github/workflows/test-suite.yaml
     permissions:
       contents: read
       id-token: write
+    with:
+      skip: ${{ needs.Changes.outputs.code != 'true' }}
     secrets:
       HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}

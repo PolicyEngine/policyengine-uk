@@ -28,9 +28,12 @@ the pieces to the invariants the Test job relies on:
    and fails if a shard's log is left out, repeated, or a test fails.
 9. The checked-in allowlist parses, and each entry naming one test names a
    test function that exists.
-10. Every pull request reports the required "Test / Result" check: the
-    workflow that runs the suite and the one that reports it as skipped for
-    other changes trigger on exactly complementary paths.
+10. Every pull request reports the required "Test / Result" check: the pull
+    request workflow has no path filter, and the paths its Changes job counts
+    as code are the main push workflow's paths.
+11. ``changed_code.py`` calls a change code exactly when a path matches a
+    pattern as a workflow ``paths`` filter would (``dir/**`` is every file
+    under ``dir/``), and calls an empty change list code.
 """
 
 import ast
@@ -704,17 +707,93 @@ def test_the_checked_in_allowlist_names_tests_that_exist():
 # Invariant 10: every pull request reports "Test / Result".
 
 
-def test_code_and_no_code_workflows_cover_every_pull_request():
+def test_every_pull_request_reports_the_test_result():
     import yaml
+
     workflows = GITHUB_DIR / "workflows"
 
-    def trigger(name):
+    def load(name):
         document = yaml.safe_load((workflows / name).read_text(encoding="utf-8"))
         # PyYAML reads the key "on" as True.
-        return document.get("on", document.get(True))["pull_request"]
+        return document, document.get("on", document.get(True))
 
-    code = trigger("pr_code_changes.yaml")
-    no_code = trigger("pr_code_unchanged.yaml")
-    assert code["branches"] == no_code["branches"] == ["main"]
-    assert "paths-ignore" not in code and "paths" not in no_code
-    assert code["paths"] == no_code["paths-ignore"]
+    pull_request, triggers = load("pr_code_changes.yaml")
+    assert triggers["pull_request"] == {"branches": ["main"]}
+    _, main_triggers = load("code_changes.yaml")
+    code_paths = pull_request["jobs"]["Changes"]["steps"][1]["env"]["CODE_PATHS"]
+    assert code_paths.split() == main_triggers["push"]["paths"]
+    # The suite is always called, and skips only when no code changed.
+    test = pull_request["jobs"]["Test"]
+    assert test["uses"] == "./.github/workflows/test-suite.yaml"
+    assert "if" not in test
+    assert test["with"]["skip"] == "${{ needs.Changes.outputs.code != 'true' }}"
+
+
+# Invariant 11: deciding whether a pull request changes code.
+
+_changed_spec = importlib.util.spec_from_file_location(
+    "changed_code", GITHUB_DIR / "changed_code.py"
+)
+changed_code = importlib.util.module_from_spec(_changed_spec)
+_changed_spec.loader.exec_module(changed_code)
+CODE_PATHS = [
+    "policyengine_uk/**",
+    "tests/**",
+    ".github/**",
+    "pyproject.toml",
+    "uv.lock",
+    "Makefile",
+]
+_segment = st.from_regex(r"[A-Za-z0-9_.é -]{1,8}", fullmatch=True).filter(
+    lambda s: s not in {".", ".."}
+)
+paths = st.lists(_segment, min_size=1, max_size=4).map("/".join)
+
+
+def reference_is_code(path):
+    # fnmatch-free statement of a workflow paths filter for these patterns.
+    top, _, rest = path.partition("/")
+    return (bool(rest) and top in {"policyengine_uk", "tests", ".github"}) or (
+        path in {"pyproject.toml", "uv.lock", "Makefile"}
+    )
+
+
+@PROPERTY_SETTINGS
+@given(
+    changed=st.lists(
+        paths
+        | st.sampled_from(
+            [
+                "policyengine_uk/x.py",
+                "docs/a.md",
+                "changelog.d/1.fixed.md",
+                "Makefile",
+                "Makefile.bak",
+                "policyengine_uk",
+                "policyengine_uk_other/x.py",
+                ".github/workflows/a.yaml",
+                "docs/pyproject.toml",
+            ]
+        ),
+        max_size=6,
+    )
+)
+def test_changed_code_matches_a_paths_filter(changed):
+    expected = not changed or any(reference_is_code(p) for p in changed)
+    assert changed_code.changes_code(changed, CODE_PATHS) == expected
+
+
+def test_changed_code_reads_nul_separated_unquoted_paths(tmp_path, monkeypatch, capsys):
+    monkeypatch.setenv("CODE_PATHS", "\n".join(CODE_PATHS))
+    listing = tmp_path / "changed"
+    listing.write_text("docs/caf\u00e9 notes.md\0README.md\0", encoding="utf-8")
+    assert changed_code.main([str(listing)]) == 0
+    assert capsys.readouterr().out.strip() == "code=false"
+    listing.write_text("docs/a.md\0policyengine_uk/caf\u00e9.py\0", encoding="utf-8")
+    assert changed_code.main([str(listing)]) == 0
+    assert capsys.readouterr().out.strip() == "code=true"
+    listing.write_text("", encoding="utf-8")
+    assert changed_code.main([str(listing)]) == 0
+    assert capsys.readouterr().out.strip() == "code=true"
+    monkeypatch.setenv("CODE_PATHS", "policyengine_uk/*.py")
+    assert changed_code.main([str(listing)]) == 2

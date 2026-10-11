@@ -32,7 +32,7 @@ on:
       skip:
         description: >
           Run nothing and pass Result. For pull requests that change no
-          code (pr_code_unchanged.yaml), so the required check still reports.
+          code (pr_code_changes.yaml), so the required check still reports.
         type: boolean
         default: false
     secrets:
