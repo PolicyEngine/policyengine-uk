@@ -586,6 +586,9 @@ def run_bump_script(tmp_path, fragments):
     (tmp_path / ".github").mkdir()
     shutil.copy(BUMP_SCRIPT, tmp_path / ".github" / "bump_version.py")
     (tmp_path / "pyproject.toml").write_text(PYPROJECT)
+    if (REPO_ROOT / "uv.lock").exists():
+        # A release also moves the lock's own version when the script does.
+        shutil.copy(REPO_ROOT / "uv.lock", tmp_path / "uv.lock")
     (tmp_path / "changelog.d").mkdir()
     (tmp_path / "changelog.d" / ".gitkeep").write_text("")
     for name, text in fragments.items():
