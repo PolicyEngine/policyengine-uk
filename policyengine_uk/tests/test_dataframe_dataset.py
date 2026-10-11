@@ -1639,6 +1639,7 @@ def test_a_dataset_gives_the_identifiers_for_its_own_years_only(descending):
     id_columns=id_columns,
     identifier_years=st.sets(st.sampled_from(YEARS), min_size=1, max_size=2),
     data_years=st.sets(st.sampled_from(YEARS), max_size=3),
+    lone_years=st.sets(st.sampled_from(YEARS), max_size=1),
     month_years=st.sets(st.sampled_from(YEARS), max_size=1),
 )
 def test_the_export_and_the_loader_find_the_same_years(
@@ -1647,14 +1648,18 @@ def test_the_export_and_the_loader_find_the_same_years(
     id_columns,
     identifier_years,
     data_years,
+    lone_years,
     month_years,
 ):
     # The export gives each identifier for the years a simulation built from
     # the frame holds it in: the dataset's years and the years only an
     # identifier column names. The loader and the export each work these out
     # from the frame's columns, so the round trip relies on them agreeing.
-    # Months name no year in either.
+    # A person_id column alone names a year for every identifier; months
+    # name no year in either.
     frame_ = multi_year_frame(population, id_columns, identifier_years, data_years)
+    for year in sorted(lone_years):
+        frame_[f"person_id__{year}"] = population.person_ids
     for year in sorted(month_years):
         frame_[f"ebr_energy_bills_credit_eligible__{year}-01"] = True
 
@@ -1666,7 +1671,7 @@ def test_the_export_and_the_loader_find_the_same_years(
     held = {int(year) for year in dataset.years} | {
         int(period) for _, period, _ in identifier_inputs
     }
-    assert held == set(identifier_years) | set(data_years)
+    assert held == set(identifier_years) | set(data_years) | set(lone_years)
     named = {split_column(column)[0] for column in frame_}
     for identifier in IDENTIFIER_VARIABLES:
         given_for = {
