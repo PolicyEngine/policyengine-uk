@@ -15,7 +15,9 @@ Invariants:
    test (a child or qualifying young person who is not looked after and not
    the claimant or partner) exactly where the family is in Scotland, is not a
    pensioner for Council Tax Reduction and the year is 2022-23 or later.
-   Everywhere else it is the legacy (Child Benefit) flag.
+   Everywhere else it is the legacy (Child Benefit) flag. Checked over
+   every combination of the inputs the two definitions read, and over
+   generated benefit units of any shape.
 2. No claimant or partner is their own benefit unit's child or young person,
    under any scheme.
 3. A member under 16 who is not looked after is in the family under every
@@ -138,9 +140,7 @@ def follows_universal_credit(unit, year):
     return unit["country"] == "SCOTLAND" and not unit["pensioner"] and year >= 2022
 
 
-@SETTINGS
-@given(st.lists(families(), min_size=1, max_size=6), st.sampled_from(YEARS))
-def test_each_scheme_reads_its_own_young_person(units, year):
+def assert_scheme_selection(units, year):
     sim = simulate(units, year)
     people = [p for unit in units for p in unit["members"]]
     claimant_or_partner = np.array([p["is_claimant_or_partner"] for p in people])
@@ -169,6 +169,67 @@ def test_each_scheme_reads_its_own_young_person(units, year):
     assert not (flag & claimant_or_partner).any()
     # Invariant 3.
     assert flag[under_16 & ~looked_after & ~claimant_or_partner].all()
+    return flag, legacy, scottish
+
+
+@SETTINGS
+@given(st.lists(families(), min_size=1, max_size=6), st.sampled_from(YEARS))
+def test_each_scheme_reads_its_own_young_person(units, year):
+    # Benefit units of any shape, where a claimant or partner can also be a
+    # qualifying young person.
+    assert_scheme_selection(units, year)
+
+
+def test_scheme_selection_over_every_combination():
+    # Ages 14 to 21, every education value, training, own-right benefits,
+    # looked-after status, the Universal Credit terminal date and the entry
+    # age, under each country and pensioner test, in each year: 2,048
+    # subjects * 8 schemes * 3 years, each with a claimant aged 45.
+    adult = {
+        "age": 45,
+        "current_education": "NOT_IN_EDUCATION",
+        "is_in_approved_training": False,
+        "receives_benefits_in_own_right": False,
+        "is_looked_after_by_local_authority": False,
+        "is_before_universal_credit_qualifying_young_person_terminal_date": False,
+        "age_started_or_accepted_current_education_or_training": 1000,
+        "is_claimant_or_partner": True,
+    }
+    subjects = [
+        {
+            "age": age,
+            "current_education": education,
+            "is_in_approved_training": training,
+            "receives_benefits_in_own_right": own_right,
+            "is_looked_after_by_local_authority": looked_after,
+            "is_before_universal_credit_qualifying_young_person_terminal_date": (
+                terminal
+            ),
+            "age_started_or_accepted_current_education_or_training": entry_age,
+            "is_claimant_or_partner": False,
+        }
+        for age in range(14, 22)
+        for education in EDUCATIONS
+        for training in (False, True)
+        for own_right in (False, True)
+        for looked_after in (False, True)
+        for terminal in (False, True)
+        for entry_age in (17, 1000)
+    ]
+    units = [
+        {"country": country, "pensioner": pensioner, "members": [adult, subject]}
+        for subject in subjects
+        for country in COUNTRIES
+        for pensioner in (False, True)
+    ]
+    for year in YEARS:
+        flag, legacy, scottish = assert_scheme_selection(units, year)
+        differs = flag != legacy
+        # The Universal Credit definition applies nowhere before 2022-23, and
+        # only in Scotland's working-age scheme after it.
+        assert not differs[~scottish].any()
+        # Not vacuous: from 2022-23 the two definitions do part there.
+        assert differs.any() == (year >= 2022)
 
 
 @SETTINGS
