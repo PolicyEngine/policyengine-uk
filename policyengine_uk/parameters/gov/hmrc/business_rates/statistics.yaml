@@ -1,38 +1,88 @@
+description: Business rates (non-domestic rates) statistics.
 metadata:
   economy: false
   propagate_metadata_to_children: true
+# Non-domestic rates in each nation, on the headline outturn measure each
+# government publishes. For England, Scotland and Wales that is the amount
+# councils collect after reliefs for the retention scheme or national pool;
+# for Northern Ireland it is the non-domestic rates Land & Property Services
+# received in the rating year. Dates are the first calendar year of each
+# fiscal year (2025-01-01 = 2025-26). The latest year of each series is
+# provisional where the source says so.
+#
+# After its latest outturn year each series is projected by uprating with the
+# OBR's receipts forecast: England, Scotland and Wales with the OBR's
+# "Business rates" line, and Northern Ireland with its "Northern Ireland
+# business rates" line (gov.economic_assumptions.yoy_growth.obr.business_rates).
 revenue:
+  description: Total revenue raised by business rates.
   ENGLAND:
-    metadata:
-      reference:
-      - href: https://www.gov.uk/government/collections/national-non-domestic-rates-collected-by-councils#2021-to-2022
-        title: National non-domestic (non-residential) rates collected by councils
-          in England
+    description: Non-domestic rating income from the business rates retention scheme, England.
     values:
-      2019-01-01: 24967000000
-      2020-01-01: 16403000000
-      2021-01-01: 27222000000
-  NORTHERN_IRELAND:
+      2019-01-01: 25_344_250_093
+      2020-01-01: 12_967_918_437
+      2021-01-01: 20_447_905_400
+      2022-01-01: 22_923_982_400
+      2023-01-01: 25_079_394_900
+      2024-01-01: 26_397_345_600
+      2025-01-01: 27_591_022_700
     metadata:
+      unit: currency-GBP
+      label: Business rates income, England
+      uprating: gov.economic_assumptions.indices.obr.business_rates.great_britain
       reference:
-      - href: https://minutes.belfastcity.gov.uk/documents/s81213/Terms%20of%20Reference.pdf
-        title: 2019 Review of Business Rates
-    values:
-      2018-01-01: 1334000000
+        - title: MHCLG, National non-domestic rates collected by councils in England 2025 to 2026, Table 1 "Non-domestic rating income from rates retention scheme" (2021-22 to 2025-26; 2025-26 provisional)
+          href: https://www.gov.uk/government/statistics/national-non-domestic-rates-collected-by-councils-in-england-2025-to-2026
+        - title: MHCLG, National non-domestic rates collected by councils in England 2023 to 2024, Table 1 (2019-20, 2020-21)
+          href: https://www.gov.uk/government/statistics/national-non-domestic-rates-collected-by-councils-in-england-2023-to-2024
   SCOTLAND:
-    metadata:
-      reference:
-      - href: https://www.gov.scot/publications/non-domestic-rates-income-statistics/
-        title: Non-domestic (non-residential) rates income statistics
+    description: Non-domestic rates contributable amount, Scotland (audited outturn where published, otherwise provisional outturn).
     values:
-      2020-01-01: 1912000000
-      2021-01-01: 2123000000
+      2019-01-01: 2_752_830_731
+      2020-01-01: 1_816_120_309
+      2021-01-01: 2_108_180_163
+      2022-01-01: 2_791_962_750
+      2023-01-01: 3_033_471_284
+      2024-01-01: 3_146_317_233
+      2025-01-01: 3_079_138_735
+    metadata:
+      unit: currency-GBP
+      label: Business rates contributable amount, Scotland
+      uprating: gov.economic_assumptions.indices.obr.business_rates.great_britain
+      reference:
+        - title: Scottish Government, Non-domestic rates income statistics (August 2026 update), Table 1 "Contributable amount" (audited outturn 2019-20 to 2021-22; provisional outturn 2022-23 to 2025-26)
+          href: https://www.gov.scot/publications/non-domestic-rates-income-statistics/
   WALES:
-    metadata:
-      reference:
-      - href: https://statswales.gov.wales/Catalogue/Local-Government/Finance/Non-Domestic-Rates/Estimates/nondomesticratesestimates-by-authority
-        title: "Non-domestic (non-residential) rates estimates by authority (\xA3\
-          \ thousand) | StatsWales"
+    description: Non-domestic rates contribution to the pool, Wales.
     values:
-      2020-01-01: 1053499000
-  description: Total revenue raised by Business Rates
+      2019-01-01: 990_231_844
+      2020-01-01: 952_827_214
+      2021-01-01: 991_820_618
+      2022-01-01: 986_435_966
+      2023-01-01: 893_667_788
+      2024-01-01: 980_085_115
+    metadata:
+      unit: currency-GBP
+      label: Business rates contribution to the pool, Wales
+      uprating: gov.economic_assumptions.indices.obr.business_rates.great_britain
+      reference:
+        - title: StatsWales, Non-domestic rates actuals by local authority, "Contribution to the pool", Total Unitary Authorities (2019-20 to 2024-25)
+          href: https://stats.gov.wales/en-GB/a587b659-d5c7-4a53-a40d-382dbb851fdf/start
+        - title: Welsh Government, Non-domestic rates (actuals) April 2024 to March 2025
+          href: https://www.gov.wales/node/76004
+  NORTHERN_IRELAND:
+    description: Non-domestic rates paid against ratepayer accounts in the rating year, Northern Ireland.
+    values:
+      2020-01-01: 380_876_615
+      2021-01-01: 446_688_825
+      2022-01-01: 609_651_544
+      2023-01-01: 702_804_905
+      2024-01-01: 741_337_437
+      2025-01-01: 766_153_718
+    metadata:
+      unit: currency-GBP
+      label: Business rates paid, Northern Ireland
+      uprating: gov.economic_assumptions.indices.obr.business_rates.northern_ireland
+      reference:
+        - title: Land & Property Services (OpenDataNI), Rates paid by District Council and Sector, "Non-Domestic Rates collected by District Council" (2020-21 to 2025-26)
+          href: https://admin.opendatani.gov.uk/dataset/rates-paid-by-district-council-and-sector
