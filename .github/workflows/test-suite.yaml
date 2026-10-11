@@ -29,6 +29,14 @@ on:
         description: The sha256 the wheel in dist-artifact must have.
         type: string
         default: ""
+      require-data:
+        description: >
+          Fail Result if the run had no dataset credentials, instead of
+          accepting the microsimulation tests as skipped. For main, merge
+          queue groups and releases; pull requests from forks and Dependabot
+          have no credentials.
+        type: boolean
+        default: false
       skip:
         description: >
           Run nothing and pass Result. For pull requests that change no
@@ -229,7 +237,12 @@ jobs:
         env:
           MODE: ${{ inputs.dist-artifact == '' && 'source' || 'wheel' }}
           DATA: ${{ secrets.HUGGING_FACE_TOKEN != '' && 'present' || 'absent' }}
+          REQUIRE_DATA: ${{ inputs.require-data }}
         run: |
+          if [ "$REQUIRE_DATA" = true ] && [ "$DATA" != present ]; then
+            echo "::error::This run must have the dataset credentials (HUGGING_FACE_TOKEN), so its microsimulation tests run; it has none."
+            exit 1
+          fi
           python3 .github/check_test_shards.py --collected collected.txt \
             --outcomes outcomes-*.jsonl \
             --allowlist .github/test_outcome_allowlist.toml \

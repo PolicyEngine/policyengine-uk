@@ -47,7 +47,6 @@ jobs:
         id: diff
         env:
           EVENT: ${{ github.event_name }}
-          MERGE_GROUP_BASE: ${{ github.event.merge_group.base_sha }}
           # The paths that make a change "code": the same list as the push
           # filter in code_changes.yaml (a test keeps them equal).
           CODE_PATHS: |
@@ -57,21 +56,21 @@ jobs:
             pyproject.toml
             uv.lock
             Makefile
+            conftest.py
+            .gitignore
+            README.md
         run: |
           set -euo pipefail
-          case "$EVENT" in
-            pull_request)
-              # The merge commit's first parent is the base branch.
-              base=HEAD^1 ;;
-            merge_group)
-              # The group may hold several pull requests: compare with the
-              # main it is merged onto.
-              git fetch --no-tags --depth=1 origin "$MERGE_GROUP_BASE"
-              base=$MERGE_GROUP_BASE ;;
-            *)
-              echo "code=true" | tee -a "$GITHUB_OUTPUT"
-              exit 0 ;;
-          esac
+          # Only a pull request can skip its tests. A merge queue group
+          # always runs them: main moves to the group's commit, and its
+          # base_sha can be the group queued ahead of it rather than main,
+          # so a diff against it could call a code change "no code".
+          if [ "$EVENT" != pull_request ]; then
+            echo "code=true" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The merge commit's first parent is the base branch.
+          base=HEAD^1
           # NUL-separated and unquoted, with a rename listed as its old and
           # new paths, so a file moved out of policyengine_uk/ still counts.
           git -c core.quotePath=false diff --name-only --no-renames -z "$base" HEAD \
@@ -156,6 +155,11 @@ jobs:
       contents: read
       id-token: write
     with:
-      skip: ${{ needs.Changes.outputs.code != 'true' }}
+      # Skip only on an explicit "false", so a missing output runs the tests.
+      skip: ${{ needs.Changes.outputs.code == 'false' }}
+      # A merge group decides what main becomes: it must run the
+      # microsimulation tests, never accept them as skipped for want of
+      # the dataset credentials.
+      require-data: ${{ github.event_name == 'merge_group' }}
     secrets:
       HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}

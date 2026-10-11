@@ -63,6 +63,7 @@ on:
       - .github/check_test_shards.py
       - .github/pytest_outcome_log.py
       - .github/test_outcome_allowlist.toml
+      - .github/build-constraints.txt
 
 permissions:
   contents: read
@@ -76,7 +77,9 @@ jobs:
     if: github.event_name != 'push' || github.event.head_commit.message != 'Update package version'
     # One versioning run at a time, never cancelled once started. A run that
     # is still queued is replaced by a newer one; that is safe, because each
-    # run versions the latest main, fragments and all.
+    # run versions the latest main, fragments and all. A queued release-sha
+    # dispatch or re-run is replaced too (it shows as cancelled): dispatch it
+    # again once the newer run has versioned.
     concurrency:
       group: ${{ github.event_name == 'pull_request' && format('release-dry-run-{0}', github.event.pull_request.number) || 'release-versioning' }}
       cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -143,11 +146,9 @@ jobs:
               echo "::error::$RELEASE_SHA is not on main"
               exit 1
             fi
-            subject=$(git log -1 --format=%s "$RELEASE_SHA")
-            if [ "$subject" != "Update package version" ]; then
-              echo "::error::$RELEASE_SHA is not a version commit ('$subject')"
-              exit 1
-            fi
+            # One parent, the version subject, and nothing changed but the
+            # version, the changelog and the consumed fragments.
+            python3 .github/prepare_release.py --verify "$RELEASE_SHA"
             {
               echo "release=true"
               echo "publish=true"
@@ -156,8 +157,8 @@ jobs:
             } | tee -a "$GITHUB_OUTPUT"
           elif [ "$RUN_ATTEMPT" -gt 1 ] \
             && git fetch --no-tags origin main \
-            && [ "$(git log -1 --format=%s FETCH_HEAD)" = "Update package version" ] \
-            && [ -z "$(git ls-remote --tags origin "refs/tags/$(version_at FETCH_HEAD)")" ]; then
+            && python3 .github/prepare_release.py --verify "$(git rev-parse FETCH_HEAD)" \
+            && [ -z "$(git ls-remote --exit-code --tags origin "refs/tags/$(version_at FETCH_HEAD)" || true)" ]; then
             # "Re-run all jobs" after this run's first attempt pushed a version
             # commit: main's tip is that commit, untagged because it was never
             # published. prepare_release.py would see a versioned tip and
@@ -205,7 +206,8 @@ jobs:
         uses: astral-sh/setup-uv@v8.1.0
       - name: Build the wheel and sdist once
         run: |
-          uv build --python 3.13 --out-dir dist
+          uv build --python 3.13 --out-dir dist \
+            --build-constraint .github/build-constraints.txt
           # uv writes a .gitignore into its output directory; only the
           # wheel and sdist are release files.
           rm -f dist/.gitignore
@@ -311,6 +313,42 @@ jobs:
           cd "$RUNNER_TEMP"
           python -c "import importlib.metadata as m, policyengine_uk; print('import OK', m.version('policyengine-uk'), policyengine_uk.__file__)"
 
+  Sdist:
+    # The sdist is published too: check it builds and installs, with the
+    # build backend pinned as Build pins it.
+    name: Release install (sdist)
+    needs: [Versioning, Build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout the version commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.Versioning.outputs.sha }}
+          sparse-checkout: .github
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Download the release files
+        uses: actions/download-artifact@v8
+        with:
+          name: release-dist
+          path: dist
+      - name: Install the sdist
+        env:
+          SDIST_SHA256: ${{ needs.Build.outputs.sdist-sha256 }}
+        run: |
+          set -euo pipefail
+          echo "$SDIST_SHA256  $(ls dist/*.tar.gz)" | sha256sum --check
+          uv pip install --system --build-constraint .github/build-constraints.txt dist/*.tar.gz
+      - name: Smoke-import
+        run: |
+          cd "$RUNNER_TEMP"
+          python -c "import importlib.metadata as m, policyengine_uk; print('import OK', m.version('policyengine-uk'), policyengine_uk.__file__)"
+
   Test:
     name: Release test
     needs: [Versioning, Build]
@@ -322,16 +360,24 @@ jobs:
       ref: ${{ needs.Versioning.outputs.sha }}
       dist-artifact: release-dist
       wheel-sha256: ${{ needs.Build.outputs.wheel-sha256 }}
+      # A release never publishes with its microsimulation tests skipped.
+      require-data: true
     secrets:
       HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
 
   Publish:
     # Runs only when every check above passed, and never for a pull request.
     name: Publish
-    needs: [Versioning, Build, Lint, Compat, Test]
+    needs: [Versioning, Build, Lint, Compat, Sdist, Test]
     if: needs.Versioning.outputs.publish == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # One Publish per version at a time: two runs releasing the same version
+    # commit (a re-run beside the original) upload and tag in turn, and the
+    # second finds PyPI complete and the tag in place.
+    concurrency:
+      group: release-publish-${{ needs.Versioning.outputs.version }}
+      cancel-in-progress: false
     permissions:
       contents: write
     steps:

@@ -21,7 +21,12 @@ stand-in for towncrier, and hold them to:
 6. ``--github-output`` appends ``key=value`` lines and keeps what was there.
 7. The tag script tags the given commit, not HEAD, with an annotated tag;
    a re-run is a no-op; it never moves an existing tag; it rejects a bad
-   version or commit.
+   version or commit; it fails, not passes, when it cannot list origin's
+   tags.
+8. A push that landed although git reported a failure counts as pushed, so
+   the release is not lost to a retry that finds a versioned tip.
+9. --verify accepts exactly a commit with one parent, the version subject
+   and only versioning changes, whoever wrote it, and returns its version.
 """
 
 import importlib.util
@@ -296,6 +301,66 @@ def test_github_output_is_appended(remote, tmp_path, capsys, monkeypatch):
     assert set(values) == {"committed", "pushed", "version", "sha", "base"}
 
 
+def test_a_push_that_landed_but_reported_failure_counts(remote, tmp_path):
+    work = clone(remote, tmp_path / "work")
+
+    class FlakyGit(prepare.Git):
+        def run(self, *args, check=True):
+            result = super().run(*args, check=check)
+            if args and args[0] == "push":
+                # The server took the push; the client saw an error.
+                return subprocess.CompletedProcess(
+                    result.args, 1, "", "connection reset"
+                )
+            return result
+
+    result = run(work, git=FlakyGit(work))
+
+    assert result["pushed"] == "true"
+    assert result["sha"] == git(remote, "rev-parse", "main")
+
+
+def test_verify_accepts_exactly_version_commits(remote, tmp_path, capsys):
+    work = clone(remote, tmp_path / "work")
+    made = run(work)
+    assert prepare.main(["--repo", str(work), "--verify", made["sha"]]) == 0
+    assert capsys.readouterr().out.strip() == "version=1.2.4"
+
+    # A version commit by another author, as the old workflow made them.
+    git(work, "checkout", "-q", "--detach", made["base"])
+    git(work, "rm", "-q", "changelog.d/one.fixed.md")
+    (work / "pyproject.toml").write_text(
+        (work / "pyproject.toml").read_text().replace("1.2.3", "1.2.4")
+    )
+    (work / "CHANGELOG.md").write_text("## [1.2.4]\n- Fixed one.\n## [1.2.3]\n")
+    git(work, "add", "-A")
+    git(work, "commit", "-qm", "Update package version")
+    by_hand = git(work, "rev-parse", "HEAD")
+    assert prepare.main(["--repo", str(work), "--verify", by_hand]) == 0
+    capsys.readouterr()
+
+    # The same subject on a commit that also changes code.
+    (work / "towncrier.py").write_text("# changed\n")
+    git(work, "commit", "-qam", "Update package version")
+    sneaky = git(work, "rev-parse", "HEAD")
+    assert prepare.main(["--repo", str(work), "--verify", sneaky]) == 1
+    # Another subject, a short SHA, a merge commit.
+    assert prepare.main(["--repo", str(work), "--verify", made["base"]]) == 1
+    assert prepare.main(["--repo", str(work), "--verify", by_hand[:12]]) == 1
+    merge = git(
+        work,
+        "commit-tree",
+        f"{made['sha']}^{{tree}}",
+        "-p",
+        made["base"],
+        "-p",
+        by_hand,
+        "-m",
+        "Update package version",
+    )
+    assert prepare.main(["--repo", str(work), "--verify", merge]) == 1
+
+
 # Invariant 7: the tag script.
 
 bash = shutil.which("bash")
@@ -352,3 +417,13 @@ def test_the_tag_script_rejects_bad_input(remote, tmp_path, version, sha):
     result = tag(work, version, sha)
     assert result.returncode == 2, result.stderr
     assert git(remote, "tag", "-l") == ""
+
+
+@pytest.mark.skipif(bash is None, reason="needs bash")
+def test_the_tag_script_fails_when_it_cannot_list_tags(remote, tmp_path):
+    work = clone(remote, tmp_path / "work")
+    sha = git(work, "rev-parse", "HEAD")
+    git(work, "remote", "set-url", "origin", str(tmp_path / "gone.git"))
+    result = tag(work, "1.2.3", sha)
+    assert result.returncode == 1
+    assert "cannot list origin's tags" in result.stderr

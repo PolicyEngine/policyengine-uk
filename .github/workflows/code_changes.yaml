@@ -15,6 +15,9 @@ on:
       - pyproject.toml
       - uv.lock
       - Makefile
+      - conftest.py
+      - .gitignore
+      - README.md
   workflow_dispatch:
 
 # No concurrency group: every commit that lands on main finishes its run. The
@@ -24,7 +27,8 @@ on:
 #
 # With a merge queue, main moves only to a commit the queue already tested
 # with this suite (pr_code_changes.yaml on merge_group), so the Tested job
-# skips the tests for such a commit rather than run them twice.
+# skips the tests for such a commit rather than run them twice. Main's own
+# runs must have the dataset (require-data).
 
 jobs:
   Tested:
@@ -35,7 +39,7 @@ jobs:
     runs-on: ubuntu-24.04-arm
     timeout-minutes: 5
     permissions:
-      checks: read
+      actions: read
     outputs:
       tested: ${{ steps.check.outputs.tested }}
     steps:
@@ -46,12 +50,15 @@ jobs:
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
         run: |
-          # A passed "Test / Result" on this exact commit can only come from
-          # a merge group: a pull request's own runs are on its merge commit,
-          # a different commit. If the lookup fails, run the tests.
-          passed=$(gh api "repos/$REPO/commits/$SHA/check-runs?check_name=Test%20%2F%20Result&per_page=100" \
-            --jq '[.check_runs[] | select(.conclusion == "success")] | length' || echo 0)
-          if [ "${passed:-0}" -gt 0 ]; then
+          # Only a successful merge_group run of the pull request workflow
+          # counts: a merge group always runs the whole suite, with the
+          # dataset (pr_code_changes.yaml). A check named "Test / Result" on
+          # this commit could also come from a pull request run on the same
+          # head commit, which may have skipped tests. If the lookup fails,
+          # run the tests.
+          runs=$(gh api "repos/$REPO/actions/workflows/pr_code_changes.yaml/runs?head_sha=$SHA&event=merge_group&status=success&per_page=1" \
+            --jq '.total_count' || echo 0)
+          if [ "${runs:-0}" -gt 0 ]; then
             echo "The merge queue already tested $SHA; not running the suite again."
             echo "tested=true" >> "$GITHUB_OUTPUT"
           else
@@ -86,5 +93,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    with:
+      require-data: true
     secrets:
       HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}

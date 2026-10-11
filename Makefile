@@ -38,9 +38,13 @@ test-ci:
 	uv run --frozen --no-sync pytest policyengine_uk/tests --collect-only -q -p no:cacheprovider > $$out/collected.txt && \
 	{ PYTHONPATH=.github uv run --frozen --no-sync pytest policyengine_uk/tests -p no:cacheprovider \
 		-p pytest_outcome_log --outcome-log=$$out/outcomes.jsonl -o xfail_strict=true --maxfail=0 $(PYTEST_ARGS); \
+	  tests=$$?; \
 	  python3 .github/check_test_shards.py --collected $$out/collected.txt --outcomes $$out/outcomes.jsonl \
 		--allowlist .github/test_outcome_allowlist.toml \
-		--data $$(if [ -n "$$HUGGING_FACE_TOKEN$$POLICYENGINE_UK_DEFAULT_DATASET" ]; then echo present; else echo absent; fi); }
+		--data $$(if [ -n "$$HUGGING_FACE_TOKEN$$POLICYENGINE_UK_DEFAULT_DATASET" ]; then echo present; else echo absent; fi); \
+	  check=$$?; \
+	  if [ $$check -ne 0 ]; then exit $$check; fi; \
+	  if [ $$tests -ne 0 ] && [ $$tests -ne 1 ]; then echo "pytest exited $$tests"; exit $$tests; fi; }
 
 test-all:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk

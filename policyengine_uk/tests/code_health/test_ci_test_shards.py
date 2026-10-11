@@ -22,7 +22,8 @@ the pieces to the invariants the Test job relies on:
    that matches nothing is a warning, never a failure.
 7. The outcome log records what pytest did, by raw node id, the same with
    and without pytest-xdist: passes, failures in setup, call and teardown,
-   skips with their reasons, expected failures, XPASSes and skipped modules.
+   skips with their reasons (including a skipped subtest), expected
+   failures, XPASSes and skipped modules.
 8. With real pytest runs over three shards, with and without xdist, the
    check passes exactly when the allowlist covers the sample suite's skips,
    and fails if a shard's log is left out, repeated, or a test fails.
@@ -624,6 +625,33 @@ def test_the_outcome_log_records_what_pytest_did(tmp_path):
     assert _records(parallel) == expected
 
 
+SUBTEST_SUITE = """
+import pytest
+
+
+def test_with_subtests(subtests):
+    with subtests.test("skipped part"):
+        pytest.skip("sample subtest skip")
+    with subtests.test("passing part"):
+        pass
+"""
+
+
+def test_a_skipped_subtest_is_not_hidden_by_its_tests_pass(tmp_path):
+    # pytest 9's subtests report a skipped subtest before the test's own
+    # passing call; the log must keep the skip so the check sees it.
+    _suite(tmp_path, test_subtests=SUBTEST_SUITE)
+    log = tmp_path / "outcomes.jsonl"
+    _pytest(tmp_path, "suite", "-p", "pytest_outcome_log", f"--outcome-log={log}")
+    assert _records(log) == [
+        (
+            "suite/test_subtests.py::test_with_subtests",
+            "skipped",
+            "sample subtest skip",
+        )
+    ]
+
+
 @pytest.mark.parametrize("xdist", [(), ("-n", "2", "--dist", "worksteal")])
 def test_real_pytest_shards_pass_the_check_only_when_allowed(tmp_path, xdist):
     _suite(tmp_path, test_sample=SAMPLE_SUITE, test_skipped_module=SKIPPED_MODULE)
@@ -733,7 +761,10 @@ def test_every_pull_request_reports_the_test_result():
     test = pull_request["jobs"]["Test"]
     assert test["uses"] == "./.github/workflows/test-suite.yaml"
     assert "if" not in test
-    assert test["with"]["skip"] == "${{ needs.Changes.outputs.code != 'true' }}"
+    assert test["with"]["skip"] == "${{ needs.Changes.outputs.code == 'false' }}"
+    # Merge groups must run the microsimulation tests; so must main.
+    assert test["with"]["require-data"] == "${{ github.event_name == 'merge_group' }}"
+    assert main["jobs"]["Test"]["with"]["require-data"] is True
 
 
 # Invariant 11: deciding whether a pull request changes code.
@@ -750,6 +781,9 @@ CODE_PATHS = [
     "pyproject.toml",
     "uv.lock",
     "Makefile",
+    "conftest.py",
+    ".gitignore",
+    "README.md",
 ]
 _segment = st.from_regex(r"[A-Za-z0-9_.é -]{1,8}", fullmatch=True).filter(
     lambda s: s not in {".", ".."}
@@ -761,7 +795,15 @@ def reference_is_code(path):
     # fnmatch-free statement of a workflow paths filter for these patterns.
     top, _, rest = path.partition("/")
     return (bool(rest) and top in {"policyengine_uk", "tests", ".github"}) or (
-        path in {"pyproject.toml", "uv.lock", "Makefile"}
+        path
+        in {
+            "pyproject.toml",
+            "uv.lock",
+            "Makefile",
+            "conftest.py",
+            ".gitignore",
+            "README.md",
+        }
     )
 
 
@@ -793,7 +835,7 @@ def test_changed_code_matches_a_paths_filter(changed):
 def test_changed_code_reads_nul_separated_unquoted_paths(tmp_path, monkeypatch, capsys):
     monkeypatch.setenv("CODE_PATHS", "\n".join(CODE_PATHS))
     listing = tmp_path / "changed"
-    listing.write_text("docs/caf\u00e9 notes.md\0README.md\0", encoding="utf-8")
+    listing.write_text("docs/caf\u00e9 notes.md\0scripts/run.sh\0", encoding="utf-8")
     assert changed_code.main([str(listing)]) == 0
     assert capsys.readouterr().out.strip() == "code=false"
     listing.write_text("docs/a.md\0policyengine_uk/caf\u00e9.py\0", encoding="utf-8")

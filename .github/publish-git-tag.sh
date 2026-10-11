@@ -34,16 +34,20 @@ git_bot() {
     -c user.email="41898282+github-actions[bot]@users.noreply.github.com" "$@"
 }
 
-# The commit the remote tag points at, peeled through an annotated tag.
+# The commit the remote tag points at, peeled through an annotated tag, or
+# nothing if there is no such tag. Fails if origin cannot be listed.
 remote_target() {
   local refs peeled direct
-  refs=$(git ls-remote --tags origin "refs/tags/$version" "refs/tags/$version^{}")
+  if ! refs=$(git ls-remote --tags origin "refs/tags/$version" "refs/tags/$version^{}"); then
+    echo "error: cannot list origin's tags" >&2
+    return 1
+  fi
   peeled=$(awk -v ref="refs/tags/$version^{}" '$2 == ref { print $1 }' <<<"$refs")
   direct=$(awk -v ref="refs/tags/$version" '$2 == ref { print $1 }' <<<"$refs")
   echo "${peeled:-$direct}"
 }
 
-existing=$(remote_target)
+existing=$(remote_target) || exit 1
 if [ -n "$existing" ]; then
   if [ "$existing" = "$sha" ]; then
     echo "Tag $version already points at $sha; nothing to do."
@@ -67,9 +71,18 @@ else
   fi
 fi
 
-git push origin "refs/tags/$version"
+if ! git push origin "refs/tags/$version"; then
+  # Another run of the same release may have pushed it first.
+  pushed=$(remote_target) || exit 1
+  if [ "$pushed" = "$sha" ]; then
+    echo "Tag $version was pushed at $sha by another run; nothing to do."
+    exit 0
+  fi
+  echo "error: pushing tag $version failed, and origin has it at '${pushed}'" >&2
+  exit 1
+fi
 
-pushed=$(remote_target)
+pushed=$(remote_target) || exit 1
 if [ "$pushed" != "$sha" ]; then
   echo "error: after the push, origin's tag $version points at '${pushed}', not $sha" >&2
   exit 1

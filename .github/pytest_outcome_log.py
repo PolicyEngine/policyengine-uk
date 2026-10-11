@@ -101,7 +101,10 @@ class OutcomeRecorder:
                 else:
                     test["outcome"] = "skipped"
                     test["reason"] = skip_reason(report)
-            elif report.when == "call":
+            elif report.when == "call" and test["outcome"] in (None, "passed"):
+                # A passing call never replaces an earlier skip or expected
+                # failure: with subtests (pytest 9), a skipped subtest reports
+                # before the test's own passing call.
                 if wasxfail is not None:
                     test["outcome"] = "xpassed"
                     test["reason"] = wasxfail.removeprefix("reason: ")

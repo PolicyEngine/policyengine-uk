@@ -161,12 +161,14 @@ def prepare_release(
     towncrier: list[str] = ("towncrier",),
     sleep=time.sleep,
     before_push=None,
+    git=None,
 ) -> dict[str, str]:
     """Version the tip of ``remote/branch`` and push it; see the module docs.
 
-    ``before_push`` is called just before each push, for tests.
+    ``before_push`` is called just before each push, and ``git`` replaces the
+    git runner, for tests.
     """
-    git = Git(repo)
+    git = git or Git(repo)
     for attempt in range(1, max_attempts + 1):
         git.run("fetch", "--no-tags", remote, branch)
         git.run("checkout", "--force", "--detach", "FETCH_HEAD")
@@ -219,6 +221,17 @@ def prepare_release(
         # A race: main moved after the fetch. Anything else is a real failure.
         git.run("fetch", "--no-tags", remote, branch)
         tip = git.out("rev-parse", "FETCH_HEAD")
+        if tip == head:
+            # The push landed although git reported a failure (say, the
+            # connection dropped after the server accepted it). Retrying
+            # would find a versioned tip and release nothing.
+            result["pushed"] = "true"
+            print(
+                f"Pushed {version} as {head} on {base} (git reported an error, "
+                "but the branch is at the version commit)",
+                file=sys.stderr,
+            )
+            return result
         if tip == base:
             raise ReleaseError(
                 f"pushing the version commit failed, and {branch} has not moved: "
@@ -233,6 +246,32 @@ def prepare_release(
     raise ReleaseError(f"{branch} kept moving; gave up after {max_attempts} attempts")
 
 
+def verify_version_commit(repo: Path, sha: str) -> str:
+    """Check ``sha`` is a version commit; return its version.
+
+    For releasing an existing commit (the release workflow's release-sha
+    input and its re-run path). The subject alone could be copied by any
+    commit, so it must also have one parent and change only what versioning
+    changes (check_release_diff). Such a commit's code is its parent's, which
+    is on main. The author is not checked: version commits made before this
+    script were authored by whoever merged the pull request.
+    """
+    git = Git(repo)
+    if not re.fullmatch(r"[0-9a-f]{40}", sha):
+        raise ReleaseError(f"{sha!r} is not a full 40-character commit SHA")
+    fields = git.out("log", "-1", "--format=%P%n%s", sha)
+    parents, subject = (fields.split("\n") + ["", ""])[:2]
+    problems = []
+    if len(parents.split()) != 1:
+        problems.append(f"it has {len(parents.split())} parents, not one")
+    if subject != COMMIT_MESSAGE:
+        problems.append(f"its subject is {subject!r}")
+    if problems:
+        raise ReleaseError(f"{sha} is not a version commit: " + "; ".join(problems))
+    check_release_diff(git, parents.strip(), sha)
+    return version_text(parse_version(git.out("show", f"{sha}:pyproject.toml")))
+
+
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo", type=Path, default=Path("."))
@@ -245,7 +284,20 @@ def main(argv=None) -> int:
     parser.add_argument("--github-output", type=Path)
     parser.add_argument("--towncrier", default="towncrier")
     parser.add_argument("--python", default=sys.executable)
+    parser.add_argument(
+        "--verify",
+        metavar="SHA",
+        help="only check that SHA is a version commit this script made",
+    )
     args = parser.parse_args(argv)
+    if args.verify:
+        try:
+            version = verify_version_commit(args.repo.resolve(), args.verify)
+        except (ReleaseError, ValueError, KeyError, tomllib.TOMLDecodeError) as error:
+            print(f"Cannot release it: {error}", file=sys.stderr)
+            return 1
+        print(f"version={version}")
+        return 0
     try:
         result = prepare_release(
             args.repo.resolve(),
