@@ -1,0 +1,355 @@
+# Child Tax Credit qualifying young persons who have left education: Child
+# Tax Credit Regulations 2002 reg. 4 (from the 16th birthday until the 31
+# August that next follows, with no education condition), reg. 5(3)(b) (20
+# weeks after leaving, under 18, while registered for work or training) and
+# the second condition in reg. 5(4), which applies to both: not in
+# remunerative work (24 hours a week or more, reg. 2(1)) after leaving, and
+# not receiving a benefit in their own right.
+#
+# The child element was £3,455 in 2024-25, the last year of tax credits
+# (gov/dwp/tax_credits/child_tax_credit/elements/child_element.yaml).
+
+- name: Case 1, a 16-year-old who has left education is a qualifying young person for the year (reg. 4(1)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    is_child_or_qualifying_young_person_for_child_tax_credit: [false, true]
+    is_responsible_for_child_or_qualifying_young_person_for_child_tax_credit: true
+    CTC_child_element: 3_455
+
+- name: Case 2, a 16-year-old who has left education and works 24 hours a week is not a qualifying young person (reg. 5(4)(a)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 24
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_in_remunerative_work_for_child_tax_credit: [false, true]
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+    # Child Benefit reg. 4 has no remunerative work bar.
+    is_qualifying_young_person_for_child_benefit: [false, true]
+
+- name: Case 3, working 23 hours a week does not end the period.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        weekly_hours: 23
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 4, remunerative work does not matter for a 16-year-old still at school.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      pupil:
+        age: 16
+        current_education: UPPER_SECONDARY
+        weekly_hours: 24
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, pupil]
+  output:
+    # Reg. 5(4)(a) applies to a person "having ceased" education or training.
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 5, a 16-year-old apprentice working 30 hours a week is not a qualifying young person.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      apprentice:
+        age: 16
+        current_education: POST_SECONDARY
+        is_apprentice: true
+        weekly_hours: 30
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, apprentice]
+  output:
+    # Education "by virtue of his employment" is not the first condition
+    # (reg. 5(3)(a)(ii)), so the apprentice has left it and is in
+    # remunerative work.
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 6, born 15 September 2007, the period runs to 31 August 2024.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        date_of_birth: 20070915
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 7, born 31 August 2007, reg. 4(1A) gives no period to the next 31 August.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        date_of_birth: 20070831
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 8, born 31 August 2008, the year in which they are a child until 30 August counts.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        date_of_birth: 20080831
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 9, a 16-year-old receiving a benefit in their own right is not a qualifying young person (reg. 5(4)(c)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        receives_benefits_in_own_right: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 10, a 17-year-old who has left education is not a qualifying young person by default.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 11, a 17-year-old in the 20 weeks after leaving, registered for work or training, is a qualifying young person (reg. 5(3)(b)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        is_in_child_tax_credit_extension_period: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 12, the 20 weeks end if the 17-year-old starts remunerative work.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        is_in_child_tax_credit_extension_period: true
+        weekly_hours: 24
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 13, the 20 weeks are for under-18s only.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+        is_in_child_tax_credit_extension_period: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 14, a lone 16-year-old who has left education is not their own qualifying young person.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [school_leaver]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: true
+    is_child_or_qualifying_young_person_for_child_tax_credit: false
+    CTC_child_element: 0
+
+- name: Case 15, a 16-year-old in full-time advanced education working 24 hours a week is a qualifying young person (reg. 4(2), 5(4)(a), 5(5)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 16
+        date_of_birth: 20080101
+        current_education: TERTIARY
+        weekly_hours: 24
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    # Advanced education fails the first condition, which reg. 4(2) lifts.
+    # It is still full-time education (reg. 5(5)), so the student has not
+    # "ceased" it and the remunerative work bar does not apply.
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 16, the same advanced student aged 17, outside the reg. 4 period, is not a qualifying young person.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        date_of_birth: 20070101
+        current_education: TERTIARY
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0

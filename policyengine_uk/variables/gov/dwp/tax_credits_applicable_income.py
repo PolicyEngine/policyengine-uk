@@ -12,14 +12,12 @@ class tax_credits_applicable_income(Variable):
     )
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the claimant and partner and, as the model did
-        # before, the programme's own children or young persons. The regulations count
-        # only the claimant's and partner's (TCA 2002 s.7); dropping dependants' own
-        # income is a follow-up. Anyone else in the benefit unit does not count.
+        # Members whose income counts: the claimant or, on a joint claim, the
+        # claimants (TCA 2002 s.7; Tax Credits (Definition and Calculation of
+        # Income) Regs 2002 reg 3(1)). A child's or qualifying young person's
+        # own income does not count, nor anyone else's in the benefit unit.
         person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_qualifying_young_person_for_child_tax_credit", period
-        )
+        members = person("is_claimant_or_partner", period)
         TC = parameters(period).gov.dwp.tax_credits
         STEP_1_COMPONENTS = [
             "private_pension_income",
