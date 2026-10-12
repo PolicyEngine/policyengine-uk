@@ -470,6 +470,21 @@ weighted_total = (unweighted_values * modified_weights).sum()
 print(f"Total with 10% higher weights: £{weighted_total / 1e9:.1f}bn")
 ```
 
+### Subsampling a microsimulation
+
+`subsample` cuts a simulation built from a dataset down to a weighted random sample of its households:
+
+```python
+sim = Microsimulation(
+    dataset="hf://policyengine/policyengine-uk-data/enhanced_frs_2022_23.h5"
+)
+sim.subsample(n=10_000, seed=0, time_period=2026)
+```
+
+It draws `n` households with replacement, each with probability proportional to its weight in `time_period` (with the default `quantize_weights=True`), and keeps every household drawn at least once, with its benefit units and people. So the sample holds at most `n` households. A household's new weight is proportional to the number of times it was drawn, and the total household weight of every year is unchanged. The values the simulation was given are kept for the sampled records; results are calculated again on the sample, so population estimates then carry sampling error.
+
+The simulation's `baseline` and `dataset` are replaced with copies cut down to the same households; the objects they held before are left as they were. The `dataset` holds the rows of the dataset the simulation was built from, so it holds whole years only and does not include values set with `set_input` after the simulation was built. The same `seed` always draws the same households.
+
 ## Debugging simulations
 
 When simulations don't behave as expected:

@@ -38,6 +38,7 @@ from policyengine_uk.data.input_dataframe import (
     with_identifiers_in_each_year,
 )
 from policyengine_uk.utils.dependencies import get_variable_dependencies
+from policyengine_uk.utils.subsample import subsample_simulation
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
     drop_missing_supplied_inputs,
@@ -622,6 +623,70 @@ class Simulation(CoreSimulation):
         )
 
         self.build_from_populations(builder.populations)
+
+    def subsample(
+        self,
+        n: Optional[int] = None,
+        frac: Optional[float] = None,
+        seed=None,
+        time_period=None,
+        quantize_weights: bool = True,
+    ) -> "Simulation":
+        """Cut the simulation down to a weighted random sample of households.
+
+        Draws ``n`` households with replacement and keeps each household
+        drawn at least once, with its benefit units and people. So the sample
+        holds at most ``n`` households. Only households with a positive
+        weight in ``time_period`` can be drawn: with ``quantize_weights``
+        (the default), each with probability proportional to that weight;
+        without it, each with equal probability. A period before the first
+        one the simulation was given household weights for has none, so the
+        first given weights are used instead.
+
+        Every value the simulation was given (from its dataset or through
+        ``set_input``) is kept for the sampled records, for every period.
+        Calculated values are dropped and recalculated on the sample, and the
+        tracer starts again. Each supplied weight is replaced so that its
+        total is unchanged in every period: a household's new weight is
+        proportional to the number of times it was drawn, and also to its old
+        weight without ``quantize_weights``. With ``quantize_weights``, a
+        household's new weight in ``time_period``, averaged over draws, is
+        its old one; in another period that holds only if the household's
+        share of the total weight is the same there.
+
+        ``baseline`` is replaced with a copy subsampled to the same
+        households, which keeps its own policy and inputs. The baseline the
+        simulation held before is left as it was, since another simulation
+        (a clone of this one) can hold it too. ``dataset`` is replaced with
+        the rows of the dataset the simulation was built from for the
+        sampled records, with its weights rescaled in the same way. Like the
+        dataset before, it holds whole years only, and not values set with
+        ``set_input`` after the simulation was built.
+
+        Args:
+            n: The number of households to draw.
+            frac: The number to draw as a share of all households, used when
+                ``n`` is not given.
+            seed: A number or text that fixes the draw. The same seed always
+                draws the same households; without one, a fixed seed is used.
+            time_period: Draw households by their weight in this period.
+                Defaults to the default calculation period.
+            quantize_weights: If false, draw households with a positive
+                weight with equal probability, and make a household's new
+                weight proportional to its old weight times the number of
+                times it was drawn.
+
+        Returns:
+            This simulation, subsampled.
+        """
+        return subsample_simulation(
+            self,
+            n=n,
+            frac=frac,
+            seed=seed,
+            time_period=time_period,
+            quantize_weights=quantize_weights,
+        )
 
     def move_values(self, variable_donor: str, variable_target: str) -> None:
         """Move values from one variable to another across all branches.
