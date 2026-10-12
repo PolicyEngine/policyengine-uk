@@ -1,14 +1,15 @@
 """Require a changed test and a named reproducer for fix pull requests.
 
 This runs before the package is installed. Read test definitions rather than
-importing PR code, so checking evidence needs neither dependencies nor datasets.
+importing PR code. YAML validation uses PyYAML when available and fails closed
+without it; checking evidence never needs model dependencies or datasets.
 """
 
 import argparse
 import ast
 import html
-import json
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
@@ -18,7 +19,7 @@ POLICY_PREFIX = TESTS_PREFIX + "policy/"
 REPRODUCER_HINT = (
     'Use "Reproducer: policyengine_uk/tests/test_example.py::test_regression", '
     '"Reproducer: policyengine_uk/tests/policy/example.yaml::Case name", '
-    'or "Reproducer: n/a: <reason>" for CI/docs-only fixes.'
+    'or "Reproducer: n/a: <reason>" when model source and dependencies are unchanged.'
 )
 
 
@@ -35,29 +36,18 @@ def _relative_path(path: str) -> bool:
 
 
 def parse_changes(text: str) -> list[tuple[str, str]]:
-    """Read the two columns emitted by git diff --name-status --no-renames."""
+    """Read status/path pairs from git diff --name-status --no-renames -z."""
+    if not text:
+        return []
+    fields = text.split("\0")
+    if fields.pop() != "" or len(fields) % 2:
+        raise ValueError("Changes must be NUL-terminated status/path pairs")
     changes = []
-    for number, line in enumerate(text.splitlines(), 1):
-        if not line.strip():
-            continue
-        match = re.fullmatch(r"([A-Z])\t([^\t]+)", line)
-        if not match:
-            raise ValueError(f"Unparseable changes line {number}: {line!r}")
-        status, path = match.groups()
-        if path.startswith('"'):
-            # Git quotes unusual paths and encodes non-ASCII bytes as octal.
-            try:
-                path = ast.literal_eval(path)
-                if re.search(r"\\[0-7]{3}", match[2]):
-                    path = path.encode("latin-1").decode("utf-8")
-            except (SyntaxError, ValueError, UnicodeError) as error:
-                raise ValueError(
-                    f"Unparseable path on changes line {number}"
-                ) from error
-        if not isinstance(path, str) or not _relative_path(path):
-            raise ValueError(
-                f"Invalid repository path on changes line {number}: {path!r}"
-            )
+    for status, path in zip(fields[::2], fields[1::2]):
+        if not re.fullmatch(r"[A-Z]", status):
+            raise ValueError(f"Unparseable change status: {status!r}")
+        if not _relative_path(path):
+            raise ValueError(f"Invalid repository path: {path!r}")
         changes.append((status, path))
     return changes
 
@@ -66,9 +56,16 @@ def classify_fix_pr(
     title: str, body: str, labels: list[str], changes: list[tuple[str, str]]
 ) -> bool:
     """Classify from PR metadata only; title and body are reserved for later rules."""
-    return bool({"bug", "bug-fix"}.intersection(labels)) or any(
-        status in ("A", "M") and re.fullmatch(r"changelog\.d/[^/]+\.fixed\.md", path)
-        for status, path in changes
+    return (
+        bool({"bug", "bug-fix"}.intersection(labels))
+        or any(
+            status in ("A", "M", "T")
+            and path.startswith("changelog.d/")
+            and len(path.split("/")) == 2
+            # Towncrier searches every basename part after the issue for its type.
+            and "fixed" in PurePosixPath(path).name.split(".")[1:]
+            for status, path in changes
+        )
     )
 
 
@@ -95,7 +92,7 @@ def changed_executable_tests(changes: list[tuple[str, str]]) -> list[str]:
     return [
         path
         for status, path in changes
-        if status in ("A", "M") and (_pytest_module(path) or _policy_test(path))
+        if status in ("A", "M", "T") and (_pytest_module(path) or _policy_test(path))
     ]
 
 
@@ -109,6 +106,8 @@ def _unquote_id(value: str) -> str:
 
 
 def parse_reproducers(body: str) -> list[str]:
+    # Template guidance is not evidence supplied by the contributor.
+    body = re.sub(r"<!--.*?-->", "", body, flags=re.DOTALL)
     ids = []
     for line in body.splitlines():
         match = re.match(r"^\s*reproducer:\s*(.*)$", line, re.IGNORECASE)
@@ -133,84 +132,93 @@ def parse_reproducers(body: str) -> list[str]:
     return ids
 
 
-def _yaml_double_quoted(value: str) -> str:
-    # YAML allows additional escapes beyond JSON. Translate those while keeping
-    # JSON's handling of Unicode and escaped quotes, without installing PyYAML.
-    extra_escapes = {
-        "0": "\0",
-        "a": "\a",
-        "v": "\v",
-        "e": "\x1b",
-        " ": " ",
-        "\t": "\t",
-        "N": "\u0085",
-        "_": "\u00a0",
-        "L": "\u2028",
-        "P": "\u2029",
-    }
+def _read_test(repo_root: Path, path: str, head_sha: str | None) -> bytes:
+    if head_sha is not None:
 
-    def translate(match: re.Match) -> str:
-        escape = match[1]
-        if escape[0] in ("x", "U") and len(escape) > 1:
-            character = chr(int(escape[1:], 16))
-        elif escape in extra_escapes:
-            character = extra_escapes[escape]
-        else:
-            return match[0]
-        return json.dumps(character)[1:-1]
+        def git(*args: str) -> bytes:
+            return subprocess.run(
+                ["git", "-C", str(repo_root), "--literal-pathspecs", *args],
+                check=True,
+                capture_output=True,
+                timeout=15,
+            ).stdout
 
-    return json.loads(
-        re.sub(r"\\(x[0-9a-fA-F]{2}|U[0-9a-fA-F]{8}|.)", translate, value)
+        entries = git("ls-tree", "-z", head_sha, "--", path).split(b"\0")
+        if len(entries) != 2 or entries[-1] != b"":
+            raise ValueError("the test file is missing from the PR head")
+        metadata, entry_path = entries[0].split(b"\t", 1)
+        mode, kind, _ = metadata.split()
+        if entry_path.decode("utf-8", errors="surrogateescape") != path:
+            raise ValueError("the test file is missing from the PR head")
+        # A symlink's blob is its target text, not an executable test file.
+        if mode == b"120000":
+            raise ValueError("a symlink cannot be a reproducer")
+        if mode not in (b"100644", b"100755") or kind != b"blob":
+            raise ValueError("the reproducer must be a regular test file")
+        return git("cat-file", "blob", f"{head_sha}:{path}")
+
+    # Filesystem mode supports unit fixtures; CI always reads committed blobs.
+    file = repo_root
+    for part in path.split("/"):
+        file = file / part
+        if file.is_symlink():
+            raise ValueError("a symlink cannot be a reproducer")
+    if not file.resolve().is_relative_to(repo_root.resolve()):
+        raise ValueError("the test file must be inside the PR checkout")
+    return file.read_bytes()
+
+
+def _assigns_name(node: ast.AST, name: str) -> bool:
+    targets = (
+        node.targets
+        if isinstance(node, ast.Assign)
+        else [node.target]
+        if isinstance(node, ast.AnnAssign)
+        else []
+    )
+    return any(isinstance(target, ast.Name) and target.id == name for target in targets)
+
+
+def _suppresses_tests(body: list[ast.stmt]) -> bool:
+    return any(
+        _assigns_name(node, "__test__")
+        and isinstance(node.value, ast.Constant)
+        and node.value.value is False
+        for node in body
     )
 
 
-def _yaml_names(text: str) -> set[str]:
-    """Read name scalars at test-entry level, excluding nested input names."""
-    lines = [
-        line
-        for line in text.splitlines()
-        if line.strip() and not line.lstrip().startswith(("#", "---", "...", "%"))
-    ]
-    if not lines:
-        return set()
-    root_indent = min(len(line) - len(line.lstrip(" ")) for line in lines)
-    is_list = lines[0].lstrip().startswith("-")
-    names = set()
-    for line in lines:
-        match = re.fullmatch(r"( *)(-\s+)?name:\s*(.*)", line)
-        if not match:
-            continue
-        indent, marker, value = match.groups()
-        expected_indent = root_indent + (2 if is_list and not marker else 0)
-        if len(indent) != expected_indent or (marker and not is_list):
-            continue
-        if value.startswith("'"):
-            scalar = re.fullmatch(r"'((?:[^']|'')*)'\s*(?:#.*)?", value)
-            if scalar:
-                names.add(scalar[1].replace("''", "'"))
-        elif value.startswith('"'):
-            scalar = re.fullmatch(r'("(?:[^"\\]|\\.)*")\s*(?:#.*)?', value)
-            if scalar:
-                try:
-                    names.add(_yaml_double_quoted(scalar[1]))
-                except ValueError:
-                    continue
-        elif value and not value.startswith(("#", "|", ">")):
-            names.add(re.split(r"\s+#", value, maxsplit=1)[0].strip())
-    return names
-
-
-def _reference_problem(reproducer: str, tests: set[str], repo_root: Path) -> str | None:
+def _reference_problem(
+    reproducer: str, tests: set[str], repo_root: Path, head_sha: str | None
+) -> str | None:
     path, separator, name = reproducer.partition("::")
     if path not in tests:
-        return "the path must be an added or modified executable test in this PR"
+        return "the path must be an added, modified or type-changed executable test in this PR"
     try:
-        file = (repo_root / path).resolve()
-        if not file.is_relative_to(repo_root.resolve()):
-            return "the test file must be inside the PR checkout"
+        source = _read_test(repo_root, path, head_sha)
         if _policy_test(path):
-            text = file.read_text(encoding="utf-8")
-            if separator and name not in _yaml_names(text):
+            try:
+                import yaml
+            except ImportError:
+                return "cannot validate YAML tests without PyYAML"
+            try:
+                entries = yaml.safe_load(source.decode("utf-8"))
+            except yaml.YAMLError as error:
+                return f"the YAML file cannot be parsed: {error}"
+            names = (
+                {
+                    entry["name"]
+                    for entry in entries
+                    if isinstance(entry, dict)
+                    and isinstance(entry.get("name"), str)
+                    and "output" in entry
+                }
+                if isinstance(entries, list)
+                else set()
+            )
+            if not names:
+                return "the YAML file has no test mapping with a string name and output"
+            if separator and name not in names:
                 return f"the YAML file has no test entry named {name!r}"
             return None
         if not separator or not name:
@@ -221,25 +229,49 @@ def _reference_problem(reproducer: str, tests: set[str], repo_root: Path) -> str
                 return "pytest parameters must be a terminal [param] suffix"
             name = name.split("[", 1)[0]
         parts = name.split("::")
-        tree = ast.parse(file.read_bytes(), filename=path)
+        tree = ast.parse(source, filename=path)
+        if _suppresses_tests(tree.body):
+            return "pytest collection is disabled by module __test__ = False"
         definitions = (ast.FunctionDef, ast.AsyncFunctionDef)
-        if len(parts) == 1 and any(
-            isinstance(node, definitions) and node.name == parts[0]
-            for node in tree.body
-        ):
-            return None
-        if len(parts) == 2 and any(
-            isinstance(node, ast.ClassDef)
-            and node.name == parts[0]
+        if (
+            len(parts) == 1
+            and parts[0].startswith("test")
             and any(
-                isinstance(method, definitions) and method.name == parts[1]
-                for method in node.body
+                isinstance(node, definitions) and node.name == parts[0]
+                for node in tree.body
             )
-            for node in tree.body
         ):
             return None
-        return "the pytest file does not define the named test"
-    except (OSError, RuntimeError, SyntaxError, UnicodeError, ValueError) as error:
+        if (
+            len(parts) == 2
+            and parts[0].startswith("Test")
+            and parts[1].startswith("test")
+            and any(
+                isinstance(node, ast.ClassDef)
+                and node.name == parts[0]
+                and not _suppresses_tests(node.body)
+                and not any(
+                    (isinstance(method, definitions) and method.name == "__init__")
+                    or _assigns_name(method, "__init__")
+                    for method in node.body
+                )
+                and any(
+                    isinstance(method, definitions) and method.name == parts[1]
+                    for method in node.body
+                )
+                for node in tree.body
+            )
+        ):
+            return None
+        return "the pytest file does not define a collectable named test"
+    except (
+        OSError,
+        RuntimeError,
+        SyntaxError,
+        UnicodeError,
+        ValueError,
+        subprocess.SubprocessError,
+    ) as error:
         return f"the test file cannot be read or parsed: {error}"
 
 
@@ -249,21 +281,28 @@ def check_fix_pr(
     labels: list[str],
     changes: list[tuple[str, str]],
     repo_root: Path,
+    head_sha: str | None = None,
 ) -> Report:
+    if head_sha is not None and not re.fullmatch(
+        r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})", head_sha
+    ):
+        raise ValueError("The PR head must be a full hexadecimal commit SHA")
     if not classify_fix_pr(title, body, labels, changes):
         return Report(
             title,
             False,
             True,
             [
-                "Not a fix PR: no added/modified .fixed.md fragment or bug/bug-fix label."
+                "Not a fix PR: no added/modified/type-changed fixed fragment or bug/bug-fix label."
             ],
         )
     tests = set(changed_executable_tests(changes))
     model_changed = any(
-        status in ("A", "M", "D")
-        and path.startswith("policyengine_uk/")
-        and not path.startswith(TESTS_PREFIX)
+        status in ("A", "M", "T", "D")
+        and (
+            (path.startswith("policyengine_uk/") and not path.startswith(TESTS_PREFIX))
+            or path in ("pyproject.toml", "uv.lock")
+        )
         for status, path in changes
     )
     reproducer_messages = []
@@ -275,13 +314,13 @@ def check_fix_pr(
             problem = (
                 "n/a requires a non-empty reason"
                 if not exemption[1].strip()
-                else "n/a is allowed only when no model source outside tests changes"
+                else "n/a is allowed only when model source outside tests, pyproject.toml and uv.lock are unchanged"
                 if model_changed
                 else None
             )
             valid_exemption |= problem is None
         else:
-            problem = _reference_problem(reproducer, tests, repo_root)
+            problem = _reference_problem(reproducer, tests, repo_root, head_sha)
         if problem:
             reproducer_messages.append(
                 f"Invalid reproducer {reproducer!r}: {problem}. {REPRODUCER_HINT}"
@@ -291,7 +330,7 @@ def check_fix_pr(
     messages = []
     if not tests and not valid_exemption:
         messages.append(
-            "No added or modified executable test. Add a pytest module under "
+            "No added, modified or type-changed executable test. Add a pytest module under "
             "policyengine_uk/tests/ or YAML test under policyengine_uk/tests/policy/. "
             + REPRODUCER_HINT
         )
@@ -304,7 +343,7 @@ def check_fix_pr(
         or [
             "Fix PR has valid reproducer evidence. "
             + (
-                "CI/docs-only exemption accepted."
+                "Exemption accepted: model source and dependencies are unchanged."
                 if valid_exemption
                 else f"Changed executable tests: {len(tests)}."
             )
@@ -337,6 +376,10 @@ def main(argv: list[str] | None = None) -> int:
     for option in ("title", "body", "labels", "changes"):
         parser.add_argument(f"--{option}-file", type=Path, required=True)
     parser.add_argument("--repo-root", type=Path, required=True)
+    parser.add_argument(
+        "--head-sha",
+        help="Read tests from this commit's git objects instead of the filesystem",
+    )
     parser.add_argument("--summary-file", type=Path)
     args = parser.parse_args(argv)
     title = ""
@@ -349,10 +392,15 @@ def main(argv: list[str] | None = None) -> int:
             for label in args.labels_file.read_text(encoding="utf-8").splitlines()
             if label.strip()
         ]
-        changes = parse_changes(args.changes_file.read_text(encoding="utf-8"))
+        # Preserve path bytes, including literal newlines, rather than decoding Git quotes.
+        changes = parse_changes(
+            args.changes_file.read_bytes().decode("utf-8", errors="surrogateescape")
+        )
         if not args.repo_root.is_dir():
             raise ValueError(f"Repository root is not a directory: {args.repo_root}")
-        report = check_fix_pr(title, body, labels, changes, args.repo_root)
+        report = check_fix_pr(
+            title, body, labels, changes, args.repo_root, args.head_sha
+        )
     except (OSError, UnicodeError, ValueError) as error:
         report = Report(title, False, False, [f"Unusable input: {error}"])
         unusable = True

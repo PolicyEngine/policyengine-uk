@@ -1,6 +1,10 @@
 # Fix pull requests must change an executable test and name the test that
 # reproduces the bug (.github/check_fix_pr.py; docs/engineering/skills/github-prs.md).
 #
+# pull_request_target is safe here because the job never executes, installs or
+# imports code from the PR. The base checkout supplies the trusted checker,
+# which reads the PR's files as data from git objects.
+#
 # It also reports on merge queue groups (merge_group), so a branch rule can
 # require it with a merge queue on: a group passes, because each pull
 # request's evidence was checked on the pull request before it could join
@@ -8,7 +12,7 @@
 
 name: Fix evidence
 on:
-  pull_request:
+  pull_request_target:
     branches: [main]
     types: [opened, edited, synchronize, reopened, labeled, unlabeled, ready_for_review]
   merge_group:
@@ -18,7 +22,7 @@ permissions:
 
 concurrency:
   group: fix-evidence-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request_target' }}
 
 jobs:
   Fix-evidence:
@@ -29,31 +33,45 @@ jobs:
       - name: Merge queue group
         if: github.event_name == 'merge_group'
         run: echo "Each pull request in this group passed Fix evidence before it joined the queue."
-      - name: Check out the pull request head
-        if: github.event_name == 'pull_request'
+      - name: Check out the trusted base branch
+        if: github.event_name == 'pull_request_target'
         uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
       - name: Collect pull request evidence
-        if: github.event_name == 'pull_request'
+        id: evidence
+        if: github.event_name == 'pull_request_target'
         env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_TITLE: ${{ github.event.pull_request.title }}
           PR_BODY: ${{ github.event.pull_request.body }}
           PR_LABELS_JSON: ${{ toJSON(github.event.pull_request.labels.*.name) }}
           PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
+          # A fresh directory keeps metadata writes away from any PR paths.
+          evidence_dir=$(mktemp -d "$RUNNER_TEMP/fix-evidence.XXXXXX")
+          printf 'directory=%s\n' "$evidence_dir" >> "$GITHUB_OUTPUT"
           # PR text stays in environment variables so shell syntax in it cannot run.
-          printf '%s' "$PR_TITLE" > title.txt
-          printf '%s' "$PR_BODY" > body.md
-          python3 -c 'import json, os; print("\n".join(json.loads(os.environ["PR_LABELS_JSON"])), end="")' > labels.txt
+          printf '%s' "$PR_TITLE" > "$evidence_dir/title.txt"
+          printf '%s' "$PR_BODY" > "$evidence_dir/body.md"
+          python3 -c 'import json, os; print("\n".join(json.loads(os.environ["PR_LABELS_JSON"])), end="")' > "$evidence_dir/labels.txt"
+          git fetch --no-tags origin "+refs/pull/${PR_NUMBER}/head:refs/remotes/pr/head"
+          # Fetch the event's immutable head too in case the PR changed again.
+          git fetch --no-tags origin "$PR_BASE_SHA" "$PR_HEAD_SHA"
           merge_base=$(git merge-base "$PR_BASE_SHA" "$PR_HEAD_SHA")
-          git diff --name-status --no-renames "$merge_base" "$PR_HEAD_SHA" > changes.txt
+          git diff --name-status --no-renames -z "$merge_base" "$PR_HEAD_SHA" > "$evidence_dir/changes.bin"
+      - name: Set up uv for the trusted checker
+        if: github.event_name == 'pull_request_target'
+        uses: astral-sh/setup-uv@v8.1.0
       - name: Check fix evidence
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request_target'
+        env:
+          EVIDENCE_DIR: ${{ steps.evidence.outputs.directory }}
+          PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          python3 .github/check_fix_pr.py \
-            --title-file title.txt --body-file body.md --labels-file labels.txt \
-            --changes-file changes.txt --repo-root . \
+          uv run --no-project --with pyyaml==6.0.2 python .github/check_fix_pr.py \
+            --title-file "$EVIDENCE_DIR/title.txt" --body-file "$EVIDENCE_DIR/body.md" \
+            --labels-file "$EVIDENCE_DIR/labels.txt" --changes-file "$EVIDENCE_DIR/changes.bin" \
+            --repo-root . --head-sha "$PR_HEAD_SHA" \
             --summary-file "$GITHUB_STEP_SUMMARY"

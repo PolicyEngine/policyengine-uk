@@ -56,29 +56,42 @@ types are patch.
 
 ## Fix evidence
 
-The **Fix evidence** pull request check applies when a PR adds or modifies a
-`changelog.d/*.fixed.md` fragment or has the `bug` or `bug-fix` label. A fix PR
-must add or modify an executable test under `policyengine_uk/tests/` and name
-its reproducer in the PR description:
+The **Fix evidence** pull request check applies when a PR adds, modifies or
+type-changes a fixed fragment directly in `changelog.d/`, or has the `bug` or
+`bug-fix` label. A fragment counts as fixed when its basename has `fixed` in
+any dot-separated part after the first, including `x.fixed.md`, `x.fixed.1.md`,
+`x.fixed.md.md` and `x.fixed`. Use the canonical fragment naming convention
+above when writing new fragments. A fix PR must add, modify or type-change an
+executable test under `policyengine_uk/tests/` and name its reproducer in the
+PR description:
 
 ```text
 Reproducer: policyengine_uk/tests/path/to/test_file.py::test_name
 ```
 
 Accepted ids are pytest node ids (`file.py::test_name` or
-`file.py::Class::test_name`) and YAML policy tests under
+`file.py::TestClass::test_name`) and YAML policy tests under
 `policyengine_uk/tests/policy/` (`file.yaml` or `file.yaml::test name`, also
-accepting `.yml`). Each named file must be added or modified in the PR, and
-each named test must exist in that file. Python files must match `test_*.py`
-or `*_test.py`. Separate multiple ids with commas or semicolons. Backticks
-around each id are optional; use them when a name or reason contains these
-separators.
+accepting `.yml`). Each named file must be added, modified or type-changed in
+the PR. Python files must match `test_*.py` or `*_test.py`, and names must
+resolve to module-level functions starting with `test`, or methods starting
+with `test` in module-level classes starting with `Test` and defining no
+`__init__`. A module or class with `__test__ = False` is excluded, as are
+definitions nested in functions or conditional blocks. YAML files must parse
+to a non-empty list with at least one mapping containing a string `name` and
+an `output` key; a named YAML reproducer must match such a mapping exactly.
+Separate multiple ids with commas or semicolons. Backticks around each id
+are optional; use them when a name or reason contains these separators.
+Reproducer lines inside HTML comments are ignored.
 
 For CI/docs-only fixes, use `Reproducer: n/a: <reason>` with a non-empty reason.
 This exempts the PR from changing a test only when no file under
-`policyengine_uk/` outside `policyengine_uk/tests/` is added, modified or deleted.
-The check validates the named reproducer at the PR head; it does not run the
-reproducer against the old code.
+`policyengine_uk/` outside `policyengine_uk/tests/` is added, modified,
+type-changed or deleted, and neither `pyproject.toml` nor `uv.lock` changes.
+Dependency changes can change model results, so they also require a test.
+The workflow runs the trusted base-branch checker and reads test files from
+the PR head's git objects, rejecting symlinked test paths. It validates the
+named reproducer without running PR code or testing against the old code.
 
 ## Required Axiom Line
 
