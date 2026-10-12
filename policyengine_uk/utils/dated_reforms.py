@@ -79,9 +79,10 @@ The tax-benefit system keeps every dated change and legacy override it has
 been given. Any later rebuild of its parameters (another call to
 ``Simulation.apply_parameter_changes``, or a modifier that reloads and
 reprocesses the parameters, as ``no_economic_assumptions`` does) writes them
-all again, onto the parameters as that modifier left them. A rebuild does
-not keep other edits to the processed parameters, such as a structural
-reform's.
+all again, onto the parameters as that modifier left them. Nodes a
+structural reform added to the processed parameters (a new parameter, or a
+band appended to a scale) are added back (``graft_missing_nodes``); other
+edits made directly to existing processed parameters are not kept.
 
 ``Scenario.apply`` on an already-built simulation never rebuilds: it edits
 the annualised parameters, as it always has, so every change it makes is a

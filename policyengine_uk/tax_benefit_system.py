@@ -312,16 +312,25 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         if not overrides:
             return
         # Every target is found before anything changes; ``update`` replaces
-        # a parameter's ``values_list``, so keeping each list is enough to
-        # undo the batch.
+        # a parameter's ``values_list`` and marks it and its ancestors
+        # modified, so keeping each list and those flags is enough to undo
+        # the batch.
         targets = [self.parameters.get_child(override.path) for override in overrides]
         saved = [(target, target.values_list) for target in targets]
+        flags = {}
+        for target in targets:
+            node = target
+            while node is not None and id(node) not in flags:
+                flags[id(node)] = (node, getattr(node, "modified", False))
+                node = getattr(node, "parent", None)
         try:
             apply_legacy_overrides(self.parameters, overrides)
         except Exception:
             for target, values_list in saved:
                 target.values_list = values_list
                 target.parent.clear_parent_cache()
+            for node, modified in flags.values():
+                node.modified = modified
             raise
         finally:
             self.reset_parameter_caches()

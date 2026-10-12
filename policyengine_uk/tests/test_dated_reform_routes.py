@@ -1044,14 +1044,24 @@ def test_a_failed_override_batch_applies_none_of_its_overrides():
     simulation = Simulation(situation=SITUATION)
     system = simulation.tax_benefit_system
     parameters = system.parameters
+    # Processing marks parameters modified, so clear the flags on the path
+    # to the rate to see whether a failed batch leaves them set.
+    path = []
+    node = parameters.get_child(BASIC_RATE)
+    while node is not None:
+        node.modified = False
+        path.append(node)
+        node = getattr(node, "parent", None)
     with pytest.raises(ValueError):
         Scenario.from_reform(
             {BASIC_RATE: {"2027": 0.3}, "gov.not_a_real_parameter": {"2027": 1}}
         ).apply(simulation)
     assert annual(simulation, BASIC_RATE, 2027) == 0.20
     assert system.legacy_overrides == []
-    # The batch is undone in place: the tree is the one the system had.
+    # The batch is undone in place: the tree is the one the system had, and
+    # nothing on the path to the rate is left marked modified.
     assert system.parameters is parameters
+    assert not any(node.modified for node in path)
     Scenario.from_reform({BASIC_RATE: {"2027": 0.3}}).apply(simulation)
     assert system.parameters is parameters
     assert annual(simulation, BASIC_RATE, 2027) == 0.3
