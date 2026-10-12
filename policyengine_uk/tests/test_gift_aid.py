@@ -270,6 +270,10 @@ def test_explicit_zero_gift_matches_omitted_input(sim, omitted_sim, drawn):
 def test_zero_gift_preserves_main_outputs_bit_for_bit():
     """Freeze main's intermediate and final outputs, including mixed income.
 
+    Frozen from main at 3381500f4 (after #2352 put savings and dividends
+    above property income, and the Scottish personal savings allowance
+    moved to the UK bands). Re-freeze from main when main moves these.
+
     Gift Aid's zero-input compatibility also applies to inherited baseline
     choices about property stacking, the Scottish schedule and taxpayer bands.
     Exact float32 expectations catch changes hidden by a tax-level tolerance.
@@ -289,42 +293,28 @@ def test_zero_gift_preserves_main_outputs_bit_for_bit():
         )
         inputs["people"][f"p{i}"]["capital_gains"] = {YEAR: 40_000}
     snapshot = Simulation(situation=inputs)
-    allowance = [12_570, 12_570, 0, 12_570, 12_570, 12_070] * 2
     expected = {
         "adjusted_net_income": [30_000, 60_000, 150_000, 69_000, 40_000, 101_000] * 2,
-        "personal_allowance": allowance,
-        "allowances": allowance,
-        "unused_personal_allowance": [0] * 12,
+        "personal_allowance": [12_570, 12_570, 0, 12_570, 12_570, 12_070] * 2,
+        "allowances": [12_570, 12_570, 0, 12_570, 12_570, 12_070] * 2,
+        "unused_personal_allowance": [0, 0, 0, 0, 0, 0] * 2,
         "earned_taxable_income": [17_430, 47_430, 150_000, 17_430, 0, 88_930] * 2,
         "received_allowances_earned_income": [12_570, 12_570, 0, 12_570, 10_000, 12_070]
         * 2,
-        "received_allowances_savings_income": [0, 0, 0, 0, 2_570, 0] * 2,
-        "received_allowances_dividend_income": [0] * 12,
+        "received_allowances_savings_income": [0, 0, 0, 0, 2570, 0] * 2,
+        "received_allowances_dividend_income": [0, 0, 0, 0, 0, 0] * 2,
         "basic_rate_earned_income": [17_430, 37_700, 37_700, 17_430, 0, 37_700] * 2,
-        "higher_rate_earned_income": [0, 9_730, 87_440, 0, 0, 51_230] * 2,
+        "higher_rate_earned_income": [0, 9730, 87_440, 0, 0, 51_230] * 2,
         "add_rate_earned_income": [0, 0, 24_860, 0, 0, 0] * 2,
-        "basic_rate_savings_income": [0, 0, 0, 6_500, 11_430, 0] * 2,
-        "higher_rate_savings_income": [0] * 12,
-        "add_rate_savings_income": [0] * 12,
-        "savings_allowance": [
-            1_000,
-            500,
-            0,
-            500,
-            1_000,
-            500,
-            1_000,
-            500,
-            0,
-            500,
-            1_000,
-            0,
-        ],
+        "basic_rate_savings_income": [0, 0, 0, 10_770, 11_430, 0] * 2,
+        "higher_rate_savings_income": [0, 0, 0, 730, 0, 0] * 2,
+        "add_rate_savings_income": [0, 0, 0, 0, 0, 0] * 2,
+        "savings_allowance": [1000, 500, 0, 500, 1000, 500] * 2,
         "earned_income_tax": [
-            3_486,
+            3486,
             11_432,
             53_703,
-            3_486,
+            3486,
             0,
             28_032,
             3451.070068359375,
@@ -334,31 +324,24 @@ def test_zero_gift_preserves_main_outputs_bit_for_bit():
             0,
             31407.05078125,
         ],
-        "savings_income_tax": [0, 0, 0, 1_300, 2_286, 0] * 2,
-        "dividend_income_tax": [0, 0, 0, 4_313.75, 1_021.25, 0] * 2,
-        "property_income_tax": [0, 0, 0, 1_800, 0, 0, 0, 0, 0, 1_890, 0, 0],
+        "savings_income_tax": [0, 0, 0, 2446, 2286, 0] * 2,
+        "dividend_income_tax": [0, 0, 0, 6256.25, 1021.25, 0] * 2,
+        "property_income_tax": [0, 0, 0, 1800, 0, 0, 0, 0, 0, 1890, 0, 0],
         "income_tax": [
-            3_486,
+            3486,
             11_432,
             53_703,
-            10_899.75,
-            3_307.25,
+            13988.25,
+            3307.25,
             28_032,
             3451.070068359375,
             13182.0498046875,
             60011.44921875,
-            10954.8203125,
-            3_307.25,
+            14043.3203125,
+            3307.25,
             31407.05078125,
         ],
-        "capital_gains_tax": [
-            7663.7998046875,
-            8_880,
-            8_880,
-            8_880,
-            8263.7998046875,
-            8_880,
-        ]
+        "capital_gains_tax": [7663.7998046875, 8880, 8880, 8880, 8263.7998046875, 8880]
         * 2,
     }
     for variable, values in expected.items():
