@@ -24,14 +24,16 @@ They replace the
 Under the 2022 Regulations, the means-tested group had to pass a
 "high cost to heat" test based on property data. For winter 2025-26
 that test was removed, so every household on a qualifying means-tested
-benefit got the rebate: around 6 million households in Great Britain,
-2.7 million more than the year before
+benefit became eligible. The government estimated this would bring
+2.7 million more households into the scheme, taking it to more than
+6 million households in Great Britain
 ([government response, June 2025](https://assets.publishing.service.gov.uk/media/6852e6e9679778c74ec15e82/expanding-the-warm-home-discount-scheme-2025-to-2026-government-response.pdf)).
 
 For winter 2026-27, GOV.UK
 ([eligibility in England and Wales](https://www.gov.uk/the-warm-home-discount-scheme/if-you-live-in-england-and-wales))
 says a household qualifies if, on the qualifying date of 23 August
-2026, its electricity supplier is in the scheme and the person or
+2026, its electricity supplier is in the scheme, the person's (or
+their partner's) name is on the electricity bill, and the person or
 their partner gets one of:
 
 - Universal Credit;
@@ -43,10 +45,12 @@ The rebate is applied automatically.
 
 ### Scotland
 
-The scheme runs under separate Scottish regulations
-([2022](https://www.legislation.gov.uk/uksi/2022/1073/contents), SI
-2022/1073; 2026 Regulations running to 31 March 2031 have been laid in
-draft). For winter 2026-27
+The scheme runs under separate Scottish regulations.
+[The Warm Home Discount (Scotland) Regulations 2026](https://www.legislation.gov.uk/uksi/2026/488/contents)
+(SI 2026/488) came into force on 1 May 2026 and run the scheme to
+31 March 2031, replacing the
+[2022 Regulations](https://www.legislation.gov.uk/uksi/2022/1073/contents)
+(SI 2022/1073). Both 2026 Regulations set the rebate at £150. For winter 2026-27
 ([eligibility in Scotland](https://www.gov.uk/the-warm-home-discount-scheme/if-you-live-in-scotland)):
 
 - **Core group, automatic:** Pension Credit; Universal Credit with an
@@ -71,8 +75,9 @@ extends to Great Britain only.
 
 Now a rule on benefit receipt:
 
-- Parameter `gov.ofgem.warm_home_discount.amount`: £150 (£140 before
-  winter 2022-23). Check the 2026 Regulations for any change.
+- Parameter `gov.ofgem.warm_home_discount.amount`: £150, the
+  "prescribed rebate" in both sets of 2026 Regulations (£140 before
+  winter 2022-23).
 - Parameter listing the qualifying benefits, so a reform can widen or
   narrow the list.
 - Variable `warm_home_discount` (Household, YEAR): the amount if the
@@ -123,6 +128,7 @@ published recipient numbers for Scotland, on top of the eligible group.
 
 - [The Warm Home Discount (England and Wales) Regulations 2026 (SI 2026/389)](https://www.legislation.gov.uk/uksi/2026/389/contents).
 - [The Warm Home Discount (England and Wales) Regulations 2022 (SI 2022/772)](https://www.legislation.gov.uk/uksi/2022/772/contents).
+- [The Warm Home Discount (Scotland) Regulations 2026 (SI 2026/488)](https://www.legislation.gov.uk/uksi/2026/488/contents).
 - [The Warm Home Discount (Scotland) Regulations 2022 (SI 2022/1073)](https://www.legislation.gov.uk/uksi/2022/1073/contents).
 - DESNZ, [Expanding the Warm Home Discount scheme, 2025 to 2026: government response](https://assets.publishing.service.gov.uk/media/6852e6e9679778c74ec15e82/expanding-the-warm-home-discount-scheme-2025-to-2026-government-response.pdf).
 - GOV.UK, [Warm Home Discount Scheme](https://www.gov.uk/the-warm-home-discount-scheme).
