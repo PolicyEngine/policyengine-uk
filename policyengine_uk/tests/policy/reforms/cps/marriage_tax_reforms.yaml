@@ -185,3 +185,69 @@
         members: [high_earner, low_earner, student]
   output:
     adjusted_net_income: [35_000, 35_000, 8_000]
+
+# A supplied adjusted net income took precedence over this reform before
+# #2253 moved its override to net_income; it still sets the taxable base.
+- name: Marriage-neutral IT — a supplied adjusted net income still sets the taxable base
+  period: 2026
+  absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.marriage_neutral_it_reform
+  input:
+    people:
+      earner:
+        age: 40
+        adjusted_net_income: 50_000
+        personal_allowance: 12_570
+        marriage_allowance: 0
+      spouse:
+        age: 40
+        adjusted_net_income: 0
+        personal_allowance: 12_570
+        marriage_allowance: 0
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      household:
+        members: [earner, spouse]
+        region: NORTH_WEST
+  output:
+    net_income: [50_000, 0]
+    earned_taxable_income: [37_430, 0]
+    income_tax: [7_486, 0]
+
+- name: Marriage-neutral IT — a supplied adjusted net income gets the grossed-up gift back
+  period: 2026
+  absolute_error_margin: 1
+  reforms:
+    - policyengine_uk.reforms.cps.marriage_tax_reforms.marriage_neutral_it_reform
+  input:
+    people:
+      earner:
+        age: 40
+        adjusted_net_income: 49_000
+        gift_aid: 800
+        personal_allowance: 12_570
+        marriage_allowance: 0
+      spouse:
+        age: 40
+        adjusted_net_income: 0
+        personal_allowance: 12_570
+        marriage_allowance: 0
+    benunits:
+      benunit:
+        members: [earner, spouse]
+        is_married: true
+    households:
+      household:
+        members: [earner, spouse]
+        region: NORTH_WEST
+  output:
+    # ANI already has the £1,000 grossed-up gift deducted (s.58), so net
+    # income is £50,000; the raised basic rate limit gives no relief here.
+    net_income: [50_000, 0]
+    adjusted_net_income: [49_000, 0]
+    earned_taxable_income: [37_430, 0]
+    income_tax: [7_486, 0]
