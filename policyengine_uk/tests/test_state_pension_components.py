@@ -444,12 +444,13 @@ def test_full_rate_reforms_leave_the_add_on_alone(change):
 
 def test_a_september_cpi_scenario_moves_the_add_on():
     """The index is read from the simulation's own parameters: with September
-    2027 CPI set to 5%, the add-on rises 5% in April 2028."""
+    2027 CPI set to 1%, the add-on rises 1% in April 2028, while the full
+    rates rise by at least the triple lock's 2.5%."""
     person = {"age": 90, "male": True, "months": 3, "weekly": 250}
     scenario = Scenario(
         parameter_changes={
             "gov.economic_assumptions.statutory_uprating_inputs.cpi_september": {
-                "2027": 0.05
+                "2027": 0.01
             },
         },
         applied_before_data_load=True,
@@ -459,7 +460,10 @@ def test_a_september_cpi_scenario_moves_the_add_on():
         calculate(sim, "additional_state_pension", 2028)[0]
         / calculate(sim, "additional_state_pension", 2027)[0]
     )
-    assert growth == pytest.approx(1.05, abs=INDEX_ROUNDING)
+    assert growth == pytest.approx(1.01, abs=INDEX_ROUNDING)
+    assert flat_uprating(sim, 2028, "BASIC") / flat_uprating(sim, 2027, "BASIC") >= (
+        1.025 - INDEX_ROUNDING
+    )
 
 
 # Each example builds a microsimulation, so examples are slow to generate.
