@@ -16,15 +16,16 @@ from pathlib import Path, PurePosixPath
 
 TESTS_PREFIX = "policyengine_uk/tests/"
 POLICY_PREFIX = TESTS_PREFIX + "policy/"
-# pytest marks under which a named reproducer would not run, or would not need
-# to pass. skipif is allowed: its condition is usually a platform check that
-# holds false in CI.
-NON_RUNNING_MARKS = frozenset({"skip", "xfail"})
+# pytest marks and unittest decorators under which a named reproducer would
+# not run, or would not need to pass. skipif (and unittest's skipIf) is allowed:
+# its condition is usually a platform check that holds false in CI.
+NON_RUNNING_MARKS = frozenset({"skip", "xfail", "expectedFailure"})
 # pytest does not collect a test class that defines either.
 CONSTRUCTORS = ("__init__", "__new__")
 # Base classes a collectable test class may name; any other base could bring a
-# constructor or __test__ = False with it.
-TEST_CLASS_BASES = frozenset({"object", "unittest.TestCase", "TestCase"})
+# constructor or __test__ = False with it. A bare TestCase counts only when the
+# module imports it from unittest.
+TEST_CLASS_BASES = frozenset({"object", "unittest.TestCase"})
 REPRODUCER_HINT = (
     'Use "Reproducer: policyengine_uk/tests/test_example.py::test_regression", '
     '"Reproducer: policyengine_uk/tests/policy/example.yaml::Case name", '
@@ -228,6 +229,18 @@ def _sets_test_attribute(body: list[ast.stmt], name: str) -> bool:
     return False
 
 
+def _imports_unittest_testcase(body: list[ast.stmt]) -> bool:
+    return any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "unittest"
+        and any(
+            alias.name == "TestCase" and alias.asname in (None, "TestCase")
+            for alias in node.names
+        )
+        for node in body
+    )
+
+
 def _decorator_names(definition: ast.AST) -> list[str | None]:
     return [
         _dotted_name(decorator.func if isinstance(decorator, ast.Call) else decorator)
@@ -256,7 +269,7 @@ def _not_run_problem(names: list[str | None]) -> str | None:
         parts = name.split(".")
         if parts[-1] == "fixture":
             return "the named test is a fixture, which pytest does not run as a test"
-        if parts[-1] in NON_RUNNING_MARKS and "mark" in parts[:-1]:
+        if parts[-1] in NON_RUNNING_MARKS:
             return (
                 f"the named test is marked {parts[-1]}, so it would not run as a "
                 "reproducer"
@@ -347,7 +360,14 @@ def _reference_problem(
                     or any(_assigns_name(node, name) for name in CONSTRUCTORS)
                     for node in cls.body
                 )
-                and all(_dotted_name(base) in TEST_CLASS_BASES for base in cls.bases)
+                and all(
+                    _dotted_name(base) in TEST_CLASS_BASES
+                    or (
+                        _dotted_name(base) == "TestCase"
+                        and _imports_unittest_testcase(tree.body)
+                    )
+                    for base in cls.bases
+                )
                 and not cls.keywords
                 and not _sets_test_attribute(tree.body, parts[0])
                 and not _sets_test_attribute(cls.body, parts[1])

@@ -8,8 +8,10 @@ the invariants reviewers rely on:
 2. Deleted tests never count as changed executable tests or reproducers.
 3. Formatting reproducer ids with supported separators and quoting round
    trips through the body parser.
-4. A pytest reproducer requires a changed file and a directly defined,
-   collectable test function or class method, ignoring parametrisation suffixes.
+4. A pytest reproducer requires a changed file and a directly defined test
+   function or class method that pytest collects, checked against real pytest
+   collection, ignoring parametrisation suffixes. A collected test marked to
+   skip or expected to fail is rejected too, since it reproduces nothing.
 5. An n/a reason is accepted exactly when it is non-empty and no model
    source outside the test tree or dependency file was added, modified,
    type-changed or deleted.
@@ -21,8 +23,8 @@ the invariants reviewers rely on:
    The standalone checker entry point obeys the same passing and failing rules.
 9. The workflow runs the trusted base checker on pull_request_target events,
    isolates artifacts under RUNNER_TEMP and reports on merge queue groups.
-10. YAML reproducers require parsed list entries with a string name and output;
-    missing PyYAML fails closed.
+10. YAML reproducers require parsed list entries with a string name and a
+    non-empty output mapping; missing PyYAML fails closed.
 11. Reproducer lines inside HTML comments never count as evidence.
 """
 
@@ -573,6 +575,11 @@ def test_backticked_na_reason_can_include_commas_and_semicolons(tmp_path):
             "test_regression.__test__ = False\n",
             "::test_regression",
         ),
+        (
+            "from helpers import TestCase\nclass TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
     ],
 )
 def test_pytest_reproducer_rejects_bare_paths_and_nonexistent_definitions(
@@ -680,6 +687,18 @@ def test_pytest_default_collection_confirms_function_and_class_names(
             "    def test_regression(self):\n        pass\n",
             "::TestRegression::test_regression",
         ),
+        (
+            "import unittest\nclass TestRegression(unittest.TestCase):\n"
+            "    @unittest.skip('later')\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "from unittest import TestCase, expectedFailure\n"
+            "class TestRegression(TestCase):\n    @expectedFailure\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
     ],
 )
 def test_pytest_reproducer_must_not_be_skipped_or_expected_to_fail(
@@ -716,6 +735,17 @@ def test_pytest_reproducer_must_not_be_skipped_or_expected_to_fail(
             "@pytest.mark.skipif(sys.platform == 'win32', reason='no FIFOs')\n"
             "def test_regression():\n    pass\n",
             "::test_regression",
+        ),
+        (
+            "from unittest import TestCase\nclass TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "import unittest, sys\nclass TestRegression(unittest.TestCase):\n"
+            "    @unittest.skipIf(sys.platform == 'win32', 'no FIFOs')\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
         ),
         (
             "class TestRegression(object):\n    __test__ = True\n"
