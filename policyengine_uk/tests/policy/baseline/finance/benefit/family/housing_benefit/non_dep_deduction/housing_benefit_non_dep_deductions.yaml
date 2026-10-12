@@ -99,7 +99,7 @@
     housing_benefit_non_dep_deductions: [3, 0, 0]
 
 # HB Regs 2006 reg 74(1)(b) and (2): a non-dependant aged 18 or over who is
-# not in remunerative work takes the minimum deduction, £19.30 a week in
+# not in remunerative work takes the minimum deduction, £19.65 a week in
 # 2025-26, whatever their income. Reg 74(6): no deduction at all if the
 # claimant or partner receives Attendance Allowance (among other benefits).
 - name: A non-working adult non-dependant with only investment income takes the minimum deduction
@@ -124,8 +124,8 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 15_000
   output:
-    # 19.30 * 52 = 1,003.60 (the top band would be 124.55 * 52 = 6,476.60).
-    housing_benefit_non_dep_deductions: [1_003.60, 0]
+    # 19.65 * 52 = 1,021.80 (the £463-576.99 band would be 115.45 * 52 = 6,003.40).
+    housing_benefit_non_dep_deductions: [1_021.80, 0]
 
 - name: A claimant on Attendance Allowance has no non-dependant deduction
   period: 2025
@@ -153,5 +153,5 @@
   output:
     housing_benefit_non_dep_deduction_exempt: [true, false]
     # Reg 74(6)(b)(i) / SPC reg 55(6)(b)(i): no deduction, although the
-    # non-dependant alone would take 124.55 * 52 = 6,476.60.
+    # non-dependant alone would take 115.45 * 52 = 6,003.40.
     housing_benefit_non_dep_deductions: [0, 0]
