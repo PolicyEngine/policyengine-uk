@@ -1,0 +1,26 @@
+description: Passenger receipts divided by fare-paying boardings in 2024-25, including
+  single and season tickets. This is a benchmark yield, before subsequent cap changes and
+  explicit fare-index reforms; held nominally constant unless reformed.
+metadata:
+  unit: currency-GBP
+  period: year
+  label: bus yield per boarding
+  reference:
+  - title: DfT bus statistics, BUS01 and BUS05i, 2024-25
+    href: https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables
+  - title: DfT National Travel Survey, NTS0705a, 2024
+    href: https://www.gov.uk/government/statistical-data-sets/nts07-car-ownership-and-access
+  - title: Scottish Transport Statistics 2025, tables 2.2a and 2.8
+    href: https://www.transport.gov.scot/publication/scottish-transport-statistics-2025/chapter-2-bus-and-coach-travel/
+  - title: Northern Ireland Public Transport Statistics 2024-25, figures 3, 4 and 6
+    href: https://www.infrastructure-ni.gov.uk/publications/public-transport-statistics-northern-ireland-2024-25
+  - title: Microcosm 954, published-fact extraction and pricing derivation
+    href: https://github.com/PolicyEngine/microcosm/pull/954
+LONDON:
+  '2024-01-01': 1.017729905895
+ENGLAND_OUTSIDE_LONDON:
+  '2024-01-01': 1.554716967657
+SCOTLAND:
+  '2024-01-01': 2.599723222144
+NORTHERN_IRELAND:
+  '2024-01-01': 2.550929922065

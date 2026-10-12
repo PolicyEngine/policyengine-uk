@@ -59,6 +59,7 @@
     employee_pension_contributions_reported: 5_000
     personal_pension_contributions: 0
     employer_pension_contributions: 2_000
+    employment_income_before_lsr: 60_000
     pension_contributions_via_salary_sacrifice: 8_000
   output:
     # employee_pension_contributions = 5_000 + 0 (no excess) = 5_000
