@@ -11,10 +11,11 @@ class in_receipt_of_savings_credit_only(Variable):
         "reform that stops Pension Credit being paid is not received; under "
         "disable_simulated_benefits, which sets Pension Credit to the reported amount, "
         "receipt also needs reported Pension Credit. A payment stands in for the "
-        "award: the model does not withhold awards of less than 10 pence a week (State "
-        "Pension Credit Regulations 2002 reg 13), so every claimed award is paid. "
-        "Under the Pension Credit freeze the baseline receipt is kept while Pension "
-        "Credit is still paid, because the frozen award is the baseline award."
+        "award: the model does not withhold payment of awards of less than 10 pence a "
+        "week (State Pension Credit Regulations 2002 reg 13), so every claimed award "
+        "is paid; modelling that rule would need this to test the award, not the "
+        "payment. Under the Pension Credit freeze the baseline receipt is kept while "
+        "Pension Credit is still paid, because the frozen award is the baseline award."
     )
     entity = BenUnit
     definition_period = YEAR
