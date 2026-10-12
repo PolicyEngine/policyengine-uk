@@ -115,6 +115,7 @@ PARTNER_OWN = {
     "pip_dl": 0.0,
     "afcs": 0.0,
     "esa_contrib": 0.0,
+    "armed_forces_independence_payment": 0.0,
 }
 
 
@@ -129,6 +130,7 @@ def adult(draw, ages):
         pip_dl=draw(pip),
         afcs=draw(sometimes_paid),
         esa_contrib=draw(sometimes_paid),
+        armed_forces_independence_payment=draw(sometimes_paid),
     )
 
 
@@ -157,6 +159,7 @@ def adult_inputs(age, **inputs):
         pip_dl=0.0,
         afcs=0.0,
         esa_contrib=0.0,
+        armed_forces_independence_payment=0.0,
     )
     values.update(inputs)
     return values
@@ -256,6 +259,16 @@ def example_families():
             tenure="RENT_FROM_COUNCIL",
             region="NORTH_EAST",
         ),
+        # An other member with armed forces independence payment and nothing
+        # else.
+        dict(
+            claimant=adult_inputs(40),
+            partner=adult_inputs(40, armed_forces_independence_payment=5_000.0),
+            children=[],
+            rent=0.0,
+            tenure="RENT_FROM_COUNCIL",
+            region="NORTH_EAST",
+        ),
     ]
 
 
@@ -269,6 +282,7 @@ EXAMPLE_INDEX = dict(
     afcs_partner=6,
     esa_partner=7,
     afcs_claimant=8,
+    afip_partner=9,
 )
 EXAMPLE_FAMILIES = example_families()
 
@@ -489,12 +503,12 @@ def test_deduction_is_the_joint_claimants(families, year):
 @given(
     families=populations,
     year=st.sampled_from([2021, 2026]),
-    balances=st.lists(st.floats(0, 30_000), min_size=18, max_size=18),
+    balances=st.lists(st.floats(0, 30_000), min_size=20, max_size=20),
 )
 @example(
     families=example_families(),
     year=2026,
-    balances=[8_000.0, 16_000.0, 0.0, 30_000.0, 2_000.0, 0.0] + [5_000.0] * 12,
+    balances=[8_000.0, 16_000.0, 0.0, 30_000.0, 2_000.0, 0.0] + [5_000.0] * 14,
 )
 def test_capital_includes_the_other_members(families, year, balances):
     families = copy.deepcopy(families)
@@ -679,6 +693,11 @@ def test_examples_reach_the_cases():
         assert not single["is_benefit_cap_exempt_health_disability"][family]
         assert joint["is_benefit_cap_exempt_health_disability"][family]
     assert single["is_benefit_cap_exempt_other"][i["afcs_claimant"]]
+    # Reg. 83(1)(c) with reg. 2: armed forces independence payment is
+    # attendance allowance, which lifts the cap only for a claimant.
+    family = i["afip_partner"]
+    assert not single["is_benefit_cap_exempt_health_disability"][family]
+    assert joint["is_benefit_cap_exempt_health_disability"][family]
     # Reg. 80A(2) and Sch 4 para 28(2): single rate and shared accommodation.
     family = i["young_renter"]
     assert single["is_benefit_cap_single_claimant_rate"][family]

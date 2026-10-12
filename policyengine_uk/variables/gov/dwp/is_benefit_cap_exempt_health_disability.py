@@ -55,21 +55,28 @@ class is_benefit_cap_exempt_health_disability(Variable):
         )
         qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
 
-        # Armed Forces Independence Payment counts only for the people the
-        # regulations name. Housing Benefit: "the claimant, the claimant's
-        # partner or a young person for whom the claimant or the claimant's
-        # partner is responsible" (HB Regs 2006 reg 75F(1)(ea)), so not a
-        # child under 16. Universal Credit: AFIP is within "attendance
+        # Armed Forces Independence Payment counts for different people in
+        # each scheme. Universal Credit: AFIP is within "attendance
         # allowance" (UC Regs 2013 reg 2), which excepts only where "a
-        # claimant is receiving" it (reg 83(1)(c)). The model applies one
-        # cap to both schemes, so the claimant, partner or a Housing Benefit
-        # young person counts.
+        # claimant is receiving" it (reg 83(1)(c)), so a dependant's AFIP
+        # does not lift the cap. Housing Benefit: "the claimant, the
+        # claimant's partner or a young person for whom the claimant or the
+        # claimant's partner is responsible" (HB Regs 2006 reg 75F(1)(ea)),
+        # so a young person counts but a child under 16 does not. The model
+        # applies one cap to both schemes; it takes the Universal Credit
+        # route for a family with a Universal Credit award and the Housing
+        # Benefit route otherwise.
+        on_universal_credit = benunit.project(
+            benunit("universal_credit_pre_benefit_cap", period) > 0
+        )
+        uc_claimant = person("is_uc_assessed_claimant", period) & ~not_a_claimant
         housing_benefit_young_person = person(
             "is_child_or_young_person_for_legacy_benefits", period
         ) & person("is_qualifying_young_person_for_child_benefit", period)
-        afip_counted = (
+        housing_benefit_person = (
             person("is_claimant_or_partner", period) & ~not_a_claimant
         ) | housing_benefit_young_person
+        afip_counted = where(on_universal_credit, uc_claimant, housing_benefit_person)
         afip = (
             add_for_members(
                 benunit, period, ["armed_forces_independence_payment"], afip_counted

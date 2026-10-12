@@ -33,12 +33,12 @@ unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
 s. 35), which raises the tax a person pays on their earnings and so changes
 the deduction from them (see test_uc_earnings_deductions_properties.py).
 The award after the benefit cap is compared only where the cap exemption is
-also unchanged. The cap's earnings exception now nets only the tax on
-non-savings, non-dividend income off earnings (PolicyEngine/policyengine-uk#1986),
-so savings and dividend income leave it alone, but property income is taxed in
-that same band and can still switch the cap on.
-test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception pins
-the dividend case.
+also unchanged. The cap's earnings exception now reads each claimant's
+Universal Credit earned income (uc_individual_earned_income_before_mif), which
+deducts only the tax on their earnings (uc_income_tax_on_earnings), so
+interest, dividends and rent leave it alone too, apart from the allowance
+effects above. test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception
+pins the dividend case.
 """
 
 import numpy as np

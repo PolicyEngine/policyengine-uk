@@ -6,40 +6,38 @@ class is_benefit_cap_exempt_earnings(Variable):
     entity = BenUnit
     label = "Whether exempt from the benefits cap because of earnings"
     definition_period = YEAR
-    reference = "https://www.legislation.gov.uk/uksi/2013/376/regulation/82"
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/82",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/55",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/57",
+        "https://www.legislation.gov.uk/ukpga/2004/12/section/188",
+    )
 
     def formula(benunit, period, parameters):
-        # Regulation 82 of the Universal Credit Regulations 2013 excepts a
-        # claimant (or couple, on their combined income) from the benefit cap
-        # where their earned income reaches 16 hours a week at the National
-        # Living Wage. Earned income here is employed and self-employed
-        # earnings net of the income tax, National Insurance and relievable
-        # pension contributions attributable to those earnings (reg. 55(5),
-        # reg. 57), not net of total tax on all income.
+        # Regulation 82(1)(a) of the Universal Credit Regulations 2013
+        # excepts an award from the benefit cap where "the claimant's earned
+        # income or, if the claimant is a member of a couple, the couple's
+        # combined earned income" reaches 16 hours a week at the National
+        # Living Wage. A dependant's earnings do not count.
         #
-        # Reg. 82(1)(a) tests "the claimant's earned income or, if the
-        # claimant is a member of a couple, the couple's combined earned
-        # income": a dependant's earnings do not count.
+        # Earned income is each claimant's own: their employed earnings less
+        # their relievable pension contributions and the income tax and
+        # primary Class 1 contributions paid in respect of the employment
+        # (reg. 55(5)), and their self-employed earnings after the reg. 57(2)
+        # steps, which make a loss or a nil result nil. So one partner's
+        # deductions never come off the other partner's earnings, tax on
+        # pension, property, savings or dividend income is not deducted, and
+        # contributions paid after 75 are not relievable (Finance Act 2004
+        # s. 188(3)(a)). uc_individual_earned_income_before_mif applies all
+        # of this per person. It is read before the minimum income floor,
+        # because reg. 82(4) excludes income treated as earned under reg. 62.
         #
         # Only earned income is read, not the Universal Credit award itself,
         # to avoid a circular dependency with the cap.
         person = benunit.members
         claimant = person("is_uc_assessed_claimant", period)
-        earnings = person("employment_income", period) + person(
-            "self_employment_income", period
+        earned_income = benunit.sum(
+            person("uc_individual_earned_income_before_mif", period) * claimant
         )
-        # earned_income_tax is the tax on non-savings, non-dividend income,
-        # which excludes property, savings and dividend income. It is the
-        # closest available measure of tax on earnings; it still includes tax
-        # on private and state pension income, which is the approximation we
-        # accept here (households with pension income are generally already
-        # exempt through the state pension age exception).
-        deductions = (
-            person("earned_income_tax", period)
-            + person("national_insurance", period)
-            + person("pension_contributions", period)
-        )
-        net_earnings = max_(0, benunit.sum((earnings - deductions) * claimant))
-
         monthly_threshold = parameters(period).gov.dwp.benefit_cap_earnings_exemption
-        return net_earnings >= monthly_threshold * MONTHS_IN_YEAR
+        return earned_income >= monthly_threshold * MONTHS_IN_YEAR

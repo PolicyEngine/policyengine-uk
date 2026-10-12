@@ -1,4 +1,5 @@
-# Benefit cap exceptions, Universal Credit Regulations 2013 regs. 82-83.
+# Benefit cap exceptions, Universal Credit Regulations 2013 regs. 82-83 and
+# Housing Benefit Regulations 2006 reg. 75F.
 # https://www.legislation.gov.uk/uksi/2013/376/regulation/82
 # https://www.gov.uk/benefit-cap/when-youre-not-affected
 
@@ -74,6 +75,115 @@
         members: [person]
   output:
     is_benefit_cap_exempt_earnings: false
+
+- name: Tax on private pension income does not reduce earned income for the earnings exception
+  # Reg. 55(5)(b) deducts only income tax paid "in respect of the
+  # employment". The 5,000 private pension uses up the personal allowance,
+  # so earned_income_tax (tax on non-savings, non-dividend income) is 546,
+  # but none of it is in respect of the 10,300 of wages. Earned income is
+  # 10,300, which clears 846 x 12 = 10,152, so the cap does not reduce the
+  # family's Universal Credit.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 35
+        employment_income: 10_300
+        private_pension_income: 5_000
+      child1:
+        age: 5
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, child1, child2]
+    households:
+      household:
+        members: [parent, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    earned_income_tax: [546, 0, 0]
+    uc_income_tax_on_earnings: [0, 0, 0]
+    is_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+    universal_credit: 33_876.72
+  absolute_error_margin: 1
+
+- name: One partner's pension contributions do not reduce the other partner's earnings
+  # Reg. 82(1)(a) adds the couple's earned income, and each person's earned
+  # income is their own earnings less their own deductions. The
+  # self-employed partner's 100 of profit less 3,000 of relievable pension
+  # contributions is nil, not minus 2,900 (reg. 57(2), steps 3 and 4).
+  # Combined earned income is 10,600, which clears 881 x 12 = 10,572.
+  period: 2026
+  input:
+    people:
+      employee:
+        age: 35
+        employment_income: 10_600
+      self_employed:
+        age: 35
+        self_employment_income: 100
+        personal_pension_contributions: 3_000
+      child1:
+        age: 5
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [employee, self_employed, child1, child2]
+    households:
+      household:
+        members: [employee, self_employed, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    uc_individual_earned_income_before_mif: [10_600, 0, 0, 0]
+    is_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+    universal_credit: 31_074.08
+  absolute_error_margin: 1
+
+- name: Pension contributions after 75 are not deducted from earned income
+  # Contributions paid after the individual reaches 75 are not relievable
+  # (Finance Act 2004 s. 188(3)(a)), so reg. 55(5)(a) does not deduct them.
+  # The mixed-age couple's Universal Credit award is capped like any other
+  # (reg. 3(2)(a); no age exception reaches it), and the older partner's
+  # 11,000 of earnings clears 881 x 12 = 10,572 before and after the
+  # 1,000 contribution.
+  period: 2026
+  input:
+    people:
+      older_partner:
+        age: 76
+        employment_income: 11_000
+        employee_pension_contributions: 1_000
+      younger_partner:
+        age: 40
+      child1:
+        age: 5
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [older_partner, younger_partner, child1, child2]
+    households:
+      household:
+        members: [older_partner, younger_partner, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    is_uc_assessed_claimant: [true, true, false, false]
+    housing_benefit_pension_age_regulations_apply: false
+    uc_individual_earned_income_before_mif: [11_000, 0, 0, 0]
+    is_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
+    universal_credit: 42_066.40
+  absolute_error_margin: 1
 
 # --- Earnings threshold is a dated parameter, not a hardcoded constant ---
 
@@ -168,9 +278,12 @@
     is_benefit_cap_exempt_health_disability: false
     is_benefit_cap_exempt: false
 
-- name: A young person's Armed Forces Independence Payment excepts the benefit unit
-  # HB Regs 2006 reg 75F(1)(ea) names a young person the claimant is
-  # responsible for: a Child Benefit qualifying young person (reg 19).
+- name: A dependent young person's AFIP does not lift the Universal Credit cap
+  # For Universal Credit, AFIP is within "attendance allowance" (UC Regs
+  # 2013 reg 2), and reg 83(1)(c) excepts only where "a claimant is
+  # receiving" it. The 17-year-old is a qualifying young person, not a
+  # claimant, so the family's Universal Credit is capped at the London
+  # family rate of 25,323 a year.
   period: 2026
   input:
     people:
@@ -180,12 +293,68 @@
         age: 17
         current_education: UPPER_SECONDARY
         armed_forces_independence_payment: 5_740
+      child1:
+        age: 10
+      child2:
+        age: 8
     benunits:
       benunit:
-        members: [parent, young_person]
+        members: [parent, young_person, child1, child2]
+    households:
+      household:
+        members: [parent, young_person, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
   output:
-    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, true, false, false]
+    is_uc_assessed_claimant: [true, false, false, false]
+    is_benefit_cap_exempt_health_disability: false
+    is_benefit_cap_exempt: false
+    benefit_cap: 25_323
+    universal_credit_pre_benefit_cap: 52_792.44
+    benefit_cap_reduction: 30_737.64
+    universal_credit: 22_054.80
+  absolute_error_margin: 1
+
+- name: A dependent young person's AFIP lifts the Housing Benefit cap
+  # HB Regs 2006 reg 75F(1)(ea) names "the claimant, the claimant's partner
+  # or a young person for whom the claimant or the claimant's partner is
+  # responsible". The same family on legacy Housing Benefit (an existing
+  # award, no Universal Credit claim) is outside the cap, so its Housing
+  # Benefit is paid in full. Without the AFIP it would be capped by 7,945.
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+        housing_benefit_reported: 10_000
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        armed_forces_independence_payment: 5_740
+      child1:
+        age: 10
+      child2:
+        age: 8
+    benunits:
+      benunit:
+        members: [parent, young_person, child1, child2]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, young_person, child1, child2]
+        region: LONDON
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 30_000
+  output:
+    universal_credit_pre_benefit_cap: 0
     is_benefit_cap_exempt_health_disability: true
+    is_benefit_cap_exempt: true
+    benefit_cap_reduction: 0
+    housing_benefit_pre_benefit_cap: 30_000
+    housing_benefit: 30_000
+  absolute_error_margin: 1
 
 # --- Other exceptions are unchanged ---
 
