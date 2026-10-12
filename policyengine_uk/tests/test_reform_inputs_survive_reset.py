@@ -207,16 +207,32 @@ def test_a_reform_names_no_input_it_did_not_store(case):
     assert simulation.calculate(variable, year).tolist() == [calculated]
 
 
+class added_award(Variable):
+    value_type = float
+    entity = BenUnit
+    label = "An award added after the build"
+    definition_period = YEAR
+
+    def formula(benunit, period, parameters):
+        return 42
+
+
 def test_a_reform_names_no_input_of_a_variable_it_neutralizes():
+    # Core stores nothing for a variable neutralized before the simulation
+    # makes its holder. (The build makes a holder for every variable it has
+    # then, and a holder keeps the definition it was made with, so this
+    # variable is added after the build.)
     def apply(reform):
-        reform.neutralize_variable("claimant_or_partner_jsa_income")
-        reform.simulation.set_input("claimant_or_partner_jsa_income", AWARD_YEAR, [0])
+        reform.neutralize_variable("added_award")
+        reform.simulation.set_input("added_award", AWARD_YEAR, [0])
 
     simulation = built()
+    simulation.tax_benefit_system.add_variable(added_award)
     recorded = list(simulation.input_variables)
     with pytest.warns(Warning, match="neutralized"):
         simulation.apply_reform(as_reform(apply))
     assert simulation.input_variables == recorded
+    assert simulation.calculate("added_award", AWARD_YEAR).tolist() == [0]
 
 
 @pytest.mark.parametrize("route", ["clone", "branch"])
