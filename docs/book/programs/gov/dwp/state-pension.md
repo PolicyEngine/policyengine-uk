@@ -40,8 +40,9 @@ simulated, for anyone over State Pension age:
   CPI: `gov.economic_assumptions.indices.september_cpi_uprating` in the year
   over the data year.
 
-That follows the law. Each year's Up-rating Order raises the full rates by
-the triple lock (Social Security Administration Act 1992 s.150A), but raises
+That follows the law. Each year's Up-rating Order applies the triple lock to
+the full rates; the statutory minimum is earnings growth
+([Social Security Administration Act 1992 s.150A](https://www.legislation.gov.uk/ukpga/1992/5/section/150A)). The Order raises
 additional pensions (s.150(1)(c)), increments for deferring the pension and
 the amounts of new State Pension above the full rate (protected payments,
 s.151A) by the September CPI of the year before. In April 2026 the full
@@ -373,10 +374,9 @@ like-for-like gap is larger by Northern Ireland's State Pension.
 These runs predate the fix for
 [#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941), which
 uprates additional pensions and protected payments by September CPI instead of
-the triple lock. On the enhanced FRS 2024-25 (policyengine-uk-data-private
-1.58.0) it leaves 2024-25 unchanged and lowers the model's State Pension by
-£0.3bn in 2025-26, £0.5bn in 2026-27 and £0.8bn in 2030-31, so the gap to DWP
-widens by as much.
+the triple lock. The fix leaves the data year unchanged. In projected years,
+when the full rates rise faster than prices, it lowers the model's State
+Pension and widens the gap to the forecasts in this table.
 
 **The data year.** In 2024-25 the model has 11.36m State Pension recipients
 averaging £201.6 a week, for the UK. The FRS's own grossed figures for Great
