@@ -43,11 +43,14 @@ YEAR = 2029
 sim_baseline = Microsimulation(dataset=DATASET)
 
 # Counterfactual where the TCL is held in place at 2 children
-sim_counter = Microsimulation(dataset=DATASET, reform={
-    "gov.dwp.universal_credit.elements.child.limit.child_count": {
-        f"{YEAR}-01-01": 2,
+sim_counter = Microsimulation(
+    dataset=DATASET,
+    reform={
+        "gov.dwp.universal_credit.elements.child.limit.child_count": {
+            f"{YEAR}-01-01": 2,
+        },
     },
-})
+)
 
 is_child = sim_baseline.calculate("is_child", YEAR)
 in_poverty_baseline = sim_baseline.calculate(
@@ -63,8 +66,8 @@ fiscal_cost = (
     - sim_baseline.calculate("gov_balance", YEAR).sum()
 )
 
-print(f"AHC children lifted: {children_lifted/1e3:.0f}k")
-print(f"Treasury cost:       £{fiscal_cost/1e9:.2f}bn")
+print(f"AHC children lifted: {children_lifted / 1e3:.0f}k")
+print(f"Treasury cost:       £{fiscal_cost / 1e9:.2f}bn")
 ```
 
 This is a *reverse* comparison: PolicyEngine's baseline already includes
