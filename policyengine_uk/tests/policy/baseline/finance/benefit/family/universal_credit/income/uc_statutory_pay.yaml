@@ -1,0 +1,203 @@
+# Universal Credit treats statutory sick, maternity and paternity pay as
+# employed earnings (UC Regs 2013 reg. 55(4)(a) to (c)). Reg. 55(5) takes
+# relievable pension contributions, income tax and primary Class 1 National
+# Insurance off "the amount of general earnings or benefits specified in
+# paragraphs (2) to (4)", so the tax on the payments comes off with the rest.
+# Reg. 55(4)(e) to (h) list statutory adoption, shared parental, parental
+# bereavement and neonatal care pay too; the model has no variables for them.
+#
+# Before this was fixed the payments were left out of earned income while the
+# income tax and National Insurance on them were still deducted. Each pound of
+# sick or maternity pay above the thresholds then raised the award by
+# 0.55 x (20% + 8%) = 15.4p; each pound of paternity pay by 0.55 x 8% = 4.4p.
+#
+# Hand calculations use the 2026-27 rates:
+# - personal allowance 12,570; basic rate 20%;
+# - primary Class 1 NI 8% above the primary threshold of 241.73 a week
+#   (12,569.96 a year);
+# - UC standard allowance 424.90 a month (single, 25 or over) or 666.97
+#   (couple, one 25 or over); child element 303.94 a month; work allowance
+#   427 a month with housing costs; taper 55%.
+
+- name: Statutory sick pay counts as earnings, and the tax on it comes off with the rest
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 20_000
+        statutory_sick_pay: 2_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # (20,000 + 2,000 - 12,570) x 20%.
+    income_tax: [1_886, 0]
+    uc_income_tax_on_earnings: [1_886, 0]
+    # (22,000 - 12,569.96) x 8%.
+    uc_national_insurance_on_earnings: [754.40, 0]
+    # 22,000 - 1,886 - 754.40. Before this fix: 20,000 - 1,886 - 754.40
+    # = 17,359.60.
+    uc_individual_earned_income: [19_359.60, 0]
+    # Less the work allowance of 427 x 12 = 5,124.
+    uc_earned_income: 14_235.60
+    # 424.90 x 12 + 303.94 x 12 + 9,600 = 5,098.80 + 3,647.28 + 9,600.
+    uc_maximum_amount: 18_346.08
+    # 18,346.08 - 0.55 x 14,235.60. Before this fix: 11,616.50, which is
+    # 308 more than the 11,308.50 the same parent gets with no sick pay.
+    universal_credit: 10_516.50
+
+- name: Statutory maternity pay counts as earnings in the same way
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 20_000
+        statutory_maternity_pay: 2_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    income_tax: [1_886, 0]
+    uc_income_tax_on_earnings: [1_886, 0]
+    uc_national_insurance_on_earnings: [754.40, 0]
+    uc_individual_earned_income: [19_359.60, 0]
+    uc_earned_income: 14_235.60
+    universal_credit: 10_516.50
+
+- name: The same total paid as wages gives the same award
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        employment_income: 22_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    uc_individual_earned_income: [19_359.60, 0]
+    uc_earned_income: 14_235.60
+    universal_credit: 10_516.50
+
+- name: Statutory sick pay alone is earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    statutory_sick_pay: 3_000
+  output:
+    # Below the personal allowance and the primary threshold.
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
+    uc_individual_earned_income: 3_000
+    # No work allowance: no child and no limited capability for work.
+    uc_earned_income: 3_000
+    # 424.90 x 12.
+    uc_maximum_amount: 5_098.80
+    # 5,098.80 - 0.55 x 3,000. Before this fix the full 5,098.80.
+    universal_credit: 3_448.80
+
+- name: Joint claimants' statutory paternity and maternity pay are combined earned income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      father:
+        age: 30
+        employment_income: 9_000
+        statutory_paternity_pay: 400
+      mother:
+        age: 30
+        statutory_maternity_pay: 6_000
+      child:
+        age: 1
+    benunits:
+      benunit:
+        members: [father, mother, child]
+    households:
+      household:
+        members: [father, mother, child]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 9_600
+  output:
+    # Each is below the personal allowance and the primary threshold, so
+    # nothing is deducted: 9,000 + 400 and 6,000.
+    uc_income_tax_on_earnings: [0, 0, 0]
+    uc_national_insurance_on_earnings: [0, 0, 0]
+    uc_individual_earned_income: [9_400, 6_000, 0]
+    # 15,400 less the work allowance of 5,124.
+    uc_earned_income: 10_276
+    # 666.97 x 12 + 303.94 x 12 + 9,600 = 8,003.64 + 3,647.28 + 9,600.
+    uc_maximum_amount: 21_250.92
+    # 21,250.92 - 0.55 x 10,276. Before this fix only the 9,000 of wages
+    # counted: 21,250.92 - 0.55 x 3,876 = 19,119.12.
+    universal_credit: 15_599.12
+
+- name: National Insurance on statutory paternity pay comes off the earnings that include it
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    employment_income: 12_000
+    statutory_paternity_pay: 400
+  output:
+    # (12,400 - 12,569.96) is negative, so no National Insurance, and wages
+    # of 12,000 are below the personal allowance.
+    uc_national_insurance_on_earnings: 0
+    uc_income_tax_on_earnings: 0
+    uc_individual_earned_income: 12_400
+    # 5,098.80 - 0.55 x 12,400 is negative.
+    universal_credit: 0
+
+- name: A qualifying young person's statutory sick pay is not the claimant's earned income
+  # Reg. 22(1)(b) deducts "the claimant's earned income (or, in the case of
+  # joint claimants, their combined earned income)".
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        statutory_sick_pay: 2_000
+    benunits:
+      benunit:
+        members: [parent, young_person]
+    households:
+      household:
+        members: [parent, young_person]
+  output:
+    uc_individual_earned_income_before_mif: [0, 2_000]
+    uc_earned_income: 0
+    # 424.90 x 12 + 351.88 x 12, the higher child element for a first child
+    # born before 6 April 2017. The sick pay takes nothing off it.
+    universal_credit: 9_321.36

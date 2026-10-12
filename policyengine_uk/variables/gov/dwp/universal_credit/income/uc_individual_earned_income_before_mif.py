@@ -9,16 +9,19 @@ class uc_individual_earned_income_before_mif(Variable):
     )
     documentation = (
         "The person's actual earned income for Universal Credit: their "
-        "earnings less their own relievable pension contributions and their "
-        "own income tax and National Insurance in respect of their employment "
+        "earnings, including statutory sick, maternity and paternity pay, "
+        "less their own relievable pension contributions and their own "
+        "income tax and National Insurance in respect of their employment "
         "and self-employment. The minimum income floor compares this with "
-        "the net threshold."
+        "the net threshold. Regulation 55(4) also treats statutory adoption, "
+        "shared parental, parental bereavement and neonatal care pay as "
+        "employed earnings; the model has no variables for those."
     )
     definition_period = YEAR
     unit = GBP
     reference = [
         dict(
-            title="Universal Credit Regulations 2013 reg. 55(5)",
+            title="Universal Credit Regulations 2013 reg. 55(4) and (5)",
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/55",
         ),
         dict(
@@ -35,7 +38,20 @@ class uc_individual_earned_income_before_mif(Variable):
         # The deductions are the person's own and come off only their own
         # earnings, so one partner's tax, NI or pension contributions never
         # reduce the other partner's earned income.
-        earnings_components = ["employment_income", "miscellaneous_income"]
+        # Reg. 55(4) treats statutory sick, maternity and paternity pay as
+        # employed earnings, and reg. 55(5) takes the deductions off "the
+        # amount of general earnings or benefits specified in paragraphs (2)
+        # to (4)". Income tax and National Insurance already fall on these
+        # payments (taxable_employment_income, ni_class_1_income), so leaving
+        # them out of the earnings deducted the tax on them from other
+        # earnings and raised the award as the payments rose.
+        earnings_components = [
+            "employment_income",
+            "miscellaneous_income",
+            "statutory_sick_pay",
+            "statutory_maternity_pay",
+            "statutory_paternity_pay",
+        ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             earnings_components.append("basic_income")
