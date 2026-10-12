@@ -11,7 +11,7 @@ SINGLE:
     2022-04-01: 158.47
     2023-04-01: 174.49
     2024-04-01: 189.8
-    2025-04-01: 193.02
+    2025-04-01: 198.27
     2026-04-01: 208.07
   metadata:
     label: Pension Credit Savings Credit income threshold (single)
@@ -27,7 +27,7 @@ COUPLE:
     2022-04-01: 251.7
     2023-04-01: 277.12
     2024-04-01: 301.22
-    2025-04-01: 306.34
+    2025-04-01: 314.34
     2026-04-01: 329.75
   metadata:
     label: Pension Credit Savings Credit income threshold (couple)
@@ -39,3 +39,11 @@ metadata:
   reference:
     - title: The State Pension Credit Regulations 2002 reg. 7
       href: https://www.legislation.gov.uk/uksi/2002/1792/regulation/7/2021-04-12
+    - title: Benefit and pension rates 2025 to 2026 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2025-to-2026/benefit-and-pension-rates-2025-to-2026
+    - title: Benefit and pension rates 2026 to 2027 (DWP, gov.uk)
+      href: https://www.gov.uk/government/publications/benefit-and-pension-rates-2026-to-2027/proposed-benefit-and-pension-rates-2026-to-2027
+    - title: The Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: The Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made

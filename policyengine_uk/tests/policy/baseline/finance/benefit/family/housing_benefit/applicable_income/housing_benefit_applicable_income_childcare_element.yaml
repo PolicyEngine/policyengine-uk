@@ -199,10 +199,9 @@
         members: [claimant, child, young_person]
   output:
     num_relevant_children_for_housing_benefit_childcare: 1
-    # Reg 27(3) selects the one-child cap: min(30,000, 312.0555942 * 52).
-    # The existing uprated WTC cap is retained; its difference from the
-    # statutory HB cap of 175/week is outside this classification change.
-    housing_benefit_applicable_income_childcare_element: 16_226.8908984
+    # Reg 27(3) selects the one-child cap: min(30,000, 175 * 52). The cap is
+    # fixed at 175/week in law (unchanged by SI 2025/295 art 23(2)).
+    housing_benefit_applicable_income_childcare_element: 9_100
 
 - name: Under-18 claimant is not their own relevant child
   period: 2025

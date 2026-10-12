@@ -9,9 +9,12 @@ Child Tax Credit Regulations 2002:
   on 31 August gets no such period.
 - Reg. 5(3)(b): under 18, the 20 weeks after leaving while registered for
   work or training satisfy the first condition.
-- Reg. 5(4), the second condition, always applies: a person who has left
-  education or training must not be in remunerative work (24 hours a week or
-  more, reg. 2(1)), and no one may be receiving a benefit in their own right.
+- Reg. 5(4), the second condition, always applies: a person who has ceased
+  full-time education or approved training must not be in remunerative work
+  (24 hours a week or more, reg. 2(1)), and no one may be receiving a benefit
+  in their own right. Full-time education at any level counts (reg. 5(5)), so
+  an advanced student has not ceased; an apprentice is treated as having
+  ceased.
 
 Invariants:
 
@@ -22,13 +25,15 @@ Invariants:
    reg. 4 period. For a 16th birthday on 31 August that day is 30 August.
 2. Over every combination of age, education, training, apprenticeship,
    own-right benefits, the age the course began, the two leaver facts and
-   hours: the status is the education condition, or a leaver fact for a
-   person who has left and is not in remunerative work, within ages 16 to 19
-   and without own-right benefits. So remunerative work ends both leaver
-   routes and neither a student's status, the 20 weeks end at 18, a leaver
-   fact never reaches a student whose course began at 19, and with the
-   leaver facts off the status is the education condition's alone, as
-   before.
+   hours: the status is the education condition; or the reg. 4 period,
+   unless the person has ceased education or training and is in remunerative
+   work; or the 20 weeks for a person under 18 who has ceased and is not in
+   remunerative work; within ages 16 to 19 and without own-right benefits.
+   So remunerative work ends both routes for a person who has ceased and
+   never a student's status, an advanced student keeps the reg. 4 period
+   whatever their hours, the 20 weeks end at 18 and never reach a student
+   whose course began at 19, and with the leaver facts off the status is the
+   education condition's alone, as before.
 3. Switching a leaver fact on never removes the status.
 4. The benefit unit's child or qualifying young person is a child or
    qualifying young person who is not its claimant or partner.
@@ -173,6 +178,15 @@ def receiving_education_or_training(p):
     ) or p["is_in_approved_training"]
 
 
+def has_ceased_education_or_training(p):
+    # Reg. 5(4)(a), (5): full-time education at any level, not received by
+    # virtue of employment, or approved training, has not ceased.
+    in_full_time_education = (
+        p["current_education"] != "NOT_IN_EDUCATION" and not p["is_apprentice"]
+    )
+    return not (in_full_time_education or p["is_in_approved_training"])
+
+
 def first_condition_through_education(p):
     # Reg. 5(3A): begun before 19.
     begun_before_19 = (
@@ -187,10 +201,14 @@ def qualifying_young_person(p):
         return False
     if first_condition_through_education(p):
         return True
-    left = not receiving_education_or_training(p)
-    leaver_fact = p[ROUTE] or (p["age"] < 18 and p[EXTENSION])
+    ceased = has_ceased_education_or_training(p)
     # Reg. 2(1): remunerative work is 24 hours a week or more.
-    return left and leaver_fact and p["weekly_hours"] < 24
+    working = p["weekly_hours"] >= 24
+    # Reg. 4(2): the period needs only the second condition.
+    if p[ROUTE] and not (ceased and working):
+        return True
+    # Reg. 5(3)(b): under 18, having ceased, and reg. 5(4)(a).
+    return p["age"] < 18 and p[EXTENSION] and ceased and not working
 
 
 GRID = [
@@ -213,7 +231,7 @@ GRID = [
         (0, 23, 24),
         # A course begun at 19 fails reg. 5(3A). Such a student has not left
         # education, so neither leaver fact reaches them.
-        (17, 1000),
+        (17, 19),
     )
     for route, extension in product((False, True), repeat=2)
 ]
@@ -230,23 +248,34 @@ def test_status_is_the_first_condition_or_a_leaver_fact_under_the_second():
     age = np.array([p["age"] for p in GRID])
     hours = np.array([p["weekly_hours"] for p in GRID])
     student = np.array([receiving_education_or_training(p) for p in GRID])
+    ceased = np.array([has_ceased_education_or_training(p) for p in GRID])
+    route = np.array([p[ROUTE] for p in GRID])
     own_right = np.array([p["receives_benefits_in_own_right"] for p in GRID])
     assert not status[(age < 16) | (age >= 20)].any()
     assert not status[own_right].any()
-    # A student whose course began at 19 does not qualify, whatever the
-    # leaver facts say.
+    # A student whose course began at 19 does not qualify through the 20
+    # weeks, which need them to have ceased. (The grid sets the reg. 4 fact
+    # directly; from a date of birth it is never true at 19.)
     late_student = np.array(
         [
             receiving_education_or_training(p)
             and p["age"] >= 19
             and p["age_started_or_accepted_current_education_or_training"] >= 19
+            and not p[ROUTE]
             for p in GRID
         ]
     )
     assert late_student.any() and not status[late_student].any()
-    # Remunerative work ends a leaver's status and not a student's.
-    assert not status[~student & (hours >= 24)].any()
+    # Remunerative work ends the status of a person who has ceased education
+    # or training, and not a student's.
+    assert not status[ceased & (hours >= 24)].any()
     assert status[student & (hours >= 24)].any()
+    # An advanced student in the reg. 4 period qualifies whatever their hours.
+    advanced = np.array([p["current_education"] == "TERTIARY" for p in GRID])
+    in_age = (age >= 16) & (age < 20) & ~own_right
+    advanced_in_route = advanced & ~ceased & route & in_age
+    assert advanced_in_route.any() and status[advanced_in_route].all()
+    assert (advanced_in_route & (hours >= 24)).any()
     # The 20 weeks alone do not reach an 18-year-old.
     alone = np.array([p[EXTENSION] and not p[ROUTE] for p in GRID])
     assert not status[alone & ~student & (age >= 18)].any()
