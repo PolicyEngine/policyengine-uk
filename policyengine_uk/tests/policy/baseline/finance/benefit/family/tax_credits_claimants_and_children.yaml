@@ -1,0 +1,184 @@
+# Working Tax Credit: who is the claimant, who is a child or qualifying young
+# person (QYP), and which children count for the childcare element.
+#
+# Claims are single or joint by the members of a couple (Tax Credits Act 2002
+# s.3); a claimant is responsible for children and QYPs under the Child Tax
+# Credit rules (SI 2002/2007 regs 3 and 5). Dependants are never claimants.
+# 2020-21 elements (SI 2002/2005 Sch 2): lone parent 2,045; couple 2,045;
+# disabled 3,220; severe disability 1,390. Hours: 16 for lone parents and
+# disabled workers, 24 for a couple with children (one working 16+), 30 at 25+.
+
+- name: A couple with an 18-year-old QYP and a 10-year-old needs 24 hours, not 16
+  # Previously three members aged 18+ made this a "lone parent" family, eligible
+  # at 16 hours with both the lone parent and couple elements.
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 35
+        is_parent: true
+        weekly_hours: 20
+        working_tax_credit_reported: true
+      parent_2:
+        age: 33
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student, child]
+  output:
+    is_WTC_eligible: false
+
+- name: A couple with an 18-year-old QYP working 26 hours gets the couple element only
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 35
+        is_parent: true
+        weekly_hours: 26
+        working_tax_credit_reported: true
+      parent_2:
+        age: 33
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+  output:
+    is_WTC_eligible: true
+    WTC_couple_element: 2_045
+    WTC_lone_parent_element: 0
+
+- name: A lone parent whose only dependant is an 18-year-old QYP qualifies on 16 hours
+  # Previously the 18-year-old made this a childless "couple" needing 30 hours.
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        weekly_hours: 20
+        working_tax_credit_reported: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_WTC_eligible: true
+    WTC_lone_parent_element: 2_045
+    WTC_couple_element: 0
+
+- name: A childless 17-year-old is not a lone parent and needs to be 25 for the 30-hour route
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      worker:
+        age: 17
+        weekly_hours: 30
+        working_tax_credit_reported: true
+    benunits:
+      benunit:
+        members: [worker]
+  output:
+    is_WTC_eligible: false
+
+- name: A severely disabled 18-year-old QYP gives no WTC severe disability element
+  # The element is for the claimant or a joint claimant (reg 17); the young
+  # person's severe disability counts for Child Tax Credit instead.
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        age: 45
+        is_parent: true
+        weekly_hours: 30
+        working_tax_credit_reported: true
+      parent_2:
+        age: 44
+        is_parent: true
+      student:
+        age: 18
+        current_education: UPPER_SECONDARY
+        is_disabled_for_benefits: true
+        is_severely_disabled_for_benefits: true
+        weekly_hours: 16
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, student]
+  output:
+    is_WTC_eligible: true
+    WTC_severely_disabled_element: 0
+    WTC_disabled_element: 0
+
+- name: A severely disabled lone claimant gets the WTC severe disability element
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      worker:
+        age: 30
+        weekly_hours: 30
+        working_tax_credit_reported: true
+        is_severely_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [worker]
+  output:
+    WTC_severely_disabled_element: 1_390
+
+- name: Childcare element counts children until the September after their 15th birthday
+  # A 16-year-old is past the reg 14(3) limit, so only the 10-year-old counts:
+  # the one-child cap applies. Cap 175 x 52 = 9,100 (the limit has been 175 a
+  # week since 2005); 70% of that is 6,370 (the 20,000 of charges exceed the
+  # cap). Previously the 16-year-old counted and the two-child cap applied.
+  period: 2020
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        weekly_hours: 20
+        working_tax_credit_reported: true
+        childcare_expenses: 20_000
+      teenager:
+        age: 16
+      child:
+        age: 10
+    benunits:
+      benunit:
+        members: [parent, teenager, child]
+  output:
+    is_child_for_working_tax_credit_childcare_element: [false, false, true]
+    WTC_childcare_element: 6_370
+
+- name: Childcare element counts a disabled child until the September after their 16th birthday
+  period: 2020
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      teenager:
+        age: 16
+        is_disabled_for_benefits: true
+    benunits:
+      benunit:
+        members: [parent, teenager]
+  output:
+    is_child_for_working_tax_credit_childcare_element: [false, true]

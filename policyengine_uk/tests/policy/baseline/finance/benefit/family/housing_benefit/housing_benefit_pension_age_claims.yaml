@@ -1,0 +1,274 @@
+# Who may claim Housing Benefit: SI 2014/1230 reg 6A (NI: SR 2016/226 reg 4A).
+# Pension-age units (claimant and any partner at State Pension Credit
+# qualifying age) may make new claims (reg 6A(4)); others keep only a
+# continuing award (reported HB and not claiming UC) in this model.
+
+- name: Single pensioner council tenant makes a new Housing Benefit claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    guarantee_credit: 2_376
+    housing_benefit_applicable_income: 0
+    housing_benefit_eligible: true
+    housing_benefit: 6_240
+    universal_credit: 0
+
+- name: Pensioner couple renting privately is capped at the Local Housing Allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension_reported: 2_500
+      younger:
+        age: 68
+        state_pension_reported: 2_500
+    benunits:
+      benunit:
+        members: [older, younger]
+        housing_benefit_LHA_rate: 8_000
+    households:
+      household:
+        members: [older, younger]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    housing_benefit_eligible: true
+    housing_benefit_applicable_income: 0
+    housing_benefit: 8_000
+    universal_credit: 0
+
+- name: New pension-age claim is tapered at 65% above the applicable amount
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 80
+    benunits:
+      benunit:
+        members: [person]
+        housing_benefit_LHA_rate: 12_000
+        housing_benefit_applicable_income: 20_000
+    households:
+      household:
+        members: [person]
+        rent: 9_000
+        tenure_type: RENT_PRIVATELY
+  output:
+    housing_benefit_eligible: true
+    housing_benefit_applicable_amount: 13_312
+    housing_benefit: 4_652.80
+
+- name: Pensioner with capital over 16,000 and no Guarantee Credit is not eligible
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 15_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    guarantee_credit: 0
+    housing_benefit_assessable_capital: 20_000
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Pensioner on Guarantee Credit has capital disregarded
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        savings: 20_000
+  output:
+    guarantee_credit: 1_336
+    housing_benefit_assessable_capital: 0
+    housing_benefit_eligible: true
+    housing_benefit: 6_240
+
+- name: Would-claim-UC flag does not block a pension-age claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: true
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_eligible: true
+    housing_benefit: 6_240
+    universal_credit: 0
+
+- name: Survey-style pensioner reporting HB with would_claim_uc true is paid
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 10_000
+        housing_benefit_reported: 1
+    benunits:
+      benunit:
+        members: [person]
+        would_claim_uc: true
+        claims_all_entitled_benefits: false
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    would_claim_housing_benefit: true
+    housing_benefit_eligible: true
+    housing_benefit: 6_240
+
+- name: Mixed-age couple without a continuing award cannot claim HB
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension_reported: 10_000
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_PRIVATELY
+  output:
+    housing_benefit_eligible: false
+    housing_benefit: 0
+    is_uc_eligible: true
+
+- name: Mixed-age couple with a continuing award keeps HB and gets no UC
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        state_pension_reported: 10_000
+        housing_benefit_reported: 1
+      younger:
+        age: 60
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+    households:
+      household:
+        members: [older, younger]
+        rent: 6_240
+        tenure_type: RENT_PRIVATELY
+  output:
+    housing_benefit_eligible: true
+    universal_credit: 0
+
+- name: Working-age council tenant cannot make a new HB claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+  output:
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Pension-age owner-occupier gets no HB
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    housing_benefit_eligible: false
+    housing_benefit: 0
+
+- name: Northern Ireland pensioner council tenant makes a new claim
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 70
+        state_pension_reported: 10_000
+    benunits:
+      benunit:
+        members: [person]
+    households:
+      household:
+        members: [person]
+        rent: 6_240
+        tenure_type: RENT_FROM_COUNCIL
+        region: NORTHERN_IRELAND
+  output:
+    housing_benefit_eligible: true
+    housing_benefit: 6_240

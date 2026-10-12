@@ -1,0 +1,11 @@
+description: ONS calendar-year average retail price of twenty king-size filter cigarettes, held at the last observation and overrideable by the household.
+values:
+  '2023-01-01': 14.25
+  '2024-01-01': 15.85
+metadata:
+  unit: currency-GBP
+  period: year
+  label: default retail price of twenty cigarettes
+  reference:
+  - title: ONS cigarette retail price series CZMP
+    href: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/czmp/mm23

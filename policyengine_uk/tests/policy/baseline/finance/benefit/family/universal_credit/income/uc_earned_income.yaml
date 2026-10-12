@@ -5,9 +5,11 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 10
-    benunit_tax: 1
+    # The claimant's own tax on these earnings.
+    uc_income_tax_on_earnings: 1
   output:
-    uc_earned_income: 1100 - 11
+    uc_individual_earned_income: 1_100 - 1
+    uc_earned_income: 1_100 - 11
 
 - name: Capped at 0
   period: 2025
@@ -16,6 +18,162 @@
     employment_income: 1_000
     miscellaneous_income: 100
     uc_work_allowance: 2_000
-    benunit_tax: 1
+    # The claimant's own tax on these earnings.
+    uc_income_tax_on_earnings: 1
   output:
+    uc_earned_income: 0
+
+- name: Each person's deductions come off only their own earnings
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      earner:
+        employment_income: 1_000
+        uc_income_tax_on_earnings: 100
+        uc_national_insurance_on_earnings: 10
+      partner:
+        uc_income_tax_on_earnings: 500
+        pension_contributions: 50
+    benunits:
+      benunit:
+        members: [earner, partner]
+        uc_work_allowance: 0
+  output:
+    uc_individual_earned_income: [890, 0]
+    uc_earned_income: 890
+
+- name: Work allowance comes off combined earnings after each person's deductions
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      earner:
+        employment_income: 1_000
+        uc_income_tax_on_earnings: 100
+      partner:
+        employment_income: 500
+        pension_contributions: 50
+    benunits:
+      benunit:
+        members: [earner, partner]
+        uc_work_allowance: 300
+  output:
+    uc_individual_earned_income: [900, 450]
+    uc_earned_income: 1_050
+
+# Reg. 22(1)(b) deducts "the claimant's earned income (or, in the case of
+# joint claimants, their combined earned income)". A child's or qualifying
+# young person's earnings are theirs, not the claimant's.
+
+- name: A qualifying young person's earnings do not reduce a lone parent's Universal Credit
+  # Standard allowance £424.90 (single, 25 or over) and child element
+  # £351.88 (first child, born before 6 April 2017) a month: reg. 36 table,
+  # 2026-27. The parent has no earned income, so nothing is deducted. Before
+  # this was fixed the child's £12,000 less the £8,520 work allowance was
+  # tapered: uc_earned_income 3,480, UC £7,407.36.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        employment_income: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    # The child's own earnings are below the personal allowance and the
+    # primary threshold, so nothing is deducted from them.
+    uc_individual_earned_income: [0, 12_000]
+    uc_earned_income: 0
+    universal_credit: (424.90 + 351.88) * 12
+
+- name: Joint claimants' earnings combine and their qualifying young person's do not
+  # Higher work allowance £710 a month (responsible for a qualifying young
+  # person, no housing costs element): reg. 22(2)(a) table, 2026-27. The
+  # couple's earned income is 10,000 + 5,000 (below the personal allowance
+  # and primary threshold, so no deductions); less 8,520 is 6,480. Maximum
+  # amount (666.97 + 351.88) x 12 = 12,226.20, less 55% of 6,480 = 3,564.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent_1:
+        age: 40
+        is_parent: true
+        employment_income: 10_000
+      parent_2:
+        age: 38
+        is_parent: true
+        employment_income: 5_000
+      young_person:
+        age: 18
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        employment_income: 8_000
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, young_person]
+    households:
+      household:
+        members: [parent_1, parent_2, young_person]
+  output:
+    uc_individual_earned_income: [10_000, 5_000, 8_000]
+    uc_work_allowance: 710 * 12
+    uc_earned_income: 10_000 + 5_000 - 710 * 12
+    universal_credit: (666.97 + 351.88) * 12 - 0.55 * (15_000 - 710 * 12)
+
+- name: An adult child flagged as a third claimant by the data does not add earned income
+  # Joint claimants with no child or qualifying young person and no limited
+  # capability for work have no work allowance (reg. 22(1)(b)(i)).
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent_1:
+        is_claimant_or_partner: true
+        age: 50
+        employment_income: 10_000
+      parent_2:
+        is_claimant_or_partner: true
+        age: 48
+      adult_child:
+        age: 25
+        is_claimant_or_partner: true
+        employment_income: 11_000
+    benunits:
+      benunit:
+        members: [parent_1, parent_2, adult_child]
+  output:
+    is_uc_assessed_claimant: [true, true, false]
+    uc_work_allowance: 0
+    uc_earned_income: 10_000
+
+- name: A dependant's self-employed profits do not count and get no minimum income floor
+  # Before this was fixed the child's £12,000 (no tax or Class 4 below
+  # £12,570) less the £8,520 work allowance counted: 3,480.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        self_employment_income: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_mif_applies: [false, false]
     uc_earned_income: 0

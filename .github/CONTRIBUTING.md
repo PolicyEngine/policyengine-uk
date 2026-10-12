@@ -5,14 +5,14 @@ See the [shared PolicyEngine contribution guide](https://github.com/PolicyEngine
 ## Commands
 
 ```bash
-make install           # install deps (uv)
+make install           # install development dependencies with pip
 make format            # format (required — CI enforces)
 make test              # full test suite
 uv run policyengine-core test policyengine_uk/tests/path/to/test.yaml -c policyengine_uk
 uv run pytest policyengine_uk/tests/path/to/test_file.py::test_name -v
 ```
 
-Python 3.11–3.14. Default branch: `main`.
+The package supports Python 3.11–3.14. Default branch: `main`.
 
 ## Writing variables and reforms
 
@@ -38,7 +38,21 @@ Conventions:
 
 ## Program registry
 
-`policyengine_uk/programs.yaml` is the single source of truth for program coverage metadata and drives the `/uk/metadata` API. When adding a program, add an entry with `id`, `name`, `full_name`, `category`, `agency`, `status`, `coverage`, `variable`, `parameter_prefix`. When extending year coverage, bump `verified_years` after verifying parameters and tests cover the new year.
+`policyengine_uk/programs.yaml` is the single source of truth for program
+coverage metadata and drives the `/uk/metadata` API. Every entry includes `id`,
+`name`, `full_name`, `category`, `agency`, `status`, `coverage`, and
+`verified_start_year`. Add `variable` and `parameter_prefix` when applicable,
+and add `verified_end_year` when verified coverage has a defined end. Change the
+verified year fields only after confirming that parameters and tests cover the
+stated years.
+
+## Axiom parity
+
+Every policy change here must also be correct in [rulespec-uk](https://github.com/TheAxiomFoundation/rulespec-uk). That covers a new programme, a parameter or threshold update, an eligibility rule and a bug fix. The shared guide, [Mirror policy changes in Axiom](https://github.com/PolicyEngine/.github/blob/main/CONTRIBUTING.md#mirror-policy-changes-in-axiom), defines the `axiom:` line your PR description needs and what a `queued` issue must contain. UK specifics:
+
+- National modules live under `uk/`, and council schemes such as council tax reduction live under `uk-<council>/`. Search `main` there before opening a new issue.
+- An `encoded-correct` claim names the module and a companion case in its `.test.yaml` that exercises the same situation as your YAML test.
+- Use `queued` only when the signed encoder is blocked; record the blocker in the issue. Each billed encoder run requires separate approval. Label `queued` issues `pe-parity`. Reuse your YAML test's externally sourced expected values (legislation.gov.uk, gov.uk guidance, official calculators) as the companion tests; don't copy values computed by policyengine-uk.
 
 ## Repo-specific anti-patterns
 

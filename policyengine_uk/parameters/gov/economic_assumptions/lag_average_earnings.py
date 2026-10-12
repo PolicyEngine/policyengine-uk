@@ -1,4 +1,8 @@
-from policyengine_core.parameters import Parameter, ParameterNode
+from policyengine_core.parameters import ParameterNode
+
+from policyengine_uk.parameters.gov.economic_assumptions.lagged_series import (
+    add_lagged_parameter,
+)
 
 
 def add_lagged_earnings(
@@ -8,20 +12,8 @@ def add_lagged_earnings(
     Add lagged average earnings to the economic assumptions.
     """
     obr = parameters.gov.economic_assumptions.yoy_growth.obr
-    earnings = obr.average_earnings
-
-    lagged_earnings = Parameter(
-        "gov.economic_assumptions.yoy_growth.lagged_average_earnings",
-        data={
-            "values": {
-                f"{year}-01-01": earnings(year - 1) for year in range(2022, 2030)
-            },
-        },
-    )
-
-    obr.add_child(
-        "lagged_average_earnings",
-        lagged_earnings,
+    add_lagged_parameter(
+        obr, "average_earnings", "lagged_average_earnings", first_year=2022
     )
 
     return parameters

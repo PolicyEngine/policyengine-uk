@@ -7,7 +7,10 @@ description: >
   financial assets, `other_residential_property_value` for residential
   property other than the home, and `non_residential_property_value` for other
   land and premises. `main_residence_value` is excluded because Schedule 9
-  paragraph 1 disregards premises occupied as the claimant's home. Other
+  paragraph 1 disregards premises occupied as the claimant's home.
+  `private_pension_wealth` is excluded because Schedule 9 paragraphs 28 and 29
+  disregard the value of the right to receive an occupational or personal
+  pension and the value of funds held under a personal pension scheme. Other
   Schedule 9 disregards and the higher residential-care capital disregard are
   not yet modeled because the current dataset does not isolate those states or
   asset holdings. Because the dataset only provides household-level capital
@@ -24,6 +27,8 @@ metadata:
       href: https://www.legislation.gov.uk/uksi/2008/794/regulation/111
     - title: Employment and Support Allowance Regulations 2008 Schedule 9 para. 1
       href: https://www.legislation.gov.uk/uksi/2008/794/schedule/9/paragraph/1
+    - title: Employment and Support Allowance Regulations 2008 Schedule 9 paras. 28-29
+      href: https://www.legislation.gov.uk/uksi/2008/794/schedule/9/paragraph/28
 values:
   2008-10-27:
     - savings

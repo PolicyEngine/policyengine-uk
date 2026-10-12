@@ -1,8 +1,12 @@
 # Regression tests for issue #201: UC and legacy benefit `claims_*` consistency.
 #
-# `housing_benefit_eligible` explicitly includes `& ~claiming_uc` so a benunit
-# claiming Universal Credit cannot also be eligible for Housing Benefit. These
-# tests pin that contract so a future refactor can't quietly break it.
+# A working-age benunit keeps Housing Benefit only while it continues an
+# existing award and does not claim Universal Credit, so a benunit claiming
+# Universal Credit cannot also be eligible for Housing Benefit. Wholly
+# pension-age benunits can make new Housing Benefit claims whatever
+# `would_claim_uc` says, because Universal Credit is not available to them
+# (see housing_benefit_pension_age_claims.yaml). These tests pin the
+# working-age contract so a future refactor can't quietly break it.
 
 - name: HB eligibility excludes benunits claiming Universal Credit
   period: 2025

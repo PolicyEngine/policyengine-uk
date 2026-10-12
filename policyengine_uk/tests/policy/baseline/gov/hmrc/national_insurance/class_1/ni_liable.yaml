@@ -12,7 +12,7 @@
   output:
     ni_liable: true
 
-- name: Retired adult isn't liable for NI.
+- name: Adult over state pension age isn't liable for primary NI.
   period: 2023
   input:
     age: 70

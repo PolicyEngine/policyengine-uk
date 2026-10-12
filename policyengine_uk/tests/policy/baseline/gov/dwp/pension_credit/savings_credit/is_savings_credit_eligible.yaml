@@ -24,7 +24,6 @@
     benunits:
       benunit:
         members: [person]
-        relation_type: SINGLE
         savings_credit_income: 10200
   output:
     is_savings_credit_eligible: true
@@ -40,7 +39,6 @@
     benunits:
       benunit:
         members: [person]
-        relation_type: SINGLE
         savings_credit_income: 10_000
   output:
     is_savings_credit_eligible: false
@@ -60,7 +58,6 @@
     benunits:
       benunit:
         members: [person, spouse]
-        relation_type: COUPLE
         savings_credit_income: 16000
   output:
     is_savings_credit_eligible: true
@@ -80,7 +77,25 @@
     benunits:
       benunit:
         members: [person, spouse]
-        relation_type: COUPLE
         savings_credit_income: 16000
   output:
+    is_savings_credit_eligible: false
+
+- name: A nonclaimant's age-requirement flag cannot establish Savings Credit eligibility.
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 68
+      young_person:
+        age: 19
+        is_claimant_or_partner: false
+        # Deliberate override to isolate s.3(1)'s claimant/partner restriction.
+        meets_savings_credit_age_requirement: true
+    benunits:
+      benunit:
+        members: [claimant, young_person]
+        savings_credit_income: 12_000
+  output:
+    # 12,000 > 208.07 * 52, but no claimant reached SPA before the cutoff.
     is_savings_credit_eligible: false

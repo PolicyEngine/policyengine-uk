@@ -1,0 +1,396 @@
+# Expected amounts are single twelve-month DVLA licence fees.
+# CO2 thresholds are inclusive upper bounds; price thresholds are strict.
+- name: No car details gives no VED
+  period: 2026
+  absolute_error_margin: 0.01
+  input: {}
+  output:
+    vehicle_excise_duty: 0
+- name: Standard modern car
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2020-05-01'
+    car_co2_emissions: 120
+  output:
+    car_vehicle_excise_duty: 200
+- name: First registration CO2 bands including boundaries
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    car_co2_emissions:
+    - 0
+    - 1
+    - 50
+    - 51
+    - 75
+    - 76
+    - 90
+    - 100
+    - 110
+    - 130
+    - 150
+    - 170
+    - 190
+    - 255
+    - 256
+  output:
+    car_vehicle_excise_duty:
+    - 10
+    - 115
+    - 115
+    - 135
+    - 135
+    - 280
+    - 280
+    - 365
+    - 405
+    - 455
+    - 560
+    - 1410
+    - 2270
+    - 4850
+    - 5690
+- name: Non RDE2 diesel uses next first year band
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    - '2026-05-01'
+    car_co2_emissions:
+    - 0
+    - 50
+    - 130
+    - 256
+    car_fuel_type:
+    - DIESEL_NON_RDE2
+    - DIESEL_NON_RDE2
+    - DIESEL_NON_RDE2
+    - DIESEL_NON_RDE2
+  output:
+    car_vehicle_excise_duty:
+    - 10
+    - 135
+    - 560
+    - 5690
+- name: Pre 2001 engine size boundary
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2000-01-01'
+    - '2000-01-01'
+    car_co2_emissions:
+    - 120
+    - 120
+    car_engine_size:
+    - 1549
+    - 1550
+  output:
+    car_vehicle_excise_duty:
+    - 230
+    - 375
+- name: 2001 to 2017 CO2 bands
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    - '2010-01-01'
+    car_co2_emissions:
+    - 0
+    - 100
+    - 110
+    - 120
+    - 130
+    - 140
+    - 150
+    - 165
+    - 175
+    - 185
+    - 200
+    - 225
+    - 255
+    - 256
+  output:
+    car_vehicle_excise_duty:
+    - 20
+    - 20
+    - 20
+    - 35
+    - 170
+    - 200
+    - 225
+    - 275
+    - 325
+    - 360
+    - 410
+    - 445
+    - 760
+    - 790
+- name: Pre March 2006 cars capped at band K
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2006-03-22'
+    - '2006-03-23'
+    car_co2_emissions:
+    - 260
+    - 260
+  output:
+    car_vehicle_excise_duty:
+    - 445
+    - 790
+- name: Expensive car threshold is strict
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2024-05-01'
+    - '2024-05-01'
+    car_co2_emissions:
+    - 120
+    - 120
+    car_list_price:
+    - 40000
+    - 40001
+  output:
+    car_vehicle_excise_duty:
+    - 200
+    - 640
+- name: Supplement applies in second through sixth licence years
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2026-05-01'
+    - '2025-05-01'
+    - '2021-05-01'
+    - '2020-05-01'
+    car_co2_emissions:
+    - 120
+    - 120
+    - 120
+    - 120
+    car_list_price:
+    - 50000
+    - 50000
+    - 50000
+    - 50000
+  output:
+    car_vehicle_excise_duty:
+    - 455
+    - 640
+    - 640
+    - 200
+- name: Zero emission threshold rises to fifty thousand in 2026
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2025-05-01'
+    - '2025-05-01'
+    - '2025-05-01'
+    car_co2_emissions:
+    - 0
+    - 0
+    - 0
+    car_fuel_type:
+    - ELECTRIC
+    - ELECTRIC
+    - ELECTRIC
+    car_list_price:
+    - 45000
+    - 50000
+    - 50001
+  output:
+    car_vehicle_excise_duty:
+    - 200
+    - 200
+    - 640
+- name: Zero emission cars registered before April 2025 avoid supplement
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2025-03-31'
+    car_co2_emissions: 0
+    car_fuel_type: ELECTRIC
+    car_list_price: 90000
+  output:
+    car_vehicle_excise_duty: 200
+- name: Zero emission cars in old graduated schedule pay band B
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2015-05-01'
+    car_co2_emissions: 0
+    car_fuel_type: ELECTRIC
+  output:
+    car_vehicle_excise_duty: 20
+- name: Modern zero emission cars exempt before April 2025
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2023-05-01'
+    car_co2_emissions: 0
+    car_fuel_type: ELECTRIC
+  output:
+    car_vehicle_excise_duty: 0
+- name: Cars on both sides of April 2017 registration boundary
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2017-03-31'
+    - '2017-04-01'
+    car_co2_emissions:
+    - 150
+    - 150
+  output:
+    car_vehicle_excise_duty:
+    - 225
+    - 200
+- name: Cars registered after tax year have no duty
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2027-04-06'
+    car_co2_emissions: 120
+  output:
+    car_vehicle_excise_duty: 0
+- name: Exempt car
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2020-05-01'
+    car_co2_emissions: 120
+    car_is_ved_exempt: true
+  output:
+    car_vehicle_excise_duty: 0
+- name: 2025 standard and supplement amounts
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2024-05-01'
+    car_co2_emissions: 120
+    car_list_price: 45000
+  output:
+    car_vehicle_excise_duty: 620
+- name: Alternative fuel discount in 2024 across schedules
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2010-05-01'
+    - '2023-05-01'
+    - '2024-05-01'
+    car_co2_emissions:
+    - 150
+    - 150
+    - 150
+    car_fuel_type:
+    - ALTERNATIVE_FUEL
+    - ALTERNATIVE_FUEL
+    - ALTERNATIVE_FUEL
+  output:
+    car_vehicle_excise_duty:
+    - 200
+    - 180
+    - 260
+- name: RDE2 diesel pays the ordinary first year rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2026-05-01'
+    car_co2_emissions: 130
+    car_fuel_type: DIESEL_RDE2
+  output:
+    car_vehicle_excise_duty: 455
+- name: Cars registered in January renew within the correct rate year
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2021-01-01'
+    - '2022-01-01'
+    car_co2_emissions:
+    - 150
+    - 150
+    car_list_price:
+    - 50000
+    - 50000
+  output:
+    car_vehicle_excise_duty:
+    - 200
+    - 640
+- name: Electric cars registered before 2001 pay small engine rate
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date: '2000-02-01'
+    car_fuel_type: ELECTRIC
+  output:
+    car_vehicle_excise_duty: 230
+- name: 2024 engine size schedule
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2000-05-01'
+    - '2000-05-01'
+    car_engine_size:
+    - 1549
+    - 1550
+  output:
+    car_vehicle_excise_duty:
+    - 210
+    - 345
+- name: 2025 first year zero emissions and high emissions
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    car_first_registration_date:
+    - '2025-05-01'
+    - '2025-05-01'
+    car_co2_emissions:
+    - 0
+    - 256
+    car_fuel_type:
+    - ELECTRIC
+    - PETROL
+  output:
+    car_vehicle_excise_duty:
+    - 10
+    - 5490

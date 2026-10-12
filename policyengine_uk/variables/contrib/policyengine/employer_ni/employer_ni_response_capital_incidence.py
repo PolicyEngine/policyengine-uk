@@ -25,7 +25,8 @@ class employer_ni_response_capital_incidence(Variable):
         amount_paid_by_employers = (person_weight * change_in_employer_cost).sum()
 
         wealth = (
-            person.household("corporate_wealth", period) / person.household.nb_persons()
+            person.household("corporate_sector_wealth", period)
+            / person.household.nb_persons()
         )
         total_wealth = (wealth * person_weight).sum()
         share_of_total_wealth = wealth / total_wealth

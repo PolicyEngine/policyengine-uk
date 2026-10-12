@@ -16,4 +16,8 @@ class fuel_duty(Variable):
         effective_rate = (
             fd.petrol_and_diesel - in_relief_area * fd.rural_fuel_duty_relief
         )
-        return effective_rate * (petrol_litres + diesel_litres)
+        road_fuel_gases = (
+            household("lpg_kg", period.this_year) * fd.lpg
+            + household("natural_gas_kg", period.this_year) * fd.natural_gas
+        ) / MONTHS_IN_YEAR
+        return effective_rate * (petrol_litres + diesel_litres) + road_fuel_gases

@@ -1,0 +1,9 @@
+description: Annual age below which a child's childcare charges count for the Working Tax Credit childcare element, approximating the week containing the 1 September after the child's 15th birthday.
+values:
+  2003-04-06: 16
+metadata:
+  unit: year
+  label: WTC childcare child age limit
+  reference:
+    - title: Working Tax Credit (Entitlement and Maximum Rate) Regulations 2002 reg 14(3)
+      href: https://www.legislation.gov.uk/uksi/2002/2005/regulation/14

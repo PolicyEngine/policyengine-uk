@@ -1,0 +1,92 @@
+description: Vehicle excise duty first year schedule.
+brackets:
+- threshold:
+    '2024-04-01': -.inf
+  amount:
+    '2024-04-01': 0
+    '2025-04-01': 10
+    '2026-04-01': 10
+- threshold:
+    '2024-04-01': 0
+  amount:
+    '2024-04-01': 10
+    '2025-04-01': 110
+    '2026-04-01': 115
+- threshold:
+    '2024-04-01': 50
+  amount:
+    '2024-04-01': 30
+    '2025-04-01': 130
+    '2026-04-01': 135
+- threshold:
+    '2024-04-01': 75
+  amount:
+    '2024-04-01': 135
+    '2025-04-01': 270
+    '2026-04-01': 280
+- threshold:
+    '2024-04-01': 90
+  amount:
+    '2024-04-01': 175
+    '2025-04-01': 350
+    '2026-04-01': 365
+- threshold:
+    '2024-04-01': 100
+  amount:
+    '2024-04-01': 195
+    '2025-04-01': 390
+    '2026-04-01': 405
+- threshold:
+    '2024-04-01': 110
+  amount:
+    '2024-04-01': 220
+    '2025-04-01': 440
+    '2026-04-01': 455
+- threshold:
+    '2024-04-01': 130
+  amount:
+    '2024-04-01': 270
+    '2025-04-01': 540
+    '2026-04-01': 560
+- threshold:
+    '2024-04-01': 150
+  amount:
+    '2024-04-01': 680
+    '2025-04-01': 1360
+    '2026-04-01': 1410
+- threshold:
+    '2024-04-01': 170
+  amount:
+    '2024-04-01': 1095
+    '2025-04-01': 2190
+    '2026-04-01': 2270
+- threshold:
+    '2024-04-01': 190
+  amount:
+    '2024-04-01': 1650
+    '2025-04-01': 3300
+    '2026-04-01': 3420
+- threshold:
+    '2024-04-01': 225
+  amount:
+    '2024-04-01': 2340
+    '2025-04-01': 4680
+    '2026-04-01': 4850
+- threshold:
+    '2024-04-01': 255
+  amount:
+    '2024-04-01': 2745
+    '2025-04-01': 5490
+    '2026-04-01': 5690
+metadata:
+  type: single_amount
+  unit: currency-GBP
+  period: year
+  label: vehicle excise duty first year
+  reference:
+  - title: Vehicle Excise and Registration Act 1994, Schedule 1
+    href: https://www.legislation.gov.uk/ukpga/1994/22/schedule/1
+  - title: HMRC Budget 2025 rates and allowances, Vehicle Excise Duty
+    href: https://www.gov.uk/government/publications/budget-2025-overview-of-tax-legislation-and-rates-ootlar/annex-a-rates-and-allowances
+  - title: DVLA vehicle tax rate tables
+    href: https://www.gov.uk/vehicle-tax-rate-tables

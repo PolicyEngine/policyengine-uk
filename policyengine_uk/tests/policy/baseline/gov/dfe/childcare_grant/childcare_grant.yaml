@@ -10,7 +10,6 @@
         childcare_expenses: 5_000
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -35,7 +34,6 @@
         childcare_expenses: 20_000
       child:
         age: 3
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -59,10 +57,8 @@
         childcare_expenses: 25_000
       child_1:
         age: 6
-        is_child: true
       child_2:
         age: 8
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child_1", "child_2"]
@@ -86,7 +82,6 @@
         childcare_grant_household_income: 20_107.23
       child:
         age: 2
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -110,7 +105,6 @@
         childcare_expenses: 4_000
       child:
         age: 16
-        is_child: true
         childcare_grant_child_has_special_educational_needs: true
     benunits:
       benunit:
@@ -135,7 +129,6 @@
         childcare_expenses: 4_000
       child:
         age: 16
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -158,7 +151,6 @@
         childcare_expenses: 4_000
       child:
         age: 16
-        is_child: true
         is_disabled_for_benefits: true
     benunits:
       benunit:
@@ -183,7 +175,6 @@
         childcare_expenses: 6_000
       child:
         age: 4
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -210,7 +201,6 @@
         childcare_grant_receives_postgraduate_loan: true
       child:
         age: 5
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -235,7 +225,6 @@
         childcare_grant_receives_nhs_childcare_support: true
       child:
         age: 5
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -258,7 +247,6 @@
         childcare_expenses: 6_000
       child:
         age: 5
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -282,7 +270,6 @@
         childcare_expenses: 6_000
       child:
         age: 5
-        is_child: true
         tax_free_childcare: 1_000
     benunits:
       benunit:
@@ -308,7 +295,6 @@
         childcare_grant_provider_is_nanny: true
       child:
         age: 5
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]
@@ -335,7 +321,6 @@
         working_tax_credit_reported: 1
       child:
         age: 5
-        is_child: true
     benunits:
       benunit:
         members: ["student", "child"]

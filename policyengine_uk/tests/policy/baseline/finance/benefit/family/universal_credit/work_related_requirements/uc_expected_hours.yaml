@@ -1,0 +1,87 @@
+# UC Regs 2013 reg. 88(1): the expected number of hours per week "is 35
+# unless some lesser number of hours applies under paragraph (2)". The lesser
+# numbers are whatever "the Secretary of State considers is compatible" with
+# caring for a child below compulsory school age (reg. 88(2)(aa)) or with the
+# normal school hours of a child under 13 (reg. 88(2)(b)). The model uses the
+# hours DWP says it uses: "self-employed individuals with children aged 3-12
+# typically have their Minimum Income Floor set using a maximum of 30 hours
+# per week" (written answer 129349, 28 April 2026); before DWP raised
+# existing floors from February 2025, 16 hours for a child aged 3 or 4 and 25
+# for a school-age child (Advice for Decision Making J2086).
+
+- name: A claimant with no child is expected to work 35 hours
+  period: 2026
+  input:
+    age: 30
+  output:
+    uc_expected_hours: 35
+
+- name: Responsible carer of a child aged 3 in 2026
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 3
+  output:
+    uc_expected_hours: [30, 35]
+
+- name: Responsible carer of a child aged 12 in 2026
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 12
+  output:
+    uc_expected_hours: [30, 35]
+
+- name: A child aged 13 does not lower the expected hours
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 13
+  output:
+    uc_expected_hours: [35, 35]
+
+- name: In a couple only the responsible carer has the lesser hours
+  period: 2026
+  input:
+    people:
+      nominated:
+        age: 30
+        uc_is_responsible_carer: true
+      partner:
+        age: 32
+        uc_is_responsible_carer: false
+      child:
+        age: 7
+  output:
+    uc_expected_hours: [30, 35, 35]
+
+- name: Responsible carer of a child aged 4 before DWP raised the hours
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 4
+  output:
+    uc_expected_hours: [16, 35]
+
+- name: Responsible carer of a school-age child before DWP raised the hours
+  period: 2024
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 9
+  output:
+    uc_expected_hours: [25, 35]

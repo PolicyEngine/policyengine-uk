@@ -1,0 +1,69 @@
+- name: Excise duties enter household and government taxes exactly once
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    LVT: 0
+    business_rates: 0
+    capital_gains_tax: 0
+    carbon_tax: 0
+    consumer_incident_tax_revenue_change: 0
+    corporate_incident_tax_revenue_change: 0
+    corporate_sdlt: 0
+    council_tax: 0
+    domestic_rates: 0
+    employer_ni_response_capital_incidence: 0
+    employer_ni_response_consumer_incidence: 0
+    expected_lbtt: 0
+    expected_ltt: 0
+    expected_sdlt: 0
+    high_value_council_tax_surcharge: 0
+    income_tax: 0
+    national_insurance: 0
+    ni_employer: 0
+    non_primary_residence_wealth_tax: 0
+    private_school_vat: 0
+    student_loan_repayments: 0
+    tv_licence: 0
+    vat: 0
+    vat_change: 0
+    wealth_tax: 0
+    beer_litres: 100
+    beer_abv: 0.05
+    cigarettes_per_week: 20
+    cigarette_price_per_pack: 10
+    car_first_registration_date: '2020-05-01'
+    car_co2_emissions: 120
+    lpg_kg: 1000
+    natural_gas_kg: 1000
+    petrol_litres: 0
+    diesel_litres: 0
+  output:
+    alcohol_duty: 109.6013698630137
+    tobacco_duty: 473.91137424657535
+    vehicle_excise_duty: 195
+    fuel_duty: 514.5
+    household_tax: 1293.0127441095892
+    gov_tax: 1293.0127441095892
+- name: Cars aggregate across household members
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        car_first_registration_date: '2020-05-01'
+        car_co2_emissions: 120
+      person2:
+        car_first_registration_date: '2000-01-01'
+        car_engine_size: 1600
+    benunits:
+      benunit:
+        members:
+        - person1
+        - person2
+    households:
+      household:
+        members:
+        - person1
+        - person2
+  output:
+    vehicle_excise_duty: 575

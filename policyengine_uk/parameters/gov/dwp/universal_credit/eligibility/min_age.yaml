@@ -1,0 +1,9 @@
+description: Default minimum age for Universal Credit claimants.
+values:
+  2013-04-29: 18
+metadata:
+  unit: year
+  label: universal credit minimum age
+  reference:
+    - title: Welfare Reform Act 2012, section 4(1)(a)
+      href: https://www.legislation.gov.uk/ukpga/2012/5/section/4

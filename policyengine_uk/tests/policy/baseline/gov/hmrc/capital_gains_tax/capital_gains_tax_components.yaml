@@ -1,0 +1,205 @@
+# Gains on the three schedule inputs (capital_gains_badr,
+# capital_gains_residential_property, capital_gains_carried_interest) are
+# components of capital_gains and are charged at their own rates; the rest of
+# capital_gains is charged at the main rates. The annual exempt amount goes to
+# the schedule with the highest top rate first (TCGA 1992 s. 1K(5)); the unused
+# basic rate band goes to relief gains first (s. 1I(4)-(6)) and then to the
+# schedule with the widest higher-minus-basic gap (s. 1I(7)-(9)).
+#
+# 2024-25 main rates are the day-weighted blend of the rates before and after
+# 30 October 2024: basic 49.14/365 = 0.1346301, higher 79.32/365 = 0.2173151.
+# The residential property higher rate is 24% for the whole of 2024-25.
+
+- name: Residential property 2024, 18% on the unused basic rate band and 24% above, after one AEA.
+  # adjusted_net_income 42,570 less the 12,570 personal allowance leaves taxable
+  # income 30,000 and 7,700 of the 37,700 basic rate band. 100,000 - 3,000 AEA =
+  # 97,000: 7,700 x 0.18 = 1,386 plus 89,300 x 0.24 = 21,432.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: 42_570
+    capital_gains: 100_000
+    capital_gains_residential_property: 100_000
+  output:
+    capital_gains_tax: 22_818
+
+- name: Residential property 2024, the same gains given through capital_gains_before_response.
+  # capital_gains adds the pre-response gains and a zero response, so the
+  # component is scaled by exactly 1 and the answer matches the case above.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: 42_570
+    capital_gains_before_response: 100_000
+    capital_gains_residential_property: 100_000
+  output:
+    capital_gains_tax: 22_818
+
+- name: BADR gains 2024 pay 10% whatever the band.
+  # 500,000 - 3,000 AEA = 497,000 x 0.10.
+  period: 2024
+  input:
+    adjusted_net_income: 0
+    capital_gains: 500_000
+    capital_gains_badr: 500_000
+  output:
+    capital_gains_tax: 49_700
+
+- name: BADR gains 2025 pay 14%.
+  # 497,000 x 0.14 (Finance Act 2025 s. 8, disposals from 6 April 2025).
+  period: 2025
+  input:
+    adjusted_net_income: 0
+    capital_gains: 500_000
+    capital_gains_badr: 500_000
+  output:
+    capital_gains_tax: 69_580
+
+- name: BADR gains 2026 pay 18%.
+  # 497,000 x 0.18 (Finance Act 2025 s. 8, disposals from 6 April 2026).
+  period: 2026
+  input:
+    adjusted_net_income: 0
+    capital_gains: 500_000
+    capital_gains_badr: 500_000
+  output:
+    capital_gains_tax: 89_460
+
+- name: BADR gains above the lifetime limit, 2025, the excess is charged at the main rates.
+  # 1,000,000 x 0.14 = 140,000 on the relieved gains. The 500,000 excess takes
+  # the AEA (0.24 beats 0.14), leaving 497,000; the relieved gains have used the
+  # whole basic rate band and the notional higher band first, so the excess is
+  # charged at 0.24: 119,280.
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    adjusted_net_income: 0
+    capital_gains: 1_500_000
+    capital_gains_badr: 1_500_000
+  output:
+    capital_gains_tax: 259_280
+
+- name: BADR gains just above the lifetime limit, 2024, the excess is charged at the blended main rate.
+  # 1,000,000 x 0.10 = 100,000. The 10,000 excess takes the AEA, leaving 7,000
+  # above every band the relieved gains have filled: 7,000 x 0.2173151 = 1,521.21.
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    adjusted_net_income: 0
+    capital_gains: 1_010_000
+    capital_gains_badr: 1_010_000
+  output:
+    capital_gains_tax: 101_521.21
+
+- name: Carried interest 2024 pays 18% in the basic rate band and 28% above.
+  # 1,000,000 - 3,000 AEA = 997,000: 37,700 x 0.18 = 6,786 plus 959,300 x 0.28
+  # = 268,604.
+  period: 2024
+  absolute_error_margin: 0.1
+  input:
+    adjusted_net_income: 0
+    capital_gains: 1_000_000
+    capital_gains_carried_interest: 1_000_000
+  output:
+    capital_gains_tax: 275_390
+
+- name: Carried interest 2025 pays a flat 32%.
+  # 997,000 x 0.32 (Finance Act 2025 s. 12).
+  period: 2025
+  absolute_error_margin: 0.1
+  input:
+    adjusted_net_income: 0
+    capital_gains: 1_000_000
+    capital_gains_carried_interest: 1_000_000
+  output:
+    capital_gains_tax: 319_040
+
+- name: BADR gains take the basic rate band before residential property gains.
+  # The AEA goes to the residential gains (0.24 beats 0.14): 7,000 left. The
+  # 37,700 of relieved gains use the whole basic rate band by statute (TCGA
+  # 1992 s. 1I(4)-(6)), so the residential gains pay 0.24 on all 7,000: 1,680,
+  # plus 37,700 x 0.14 = 5,278. Had the taxpayer been free to allocate the band,
+  # the residential gains would have paid 0.18 and the total would be 6,538.
+  period: 2025
+  input:
+    adjusted_net_income: 0
+    capital_gains: 47_700
+    capital_gains_badr: 37_700
+    capital_gains_residential_property: 10_000
+  output:
+    capital_gains_tax: 6_958
+
+- name: Mixed schedules 2024, the AEA and the basic rate band go where they save most.
+  # Taxable income 20,000 - 12,570 = 7,430 leaves 30,270 of basic rate band.
+  # Gains 100,000: BADR 20,000, carried interest 10,000, residential 30,000 and
+  # 40,000 at the main rates. The AEA goes to carried interest (top rate 0.28):
+  # 7,000 left. Band: BADR 20,000 first, then by higher-minus-basic gap carried
+  # interest 7,000 (gap 0.10), main 3,270 (gap 0.0827); none is left for the
+  # residential gains (gap 0.06). Tax: 20,000 x 0.10 = 2,000; 7,000 x 0.18 =
+  # 1,260; 3,270 x 0.1346301 = 440.24; 36,730 x 0.2173151 = 7,981.98;
+  # 30,000 x 0.24 = 7,200.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: 20_000
+    capital_gains: 100_000
+    capital_gains_badr: 20_000
+    capital_gains_carried_interest: 10_000
+    capital_gains_residential_property: 30_000
+  output:
+    capital_gains_tax: 18_882.22
+
+- name: Schedule inputs that exceed capital_gains are clipped in order, leaving nothing at the main rates.
+  # Residential 40,000 is taken in full; carried interest is clipped to the
+  # 10,000 left. The AEA goes to carried interest (0.32): 7,000 x 0.32 = 2,240.
+  # Residential: 37,700 x 0.18 = 6,786 plus 2,300 x 0.24 = 552.
+  period: 2025
+  input:
+    adjusted_net_income: 0
+    capital_gains: 50_000
+    capital_gains_residential_property: 40_000
+    capital_gains_carried_interest: 30_000
+  output:
+    capital_gains_tax: 9_578
+
+- name: Residential property 2018 at the 18% and 28% rates of the time.
+  # AEA 11,700 leaves 38,300; the 2018-19 basic rate band is 34,500:
+  # 34,500 x 0.18 = 6,210 plus 3,800 x 0.28 = 1,064.
+  period: 2018
+  input:
+    adjusted_net_income: 0
+    capital_gains: 50_000
+    capital_gains_residential_property: 50_000
+  output:
+    capital_gains_tax: 7_274
+
+- name: A schedule input without capital_gains is ignored.
+  period: 2025
+  input:
+    adjusted_net_income: 0
+    capital_gains: 0
+    capital_gains_residential_property: 50_000
+  output:
+    capital_gains_tax: 0
+
+- name: A net loss pays nothing whatever the schedule inputs say.
+  period: 2025
+  input:
+    adjusted_net_income: 0
+    capital_gains: -20_000
+    capital_gains_residential_property: 50_000
+  output:
+    capital_gains_tax: 0
+
+- name: Schedule inputs of zero reproduce the main-rate result exactly.
+  # Same as the "Higher rate capital gains tax" case in capital_gains_tax.yaml.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    adjusted_net_income: 50_000
+    capital_gains: 50_000
+    capital_gains_badr: 0
+    capital_gains_residential_property: 0
+    capital_gains_carried_interest: 0
+  output:
+    capital_gains_tax: 11_263.80

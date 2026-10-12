@@ -9,9 +9,7 @@ class benefit_cap(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        is_single_adult = benunit("num_adults", period) == 1
-        has_children = benunit("num_children", period) > 0
-        single_claimant = is_single_adult & ~has_children
+        single_claimant = benunit("is_benefit_cap_single_claimant_rate", period)
         household_region = benunit.members.household("region", period)
         region = benunit.value_from_first_person(household_region)
         regions = household_region.possible_values
@@ -32,4 +30,4 @@ class benefit_cap(Variable):
             ],
         )
         exempt = benunit("is_benefit_cap_exempt", period)
-        return where(exempt, np.inf * np.ones_like(has_children), rate)
+        return where(exempt, np.inf, rate)

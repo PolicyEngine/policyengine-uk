@@ -24,12 +24,30 @@
 
 - name: Exempt - carers
   period: 2025
-  absolute_error_margin: 1
+  absolute_error_margin: 0
   input:
-    pension_credit: 1
+    pension_credit: 0
     dla_sc_middle_plus: false
     pip_dl: 0
     attendance_allowance: 0
     receives_carers_allowance: true
   output:
     uc_non_dep_deduction_exempt: true
+
+- name: Caring hours without a claim do not give the carer receipt exemption
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    age: 40
+    pension_credit: 0
+    dla_sc_middle_plus: false
+    pip_dl: 0
+    attendance_allowance: 0
+    care_hours: 35
+    carers_allowance_reported: 0
+    would_claim_carers_allowance: false
+  output:
+    receives_carers_allowance: false
+    is_entitled_to_carer_benefit: false
+    is_carer_for_benefits: true
+    uc_non_dep_deduction_exempt: false

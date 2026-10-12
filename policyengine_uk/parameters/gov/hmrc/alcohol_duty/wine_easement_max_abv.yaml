@@ -1,0 +1,10 @@
+description: Alcohol duty wine easement max abv.
+values:
+  '2023-08-01': 0.145
+metadata:
+  unit: /1
+  period: year
+  label: alcohol duty wine easement max abv
+  reference:
+  - title: Finance (No. 2) Act 2023, section 115
+    href: https://www.legislation.gov.uk/ukpga/2023/30/section/115

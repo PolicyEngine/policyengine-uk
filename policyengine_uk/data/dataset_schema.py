@@ -1,6 +1,7 @@
+import warnings
 import pandas as pd
 import numpy as np
-from typing import TYPE_CHECKING, List, Optional
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from policyengine_uk import Microsimulation
@@ -40,18 +41,32 @@ class UKSingleYearDataset:
 
         return True
 
+    # Used when a dataset is built from DataFrames without a fiscal year.
+    # Deprecated: pass fiscal_year explicitly, as this will become required.
+    DEFAULT_FISCAL_YEAR = 2025
+
     def __init__(
         self,
         file_path: str = None,
         person: pd.DataFrame = None,
         benunit: pd.DataFrame = None,
         household: pd.DataFrame = None,
-        fiscal_year: int = 2025,
+        fiscal_year: int = None,
     ):
         file_path = str(file_path) if file_path else None
         if file_path is not None:
+            if fiscal_year is not None:
+                warnings.warn(
+                    "fiscal_year is ignored when loading from a file: the "
+                    "time period is read from the file itself. Drop the "
+                    "argument, or use uprate_dataset to change the period.",
+                    UserWarning,
+                    stacklevel=2,
+                )
             self.validate_file_path(file_path)
-            with pd.HDFStore(file_path) as f:
+            # Read-only: the file may be a cached download the cache manager
+            # has made unwritable, and the default append mode would refuse it.
+            with pd.HDFStore(file_path, mode="r") as f:
                 self._person = f["person"]
                 self._benunit = f["benunit"]
                 self._household = f["household"]
@@ -61,6 +76,17 @@ class UKSingleYearDataset:
                 raise ValueError(
                     "Must provide either a file path or all three DataFrames (person, benunit, household)."
                 )
+            if fiscal_year is None:
+                warnings.warn(
+                    "fiscal_year was not given, so this dataset is labelled "
+                    f"{self.DEFAULT_FISCAL_YEAR}. The label is the year the "
+                    "financial year starts, so FRS 2024/25 data is 2024. "
+                    "Pass fiscal_year explicitly; the default will be "
+                    "removed.",
+                    FutureWarning,
+                    stacklevel=2,
+                )
+                fiscal_year = self.DEFAULT_FISCAL_YEAR
             self._person = person
             self._benunit = benunit
             self._household = household
@@ -179,7 +205,7 @@ class UKMultiYearDataset:
     def __init__(
         self,
         file_path: str = None,
-        datasets: Optional[List[UKSingleYearDataset]] = None,
+        datasets: list[UKSingleYearDataset] | None = None,
     ):
         if datasets is not None:
             self.datasets = {}
@@ -193,7 +219,7 @@ class UKMultiYearDataset:
 
         if file_path is not None:
             UKMultiYearDataset.validate_file_path(file_path)
-            with pd.HDFStore(file_path) as f:
+            with pd.HDFStore(file_path, mode="r") as f:
                 self.datasets = {}
                 for year in f.keys():
                     if year.startswith("/person/"):

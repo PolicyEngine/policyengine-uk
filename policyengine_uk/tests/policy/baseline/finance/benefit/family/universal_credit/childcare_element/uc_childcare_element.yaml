@@ -42,3 +42,20 @@
         uc_childcare_element_eligible_children: 1
   output:
     uc_childcare_element: 646.35 * 12
+
+- name: Childcare element not claimed
+  period: 2020
+  absolute_error_margin: 0.001
+  input:
+    people:
+      parent:
+        in_work: true
+        childcare_expenses: 5_000
+    benunits:
+      benunit:
+        members: parent
+        uc_childcare_element_eligible_children: 1
+        would_claim_uc_childcare: false
+  output:
+    uc_childcare_element: 0
+    uc_childcare_element_claimed: false

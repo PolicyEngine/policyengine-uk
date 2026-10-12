@@ -105,3 +105,116 @@
     standard_minimum_guarantee: 12_376
     guarantee_credit: 3_016
     pension_credit: 3_016
+
+- name: Pension Credit capital disregards private pension wealth
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person1:
+        age: 81
+    benunits:
+      benunit:
+        members: [person1]
+    households:
+      household:
+        members: [person1]
+        savings: 12_000
+        private_pension_wealth: 200_000
+  output:
+    pension_credit_assessable_capital: 12_000
+
+# Issue #2255. State Pension Credit Act 2002 s. 15(1) and SPC Regulations 2002
+# reg. 15 list receipts; nothing lets a loss on one be set against another
+# (https://www.legislation.gov.uk/uksi/2002/1792/regulation/15). A property
+# loss used to wipe out the pension here and pay the full guarantee credit.
+- name: A property loss does not reduce other Pension Credit income.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 75
+        private_pension_income: 20_000
+        property_income: -30_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: WALES
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    property_income_after_finance_costs: -30_000
+    pension_credit_income: 18_514
+    pension_credit: 0
+
+- name: The same person without the property loss has the same Pension Credit income.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 75
+        private_pension_income: 20_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: WALES
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    pension_credit_income: 18_514
+    pension_credit: 0
+
+- name: Positive property income still counts in Pension Credit income.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 75
+        private_pension_income: 20_000
+        property_income: 3_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: WALES
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    # 20,000 + 3,000, less income tax of 20% of (23,000 - 12,570) = 2,086.
+    pension_credit_income: 20_914
+    pension_credit: 0
+
+# Issue #2255, earnings. A self-employment loss is not set against wages
+# (Computation of Earnings Regulations 1996 reg. 13(12), applied by SPC
+# Regulations 2002 reg. 17B(5)(b)). The loss used to cut Pension Credit income
+# from 10,000 to 2,000 and raise the award from 2,376 to 10,376.
+- name: A self-employment loss does not reduce Pension Credit income from wages.
+  period: 2026
+  absolute_error_margin: 1
+  input:
+    people:
+      person:
+        age: 70
+        employment_income: 10_000
+        self_employment_income: -8_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        region: WALES
+        tenure_type: OWNED_OUTRIGHT
+  output:
+    pension_credit_earnings: 10_000
+    pension_credit_income: 10_000
+    # 238 x 52 = 12,376, less income of 10,000.
+    pension_credit: 2_376

@@ -6,7 +6,7 @@ class WTC_couple_element(Variable):
     entity = BenUnit
     label = "Working Tax Credit couple element"
     definition_period = YEAR
-    reference = "Tax Credits Act 2002 s. 11"
+    reference = "https://www.legislation.gov.uk/uksi/2002/2005/regulation/11"
     unit = GBP
     defined_for = "is_WTC_eligible"
 

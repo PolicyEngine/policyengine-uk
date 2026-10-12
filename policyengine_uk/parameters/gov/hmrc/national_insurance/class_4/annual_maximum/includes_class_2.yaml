@@ -1,0 +1,21 @@
+description: Class 2 contributions count towards the Class 4 annual maximum under regulation 100 of the Social Security (Contributions) Regulations 2001.
+values:
+  2003-04-06:
+    value: true
+    metadata:
+      reference:
+        - title: The Social Security (Contributions) Regulations 2001 reg 100 (as at 6 April 2023)
+          href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/100/2023-04-06
+  2024-04-06:
+    value: false
+    metadata:
+      reference:
+        - title: The Social Security (Class 2 National Insurance Contributions) (Consequential Amendments and Savings) Regulations 2024 reg 6(5)
+          href: https://www.legislation.gov.uk/uksi/2024/377/regulation/6
+metadata:
+  unit: bool
+  period: year
+  label: Class 2 counts towards the Class 4 annual maximum
+  reference:
+    - title: The Social Security (Contributions) Regulations 2001 reg 100
+      href: https://www.legislation.gov.uk/uksi/2001/1004/regulation/100

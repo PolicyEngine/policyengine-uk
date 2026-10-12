@@ -9,12 +9,14 @@ class uc_housing_costs_element(Variable):
     unit = GBP
 
     def formula(benunit, period, parameters):
-        tenure_type = benunit.value_from_first_person(
-            benunit.members.household("tenure_type", period)
-        )
+        # The family's own tenure: a boarder or lodger is a private renter
+        # whatever the household's tenure (UC Regs 2013 Sch 4 para 20).
+        tenure_type = benunit("benunit_tenure_type", period)
         tenure_types = tenure_type.possible_values
         rent = benunit("benunit_rent", period)
-        rent_cap = benunit("LHA_cap", period)
+        # Universal Credit has its own monthly national maximum, which is
+        # set independently of the weekly Housing Benefit one.
+        rent_cap = benunit("uc_LHA_cap", period)
         capped_rent_amount = min_(rent_cap, rent)
         max_housing_costs = select(
             [

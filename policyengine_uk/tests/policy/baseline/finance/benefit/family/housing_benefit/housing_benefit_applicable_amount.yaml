@@ -2,23 +2,15 @@
   period: 2025
   absolute_error_margin: 100
   input:
-    people: 
-      person1:
+    people:
+      claimant:
+        age: 25
         is_SP_age: false
-      person2:
-        is_SP_age: false
-      person3:
-        is_SP_age: false
-      person4:
-        is_SP_age: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
-        members: [person1, person2, person3, person4]
+        members: [claimant]
         housing_benefit_eligible: true
-        eldest_adult_age: 25
-        is_single_person: true
-        is_couple: false
-        is_lone_parent: false
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 90.5 * 52
@@ -27,23 +19,15 @@
   period: 2025
   absolute_error_margin: 100
   input:
-    people: 
-      person1:
+    people:
+      claimant:
+        age: 23
         is_SP_age: false
-      person2:
-        is_SP_age: false
-      person3:
-        is_SP_age: false
-      person4:
-        is_SP_age: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
-        members: [person1, person2, person3, person4]
+        members: [claimant]
         housing_benefit_eligible: true
-        eldest_adult_age: 23
-        is_single_person: true
-        is_couple: false
-        is_lone_parent: false
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 71.7 * 52
@@ -52,23 +36,19 @@
   period: 2025
   absolute_error_margin: 100
   input:
-    people: 
-      person1:
+    people:
+      claimant:
+        age: 17
         is_SP_age: false
-      person2:
-        is_SP_age: false
-      person3:
-        is_SP_age: false
-      person4:
+        is_claimant_or_partner: true
+        is_parent: true
+      child:
+        age: 1
         is_SP_age: false
     benunits:
       benunit:
-        members: [person1, person2, person3, person4]
+        members: [claimant, child]
         housing_benefit_eligible: true
-        eldest_adult_age: 17
-        is_single_person: false
-        is_couple: false
-        is_lone_parent: true
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 71.7 * 52
@@ -77,23 +57,19 @@
   period: 2025
   absolute_error_margin: 100
   input:
-    people: 
-      person1:
+    people:
+      claimant:
+        age: 18
         is_SP_age: false
-      person2:
-        is_SP_age: false
-      person3:
-        is_SP_age: false
-      person4:
+        is_claimant_or_partner: true
+        is_parent: true
+      child:
+        age: 1
         is_SP_age: false
     benunits:
       benunit:
-        members: [person1, person2, person3, person4]
+        members: [claimant, child]
         housing_benefit_eligible: true
-        eldest_adult_age: 18
-        is_single_person: false
-        is_couple: false
-        is_lone_parent: true
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 90.5 * 52
@@ -102,23 +78,19 @@
   period: 2025
   absolute_error_margin: 200
   input:
-    people: 
-      person1:
+    people:
+      claimant:
+        age: 18
         is_SP_age: false
-      person2:
+        is_claimant_or_partner: true
+      partner:
+        age: 18
         is_SP_age: false
-      person3:
-        is_SP_age: false
-      person4:
-        is_SP_age: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
-        members: [person1, person2, person3, person4]
+        members: [claimant, partner]
         housing_benefit_eligible: true
-        eldest_adult_age: 18
-        is_single_person: false
-        is_couple: true
-        is_lone_parent: false
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 142.25 * 52
@@ -127,23 +99,19 @@
   period: 2025
   absolute_error_margin: 100
   input:
-    people: 
-      person1:
+    people:
+      claimant:
+        age: 17
         is_SP_age: false
-      person2:
+        is_claimant_or_partner: true
+      partner:
+        age: 17
         is_SP_age: false
-      person3:
-        is_SP_age: false
-      person4:
-        is_SP_age: false
+        is_claimant_or_partner: true
     benunits:
       benunit:
-        members: [person1, person2, person3, person4]
+        members: [claimant, partner]
         housing_benefit_eligible: true
-        eldest_adult_age: 17
-        is_single_person: false
-        is_couple: true
-        is_lone_parent: false
         benefits_premiums: 0
   output:
     housing_benefit_applicable_amount: 108.3 * 52

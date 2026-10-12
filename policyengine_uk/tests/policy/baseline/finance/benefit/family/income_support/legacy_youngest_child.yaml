@@ -1,0 +1,95 @@
+# SSCBA 1992 ss.137(1),142(1): children are under 16, excluding the claimant
+# and partner. IS Sch 1B para 1 says under 5; the model deliberately retains
+# <= 5 pending the separate threshold decision requested in the brief.
+- name: IS youngest child excludes a young claimant and qualifying young person
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 17
+        is_parent: true
+        is_benunit_head: true
+        income_support_reported: 1000
+      child:
+        age: 4
+      young_person:
+        age: 18
+        is_in_non_advanced_education: true
+    benunits:
+      family:
+        members: [claimant, child, young_person]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    youngest_child_age_for_legacy_benefits: 4
+    income_support_eligible: true
+
+- name: IS youngest child threshold retains age five and excludes age six
+  period: 2025
+  input:
+    people:
+      claimant1:
+        age: 30
+        income_support_reported: 1000
+      child1:
+        age: 5
+      claimant2:
+        age: 30
+        income_support_reported: 1000
+      child2:
+        age: 6
+    benunits:
+      family1:
+        members: [claimant1, child1]
+        esa_income: 0
+        income_support_assessable_capital: 0
+      family2:
+        members: [claimant2, child2]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    youngest_child_age_for_legacy_benefits: [5, 6]
+    income_support_eligible: [true, false]
+
+- name: IS young person alone does not satisfy young-child eligibility
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        income_support_reported: 1000
+      young_person:
+        age: 16
+        is_in_non_advanced_education: true
+    benunits:
+      family:
+        members: [claimant, young_person]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    is_lone_parent: true
+    income_support_eligible: false
+
+- name: IS claimant with under-18 partner is not a lone parent
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 30
+        is_parent: true
+        income_support_reported: 1000
+      partner:
+        age: 17
+        is_parent: true
+      child:
+        age: 3
+    benunits:
+      family:
+        members: [claimant, partner, child]
+        esa_income: 0
+        income_support_assessable_capital: 0
+  output:
+    youngest_child_age_for_legacy_benefits: 3
+    is_lone_parent: false
+    income_support_eligible: false
