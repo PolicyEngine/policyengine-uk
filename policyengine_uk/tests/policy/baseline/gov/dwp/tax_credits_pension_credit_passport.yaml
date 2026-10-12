@@ -206,9 +206,10 @@
   # = £866.64, so £123.34.
   # CTC: £545 + £3,455 = £4,000, not 4,000 - 0.41 x 205 = £3,915.95.
   # SPC Regs 2002 reg 6(6)(d) and (11) give no Schedule IIA child amount to
-  # a person awarded a tax credit, and the CTC family element has been £545
-  # since 2011-12; both are entered because the model applies neither
-  # (#2050 for the family element).
+  # a person awarded a tax credit; it is entered because the model pays it
+  # (#2061). The CTC family element has been £545 since 2011-12; it was
+  # entered when the model uprated it, and since #1925 the model's own value
+  # is the same.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -392,8 +393,9 @@
   # Tax credits ended on 5 April 2025, so no award is paid in 2025-26 and
   # working tax credit is nil either way. The standard minimum guarantee for
   # a single claimant is £227.10 a week (SPC Regs 2002 reg 6(1)(b), as
-  # substituted by SI 2025/295 art. 29(2)(b)); it is entered because the
-  # model's 2025-26 value differs (#1937). Guarantee Credit:
+  # substituted by SI 2025/295 art. 29(2)(b)); it was entered when the
+  # model had £221.85 (#1937), and since #1925 the model's own value is the
+  # same. Guarantee Credit:
   # 227.10 x 52 - (2,340 + 6,000) = 11,809.20 - 8,340 = £3,469.20.
   period: 2025
   absolute_error_margin: 0.01
