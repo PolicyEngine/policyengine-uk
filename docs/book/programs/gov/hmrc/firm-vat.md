@@ -79,9 +79,14 @@ Firm = build_entity(
     plural="firms",
     label="Firm",
     doc="A business entity that may register for VAT.",
-    roles=[{"key": "owner", "plural": "owners",
+    roles=[
+        {
+            "key": "owner",
+            "plural": "owners",
             "label": "Owner",
-            "doc": "Person or household that owns the firm."}],
+            "doc": "Person or household that owns the firm.",
+        }
+    ],
     containing_entities=["state"],
 )
 ```
