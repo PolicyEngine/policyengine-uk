@@ -27,6 +27,18 @@
   the resume prompt. Its 314-second load was heavily contended; running a new
   sequential before/after pair against the same code with only the horizon
   changed. Compressor gates and a 20 GB RSS monitor are active.
-- Next: finish cost pair, run changed tests plus economic-assumption
-  regression files, format, commit/push, update PR, independent head review,
-  REPORT.md and handoffs.jsonl.
+- Pushed `eaf48e9`: clarified docs and synthetic regression tests. Created
+  tracking issue #2378. Equivalent Ruff format/check on touched Python files
+  passed using the read-only existing r5 venv; a fresh uv install was stopped
+  after slow package preparation rather than modifying dependencies elsewhere.
+- New sequential costs completed: before load 33.2s / RSS 2.220 GB, 2032
+  overall peak 2.529 GB; after load 13.3s / RSS 2.646 GB, overall peak 2.921 GB.
+  Compressor gates 7.898/7.850 GB. Timing is host-dependent; not a speed claim.
+  Isolated before HNI matches saved cost but differs from inherited full-period
+  impact; after HNI matches inherited impact. Recorded this verification gap.
+- Running eight focused test files serially, including the full changed file,
+  no-economic-assumptions, rents, council tax, domestic rates, capital semantics,
+  thresholds and statutory triple-lock inputs. No test_economic_assumptions*
+  filename exists at this checkpoint; the unrelated dataframe test is excluded.
+- Next: finish tests, final report/PR update, independent exact-head review and
+  handoffs.jsonl.
