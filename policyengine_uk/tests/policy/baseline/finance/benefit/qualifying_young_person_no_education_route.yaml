@@ -266,3 +266,70 @@
     child_minimum_guarantee_addition: 4_215.64
     standard_minimum_guarantee: 12_376
     minimum_guarantee: 16_591.64
+
+- name: In 2025-26 the 16-year-old counts first under the two-child limit, and the youngest child loses the element.
+  # 2025-26: the 16-year-old (born 6 April 2009) is a qualifying young person
+  # through reg. 5(1)(a), so the eldest of three. The higher first-child
+  # amount: GBP 339 a month x 12 = GBP 4,068. The 7-year-old (born 6 April
+  # 2018): GBP 292.81 x 12 = GBP 3,513.72. The 5-year-old (born 6 April 2020,
+  # after 6 April 2017) is the third child, so no element (reg. 24A). Total
+  # GBP 7,581.72.
+  period: 2025
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      young_person:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+      child_7:
+        age: 7
+      child_5:
+        age: 5
+    benunits:
+      benunit:
+        members: [parent, young_person, child_7, child_5]
+    households:
+      household:
+        members: [parent, young_person, child_7, child_5]
+  output:
+    uc_child_index: [-1, 1, 2, 3]
+    uc_individual_child_element: [0, 4_068, 3_513.72, 0]
+    uc_is_child_limit_affected: [false, false, false, true]
+    uc_child_element: 7_581.72
+
+- name: A date of birth given for one person leaves another's age-placed date unchanged.
+  # The 17-year-old's date of birth (15 September 2009) puts them in the
+  # route; the 16-year-old elsewhere has none, so age places their birthday
+  # on 6 April 2010 and they are in it too.
+  period: 2026
+  input:
+    people:
+      parent_1:
+        age: 34
+        is_parent: true
+      young_person_17:
+        age: 17
+        date_of_birth: 20090915
+        current_education: NOT_IN_EDUCATION
+      parent_2:
+        age: 40
+        is_parent: true
+      young_person_16:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+    benunits:
+      benunit_1:
+        members: [parent_1, young_person_17]
+      benunit_2:
+        members: [parent_2, young_person_16]
+    households:
+      household_1:
+        members: [parent_1, young_person_17]
+      household_2:
+        members: [parent_2, young_person_16]
+  output:
+    is_before_first_september_following_16th_birthday: [false, true, false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true, false, true]
+    is_qualifying_young_person_for_pension_credit: [false, true, false, true]

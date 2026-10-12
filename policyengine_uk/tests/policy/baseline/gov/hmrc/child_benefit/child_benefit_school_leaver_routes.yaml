@@ -256,10 +256,16 @@
         current_education: NOT_IN_EDUCATION
         is_before_child_benefit_terminal_date: true
         weekly_hours: 24
+        employment_income: 20_000
         is_claimant_or_partner: false
     benunits:
       benunit:
         members: [parent, school_leaver]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, school_leaver]
+        country: ENGLAND
   output:
     is_qualifying_young_person_for_child_benefit: [false, true]
     is_child_or_qualifying_young_person_for_child_benefit: [false, true]
@@ -268,6 +274,12 @@
     # Still a young person for Housing Benefit and the other legacy schemes.
     is_child_or_young_person_for_legacy_benefits: [false, true]
     is_lone_parent: true
+    # Their £20,000 of earnings is not the parent's (HB Regs 2006 reg 25(3),
+    # IS Regs 1987 reg 23(2), CTR applicant-and-partner rules; #2387). The
+    # parent has no income of their own.
+    housing_benefit_applicable_income: 0
+    income_support_applicable_income: 0
+    council_tax_reduction_applicable_income: 0
 
 - name: Case 12, reg. 7(3) does not stop Child Benefit payable through another condition.
   period: 2026
