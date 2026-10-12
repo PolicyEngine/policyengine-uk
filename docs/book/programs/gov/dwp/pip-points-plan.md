@@ -5,9 +5,9 @@
 and mobility **band** as a categorical input (`pip_dl_category` and
 `pip_m_category`, each `STANDARD | ENHANCED | NONE`) and multiplies by
 the published weekly rate. The **points-system** logic that determines
-which band a claimant falls into — ten daily-living activities and two
-mobility activities, each scored 0–12 points under the legislation — is
-**not** modelled.
+which band a claimant falls into (ten daily-living activities and two
+mobility activities, with descriptors worth 0 to 12 points under the
+legislation) is **not** modelled.
 This page captures the proposed scope, tracked under
 [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
 ```
@@ -21,22 +21,32 @@ with the category derived from points only when it is not given as an
 input. That is a simpler form of Phase 1 below: no per-activity scores
 and no `use_point_system` switch, since a category input already takes
 precedence over the formula.
+
+PR #1661 is waiting on a data-side path. Its companion,
+[policyengine-uk-data #408](https://github.com/PolicyEngine/policyengine-uk-data/pull/408)
+(points imputed from the observed categories), was closed in June 2026
+in the uk-data archive clean-up, with PIP points derivation to move into
+Microcosm UK's source stages
+([microcosm #145](https://github.com/PolicyEngine/microcosm/issues/145))
+once the input variables exist here.
 ```
 
 ## What PIP scoring actually is
 
 The Personal Independence Payment is awarded on a **points-based**
-assessment defined in [SI 2013/377][si-377] (the Social Security
-(Personal Independence Payment) Regulations 2013):
+assessment defined in Schedule 1 to [SI 2013/377][si-377] (the Social
+Security (Personal Independence Payment) Regulations 2013):
 
-- **Part 2: Daily living activities** — ten activities (preparing food,
+- **Part 2: Daily living activities**: ten activities (preparing food,
   taking nutrition, managing therapy, washing and bathing, managing
   toilet needs, dressing and undressing, communicating verbally,
   reading and understanding signs and symbols, engaging with other
   people face-to-face, making budgeting decisions). Each activity has
-  a set of descriptors with point values from 0 to 12.
-- **Part 3: Mobility activities** — two activities (planning and
-  following a journey, moving around). Same descriptor-based scoring.
+  a set of descriptors with point values from 0 up to 12; the top
+  value varies by activity.
+- **Part 3: Mobility activities**: two activities (planning and
+  following a journey, moving around), each with descriptors worth up
+  to 12 points.
 
 The award rule:
 
@@ -46,7 +56,7 @@ The award rule:
 | 8–11 | Standard rate |
 | 12+ | Enhanced rate |
 
-Daily living and mobility are scored independently — a claimant can be
+Daily living and mobility are scored independently, so a claimant can be
 on standard daily-living and enhanced mobility, or any other
 combination.
 
@@ -58,9 +68,10 @@ sufficient because:
 - the FRS doesn't capture activity-level point scores at all,
 - DWP's published caseload reports band counts (standard / enhanced)
   rather than activity scores,
-- the data pipeline (now Microcosm UK) sets `pip_dl_category` /
-  `pip_m_category` from the PIP components respondents report in the
-  FRS.
+- the data pipeline (now Microcosm UK) sets `pip_dl_category` and
+  `pip_m_category` by comparing the weekly PIP daily-living and mobility
+  amounts respondents report in the FRS with the standard and enhanced
+  rates.
 
 So for headline distributional and fiscal analysis the categorical
 inputs are correct.
@@ -69,23 +80,23 @@ inputs are correct.
 
 Three reform scenarios that the categorical model can't answer:
 
-1. **Activity-level descriptor reform** — e.g. the April 2024 green paper
-   proposed changing the descriptors, and the March 2025 *Pathways to
+1. **Activity-level descriptor reform**: for example, the April 2024
+   green paper consulted on changing the descriptors, and the March 2025 *Pathways to
    Work* green paper proposed requiring at least four points in one
    daily-living activity for the daily-living component. The government
    withdrew the four-point change in July 2025, pending a review of the
    PIP assessment. A categorical input can't capture
    this; the categorical band wouldn't shift unless an analyst manually
    re-bands a synthetic distribution.
-2. **Threshold reform** — changing the band thresholds (e.g. raising
+2. **Threshold reform**: changing the band thresholds (for example raising
    the standard-rate floor from 8 to 10 points). Same limitation.
-3. **Targeted analysis by descriptor** — distributional questions like
+3. **Targeted analysis by descriptor**: distributional questions like
    "how does the enhanced cohort split between mobility activities" need
    the underlying activity scores.
 
 ## Proposed scope
 
-### Phase 1 — points-to-category mapping
+### Phase 1: points-to-category mapping
 
 - Add the threshold parameters under `gov/dwp/pip/`:
   - `daily_living/standard_threshold.yaml` (8)
@@ -109,7 +120,7 @@ This is a strict superset of the current model: the categorical input
 remains authoritative by default, and analysts opting into the points
 machinery (for reform analysis) get the activity-level surface.
 
-### Phase 2 — descriptor-level parameters
+### Phase 2: descriptor-level parameters
 
 - Per-activity descriptor tables under `gov/dwp/pip/descriptors/`,
   encoding the point value of each descriptor in SI 2013/377. The
@@ -120,7 +131,7 @@ machinery (for reform analysis) get the activity-level surface.
 - Reform-side: descriptor point values are then parameters that can be
   perturbed for "what if descriptor X scored 4 instead of 6" analyses.
 
-### Phase 3 — data-side imputation
+### Phase 3: data-side imputation
 
 - The FRS provides PIP payment amounts but not descriptor selections.
   The data pipeline (Microcosm UK) would need to impute descriptor selections per
@@ -146,11 +157,11 @@ machinery (for reform analysis) get the activity-level surface.
 
 ## References
 
-- [The Social Security (Personal Independence Payment) Regulations 2013 (SI 2013/377)][si-377] — Parts 2 and 3 define the point system.
+- [The Social Security (Personal Independence Payment) Regulations 2013 (SI 2013/377)][si-377]: Schedule 1, Parts 2 and 3 define the point system.
 - DWP, [Personal Independence Payment: Assessment guide][assess-guide].
-- DWP, [PIP statistics](https://www.gov.uk/government/collections/personal-independence-payment-statistics) — caseload by component and band.
-- DWP, [Modernising support for independent living: the health and disability green paper (April 2024)][green-paper] — proposals to restrict descriptors.
-- DWP, [Pathways to Work: Reforming Benefits and Support to Get Britain Working (March 2025)](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper) — the four-point proposal.
+- DWP, [PIP statistics](https://www.gov.uk/government/collections/personal-independence-payment-statistics: caseload by component and band.
+- DWP, [Modernising support for independent living: the health and disability green paper (April 2024)][green-paper]: proposals on the descriptors.
+- DWP, [Pathways to Work: Reforming Benefits and Support to Get Britain Working (March 2025)](https://www.gov.uk/government/consultations/pathways-to-work-reforming-benefits-and-support-to-get-britain-working-green-paper): the four-point proposal.
 - Issue: [#1069](https://github.com/PolicyEngine/policyengine-uk/issues/1069).
 - Existing model: `pip_dl_category`, `pip_m_category`, `pip_dl`, `pip_m`.
 
