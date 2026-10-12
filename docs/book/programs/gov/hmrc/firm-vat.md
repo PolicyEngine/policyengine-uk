@@ -18,8 +18,8 @@ Household-side VAT in PolicyEngine answers the question "what does this
 household pay in VAT on the goods and services it buys?" but it can't
 answer policy questions framed at the business side:
 
-- How does changing the VAT registration threshold (currently £90,000
-  annual turnover) affect the number of firms in scope, and through
+- How does changing the VAT registration threshold (£90,000 of taxable
+  turnover since 1 April 2024) affect the number of firms in scope, and through
   them the consumer prices that households face?
 - What's the revenue effect of moving a supply between standard, reduced
   and zero rates seen from the *supplier* side (input/output netting)?
@@ -31,7 +31,7 @@ net liability.
 
 ## Scope
 
-### Phase 1 — MVP
+### Phase 1: minimum viable product
 
 1. **`Firm` entity** with the bare attributes needed for the threshold
    and rate questions: `firm_turnover`, `firm_industry_sector`,
@@ -49,15 +49,16 @@ net liability.
    turnover and intermediate consumption.
 5. **`firm_net_vat_liability`** = output VAT − input VAT.
 
-### Phase 2 — distributional refinements
+### Phase 2: distributional refinements
 
-- **Flat-rate scheme** for small businesses (`gov.hmrc.vat.flat_rate_scheme/`).
+- **Flat-rate scheme** for small businesses (a new
+  `gov.hmrc.vat.firm.flat_rate_scheme` parameter tree).
 - **VAT groups** and partial exemption (de minimis rules for
   exempt-versus-taxable splits).
-- **Cross-border VAT** post-Brexit changes (Northern Ireland Protocol,
-  postponed accounting).
+- **Cross-border VAT** after Brexit (Northern Ireland under the Windsor
+  Framework, postponed VAT accounting on imports).
 
-### Phase 3 — incidence
+### Phase 3: incidence
 
 - **Pass-through** of VAT rate changes to consumer prices, joining up
   the household-side `vat` variable and the firm-side
@@ -112,15 +113,15 @@ meet in Phase 3.
 
 A new tree under `parameters/gov/hmrc/vat/firm/`:
 
-- `registration_threshold.yaml` — currently £90,000 from April 2024.
-- `deregistration_threshold.yaml` — currently £88,000 from April 2024.
+- `registration_threshold.yaml`: £90,000 from 1 April 2024.
+- `deregistration_threshold.yaml`: £88,000 from 1 April 2024.
 - Rates: reference the existing `gov/hmrc/vat/standard_rate.yaml` and
   `reduced_rate.yaml` rather than duplicating them. Zero-rated supplies
   need no rate parameter.
-- `sector_supply_split/` — share parameters by industry sector for the
+- `sector_supply_split/`: share parameters by industry sector for the
   standard/reduced/zero/exempt split (Phase 1.5 refinement; MVP can use
   a single national split per sector).
-- `flat_rate_scheme/` — Phase 2.
+- `flat_rate_scheme/`: Phase 2.
 
 ### Tests
 
@@ -134,11 +135,11 @@ A new tree under `parameters/gov/hmrc/vat/firm/`:
 ## Data needs
 
 This is the harder half of the project. Summary of where each Phase 1
-component sits w.r.t. our current data:
+component sits against our current data:
 
 | Component | Public source | FRS coverage | Datalab source |
 |-----------|---------------|--------------|----------------|
-| Firm turnover distribution | ONS *Business Demography* | sole-trader / partnership turnover via FRS self-employment income | HMRC Datalab — anonymised VAT returns |
+| Firm turnover distribution | ONS *Business Demography* | sole-trader / partnership turnover via FRS self-employment income | HMRC Datalab: anonymised VAT returns |
 | Industry sector | SIC codes from ONS *Inter-Departmental Business Register (IDBR)* | not in FRS | HMRC Datalab |
 | VAT registration share | HMRC *VAT statistics* (annual) | not in FRS | HMRC Datalab |
 | Input VAT shares | ONS *Supply and Use tables* | not applicable | HMRC Datalab |
@@ -177,10 +178,9 @@ files (#1333) used to size each step before they are productionised.
 ## Open questions
 
 - Should the synthetic firm panel live in the data pipeline or in this
-  repo? Recommendation: in the data pipeline, which for PolicyEngine UK is
-  now [Microcosm UK](https://github.com/PolicyEngine/microcosm) (it replaced
-  the Enhanced FRS build; its first certified national release is dated
-  4 October 2026), with the rules variables here.
+  repo? Recommendation: in the data pipeline
+  ([Microcosm UK](https://github.com/PolicyEngine/microcosm)), with the
+  rules variables here.
 - Do we need to model Making Tax Digital filing-frequency mechanics, or
   is annualised liability sufficient for nowcasting purposes?
 - HMRC Datalab access for anonymised VAT returns: pursue, or stick to
@@ -189,10 +189,10 @@ files (#1333) used to size each step before they are productionised.
 ## References
 
 - HMRC, [VAT rates](https://www.gov.uk/vat-rates) and [VAT registration thresholds](https://www.gov.uk/vat-registration-thresholds).
-- [Value Added Tax Act 1994](https://www.legislation.gov.uk/ukpga/1994/23/contents) — primary statute.
-- HMRC, [VAT statistics](https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics) — annual outturn used for calibration.
+- [Value Added Tax Act 1994](https://www.legislation.gov.uk/ukpga/1994/23/contents): primary statute.
+- HMRC, [VAT statistics](https://www.gov.uk/government/statistics/value-added-tax-vat-annual-statistics): annual outturn used for calibration.
 - ONS, [UK Business: Activity, Size and Location](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation) (the IDBR-based business demography release).
-- ONS, [Supply and Use tables](https://www.ons.gov.uk/economy/nationalaccounts/supplyandusetables) — intermediate consumption shares.
+- ONS, [Supply and Use tables](https://www.ons.gov.uk/economy/nationalaccounts/supplyandusetables): intermediate consumption shares.
 - Companion analysis repo: [`policyengine/uk-vatlab`][vatlab] (#1333).
 
 [vatlab]: https://github.com/policyengine/uk-vatlab
