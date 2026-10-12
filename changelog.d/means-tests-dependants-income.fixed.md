@@ -1,0 +1,1 @@
+Housing Benefit, Income Support, tax credit and Council Tax Reduction means tests no longer count a child's or young person's own income, tax or personal benefits as the claimant's (HB Regs 2006 reg 25(3), IS Regs 1987 reg 23(2), Tax Credits (Definition and Calculation of Income) Regs 2002 reg 3(1), the Council Tax Reduction applicant-and-partner rules).
