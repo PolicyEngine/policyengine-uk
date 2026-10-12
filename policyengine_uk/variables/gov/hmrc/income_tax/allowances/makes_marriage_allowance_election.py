@@ -6,12 +6,15 @@ BRANCH_OUTPUTS = [
     "marriage_allowance_tax_reduction_limit",
     "meets_marriage_allowance_income_conditions",
 ]
-# Inputs to income tax that do not depend on the election. Resolving them
-# before branching lets both branches reuse them, and keeps the result
-# independent of which variable a caller asks for first (a reform that
-# branches inside adjusted_net_income would otherwise see a cached election).
+# Inputs to income tax that do not depend on the election. They are resolved
+# before branching and held at the simulation's values in both branches, so
+# the result does not depend on which variable a caller asks for first, and a
+# choice made in branches upstream of them (a reform's split of adjusted net
+# income, or a labour supply response in employment income) is not made again
+# for the counterfactual.
 INDEPENDENT_OF_ELECTION = [
     "age",
+    "employment_income",
     "adjusted_net_income",
     "gift_aid_grossed_up",
     "gift_aid",
@@ -30,16 +33,19 @@ INDEPENDENT_OF_ELECTION = [
 ]
 
 
-def tax_position(simulation, name, period, relinquished, property_route):
+def tax_position(simulation, name, period, relinquished, held):
     """Each person's tax with no election in force and the given allowance cut.
 
     The branch holds the election off, so no one gains a reduction, and cuts
     each person's personal allowance by ``relinquished`` (ITA 2007 s. 55B(6)).
-    It also holds each person's property allowance route at
-    ``property_route``, the route the simulation uses. Inputs set on a branch
-    invalidate the values derived from them (policyengine-core 3.33), so
-    without it the branch would choose a route of its own for the
-    counterfactual it represents.
+    It also holds each variable in ``held`` at the given values, the
+    simulation's own: the inputs to income tax the election does not change,
+    and the property allowance route. From policyengine-core 3.33, an input
+    set on a branch drops what the branch holds that may have been calculated
+    from the value it replaces. A choice the simulation made in branches of
+    its own before this election (the property allowance route, say) was
+    weighed with an election in force there, so without these inputs the
+    branch would make that choice again for the counterfactual it represents.
     The branch shares the simulation's cached arrays until it writes, and is
     dropped afterwards so a later period starts from a fresh branch.
     """
@@ -53,7 +59,8 @@ def tax_position(simulation, name, period, relinquished, property_route):
             np.zeros(len(relinquished), dtype=bool),
         )
         branch.set_input("marriage_allowance_relinquished", period, relinquished)
-        branch.set_input("uses_property_allowance", period, property_route)
+        for variable, values in held.items():
+            branch.set_input(variable, period, values)
         population = branch.populations["person"]
         return {variable: population(variable, period) for variable in BRANCH_OUTPUTS}
     finally:
@@ -91,28 +98,29 @@ class makes_marriage_allowance_election(Variable):
     ]
 
     def formula(person, period, parameters):
-        for variable in INDEPENDENT_OF_ELECTION:
-            person(variable, period)
+        held = {
+            variable: person(variable, period) for variable in INDEPENDENT_OF_ELECTION
+        }
         spouse = person("is_marriage_allowance_spouse", period)
         transferable = person("marriage_allowance_transferable_amount", period)
         # The property allowance route (ITTOIA 2005 s. 783BL) is settled
         # first, each route weighed with the election it would bring. The
         # election is then weighed under that route.
-        property_route = person("uses_property_allowance", period)
+        held["uses_property_allowance"] = person("uses_property_allowance", period)
         simulation = person.simulation
         without = tax_position(
             simulation,
             "marriage_allowance_without_election",
             period,
             np.zeros_like(transferable),
-            property_route,
+            held,
         )
         relinquishing = tax_position(
             simulation,
             "marriage_allowance_relinquishing",
             period,
             spouse * transferable,
-            property_route,
+            held,
         )
 
         def partner(values):
