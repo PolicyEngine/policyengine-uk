@@ -1,0 +1,1 @@
+- Added a Fix evidence pull request check using a trusted base-branch checker to require bug fixes to name a collectable Python or executable YAML test from the PR's git objects, with an exemption only when model files and dependencies are unchanged.

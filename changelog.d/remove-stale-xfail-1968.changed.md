@@ -1,1 +1,0 @@
-- Removed the stale non-strict expected failure for the 2023-24 Class 4 lower profits limit (#1968, fixed by #2058), so the alignment test now asserts that year.
