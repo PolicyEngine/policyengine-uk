@@ -4,14 +4,17 @@ from policyengine_uk.model_api import *
 class in_receipt_of_savings_credit_only(Variable):
     label = "in receipt of Savings Credit only"
     documentation = (
-        "Whether the claimant or partner in this benefit unit has an award of "
-        "Pension Credit comprising only the savings credit: the benefit unit is "
-        "eligible for Pension Credit, claims it, is paid Pension Credit, its "
-        "Savings Credit is positive and it has no Guarantee Credit. A Savings "
-        "Credit computed under a reform that stops Pension Credit being paid "
-        "is not received. Under the Pension Credit freeze the baseline receipt "
-        "is kept while Pension Credit is still paid, because the frozen award "
-        "is the baseline award."
+        "Whether the claimant or partner in this benefit unit has an award of Pension "
+        "Credit comprising only the savings credit: the benefit unit is eligible for "
+        "Pension Credit, claims it, is paid Pension Credit, its Savings Credit is "
+        "positive and it has no Guarantee Credit. A Savings Credit computed under a "
+        "reform that stops Pension Credit being paid is not received; under "
+        "disable_simulated_benefits, which sets Pension Credit to the reported amount, "
+        "receipt also needs reported Pension Credit. A payment stands in for the "
+        "award: the model does not withhold awards of less than 10 pence a week (State "
+        "Pension Credit Regulations 2002 reg 13), so every claimed award is paid. "
+        "Under the Pension Credit freeze the baseline receipt is kept while Pension "
+        "Credit is still paid, because the frozen award is the baseline award."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -19,6 +22,9 @@ class in_receipt_of_savings_credit_only(Variable):
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/1",
         "https://www.legislation.gov.uk/ukpga/2002/16/section/3",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/13",
+        "https://www.legislation.gov.uk/uksi/2012/2885/schedule/1/paragraph/14",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/27",
     )
 
     def formula(benunit, period, parameters):

@@ -69,11 +69,12 @@ COUNTRIES = {
     "WALES": "CARDIFF",
     "SCOTLAND": "GLASGOW_CITY",
 }
-# Savings credit needs State Pension age reached before 6 April 2016, so
-# aged 80 or over in 2026 is safely inside and 67 to 76 is over State
-# Pension age but outside.
+# Savings credit needs State Pension age reached before 6 April 2016. With
+# no sex given (so male), the model's age rule is met in 2026 at 76 or over
+# and not at 67 to 75, so 80 or over is safely inside and 67 to 75 is over
+# State Pension age but outside.
 SAVINGS_CREDIT_AGE = st.integers(80, 100)
-PENSION_AGE = st.one_of(st.integers(67, 76), SAVINGS_CREDIT_AGE)
+PENSION_AGE = st.one_of(st.integers(67, 75), SAVINGS_CREDIT_AGE)
 WORKING_AGE = st.integers(18, 60)
 SHAPES = {
     "single_pension": [PENSION_AGE],
