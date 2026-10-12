@@ -1,3 +1,18 @@
+## [2.127.0] - 2026-10-12
+
+### Added
+
+- - Added a Fix evidence pull request check using a trusted base-branch checker to require bug fixes to name a collectable Python or executable YAML test from the PR's git objects, with an exemption only when model files and dependencies are unchanged.
+
+### Changed
+
+- - Publish only the policyengine-uk release files whose checks passed. The release workflow makes the version commit on the latest main, retrying instead of failing when main moves. It builds the wheel and sdist once from that commit and runs the full test suite on the installed wheel in the locked environment. It uploads the same files only after the tests pass, and tags that exact commit, failing on tag errors. CI tests now fail on any skip, expected failure or XPASS that is not on a reviewed allowlist.
+
+### Fixed
+
+- - `in_receipt_of_savings_credit_only` now requires a Pension Credit payment, so a reform that stops Pension Credit being paid no longer leaves savings-credit-only families assessed on the Pension Credit route for Council Tax Reduction and pension-age Housing Benefit, with or without the Pension Credit freeze. Under `disable_simulated_benefits`, which sets Pension Credit to the reported amount, receipt now also needs reported Pension Credit.
+
+
 ## [2.126.12] - 2026-10-12
 
 ### Fixed
