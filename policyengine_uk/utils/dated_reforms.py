@@ -79,9 +79,10 @@ The tax-benefit system keeps every dated change and legacy override it has
 been given. Any later rebuild of its parameters (another call to
 ``Simulation.apply_parameter_changes``, or a modifier that reloads and
 reprocesses the parameters, as ``no_economic_assumptions`` does) writes them
-all again, onto the parameters as that modifier left them. A rebuild does
-not keep other edits to the processed parameters, such as a structural
-reform's.
+all again, onto the parameters as that modifier left them. Nodes a
+structural reform added to the processed parameters (a new parameter, or a
+band appended to a scale) are added back (``graft_missing_nodes``); other
+edits made directly to existing processed parameters are not kept.
 
 ``Scenario.apply`` on an already-built simulation never rebuilds: it edits
 the annualised parameters, as it always has, so every change it makes is a
@@ -96,7 +97,7 @@ import warnings
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
 
-from policyengine_core.parameters import Parameter, ParameterNode
+from policyengine_core.parameters import Parameter, ParameterNode, ParameterScale
 from policyengine_core.parameters.parameter_at_instant import ParameterAtInstant
 from policyengine_core.periods import Instant, Period, instant, period
 
@@ -500,6 +501,43 @@ def copy_timelines(timelines: Dict[str, Timeline]) -> Dict[str, Timeline]:
         name: [_entry(name, entry.instant_str, entry.value) for entry in timeline]
         for name, timeline in timelines.items()
     }
+
+
+def graft_missing_nodes(
+    source: ParameterNode, target: ParameterNode, root: bool = True
+) -> List[str]:
+    """Add to ``target`` copies of the nodes ``source`` has and it lacks.
+
+    A rebuild or a reload starts from the YAML, so nodes a structural
+    reform added to the processed parameters (``parameters.add_child``, or
+    a bracket appended to a scale) would otherwise be lost. Existing
+    parameters are left as ``target`` has them, and the root's ``baseline``
+    child, which every processing builds again, is skipped. Added nodes are
+    copies of ``source``'s, not processed again. Returns the names of the
+    nodes added.
+    """
+    added = []
+    for key, child in source.children.items():
+        if root and key == "baseline":
+            continue
+        existing = target.children.get(key)
+        if existing is None:
+            target.add_child(key, child.clone())
+            added.append(child.name)
+        elif isinstance(child, ParameterNode) and isinstance(existing, ParameterNode):
+            added += graft_missing_nodes(child, existing, root=False)
+        elif isinstance(child, ParameterScale) and isinstance(existing, ParameterScale):
+            for bracket, existing_bracket in zip(child.brackets, existing.brackets):
+                added += graft_missing_nodes(bracket, existing_bracket, root=False)
+            extra = child.brackets[len(existing.brackets) :]
+            for bracket in extra:
+                copy = bracket.clone()
+                copy.parent = existing
+                existing.brackets.append(copy)
+                added.append(bracket.name)
+            if extra:
+                existing.clear_parent_cache()
+    return added
 
 
 def tree_defines(parameters: ParameterNode) -> Callable[[str], bool]:
