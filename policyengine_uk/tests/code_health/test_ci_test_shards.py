@@ -871,6 +871,14 @@ def test_the_release_tells_policyengine_py_only_after_pypi_has_it():
     assert confirm < token < dispatch
     for index in (token, dispatch):
         assert publish["steps"][index]["continue-on-error"] is True
+        # A hung step must not use up the job before the tag step runs.
+        assert publish["steps"][index]["timeout-minutes"] <= 5
+    token_inputs = publish["steps"][token]["with"]
+    assert token_inputs["repositories"] == "policyengine.py"
+    assert token_inputs["permission-contents"] == "write"
+    assert publish["steps"][dispatch]["if"] == (
+        "steps.dispatch-token.outcome == 'success'"
+    )
     run = publish["steps"][dispatch]["run"]
     assert "repos/PolicyEngine/policyengine.py/dispatches" in run
     assert "event_type=policyengine-uk-release" in run

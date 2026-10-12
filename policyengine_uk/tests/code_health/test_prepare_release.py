@@ -214,7 +214,11 @@ def test_a_versioned_tip_means_no_release(remote, tmp_path):
     assert third["version"] == "1.2.5"
 
 
-def test_a_release_extends_main_by_one_version_commit(remote, tmp_path):
+def test_a_release_extends_main_by_one_version_commit(remote, tmp_path, monkeypatch):
+    # Bytecode writing on, as on a runner, so the no-__pycache__ check below
+    # tests prepare_release.py rather than this machine's settings.
+    monkeypatch.setattr(sys, "dont_write_bytecode", False)
+    monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
     work = clone(remote, tmp_path / "work")
     before = git(remote, "rev-parse", "main")
 

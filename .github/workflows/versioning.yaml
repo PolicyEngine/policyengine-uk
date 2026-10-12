@@ -375,8 +375,9 @@ jobs:
     if: needs.Versioning.outputs.publish == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # The environment the PyPI credential is meant to live in, limited to
-    # main, so that no other branch's workflow can read it.
+    # The environment the PyPI credential is meant to live in. Once its
+    # protection rules allow only main (an admin setting, not set here), no
+    # other branch's workflow can read that credential.
     environment: pypi
     # One Publish per version at a time: two runs releasing the same version
     # commit (a re-run beside the original) upload and tag in turn, and the
@@ -444,15 +445,19 @@ jobs:
       - name: Generate a token for policyengine.py
         id: dispatch-token
         continue-on-error: true
+        timeout-minutes: 2
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.APP_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
           owner: PolicyEngine
           repositories: policyengine.py
+          # A repository dispatch needs contents: write and nothing more.
+          permission-contents: write
       - name: Tell policyengine.py the release is on PyPI
         if: steps.dispatch-token.outcome == 'success'
         continue-on-error: true
+        timeout-minutes: 2
         env:
           GH_TOKEN: ${{ steps.dispatch-token.outputs.token }}
           VERSION: ${{ needs.Versioning.outputs.version }}
