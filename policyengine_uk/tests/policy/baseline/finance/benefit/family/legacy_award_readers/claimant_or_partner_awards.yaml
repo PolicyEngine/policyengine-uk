@@ -1,0 +1,393 @@
+# claimant_or_partner_esa_income and claimant_or_partner_jsa_income: the
+# income-related award on the claimant's and partner's reported amounts, with
+# the same capital test as esa_income and jsa_income. "other" is a member who
+# is neither the claimant, the partner nor a child or young person they are
+# responsible for (an adult, not in education, with an explicit role), so
+# their award is their own claim. It still counts in esa_income / jsa_income.
+# Capital: tariff income is £1 a week for each £250, or part, above £6,000
+# (ESA Regs 2008 reg 118; JSA Regs 1996 reg 116), times 52 weeks.
+
+- name: The claimant's own income-related ESA is the claimant-or-partner award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    esa_income: 3_000
+    claimant_or_partner_esa_income: 3_000
+
+- name: The partner's income-related ESA is the claimant-or-partner award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+  output:
+    esa_income: 3_000
+    claimant_or_partner_esa_income: 3_000
+
+- name: Another member's income-related ESA is household income but not the claimant's award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+
+- name: The claimant-or-partner ESA award takes the same tariff income from capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+        savings: 10_000
+  output:
+    # (10,000 - 6,000) / 250 = 16 steps; 16 x £1 x 52 = £832.
+    esa_income_tariff_income: 832
+    esa_income: 7_168  # 3,000 + 5,000 - 832
+    claimant_or_partner_esa_income: 2_168  # 3,000 - 832
+
+- name: Capital above the income-related ESA limit removes the claimant-or-partner award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+        savings: 16_001
+  output:
+    esa_income: 0
+    claimant_or_partner_esa_income: 0
+
+- name: A directly entered esa_income is the claimant's award whatever another member reports
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        esa_income: 3_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    claimant_or_partner_esa_income: 3_000
+
+- name: A directly entered zero esa_income overrides the claimant's report
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+        esa_income: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    claimant_or_partner_esa_income: 0
+
+- name: The claimant's own income-based JSA is the claimant-or-partner award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    jsa_income: 3_000
+    claimant_or_partner_jsa_income: 3_000
+
+- name: Another member's income-based JSA is household income but not the claimant's award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    jsa_income: 4_000
+    claimant_or_partner_jsa_income: 0
+
+- name: The claimant-or-partner JSA award takes the same tariff income from capital
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+    households:
+      household:
+        members: [claimant, other]
+        savings: 7_000
+  output:
+    # (7,000 - 6,000) / 250 = 4 steps; 4 x £1 x 52 = £208.
+    jsa_income_tariff_income: 208
+    jsa_income: 6_792  # 3,000 + 4,000 - 208
+    claimant_or_partner_jsa_income: 2_792  # 3,000 - 208
+
+- name: No claimant-or-partner JSA award once income-based JSA has closed
+  period: 2027
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        jsa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant]
+    households:
+      household:
+        members: [claimant]
+  output:
+    jsa_income: 0
+    claimant_or_partner_jsa_income: 0
+
+- name: A directly entered jsa_income is the claimant's award whatever another member reports
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        jsa_income: 2_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    claimant_or_partner_jsa_income: 2_000
+
+- name: An esa_income entered for an earlier year only does not make another member's award the claimant's
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        esa_income:
+          2024: 1_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+
+- name: A jsa_income entered for an earlier year only does not make another member's award the claimant's
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        jsa_income:
+          2024: 1_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    jsa_income: 4_000
+    claimant_or_partner_jsa_income: 0
+
+- name: An entered claimant-or-partner award is the claimant's whatever another member reports
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 3_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        esa_income: 3_000
+        claimant_or_partner_esa_income: 3_000
+    households:
+      household:
+        members: [claimant, other]
+  output:
+    # esa_income alone equals the other member's report, so it would be read
+    # through the reports; entering the scoped award states whose it is.
+    claimant_or_partner_esa_income: 3_000
+    council_tax_reduction_relevant_income_based_benefit: true
+
+- name: The claimant's raw reported award passes through when esa_income holds the raw total
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 200
+    benunits:
+      benunit:
+        members: [claimant]
+        esa_income: 200
+    households:
+      household:
+        members: [claimant]
+        savings: 10_000
+  output:
+    # The formula would give max(0, 200 - 832) = 0; the stored 200 is the raw
+    # total of the reports (as the disable_simulated_benefits reform sets),
+    # so the claimant's raw report is used.
+    claimant_or_partner_esa_income: 200
+
+- name: A stored zero esa_income is never the claimant's award
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 0.004
+    benunits:
+      benunit:
+        members: [claimant]
+        esa_income: 0
+    households:
+      household:
+        members: [claimant]
+  output:
+    claimant_or_partner_esa_income: 0
+    council_tax_reduction_relevant_income_based_benefit: false

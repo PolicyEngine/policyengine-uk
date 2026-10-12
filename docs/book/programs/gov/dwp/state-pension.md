@@ -79,7 +79,10 @@ timetable row by row:
 A person attains State Pension age on the later of the two. The model
 places each person's date of birth with `age` and
 `months_since_last_birthday`, which counts months since their last
-birthday on 6 October, the middle of the fiscal year:
+birthday on 6 October, the middle of the fiscal year. `date_of_birth` holds
+the resulting day (as a YYYYMMDD number), which other date-of-birth rules
+also read, such as the 6 April 2017 cutoffs in Universal Credit, Child Tax
+Credit and Pension Credit:
 
 - `state_pension_age` is the person's own State Pension age;
 - `months_since_state_pension_age` is how long before 6 October they
@@ -93,7 +96,12 @@ the exact age on 6 October, overriding `months_since_last_birthday` even
 when another person supplies birthday months. The default implies a birth
 date of 6 April: an entered age of 66 is above State Pension age at the
 6 October check in 2026-27 and below it in 2027-28. Set a fractional age
-or `months_since_last_birthday` to specify a different inferred birth date.
+or `months_since_last_birthday` to specify a different inferred birth date,
+or set `date_of_birth` directly (a YYYYMMDD number, with `age` as the age on
+6 October): `state_pension_age`, `months_since_state_pension_age`,
+`is_SP_age`, the State Pension Credit qualifying age and its attainment, and
+the Savings Credit age test then all follow that day. A value that is not a
+calendar date, or that gives a different age, raises an error.
 Survey microdata records whole years only, so in
 simulations built from data, including a region or constituency filtered
 from it, each single year of age and sex is spread evenly over the year by
@@ -101,6 +109,36 @@ weight, and `filter_dataset` carries each person's place into a household it
 extracts. The weighted share of each age over State Pension age then matches
 the statute: three quarters of 66-year-olds in 2026-27, a quarter in 2027-28
 and none from 2028-29.
+
+Other programmes test State Pension age in two ways:
+
+- **The qualifying age for State Pension Credit** (State Pension Credit Act
+  2002 s.1(6)) is a woman's State Pension age, and for a man the State
+  Pension age of a woman born on the same day. `state_pension_credit_qualifying_age`
+  applies the timetable without rule (1), and
+  `has_attained_state_pension_credit_qualifying_age` is whether it is reached
+  by 6 October. Pension Credit, Universal Credit (Welfare Reform Act 2012
+  s.4(1)(b)), Housing Benefit (Housing Benefit Regulations 2006 reg 5 in both
+  sets), Council Tax Reduction's pension-age schemes, Income Support
+  (SSCBA 1992 s.124(1)(aa)), the benefit cap (which reaches only
+  working-age Housing Benefit and Universal Credit) and Winter Fuel Payment
+  (to September 2024) use it. It differs from
+  `is_SP_age` only for men born before 6 December 1953, so only in 2018-19
+  and earlier: a man born on 6 April 1952 reached it on 6 May 2014, nearly
+  three years before his State Pension age of 65.
+- **Class 4 National Insurance** stops from the first tax year that begins on
+  or after the day State Pension age is reached: a person over it at the
+  beginning of the tax year (6 April) is excepted (Social Security
+  (Contributions) Regulations 2001 reg 91(a)), so `ni_class_4_liable` needs
+  `months_since_state_pension_age` below 6. Someone who reaches it on 6 April
+  itself is read as over it at the beginning of that year. With default
+  whole-number ages in a household situation, the inferred birthday is
+  6 April. Entering an integer State Pension age therefore makes this
+  boundary reading determine the Class 4 result; fractional ages, explicit
+  birthday-month inputs and a `date_of_birth` input can place the birthday on
+  another day. Class 1 employee
+  contributions stop at State Pension age itself (SSCBA 1992 s.6(3)), which
+  the annual model reads as `is_SP_age`.
 
 A person attains an age at the start of the anniversary of their birth
 (Family Law Reform Act 1969 s.9(1)), and an age of "N years and M months" on

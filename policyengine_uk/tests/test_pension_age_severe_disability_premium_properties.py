@@ -215,9 +215,21 @@ def test_premiums_follow_the_pension_age_and_working_age_schedules(adults, age):
     def get(variable):
         return float(simulation.calculate(variable, YEAR)[0])
 
-    pension_age = bool(simulation.calculate("is_SP_age", YEAR).any())
+    # The premium needs a claimant or partner over the State Pension Credit
+    # qualifying age; HB's own regime switch then chooses the schedule.
+    over_qualifying_age = bool(
+        (
+            simulation.calculate("is_claimant_or_partner", YEAR)
+            & simulation.calculate(
+                "has_attained_state_pension_credit_qualifying_age", YEAR
+            )
+        ).any()
+    )
+    pension_regulations = bool(
+        simulation.calculate("housing_benefit_pension_age_regulations_apply", YEAR)[0]
+    )
     premium = get("pension_age_severe_disability_premium")
-    if pension_age:
+    if over_qualifying_age:
         weekly_rate = float(
             simulation.tax_benefit_system.parameters(
                 YEAR
@@ -232,9 +244,13 @@ def test_premiums_follow_the_pension_age_and_working_age_schedules(adults, age):
         assert (
             abs(premium - get("severe_disability_minimum_guarantee_addition")) < 0.005
         )
-        expected = premium + get("carer_premium")
     else:
         assert premium == 0
+    # Reg 5 needs the qualifying age, so the pension-age schedule implies it.
+    assert over_qualifying_age or not pension_regulations
+    if pension_regulations:
+        expected = premium + get("carer_premium")
+    else:
         expected = sum(
             get(variable)
             for variable in [

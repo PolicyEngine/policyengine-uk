@@ -1,0 +1,36 @@
+description: Share of the costs of dwelling-related loans that cannot be deducted in calculating property business profits, and is relieved as a tax reduction instead.
+values:
+  2005-04-06:
+    value: 0
+    reference:
+      - title: Finance (No. 2) Act 2015 s. 24 (inserts the restriction, which has effect from 2017-18)
+        href: https://www.legislation.gov.uk/ukpga/2015/33/section/24
+  2017-04-06:
+    value: 0.25
+    reference:
+      - title: Income Tax (Trading and Other Income) Act 2005 s. 272A(1)
+        href: https://www.legislation.gov.uk/ukpga/2005/5/section/272A
+  2018-04-06:
+    value: 0.5
+    reference:
+      - title: Income Tax (Trading and Other Income) Act 2005 s. 272A(2)
+        href: https://www.legislation.gov.uk/ukpga/2005/5/section/272A
+  2019-04-06:
+    value: 0.75
+    reference:
+      - title: Income Tax (Trading and Other Income) Act 2005 s. 272A(3)
+        href: https://www.legislation.gov.uk/ukpga/2005/5/section/272A
+  2020-04-06:
+    value: 1
+    reference:
+      - title: Income Tax (Trading and Other Income) Act 2005 s. 272A(4)
+        href: https://www.legislation.gov.uk/ukpga/2005/5/section/272A
+metadata:
+  label: Disallowed share of residential property finance costs
+  period: year
+  unit: /1
+  reference:
+    - title: Income Tax (Trading and Other Income) Act 2005 s. 272A
+      href: https://www.legislation.gov.uk/ukpga/2005/5/section/272A
+    - title: Finance (No. 2) Act 2015 s. 24
+      href: https://www.legislation.gov.uk/ukpga/2015/33/section/24

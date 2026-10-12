@@ -23,7 +23,7 @@ class share_of_household_rent(Variable):
         person = benunit.members
         liable = person("is_liable_for_household_rent", period)
         liable_people = benunit.max(person.household.sum(liable))
-        head_family = benunit.any(person("is_household_head", period))
+        head_family = benunit("benunit_contains_household_head", period)
         return where(
             liable_people > 0,
             benunit.sum(liable) / max_(liable_people, 1),

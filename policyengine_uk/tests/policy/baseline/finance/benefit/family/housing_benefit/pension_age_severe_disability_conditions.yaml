@@ -1,12 +1,12 @@
 # HB(SPC) Regs 2006 Sch 3 para 6, with the non-dependant definition in
 # reg 3: these cases assert final awards without a Guarantee Credit passport.
 # The final HB and CTR awards include the model's current income rules,
-# including two known defects outside this PR: no Savings Credit in HB
-# income for a savings-credit-only claimant (#2112), and no non-dependant
-# deduction exemption for a claimant on Attendance Allowance (#2007). The
-# premium and applicable-amount assertions do not depend on them. Each HB
-# award is the rent less 65% of income after tax above the applicable
-# amount; State Pension gets no earnings disregard (#1908).
+# including a known defect outside this file: no non-dependant deduction
+# exemption for a claimant on Attendance Allowance (#2007). The premium and
+# applicable-amount assertions do not depend on it. Each HB award is the
+# rent less 65% of income after tax, plus the savings credit where the award
+# is savings credit only (HB (SPC) Regs 2006 reg 27(4)(a)), above the
+# applicable amount; State Pension gets no earnings disregard (#1908).
 
 - name: One qualifying pensioner and a non-blind partner get no HB or CTR severe premium
   period: 2026
@@ -63,7 +63,10 @@
   output:
     guarantee_credit: 0
     pension_age_severe_disability_premium: 172.10 * 52
-    housing_benefit: 6_146.01
+    # Savings credit only (569.28): HB income is Pension Credit income plus
+    # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 569.28 =
+    # 370.03 below the figure without it.
+    housing_benefit: 5_775.98
     council_tax_benefit: 1_857.22
 
 - name: A qualifying pensioner with a blind non-qualifying partner gets one HB and CTR rate
@@ -92,7 +95,10 @@
   output:
     guarantee_credit: 0
     pension_age_severe_disability_premium: 86.05 * 52
-    housing_benefit: 5_317.52
+    # Savings credit only (59.44): HB income is Pension Credit income plus
+    # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 59.44 =
+    # 38.64 below the figure without it.
+    housing_benefit: 5_278.88
     council_tax_benefit: 1_704.27
 
 - name: A non-ignored adult resident blocks the pensioner's HB and CTR severe premium
@@ -163,7 +169,10 @@
     has_non_dependant_for_severe_disability_premium: [true, false]
     pension_age_severe_disability_premium: [0, 0]
     housing_benefit_applicable_amount: [13_312, 0]
-    housing_benefit: [3_898.70, 0]
+    # Savings credit only (908.46): HB income is Pension Credit income plus
+    # the savings credit (HB (SPC) Regs 2006 reg 27(4)(a)), 0.65 x 908.46 =
+    # 590.50 below the figure without it.
+    housing_benefit: [3_308.20, 0]
     council_tax_benefit: [1_097.91, 0]
 
 - name: A qualifying-benefit resident in another benefit unit can still be the pensioner's paid carer

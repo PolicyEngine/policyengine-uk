@@ -8,9 +8,9 @@ class council_tax_reduction_claims_are_joint(Variable):
     documentation = (
         "Whether the household's rent is shared between families, so that "
         "each family liable for it is jointly liable for the council tax and "
-        "claims Council Tax Reduction on its own part. Each such claim is "
-        "then assessed on the applicant's own family: its scheme "
-        "(council_tax_reduction_claim_pensioner) and its exemption from "
+        "claims Council Tax Reduction on its own part. Each claim, joint or "
+        "not, is assessed on the applicant's own family: its scheme "
+        "(council_tax_reduction_pensioner) and its exemption from "
         "non-dependant deductions "
         "(council_tax_reduction_applicant_has_non_dep_exemption)."
     )

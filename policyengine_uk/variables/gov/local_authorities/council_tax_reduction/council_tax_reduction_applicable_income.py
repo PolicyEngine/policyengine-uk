@@ -39,14 +39,30 @@ class council_tax_reduction_applicable_income(Variable):
         # Regs 2012 Sch 1 para 11); dropping dependants' own income is a follow-up.
         # Anyone else in the benefit unit does not count.
         person = benunit.members
-        members = person("is_claimant_or_partner", period) | person(
-            "is_child_or_young_person_for_legacy_benefits", period
+        # A household head who applies alone
+        # (council_tax_reduction_head_applies_alone) is not the benefit unit's
+        # claimant, so this mask has reached them only as a Child Benefit young
+        # person. The applicant's own income always counts (SSI 2021/249 reg
+        # 36(1)), so they stay counted where Scotland's working-age scheme no
+        # longer reads them as a young person.
+        applicant_counted_as_young_person = person(
+            "is_council_tax_reduction_applicant_or_partner", period
+        ) & person("is_child_or_young_person_for_legacy_benefits", period)
+        members = (
+            person("is_claimant_or_partner", period)
+            | person("is_child_or_young_person_for_council_tax_reduction", period)
+            | applicant_counted_as_young_person
         )
+        # Only the claimant's and partner's income-related awards: the scheme
+        # counts the applicant's and partner's income (Sch 1 para 11 above). A
+        # member outside the family who has an award of their own claims in their
+        # own right. Income Support already needs the claimant's or partner's own
+        # award (income_support_eligible).
         benunit_means_tested_benefits = [
             "child_benefit",
             "income_support",
-            "jsa_income",
-            "esa_income",
+            "claimant_or_partner_jsa_income",
+            "claimant_or_partner_esa_income",
             "universal_credit",
         ]
         personal_benefits = [
@@ -77,7 +93,7 @@ class council_tax_reduction_applicable_income(Variable):
         income_components = [
             "employment_income",
             "self_employment_income",
-            "property_income",
+            "property_income_after_finance_costs",
             "private_pension_income",
         ]
         bi = parameters(period).gov.contrib.ubi_center.basic_income

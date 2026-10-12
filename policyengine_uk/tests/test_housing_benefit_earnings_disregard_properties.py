@@ -5,11 +5,12 @@ SI 2006/213 Sch 4 (working age) and SI 2006/214 Sch 4 (pension age) disregard
 else's, plus the £17.10 additional earnings disregard where a work condition
 is met and net earnings at least equal the other disregards, the deductible
 childcare charges and £17.10. A claimant who, or whose partner, is on
-Income Support, income-based JSA or income-related ESA has all earnings
-disregarded (SI 2006/213 Sch 4 para 12), at any age: SI 2006/213 then applies
-whatever the claimant's age (reg 5(1)(b)).
+Universal Credit, Income Support, income-based JSA or income-related ESA has
+all earnings disregarded (SI 2006/213 Sch 4 para 12), at any age: SI 2006/213
+then applies whatever the claimant's age (reg 5(1)(b)).
 
-Invariants, for any generated population of families not on those benefits:
+Invariants, for any generated population of families not on those benefits
+(none claims Universal Credit):
 
 1. Bounds: 0 <= disregard <= min(net earnings, (£25 + £17.10) x 52), and
    net earnings never exceed the claimant's and partner's gross earnings.
@@ -143,6 +144,7 @@ def situation(units, earnings_bump=0.0, income_support=0.0, age_map=None):
             names.append(name)
         benunits[f"b{i}"] = {
             "members": names,
+            "would_claim_uc": {YEAR: False},
             "income_support": {YEAR: income_support},
             "jsa_income": {YEAR: 0.0},
             "esa_income": {YEAR: 0.0},

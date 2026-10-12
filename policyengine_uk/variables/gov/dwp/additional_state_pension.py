@@ -37,9 +37,25 @@ class additional_state_pension(Variable):
         #   BASIC → SERPS / S2P (pre-2016 earnings-related top-up)
         #   NEW   → Protected Payment (pre-2016 accrual exceeding the
         #           new flat rate, folded into NSP under current law)
+        # state_pension_reported was observed under the legislated rates, so
+        # split it at the baseline's data-year rate, not the reformed one.
+        # Otherwise a reform that also sets the data year's rate (an undated
+        # reform, or any reform in a simulation without a dataset, where the
+        # data year is the period) leaves the period-over-data-year ratio at 1,
+        # and state_pension does not follow the reform
+        # (PolicyEngine/policyengine-uk#2122).
+        baseline = getattr(simulation, "baseline", None)
+        legislated = (
+            baseline.tax_benefit_system.parameters
+            if baseline is not None
+            else parameters
+        ).gov.dwp.state_pension
         max_for_type_data = select(
             [pension_type == types.BASIC, pension_type == types.NEW],
-            [bsp_amount(data_year), nsp_amount(data_year)],
+            [
+                legislated.basic_state_pension.amount(data_year),
+                legislated.new_state_pension.amount(data_year),
+            ],
             default=0,
         )
         max_for_type_period = select(
@@ -53,10 +69,11 @@ class additional_state_pension(Variable):
             max_(reported - max_for_type_data, 0),
             0,
         )
-        uprating = where(
-            max_for_type_data > 0,
-            max_for_type_period / max_for_type_data,
-            1,
+        uprating = np.divide(
+            max_for_type_period,
+            max_for_type_data,
+            out=np.ones_like(max_for_type_data, dtype=float),
+            where=max_for_type_data > 0,
         )
         # No State Pension is paid before State Pension age. A computed type
         # is already NONE there; this also holds if the type is an input.

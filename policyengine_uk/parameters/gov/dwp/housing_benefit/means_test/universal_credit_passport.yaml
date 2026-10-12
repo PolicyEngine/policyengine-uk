@@ -1,0 +1,50 @@
+description: >-
+  Whether the Housing Benefit passport covers a claimant on Universal Credit:
+  the whole of the earnings, other income and capital of a claimant who is
+  entitled to Universal Credit, whether it is in payment or not, is
+  disregarded, as it is for a claimant on Income Support, income-based
+  Jobseeker's Allowance or income-related Employment and Support Allowance.
+  The universal credit words came into force on different dates in Great
+  Britain and Northern Ireland. Annual formulas read the value sampled on
+  30 April of the model year, so the limb applies from 2014-15 in Great
+  Britain and 2019-20 in Northern Ireland.
+great_britain:
+  description: Whether the Housing Benefit passport covers a claimant on Universal Credit in Great Britain. SI 2013/2070 inserted "universal credit," into SI 2006/213 Sch 4 para 12, Sch 5 para 4 and Sch 6 para 5, and the meaning of being on Universal Credit as reg 2(3B), from 28 October 2013.
+  values:
+    2006-03-06: false
+    2013-10-28: true
+  metadata:
+    label: Housing Benefit passport covers Universal Credit in Great Britain
+    unit: bool
+    period: year
+    reference:
+      - title: The Housing Benefit Regulations 2006, Schedule 4 paragraph 12
+        href: https://www.legislation.gov.uk/uksi/2006/213/schedule/4/paragraph/12
+      - title: The Housing Benefit Regulations 2006, Schedule 5 paragraph 4
+        href: https://www.legislation.gov.uk/uksi/2006/213/schedule/5/paragraph/4
+      - title: The Housing Benefit Regulations 2006, Schedule 6 paragraph 5
+        href: https://www.legislation.gov.uk/uksi/2006/213/schedule/6/paragraph/5
+      - title: The Housing Benefit Regulations 2006, regulation 2(3B)
+        href: https://www.legislation.gov.uk/uksi/2006/213/regulation/2
+      - title: The Universal Credit (Transitional Provisions) and Housing Benefit (Amendment) Regulations 2013, regulation 7
+        href: https://www.legislation.gov.uk/uksi/2013/2070/regulation/7
+northern_ireland:
+  description: Whether the Housing Benefit passport covers a claimant on Universal Credit in Northern Ireland. SR 2018/92 inserted "universal credit," into SR 2006/405 Sch 5 para 12, Sch 6 para 4 and Sch 7 para 5, and the meaning of being on Universal Credit as reg 2(3B), from 8 May 2018.
+  values:
+    2006-11-20: false
+    2018-05-08: true
+  metadata:
+    label: Housing Benefit passport covers Universal Credit in Northern Ireland
+    unit: bool
+    period: year
+    reference:
+      - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 5 paragraph 12
+        href: https://www.legislation.gov.uk/nisr/2006/405/schedule/5/paragraph/12
+      - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 6 paragraph 4
+        href: https://www.legislation.gov.uk/nisr/2006/405/schedule/6/paragraph/4
+      - title: The Housing Benefit Regulations (Northern Ireland) 2006, Schedule 7 paragraph 5
+        href: https://www.legislation.gov.uk/nisr/2006/405/schedule/7/paragraph/5
+      - title: The Housing Benefit Regulations (Northern Ireland) 2006, regulation 2(3B)
+        href: https://www.legislation.gov.uk/nisr/2006/405/regulation/2
+      - title: The Universal Credit (Persons Required to Provide Information, Miscellaneous Amendments and Saving and Transitional Provision) Regulations (Northern Ireland) 2018, regulation 4
+        href: https://www.legislation.gov.uk/nisr/2018/92/regulation/4

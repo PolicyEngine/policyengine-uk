@@ -9,8 +9,10 @@ class uc_assessable_capital(Variable):
     documentation = (
         "Universal Credit capital counted from the configured capital sources, "
         "each valued at market value less 10% where a sale would incur "
-        "expenses and less any debt secured on it (reg. 49(1)), "
-        "with benunit-reported overrides when available. PolicyEngine allocates "
+        "expenses and less any debt secured on it (reg. 49(1)). Where the "
+        "benefit unit's capital is recorded (uc_reported_capital, by default "
+        "benunit_reported_capital), that figure replaces them, as recorded. "
+        "PolicyEngine allocates "
         "the remaining household capital between unreported benefit units in "
         "proportion to their claimant and partner counts, including units that "
         "do not receive Universal Credit. This allocation is a modelling "
