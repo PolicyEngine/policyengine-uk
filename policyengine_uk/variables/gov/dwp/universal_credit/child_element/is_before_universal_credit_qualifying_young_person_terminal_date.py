@@ -14,7 +14,8 @@ class is_before_universal_credit_qualifying_young_person_terminal_date(Variable)
         "can set it directly: set it to false for a 19-year-old whose 1 "
         "September has passed. Its default is true, the value the date fact "
         "gives everyone under 20 on 6 October, so setting it for some people "
-        "leaves everyone else where the date fact puts them."
+        "leaves everyone else under 20 where the date fact puts them; older "
+        "people are excluded by the age limit before it is read."
     )
     definition_period = YEAR
     default_value = True

@@ -80,7 +80,9 @@
       benunit:
         members: [parent, student]
   output:
-    is_before_universal_credit_qualifying_young_person_terminal_date: [false, false]
+    # The parent, not set, takes the default, true: harmless, since every
+    # reader is behind the qualifying young person age limit.
+    is_before_universal_credit_qualifying_young_person_terminal_date: [true, false]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, false]
     uc_individual_child_element: [0, 0]

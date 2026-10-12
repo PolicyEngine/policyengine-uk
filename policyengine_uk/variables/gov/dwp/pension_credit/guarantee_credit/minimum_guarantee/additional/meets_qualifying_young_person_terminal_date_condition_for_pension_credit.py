@@ -14,8 +14,8 @@ class meets_qualifying_young_person_terminal_date_condition_for_pension_credit(
         "ahead; at 19 it is read from "
         "is_before_first_september_following_19th_birthday. Its default is "
         "true, the value the formula gives everyone under 20 on 6 October, so "
-        "setting it for some people leaves everyone else where the formula "
-        "puts them."
+        "setting it for some people leaves everyone else under 20 where the "
+        "formula puts them; older people are excluded by the age limit."
     )
     definition_period = YEAR
     default_value = True

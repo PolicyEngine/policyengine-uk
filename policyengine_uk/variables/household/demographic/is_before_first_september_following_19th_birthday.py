@@ -25,9 +25,11 @@ class is_before_first_september_following_19th_birthday(Variable):
         "formula gives true for everyone under 20 on 6 October, which is "
         "everyone that limit lets be a qualifying young person, and the "
         "default is true: a situation that sets this for some people gives "
-        "everyone else true, the value the formula gives them. Set it to "
-        "false for a person whose 1 September has passed, or set their "
-        "date_of_birth."
+        "everyone else true. That is the formula's value for anyone under 20; "
+        "for someone older it is not, but every reader of this variable is "
+        "behind the qualifying young person age limit, which excludes them "
+        "first. Set it to false for a person whose 1 September has passed, or "
+        "set their date_of_birth."
     )
     definition_period = YEAR
     default_value = True
