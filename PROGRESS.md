@@ -42,3 +42,41 @@
   filename exists at this checkpoint; the unrelated dataframe test is excluded.
 - Next: finish tests, final report/PR update, independent exact-head review and
   handoffs.jsonl.
+- Initial pytest collection was interrupted after 774.77s with no tests run.
+  Stack trace located the stall in Hypothesis 6.168.2 `_get_local_constants`,
+  mining dynamically imported variable module source. Restarted the same
+  serial tests with only that optional local-source heuristic disabled in the
+  external verification harness; explicit strategies/example counts unchanged.
+  Source tests/dependencies are not patched. Full `make format` passed across
+  1,363 Python files before the report/cost commit `2765bd6` was pushed.
+- The fresh-system run eventually stopped with 8 projection tests passed in
+  954.70s; the interrupt was delayed by the sandbox. Confirmed the process had
+  exited before restarting. The final run uses the repository's existing
+  cloned-system constructor seam in the local harness, preserving independent
+  variable and parameter state while avoiding repeated source loading. It
+  still disables optional Hypothesis source-constant mining; tests unchanged.
+- Fresh independent team review at exact `2765bd6e01f0b773ec197a5b94209dd6afbc213a`
+  found no blocking issues. Nonblocking gap: student-loan cohort behavior in
+  2031–2032 is not directly exercised by the new fixture. Saved review is
+  `.verification/team-head-review.md`.
+- Submitted requested isolated Subfleet hard review with an explicit prompt
+  file, job `20261012-054543-uk-horizon-2032-head-review`; queued for admission.
+  Prompt-file routing avoids writes to the inaccessible global inbox, and its
+  immutable review checkout is inside this assigned workspace.
+- The cloned-system retry exited 139 during import while the faulthandler
+  timer was emitting an incomplete import-stack dump. No tests ran in that
+  process. Removed the diagnostic timer and am completing a fresh locked
+  workspace-local environment with bounded uv installation concurrency before
+  rerunning. No simulation process is still active from the failed retry.
+- Fresh locked environment completed (Python 3.13.15, Core 3.32.27); full
+  serial suite now at 97%. All nine initial projection tests passed; one
+  unchanged September-CPI property failed, with its footer still pending.
+- Requested Subfleet hard review at `2765bd6` completed with P2: storing extra
+  years suppresses Core growth for unmapped salary sacrifice/housing charges.
+  Added post-2030 compatibility using each variable's cumulative index,
+  preserving projections through 2030 and explicit FY26/27 energy exclusions.
+  Registry covers twelve eligible inputs, four present in this H5. Resetting
+  growth now includes them. Tests cover all twelve, reset, energy exclusions
+  and a second Hypothesis ratio property. Full make format passed again.
+- Next: run the changed tests after this correction, refresh survey impacts
+  and after-cost, then obtain independent review at the corrected head.

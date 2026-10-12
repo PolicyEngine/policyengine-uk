@@ -24,8 +24,11 @@ from policyengine_uk import Microsimulation, parameters
 from policyengine_uk.data import UKSingleYearDataset
 from policyengine_uk.data import economic_assumptions
 from policyengine_uk.data.economic_assumptions import (
+    DATASET_UPRATING_EXCLUSIONS,
+    LEGACY_PROJECTION_END_YEAR,
     PROJECTION_END_YEAR,
     extend_single_year_dataset,
+    reset_growthfactor_uprating,
 )
 from policyengine_uk.system import system
 
@@ -43,6 +46,21 @@ INDEX_OF = {
     for variable in variables
     if variable in system.variables
 }
+FALLBACK_INDEX_OF = {
+    name: variable.uprating
+    for name, variable in system.variables.items()
+    if variable.uprating is not None
+    and variable.value_type in (int, float)
+    and name not in INDEX_OF
+    and name not in DATASET_UPRATING_EXCLUSIONS
+}
+# These survey inputs already use FY2026-27 prices, so projection must not
+# apply their class-level CPI index a second time.
+ENERGY_VARIABLES = (
+    "domestic_energy_consumption",
+    "electricity_consumption",
+    "gas_consumption",
+)
 TABLES = {"person": "person", "benunit": "benunit", "household": "household"}
 # One household per tenure and region pair that the rent and council tax
 # uprating distinguish: private renters, social renters and owners, in a
@@ -63,8 +81,9 @@ COUNCIL_TAX_SERIES = {
 
 
 def _dataset(amount=1_000.0, base_year=BASE_YEAR):
-    """One person per household, with every singly indexed input set to
-    ``amount`` (or one amount per household), plus rent and council tax.
+    """One person per household, with every indexed input and excluded energy
+    input set to ``amount`` (or one amount per household), plus rent and
+    council tax.
 
     Recorded Pension Credit capital is twice the benefit unit's recorded
     capital, which its formula reads, so the two tell apart a stored value
@@ -92,7 +111,7 @@ def _dataset(amount=1_000.0, base_year=BASE_YEAR):
             "council_tax": amounts,
         },
     }
-    for variable in INDEX_OF:
+    for variable in (*INDEX_OF, *FALLBACK_INDEX_OF, *ENERGY_VARIABLES):
         entity = system.variables[variable].entity.key
         tables[TABLES[entity]].setdefault(variable, amounts)
     return UKSingleYearDataset(
@@ -155,6 +174,55 @@ def test_each_singly_indexed_input_grows_by_its_index_every_year(projected):
             )
 
 
+def test_unmapped_inputs_preserve_legacy_years_and_grow_after_2030(projected):
+    """Previously unmapped columns keep their old values through 2030, then
+    grow by the same cumulative-index ratio Core used beyond that year.
+    """
+    assert {
+        "mortgage_debt",
+        "consumer_debt",
+        "rent_paid_as_boarder",
+        "self_employment_gross_receipts",
+        "rent_paid_as_lodger",
+        "rail_usage",
+        "stocks_and_shares_isa",
+        "cash_isa",
+        "water_and_sewerage_charges",
+        "employee_pension_contributions_reported",
+        "pension_contributions_via_salary_sacrifice",
+        "housing_service_charges",
+    } <= set(FALLBACK_INDEX_OF)
+    for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
+        for variable, index_name in FALLBACK_INDEX_OF.items():
+            previous = _table(projected[year - 1], variable)[variable].to_numpy()
+            current = _table(projected[year], variable)[variable].to_numpy()
+            index = parameters.get_child(index_name)
+            factor = (
+                index(year) / index(year - 1)
+                if year > LEGACY_PROJECTION_END_YEAR
+                else 1
+            )
+            assert current == pytest.approx(previous * factor), (variable, year)
+
+
+def test_dataset_energy_prices_are_not_uprated_twice(projected):
+    for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
+        for variable in ENERGY_VARIABLES:
+            base = _table(projected[BASE_YEAR], variable)[variable].to_numpy()
+            current = _table(projected[year], variable)[variable].to_numpy()
+            np.testing.assert_array_equal(current, base, err_msg=f"{variable}, {year}")
+
+
+def test_reset_growthfactor_uprating_restores_unmapped_inputs(projected):
+    reset = projected.copy()
+    reset_growthfactor_uprating(reset)
+    for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
+        for variable in (*INDEX_OF, *FALLBACK_INDEX_OF):
+            base = _table(projected[BASE_YEAR], variable)[variable].to_numpy()
+            current = _table(reset[year], variable)[variable].to_numpy()
+            np.testing.assert_array_equal(current, base, err_msg=f"{variable}, {year}")
+
+
 def test_rent_and_council_tax_grow_every_projected_year(projected):
     for year in range(BASE_YEAR + 1, PROJECTION_END_YEAR + 1):
         previous, current = projected[year - 1].household, projected[year].household
@@ -201,6 +269,28 @@ def test_growth_ratio_is_one_plus_the_index(amounts, year, variable):
     )
     index = parameters.get_child(INDEX_OF[variable])(year)
     assert ratio == pytest.approx(np.full(len(amounts), 1 + index))
+
+
+@settings(max_examples=10, deadline=None, derandomize=True)
+@given(
+    amounts=st.lists(
+        st.floats(1, 1e6, allow_nan=False),
+        min_size=len(HOUSEHOLDS),
+        max_size=len(HOUSEHOLDS),
+    ),
+    year=st.integers(LEGACY_PROJECTION_END_YEAR + 1, PROJECTION_END_YEAR),
+    variable=st.sampled_from(sorted(FALLBACK_INDEX_OF)),
+)
+def test_unmapped_growth_ratio_equals_its_cumulative_index(amounts, year, variable):
+    projected = extend_single_year_dataset(
+        _dataset(np.array(amounts)), parameters, end_year=year
+    )
+    ratio = (
+        _table(projected[year], variable)[variable].to_numpy()
+        / _table(projected[year - 1], variable)[variable].to_numpy()
+    )
+    index = parameters.get_child(FALLBACK_INDEX_OF[variable])
+    assert ratio == pytest.approx(np.full(len(amounts), index(year) / index(year - 1)))
 
 
 def test_simulation_serves_projected_values_to_the_horizon(sim, projected):

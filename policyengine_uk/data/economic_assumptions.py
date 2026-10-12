@@ -2,6 +2,7 @@ from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
 
 import yaml
 from policyengine_core.parameters import ParameterNode
+from policyengine_core.simulations.simulation import _uprating_index_value
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -67,6 +68,33 @@ _COUNCIL_TAX_GROWTH_SERIES = {
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
 PROJECTION_END_YEAR = 2032
+
+# Before this horizon was extended, Core uprated unmapped inputs from 2030.
+# Preserve that behavior in the newly materialized years without changing
+# projections for earlier years. Correcting historical mapping omissions is
+# a separate change. Energy values already have FY26/27 prices (#1868), as
+# documented in uprating_indices.yaml, and must remain flat in the dataset.
+LEGACY_PROJECTION_END_YEAR = 2030
+DATASET_UPRATING_EXCLUSIONS = frozenset(
+    {
+        "domestic_energy_consumption",
+        "electricity_consumption",
+        "gas_consumption",
+    }
+)
+
+
+def _unmapped_uprating_indices(uprating):
+    from policyengine_uk.system import system
+
+    mapped = {variable for variables in uprating.values() for variable in variables}
+    return {
+        name: variable.uprating
+        for name, variable in system.variables.items()
+        if variable.uprating is not None
+        and name not in mapped
+        and name not in DATASET_UPRATING_EXCLUSIONS
+    }
 
 
 def extend_single_year_dataset(
@@ -145,6 +173,32 @@ def apply_single_year_uprating(
     current_year = uprate_rent(current_year, previous_year, parameters)
 
     current_year = uprate_student_loan_plans(current_year, previous_year, parameters)
+
+    # Stored arrays take precedence over Core's variable-level uprating.
+    # Reproduce the index growth Core used after the old dataset horizon for
+    # inputs missing from the projection map (for example salary sacrifice).
+    if int(current_year.time_period) > LEGACY_PROJECTION_END_YEAR:
+        for variable, index_name in _unmapped_uprating_indices(uprating).items():
+            for table_name in current_year.table_names:
+                table = getattr(current_year, table_name)
+                if variable in table.columns:
+                    index = parameters.get_child(index_name)
+                    previous_index = _uprating_index_value(
+                        index, f"{previous_year.time_period}-01-01"
+                    )
+                    current_index = _uprating_index_value(
+                        index, f"{current_year.time_period}-01-01"
+                    )
+                    # Use Core's treatment of missing, zero and explicitly
+                    # terminated indices as well as its cumulative ratio.
+                    ratio = (
+                        current_index / previous_index
+                        if previous_index not in (None, 0) and current_index is not None
+                        else 1
+                    )
+                    table[variable] = (
+                        getattr(previous_year, table_name)[variable] * ratio
+                    )
 
     current_year.validate()
 
@@ -375,6 +429,7 @@ def reset_growthfactor_uprating(
         variable for variables in uprating.values() for variable in variables
     }
     growthfactor_uprated_variables.update({"council_tax", "rent"})
+    growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
 
     first_year = min(dataset.datasets.keys())
     base_year_dataset = dataset.datasets[first_year]

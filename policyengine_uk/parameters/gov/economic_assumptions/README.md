@@ -81,11 +81,35 @@ cumulative index it freezes the level. Extending the dataset to the raw
 series' final year would therefore be both costly and inconsistent with Core
 uprating after the cumulative-index horizon.
 
-Only the inputs listed in `uprating_indices.yaml` and the custom routines grow
-during dataset projection. Class-level `uprating` alone does not grow a stored
-dataset column: salary-sacrifice pension contributions, water and sewerage
-charges, housing service charges and rail usage retain their base-year values
-within the projection. These existing omissions require a separate audit.
+From 2031 onward, dataset projection also grows stored columns whose variables
+have a class-level `uprating` index but are absent from `uprating_indices.yaml`.
+It multiplies the previous year's value by the target-year index divided by
+the previous-year index, preserving the growth Core applied after the former
+2030 dataset horizon. `_unmapped_uprating_indices` discovers these variables
+from the variable registry rather than maintaining another projection list.
+The current registry has twelve eligible variables; the legacy enhanced FRS
+2024-25 stores four of them: salary-sacrifice pension contributions, water and
+sewerage charges, housing service charges and rail usage. Their historical
+projection through 2030 retains its previous handling; correcting those
+earlier mapping omissions is a separate change.
+
+`domestic_energy_consumption`, `electricity_consumption` and `gas_consumption`
+are deliberately excluded from this fallback as well as the annual growth
+mapping. Their stored amounts already use FY2026-27 unit prices, so dataset
+projection holds them flat, as documented in `uprating_indices.yaml`.
+
+The additional indices have their own source limits:
+
+| Stored input | Variable index | Source coverage and terminal behavior |
+|---|---|---|
+| Salary-sacrifice pension contributions | `indices.obr.average_earnings` | Earnings growth has source values through 2073; its cumulative index compounds through 2039. |
+| Water and sewerage charges | `indices.ofwat.water_bills` | Raw growth ends in 2029 at 4.5%; that rate carries into later years when the cumulative index is generated, through 2039. |
+| Housing service charges | `indices.obr.lagged_average_earnings` | Lagged growth is generated through 2074 from the preceding year's earnings; its cumulative index compounds through 2039. |
+| Rail usage | `gov.dft.rail.ridership_index` | The source cumulative index ends in 2029 at 1.044. Its terminal level stays flat, so the projection ratio is one in 2031 and 2032. |
+
+The `indices.*` paths in this table are relative to
+`gov.economic_assumptions`. Source dates remain distinct from the later dates
+added by fiscal-year conversion.
 
 ## How the 2031+ values were constructed
 
