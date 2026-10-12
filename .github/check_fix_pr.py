@@ -16,6 +16,15 @@ from pathlib import Path, PurePosixPath
 
 TESTS_PREFIX = "policyengine_uk/tests/"
 POLICY_PREFIX = TESTS_PREFIX + "policy/"
+# pytest marks under which a named reproducer would not run, or would not need
+# to pass. skipif is allowed: its condition is usually a platform check that
+# holds false in CI.
+NON_RUNNING_MARKS = frozenset({"skip", "xfail"})
+# pytest does not collect a test class that defines either.
+CONSTRUCTORS = ("__init__", "__new__")
+# Base classes a collectable test class may name; any other base could bring a
+# constructor or __test__ = False with it.
+TEST_CLASS_BASES = frozenset({"object", "unittest.TestCase", "TestCase"})
 REPRODUCER_HINT = (
     'Use "Reproducer: policyengine_uk/tests/test_example.py::test_regression", '
     '"Reproducer: policyengine_uk/tests/policy/example.yaml::Case name", '
@@ -180,12 +189,79 @@ def _assigns_name(node: ast.AST, name: str) -> bool:
 
 
 def _suppresses_tests(body: list[ast.stmt]) -> bool:
+    # pytest skips a class whose __test__ is falsy; anything but a literal True
+    # counts as switching collection off.
     return any(
         _assigns_name(node, "__test__")
-        and isinstance(node.value, ast.Constant)
-        and node.value.value is False
+        and not (isinstance(node.value, ast.Constant) and node.value.value is True)
         for node in body
     )
+
+
+def _dotted_name(node: ast.AST) -> str | None:
+    parts = []
+    while isinstance(node, ast.Attribute):
+        parts.append(node.attr)
+        node = node.value
+    if not isinstance(node, ast.Name):
+        return None
+    parts.append(node.id)
+    return ".".join(reversed(parts))
+
+
+def _sets_test_attribute(body: list[ast.stmt], name: str) -> bool:
+    """Whether the body assigns name.__test__, which pytest reads on collection."""
+    for node in body:
+        if isinstance(node, ast.Assign):
+            targets = node.targets
+        elif isinstance(node, (ast.AnnAssign, ast.AugAssign)):
+            targets = [node.target]
+        else:
+            continue
+        if any(
+            isinstance(target, ast.Attribute)
+            and target.attr == "__test__"
+            and _dotted_name(target.value) == name
+            for target in targets
+        ):
+            return True
+    return False
+
+
+def _decorator_names(definition: ast.AST) -> list[str | None]:
+    return [
+        _dotted_name(decorator.func if isinstance(decorator, ast.Call) else decorator)
+        for decorator in definition.decorator_list
+    ]
+
+
+def _pytestmark_names(body: list[ast.stmt]) -> list[str | None]:
+    """The dotted names in a module's or class's pytestmark assignment."""
+    names = []
+    for node in body:
+        if _assigns_name(node, "pytestmark") and node.value is not None:
+            names.extend(
+                _dotted_name(part)
+                for part in ast.walk(node.value)
+                if isinstance(part, ast.Attribute)
+            )
+    return names
+
+
+def _not_run_problem(names: list[str | None]) -> str | None:
+    """Why marks or decorators would keep the named test from running, if so."""
+    for name in names:
+        if name is None:
+            continue
+        parts = name.split(".")
+        if parts[-1] == "fixture":
+            return "the named test is a fixture, which pytest does not run as a test"
+        if parts[-1] in NON_RUNNING_MARKS and "mark" in parts[:-1]:
+            return (
+                f"the named test is marked {parts[-1]}, so it would not run as a "
+                "reproducer"
+            )
+    return None
 
 
 def _reference_problem(
@@ -211,13 +287,14 @@ def _reference_problem(
                     for entry in entries
                     if isinstance(entry, dict)
                     and isinstance(entry.get("name"), str)
-                    and "output" in entry
+                    and isinstance(entry.get("output"), dict)
+                    and entry["output"]
                 }
                 if isinstance(entries, list)
                 else set()
             )
             if not names:
-                return "the YAML file has no test mapping with a string name and output"
+                return "the YAML file has no test mapping with a string name and a non-empty output mapping"
             if separator and name not in names:
                 return f"the YAML file has no test entry named {name!r}"
             return None
@@ -231,38 +308,57 @@ def _reference_problem(
         parts = name.split("::")
         tree = ast.parse(source, filename=path)
         if _suppresses_tests(tree.body):
-            return "pytest collection is disabled by module __test__ = False"
+            return "pytest collection is disabled by module __test__"
+        module_marks = _pytestmark_names(tree.body)
         definitions = (ast.FunctionDef, ast.AsyncFunctionDef)
-        if (
-            len(parts) == 1
-            and parts[0].startswith("test")
-            and any(
-                isinstance(node, definitions) and node.name == parts[0]
-                for node in tree.body
-            )
-        ):
-            return None
+        # A later definition of the same name replaces an earlier one.
+        functions = [
+            node
+            for node in tree.body
+            if isinstance(node, definitions) and node.name == parts[0]
+        ]
+        if len(parts) == 1 and parts[0].startswith("test") and functions:
+            if _sets_test_attribute(tree.body, parts[0]):
+                return "the named test's __test__ attribute is set after its definition"
+            return _not_run_problem(module_marks + _decorator_names(functions[-1]))
+        classes = [
+            node
+            for node in tree.body
+            if isinstance(node, ast.ClassDef) and node.name == parts[0]
+        ]
         if (
             len(parts) == 2
             and parts[0].startswith("Test")
             and parts[1].startswith("test")
-            and any(
-                isinstance(node, ast.ClassDef)
-                and node.name == parts[0]
-                and not _suppresses_tests(node.body)
-                and not any(
-                    (isinstance(method, definitions) and method.name == "__init__")
-                    or _assigns_name(method, "__init__")
-                    for method in node.body
-                )
-                and any(
-                    isinstance(method, definitions) and method.name == parts[1]
-                    for method in node.body
-                )
-                for node in tree.body
-            )
+            and classes
         ):
-            return None
+            cls = classes[-1]
+            methods = [
+                node
+                for node in cls.body
+                if isinstance(node, definitions) and node.name == parts[1]
+            ]
+            # pytest does not collect a class with its own constructor or
+            # __test__ switched off, and a base class could bring either.
+            collectable = (
+                not _suppresses_tests(cls.body)
+                and not any(
+                    (isinstance(node, definitions) and node.name in CONSTRUCTORS)
+                    or any(_assigns_name(node, name) for name in CONSTRUCTORS)
+                    for node in cls.body
+                )
+                and all(_dotted_name(base) in TEST_CLASS_BASES for base in cls.bases)
+                and not cls.keywords
+                and not _sets_test_attribute(tree.body, parts[0])
+                and not _sets_test_attribute(cls.body, parts[1])
+            )
+            if collectable and methods:
+                return _not_run_problem(
+                    module_marks
+                    + _decorator_names(cls)
+                    + _pytestmark_names(cls.body)
+                    + _decorator_names(methods[-1])
+                )
         return "the pytest file does not define a collectable named test"
     except (
         OSError,

@@ -186,7 +186,7 @@ def test_deleted_tests_never_count_as_executable_or_reproducers(tmp_path, paths)
     content = (
         "def test_regression():\n    pass\n"
         if path.endswith(".py")
-        else "- name: regression\n  output: {}\n"
+        else "- name: regression\n  output: {x: 1}\n"
     )
     _write(tmp_path, path, content)
     # A separate changed test isolates reproducer eligibility from the
@@ -359,11 +359,11 @@ def test_only_collected_test_paths_are_executable(path, executable):
 @pytest.mark.parametrize(
     "source",
     [
-        "- name: Regression case\n  period: 2026\n  input: {}\n  output: {}\n",
-        "- name: 'Regression case'\n  output: {}\n",
-        '- name: "Regression case"\n  output: {}\n',
-        "- period: 2026\n  name: Regression case\n  output: {}\n",
-        "- name: Regression case # An inline comment\n  output: {}\n",
+        "- name: Regression case\n  period: 2026\n  input: {}\n  output: {x: 1}\n",
+        "- name: 'Regression case'\n  output: {x: 1}\n",
+        '- name: "Regression case"\n  output: {x: 1}\n',
+        "- period: 2026\n  name: Regression case\n  output: {x: 1}\n",
+        "- name: Regression case # An inline comment\n  output: {x: 1}\n",
     ],
 )
 @pytest.mark.parametrize("extension", ["yaml", "yml"])
@@ -393,7 +393,7 @@ def test_quoted_yaml_names_resolve_without_treating_punctuation_as_ids(
     tmp_path, source, name
 ):
     path = "policyengine_uk/tests/policy/regression.yaml"
-    _write(tmp_path, path, source + "  output: {}\n")
+    _write(tmp_path, path, source + "  output: {x: 1}\n")
     assert _report(tmp_path, f"Reproducer: `{path}::{name}`", [("A", path)]).passed
 
 
@@ -402,7 +402,7 @@ def test_nested_yaml_name_is_not_a_test_entry(tmp_path):
     _write(
         tmp_path,
         path,
-        "- name: Regression case\n  input:\n    name: Impostor\n  output: {}\n",
+        "- name: Regression case\n  input:\n    name: Impostor\n  output: {x: 1}\n",
     )
     changes = [("M", path)]
     assert _report(tmp_path, f"Reproducer: {path}::Regression case", changes).passed
@@ -416,9 +416,9 @@ def test_nested_yaml_name_is_not_a_test_entry(tmp_path):
         "# No policy tests here.\n",
         "- |\n  name: Ghost\n",
         "- name: Ghost\n  period: 2026\n",
-        "name: Ghost\noutput: {}\n",
-        "- name: 123\n  output: {}\n",
-        "- name: [invalid\n  output: {}\n",
+        "name: Ghost\noutput: {x: 1}\n",
+        "- name: 123\n  output: {x: 1}\n",
+        "- name: [invalid\n  output: {x: 1}\n",
     ],
 )
 @pytest.mark.parametrize("suffix", ["", "::Ghost"])
@@ -428,12 +428,22 @@ def test_yaml_reproducer_rejects_non_executable_documents(tmp_path, source, suff
     assert not _report(tmp_path, f"Reproducer: {path}{suffix}", [("A", path)]).passed
 
 
+@pytest.mark.parametrize("output", ["{}", "[]", "5", "null", "[x]"])
+def test_yaml_reproducer_needs_a_non_empty_output_mapping(tmp_path, output):
+    # An entry whose output is empty or not a mapping asserts nothing.
+    path = "policyengine_uk/tests/policy/regression.yaml"
+    _write(tmp_path, path, f"- name: Regression\n  output: {output}\n")
+    changes = [("A", path)]
+    assert not _report(tmp_path, f"Reproducer: {path}", changes).passed
+    assert not _report(tmp_path, f"Reproducer: {path}::Regression", changes).passed
+
+
 def test_yaml_named_reproducer_requires_output_on_the_named_entry(tmp_path):
     path = "policyengine_uk/tests/policy/regression.yaml"
     _write(
         tmp_path,
         path,
-        "- name: Ghost\n  period: 2026\n- name: Real\n  output: {}\n",
+        "- name: Ghost\n  period: 2026\n- name: Real\n  output: {x: 1}\n",
     )
     changes = [("A", path)]
     assert _report(tmp_path, f"Reproducer: {path}", changes).passed
@@ -443,7 +453,7 @@ def test_yaml_named_reproducer_requires_output_on_the_named_entry(tmp_path):
 
 def test_yaml_reproducer_fails_closed_without_pyyaml(tmp_path, monkeypatch):
     path = "policyengine_uk/tests/policy/regression.yaml"
-    _write(tmp_path, path, "- name: Regression\n  output: {}\n")
+    _write(tmp_path, path, "- name: Regression\n  output: {x: 1}\n")
     monkeypatch.setitem(sys.modules, "yaml", None)
     report = _report(tmp_path, f"Reproducer: {path}::Regression", [("A", path)])
     assert not report.passed
@@ -525,6 +535,44 @@ def test_backticked_na_reason_can_include_commas_and_semicolons(tmp_path):
             "class TestRegression:\n    def test_regression(self):\n        pass\n",
             "::TestRegression::Nested::test_regression",
         ),
+        (
+            "__test__ = 0\ndef test_regression():\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "class TestRegression:\n    __test__ = None\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "def test_regression():\n    pass\ntest_regression.__test__ = False\n",
+            "::test_regression",
+        ),
+        (
+            "class TestRegression:\n    def test_regression(self):\n        pass\n"
+            "TestRegression.__test__ = False\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "class TestRegression:\n    def __new__(cls):\n        pass\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "class Base:\n    def __init__(self):\n        pass\n"
+            "class TestRegression(Base):\n    def test_regression(self):\n"
+            "        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "import pytest\n@pytest.fixture\ndef test_regression():\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "def test_regression():\n    pass\ndef test_regression(x):\n    pass\n"
+            "test_regression.__test__ = False\n",
+            "::test_regression",
+        ),
     ],
 )
 def test_pytest_reproducer_rejects_bare_paths_and_nonexistent_definitions(
@@ -549,7 +597,15 @@ def test_pytest_default_collection_confirms_function_and_class_names(
         "class TestConstructor:\n    def __init__(self):\n        pass\n"
         "    def test_hidden(self):\n        pass\n"
         "class TestDisabled:\n    __test__ = False\n"
-        "    def test_hidden(self):\n        pass\n",
+        "    def test_hidden(self):\n        pass\n"
+        "class TestFalsy:\n    __test__ = 0\n"
+        "    def test_hidden(self):\n        pass\n"
+        "class TestAllocator:\n    def __new__(cls):\n        pass\n"
+        "    def test_hidden(self):\n        pass\n"
+        "class TestInherited(TestConstructor):\n"
+        "    def test_hidden(self):\n        pass\n"
+        "def test_switched_off():\n    pass\n"
+        "test_switched_off.__test__ = False\n",
     )
 
     class Collection:
@@ -586,10 +642,94 @@ def test_pytest_default_collection_confirms_function_and_class_names(
         "Regression::test_hidden",
         "TestConstructor::test_hidden",
         "TestDisabled::test_hidden",
+        "TestFalsy::test_hidden",
+        "TestAllocator::test_hidden",
+        "TestInherited::test_hidden",
+        "test_switched_off",
     ]:
         nodeid = f"{path}::{suffix}"
         report = _report(tmp_path, f"Reproducer: {nodeid}", [("A", path)])
         assert report.passed is (suffix in collected)
+
+
+@pytest.mark.parametrize(
+    "source, suffix",
+    [
+        (
+            "import pytest\n@pytest.mark.skip(reason='later')\n"
+            "def test_regression():\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "from pytest import mark\n@mark.xfail\ndef test_regression():\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "import pytest\npytestmark = [pytest.mark.skip]\n"
+            "def test_regression():\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "import pytest\n@pytest.mark.xfail(strict=True)\nclass TestRegression:\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "import pytest\nclass TestRegression:\n"
+            "    pytestmark = pytest.mark.skip(reason='later')\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+    ],
+)
+def test_pytest_reproducer_must_not_be_skipped_or_expected_to_fail(
+    tmp_path, source, suffix
+):
+    # pytest collects these, but a skipped or xfailed test reproduces nothing.
+    path = "policyengine_uk/tests/test_regression.py"
+    _write(tmp_path, path, source)
+    report = _report(tmp_path, f"Reproducer: {path}{suffix}", [("M", path)])
+    assert not report.passed
+    assert any("so it would not run" in message for message in report.messages)
+
+
+@pytest.mark.parametrize(
+    "source, suffix",
+    [
+        (
+            "from hypothesis import given, strategies as st\n"
+            "@given(st.integers())\ndef test_regression(x):\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "import pytest\n@pytest.mark.parametrize('x', [1, 2])\n"
+            "@pytest.mark.microsimulation\ndef test_regression(x):\n    pass\n",
+            "::test_regression[1]",
+        ),
+        (
+            "import unittest\nclass TestRegression(unittest.TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "import sys, pytest\n"
+            "@pytest.mark.skipif(sys.platform == 'win32', reason='no FIFOs')\n"
+            "def test_regression():\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "class TestRegression(object):\n    __test__ = True\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+    ],
+)
+def test_pytest_reproducer_accepts_marks_and_decorators_that_still_run(
+    tmp_path, source, suffix
+):
+    path = "policyengine_uk/tests/test_regression.py"
+    _write(tmp_path, path, source)
+    assert _report(tmp_path, f"Reproducer: {path}{suffix}", [("M", path)]).passed
 
 
 def test_reproducer_file_must_exist_at_pr_head(tmp_path):
@@ -1007,6 +1147,8 @@ def test_the_workflow_reports_on_pull_requests_and_merge_groups():
     assert checkout["if"] == "github.event_name == 'pull_request_target'"
     # The event's default checkout supplies the trusted base workflow and checker.
     assert "ref" not in checkout.get("with", {})
+    # No token stays in .git/config while PR objects are fetched and read.
+    assert checkout["with"]["persist-credentials"] is False
     for step in steps:
         if step.get("uses", "").startswith("actions/checkout@"):
             reference = str(step.get("with", {}).get("ref", ""))

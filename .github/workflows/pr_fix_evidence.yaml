@@ -38,6 +38,8 @@ jobs:
         uses: actions/checkout@v6
         with:
           fetch-depth: 0
+          # The repository is public, so the fetches below need no token.
+          persist-credentials: false
       - name: Collect pull request evidence
         id: evidence
         if: github.event_name == 'pull_request_target'

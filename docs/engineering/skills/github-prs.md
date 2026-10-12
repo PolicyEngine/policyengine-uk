@@ -75,11 +75,18 @@ Accepted ids are pytest node ids (`file.py::test_name` or
 accepting `.yml`). Each named file must be added, modified or type-changed in
 the PR. Python files must match `test_*.py` or `*_test.py`, and names must
 resolve to module-level functions starting with `test`, or methods starting
-with `test` in module-level classes starting with `Test` and defining no
-`__init__`. A module or class with `__test__ = False` is excluded, as are
-definitions nested in functions or conditional blocks. YAML files must parse
-to a non-empty list with at least one mapping containing a string `name` and
-an `output` key; a named YAML reproducer must match such a mapping exactly.
+with `test` in module-level classes starting with `Test`. Such a class may
+derive only from `object` or `unittest.TestCase` and may not define
+`__init__` or `__new__`. A module or class whose `__test__` is anything but
+`True`, a test or class whose `__test__` attribute is set after it is defined,
+a fixture, and definitions nested in functions or conditional blocks are
+excluded. The reproducer must run and pass: a `skip` or `xfail` mark on it,
+its class or its module (`pytestmark`) is rejected. A `skipif` condition must
+hold false in CI, so the reproducer runs there. A test marked
+`microsimulation` runs only where the dataset is available, which includes
+merge-queue and main runs. YAML files must parse to a non-empty list with at
+least one mapping containing a string `name` and a non-empty `output` mapping;
+a named YAML reproducer must match such a mapping exactly.
 Separate multiple ids with commas or semicolons. Backticks around each id
 are optional; use them when a name or reason contains these separators.
 Reproducer lines inside HTML comments are ignored.
