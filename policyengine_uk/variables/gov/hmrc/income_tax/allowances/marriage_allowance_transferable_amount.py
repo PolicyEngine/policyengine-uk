@@ -23,4 +23,6 @@ class marriage_allowance_transferable_amount(Variable):
         ma = allowances.marriage_allowance
         amount = allowances.personal_allowance.amount * ma.max
         increment = ma.rounding_increment
-        return np.ceil(amount / increment) * increment
+        share = np.ceil(amount / increment) * increment
+        # 2015-16 is a fixed amount (s. 55B(4)(a)), whatever the allowance.
+        return share if ma.fixed_amount == 0 else ma.fixed_amount

@@ -77,7 +77,13 @@ def create_expanded_ma_reform(
             )
             amount = allowances.personal_allowance.amount * share
             increment = allowances.marriage_allowance.rounding_increment
-            return np.ceil(amount / increment) * increment
+            rounded = np.ceil(amount / increment) * increment
+            # 2015-16 is a fixed amount (ITA 2007 s. 55B(4)(a)) unless the
+            # reform's expansion applies.
+            fixed = allowances.marriage_allowance.fixed_amount
+            if fixed == 0:
+                return rounded
+            return where(person("meets_expanded_ma_conditions", period), rounded, fixed)
 
     class reform(Reform):
         def apply(self):

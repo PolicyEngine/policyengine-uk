@@ -73,6 +73,29 @@ LANDLORD_COUPLE = [
         married_couples_allowance=0.0,
     )
 ]
+# A low earner whose small lettings are within the property allowance. Full
+# relief and an election save the couple 114; electing out of the allowance
+# for the finance-cost reduction saves the low earner 132 but stops the
+# election, costing the couple 120 more. The route must be weighed on the
+# couple's tax (independent review of #1963, 12 Oct 2026).
+SMALL_LETTINGS_COUPLE = [
+    dict(
+        adults=[
+            dict(age=40, employment_income=30_000.0),
+            dict(
+                age=38,
+                employment_income=12_000.0,
+                property_income=800.0,
+                property_rental_income=800.0,
+                property_finance_costs=200.0,
+            ),
+        ],
+        married=True,
+        children=[],
+        region="LONDON",
+        married_couples_allowance=0.0,
+    )
+]
 ELECTION = "makes_marriage_allowance_election"
 VARIABLES = [
     ELECTION,
@@ -213,6 +236,7 @@ couple_populations = populations()
 @PROPERTY_SETTINGS
 @given(units=couple_populations, year=st.sampled_from(YEARS))
 @example(units=LANDLORD_COUPLE, year=2026)
+@example(units=SMALL_LETTINGS_COUPLE, year=2026)
 def test_election_never_raises_the_couples_tax(units, year):
     model = calculate(units, year)
     none = calculate(units, year, election=np.zeros_like(model[ELECTION]))
@@ -227,6 +251,7 @@ def test_election_never_raises_the_couples_tax(units, year):
 @PROPERTY_SETTINGS
 @given(units=couple_populations, year=st.sampled_from(YEARS))
 @example(units=LANDLORD_COUPLE, year=2026)
+@example(units=SMALL_LETTINGS_COUPLE, year=2026)
 def test_election_is_the_best_allowed_choice(units, year):
     model = calculate(units, year)
     none = calculate(units, year, election=np.zeros_like(model[ELECTION]))
@@ -383,3 +408,39 @@ def test_only_married_couples_transfer(units, year):
     }
     spouse_units = set(model["benunit"][model["is_marriage_allowance_spouse"]])
     assert spouse_units == married_pairs, units
+
+
+def test_2015_transferable_amount_is_fixed_whatever_the_allowance():
+    # ITA 2007 s. 55B(4)(a) fixes 2015-16 at 1,060; only later years take 10%
+    # of the s. 35(1) allowance. With the 2015 allowance raised to 15,000 the
+    # transfer is still 1,060: the transferor's allowance falls to 13,940 and
+    # the recipient on 30,000 pays (30,000 - 15,000) x 20% - 212 = 2,788.
+    year = 2015
+    situation = {
+        "people": {
+            "recipient": {"age": {year: 40}, "employment_income": {year: 30_000}},
+            "transferor": {"age": {year: 38}},
+        },
+        "benunits": {
+            "couple": {
+                "members": ["recipient", "transferor"],
+                "is_married": {year: True},
+            }
+        },
+        "households": {"home": {"members": ["recipient", "transferor"]}},
+    }
+    sim = Simulation(
+        situation=situation,
+        reform={
+            "gov.hmrc.income_tax.allowances.personal_allowance.amount": {
+                "2015-01-01.2015-12-31": 15_000
+            }
+        },
+    )
+    np.testing.assert_allclose(
+        sim.calculate("marriage_allowance_transferable_amount", year), [1_060, 1_060]
+    )
+    np.testing.assert_allclose(
+        sim.calculate("personal_allowance", year), [15_000, 13_940]
+    )
+    np.testing.assert_allclose(sim.calculate("income_tax", year), [2_788, 0])

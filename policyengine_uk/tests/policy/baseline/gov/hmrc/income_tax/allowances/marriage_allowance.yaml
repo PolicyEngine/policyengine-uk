@@ -773,11 +773,12 @@
     income_tax: [3_234, 0]
 
 - name: The election is weighed under the property allowance route the couple uses
-  # Each property allowance route is weighed with the election it would
-  # bring (ITTOIA 2005 s. 783BL); the election is then weighed under the route
-  # chosen. Under policyengine-core 3.33 the election's branches dropped the
-  # chosen route and picked their own, so the earner elected as if on full
-  # relief while taxed on actual expenses (CI, 11 Oct 2026).
+  # Each property allowance route is weighed on the couple's tax, with the
+  # election it would bring (ITTOIA 2005 s. 783BL); the election is then
+  # weighed under the route chosen. Under policyengine-core 3.33 the
+  # election's branches dropped the chosen route and picked their own, so
+  # the earner elected as if on full relief while taxed on actual expenses
+  # (CI, 11 Oct 2026).
   period: 2027
   input:
     people:
@@ -798,16 +799,53 @@
         members: [landlord, earner]
         is_married: true
   output:
-    # Earner, full relief: no tax, or 690 x 20% = 138 if electing, so the
-    # couple would elect. On actual expenses: employment uses 12,000 of the
-    # allowance, 230 of property at the 22% property basic rate = 50.60, less
-    # 22% x 200 of finance costs = 6.60; electing would raise that to
-    # 138 + 176 - 44 = 270, by 263.40, more than the 252 it saves, so no
-    # election. Actual expenses cost the earner less (6.60 against 138), so
-    # the earner uses them.
-    # Landlord: 7,430 x 20% + 10,000 x 22% - 22% x 2,000 = 3,246, against
-    # 3,466 with the property allowance.
-    uses_property_allowance: [false, false]
-    makes_marriage_allowance_election: [false, false]
-    property_finance_cost_relief: [440, 44]
-    income_tax: [3_246, 6.60]
+    # Landlord: 7,430 x 20% + 10,000 x 22% (property basic rate) - 22% x
+    # 2,000 = 3,246 on actual expenses, against 3,466 with the property
+    # allowance, so actual expenses. Basic rates only, so they can gain.
+    # Earner, full relief: taxable 12,000; electing costs
+    # (12,000 - 11,310) x 20% = 138 and saves the landlord 20% x 1,260 =
+    # 252, so the couple pays 2,994 + 138 = 3,132. On actual expenses: 230
+    # of property at 22% = 50.60 less 22% x 200 = 6.60; electing would raise
+    # that by 263.40, more than the 252 it saves, so no election and the
+    # couple pays 3,246 + 6.60 = 3,252.60. The couple keeps full relief and
+    # elects.
+    uses_property_allowance: [false, true]
+    makes_marriage_allowance_election: [false, true]
+    property_finance_cost_relief: [440, 0]
+    marriage_allowance_tax_reduction: [252, 0]
+    income_tax: [2_994, 138]
+
+- name: The property allowance route is chosen on the couple's tax, with the election it brings
+  period: 2026
+  input:
+    people:
+      recipient:
+        age: 40
+        employment_income: 30_000
+      transferor:
+        age: 38
+        employment_income: 12_000
+        property_income: 800
+        property_rental_income: 800
+        property_finance_costs: 200
+    benunits:
+      benunit:
+        members: [recipient, transferor]
+        is_married: true
+    households:
+      household:
+        members: [recipient, transferor]
+        region: LONDON
+  output:
+    # Receipts of 800 are within the 1,000 property allowance, so full relief
+    # applies (ITTOIA 2005 ss. 783BE-783BF) unless the transferor elects out
+    # to deduct expenses and take the finance-cost reduction (s. 783BL).
+    # Full relief: taxable income 12,000; electing for Marriage Allowance
+    # costs (12,000 - 11,310) x 20% = 138 and saves the recipient 252, so the
+    # couple pays 3,234 + 138 = 3,372. Electing out: profit 800 taxable,
+    # (12,800 - 12,570) x 20% - 20% x 200 = 6, but now electing would cost
+    # 252, so no election and the couple pays 3,486 + 6 = 3,492. The route
+    # that is cheaper for the transferor alone costs the couple 120 more.
+    uses_property_allowance: [false, true]
+    makes_marriage_allowance_election: [false, true]
+    income_tax: [3_234, 138]

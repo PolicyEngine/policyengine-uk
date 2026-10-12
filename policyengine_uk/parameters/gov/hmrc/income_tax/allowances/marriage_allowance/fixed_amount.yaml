@@ -1,0 +1,10 @@
+description: Transferable amount where the Act fixes it in pounds rather than as a share of the personal allowance. For 2015-16 it is £1,060 (ITA 2007 s. 55B(4)(a)); from 2016-17 the amount is the share of the personal allowance in `max`, so this is zero.
+values:
+  2015-04-06: 1_060
+  2016-04-06: 0
+metadata:
+  unit: currency-GBP
+  label: Marriage Allowance fixed transferable amount
+  reference:
+    - title: Income Tax Act 2007 s. 55B(4)(a)
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/55B
