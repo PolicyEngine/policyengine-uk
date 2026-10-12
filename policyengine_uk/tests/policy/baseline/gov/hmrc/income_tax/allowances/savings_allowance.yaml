@@ -1,0 +1,200 @@
+# Personal Savings Allowance, ITA 2007 s. 12B. A Scottish taxpayer's higher-
+# and additional-rate income is what would be charged at those rates if they
+# were not a Scottish taxpayer (s. 12B(8)(a)(iv) and (b)(iv)), so the
+# allowance follows the rest-of-UK bands: in 2026-27, £37,700 and £125,140 of
+# taxable income, with a £12,570 personal allowance tapered above £100,000.
+# Savings income is taxed at the UK savings rates.
+
+- name: Case 1, a Scottish advanced-rate taxpayer below £125,140 gets £500.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 80_000
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Taxable income 81,000 - 12,570 = 68,430: Scottish advanced rate, but
+    # UK higher rate. (1,000 - 500) x 40% = 200.
+    pays_scottish_income_tax: true
+    tax_band: ADDITIONAL
+    savings_allowance: 500
+    savings_income_tax: 200
+
+- name: Case 2, a Scottish higher-rate taxpayer below £37,700 gets £1,000.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 45_000
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # Taxable income 46,000 - 12,570 = 33,430: Scottish higher rate, but UK
+    # basic rate, so the whole £1,000 of interest is covered.
+    tax_band: HIGHER
+    savings_allowance: 1_000
+    savings_income_tax: 0
+
+- name: Case 3, an English taxpayer with the same income is unchanged.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 80_000
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    tax_band: HIGHER
+    savings_allowance: 500
+    savings_income_tax: 200
+
+- name: Case 4, a Scottish taxpayer above £125,140 gets nothing.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 130_000
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: SCOTLAND
+  output:
+    # The personal allowance is tapered to nil, so taxable income is
+    # 131,000, above £125,140.
+    savings_allowance: 0
+
+- name: Case 5, 2016-17 bands for a higher-rate taxpayer.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 60_000
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # Taxable income above the £32,000 basic rate limit but below £150,000.
+    savings_allowance: 500
+
+- name: Case 6, 2016-17 bands for an additional-rate taxpayer.
+  period: 2016
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 200_000
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    savings_allowance: 0
+
+- name: Case 7, the 2016-17 rules also apply to period 2017.
+  period: 2017
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 60_000
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    savings_allowance: 500
+
+- name: Case 8, taxable income exactly at the basic rate limit has no higher-rate income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 49_270
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # 50,270 - 12,570 = 37,700: nothing above the limit (ITA 2007 s. 10(2)-(3)).
+    savings_allowance: 1_000
+    savings_income_tax: 0
+
+- name: Case 9, a pound over the basic rate limit is higher-rate income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 49_271
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    savings_allowance: 500
+
+- name: Case 10, taxable income exactly at the higher rate limit has no additional-rate income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 124_140
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    # Adjusted net income 125,140 tapers the personal allowance to nil, so
+    # taxable income is 125,140.
+    savings_allowance: 500
+
+- name: Case 11, a pound over the higher rate limit is additional-rate income.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person:
+        age: 40
+        employment_income: 124_141
+        savings_interest_income: 1_000
+    households:
+      household:
+        members: [person]
+        country: ENGLAND
+  output:
+    savings_allowance: 0
