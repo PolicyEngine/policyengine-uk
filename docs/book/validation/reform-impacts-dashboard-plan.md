@@ -5,9 +5,9 @@
 [#806](https://github.com/PolicyEngine/policyengine-uk/issues/806),
 which asks for a dashboard tracking the budgetary impact of
 high-importance reforms over time and across model / data versions.
-The repo already has the **fixtures** — what's missing is a published
-view onto them. Updated October 2026: still not built; the dataset move
-to Microcosm UK (below) makes it more useful.
+The repo already has the **fixtures**; what's missing is a published
+view onto them. Updated October 2026: still not built, and the planned
+dataset move to Microcosm UK (below) makes it more useful.
 ```
 
 ## What exists today
@@ -31,9 +31,15 @@ shape:
 Each fixture is run by
 [`tests/microsimulation/test_reform_impacts.py`](../../../policyengine_uk/tests/microsimulation/test_reform_impacts.py),
 which compares the change in `gov_balance` in 2029 with
-`expected_impact` (£bn), within `tolerance` (default £1bn). It runs in
-CI's Test job on every PR, on the dataset CI is configured with, so CI
-already catches *unintended* impact changes. But the signal is only
+`expected_impact` (£bn), within `tolerance` (default £1bn). The tests
+are marked `microsimulation`, so they run in CI's test suite only when a
+dataset is available: `policyengine_uk/tests/conftest.py` points
+`POLICYENGINE_UK_DEFAULT_DATASET` at the Enhanced FRS 2023-24 file
+(`enhanced_frs_2023_24.h5@1.40.3`) when a Hugging Face token is set.
+The suite requires that data in the merge queue and on main, and skips
+these tests on pull requests without credentials. So CI already
+catches *unintended* impact changes before they reach main. But the
+signal is only
 pass or fail, and when a change is intended, someone reruns
 [`update_reform_impacts.py`](../../../policyengine_uk/tests/microsimulation/update_reform_impacts.py)
 and the old value is overwritten. The fixtures are regression values
@@ -58,7 +64,7 @@ timestamp, policyengine_uk_version, policyengine_uk_data_version,
 dataset_url, reform_name, expected_impact, observed_impact, gap
 ```
 
-Append-only — no overwrites — so the history survives.
+The table is append-only, with no overwrites, so the history survives.
 
 ### Computation
 
@@ -71,14 +77,14 @@ per fixture. Schedule: weekly + on every release tag.
 
 Three publication paths, in order of effort:
 
-1. **Static page in the docs site** — the simplest. Convert the CSV
+1. **Static page in the docs site**: the simplest. Convert the CSV
    to a Plotly chart (matching the existing `validation/*.ipynb`
    pattern) and render it under `docs/book/validation/`. Updates
    when the docs site rebuilds.
-2. **Living JSON endpoint** — push the latest aggregate JSON to a
+2. **Living JSON endpoint**: push the latest aggregate JSON to a
    stable URL (HuggingFace dataset or a `gh-pages` artefact) so the
    policyengine.org app can render it without needing the docs build.
-3. **policyengine.org dashboard tile** — a tile on the marketing site
+3. **policyengine.org dashboard tile**: a tile on the marketing site
    that shows the latest impact alongside the OBR/RF benchmark. Most
    work; right answer once the static page proves the data is stable.
 
@@ -102,8 +108,10 @@ content:
 
 1. Raise basic rate by 1pp.
 2. Raise higher rate by 1pp.
-3. Raise personal allowance by ~£800/year.
-4. Raise child benefit by £25/week per additional child.
+3. Raise the personal allowance to £13,000 (the fixture's name says
+   "by ~800GBP/year", but the allowance is frozen at £12,570 to
+   2030-31, so in 2029 the rise is £430).
+4. Set the child benefit rate for each additional child to £25 a week.
 5. Reduce Universal Credit taper to 20%.
 6. Raise Class 1 main employee NI rate to 10%.
 7. Raise VAT standard rate by 2pp.
@@ -124,8 +132,8 @@ benchmarks:
 ## Why now
 
 The UK data pipeline is moving from the Enhanced FRS to
-[Microcosm UK](https://github.com/PolicyEngine/microcosm), whose first
-certified national release was published on 4 October 2026. Moving the
+[Microcosm UK](https://github.com/PolicyEngine/microcosm), while the
+fixtures still run on the Enhanced FRS 2023-24. Moving the
 fixtures' dataset will shift every expected impact at once, and model
 changes to VAT, fuel duty and other bases are landing at the same time.
 A history that records the dataset alongside each value is the easiest
