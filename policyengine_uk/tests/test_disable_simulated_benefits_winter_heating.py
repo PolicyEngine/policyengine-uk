@@ -141,6 +141,14 @@ def test_every_simulated_benefit_with_a_reported_amount_is_set():
     assert not unlisted, unlisted
 
 
+def test_no_benefit_is_both_listed_and_excluded():
+    """winter_fuel_allowance in particular stays out of BENEFITS. The winter
+    heating split sets it from the report; a generic entry as well would be
+    harmless only while the split runs after the generic loop."""
+    both = set(BENEFITS) & set(NOT_IN_BENEFITS)
+    assert not both, both
+
+
 @pytest.mark.parametrize("simulation_class", [Simulation, Microsimulation])
 def test_reform_sets_reported_benefits(simulation_class):
     """The reform runs, and a listed benefit takes its reported amount."""

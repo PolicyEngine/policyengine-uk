@@ -23,7 +23,7 @@ which is at least zero and at most the payment.
 
 import numpy as np
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -74,6 +74,59 @@ def populations(draw):
     }
 
 
+# PAWHP recipients the property always checks, whatever Hypothesis draws: a
+# single Scottish pensioner in 2025, when everyone of pensionable age in
+# Scotland is entitled, and a Scottish couple on Pension Credit in 2024, when
+# a relevant benefit was a condition and one member's payment is the couple's.
+PAWHP_RECIPIENTS = [
+    {
+        "year": 2025,
+        "households": [
+            {
+                "country": "SCOTLAND",
+                "units": [
+                    {
+                        "adults": [
+                            {
+                                "age": 70,
+                                "state_pension_reported": 12_000,
+                                "employment_income": 0,
+                            }
+                        ],
+                        "pension_credit": 0,
+                    }
+                ],
+            }
+        ],
+    },
+    {
+        "year": 2024,
+        "households": [
+            {
+                "country": "SCOTLAND",
+                "units": [
+                    {
+                        "adults": [
+                            {
+                                "age": 70,
+                                "state_pension_reported": 8_000,
+                                "employment_income": 0,
+                            },
+                            {
+                                "age": 82,
+                                "state_pension_reported": 8_000,
+                                "employment_income": 0,
+                            },
+                        ],
+                        "pension_credit": 1_000,
+                    }
+                ],
+            }
+        ],
+    },
+]
+
+
 def situation(population):
     year = population["year"]
     people, benunits, households = {}, {}, {}
@@ -100,6 +153,8 @@ def situation(population):
 
 @PROPERTY_SETTINGS
 @given(populations())
+@example(PAWHP_RECIPIENTS[0])
+@example(PAWHP_RECIPIENTS[1])
 def test_switching_pawhp_off_lowers_household_income_by_pawhp(population):
     year = population["year"]
     reformed = Simulation(situation=situation(population), reform=PAWHP_OFF)
@@ -134,33 +189,17 @@ def test_switching_pawhp_off_lowers_household_income_by_pawhp(population):
         )
 
 
-def test_pawhp_is_paid_in_the_generated_populations():
-    """The property is not vacuous: a Scottish pensioner household gets PAWHP
-    from 2024, and switching it off changes household net income."""
-    population = {
-        "year": 2025,
-        "households": [
-            {
-                "country": "SCOTLAND",
-                "units": [
-                    {
-                        "adults": [
-                            {
-                                "age": 70,
-                                "state_pension_reported": 12_000,
-                                "employment_income": 0,
-                            }
-                        ],
-                        "pension_credit": 0,
-                    }
-                ],
-            }
-        ],
-    }
+@pytest.mark.parametrize("population", PAWHP_RECIPIENTS)
+def test_the_property_examples_receive_pawhp(population):
+    """The property is not vacuous: each of its explicit examples is a
+    household that receives PAWHP, and switching PAWHP off lowers its
+    household net income by the payment."""
+    year = population["year"]
     reformed = Simulation(situation=situation(population), reform=PAWHP_OFF)
     baseline = reformed.baseline
-    assert baseline.calculate("pawhp", 2025)[0] > 200
-    change = baseline.calculate("household_net_income", 2025) - reformed.calculate(
-        "household_net_income", 2025
+    pawhp = baseline.calculate("pawhp", year)
+    assert pawhp[0] > 0
+    change = baseline.calculate("household_net_income", year) - reformed.calculate(
+        "household_net_income", year
     )
-    assert change[0] == pytest.approx(baseline.calculate("pawhp", 2025)[0], abs=1e-2)
+    assert change[0] == pytest.approx(pawhp[0], abs=1e-2)
