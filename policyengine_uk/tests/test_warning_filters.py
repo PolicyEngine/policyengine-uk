@@ -172,7 +172,9 @@ def test_a_warning_raised_after_simulating_reaches_pytest_warns():
 
 @pytest.mark.parametrize("reform", [None, BASIC_INCOME], ids=["baseline", "reform"])
 def test_the_divisions_the_filters_hid_raise_no_runtime_warning(reform):
-    with warnings.catch_warnings():
+    # known_global_state sets numpy to warn, so a 0/0 cannot pass silently
+    # under an "ignore" error state left by earlier code.
+    with known_global_state():
         warnings.simplefilter("error", RuntimeWarning)
         simulation = simulate(reform)
     household_basic_income = simulation.calculate(
@@ -188,55 +190,120 @@ WARNING_FILTER_CALLS = {"filterwarnings", "simplefilter", "resetwarnings"}
 # Calls that change numpy's process-wide error state. np.errstate() is the
 # scoped form, so these are never needed.
 NUMPY_ERROR_STATE_CALLS = {"seterr", "seterrcall"}
-DEFINITIONS = (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda, ast.ClassDef)
-
-
-def _name(node: ast.AST):
-    if isinstance(node, ast.Attribute):
-        return node.attr
-    if isinstance(node, ast.Name):
-        return node.id
-    return None
-
-
-def _catches_warnings(node: ast.AST) -> bool:
-    return isinstance(node, (ast.With, ast.AsyncWith)) and any(
-        isinstance(item.context_expr, ast.Call)
-        and _name(item.context_expr.func) == "catch_warnings"
-        for item in node.items
-    )
+# List methods that change warnings.filters in place.
+LIST_MUTATORS = {
+    "append",
+    "clear",
+    "extend",
+    "insert",
+    "pop",
+    "remove",
+    "reverse",
+    "sort",
+}
+# Names to follow when imported under another name, by module.
+TRACKED_IMPORTS = {
+    "warnings": WARNING_FILTER_CALLS | {"catch_warnings", "filters"},
+    "numpy": NUMPY_ERROR_STATE_CALLS,
+}
 
 
 def global_warning_state_changes(source: str) -> list:
     """Lines that change warning filters or numpy's error state unscoped.
 
-    A ``with warnings.catch_warnings():`` block scopes the filter calls in
-    its body, but not those in a function defined there, which run later.
+    A ``with warnings.catch_warnings():`` block scopes what runs in its body,
+    including a class body and a function's decorators and defaults. It does
+    not scope the body of a function or generator expression defined there,
+    which runs later. Reading ``warnings.filters`` is fine; changing it is
+    not. Names imported under another name are followed.
     """
+    tree = ast.parse(source)
+    # "w" in "import warnings as w"; "fw" -> "filterwarnings" in
+    # "from warnings import filterwarnings as fw".
+    warnings_modules = {"warnings"}
+    aliases = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            warnings_modules |= {
+                alias.asname or alias.name
+                for alias in node.names
+                if alias.name == "warnings"
+            }
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            tracked = TRACKED_IMPORTS.get(node.module.split(".")[0], set())
+            for alias in node.names:
+                if alias.name in tracked:
+                    aliases[alias.asname or alias.name] = alias.name
+
+    def name(node: ast.AST):
+        if isinstance(node, ast.Attribute):
+            return node.attr
+        if isinstance(node, ast.Name):
+            return aliases.get(node.id, node.id)
+        return None
+
+    def is_filters(node: ast.AST) -> bool:
+        if isinstance(node, ast.Attribute):
+            return node.attr == "filters" and (
+                isinstance(node.value, ast.Name) and node.value.id in warnings_modules
+            )
+        return isinstance(node, ast.Name) and aliases.get(node.id) == "filters"
+
+    def changes_filters(node: ast.AST) -> bool:
+        if isinstance(node, (ast.Assign, ast.Delete)):
+            targets = node.targets
+        elif isinstance(node, (ast.AugAssign, ast.AnnAssign)):
+            targets = [node.target]
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            return node.func.attr in LIST_MUTATORS and is_filters(node.func.value)
+        else:
+            return False
+        return any(
+            is_filters(target)
+            or (isinstance(target, ast.Subscript) and is_filters(target.value))
+            for target in targets
+        )
+
     found = []
 
     def visit(node: ast.AST, scoped: bool) -> None:
-        if isinstance(node, DEFINITIONS):
-            scoped = False
-        elif _catches_warnings(node):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.Lambda)):
+            arguments = node.args
+            for now in [
+                *getattr(node, "decorator_list", []),
+                *arguments.defaults,
+                *[default for default in arguments.kw_defaults if default],
+            ]:
+                visit(now, scoped)
+            body = node.body if isinstance(node.body, list) else [node.body]
+            for later in body:
+                visit(later, False)
+            return
+        if isinstance(node, ast.GeneratorExp):
+            # Only the first iterable is evaluated where the generator is made.
+            first, *rest = node.generators
+            visit(first.iter, scoped)
+            for later in [node.elt, first.target, *first.ifs, *rest]:
+                visit(later, False)
+            return
+        if isinstance(node, (ast.With, ast.AsyncWith)) and any(
+            isinstance(item.context_expr, ast.Call)
+            and name(item.context_expr.func) == "catch_warnings"
+            for item in node.items
+        ):
             scoped = True
         if isinstance(node, ast.Call):
-            name = _name(node.func)
-            if name in NUMPY_ERROR_STATE_CALLS or (
-                name in WARNING_FILTER_CALLS and not scoped
+            called = name(node.func)
+            if called in NUMPY_ERROR_STATE_CALLS or (
+                called in WARNING_FILTER_CALLS and not scoped
             ):
-                found.append((node.lineno, name))
-        elif (
-            not scoped
-            and isinstance(node, ast.Attribute)
-            and node.attr == "filters"
-            and _name(node.value) == "warnings"
-        ):
+                found.append((node.lineno, called))
+        if not scoped and changes_filters(node):
             found.append((node.lineno, "warnings.filters"))
         for child in ast.iter_child_nodes(node):
             visit(child, scoped)
 
-    visit(ast.parse(source), scoped=False)
+    visit(tree, scoped=False)
     return found
 
 
@@ -253,12 +320,24 @@ def global_warning_state_changes(source: str) -> list:
             'from warnings import simplefilter\nsimplefilter("ignore")',
             [(2, "simplefilter")],
         ),
+        (
+            'from warnings import filterwarnings as fw\nfw("ignore")',
+            [(2, "filterwarnings")],
+        ),
+        ('import warnings as w\nw.simplefilter("ignore")', [(2, "simplefilter")]),
         ("warnings.resetwarnings()", [(1, "resetwarnings")]),
         (
             'warnings.filters.insert(0, ("ignore", None, Warning, None, 0))',
             [(1, "warnings.filters")],
         ),
+        ("import warnings as w\nw.filters[:] = []", [(2, "warnings.filters")]),
+        ("del warnings.filters[0]", [(1, "warnings.filters")]),
+        ("from warnings import filters\nfilters.clear()", [(2, "warnings.filters")]),
+        ("filters = list(warnings.filters)\nfilters.clear()", []),
+        ("from django import filters\nfilters.clear()", []),
         ('np.seterr(all="ignore")', [(1, "seterr")]),
+        ('numpy.core.seterr(all="ignore")', [(1, "seterr")]),
+        ('from numpy import seterr as se\nse(all="ignore")', [(2, "seterr")]),
         (
             'with np.errstate(all="ignore"):\n    np.seterr(all="ignore")',
             [(2, "seterr")],
@@ -270,13 +349,33 @@ def global_warning_state_changes(source: str) -> list:
         ),
         (
             "with warnings.catch_warnings():\n"
+            '    later = (warnings.simplefilter("ignore") for _ in range(1))',
+            [(2, "simplefilter")],
+        ),
+        (
+            "with warnings.catch_warnings():\n"
+            '    class Now:\n        warnings.simplefilter("ignore")',
+            [],
+        ),
+        (
+            "with warnings.catch_warnings():\n"
+            '    @decorate(warnings.simplefilter("ignore"))\n'
+            "    def f():\n        pass",
+            [],
+        ),
+        (
+            "from warnings import catch_warnings as quiet\n"
+            'with quiet():\n    warnings.simplefilter("ignore")',
+            [],
+        ),
+        (
+            "with warnings.catch_warnings():\n"
             '    warnings.filterwarnings("ignore", category=RuntimeWarning)\n'
             "    x = a / b",
             [],
         ),
         ('with np.errstate(divide="ignore"):\n    x = a / b', []),
         ("x = np.divide(a, b, out=np.zeros_like(a), where=b > 0)", []),
-        ("filters = [1]\nlen(warnings.__name__)", []),
     ],
 )
 def test_the_scanner_finds_unscoped_global_warning_state(source, expected):
