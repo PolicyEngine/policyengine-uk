@@ -39,6 +39,9 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - alcohol_and_tobacco_consumption
 - bus_fare_spending
 - bus_fare_spending_reported
+# bsp_reported still holds FRS code 9 (War Widow's Pension, CPI-uprated) as
+# well as Bereavement Support Payment, whose rates are frozen. It moves off
+# this index once datasets put code 9 in war_widows_pension_reported (#2381).
 - bsp_reported
 - carers_allowance_reported
 - child_benefit_reported
@@ -76,6 +79,7 @@ gov.economic_assumptions.yoy_growth.obr.consumer_price_index:
 - statutory_sick_pay
 - transport_consumption
 - universal_credit_reported
+- war_widows_pension_reported
 - winter_fuel_allowance_reported
 - working_tax_credit_reported
 gov.economic_assumptions.yoy_growth.obr.diesel_spending_litre_proxy:

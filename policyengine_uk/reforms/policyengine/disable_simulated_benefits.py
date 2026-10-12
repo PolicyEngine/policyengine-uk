@@ -9,6 +9,7 @@ from policyengine_core.model_api import *
 BENEFITS = [
     "afcs",
     "bsp",
+    "war_widows_pension",
     "carers_allowance",
     "child_benefit",
     "child_tax_credit",
