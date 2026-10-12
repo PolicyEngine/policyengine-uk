@@ -1,11 +1,19 @@
-"""A means test never counts the income of someone outside its family.
+"""A means test counts the claimant's and partner's income, no one else's.
 
-Invariant: for any benefit unit, giving income to a member who is neither the
-claimant, the partner, nor the programme's own child or young person (for
-example an 18- or 19-year-old presumed the claimant's child but not in
-education, a 16-year-old outside education and past the 1 September following
-their 16th birthday, or a third adult) never changes a means test's income. The UC, HB,
-IS, tax credit, CTR and Pension Credit income totals are covered.
+Invariants:
+
+1. For any benefit unit, giving income to a member who is neither the
+   claimant, the partner, nor the programme's own child or young person (for
+   example an 18- or 19-year-old presumed the claimant's child but not in
+   education, a 16-year-old outside education and past the 1 September
+   following their 16th birthday, or a third adult) never changes a means
+   test's income. The UC, HB, IS, tax credit, CTR and Pension Credit income
+   totals are covered.
+2. Giving income to the family's own child or young person never changes it
+   either (HB Regs 2006 reg 25(3); IS Regs 1987 reg 23(2); Tax Credits
+   (Definition and Calculation of Income) Regs 2002 reg 3(1); SSI 2021/249 reg
+   36(2) and the applicant-and-partner rules of the other Council Tax
+   Reduction schemes).
 
 Each example builds families twice in one simulation: once with the other
 member's income and once without, in separate households and benefit units.
@@ -127,6 +135,84 @@ def test_income_of_non_claimants_never_counts(units):
             for i in range(n):
                 # The generator's construction, checked against the model.
                 assert not flags[offsets[i + 1] - 1], (variable, units[i])
+        for variable in INCOME_TESTS:
+            values = sim.calculate(variable, YEAR)
+            for i in range(n):
+                assert abs(values[i] - values[n + i]) < 0.01, (
+                    variable,
+                    would_claim_uc,
+                    units[i],
+                )
+
+
+@st.composite
+def families_with_a_dependant(draw):
+    # A head, an optional partner, and the family's own child or young
+    # person: a child under 16, or a 16- to 19-year-old at school on a course
+    # begun at 17, at least 16 years younger than the head and with the head
+    # flagged a parent, so every programme counts them as the family's.
+    dependant_age = draw(st.integers(10, 19))
+    head_age = draw(st.integers(dependant_age + 16, 60))
+    family = [
+        {
+            "age": head_age,
+            "is_parent": True,
+            "employment_income": draw(money),
+        }
+    ]
+    if draw(st.booleans()):
+        family.append(
+            {
+                "age": draw(st.integers(dependant_age + 16, 60)),
+                "is_parent": True,
+                "employment_income": draw(money),
+            }
+        )
+    family.append(
+        {
+            "age": dependant_age,
+            "current_education": "UPPER_SECONDARY",
+            "age_started_or_accepted_current_education_or_training": 17,
+            "is_before_universal_credit_qualifying_young_person_terminal_date": True,
+            "employment_income": draw(st.floats(1, 50_000)),
+            "private_pension_income": draw(money),
+            "savings_interest_income": draw(money),
+        }
+    )
+    return family
+
+
+@settings(
+    max_examples=15,
+    deadline=None,
+    derandomize=True,
+    suppress_health_check=[HealthCheck.too_slow, HealthCheck.data_too_large],
+)
+@given(st.lists(families_with_a_dependant(), min_size=1, max_size=6))
+def test_income_of_children_and_young_persons_never_counts(units):
+    # Invariant 2: the same families with the dependant's income removed.
+    without = [
+        family[:-1]
+        + [
+            {
+                **family[-1],
+                "employment_income": 0,
+                "private_pension_income": 0,
+                "savings_interest_income": 0,
+            }
+        ]
+        for family in units
+    ]
+    for would_claim_uc in (None, False):
+        sim = Simulation(situation=situation(units + without, would_claim_uc))
+        offsets = np.cumsum([0] + [len(f) for f in units])
+        n = len(units)
+        # Not vacuous: the dependant is every legacy programme's own child or
+        # young person.
+        for variable in FAMILY_FLAGS[1:]:
+            flags = sim.calculate(variable, YEAR)
+            for i in range(n):
+                assert flags[offsets[i + 1] - 1], (variable, units[i])
         for variable in INCOME_TESTS:
             values = sim.calculate(variable, YEAR)
             for i in range(n):

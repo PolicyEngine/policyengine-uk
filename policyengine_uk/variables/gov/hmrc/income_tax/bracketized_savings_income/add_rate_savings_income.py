@@ -14,7 +14,9 @@ class add_rate_savings_income(Variable):
 
     def formula(person, period, parameters):
         thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
-        other_income = person("earned_taxable_income", period)
+        # Savings sit above all non-savings income, property income
+        # included (ITA 2007 s. 16).
+        other_income = person("non_savings_taxable_income", period)
         savings_after_allowances = max_(
             0,
             person("taxable_savings_interest_income", period)
