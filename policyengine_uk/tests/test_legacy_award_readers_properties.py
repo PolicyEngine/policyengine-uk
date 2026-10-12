@@ -183,13 +183,15 @@ def families(draw):
 def other_members(draw):
     """An adult who is neither claimant, partner nor a dependant.
 
-    They are under state pension age and not in education, so a 16 to 19 year
-    old is not a qualifying young person. They have no income other than the
-    awards they report.
+    They are under state pension age, not in education and past the 1
+    September following their 16th birthday (UC Regs 2013 reg. 5(1)(a)), so a
+    16 to 19 year old is not a qualifying young person. They have no income
+    other than the awards they report.
     """
     return {
         "age": draw(st.integers(16, 60)),
         "current_education": "NOT_IN_EDUCATION",
+        "is_before_first_september_following_16th_birthday": False,
         **draw(award_reports()),
     }
 

@@ -33,26 +33,22 @@ class council_tax_reduction_applicable_income(Variable):
     ]
 
     def formula(benunit, period, parameters):
-        # Members whose income counts: the claimant and partner and, as the model did
-        # before, the programme's own children or young persons. The regulations count
-        # only the claimant's and partner's (CTR (Prescribed Requirements) (England)
-        # Regs 2012 Sch 1 para 11); dropping dependants' own income is a follow-up.
-        # Anyone else in the benefit unit does not count.
+        # Members whose income counts: the applicant and partner (CTR
+        # (Prescribed Requirements) (England) Regs 2012 Sch 1 para 11; WSI
+        # 2013/3029 Sch 1 para 5; SSI 2012/319 reg 21; SSI 2021/249 reg 36(1)).
+        # "The income and capital of a child or young person is not to be
+        # treated as the income and capital of the applicant" (SSI 2021/249 reg
+        # 36(2)); the other schemes count the applicant's and partner's alone.
         person = benunit.members
         # A household head who applies alone
-        # (council_tax_reduction_head_applies_alone) is not the benefit unit's
-        # claimant, so this mask has reached them only as a Child Benefit young
-        # person. The applicant's own income always counts (SSI 2021/249 reg
-        # 36(1)), so they stay counted where Scotland's working-age scheme no
-        # longer reads them as a young person.
-        applicant_counted_as_young_person = person(
+        # (council_tax_reduction_head_applies_alone) is the applicant but not
+        # the benefit unit's claimant. The model has counted such a head only
+        # when they are a Child Benefit young person; that is kept, as their
+        # own income. Counting every such applicant is #2078's change.
+        head_applicant_counted = person(
             "is_council_tax_reduction_applicant_or_partner", period
         ) & person("is_child_or_young_person_for_legacy_benefits", period)
-        members = (
-            person("is_claimant_or_partner", period)
-            | person("is_child_or_young_person_for_council_tax_reduction", period)
-            | applicant_counted_as_young_person
-        )
+        members = person("is_claimant_or_partner", period) | head_applicant_counted
         # Only the claimant's and partner's income-related awards: the scheme
         # counts the applicant's and partner's income (Sch 1 para 11 above). A
         # member outside the family who has an award of their own claims in their
