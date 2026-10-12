@@ -76,7 +76,7 @@ def test_retained_uplift_projection_does_not_reduce_the_cash_amount():
     assert project_retained_uplift(18, -0.02) == 18
 
 
-def _boundary_calculation(couple: bool, private_pension: float) -> dict[str, float]:
+def _boundary_simulation(couple: bool, private_pension: float) -> Simulation:
     year = 2035
     names = ["claimant", "partner"] if couple else ["claimant"]
     people = {
@@ -88,7 +88,7 @@ def _boundary_calculation(couple: bool, private_pension: float) -> dict[str, flo
         }
         for name in names
     }
-    simulation = Simulation(
+    return Simulation(
         situation={
             "people": people,
             "benunits": {"benunit": {"members": names}},
@@ -105,8 +105,12 @@ def _boundary_calculation(couple: bool, private_pension: float) -> dict[str, flo
             },
         }
     )
+
+
+def _boundary_calculation(couple: bool, private_pension: float) -> dict[str, float]:
+    simulation = _boundary_simulation(couple, private_pension)
     return {
-        variable: float(simulation.calculate(variable, year)[0])
+        variable: float(simulation.calculate(variable, 2035)[0])
         for variable in (
             "guarantee_credit",
             "housing_benefit",
@@ -117,20 +121,40 @@ def _boundary_calculation(couple: bool, private_pension: float) -> dict[str, flo
     }
 
 
-@pytest.mark.parametrize(
-    ("couple", "income_below", "income_above"),
-    [(False, 16_808, 16_809), (True, 27_133, 27_134)],
-)
-def test_net_income_does_not_fall_when_guarantee_credit_ends(
-    couple,
-    income_below,
-    income_above,
-):
+@pytest.mark.parametrize("couple", [False, True])
+def test_net_income_does_not_fall_when_guarantee_credit_ends(couple):
     """Test £1 income steps across each modeled 2035 guarantee boundary.
 
     A normal marginal withdrawal may occur, but there must be no discontinuous
     loss of Housing Benefit or Council Tax Reduction when Guarantee Credit ends.
     """
+    # Locate the actual cutoff, including income-tax deductions. Forecasts and
+    # tax thresholds can change independently of this discontinuity regression.
+    income_below, income_above = 0, 100_000
+    assert (
+        _boundary_simulation(couple, income_below).calculate("guarantee_credit", 2035)[
+            0
+        ]
+        > 0
+    )
+    assert (
+        _boundary_simulation(couple, income_above).calculate("guarantee_credit", 2035)[
+            0
+        ]
+        == 0
+    )
+    while income_above - income_below > 1:
+        midpoint = (income_below + income_above) // 2
+        if (
+            _boundary_simulation(couple, midpoint).calculate("guarantee_credit", 2035)[
+                0
+            ]
+            > 0
+        ):
+            income_below = midpoint
+        else:
+            income_above = midpoint
+
     below = _boundary_calculation(couple, income_below)
     above = _boundary_calculation(couple, income_above)
 
