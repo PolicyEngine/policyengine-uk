@@ -74,7 +74,9 @@ That change verified, on main at `3c48247e`, that:
 
 ## Checking for a regression
 
-CI now runs the Test job on Linux arm64 and the smoke imports on x86
+CI now runs the test suite (`.github/workflows/test-suite.yaml`: the
+YAML tests and the Python tests, split over four shards) on Linux arm64
+(`ubuntu-24.04-arm`), and the install and smoke-import checks on x86
 `ubuntu-latest`. There is no macOS job. If an OS difference is
 suspected again:
 
