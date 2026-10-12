@@ -2,7 +2,7 @@
 
 ```{warning}
 **Currently reported-only.** PolicyEngine UK models the Bereavement
-Support Payment (BSP) as `adds = ["bsp_reported"]` — i.e. the value
+Support Payment (BSP) as `adds = ["bsp_reported"]`, so the value
 flows through from the dataset, with no derived eligibility or
 rule-based amount. This page captures the proposed formula-based
 extension covering both BSP and the legacy Widowed Parent's Allowance
@@ -21,11 +21,12 @@ Just the FRS-reported amount:
 
 ```python
 class bsp(Variable):
-    label = "Bereavement Support Payment"
-    entity = Person
-    definition_period = YEAR
     value_type = float
+    entity = Person
+    label = "Bereavement Support Payment"
+    definition_period = YEAR
     unit = GBP
+
     adds = ["bsp_reported"]
 ```
 
@@ -37,25 +38,26 @@ That means:
 - The legacy WPA has no variable of its own. Microcosm UK fills
   `bsp_reported` from FRS benefit codes 6 and 9
   ([`frs_spine.py`](https://github.com/PolicyEngine/microcosm/blob/75167a68/packages/microcosm-build/src/microcosm/build/uk_runtime/frs_spine.py#L825)),
-  and Microcosm's own source notes say code 6 mixes benefits and code 9
-  is War Widow's Pension. So the reported "BSP" also carries legacy
+  and Microcosm's own
+  [source notes](https://github.com/PolicyEngine/microcosm/blob/d1fda720/packages/microcosm-build/src/microcosm/build/uk/spec/sources.yaml#L1870)
+  say code 6 mixes benefits and code 9 is tax-free War Widow's Pension. So the reported "BSP" also carries legacy
   widow's benefits and War Widow's Pension.
 
 ## Proposed scope
 
-### Phase 1 — BSP rule-based formula
+### Phase 1: rule-based BSP formula
 
 The BSP under the [Pensions Act 2014, Part 5][pa-2014-5] and the
 [Bereavement Support Payment Regulations 2017][bsp-regs] (SI 2017/410)
 pays:
 
-- A **lump-sum** of either £2,500 (Standard Rate) or £3,500 (Higher
-  Rate, with a dependent child).
-- **18 monthly payments** of £100 (Standard) or £350 (Higher), for a
+- A **lump sum** of either £2,500 (standard rate) or £3,500 (higher
+  rate, with a dependent child).
+- **18 monthly payments** of £100 (standard) or £350 (higher), for a
   death on or after 6 April 2017
   ([GOV.UK](https://www.gov.uk/bereavement-support-payment/what-youll-get)).
 
-The Higher Rate applies if, when the partner died, the claimant was
+The higher rate applies if, when the partner died, the claimant was
 getting (or entitled to) Child Benefit for a child living with them, or
 was pregnant. The
 [Bereavement Benefits (Remedial) Order 2023](https://www.legislation.gov.uk/uksi/2023/134/contents)
@@ -65,11 +67,11 @@ children, with effect back to 30 August 2018, after the Supreme Court's
 
 To model this we need:
 
-- `is_bereaved_recently` (Person, YEAR) — a new input flagging
+- `is_bereaved_recently` (Person, YEAR): a new input flagging
   whether the person has been bereaved in the last 18 months.
-- `bsp_higher_rate_eligible` (Person, YEAR) — whether they have a
+- `bsp_higher_rate_eligible` (Person, YEAR): whether they have a
   dependent child.
-- `bsp_months_remaining` (Person, YEAR) — how many of the 18 monthly
+- `bsp_months_remaining` (Person, YEAR): how many of the 18 monthly
   instalments fall within the simulation year.
 
 The BSP formula then becomes:
@@ -84,11 +86,11 @@ bsp = (
 Both `lump_sum_amount` and `monthly_amount` parameter trees split on
 `bsp_higher_rate_eligible` (£3,500 / £350 vs £2,500 / £100).
 
-### Phase 2 — WPA (historical) under the same formula
+### Phase 2: historical WPA under the same formula
 
 Widowed Parent's Allowance (under [Social Security Contributions and
 Benefits Act 1992 s. 39A][sscba-39a]) was paid for deaths from April
-2001 to 5 April 2017. The benefit:
+2001 up to 5 April 2017. The benefit:
 
 - Continued for as long as the surviving spouse had a dependent child.
 - Was uprated annually.
@@ -96,8 +98,9 @@ Benefits Act 1992 s. 39A][sscba-39a]) was paid for deaths from April
 
 For historical analyses the model should:
 
-- Add `wpa_eligible` (Person, YEAR) — bereavement date 2001-04 to
-  2017-04 inclusive, with a dependent child.
+- Add `wpa_eligible` (Person, YEAR): partner died between April 2001
+  and 5 April 2017, the survivor is under State Pension age and is
+  entitled to Child Benefit.
 - Add `widowed_parents_allowance` (Person, YEAR) as a derived
   formula reading the WPA rate parameter (which would need
   backfilling under `gov/dwp/wpa/rate.yaml`).
@@ -108,7 +111,7 @@ the current data they sit inside `bsp_reported` (see above), so they
 are already counted in income; the gap is that they can't be told
 apart from BSP or reformed separately.
 
-### Phase 3 — data-side bereavement flag
+### Phase 3: data-side bereavement flag
 
 `is_bereaved_recently` doesn't exist in the FRS. The FRS is a
 cross-section, not a panel, and doesn't record when a partner died, so
@@ -120,14 +123,16 @@ the flag would need imputing in Microcosm UK:
   and region.
 
 This is the heaviest of the three phases; without it the new
-variables work for the household-calculator (which can input the flag
+variables work for the household calculator (which can input the flag
 directly) but not for microsim aggregates.
 
 ## Open questions
 
 - BSP isn't uprated each year. The rates have been £2,500/£3,500 and
-  £100/£350 since 2017.
-  Should the parameter tree carry an explicit
+  £100/£350 since 2017. The model's `bsp_reported` is nonetheless
+  uprated with CPI, which suits the War Widow's Pension and legacy
+  widow's benefits it also contains but not BSP itself. Should the new
+  parameter tree carry an explicit
   `uprating: gov.economic_assumptions.indices.obr.consumer_price_index`
   to mirror what other DWP rates do, or hold flat to match the
   historical reality?
@@ -141,10 +146,10 @@ directly) but not for microsim aggregates.
 
 ## References
 
-- [Pensions Act 2014, Part 5](https://www.legislation.gov.uk/ukpga/2014/19/part/5) — primary statute for BSP.
+- [Pensions Act 2014, Part 5](https://www.legislation.gov.uk/ukpga/2014/19/part/5): primary statute for BSP.
 - [Bereavement Support Payment Regulations 2017 (SI 2017/410)][bsp-regs].
-- [Bereavement Benefits (Remedial) Order 2023 (SI 2023/134)](https://www.legislation.gov.uk/uksi/2023/134/contents) — cohabiting-parent extension, effective from 30 August 2018.
-- [SSCBA 1992 s. 39A][sscba-39a] — legacy WPA basis.
+- [Bereavement Benefits (Remedial) Order 2023 (SI 2023/134)](https://www.legislation.gov.uk/uksi/2023/134/contents): cohabiting-parent extension, effective from 30 August 2018.
+- [SSCBA 1992 s. 39A][sscba-39a]: legacy WPA basis.
 - gov.uk, [Bereavement Support Payment](https://www.gov.uk/bereavement-support-payment) and [Widowed Parent's Allowance](https://www.gov.uk/widowed-parents-allowance).
 - DWP, [Stat-Xplore](https://stat-xplore.dwp.gov.uk/): Bereavement Support Payment and Widowed Parent's Allowance caseloads.
 - Issues: [#466](https://github.com/PolicyEngine/policyengine-uk/issues/466) (BSP formula), [#465](https://github.com/PolicyEngine/policyengine-uk/issues/465) (historical WPA).
