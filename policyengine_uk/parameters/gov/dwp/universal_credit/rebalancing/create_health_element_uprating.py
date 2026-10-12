@@ -121,7 +121,8 @@ def projected_value(parameter: Parameter, parameters: ParameterNode, at: str):
     ]
     if not projected:
         return parameter(at)
-    return parameter(last) * uprater(max(projected)) / uprater(last)
+    # Core's order: the index ratio first, then the amount.
+    return parameter(last) * (uprater(max(projected)) / uprater(last))
 
 
 def index_years(parameters: ParameterNode) -> range:

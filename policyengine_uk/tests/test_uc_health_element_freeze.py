@@ -12,7 +12,8 @@ Invariants:
 
 1. Freeze: in each tax year in which ``rebalancing.health_element_freeze``
    and ``rebalancing.active`` are true (2026-27 to 2029-30 in law), the
-   amount equals the previous year's, for any CPI path.
+   amount equals the previous year's, for any CPI path, unless an amount is
+   stated for that year (as s. 2 states £217.26 for 2026-27).
 2. Uprating otherwise: in any other year the amount is the previous year's
    times the growth in the benefit uprating index, floored at no change
    (s. 150(2) provides only for increases). So it never falls, and with
@@ -176,8 +177,9 @@ def test_household_element_after_the_freeze():
     with LCWRA gets twelve times the uprated monthly amount."""
     simulation = Simulation(situation=SITUATION)
     monthly = system.parameters.get_child(AMOUNT)(at(2030))
-    assert simulation.calculate("uc_LCWRA_element", 2030)[0] == pytest.approx(
-        12 * monthly, rel=1e-9
+    # The formula returns float32.
+    assert float(simulation.calculate("uc_LCWRA_element", 2030)[0]) == pytest.approx(
+        12 * monthly, rel=1e-6
     )
 
 

@@ -142,9 +142,9 @@
 
 - name: Childcare element counts children until the September after their 15th birthday
   # A 16-year-old is past the reg 14(3) limit, so only the 10-year-old counts:
-  # the one-child cap applies. Cap 248.63997060 x 52 = 12,929.28; 70% of that
-  # is 9,050.50 (the 20,000 of charges exceed the cap). Previously the
-  # 16-year-old counted and the two-child cap applied.
+  # the one-child cap applies. Cap 175 x 52 = 9,100 (the limit has been 175 a
+  # week since 2005); 70% of that is 6,370 (the 20,000 of charges exceed the
+  # cap). Previously the 16-year-old counted and the two-child cap applied.
   period: 2020
   absolute_error_margin: 0.01
   input:
@@ -164,7 +164,7 @@
         members: [parent, teenager, child]
   output:
     is_child_for_working_tax_credit_childcare_element: [false, false, true]
-    WTC_childcare_element: 9_050.50
+    WTC_childcare_element: 6_370
 
 - name: Childcare element counts a disabled child until the September after their 16th birthday
   period: 2020
