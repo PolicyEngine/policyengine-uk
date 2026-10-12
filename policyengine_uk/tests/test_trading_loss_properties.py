@@ -24,8 +24,10 @@ Invariants, for any people and incomes:
    means-tested benefit and means-test income is what it is without the loss,
    except that UC sets it against the person's other trades' profits (UC Regs
    2013 reg 57(2)), so UC, its benefit cap earnings test and the capped
-   award equal the same family with those profits cut by the loss. (The model's means tests deduct the year's Income Tax liability,
-   so otherwise the loss reaches them only through that tax.)
+   award equal the same family with those profits cut by the loss. The
+   model's means tests use annual tax deductions, so otherwise the loss
+   reaches them through those deductions. UC's own deductions for tax and
+   NI on earnings are held alongside Income Tax and NI.
 5. Tax credits (SI 2002/2006 reg 3(1) Step 4): the claimants' losses (not a
    child's) come off their applicable income, never below zero, and the award
    never falls.
@@ -33,15 +35,24 @@ Invariants, for any people and incomes:
    and HBAI net income moves only through the loss itself, taxes and
    means-tested or passported benefits; every other component is unchanged.
 7. Class 4 (SSCBA 1992 Sch 2 para 3): Class 4 profits are self-employment
-   profits less losses brought forward (for both taxes and for Class 4 only)
-   and the year's relief, never below zero, so Class 4 never rises with the
-   loss and someone with no profits pays none whatever their loss.
+   profits after capital allowances and the trading allowance, less the
+   separate Class 4 loss balance and the year's loss, never below zero.
+   The Income Tax cap and relief against other income do not limit this
+   deduction. Class 4 never rises with a loss; a person with no profits
+   pays none whatever their loss.
 8. The s.24A cap starts in 2013-14.
+9. A loss-making trade, compared with the same trade making zero profit and
+   no loss, never increases Income Tax. With paid tax and NI deductions and
+   other benefit receipts held consistently, it never reduces UC, Housing
+   Benefit or tax credits. This isolates each programme's loss rule: the
+   model's annual tax deductions and changes to other benefits can otherwise
+   lower an individual award (the tax-payment timing gap is #2108).
 
 Comparisons allow float32 rounding: the model stores values as float32.
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
@@ -50,6 +61,8 @@ from policyengine_uk.variables.household.income.hbai_household_net_income import
     HBAI_HOUSEHOLD_NET_INCOME_ADDS,
     HBAI_HOUSEHOLD_NET_INCOME_SUBTRACTS,
 )
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -396,7 +409,7 @@ def families(draw):
     return people, household
 
 
-def family_situation(units, overrides=None, benunit_overrides=None):
+def family_situation(units, overrides=None, benunit_overrides=None, year=YEAR):
     situation = {"people": {}, "benunits": {}, "households": {}}
     for i, (people, household) in enumerate(units):
         names = []
@@ -405,18 +418,18 @@ def family_situation(units, overrides=None, benunit_overrides=None):
             values = dict(inputs)
             if overrides is not None:
                 values.update(overrides.get(name, {}))
-            situation["people"][name] = {k: {YEAR: v} for k, v in values.items()}
+            situation["people"][name] = {k: {year: v} for k, v in values.items()}
             names.append(name)
         situation["benunits"][f"b{i}"] = {
             "members": names,
             **{
-                k: {YEAR: v}
+                k: {year: v}
                 for k, v in (benunit_overrides or {}).get(f"b{i}", {}).items()
             },
         }
         situation["households"][f"h{i}"] = {
             "members": names,
-            **{k: {YEAR: v} for k, v in household.items()},
+            **{k: {year: v} for k, v in household.items()},
         }
     return situation
 
@@ -474,6 +487,93 @@ PINNED_FAMILIES = [
 ]
 
 
+@pytest.mark.parametrize(
+    ("programme", "year"),
+    [("universal_credit", 2026), ("housing_benefit", 2024), ("tax_credits", 2024)],
+)
+@PROPERTY_SETTINGS
+@example(units=PINNED_FAMILIES)
+@given(units=st.lists(families(), min_size=4, max_size=10))
+def test_zero_profit_trade_loss_cannot_raise_tax_or_reduce_programme_award(
+    units, programme, year
+):
+    """Compare a loss-making trade with an otherwise identical zero-profit trade.
+
+    Tax uses each person's actual liability. Benefit comparisons hold paid
+    deductions at the zero-loss values, including UC's earnings-only tax and
+    NI. Housing Benefit is tested for continuing 2024 awards without tax
+    credits: a changed credit receipt can legitimately change Housing Benefit.
+    No trade has concurrent profits, so a loss cannot switch the UC benefit
+    cap earnings exemption through reg. 82.
+    """
+    loss_making = [
+        ([{**person, "self_employment_income": 0.0} for person in people], household)
+        for people, household in units
+    ]
+    zero_profit = [
+        ([{**person, "trading_loss": 0.0} for person in people], household)
+        for people, household in loss_making
+    ]
+    benunit_inputs = {
+        f"b{i}": {
+            "would_claim_uc": programme == "universal_credit",
+            "would_claim_housing_benefit": programme == "housing_benefit",
+            "would_claim_WTC": programme == "tax_credits",
+            "would_claim_CTC": programme == "tax_credits",
+        }
+        for i in range(len(units))
+    }
+    if programme == "housing_benefit":
+        for inputs in benunit_inputs.values():
+            inputs.update(
+                tax_credits=0.0,
+                working_tax_credit=0.0,
+                child_tax_credit=0.0,
+            )
+    person_inputs = (
+        {f"p{i}_0": {"housing_benefit_reported": 1_000.0} for i in range(len(units))}
+        if programme == "housing_benefit"
+        else {}
+    )
+
+    def simulation(population, inputs):
+        return Simulation(
+            situation=family_situation(population, inputs, benunit_inputs, year=year)
+        )
+
+    def values(sim, variable):
+        return np.asarray(sim.calculate(variable, year), dtype=float)
+
+    baseline = simulation(zero_profit, person_inputs)
+    actual_loss = simulation(loss_making, person_inputs)
+    actual_tax = values(actual_loss, "income_tax")
+    baseline_tax = values(baseline, "income_tax")
+    assert np.all(actual_tax <= baseline_tax + 0.5), (actual_tax, baseline_tax, units)
+
+    deductions = [
+        "income_tax",
+        "national_insurance",
+        "uc_income_tax_on_earnings",
+        "uc_national_insurance_on_earnings",
+    ]
+    held = {variable: values(baseline, variable) for variable in deductions}
+    mif = np.asarray(baseline.calculate("uc_mif_applies", year), dtype=bool)
+    for k, name in enumerate(baseline.populations["person"].ids):
+        person_inputs.setdefault(name, {}).update(
+            {variable: float(held[variable][k]) for variable in deductions}
+        )
+        person_inputs[name]["uc_mif_applies"] = bool(mif[k])
+
+    loss_award = values(simulation(loss_making, person_inputs), programme)
+    zero_award = values(simulation(zero_profit, person_inputs), programme)
+    assert np.all(loss_award >= zero_award - 0.5), (
+        programme,
+        loss_award,
+        zero_award,
+        units,
+    )
+
+
 @PROPERTY_SETTINGS
 @example(PINNED_FAMILIES)
 @given(st.lists(families(), min_size=4, max_size=10))
@@ -485,7 +585,13 @@ def test_means_tests_see_the_loss_only_through_tax(units):
 
     names = with_loss.populations["person"].ids
     benunits = with_loss.populations["benunit"].ids
-    tax = {v: values(with_loss, v) for v in ["income_tax", "national_insurance"]}
+    deductions = [
+        "income_tax",
+        "national_insurance",
+        "uc_income_tax_on_earnings",
+        "uc_national_insurance_on_earnings",
+    ]
+    tax = {v: values(with_loss, v) for v in deductions}
     loss = values(with_loss, "trading_loss")
     profits = values(with_loss, "self_employment_income")
     mif = np.asarray(with_loss.calculate("uc_mif_applies", YEAR))
@@ -495,8 +601,7 @@ def test_means_tests_see_the_loss_only_through_tax(units):
     def held(k, **extra):
         return {
             "trading_loss": 0.0,
-            "income_tax": float(tax["income_tax"][k]),
-            "national_insurance": float(tax["national_insurance"][k]),
+            **{v: float(tax[v][k]) for v in deductions},
             **extra,
         }
 
@@ -622,13 +727,21 @@ def test_household_income_moves_only_through_its_channels(units):
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
     st.lists(money(20_000), min_size=16, max_size=16),
 )
-def test_class_4_profits_net_of_the_relief(people, regions, brought_forward):
-    people = [{**p, "loss_relief": b} for p, b in zip(people, brought_forward)]
+def test_class_4_profits_net_of_the_loss_balance(people, regions, brought_forward):
+    people = [
+        {
+            **p,
+            "loss_relief": b,
+            "ni_class_4_losses_brought_forward": b,
+            "capital_allowances": 0.0,
+            "trading_allowance_deduction": 0.0,
+        }
+        for p, b in zip(people, brought_forward)
+    ]
     without = [{**p, "trading_loss": 0.0} for p in people]
     variables = [
         "ni_class_4_profits",
         "ni_class_4",
-        "trade_loss_relief_against_general_income",
     ]
     a = calculate(single_people(people, regions), variables)
     b = calculate(single_people(without, regions), variables)
@@ -636,8 +749,10 @@ def test_class_4_profits_net_of_the_relief(people, regions, brought_forward):
         expected = max(
             0.0,
             person["self_employment_income"]
-            - person["loss_relief"]
-            - a["trade_loss_relief_against_general_income"][i],
+            - person["capital_allowances"]
+            - person["trading_allowance_deduction"]
+            - person["trading_loss"]
+            - person["ni_class_4_losses_brought_forward"],
         )
         assert abs(a["ni_class_4_profits"][i] - expected) <= tolerance(
             person["self_employment_income"]

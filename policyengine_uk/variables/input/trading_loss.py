@@ -17,7 +17,11 @@ class trading_loss(Variable):
         "against the person's other trades' profits (UC Regs 2013 reg 57(2)), "
         "and HB, CTR, Pension Credit and the legacy benefits not even that (HB "
         "Regs 2006 reg 38(10)); HBAI household income counts it as negative "
-        "income. Losses brought forward from earlier years go in loss_relief."
+        "income. Income Tax losses brought forward go in loss_relief; Class 4 "
+        "tracks its own unrelieved balance in ni_class_4_losses_brought_forward. "
+        "For a one-off loss, set subsequent years explicitly to zero for "
+        "Income Tax and benefits; Class 4 counts only explicitly supplied "
+        "loss years and carries forward the unused balance automatically."
     )
     definition_period = YEAR
     unit = GBP

@@ -11,14 +11,22 @@ class uc_trading_losses_set_against_profits(Variable):
         "one trade's loss reduces another trade's profits but never employed "
         "earnings. Over a year, with profits and losses spread evenly, that is "
         "the loss up to the profits. UC earnings and the benefit cap earnings "
-        "test (reg 82) both deduct it."
+        "test (reg 82) both deduct it. This annual approximation does not "
+        "track unused losses by assessment period under reg 57A; prior-period "
+        "losses must not be entered as a fresh current-year trading_loss."
     )
     definition_period = YEAR
     unit = GBP
-    reference = dict(
-        title="Universal Credit Regulations 2013 reg. 57(2)",
-        href="https://www.legislation.gov.uk/uksi/2013/376/regulation/57",
-    )
+    reference = [
+        dict(
+            title="Universal Credit Regulations 2013 reg. 57(2)",
+            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/57",
+        ),
+        dict(
+            title="Universal Credit Regulations 2013 reg. 57A (assessment-period losses)",
+            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/57A",
+        ),
+    ]
 
     def formula(person, period, parameters):
         return min_(
