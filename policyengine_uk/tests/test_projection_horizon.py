@@ -124,7 +124,7 @@ def projected():
     return extend_single_year_dataset(_dataset(), parameters)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def sim():
     return Microsimulation(dataset=_dataset())
 
@@ -213,6 +213,7 @@ def test_simulation_serves_projected_values_to_the_horizon(sim, projected):
             ("employment_income_before_lsr", "employment_income"),
             ("rent", "rent"),
             ("council_tax", "council_tax"),
+            ("state_pension_reported", "state_pension_reported"),
             ("pension_credit_reported_capital", "pension_credit_reported_capital"),
         ):
             assert sim.calculate(stored, year).values == pytest.approx(
@@ -244,8 +245,43 @@ def test_a_year_past_the_horizon_is_served_from_the_last_projected_year(sim):
         assert sim.calculate(variable, after).values == pytest.approx(
             sim.calculate(variable, last).values * index(after) / index(last)
         ), variable
-    for variable in ("rent", "council_tax"):
+    for variable in ("rent", "council_tax", "state_pension_reported"):
         assert system.variables[variable].uprating is None
         assert sim.calculate(variable, after).values == pytest.approx(
             sim.calculate(variable, last).values
         )
+
+
+def test_legacy_reported_capital_expires_only_after_the_horizon(projected):
+    """Legacy survey files store programme capital without the shared input.
+
+    Projection preserves that observation through the supported horizon.
+    Afterward the programme formula uses the absent shared input's sentinel,
+    matching direct-situation semantics rather than carrying the observation.
+    """
+    dataset = _dataset()
+    dataset.benunit = dataset.benunit.drop(columns="benunit_reported_capital")
+    simulation = Microsimulation(dataset=dataset)
+    for year in (2030, 2031, 2032):
+        assert simulation.calculate("pension_credit_reported_capital", year).values == (
+            pytest.approx(projected[year].benunit["pension_credit_reported_capital"])
+        )
+    assert simulation.calculate(
+        "pension_credit_reported_capital", PROJECTION_END_YEAR + 1
+    ).values == pytest.approx(np.full(len(HOUSEHOLDS), -1))
+
+
+def test_tax_free_savings_formula_takes_over_after_the_horizon():
+    """The survey exemption is stored until the horizon, then ISA interest
+    supplies it. Legacy files with no ISA-interest input therefore get zero.
+    """
+    dataset = _dataset()
+    dataset.person["tax_free_savings_income"] = 1_000.0
+    # Enhanced FRS 2024-25 does not store the formula's ISA-interest source.
+    simulation = Microsimulation(dataset=dataset)
+    assert simulation.calculate(
+        "tax_free_savings_income", PROJECTION_END_YEAR
+    ).values == (pytest.approx(np.full(len(HOUSEHOLDS), 1_000)))
+    assert simulation.calculate(
+        "tax_free_savings_income", PROJECTION_END_YEAR + 1
+    ).values == pytest.approx(np.zeros(len(HOUSEHOLDS)))

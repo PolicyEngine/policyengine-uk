@@ -55,13 +55,37 @@ value after its last date, so in 2031 and 2032 these hold their 2030 growth
 rate. That is an extrapolation, not an OBR forecast; replace it with the next
 EFO's values once one covers those years.
 
-After `PROJECTION_END_YEAR`, policyengine-core serves each stored input from
-the last projected year: an input whose variable has a formula is calculated
-by it, one with an `uprating` attribute is scaled by that index, and any other
-is held flat. Rent and council tax are held flat, recorded Pension Credit
-capital falls to -1 (the household capital proxy) and tax-free savings income
-is recalculated, so results for years past the horizon are not comparable
-with those up to it.
+After `PROJECTION_END_YEAR`, policyengine-core checks for a formula result
+first, then an `uprating` attribute, then carries the last stored input forward.
+Rent and council tax arrays are held flat; reported State Pension's formula
+also holds its last value. Weighted totals can still rise with population
+weights. In the legacy enhanced FRS 2024-25, recorded Pension Credit capital
+falls to -1 because its formula's shared `benunit_reported_capital` input is
+absent. That sentinel selects the household capital proxy. Likewise, the
+stored tax-free savings exemption is replaced by ISA interest, which is zero
+when its input is absent. Results beyond the horizon therefore have different
+input semantics.
+
+Direct programme capital inputs intentionally apply only in the periods
+supplied. Preserving legacy survey capital beyond the horizon requires a
+dataset compatibility change, such as materialising the survey's shared
+benefit-unit capital without overwriting programme-specific countable capital.
+Changing that formula to carry every direct input would alter situation
+semantics.
+
+Source coverage and processed parameter dates are distinct: fiscal-year
+conversion materialises annual values through 2040, while cumulative economic
+indices compound only through 2039. A later parameter lookup retains the final
+scalar; for a raw growth series that repeats the growth rate, but for a
+cumulative index it freezes the level. Extending the dataset to the raw
+series' final year would therefore be both costly and inconsistent with Core
+uprating after the cumulative-index horizon.
+
+Only the inputs listed in `uprating_indices.yaml` and the custom routines grow
+during dataset projection. Class-level `uprating` alone does not grow a stored
+dataset column: salary-sacrifice pension contributions, water and sewerage
+charges, housing service charges and rail usage retain their base-year values
+within the projection. These existing omissions require a separate audit.
 
 ## How the 2031+ values were constructed
 
