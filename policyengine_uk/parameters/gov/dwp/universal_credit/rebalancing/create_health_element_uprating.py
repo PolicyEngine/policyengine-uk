@@ -45,12 +45,15 @@ raised under s. 4; ``scenarios/uc_reform.py`` sets it for 2026-27 to
 Other Universal Credit amounts are uprated by ``gov.benefit_uprating_cpi``
 directly and would fall with it; the two agree whenever the index rises.
 
-This runs in ``process_parameters`` before uprating, so a change made through
-``Scenario(parameter_changes=...)``, which re-runs that pipeline, reaches the
-element: to the freeze, to ``rebalancing.active``, to the benefit index or
-the forecasts behind it, or to the amount itself, which is then held or
-uprated from the changed value. A ``reform=`` dict is applied after
-processing and does not re-run uprating; it changes the years it names.
+This runs with the other generated series before uprating (see
+``process_parameter_tree``). A reform written onto the statutory timeline
+re-runs that processing (``policyengine_uk.utils.dated_reforms``): a
+``Scenario(parameter_changes=...)`` change, or a ``reform=`` dict entry keyed
+by a year or a ``start.stop`` range. So a change to the freeze, to
+``rebalancing.active``, to the benefit index or the forecasts behind it, or to
+an amount itself reaches the element, which is then held or uprated from the
+changed value. A ``reform=`` dict key naming a single day still edits the
+annualised parameter on that day only and does not re-run uprating.
 """
 
 from typing import Dict

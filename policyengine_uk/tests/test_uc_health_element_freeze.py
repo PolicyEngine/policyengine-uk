@@ -253,23 +253,29 @@ def test_lifting_the_freeze_reaches_a_simulated_new_claimant(monkeypatch):
         assert frozen.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
             12 * ACT_AMOUNT, rel=1e-6
         )
-    lifted = Simulation(
-        situation=new_claimant_situation(years),
-        scenario=Scenario(
-            parameter_changes={FREEZE: {"2028": False, "2029": False}},
-            applied_before_data_load=True,
+    lift = {FREEZE: {"2028": False, "2029": False}}
+    # Every route that writes the change onto the statutory timeline reaches
+    # the award: a scenario applied before or after the data load, and a
+    # reform dict keyed by year.
+    routes = {
+        "scenario before data load": dict(
+            scenario=Scenario(parameter_changes=lift, applied_before_data_load=True)
         ),
-    )
-    parameters = lifted.tax_benefit_system.parameters
-    assert lifted.calculate("uc_LCWRA_element", 2027)[0] == pytest.approx(
-        12 * ACT_AMOUNT, rel=1e-6
-    )
-    for year in (2028, 2029):
-        growth = benefit_index(parameters, year) / benefit_index(parameters, 2027)
-        assert growth > 1
-        assert lifted.calculate("uc_LCWRA_element", year)[0] == pytest.approx(
-            12 * ACT_AMOUNT * growth, rel=1e-6
-        )
+        "scenario after data load": dict(scenario=Scenario(parameter_changes=lift)),
+        "reform dict": dict(reform=lift),
+    }
+    for route, kwargs in routes.items():
+        lifted = Simulation(situation=new_claimant_situation(years), **kwargs)
+        parameters = lifted.tax_benefit_system.parameters
+        assert float(lifted.calculate("uc_LCWRA_element", 2027)[0]) == pytest.approx(
+            12 * ACT_AMOUNT, rel=1e-6
+        ), route
+        for year in (2028, 2029):
+            growth = benefit_index(parameters, year) / benefit_index(parameters, 2027)
+            assert growth > 1, route
+            assert float(
+                lifted.calculate("uc_LCWRA_element", year)[0]
+            ) == pytest.approx(12 * ACT_AMOUNT * growth, rel=1e-6), route
 
 
 def test_a_changed_amount_is_held_through_the_freeze():

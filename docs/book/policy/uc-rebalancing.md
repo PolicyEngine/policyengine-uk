@@ -134,8 +134,7 @@ scenario = Scenario(
             "2028": False,
             "2029": False,
         }
-    },
-    applied_before_data_load=True,
+    }
 )
 
 sim = Simulation(scenario=scenario)
@@ -143,7 +142,7 @@ sim = Simulation(scenario=scenario)
 
 New claimants then get the uprated amount in 2028-29 and 2029-30, and every later year starts from that higher amount. The protected amount for existing claimants does not change; it follows the s. 4 floor.
 
-`applied_before_data_load=True` is needed because the rebalancing scenario sets the 2026-27 to 2029-30 health elements when the simulation is built. The freeze reaches the element through parameter processing, which `Scenario(parameter_changes=...)` re-runs; a `reform=` dictionary does not re-run it.
+The freeze reaches the element through parameter processing. A `Scenario(parameter_changes=...)` change and a `reform=` dictionary keyed by year (`reform={"gov.dwp.universal_credit.rebalancing.health_element_freeze": {"2028": False, "2029": False}}`) both re-run it, before the rebalancing scenario sets the 2026-27 to 2029-30 health elements. A `reform=` key naming a single day edits the annualised parameter on that day only and does not.
 
 ## Legislative reference
 

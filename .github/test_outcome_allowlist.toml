@@ -61,5 +61,5 @@ why = "Microsimulation tests need the private dataset. Runs without its credenti
 [[allow]]
 nodeid = "policyengine_uk/tests/test_dwp_published_rates.py::test_projection_continues_from_last_published_rate[[]*"
 outcome = "skipped"
-reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 ss\.1 and 3 depart from CPI uprating)$'
-why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the five the Universal Credit Act 2025 ss.1 and 3 set apart from CPI uprating (the four UC standard allowances and the LCWRA element, #1925). 66 cases on 12 October 2026."
+reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 s\.1 departs from CPI uprating)$'
+why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the four UC standard allowances, whose minimum the Universal Credit Act 2025 s.1 sets above CPI uprating (#1925). The LCWRA element, frozen by s.3, is checked against its own uprating index (#2284). 64 cases on 12 October 2026."
