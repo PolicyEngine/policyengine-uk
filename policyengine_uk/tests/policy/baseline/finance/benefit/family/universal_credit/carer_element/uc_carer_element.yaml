@@ -309,3 +309,27 @@
   output:
     uc_carer_element: 2_512.08
     uc_LCWRA_element: 0
+
+# receives_uc_carer_element attributes the award's carer element to the
+# claimant who is the carer, never to a dependant who also cares.
+
+- name: The claimant carer receives the carer element; a qualifying young person who also cares does not
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        care_hours: 35
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        care_hours: 40
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_carer_for_benefits: [true, true]
+    uc_carer_element: 2_512.08 # 209.34 * 12, once
+    receives_uc_carer_element: [true, false]
