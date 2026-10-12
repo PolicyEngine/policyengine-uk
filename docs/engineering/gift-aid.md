@@ -40,9 +40,13 @@ band extension, and no longer removes the net gift from `allowances`.
 Savings and dividends stack above all non-savings income, property income
 included ([ITA 2007 s. 16](https://www.legislation.gov.uk/ukpga/2007/3/section/16);
 #2352). Property income, savings and dividends therefore fill the bands in that
-order, each against the extended limits. `non_savings_income_after_allowances`,
-the base they stack on, starts from `net_income`, so the gift raises the limits
-without also shrinking the income beneath them. The Personal Savings Allowance
+order, each against the extended limits. Property income is taxed on top of
+`non_savings_income_after_allowances` less property income after allowances,
+and savings and dividends on top of `non_savings_taxable_income`
+(`earned_taxable_income` plus property income after allowances). Both bases
+derive from `net_income`, so the gift raises the limits without also shrinking
+the income beneath them. They differ only when Marriage Allowance applies,
+which `earned_taxable_income` subtracts (#1947). The Personal Savings Allowance
 compares net income less allowances with the UK basic and higher rate limits,
 both extended by the gross gift ([s. 12B](https://www.legislation.gov.uk/ukpga/2007/3/section/12B),
 including s. 12B(8) for Scottish taxpayers, with s. 414(2)(b)).
