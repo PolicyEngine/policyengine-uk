@@ -181,3 +181,52 @@
     # are within its universal 15.
     is_child_receiving_extended_childcare: [true, false]
     is_child_receiving_universal_childcare: [false, true]
+
+# Benefit units of different sizes, so person-level and benefit unit-level
+# arrays differ in length: each child is still judged on its own family.
+- name: Children in two families of different sizes are each judged on their own family
+  period: 2026
+  input:
+    people:
+      child1:
+        age: 1
+      child2:
+        age: 3
+      child3:
+        age: 4
+    benunits:
+      benunit1:
+        members: [child1, child2]
+        extended_childcare_entitlement_eligible: true
+        maximum_extended_childcare_hours_usage: 10
+      benunit2:
+        members: [child3]
+        extended_childcare_entitlement_eligible: true
+        maximum_extended_childcare_hours_usage: 30
+    households:
+      household1:
+        members: [child1, child2]
+      household2:
+        members: [child3]
+  output:
+    # Family 1 as in the case above. Family 2's 4-year-old uses 30 hours:
+    # 15 universal plus 15 working parent hours.
+    is_child_receiving_extended_childcare: [true, false, true]
+
+- name: A supplied family amount counts for each qualifying child, not an older sibling
+  period: 2026
+  input:
+    people:
+      child1:
+        age: 3
+      child2:
+        age: 6
+    benunits:
+      benunit1:
+        members: [child1, child2]
+        extended_childcare_entitlement: 3000
+  output:
+    # No parent is in the benefit unit, so no working parent hours are
+    # calculated for either child; the supplied amount goes to the
+    # 3-year-old, and the 6-year-old is of compulsory school age.
+    is_child_receiving_extended_childcare: [true, false]
