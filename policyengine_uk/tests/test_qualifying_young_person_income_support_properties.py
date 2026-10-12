@@ -19,7 +19,8 @@ Invariants:
 4. Without it, Pension Credit and Universal Credit agree on every combination;
    with it, Pension Credit is the narrower.
 5. By default the input is the person's own reported Income Support while
-   Income Support is in payment (to 2025-26), and false after.
+   Income Support is in payment (to 2025-26) and no reform removes it, and
+   false otherwise.
 """
 
 from itertools import product
@@ -126,3 +127,23 @@ def test_default_follows_reported_income_support_while_it_is_paid(rows, year):
     sim = simulate(people, year)
     expected = [year <= 2025 and amount > 0 for _, amount in rows]
     np.testing.assert_array_equal(sim.calculate(INCOME_SUPPORT, year), expected)
+
+
+def test_no_receipt_once_a_reform_removes_income_support():
+    # Invariant 5 under a reform: a 17-year-old at school reporting £3,000 of
+    # Income Support of their own is excluded while Income Support exists,
+    # and is a qualifying young person again once a reform neutralizes it.
+    student = {
+        "age": 17,
+        "current_education": "UPPER_SECONDARY",
+        "income_support_reported": 3_000,
+    }
+    kept = simulate([student])
+    assert kept.calculate(INCOME_SUPPORT, YEAR).all()
+    removed = simulate([student])
+    removed.tax_benefit_system.neutralize_variable("income_support")
+    removed.delete_arrays("income_support")
+    assert not removed.calculate(INCOME_SUPPORT, YEAR).any()
+    for programme in EXCLUDING:
+        assert not status(kept, programme).any(), programme
+        assert status(removed, programme).all(), programme

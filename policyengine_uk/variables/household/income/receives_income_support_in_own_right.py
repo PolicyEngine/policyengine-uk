@@ -13,8 +13,10 @@ class receives_income_support_in_own_right(Variable):
         "person, and Child Tax Credit (CTC Regs 2002 reg. 5(4)(c)). Universal "
         "Credit's list (UC Regs 2013 reg. 5(5)) does not include it. By "
         "default it is the person's own reported Income Support "
-        "(income_support_reported) while Income Support is in payment; set it "
-        "directly otherwise. It does not read the benefit unit's calculated "
+        "(income_support_reported) while Income Support is in payment and no "
+        "reform removes it (neutralizes income_support), as is_on_income_support "
+        "reads another member's own claim; set it directly otherwise. It does "
+        "not read the benefit unit's calculated "
         "award, which belongs to the claimant and depends on who the family's "
         "young persons are."
     )
@@ -27,4 +29,8 @@ class receives_income_support_in_own_right(Variable):
 
     def formula(person, period, parameters):
         active = parameters(period).gov.dwp.income_support.active
-        return active & (person("income_support_reported", period) > 0)
+        # A reform that removes Income Support leaves no award to receive.
+        removed = person.simulation.tax_benefit_system.get_variable(
+            "income_support"
+        ).is_neutralized
+        return active & (not removed) & (person("income_support_reported", period) > 0)
