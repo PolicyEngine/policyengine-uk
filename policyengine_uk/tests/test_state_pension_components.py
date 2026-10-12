@@ -22,7 +22,7 @@ from decimal import ROUND_HALF_UP, Decimal
 import numpy as np
 import pandas as pd
 import pytest
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Microsimulation
@@ -494,10 +494,19 @@ def by_type(pension_type: np.ndarray, basic, new) -> np.ndarray:
     return np.select([pension_type == "BASIC", pension_type == "NEW"], [basic, new], 0)
 
 
+def stored_weekly(people: list) -> np.ndarray:
+    """Each record's reported weekly amount as the simulation holds it.
+    state_pension_reported is a float variable, which the model stores in
+    float32, so an amount too small for float32 (Hypothesis draws amounts down
+    to 5e-324 a week) is held as nil: the record reports no State Pension."""
+    annual = np.array([p["weekly"] * WEEKS_IN_YEAR for p in people], np.float32)
+    return annual.astype(float) / WEEKS_IN_YEAR
+
+
 def data_year_net_weekly(sim, people: list) -> np.ndarray:
     """Each record's reported weekly amount less the age addition it includes
     in the data year."""
-    weekly = np.array([p["weekly"] for p in people])
+    weekly = stored_weekly(people)
     included = receives_age_addition(
         calculate(sim, "state_pension_type", DATA_YEAR).astype(str),
         calculate(sim, "age", DATA_YEAR),
@@ -516,7 +525,7 @@ def assert_components_add_up(sim, people: list, years) -> None:
     is on the basic State Pension, aged 80 or over and has a State Pension, in
     every year; in the data year the four parts add up to the reported amount
     whenever it is at least 25p a week."""
-    reported_weekly = np.array([p["weekly"] for p in people])
+    reported_weekly = stored_weekly(people)
     weekly = data_year_net_weekly(sim, people)
     for year in years:
         pension_type = calculate(sim, "state_pension_type", year).astype(str)
@@ -562,8 +571,21 @@ def assert_components_add_up(sim, people: list, years) -> None:
             )
 
 
+# Reported amounts too small for float32, held as nil (CI run 38170838155
+# found the first), and a tiny amount float32 still holds, at 80 on the basic
+# State Pension.
+TINY_REPORTS = [
+    [{"age": 80, "male": False, "months": 0.0, "weekly": 8.266518416092618e-246}],
+    [{"age": 80, "male": False, "months": 0.0, "weekly": 2.2250738585e-313}],
+    [{"age": 85, "male": True, "months": 3.0, "weekly": 1e-30}],
+]
+
+
 @PROPERTY_SETTINGS
 @given(people=PEOPLE)
+@example(people=TINY_REPORTS[0])
+@example(people=TINY_REPORTS[1])
+@example(people=TINY_REPORTS[2])
 def test_components_add_up_to_uprated_reported_amount(people):
     """Data projected with ages held fixed, every year from 2024-25 to 2030-31."""
     sim = projected_simulation(people)
@@ -928,10 +950,14 @@ def test_full_basic_rate_plus_age_addition_is_never_additional_pension():
 
 
 def test_age_addition_reforms_leave_the_reported_split_alone():
-    """An undated reform paying £10 a week from 75 pays it to both records in
-    every year, but the reported amounts were observed under the legislated
-    25p from 80: the 85-year-old's is still split net of 25p, and the
-    77-year-old's in full, so the other components do not change."""
+    """An undated reform paying £10 a week from 75 pays it to both records
+    while they are on the basic State Pension, but the reported amounts were
+    observed under the legislated 25p from 80: the 85-year-old's is still
+    split net of 25p, and the 77-year-old's in full, so the other components
+    do not change. Held at 77, the second record is on the new State Pension
+    by 2030-31, and a new State Pension gets no age addition, reformed or not:
+    the addition belongs to a retirement pension under the 1992 Act
+    (s.79(1))."""
     people = [
         {"age": 85, "male": True, "months": 3, "weekly": 169.75},
         {"age": 77, "male": True, "months": 3, "weekly": 169.5},
@@ -944,11 +970,16 @@ def test_age_addition_reforms_leave_the_reported_split_alone():
             "gov.dwp.state_pension.age_addition.age": 75,
         },
     )
-    for year in (DATA_YEAR, 2027, 2030):
-        assert (
-            list(calculate(reformed, "state_pension_age_addition", year))
-            == [10 * WEEKS_IN_YEAR] * 2
-        )
+    types = {
+        DATA_YEAR: ["BASIC", "BASIC"],
+        2027: ["BASIC", "BASIC"],
+        2030: ["BASIC", "NEW"],
+    }
+    for year, year_types in types.items():
+        assert list(calculate(reformed, "state_pension_type", year)) == year_types
+        assert list(calculate(reformed, "state_pension_age_addition", year)) == [
+            10 * WEEKS_IN_YEAR if t == "BASIC" else 0 for t in year_types
+        ], year
         for variable in COMPONENTS:
             assert calculate(reformed, variable, year) == pytest.approx(
                 calculate(baseline, variable, year), abs=1e-6
