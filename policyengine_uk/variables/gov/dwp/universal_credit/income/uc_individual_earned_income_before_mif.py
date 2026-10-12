@@ -41,10 +41,12 @@ class uc_individual_earned_income_before_mif(Variable):
         # Reg. 55(4) treats statutory sick, maternity and paternity pay as
         # employed earnings, and reg. 55(5) takes the deductions off "the
         # amount of general earnings or benefits specified in paragraphs (2)
-        # to (4)". Income tax and National Insurance already fall on these
-        # payments (taxable_employment_income, ni_class_1_income), so leaving
-        # them out of the earnings deducted the tax on them from other
-        # earnings and raised the award as the payments rose.
+        # to (4)". National Insurance falls on all three (ni_class_1_income)
+        # and income tax on sick and maternity pay (employment_benefits in
+        # taxable_employment_income), and both are deducted below. Leaving
+        # the payments out of the earnings deducted the tax and National
+        # Insurance on them from other earnings, so the award rose as the
+        # payments rose.
         earnings_components = [
             "employment_income",
             "miscellaneous_income",

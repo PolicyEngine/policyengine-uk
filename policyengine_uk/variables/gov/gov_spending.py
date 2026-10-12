@@ -27,6 +27,7 @@ GOV_SPENDING_VARIABLES = [
     "maternity_allowance",
     "statutory_sick_pay",
     "statutory_maternity_pay",
+    "statutory_paternity_pay",
     "ssmg",
     "basic_income",
     "epg_subsidy",

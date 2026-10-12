@@ -7,8 +7,9 @@
 # bereavement and neonatal care pay too; the model has no variables for them.
 #
 # Before this was fixed the payments were left out of earned income while the
-# income tax and National Insurance on them were still deducted. Each pound of
-# sick or maternity pay above the thresholds then raised the award by
+# National Insurance on them, and the income tax on sick and maternity pay,
+# were still deducted (the model charges no income tax on paternity pay). Each
+# pound of sick or maternity pay above the thresholds then raised the award by
 # 0.55 x (20% + 8%) = 15.4p; each pound of paternity pay by 0.55 x 8% = 4.4p.
 #
 # Hand calculations use the 2026-27 rates:
@@ -201,3 +202,53 @@
     # 424.90 x 12 + 351.88 x 12, the higher child element for a first child
     # born before 6 April 2017. The sick pay takes nothing off it.
     universal_credit: 9_321.36
+
+- name: National Insurance on statutory paternity pay above the threshold comes off earned income
+  # Employee pension contributions of 8,000 under a net pay arrangement take
+  # taxable income below the personal allowance, so no income tax is due
+  # whether or not paternity pay is taxed; National Insurance is charged on
+  # pay before pension contributions.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    employment_income: 20_000
+    employee_pension_contributions: 8_000
+    statutory_paternity_pay: 400
+  output:
+    uc_income_tax_on_earnings: 0
+    # (20,000 + 400 - 12,569.96) x 8%.
+    uc_national_insurance_on_earnings: 626.40
+    # 20,400 - 8,000 relievable pension contributions - 626.40 (reg. 55(5)).
+    uc_individual_earned_income: 11_773.60
+
+- name: Statutory paternity pay is household income, so it never lowers net income through Universal Credit
+  # Statutory sick and maternity pay were already in household benefits,
+  # HBAI income and government spending; paternity pay was in none of them.
+  # Once Universal Credit tapers it, leaving it out would make net income
+  # fall by 0.55 x 400 = 220 as the pay rose.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        statutory_paternity_pay: 400
+    benunits:
+      benunit:
+        members: [parent]
+    households:
+      household:
+        members: [parent]
+        council_tax: 0
+        tv_licence: 0
+        expected_sdlt: 0
+  output:
+    # 424.90 x 12 - 0.55 x 400, with no work allowance.
+    universal_credit: 4_878.80
+    # The award plus the pay. Without the pay the household has 5,098.80, so
+    # 400 of pay raises its income by 180.
+    household_benefits: 5_278.80
+    household_net_income: 5_278.80
+    hbai_household_net_income: 5_278.80
+    gov_spending: 5_278.80

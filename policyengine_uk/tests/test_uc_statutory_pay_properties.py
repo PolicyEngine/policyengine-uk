@@ -11,14 +11,16 @@ Insurance on all three (ni_class_1_income) and income tax on sick and maternity
 pay (employment_benefits in taxable_employment_income), as it does on wages.
 
 Before this was fixed the payments were left out of earned income while the
-tax and National Insurance on them were still deducted, so the award rose by
-the taper rate times that tax as a payment rose.
+National Insurance on them, and the income tax on sick and maternity pay, were
+still deducted, so the award rose by the taper rate times that tax as a
+payment rose.
 
 Invariants, for any generated population of single claimants and couples, with
 or without children, in which one member receives one of the three payments:
 
 1. Monotonic: raising a claimant's payment, with everything else fixed, never
-   raises the award. Two rules of law make exceptions, and neither is a fault:
+   raises the award before the benefit cap. Three rules of law make
+   exceptions, and none is a fault:
 
    a. Reg. 32(2)(b) treats a claimant receiving statutory sick, maternity or
       paternity pay as in paid work for the childcare costs element. So the
@@ -27,13 +29,21 @@ or without children, in which one member receives one of the three payments:
       and only as the payment starts from nil
       (test_first_pound_of_statutory_pay_can_open_the_childcare_element).
    b. Income Tax Act 2007 s. 55B(2)(b) withdraws the Marriage Allowance tax
-      reduction in full once the recipient is liable at a rate above the
-      basic rate. A pound of pay that crosses that line raises the tax on the
-      earnings by more than a pound, earned income falls and the award rises.
-      Wages do the same
+      reduction in full once the recipient is liable at a rate the subsection
+      does not list (it lists the basic rate and, for a Scottish taxpayer, the
+      Scottish rates up to the intermediate rate). A pound of pay that crosses
+      that line raises the tax on the earnings by more than a pound, earned
+      income falls and the award rises. Wages do the same
       (test_marriage_allowance_cliff_is_the_same_as_for_wages), so the
       monotonic property is stated for families that do not claim Marriage
       Allowance.
+   c. The benefit cap does not apply where earned income reaches the reg.
+      82(1)(a) threshold, and the payments are earned income (reg. 55(4)). So
+      a pound of pay can lift the cap and raise the final award. The award
+      after the cap may therefore rise only where the family becomes exempt
+      (is_benefit_cap_exempt); otherwise it obeys the same bound. Today's
+      is_benefit_cap_exempt_earnings reads employment income without
+      statutory pay, so this exception does not yet arise in the model.
 
 2. Same as wages: statutory sick or maternity pay of s on top of wages of e
    gives the same income tax, National Insurance, earned income and award
@@ -55,6 +65,12 @@ or without children, in which one member receives one of the three payments:
    recipient's earned income, for families that do not claim Marriage
    Allowance.
 
+6. Household income: each payment counts once in household_benefits, and so
+   in household net income. Raising it by d raises household_benefits by d
+   plus the change in the other benefits listed there. Statutory paternity
+   pay was in no household income list, so once Universal Credit tapered it
+   household net income fell as the pay rose.
+
 5. A dependant's payment changes neither the claimants' earned income nor the
    award (reg. 22(1)(b): "the claimant's earned income (or, in the case of
    joint claimants, their combined earned income)").
@@ -68,7 +84,14 @@ import numpy as np
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
 
-from policyengine_uk import Simulation
+from policyengine_uk import CountryTaxBenefitSystem, Simulation
+from policyengine_uk.variables.gov.gov_spending import GOV_SPENDING_VARIABLES
+from policyengine_uk.variables.household.income.hbai_household_net_income import (
+    HBAI_HOUSEHOLD_NET_INCOME_ADDS,
+)
+from policyengine_uk.variables.household.income.household_benefits import (
+    HOUSEHOLD_BENEFIT_VARIABLES,
+)
 
 YEAR = 2026
 PROPERTY_SETTINGS = settings(
@@ -85,6 +108,7 @@ PAYMENTS = [
 ]
 # The model charges income tax on these, as on wages (employment_benefits).
 TAXED_AS_WAGES = ["statutory_sick_pay", "statutory_maternity_pay"]
+BENEFITS = list(dict.fromkeys(HOUSEHOLD_BENEFIT_VARIABLES))
 # Wages and payments on and around the 2026-27 thresholds: the personal
 # allowance and primary threshold (12,570), the basic rate limit (50,270) and
 # the personal allowance taper (100,000 to 125,140).
@@ -226,6 +250,13 @@ class Results:
         values = np.array(self.simulation.calculate(variable, YEAR), dtype=float)
         return values.reshape(len(self.population), len(VERSIONS))[:, version]
 
+    def households(self, variable, version):
+        """Any variable summed to the household, for one version of every family."""
+        values = np.array(
+            self.simulation.calculate(variable, YEAR, map_to="household"), dtype=float
+        )
+        return values.reshape(len(self.population), len(VERSIONS))[:, version]
+
     def person(self, variable, i, version, member):
         values = np.array(self.simulation.calculate(variable, YEAR), dtype=float)
         return values[self.first_member[i, version] + member]
@@ -238,25 +269,66 @@ class Results:
 @given(population=populations())
 def test_award_never_rises_with_a_claimants_statutory_pay(population):
     results = Results(population)
-    award = {v: results.families("universal_credit", v) for v in (LOW, HIGH)}
-    childcare = {v: results.families("uc_childcare_element", v) for v in (LOW, HIGH)}
+
+    def both(variable):
+        return {v: results.families(variable, v) for v in (LOW, HIGH)}
+
+    before_cap = both("universal_credit_pre_benefit_cap")
+    award = both("universal_credit")
+    childcare = both("uc_childcare_element")
+    exempt = both("is_benefit_cap_exempt")
     earned = "uc_individual_earned_income_before_mif"
     for i, family in enumerate(population):
         if family["low"] > 0:
             # The payment is already in payment, so reg. 32(2)(b) changes
-            # nothing: the award cannot rise at all.
+            # nothing.
             assert childcare[HIGH][i] == childcare[LOW][i], family
-            assert award[HIGH][i] <= award[LOW][i] + TOLERANCE, family
-        else:
-            # The payment starts. It can open the childcare costs element
-            # (reg. 32(2)(b)) and nothing else.
-            opened = max(0, childcare[HIGH][i] - childcare[LOW][i])
+        # Exception a: a payment that starts can open the childcare costs
+        # element, and nothing else.
+        opened = max(0, childcare[HIGH][i] - childcare[LOW][i])
+        assert before_cap[HIGH][i] <= before_cap[LOW][i] + opened + TOLERANCE, family
+        # Exception c: more earned income never ends an exemption from the
+        # cap, and only a new exemption can raise the award after the cap.
+        assert exempt[HIGH][i] >= exempt[LOW][i], family
+        if exempt[HIGH][i] == exempt[LOW][i]:
             assert award[HIGH][i] <= award[LOW][i] + opened + TOLERANCE, family
         # Invariant 4: a pound more adds between nothing and a pound to the
         # recipient's earned income.
         gain = results.recipient(earned, i, HIGH) - results.recipient(earned, i, LOW)
         assert gain >= -TOLERANCE, family
         assert gain <= family["high"] - family["low"] + TOLERANCE, family
+    # Invariant 6: each payment is in household_benefits once.
+    for payment in PAYMENTS:
+        rows = np.array([family["payment"] == payment for family in population])
+        if not rows.any():
+            continue
+
+        def change(variable):
+            return results.households(variable, HIGH) - results.households(
+                variable, LOW
+            )
+
+        others = sum(change(benefit) for benefit in BENEFITS if benefit != payment)
+        paid = np.array([family["high"] - family["low"] for family in population])
+        np.testing.assert_allclose(
+            (change("household_benefits") - others)[rows],
+            paid[rows],
+            atol=TOLERANCE,
+            rtol=1e-5,
+            err_msg=payment,
+        )
+
+
+def test_each_payment_is_household_income_and_government_spending():
+    lists = {
+        "HOUSEHOLD_BENEFIT_VARIABLES": HOUSEHOLD_BENEFIT_VARIABLES,
+        "HBAI_HOUSEHOLD_NET_INCOME_ADDS": HBAI_HOUSEHOLD_NET_INCOME_ADDS,
+        "hbai_benefits.adds": CountryTaxBenefitSystem().variables["hbai_benefits"].adds,
+        "GOV_SPENDING_VARIABLES": GOV_SPENDING_VARIABLES,
+    }
+    for name, listed in lists.items():
+        for payment in PAYMENTS:
+            assert listed.count(payment) == 1, (name, payment)
 
 
 def counts_as_wages(family):
@@ -440,15 +512,25 @@ def along_paths(bases, payments, variables):
 
 
 def test_award_falls_along_a_path_of_rising_statutory_pay():
-    paths = along_paths(list(ARCHETYPES.values()), PAYMENTS, ["universal_credit"])
-    awards = paths["universal_credit"][HIGH]
+    variables = [
+        "universal_credit_pre_benefit_cap",
+        "universal_credit",
+        "is_benefit_cap_exempt",
+    ]
+    paths = along_paths(list(ARCHETYPES.values()), PAYMENTS, variables)
     for i, name in enumerate(ARCHETYPES):
         for j, payment in enumerate(PAYMENTS):
-            path = awards[i, j]
+            path = paths["universal_credit_pre_benefit_cap"][HIGH][i, j]
             assert path[0] > 0, name
             assert (np.diff(path) <= TOLERANCE).all(), (name, payment, path)
             # The path takes the award down, so the test can fail.
             assert path[-1] < path[0] - 1_000, (name, payment, path)
+            # After the cap, the award rises only at a step that makes the
+            # family exempt (reg. 82(1)(a)).
+            final = paths["universal_credit"][HIGH][i, j]
+            newly_exempt = np.diff(paths["is_benefit_cap_exempt"][HIGH][i, j]) > 0
+            rises = np.diff(final) > TOLERANCE
+            assert not (rises & ~newly_exempt).any(), (name, payment, final)
 
 
 def test_first_pound_of_statutory_pay_can_open_the_childcare_element():
@@ -474,10 +556,11 @@ def test_first_pound_of_statutory_pay_can_open_the_childcare_element():
 
 def test_marriage_allowance_cliff_is_the_same_as_for_wages():
     # Intended: ITA 2007 s. 55B(2)(b) withdraws the whole Marriage Allowance
-    # reduction once the recipient is liable above the basic rate. The pound
-    # of pay that takes the recipient past the basic rate limit therefore
-    # lowers earned income and raises the award, exactly as a pound of wages
-    # does. The monotonic property above leaves these families out.
+    # reduction once the recipient (an English taxpayer here) is liable above
+    # the basic rate. The pound of pay that takes the recipient past the
+    # basic rate limit therefore lowers earned income and raises the award,
+    # exactly as a pound of wages does. The monotonic property above leaves
+    # these families out.
     base = family(
         [
             adult(40, wages=50_000, claims_marriage_allowance=True),
@@ -495,3 +578,27 @@ def test_marriage_allowance_cliff_is_the_same_as_for_wages():
             atol=TOLERANCE,
             err_msg=variable,
         )
+    # The cliff is there: the reduction goes in one step, and at that step
+    # earned income falls and the award rises.
+    population = [
+        dict(base, payment=payment, low=0.0, high=float(step))
+        for payment in TAXED_AS_WAGES
+        for step in PATH
+    ]
+    results = Results(population)
+    shape = (len(TAXED_AS_WAGES), len(PATH))
+    reduction = np.array(
+        [
+            results.recipient("marriage_allowance", i, HIGH)
+            for i in range(len(population))
+        ]
+    ).reshape(shape)
+    for j, payment in enumerate(TAXED_AS_WAGES):
+        assert reduction[j, 0] > 0 and reduction[j, -1] == 0, (payment, reduction[j])
+        steps = np.flatnonzero(np.diff(reduction[j]) < 0)
+        assert len(steps) == 1, (payment, reduction[j])
+        step = steps[0]
+        earned = paths["uc_earned_income"][HIGH][0, j]
+        award = paths["universal_credit_pre_benefit_cap"][HIGH][0, j]
+        assert earned[step + 1] < earned[step], (payment, earned)
+        assert award[step + 1] > award[step], (payment, award)
