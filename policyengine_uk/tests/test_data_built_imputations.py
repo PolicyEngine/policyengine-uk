@@ -1,10 +1,14 @@
 """Imputations that apply to simulations built from data, not to situations.
 
-UC deduction draws and private school attendance are imputed across a
-population. How the simulation was built decides whether they apply, not how
-much weight it carries: a constituency or local authority filtered from the
-national data (as policyengine.py's RowFilterStrategy does) carries well under
-a million people of weight and is still data.
+UC deduction draws are imputed across a population. How the simulation was
+built decides whether they apply, not how much weight it carries: a
+constituency or local authority filtered from the national data (as
+policyengine.py's RowFilterStrategy does) carries well under a million people
+of weight and is still data.
+
+Private school attendance ranks incomes within the simulated population, so
+until the data carries a national income rank it is imputed only for data
+with at least a million people of weight. Situations never get it.
 """
 
 import numpy as np
@@ -35,6 +39,9 @@ UC_OUTPUTS = (
 # about 1.6m of weight. One region (a quarter of them) carries about 0.4m, or
 # 0.8m of people, under the old threshold of a million for both.
 NATIONAL_SCALE = 3_500
+# 40 households at this scale carry about 3.7m people of weight, enough for
+# private school attendance to be imputed.
+SMALL_NATIONAL_SCALE = 10 * NATIONAL_SCALE
 SITUATION = {
     "people": {
         "adult": {"age": {YEAR: 35}},
@@ -146,7 +153,6 @@ def test_small_data_built_simulation_gets_hashed_draws():
         assert np.array_equal(values(sim, draw), expected), draw
     # Every benefit unit is on UC, so some have deductions.
     assert values(sim, "uc_deductions").max() > 0
-    assert values(sim, "attends_private_school").any()
 
 
 @settings(max_examples=6, deadline=None)
@@ -158,7 +164,7 @@ def test_imputations_do_not_depend_on_total_weight(national, power):
     totals from about a hundred to about 10^15."""
     t, reference = national
     sim = data_simulation(tables(weight_scale=NATIONAL_SCALE * 2.0**power))
-    for variable in (*UC_OUTPUTS, "attends_private_school"):
+    for variable in UC_OUTPUTS:
         assert np.array_equal(values(sim, variable), values(reference, variable)), (
             variable
         )
@@ -181,9 +187,16 @@ def test_region_filtered_from_data_matches_the_national_run(national):
             values(regional, variable), values(sim, variable)[kept]
         ), variable
     assert values(regional, "uc_deductions").max() > 0
-    # Private school attendance ranks incomes within the simulated population,
-    # so a region ranks against itself; it is still imputed.
-    assert values(regional, "attends_private_school").any()
+
+
+def test_private_school_attendance_needs_a_national_population(national):
+    """Ranked against itself, a small population would put too many children
+    in private school, so data under a million people of weight imputes none
+    while the national population does."""
+    t, sim = national
+    assert values(sim, "attends_private_school").any()
+    region = data_simulation(row_filter(t, lambda h: h.region == "LONDON"))
+    assert not values(region, "attends_private_school").any()
 
 
 def test_extracted_household_keeps_its_imputations(national):
@@ -215,8 +228,8 @@ def test_extracted_household_keeps_its_imputations(national):
 
 
 def test_data_without_weight_attends_no_private_school():
-    """Every household at zero weight: no income ranking is possible, so no
-    household reaches a percentile with a positive rate, and nothing fails."""
+    """Every household at zero weight: nothing is ranked, and the UC draws are
+    still hashed."""
     sim = data_simulation(tables(n=40, weight_scale=0))
     assert not values(sim, "attends_private_school").any()
     ids = values(sim, "benunit_id")
@@ -252,7 +265,7 @@ def test_rebuilding_in_place_follows_the_new_source():
     """The builders set the flag and drop what was cached for the old
     population, so a calculated clone rebuilt from a situation gets household
     defaults, and one rebuilt from data gets the imputations."""
-    data = tables(n=40, weight_scale=NATIONAL_SCALE)
+    data = tables(n=40, weight_scale=SMALL_NATIONAL_SCALE)
     sim = data_simulation(data).clone()
     calculate_imputations(sim)
     sim.build_from_situation(SITUATION)
@@ -282,7 +295,7 @@ def test_core_simulation_over_data_gets_imputations():
 
     from policyengine_uk.system import system
 
-    t = tables(n=40, weight_scale=NATIONAL_SCALE)
+    t = tables(n=40, weight_scale=SMALL_NATIONAL_SCALE)
     frame = (
         t["person"]
         .merge(t["benunit"], left_on="person_benunit_id", right_on="benunit_id")

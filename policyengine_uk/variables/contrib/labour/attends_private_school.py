@@ -36,10 +36,9 @@ class attends_private_school(Variable):
     value_type = bool
 
     def formula(person, period, parameters):
-        # Imputed only in simulations built from data, including a region or
-        # constituency filtered from them. A household situation has no
-        # income distribution to rank within, so it attends no private school
-        # unless set.
+        # Imputed only in simulations built from data. A household situation
+        # has no income distribution to rank within, so it attends no private
+        # school unless set, whatever its weight.
         if not built_from_data(person.simulation):
             return 0
         household = person.household
@@ -70,20 +69,25 @@ class attends_private_school(Variable):
         household_weight = household("household_weight", period)
         weighted_income = MicroSeries(net_income, weights=household_weight)
 
-        # Percentiles rank households within the simulated population, so a
-        # region filtered from the data ranks against itself, not the UK.
-        # Households without weight stay at percentile 0 (a rate of 0 unless
-        # reformed), including when no household has weight.
+        # Percentiles rank incomes within the simulated population. Until the
+        # data carries each household's national income rank, a population
+        # under a million people of weight (household weight counts once per
+        # member here), such as a constituency or local authority filtered
+        # from the national data, imputes no attendance: ranked against
+        # itself, constituency runs sum to about twice the national run's
+        # pupils (policyengine-uk#1905).
+        if household_weight.sum() < 1e6:
+            return 0
+
         percentile = np.zeros_like(weighted_income).astype(numpy.int64)
         mask = household_weight > 0
 
-        if mask.any():
-            percentile[mask] = (
-                weighted_income[mask]
-                .percentile_rank()
-                .clip(0, 100)
-                .values.astype(numpy.int64)
-            )
+        percentile[mask] = (
+            weighted_income[mask]
+            .percentile_rank()
+            .clip(0, 100)
+            .values.astype(numpy.int64)
+        )
         # STUDENT_POPULATION_ADJUSTMENT_FACTOR = 0.78
         STUDENT_POPULATION_ADJUSTMENT_FACTOR = population_adjustment_factor
 
