@@ -50,10 +50,29 @@ _COUNCIL_TAX_GROWTH_SERIES = {
 }
 
 
+# The last year a single-year dataset is projected to: 2032, fiscal year
+# 2032-33. An OBR forecast runs five years past the fiscal year it is made in,
+# so one made in 2026-27 ends in 2031-32 (year 2031). yoy_growth.yaml holds the
+# March 2026 forecast, which ends in 2030-31. Move this on as forecasts move.
+#
+# Every year up to here is a dataset year, grown from the year before by
+# apply_single_year_uprating. A growth series with no value for a year grows
+# at its latest rate, so a series that the March 2026 forecast ends in 2030
+# holds its 2030-31 rate in 2031-32 and 2032-33.
+#
+# Past this year policyengine-core serves each stored input from the last
+# projected year. An input whose variable has a formula is calculated by it
+# instead (pension_credit_reported_capital reads benunit_reported_capital,
+# which the Enhanced FRS does not store, so it falls to -1); one whose
+# variable has an `uprating` attribute is scaled by that index; any other,
+# rent and council tax among them, is held at its last projected value.
+PROJECTION_END_YEAR = 2032
+
+
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
     tax_benefit_system_parameters: ParameterNode,
-    end_year: int = 2030,
+    end_year: int = PROJECTION_END_YEAR,
 ) -> UKMultiYearDataset:
     # Extend years and uprate
     start_year = int(dataset.time_period)
