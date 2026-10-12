@@ -68,8 +68,9 @@ sufficient because:
 - the FRS doesn't capture activity-level point scores at all,
 - DWP's published caseload reports band counts (standard / enhanced)
   rather than activity scores,
-- the data pipeline (now Microcosm UK) sets `pip_dl_category` and
-  `pip_m_category` by comparing the weekly PIP daily-living and mobility
+- the data (both the certified Enhanced FRS from policyengine-uk-data
+  and Microcosm UK, which is being built to replace it) sets
+  `pip_dl_category` and `pip_m_category` by comparing the weekly PIP daily-living and mobility
   amounts respondents report in the FRS with the standard and enhanced
   rates.
 
@@ -134,8 +135,8 @@ machinery (for reform analysis) get the activity-level surface.
 ### Phase 3: data-side imputation
 
 - The FRS provides PIP payment amounts but not descriptor selections.
-  The data pipeline (Microcosm UK) would need to impute descriptor selections per
-  claimant that are consistent with the observed band. The plausible
+  The data (Microcosm UK, as the replacement dataset) would need to
+  impute descriptor selections per claimant that are consistent with the observed band. The plausible
   approach is to draw uniformly across descriptor combinations that
   sum to the observed band, weighted by DWP-published "activities most
   commonly scoring above zero" tables.
