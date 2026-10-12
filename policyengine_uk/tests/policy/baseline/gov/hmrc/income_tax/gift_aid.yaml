@@ -395,3 +395,71 @@
     # band remains (£5,270 without), at 18%, and the rest at 24%.
     capital_gains_tax: [3_703.80, 3_763.80]
     income_tax: [6_486, 6_486]
+
+# With #2352, savings and dividends sit above property income (ITA 2007 s. 16),
+# and the raised limits must apply on that order.
+- name: Gift Aid raises the basic rate limit for dividends above property income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        property_income: 40_000
+        dividend_income: 20_000
+        gift_aid: 800
+      control:
+        age: 40
+        property_income: 40_000
+        dividend_income: 20_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: NORTH_WEST
+      control_household:
+        members: [control]
+        region: NORTH_WEST
+  output:
+    # Non-savings taxable income £27,430. Without the gift, £500 allowance and
+    # £9,770 at 10.75% fill the band and £9,730 is at 35.75% (#2352's worked
+    # example). The gift moves £1,000 from 35.75% to 10.75%: £250.
+    dividend_income_tax: [4_278.75, 4_528.75]
+    property_income_tax: [5_486, 5_486]
+
+- name: Gift Aid raises the basic rate limit for savings above property income
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      donor:
+        age: 40
+        property_income: 40_000
+        savings_interest_income: 20_000
+        gift_aid: 800
+      control:
+        age: 40
+        property_income: 40_000
+        savings_interest_income: 20_000
+    benunits:
+      donor_unit:
+        members: [donor]
+      control_unit:
+        members: [control]
+    households:
+      donor_household:
+        members: [donor]
+        region: NORTH_WEST
+      control_household:
+        members: [control]
+        region: NORTH_WEST
+  output:
+    # Both still have higher-rate income, so a £500 savings allowance. Without
+    # the gift, £9,770 at 20% and £9,730 at 40%; the gift moves £1,000 from
+    # 40% to 20%: £200.
+    savings_allowance: [500, 500]
+    savings_income_tax: [5_646, 5_846]
