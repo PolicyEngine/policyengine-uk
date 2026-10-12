@@ -6,10 +6,12 @@ class universal_childcare_entitlement_eligible(Variable):
     entity = Person
     label = "eligible for universal childcare entitlement"
     definition_period = YEAR
-    defined_for = "would_claim_universal_childcare"
+    documentation = "Legal eligibility, independent of standalone take-up."
     reference = (
         "https://www.legislation.gov.uk/ukpga/2006/21/section/7",
         "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/4",
     )
 
     def formula(person, period, parameters):

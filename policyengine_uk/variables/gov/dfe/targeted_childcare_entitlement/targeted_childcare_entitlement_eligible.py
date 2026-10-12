@@ -6,8 +6,12 @@ class targeted_childcare_entitlement_eligible(Variable):
     entity = BenUnit
     label = "eligibility for targeted childcare entitlement"
     definition_period = YEAR
-    defined_for = "would_claim_targeted_childcare"
-    reference = "https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026"
+    documentation = "Legal family eligibility, independent of standalone take-up."
+    reference = (
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/4",
+        "https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026",
+    )
 
     def formula(benunit, period, parameters):
         # Check if household is in England

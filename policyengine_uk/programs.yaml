@@ -404,7 +404,7 @@ programs:
     parameter_prefix: gov.dfe.extended_childcare_entitlement
     verified_start_year: 2023
     verified_end_year: 2025
-    notes: Working parent hours above the child's universal (3-4) or targeted (2) hours, which count towards the 30 a week (Childcare Act 2016 s.1(6)); 570 hours/year on top of the universal entitlement for 3- and 4-year-olds, and up to 1,140 for children aged 9 months to 2 from September 2025.
+    notes: Working parent hours above the child's legally applicable universal (3-4) or targeted (2) hours, which count towards the 30 a week regardless of standalone take-up (Childcare Act 2016 s.1(6)); up to 570 extended hours/year for children eligible for either base programme, and up to 1,140 for younger children without a base entitlement from September 2025.
 
   - id: targeted_childcare_entitlement
     name: Targeted childcare entitlement
