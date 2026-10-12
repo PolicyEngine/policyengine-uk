@@ -54,12 +54,14 @@ assumes the reported amount of a basic State Pension recipient over 80
 includes it. `state_pension_reported_excluding_age_addition` takes the data
 year's addition off, at the legislated 25p from 80, and the other three
 components split what is left. The addition is part of `state_pension`, so
-it is taxed and means-tested as the pension is: it is an increase of the
-pension (s.79(1)), which income tax charges as pension income under
+it is taxed and means-tested as the pension is. It is an increase of the
+pension (s.79(1)), so the model taxes it with the pension it increases:
 [ITEPA 2003 s.577](https://www.legislation.gov.uk/ukpga/2003/1/section/577)
-(the pre-2003 charge in ICTA 1988 s.617(1) reached every benefit under Parts
-II to IV of the 1992 Act not excepted, and the age addition was not), and
-Pension Credit counts it as retirement pension income
+charges the retirement pensions under SSCBA 1992 ss.44, 48A to 48BB, 51 and
+78 as pension income, without naming s.79, and s.677 does not exempt the age
+addition (the pre-2003 charge in ICTA 1988 s.617(1) reached every benefit
+under Parts II to IV of the 1992 Act not excepted, and the age addition was
+not excepted). Pension Credit counts it as retirement pension income
 ([State Pension Credit Act 2002 s.16(1)(e)](https://www.legislation.gov.uk/ukpga/2002/16/section/16)),
 as do Universal Credit (Universal Credit Regulations 2013 regs 66(1)(a) and 67) and
 pension-age Housing Benefit (Housing Benefit (State Pension Credit)
