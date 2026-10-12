@@ -11,8 +11,9 @@ extension covering both BSP and the legacy Widowed Parent's Allowance
 the related historical-WPA ask in
 [#465](https://github.com/PolicyEngine/policyengine-uk/issues/465).
 Updated October 2026: still reported-only; the facts below were checked
-against GOV.UK and legislation.gov.uk, and the data notes now describe
-Microcosm UK, the current UK data pipeline.
+against GOV.UK and legislation.gov.uk. The data notes cover both the
+certified Enhanced FRS (policyengine-uk-data) and Microcosm UK, the
+dataset being built to replace it.
 ```
 
 ## What's currently modelled
@@ -35,8 +36,9 @@ That means:
 - Reform analyses changing BSP rates have no household-level surface.
 - Anyone bereaved after the FRS reference week never appears as a BSP
   recipient even if eligible.
-- The legacy WPA has no variable of its own. Microcosm UK fills
-  `bsp_reported` from FRS benefit codes 6 and 9
+- The legacy WPA has no variable of its own. Both the Enhanced FRS
+  ([`frs.py`](https://github.com/PolicyEngine/policyengine-uk-data/blob/main/policyengine_uk_data/datasets/frs.py))
+  and Microcosm UK fill `bsp_reported` from FRS benefit codes 6 and 9
   ([`frs_spine.py`](https://github.com/PolicyEngine/microcosm/blob/75167a68/packages/microcosm-build/src/microcosm/build/uk_runtime/frs_spine.py#L825)),
   and Microcosm's own
   [source notes](https://github.com/PolicyEngine/microcosm/blob/d1fda720/packages/microcosm-build/src/microcosm/build/uk/spec/sources.yaml#L1870)
@@ -115,7 +117,8 @@ apart from BSP or reformed separately.
 
 `is_bereaved_recently` doesn't exist in the FRS. The FRS is a
 cross-section, not a panel, and doesn't record when a partner died, so
-the flag would need imputing in Microcosm UK:
+the flag would need imputing in the data (Microcosm UK, as the
+replacement dataset):
 
 - start from FRS respondents who report BSP (once it is separated from
   the other codes, as above) and from widowed respondents;
