@@ -1,3 +1,51 @@
+## [2.127.0] - 2026-10-12
+
+### Added
+
+- - Added a Fix evidence pull request check using a trusted base-branch checker to require bug fixes to name a collectable Python or executable YAML test from the PR's git objects, with an exemption only when model files and dependencies are unchanged.
+
+### Changed
+
+- - Publish only the policyengine-uk release files whose checks passed. The release workflow makes the version commit on the latest main, retrying instead of failing when main moves. It builds the wheel and sdist once from that commit and runs the full test suite on the installed wheel in the locked environment. It uploads the same files only after the tests pass, and tags that exact commit, failing on tag errors. CI tests now fail on any skip, expected failure or XPASS that is not on a reviewed allowlist.
+
+### Fixed
+
+- - `in_receipt_of_savings_credit_only` now requires a Pension Credit payment, so a reform that stops Pension Credit being paid no longer leaves savings-credit-only families assessed on the Pension Credit route for Council Tax Reduction and pension-age Housing Benefit, with or without the Pension Credit freeze. Under `disable_simulated_benefits`, which sets Pension Credit to the reported amount, receipt now also needs reported Pension Credit.
+
+
+## [2.126.12] - 2026-10-12
+
+### Fixed
+
+- - Every reform route now writes dated changes onto the statutory parameter timeline and reprocesses it as current law is processed. A dict reform dated 6 April now sets that fiscal year, and uprating, threshold indexation and the aligned NICs thresholds follow reformed values. A bounded change on an uprated or indexed parameter now resumes prior law's projected path, not a stale stated value. Reforms applied after the data load now reach the Universal Credit rebalancing inputs and the parameter-gated structural reforms. `parameters.baseline` stays current law under `Scenario(parameter_changes=...)`.
+
+
+## [2.126.11] - 2026-10-12
+
+### Changed
+
+- Documentation pages in docs/book/assumptions, validation, policy and programs/gov/<agency> are now picked up by folder, so a new page no longer needs a myst.yml entry. This also publishes eight existing pages that were missing from the contents.
+- - Removed the stale non-strict expected failure for the 2023-24 Class 4 lower profits limit (#1968, fixed by #2058), so the alignment test now asserts that year.
+
+### Fixed
+
+- Warned when `UKSingleYearDataset` is given a `fiscal_year` alongside a file path, where it cannot take effect, and when it is built from DataFrames without one. Removed the process-wide `warnings.filterwarnings("ignore")` that importing the package installed, which hid these and every other warning from callers.
+- - Split the CI `Test` job into a YAML job and three parallel shards of the Python tests, with a check that every collected test ran in exactly one shard, and measured coverage with `sys.monitoring` (#2099).
+- Put the petrol and diesel pump prices that convert spending into litres on the DESNZ annual ULSP and ULSD series (the basis Microcosm UK prices fuel spending on), replacing the January 2024 RAC prices, and re-derived the petrol and diesel spending litre proxies so weighted litres still follow the HMRC/OBR road-fuel volume path (part A of #2169).
+- - Stop paying Carer's Allowance to a carer whose net earnings exceed the earnings limit (£204 a week from April 2026).
+- - Round the High Income Child Benefit Charge as ITEPA 2003 s. 681C(3) requires: the percentage down to a whole number, and the Child Benefit and the charge down to whole pounds.
+- - Stop relieving a miscellaneous loss against other income in Income Tax, adjusted net income, total income and Universal Credit earnings: ITA 2007 s. 152(4) allows it only against miscellaneous income.
+- Set the Personal Savings Allowance on the rest-of-UK bands for Scottish taxpayers, as ITA 2007 s. 12B(8) requires; give the higher amount at exactly the basic rate limit and the lower amount at exactly the higher rate limit (ITA 2007 s. 10); and use the right bands for periods 2016 and 2017.
+- Band savings and dividend income above property income, which is non-savings income (ITA 2007 ss. 16, 16A), including in the income the annual allowance charge's marginal rate is read from.
+
+
+## [2.126.10] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation.to_input_dataframe()` leaving out the person, benefit unit and household identifiers for years in which a simulation was given inputs after it was built, such as the Universal Credit health element status for 2026 to 2029, so that an exported frame loads back to a simulation that exports the same frame.
+
+
 ## [2.126.9] - 2026-10-11
 
 ### Fixed

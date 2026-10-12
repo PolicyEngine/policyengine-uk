@@ -1,29 +1,85 @@
 # Workflow that runs on code changes to a pull request.
+#
+# It runs on every pull request to main, with no path filter, so its checks,
+# "Test / Result" above all, report on every pull request and a branch rule
+# can require them: GitHub leaves a required check pending forever when a
+# path filter skips its workflow, and a second workflow on the other paths
+# cannot stand in, because a pull request that touches both kinds of path
+# runs both. The Changes job decides instead. When no code changed, the jobs
+# below are skipped, which a required check counts as passing, and the test
+# suite reports Result as a pass without running.
+#
+# It also runs for merge queue groups (merge_group): with a merge queue on
+# main, each pull request is tested again merged onto the latest main, with
+# any pull requests queued ahead of it, and main moves only to a commit that
+# passed. Each pull request was green on its own while #2251 and #2270
+# together broke main on 11 October 2026 (7343f948).
 
 name: Code changes
 on:
   pull_request:
     branches:
       - main
-
-    paths:
-      - policyengine_uk/**
-      - tests/**
-      - .github/**
-      - pyproject.toml
-      - uv.lock
+  merge_group:
   workflow_dispatch:
 
 # A new push to a pull request supersedes the run on its previous head, so
-# cancel that run instead of letting it hold runners. Manual dispatches are
-# grouped by ref and never cancelled.
+# cancel that run instead of letting it hold runners. Merge groups and manual
+# dispatches are grouped by ref (each merge group has its own) and never
+# cancelled.
 concurrency:
   group: pr-code-changes-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  Changes:
+    runs-on: ubuntu-24.04-arm
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.diff.outputs.code }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          # The pull request's merge commit and its first parent, the base.
+          fetch-depth: 2
+      - name: Did the pull request change code?
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          # The paths that make a change "code": the same list as the push
+          # filter in code_changes.yaml (a test keeps them equal).
+          CODE_PATHS: |
+            policyengine_uk/**
+            tests/**
+            .github/**
+            pyproject.toml
+            uv.lock
+            Makefile
+            conftest.py
+            .gitignore
+            README.md
+        run: |
+          set -euo pipefail
+          # Only a pull request can skip its tests. A merge queue group
+          # always runs them: main moves to the group's commit, and its
+          # base_sha can be the group queued ahead of it rather than main,
+          # so a diff against it could call a code change "no code".
+          if [ "$EVENT" != pull_request ]; then
+            echo "code=true" | tee -a "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # The merge commit's first parent is the base branch.
+          base=HEAD^1
+          # NUL-separated and unquoted, with a rename listed as its old and
+          # new paths, so a file moved out of policyengine_uk/ still counts.
+          git -c core.quotePath=false diff --name-only --no-renames -z "$base" HEAD \
+            > "$RUNNER_TEMP/changed.txt"
+          python3 .github/changed_code.py "$RUNNER_TEMP/changed.txt" | tee -a "$GITHUB_OUTPUT"
   Python-Compat:
     name: Install + smoke-import (py${{ matrix.python-version }})
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     strategy:
@@ -43,6 +99,10 @@ jobs:
       - name: Smoke-import
         run: python -c "import policyengine_uk; print('import OK')"
   Lint:
+    # On every pull request, whatever it changes: ruff formats and checks
+    # notebooks under docs/ and scripts/ too, so a documentation-only change
+    # can break Lint for every later pull request (#1696 landed a notebook
+    # that failed the format check; #1743 fixed it).
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -51,59 +111,57 @@ jobs:
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
           run: uvx ruff format --check .
+        - name: Lint
+          # The ruff rules pyproject.toml selects, then two pyflakes rules it
+          # ignores, checked in the package: F811, a definition that a later
+          # one of the same name silently replaces (two PRs that each add a
+          # Simulation.set_input merge cleanly, and the second wins; uk hub
+          # notice 16), and F821, an undefined name. Neither has a finding
+          # in the package today.
+          run: |
+            uvx ruff check .
+            uvx ruff check --select F811,F821 policyengine_uk
+  Docs:
+    # The documentation, built against a pull request's code changes. A
+    # pull request that changes only docs/ builds it in pr_docs_changes.yaml.
+    name: Documentation build
+    needs: Changes
+    if: needs.Changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: Install package
+        run: uv pip install -e .[dev] --system
+      - name: Install policyengine
+        run: uv pip install policyengine --system
+      - name: Test documentation builds
+        run: make documentation
+  # The YAML tests, the Python tests on four runners, and the check that
+  # every test ran once and passed, in the locked environment. As one job
+  # they took 59 minutes on 10 October 2026 (run 38075384588), and runs were
+  # cancelled at a 60-minute limit (issues #2099 and #2257). The release
+  # workflow runs the same suite on the wheel it publishes. Require
+  # "Test / Result".
   Test:
-      # Linux arm64 keeps the CPU architecture of the macOS runners this job
-      # used to run on. GitHub-hosted macOS runners are scarce, so PR runs
-      # queued for hours; the parameter tree and every test result are
-      # identical on both.
-      runs-on: ubuntu-24.04-arm
-      # The whole job took about 18 minutes when this limit was set; by
-      # October 2026 it takes about an hour (57 to 60 minutes on 9 October,
-      # and every run on 10 October was cancelled at a 60-minute limit, one
-      # at 99% with every test passing; issue #2257). 120 minutes lets a
-      # slow run finish and still stops a hung one long before the 6-hour
-      # GitHub limit. The suite's runtime needs its own attention.
-      timeout-minutes: 120
-      permissions:
-        contents: "read"
-        id-token: "write"
-      steps:
-          - name: Checkout repo
-            uses: actions/checkout@v6
-          - name: Install uv
-            uses: astral-sh/setup-uv@v8.1.0
-
-          - name: Set up Python
-            uses: actions/setup-python@v6
-            with:
-                python-version: '3.13'
-          - uses: "google-github-actions/auth@v3"
-            with:
-              workload_identity_provider: "projects/322898545428/locations/global/workloadIdentityPools/policyengine-research-id-pool/providers/prod-github-provider"
-              service_account: "policyengine-research@policyengine-research.iam.gserviceaccount.com"
-
-          - name: Install package
-            run: uv pip install -e .[dev] --system
-          - name: Install policyengine
-            run: uv pip install policyengine --system
-          - name: UV sync
-            run: uv sync --extra dev
-          - name: Run tests with coverage
-            run: |
-              # Only export token if non-empty (avoids 'Bearer ' error for Dependabot PRs)
-              if [ -n "$HF_TOKEN_VALUE" ]; then
-                export HUGGING_FACE_TOKEN="$HF_TOKEN_VALUE"
-              fi
-              # Four pytest-xdist workers, one per core; together they peak at
-              # about 9 GB of the runner's 16 GB.
-              make test PYTEST_ARGS="-n 4 --dist worksteal"
-            env:
-              HF_TOKEN_VALUE: ${{ secrets.HUGGING_FACE_TOKEN }}
-          - name: Upload coverage to Codecov
-            uses: codecov/codecov-action@v6
-            with:
-              files: ./coverage.xml
-              fail_ci_if_error: false
-              verbose: true
-          - name: Test documentation builds
-            run: make documentation
+    needs: Changes
+    uses: ./.github/workflows/test-suite.yaml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      # Skip only on an explicit "false", so a missing output runs the tests.
+      skip: ${{ needs.Changes.outputs.code == 'false' }}
+      # A merge group decides what main becomes: it must run the
+      # microsimulation tests, never accept them as skipped for want of
+      # the dataset credentials.
+      require-data: ${{ github.event_name == 'merge_group' }}
+    secrets:
+      HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
