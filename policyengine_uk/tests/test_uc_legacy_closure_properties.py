@@ -33,11 +33,12 @@ Invariants, for any generated population of families in 2024 to 2027:
    Universal Credit anyway. In particular nothing changes in 2024, before
    any closure.
 6. Differential: a working-age family claiming at the closure gets the
-   benefits it would get if would_claim_uc were true.
+   benefits it would get if would_claim_uc were true, including when a
+   partner cannot be a joint claimant.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -97,6 +98,9 @@ OUTPUTS = BENEFITS + [
     "is_mixed_age_couple",
     "is_uc_eligible",
     "uc_assessable_capital",
+    "uc_housing_costs_element",
+    "is_lha_shared_accommodation_rate_specified_renter",
+    "is_benefit_cap_single_claimant_rate",
 ]
 award = st.sampled_from([0.0, 0.0, 2_000.0, 6_000.0])
 
@@ -118,6 +122,7 @@ def families(draw):
         savings=draw(st.sampled_from([0.0, 5_000.0, 20_000.0])),
         would_claim_uc=draw(st.booleans()),
         claims_at_closure=draw(st.booleans()),
+        ineligible_partner=draw(st.booleans()),
     )
 
 
@@ -136,6 +141,9 @@ def situation(units, negate_flag=False, would_claim_uc=None):
             person = {
                 "age": every_year(age),
                 "is_claimant_or_partner": every_year(role != "child"),
+                "uc_is_ineligible_partner": every_year(
+                    role == "partner" and unit.get("ineligible_partner", False)
+                ),
                 "employment_income": every_year(
                     unit["earnings"] if role == "claimant" else 0.0
                 ),
@@ -257,6 +265,26 @@ def test_the_closure_flag_only_decides_closure_claims(units):
 
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=25))
+@example(
+    [
+        dict(
+            shape="couple",
+            members=[("claimant", 30), ("partner", 30)],
+            reported={
+                name: 2_000.0 if name == "working_tax_credit_reported" else 0.0
+                for name in LEGACY
+            },
+            saving=False,
+            tenure="RENT_PRIVATELY",
+            rent=9_000.0,
+            earnings=0.0,
+            savings=0.0,
+            would_claim_uc=False,
+            claims_at_closure=True,
+            ineligible_partner=True,
+        )
+    ]
+)
 def test_a_closure_claim_pays_the_universal_credit_of_any_claim(units):
     for unit in units:
         unit["claims_at_closure"] = True
@@ -271,8 +299,15 @@ def test_a_closure_claim_pays_the_universal_credit_of_any_claim(units):
                 v["legacy_benefits_closed"][i]
                 and not (v["meets_pension_credit_age_conditions"][i])
             ):
-                for benefit in BENEFITS:
-                    assert abs(v[benefit][i] - anyway[year][benefit][i]) < 0.01, (
+                for benefit in BENEFITS + [
+                    "uc_housing_costs_element",
+                    "is_lha_shared_accommodation_rate_specified_renter",
+                    "is_benefit_cap_single_claimant_rate",
+                ]:
+                    assert (
+                        abs(float(v[benefit][i]) - float(anyway[year][benefit][i]))
+                        < 0.01
+                    ), (
                         year,
                         benefit,
                         unit,
