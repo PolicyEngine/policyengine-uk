@@ -259,6 +259,7 @@ BENUNIT_VARIABLES = [
     "savings_credit",
     "pension_credit_income",
     "pension_credit_assessable_capital",
+    "council_tax_reduction_pensioner",
 ]
 # council_tax_reduction_applicable_income on main before this change (1c5b4d04):
 # these incomes and benefits, less income tax, National Insurance and half of
@@ -293,7 +294,6 @@ PENSIONER_FLAT_DISREGARD = {"lone_parent": 25, "couple": 10, "single": 5}
 PENSIONER_ADDITIONAL_DISREGARD = 17.10
 HOUSEHOLD_VARIABLES = [
     "council_tax_reduction_maximum_eligible_liability",
-    "council_tax_reduction_household_has_pensioner",
     "savings",
 ]
 
@@ -366,12 +366,11 @@ def calculate(units, guarantee=None, **kwargs):
         - 0.5 * benunit_total(["pension_contributions"])
         - pensioner_earnings_disregard(sim, claimants),
     )
+    # Each claim's scheme follows its own family's pensioner status.
     values["national"] = np.array(
         [
-            unit["country"] != "ENGLAND" or has_pensioner
-            for unit, has_pensioner in zip(
-                units, values["council_tax_reduction_household_has_pensioner"]
-            )
+            unit["country"] != "ENGLAND" or pensioner
+            for unit, pensioner in zip(units, values["council_tax_reduction_pensioner"])
         ]
     )
     return values

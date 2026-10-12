@@ -469,13 +469,15 @@ def read_only_cache(monkeypatch):
     original_put = InMemoryStorage.put
     original_get = InMemoryStorage.get
 
-    def put(self, value, period, branch_name="default"):
+    # Forward every argument: storage methods gain keywords between core
+    # releases (3.32.16 added ``put(..., derived=...)``).
+    def put(self, value, *args, **kwargs):
         if isinstance(value, np.ndarray):
             value.flags.writeable = False
-        return original_put(self, value, period, branch_name)
+        return original_put(self, value, *args, **kwargs)
 
-    def get(self, period, branch_name="default"):
-        value = original_get(self, period, branch_name)
+    def get(self, *args, **kwargs):
+        value = original_get(self, *args, **kwargs)
         if isinstance(value, np.ndarray):
             value.flags.writeable = False
         return value

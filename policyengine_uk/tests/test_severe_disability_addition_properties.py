@@ -27,12 +27,31 @@ Invariants, for every benefit unit in every generated household:
    unit's addition.
 5. Symmetry: swapping the drawn attributes of a couple's two partners leaves
    their addition unchanged.
+6. Shared carer attribution, differential: the claimants and partners that
+   is_cared_for_by_carer_benefit_recipient marks in each benefit unit are one
+   of the sets the reference's person-to-person matching allows, and the
+   number of other members marked (such as disabled children) is the number
+   the reference's within-unit matching covers. Structural: only a person
+   who is severely disabled for Carer's Allowance is marked, a household has
+   no more people cared for than carer benefits, and a household's only
+   carer is never marked as caring for themselves.
+7. Cross-programme, differential: the legacy severe disability premium (HB
+   Regs 2006 Sch 3 para 14) reads the same attribution, and its qualifying
+   benefits, couple, blind-partner and carer rules and rates are those of the
+   addition. The two residence tests differ only over 16- to 19-year-olds
+   (HB reg 3 non-dependants against SPC Sch I para 2(2)(f)), so in a
+   household with no one of that age the premium equals the addition for
+   every benefit unit, carers in other benefit units included.
 """
 
 import numpy as np
 from hypothesis import HealthCheck, given, settings
 from hypothesis import strategies as st
-from severe_disability_addition_reference import reference_rates
+from severe_disability_addition_reference import (
+    _best_within_unit,
+    household_carer_assignments,
+    reference_rates,
+)
 
 from policyengine_uk import Simulation
 
@@ -139,6 +158,10 @@ def simulate(households):
         "qualifies": calc("receives_severe_disability_addition_qualifying_benefit"),
         "carer": calc("receives_carer_benefit"),
         "is_couple": calc("is_couple"),
+        "cared_for": calc("is_cared_for_by_carer_benefit_recipient"),
+        "could_be_cared_for": calc("is_severely_disabled_for_carers_allowance"),
+        "addition": calc("severe_disability_minimum_guarantee_addition"),
+        "legacy_premium": calc("severe_disability_premium"),
     }
 
 
@@ -279,3 +302,81 @@ def test_swapping_partners_leaves_a_couples_addition_unchanged(original):
     result = simulate([original, swapped])
     before, after = rates_by_household(result)
     assert before[0] == after[0]
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(household(), min_size=1, max_size=6))
+def test_shared_carer_attribution_matches_the_reference_matching(households):
+    result = simulate(households)
+    cared_for = result["cared_for"].astype(bool)
+    # Only someone a carer benefit can be paid for is marked.
+    assert not np.any(cared_for & ~result["could_be_cared_for"].astype(bool))
+    np.testing.assert_array_equal(result["could_be_cared_for"], result["qualifies"])
+    k = 0
+    for h, layout in enumerate(result["layout"]):
+        allowed = household_carer_assignments(reference_household(result, h))
+        names = [name for unit in layout for name, _, _ in unit]
+        marked = {name for i, name in enumerate(names) if cared_for[k + i]}
+        carers = int(result["carer"][k : k + len(names)].sum())
+        # Each award is for one person.
+        assert len(marked) <= carers, (layout, marked)
+        if carers == 1 and len(names) > 0:
+            (carer,) = [n for i, n in enumerate(names) if result["carer"][k + i]]
+            assert carer not in marked, (layout, marked)
+        reference = reference_household(result, h)
+        for b, unit in enumerate(layout):
+            claimants = {name for name, role, _ in unit if role == "cp"}
+            assert frozenset(marked & claimants) in allowed[b], (
+                layout,
+                marked,
+                allowed[b],
+            )
+            # Other members (such as a disabled child) are cared for only by
+            # carers of their own unit, after its claimants and partners.
+            others = {name for name, role, _ in unit if role != "cp"}
+            unit_carers = sum(
+                reference["people"][n]["receives_carer_benefit"]
+                for n in claimants | others
+            )
+            within_cp, left_over = _best_within_unit(
+                reference["people"], reference["benunits"][b]
+            )
+            assert len(marked & others) == unit_carers - left_over - within_cp, (
+                layout,
+                marked,
+            )
+        k += len(names)
+
+
+def no_one_aged_16_to_19(units):
+    return not any(
+        16 <= p["age"] <= 19
+        for unit in units
+        for p in unit["claimants"] + unit["dependants"]
+    )
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(household().filter(no_one_aged_16_to_19), min_size=1, max_size=6))
+def test_legacy_premium_equals_the_addition_without_young_people(households):
+    result = simulate(households)
+    np.testing.assert_allclose(result["legacy_premium"], result["addition"], atol=0.01)
+
+
+def test_the_three_qualifying_benefit_lists_agree():
+    """The attribution's candidates are the Carer's Allowance list (SSCBA 1992
+    s.70(2)); the premium and the addition each count their own qualifying
+    claimants and partners among those marked. In the model's variables the
+    three lists are the same from 8 April 2013, when PIP and AFIP joined
+    s.70(2), which is what makes the two programmes' cared-for counts agree."""
+    from policyengine_uk import CountryTaxBenefitSystem
+
+    parameters = CountryTaxBenefitSystem().parameters
+    for instant in ("2013-04-08", "2020-01-01", "2026-01-01", "2030-01-01"):
+        dwp = parameters(instant).gov.dwp
+        carers_allowance = set(dwp.carers_allowance.qualifying_disability_benefits)
+        legacy = set(dwp.disability_premia.severe_qualifying_benefits)
+        pension_credit = set(
+            dwp.pension_credit.guarantee_credit.severe_disability.relevant_benefits
+        )
+        assert carers_allowance == legacy == pension_credit, instant

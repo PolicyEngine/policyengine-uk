@@ -1,0 +1,128 @@
+# A benefit unit is on a benefit that passports the Housing Benefit means test
+# when it is on universal credit, income support, an income-based jobseeker's
+# allowance or an income-related employment and support allowance (SI 2006/213
+# Sch 4 para 12, Sch 5 para 4, Sch 6 para 5; NI: SR 2006/405 Sch 5 para 12,
+# Sch 6 para 4, Sch 7 para 5). On universal credit means entitled to it,
+# whether in payment or not (reg 2(3B)). The universal credit words came into
+# force on 28 October 2013 in Great Britain (SI 2013/2070 reg 7) and on 8 May
+# 2018 in Northern Ireland (SR 2018/92 reg 4). Model years are fiscal years
+# read on 30 April, so the limb applies from 2014 in Great Britain and 2019 in
+# Northern Ireland.
+
+- name: Not on any of the benefits
+  period: 2025
+  input:
+    is_uc_entitled: false
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+  output:
+    housing_benefit_on_passporting_benefit: false
+
+- name: Entitled to Universal Credit
+  period: 2025
+  input:
+    is_uc_entitled: true
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+  output:
+    housing_benefit_on_passporting_benefit: true
+
+- name: Income Support alone, without Universal Credit
+  period: 2025
+  input:
+    is_uc_entitled: false
+    income_support: 0.01
+    jsa_income: 0
+    esa_income: 0
+  output:
+    housing_benefit_on_passporting_benefit: true
+
+- name: Claims Universal Credit but the amount before the cap is nil
+  period: 2025
+  input:
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 0
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+  output:
+    is_uc_entitled: false
+    housing_benefit_on_passporting_benefit: false
+
+- name: Universal Credit before the benefit cap counts even when the cap leaves nothing to pay
+  period: 2025
+  input:
+    would_claim_uc: true
+    universal_credit_pre_benefit_cap: 2_000
+    benefit_cap_reduction: 2_000
+    income_support: 0
+    jsa_income: 0
+    esa_income: 0
+  output:
+    universal_credit: 0
+    housing_benefit_on_passporting_benefit: true
+
+- name: Great Britain in 2013-14, before the universal credit limb on 28 October 2013
+  period: 2013
+  input:
+    is_uc_entitled: true
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    country: ENGLAND
+  output:
+    housing_benefit_on_passporting_benefit: false
+
+- name: Great Britain in 2013-14, Income Support still passports
+  period: 2013
+  input:
+    is_uc_entitled: true
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+    country: ENGLAND
+  output:
+    housing_benefit_on_passporting_benefit: true
+
+- name: Great Britain in 2014-15, the first year with the universal credit limb
+  period: 2014
+  input:
+    is_uc_entitled: true
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    country: SCOTLAND
+  output:
+    housing_benefit_on_passporting_benefit: true
+
+- name: Wales in 2018-19 has the limb
+  period: 2018
+  input:
+    is_uc_entitled: true
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    country: WALES
+  output:
+    housing_benefit_on_passporting_benefit: true
+
+- name: Northern Ireland in 2018-19, read on 30 April 2018, before the limb on 8 May 2018
+  period: 2018
+  input:
+    is_uc_entitled: true
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    country: NORTHERN_IRELAND
+  output:
+    housing_benefit_on_passporting_benefit: false
+
+- name: Northern Ireland in 2019-20 has the limb
+  period: 2019
+  input:
+    is_uc_entitled: true
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    country: NORTHERN_IRELAND
+  output:
+    housing_benefit_on_passporting_benefit: true
+
+- name: Northern Ireland in 2025-26 with Universal Credit
+  period: 2025
+  input:
+    is_uc_entitled: true
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    country: NORTHERN_IRELAND
+  output:
+    housing_benefit_on_passporting_benefit: true

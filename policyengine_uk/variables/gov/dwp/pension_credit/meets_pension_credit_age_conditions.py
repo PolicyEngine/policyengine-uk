@@ -26,8 +26,14 @@ class meets_pension_credit_age_conditions(Variable):
         person = benunit.members
         claimant_or_partner = person("is_claimant_or_partner", period)
         count = benunit.sum(claimant_or_partner)
+        # SPCA 2002 s.1(2)(b): "has attained the qualifying age";
+        # s.4(1A) excludes a partner who "has not attained the qualifying age".
         all_pension_age = (count > 0) & (
-            benunit.sum(claimant_or_partner & person("is_SP_age", period)) == count
+            benunit.sum(
+                claimant_or_partner
+                & person("has_attained_state_pension_credit_qualifying_age", period)
+            )
+            == count
         )
         # Parameters are read at 30 April of the model year
         # (convert_to_fiscal_year_parameters), so model year 2019 (2019-20)
