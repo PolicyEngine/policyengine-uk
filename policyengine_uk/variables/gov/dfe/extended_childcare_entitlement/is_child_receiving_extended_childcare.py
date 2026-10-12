@@ -17,12 +17,13 @@ class is_child_receiving_extended_childcare(Variable):
     definition_period = YEAR
 
     def formula(person, period, parameters):
-        benunit = person.benunit
-        family_amount = benunit("extended_childcare_entitlement", period)
+        # person.benunit projects benefit unit values onto each member, so
+        # both family amounts below are already one value per person.
+        family_amount = person.benunit("extended_childcare_entitlement", period)
 
         # Calculated amounts: each child's own working parent hours.
         child_amount = person("extended_childcare_entitlement_per_child", period)
-        calculated_family_amount = benunit.sum(child_amount)
+        calculated_family_amount = person.benunit.sum(child_amount)
 
         # A supplied family amount that no child's calculated hours account
         # for: attribute it to every qualifying child with hours at its age.
@@ -30,8 +31,8 @@ class is_child_receiving_extended_childcare(Variable):
         qualifying_child = person(
             "extended_childcare_entitlement_qualifying_child", period
         ) & (p.hours.calc(person("age", period)) > 0)
-        supplied_only = benunit.project(calculated_family_amount) <= 0
+        supplied_only = calculated_family_amount <= 0
 
-        return (benunit.project(family_amount) > 0) & (
+        return (family_amount > 0) & (
             (child_amount > 0) | (supplied_only & qualifying_child)
         )
