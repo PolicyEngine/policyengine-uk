@@ -11,8 +11,9 @@ scope, tracked in
 [#435](https://github.com/PolicyEngine/policyengine-uk/issues/435).
 
 In Scotland the equivalent is the **Winter Heating Payment**, a flat
-annual payment (£62.00 at the latest uprating,
-[mygov.scot](https://www.mygov.scot/winter-heating-payment)), which
+annual payment (£62.00 from April 2026, regulation 9 of
+[SSI 2023/16](https://www.legislation.gov.uk/ssi/2023/16/contents) as
+amended), which
 replaced Cold Weather Payment there in 2023. It isn't modelled either.
 The separate Pension Age Winter Heating Payment, which replaced Winter
 Fuel Payment in Scotland, is modelled under
@@ -30,14 +31,17 @@ Regulations 1988][cwp-1988] (SI 1988/1724). A household qualifies if
   average temperature is recorded as, or forecast to be, **0°C or below
   over 7 consecutive days** between 1 November and 31 March.
 - A member of the benefit unit receives a **qualifying benefit**:
-  Pension Credit; Income Support, income-based JSA or income-related
-  ESA with a disability or pensioner premium or a child under 5 (or,
-  for ESA, in the support or work-related activity group); Universal
-  Credit when not employed with a limited capability for work element,
-  a disabled child element or a child under 5, or when employed with a
-  disabled child element; or Support for Mortgage Interest with one of
-  those premiums or a child under 5. The GOV.UK eligibility page has
-  the exact conditions.
+  Pension Credit; income-related ESA in the support or work-related
+  activity group, or with a severe or enhanced disability premium, a
+  pensioner premium, a disabled child or a child under 5 (the
+  Regulations extend the same premium test to Income Support and
+  income-based JSA); Universal Credit when neither the claimant nor a
+  partner is employed or gainfully self-employed and someone has
+  limited capability for work or there is a child under 5, or, whether
+  working or not, when the award includes a disabled child amount; or
+  Support for Mortgage Interest with one of those premiums or children.
+  The [GOV.UK eligibility page](https://www.gov.uk/cold-weather-payment/eligibility)
+  has the exact conditions.
 
 The payment is £25 per 7-day cold period, and each further cold
 period triggers another payment. Spending varies a lot with the winter: in
@@ -57,11 +61,11 @@ analogue). Modelling the weather side has three plausible approaches:
 1. **Expected-value parameterisation**: a single national
    `cold_weather_payments_expected_periods` parameter capturing the
    long-run-average number of 7-day cold periods triggered per winter.
-   Multiply by `£25 × qualifying_household` to produce the expected
+   Multiply by £25 and by the qualifying household flag to produce the expected
    annual payment. Easy to implement, accurate in aggregate, wrong in
    any specific winter.
 2. **Regional weather mixing**: a per-region weather-event
-   distribution (e.g. North East has more cold periods than London on
+   distribution (for example, the North East has more cold periods than London on
    average), parameterised from Met Office historic data. Captures the
    distributional skew without forecasting any particular winter.
 3. **Year-specific lookups**: tabulate the DWP-published *Cold Weather
@@ -74,7 +78,7 @@ and option 3 for back-casts where the data is available.
 
 ## Proposed scope
 
-### Phase 1 — qualifying-benefit gate + expected-value payment
+### Phase 1: qualifying-benefit gate and expected-value payment
 
 - New parameter `gov.dwp.cold_weather_payment.amount` = £25. The amount
   was lower in earlier years, so take any backdated values from the
@@ -92,13 +96,13 @@ This delivers a model that gets the policy-relevant slice right
 (*who* qualifies for CWP and how it interacts with their other
 benefits) at the cost of smoothing year-to-year weather variance.
 
-### Phase 2 — regional weather mixing
+### Phase 2: regional weather mixing
 
 Add a `gov.dwp.cold_weather_payment.expected_periods_by_region` table
 parameterised from Met Office observation data, and a household-side
 lookup by `region`.
 
-### Phase 3 — Scotland Winter Heating Payment
+### Phase 3: Scotland's Winter Heating Payment
 
 Paid by Social Security Scotland under
 [The Winter Heating Assistance (Low Income) (Scotland) Regulations 2023](https://www.legislation.gov.uk/ssi/2023/16/contents)
@@ -113,16 +117,16 @@ weather trigger. So:
   residence in Scotland. Reuse the Phase 1 variable rather than a second
   copy of the benefit conditions.
 - `winter_heating_payment` = `amount` × eligible, with `amount`
-  uprated each year (£62.00 at the latest uprating).
+  uprated each year (£62.00 from April 2026).
 
 ## Data needs
 
-- DWP, [Cold Weather Payment statistics](https://www.gov.uk/government/collections/social-fund-cold-weather-payments) — estimated eligible numbers at the start of each season and weekly triggers by weather station; the main calibration source.
-- DWP-published WHP statistics (Scotland) — Phase 3 calibration.
-- Met Office, [UK climate historic stations](https://www.metoffice.gov.uk/research/climate/maps-and-data/historic-station-data) — Phase 2 regional expected-period parameterisation.
+- DWP, [Cold Weather Payment statistics](https://www.gov.uk/government/collections/social-fund-cold-weather-payments): estimated eligible numbers at the start of each season and weekly triggers by weather station. The main calibration source.
+- Social Security Scotland's Winter Heating Payment statistics: Phase 3 calibration.
+- Met Office, [UK climate historic stations](https://www.metoffice.gov.uk/research/climate/maps-and-data/historic-station-data): Phase 2 regional expected-period parameterisation.
 
 The FRS gives `region` cleanly, so the geographic gate is no extra
-data work for Phase 1/2.
+data work for Phases 1 and 2.
 
 ## Open questions
 
