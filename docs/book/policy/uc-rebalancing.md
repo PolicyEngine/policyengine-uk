@@ -96,11 +96,13 @@ sim = Simulation(scenario=scenario)
 ```python
 from policyengine_uk import Simulation, Scenario
 
-# Set the new claimant health element to £250 per month
+# Set the new claimant health element to £250 per month from April 2026.
+# A "start.stop" key sets the value over those dates. A single date such as
+# "2026-01-01" would change that one day only and leave every year unchanged.
 scenario = Scenario(
     parameter_changes={
         "gov.dwp.universal_credit.rebalancing.new_claimant_health_element": {
-            "2026-01-01": 250.00
+            "2026-04-06.2100-12-31": 250.00
         }
     }
 )
