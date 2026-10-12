@@ -7,9 +7,12 @@ class employment_benefits(Variable):
     label = "Employment benefits"
     documentation = (
         "Statutory sick, maternity and paternity pay. ITEPA 2003 s. 660 "
-        "Table A lists each as a taxable social security benefit; employers "
-        "pay them through payroll, and taxable_employment_income taxes them "
-        "with wages. Table A also lists statutory adoption, shared parental, "
+        "Table A lists each as a taxable social security benefit. Employers "
+        "pay them through payroll, and HMRC counts employer-paid statutory "
+        "sick and maternity pay as employment income taxable under s. 7(2) "
+        "(Pensions Tax Manual PTM044100), so s. 660(2) keeps them out of "
+        "social security income. taxable_employment_income taxes them with "
+        "wages. Table A also lists statutory adoption, shared parental, "
         "parental bereavement and neonatal care pay; the model has no "
         "variables for those."
     )

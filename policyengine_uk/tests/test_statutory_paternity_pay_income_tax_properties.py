@@ -17,6 +17,8 @@ statutory paternity pay:
    family's total income tax. A Child Benefit opt-out can lower the family's
    tax as income rises (the High Income Child Benefit Charge stops when the
    benefit stops), for wages too, so the generated families do not opt out.
+   Before statutory paternity pay was taxed this held trivially, as the
+   payment moved no income tax; it guards the sign of the new tax.
 2. Bounds: for families that do not claim Marriage Allowance, a pound more
    of statutory paternity pay raises the family's income tax by at most a
    pound. Income Tax Act 2007 s. 55B(2)(b) withdraws the whole Marriage
@@ -31,9 +33,13 @@ statutory paternity pay:
 4. Same as wages: statutory paternity pay of s on top of wages of e gives the
    same income tax and National Insurance as wages of e + s, where the
    recipient's wages and trading profit cover their pension contributions.
-   pension_contributions_relief caps relief at employment and self-employment
-   income, which leaves statutory pay out, so a recipient whose contributions
-   exceed those gets less relief on statutory pay than on wages.
+   That condition works round a model limitation, not the law:
+   pension_contributions_relief caps relief at employment and
+   self-employment income, leaving statutory pay out, although FA 2004 s.
+   189(2)(a) counts employment income as relevant UK earnings and HMRC
+   counts employer-paid statutory sick and maternity pay in it (Pensions Tax
+   Manual PTM044100). So a recipient whose contributions exceed their wages
+   and profit gets less relief on statutory pay than on wages.
 5. Accounting: employment_benefits is statutory sick, maternity and
    paternity pay, and taxable_employment_income is wages plus those less
    employment deductions, floored at nil.
