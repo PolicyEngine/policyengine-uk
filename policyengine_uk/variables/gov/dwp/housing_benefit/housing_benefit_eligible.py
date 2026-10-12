@@ -42,10 +42,11 @@ class housing_benefit_eligible(Variable):
         # with an 18 or 19 year old dependant can claim Housing Benefit and
         # not Universal Credit.
         # A family DWP moved to Universal Credit leaves this route if it
-        # claims Universal Credit and is eligible for it
-        # (left_pension_route_at_legacy_closure). One that does not claim
-        # keeps it; a protected mixed-age couple can reclaim Housing Benefit
-        # and keep its saving (SI 2019/37 art. 4(3)(b)(ii)).
+        # claims Universal Credit and is entitled before benefit-cap reductions
+        # and deductions (left_pension_route_at_legacy_closure). One that does
+        # not claim, or claims with nil entitlement, keeps it; a protected
+        # mixed-age couple can reclaim Housing Benefit and keep its saving
+        # (SI 2019/37 art. 4(3)(b)(ii), inserted by SI 2024/604 art. 2).
         pension_age = benunit("meets_pension_credit_age_conditions", period) & ~benunit(
             "left_pension_route_at_legacy_closure", period
         )

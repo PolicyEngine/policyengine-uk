@@ -22,7 +22,7 @@ Invariants, for any generated population of families in 2024 to 2027:
 3. Migration ends every legacy award: a family moved off legacy benefits gets
    no tax credits, Income Support, income-related ESA or income-based JSA.
    It gets no Housing Benefit unless it keeps the pension-age route by not
-   claiming (or by being refused Universal Credit). A family that leaves
+   claiming (or by having nil Universal Credit entitlement). A family that leaves
    that route gets no Pension Credit either, and any closure claimant
    within the capital limit is eligible for Universal Credit.
 4. Exclusive: no family gets Universal Credit with Pension Credit or with
@@ -38,10 +38,13 @@ Invariants, for any generated population of families in 2024 to 2027:
 """
 
 import numpy as np
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
+
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
 
 YEARS = (2024, 2025, 2026, 2027)
 PROPERTY_SETTINGS = settings(
@@ -97,6 +100,7 @@ OUTPUTS = BENEFITS + [
     "meets_pension_credit_age_conditions",
     "is_mixed_age_couple",
     "is_uc_eligible",
+    "universal_credit_pre_benefit_cap",
     "uc_assessable_capital",
     "uc_housing_costs_element",
     "is_lha_shared_accommodation_rate_specified_renter",
@@ -230,7 +234,11 @@ def test_closure_claims_and_the_end_of_legacy_awards(units):
             # (reg 3(2)(a)) or the reg 60A waiver.
             if claims_at_closure and v["uc_assessable_capital"][i] <= 16_000:
                 assert uc_eligible, (year, unit)
-            left = pension_age_route and claims_at_closure and uc_eligible
+            left = (
+                pension_age_route
+                and claims_at_closure
+                and v["universal_credit_pre_benefit_cap"][i] > 0
+            )
             assert bool(v["left_pension_route_at_legacy_closure"][i]) == left
             if left or not pension_age_route:
                 assert v["housing_benefit"][i] == 0, (year, unit)

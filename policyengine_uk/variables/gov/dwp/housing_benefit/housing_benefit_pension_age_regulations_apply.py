@@ -21,9 +21,10 @@ class housing_benefit_pension_age_regulations_apply(Variable):
         "reg 5 itself, under which such an award would bring in the "
         "working-age regulations. The model's only such awards go to tax "
         "credit migrants under SI 2014/1230 reg 60A (claims_uc_at_legacy_"
-        "closure); they leave the pension-age route, so they get no Housing "
-        "Benefit under either set of regulations, and the cap does not apply "
-        "to them (reg 60C)."
+        "closure). While entitled, they leave the pension-age route and get "
+        "no Housing Benefit under either set of regulations; a claim with "
+        "nil entitlement keeps that route. The cap does not apply to their "
+        "Universal Credit awards (reg 60C)."
     )
     definition_period = YEAR
     reference = (
