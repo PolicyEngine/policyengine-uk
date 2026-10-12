@@ -12,70 +12,75 @@ under [#1008](https://github.com/PolicyEngine/policyengine-uk/issues/1008)
 and the broader [#1644 audit][issue-1644].
 ```
 
-## What's modelled today
+## What is modelled today
 
 The current childcare coverage is captured in
 [`policyengine_uk/programs.yaml`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/programs.yaml) (see the
 [#1644 split into per-programme rows][issue-1644]) and works as follows:
 
 - **UK-wide**: Tax-Free Childcare (HMRC); Universal Credit childcare
-  element (DWP); Working Tax Credit childcare element (DWP, legacy, see
+  element (DWP); Working Tax Credit childcare element (legacy, HMRC
+  administered, modelled under `gov/dwp/`; see
   [tax-credits.md](./../dwp/tax-credits.md)).
 - **England-only** (gate on `country == ENGLAND`):
-  Universal Childcare Entitlement (15h), Extended Childcare Entitlement
-  (30h working parents), Targeted Childcare Entitlement (disadvantaged
-  2-year-olds + working families with younger children), Care to Learn,
+  Universal Childcare Entitlement (15 hours for 3- and 4-year-olds),
+  Extended Childcare Entitlement (working parents, now reaching down to
+  children aged nine months), Targeted Childcare Entitlement (2-year-olds
+  in families on qualifying benefits or low incomes), Care to Learn,
   Student Finance England Childcare Grant.
 - **Scotland**: eligibility for the universal funded ELC for 3- and
-  4-year-olds (`scottish_funded_early_learning_childcare_eligible`) and
-  its 1,140 hours a year, added in [#1643][pr-1643]. No funding value is
-  attached yet, so it does not reach household income.
+  4-year-olds (`scottish_funded_early_learning_childcare_eligible`,
+  including the statutory start-date rule for 3-year-olds) and its 1,140
+  hours a year, added in [#1643][pr-1643]. No funding value is attached
+  yet, so it does not reach household income.
 - **Wales, Northern Ireland**: no programmes modelled.
 
 ## Proposed scope by jurisdiction
 
-### Scotland — three remaining strands
+### Scotland: three remaining strands
 
 The [#1644 audit][issue-1644] flagged three Scottish gaps:
 
 1. **Eligible-two-year-old strand** of the funded ELC programme
-   (vulnerable / low-income 2-year-olds under the
+   (vulnerable or low-income 2-year-olds under the
    [Provision of Early Learning and Childcare (Specified Children)
    (Scotland) Order 2014][sssi-196-2014]). Modelled the same way as the
-   3- and 4-year-old strand but gated on a means test against UC /
-   tax credits / equivalent qualifying benefits.
+   3- and 4-year-old strand but gated on UC, tax credits or other
+   qualifying benefits.
 2. **Student Awards Agency Scotland (SAAS) Lone Parents' Grant,
-   Dependants' Grant, and Childcare Fund** for full-time HE students
-   — the Scottish equivalent of Student Finance England's Childcare
-   Grant. Income-tested, paid at standard weekly rates.
-3. **Scottish EMA-equivalent** for young parents in further education
-   (the [Educational Maintenance Allowance][saas-ema] is paid through
-   schools, colleges and local authorities in Scotland; the
-   childcare-support layer parallels Care to Learn in England).
+   Dependants' Grant, and Childcare Fund** for full-time HE students:
+   the Scottish equivalent of Student Finance England's Childcare
+   Grant. Income-tested.
+3. **Support for young parents in further education**, the role Care to
+   Learn plays in England. The [Education Maintenance Allowance][scot-ema]
+   still runs in Scotland for 16- to 19-year-olds, applied for through
+   local councils and colleges, but it is a maintenance payment rather
+   than childcare support, so the childcare side needs its own scoping.
 
 ### Wales
 
 The audit identified four Welsh programmes:
 
-1. **Childcare Offer for Wales** — 30 hours/week for working parents
-   of 3- and 4-year-olds (term-time + a portion of holiday weeks).
+1. **Childcare Offer for Wales**: 30 hours a week for working parents
+   of 3- and 4-year-olds (term time plus some holiday weeks).
    Modelled the same as the English Extended Childcare Entitlement
    with Welsh-specific income tests and hour caps. Statutory basis:
    [Childcare Funding (Wales) Act 2019][wales-act].
-2. **Flying Start** — universal preschool offer in disadvantaged areas
-   for 2- and 3-year-olds (12.5 hours/week). Geographic eligibility
-   based on lower-super-output-area data.
-3. **Student Finance Wales Childcare Grant** — parallel to the English
+2. **Flying Start**: a universal offer in disadvantaged areas for
+   2- to 3-year-olds (12.5 hours a week). Eligibility is geographic,
+   based on lower layer super output areas.
+3. **Student Finance Wales Childcare Grant**, parallel to the English
    Childcare Grant.
-4. **Welsh EMA** — parallel to Scottish EMA.
+4. **Welsh EMA**, parallel to the Scottish EMA.
 
 ### Northern Ireland
 
 The audit identified four NI programmes:
 
-1. **Pre-school Education Programme (PSEP)** — 12.5 hours/week for 3-
-   and 4-year-olds. Universal.
-2. **Sure Start** — younger disadvantaged children (2-3yo).
+1. **Pre-school Education Programme (PSEP)**: 12.5 hours a week in the
+   year before school. Universal.
+2. **Sure Start**: younger children in disadvantaged areas, including a
+   programme for 2-year-olds.
 3. **Student Finance NI Childcare Grant**.
 4. **NI EMA**.
 
@@ -88,7 +93,7 @@ For each new programme:
 - New variable(s) under `variables/gov/<region>/<programme>/` gated on
   the appropriate `country == ...` check.
 - A `<programme>_eligible` companion variable that the new programme
-  variable composes with the rate parameter — same pattern as the
+  variable composes with the rate parameter, the same pattern as the
   English entitlement trio.
 - A `programs.yaml` row per programme, bound to the new variable and
   parameter prefix.
@@ -100,10 +105,10 @@ become more pressing once the regional programmes land:
 
 - `weeks_per_year` and `childcare_funding_rate` currently sit at
   `gov.dfe.*` root but encode English term-week and funding-rate
-  assumptions. They should be regionalised (e.g.
-  `gov.scotland.elc.weeks_per_year`) once the Scotland / Wales / NI
-  programmes are modelled.
-- No aggregating variable across programmes exists (e.g. "total
+  assumptions. They should be regionalised (for example
+  `gov.scottish_government.funded_early_learning_childcare.weeks_per_year`)
+  once the Scotland, Wales and NI programmes are modelled.
+- No aggregating variable across programmes exists (for example "total
   subsidised childcare hours per child per week"). The API surfaces
   the per-programme variables but can't answer "what's this family's
   combined childcare support" without the caller summing.
@@ -116,22 +121,21 @@ per-programme work.
 Most regional programmes are point-in-time per-hour funding rather
 than per-household payments, so the data side is comparatively easy:
 
-- **FRS** provides `region` and `country` at the household level —
+- **FRS** provides `region` and `country` at the household level,
   enough to gate eligibility.
 - **Welsh Government Statistical Bulletins** publish Flying Start
   and Childcare Offer caseloads by local authority.
 - **Scottish Government Childcare and Early Years statistics** provide
   Scottish funded ELC caseloads.
 - **Department of Education NI** publishes PSEP caseloads.
-- The SAAS / Student Finance Wales / NI Childcare Grants need the same
-  treatment as the English `childcare_grant` — calibration against
+- The SAAS, Student Finance Wales and NI childcare grants need the same
+  treatment as the English `childcare_grant`: calibration against
   published award totals.
 
 The aggregating challenge is choosing whether to expose **subsidised
 hours** or **subsidised cost** as the primary household-level
-variable. Recommendation: subsidised cost, since that's what flows
-through to `household_market_income` and the UC childcare element
-disregards.
+variable. Recommendation: subsidised cost, since that is how the English
+entitlements already enter `household_benefits` and `gov_spending`.
 
 ## Open questions
 
@@ -150,9 +154,9 @@ disregards.
 
 ## References
 
-- Audit: [#1644](https://github.com/PolicyEngine/policyengine-uk/issues/1644) — full childcare coverage audit.
-- Tracking: [#1008](https://github.com/PolicyEngine/policyengine-uk/issues/1008) — original Scotland/Wales/NI gap report.
-- Recent landed work: [#1643][pr-1643] — Scottish Universal Funded ELC.
+- Audit: [#1644](https://github.com/PolicyEngine/policyengine-uk/issues/1644), the full childcare coverage audit.
+- Tracking: [#1008](https://github.com/PolicyEngine/policyengine-uk/issues/1008), the original Scotland, Wales and NI gap report.
+- Recent landed work: [#1643][pr-1643], Scottish universal funded ELC.
 - Existing England docs (for the pattern to mirror): the entitlement variables under [`policyengine_uk/variables/gov/dfe/`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/variables/gov/dfe).
 - Welsh childcare statute: [Childcare Funding (Wales) Act 2019][wales-act].
 - Scottish eligible-2-year-old statute: [SSSI 2014/196][sssi-196-2014].
@@ -161,4 +165,4 @@ disregards.
 [pr-1643]: https://github.com/PolicyEngine/policyengine-uk/pull/1643
 [wales-act]: https://www.legislation.gov.uk/anaw/2019/1/contents
 [sssi-196-2014]: https://www.legislation.gov.uk/ssi/2014/196/contents/made
-[saas-ema]: https://www.saas.gov.uk/funding/maintenance-allowance
+[scot-ema]: https://www.mygov.scot/ema
