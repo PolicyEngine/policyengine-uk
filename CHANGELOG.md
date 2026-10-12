@@ -1,3 +1,22 @@
+## [2.126.11] - 2026-10-12
+
+### Changed
+
+- Documentation pages in docs/book/assumptions, validation, policy and programs/gov/<agency> are now picked up by folder, so a new page no longer needs a myst.yml entry. This also publishes eight existing pages that were missing from the contents.
+- - Removed the stale non-strict expected failure for the 2023-24 Class 4 lower profits limit (#1968, fixed by #2058), so the alignment test now asserts that year.
+
+### Fixed
+
+- Warned when `UKSingleYearDataset` is given a `fiscal_year` alongside a file path, where it cannot take effect, and when it is built from DataFrames without one. Removed the process-wide `warnings.filterwarnings("ignore")` that importing the package installed, which hid these and every other warning from callers.
+- - Split the CI `Test` job into a YAML job and three parallel shards of the Python tests, with a check that every collected test ran in exactly one shard, and measured coverage with `sys.monitoring` (#2099).
+- Put the petrol and diesel pump prices that convert spending into litres on the DESNZ annual ULSP and ULSD series (the basis Microcosm UK prices fuel spending on), replacing the January 2024 RAC prices, and re-derived the petrol and diesel spending litre proxies so weighted litres still follow the HMRC/OBR road-fuel volume path (part A of #2169).
+- - Stop paying Carer's Allowance to a carer whose net earnings exceed the earnings limit (£204 a week from April 2026).
+- - Round the High Income Child Benefit Charge as ITEPA 2003 s. 681C(3) requires: the percentage down to a whole number, and the Child Benefit and the charge down to whole pounds.
+- - Stop relieving a miscellaneous loss against other income in Income Tax, adjusted net income, total income and Universal Credit earnings: ITA 2007 s. 152(4) allows it only against miscellaneous income.
+- Set the Personal Savings Allowance on the rest-of-UK bands for Scottish taxpayers, as ITA 2007 s. 12B(8) requires; give the higher amount at exactly the basic rate limit and the lower amount at exactly the higher rate limit (ITA 2007 s. 10); and use the right bands for periods 2016 and 2017.
+- Band savings and dividend income above property income, which is non-savings income (ITA 2007 ss. 16, 16A), including in the income the annual allowance charge's marginal rate is read from.
+
+
 ## [2.126.10] - 2026-10-11
 
 ### Fixed
