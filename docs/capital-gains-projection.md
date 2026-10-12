@@ -163,6 +163,55 @@ versions. Include it in analysis outputs and cache keys alongside dataset
 identity and policy settings. PE-UK's in-memory remote-dataset cache
 separates different projections; persisted downstream caches must do so too.
 
+These top-level fields describe **configured assumptions**, as indicated by
+`configuration_scope`. They do not establish that the projection changed
+the supplied data. The additional `application` section covers loaded CGT
+inputs and completed CGT input calculations, with records at
+`application["by_variable"][variable][period]`:
+
+- `supplied`: an authoritative input for that period. Its historical
+  projection is unknown, so its applied fingerprint is `None`.
+- `projected`: PE-UK extended a single-year dataset (`dataset_extension`)
+  or uprated an earlier household input (`input_uprating`). The record gives
+  the source period, projection name and fingerprint actually applied. The
+  legacy GDP path has no explicit-scenario fingerprint.
+- `default`: the calculation used the variable's default without an earlier
+  input to project, or neutralization/abolition made it return its default.
+  A missing gains component defaults to zero; a supplied zero or signed
+  amount can still be projected.
+- `unknown`: a calculation outside the ordinary annual input routes, such
+  as a custom formula, whose application this interface cannot certify.
+
+`application["by_period"]` gives each covered period's status and
+`covered_variables`; different statuses within that period produce `mixed`.
+It does not summarise years or variables that have not been loaded or
+calculated. A normal single-year projection therefore reports its base
+year as supplied and its generated future years as projected. A household
+can report a supplied total and a projected component in the same year.
+Metadata access does not perform calculations or issue warnings, and the
+returned records are independent copies.
+
+An explicit scenario with supplied future CGT inputs issues
+`UnusedCapitalGainsProjectionWarning` after a relevant completed calculation
+when that period's covered inputs include supplied values and no projected
+values. The warning names the period and supplied variables and is emitted
+once per simulation. It does not mean the scenario cannot apply to other,
+unrequested years. Missing/default-only inputs do not trigger it. For
+example, selecting EOT on a dataset already populated through 2030 preserves
+those annual amounts and reports them as supplied; configuration metadata
+alone must not label their results as an EOT projection.
+
+PE-UK retains extension provenance through its in-memory remote-dataset
+cache and the total-to-before-response alias. A separately supplied
+multi-year dataset or a saved and reloaded file has no certified historical
+projection provenance and is reported as supplied. Baseline and reform
+simulations keep independent records. Replacing or deleting inputs through
+`Simulation.set_input` or `Simulation.delete_arrays` updates their provenance.
+A runtime economic reform changes the configured fingerprint; materialised
+dataset inputs retain their original applied fingerprint, while recalculated
+household projections record the new one. Direct mutation of holder storage
+is outside this provenance contract.
+
 Before selecting a replacement default:
 
 1. Compare GDP per capita, a CPI-per-record sensitivity and the candidate

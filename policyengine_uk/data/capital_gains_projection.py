@@ -5,6 +5,7 @@ One factor applies to every CGT input, preserving the supplied composition.
 """
 
 from collections.abc import Mapping
+import copy
 from dataclasses import dataclass
 import hashlib
 import json
@@ -24,6 +25,33 @@ CGT_INPUTS = (
 CGT_DATASET_INPUTS = ("capital_gains", *CGT_INPUTS)
 CGT_GROWTH_PATH = "gov.economic_assumptions.yoy_growth.capital_gains"
 CGT_INDEX_PATH = "gov.economic_assumptions.indices.capital_gains"
+
+
+class UnusedCapitalGainsProjectionWarning(UserWarning):
+    """Supplied CGT inputs bypass the selected projection for a calculation."""
+
+
+def capital_gains_application_metadata(records: dict) -> dict:
+    """Describe recorded input origins without implying coverage of other outputs."""
+    by_variable = {
+        variable: copy.deepcopy(records[variable])
+        for variable in CGT_INPUTS
+        if records.get(variable)
+    }
+    by_period = {}
+    for variable, periods in by_variable.items():
+        for period, record in periods.items():
+            summary = by_period.setdefault(
+                period, {"status": record["status"], "covered_variables": []}
+            )
+            if summary["status"] != record["status"]:
+                summary["status"] = "mixed"
+            summary["covered_variables"].append(variable)
+    return {
+        "coverage": "loaded CGT inputs and completed CGT input calculations",
+        "by_variable": by_variable,
+        "by_period": by_period,
+    }
 
 
 def check_capital_gains_projection_parameter(path: str) -> None:

@@ -675,3 +675,445 @@ def test_shared_horizon_extension_preserves_finite_cgt_boundary(dataset, monkeyp
         )
     with pytest.raises(ValueError, match="supports.*2030"):
         finite.calculate("capital_gains_before_response", 2031)
+
+
+def test_supplied_gains_report_unused_projection_without_changing_values(dataset):
+    """A selected scenario must not claim credit for GDP-preprojected inputs."""
+    import warnings
+
+    materialized = extend_single_year_dataset(
+        dataset, CountryTaxBenefitSystem().parameters, end_year=2030
+    )
+    original = Simulation(dataset=materialized)
+    expected = {
+        variable: original.calculate(variable, 2026).copy() for variable in INPUTS
+    }
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        simulation = Simulation(
+            dataset=materialized, capital_gains_projection=obr_eot_projection()
+        )
+        # Inspecting configuration is not an attempt to project a requested year.
+        initial_metadata = simulation.capital_gains_projection_metadata
+        assert not caught
+        for variable in INPUTS:
+            np.testing.assert_array_equal(
+                simulation.calculate(variable, 2026), expected[variable]
+            )
+        first_warning_count = len(caught)
+        simulation.calculate("capital_gains_before_response", 2026)
+        assert len(caught) == first_warning_count
+
+    application = initial_metadata["application"]
+    assert initial_metadata["configuration_scope"] == "configured_assumptions"
+    for variable in INPUTS:
+        record = application["by_variable"][variable]["2026"]
+        assert record["status"] == "supplied"
+        assert record["projection_fingerprint"] is None
+    assert application["by_period"]["2026"]["status"] == "supplied"
+    assert set(application["by_period"]["2026"]["covered_variables"]) == set(INPUTS)
+    unused = [
+        warning
+        for warning in caught
+        if warning.category.__name__ == "UnusedCapitalGainsProjectionWarning"
+    ]
+    assert len(unused) == 1
+    assert "supplied" in str(unused[0].message).lower()
+
+
+def test_single_year_extension_records_applied_projection(dataset, projection):
+    simulation = Simulation(dataset=dataset, capital_gains_projection=projection)
+    metadata = simulation.capital_gains_projection_metadata
+    records = metadata["application"]["by_variable"]
+    for variable in INPUTS:
+        assert records[variable]["2024"]["status"] == "supplied"
+        for year in (2025, 2026, 2027):
+            record = records[variable][str(year)]
+            assert record["status"] == "projected"
+            assert record["method"] == "dataset_extension"
+            assert record["source_period"] is not None
+            assert record["projection_fingerprint"] == metadata["fingerprint"]
+            expected = dataset.person[variable] * aggregate_factor(projection, year)
+            expected /= population_factor(
+                simulation.tax_benefit_system.parameters, 2024, year
+            )
+            assert simulation.calculate(variable, year) == pytest.approx(
+                expected, rel=1e-6
+            )
+    assert metadata["application"]["by_period"]["2026"]["status"] == "projected"
+    # Returning provenance does not expose the simulation's mutable records.
+    records[INPUTS[0]]["2026"]["status"] = "corrupted"
+    assert (
+        simulation.capital_gains_projection_metadata["application"]["by_variable"][
+            INPUTS[0]
+        ]["2026"]["status"]
+        == "projected"
+    )
+
+
+def test_household_projection_records_mixed_components_and_periods(projection):
+    import warnings
+
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        simulation = Simulation(
+            situation={
+                "capital_gains": {2024: 100_000, 2026: 0},
+                "capital_gains_badr": {2024: 10_000},
+            },
+            capital_gains_projection=projection,
+        )
+        simulation.capital_gains_projection_metadata
+        assert not caught
+        # Calculate a projected component before the explicit zero so the
+        # completed calculations demonstrate mixed application in the year.
+        assert simulation.calculate("capital_gains_badr", 2026)[0] > 10_000
+        assert simulation.calculate("capital_gains_before_response", 2026)[0] == 0
+        assert simulation.calculate("capital_gains_residential_property", 2026)[0] == 0
+        assert simulation.calculate("capital_gains_before_response", 2025)[0] > 100_000
+
+    application = simulation.capital_gains_projection_metadata["application"]
+    records = application["by_variable"]
+    assert records["capital_gains_before_response"]["2026"]["status"] == "supplied"
+    for variable, year in (
+        ("capital_gains_before_response", "2025"),
+        ("capital_gains_badr", "2026"),
+    ):
+        assert records[variable][year]["status"] == "projected"
+        assert records[variable][year]["method"] == "input_uprating"
+        assert records[variable][year]["source_period"] == "2024"
+    assert records["capital_gains_residential_property"]["2026"]["status"] == "default"
+    assert application["by_period"]["2026"]["status"] == "mixed"
+    assert not [
+        warning
+        for warning in caught
+        if warning.category.__name__ == "UnusedCapitalGainsProjectionWarning"
+    ]
+
+
+def test_absent_gains_do_not_claim_projection_or_warn(projection):
+    import warnings
+
+    simulation = Simulation(situation={"age": 45}, capital_gains_projection=projection)
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        for variable in INPUTS:
+            assert simulation.calculate(variable, 2031)[0] == 0
+    records = simulation.capital_gains_projection_metadata["application"]["by_variable"]
+    for variable in INPUTS:
+        record = records[variable]["2031"]
+        assert record["status"] == "default"
+        assert record["projection_fingerprint"] is None
+    assert not [
+        warning
+        for warning in caught
+        if warning.category.__name__ == "UnusedCapitalGainsProjectionWarning"
+    ]
+
+
+def test_projection_provenance_survives_cache_and_input_replacement(projection):
+    import warnings
+
+    simulation = Simulation(
+        situation={"capital_gains": {2024: 100_000}},
+        capital_gains_projection=projection,
+    )
+    first = simulation.calculate("capital_gains_before_response", 2026).copy()
+    first_record = simulation.capital_gains_projection_metadata["application"][
+        "by_variable"
+    ]["capital_gains_before_response"]["2026"]
+    np.testing.assert_array_equal(
+        simulation.calculate("capital_gains_before_response", 2026), first
+    )
+    assert (
+        simulation.capital_gains_projection_metadata["application"]["by_variable"][
+            "capital_gains_before_response"
+        ]["2026"]
+        == first_record
+    )
+    assert first_record["status"] == "projected"
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)
+        simulation.set_input("capital_gains_before_response", 2026, [0])
+        assert simulation.calculate("capital_gains_before_response", 2026)[0] == 0
+    replacement = simulation.capital_gains_projection_metadata["application"][
+        "by_variable"
+    ]["capital_gains_before_response"]["2026"]
+    assert replacement["status"] == "supplied"
+    assert replacement["projection_fingerprint"] is None
+    simulation.delete_arrays("capital_gains_before_response", 2026)
+    np.testing.assert_array_equal(
+        simulation.calculate("capital_gains_before_response", 2026), first
+    )
+    assert (
+        simulation.capital_gains_projection_metadata["application"]["by_variable"][
+            "capital_gains_before_response"
+        ]["2026"]["status"]
+        == "projected"
+    )
+
+
+def test_projection_application_records_are_independent_of_baseline(projection):
+    simulation = Simulation(
+        situation={"capital_gains": {2024: 100_000}},
+        capital_gains_projection=projection,
+        reform={"gov.hmrc.cgt.higher_rate": {"2026": 0.4}},
+    )
+    baseline_before = simulation.baseline.capital_gains_projection_metadata
+    expected = simulation.calculate("capital_gains_before_response", 2026)
+    assert simulation.baseline.capital_gains_projection_metadata == baseline_before
+    actual = simulation.baseline.calculate("capital_gains_before_response", 2026)
+    np.testing.assert_array_equal(actual, expected)
+    assert (
+        simulation.capital_gains_projection_metadata["application"]
+        == (simulation.baseline.capital_gains_projection_metadata["application"])
+    )
+    clone = simulation.clone()
+    clone.calculate("capital_gains_before_response", 2027)
+    original_records = simulation.capital_gains_projection_metadata["application"][
+        "by_variable"
+    ]["capital_gains_before_response"]
+    assert "2027" not in original_records
+
+
+def test_cached_dataset_extension_retains_application_provenance(
+    dataset, projection, monkeypatch, tmp_path
+):
+    import policyengine_uk.simulation as simulation_module
+
+    path = tmp_path / "synthetic.h5"
+    dataset.save(str(path))
+    monkeypatch.setattr(simulation_module, "_url_dataset_cache", {})
+    downloads = []
+
+    def download(**kwargs):
+        downloads.append(kwargs)
+        return str(path)
+
+    monkeypatch.setattr(simulation_module, "download_huggingface_dataset", download)
+    source = "hf://synthetic/uk/synthetic.h5"
+    first = Simulation(dataset=source, capital_gains_projection=projection)
+    second = Simulation(dataset=source, capital_gains_projection=projection)
+    assert len(downloads) == 1
+    for simulation in (first, second):
+        metadata = simulation.capital_gains_projection_metadata
+        record = metadata["application"]["by_variable"][
+            "capital_gains_before_response"
+        ]["2026"]
+        assert record["status"] == "projected"
+        assert record["method"] == "dataset_extension"
+        assert record["projection_fingerprint"] == metadata["fingerprint"]
+    np.testing.assert_array_equal(
+        first.calculate("capital_gains_before_response", 2026),
+        second.calculate("capital_gains_before_response", 2026),
+    )
+
+
+@pytest.mark.parametrize("data_source", ["household", "dataset"])
+def test_runtime_population_reform_reports_fingerprint_actually_applied(
+    projection, dataset, data_source
+):
+    kwargs = (
+        {"situation": situation_from(dataset)}
+        if data_source == "household"
+        else {"dataset": dataset}
+    )
+    simulation = Simulation(capital_gains_projection=projection, **kwargs)
+    before = simulation.calculate("capital_gains_before_response", 2026).copy()
+    old_fingerprint = simulation.capital_gains_projection_metadata["fingerprint"]
+    simulation.apply_reform(
+        {"gov.economic_assumptions.yoy_growth.ons.population": {"2026": 0.05}}
+    )
+    after = simulation.calculate("capital_gains_before_response", 2026)
+    metadata = simulation.capital_gains_projection_metadata
+    record = metadata["application"]["by_variable"]["capital_gains_before_response"][
+        "2026"
+    ]
+    assert metadata["fingerprint"] != old_fingerprint
+    if data_source == "household":
+        expected = dataset.person["capital_gains_before_response"]
+        expected = (
+            expected
+            * aggregate_factor(projection, 2026)
+            / population_factor(simulation.tax_benefit_system.parameters, 2024, 2026)
+        )
+        assert after == pytest.approx(expected, rel=1e-6)
+        assert after[0] != pytest.approx(before[0])
+        assert record["projection_fingerprint"] == metadata["fingerprint"]
+    else:
+        np.testing.assert_array_equal(after, before)
+        assert record["projection_fingerprint"] == old_fingerprint
+    assert record["status"] == "projected"
+
+
+def test_default_component_does_not_warn_about_other_supplied_gains(projection):
+    import warnings
+
+    simulation = Simulation(
+        situation={"capital_gains": {2024: 100_000, 2026: 120_000}},
+        capital_gains_projection=projection,
+    )
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        assert simulation.calculate("capital_gains_residential_property", 2026)[0] == 0
+    assert not [
+        warning
+        for warning in caught
+        if warning.category.__name__ == "UnusedCapitalGainsProjectionWarning"
+    ]
+    with pytest.warns(UserWarning, match="supplied"):
+        assert simulation.calculate("capital_gains_before_response", 2026)[0] == 120_000
+
+
+def test_frozen_dataset_does_not_retain_extension_application_claim(
+    dataset, projection
+):
+    from policyengine_uk.scenarios import no_economic_assumptions
+
+    projected = Simulation(dataset=dataset, capital_gains_projection=projection)
+    frozen = Simulation(dataset=projected.dataset, scenario=no_economic_assumptions)
+    for variable in INPUTS:
+        assert frozen.calculate(variable, 2026) == pytest.approx(
+            dataset.person[variable], rel=1e-6
+        )
+        record = frozen.capital_gains_projection_metadata["application"]["by_variable"][
+            variable
+        ]["2026"]
+        assert record["status"] == "unknown"
+        assert record["projection_fingerprint"] is None
+    # Freezing a copy must not change the original simulation's receipt.
+    original = projected.capital_gains_projection_metadata
+    assert (
+        original["application"]["by_variable"]["capital_gains_before_response"]["2026"][
+            "projection_fingerprint"
+        ]
+        == original["fingerprint"]
+    )
+
+
+@pytest.mark.parametrize("route", ["neutralize_variable", "synthetic_abolition"])
+def test_neutralized_supplied_gains_report_default_without_unused_warning(
+    projection, route
+):
+    import warnings
+
+    from policyengine_core.parameters import Parameter, ParameterNode
+    from policyengine_core.reforms import Reform
+    from policyengine_uk.variables.gov.hmrc.capital_gains_tax.capital_gains_before_response import (
+        capital_gains_before_response,
+    )
+
+    class NeutralizeGains(Reform):
+        def apply(self):
+            if route == "neutralize_variable":
+                self.neutralize_variable("capital_gains_before_response")
+            else:
+                # Core omits input variables from its generated abolition flags.
+                # Add one explicitly to exercise its parameter-based default route.
+                if "abolitions" not in self.parameters.gov.children:
+                    self.parameters.gov.add_child(
+                        "abolitions", ParameterNode("gov.abolitions", data={})
+                    )
+                self.parameters.gov.abolitions.add_child(
+                    "capital_gains_before_response",
+                    Parameter(
+                        "gov.abolitions.capital_gains_before_response",
+                        data={"values": {"2026-01-01": True}},
+                    ),
+                )
+
+    class RestoreGains(Reform):
+        def apply(self):
+            self.replace_variable(capital_gains_before_response)
+
+    simulation = Simulation(
+        situation={"capital_gains": {2024: 100_000, 2026: 120_000}},
+        capital_gains_projection=projection,
+    )
+    with warnings.catch_warnings(record=True) as caught:
+        warnings.simplefilter("always")
+        simulation.apply_reform(NeutralizeGains)
+        assert simulation.calculate("capital_gains_before_response", 2026)[0] == 0
+        record = simulation.capital_gains_projection_metadata["application"][
+            "by_variable"
+        ]["capital_gains_before_response"]["2026"]
+        simulation.delete_arrays("capital_gains_before_response", 2030)
+        after_delete = simulation.capital_gains_projection_metadata["application"][
+            "by_variable"
+        ]["capital_gains_before_response"]["2026"]
+        assert after_delete == record
+        simulation.set_input("capital_gains_before_response", 2026, [555])
+        after_replacement = simulation.capital_gains_projection_metadata["application"][
+            "by_variable"
+        ]["capital_gains_before_response"]["2026"]
+        assert after_replacement == record
+        assert simulation.calculate("capital_gains_before_response", 2026)[0] == 0
+    assert record["status"] == "default"
+    assert record["method"] == "default"
+    assert record["projection_fingerprint"] is None
+    assert not [
+        warning
+        for warning in caught
+        if warning.category.__name__ == "UnusedCapitalGainsProjectionWarning"
+    ]
+    if route == "neutralize_variable":
+        simulation.apply_reform(RestoreGains)
+    else:
+        simulation.apply_reform(
+            {"gov.abolitions.capital_gains_before_response": {"2026": False}}
+        )
+    with pytest.warns(UserWarning, match="supplied"):
+        assert simulation.calculate("capital_gains_before_response", 2026)[0] == 555
+    restored_record = simulation.capital_gains_projection_metadata["application"][
+        "by_variable"
+    ]["capital_gains_before_response"]["2026"]
+    assert restored_record["status"] == "supplied"
+    assert restored_record["projection_fingerprint"] is None
+
+
+def test_restoring_neutralized_projection_preserves_applied_fingerprint(
+    dataset, projection
+):
+    from policyengine_core.reforms import Reform
+    from policyengine_uk.variables.gov.hmrc.capital_gains_tax.capital_gains_before_response import (
+        capital_gains_before_response,
+    )
+
+    class NeutralizeGains(Reform):
+        def apply(self):
+            self.neutralize_variable("capital_gains_before_response")
+
+    class RestoreGains(Reform):
+        def apply(self):
+            self.replace_variable(capital_gains_before_response)
+
+    simulation = Simulation(dataset=dataset, capital_gains_projection=projection)
+    original = simulation.calculate("capital_gains_before_response", 2026).copy()
+    original_record = simulation.capital_gains_projection_metadata["application"][
+        "by_variable"
+    ]["capital_gains_before_response"]["2026"]
+    simulation.apply_reform(NeutralizeGains)
+    np.testing.assert_array_equal(
+        simulation.calculate("capital_gains_before_response", 2026), np.zeros(3)
+    )
+    neutralized_record = simulation.capital_gains_projection_metadata["application"][
+        "by_variable"
+    ]["capital_gains_before_response"]["2026"]
+    assert neutralized_record["status"] == "default"
+    assert neutralized_record["projection_fingerprint"] is None
+    simulation.delete_arrays("capital_gains_before_response", 2030)
+    assert (
+        simulation.capital_gains_projection_metadata["application"]["by_variable"][
+            "capital_gains_before_response"
+        ]["2026"]
+        == neutralized_record
+    )
+    simulation.apply_reform(RestoreGains)
+    np.testing.assert_array_equal(
+        simulation.calculate("capital_gains_before_response", 2026), original
+    )
+    restored_record = simulation.capital_gains_projection_metadata["application"][
+        "by_variable"
+    ]["capital_gains_before_response"]["2026"]
+    assert restored_record == original_record
