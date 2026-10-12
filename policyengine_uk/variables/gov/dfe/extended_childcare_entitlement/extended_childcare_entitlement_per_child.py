@@ -24,6 +24,7 @@ class extended_childcare_entitlement_per_child(Variable):
     defined_for = "extended_childcare_entitlement_eligible"
     reference = (
         "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2022/1134/regulation/44",
         "https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026",
     )
 
@@ -50,8 +51,9 @@ class extended_childcare_entitlement_per_child(Variable):
             weekly_hours_used * p.weeks_per_year * p.childcare_funding_rate.calc(age)
         )
 
-        # Childcare Act 2016 s.1(6)(a): the childcare available under the
-        # duty in Childcare Act 2006 s.7(1) counts towards the 30 hours. DfE's
+        # Childcare Act 2016 s.1(6)(a) and SI 2022/1134 reg 44(3): the
+        # childcare available under the duty in Childcare Act 2006 s.7(1)
+        # counts towards the 30 hours (1,140 a year, reg 44(2)(b)). DfE's
         # statutory guidance (April 2026, "Amount of free childcare for
         # children of working parents" and para A1.11) gives a child eligible
         # for both 15 universal or Early Learning for 2-year-olds hours plus

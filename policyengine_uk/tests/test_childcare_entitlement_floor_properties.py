@@ -31,6 +31,16 @@ randomly drawn families, each simulated twice (eligible and not):
    working parent hours beyond its universal or targeted hours.
 7. The family's extended_childcare_entitlement equals the sum of its
    children's working parent amounts.
+8. Statutory maximum: no child is funded for more than 30 hours in each of 38
+   weeks (1,140 hours a year: Childcare Act 2016 s.1(1), SI 2022/1134 reg
+   44(2)(b), guidance para A1.10), nor for more than 570 hours a year when
+   the family is not eligible for the working parent hours (guidance paras
+   A1.1 and A1.6), nor for more hours than it uses. These bounds are written
+   from the law, not read from the model's parameters.
+9. No child gets both universal and targeted hours, so its universal or
+   targeted floor is at most 15 hours a week.
+10. Outside England no child gets universal or working parent hours
+    (Childcare Act 2006 s.7 and 2016 s.1(2)(b) are duties for England).
 
 A further property runs the real eligibility test: raising the £100,000
 income limit never lowers childcare support or household net income, and the
@@ -58,6 +68,11 @@ ENTITLEMENTS = (
     "targeted_childcare_entitlement",
     "extended_childcare_entitlement_per_child",
 )
+# Statutory maxima in hours a year, written from the law (invariant 8).
+WEEKS = 38
+WORKING_PARENT_MAX_HOURS = 30 * WEEKS  # 1,140: SI 2022/1134 reg 44(2)(b)
+UNIVERSAL_OR_TARGETED_MAX_HOURS = 570  # Guidance paras A1.1 and A1.6
+HOURS_TOLERANCE = 0.01
 
 
 def close(a, b):
@@ -68,20 +83,29 @@ def close(a, b):
 child = st.fixed_dictionaries(
     {
         "age": st.sampled_from([0, 0.5, 0.75, 1, 2, 2.5, 3, 4, 4.9, 5, 6]),
-        "hours_used": st.sampled_from([0, 5, 10, 14.9, 15, 15.1, 20, 30]),
+        "hours_used": st.sampled_from([0, 5, 10, 14.9, 15, 15.1, 20, 30, 45]),
         "looked_after": st.booleans(),
     }
 )
 family = st.fixed_dictionaries(
     {
         "children": st.lists(child, min_size=1, max_size=3),
-        "cap": st.sampled_from([0, 5, 10, 14.9, 15, 15.1, 18, 20, 30, 40]),
+        "cap": st.sampled_from([0, 5, 10, 14.9, 15, 15.1, 18, 20, 30, 40, 60]),
         "claims_universal": st.booleans(),
         "targeted": st.booleans(),
         "england": st.sampled_from([True, True, True, False]),
     }
 )
 years = st.sampled_from([2024, 2025, 2026])
+
+
+def new_simulation(**kwargs):
+    """A Simulation on a clone of the already loaded tax-benefit system."""
+    with patch(
+        "policyengine_uk.simulation.CountryTaxBenefitSystem",
+        side_effect=_PROPERTY_SYSTEM.clone,
+    ):
+        return Simulation(**kwargs)
 
 
 def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
@@ -111,11 +135,7 @@ def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
                 "members": members,
                 "country": {year: "ENGLAND" if f["england"] else "WALES"},
             }
-    with patch(
-        "policyengine_uk.simulation.CountryTaxBenefitSystem",
-        side_effect=_PROPERTY_SYSTEM.clone,
-    ):
-        sim = Simulation(situation=situation)
+    sim = new_simulation(situation=situation)
     values = {v: [float(x) for x in sim.calculate(v, year)] for v in ENTITLEMENTS}
     values["receiving"] = [
         bool(x) for x in sim.calculate("is_child_receiving_extended_childcare", year)
@@ -190,6 +210,32 @@ def funded(child_values):
     return sum(child_values[v] for v in ENTITLEMENTS)
 
 
+def assert_statutory_bounds(c, f, year, eligible, child_values):
+    """Invariants 8 to 10 for one child, eligible or not."""
+    rate = float(
+        system.parameters(f"{year}-01-01").gov.dfe.childcare_funding_rate.calc(c["age"])
+    )
+    hours = funded(child_values) / rate
+    context = (year, f, c, eligible, child_values, hours)
+    # 8. At most 30 hours a week over 38 weeks; at most the universal or
+    # targeted 570 hours without the working parent hours; and never more
+    # hours than the child uses.
+    limit = WORKING_PARENT_MAX_HOURS if eligible else UNIVERSAL_OR_TARGETED_MAX_HOURS
+    assert hours <= limit + HOURS_TOLERANCE, context
+    assert hours <= WEEKS * max(c["hours_used"], 0) + HOURS_TOLERANCE, context
+    # 9. Never both universal and targeted hours.
+    assert not (
+        child_values["universal_childcare_entitlement"] > 0
+        and child_values["targeted_childcare_entitlement"] > 0
+    ), context
+    # 10. No universal or working parent hours outside England. (These tests
+    # supply targeted eligibility as an input, which bypasses its own England
+    # condition.)
+    if not f["england"]:
+        assert child_values["universal_childcare_entitlement"] == 0, context
+        assert child_values["extended_childcare_entitlement_per_child"] == 0, context
+
+
 @PROPERTY_SETTINGS
 @given(years, st.lists(family, min_size=1, max_size=5))
 @example(
@@ -227,6 +273,9 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
             assert close(copy[0]["family_extended"], per_child), (year, f, copy)
         for c, b, a in zip(f["children"], before, after):
             assert funded(a) >= funded(b) - 0.02, (year, f, c, b, a)
+            # 8-10. Statutory maximum, no double floor, England only.
+            assert_statutory_bounds(c, f, year, False, b)
+            assert_statutory_bounds(c, f, year, True, a)
             # 2. Universal and targeted do not depend on eligibility.
             for v in (
                 "universal_childcare_entitlement",
@@ -259,14 +308,17 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
 @given(years, st.lists(family, min_size=1, max_size=5), st.sampled_from([1, 5, 15]))
 def test_more_hours_used_never_lowers_childcare_support(year, families, bump):
     lower = split(simulate(families, year, eligible=[True]), families, 1)[0]
-    for raised in (
-        simulate(families, year, eligible=[True], cap_bump=bump),
-        simulate(families, year, eligible=[True], hours_bump=bump),
-    ):
+    for cap_bump, hours_bump in ((bump, 0), (0, bump)):
+        raised = simulate(
+            families, year, eligible=[True], cap_bump=cap_bump, hours_bump=hours_bump
+        )
         higher = split(raised, families, 1)[0]
         for f, lo, hi in zip(families, lower, higher):
             for c, a, b in zip(f["children"], lo, hi):
                 assert funded(b) >= funded(a) - 0.02, (year, f, c, bump, a, b)
+                # 8. However many hours are used, never above 30 a week.
+                used = {**c, "hours_used": c["hours_used"] + hours_bump}
+                assert_statutory_bounds(used, f, year, True, b)
 
 
 # The real eligibility route: a working couple with a child, one parent's
@@ -315,8 +367,8 @@ def test_raising_the_income_limit_never_lowers_support_or_income(h):
         },
         "households": {"hh": {"members": members, "country": {year: "ENGLAND"}}},
     }
-    base = Simulation(situation=situation)
-    reform = Simulation(situation=situation, reform={INCOME_LIMIT: math.inf})
+    base = new_simulation(situation=situation)
+    reform = new_simulation(situation=situation, reform={INCOME_LIMIT: math.inf})
 
     def total(sim, variable):
         return float(sim.calculate(variable, year).sum())
