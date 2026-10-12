@@ -1,0 +1,158 @@
+# HB Regs 2006 Sch 5 para 4 and Sch 6 para 5 (NI: SR 2006/405 Sch 6 para 4
+# and Sch 7 para 5): where the claimant is on Income Support, income-based JSA
+# or income-related ESA, the whole of their income and capital is disregarded.
+# The claimant's partner's income and capital are the claimant's (reg 25), and
+# a couple's award covers both of them. "other" is a member who is neither the
+# claimant, the partner nor a child or young person they are responsible for,
+# so an award they report is their own claim and passports nobody. The
+# household's £12,000 of savings all fall to the claimant's family, the only
+# family in the household with a claimant or partner. Income-based JSA is in
+# payment until April 2026, so these cases are in 2025.
+
+- name: Another member's income-related ESA does not passport the claimant's Housing Benefit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+        savings: 12_000
+  output:
+    claimant_or_partner_esa_income: 0
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    housing_benefit_assessable_capital: 12_000
+
+- name: Another member's income-based JSA does not passport the claimant's Housing Benefit
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+      other:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, other]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, other]
+        savings: 12_000
+  output:
+    claimant_or_partner_jsa_income: 0
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    housing_benefit_assessable_capital: 12_000
+
+- name: The claimant's own income-related ESA passports their income and capital
+  # Income-related ESA on £12,000 of capital: £1 a week of tariff income for
+  # each £250 above £6,000, so 5,000 - 24 x 52 = 3,752.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        savings: 12_000
+  output:
+    claimant_or_partner_esa_income: 3_752
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+
+- name: The partner's income-based JSA passports the couple's income and capital
+  # 4,000 - 24 x 52 = 2,752 after tariff income on £12,000 of capital.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        employment_income: 3_000
+      partner:
+        age: 38
+        is_claimant_or_partner: true
+        jsa_income_reported: 4_000
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, partner]
+        savings: 12_000
+  output:
+    claimant_or_partner_jsa_income: 2_752
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: true
+    housing_benefit_assessable_capital: 0
+    housing_benefit_applicable_income: 0
+
+- name: A non-dependant son's income-related ESA does not passport his working mother's Housing Benefit
+  # The mother earns £30,000 and rents from the council for £10,000 a year.
+  # Her 25-year-old son is neither her partner nor a young person she is
+  # responsible for, so the £5,000 of income-related ESA he reports is his own
+  # claim and her income is assessed. Income tax (30,000 - 12,570) x 20% =
+  # 3,486 and National Insurance (30,000 - 12,570) x 8% = 1,394.40 leave net
+  # earnings of 25,119.60; less the £5 a week single disregard (Sch 4 para 10),
+  # applicable income is 24,859.60. 65% of its excess over her applicable
+  # amount covers the rent whenever that amount is at most £9,474.98
+  # (24,859.60 - 10,000 / 0.65), which a single person's personal allowance
+  # is, so Housing Benefit is nil. Read as hers, his award would passport her
+  # whole income and give the full £10,000.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      mother:
+        age: 50
+        is_claimant_or_partner: true
+        employment_income: 30_000
+        housing_benefit_reported: 1
+      son:
+        age: 25
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        esa_income_reported: 5_000
+    benunits:
+      benunit:
+        members: [mother, son]
+        would_claim_uc: false
+    households:
+      household:
+        members: [mother, son]
+        tenure_type: RENT_FROM_COUNCIL
+        rent: 10_000
+  output:
+    esa_income: 5_000
+    claimant_or_partner_esa_income: 0
+    in_receipt_of_income_support_jsa_ib_or_esa_ir: false
+    housing_benefit_on_passporting_benefit: false
+    housing_benefit_applicable_income: 24_859.60
+    housing_benefit: 0

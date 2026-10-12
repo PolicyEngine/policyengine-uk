@@ -18,7 +18,7 @@ class housing_benefit_assessable_capital(Variable):
         "family on Universal Credit, Income Support, income-based Jobseeker's "
         "Allowance or income-related Employment and Support Allowance "
         "(housing_benefit_on_passporting_benefit), and for a pension-age "
-        "family with a positive guarantee credit (the guarantee credit "
+        "family receiving a guarantee credit (the guarantee credit "
         "passport)."
     )
     definition_period = YEAR
@@ -29,7 +29,9 @@ class housing_benefit_assessable_capital(Variable):
         "https://www.legislation.gov.uk/uksi/2006/213/schedule/6/paragraph/5",
         "https://www.legislation.gov.uk/nisr/2006/405/schedule/7/paragraph/5",
         "https://www.legislation.gov.uk/uksi/2006/213/regulation/2",
+        "https://www.legislation.gov.uk/uksi/2006/214/regulation/26",
         "https://www.legislation.gov.uk/uksi/2006/214/regulation/27",
+        "https://www.legislation.gov.uk/nisr/2006/406/regulation/24",
         "https://www.legislation.gov.uk/nisr/2006/406/regulation/25",
     )
 
@@ -75,10 +77,14 @@ class housing_benefit_assessable_capital(Variable):
             benunit("pension_credit_assessable_capital", period),
             household_capital_proxy + person_capital,
         )
-        # Pension HB reg 26 disregards "the whole of his capital and income"
-        # for guarantee-credit recipients within that regulation set.
-        guarantee_credit = pension_age_regulations & (
-            benunit("guarantee_credit", period) > 0
+        # Guarantee Credit passport: SI 2006/214 reg 26 (NI: SR 2006/406
+        # reg 24) disregards the whole of the capital and income of a
+        # claimant in receipt, or whose partner is in receipt, of a
+        # guarantee credit. By reg 2(5), receipt includes awards withheld
+        # solely under SPC Regs 2002 reg 13 (small amounts), which the
+        # model does not withhold. Entitlement without a claim is not receipt.
+        passported = pension_age_regulations & benunit(
+            "in_receipt_of_guarantee_credit", period
         )
         # SI 2006/213 Sch 6 para 5 (NI: SR 2006/405 Sch 7 para 5) disregards
         # "the whole of his capital" where a claimant is on universal credit,
@@ -91,7 +97,7 @@ class housing_benefit_assessable_capital(Variable):
             "housing_benefit_on_passporting_benefit", period
         )
         return where(
-            guarantee_credit | on_passporting_benefit,
+            passported | on_passporting_benefit,
             0,
             max_(0, capital),
         )

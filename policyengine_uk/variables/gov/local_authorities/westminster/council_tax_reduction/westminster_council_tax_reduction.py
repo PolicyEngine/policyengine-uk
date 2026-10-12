@@ -21,7 +21,7 @@ class westminster_council_tax_reduction(Variable):
         working_age = is_westminster_working_age(
             household("local_authority", period),
             household("country", period),
-            benunit("council_tax_reduction_claim_pensioner", period),
+            benunit("council_tax_reduction_pensioner", period),
         )
         has_uc_award = benunit("universal_credit", period) > 0
         capital = household("savings", period)
