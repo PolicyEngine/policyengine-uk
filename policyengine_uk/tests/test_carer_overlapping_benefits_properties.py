@@ -215,6 +215,9 @@ def rates(sim):
         * WEEKS,
         "basic": float(parameters.gov.dwp.state_pension.basic_state_pension.amount)
         * WEEKS,
+        "age_addition": float(parameters.gov.dwp.state_pension.age_addition.amount)
+        * WEEKS,
+        "age_addition_age": float(parameters.gov.dwp.state_pension.age_addition.age),
         "min_hours": float(parameters.gov.dwp.carers_allowance.min_hours),
         "carer_addition": float(
             parameters.gov.dwp.pension_credit.guarantee_credit.carer.addition
@@ -246,9 +249,17 @@ def reference(people, sim, extra=None):
             # The model's split of a reported amount: an old State Pension
             # above the full basic rate is additional pension, which does not
             # overlap. A new State Pension overlaps in full, protected payment
-            # included, and there is none before pensionable age.
+            # included, and there is none before pensionable age. From 80 an
+            # old State Pension is taken to include the 25p age addition,
+            # which does not overlap either (SI 1979/597 reg 4(3)).
+            with_age_addition = (
+                pension_type == "BASIC"
+                and person["age"] >= r["age_addition_age"]
+                and pension > 0
+            )
+            basic_reported = max(pension - r["age_addition"] * with_age_addition, 0)
             state_pension = {
-                "BASIC": min(pension, r["basic"]),
+                "BASIC": min(basic_reported, r["basic"]),
                 "NEW": pension,
                 "NONE": 0,
             }[pension_type]

@@ -92,7 +92,9 @@
     country: ENGLAND
   output:
     state_pension_type: BASIC
-    state_pension: 7_000
+    # Aged 80 on an old State Pension, so the 25p age addition is paid too
+    # (SSCBA 1992 s.79); it does not overlap (SI 1979/597 reg 4(3)).
+    state_pension: 7_000 + 0.25 * 52
     overlapping_state_pension: 2_000
     carers_allowance: 86.45 * 52 - 2_000
 
@@ -119,8 +121,11 @@
     care_hours: 35
     country: ENGLAND
   output:
+    # The reported amount of a person aged 80 includes the 25p age addition
+    # (SSCBA 1992 s.79), paid on its own.
     basic_state_pension: 184.90 * 52
-    additional_state_pension: 13_000 - 184.90 * 52
+    additional_state_pension: 13_000 - 0.25 * 52 - 184.90 * 52
+    state_pension_age_addition: 0.25 * 52
     overlapping_state_pension: 184.90 * 52
     carers_allowance: 0
 
@@ -133,8 +138,11 @@
     care_hours: 35
     country: ENGLAND
   output:
-    overlapping_state_pension: 3_000
-    carers_allowance: 86.45 * 52 - 3_000
+    # The 25p age addition in the reported amount does not overlap: an age
+    # addition is adjusted only by reference to another age addition (SI
+    # 1979/597 reg 4(3); Sch 1 row 4, "except any age addition").
+    overlapping_state_pension: 3_000 - 0.25 * 52
+    carers_allowance: 86.45 * 52 - (3_000 - 0.25 * 52)
 
 - name: Case 9, a reported new State Pension below the allowance.
   period: 2026

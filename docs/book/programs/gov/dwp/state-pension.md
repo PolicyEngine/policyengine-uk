@@ -1,6 +1,6 @@
 # State Pension
 
-The State Pension is modelled in PolicyEngine UK as three composable
+The State Pension is modelled in PolicyEngine UK as four composable
 person-level variables, summed into the `state_pension` aggregate that
 flows into household benefits. This page describes the current model
 and the residual aggregate gap against OBR outturn tracked under
@@ -8,7 +8,7 @@ and the residual aggregate gap against OBR outturn tracked under
 
 ## Components
 
-Three variables under `gov/dwp/`:
+Four variables under `gov/dwp/`:
 
 - **`basic_state_pension`** — the pre-2016 flat-rate State Pension paid
   to people who reached State Pension age before 6 April 2016
@@ -26,20 +26,81 @@ Three variables under `gov/dwp/`:
     current law but tracked separately in PolicyEngine so the reform
     surface stays clean.
   - Both are the reported weekly amount above the type's full rate in the
-    data year, `max(reported - flat_max_for_type, 0)`, uprated as described
-    below and multiplied by `WEEKS_IN_YEAR`.
+    data year, `max(reported - flat_max_for_type, 0)`, uprated by September
+    CPI as described below and multiplied by `WEEKS_IN_YEAR`.
+- **`state_pension_age_addition`** — the age addition: 25p a week
+  (`gov.dwp.state_pension.age_addition.amount`) for a person over the age of
+  80 (`age_addition.age`) who is entitled to a retirement pension under the
+  Social Security Contributions and Benefits Act 1992
+  ([s.79](https://www.legislation.gov.uk/ukpga/1992/4/section/79) and
+  [Sch 4 Part III para 8](https://www.legislation.gov.uk/ukpga/1992/4/schedule/4)),
+  read as a `BASIC` type with a State Pension reported in the data year. It
+  is never uprated: each Up-rating Order excludes it (for example
+  [SI 2026/148 art 3(2)(a)](https://www.legislation.gov.uk/uksi/2026/148/article/3/made)).
+  A new State Pension gets none, because s.79(1) covers only a retirement
+  pension "under this Act", words the Pensions Act 2014 inserted
+  ([Sch 12 para 85](https://www.legislation.gov.uk/ukpga/2014/19/schedule/12/paragraph/85)).
+  A person is over an age once they have attained it (SSCBA 1992 s.173).
+  The model reads age on 6 October, the middle of the fiscal year, as it
+  does for State Pension age, so a person who turns 80 by then gets the
+  year's £13 in full and one who turns 80 later in the year gets none until
+  the next.
 
-All three split the amount a person reported in the data year (the
-dataset's first year) by the person's `state_pension_type` in the year
-simulated. The part up to that type's full rate in the data year is basic
-or new State Pension, and the part above it is additional State Pension.
-Both parts are uprated by the type's full rate (the year's over the data
-year's), so together they pay the reported amount uprated by the flat rate,
-for anyone over State Pension age. In law, additional pensions and
-protected payments rise with prices instead: the Social Security Benefits
-Up-rating Order 2026 raised them by 3.8% in April 2026 (articles 4(3) and
-6(3)), and the full rates by 4.8%. This is tracked in
-[#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941).
+The survey records the State Pension in payment. For Family Resources
+Survey respondents, `state_pension_reported` is the benefits table's weekly
+State Pension amount (benefit code 5) times 52, and policyengine-uk-data maps
+no separate code for the age addition (`datasets/frs.py`), so the model
+assumes the reported amount of a basic State Pension recipient over 80
+includes it. `state_pension_reported_excluding_age_addition` takes the data
+year's addition off, at the legislated 25p from 80, and the other three
+components split what is left. The addition is part of `state_pension`, so
+it is taxed and means-tested as the pension is: it is an increase of the
+pension (s.79(1)), which income tax charges as pension income under
+[ITEPA 2003 s.577](https://www.legislation.gov.uk/ukpga/2003/1/section/577)
+(the pre-2003 charge in ICTA 1988 s.617(1) reached every benefit under Parts
+II to IV of the 1992 Act not excepted, and the age addition was not), and
+Pension Credit counts it as retirement pension income
+([State Pension Credit Act 2002 s.16(1)(e)](https://www.legislation.gov.uk/ukpga/2002/16/section/16)),
+as do Universal Credit (Universal Credit Regulations 2013 regs 66(1)(a) and 67) and
+pension-age Housing Benefit (Housing Benefit (State Pension Credit)
+Regulations 2006 reg 29(1)(c)). It never reduces Carer's Allowance: an age
+addition is adjusted only by reference to another age addition
+([Overlapping Benefits Regulations 1979 reg 4(3)](https://www.legislation.gov.uk/uksi/1979/597/regulation/4)
+and Sch 1 row 4).
+
+The basic, new and additional State Pension split the amount a person
+reported in the data year (the dataset's first year), less any age addition,
+by the person's `state_pension_type` in the year simulated, for anyone over
+State Pension age:
+
+- The part up to that type's full rate in the data year is basic or new
+  State Pension. It is uprated by the type's full rate: the year's over the
+  data year's.
+- The part above it is additional State Pension. It is uprated by September
+  CPI: `gov.economic_assumptions.indices.september_cpi_uprating` in the year
+  over the data year.
+
+That follows the law. Each year's Up-rating Order raises the full rates by
+the triple lock (Social Security Administration Act 1992 s.150A), but raises
+additional pensions (s.150(1)(c)), increments for deferring the pension and
+the amounts of new State Pension above the full rate (protected payments,
+s.151A) by the September CPI of the year before. In April 2026 the full
+rates rose 4.8% and the rest 3.8%
+([Social Security Benefits Up-rating Order 2026](https://www.legislation.gov.uk/uksi/2026/148/made),
+articles 4(2), 4(3), 6(1) and 6(3)); in April 2025, 4.1% and 1.7%
+([2025 Order](https://www.legislation.gov.uk/uksi/2025/295/made), the same
+articles). Graduated retirement benefit, paid with the pension, also rose by
+September CPI (article 11 of each Order). Until the fix for
+[#1941](https://github.com/PolicyEngine/policyengine-uk/issues/1941) the
+model uprated the part above the full rate by the full rate too.
+
+So a reform to the full rates, or to the triple lock, moves only basic and
+new State Pension. A reform that sets a full rate to zero leaves additional
+pensions and protected payments in place; `gov.contrib.abolish_state_pension`
+removes all State Pension. The September CPI index is read from the
+simulation's own parameters, so a scenario applied before the data load that
+changes September CPI, or the calendar-year CPI growth its forecast follows,
+moves the part above the full rate.
 
 Survey ages are held fixed in the years a dataset is projected to, so a
 record's birth cohort moves one year later for each year projected, and its
@@ -166,6 +227,19 @@ State Pension flat-rate parameters live in
 to 2026-27; later years are uprated by
 `gov.economic_assumptions.indices.triple_lock`, built from the yearly rates
 in `gov.economic_assumptions.yoy_growth.triple_lock`.
+
+The part of a reported State Pension above the full rate is uprated by
+`gov.economic_assumptions.indices.september_cpi_uprating` instead (see
+Components). Its yearly rises,
+`gov.economic_assumptions.yoy_growth.september_cpi_uprating`, are the
+September CPI of the year before from `statutory_uprating_inputs.cpi_september`
+(below), rounded to the 0.1 percentage points the ONS publishes, and zero
+when prices fall (`create_september_cpi_uprating.py`). They equal the rise
+each Up-rating Order gave additional pensions from April 2011 to April 2026,
+including none in April 2016, when September 2015 CPI was -0.1%
+(`policyengine_uk/tests/test_state_pension_components.py`). The index is
+rounded to five decimal places each year, so it differs from the exact
+product of the rises by less than 0.001%.
 
 ### The triple lock
 
@@ -360,8 +434,9 @@ tracked in [#1929](https://github.com/PolicyEngine/policyengine-uk/issues/1929):
   population keeps the data year's age structure. From 2025-26 to 2030-31
   the model's State Pension recipients fall 3.0%, as State Pension age rises
   to 67, while DWP's caseload less those paid abroad rises 4.8%.
-- **Awards.** Each record keeps its reported amount, uprated by the flat
-  rate, including records whose cohort moves from basic to new State
+- **Awards.** Each record keeps its reported amount, the part up to the
+  full rate uprated by the flat rate and the part above it by September CPI,
+  including records whose cohort moves from basic to new State
   Pension. The model's State Pension per recipient grows 17.0% over those
   years. DWP's spending per recipient, less those paid abroad, grows 18.3%,
   as its new State Pension spending grows from £56.1bn to £102.4bn and its
@@ -382,8 +457,14 @@ part of the widening.
 | `new_state_pension` returned flat max for every NEW retiree, ignoring partial NI records | Fixed | #1634 |
 | Protected Payment only computed for BASIC-type recipients | Fixed | #1634 (ASP now extends to NEW) |
 | `additional_state_pension` split the reported amount by the data year's State Pension type, paying part of it twice for records moving from basic to new cohorts | Fixed | #1921 |
+| `additional_state_pension` uprated additional pensions and protected payments by the full rate (the triple lock), not September CPI | Fixed | #1941 |
+| The 25p age addition at 80 was not modelled: in the reported amount it was uprated as additional pension, and no one who turned 80 later got it | Fixed | #2139 |
 
 ### What's still open
+
+- The Category D retirement pension, for people over 80 with no other
+  retirement pension or one below its rate (SSCBA 1992 s.78(3)), is not
+  modelled: [#2339](https://github.com/PolicyEngine/policyengine-uk/issues/2339).
 
 - The data year's shortfall in the enhanced FRS:
   [policyengine-uk-data#493](https://github.com/PolicyEngine/policyengine-uk-data/issues/493).
