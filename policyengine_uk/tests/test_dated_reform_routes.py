@@ -1044,30 +1044,47 @@ def test_a_failed_override_batch_applies_none_of_its_overrides():
     simulation = Simulation(situation=SITUATION)
     system = simulation.tax_benefit_system
     parameters = system.parameters
-    # Processing marks parameters modified, so clear the flags on the path
-    # to the rate to see whether a failed batch leaves them set.
-    path = []
-    node = parameters.get_child(BASIC_RATE)
-    while node is not None:
-        node.modified = False
-        path.append(node)
-        node = getattr(node, "parent", None)
     with pytest.raises(ValueError):
         Scenario.from_reform(
             {BASIC_RATE: {"2027": 0.3}, "gov.not_a_real_parameter": {"2027": 1}}
         ).apply(simulation)
     assert annual(simulation, BASIC_RATE, 2027) == 0.20
     assert system.legacy_overrides == []
-    # The batch is undone in place: the tree is the one the system had, and
-    # nothing on the path to the rate is left marked modified.
+    # An unknown path is refused before anything changes, and the tree is
+    # the one the system had.
     assert system.parameters is parameters
-    assert not any(node.modified for node in path)
     Scenario.from_reform({BASIC_RATE: {"2027": 0.3}}).apply(simulation)
     assert system.parameters is parameters
     assert annual(simulation, BASIC_RATE, 2027) == 0.3
     simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
     assert annual(simulation, BASIC_RATE, 2027) == 0.3
     assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
+
+
+def test_a_batch_failing_after_an_update_restores_values_and_flags():
+    simulation = Simulation(situation=SITUATION)
+    system = simulation.tax_benefit_system
+    rate = system.parameters.get_child(BASIC_RATE)
+    values_list = rate.values_list
+    # Processing marks parameters modified, so clear the flags on the path
+    # to the rate to see whether a failed batch leaves them set.
+    path, node = [], rate
+    while node is not None:
+        node.modified = False
+        path.append(node)
+        node = getattr(node, "parent", None)
+    # Reform.from_dict keys reach the overrides unparsed, so the second
+    # override fails after the first has updated the rate.
+    reform = Reform.from_dict(
+        {BASIC_RATE: {"2027-01-01": 0.3}, UC_SINGLE_OLD: {"not-a-date": 1}},
+        country_id="uk",
+    )
+    with pytest.raises(ValueError):
+        Scenario.from_reform(reform).apply(simulation)
+    assert rate.values_list is values_list
+    assert annual(simulation, BASIC_RATE, 2027) == 0.20
+    assert system.legacy_overrides == []
+    assert not any(node.modified for node in path)
 
 
 def test_a_rebuild_keeps_a_structural_reforms_parameter():
