@@ -1061,7 +1061,7 @@ def test_a_failed_override_batch_applies_none_of_its_overrides():
     assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
 
 
-def test_a_batch_failing_after_an_update_restores_values_and_flags():
+def test_a_batch_failing_after_an_update_restores_values_and_flags(monkeypatch):
     simulation = Simulation(situation=SITUATION)
     system = simulation.tax_benefit_system
     rate = system.parameters.get_child(BASIC_RATE)
@@ -1079,8 +1079,22 @@ def test_a_batch_failing_after_an_update_restores_values_and_flags():
         {BASIC_RATE: {"2027-01-01": 0.3}, UC_SINGLE_OLD: {"not-a-date": 1}},
         country_id="uk",
     )
+    # Guard against the test going empty: the batch must fail inside the
+    # overrides, after the rate was updated, so the rollback runs.
+    original = tbs_module.apply_legacy_overrides
+    seen = {}
+
+    def spy(parameters, overrides):
+        try:
+            return original(parameters, overrides)
+        except Exception:
+            seen["rate_updated"] = rate.values_list is not values_list
+            raise
+
+    monkeypatch.setattr(tbs_module, "apply_legacy_overrides", spy)
     with pytest.raises(ValueError):
         Scenario.from_reform(reform).apply(simulation)
+    assert seen == {"rate_updated": True}
     assert rate.values_list is values_list
     assert annual(simulation, BASIC_RATE, 2027) == 0.20
     assert system.legacy_overrides == []
