@@ -11,9 +11,10 @@ because the release would then silently do nothing.
 
 The conftest also freezes the objects that exist once the tests are collected
 (gc.freeze()). gc.get_objects() leaves frozen objects out, so the release must
-still count a frozen system as live. A frozen object that later becomes
-garbage is never freed, so no system may die before the freeze: its variable
-modules would be frozen, then released and leaked.
+still count a frozen system as live. Frozen objects in reference cycles that
+later become garbage are not freed until they are unfrozen, so no system may be
+built and dropped while the tests are collected: its variable modules would be
+frozen, then released and leaked for the rest of the session.
 """
 
 import gc

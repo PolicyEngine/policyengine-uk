@@ -119,10 +119,13 @@ def pytest_collection_modifyitems(config, items):
 # - freezes every object that exists once the tests are collected
 #   (gc.freeze(), about 1.6 million objects per worker): the modules, the
 #   tax-benefit systems built at import and the collected tests. The collector
-#   never scans frozen objects, so a frozen object that later becomes garbage
-#   is never freed. No tax-benefit system may therefore die before the freeze
-#   (test_variable_module_release.py checks this); build one in a fixture or on
-#   first use, not at import. Objects created by tests are collected as before.
+#   never scans frozen objects, so frozen objects in reference cycles that
+#   later become garbage are not freed until they are unfrozen (objects outside
+#   cycles still go with their last reference). A tax-benefit system and its
+#   variable modules are such cycles, so no system may be built and dropped
+#   while the tests are collected (test_variable_module_release.py checks
+#   this); build one in a fixture or on first use, not at import. Objects
+#   created by tests are collected as before.
 #
 # Measured on CI on 11 October 2026 (runs and numbers in PR #2317): the
 # workers' CPU time, summed over the three shards, fell from 204 to 172
@@ -172,7 +175,9 @@ def pytest_collection_finish(session):
 
 
 def pytest_unconfigure(config):
-    # Leave a process that runs pytest in-process (an IDE, a REPL) as it was.
+    # Undo the freeze and threshold for a process that runs pytest in-process
+    # (an IDE, a REPL). gc.unfreeze() also unfreezes anything frozen before
+    # the session.
     global _heap_frozen
     if _heap_frozen:
         gc.unfreeze()
