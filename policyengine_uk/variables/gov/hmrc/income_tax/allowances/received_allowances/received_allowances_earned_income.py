@@ -14,7 +14,7 @@ class received_allowances_earned_income(Variable):
 
         all_allowances = person("allowances", period)
 
-        all_income = person("adjusted_net_income", period)
+        all_income = person("net_income", period)
         excluded_income = person("taxable_savings_interest_income", period) + person(
             "taxable_dividend_income", period
         )
