@@ -1,4 +1,7 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.household.demographic.highest_education import (
+    EducationType,
+)
 
 
 class is_qualifying_young_person_for_child_tax_credit(Variable):
@@ -18,9 +21,12 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
         "Universal Credit gives that day and Child Benefit two: the year "
         "counts all the same, as the one in which the person is a child "
         "until 30 August, and not the year after. The second condition "
-        "(reg. 5(4)) always applies: a young person who has left education or "
-        "training must not be in remunerative work, and no one may be "
-        "receiving a benefit in their own right. The own-right benefits "
+        "(reg. 5(4)) always applies: a young person who has ceased full-time "
+        "education or approved training must not be in remunerative work, and "
+        "no one may be receiving a benefit in their own right. Full-time "
+        "education at any level counts (reg. 5(5)), so an advanced student "
+        "has not ceased it; an apprentice's education, received by virtue of "
+        "employment, is treated as having ceased. The own-right benefits "
         "input covers Universal Credit, Employment and Support Allowance and "
         "Jobseeker's Allowance, where reg. 5(4)(c) lists Universal Credit, "
         "Income Support and the income-related and income-based allowances. "
@@ -52,22 +58,28 @@ class is_qualifying_young_person_for_child_tax_credit(Variable):
         in_extension_period = (
             person("age", period) < p.extension_period_age_limit
         ) & person("is_in_child_tax_credit_extension_period", period)
-        # Reg. 5(4)(a): having left, not in remunerative work.
-        left_and_not_working = ~receiving_education_or_training & ~person(
-            "is_in_remunerative_work_for_child_tax_credit", period
+        # Reg. 5(4)(a) bars remunerative work only for a person "having
+        # ceased to receive full-time education or approved training".
+        # Full-time education at a school or college counts at any level
+        # (reg. 5(5)), so failing the non-advanced test of reg. 5(3)(a) does
+        # not mean having ceased it.
+        in_full_time_education = (
+            person("current_education", period) != EducationType.NOT_IN_EDUCATION
+        ) & ~person("is_apprentice", period)
+        ceased = ~in_full_time_education & ~person("is_in_approved_training", period)
+        working = person("is_in_remunerative_work_for_child_tax_credit", period)
+        # Reg. 4(2): the period needs no first condition, only the second.
+        in_regulation_4_period = before_31_august_following_16th_birthday & ~(
+            ceased & working
         )
+        # Reg. 5(3)(b) is for a person who has ceased.
+        in_20_weeks = in_extension_period & ceased & ~working
         return (
             person(
                 "meets_qualifying_young_person_age_condition_for_child_tax_credit",
                 period,
             )
-            & (
-                in_education_or_training
-                | (
-                    (before_31_august_following_16th_birthday | in_extension_period)
-                    & left_and_not_working
-                )
-            )
+            & (in_education_or_training | in_regulation_4_period | in_20_weeks)
             # Reg. 5(4)(c).
             & ~person("receives_benefits_in_own_right", period)
         )

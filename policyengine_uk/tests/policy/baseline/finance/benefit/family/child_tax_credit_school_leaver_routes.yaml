@@ -307,3 +307,49 @@
     is_qualifying_young_person_for_child_tax_credit: true
     is_child_or_qualifying_young_person_for_child_tax_credit: false
     CTC_child_element: 0
+
+- name: Case 15, a 16-year-old in full-time advanced education working 24 hours a week is a qualifying young person (reg. 4(2), 5(4)(a), 5(5)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 16
+        date_of_birth: 20080101
+        current_education: TERTIARY
+        weekly_hours: 24
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    # Advanced education fails the first condition, which reg. 4(2) lifts.
+    # It is still full-time education (reg. 5(5)), so the student has not
+    # "ceased" it and the remunerative work bar does not apply.
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 16, the same advanced student aged 17, outside the reg. 4 period, is not a qualifying young person.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        date_of_birth: 20070101
+        current_education: TERTIARY
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
