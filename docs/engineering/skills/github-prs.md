@@ -87,7 +87,8 @@ unittest `skipIf`/`skipUnless`) condition must let the reproducer run in CI,
 and the test must not skip itself at run time (`pytest.skip`,
 `pytest.importorskip`), which the check cannot see. A test marked
 `microsimulation` runs only where the dataset is available, which includes
-merge-queue and main runs. YAML files must parse to a non-empty list with at
+merge-queue and main runs. The check reads test files statically, so it
+catches mistakes, not deliberate evasion; reviewers still read the test. YAML files must parse to a non-empty list with at
 least one mapping containing a string `name` and a non-empty `output` mapping;
 a named YAML reproducer must match such a mapping exactly.
 Separate multiple ids with commas or semicolons. Backticks around each id

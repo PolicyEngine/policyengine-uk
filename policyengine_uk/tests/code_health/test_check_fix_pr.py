@@ -591,6 +591,32 @@ def test_backticked_na_reason_can_include_commas_and_semicolons(tmp_path):
             "    def test_regression(self):\n        pass\n",
             "::TestRegression::test_regression",
         ),
+        (
+            "from helpers import TestCase\nclass TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n"
+            "from unittest import TestCase\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "from unittest import TestCase\nfrom helpers import *\n"
+            "class TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "from unittest import TestCase\nif True:\n"
+            "    from helpers import TestCase\n"
+            "class TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "import helpers\nfrom unittest import TestCase\n"
+            "TestCase, _ = helpers.TestCase, 0\n"
+            "class TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
     ],
 )
 def test_pytest_reproducer_rejects_bare_paths_and_nonexistent_definitions(
@@ -714,6 +740,17 @@ def test_pytest_default_collection_confirms_function_and_class_names(
             "    def test_regression(self):\n        pass\n",
             "::TestRegression::test_regression",
         ),
+        (
+            "from pytest import mark as m\npytestmark = m.skip\n"
+            "def test_regression():\n    pass\n",
+            "::test_regression",
+        ),
+        (
+            "import pytest\nm = pytest.mark\nclass TestRegression:\n"
+            "    pytestmark = [m.xfail]\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
     ],
 )
 def test_pytest_reproducer_must_not_be_skipped_or_expected_to_fail(
@@ -754,6 +791,12 @@ def test_pytest_reproducer_must_not_be_skipped_or_expected_to_fail(
         (
             "from unittest import TestCase\nclass TestRegression(TestCase):\n"
             "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "from unittest import TestCase\nclass TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n"
+            "from helpers import TestCase\n",
             "::TestRegression::test_regression",
         ),
         (

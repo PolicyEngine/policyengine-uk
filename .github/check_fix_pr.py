@@ -23,8 +23,8 @@ NON_RUNNING_MARKS = frozenset({"skip", "xfail", "expectedFailure"})
 # pytest does not collect a test class that defines either.
 CONSTRUCTORS = ("__init__", "__new__")
 # Base classes a collectable test class may name; any other base could bring a
-# constructor or __test__ = False with it. A bare TestCase counts only when the
-# module imports it from unittest.
+# constructor or __test__ = False with it. A bare TestCase counts only when its
+# last binding before the class is an absolute import from unittest.
 TEST_CLASS_BASES = frozenset({"object", "unittest.TestCase"})
 REPRODUCER_HINT = (
     'Use "Reproducer: policyengine_uk/tests/test_example.py::test_regression", '
@@ -229,22 +229,38 @@ def _sets_test_attribute(body: list[ast.stmt], name: str) -> bool:
     return False
 
 
+def _binds_name(node: ast.AST, name: str) -> bool:
+    """Whether a statement could bind name, including inside compound blocks."""
+    for part in ast.walk(node):
+        if isinstance(part, ast.Name) and isinstance(part.ctx, ast.Store):
+            if part.id == name:
+                return True
+        elif isinstance(part, (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            if part.name == name:
+                return True
+        elif isinstance(part, (ast.Import, ast.ImportFrom)):
+            if any(
+                alias.name == "*" or (alias.asname or alias.name.split(".")[0]) == name
+                for alias in part.names
+            ):
+                return True
+    return False
+
+
 def _imports_unittest_testcase(body: list[ast.stmt]) -> bool:
-    """Whether the module's last top-level binding of TestCase is unittest's."""
+    """Whether the last top-level binding of TestCase in body is unittest's."""
     from_unittest = False
     for node in body:
-        if isinstance(node, (ast.Import, ast.ImportFrom)):
+        if (
+            isinstance(node, ast.ImportFrom)
+            and node.module == "unittest"
+            and node.level == 0
+            and all(alias.name != "*" for alias in node.names)
+        ):
             for alias in node.names:
                 if (alias.asname or alias.name) == "TestCase":
-                    from_unittest = (
-                        isinstance(node, ast.ImportFrom)
-                        and node.module == "unittest"
-                        and node.level == 0
-                        and alias.name == "TestCase"
-                    )
-        elif isinstance(node, ast.ClassDef) and node.name == "TestCase":
-            from_unittest = False
-        elif _assigns_name(node, "TestCase"):
+                    from_unittest = alias.name == "TestCase"
+        elif _binds_name(node, "TestCase"):
             from_unittest = False
     return from_unittest
 
@@ -256,22 +272,28 @@ def _decorator_names(definition: ast.AST) -> list[str | None]:
     ]
 
 
-def _pytestmark_names(body: list[ast.stmt]) -> list[str | None]:
-    """The pytest marks in a module's or class's pytestmark assignment.
+def _mark_attributes(node: ast.AST):
+    """Attribute nodes in a pytestmark value, leaving out call arguments."""
+    if isinstance(node, ast.Call):
+        yield from _mark_attributes(node.func)
+        return
+    if isinstance(node, ast.Attribute):
+        yield node
+    for child in ast.iter_child_nodes(node):
+        yield from _mark_attributes(child)
 
-    Only names with a mark part count, so an argument such as config.skip in
-    pytest.mark.skipif(config.skip, ...) is not taken for a mark.
+
+def _pytestmark_names(body: list[ast.stmt]) -> list[str | None]:
+    """The marks in a module's or class's pytestmark assignment.
+
+    Call arguments are left out, so config.skip in
+    pytest.mark.skipif(config.skip, ...) is not taken for a mark, while an
+    aliased mark such as m.skip still counts.
     """
     names = []
     for node in body:
         if _assigns_name(node, "pytestmark") and node.value is not None:
-            names.extend(
-                name
-                for part in ast.walk(node.value)
-                if isinstance(part, ast.Attribute)
-                and (name := _dotted_name(part)) is not None
-                and "mark" in name.split(".")[:-1]
-            )
+            names.extend(_dotted_name(part) for part in _mark_attributes(node.value))
     return names
 
 
@@ -378,7 +400,9 @@ def _reference_problem(
                     _dotted_name(base) in TEST_CLASS_BASES
                     or (
                         _dotted_name(base) == "TestCase"
-                        and _imports_unittest_testcase(tree.body)
+                        and _imports_unittest_testcase(
+                            tree.body[: tree.body.index(cls)]
+                        )
                     )
                     for base in cls.bases
                 )
