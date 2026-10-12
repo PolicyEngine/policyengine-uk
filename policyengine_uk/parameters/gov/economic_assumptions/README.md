@@ -119,22 +119,21 @@ constructed as follows:
 
 - **CPI** is pinned to the Bank of England's 2.0% target from 2031-01-01
   onwards.
-- **RPI** and **CPIH** linearly interpolate from the final EFO value
-  (2030-01-01) up to a 2.39% steady state by 2035-01-01, then hold flat
-  through 2073-01-01. The 0.39 pp gap above CPI is the OBR's published
+- **RPI** and **CPIH** use the stored convergence assumptions: 2.30% in
+  2031 and 2.37% in 2032, reaching 2.39% in 2035 and then holding that rate
+  through 2073. Their annual steps are not uniform. The 0.39 pp gap above
+  CPI is the OBR's published
   long-run wedge to account for housing-cost growth ([long-run difference
   between RPI and CPI inflation][rpi-cpi]).
-- **Average earnings** linearly interpolate from the final EFO value
-  (2030-01-01) up to a 3.83% steady state by 2036-01-01, then hold flat.
-  This is consistent with the OBR's long-run productivity assumption
-  (1.8%) added to CPI (2.0%).
+- **Average earnings** use 3.32% in 2031 and 3.71% in 2032, reaching 3.83%
+  in 2036 and then holding that rate through 2073. These are existing model
+  convergence assumptions beyond the EFO forecast horizon.
 - **`road_fuel_volume`** is held flat at 0% after the OBR forecast ends —
   i.e. the final EFO forecast volume is held constant in real terms.
 
-These steady-state assumptions are reviewed each time the OBR publishes a
-new Fiscal Risks and Sustainability report. The convergence path itself
-is conservative interpolation and is not load-bearing for short-horizon
-analysis.
+Review these stored assumptions when refreshing the EFO or long-run sources.
+They are not annual EFO forecasts for 2031 onwards. The 2031–2032 rates
+directly affect projections through the dataset horizon.
 
 ## Statutory uprating inputs
 

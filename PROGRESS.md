@@ -80,3 +80,69 @@
   and a second Hypothesis ratio property. Full make format passed again.
 - Next: run the changed tests after this correction, refresh survey impacts
   and after-cost, then obtain independent review at the corrected head.
+- Pushed compatibility correction `9a8c07a04303e6fdc278322930414c245105ea55`.
+  Independent team review of that head found no blocking code/test problems.
+- Full eight-file run completed: 154 passed, 1 xpassed, 1 unchanged CPI property
+  timing failure in 2750.14s. Hypothesis reported 295.04ms on its first call,
+  0.06ms on replay (200ms deadline), not an arithmetic failure. Peak RSS
+  0.453 GB. Confirmed PID 17761 exited before the next process.
+- Rerunning full corrected projection file, no-economic-assumptions file and
+  the CPI property with only the local timing deadline disabled. The optional
+  Hypothesis constant-mining and cloned-system harness exceptions remain
+  disclosed. No source tests or rounding rules changed for that failure.
+- Final focused rerun passed all 16 tests (13 projection, 2 no-economic,
+  1 CPI property) in 226.07s, peak RSS 0.398 GB. Its process exited before
+  starting the final after-fix H5 impact run. Independent hard review at
+  corrected head is running as job
+  `20261012-072250-uk-horizon-2032-corrected-head-review`.
+- Corrected-head survey impact completed, total221.3s, peakRSS3.291GB,
+  compressor21.947GB before construction. All2030 outputs exactly unchanged.
+  Income-tax reductions2031/2032 £5.514bn/£5.610bn; UC increases
+  £0.813bn/£1.578bn. Refreshed report tables from the final JSON.
+- Requested hard review completed: no blocking findings, earlierP2 resolved
+  at9a8c07a. It saw all16passing tests; refreshed impact/cost were pending
+  while it reviewed and receive separate final evidence checks.
+- Matched before-cost completed and exited: Python3.13.15, load55.5s,
+  loadRSS2.210GB,2032overallRSS2.459GB, compressor20.797GB. Isolated before
+  HNI2032 still£1,959.453bn, confirming the retained order-sensitive caveat.
+  Cost imports were overlapped, but marker files prevent simulation
+  construction until the previous process exits; all actual simulations are
+  sequential and individually gated. After-cost is next.
+- Final after-cost completed and exited: load72.1s, loadRSS2.473GB,
+  2032overallRSS2.735GB, compressor20.548GB. After HNI£1,956.421bn matches
+  the final sequential impact. Matched overall RSS increase0.276GB.
+- Independent numerical audit confirmed every refreshed report input/output
+  and change, exact2030 equality, compatibility growth ratios and source refs.
+  Energy-flat evidence is synthetic tests/implementation, not the survey JSON.
+  Finishing report/PR evidence, ready status and workspace-local hub handoff.
+
+## Resume r7 after the reboot
+
+- Fetched PR #2376 at `9a8c07a04303e6fdc278322930414c245105ea55` into
+  workspace-local `.horizon-git`; shared Git metadata is outside the writable
+  boundary. No caller checkout or external progress file was modified.
+- Compared the interrupted workspace's production code with that head:
+  identical. Salvaged its completed final report, aggregate measurement JSON,
+  cost pair, test logs and independent hard review. No completed simulation
+  was repeated, and the old measurement process is gone after the reboot.
+- Three independent read-only audits confirmed mechanism, every reported
+  numeric cell, coverage, policy-parameter origins and #2274 integration.
+  Rehashed the cached H5: `5ba399ea5ab9a6c7d4e9aaf6c623080beb34d9ad5f330f6244dbad72b8d960b6`.
+- Confirmed the capital -1 and lost savings exemption from source and H5
+  column metadata. Their past-2032 fix belongs in the hub's uk-data batch,
+  preserving existing direct-programme-input semantics.
+- Corrected relevant README/header wording that claimed uniform linear
+  convergence. Parameter values and all production Python remain unchanged.
+- Final inherited evidence: all 16 corrected tests passed with the disclosed
+  local harness; broader run had 154 passes, 1 XPASS and a timing-only CPI
+  property flake. Cost load 55.5s/2.210 GB before, 72.1s/2.473 GB after;
+  overall peak 2.459/2.735 GB. The sequential impact and isolated baseline
+  net-income discrepancy remains explicitly disclosed.
+- Next: complete locked local environment/format, commit and push final
+  evidence, refresh PR body and ready status, review the final head, and write
+  workspace-local `handoffs.jsonl` for the hub.
+- Frozen workspace-local environment completed: UK 2.126.8/Core 3.32.27.
+  Full `make format` passed (1,363 unchanged Python files; Ruff clean).
+  Parsed YAML is unchanged and five cited installed Core files match the
+  earlier audited installation byte for byte. Final changes are evidence and
+  explanatory text only; completed tests/simulations are retained.

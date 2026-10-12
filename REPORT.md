@@ -6,12 +6,14 @@ Core's variable indices, but rent, council tax and reported State Pension
 arrays stop growing. Several stored inputs switch to formulas. The fix
 projects every dataset year through 2032, using existing assumptions without
 adding forecast values. This makes input handling consistent within that
-horizon; it does not certify new OBR forecasts or fix existing projection
-omissions.
+horizon; it does not certify new OBR forecasts. A compatibility step preserves
+Core's growth for unmapped inputs after 2030 without changing historical
+projection omissions.
 
 PR: <https://github.com/PolicyEngine/policyengine-uk/pull/2376>.
 Tracking issue: <https://github.com/PolicyEngine/policyengine-uk/issues/2378>.
-Final head, tests, costs and independent review are recorded below when complete.
+Reviewed implementation head:
+`9a8c07a04303e6fdc278322930414c245105ea55`; subsequent commits record evidence.
 
 ## Scope and evidence
 
@@ -30,14 +32,22 @@ SHA-256 rechecked in this workspace:
 The prior `measure_all.py` process (PID 43401) has exited. Its complete before,
 after and rules-only JSON files and decomposition were retained under
 `.verification/` in this workspace. Measurements compare the same code and
-data, changing only projection end year from 2030 to 2032. The saved script
+data, initially changing only projection end year from 2030 to 2032. The saved script
 constructs one Microsimulation at a time. New cost and test runs use compressor
 gates, four or fewer numerical-library threads, and a 20 GB RSS monitor.
+
+The final impact, matched costs and corrected tests had all finished before
+the reboot. This resume salvaged them from the interrupted workspace
+`20261012-044816-uk-horizon-2032-sol`, checked every table against its JSON,
+rechecked the dataset hash and audited mechanism and coverage against source.
+No completed simulation was repeated. Production code, tests and durable
+documentation there already match the pushed implementation head above;
+the remaining uncommitted work was the final evidence update in this report.
 
 ## Mechanism read in both packages
 
 Installed Core file root inspected:
-`/Users/maxghenis/.subfleet/worktrees/20261011-204722-uk-horizon-2032-r5/.venv/lib/python3.13/site-packages/policyengine_core/`.
+`/Users/maxghenis/.subfleet/worktrees/20261012-075210-uk-horizon-2032-r7/.venv/lib/python3.13/site-packages/policyengine_core/`.
 Line references below are to that installed 3.32.27 code, not inferred behavior.
 
 1. `holders/holder.py:313–351` looks up an exact stored period.
@@ -53,12 +63,20 @@ Line references below are to that installed 3.32.27 code, not inferred behavior.
    variable default. This is enabled in UK at `tax_benefit_system.py:75`.
 
 UK's `simulation.py:342–345` calls `extend_single_year_dataset` without an
-explicit end year. `data/economic_assumptions.py:73–91` now defaults to
+explicit end year. `data/economic_assumptions.py:100–117` now defaults to
 `PROJECTION_END_YEAR = 2032`; its previous default was 2030. It copies years
 and applies mapped annual growth plus custom rent/council-tax/student-loan
 routines. UK stores each projected year's inputs at `simulation.py:518–523`
 and moves employment income into `employment_income_before_lsr` at `:209–217`.
 `simulation.py` was not edited.
+
+`data/economic_assumptions.py:87–97,177–201` also preserves variable-index
+growth for unmapped stored columns after 2030, using Core's
+`_uprating_index_value` (`simulations/simulation.py:81–108`) and the same
+missing/zero-index treatment as `:1185–1192`. Mapped/custom projections take
+priority; the three energy exclusions in `uprating_indices.yaml:1–23` remain
+flat. This closes a regression found by independent review: merely extending
+the horizon installed flat arrays where Core previously supplied growth.
 
 Specific boundary behavior:
 
@@ -86,13 +104,19 @@ Specific boundary behavior:
 
 ## Measured inputs and outputs
 
+The final after columns are freshly measured at corrected implementation
+head `9a8c07a04303e6fdc278322930414c245105ea55`, on the same dataset hash and
+sequential calculation order as the retained before run. All 2030 outputs
+are exactly unchanged. Final impact run peak RSS was 3.291 GB, compressor
+21.947 GB before construction; the process exited before the cost run began.
+
 All monetary totals below are weighted £bn. The weight row is the **unweighted
 sum of household weights**, in millions; calling weighted `.sum()` on the
 weight variable itself would incorrectly sum squared weights.
 
 | Input | 2029 | 2030 | 2031 before | 2032 before | 2031 after | 2032 after |
 |---|---:|---:|---:|---:|---:|---:|
-| Employment income | 1,328.442 | 1,366.190 | 1,417.820 | 1,476.820 | 1,417.260 | 1,475.613 |
+| Employment income | 1,328.442 | 1,366.190 | 1,417.820 | 1,476.820 | 1,417.814 | 1,476.817 |
 | Self-employment income | 134.428 | 139.908 | 145.582 | 151.471 | 145.582 | 151.471 |
 | Private pension income | 150.569 | 155.633 | 159.897 | 164.261 | 159.897 | 164.262 |
 | Reported State Pension | 135.549 | 138.882 | 139.479 | 140.065 | 142.268 | 145.723 |
@@ -107,11 +131,11 @@ from Core's cumulative-index rounding versus direct annual dataset growth.
 
 | Output | 2029 | 2030, both | 2031 before | 2031 after | Change | 2032 before | 2032 after | Change |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Income tax | 369.118 | 387.232 | 411.430 | 405.833 | −5.596 | 433.362 | 427.565 | −5.797 |
-| National Insurance | 60.934 | 62.865 | 65.322 | 65.308 | −0.014 | 68.113 | 68.083 | −0.030 |
+| Income tax | 369.118 | 387.232 | 411.430 | 405.916 | −5.514 | 433.362 | 427.752 | −5.610 |
+| National Insurance | 60.934 | 62.865 | 65.322 | 65.321 | −0.000274 | 68.113 | 68.113 | −0.000155 |
 | Universal Credit | 87.590 | 84.523 | 84.960 | 85.773 | +0.813 | 84.853 | 86.431 | +1.578 |
 | State Pension | 136.141 | 140.173 | 144.295 | 144.295 | −0.000274 | 149.683 | 149.683 | −0.000168 |
-| Household net income | 1,812.661 | 1,849.617 | 1,901.820 | 1,900.849 | −0.971 | 1,960.197 | 1,956.639 | −3.558 |
+| Household net income | 1,812.661 | 1,849.617 | 1,901.820 | 1,900.753 | −1.067 | 1,960.197 | 1,956.421 | −3.777 |
 | Pension Credit | 7.228 | 7.359 | 6.707 | 7.457 | +0.749 | 6.735 | 7.449 | +0.713 |
 | Housing Benefit | 9.134 | 9.370 | 7.909 | 9.636 | +1.727 | 7.894 | 9.910 | +2.016 |
 | Council tax reduction | 2.324 | 2.390 | 2.146 | 2.448 | +0.302 | 2.145 | 2.508 | +0.363 |
@@ -134,7 +158,22 @@ Before the fix, 100% of nonzero rent, council-tax and reported-State-Pension
 records have ratio 1 after 2030. Northern Ireland council tax remains zero;
 domestic rates have their separate growth mapping.
 
+Final compatibility growth (median record ratios, rounding to percentages):
+salary-sacrifice contributions 3.320244%/3.709875%, water charges
+4.499848%/4.500225%, housing services 2.399692%/3.319662%, and rail usage
+0%/0%. These are cumulative-index ratios, including Core's five-decimal index
+rounding, rather than independently fabricated growth rates. Energy remains
+flat by its documented dataset price basis, verified in synthetic tests;
+those three fields were not included in the final survey measurement JSON.
+
 ## Why income tax rises by £24bn despite no dataset year
+
+The retained decomposition below uses the earlier horizon-only correction as
+its counterfactual. Its individual replacements are cumulative and order
+dependent; they are not an additive attribution of the final corrected head.
+The final income-tax reduction is £5.514bn/£5.610bn in 2031/2032. Restoring
+unmapped growth raises income tax £0.082bn/£0.188bn relative to the earlier
+correction, which explains why its old impact figures must not be reused.
 
 Before-fix income tax rises from £387.232bn in 2030 to £411.430bn in 2031,
 **£24.197bn**. Storing unchanged 2030 inputs explicitly in 2031 gives
@@ -174,6 +213,13 @@ their later rates still derive from their final source scalar.
 | `obr.council_tax.wales` | 2030 | 7.43% | 7.43% | lines 641–647 |
 | `obr.social_rent` | 2030 | 3% | 3% | lines 760–793 |
 | All 14 `ons.private_rental_prices.*` children | 2030 | 2.213617% | 2.213617% | lines 904–1189 |
+| `ofwat.water_bills` (unmapped-input compatibility) | 2029 | 4.5% | 4.5% | lines 1194–1202 |
+| `obr.lagged_average_earnings` (compatibility) | 2074 generated | 2.4% | 3.32% | `lag_average_earnings.py:14–17`, `lagged_series.py:13–14,29–31` |
+
+Rail usage uses `gov.dft.rail.ridership_index`, a cumulative index rather than
+a YoY series. Its last raw value is 1.044 in 2029 (`ridership_index.yaml:20–22`),
+so its 2031/2032 ratio is one. Other compatibility fields use earnings,
+per-capita GDP or per-capita mixed income, whose coverage appears above.
 
 The private-rent children, each ending in 2030, are `UNITED_KINGDOM`, `ENGLAND`,
 `WALES`, `SCOTLAND`, `NORTHERN_IRELAND`, `NORTH_EAST`, `NORTH_WEST`, `YORKSHIRE`,
@@ -187,6 +233,10 @@ RPI and CPIH, used indirectly for pension/other uprating, also end in 2073;
 their 2031/2032 rates are 2.30%/2.37%. No missing 2031–2032 EFO values were
 invented. Existing long-run assumptions or terminal-rate extrapolation are
 used; these should be refreshed when the next EFO supplies source values.
+The README and growth-file header now describe the checked-in convergence
+rates accurately: their annual steps are not uniform, and the 2031–2032
+assumptions directly affect this horizon. Only explanatory text changed;
+all parameter values are unchanged.
 
 Core scalar parameter lookup (`parameters/parameter.py:223–227`) selects the
 latest dated value at or before the requested instant. A non-null terminal
@@ -224,7 +274,8 @@ reported State Pension is CPI-projected, a separate concept from that output.
 
 ## Fix, tests, cost and review
 
-The production change only sets the dataset projection default to 2032.
+The production change sets the dataset projection default to 2032 and
+preserves variable-index growth in added years for unmapped inputs.
 Retaining a finite horizon avoids copying datasets out to 2073 and crossing
 the generated economic-index horizon. The changelog fragment is
 `changelog.d/fix-projection-horizon-obr.fixed.md`. Tests use synthetic tables,
@@ -232,33 +283,69 @@ cover every dataset year, per-index annual growth, a Hypothesis growth-ratio
 property, rent/council-tax projections and the documented after-horizon
 formula/index/carry behavior. Added tests specifically reproduce the legacy
 capital and savings-input boundary cases and check reported State Pension.
+Additional tests exercise all twelve eligible unmapped fields, legacy values
+through 2030, index ratios after 2030, energy exclusions and growth reset.
 
-New cost pair (same package, explicit 2030 override only for before; one
-fresh process per case):
+Final matched cost pair at the corrected implementation (Python 3.13.15,
+Core 3.32.27, same H5; explicit 2030 override only for before):
 
 | Metric | Before | After |
 |---|---:|---:|
 | Dataset years | 2024–2030 | 2024–2032 |
-| Import seconds | 98.0 | 54.6 |
-| Microsimulation load seconds | 33.2 | 13.3 |
-| Peak RSS after load, decimal GB | 2.220 | 2.646 |
-| 2032 net-income calculation seconds | 2.0 | 2.6 |
-| Peak RSS through 2032 calculation, decimal GB | 2.529 | 2.921 |
+| Import seconds | 108.1 | 120.1 |
+| Microsimulation load seconds | 55.5 | 72.1 |
+| Peak RSS after load, decimal GB | 2.210 | 2.473 |
+| 2032 net-income calculation seconds | 17.4 | 21.8 |
+| Peak RSS through 2032 calculation, decimal GB | 2.459 | 2.735 |
 
-The after-load RSS increases 0.426 GB; overall peak increases 0.392 GB. Wall
-times are observed host timings, not a controlled performance claim: host
-contention/cache warmth differ. Compressor memory before the simulations was
-7.898 GB / 7.850 GB, both below 30 GB. Costs use `resource.ru_maxrss` in bytes
-on macOS. The saved prior `cost_before.json` actually reports 1.543 GB RSS and
-314s load under heavy contention; its separate 2.466 GB memory-footprint metric
-and the prompt's 2.18 GB must not be substituted for RSS. `/usr/bin/time -l`
-could not read `kern.clockrate` in this sandbox and exited 1 after the before
-Python run completed; both cost JSON results were successfully written.
+The load peak rises 0.263 GB and overall peak 0.276 GB. These are observed
+host timings, not a controlled performance claim: contention/cache warmth
+vary. Imports were overlapped, while marker files blocked all Microsimulation
+construction until the preceding simulation process exited. Compressor
+memory immediately before construction was 20.797/20.548 GB; the 20 GB
+per-process monitor stayed well below its cap. macOS `resource.ru_maxrss`
+reports bytes, converted here to decimal GB. Final isolated after net income
+£1,956.421bn agrees with the sequential final-impact result; isolated before
+remains £1,959.453bn, with the order-sensitive discrepancy discussed below.
 
-Validation: changed test file and economic-assumption regressions are running
-serially, with gates before each Microsimulation construction. There is no
-file named `test_economic_assumptions*` at this checkpoint; the relevant files
-are listed in the final test result below.
+Earlier horizon-only costs (2.529/2.921 GB overall peaks) and the resumed
+prompt's 2.18 GB are superseded by this matched pair. The inherited
+`cost_before.json` actually reported 1.543 GB RSS and used a separate memory
+footprint metric; neither is substituted for the final RSS measurements.
+
+Validation uses the locked workspace environment (Python 3.13.15, Core
+3.32.27), serial `pytest -n 0`, four numerical-library threads, compressor
+gates and a 20 GB process monitor. The full eight-file run completed with
+154 passed, 1 xpassed and one unchanged September-CPI Hypothesis timing flake
+in 2750.14s: the first call took 295.04ms against a 200ms deadline, then
+0.06ms on replay. No arithmetic assertion failed. Peak RSS was 0.453 GB.
+
+Those full files were `test_projection_horizon.py`,
+`test_no_economic_assumptions.py`, `test_rent_uprating.py`,
+`test_council_tax_uprating.py`, `test_domestic_rates_uprating.py`,
+`test_benunit_reported_capital_properties.py`, `test_threshold_indexation.py`
+and `test_triple_lock_statutory_inputs.py`. No file named
+`test_economic_assumptions*` exists at this checkpoint. After the compatibility
+correction, the entire changed projection file and no-economic-assumptions
+file, plus that CPI property, passed **all 16 tests** in 226.07s; peak RSS
+0.398 GB. This includes all thirteen projection tests at `9a8c07a`.
+
+Local harness exceptions: optional Hypothesis source-constant mining is
+disabled because it stalled collection for 774.77s; explicit strategies and
+example counts remain unchanged. Constructors use `system.clone`, the seam
+supported by the repository's `cloned_uk_tax_benefit_system` fixture, with
+independent state. The final rerun disables the local Hypothesis deadline
+without changing source tests or mathematical assertions. Ordinary
+unmodified-harness/full-suite CI is not claimed. Full `make format` passed
+across 1,363 Python files.
+
+On this resume, `UV_LINK_MODE=clone uv sync --frozen --extra dev` completed
+in the assigned workspace, installing UK 2.126.8/Core 3.32.27. Full
+`make format` passed again: 1,363 Python files unchanged and Ruff checks passed.
+A parsed-YAML comparison confirmed all growth parameter values unchanged,
+and the five cited Core implementation files are byte-identical to the
+previously audited installation. Completed tests and simulations were reused
+because the production implementation and test files are unchanged.
 
 ## Remaining limits and uk-data follow-up
 
@@ -274,12 +361,12 @@ into the generic input. Likewise audit the relationship between the survey
 tax-free savings exemption and its ISA-interest source. No uk-data PR or build
 was opened; these belong in the hub's d833 batch.
 
-Four preexisting inputs have variable `uprating` but no dataset projection
-mapping: `pension_contributions_via_salary_sacrifice`,
-`water_and_sewerage_charges`, `housing_service_charges`, and `rail_usage`.
-They stay at their 2024 stored values through the horizon; Core applies only
-the last-stored-to-requested index ratio afterward. This extension does not
-fix those separate omissions.
+Four H5 inputs have variable `uprating` but no dataset projection mapping:
+`pension_contributions_via_salary_sacrifice`, `water_and_sewerage_charges`,
+`housing_service_charges`, and `rail_usage`. They retain their base-year
+stored values through 2030; the final correction restores their former Core
+index growth in 2031–2032. Twelve such fields exist in the model registry,
+all covered by the compatibility step. Historical omissions remain a follow-up.
 
 PR #2274 at `f86bdbbea37fe92892a37f0ea29cd8268ba7014c` replaces the same default
 with `None` and derives a cap using `min(2030, scenario_end)`. Reconcile by
@@ -306,3 +393,17 @@ the same calculation order before/after, and cost is a separate metric.
 No exact certified-pair reproduction, forthcoming EFO data, uk-data rebuild,
 or beyond-horizon full-survey validation is claimed. The known unrelated
 `test_dataframe_dataset.py` failure was excluded.
+
+## Independent review and handoff
+
+Requested `subfleet run --task review --tier hard` completed as
+`20261012-072250-uk-horizon-2032-corrected-head-review` at exact implementation
+head `9a8c07a04303e6fdc278322930414c245105ea55`: **no blocking findings; the
+earlier P2 is resolved**. It saw all sixteen passing tests. Final impact and
+cost runs completed after that review; an independent numerical audit checked
+refreshed tables against the JSON. Report-only commits follow the reviewed
+implementation without changing production code. This report accompanies
+the final PR evidence update; no merge is performed. Final PR status, head
+SHA and the additional final-head review are recorded in workspace-local
+`handoffs.jsonl`, respecting the assigned-workspace restriction. No CI
+rerun was requested.
