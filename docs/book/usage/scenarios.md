@@ -396,7 +396,9 @@ Each way of passing a reform reads period keys as it always has:
 
 A single-date key in a `reform=` dict overrides the annualised value on that day only. Formulas read annual values on 1 January, so `"2027-01-01"` sets fiscal year 2027 and `"2027-04-06"` changes nothing. The model logs a warning when a key can change nothing. Use `"start.stop"` keys for dated measures.
 
-Changes applied after the data is loaded (the default) leave the data as built, so a changed economic assumption does not re-uprate incomes. They still come before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Set `applied_before_data_load=True` on a scenario to project the data with changed economic assumptions too.
+Changes applied after the data is loaded (the default) leave the data as built, so a changed economic assumption does not re-uprate incomes. Dated changes (`parameter_changes` and `"start.stop"` or bare-year keys) still come before the steps that read parameters while the simulation is built: the Universal Credit rebalancing awards and the structural reforms that parameters switch on. Single-day keys and a scenario's own simulation modifier run after those steps, as they always have. Set `applied_before_data_load=True` on a scenario to project the data with changed economic assumptions too.
+
+All of this applies when the scenario or reform is passed to `Simulation(...)`. `Scenario.apply(simulation)` on a simulation that is already built edits its annualised values instead, as it always has: a `"2027-04-06.2028-04-05"` key there overrides those dates of the fiscal-year values, so it does not set fiscal year 2027, and the model logs a warning saying so. Pass the scenario when constructing the simulation for dated measures.
 
 ### Creating complex scenarios with simulation modifiers
 
