@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class uc_company_self_employed_earnings(Variable):
     value_type = float
     entity = Person
-    label = "Universal Credit self-employed earnings from an owned company"
+    label = "Universal Credit self-employed profit or loss from an owned company"
     documentation = (
         "The income of a company carrying on a trade, or the person's share "
         "of it, which Universal Credit treats as the person's self-employed "
@@ -14,9 +14,12 @@ class uc_company_self_employed_earnings(Variable):
         "no earnings. Where the minimum income floor applies it is compared "
         "with the person's total earned income, including this amount and "
         "their pay (reg. 62(2)); DWP guidance (ADM H4375) describes comparing "
-        "the company income alone. A loss counts as nil, as negative "
-        "self-employed earnings do (reg. 57(2)); carrying it forward against "
-        "later profits (reg. 57A) is not modelled."
+        "the company income alone. This is the step 1 amount of reg. 57(2) "
+        "for the company's trade, so a loss is negative here: step 2 adds it "
+        "to the profit or loss of any trade the person carries on themselves, "
+        "and the total is nil if negative (uc_individual_earned_income_before_mif). "
+        "Carrying a loss forward against later profits (reg. 57A) is not "
+        "modelled."
     )
     definition_period = YEAR
     unit = GBP
@@ -40,7 +43,5 @@ class uc_company_self_employed_earnings(Variable):
             "uc_company_owner_treatment_applies", period
         ) & person("owned_company_carries_on_trade", period)
         return where(
-            trading_company_owner,
-            max_(0, person("owned_company_income_share", period)),
-            0,
+            trading_company_owner, person("owned_company_income_share", period), 0
         )

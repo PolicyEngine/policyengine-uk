@@ -6,8 +6,10 @@ class uc_assessable_capital(Variable):
     entity = BenUnit
     label = "Universal Credit assessable capital"
     documentation = (
-        "Universal Credit capital counted from the configured capital sources, "
-        "with benunit-reported overrides when available. PolicyEngine allocates "
+        "Universal Credit capital counted from the configured capital sources. "
+        "Where the benefit unit's capital is recorded (uc_reported_capital, by "
+        "default benunit_reported_capital), that figure replaces them. "
+        "PolicyEngine allocates "
         "the remaining household capital between unreported benefit units in "
         "proportion to their claimant and partner counts, including units that "
         "do not receive Universal Credit. This allocation is a modelling "
@@ -53,10 +55,12 @@ class uc_assessable_capital(Variable):
         # holding in it disregarded and is treated as possessing the company's
         # capital (or their share of it) instead (UC Regs 2013 reg. 77(2),
         # (3)(a)). Holdings of people in unreported benunits leave the
-        # household pool before it is shared out; a reporting benunit's
-        # claimant and partner's holdings come off its reported capital.
-        # Neither subtraction can take capital below zero. Only the claimant
-        # and partner's company capital is theirs to count.
+        # household pool before it is shared out, up to the household's
+        # corporate_wealth that holds them; a reporting benunit's claimant and
+        # partner's holdings come off its reported capital, which has no
+        # breakdown to cap them against. Neither subtraction can take capital
+        # below zero. Only the claimant and partner's company capital is
+        # theirs to count.
         unreported_holdings = household(
             "household_uc_unreported_company_holdings", period
         )

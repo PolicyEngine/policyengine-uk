@@ -37,4 +37,8 @@ class owned_company_income_share(Variable):
             title="The Universal Credit Regulations 2013 reg. 57",
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/57",
         ),
+        dict(
+            title="DWP Universal Credit guidance: Companies and directors, gainful self-employment (V9, House of Commons Library DEP2025-0769)",
+            href="https://data.parliament.uk/DepositedPapers/Files/DEP2025-0769/044_Companies_and_directorsgainful_selfemploymentGuidance_V9.pdf",
+        ),
     ]

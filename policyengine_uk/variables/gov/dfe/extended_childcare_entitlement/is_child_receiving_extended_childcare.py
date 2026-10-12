@@ -17,11 +17,16 @@ class is_child_receiving_extended_childcare(Variable):
         # Check if hours > 0 for this age (using the hours parameter)
         hours_by_age = p.hours.calc(age)
 
+        qualifying_child = person(
+            "extended_childcare_entitlement_qualifying_child", period
+        )
+
         # Get the benefit unit's extended childcare entitlement amount
         benunit = person.benunit
         entitlement_amount = benunit("extended_childcare_entitlement", period)
 
         # Child is eligible if:
-        # 1. Hours > 0 for this age AND
-        # 2. Benefit unit's entitlement amount > 0
-        return (hours_by_age > 0) & (entitlement_amount > 0)
+        # 1. They are a qualifying child of working parents AND
+        # 2. Hours > 0 for this age AND
+        # 3. Benefit unit's entitlement amount > 0
+        return qualifying_child & (hours_by_age > 0) & (entitlement_amount > 0)

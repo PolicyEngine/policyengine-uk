@@ -6,11 +6,11 @@ limits (LPL, UPL), at their 2026-27 levels until 5 April 2031. The Lower
 Earnings Limit is not frozen: it rose with CPI to £129 a week in 2026-27.
 
 Model year Y is the fiscal year starting 6 April Y. The model stores PT and UEL
-as the annual amounts over 52 (12,570 / 52 and 50,270 / 52, as SI 2001/1004
-reg 11(3)(c) and 11(2A)(c) do for periods of whole weeks) and ST as the reg
-10(d) weekly amount (£96), and annualises weekly thresholds as 52 weeks. So the
-model's annual ST is £4,992, where reg 11(3A)(b) gives £5,000 (#1967); the
-statute table follows the model here, and a strict xfail marks the gap.
+and ST as the annual amounts over 52 (12,570 / 52, 50,270 / 52 and 5,000 / 52,
+as SI 2001/1004 reg 11(3)(c), 11(2A)(c) and 11(3A)(c) do for periods of whole
+weeks), and annualises weekly thresholds as 52 weeks. So the model's annual ST
+is the £5,000 in reg 11(3A)(b), not 52 x the rounded reg 10(d) weekly £96
+(£4,992) (#1967).
 
 Invariants:
 
@@ -19,12 +19,14 @@ Invariants:
    stand for 2026-27 and SSCBA 1992 s.15(3), not from the parameter files.
 2. Cash freeze: PT, UEL, ST, LPL and UPL are identical in every year
    2026-2030.
-3. Indexation resumes from the frozen level: from 2031, each threshold is its
-   2030 value times CPI(Y) / CPI(2030). There is no catch-up to the path the
-   threshold would have followed without the freeze.
-4. Alignment: 52 x PT = LPL = personal allowance in every year 2024-2040;
-   52 x UEL = UPL in every year 2021-2040; and UPL = personal allowance +
-   basic rate limit in every year 2021-2030.
+3. After the freeze: from 2031 the PT, UEL, LPL and UPL stay aligned with
+   the income tax thresholds, which Income Tax Act 2007 ss21 and 57 index by
+   September CPI, and the ST rises by September CPI, each from its frozen
+   level with no catch-up. test_threshold_indexation.py tests this.
+4. Alignment, in test_threshold_indexation.py: the UEL and UPL with the
+   higher rate threshold in every year 2021-2040, and the PT and LPL with the
+   personal allowance from 2023. The 2021-22 and 2022-23 lower thresholds
+   are intended exceptions.
 5. No cash cuts: no threshold falls from one year to the next, 2026-2040.
 6. Differential: for any earnings or profits >= 0 in 2026-2030, primary and
    additional Class 1, secondary Class 1 and Class 4 equal an exact-rational
@@ -59,8 +61,7 @@ PARAMETER_DIR = Path(policyengine_uk.__file__).parent / "parameters"
 STATUTORY_2026_27 = {
     "lower_earnings_limit": Fraction(129),  # weekly, CPI-uprated
     "primary_threshold": Fraction(12_570, 52),  # annual / 52
-    # reg 10(d) weekly, as the model stores it; see #1967 for the annual £5,000.
-    "secondary_threshold": Fraction(96),
+    "secondary_threshold": Fraction(5_000, 52),  # annual / 52 (#1967)
     "upper_earnings_limit": Fraction(50_270, 52),  # annual / 52
     "lower_profits_limit": Fraction(12_570),  # annual
     "upper_profits_limit": Fraction(50_270),  # annual
@@ -129,15 +130,8 @@ def test_lower_earnings_limit_2025_26_and_2026_27(system):
     assert threshold(system, "lower_earnings_limit", 2026) == 129
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="#1967: the model annualises the weekly ST as 52 x £96 = £4,992; "
-    "SI 2001/1004 reg 11(3A)(b) gives £5,000 a year.",
-)
-@pytest.mark.parametrize("year", FROZEN_YEARS)
-def test_annual_secondary_threshold_is_statutory(system, year):
-    annual = 52 * threshold(system, "secondary_threshold", year)
-    assert annual == pytest.approx(5_000, abs=0.5)
+# The annual secondary threshold in every year from 2015-16, including the
+# £5,000 from 2025-26 (#1967), is pinned in test_ni_secondary_threshold.py.
 
 
 # Invariant 2: cash freeze.
@@ -147,19 +141,7 @@ def test_frozen_thresholds_hold_in_cash_terms(system, name):
     assert len(set(values.values())) == 1, values
 
 
-# Invariant 3: indexation resumes from the frozen level.
-@pytest.mark.parametrize("name", FROZEN)
-def test_indexation_resumes_from_frozen_level(system, name):
-    base = threshold(system, name, 2030)
-    for year in range(2031, 2041):
-        expected = base * cpi(system, year) / cpi(system, 2030)
-        assert threshold(system, name, year) == pytest.approx(expected, rel=1e-9), (
-            name,
-            year,
-        )
-    # One year of CPI in 2031, not the cumulative rise since 2026.
-    first_step = threshold(system, name, 2031) / base
-    assert first_step == pytest.approx(cpi(system, 2031) / cpi(system, 2030))
+# Invariants 3 and 4 are in test_threshold_indexation.py.
 
 
 def test_lower_earnings_limit_is_cpi_uprated_from_2026_27(system):
@@ -169,33 +151,6 @@ def test_lower_earnings_limit_is_cpi_uprated_from_2026_27(system):
         assert threshold(system, "lower_earnings_limit", year) == pytest.approx(
             expected, rel=1e-9
         )
-
-
-# Invariant 4: alignment with the income tax thresholds.
-def test_primary_threshold_and_lpl_align_with_personal_allowance(system):
-    for year in range(2024, 2041):
-        income_tax = system.get_parameters_at_instant(str(year)).gov.hmrc.income_tax
-        personal_allowance = float(income_tax.allowances.personal_allowance.amount)
-        pt_annual = 52 * threshold(system, "primary_threshold", year)
-        lpl = threshold(system, "lower_profits_limit", year)
-        assert pt_annual == pytest.approx(personal_allowance, rel=1e-5), year
-        assert lpl == pytest.approx(personal_allowance, rel=1e-9), year
-
-
-def test_uel_and_upl_align(system):
-    for year in range(2021, 2041):
-        uel_annual = 52 * threshold(system, "upper_earnings_limit", year)
-        upl = threshold(system, "upper_profits_limit", year)
-        assert uel_annual == pytest.approx(upl, rel=1e-5), year
-
-
-def test_upl_equals_higher_rate_threshold_through_the_freeze(system):
-    for year in range(2021, 2031):
-        income_tax = system.get_parameters_at_instant(str(year)).gov.hmrc.income_tax
-        personal_allowance = float(income_tax.allowances.personal_allowance.amount)
-        basic_rate_limit = float(income_tax.rates.uk.thresholds[1])
-        upl = threshold(system, "upper_profits_limit", year)
-        assert upl == personal_allowance + basic_rate_limit, year
 
 
 # Invariant 5: no cash cuts.
@@ -328,7 +283,7 @@ def check_liabilities(earnings, profits, years):
 # Every threshold, a penny and a pound either side, plus seeded random levels.
 EDGES = [
     edge + offset
-    for edge in [4_992, 12_570, 50_270]
+    for edge in [4_992, 5_000, 12_570, 50_270]
     for offset in (-1, -0.01, 0, 0.01, 1)
 ]
 

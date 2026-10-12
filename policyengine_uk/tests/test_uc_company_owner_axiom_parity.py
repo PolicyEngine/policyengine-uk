@@ -199,13 +199,21 @@ def test_reg_77_matches_axiom(name):
         i["chapter"] != "NONE" and i["chapter_main"]
     )
     # Reg. 77(4): the model's earned income adds the company earnings to
-    # director pay. These cases' totals are above the floor, so the floor
-    # does not change them.
+    # director pay. Axiom's total is gross of the person's own income tax and
+    # National Insurance, which the model deducts (reg. 55(5), 57(2)), so they
+    # are added back; these cases have no pension contributions. The totals
+    # are above the floor, so the floor does not change them.
     if o["company_and_director_earnings"]:
-        assert calc("uc_mif_capped_earned_income") == pytest.approx(
-            o["company_and_director_earnings"] * MONTHS
+        own_tax_and_ni = calc("uc_income_tax_on_earnings") + calc(
+            "uc_national_insurance_on_earnings"
         )
-        assert calc("uc_mif_capped_earned_income") > calc("uc_minimum_income_floor")
+        assert calc("pension_contributions") == 0
+        assert calc(
+            "uc_individual_earned_income_before_mif"
+        ) + own_tax_and_ni == pytest.approx(o["company_and_director_earnings"] * MONTHS)
+        assert calc("uc_individual_earned_income") == pytest.approx(
+            calc("uc_individual_earned_income_before_mif")
+        )
     assert bool(calc("uc_company_gainful_self_employment")) == o["gainful"]
     # Axiom's minimum_income_floor_applies_due_to_company_trade is the reg.
     # 77(3)(c) trigger; the model's floor also applies to self-employment

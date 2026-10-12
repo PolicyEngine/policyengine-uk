@@ -33,7 +33,9 @@ class uc_company_capital(Variable):
     def formula(person, period, parameters):
         applies = person("uc_company_owner_treatment_applies", period)
         # A person whose main employment is the company's trade is engaged in
-        # activities in the course of that trade.
+        # activities in the course of that trade. Reg. 77(3)(a) does not say
+        # so; it is an inference from "engaged in activities in the course
+        # of that trade", which work as one's main employment must be.
         engaged = person("is_engaged_in_owned_company_trade", period) | person(
             "owned_company_is_main_employment", period
         )

@@ -10,7 +10,10 @@ class household_uc_unreported_company_holdings(Variable):
         "benunits without reported UC capital. They are taken out of the "
         "household's capital before it is shared among those benunits' "
         "claimants and partners, so no benunit counts any part of a "
-        "disregarded holding."
+        "disregarded holding. A holding is shares, held within the "
+        "household's corporate_wealth, so no more than that is taken out: a "
+        "holding entered without matching corporate_wealth cannot remove "
+        "savings or property."
     )
     definition_period = YEAR
     unit = GBP
@@ -19,5 +22,8 @@ class household_uc_unreported_company_holdings(Variable):
     def formula(household, period, parameters):
         person = household.members
         has_reported_capital = person.benunit("uc_reported_capital", period) >= 0
-        holdings = person("uc_company_holding_disregard", period)
-        return household.sum(holdings * ~has_reported_capital)
+        holdings = household.sum(
+            person("uc_company_holding_disregard", period) * ~has_reported_capital
+        )
+        corporate_wealth = max_(0, household("corporate_wealth", period))
+        return min_(holdings, corporate_wealth)

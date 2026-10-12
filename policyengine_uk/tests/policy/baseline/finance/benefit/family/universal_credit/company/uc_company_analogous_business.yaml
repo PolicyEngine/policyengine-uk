@@ -4,7 +4,9 @@
 # by hand from the regulation; the capital cases use the same figures as the
 # Axiom encoding's tests (rulespec-uk uk/regulations/uksi/2013/376/77.test.yaml).
 # Company earnings are not taxable income, so no income tax or National
-# Insurance comes off them in these cases.
+# Insurance comes off them, and other earnings in these cases are below the
+# personal allowance and the primary threshold, so earned income before the
+# floor equals gross earnings.
 
 - name: Sole owner of a trading company whose main employment it is has the floor applied to the company income
   # H4374-H4375 and Example 2 (Claudia): the company's income is the owner's
@@ -25,7 +27,8 @@
     uc_company_self_employed_earnings: 6_000
     uc_company_gainful_self_employment: true
     uc_mif_applies: true
-    uc_mif_capped_earned_income: 20_000
+    uc_individual_earned_income_before_mif: 6_000
+    uc_individual_earned_income: 20_000
 
 - name: A partner-like shareholder in a start-up period has only their share of the company income counted
   # H4376 Example 1 (Ezgjan): a 50% owner with meaningful influence, working
@@ -44,7 +47,7 @@
   output:
     uc_company_gainful_self_employment: true
     uc_mif_applies: false
-    uc_mif_capped_earned_income: 12_000
+    uc_individual_earned_income: 12_000
 
 - name: Company income is counted in addition to the owner's pay as its director
   # Reg. 77(4): 9,000 of director's pay (employed earnings) plus 15,000 of
@@ -61,16 +64,17 @@
     uc_minimum_income_floor: 20_000
   output:
     uc_company_self_employed_earnings: 15_000
-    uc_mif_capped_earned_income: 24_000
+    uc_individual_earned_income: 24_000
 
 - name: When the company is not the owner's main employment its income counts but no floor applies
   # Reg. 77(3)(b) applies to any owner of a trading company; reg. 77(3)(c)
-  # only when the trade is the main employment.
+  # only when the trade is the main employment. 12,000 + 1,000 = 13,000,
+  # below the 20,000 floor, which does not apply.
   period: 2026
   absolute_error_margin: 0
   input:
     age: 40
-    employment_income: 18_000
+    employment_income: 12_000
     stands_as_sole_owner_or_partner_of_company: true
     owned_company_carries_on_trade: true
     owned_company_is_main_employment: false
@@ -79,7 +83,7 @@
   output:
     uc_company_gainful_self_employment: false
     uc_mif_applies: false
-    uc_mif_capped_earned_income: 19_000
+    uc_individual_earned_income: 13_000
 
 - name: The company income is tapered like other earnings
   # A single claimant with no children and no limited capability for work has
@@ -142,7 +146,7 @@
     uc_company_gainful_self_employment: [false]
     uc_company_capital: [120_000]
     uc_company_holding_disregard: [90_000]
-    uc_mif_capped_earned_income: [0]
+    uc_individual_earned_income: [0]
     uc_assessable_capital: 122_000
 
 - name: Trade assets are disregarded while the owner works in the trade
@@ -265,7 +269,7 @@
         corporate_wealth: 12_000
   output:
     uc_company_owner_treatment_applies: [false]
-    uc_mif_capped_earned_income: [0]
+    uc_individual_earned_income: [0]
     uc_assessable_capital: 12_000
 
 - name: A company carrying on neither a trade nor a property business is outside the rule
@@ -291,7 +295,8 @@
     uc_assessable_capital: 10_000
 
 - name: Each partner's company is attributed to the couple's capital
-  # Couples' capital is combined (reg. 18(2)). Two 50% owners of the same
+  # Joint claimants' capital is combined against one limit (Welfare Reform
+  # Act 2012 s. 5(2)(a); UC Regs 2013 reg. 18(1)(b)). Two 50% owners of the same
   # trading company, neither working in it: each is treated as holding half
   # of the 30,000 company capital and each 5,000 holding is disregarded.
   # 10,000 + 15,000 + 15,000 - 5,000 - 5,000 = 30,000.
@@ -400,21 +405,39 @@
     uc_company_owner_treatment_applies: true
     uc_company_self_employed_earnings: 10_000
 
-- name: A company loss counts as nil, not against the owner's pay
+- name: A company loss makes self-employed earnings nil and is not set against the owner's pay
   # Reg. 57(2): if the result of steps 1 to 3 "is nil or a negative amount,
   # the amount of the person's self-employed earnings ... is nil". A 10,000
-  # loss leaves the 20,000 of director's pay intact (reg. 77(4)).
+  # loss leaves the 12,000 of director's pay intact (reg. 77(4)).
   period: 2026
   absolute_error_margin: 0
   input:
     age: 40
-    employment_income: 20_000
+    employment_income: 12_000
     stands_as_sole_owner_or_partner_of_company: true
     owned_company_carries_on_trade: true
     owned_company_income_share: -10_000
   output:
-    uc_company_self_employed_earnings: 0
-    uc_mif_capped_earned_income: 20_000
+    uc_company_self_employed_earnings: -10_000
+    uc_individual_earned_income: 12_000
+
+- name: A company loss is set against the profit of the owner's own trade
+  # Reg. 77(1) treats the owner as the company's sole owner, so its trade is
+  # one more trade they carry on. Reg. 57(2) step 2 adds together the profit
+  # or loss of each trade before the nil rule: 8,000 of profit from their own
+  # trade less the company's 3,000 loss is 5,000. Start-up period, so no floor.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    age: 40
+    self_employment_income: 8_000
+    uc_is_in_startup_period: true
+    stands_as_sole_owner_or_partner_of_company: true
+    owned_company_carries_on_trade: true
+    owned_company_income_share: -3_000
+  output:
+    uc_individual_earned_income_before_mif: 5_000
+    uc_individual_earned_income: 5_000
 
 - name: Working in the trade as one's main employment is engagement in it
   # Reg. 77(3)(a) disregards trade assets "while they are engaged in
@@ -509,3 +532,91 @@
         members: person
   output:
     is_benefit_cap_exempt_earnings: true
+
+- name: A dependant's company earnings are not the claimant's earned income
+  # Reg. 22(1)(b) deducts "the claimant's earned income (or, in the case of
+  # joint claimants, their combined earned income)", and reg. 82(1)(a) tests
+  # the same for the benefit cap. A qualifying young person who owns a
+  # trading company is not a claimant: their 20,000 of company income is
+  # their own self-employed earnings but neither reduces the award nor
+  # exempts the household from the cap.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+      student:
+        age: 17
+        is_in_non_advanced_education: true
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_income_share: 20_000
+    benunits:
+      benunit:
+        members: [parent, student]
+    households:
+      household:
+        members: [parent, student]
+  output:
+    is_uc_assessed_claimant: [true, false]
+    uc_company_self_employed_earnings: [0, 20_000]
+    uc_earned_income: 0
+    is_benefit_cap_exempt_earnings: false
+
+- name: Company earnings below the benefit cap earnings threshold leave the cap in place
+  # Reg. 82(1)(a): the earnings exception needs earned income of at least the
+  # threshold (10,152 a year in the model). 10,000 of company income falls
+  # short; 10,152 meets it, so a rise in company income can lift the cap and
+  # raise the award.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      low:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_income_share: 10_000
+      high:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_income_share: 10_152
+    benunits:
+      low_unit:
+        members: [low]
+      high_unit:
+        members: [high]
+    households:
+      low_household:
+        members: [low]
+      high_household:
+        members: [high]
+  output:
+    is_benefit_cap_exempt_earnings: [false, true]
+
+- name: A holding is disregarded only from the corporate wealth that holds it
+  # Reg. 77(2) disregards "the value of the person's holding in the
+  # company", which is shares, so it comes out of the household's
+  # corporate_wealth and cannot remove savings. A 10,000 holding entered with
+  # 10,000 of savings and no corporate_wealth leaves the 10,000 of savings.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      person:
+        age: 40
+        stands_as_sole_owner_or_partner_of_company: true
+        owned_company_carries_on_trade: true
+        owned_company_holding_value: 10_000
+    benunits:
+      benunit:
+        members: person
+    households:
+      household:
+        members: person
+        savings: 10_000
+  output:
+    household_uc_unreported_company_holdings: 0
+    uc_assessable_capital: 10_000

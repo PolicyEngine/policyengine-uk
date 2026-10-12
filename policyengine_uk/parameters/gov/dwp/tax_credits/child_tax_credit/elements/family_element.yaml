@@ -1,11 +1,15 @@
 description: Child Tax Credit family element.
 values:
+  # £545 a year in every year HMRC published (2019-20 to 2024-25), unchanged by
+  # the Tax Credits Up-rating Regulations, until tax credits ended on 5 April
+  # 2025; it is not projected.
   2016-04-06:
     value: 545
 metadata:
   period: year
   unit: currency-GBP
-  uprating: gov.benefit_uprating_cpi
   reference:
-    - https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
-    - https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27
+    - title: "Tax credits, Child Benefit and Guardian's Allowance: rates and allowances (HMRC, gov.uk)"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-tax-credits-child-benefit-and-guardians-allowance/tax-credits-child-benefit-and-guardians-allowance
+    - title: UKMOD country report (EUROMOD)
+      href: https://www.iser.essex.ac.uk/files/projects/UKMOD/EUROMOD_country_report.pdf#page=27
