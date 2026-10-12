@@ -1,4 +1,4 @@
-description: The Marriage Allowance is rounded up by this increment.
+description: The Marriage Allowance transferable amount is rounded up to a multiple of this amount.
 values:
   2016-04-01: 10
 metadata:
@@ -6,4 +6,4 @@ metadata:
   label: Marriage Allowance rounding increment
   reference:
     - title: Income Tax Act 2007 s. 55B(5)
-      href: https://www.legislation.gov.uk/ukpga/2007/3/part/3/chapter/3A
+      href: https://www.legislation.gov.uk/ukpga/2007/3/section/55B
