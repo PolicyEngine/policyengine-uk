@@ -58,6 +58,56 @@ unless the user or maintainer explicitly asks. The type controls the inferred
 version bump: `breaking` is major, `added` and `removed` are minor, and other
 types are patch.
 
+## Fix evidence
+
+The **Fix evidence** pull request check applies when a PR adds, modifies or
+type-changes a fixed fragment directly in `changelog.d/`, or has the `bug` or
+`bug-fix` label. A fragment counts as fixed when its basename has `fixed` in
+any dot-separated part after the first, including `x.fixed.md`, `x.fixed.1.md`,
+`x.fixed.md.md` and `x.fixed`. Use the canonical fragment naming convention
+above when writing new fragments. A fix PR must add, modify or type-change an
+executable test under `policyengine_uk/tests/` and name its reproducer in the
+PR description:
+
+```text
+Reproducer: policyengine_uk/tests/path/to/test_file.py::test_name
+```
+
+Accepted ids are pytest node ids (`file.py::test_name` or
+`file.py::TestClass::test_name`) and YAML policy tests under
+`policyengine_uk/tests/policy/` (`file.yaml` or `file.yaml::test name`, also
+accepting `.yml`). Each named file must be added, modified or type-changed in
+the PR. Python files must match `test_*.py` or `*_test.py`, and names must
+resolve to module-level functions starting with `test`, or methods starting
+with `test` in module-level classes starting with `Test`. Such a class may
+derive only from `object` or `unittest.TestCase` (also as `TestCase` imported
+from `unittest`) and may not define `__init__` or `__new__`. A module or class
+whose `__test__` is anything but `True`, a test or class whose `__test__`
+attribute is set after it is defined, a fixture, and definitions nested in
+functions or conditional blocks are excluded. The reproducer must run and
+pass: a `skip` or `xfail` mark, or unittest's `skip` or `expectedFailure`, on
+it, its class or its module (`pytestmark`) is rejected. A `skipif` (or
+unittest `skipIf`/`skipUnless`) condition must let the reproducer run in CI,
+and the test must not skip itself at run time (`pytest.skip`,
+`pytest.importorskip`), which the check cannot see. A test marked
+`microsimulation` runs only where the dataset is available, which includes
+merge-queue and main runs. The check reads test files statically, so it
+catches mistakes, not deliberate evasion; reviewers still read the test. YAML files must parse to a non-empty list with at
+least one mapping containing a string `name` and a non-empty `output` mapping;
+a named YAML reproducer must match such a mapping exactly.
+Separate multiple ids with commas or semicolons. Backticks around each id
+are optional; use them when a name or reason contains these separators.
+Reproducer lines inside HTML comments are ignored.
+
+For CI/docs-only fixes, use `Reproducer: n/a: <reason>` with a non-empty reason.
+This exempts the PR from changing a test only when no file under
+`policyengine_uk/` outside `policyengine_uk/tests/` is added, modified,
+type-changed or deleted, and neither `pyproject.toml` nor `uv.lock` changes.
+Dependency changes can change model results, so they also require a test.
+The workflow runs the trusted base-branch checker and reads test files from
+the PR head's git objects, rejecting symlinked test paths. It validates the
+named reproducer without running PR code or testing against the old code.
+
 ## Required Axiom Line
 
 Every PR that adds, updates or fixes policy (programmes, parameters, eligibility
