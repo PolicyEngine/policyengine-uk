@@ -1,3 +1,29 @@
+## [2.128.0] - 2026-10-12
+
+### Added
+
+- - Move families onto Universal Credit when DWP closes a legacy benefit they receive: tax credits from 2025-26, Income Support and income-based JSA from 2026-27. Families on Pension Credit, and families on Child Tax Credit only that meet the Pension Credit age conditions, go to Pension Credit instead (SI 2019/167 art. 3A). Pension-age families on Working Tax Credit can claim Universal Credit with the upper age condition waived (SI 2014/1230 reg 60A), and protected mixed-age couples on it can claim jointly (UC Regulations 2013 reg 3(2)(a)); either leaves the pension-age route only by claiming and having positive Universal Credit entitlement before the benefit cap and deductions. A new dataset input, `would_claim_uc_at_legacy_closure` (default true), says whether the family claims. `claims_universal_credit` replaces `would_claim_uc` wherever the model asks whether a family claims Universal Credit, including whose claim counts a household's non-dependants. The family's other legacy awards end at the closure whether or not it claims (SI 2014/1230 regs 8 and 46).
+
+### Changed
+
+- - Publish to PyPI with trusted publishing instead of the organisation-wide PyPI token.
+- - Cut the CPU the Python tests spend in garbage collection: each test process raises the first-generation GC threshold and freezes the objects that exist once the tests are collected (#2316).
+
+### Fixed
+
+- - Projected single-year datasets to 2032 (fiscal year 2032-33) rather than 2030, so 2031-32, the last year of a forecast made in 2026-27, is a dataset year. Before, 2031 and later were served from 2030: earnings, other incomes and weights grew by their `uprating` indices, but rent, council tax and Northern Ireland domestic rates were held flat, recorded Pension Credit capital fell to -1 (the household capital proxy), and tax-free savings income and other stored inputs with formulas were recalculated.
+  - Preserved variable-index growth after 2030 for inputs omitted from the dataset projection map, including salary-sacrifice pension contributions and housing charges. Energy inputs retain their documented FY26/27 price basis, and already projected inputs are reset under `no_economic_assumptions`.
+- - Fixed Universal Credit closure claims with ineligible partners, preserved protected mixed-age couples' pension-age route when Universal Credit entitlement is nil, and applied the nation-specific Council Tax Reduction rules for pension-age tax credit migrants.
+- - Fixed Gift Aid income tax relief by extending rate limits instead of deducting donations from taxable income, and deducting grossed-up gifts from adjusted net income.
+- - Stop the Python tests' memory growing with every Simulation under sys.monitoring coverage: each test process compiles each variable file once and every tax-benefit system runs that code (#2330).
+  - Release dead tax-benefit systems' variable modules in the Python tests once eight more systems own modules than were alive at the last release, checked as each new system starts adding its variables as well as after each test.
+  - Hand freed memory back to the system after each test file (glibc malloc_trim), and stop keeping the unpinned latest dataset cached after its smoke test.
+- - Counted statutory sick, maternity and paternity pay as Universal Credit earned income (UC Regs 2013 reg. 55(4)). Universal Credit already deducted the National Insurance on all three, and the income tax on sick and maternity pay, so it rose as the payments rose. Statutory paternity pay is now also counted in household benefits, HBAI income and government spending, as sick and maternity pay already were.
+- - Counted the Scottish Child Payment, Healthy Start vouchers and the Two Child Limit Payment in government spending, so `gov_balance` no longer leaves out benefits that households receive.
+- - A failed batch of legacy parameter overrides is now rolled back whole, nodes a structural reform adds to the parameters survive later rebuilds and reprocessing, and the scenario docs say that `Scenario.apply` on a built simulation edits the annualised values.
+- - Added tests that building the model and running a simulation leave the process's warning filters and numpy's error state unchanged, and that importing the package adds no filter that ignores a built-in warning category everywhere. A `ReformPeriodWarning` is no longer also written to the log, since warnings now reach the caller.
+
+
 ## [2.127.0] - 2026-10-12
 
 ### Added

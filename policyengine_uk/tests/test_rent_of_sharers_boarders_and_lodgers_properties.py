@@ -395,7 +395,7 @@ def test_no_op_without_sharers_boarders_or_lodgers(population):
     claims_uc = calc(sim, "uc_non_dependants_counted")
     assert np.array_equal(
         claims_uc,
-        head & calc(sim, "is_uc_eligible") & calc(sim, "would_claim_uc"),
+        head & calc(sim, "is_uc_eligible") & calc(sim, "claims_universal_credit"),
     )
     person_head_family = sim.map_result(head, "benunit", "person") > 0
     individual = calc(sim, "uc_individual_non_dep_deduction")
