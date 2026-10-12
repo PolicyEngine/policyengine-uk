@@ -8,6 +8,9 @@ childcare for children of working parents") gives a child eligible for both
 15 universal or Early Learning for 2-year-olds hours plus 15 working parent
 hours. Sources fetched on 2026-10-07:
 https://www.legislation.gov.uk/ukpga/2016/5/section/1
+https://www.legislation.gov.uk/uksi/2014/2147/regulation/3/made
+https://www.legislation.gov.uk/uksi/2014/2147/regulation/4/made
+https://www.legislation.gov.uk/uksi/2023/1330/pdfs/uksi_20231330_en.pdf
 https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026
 
 The model's extended hours parameter gives each child's working parent total
@@ -17,11 +20,13 @@ randomly drawn families, each simulated twice (eligible and not):
 
 1. Becoming eligible never lowers a family's childcare support (universal +
    targeted + extended), nor any child's.
-2. Universal and targeted values do not depend on eligibility.
+2. Legal universal and targeted eligibility does not depend on standalone
+   take-up. A participating child's first funded hours, up to 15 a week, go
+   to the applicable base programme even when its standalone flag is false.
 3. Each child's funded value equals an independent scalar reference:
-   max(universal or targeted value, working parent total) when eligible, the
-   universal or targeted value otherwise. So nothing is counted twice and no
-   child falls below the universal or targeted hours.
+   max(claimed standalone value, working parent total) when eligible, the
+   claimed standalone value otherwise. Programme allocations count the
+   legally available base hours first, preserving that total.
 4. A child's funded hours never exceed the larger of its universal or
    targeted hours and its working parent total, so never 30 hours a week
    plus the universal 15.
@@ -35,8 +40,11 @@ randomly drawn families, each simulated twice (eligible and not):
    weeks (1,140 hours a year: Childcare Act 2016 s.1(1), SI 2022/1134 reg
    44(2)(b), guidance para A1.10), nor for more than 570 hours a year when
    the family is not eligible for the working parent hours (guidance paras
-   A1.1 and A1.6), nor for more hours than it uses. These bounds are written
-   from the law, not read from the model's parameters.
+   A1.1 and A1.6). Under-threes get at most 570 annual hours before September
+   2025: two-year-olds qualify from April 2024 and children from nine months
+   from September 2024 (SI 2023/1330 reg 2). No child gets more hours than it
+   uses. These bounds are written from the law, not read from the model's
+   parameters; annual simulations still evaluate the schedule at January.
 9. No child gets both universal and targeted hours, so its universal or
    targeted floor is at most 15 hours a week.
 10. Outside England no child gets universal or working parent hours
@@ -48,10 +56,14 @@ change in household net income equals the change in the three entitlements.
 """
 
 import math
+from datetime import date
+from pathlib import Path
 from unittest.mock import patch
 
+import pytest
 from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
+from policyengine_core.parameters import load_parameter_file
 
 from policyengine_uk import Simulation
 from policyengine_uk.tax_benefit_system import system
@@ -92,6 +104,7 @@ family = st.fixed_dictionaries(
         "children": st.lists(child, min_size=1, max_size=3),
         "cap": st.sampled_from([0, 5, 10, 14.9, 15, 15.1, 18, 20, 30, 40, 60]),
         "claims_universal": st.booleans(),
+        "claims_targeted": st.booleans(),
         "targeted": st.booleans(),
         "england": st.sampled_from([True, True, True, False]),
     }
@@ -129,6 +142,7 @@ def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
                 "extended_childcare_entitlement_eligible": {year: is_eligible},
                 "targeted_childcare_entitlement_eligible": {year: f["targeted"]},
                 "would_claim_universal_childcare": {year: f["claims_universal"]},
+                "would_claim_targeted_childcare": {year: f["claims_targeted"]},
                 "maximum_extended_childcare_hours_usage": {year: f["cap"] + cap_bump},
             }
             situation["households"][f"h{copy}_{i}"] = {
@@ -139,6 +153,9 @@ def simulate(families, year, eligible, cap_bump=0, hours_bump=0):
     values = {v: [float(x) for x in sim.calculate(v, year)] for v in ENTITLEMENTS}
     values["receiving"] = [
         bool(x) for x in sim.calculate("is_child_receiving_extended_childcare", year)
+    ]
+    values["universal_eligible"] = [
+        bool(x) for x in sim.calculate("universal_childcare_entitlement_eligible", year)
     ]
     # The family amount, repeated on each child.
     values["family_extended"] = [
@@ -173,7 +190,7 @@ def reference(c, f, year, eligible):
     in_england = f["england"]
     universal_hours = (
         min(c["hours_used"] * weeks, p.universal_childcare_entitlement.hours)
-        if in_england and f["claims_universal"] and 3 <= age < 5
+        if in_england and 3 <= age < 5
         else 0
     )
     targeted_hours = (
@@ -185,7 +202,11 @@ def reference(c, f, year, eligible):
         if f["targeted"]
         else 0
     )
-    floor = (universal_hours + targeted_hours) * rate
+    universal_value = universal_hours * rate
+    targeted_value = targeted_hours * rate
+    floor = (
+        universal_value * f["claims_universal"] + targeted_value * f["claims_targeted"]
+    )
     qualifying = (
         in_england
         and under_school_age
@@ -201,28 +222,53 @@ def reference(c, f, year, eligible):
         if qualifying
         else 0
     )
-    working_parent_total = weekly * weeks * rate
-    total = max(floor, working_parent_total) if eligible else floor
-    return floor, total, working_parent_total
+    working_parent_total = weekly * weeks * rate if eligible else 0
+    total = max(floor, working_parent_total)
+    # Legal eligibility, independent of standalone take-up, determines
+    # which programme funds the first hours of participating children.
+    allocations = {
+        "universal_childcare_entitlement": min(universal_value, total),
+        "targeted_childcare_entitlement": min(targeted_value, total),
+    }
+    allocations["extended_childcare_entitlement_per_child"] = total - sum(
+        allocations.values()
+    )
+    return floor, total, working_parent_total, allocations
 
 
 def funded(child_values):
     return sum(child_values[v] for v in ENTITLEMENTS)
 
 
-def assert_statutory_bounds(c, f, year, eligible, child_values):
+def statutory_max_hours(c, instant, eligible):
+    """Age/date maximum from the law, without reading model parameters."""
+    instant = date.fromisoformat(instant)
+    # SI 2023/1330 reg 2(8)(a), commenced by reg 1(2)(b), expands
+    # under-three hours from 570 to 1,140 on 1 September 2025.
+    if not eligible or (c["age"] < 3 and instant < date(2025, 9, 1)):
+        return UNIVERSAL_OR_TARGETED_MAX_HOURS
+    return WORKING_PARENT_MAX_HOURS
+
+
+def assert_statutory_maximum(c, f, instant, eligible, hours):
+    """Independent annual and actual-use bounds, including rollout dates."""
+    context = (instant, f, c, eligible, hours)
+    assert hours <= statutory_max_hours(c, instant, eligible) + HOURS_TOLERANCE, context
+    assert hours <= WEEKS * max(c["hours_used"], 0) + HOURS_TOLERANCE, context
+
+
+def assert_statutory_bounds(c, f, instant, eligible, child_values):
     """Invariants 8 to 10 for one child, eligible or not."""
     rate = float(
-        system.parameters(f"{year}-01-01").gov.dfe.childcare_funding_rate.calc(c["age"])
+        system.parameters(instant).gov.dfe.childcare_funding_rate.calc(c["age"])
     )
     hours = funded(child_values) / rate
-    context = (year, f, c, eligible, child_values, hours)
+    context = (instant, f, c, eligible, child_values, hours)
     # 8. At most 30 hours a week over 38 weeks; at most the universal or
     # targeted 570 hours without the working parent hours; and never more
-    # hours than the child uses.
-    limit = WORKING_PARENT_MAX_HOURS if eligible else UNIVERSAL_OR_TARGETED_MAX_HOURS
-    assert hours <= limit + HOURS_TOLERANCE, context
-    assert hours <= WEEKS * max(c["hours_used"], 0) + HOURS_TOLERANCE, context
+    # hours than the child uses. Under-threes have a separate 15-hour limit
+    # before September 2025, independent of the model's hours schedule.
+    assert_statutory_maximum(c, f, instant, eligible, hours)
     # 9. Never both universal and targeted hours.
     assert not (
         child_values["universal_childcare_entitlement"] > 0
@@ -234,6 +280,74 @@ def assert_statutory_bounds(c, f, year, eligible, child_values):
     if not f["england"]:
         assert child_values["universal_childcare_entitlement"] == 0, context
         assert child_values["extended_childcare_entitlement_per_child"] == 0, context
+    # Legally universal children can have only the additional 15 weekly
+    # hours classified as extended, irrespective of standalone take-up.
+    if f["england"] and 3 <= c["age"] < 5:
+        extended_hours = child_values["extended_childcare_entitlement_per_child"] / rate
+        assert extended_hours <= UNIVERSAL_OR_TARGETED_MAX_HOURS + HOURS_TOLERANCE, (
+            context
+        )
+
+
+@pytest.mark.parametrize(
+    "instant, age, limit",
+    [
+        ("2024-03-31", 2, 570),
+        ("2024-04-01", 2, 570),
+        ("2024-08-31", 0.75, 570),
+        ("2024-09-01", 0.75, 570),
+        ("2025-08-31", 0.75, 570),
+        ("2025-08-31", 2, 570),
+        ("2025-09-01", 0.75, 1_140),
+        ("2025-09-01", 2, 1_140),
+        ("2025-08-31", 3, 1_140),
+    ],
+)
+def test_statutory_maximum_at_rollout_boundaries(instant, age, limit):
+    """The independent assertion rejects excessive hours without a simulation."""
+    c = {"age": age, "hours_used": 45, "looked_after": False}
+    f = {"england": True, "targeted": False}
+    assert statutory_max_hours(c, instant, eligible=True) == limit
+    assert_statutory_maximum(c, f, instant, eligible=True, hours=limit)
+    with pytest.raises(AssertionError):
+        assert_statutory_maximum(c, f, instant, eligible=True, hours=limit + 1)
+
+
+@pytest.mark.parametrize(
+    "instant, age, weekly_hours",
+    [
+        ("2024-04-01", 2, 15),
+        ("2024-09-01", 2, 15),
+        ("2025-08-31", 1, 15),
+        ("2025-08-31", 2, 15),
+        ("2025-09-01", 1, 30),
+        ("2025-09-01", 2, 30),
+        ("2025-08-31", 3, 30),
+        ("2025-09-01", 3, 30),
+    ],
+)
+def test_working_parent_hours_schedule_at_rollout_boundaries(
+    instant, age, weekly_hours
+):
+    """Check source dates before the model annualises its parameter tree.
+
+    Annual simulations evaluate January; the processed tree therefore retains
+    15 hours throughout 2025. The source scale keeps September's 30-hour change.
+    The existing age schedule models the September 2024 expansion to
+    nine-month-olds from January 2025; changing that approximation is separate.
+    """
+    hours_scale = load_parameter_file(
+        str(
+            Path(__file__).parents[1]
+            / "parameters/gov/dfe/extended_childcare_entitlement/hours.yaml"
+        ),
+        "extended_childcare_hours",
+    )
+    hours = float(hours_scale(instant).calc(age))
+    assert hours == weekly_hours
+    c = {"age": age, "hours_used": 45, "looked_after": False}
+    f = {"england": True, "targeted": False}
+    assert_statutory_maximum(c, f, instant, eligible=True, hours=hours * WEEKS)
 
 
 @PROPERTY_SETTINGS
@@ -248,6 +362,7 @@ def assert_statutory_bounds(c, f, year, eligible, child_values):
             "children": [{"age": 3, "hours_used": 30, "looked_after": False}],
             "cap": 10,
             "claims_universal": True,
+            "claims_targeted": True,
             "targeted": False,
             "england": True,
         },
@@ -256,6 +371,7 @@ def assert_statutory_bounds(c, f, year, eligible, child_values):
             "children": [{"age": 2, "hours_used": 30, "looked_after": False}],
             "cap": 30,
             "claims_universal": True,
+            "claims_targeted": True,
             "targeted": True,
             "england": True,
         },
@@ -271,6 +387,23 @@ def assert_statutory_bounds(c, f, year, eligible, child_values):
             ],
             "cap": 60,
             "claims_universal": True,
+            "claims_targeted": True,
+            "targeted": True,
+            "england": True,
+        },
+    ],
+)
+@example(
+    2026,
+    [
+        {
+            "children": [
+                {"age": age, "hours_used": hours, "looked_after": False}
+                for age, hours in ((2, 10), (3, 10), (4, 30))
+            ],
+            "cap": 30,
+            "claims_universal": False,
+            "claims_targeted": False,
             "targeted": True,
             "england": True,
         },
@@ -288,19 +421,29 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
             assert close(copy[0]["family_extended"], per_child), (year, f, copy)
         for c, b, a in zip(f["children"], before, after):
             assert funded(a) >= funded(b) - 0.02, (year, f, c, b, a)
+            legal_universal = f["england"] and 3 <= c["age"] < 5
+            assert a["universal_eligible"] == b["universal_eligible"] == legal_universal
             # 8-10. Statutory maximum, no double floor, England only.
-            assert_statutory_bounds(c, f, year, False, b)
-            assert_statutory_bounds(c, f, year, True, a)
-            # 2. Universal and targeted do not depend on eligibility.
-            for v in (
-                "universal_childcare_entitlement",
-                "targeted_childcare_entitlement",
-            ):
-                assert close(a[v], b[v]), (year, f, c, v, b, a)
+            assert_statutory_bounds(c, f, f"{year}-01-01", False, b)
+            assert_statutory_bounds(c, f, f"{year}-01-01", True, a)
             assert b["extended_childcare_entitlement_per_child"] == 0
-            # 3. Matches the scalar reference.
-            floor, total_after, working_parent_total = reference(c, f, year, True)
-            _, total_before, _ = reference(c, f, year, False)
+            # 2-3. Legal base hours fund participating children first,
+            # even with false standalone flags. Each programme and the
+            # combined total match the independent allocation reference.
+            floor, total_after, working_parent_total, expected_after = reference(
+                c, f, year, True
+            )
+            _, total_before, _, expected_before = reference(c, f, year, False)
+            for actual, expected in ((a, expected_after), (b, expected_before)):
+                for variable in ENTITLEMENTS:
+                    assert close(actual[variable], expected[variable]), (
+                        year,
+                        f,
+                        c,
+                        variable,
+                        actual,
+                        expected,
+                    )
             assert close(funded(b), total_before), (year, f, c, b, total_before)
             assert close(funded(a), total_after), (year, f, c, a, total_after)
             # 4. Never both added in full.
@@ -308,7 +451,9 @@ def test_becoming_eligible_never_lowers_childcare_support(year, families):
             # 6. Receiving means hours beyond the universal or targeted ones.
             top_up = a["extended_childcare_entitlement_per_child"]
             assert a["receiving"] == (top_up > 0), (year, f, c, a)
-            assert a["receiving"] == (working_parent_total > floor + 0.01), (
+            assert a["receiving"] == (
+                expected_after["extended_childcare_entitlement_per_child"] > 0.01
+            ), (
                 year,
                 f,
                 c,
@@ -333,7 +478,7 @@ def test_more_hours_used_never_lowers_childcare_support(year, families, bump):
                 assert funded(b) >= funded(a) - 0.02, (year, f, c, bump, a, b)
                 # 8. However many hours are used, never above 30 a week.
                 used = {**c, "hours_used": c["hours_used"] + hours_bump}
-                assert_statutory_bounds(used, f, year, True, b)
+                assert_statutory_bounds(used, f, f"{year}-01-01", True, b)
 
 
 # The real eligibility route: a working couple with a child, one parent's

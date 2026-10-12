@@ -15,42 +15,24 @@ class extended_childcare_entitlement_per_child(Variable):
         "the child's funded hours are the larger of the universal or targeted "
         "hours and the working parent total, never both added in full, and "
         "becoming eligible never removes the universal or targeted hours. A "
-        "family that does not take up the universal or targeted hours "
-        "(would_claim_universal_childcare, would_claim_targeted_childcare) "
-        "has none to subtract, so its whole working parent total counts here."
+        "participating child has its first funded hours allocated to the "
+        "applicable universal or targeted programme even when standalone "
+        "take-up of that programme is false; only the remaining hours count here."
     )
     definition_period = YEAR
     unit = GBP
     defined_for = "extended_childcare_entitlement_eligible"
     reference = (
         "https://www.legislation.gov.uk/ukpga/2016/5/section/1",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/3",
+        "https://www.legislation.gov.uk/uksi/2014/2147/regulation/4",
         "https://www.legislation.gov.uk/uksi/2022/1134/regulation/44",
         "https://www.legislation.gov.uk/uksi/2023/1330/regulation/2/made",
         "https://www.gov.uk/government/publications/early-education-and-childcare--2/early-education-and-childcare-valid-from-1-april-2026",
     )
 
     def formula(person, period, parameters):
-        p = parameters(period).gov.dfe
-        age = person("age", period)
-
-        # Only qualifying children of working parents (SI 2022/1134 reg 13)
-        # receive the entitlement's hours.
-        qualifying_child = person(
-            "extended_childcare_entitlement_qualifying_child", period
-        )
-        weekly_hours = (
-            p.extended_childcare_entitlement.hours.calc(age) * qualifying_child
-        )
-
-        # Hours actually used: the child's own limit and the family's limit.
-        max_hours_used = person("max_free_entitlement_hours_used", period)
-        family_max_hours = person.benunit(
-            "maximum_extended_childcare_hours_usage", period
-        )
-        weekly_hours_used = min_(min_(weekly_hours, max_hours_used), family_max_hours)
-        total_value = (
-            weekly_hours_used * p.weeks_per_year * p.childcare_funding_rate.calc(age)
-        )
+        total_value = person("extended_childcare_entitlement_total_per_child", period)
 
         # Childcare Act 2016 s.1(6)(a) and SI 2022/1134 reg 44(3): the
         # childcare available under the duty in Childcare Act 2006 s.7(1)
@@ -59,7 +41,9 @@ class extended_childcare_entitlement_per_child(Variable):
         # children of working parents" and para A1.11) gives a child eligible
         # for both 15 universal or Early Learning for 2-year-olds hours plus
         # 15 working parent hours. The working parent hours are therefore the
-        # part of the total above the universal and targeted hours.
+        # part of the total above the universal and targeted hours. Their
+        # award formulas allocate those first funded hours even when their
+        # standalone take-up flags are false (2014 regs 3-4; guidance A1.11).
         universal_or_targeted = person(
             "universal_childcare_entitlement", period
         ) + person("targeted_childcare_entitlement", period)
