@@ -361,17 +361,15 @@ def test_a_bare_year_is_that_year_in_a_dict_and_onwards_in_reform_from_dict():
     ]
 
 
-def test_a_single_day_dict_key_keeps_its_legacy_meaning_and_warns(caplog):
-    # Logged as well as warned: loading some variable modules switches
-    # warnings off for the process.
-    with caplog.at_level("WARNING", logger="policyengine_uk.utils.dated_reforms"):
+def test_a_single_day_dict_key_keeps_its_legacy_meaning_and_warns():
+    # The warning is raised after the simulation loads the variable modules,
+    # so this also checks that loading them leaves the filters alone (#2377).
+    with pytest.warns(ReformPeriodWarning, match="2027-04-06.2100-12-31"):
         april = via_reform_dict({BASIC_RATE: {"2027-04-06": 0.21}})
-    assert "2027-04-06.2100-12-31" in caplog.text
     assert [annual(april, BASIC_RATE, y) for y in YEARS] == [0.20] * len(YEARS)
-    caplog.clear()
-    with caplog.at_level("WARNING", logger="policyengine_uk.utils.dated_reforms"):
+    with warnings.catch_warnings():
+        warnings.simplefilter("error", ReformPeriodWarning)
         january = via_reform_dict({BASIC_RATE: {"2027-01-01": 0.21}})
-    assert caplog.text == ""
     assert [annual(january, BASIC_RATE, y) for y in (2026, 2027, 2028)] == [
         0.20,
         0.21,
@@ -910,12 +908,11 @@ def test_two_changes_that_need_projection_see_each_other():
         )
 
 
-def test_mixed_single_day_and_dated_keys_warn_and_apply_single_days_last(caplog):
-    with caplog.at_level("WARNING", logger="policyengine_uk.utils.dated_reforms"):
+def test_mixed_single_day_and_dated_keys_warn_and_apply_single_days_last():
+    with pytest.warns(ReformPeriodWarning, match="mixes single-day keys"):
         simulation = via_reform_dict(
             {BASIC_RATE: {"2027-01-01": 0.21, "2026-01-01.2100-12-31": 0.22}}
         )
-    assert "mixes single-day keys" in caplog.text
     assert annual(simulation, BASIC_RATE, 2027) == 0.21
     assert annual(simulation, BASIC_RATE, 2028) == 0.22
 
