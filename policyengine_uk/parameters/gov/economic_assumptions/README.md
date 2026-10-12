@@ -83,6 +83,26 @@ September. Then replace May-July earnings with the October release's figure,
 which the review uses: the April 2025 and April 2026 rises used October's
 4.1% and 4.8%, where September's first estimates were 4.0% and 4.7%.
 
+## September CPI uprating
+
+[`create_september_cpi_uprating.py`](./create_september_cpi_uprating.py)
+builds `yoy_growth.september_cpi_uprating`, the rise taking effect in April
+of each year (keyed to 1 January, like the other series), from
+`statutory_uprating_inputs.cpi_september`: September CPI of the year before,
+rounded to the published 0.1 percentage points, and zero when prices did not
+rise. `create_economic_assumption_indices` compounds it into
+`indices.september_cpi_uprating`. The triple lock reads the same rounded
+September figure, so a scenario that edits calendar-year CPI or sets
+September CPI directly moves both.
+
+Income Tax Act 2007 ss21 and 57 index the basic rate limit and the personal
+allowance by this measure once no freeze applies.
+[`../hmrc/create_threshold_indexation.py`](../hmrc/create_threshold_indexation.py)
+applies them from 2031-32, keeps the primary threshold, upper earnings limit
+and Class 4 profits limits aligned with them, and raises the secondary
+threshold by the same rises, up to the last year of
+`indices.september_cpi_uprating`.
+
 ## Refreshing after a new EFO
 
 1. Replace the 2025-2030 block in each series with values from the new EFO

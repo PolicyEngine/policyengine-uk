@@ -1,0 +1,353 @@
+# Each Council Tax Reduction scheme's own "young person". Scotland's
+# working-age scheme, from 1 April 2022, uses the Universal Credit qualifying
+# young person (SSI 2021/249 reg. 6(1); UC Regs 2013 reg. 5). England, Wales
+# and Scotland's pension-age scheme use the Child Benefit qualifying young
+# person (SI 2012/2885 reg. 2; WSI 2013/3029 reg. 2; SSI 2012/319 reg. 4), as
+# did Scotland's working-age scheme until 31 March 2022 (SSI 2012/303 reg. 4).
+#
+# The family in every case: a claimant with a 19-year-old at school, on a
+# course begun at 17. Child Benefit keeps a 19-year-old on such a course a
+# qualifying young person until 20 (Child Benefit (General) Regulations 2006
+# reg. 3). Universal Credit stops on the 1 September after the 19th birthday
+# (reg. 5(1)(b)), which the terminal-date input places.
+#
+# Weekly personal allowances (gov/dwp/housing_benefit/allowances): 2026-27
+# single under 25 £75.65, lone parent aged 18 or over £95.55, lone parent of
+# pension age £256.00; 2021-22 lone parent aged 18 or over £74.70. Child
+# Benefit for an eldest child is £27.05 a week in 2026-27.
+
+- name: Case 1, Scotland working age, past the Universal Credit terminal date, the 19-year-old is not a young person.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    is_child_or_young_person_for_council_tax_reduction: [false, false]
+    council_tax_reduction_pensioner: false
+    is_council_tax_reduction_lone_parent: false
+    # Single and under 25: 75.65 * 52.
+    council_tax_reduction_applicable_amount: 3_933.80
+    # The student is outside the family, so their earnings do not count. The
+    # claimant's Child Benefit for them does: 27.05 * 52.
+    council_tax_reduction_applicable_income: 1_406.60
+
+- name: Case 2, Scotland working age, before the Universal Credit terminal date, the 19-year-old is a young person.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: true
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    # Lone parent aged 18 or over: 95.55 * 52.
+    council_tax_reduction_applicable_amount: 4_968.60
+    # Child Benefit 1,406.60 plus the young person's earnings of 2,000, which
+    # are below the income tax and National Insurance thresholds. Counting a
+    # young person's own earnings is an older approximation of the model's,
+    # not the law (reg. 36(2) leaves them out); this pins that the member is
+    # in the family, not a statutory income figure.
+    council_tax_reduction_applicable_income: 3_406.60
+
+- name: Case 3, England keeps the Child Benefit young person past the Universal Credit terminal date.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, student]
+        country: ENGLAND
+        council_tax: 1_800
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_applicable_amount: 4_968.60
+    council_tax_reduction_applicable_income: 3_406.60
+
+- name: Case 4, Wales keeps the Child Benefit young person past the Universal Credit terminal date.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        employment_income: 2_000
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, student]
+        country: WALES
+        council_tax: 1_800
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_applicable_amount: 4_968.60
+
+- name: Case 5, Scotland's pension-age scheme keeps the Child Benefit young person.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    council_tax_reduction_pensioner: true
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    # Lone parent of pension age: 256.00 * 52.
+    council_tax_reduction_applicable_amount: 13_312
+
+- name: Case 6, Scotland's working-age scheme used the Child Benefit young person in 2021-22.
+  period: 2021
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      student:
+        age: 19
+        is_claimant_or_partner: false
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+    benunits:
+      benunit:
+        members: [claimant, student]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, student]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_qualifying_young_person_for_universal_credit: [false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    # Lone parent aged 18 or over in 2021-22: 74.70 * 52.
+    council_tax_reduction_applicable_amount: 3_884.40
+
+- name: Case 7, Scotland working age, a child under 16 is in the family under either definition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 22
+        is_claimant_or_partner: true
+      child:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [claimant, child]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant, child]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_child_or_young_person_for_council_tax_reduction: [false, true]
+    is_council_tax_reduction_lone_parent: true
+    council_tax_reduction_applicable_amount: 4_968.60
+
+- name: Case 8, Scotland working age, a claimant is never their own young person.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 17
+        is_claimant_or_partner: true
+        current_education: UPPER_SECONDARY
+    benunits:
+      benunit:
+        members: [claimant]
+        would_claim_uc: false
+    households:
+      household:
+        members: [claimant]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    is_qualifying_young_person_for_universal_credit: true
+    is_child_or_young_person_for_council_tax_reduction: false
+    is_council_tax_reduction_lone_parent: false
+    # Single and under 25: 75.65 * 52.
+    council_tax_reduction_applicable_amount: 3_933.80
+
+# The applicant's own income always counts (SSI 2021/249 reg. 36(1)). A
+# household head who is liable for the council tax and applies alone is not
+# the benefit unit's claimant, and the income mask reached them only as a
+# Child Benefit young person. Past the Universal Credit terminal date they are
+# not a young person under Scotland's working-age scheme, and their earnings
+# must still count.
+- name: Case 9, Scotland working age, a 19-year-old household head who applies alone keeps their earnings in the means test.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 19
+        is_household_head: true
+        is_claimant_or_partner: false
+        is_in_approved_training: true
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        employment_income: 10_000
+      father:
+        age: 45
+        is_household_head: false
+        is_claimant_or_partner: true
+      mother:
+        age: 46
+        is_household_head: false
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [head, father, mother]
+        would_claim_uc: false
+        would_claim_child_benefit: false
+    households:
+      household:
+        members: [head, father, mother]
+        country: SCOTLAND
+        local_authority: CITY_OF_EDINBURGH
+        council_tax: 1_800
+  output:
+    council_tax_reduction_head_applies_alone: true
+    is_council_tax_reduction_applicant_or_partner: [true, false, false]
+    is_qualifying_young_person_for_child_benefit: [true, false, false]
+    is_qualifying_young_person_for_universal_credit: [false, false, false]
+    is_child_or_young_person_for_council_tax_reduction: [false, false, false]
+    # The head's earnings of 10,000, below the income tax and National
+    # Insurance thresholds. No benefit is claimed.
+    council_tax_reduction_applicable_income: 10_000
+
+- name: Case 10, the same family in England, where the head is a Child Benefit young person.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      head:
+        age: 19
+        is_household_head: true
+        is_claimant_or_partner: false
+        is_in_approved_training: true
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_universal_credit_qualifying_young_person_terminal_date: false
+        employment_income: 10_000
+      father:
+        age: 45
+        is_household_head: false
+        is_claimant_or_partner: true
+      mother:
+        age: 46
+        is_household_head: false
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [head, father, mother]
+        would_claim_uc: false
+        would_claim_child_benefit: false
+    households:
+      household:
+        members: [head, father, mother]
+        country: ENGLAND
+        council_tax: 1_800
+  output:
+    council_tax_reduction_head_applies_alone: true
+    is_council_tax_reduction_applicant_or_partner: [true, false, false]
+    is_child_or_young_person_for_council_tax_reduction: [true, false, false]
+    council_tax_reduction_applicable_income: 10_000

@@ -45,7 +45,6 @@ def calculate_participation_elasticities(
     is_single = ~is_married
 
     # Get partner employment status for married individuals
-    is_household_head = sim.calculate("is_household_head", map_to="person")
     benunit_count_adults = composition["count_aged_18_or_over"].values
     employment_income = sim.calculate("employment_income")
     benunit_id = sim.calculate("benunit_id", map_to="person")
