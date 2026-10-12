@@ -20,6 +20,10 @@ Invariants:
    without a terminal date, so nothing changes below 19 or for a 19-year-old
    before the date; switching the fact on never removes the status; and it
    matters only for a 19-year-old in education or training.
+5. The formula gives true for everyone under 20 on 6 October, whether the
+   date of birth or only the age is given, and true is each terminal-date
+   variable's default. So a situation that sets one of them for some people
+   leaves everyone else's status as it would be with nothing set.
 """
 
 from datetime import date, timedelta
@@ -230,3 +234,78 @@ def test_universal_credit_input_overrides_the_fact_for_universal_credit_only():
     sim = simulate(people)
     np.testing.assert_array_equal(sim.calculate(UC, YEAR), [u for _, u in rows])
     np.testing.assert_array_equal(sim.calculate(PC, YEAR), [n for n, _ in rows])
+
+
+DEFAULTED = (
+    NINETEEN,
+    UC_TERMINAL,
+    "meets_qualifying_young_person_terminal_date_condition_for_pension_credit",
+)
+
+
+def test_formula_is_true_under_20_and_is_each_default():
+    # Invariant 5, from age and months alone: every age to 25 and every
+    # month since the last birthday, in three years.
+    rows = list(product(range(26), range(12)))
+    for year in (2022, 2026, 2030):
+        situation = {"people": {}, "benunits": {}, "households": {}}
+        for i, (age, months) in enumerate(rows):
+            situation["people"][f"p{i}"] = {
+                "age": {year: age},
+                "months_since_last_birthday": {year: months},
+            }
+            situation["benunits"][f"b{i}"] = {"members": [f"p{i}"]}
+            situation["households"][f"h{i}"] = {"members": [f"p{i}"]}
+        with patch(
+            "policyengine_uk.simulation.CountryTaxBenefitSystem",
+            side_effect=_PROPERTY_SYSTEM.clone,
+        ):
+            sim = Simulation(situation=situation)
+        under_20 = np.array([age < 20 for age, _ in rows])
+        for variable in DEFAULTED:
+            values = sim.calculate(variable, year)
+            assert values[under_20].all(), (variable, year)
+            assert sim.tax_benefit_system.variables[variable].default_value is True
+        # Not vacuous: the fact is false for some people of 20 or more.
+        assert not sim.calculate(NINETEEN, year)[~under_20].all()
+
+
+def test_setting_one_person_leaves_the_others_status():
+    # Invariant 5 in a household: two 19-year-olds at school, course begun
+    # at 17. Each terminal-date variable is set false for the first only;
+    # the second stays a qualifying young person for both programmes.
+    for variable in DEFAULTED:
+        people = {
+            "parent": {"age": {YEAR: 70}, "is_claimant_or_partner": {YEAR: True}},
+            **{
+                name: {
+                    "age": {YEAR: 19},
+                    "current_education": {YEAR: "UPPER_SECONDARY"},
+                    "age_started_or_accepted_current_education_or_training": {YEAR: 17},
+                    "is_claimant_or_partner": {YEAR: False},
+                }
+                for name in ("first", "second")
+            },
+        }
+        people["first"][variable] = {YEAR: False}
+        situation = {
+            "people": people,
+            "benunits": {"b": {"members": list(people)}},
+            "households": {"h": {"members": list(people)}},
+        }
+        with patch(
+            "policyengine_uk.simulation.CountryTaxBenefitSystem",
+            side_effect=_PROPERTY_SYSTEM.clone,
+        ):
+            sim = Simulation(situation=situation)
+        uc = sim.calculate(UC, YEAR)
+        pc = sim.calculate(PC, YEAR)
+        # The second student is a qualifying young person for both.
+        assert uc[2] and pc[2], variable
+        # The first loses the status the variable governs.
+        if variable == UC_TERMINAL:
+            assert not uc[1] and pc[1]
+        elif variable == NINETEEN:
+            assert not uc[1] and not pc[1]
+        else:
+            assert uc[1] and not pc[1]

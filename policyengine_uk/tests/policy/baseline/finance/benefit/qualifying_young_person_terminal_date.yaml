@@ -80,7 +80,9 @@
       benunit:
         members: [parent, student]
   output:
-    is_before_universal_credit_qualifying_young_person_terminal_date: [false, false]
+    # The parent, not set, takes the default, true: harmless, since every
+    # reader is behind the qualifying young person age limit.
+    is_before_universal_credit_qualifying_young_person_terminal_date: [true, false]
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, false]
     uc_individual_child_element: [0, 0]
@@ -263,3 +265,32 @@
     # The age limit, read on 6 October, excludes them.
     is_qualifying_young_person_for_universal_credit: [false, false]
     is_qualifying_young_person_for_pension_credit: [false, false]
+
+- name: Case 12, setting the date fact for one 19-year-old leaves another's status as the formula gives it.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      pensioner:
+        age: 70
+        is_claimant_or_partner: true
+      first:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_before_first_september_following_19th_birthday: false
+        is_claimant_or_partner: false
+      second:
+        age: 19
+        current_education: UPPER_SECONDARY
+        age_started_or_accepted_current_education_or_training: 17
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [pensioner, first, second]
+  output:
+    # The second takes the default, true, which is the formula's value for
+    # anyone under 20 on 6 October.
+    is_before_first_september_following_19th_birthday: [true, false, true]
+    is_qualifying_young_person_for_universal_credit: [false, false, true]
+    is_qualifying_young_person_for_pension_credit: [false, false, true]
