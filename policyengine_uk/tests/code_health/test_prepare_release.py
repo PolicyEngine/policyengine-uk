@@ -78,6 +78,7 @@ TYPED_FRAGMENTS_ONLY = hasattr(_bump, "classify_fragments")
 # ones, where bump_version.py can tell) into CHANGELOG.md.
 FAKE_TOWNCRIER = """
 import pathlib, subprocess, sys
+sys.dont_write_bytecode = True  # leave no __pycache__ in the checkout
 sys.path.insert(0, ".github")
 import bump_version
 version = sys.argv[sys.argv.index("--version") + 1]
@@ -235,6 +236,9 @@ def test_a_release_extends_main_by_one_version_commit(remote, tmp_path):
     ]
     assert version_at(remote, tip) == "1.2.4"
     assert "- Fixed one." in git(remote, "show", f"{tip}:CHANGELOG.md")
+    # Reading the tip's bump_version.py leaves nothing behind in the checkout.
+    assert git(work, "status", "--porcelain", "--untracked-files=all") == ""
+    assert not (work / ".github" / "__pycache__").exists()
 
 
 def test_a_race_versions_the_new_tip(remote, tmp_path):

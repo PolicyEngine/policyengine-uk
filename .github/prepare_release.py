@@ -89,7 +89,13 @@ def find_fragments(repo: Path) -> list[str]:
         "bump_version", repo / ".github" / "bump_version.py"
     )
     bump = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(bump)
+    # Load it without writing .github/__pycache__ into the checkout.
+    writes_bytecode = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        spec.loader.exec_module(bump)
+    finally:
+        sys.dont_write_bytecode = writes_bytecode
     if hasattr(bump, "load_towncrier_config") and hasattr(bump, "classify_fragments"):
         try:
             config = bump.load_towncrier_config(repo / "pyproject.toml")

@@ -57,3 +57,9 @@ outcome = "skipped"
 reason = "^Requires POLICYENGINE_UK_DEFAULT_DATASET or HUGGING_FACE_TOKEN"
 data = ["absent"]
 why = "Microsimulation tests need the private dataset. Runs without its credentials (pull requests from forks and Dependabot) skip them; every run with the credentials must execute them."
+
+[[allow]]
+nodeid = "policyengine_uk/tests/test_dwp_published_rates.py::test_projection_continues_from_last_published_rate[[]*"
+outcome = "skipped"
+reason = '^(not uprated|series ends before 2026-27|Universal Credit Act 2025 ss\.1 and 3 depart from CPI uprating)$'
+why = "The test is parametrised over every DWP rate parameter and skips those it does not apply to: parameters with no uprating, series that end before 2026-27, and the two the Universal Credit Act 2025 sets apart from CPI uprating (#1925). 66 cases on 12 October 2026."

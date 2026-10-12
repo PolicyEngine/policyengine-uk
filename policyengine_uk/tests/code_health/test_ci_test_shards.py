@@ -852,3 +852,26 @@ def test_changed_code_reads_nul_separated_unquoted_paths(tmp_path, monkeypatch, 
     assert capsys.readouterr().out.strip() == "code=true"
     monkeypatch.setenv("CODE_PATHS", "policyengine_uk/*.py")
     assert changed_code.main([str(listing)]) == 2
+
+
+def test_the_release_tells_policyengine_py_only_after_pypi_has_it():
+    # The dispatch to policyengine.py comes after PyPI serves exactly the
+    # tested files, names the version, and can never fail the release.
+    import yaml
+
+    workflow = yaml.safe_load(
+        (GITHUB_DIR / "workflows" / "versioning.yaml").read_text(encoding="utf-8")
+    )
+    publish = workflow["jobs"]["Publish"]
+    assert publish["environment"] == "pypi"
+    names = [step["name"] for step in publish["steps"]]
+    confirm = names.index("Check PyPI serves exactly these files")
+    token = names.index("Generate a token for policyengine.py")
+    dispatch = names.index("Tell policyengine.py the release is on PyPI")
+    assert confirm < token < dispatch
+    for index in (token, dispatch):
+        assert publish["steps"][index]["continue-on-error"] is True
+    run = publish["steps"][dispatch]["run"]
+    assert "repos/PolicyEngine/policyengine.py/dispatches" in run
+    assert "event_type=policyengine-uk-release" in run
+    assert "client_payload[version]=$VERSION" in run
