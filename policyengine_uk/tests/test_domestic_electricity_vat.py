@@ -140,10 +140,12 @@ def test_no_reform_means_no_vat_change():
 
 
 def test_extending_the_zero_rate_to_fy2027():
-    # A whole-year reform. A reform dated part-way through a year is not
-    # day-weighted on blended parameters (#2167).
+    # Dated reforms are applied on the statutory timeline and day-weighted
+    # into the model year (#2167), so the zero rate must cover all of model
+    # year 2027: 6 April 2027 to 5 April 2028. A calendar-2027 window would
+    # leave 96 of 366 days at 5%.
     reform = Reform.from_dict(
-        {GB_RATE: {"2027-01-01.2027-12-31": 0.0}}, country_id="uk"
+        {GB_RATE: {"2027-04-06.2028-04-05": 0.0}}, country_id="uk"
     )
     sim = Simulation(situation=household(year=2027), reform=reform)
     assert sim.calculate("domestic_energy_vat", 2027)[0] == 0
@@ -161,7 +163,7 @@ def test_reduced_rate_reform_reaches_gas_not_electricity():
 # Price basis of the energy inputs (#2189 review, finding C1). The inputs are
 # priced at DESNZ QEP average prices paid including 5% VAT, so the VAT-exclusive base
 # is the bill / 1.05 whatever rate a reform sets. Previously the divisor was
-# the baseline-tree reduced rate, which a Scenario reform also changes (#2188),
+# the baseline-tree reduced rate, which a Scenario reform also changed (#2188),
 # so a 20% gas rate treated 5%-priced bills as if they included 20%.
 HER_CASE = dict(region="LONDON", electricity=1_050, gas=1_050, year=2025)
 GAS_RATE = "gov.hmrc.vat.reduced_rate"
@@ -196,11 +198,11 @@ def test_gas_rate_reform_scenario_and_reform_agree_at_250():
     assert float(via_scenario.calculate("vat", 2025)[0]) == pytest.approx(
         float(via_reform.calculate("vat", 2025)[0]), abs=0.01
     )
-    # Reform.from_dict leaves the baseline tree alone: 1,000 x 5% x 2 = £100.
-    # (Under Scenario the baseline tree is still contaminated, #2188.)
-    assert float(
-        via_reform.calculate("baseline_domestic_energy_vat", 2025)[0]
-    ) == pytest.approx(100, abs=0.01)
+    # Both routes leave the baseline tree alone (#2188): 1,000 x 5% x 2 = £100.
+    for sim in (via_scenario, via_reform):
+        assert float(
+            sim.calculate("baseline_domestic_energy_vat", 2025)[0]
+        ) == pytest.approx(100, abs=0.01)
 
 
 def test_scalar_zero_gas_rate_leaves_electricity_vat_alone():
