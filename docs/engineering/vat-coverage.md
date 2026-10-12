@@ -56,8 +56,8 @@ the calculation below, whenever the dataset it should match changes.
 | Statutory rates | 20% standard, 5% reduced | `gov.hmrc.vat` |
 
 Model year 2024 is the 2024-25 fiscal year. All dataset totals are weighted
-sums from `Microsimulation`, computed with policyengine-uk at this branch and
-policyengine-core 3.33.2.
+sums from `Microsimulation`, computed with policyengine-uk as of #2187 (before
+energy bills were split out, see below) and policyengine-core 3.33.2.
 
 ### Formula
 
@@ -175,13 +175,24 @@ actually pay on it.
 With energy split out, the coverage is derived against receipts net of energy
 VAT: coverage = pre-scaling non-energy VAT / (0.7 x (receipts - energy VAT)).
 
-| Year | Pre-scaling non-energy VAT | Energy-bill VAT | OBR VAT receipts | Survey coverage |
-|---|---|---|---|---|
-| 2024-25 | £79.2bn | £2.0bn | £171.0bn (outturn) | 0.670 |
-| 2025-26 | £82.5bn | £2.0bn | £180.2bn | 0.662 |
-| 2026-27 | £84.7bn | £1.4bn | £187.7bn | 0.650 |
+On the same inputs as the derivation above:
 
-The 2024-25 value rounds to the same 0.67 as the derivation above, so the
-parameter is unchanged. To reproduce, subtract
-`sim.calculate("domestic_energy_vat", year).sum()` from the receipts in the
-snippet above before dividing.
+| Dataset | Year | Pre-scaling non-energy VAT | Energy-bill VAT | OBR VAT receipts | Survey coverage |
+|---|---|---|---|---|---|
+| Microcosm UK 2024-25 (`f9d1922c`) | 2024-25 | £79.23bn | £1.99bn | £171.0bn (outturn) | 0.670 |
+| Microcosm UK 2024-25 (`f9d1922c`) | 2025-26 | £82.51bn | £2.01bn | £180.2bn | 0.662 |
+| Microcosm UK 2024-25 (`f9d1922c`) | 2026-27 | £84.73bn | £1.40bn | £187.7bn | 0.650 |
+| Enhanced FRS 2024-25, uk-data 1.56.16 | 2024-25 | £109.39bn | £2.35bn | £171.0bn (outturn) | 0.927 |
+| Enhanced FRS 2024-25, uk-data 1.58.0 | 2024-25 | £114.06bn | £2.44bn | £171.0bn (outturn) | 0.967 |
+
+The pre-scaling non-energy VAT is the standard-rated part alone, since the
+generic reduced-rate base is empty once domestic fuel and power is taken out.
+The Microcosm 2024-25 value rounds to the same 0.67 as the derivation above,
+so the parameter is unchanged, and the bound above still holds (0.650 to 0.670
+by receipts, 0.688 by the ready reckoner). With it, total `vat` on Microcosm
+is within 0.1% of 2024-25 receipts and 3.0% below in 2026-27; on Enhanced FRS
+it is 38% (1.56.16) or 44% (1.58.0) above 2024-25 receipts.
+
+To reproduce, run the snippet above on this version and subtract
+`sim.calculate("domestic_energy_vat", year).sum()` from the receipts before
+dividing.
