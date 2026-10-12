@@ -91,7 +91,6 @@ legacy override and dated keys are not annualised again.
 from __future__ import annotations
 
 import datetime
-import logging
 import warnings
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
@@ -112,8 +111,6 @@ CORE_SCALAR_PERIOD = "year:2000:100"
 EARLIEST = Instant((1, 1, 1))
 # Where process_parameter_tree backdates each parameter's first value to.
 BACKDATED_FROM = "2015-01-01"
-
-logger = logging.getLogger(__name__)
 
 REFORM_DICT = "reform_dict"
 PARAMETER_CHANGES = "parameter_changes"
@@ -263,8 +260,6 @@ def read_reform_dict(
 
 
 def _warn(message: str) -> None:
-    # Logged as well: some variable modules switch warnings off when loaded.
-    logger.warning(message)
     warnings.warn(message, ReformPeriodWarning, stacklevel=4)
 
 
