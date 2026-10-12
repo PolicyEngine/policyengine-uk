@@ -3,10 +3,10 @@
 ```{note}
 **Planning page.** [#1692](https://github.com/PolicyEngine/policyengine-uk/issues/1692)
 asked for a switch and rollback path from the Enhanced FRS (eFRS) to Microplex UK
-(`mp-30k-uk`). Microplex UK has since been archived (May 2026), and its successor
-is [Microcosm UK](https://github.com/PolicyEngine/microcosm). Its first
-certified national release, `microcosm_uk_2024_25.h5`, is dated 4 October 2026.
-This page applies the same switch and rollback path to Microcosm UK.
+(`mp-30k-uk`). The `microplex-uk` repository has since been archived, and its
+successor is [Microcosm UK](https://github.com/PolicyEngine/microcosm), whose
+UK national line publishes `microcosm_uk_2024_25.h5`. This page applies the
+same switch and rollback path to Microcosm UK.
 ```
 
 ## Current state
@@ -25,6 +25,12 @@ when a Hugging Face token is available (`policyengine_uk/tests/conftest.py`).
 So the eFRS is still the dataset the model is tested against, and the
 default in downstream tools such as policyengine.py.
 
+Direct microsimulation through `Microsimulation()` in this package is
+deprecated in favour of [policyengine.py](https://github.com/PolicyEngine/policyengine.py),
+whose managed bundle pins certified datasets (see the repository README). The
+default most users meet is therefore the one that bundle pins, so a switch has
+to be made there as well as in this repository's tests.
+
 ## What the switch needs
 
 ### Loader
@@ -32,7 +38,8 @@ default in downstream tools such as policyengine.py.
 - `UKMultiYearDataset` and `UKSingleYearDataset`
   (`policyengine_uk/data/dataset_schema.py`) are the containers both datasets
   load into. A Microcosm file must use the same table and column conventions,
-  because `_pre_encode_enum_columns` walks each year's tables.
+  because `_pre_encode_enum_columns` (in `simulation.py`) walks each year's
+  tables.
 - The dataset's `years` drive uprating. Microcosm's base year is 2024-25,
   one year later than the eFRS file used in tests, so uprating paths from the
   earlier base year need checking.
