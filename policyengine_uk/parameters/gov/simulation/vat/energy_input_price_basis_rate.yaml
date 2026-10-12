@@ -6,14 +6,15 @@ metadata:
   label: VAT rate included in energy input prices
   derivation: >-
     The default electricity and gas inputs are NEED kWh consumption valued at
-    Ofgem price cap unit rates for 1 April to 30 June 2026, which Ofgem quotes
-    including VAT at 5%. The VAT-exclusive base is therefore the input divided
+    DESNZ Quarterly Energy Prices average domestic prices paid (standard
+    electricity table 2.2.4 and gas table 2.3.4, all payment methods, 2024-25),
+    which include VAT at 5%. The VAT-exclusive base is therefore the input divided
     by 1.05. Reading the statutory reduced rate here instead would make a
     reform to that rate reprice the inputs (PolicyEngine/policyengine-uk#2189,
     review finding C1).
   reference:
-    - title: Ofgem, Changes to energy price cap between 1 April and 30 June 2026 (unit rates and standing charges include VAT)
-      href: https://www.ofgem.gov.uk/news/changes-energy-price-cap-between-1-april-and-30-june-2026
+    - title: DESNZ, Annual domestic energy price statistics (Quarterly Energy Prices tables 2.2.4 and 2.3.4, prices include VAT)
+      href: https://www.gov.uk/government/statistical-data-sets/annual-domestic-energy-price-statistics
     - title: VAT Act 1994, Schedule 7A, Group 1 (reduced rate on domestic fuel and power)
       href: https://www.legislation.gov.uk/ukpga/1994/23/schedule/7A
 values:

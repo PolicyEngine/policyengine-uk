@@ -159,7 +159,7 @@ def test_reduced_rate_reform_reaches_gas_not_electricity():
 
 
 # Price basis of the energy inputs (#2189 review, finding C1). The inputs are
-# priced at Ofgem cap unit rates including 5% VAT, so the VAT-exclusive base
+# priced at DESNZ QEP average prices paid including 5% VAT, so the VAT-exclusive base
 # is the bill / 1.05 whatever rate a reform sets. Previously the divisor was
 # the baseline-tree reduced rate, which a Scenario reform also changes (#2188),
 # so a 20% gas rate treated 5%-priced bills as if they included 20%.

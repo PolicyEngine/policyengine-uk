@@ -5,8 +5,8 @@ from policyengine_uk.utils.parameters import fiscal_year_average
 
 
 def _domestic_energy_vat(household, period, parameters, electricity_rate, gas_rate):
-    # electricity_consumption and gas_consumption are priced at Ofgem cap unit
-    # rates, which include VAT at 5%, so the VAT-exclusive base is the bill
+    # electricity_consumption and gas_consumption are priced at DESNZ Quarterly
+    # Energy Prices average prices paid, which include VAT at 5%, so the VAT-exclusive base is the bill
     # divided by 1.05 (5/105 of the bill is VAT). The divisor is the rate the
     # inputs were priced at (gov.simulation.vat.energy_input_price_basis_rate),
     # never the statutory rate being modelled, so the base stays fixed when a
