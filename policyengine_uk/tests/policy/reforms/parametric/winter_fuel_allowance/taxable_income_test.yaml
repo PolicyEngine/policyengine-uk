@@ -45,7 +45,10 @@
   output:
     winter_fuel_allowance: 0
 
-- name: Enable income test - pensioner exactly at threshold gets no WFA
+# The limit is inclusive: the winter fuel payment charge the income test stands
+# in for applies only where total income "exceeds" the limit (ITEPA 2003
+# s.681I(1)(b)), so income exactly at the limit keeps the payment.
+- name: Enable income test - pensioner exactly at threshold keeps WFA
   period: 2024
   absolute_error_margin: 1
   input:
@@ -59,7 +62,7 @@
     esa_income: 0
     jsa_income: 0
   output:
-    winter_fuel_allowance: 0
+    winter_fuel_allowance: 200
 
 - name: Enable income test - pensioner £1 under threshold gets WFA
   period: 2024

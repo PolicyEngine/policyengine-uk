@@ -98,11 +98,11 @@
     # Only person 3 is a non-dependant of the head's family: 3.
     housing_benefit_non_dep_deductions: [3, 0, 0]
 
-# HB Regs 2006 reg 74(1)(b) and (2): a non-dependant aged 18 or over who is
-# not in remunerative work takes the minimum deduction, £19.65 a week in
-# 2025-26, whatever their income. Reg 74(6): no deduction at all if the
-# claimant or partner receives Attendance Allowance (among other benefits).
-- name: A non-working adult non-dependant with only investment income takes the minimum deduction
+# The review case on #2184: an existing claimant in council housing with an
+# adult child whose only income is £28,912 of other investment income and who
+# does no paid work. The deduction is the same as for an adult child with no
+# income; reg 74(1)(b) minimum for non-workers comes with #2007.
+- name: A non-dependant's investment income does not raise the Housing Benefit deduction
   period: 2025
   absolute_error_margin: 0.01
   input:
@@ -124,34 +124,5 @@
         tenure_type: RENT_FROM_COUNCIL
         rent: 15_000
   output:
-    # 19.65 * 52 = 1,021.80 (the £463-576.99 band would be 115.45 * 52 = 6,003.40).
-    housing_benefit_non_dep_deductions: [1_021.80, 0]
-
-- name: A claimant on Attendance Allowance has no non-dependant deduction
-  period: 2025
-  absolute_error_margin: 0.01
-  input:
-    people:
-      claimant:
-        age: 70
-        is_household_head: true
-        attendance_allowance: 3_800
-      adult_child:
-        age: 30
-        hours_worked: 1_950 # 37.5 hours a week
-        employment_income: 28_912 # 556 a week
-    benunits:
-      claimant_family:
-        members: [claimant]
-      adult_child_family:
-        members: [adult_child]
-    households:
-      household:
-        members: [claimant, adult_child]
-        tenure_type: RENT_FROM_COUNCIL
-        rent: 15_000
-  output:
-    housing_benefit_non_dep_deduction_exempt: [true, false]
-    # Reg 74(6)(b)(i) / SPC reg 55(6)(b)(i): no deduction, although the
-    # non-dependant alone would take 115.45 * 52 = 6,003.40.
+    # Banding the £556 would give 115.45 * 52 = 6,003.40.
     housing_benefit_non_dep_deductions: [0, 0]

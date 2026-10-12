@@ -2,18 +2,11 @@
 # art 23(3); DWP Benefit and pension rates 2025 to 2026): under £183 a week
 # 19.65; £183-265.99 45.15; £266-347.99 62.00; £348-462.99 101.35;
 # £463-576.99 115.45; £577 and above 126.65.
-#
-# HB Regs 2006 reg 74(2): the gross-income bands apply only to a non-dependant
-# in remunerative work, which reg 6(1) defines as at least 16 paid hours a
-# week. hours_worked: 832 is 832 / 52 = 16.0 hours a week, so the cases that
-# test the bands set it. Everyone else takes the reg 74(1)(b) minimum, which
-# is £19.65 a week in 2025-26.
 
 - name: Reduced rent without LHA
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 832 # 16 hours a week
     total_income: 5_200 # 100 weekly
   output:
     household_benefits_individual_non_dep_deduction: 19.65 * 52
@@ -22,7 +15,6 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 832 # 16 hours a week
     total_income: 30_056 # 578 weekly
   output:
     household_benefits_individual_non_dep_deduction: 126.65 * 52
@@ -31,7 +23,6 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 832 # 16 hours a week
     total_income: 18_148 # 349 weekly
   output:
     household_benefits_individual_non_dep_deduction: 101.35 * 52
@@ -42,77 +33,33 @@
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 832 # 16 hours a week
     total_income: 9_517 # just over 183 weekly, the lower edge of the second band
   output:
     household_benefits_individual_non_dep_deduction: 45.15 * 52
 
-- name: Other investment income counts for a non-dependant in remunerative work
-  period: 2025
-  input:
-    housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 832 # 16 hours a week
-    other_investment_income: 28_912 # 556 weekly
-  output:
-    # 556 is in the £463-576.99 band: 115.45 * 52 = 6,003.40.
-    household_benefits_individual_non_dep_deduction: 115.45 * 52
-
-- name: Non-worker with only investment income takes the minimum deduction
+# Other investment income counts in total_income (ITA 2007 s. 23), but it is
+# left out of the non-dependant band until the reg 74(2) remunerative-work
+# test is modelled (#2007). Otherwise a non-worker whose only income is
+# investment income would be banded on it, where reg 74(1)(b) gives them the
+# minimum whatever their income.
+- name: Other investment income does not band a non-worker
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
     other_investment_income: 28_912 # 556 weekly, no hours
   output:
-    # Not in remunerative work, so reg 74(1)(b) applies whatever the income:
-    # 19.65 * 52 = 1,021.80 (not 115.45 * 52 = 6,003.40).
-    household_benefits_individual_non_dep_deduction: 19.65 * 52
+    # The same as a non-dependant with no income. Banding the £556 would give
+    # 115.45 * 52 = 6,003.40.
+    household_benefits_individual_non_dep_deduction: 0
 
-- name: Non-worker with high investment income takes the minimum deduction
-  period: 2025
-  input:
-    housing_benefit_individual_non_dep_deduction_eligible: true
-    other_investment_income: 60_000
-    dividend_income: 40_000 # 100,000 / 52 = 1,923 weekly, no hours
-  output:
-    # 19.65 * 52 = 1,021.80.
-    household_benefits_individual_non_dep_deduction: 19.65 * 52
-
-- name: Worker in remunerative work with earnings keeps the earnings band
+- name: Other investment income does not move a worker's band
   period: 2025
   input:
     housing_benefit_individual_non_dep_deduction_eligible: true
     hours_worked: 1_950 # 37.5 hours a week
-    employment_income: 28_912 # 556 weekly
+    employment_income: 9_517 # just over 183 weekly
+    other_investment_income: 28_912 # 556 weekly
   output:
-    # 556 is in the £463-576.99 band: 115.45 * 52 = 6,003.40.
-    household_benefits_individual_non_dep_deduction: 115.45 * 52
-
-- name: Just under 16 hours a week is not remunerative work
-  period: 2025
-  input:
-    housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 831 # 831 / 52 = 15.98 hours a week
-    employment_income: 28_912 # 556 weekly
-  output:
-    # 15.98 < 16, so reg 74(1)(b): 19.65 * 52 = 1,021.80.
-    household_benefits_individual_non_dep_deduction: 19.65 * 52
-
-- name: Exactly 16 hours a week is remunerative work
-  period: 2025
-  input:
-    housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 832 # 832 / 52 = 16.0 hours a week ("not less than 16")
-    employment_income: 28_912 # 556 weekly
-  output:
-    # 16 >= 16, so the reg 74(2) bands apply: 115.45 * 52 = 6,003.40.
-    household_benefits_individual_non_dep_deduction: 115.45 * 52
-
-- name: Worker with no gross income takes the minimum deduction
-  period: 2025
-  input:
-    housing_benefit_individual_non_dep_deduction_eligible: true
-    hours_worked: 832 # 16 hours a week
-  output:
-    # 0 < 183, so reg 74(2)(a) gives the reg 74(1)(b) amount:
-    # 19.65 * 52 = 1,021.80.
-    household_benefits_individual_non_dep_deduction: 19.65 * 52
+    # Banded on the £183 of earnings: 45.15 * 52 = 2,347.80. Adding the £556
+    # would give the top band, 126.65 * 52 = 6,585.80.
+    household_benefits_individual_non_dep_deduction: 45.15 * 52
