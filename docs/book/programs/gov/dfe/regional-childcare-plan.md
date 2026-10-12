@@ -144,9 +144,11 @@ entitlements already enter `household_benefits` and `gov_spending`.
   splits Universal / Extended / Targeted), or as one variable with the
   age-and-eligibility logic inside? Recommendation: separate, mirroring
   the English pattern for queryability.
-- Welsh Flying Start is geographic. Microcosm UK assigns each household
-  to a 2021 Output Area, which nests in LSOAs, so eligibility by area is
-  now possible once the Flying Start area list is sourced.
+- Welsh Flying Start is geographic. Microcosm UK, the dataset being
+  built to replace the Enhanced FRS, assigns each household in England
+  and Wales to a 2021 Output Area, which nests in LSOAs, so eligibility
+  by area becomes possible on that dataset once the Flying Start area
+  list is sourced.
 - EMA ended in England but still runs in Scotland, Wales and Northern
   Ireland. Today `child_ema` and `adult_ema` are reported amounts with
   no formula. Should the devolved schemes be modelled under the existing
