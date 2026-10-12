@@ -478,6 +478,24 @@
     household_benefits: 200
     hbai_household_net_income: 42_514
 
+- name: 2025 Council Tax Reduction income deducts income tax before the charge
+  # The pensioner above. Council Tax Reduction income under the general rules
+  # deducts income tax and National Insurance, but not the charge, which
+  # recovers the payment: 50,000 - 7,486 = £42,514, not 50,000 - 7,686.
+  period: 2025
+  input:
+    people:
+      pensioner:
+        age: 70
+        private_pension_income: 50_000
+    households:
+      household:
+        members: [pensioner]
+        country: ENGLAND
+  output:
+    winter_fuel_payment_charge: [200]
+    council_tax_reduction_applicable_income: [42_514]
+
 - name: 2025 the payment is kept at £35,000 of private pension
   # £22,430 at 20% = £4,486; no charge. HBAI net income: 35,000 + 200 -
   # 4,486 = £30,714.

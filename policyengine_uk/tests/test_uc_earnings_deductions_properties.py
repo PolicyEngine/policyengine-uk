@@ -292,10 +292,19 @@ def _use_formula_before_1942(simulation):
                 period,
                 ["employment_income", "self_employment_income", "miscellaneous_income"],
             )
+            # The whole benefit unit's tax, as benunit_tax was before the
+            # winter fuel payment charge joined income tax: the charge depends
+            # on Universal Credit receipt, so deducting it here would be
+            # circular.
             disregards = add(
                 benunit,
                 period,
-                ["uc_work_allowance", "benunit_tax", "pension_contributions"],
+                [
+                    "uc_work_allowance",
+                    "income_tax_before_winter_fuel_payment_charge",
+                    "national_insurance",
+                    "pension_contributions",
+                ],
             )
             return max_(0, gross - disregards)
 
