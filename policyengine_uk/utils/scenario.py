@@ -1,16 +1,25 @@
+import logging
+
 from pydantic import BaseModel, ConfigDict
 from typing import Any, Literal, List, Optional, Callable, Dict, Type, Union
 from policyengine_core.simulations import Simulation
 from policyengine_core.reforms import Reform
 from policyengine_uk.utils.dated_reforms import (
+    ALL_PERIODS,
     REFORM_DICT,
     REFORM_FROM_DICT,
+    LegacyOverride,
     ParameterAssignment,
     apply_legacy_overrides,
     read_reform_dict,
     read_reform_from_dict,
 )
 from policyengine_uk.utils.parameters import check_parameter_not_removed
+
+logger = logging.getLogger(__name__)
+
+# Set on a simulation while Scenario.apply runs its modifier.
+APPLYING_TO_BUILT_SIMULATION = "_scenario_apply_to_built_simulation"
 
 
 class DatedReform(BaseModel):
@@ -49,20 +58,30 @@ def _legacy_override_modifier(dated: DatedReform) -> Callable[[Simulation], None
     def modifier(simulation: Simulation) -> None:
         from policyengine_uk.tax_benefit_system import statutory_parameter_defines
 
-        _, legacy = dated.read(statutory_parameter_defines(), warn=True)
+        # Scenario.apply edits an already-built simulation's annualised
+        # parameters, so there every change of the reform is an override.
+        every_change = getattr(simulation, APPLYING_TO_BUILT_SIMULATION, False)
+        defines = (
+            (lambda path: False) if every_change else statutory_parameter_defines()
+        )
+        _, legacy = dated.read(defines, warn=not every_change)
         if not legacy:
             return
-        system = simulation.tax_benefit_system
-        if hasattr(system, "add_legacy_overrides"):
-            # Kept by the system, so a later rebuild applies them again.
-            system.add_legacy_overrides(legacy)
-        else:
-            apply_legacy_overrides(system.parameters, legacy)
-            system.reset_parameter_caches()
-        if getattr(simulation, "populations", None) is not None:
-            simulation._invalidate_all_caches()
+        _add_overrides(simulation, legacy)
 
     return modifier
+
+
+def _add_overrides(simulation: Simulation, overrides: List[LegacyOverride]) -> None:
+    system = simulation.tax_benefit_system
+    if hasattr(system, "add_legacy_overrides"):
+        # Kept by the system, so a later rebuild applies them again.
+        system.add_legacy_overrides(overrides)
+    else:
+        apply_legacy_overrides(system.parameters, overrides)
+        system.reset_parameter_caches()
+    if getattr(simulation, "populations", None) is not None:
+        simulation._invalidate_all_caches()
 
 
 def _apply_reform_class(reform: Type[Reform], simulation: Simulation) -> None:
@@ -279,21 +298,34 @@ class Scenario(BaseModel):
             )
 
     def apply(self, simulation: Simulation) -> None:
-        """Apply this scenario to a simulation.
+        """Apply this scenario to an already-built simulation.
 
         First applies parameter changes, then runs the simulation modifier if present.
 
-        A scenario's ``dated_reforms`` rebuild the simulation's parameters
-        from the statutory tree first, which discards earlier edits to them.
+        This edits the simulation's annualised parameters, as it always has,
+        adding to whatever the simulation already carries. A dated reform's
+        keys override the annualised values over their dates and are not
+        annualised again, so a change dated 6 April does not set that fiscal
+        year here. Pass the scenario (or ``reform=``) when constructing the
+        ``Simulation`` to have its changes written onto the statutory
+        timeline. The tax-benefit system keeps the edits, so a later rebuild
+        of its parameters applies them again.
 
         Args:
             simulation: The simulation to modify
         """
         if self.dated_reforms:
-            simulation.apply_parameter_assignments(self.dated_assignments())
+            logger.warning(
+                "Scenario.apply edits the built simulation's annualised "
+                "parameters, so its dated reform keys are not annualised "
+                "again. Pass the scenario when constructing the Simulation to "
+                "apply them on the statutory timeline."
+            )
 
         # Apply parameter changes first
+        overrides: List[LegacyOverride] = []
         if self.parameter_changes:
+            parameters = simulation.tax_benefit_system.parameters
             for path, value in self.parameter_changes.items():
                 if isinstance(value, dict):
                     # Handle nested parameter changes
@@ -303,30 +335,31 @@ class Scenario(BaseModel):
                         full_path = f"{path}.{sub_path}"
                         check_parameter_not_removed(full_path)
                         try:
-                            target = simulation.tax_benefit_system.parameters.get_child(
-                                full_path
-                            )
+                            parameters.get_child(full_path)
                         except ValueError:
                             # A saved period-valued policy on a removed scalar
                             # path still needs the migration message; valid
                             # children such as male.age remain reformable.
                             check_parameter_not_removed(path)
                             raise
-                        target.update(
-                            period=None,  # Apply to all periods
-                            value=sub_value,
+                        # Apply to all periods
+                        overrides.append(
+                            LegacyOverride(full_path, None, sub_value, ALL_PERIODS)
                         )
                 else:
-                    # Simple parameter change
+                    # Simple parameter change, applied to all periods
                     check_parameter_not_removed(path)
-                    simulation.tax_benefit_system.parameters.get_child(path).update(
-                        period=None,
-                        value=value,  # Apply to all periods
-                    )
+                    overrides.append(LegacyOverride(path, None, value, ALL_PERIODS))
+        if overrides:
+            _add_overrides(simulation, overrides)
 
         # Then apply simulation modifier
         if self.simulation_modifier:
-            self.simulation_modifier(simulation)
+            setattr(simulation, APPLYING_TO_BUILT_SIMULATION, True)
+            try:
+                self.simulation_modifier(simulation)
+            finally:
+                delattr(simulation, APPLYING_TO_BUILT_SIMULATION)
 
     def __repr__(self) -> str:
         """String representation of the Scenario."""

@@ -76,9 +76,16 @@ so), and a structural reform class that edits a parameter overrides a dict
 change to it even when the dict comes later in a tuple.
 
 The tax-benefit system keeps every dated change and legacy override it has
-been given. Any later rebuild of its parameters (another reform,
-``Scenario.apply``, or a modifier that reloads and reprocesses the
-parameters, as ``no_economic_assumptions`` does) writes them all again.
+been given. Any later rebuild of its parameters (another call to
+``Simulation.apply_parameter_changes``, or a modifier that reloads and
+reprocesses the parameters, as ``no_economic_assumptions`` does) writes them
+all again, onto the parameters as that modifier left them. A rebuild does
+not keep other edits to the processed parameters, such as a structural
+reform's.
+
+``Scenario.apply`` on an already-built simulation never rebuilds: it edits
+the annualised parameters, as it always has, so every change it makes is a
+legacy override and dated keys are not annualised again.
 """
 
 from __future__ import annotations
@@ -111,6 +118,8 @@ logger = logging.getLogger(__name__)
 REFORM_DICT = "reform_dict"
 PARAMETER_CHANGES = "parameter_changes"
 REFORM_FROM_DICT = "reform_from_dict"
+# Scenario.apply's parameter_changes on a built simulation: every period.
+ALL_PERIODS = "all_periods"
 READINGS = (REFORM_DICT, PARAMETER_CHANGES, REFORM_FROM_DICT)
 
 
@@ -357,7 +366,9 @@ def apply_legacy_overrides(
 
     for override in overrides:
         target = parameters.get_child(override.path)
-        if override.reading == REFORM_FROM_DICT:
+        if override.reading == ALL_PERIODS:
+            target.update(period=None, value=override.value)
+        elif override.reading == REFORM_FROM_DICT:
             if override.key is None:
                 target.update(period=CORE_SCALAR_PERIOD, value=override.value)
             else:

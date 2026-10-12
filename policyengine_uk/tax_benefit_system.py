@@ -189,7 +189,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         onto the parameters first, so a modifier that reloads and edits the
         parameters before processing them again (as ``no_economic_assumptions``
         does) keeps the reform. Its legacy overrides of the annualised
-        parameters are then applied again.
+        parameters are then applied again. The parameters as they stood
+        before the changes are kept as the base for later rebuilds.
         """
         self._parameters_at_instant_cache = {}
         self._rebuild(self.parameters, statutory=False)
@@ -202,58 +203,110 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """Rebuild the parameters with more changes on the statutory timeline.
 
         Adds the changes to the system's ``dated_assignments`` and writes
-        them all, in order, onto a fresh copy of the parameters as loaded
-        from the YAML files. The parameters are then processed as current law
-        is, so each change is uprated, indexed and annualised by its
-        parameter's rule, and ``parameters.baseline`` stays current law.
-        Where a change reaches the part of a parameter's timeline that
-        projection fills, prior law there follows the path the parameter
-        takes under the reform's other changes (see
+        them all, in order, onto a fresh copy of the parameters the system
+        was last processed from: the YAML as loaded, or that tree as a
+        modifier left it before reprocessing. The parameters are then
+        processed as current law is, so each change is uprated, indexed and
+        annualised by its parameter's rule, and ``parameters.baseline`` stays
+        without the changes. Where a change reaches the part of a parameter's
+        timeline that projection fills, prior law there follows the path the
+        parameter takes under the reform's other changes (see
         ``policyengine_uk.utils.dated_reforms``).
+
+        A rebuild keeps the system's dated changes and legacy overrides. It
+        does not keep other edits made to the processed parameters, such as
+        a structural reform's, as ``reset_parameters`` never has. If the
+        rebuild fails, the system is left as it was.
         """
         if not assignments:
             return
+        previous = (
+            self.dated_assignments,
+            self.parameters,
+            self._projected_timelines,
+            self._raw_parameters,
+        )
         offset = len(self.dated_assignments)
-        self.dated_assignments = self.dated_assignments + [
-            replace(assignment, order=offset + index)
-            for index, assignment in enumerate(
-                sorted(assignments, key=lambda assignment: assignment.order)
-            )
-        ]
-        self._parameters_at_instant_cache = {}
-        key = _assignments_key(self.dated_assignments)
-        cached = _rebuilt_parameters_cache.get(key)
-        if cached is not None:
-            self.parameters = cached[0].clone()
-            self.projected_timelines = cached[1]
-        else:
-            self._rebuild(statutory_parameters(), statutory=True)
-            _remember_rebuilt(key, self.parameters.clone(), self.projected_timelines)
-        self._apply_legacy_overrides()
-        self.reset_parameter_caches()
+        try:
+            self.dated_assignments = self.dated_assignments + [
+                replace(assignment, order=offset + index)
+                for index, assignment in enumerate(
+                    sorted(assignments, key=lambda assignment: assignment.order)
+                )
+            ]
+            self._parameters_at_instant_cache = {}
+            statutory = self._raw_parameters is None
+            key = _assignments_key(self.dated_assignments) if statutory else None
+            cached = _rebuilt_parameters_cache.get(key) if key is not None else None
+            if cached is not None:
+                self.parameters = cached[0].clone()
+                self._projected_timelines = cached[1]
+            else:
+                raw = (
+                    statutory_parameters()
+                    if statutory
+                    else self._raw_parameters.clone()
+                )
+                self._rebuild(raw, statutory=statutory)
+                if key is not None:
+                    _remember_rebuilt(
+                        key,
+                        self.parameters.clone(),
+                        copy_timelines(self._projected_timelines),
+                    )
+            self._apply_legacy_overrides()
+        except Exception:
+            (
+                self.dated_assignments,
+                self.parameters,
+                self._projected_timelines,
+                self._raw_parameters,
+            ) = previous
+            raise
+        finally:
+            self.reset_parameter_caches()
 
     def add_legacy_overrides(self, overrides: List[LegacyOverride]) -> None:
         """Apply changes to the annualised parameters and keep them.
 
         Kept so a later rebuild of the parameters applies them again, after
-        the dated changes.
+        the dated changes. Overrides that fail to apply are not kept.
         """
         if not overrides:
             return
+        try:
+            apply_legacy_overrides(self.parameters, overrides)
+        finally:
+            self.reset_parameter_caches()
         self.legacy_overrides = self.legacy_overrides + list(overrides)
-        apply_legacy_overrides(self.parameters, overrides)
-        self.reset_parameter_caches()
+
+    @property
+    def projected_timelines(self) -> Dict[str, Timeline]:
+        """Each gov parameter's timeline before fiscal-year annualisation.
+
+        A copy: the timelines of an unreformed system, and of a rebuild
+        taken from the memo, are shared with later systems.
+        """
+        return copy_timelines(
+            self._projected_timelines
+            if self._projected_timelines is not None
+            else projected_timelines()
+        )
 
     def _rebuild(self, raw: ParameterNode, statutory: bool) -> None:
         assignments = self.dated_assignments
+        if not statutory:
+            # The base later rebuilds start from: a modifier's edits to the
+            # reloaded parameters are part of it.
+            self._raw_parameters = raw.clone()
         if not assignments:
-            self.parameters, self.projected_timelines = process_parameter_tree(raw)
+            self.parameters, self._projected_timelines = process_parameter_tree(raw)
             return
         unreformed = raw.clone()
         projected = prior_law_projection(assignments, unreformed, statutory)
         for assignment in assignments:
             write_assignment(raw.get_child(assignment.path), assignment, projected)
-        self.parameters, self.projected_timelines = process_parameter_tree(
+        self.parameters, self._projected_timelines = process_parameter_tree(
             raw, unreformed
         )
 
@@ -294,6 +347,11 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         # cloned system does not share later additions.
         self.dated_assignments: List[ParameterAssignment] = []
         self.legacy_overrides: List[LegacyOverride] = []
+        # The parameters this system was last processed from, when that is
+        # not the YAML as loaded (None), and its own projected timelines,
+        # when it has been processed itself (None: current law's).
+        self._raw_parameters: Optional[ParameterNode] = None
+        self._projected_timelines: Optional[Dict[str, Timeline]] = None
 
         # Set up and process parameters
         self.parameters_dir = COUNTRY_DIR / "parameters"
@@ -306,15 +364,16 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # apply_parameter_assignments, so they still get the full pipeline.
             self._parameters_at_instant_cache = {}
             self.parameters = _processed_parameters_cache.clone()
-            self.projected_timelines = _projected_timelines_cache
         else:
             self.reset_parameters()
             _statutory_parameters_cache = self.parameters.clone()
-            self.process_parameters()
+            self._rebuild(self.parameters, statutory=True)
+            self.reset_parameter_caches()
             _processed_parameters_cache = self.parameters.clone()
             # A copy: these timelines are prior law for every later reform,
             # and the lists just captured belong to this system's own tree.
-            _projected_timelines_cache = copy_timelines(self.projected_timelines)
+            _projected_timelines_cache = copy_timelines(self._projected_timelines)
+            self._projected_timelines = None
 
 
 def _ensure_caches() -> None:
@@ -346,12 +405,6 @@ def projected_timelines() -> Dict[str, Timeline]:
     return _projected_timelines_cache
 
 
-# Fixed-point passes for prior law's projection; dependencies between the
-# changes that need it (a frozen allowance and an aligned NICs threshold, say)
-# settle in two.
-PRIOR_LAW_PASSES = 4
-
-
 def _same_timelines(a: Dict[str, Timeline], b: Dict[str, Timeline]) -> bool:
     def key(timeline):
         return [(entry.instant_str, entry.value) for entry in timeline or []]
@@ -371,9 +424,12 @@ def prior_law_projection(
     path that parameter takes with every other change in the reform but
     without its own. Each such parameter is projected with the others'
     changes, which are written with the previous pass's projections, until
-    the projections stop changing. ``unreformed`` is the tree the changes are
-    written onto; ``statutory`` says it is the YAML as loaded, whose
-    projection without changes is cached.
+    the projections stop changing. A chain of n such parameters, each
+    projected from the one before, settles within n passes; projections
+    that still change after that depend on each other in a cycle, which is
+    an error. ``unreformed`` is the tree the changes are written onto;
+    ``statutory`` says it is the YAML as loaded, whose projection without
+    changes is cached.
     """
     needing = sorted(
         {
@@ -395,7 +451,7 @@ def prior_law_projection(
         found = environment.get(name)
         return found if found is not None else start.get(name)
 
-    for _ in range(PRIOR_LAW_PASSES):
+    for _ in range(len(needing) + 1):
         updated = {}
         for path in needing:
             tree = unreformed.clone()
@@ -406,15 +462,13 @@ def prior_law_projection(
                     )
             updated[path] = process_parameter_tree(tree, annualise=False)[1].get(path)
         if _same_timelines(updated, environment):
-            break
+            return lookup
         environment = updated
-    else:
-        logger.warning(
-            "Prior law's projection for %s did not settle in %d passes.",
-            ", ".join(needing),
-            PRIOR_LAW_PASSES,
-        )
-    return lookup
+    raise ValueError(
+        "Prior law's projected paths for "
+        + ", ".join(needing)
+        + " depend on each other in a cycle, so the reform cannot be applied."
+    )
 
 
 # Recently rebuilt parameters, by their dated changes, so simulations of the
@@ -424,10 +478,19 @@ _REBUILT_CACHE_SIZE = 4
 _rebuilt_parameters_cache: "OrderedDict[tuple, Tuple[ParameterNode, Dict[str, Timeline]]]" = OrderedDict()
 
 
-def _assignments_key(assignments: List[ParameterAssignment]) -> tuple:
-    return tuple(
-        (a.path, str(a.start), str(a.stop), repr(a.value), a.order) for a in assignments
-    )
+def _assignments_key(assignments: List[ParameterAssignment]) -> Optional[tuple]:
+    """A memo key for the changes, or None when they cannot be memoised.
+
+    Only plain numbers, booleans and strings are keyed, by type and value.
+    Any other value (a list, or a number subclass whose repr could hide its
+    value) is rebuilt every time.
+    """
+    key = []
+    for a in assignments:
+        if type(a.value) not in (int, float, bool, str):
+            return None
+        key.append((a.path, str(a.start), str(a.stop), type(a.value).__name__, a.value))
+    return tuple(key)
 
 
 def _remember_rebuilt(

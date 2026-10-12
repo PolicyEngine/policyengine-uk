@@ -699,12 +699,199 @@ def test_a_modifier_that_reprocesses_the_parameters_keeps_the_reform(name):
         assert annual(simulation, PERSONAL_ALLOWANCE, 2035) == 12_570
 
 
+DIVIDEND_BASIC_RATE = "gov.hmrc.income_tax.rates.dividends[0].rate"
+
+
+def _dividend_baseline(simulation):
+    # Sets a parameter on the annualised tree, as a dashboard baseline does.
+    simulation.tax_benefit_system.parameters.get_child(DIVIDEND_BASIC_RATE).update(
+        period="year:2026:20", value=0.0875
+    )
+
+
+@pytest.mark.parametrize("before_data_load", [False, True])
+def test_a_scenario_keeps_its_modifiers_parameters_and_its_parameter_changes(
+    before_data_load,
+):
+    # In 2.125.1 the parameter changes rebuilt the parameters after the
+    # modifier ran, so its 8.75% dividend rate reverted to 10.75%.
+    situation = adult(dividend_income={year: 10_000 for year in range(2025, 2036)})
+    both = {
+        DIVIDEND_BASIC_RATE: {f"2026-01-01.{FAR}": 0.0875},
+        BASIC_RATE: {f"2027-04-06.{FAR}": 0.21},
+    }
+    reference = via_reform_dict(both, situation)
+    modifier = Scenario(simulation_modifier=_dividend_baseline)
+    changes = Scenario(parameter_changes=as_dict(BASIC_RATE, "2027-04-06", FAR, 0.21))
+    for scenario in (modifier + changes, changes + modifier):
+        scenario.applied_before_data_load = before_data_load
+        simulation = Simulation(situation=situation, scenario=scenario)
+        for year in (2026, 2027, 2028):
+            assert annual(simulation, DIVIDEND_BASIC_RATE, year) == 0.0875
+            assert annual(simulation, BASIC_RATE, year) == annual(
+                reference, BASIC_RATE, year
+            )
+            assert calculate(simulation, "income_tax", year) == pytest.approx(
+                calculate(reference, "income_tax", year), abs=1e-6
+            )
+        assert annual(simulation.baseline, DIVIDEND_BASIC_RATE, 2027) == 0.1075
+
+
 def test_scenario_apply_adds_to_the_changes_a_simulation_already_has():
     simulation = via_reform_dict(as_dict(BASIC_RATE, "2027-04-06", FAR, 0.21))
     Scenario.from_reform({UC_SINGLE_OLD: {"2027": 500}}).apply(simulation)
     assert annual(simulation, BASIC_RATE, 2028) == 0.21
     assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
-    assert len(simulation.tax_benefit_system.dated_assignments) == 2
+    # Scenario.apply edits the annualised parameters, as it always has; the
+    # system keeps the edit so a later rebuild applies it again.
+    system = simulation.tax_benefit_system
+    assert len(system.dated_assignments) == 1
+    assert len(system.legacy_overrides) == 1
+    simulation.apply_parameter_changes({PERSONAL_ALLOWANCE: {"2027": 13_000}})
+    assert annual(simulation, BASIC_RATE, 2028) == 0.21
+    assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2027) == 13_000
+
+
+# Review round 2 (GPT-6.1 Sol): Scenario.apply never rebuilds, rebuilds keep
+# a modifier's base, failures roll back, and the memo is isolated.
+
+
+def test_scenario_apply_keeps_a_structural_reforms_parameter():
+    from policyengine_core.parameters import ParameterNode
+
+    class add_bonus(Reform):
+        def apply(self):
+            self.parameters.add_child(
+                "test_budget",
+                ParameterNode(
+                    "test_budget", data={"bonus": {"values": {"2000-01-01": 1}}}
+                ),
+            )
+
+    simulation = Simulation(
+        situation=SITUATION, reform=(add_bonus, {"test_budget.bonus": 7})
+    )
+    Scenario.from_reform({BASIC_RATE: {"2027": 0.21}}).apply(simulation)
+    parameters = simulation.tax_benefit_system.parameters
+    assert parameters.test_budget.bonus("2027-01-01") == 7
+    assert annual(simulation, BASIC_RATE, 2027) == 0.21
+
+
+def test_later_changes_keep_a_reprocessing_modifiers_edits():
+    from policyengine_uk.scenarios.no_economic_assumptions import (
+        no_economic_assumptions,
+    )
+
+    simulation = Simulation(situation=SITUATION, scenario=no_economic_assumptions)
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2035) == 12_570
+    Scenario.from_reform({BASIC_RATE: {"2027": 0.21}}).apply(simulation)
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2035) == 12_570
+    # A rebuild starts from the parameters as the modifier left them.
+    simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2035) == 12_570
+    assert annual(simulation, BASIC_RATE, 2027) == 0.21
+    assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
+
+
+def test_scenario_apply_and_construction_give_a_scenario_the_same_precedence():
+    scenario = Scenario(parameter_changes={BASIC_RATE: 0.21}) + Scenario.from_reform(
+        {BASIC_RATE: {"2027": 0.22}}
+    )
+    constructed = Simulation(situation=SITUATION, scenario=scenario)
+    applied = Simulation(situation=SITUATION)
+    scenario.apply(applied)
+    for year in (2026, 2027, 2028):
+        assert annual(applied, BASIC_RATE, year) == annual(
+            constructed, BASIC_RATE, year
+        ), year
+    assert annual(constructed, BASIC_RATE, 2027) == 0.22
+    assert annual(constructed, BASIC_RATE, 2028) == 0.21
+
+
+def test_a_failed_change_leaves_the_system_as_it_was():
+    simulation = via_reform_dict(as_dict(BASIC_RATE, "2027-04-06", FAR, 0.21))
+    system = simulation.tax_benefit_system
+    with pytest.raises(ValueError):
+        Scenario.from_reform({"gov.not_a_real_parameter": {"2027": 1}}).apply(
+            simulation
+        )
+    with pytest.raises(ValueError):
+        simulation.apply_parameter_changes({"gov.not_a_real_parameter": {"2027": 1}})
+    assert len(system.dated_assignments) == 1
+    assert system.legacy_overrides == []
+    assert annual(simulation, BASIC_RATE, 2028) == 0.21
+    # A valid change still applies afterwards.
+    simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
+    assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
+    assert annual(simulation, BASIC_RATE, 2028) == 0.21
+
+
+def _system_with(path, value, dates=f"2027-04-06.{FAR}"):
+    from policyengine_uk.utils.dated_reforms import read_reform_dict
+
+    system = tbs_module.system.clone()
+    changes, _ = read_reform_dict({path: {dates: value}}, lambda _: True)
+    system.apply_parameter_assignments(changes)
+    return system
+
+
+def test_the_rebuild_memo_cannot_be_changed_through_a_system():
+    sources = "gov.dwp.universal_credit.means_test.capital.person_sources"
+    dates = f"2016-04-06.{FAR}"
+    value = ["lifetime_isa_countable_capital"]
+    first = _system_with(sources, list(value), dates)
+    first.parameters.get_child(sources)("2027-01-01").append("employment_income")
+    later = _system_with(sources, list(value), dates)
+    assert later.parameters.get_child(sources)("2027-01-01") == value
+    # Values that are not plain numbers, booleans or strings are not keyed.
+    assert tbs_module._assignments_key(later.dated_assignments) is None
+
+    class Rate(float):
+        def __repr__(self):
+            return "0.21111"
+
+    _system_with(BASIC_RATE, 0.21111)
+    disguised = _system_with(BASIC_RATE, Rate(0.22222))
+    assert float(disguised.parameters.get_child(BASIC_RATE)("2028-01-01")) == 0.22222
+
+    # Two systems with one memoised reform share no timeline with each other
+    # or with the cache.
+    a, b = _system_with(BASIC_RATE, 0.23), _system_with(BASIC_RATE, 0.23)
+    assert a.projected_timelines[BASIC_RATE] is not b.projected_timelines[BASIC_RATE]
+    a.parameters.get_child(BASIC_RATE).update(period="2028", value=0.5)
+    assert float(b.parameters.get_child(BASIC_RATE)("2028-01-01")) == 0.23
+    assert (
+        float(
+            _system_with(BASIC_RATE, 0.23).parameters.get_child(BASIC_RATE)(
+                "2028-01-01"
+            )
+        )
+        == 0.23
+    )
+
+
+def test_prior_law_that_never_settles_is_an_error(monkeypatch):
+    # Projections that keep changing from pass to pass mean the changes'
+    # prior law depends on itself.
+    from policyengine_core.parameters.parameter_at_instant import ParameterAtInstant
+    from policyengine_uk.utils.dated_reforms import read_reform_dict
+
+    calls = {"n": 0}
+
+    def unsettled(tree, unreformed=None, annualise=True):
+        calls["n"] += 1
+        entry = ParameterAtInstant(
+            UC_SINGLE_OLD, "2026-04-01", data={"value": float(calls["n"])}
+        )
+        return tree, {UC_SINGLE_OLD: [entry]}
+
+    changes, _ = read_reform_dict(
+        as_dict(UC_SINGLE_OLD, "2027-04-06", "2028-04-05", 500), lambda _: True
+    )
+    monkeypatch.setattr(tbs_module, "process_parameter_tree", unsettled)
+    with pytest.raises(ValueError, match="depend on each other in a cycle"):
+        tbs_module.prior_law_projection(changes, tbs_module.statutory_parameters())
 
 
 def test_two_changes_that_need_projection_see_each_other():
