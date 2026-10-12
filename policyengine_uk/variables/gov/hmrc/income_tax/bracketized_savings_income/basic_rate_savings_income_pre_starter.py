@@ -19,7 +19,9 @@ class basic_rate_savings_income_pre_starter(Variable):
             person("taxable_savings_interest_income", period)
             - person("received_allowances_savings_income", period),
         )
-        other_income = person("earned_taxable_income", period)
+        # Savings sit above all non-savings income, property income
+        # included (ITA 2007 s. 16).
+        other_income = person("non_savings_taxable_income", period)
         basic_rate_amount_with_savings = clip(
             savings_income + other_income,
             thresholds[0],

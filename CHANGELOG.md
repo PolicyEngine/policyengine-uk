@@ -1,3 +1,225 @@
+## [2.126.12] - 2026-10-12
+
+### Fixed
+
+- - Every reform route now writes dated changes onto the statutory parameter timeline and reprocesses it as current law is processed. A dict reform dated 6 April now sets that fiscal year, and uprating, threshold indexation and the aligned NICs thresholds follow reformed values. A bounded change on an uprated or indexed parameter now resumes prior law's projected path, not a stale stated value. Reforms applied after the data load now reach the Universal Credit rebalancing inputs and the parameter-gated structural reforms. `parameters.baseline` stays current law under `Scenario(parameter_changes=...)`.
+
+
+## [2.126.11] - 2026-10-12
+
+### Changed
+
+- Documentation pages in docs/book/assumptions, validation, policy and programs/gov/<agency> are now picked up by folder, so a new page no longer needs a myst.yml entry. This also publishes eight existing pages that were missing from the contents.
+- - Removed the stale non-strict expected failure for the 2023-24 Class 4 lower profits limit (#1968, fixed by #2058), so the alignment test now asserts that year.
+
+### Fixed
+
+- Warned when `UKSingleYearDataset` is given a `fiscal_year` alongside a file path, where it cannot take effect, and when it is built from DataFrames without one. Removed the process-wide `warnings.filterwarnings("ignore")` that importing the package installed, which hid these and every other warning from callers.
+- - Split the CI `Test` job into a YAML job and three parallel shards of the Python tests, with a check that every collected test ran in exactly one shard, and measured coverage with `sys.monitoring` (#2099).
+- Put the petrol and diesel pump prices that convert spending into litres on the DESNZ annual ULSP and ULSD series (the basis Microcosm UK prices fuel spending on), replacing the January 2024 RAC prices, and re-derived the petrol and diesel spending litre proxies so weighted litres still follow the HMRC/OBR road-fuel volume path (part A of #2169).
+- - Stop paying Carer's Allowance to a carer whose net earnings exceed the earnings limit (£204 a week from April 2026).
+- - Round the High Income Child Benefit Charge as ITEPA 2003 s. 681C(3) requires: the percentage down to a whole number, and the Child Benefit and the charge down to whole pounds.
+- - Stop relieving a miscellaneous loss against other income in Income Tax, adjusted net income, total income and Universal Credit earnings: ITA 2007 s. 152(4) allows it only against miscellaneous income.
+- Set the Personal Savings Allowance on the rest-of-UK bands for Scottish taxpayers, as ITA 2007 s. 12B(8) requires; give the higher amount at exactly the basic rate limit and the lower amount at exactly the higher rate limit (ITA 2007 s. 10); and use the right bands for periods 2016 and 2017.
+- Band savings and dividend income above property income, which is non-savings income (ITA 2007 ss. 16, 16A), including in the income the annual allowance charge's marginal rate is read from.
+
+
+## [2.126.10] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation.to_input_dataframe()` leaving out the person, benefit unit and household identifiers for years in which a simulation was given inputs after it was built, such as the Universal Credit health element status for 2026 to 2029, so that an exported frame loads back to a simulation that exports the same frame.
+
+
+## [2.126.9] - 2026-10-11
+
+### Fixed
+
+- Set DWP benefit rates to the amounts announced in DWP's Benefit and pension rates publications and set by the Up-rating Orders, replacing CPI projections: 2025-26 values (including the Pension Credit standard minimum guarantee, £227.10 and £346.60, and the pension-age Housing Benefit allowances, £244.40 and £366.00), the legacy premiums, Constant Attendance Allowance and Pension Credit additions (uprated from a fixed start value, so years without a published key, and every year from 2027-28, were projected from that value; the premiums' and Constant Attendance Allowance's only early key was the 2020-21 rate, keyed at 2015), Income Support personal allowances, Housing Benefit non-dependant deductions, and earlier years where they differed. Fixed amounts the law does not uprate (WTC childcare limits, which Housing Benefit also uses, and the CTC family element) are no longer projected. The pension-age Housing Benefit allowances now cite SI 2006/214 rather than SI 2006/213.
+
+
+## [2.126.8] - 2026-10-11
+
+### Fixed
+
+- - Let a household situation state whether its Universal Credit health element is at the new-claimant rate (`uc_receives_new_claimant_health_element`, default false), so a household's award no longer depends on its position among the other benefit units in a simulation; simulations built from data keep the seeded draw.
+- - Corrected a property test that claimed adding an adult outside the claimant's family never changes the legacy award readers: an adult non-dependant ends the family's severe disability premium, so the test now checks that what such a member reports never changes a reader, that their presence changes one only through that premium, and that Income Support then falls by at most the premium. The benefit cap, which counts such a member's own awards, is held at zero in that test until #2298 is fixed.
+
+
+## [2.126.7] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation(dataset=<DataFrame>)` for frames in which a benefit unit or household has more than one person. Each benefit unit and household now takes the value on its members' rows, single-person groups no longer take each other's values when the rows are not in identifier order, identifier columns are matched by exact name, an exported frame saved as CSV loads back, and the simulation's `dataset` holds the multi-year dataset the frame describes. Identifiers are read as whole numbers, value by value; frames whose identifier columns contradict each other, repeat a person, or name people or groups only with floats that may stand for more than one identifier (32-bit floats of `2**24` or more) are refused instead of merging households.
+  - Fixed the NHS, education and other public spending budget reforms (`gov.contrib.policyengine.budget`) raising `KeyError` when a simulation's data leaves an income decile empty, as a small sample does. An empty decile's share now goes to nobody.
+
+
+## [2.126.6] - 2026-10-11
+
+### Fixed
+
+- - Defined the young person in Scotland's working-age Council Tax Reduction scheme as a Universal Credit qualifying young person from 2022-23 (Council Tax Reduction (Scotland) Regulations 2021 reg. 6), for lone-parent status and for the members whose income counts; other schemes keep the Child Benefit definition.
+
+
+## [2.126.5] - 2026-10-11
+
+### Fixed
+
+- - Stopped counting a benefit unit's own claimant or partner as its child or qualifying young person for Child Benefit, Child Tax Credit and Pension Credit (SSCBA 1992 ss.141 and 143 and Child Benefit (General) Regulations 2006 regs 12-13; CTC Regs 2002 reg. 3; SPC Regs 2002 Sch. IIA para. 3), so a lone 16- to 19-year-old no longer gets Child Benefit, a Child Tax Credit child element or a Pension Credit child addition for themselves.
+
+
+## [2.126.4] - 2026-10-11
+
+### Fixed
+
+- - Place a household with no BRMA input in its region's BRMA with the most private-rented households, from the 2021 and 2022 censuses (Maidstone if the region is unknown), instead of Maidstone in every region. A household that sets no region is in London, the region default, so it now gets Inner South East London's LHA rates. A BRMA input still carries forward to later years while the household stays in the same region.
+
+
+## [2.126.3] - 2026-10-10
+
+### Fixed
+
+- - Pay pre-2026 Universal Credit health element claimants the legislated protected LCWRA amount (£429.80 a month in 2026-27, one amount for every claimant type), and project later years at the Universal Credit Act 2025 s. 4 floor.
+- - Stopped a negative income source, such as a property loss or a self-employment loss, from reducing a claimant's other Pension Credit income.
+
+
+## [2.126.2] - 2026-10-10
+
+### Fixed
+
+- - Counted salary sacrifice pension contributions only for people with pay, so from 2029 the excess over the £2,000 cap no longer gives employment income to people without pay.
+- - From 2031-32, index the personal allowance and basic rate limit by the previous September's CPI with the statutory round-ups (Income Tax Act 2007 ss57 and 21), keep the primary threshold, upper earnings limit and Class 4 profits limits aligned with them, and raise the secondary threshold by September CPI. Before, they followed calendar-year CPI series without rounding.
+
+
+## [2.126.1] - 2026-10-10
+
+### Fixed
+
+- - Raised the `Test` job's timeout from 60 to 120 minutes: the suite now takes about an hour, so pull request runs were being cancelled at the limit.
+
+
+## [2.126.0] - 2026-10-10
+
+### Added
+
+- - Add `is_on_pension_credit` and `is_on_universal_credit` (whether the award is payable to the person) and `tax_credit_award` (the tax credit award payable to them). For the claimant and partner they read their couple's award: Pension Credit is paid to one member (the one who reports it, else the claimant, among members who have attained the qualifying age), and Universal Credit and tax credits are joint awards (but not for a partner who cannot be a joint Universal Credit claimant, whose partner claims as a single person). Anyone else is on an award only through their own report.
+  - Add person-level `winter_fuel_payment` and `pension_age_winter_heating_payment`, with `winter_fuel_payment_eligible`, `pawhp_eligible`, `is_on_winter_fuel_payment_relevant_benefit` and `is_on_pawhp_relevant_benefit`. The household `winter_fuel_allowance` and `pawhp` now add up their members' payments.
+
+### Fixed
+
+- - Test receipt of a relevant benefit for the Winter Fuel Payment and the Pension Age Winter Heating Payment person by person. Under SI 2000/729, SI 2025/969 and NISR 2025/142 a person is on a relevant benefit when it is paid to them: Income Support, income-based JSA, income-related ESA and Pension Credit are paid to one member of a couple, while Universal Credit is awarded and paid to the couple jointly. Under SI 2024/869 reg 2(5), NISR 2024/160 reg 2(5) and SSI 2024/351 a member of a couple is also on one when the other member is (`partner_receipt_counts`). A non-dependant's income-related ESA, income-based JSA, Income Support or Pension Credit no longer qualifies a pensioner in the same household, or exempts them from the Winter Fuel Payment income test.
+  - Count Universal Credit as a relevant benefit for both payments, and a tax credit award of at least £26 for the 2024 qualifying week, as SI 2024/869, SI 2025/969 and SSI 2024/351 list them.
+  - Pay each person the amount the regulations set: one payment for a couple on a relevant benefit, the full amount to anyone else living without another entitled person, and the shared amounts (£100, or £200 or £150 over 80, and the PAWHP equivalents) otherwise. Two benefit units in one household can now both be paid.
+  - Pay the Winter Fuel Payment in Scotland up to the 2023 qualifying week (SI 2000/729 covered Great Britain) and the Pension Age Winter Heating Payment only from the 2024 week.
+  - From the 2025 qualifying week, pay the Pension Age Winter Heating Payment to everyone of pensionable age in Scotland at the legislated amounts (SSI 2025/282, SSI 2025/100 and SSI 2026/170) instead of a flat £100 to households not on a relevant benefit.
+  - Cite the Winter Heating Assistance (Pension Age) (Scotland) Regulations 2024 (SSI 2024/351) in the PAWHP parameters; they cited SSI 2024/250, a planning instrument.
+
+### Removed
+
+- - Remove `gov.social_security_scotland.pawhp.amount.base`: the regulations set no flat amount for households not on a relevant benefit; the new shared amounts replace it.
+
+
+## [2.125.2] - 2026-10-10
+
+### Changed
+
+- - Require policyengine-core 3.32.27, which gives each clone its own record of `set_input` values and forgets the record of a value `Holder.delete_arrays` deletes (PolicyEngine/policyengine-core#561), and remove the `Simulation.clone` override that worked around policyengine-core#559. The `Simulation.delete_arrays` override and the `Simulation.calculate` sweep stay, now for the records that rebuilding the populations leaves behind (PolicyEngine/policyengine-core#605).
+
+
+## [2.125.1] - 2026-10-10
+
+### Fixed
+
+- - Fix Class 2 National Insurance for 2015-16 to 2023-24 against s.11 SSCBA 1992: charge £3.45 a week in 2023-24; from 2022-23 charge only profits above the Class 2 lower profits threshold (£11,908, then £12,570), with profits from the small profits threshold up to it treated as paid; keep the small profits threshold at £6,725 in 2023-24 and 2024-25 and correct it to £5,965 in 2015-16 and 2016-17; date the abolition 6 April 2024. Class 2 now tests its thresholds on the profits Class 4 is charged on (s.11(3)), after capital allowances, the trading allowance and loss relief, not on self-employment income. A full year of Class 2 is every contribution week in it, so 53 weeks in 2019-20. The Universal Credit minimum income floor's notional Class 2 follows the same rule, so it deducts no Class 2 in 2022-23 and 2023-24 on a threshold the lower profits threshold covers. Every value now cites its amending instrument.
+- - Fixed Class 4 NICs against s.15 SSCBA 1992: the 2023-24 lower profits limit is £12,570 (it was £11,908), the 2022-23 rates are 9.73% and 2.73% for the whole year (they were 10.25% and 3.5%), the 2023-24 additional rate is 2% (it was 3.5%), and the 2015-16 upper profits limit is £42,385. Every Class 4 limit and rate from 2015-16 to 2025-26 now cites its legal source.
+
+
+## [2.125.0] - 2026-10-09
+
+### Added
+
+- - Add `claimant_or_partner_esa_income` and `claimant_or_partner_jsa_income`: the income-related award of the claimant and partner. When `esa_income` or `jsa_income` holds what the reported awards give (its formula, or their plain total), this is the same on the claimant's and partner's reports; any other stored value is taken to be theirs, and a stored zero is zero. An entered award equal to either reported amount, to within half a penny at stored precision, is read through the reports, so enter these variables directly to state the claimant's or partner's award.
+  - Add `is_on_income_related_esa`, `is_on_income_based_jsa` and `is_on_income_support`: whether the award is payable to the person. Of the claimant and partner, that is the payee of their award (the one who reports it, or the claimant); for anyone else, the award on their own report alone, after tariff income from the benefit unit's capital and within the capital limit, while the benefit unit's award is positive (for Income Support: their own report while Income Support is active and not neutralised), so another member's report never changes it.
+
+### Fixed
+
+- - Count only the claimant's and partner's income-related ESA and income-based JSA in Housing Benefit, council tax reduction and tax credit income, and in the passports for Housing Benefit (`in_receipt_of_income_support_jsa_ib_or_esa_ir`), working-age council tax reduction, Scottish Child Payment and targeted childcare. Another member of the benefit unit, such as a non-dependent adult, who reports an award claims in their own right; their award still counts in household income.
+  - Exempt a council tax reduction non-dependant in the local working-age schemes only when Income Support, income-based JSA or income-related ESA is payable to them, not to their partner or another benefit-unit member. A non-dependant couple on one of these benefits therefore pays the partner's deduction. The maintenance loan schedule for students entitled to benefits now reads whether income-related ESA is payable to the student (HB Regs 2006 reg 56(2)(a)), alongside the existing parent and disability tests, and adds reg 56(2)(c): a student who is the claimant or partner qualifies when their applicable amount would include the disability or severe disability premium, as when their partner receives a disability benefit.
+  - Treat a family as claiming Income Support (`would_claim_IS`) when the claimant or partner reports it, or when every entitled benefit is claimed (`claims_all_entitled_benefits`); another member's report no longer counts.
+
+
+## [2.124.0] - 2026-10-09
+
+### Added
+
+- - Added `benunit_reported_capital`, the benefit unit's recorded savings and investments (such as the FRS's TOTCAPB4; -1 when nothing is recorded). `uc_reported_capital` and `pension_credit_reported_capital` are now formulas that default to it, so a dataset records the observed capital once and each means test derives its own; either can still be set directly. The input uprates like `savings`, as does either programme variable when a dataset stores it directly. Results are unchanged for datasets and situations that do not supply the new input, except as noted under Changed.
+
+### Changed
+
+- - `uc_reported_capital` and `pension_credit_reported_capital` set directly in a situation now apply only to the years they are set, as for any formula variable; later years derive from `benunit_reported_capital`, which is uprated from the year it is set. Before, a value set for one year carried into later years (uprated, for Pension Credit). A dataset that stores `uc_reported_capital` now has it uprated by per-capita GDP, like `savings`, where it used to be held flat; stored `pension_credit_reported_capital` uprates as before.
+
+### Fixed
+
+- - Fixed `build_metadata` reporting the commit of an enclosing git repository, such as a policyengine-uk-data checkout whose virtualenv holds policyengine-uk, as policyengine-uk's `git_sha`. It now reads only policyengine-uk's own checkout or the installer's PEP 610 git record, and otherwise returns `None`.
+- - Add the 15.05% employer Class 1 rate for 2022-23 (Health and Social Care Levy Act 2021 s.5(2)(b)) and its end on 6 November 2022 (Health and Social Care Levy (Repeal) Act 2022 s.2(1)). Model year 2022 now reads 15.05%, as the employee main rate reads 13.25%.
+
+
+## [2.123.10] - 2026-10-09
+
+### Fixed
+
+- - Bar Income Support when the claimant is engaged in remunerative work, 16 hours a week or more of paid work, or the partner is, 24 hours or more (SSCBA 1992 s.124(1)(c); IS Regs 1987 reg 5(1) and (1A), with 24 hours for both before 7 April 1992 and 16 for the partner until 6 October 1996). A carer within Sch 1B para 4, claimant or partner, is not treated as engaged in remunerative work (reg 6(4)(c)). The hours come from the new `income_support_remunerative_work_hours`, which is usual weekly hours and can be entered directly to average fluctuating hours or to leave out work that reg 6(1) excludes, such as child minding at home or a councillor's duties.
+  - Bar Income Support when the claimant is entitled to a jobseeker's allowance of either kind, or the partner to income-based JSA (s.124(1)(f)). The partner's contribution-based JSA does not bar it. Income-based JSA is the award on the claimant's and partner's reported amounts after the JSA capital test. A `jsa_income` that holds anything the reported amounts do not give (neither that award on everyone's reports nor their plain total), such as an award entered directly or a reform that removes it, is taken to be theirs. As for ESA, an amount within half a penny of zero is no award, so a float residual does not bar the claim.
+
+
+## [2.123.9] - 2026-10-09
+
+### Changed
+
+- Cancel superseded test runs on main and give every lint, docs and versioning job a timeout, so outdated or hung jobs free shared GitHub Actions runners.
+
+
+## [2.123.8] - 2026-10-08
+
+### Fixed
+
+- Universal Credit for a member of a couple who claims as a single person (UC Regs 2013 reg. 3(3)): the single-claimant standard allowance at the claimant's own age, no LCWRA or carer element for the other member, the single-claimant benefit cap and the shared accommodation rate, while the couple's capital and income still count. The other member's own disability and other personal benefits no longer lift the benefit cap. In the childcare work condition the claimant must meet the paid work limb and the other member the partner limb, and only the claimant can be treated as in paid work under regulation 32(2). A partner under 18 outside regulation 8 is now identified as such a partner. The benefit cap rate and exceptions and the LHA shared accommodation test, which Housing Benefit shares, keep the couple rules for a family that stays on legacy benefits (reports one and would not claim Universal Credit).
+
+
+## [2.123.7] - 2026-10-08
+
+### Fixed
+
+- - Correct the Energy Bills Support Scheme amounts, monthly timing, and eligibility in Great Britain and Northern Ireland.
+- - Corrected the 2020 over-75 TV licence Pension Credit transition to start on 1 August while preserving its Boolean eligibility rule.
+
+
+## [2.123.6] - 2026-10-08
+
+### Fixed
+
+- Assess each family that claims Council Tax Reduction under its own scheme and its own non-dependant exemption, so in a shared-rent household a working-age sharer no longer takes the pensioner scheme because the household head's family is pension-age (or the reverse), and one claimant's disability no longer exempts another's claim from non-dependant deductions.
+- - Disregard Housing Benefit income and capital on receipt of Guarantee Credit, so pensioners who do not claim Pension Credit retain the ordinary means test.
+
+
+## [2.123.5] - 2026-10-07
+
+### Fixed
+
+- - Corrected the Class 1 secondary threshold for 2015-16 and 2016-17 to the statutory £156 a week (£8,112 a year); it held the £155 primary threshold.
+
+
+## [2.123.4] - 2026-10-07
+
+### Fixed
+
+- - Apply the Income Support ESA and existing-award conditions only to the claimant and partner (SSCBA 1992 s.124(1)). Another member of the benefit unit who is neither the claimant nor the partner (a non-dependent adult or a dependent young person) no longer bars the claim by having income-related ESA, and no longer counts as having an existing Income Support award.
+  - Treat the claimant or partner who reports the existing Income Support award as the claimant. No new claim can be made (UC (Transitional Provisions) Regs 2014 reg 6A(1), from 25 July 2022; the model applies this in every year), and a partner who takes over an award makes a claim (Claims and Payments Regs 1987 reg 4(4)). That person must be under the qualifying age for State Pension Credit, in a prescribed category and without ESA, so a partner who cares can no longer take over the other partner's award.
+  - Bar Income Support when the claimant is entitled to contributory ESA (s.124(1)(h)). Income-related ESA of the claimant or partner still bars it. An `esa_income` that the reported awards do not explain (one entered directly, or set by a reform) is taken to be theirs. An amount within half a penny of zero is no award, so a float residual no longer bars the claim.
+  - Add the IS Regs 1987 Sch 1B para 2 prescribed category: a single claimant or lone parent with a child under 16 placed by a local authority (proxied by `is_looked_after_by_local_authority`).
+  - Leave a child placed by a local authority out of `youngest_child_age_for_legacy_benefits`; such a child is not a member of the claimant's household (IS Regs 1987 reg 16(4)).
+
+
 ## [2.123.3] - 2026-10-07
 
 ### Fixed

@@ -14,15 +14,18 @@ Invariants, for any thresholds 0 <= LPL < UPL, rates >= 0, and profits >= 0:
    implementation of s.15(3) SSCBA 1992 capped by the literal regulation 100
    steps (with the Case 1 comparison done exactly). The one exception is a
    Case 1 tie that holds in real numbers but not in binary (before April
-   2024: 53 x weekly Class 2 = 2 x (Class 1 + Class 2), UPL below the small
-   profits threshold); the model then follows the real-valued tie.
+   2024: 53 x weekly Class 2 = 2 x (Class 1 + Class 2), UPL below the profits
+   at which Class 2 becomes payable); the model then follows the real-valued
+   tie.
 3. The maximum only ever reduces liability: 0 <= ni_class_4 <= the
    pre-maximum amount.
 4. Monotonicity: with employment income held fixed, ni_class_4 is
    non-decreasing in self-employment profits wherever Class 2 does not
    change. Before April 2024 regulation 100 subtracts Class 2, so crossing
-   the small profits threshold can lower Class 4; Class 2 + Class 4 is then
-   still non-decreasing when the main rate is at least the additional rate.
+   the profits at which Class 2 becomes payable (the small profits threshold,
+   or from 2022-23 the Class 2 lower profits threshold) can lower Class 4;
+   Class 2 + Class 4 is then still non-decreasing when the main rate is at
+   least the additional rate.
 
 Class 2 counts in regulation 100 only before 6 April 2024 (SI 2024/377).
 

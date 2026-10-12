@@ -149,6 +149,86 @@
     # 7.20 x 35 x 52.
     uc_minimum_income_floor_gross: 13_104
 
+# The notional Class 2 follows s.11(2) SSCBA 1992 as ni_class_2 does. In
+# 2022-23 and 2023-24 profits from the small profits threshold up to the
+# lower profits threshold (11,908, then 12,570) are treated as paid and cost
+# nothing (s.11(5A)-(5B)). A full year is 53 contribution weeks in 2019-20
+# (HMRC NIM70200).
+- name: Net floor in 2023-24 deducts no Class 2 on profits treated as paid
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 3
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    # A lone parent of a child aged 3: 16 hours at the 2023-24 National
+    # Living Wage, 10.42 x 16 x 52.
+    uc_minimum_income_floor_gross: [8_669.44, 0]
+    uc_minimum_income_floor_income_tax: [0, 0]
+    # 8,669.44 is above the 6,725 small profits threshold but not above the
+    # 12,570 lower profits threshold, so Class 2 is treated as paid; Class 4
+    # starts at 12,570.
+    uc_minimum_income_floor_national_insurance: [0, 0]
+    uc_minimum_income_floor: [8_669.44, 0]
+
+- name: Net floor in 2022-23 deducts no Class 2 on profits treated as paid
+  period: 2022
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+      child:
+        age: 3
+    households:
+      household:
+        members: [parent, child]
+        region: NORTH_EAST
+  output:
+    # 9.50 x 16 x 52: above the 6,725 small profits threshold, not above the
+    # 11,908 lower profits threshold or Class 4 lower profits limit.
+    uc_minimum_income_floor_gross: [7_904, 0]
+    uc_minimum_income_floor_national_insurance: [0, 0]
+    uc_minimum_income_floor: [7_904, 0]
+
+- name: Net floor in 2023-24 deducts Class 2 above the lower profits threshold
+  period: 2023
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+  output:
+    # 10.42 x 35 x 52.
+    uc_minimum_income_floor_gross: 18_964.40
+    # (18,964.40 - 12,570) x 20%.
+    uc_minimum_income_floor_income_tax: 1_278.88
+    # Class 2: 3.45 x 52 = 179.40. Class 4: (18,964.40 - 12,570) x 9% = 575.50.
+    uc_minimum_income_floor_national_insurance: 754.90
+    uc_minimum_income_floor: 16_930.62
+
+- name: Net floor in 2019-20 deducts 53 weeks of Class 2
+  period: 2019
+  absolute_error_margin: 0.01
+  input:
+    age: 30
+    region: NORTH_EAST
+  output:
+    # 8.21 x 35 x 52.
+    uc_minimum_income_floor_gross: 14_942.20
+    # (14,942.20 - 12,500) x 20%.
+    uc_minimum_income_floor_income_tax: 488.44
+    # Class 2: 2019-20 has 53 contribution weeks (Sundays 7 April 2019 to 5
+    # April 2020), 3.00 x 53 = 159. Class 4: (14,942.20 - 8,632) x 9% = 567.92.
+    uc_minimum_income_floor_national_insurance: 726.92
+    uc_minimum_income_floor: 13_726.84
+
 # Individual thresholds by work-related group and expected hours. Reg. 90(2):
 # "(a) 16 hours per week, in the case of a claimant who would otherwise fall
 # within section 20 ... or section 21 ...; or (b) the expected number of hours

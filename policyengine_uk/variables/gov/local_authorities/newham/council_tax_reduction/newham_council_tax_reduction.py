@@ -20,7 +20,7 @@ class newham_council_tax_reduction(Variable):
         working_age = is_newham_working_age(
             household("local_authority", period),
             household("country", period),
-            benunit("council_tax_reduction_claim_pensioner", period),
+            benunit("council_tax_reduction_pensioner", period),
         )
         return legacy_council_tax_reduction(
             benunit,
