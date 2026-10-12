@@ -64,9 +64,12 @@ class _InputKeyLog(set):
     that a ``set_input`` helper skips because it already holds an input.
     This set also adds each key to every set in ``logs``: one for each
     reform being applied to the simulation, the innermost last.
+
+    A copy or pickle of it is a plain set, so a simulation copied while a
+    reform runs logs nothing.
     """
 
-    def __init__(self, keys, logs: list):
+    def __init__(self, keys=(), logs: list = ()):
         super().__init__(keys)
         self.logs = logs
 
@@ -74,6 +77,16 @@ class _InputKeyLog(set):
         super().add(key)
         for log in self.logs:
             log.add(key)
+
+    def __reduce__(self):
+        return set, (list(self),)
+
+
+# The logs (see _InputKeyLog) of the reforms Simulation.apply_reform is
+# applying, by the id of the simulation it applies them to, while it does.
+# Kept outside the simulation, because core's clone copies its __dict__:
+# a clone or branch made while a reform runs must not log for it.
+_reform_logs: Dict[int, list] = {}
 
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
@@ -278,20 +291,22 @@ class Simulation(CoreSimulation):
         system = self.tax_benefit_system
         linked = getattr(system, "simulation", None)
         system.simulation = self
-        # Log the inputs the reform stores (see _InputKeyLog). Within another
-        # reform applied to this simulation (a tuple's parts, or a reform
-        # that applies one), log them for that one too.
-        keys = getattr(self, "_user_input_keys", None)
-        enclosing = keys.logs if isinstance(keys, _InputKeyLog) else []
+        # Log the inputs the reform stores (see _InputKeyLog and the
+        # _user_input_keys property). Within another reform applied to this
+        # simulation (a tuple's parts, or a reform that applies one), log
+        # them for that one too.
+        logs = _reform_logs.setdefault(id(self), [])
         stored = set()
-        self._user_input_keys = _InputKeyLog(keys or (), enclosing + [stored])
+        logs.append(stored)
+        self._user_input_keys = getattr(self, "_user_input_keys", None) or set()
         try:
             super().apply_reform(reform)
         finally:
-            # Core rebuilds the record as a plain set once the reform is
-            # applied, but not if it raised. Resume the enclosing reform's log.
-            keys = set(self._user_input_keys)
-            self._user_input_keys = _InputKeyLog(keys, enclosing) if enclosing else keys
+            logs.pop()
+            if not logs:
+                del _reform_logs[id(self)]
+            # A plain set again, unless an enclosing reform is still logging.
+            self._user_input_keys = set(self._user_input_keys)
             if linked is not None:
                 system.simulation = linked
         # input_variables is taken when the simulation is built.
@@ -303,8 +318,11 @@ class Simulation(CoreSimulation):
         # set since the build. Name every variable with an input the reform
         # stored that this simulation still holds, under a branch name it
         # reads and a reset deletes, or a reset would delete what the reform
-        # stored and recalculate the formula. Assign a new list: a clone or
-        # branch shares its parent's.
+        # stored and recalculate the formula. input_variables names whole
+        # variables, so a reset then keeps every input of the variable, any
+        # set since the build included. A reform that raises names nothing it
+        # stored itself (a reform it applied first has named its own). Assign
+        # a new list: a clone or branch shares its parent's.
         input_variables = getattr(self, "input_variables", None)
         if input_variables is not None:
             branches = set(self._get_visible_branch_names())
@@ -316,6 +334,33 @@ class Simulation(CoreSimulation):
             added = sorted(supplied - set(input_variables))
             if added:
                 self.input_variables = list(input_variables) + added
+
+    @property
+    def _user_input_keys(self) -> set:
+        # policyengine-core's record of the simulation's inputs, kept in
+        # __dict__ as core keeps it. While apply_reform applies a reform to
+        # this simulation, a set assigned here becomes a log (see
+        # _InputKeyLog), so a record core replaces mid-reform still logs: a
+        # branch's, when a reform applied to its parent rebuilds it, or one
+        # rebuilt when the system is rebound.
+        try:
+            return self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
+
+    @_user_input_keys.setter
+    def _user_input_keys(self, keys) -> None:
+        logs = _reform_logs.get(id(self))
+        if logs and keys is not None:
+            keys = _InputKeyLog(keys, logs)
+        self.__dict__["_user_input_keys"] = keys
+
+    @_user_input_keys.deleter
+    def _user_input_keys(self) -> None:
+        try:
+            del self.__dict__["_user_input_keys"]
+        except KeyError:
+            raise AttributeError("_user_input_keys") from None
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)

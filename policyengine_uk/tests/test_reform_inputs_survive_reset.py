@@ -5,13 +5,17 @@ and derivative delete the values of every variable it does not name. So
 Simulation.apply_reform names each variable the reform stored an input for
 that the simulation still holds afterwards, however the reform stored it, and
 no other: an input set since the build that the reform did not store is still
-deleted by a reset, as before. See _InputKeyLog in policyengine_uk/simulation.py.
+deleted by a reset, as before, unless the reform names its variable.
+input_variables names whole variables, so a reset keeps every input of a named
+variable. See _InputKeyLog in policyengine_uk/simulation.py.
 
 Each simulation is one adult, the claimant, with £3,000 of income-related ESA
 entered for 2026, so their claimant-or-partner award that year is £3,000
 unless an input replaces it.
 """
 
+import copy
+import pickle
 import threading
 from functools import cache
 
@@ -92,6 +96,13 @@ def after_applying_another_reform_to_itself(reform):
     simulation.set_input(SCOPED, AWARD_YEAR, [0])
 
 
+def after_its_record_is_rebuilt(reform):
+    # Core replaces the record when it rebinds the simulation to its system.
+    simulation = reform.simulation
+    simulation._bind_to_tax_benefit_system()
+    simulation.set_input(SCOPED, AWARD_YEAR, [0])
+
+
 STORING = {
     "the simulation's set_input": as_reform(through_the_simulation),
     "a holder's set_input": as_reform(through_the_holder),
@@ -102,6 +113,7 @@ STORING = {
     "after applying another reform to itself": as_reform(
         after_applying_another_reform_to_itself
     ),
+    "after its record is rebuilt": as_reform(after_its_record_is_rebuilt),
     "a tuple's second reform": (
         as_reform(lambda _: None),
         as_reform(through_the_simulation),
@@ -253,6 +265,41 @@ def test_a_reform_names_nothing_it_stores_on_a_clone_or_branch(route):
     assert simulation.calculate(SCOPED, AWARD_YEAR).tolist() == [100]
 
 
+def test_a_branchs_reform_keeps_what_it_stores_after_its_parent_applies_one():
+    # A reform applied to a simulation rebuilds its branches' records too.
+    parent = built()
+    branch = parent.get_branch("reformed")
+
+    def apply(reform):
+        parent.apply_reform(as_reform(lambda _: None))
+        reform.simulation.set_input(SCOPED, AWARD_YEAR, [0])
+
+    branch.apply_reform(as_reform(apply))
+    assert SCOPED in branch.input_variables
+    assert SCOPED not in parent.input_variables
+    branch.reset_calculations()
+    assert branch.calculate(SCOPED, AWARD_YEAR).tolist() == [0]
+
+
+def test_a_record_copied_while_a_reform_runs_is_a_plain_set():
+    copies = []
+
+    def apply(reform):
+        simulation = reform.simulation
+        simulation.set_input(SCOPED, AWARD_YEAR, [0])
+        keys = simulation._user_input_keys
+        copies.extend(
+            [copy.copy(keys), copy.deepcopy(keys), pickle.loads(pickle.dumps(keys))]
+        )
+
+    simulation = built()
+    simulation.apply_reform(as_reform(apply))
+    assert SCOPED in simulation.input_variables
+    for keys in copies:
+        assert type(keys) is set
+        assert (SCOPED, "default", period(AWARD_YEAR)) in keys
+
+
 def test_a_reform_that_raises_leaves_the_record_as_it_was():
     def apply(reform):
         reform.simulation.set_input(SCOPED, AWARD_YEAR, [0])
@@ -272,8 +319,10 @@ def test_a_reform_that_raises_leaves_the_record_as_it_was():
 
 # Property: drawn inputs set since the build, then a reform that sets and
 # deletes inputs by any route. The reform names exactly the variables it
-# leaves an input of its own for, a reset keeps each of those inputs, and
-# every variable it does not name recalculates as if nothing had been set.
+# leaves an input of its own for. A reset keeps every input of those
+# variables (its own, and any set since the build that it left in place),
+# and every variable it does not name recalculates as if nothing had been
+# set since the build.
 VARIABLES = [SCOPED, "claimant_or_partner_jsa_income"]
 YEARS = [AWARD_YEAR - 1, AWARD_YEAR, AWARD_YEAR + 1]
 ROUTES = ["simulation", "holder", "thread", "delete"]
@@ -321,9 +370,9 @@ def test_a_reform_names_exactly_the_variables_it_leaves_inputs_for(earlier, oper
     simulation = parent.clone()
     for variable, year in earlier:
         simulation.set_input(variable, year, [EARLIER])
-    # What the reform leaves: the value of its last write to each variable
-    # and year, unless it deleted that year afterwards.
-    left = {}
+    # The inputs left after the reform, by variable and year: those set since
+    # the build, then each write replacing and each deletion removing one.
+    left = dict.fromkeys(earlier, EARLIER)
     for value, (route, (variable, year)) in enumerate(operations, start=100):
         if route == "delete":
             left.pop((variable, year), None)
@@ -335,13 +384,14 @@ def test_a_reform_names_exactly_the_variables_it_leaves_inputs_for(earlier, oper
             write(reform.simulation, route, variable, year, value)
 
     simulation.apply_reform(as_reform(apply))
-    named = {variable for variable, _ in left}
+    named = {variable for (variable, _), value in left.items() if value != EARLIER}
     assert simulation.input_variables == recorded + sorted(named)
     assert parent.input_variables is names
     assert names == recorded
     simulation.reset_calculations()
     for (variable, year), value in left.items():
-        assert simulation.calculate(variable, year).tolist() == [value]
+        if variable in named:
+            assert simulation.calculate(variable, year).tolist() == [value]
     pristine = parent.clone()
     for variable in set(VARIABLES) - named:
         for year in YEARS:
