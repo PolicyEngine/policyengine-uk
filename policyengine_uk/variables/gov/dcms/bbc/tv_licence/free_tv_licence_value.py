@@ -6,7 +6,7 @@ class free_tv_licence_value(Variable):
     entity = Household
     definition_period = YEAR
     value_type = float
-    unit = "/1"
+    unit = GBP
     reference = (
         "https://www.legislation.gov.uk/ukpga/2003/21/section/365A",
         "https://www.tvlicensing.co.uk/reducedfee",
