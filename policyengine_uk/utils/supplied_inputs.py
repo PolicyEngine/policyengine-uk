@@ -23,9 +23,10 @@ deletes.
 A scenario that stores a value the model calculated (``set_model_value``)
 records it as the model's, and the helpers do not return it. The record of
 such a value lasts only while it is the value stored: ``Simulation`` forgets
-it when ``set_input`` stores another value for the period, when
-``delete_arrays`` removes it, and when the populations are rebuilt, and a
-clone or branch gets its own copy of the record.
+it when ``set_input`` stores a value for its period, whatever the value (an
+input set for a longer or shorter period that stores nothing there leaves
+it), when ``delete_arrays`` removes it, and when the populations are
+rebuilt, and a clone or branch gets its own copy of the record.
 """
 
 from typing import List, Optional
@@ -170,7 +171,7 @@ def set_model_value(simulation, variable_name: str, period, value) -> None:
     the one stored here. A later ``Simulation.set_input`` for the period is
     supplied, whatever its value, and so is any value stored after
     ``delete_arrays`` removes this one or the populations are rebuilt (see
-    ``forget_model_value``, ``drop_missing_model_values`` and
+    ``forget_replaced_model_values``, ``drop_missing_model_values`` and
     ``forget_model_values``). If the value was supplied before (a scenario
     adjusting a user's entry), the new value stays supplied."""
     _check_registered(variable_name)
@@ -197,22 +198,57 @@ def set_model_value(simulation, variable_name: str, period, value) -> None:
 # record, as core gives each its own record of inputs.
 
 
-def forget_model_value(simulation, variable_name: str, period) -> None:
-    """Forget that the model stored this branch's value of ``variable_name``
-    for any period that overlaps ``period``: a value set there now is
-    supplied, even one equal to the model's."""
+def model_value_input_records(simulation, variable_name: str) -> dict:
+    """For each model value of ``variable_name`` on this branch, the entry
+    policyengine-core keeps for the input stored for its period, to pass to
+    ``forget_replaced_model_values`` after a ``set_input``.
+
+    Core replaces a period's entry (``Holder._user_input_storage``) each time
+    it stores an input there, even an equal value, so a changed entry shows
+    the call stored one."""
     model_values = getattr(simulation, "_model_values", None)
     if not model_values:
-        return
-    period = periods.period(period)
-    for key in [
+        return {}
+    keys = [
         key
         for key in model_values
-        if key[0] == variable_name
-        and key[1] == simulation.branch_name
-        and (key[2].contains(period) or period.contains(key[2]))
-    ]:
-        del model_values[key]
+        if key[0] == variable_name and key[1] == simulation.branch_name
+    ]
+    if not keys:
+        return {}
+    holder = simulation.get_holder(variable_name)
+    records = getattr(holder, "_user_input_storage", None) or {}
+    return {key: records.get(_input_slot(holder, key)) for key in keys}
+
+
+def forget_replaced_model_values(simulation, variable_name: str, before) -> None:
+    """Forget each model value whose period a ``set_input`` stored a value
+    for since ``before`` (``model_value_input_records``) was taken: a value
+    set there is supplied, even one equal to the model's.
+
+    An input set for another period can leave the model value in place, and
+    then it stays the model's. Core stores an input for a longer period of
+    the variable's own unit (such as ``year:2026:2``) under that period,
+    which a calculation for one year does not read. For a period of another
+    unit, ``set_input_divide_by_period`` and ``set_input_dispatch_by_period``
+    store only in years that hold no input, so an input for part of a year,
+    or for twelve months, stores nothing in a year that holds a model value
+    (``set_input_divide_by_period`` raises an error if it is inconsistent
+    with that value)."""
+    if not before:
+        return
+    holder = simulation.get_holder(variable_name)
+    records = getattr(holder, "_user_input_storage", None) or {}
+    model_values = simulation._model_values
+    for key, record in before.items():
+        if records.get(_input_slot(holder, key)) is not record:
+            model_values.pop(key, None)
+
+
+def _input_slot(holder, key):
+    """The key of core's entry for the input stored for a model value."""
+    _, branch_name, period = key
+    return (branch_name, str(holder._storage_period(period)))
 
 
 def drop_missing_model_values(simulation, variable_name: str) -> None:

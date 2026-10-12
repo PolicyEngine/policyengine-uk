@@ -42,8 +42,9 @@ from policyengine_uk.utils.supplied_inputs import (
     copy_model_values,
     drop_missing_model_values,
     drop_missing_supplied_inputs,
-    forget_model_value,
     forget_model_values,
+    forget_replaced_model_values,
+    model_value_input_records,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
@@ -265,10 +266,15 @@ class Simulation(CoreSimulation):
         forget_model_values(self)
 
     def set_input(self, variable_name: str, period, value) -> None:
-        super().set_input(variable_name, period, value)
-        # What is set here is supplied, even a value equal to the model's own.
-        # set_model_value records its value as the model's after this call.
-        forget_model_value(self, variable_name, period)
+        # What is set here is supplied, even a value equal to the model's own,
+        # so forget the model value (set_model_value) of each period the call
+        # stores a value for, and only those. set_model_value records its
+        # value as the model's after this call.
+        records = model_value_input_records(self, variable_name)
+        try:
+            super().set_input(variable_name, period, value)
+        finally:
+            forget_replaced_model_values(self, variable_name, records)
 
     def clone(self, *args, **kwargs) -> "Simulation":
         new = super().clone(*args, **kwargs)

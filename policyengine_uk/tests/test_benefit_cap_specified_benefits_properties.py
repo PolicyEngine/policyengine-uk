@@ -578,6 +578,13 @@ def enter_with_set_input(simulation, year, amount):
     simulation.set_input("uc_LCWRA_element", year, [amount])
 
 
+def enter_the_calculated_array(simulation, year, amount):
+    # The array the engine returns for the period, stored back as it is.
+    simulation.set_input(
+        "uc_LCWRA_element", year, simulation.calculate("uc_LCWRA_element", year)
+    )
+
+
 def enter_after_deleting(simulation, year, amount):
     simulation.delete_arrays("uc_LCWRA_element", year)
     simulation.set_input("uc_LCWRA_element", year, [amount])
@@ -602,6 +609,7 @@ def enter_by_rebuilding_from_a_frame(simulation, year, amount):
     "enter",
     [
         enter_with_set_input,
+        enter_the_calculated_array,
         enter_after_deleting,
         enter_by_rebuilding_from_a_situation,
         enter_by_rebuilding_from_a_frame,
@@ -667,11 +675,67 @@ def rebalanced():
     return simulation, float(simulation.calculate("uc_LCWRA_element", year)[0])
 
 
+REBALANCED_YEARS = [2026, 2027, 2028, 2029]
+
+
+@pytest.mark.parametrize(
+    "input_period, amount, entered_years",
+    [
+        # Stored under the longer period, which no single year reads.
+        ("year:2026:2", "model", []),
+        ("year:2026:2", 10_000.0, []),
+        ("year:2025:2", 999.0, []),
+        ("year:2029:2", 999.0, []),
+        # Consistent with the year's value, so nothing is stored.
+        ("2026-01", "model", []),
+        ("month:2026-01:12", "model", []),
+        # Overlaps 2026 without being a year: nothing stored there.
+        ("year:2026-04", 999.0, []),
+        # Stored for the year itself.
+        ("2027", 999.0, [2027]),
+        ("2026", "model", [2026]),
+    ],
+)
+def test_an_input_makes_the_element_an_entry_only_in_years_it_stores(
+    rebalanced, input_period, amount, entered_years
+):
+    """The rebalancing stores the model's element for 2026-2029. An input
+    for another period that leaves a year's stored value in place leaves it
+    the model's, so the non-claimant's limited capability still does not
+    lift the cap that year; an input stored for the year is an entry, even
+    the model's own amount."""
+    base, model_amount = rebalanced
+    simulation = base.clone()
+    for year in REBALANCED_YEARS:
+        assert not is_entered(simulation, year)
+    value = model_amount if amount == "model" else amount
+    simulation.set_input("uc_LCWRA_element", input_period, [value])
+    for year in REBALANCED_YEARS:
+        entered = year in entered_years
+        assert is_entered(simulation, year) == entered, year
+        assert (
+            simulation.calculate("is_benefit_cap_exempt_health_disability", year)[0]
+            == entered
+        ), year
+
+
+def test_an_inconsistent_input_for_part_of_a_year_keeps_the_model_value(
+    rebalanced,
+):
+    base, model_amount = rebalanced
+    simulation = base.clone()
+    with pytest.raises(ValueError, match="Inconsistent input"):
+        simulation.set_input("uc_LCWRA_element", "2026-01", [model_amount + 1])
+    assert not is_entered(simulation, 2026)
+
+
 AMOUNT_NAMES = st.sampled_from(["model", "nil", "other"])
 OPERATIONS = st.lists(
     st.one_of(
         st.tuples(st.just("model"), AMOUNT_NAMES),
         st.tuples(st.just("input"), AMOUNT_NAMES),
+        st.tuples(st.just("longer"), AMOUNT_NAMES),
+        st.tuples(st.just("month"), AMOUNT_NAMES),
         st.just(("delete",)),
         st.just(("rebuild",)),
         st.just(("clone",)),
@@ -694,13 +758,16 @@ def test_an_element_is_entered_exactly_when_its_last_store_was_supplied(
     """Whatever the order of stores, deletions, rebuilds and clones, the
     element is an entry exactly when its value was last set as an input, or
     adjusted by the model after an input (set_model_value keeps an entry an
-    entry). Stores in a clone never change what the simulation it was cloned
-    from reads. The amounts include the model's own, so an entry equal to it
-    is drawn."""
+    entry). An input for a longer period, or for part of the year, that
+    stores nothing for the year changes nothing. Stores in a clone never
+    change what the simulation it was cloned from reads. The amounts include
+    the model's own, so an entry equal to it is drawn."""
     year = 2026
     base, model_amount = rebalanced
     amounts = {"model": model_amount, "nil": 0.0, "other": 4_321.0}
-    simulation, entered = base.clone(), False
+    # The reference: whether the year's value is an entry, and the value
+    # stored for the year (None once nothing is).
+    simulation, entered, stored = base.clone(), False, model_amount
     earlier = []
     for operation in operations:
         event(operation[0])
@@ -711,15 +778,34 @@ def test_an_element_is_entered_exactly_when_its_last_store_was_supplied(
                 year,
                 np.array([amounts[operation[1]]]),
             )
+            stored = amounts[operation[1]]
         elif operation[0] == "input":
             simulation.set_input("uc_LCWRA_element", year, [amounts[operation[1]]])
-            entered = True
+            entered, stored = True, amounts[operation[1]]
+        elif operation[0] == "longer":
+            # Stored under year:2026:2, which a calculation for 2026 does not
+            # read.
+            simulation.set_input(
+                "uc_LCWRA_element", f"year:{year}:2", [amounts[operation[1]]]
+            )
+        elif operation[0] == "month":
+            amount = amounts[operation[1]]
+            if stored is None:
+                # A year with no input takes the month's value.
+                simulation.set_input("uc_LCWRA_element", f"{year}-01", [amount])
+                entered, stored = True, amount
+            elif amount == stored:
+                # Consistent with the year's value: nothing is stored.
+                simulation.set_input("uc_LCWRA_element", f"{year}-01", [amount])
+            else:
+                with pytest.raises(ValueError, match="Inconsistent input"):
+                    simulation.set_input("uc_LCWRA_element", f"{year}-01", [amount])
         elif operation[0] == "delete":
             simulation.delete_arrays("uc_LCWRA_element", year)
-            entered = False
+            entered, stored = False, None
         elif operation[0] == "rebuild":
             simulation.build_from_situation(element_situation(year))
-            entered = False
+            entered, stored = False, None
         else:
             earlier.append((simulation, entered))
             simulation = simulation.clone()
