@@ -23,6 +23,8 @@ import weakref
 from pathlib import Path
 
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
 
@@ -119,3 +121,81 @@ def test_no_system_dies_before_the_freeze(request):
         "Simulation or CountryTaxBenefitSystem at import: build it in a "
         "fixture or on first use instead."
     )
+
+
+def test_dead_systems_modules_are_released_while_a_test_runs(request, monkeypatch):
+    conftest = _conftest(request)
+    max_new = 8
+    # Find the systems alive now; other test modules may keep many (caches).
+    monkeypatch.setattr(conftest, "_live_owners", 0)
+    conftest.release_after_new_systems(max_new=0)
+    live = len(conftest._variable_module_owners())
+    scans = []
+    release = conftest.release_dead_variable_modules
+    monkeypatch.setattr(
+        conftest,
+        "release_dead_variable_modules",
+        lambda **kwargs: scans.append(kwargs) or release(**kwargs),
+    )
+    owners = []
+    for _ in range(max_new + 3):
+        Simulation(situation=SITUATION).calculate("income_tax", 2026)
+        owners.append(len(conftest._variable_module_owners()))
+    # Released as each new system starts adding its variables, so at most
+    # max_new dead systems' modules beyond the live ones, plus the newest
+    # system's. Without the release the last count would be live + 11.
+    assert scans, "no release ran while the systems were built"
+    assert max(owners) <= live + max_new + 1, (live, owners)
+
+
+# Model of the release's bookkeeping, without building systems: each step
+# builds a system that stays alive or dies at once, kills live systems, or
+# runs the release. After every release, at most max_new owners are beyond
+# those alive at the last scan, and a scan happens exactly when more are.
+_steps = st.lists(
+    st.one_of(
+        st.tuples(st.just("build"), st.booleans()),
+        st.tuples(st.just("die"), st.integers(0, 5)),
+        st.tuples(st.just("release"), st.just(0)),
+    ),
+    max_size=60,
+)
+
+
+@settings(max_examples=200, deadline=None)
+@given(steps=_steps, max_new=st.integers(0, 10))
+def test_release_scans_only_past_max_new_new_owners(request, steps, max_new):
+    conftest = _conftest(request)
+    live, dead, scans = 1, 0, []
+
+    def owners():
+        return {str(i): [] for i in range(live + dead)}
+
+    def release_dead(max_owners):
+        nonlocal dead
+        released, dead = dead, 0
+        scans.append(max_owners)
+        return released
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(conftest, "_variable_module_owners", owners)
+        monkeypatch.setattr(conftest, "release_dead_variable_modules", release_dead)
+        monkeypatch.setattr(conftest, "_live_owners", 0)
+        for action, value in steps:
+            if action == "build":
+                live, dead = (live + 1, dead) if value else (live, dead + 1)
+            elif action == "die":
+                moved = min(value, live)
+                live, dead = live - moved, dead + moved
+            else:
+                last_live = conftest._live_owners
+                due = live + dead > last_live + max_new
+                before = len(scans)
+                released = conftest.release_after_new_systems(max_new=max_new)
+                assert (len(scans) > before) == due
+                if due:
+                    assert scans[-1] == 0 and dead == 0 and released >= 0
+                    assert conftest._live_owners == live
+                else:
+                    assert released == 0
+                assert live + dead <= conftest._live_owners + max_new
