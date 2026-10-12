@@ -400,7 +400,7 @@
   input:
     people:
       person1:
-        age: 70
+        age: 80
         state_pension_reported: 10_000
       person2:
         age: 40
@@ -416,9 +416,12 @@
       household:
         members: [person1, person2, person3]
   output:
-    # The Case 9 couple, saved by SI 2019/37 art 4, so SPCA s.4(1A) does not
-    # apply. Couple minimum guarantee 18,889 + 3,638.96 = 22,527.96, less
-    # the State Pension of 10,000, = 12,527.96.
+    # A mixed-age couple saved by SI 2019/37 art 4, so SPCA s.4(1A) does not
+    # apply. The older member, aged 80, had reached the qualifying age by
+    # 14 May 2019, as the saving requires. Couple minimum guarantee
+    # 18,889 + 3,638.96 = 22,527.96, less the State Pension of 10,000,
+    # = 12,527.96. The couple's Savings Credit threshold (329.75 a week,
+    # 17,147 a year) is above its income, so no Savings Credit is added.
     meets_pension_credit_age_conditions: true
     is_pension_credit_eligible: true
     guarantee_credit: 12_527.96

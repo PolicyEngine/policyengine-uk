@@ -243,8 +243,8 @@ VARIABLES = [
     "is_pension_credit_eligible",
     "would_claim_pc",
     "income_support",
-    "jsa_income",
-    "esa_income",
+    "claimant_or_partner_jsa_income",
+    "claimant_or_partner_esa_income",
 ]
 BOOLEANS = [
     "targeted_childcare_entitlement_eligible",
@@ -269,7 +269,9 @@ def calculate(year, units, version="fix", reform=None, scenario=None, **kwargs):
         sum(np.asarray(sim.calculate(v, year)).astype(int) for v in criteria) > 0
     )
     values["legacy"] = (
-        values["income_support"] + values["jsa_income"] + values["esa_income"]
+        values["income_support"]
+        + values["claimant_or_partner_jsa_income"]
+        + values["claimant_or_partner_esa_income"]
     ) > 0
     values["in_england"] = np.array(
         [unit["region"] not in OUTSIDE_ENGLAND for unit in units]
