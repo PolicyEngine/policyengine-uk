@@ -206,9 +206,8 @@ def situation(
         claim_pc = unit["would_claim_pc"] if would_claim_pc is None else would_claim_pc
         benunit = {
             "members": names,
-            # claims_all_entitled_benefits sums reported benefits across the
-            # whole simulation, so set it for every family.
             "claims_all_entitled_benefits": {YEAR: True},
+            "would_claim_council_tax_reduction": {YEAR: True},
             "would_claim_pc": {YEAR: claim_pc},
             "would_claim_uc": {YEAR: unit.get("would_claim_uc", False)},
         }
@@ -227,6 +226,7 @@ def situation(
             benunits[f"n{i}"] = {
                 "members": [name],
                 "claims_all_entitled_benefits": {YEAR: True},
+                "would_claim_council_tax_reduction": {YEAR: True},
                 "would_claim_uc": {YEAR: False},
             }
             benunit_index += 1
@@ -526,6 +526,7 @@ def test_savings_credit_only_award_counts_the_frozen_savings_credit():
             "benunit": {
                 "members": ["pensioner"],
                 "claims_all_entitled_benefits": {YEAR: True},
+                "would_claim_council_tax_reduction": {YEAR: True},
             }
         },
         "households": {
@@ -572,6 +573,7 @@ def freeze_case(age, state_pension, private_pension, savings, reform):
             "benunit": {
                 "members": ["pensioner"],
                 "claims_all_entitled_benefits": {YEAR: True},
+                "would_claim_council_tax_reduction": {YEAR: True},
             }
         },
         "households": {

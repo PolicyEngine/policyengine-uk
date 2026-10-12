@@ -6,16 +6,20 @@ everything it is entitled to, and a family that reports £1 or more is assumed
 to have reported completely. The formula used to sum the seven reported columns over the whole
 simulation (`add(...).sum() < 1`), so in microdata it was False for every
 benefit unit as soon as any benefit unit reported any of them, and the
-consumers that gate on it (`would_claim_council_tax_reduction` above all)
-collapsed to FRS reporters only.
+consumers that gate on it collapsed to reporters only. Council Tax Reduction
+now has its own explicit reporters-only default until calibrated data take-up
+lands (uk-data#448; d1390).
 """
 
 import numpy as np
 import pytest
+from hypothesis import example, given, settings, strategies as st
 
 from policyengine_uk import Microsimulation, Simulation
 
-YEAR = 2025
+pytestmark = pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
+
+YEAR = 2026
 
 SEVEN_REPORTED = [
     "child_tax_credit_reported",
@@ -74,10 +78,10 @@ class TestPerBenefitUnit:
         flag = sim.calculate("claims_all_entitled_benefits", YEAR)
         assert flag.tolist() == [False, True]
 
-    def test_would_claim_council_tax_reduction_follows_the_flag(self):
+    def test_ctr_default_does_not_follow_the_all_benefits_flag(self):
         sim = Simulation(situation=separate_households(5_000, 0))
         would_claim = sim.calculate("would_claim_council_tax_reduction", YEAR)
-        assert would_claim.tolist() == [False, True]
+        assert would_claim.tolist() == [False, False]
 
     def test_reported_ctr_still_claims_when_the_flag_is_false(self):
         situation = separate_households(5_000, 0)
@@ -89,7 +93,7 @@ class TestPerBenefitUnit:
         ]
         assert sim.calculate("would_claim_council_tax_reduction", YEAR).tolist() == [
             True,
-            True,
+            False,
         ]
 
     def test_reporters_of_any_of_the_seven_are_false(self):
@@ -134,3 +138,74 @@ def test_flag_is_evaluated_per_benefit_unit_in_microdata():
     assert np.array_equal(flag, reported < 1)
     # Both values must occur: the old formula returned a single value for all.
     assert flag.any() and (~flag).any()
+
+
+# Each generated family is independently eligible or ineligible and may have
+# reported CTR or an explicit take-up input. Other families cannot enable it.
+CTR_FAMILIES = st.lists(
+    st.tuples(
+        st.integers(min_value=18, max_value=90),
+        st.sampled_from(("ENGLAND", "SCOTLAND", "WALES")),
+        st.integers(min_value=0, max_value=50_000),
+        st.integers(min_value=0, max_value=50_000),
+        st.booleans(),
+        st.sampled_from((None, False, True)),
+        st.sampled_from((0, 100)),
+    ),
+    min_size=1,
+    max_size=4,
+)
+
+
+@given(families=CTR_FAMILIES)
+@example(families=[(40, "SCOTLAND", 0, 0, True, None, 0)])
+@example(
+    families=[
+        (40, "WALES", 0, 0, True, None, 0),
+        (40, "WALES", 0, 0, True, True, 0),
+        (70, "ENGLAND", 0, 0, False, None, 100),
+    ]
+)
+@settings(max_examples=30, deadline=None)
+def test_ctr_is_zero_for_every_nonreporter_without_an_explicit_claim_flag(families):
+    situation = {"people": {}, "benunits": {}, "households": {}}
+    must_be_zero = []
+    councils = {
+        "ENGLAND": "MAIDSTONE",
+        "SCOTLAND": "CITY_OF_EDINBURGH",
+        "WALES": "CARDIFF",
+    }
+    for index, (age, country, income, savings, claims_all, flag, reported) in enumerate(
+        families
+    ):
+        name = f"person_{index}"
+        situation["people"][name] = {
+            "age": {YEAR: age},
+            "employment_income": {YEAR: income},
+            "council_tax_benefit_reported": {YEAR: reported},
+        }
+        benunit = {
+            "members": [name],
+            "claims_all_entitled_benefits": {YEAR: claims_all},
+            "would_claim_uc": {YEAR: False},
+        }
+        if flag is not None:
+            benunit["would_claim_council_tax_reduction"] = {YEAR: flag}
+        situation["benunits"][f"bu_{index}"] = benunit
+        situation["households"][f"hh_{index}"] = {
+            "members": [name],
+            "country": {YEAR: country},
+            "local_authority": {YEAR: councils[country]},
+            "council_tax": {YEAR: 1_800},
+            "savings": {YEAR: savings},
+        }
+        must_be_zero.append(reported == 0 and flag is not True)
+    sim = Simulation(situation=situation)
+    mask = np.array(must_be_zero, dtype=bool)
+    assert not sim.calculate("would_claim_council_tax_reduction", YEAR)[mask].any()
+    for variable in (
+        "simulated_council_tax_reduction_benunit",
+        "council_tax_benefit",
+        "council_tax_reduction",
+    ):
+        assert (sim.calculate(variable, YEAR)[mask] == 0).all(), variable
