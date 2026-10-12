@@ -6,7 +6,7 @@
       claimant:
         age: 75
         is_parent: true
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -52,7 +52,7 @@
         age: 75
         is_parent: true
         state_pension: 8_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -82,7 +82,7 @@
         age: 75
         is_parent: true
         state_pension: 10_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -114,7 +114,7 @@
         is_parent: true
         state_pension: 8_000
         basic_income: 100
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:
@@ -197,7 +197,7 @@
         age: 75
         is_parent: true
         state_pension: 10_000
-        income_tax: 0
+        income_tax_before_winter_fuel_payment_charge: 0
         national_insurance: 0
         pension_contributions: 0
       young_person:

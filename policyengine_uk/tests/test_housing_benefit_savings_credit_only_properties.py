@@ -32,7 +32,8 @@ or earnings, with private pension on a £250 grid:
    depend on receiving Pension Credit (the free licence at 75, the Scottish
    payment's Pension Credit rates, and the charge, from which Pension Credit
    exempts a person with more than £35,000 of total income: ITEPA 2003 s.
-   681I), and the Winter Fuel Payment, which depended on it before 2025-26.
+   681I), and the Winter Fuel Payment, whose amount depends on it (one
+   payment for a couple on a relevant benefit, shared amounts otherwise).
    Housing Benefit switches from the Secretary of State's figure to its own
    rules there.
 3. Differential: a savings-credit-only family's Housing Benefit income is the

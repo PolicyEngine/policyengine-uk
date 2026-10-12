@@ -12,7 +12,8 @@
 #   2007 ss.23 and 30).
 # The payments are worked from SI 2025/969 regs 2 to 4, NISR 2025/142 regs 2
 # and 3, and SSI 2024/351 reg 10 as substituted by SSI 2025/282 (amounts from
-# SSI 2025/100 and SSI 2026/170). Entitlement to a payment, and so who counts
+# SSI 2025/100 and SSI 2026/170). One case, marked "model, not law", pins a
+# known gap instead. Entitlement to a payment, and so who counts
 # as "a person entitled to a winter fuel payment" for the shared amounts, does
 # not depend on the charge. Benefit-unit awards are entered directly.
 
@@ -534,14 +535,18 @@
     household_benefits: 203.40
     hbai_benefits: 203.40
 
-- name: 2025 a landlord's property allowance election is made before the charge
+- name: 2025 a landlord's property allowance election is made before the charge (model, not law)
   # Private pension £32,000; property receipts £3,500, expenses £200 (profit
   # £3,300), finance costs £1,500. With expenses: (35,300 - 12,570) x 20% =
   # £4,546, less the finance-cost reduction 20% x £1,500 = £300, so £4,246.
   # With partial relief (£1,000 allowance for £200 of expenses, no
   # reduction): (34,500 - 12,570) x 20% = £4,386. Expenses are kept. The
   # model's total_income is before the property allowance, £35,300 on either
-  # route, so the £200 charge is added on either.
+  # route, so the £200 charge is added on either: £4,446.
+  # KNOWN GAP, pinned on purpose: under the law, partial relief puts total
+  # income at £34,500, under the threshold, so a landlord would elect it and
+  # pay £4,386 with no charge. The model does not deduct the property or
+  # trading allowance from total_income (see the PR's Limits).
   period: 2025
   input:
     people:
