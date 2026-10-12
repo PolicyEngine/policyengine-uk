@@ -117,6 +117,9 @@ def calculate(units, rate=None, debt_scale=1.0):
     )
     values = {v: np.asarray(sim.calculate(v, YEAR), dtype=float) for v in PROGRAMMES}
     values["guarantee_credit"] = np.asarray(sim.calculate("guarantee_credit", YEAR))
+    values["hb_passported"] = np.asarray(
+        sim.calculate("housing_benefit_on_passporting_benefit", YEAR)
+    )
     return sim, values
 
 
@@ -124,8 +127,12 @@ def parameter_node(sim, path):
     return reduce(getattr, path.split("."), sim.tax_benefit_system.parameters(YEAR))
 
 
-def applies(variable, unit, guarantee_credit=0.0):
+def applies(variable, unit, guarantee_credit=0.0, hb_passported=False):
     if variable == "housing_benefit_assessable_capital":
+        # A family on a passporting benefit has nil HB capital
+        # (housing_benefit_on_passporting_benefit, on main since #1927).
+        if hb_passported:
+            return False
         return unit["age"] < 67 or guarantee_credit <= 0
     return (unit["age"] >= 67) == (variable in PENSION_AGE_ONLY)
 
@@ -167,7 +174,7 @@ def test_valuation_matches_the_regulation_and_never_adds_capital(units):
             if variable == "housing_benefit_assessable_capital" and unit["age"] >= 67:
                 if gc > 0:
                     assert valued[variable][i] == 0, unit
-            if applies(variable, unit, gc):
+            if applies(variable, unit, gc, valued["hb_passported"][i]):
                 expected = expected_capital(unit, node)
                 assert close(valued[variable][i], expected), (variable, unit)
                 # Debt secured on property never reaches the other assets.
@@ -187,7 +194,12 @@ def test_cash_only_households_have_no_deduction(units):
     for variable in PROGRAMMES:
         assert np.allclose(valued[variable], full[variable]), variable
         for i, unit in enumerate(units):
-            if applies(variable, unit, valued["guarantee_credit"][i]):
+            if applies(
+                variable,
+                unit,
+                valued["guarantee_credit"][i],
+                valued["hb_passported"][i],
+            ):
                 assert close(valued[variable][i], unit["assets"]["savings"]), variable
 
 
