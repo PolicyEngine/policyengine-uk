@@ -1,0 +1,165 @@
+# Income Support in a young person's own right ends qualifying young person
+# status for Pension Credit (SPC Regs 2002 reg. 4A(5)), Child Benefit (Child
+# Benefit (General) Regulations 2006 reg. 8(2)(a)) and Child Tax Credit (CTC
+# Regs 2002 reg. 5(4)(c)). Universal Credit's list (UC Regs 2013 reg. 5(5))
+# names Universal Credit, Employment and Support Allowance and Jobseeker's
+# Allowance only.
+#
+# Income Support stopped paying on 31 March 2026
+# (gov/dwp/income_support/active.yaml), so reported receipt counts to 2025-26.
+# 2025-26 amounts: Child Benefit eldest child £26.05 a week; Pension Credit
+# first-child addition £78.10 a week. CTC child element £3,455 in 2024-25.
+
+- name: Case 1, a 17-year-old at school with no Income Support is every programme's qualifying young person.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent, student]
+  output:
+    receives_income_support_in_own_right: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    # 78.10 * 52.
+    child_minimum_guarantee_addition: 4_061.20
+    # 26.05 * 52.
+    child_benefit_entitlement: 1_354.60
+
+- name: Case 2, reported Income Support of their own ends it for Pension Credit and Child Benefit, not Universal Credit.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent, student]
+  output:
+    receives_income_support_in_own_right: [false, true]
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+    child_minimum_guarantee_addition: 0
+    child_benefit_entitlement: 0
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+
+- name: Case 3, the same for Child Tax Credit in 2024-25.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, false]
+    CTC_child_element: 0
+
+- name: Case 4, without it the Child Tax Credit child element is paid.
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, student]
+  output:
+    is_qualifying_young_person_for_child_tax_credit: [false, true]
+    CTC_child_element: 3_455
+
+- name: Case 5, it ends the 16-year-old's status too, which has no education condition.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent, school_leaver]
+  output:
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, true]
+
+- name: Case 6, a report of Income Support after it stopped paying does not count.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        income_support_reported: 3_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent, student]
+  output:
+    receives_income_support_in_own_right: [false, false]
+    is_qualifying_young_person_for_pension_credit: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, true]
+
+- name: Case 7, the input can be set directly.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      grandparent:
+        age: 70
+        is_claimant_or_partner: true
+      student:
+        age: 17
+        current_education: UPPER_SECONDARY
+        receives_income_support_in_own_right: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [grandparent, student]
+  output:
+    is_qualifying_young_person_for_pension_credit: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    is_qualifying_young_person_for_universal_credit: [false, true]

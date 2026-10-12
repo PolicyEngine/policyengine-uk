@@ -1,0 +1,394 @@
+# The Child Benefit qualifying young person conditions for a young person who
+# has left education: Child Benefit (General) Regulations 2006 reg. 4 (until
+# the 31 August after the 16th birthday), reg. 5 (the 20-week extension
+# period for a 16- or 17-year-old), reg. 7 (until the terminal date) and
+# reg. 7(3) (no Child Benefit by virtue of reg. 7 in a week of remunerative
+# work). Reg. 2(2): a qualifying young person until the last applicable
+# condition ceases to be met. Reg. 8: not while receiving a benefit in their
+# own right.
+#
+# Child Benefit in 2026-27: £27.05 a week for the eldest child and £17.90 for
+# each other child (gov/hmrc/child_benefit/amount). Housing Benefit and the
+# other legacy schemes take their young person from the same definition
+# (SSCBA 1992 s.142; HB Regs 2006 reg. 19).
+
+- name: Case 1, a 16-year-old who has left education is a qualifying young person for the year (reg. 4).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_child_or_qualifying_young_person_for_child_benefit: [false, true]
+    is_child_benefit_payable_for_person: [false, true]
+    # 27.05 * 52.
+    child_benefit_entitlement: 1_406.60
+    # The legacy schemes' young person follows Child Benefit.
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    is_lone_parent: true
+
+- name: Case 2, a 16-year-old apprentice is a qualifying young person under reg. 4, which has no education condition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      apprentice:
+        age: 16
+        current_education: POST_SECONDARY
+        is_apprentice: true
+        weekly_hours: 30
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, apprentice]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    # Reg. 7(3) bars only Child Benefit payable through reg. 7.
+    is_child_benefit_payable_for_person: [false, true]
+    child_benefit_entitlement: 1_406.60
+
+- name: Case 3, born 15 September 2009, the 31 August after the 16th birthday is in 2026-27 (reg. 4).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        date_of_birth: 20090915
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    child_benefit_entitlement: 1_406.60
+
+- name: Case 4, born 31 August 2009, reg. 4 ended on 1 September 2025, before the year.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        date_of_birth: 20090831
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit_entitlement: 0
+    is_child_or_young_person_for_legacy_benefits: [false, false]
+    is_lone_parent: false
+
+- name: Case 5, a 17-year-old and an 18-year-old who have left education are not qualifying young persons by default.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      seventeen:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+      eighteen:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, seventeen, eighteen]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false, false]
+    child_benefit_entitlement: 0
+
+- name: Case 6, a 16-year-old receiving a benefit in their own right is not a qualifying young person (reg. 8).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        receives_benefits_in_own_right: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit_entitlement: 0
+
+- name: Case 7, a 17-year-old in an extension period is a qualifying young person (reg. 5).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        is_in_child_benefit_extension_period: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    child_benefit_entitlement: 1_406.60
+    is_lone_parent: true
+
+- name: Case 8, the extension period needs the young person not to be in remunerative work (reg. 5(2)(c)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 17
+        current_education: NOT_IN_EDUCATION
+        is_in_child_benefit_extension_period: true
+        weekly_hours: 24
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_in_remunerative_work_for_child_benefit: [false, true]
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit_entitlement: 0
+
+- name: Case 9, the extension period is for under-18s only (reg. 5(1)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+        is_in_child_benefit_extension_period: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit_entitlement: 0
+
+- name: Case 10, an 18-year-old before the terminal date is a qualifying young person (reg. 7).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+        is_before_child_benefit_terminal_date: true
+        weekly_hours: 23
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_in_remunerative_work_for_child_benefit: [false, false]
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_child_benefit_payable_for_person: [false, true]
+    child_benefit_entitlement: 1_406.60
+    is_lone_parent: true
+
+- name: Case 11, in remunerative work a young person before the terminal date stays a qualifying young person but brings no Child Benefit (reg. 7(3)).
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+        is_before_child_benefit_terminal_date: true
+        weekly_hours: 24
+        employment_income: 20_000
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+        would_claim_uc: false
+    households:
+      household:
+        members: [parent, school_leaver]
+        country: ENGLAND
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
+    is_child_or_qualifying_young_person_for_child_benefit: [false, true]
+    is_child_benefit_payable_for_person: [false, false]
+    child_benefit_entitlement: 0
+    # Still a young person for Housing Benefit and the other legacy schemes.
+    is_child_or_young_person_for_legacy_benefits: [false, true]
+    is_lone_parent: true
+    # Their £20,000 of earnings is not the parent's (HB Regs 2006 reg 25(3),
+    # IS Regs 1987 reg 23(2), CTR applicant-and-partner rules; #2387). The
+    # parent has no income of their own.
+    housing_benefit_applicable_income: 0
+    income_support_applicable_income: 0
+    council_tax_reduction_applicable_income: 0
+
+- name: Case 12, reg. 7(3) does not stop Child Benefit payable through another condition.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_before_child_benefit_terminal_date: true
+        weekly_hours: 40
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    # Reg. 4 also applies at 16, and has no remunerative work bar.
+    is_child_benefit_payable_for_person: [false, true]
+    child_benefit_entitlement: 1_406.60
+
+- name: Case 13, a working school leaver before the terminal date does not take the eldest-child rate from a younger child.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 18
+        current_education: NOT_IN_EDUCATION
+        is_before_child_benefit_terminal_date: true
+        weekly_hours: 30
+        is_claimant_or_partner: false
+      child:
+        age: 10
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver, child]
+  output:
+    child_benefit_child_index: [-1, -1, 1]
+    # One child at the eldest rate: 27.05 * 52.
+    child_benefit_entitlement: 1_406.60
+
+- name: Case 14, the terminal date condition ends at 20.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 45
+        is_parent: true
+        is_claimant_or_partner: true
+      school_leaver:
+        age: 20
+        current_education: NOT_IN_EDUCATION
+        is_before_child_benefit_terminal_date: true
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, false]
+    child_benefit_entitlement: 0
+
+- name: Case 15, a 16-year-old at school and a 16-year-old who has left are both qualifying young persons, so two rates.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        is_claimant_or_partner: true
+      at_school:
+        age: 16
+        current_education: UPPER_SECONDARY
+        is_claimant_or_partner: false
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: false
+    benunits:
+      benunit:
+        members: [parent, at_school, school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true, true]
+    # (27.05 + 17.90) * 52.
+    child_benefit_entitlement: 2_337.40
+
+- name: Case 16, a lone 16-year-old who has left education is not their own qualifying young person.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      school_leaver:
+        age: 16
+        current_education: NOT_IN_EDUCATION
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [school_leaver]
+  output:
+    is_qualifying_young_person_for_child_benefit: true
+    is_child_or_qualifying_young_person_for_child_benefit: false
+    child_benefit_entitlement: 0
