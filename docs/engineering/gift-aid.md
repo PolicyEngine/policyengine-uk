@@ -37,21 +37,21 @@ adjusted net income. The Personal Allowance formula does not deduct Gift Aid a
 second time. Capital gains tax uses `net_income`, retains its gross Gift Aid
 band extension, and no longer removes the net gift from `allowances`.
 
+Savings and dividends stack above all non-savings income, property income
+included ([ITA 2007 s. 16](https://www.legislation.gov.uk/ukpga/2007/3/section/16);
+#2352). Property income, savings and dividends therefore fill the bands in that
+order, each against the extended limits. `non_savings_income_after_allowances`,
+the base they stack on, starts from `net_income`, so the gift raises the limits
+without also shrinking the income beneath them. The Personal Savings Allowance
+compares net income less allowances with the UK basic and higher rate limits,
+both extended by the gross gift ([s. 12B](https://www.legislation.gov.uk/ukpga/2007/3/section/12B),
+including s. 12B(8) for Scottish taxpayers, with s. 414(2)(b)).
+
 ## Existing limitations
 
 Zero-gift calculations retain their existing behavior. Several inherited
 limitations remain relevant when interpreting mixed-income results:
 
-- Savings and dividend stacking currently omits property income from the
-  income beneath those slices. Gift Aid extends the limits of those existing
-  stacks. [ITA 2007 s. 16](https://www.legislation.gov.uk/ukpga/2007/3/section/16)
-  requires savings and dividends above other income; repairing property
-  occupancy separately would also change zero-gift results.
-- The Personal Savings Allowance follows the model's `tax_band` enum, including
-  its Scottish band classification. [s. 12B(8)](https://www.legislation.gov.uk/ukpga/2007/3/section/12B)
-  instead tests Scottish non-savings income against the counterfactual UK
-  higher and additional rates. Extending the existing band tests preserves
-  that limitation.
 - The Scottish top-rate threshold parameter is £112,570 of income after
   allowances for 2024 onwards. The [HMRC rates and allowances
   table](https://www.gov.uk/government/publications/rates-and-allowances-income-tax/income-tax-rates-and-allowances-current-and-past)
