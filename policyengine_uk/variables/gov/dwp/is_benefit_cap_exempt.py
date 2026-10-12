@@ -4,7 +4,7 @@ from policyengine_uk.model_api import *
 class is_benefit_cap_exempt(Variable):
     value_type = bool
     entity = BenUnit
-    label = "Whether exempt from the benefits cap because of health or disability"
+    label = "Whether exempt from the benefits cap"
     definition_period = YEAR
     reference = "https://www.gov.uk/benefit-cap/when-youre-not-affected"
 

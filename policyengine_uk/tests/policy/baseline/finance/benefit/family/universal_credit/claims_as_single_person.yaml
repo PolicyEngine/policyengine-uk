@@ -707,8 +707,8 @@
     # "Couple" in the cap includes a single claimant's partner (reg. 78(2)).
     # 11,000 a year (916.67 a month) exceeds 16 hours at the national living
     # wage of 12.71 (NMW Regs 2015 reg. 4 from 1 April 2026):
-    # 12.71 x 16 x 52 / 12 = 881.23 a month. The model uses a fixed
-    # 10,152 a year; 11,000 clears both.
+    # 12.71 x 16 x 52 / 12 = 881.23 a month, 881 in whole pounds (reg.
+    # 6(1A)(za); gov.dwp.benefit_cap_earnings_exemption).
     is_benefit_cap_exempt_earnings: true
 
 - name: Sch 4 para 28(2) - a renter under 35 claiming as a single person is a specified renter, whatever the partner's age
