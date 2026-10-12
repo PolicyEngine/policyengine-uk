@@ -49,11 +49,13 @@ The latent distribution is observed in 2025 and applied to all model years as a 
 
 ### The protected floor binds on last resort deductions
 
-The `protected_floor` lever limits combined deductions and benefit cap reductions to (1 − floor) × the standard allowance. The benefit cap reduction absorbs the floor first: `uc_deductions` is cut only where deductions alone still exceed the allowance. Under the Fair Repayment Rate the 15% deductions cap equals the allowance an 85% floor leaves, so cappable deductions essentially never breach the floor on their own — only benefit cap reductions push past it. JRF's own worked example (standard allowance £92, deduction £14, benefit cap £59, floor £78) works out the same way: the £14 deduction survives in full and the £59 cap reduction goes.
+The `protected_floor` lever limits combined deductions and benefit cap reductions to (1 − floor) × the standard allowance. Where the current-law split already fits inside that allowance, nothing changes. Where it does not, deductions are met first from the protected award, up to the allowance, and the benefit cap reduction absorbs the rest. Both `uc_deductions` and `uc_benefit_cap_reduction` come from one allocation (`_reduction_allocation.py`), so they agree by construction.
+
+JRF specifies the combined limit, not a priority between the two: their [September 2026 briefing](https://www.jrf.org.uk/social-security/a-protected-minimum-floor-in-universal-credit-to-cut-deep-child-poverty) proposes that "the sum of the 'capped amount' and any debt deductions is limited to the difference between a household's standard allowance and the level of the protected minimum floor". Debt first is the modeling choice, for three reasons. Under the Fair Repayment Rate the 15% deductions cap equals the allowance an 85% floor leaves, so cappable deductions never breach the floor on their own, and the policy JRF builds on (extending the Fair Repayment Rate "to all deductions, including the benefit cap") leaves deductions where that rate puts them. JRF's own example (standard allowance £98 a week, a £15 deduction, an £80 cap reduction, total limited to £15) is consistent with it. And it does not depend on how heavily the household is capped: if the deduction were limited by the gross cap reduction, a household capped down to a few pence would have its deduction squeezed to almost nothing even though the floor then removes most of that cap. The award is the same under either priority; only the split differs.
 
 Where deductions alone do exceed the allowance, the floor binds on the whole of `uc_deductions`, including the above-cap excess that current law exempts from the deductions cap (last resort and child maintenance deductions). JRF's briefing does not say whether their floor exempts those categories — its worked example involves only cappable deductions and the benefit cap — so this is a modeling choice.
 
-Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction` sum to the entitlement forgone. `benefit_cap_reduction` itself stays gross: it also drives Housing Benefit, which the Universal Credit floor does not protect. Read `uc_benefit_cap_reduction` for the cap reduction applied to a UC award under a floor reform.
+Both components report what the award actually loses, so `uc_deductions` and `uc_benefit_cap_reduction` sum to the entitlement forgone, and the applied cap reduction never exceeds the award (a £1,000 cap reduction on a £500 award applies £500). `benefit_cap_reduction` itself stays gross: it also drives Housing Benefit, which the Universal Credit floor does not protect. Read `uc_benefit_cap_reduction` for the cap reduction applied to a UC award under a floor reform.
 
 ### Other assumptions
 
@@ -81,7 +83,7 @@ Both components report what the award actually loses, so `uc_deductions` and `uc
 {"gov.dwp.universal_credit.deductions.protected_floor": {"2026-01-01.2030-12-31": 0.85}}
 ```
 
-A cap of 1 − *x* is equivalent to a protected minimum floor at *x* of the standard allowance for capped deduction types. The dedicated `protected_floor` lever additionally binds on benefit cap reductions, which is where most of JRF's post-Fair-Repayment-Rate effect comes from — and, because the cap reduction absorbs the floor first, where nearly all of the modelled effect lands.
+A cap of 1 − *x* is equivalent to a protected minimum floor at *x* of the standard allowance for capped deduction types. The dedicated `protected_floor` lever additionally binds on benefit cap reductions, which is where most of JRF's post-Fair-Repayment-Rate effect comes from — and, because deductions are met first, where nearly all of the modeled effect lands.
 
 ## Where the assignment lives
 

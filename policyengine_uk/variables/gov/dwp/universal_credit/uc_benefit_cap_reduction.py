@@ -1,17 +1,21 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.variables.gov.dwp.universal_credit.deductions._reduction_allocation import (
+    allocate_uc_reductions,
+)
 
 
 class uc_benefit_cap_reduction(Variable):
-    label = "UC benefit cap reduction"
+    label = "UC benefit cap reduction applied"
     documentation = (
         "Benefit cap reduction actually taken off this benefit unit's "
-        "Universal Credit award. Equal to benefit_cap_reduction under "
-        "current law. Where a protected minimum floor is in force, the cap "
-        "reduction absorbs the floor first, so only the part of it fitting "
-        "in the allowance uc_deductions leaves is applied. "
-        "benefit_cap_reduction itself stays gross, because it also applies "
-        "to Housing Benefit, which the Universal Credit floor does not "
-        "protect."
+        "Universal Credit award. Under current law this is "
+        "benefit_cap_reduction, bounded by the award: a cap reduction larger "
+        "than the award takes the award to zero and no further. Where a "
+        "protected minimum floor binds, deductions are met first, up to the "
+        "floor allowance, and this takes whatever allowance is left. "
+        "benefit_cap_reduction itself stays gross, because Housing Benefit "
+        "also reads it and the Universal Credit floor does not protect "
+        "Housing Benefit."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -20,17 +24,17 @@ class uc_benefit_cap_reduction(Variable):
     defined_for = "would_claim_uc"
 
     def formula(benunit, period, parameters):
-        reduction = benunit("benefit_cap_reduction", period)
-        # Deductions take their share of the floor allowance first, so the
-        # cap reduction is what bends when the floor binds. Under the Fair
-        # Repayment Rate the 15% deductions cap equals a typical 15% floor
-        # allowance, so cappable deductions alone essentially never breach
-        # the floor - only benefit cap reductions push past it. JRF's worked
-        # example (standard allowance £92, deduction £14, benefit cap £59,
-        # floor £78) preserves the £14 deduction and eliminates the £59 cap
-        # reduction, which is this ordering.
-        headroom = max_(
-            benunit("uc_maximum_reduction", period) - benunit("uc_deductions", period),
-            0,
+        p = parameters(period).gov.dwp.universal_credit.deductions
+        # JRF's September 2026 example (standard allowance £98 a week, a £15
+        # Fair Repayment Rate deduction, an £80 cap reduction, an 85% floor)
+        # limits the total to £15. Meeting the deduction first, as here,
+        # removes the whole cap reduction.
+        _, cap_reduction = allocate_uc_reductions(
+            benunit("universal_credit_pre_benefit_cap", period),
+            benunit("benefit_cap_reduction", period),
+            benunit("uc_deduction_rate", period)
+            * benunit("uc_standard_allowance", period),
+            benunit("uc_maximum_reduction", period),
+            p.minimum_payable * MONTHS_IN_YEAR,
         )
-        return min_(reduction, headroom)
+        return cap_reduction
