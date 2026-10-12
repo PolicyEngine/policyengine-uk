@@ -148,7 +148,11 @@
     is_benefit_cap_exempt_health_disability: false
     is_benefit_cap_exempt: false
 
-- name: A child's Armed Forces Independence Payment excepts the benefit unit
+- name: A child's Armed Forces Independence Payment does not except the benefit unit
+  # HB Regs 2006 reg 75F(1)(ea) names the claimant, partner or a young person
+  # the claimant is responsible for, not a child under 16. For Universal
+  # Credit, AFIP is within "attendance allowance" (UC Regs 2013 reg 2), which
+  # excepts only where "a claimant is receiving" it (reg 83(1)(c)).
   period: 2026
   input:
     people:
@@ -161,6 +165,26 @@
       benunit:
         members: [parent, child]
   output:
+    is_benefit_cap_exempt_health_disability: false
+    is_benefit_cap_exempt: false
+
+- name: A young person's Armed Forces Independence Payment excepts the benefit unit
+  # HB Regs 2006 reg 75F(1)(ea) names a young person the claimant is
+  # responsible for: a Child Benefit qualifying young person (reg 19).
+  period: 2026
+  input:
+    people:
+      parent:
+        age: 45
+      young_person:
+        age: 17
+        current_education: UPPER_SECONDARY
+        armed_forces_independence_payment: 5_740
+    benunits:
+      benunit:
+        members: [parent, young_person]
+  output:
+    is_qualifying_young_person_for_child_benefit: [false, true]
     is_benefit_cap_exempt_health_disability: true
 
 # --- Other exceptions are unchanged ---
@@ -179,6 +203,13 @@
     is_benefit_cap_exempt: true
 
 - name: Armed Forces Compensation Scheme payments except from the benefit cap
+  # A guaranteed income payment (article 15(1)(c) of the Armed Forces and
+  # Reserve Forces (Compensation Scheme) Order 2011) and a war disablement
+  # pension except: UC Regs 2013 reg 83(1)(d)-(e); HB Regs 2006 reg
+  # 75F(1)(d), with reg 75F(2)(a). This asserts the health and disability
+  # exception and the overall result, not is_benefit_cap_exempt_other, which
+  # also checks afcs today but loses it when #2076 moves AFCS into
+  # is_benefit_cap_exempt_health_disability.
   period: 2026
   input:
     people:
@@ -189,5 +220,5 @@
       benunit:
         members: [person]
   output:
-    is_benefit_cap_exempt_other: true
     is_benefit_cap_exempt_health_disability: true
+    is_benefit_cap_exempt: true

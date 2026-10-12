@@ -42,8 +42,6 @@ class is_benefit_cap_exempt_health_disability(Variable):
             "pip_dl",  # PIP daily living component
             "pip_m",  # PIP mobility component
             "iidb",  # Industrial injuries disability benefit
-            # Armed Forces Independence Payment is a statutory exemption
-            "armed_forces_independence_payment",
         ]
 
         # ESA and Working Tax Credit
@@ -56,6 +54,28 @@ class is_benefit_cap_exempt_health_disability(Variable):
             benunit, period, QUAL_PERSONAL_BENEFITS, ~not_a_claimant
         )
         qualifying_benunit_benefits = add(benunit, period, QUAL_BENUNIT_BENEFITS)
+
+        # Armed Forces Independence Payment counts only for the people the
+        # regulations name. Housing Benefit: "the claimant, the claimant's
+        # partner or a young person for whom the claimant or the claimant's
+        # partner is responsible" (HB Regs 2006 reg 75F(1)(ea)), so not a
+        # child under 16. Universal Credit: AFIP is within "attendance
+        # allowance" (UC Regs 2013 reg 2), which excepts only where "a
+        # claimant is receiving" it (reg 83(1)(c)). The model applies one
+        # cap to both schemes, so the claimant, partner or a Housing Benefit
+        # young person counts.
+        housing_benefit_young_person = person(
+            "is_child_or_young_person_for_legacy_benefits", period
+        ) & person("is_qualifying_young_person_for_child_benefit", period)
+        afip_counted = (
+            person("is_claimant_or_partner", period) & ~not_a_claimant
+        ) | housing_benefit_young_person
+        afip = (
+            add_for_members(
+                benunit, period, ["armed_forces_independence_payment"], afip_counted
+            )
+            > 0
+        )
 
         # Check for Armed Forces Compensation Scheme payments
         afcs = add_for_members(benunit, period, ["afcs"], ~not_a_claimant) > 0
@@ -70,6 +90,7 @@ class is_benefit_cap_exempt_health_disability(Variable):
             | gets_uc_carer_element
             | (qualifying_personal_benefits > 0)
             | (qualifying_benunit_benefits > 0)
+            | afip
             | afcs
             | esa_support_component
         )
