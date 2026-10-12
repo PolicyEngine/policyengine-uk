@@ -19,8 +19,10 @@ test: test-yaml test-python
 test-yaml:
 	policyengine-core test policyengine_uk/tests/policy -c policyengine_uk
 
-# CI passes PYTEST_ARGS="-n 4 --dist worksteal" (pytest-xdist) to spread the
-# tests over the runner's four cores. Without it this runs serially, as before.
+# CI passes PYTEST_ARGS to spread the tests over a runner's four cores
+# ("-n 4 --dist worksteal", pytest-xdist) and over several runners
+# ("--shard K/N", policyengine_uk/tests/conftest.py). Without it this runs
+# every test serially.
 test-python:
 	pytest policyengine_uk/tests/ --cov=policyengine_uk --cov-report=xml --maxfail=0 -v $(PYTEST_ARGS)
 
