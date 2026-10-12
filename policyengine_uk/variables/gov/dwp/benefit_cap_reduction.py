@@ -22,7 +22,9 @@ class benefit_cap_reduction(Variable):
             "esa_contrib",
             "sda",
         ]
-        return max_(
-            add(benunit, period, CAPPED_BENEFITS) - benunit("benefit_cap", period),
-            0,
-        )
+        # The cap applies to "the welfare benefits to which a single person or
+        # couple is entitled" (WRA 2012 s. 96(1); UC Regs 2013 reg. 80(1)), so
+        # a dependant's own contributory benefit is not part of the total.
+        claimants = benunit.members("is_uc_assessed_claimant", period)
+        total = add_for_members(benunit, period, CAPPED_BENEFITS, claimants)
+        return max_(total - benunit("benefit_cap", period), 0)

@@ -40,9 +40,9 @@
     benunits:
       benunit:
         members: [person]
-        # The model's 2026 rate for this household (default BRMA, Maidstone,
-        # one-bedroom category) is also 9,467.64; it is an input here so the
-        # test pins the order of the cap and the taper, not the LHA table.
+        # An input, so the test pins the order of the cap and the taper, not
+        # the LHA table. (The model's 2026 rate for this household, from the
+        # published Maidstone one-bedroom rate of 172.60 a week, is 8,975.20.)
         housing_benefit_LHA_rate: 9_467.64
         # Inputs, so the earnings disregard and the pension-age allowance
         # cannot move the taper. The applicable income input overrides the

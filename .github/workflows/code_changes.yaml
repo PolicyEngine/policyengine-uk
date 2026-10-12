@@ -12,9 +12,19 @@ on:
       - .github/**
   workflow_dispatch:
 
+# This workflow only lints and tests (versioning, publishing and the docs
+# deploy are separate workflows), so when a newer commit lands on main the
+# older run's result is superseded. Cancel it instead of letting a 50-minute
+# Test job hold a shared runner. From 2026-10-06 to 10-08, 8 of 17 push runs
+# were superseded mid-run and finishing them used 357 runner-minutes.
+concurrency:
+  group: code-changes-push-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   Lint:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
         - uses: actions/checkout@v6
         - name: Install uv
@@ -27,11 +37,13 @@ jobs:
       # queued for hours; the parameter tree and every test result are
       # identical on both.
       runs-on: ubuntu-24.04-arm
-      # The whole job takes about 18 minutes (YAML tests 2, pytest 15, the
-      # rest under 1). More than three times that means a run is hung or
-      # the suite needs attention, so fail it rather than wait for the
-      # 6-hour GitHub limit.
-      timeout-minutes: 60
+      # The whole job took about 18 minutes when this limit was set; by
+      # October 2026 it takes about an hour (57 to 60 minutes on 9 October,
+      # and every run on 10 October was cancelled at a 60-minute limit, one
+      # at 99% with every test passing; issue #2257). 120 minutes lets a
+      # slow run finish and still stops a hung one long before the 6-hour
+      # GitHub limit. The suite's runtime needs its own attention.
+      timeout-minutes: 120
       permissions:
         contents: "read"
         id-token: "write"

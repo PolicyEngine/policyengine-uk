@@ -1,19 +1,33 @@
 description: The additional National Insurance rate paid above the Upper Profits Limit for self-employed profits.
 values:
-  2015-04-01: 0.02
-  2022-04-01:
-    value: 0.035
-    metadata:
-      reference:
-        - title: Autumn Budget and Spending Review 2022
-          href: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1043689/Budget_AB2021_Web_Accessible.pdf
-  2024-01-01:
+  2015-04-06:
     value: 0.02
     metadata:
       reference:
-        - title: National Insurance Contributions (Reduction in Rates) Act 2024 s 1
-          href: https://www.legislation.gov.uk/ukpga/2024/5/section/1
+        - title: National Insurance Contributions Act 2011 s 2(1)(b) (additional Class 4 percentage of 2% from 6 April 2011)
+          href: https://www.legislation.gov.uk/ukpga/2011/3/section/2/enacted
+        - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)(b) (as at 6 April 2015)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2015-04-06
+  # Class 4 is charged on the year's profits, so 2022-23 has one rate for the
+  # whole tax year. The Health and Social Care Levy (Repeal) Act 2022 replaced
+  # the 3.25% that the Health and Social Care Levy Act 2021 s 5(2) had set.
+  2022-04-06:
+    value: 0.0273
+    metadata:
+      reference:
+        - title: Health and Social Care Levy (Repeal) Act 2022 s 2(2)(b) (additional Class 4 percentage of 2.73% for the tax year 2022-23)
+          href: https://www.legislation.gov.uk/ukpga/2022/43/section/2
+  2023-04-06:
+    value: 0.02
+    metadata:
+      reference:
+        - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)(b) (as at 6 April 2023)
+          href: https://www.legislation.gov.uk/ukpga/1992/4/section/15/2023-04-06
 metadata:
   label: NI class 4 additional rate
   unit: /1
-  reference: https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/882271/Table-a4.pdf
+  reference:
+    - title: Social Security Contributions and Benefits Act 1992 s 15(3ZA)
+      href: https://www.legislation.gov.uk/ukpga/1992/4/section/15
+    - title: "GOV.UK | Rates and allowances: National Insurance contributions"
+      href: https://www.gov.uk/government/publications/rates-and-allowances-national-insurance-contributions/rates-and-allowances-national-insurance-contributions

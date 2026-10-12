@@ -135,15 +135,16 @@
         members: [householder]
       lodger_family:
         members: [lodger]
-        uncapped_BRMA_LHA_rate: 6_000
     households:
       home:
         members: [householder, lodger]
         tenure_type: OWNED_OUTRIGHT
+        brma: MAIDSTONE
   output:
     benunit_rent: [0, 5_200]
     benunit_tenure_type: [OWNED_OUTRIGHT, RENT_PRIVATELY]
-    # UC: single, 40 >= 35, 1 bedroom: B. Cap = min(rent 5,200, rate 6,000).
+    # UC: single, 40 >= 35, 1 bedroom: B. Cap = min(rent 5,200, Maidstone
+    # one-bedroom rate 750 a month = 9,000).
     LHA_category: B
     uc_LHA_cap: [0, 5_200]
     uc_housing_costs_element: [0, 5_200]
@@ -164,17 +165,16 @@
     benunits:
       householder_family:
         members: [householder]
-        uncapped_BRMA_LHA_rate: 12_000
       daughter:
         members: [adult_daughter]
       lodger_family:
         members: [lodger]
-        uncapped_BRMA_LHA_rate: 6_000
     households:
       home:
         members: [householder, adult_daughter, lodger]
         rent: 10_000
         tenure_type: RENT_PRIVATELY
+        brma: MAIDSTONE
   output:
     # The daughter is the householder's non-dependant; the lodger is no one's
     # (UC Sch 4 para 9(2)(d)), and the householder's household is not the
@@ -183,8 +183,9 @@
     # One housing cost contribution, £93.02 a month for 2025-26 (Sch 4 para
     # 14): 93.02 x 12 = 1,116.24.
     uc_non_dep_deductions: [1_116.24, 0, 0]
-    # Householder: min(10,000, 12,000) - 1,116.24 = 8,883.76. The lodger's
-    # element is not reduced: min(5,200, 6,000) = 5,200.
+    # Householder (two bedrooms, C): min(10,000, Maidstone two-bedroom rate
+    # 905 a month = 10,860) - 1,116.24 = 8,883.76. The lodger's element is
+    # not reduced: min(5,200, one-bedroom rate 9,000) = 5,200.
     uc_housing_costs_element: [8_883.76, 0, 5_200]
     # UC bedrooms: householder 1 + daughter 1 = 2 (the lodger adds none).
     LHA_allowed_bedrooms: [2, 1, 1]
@@ -359,8 +360,8 @@
     # The pensioner head is not eligible for UC, so no other UC claim has
     # treated the non-dependant as one (UC Sch 4 para 9(2)(f)): they count
     # in the co-tenant's claim. Bedrooms 1 + 1 = 2: C. Core rent 18,000 / 2
-    # = 9,000, below the Maidstone two-bedroom rate (11,892.40); less one
-    # contribution of 93.02 x 12 = 1,116.24: 7,883.76.
+    # = 9,000, below the Maidstone two-bedroom rate (905 a month = 10,860);
+    # less one contribution of 93.02 x 12 = 1,116.24: 7,883.76.
     uc_non_dependants_counted: [false, true, false]
     LHA_allowed_bedrooms: [1, 2, 1]
     LHA_category: [B, C, A]

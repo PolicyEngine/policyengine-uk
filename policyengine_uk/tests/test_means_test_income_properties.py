@@ -8,6 +8,10 @@ IS, tax credit, CTR and Pension Credit income totals are covered.
 
 Each example builds families twice in one simulation: once with the other
 member's income and once without, in separate households and benefit units.
+It does so with every family claiming Universal Credit (the default) and with
+none claiming it: a family on Universal Credit has its whole Housing Benefit
+income disregarded (SI 2006/213 Sch 5 para 4), so the Housing Benefit means
+test is only exercised off it.
 """
 
 import numpy as np
@@ -76,7 +80,7 @@ def families(draw):
     return family
 
 
-def situation(families_):
+def situation(families_, would_claim_uc=None):
     people, benunits, households = {}, {}, {}
     for i, family in enumerate(families_):
         names = []
@@ -85,6 +89,8 @@ def situation(families_):
             people[name] = {k: {YEAR: v} for k, v in inputs.items()}
             names.append(name)
         benunits[f"b{i}"] = {"members": names}
+        if would_claim_uc is not None:
+            benunits[f"b{i}"]["would_claim_uc"] = {YEAR: would_claim_uc}
         households[f"h{i}"] = {"members": names}
     return {"people": people, "benunits": benunits, "households": households}
 
@@ -109,15 +115,20 @@ def test_income_of_non_claimants_never_counts(units):
         ]
         for family in units
     ]
-    sim = Simulation(situation=situation(units + without))
-    offsets = np.cumsum([0] + [len(f) for f in units])
-    n = len(units)
-    for variable in FAMILY_FLAGS:
-        flags = sim.calculate(variable, YEAR)
-        for i in range(n):
-            # The generator's construction, checked against the model.
-            assert not flags[offsets[i + 1] - 1], (variable, units[i])
-    for variable in INCOME_TESTS:
-        values = sim.calculate(variable, YEAR)
-        for i in range(n):
-            assert abs(values[i] - values[n + i]) < 0.01, (variable, units[i])
+    for would_claim_uc in (None, False):
+        sim = Simulation(situation=situation(units + without, would_claim_uc))
+        offsets = np.cumsum([0] + [len(f) for f in units])
+        n = len(units)
+        for variable in FAMILY_FLAGS:
+            flags = sim.calculate(variable, YEAR)
+            for i in range(n):
+                # The generator's construction, checked against the model.
+                assert not flags[offsets[i + 1] - 1], (variable, units[i])
+        for variable in INCOME_TESTS:
+            values = sim.calculate(variable, YEAR)
+            for i in range(n):
+                assert abs(values[i] - values[n + i]) < 0.01, (
+                    variable,
+                    would_claim_uc,
+                    units[i],
+                )

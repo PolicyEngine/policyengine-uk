@@ -313,3 +313,100 @@
     uc_assessable_capital: 6_001
     uc_tariff_income: 4.35 * 12
     uc_unearned_income: 4.35 * 12
+
+# Reg. 22(1)(a) deducts "all of the claimant's unearned income (or in the
+# case of joint claimants all of their combined unearned income)". A
+# dependant's income is not the claimant's.
+
+- name: A dependant's unearned income does not count and the claimant's does
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        private_pension_income: 1_000
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        private_pension_income: 400
+        carers_allowance: 500
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_unearned_income: 1_000
+
+- name: A dependant's contributory JSA or ESA supplied by the data does not count either
+  # Not a lawful case: a person receiving ESA or JSA is not a qualifying
+  # young person (reg. 5(5)), so they would not be the claimant's
+  # dependant. Data can still supply them (the Enhanced FRS gives some
+  # synthetic children contributory ESA); their income is still not the
+  # claimant's.
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+        private_pension_income: 1_000
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        jsa_contrib: 300
+        esa_contrib: 200
+    benunits:
+      benunit:
+        members: [parent, child]
+  output:
+    uc_unearned_income: 1_000
+
+- name: A dependant's pension does not wipe out a lone parent's Universal Credit
+  # Reg. 36 table, 2026-27: £424.90 + £351.88 a month. Before this was
+  # fixed the child's £12,000 counted pound for pound and UC was nil.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 40
+        is_parent: true
+      child:
+        age: 17
+        current_education: UPPER_SECONDARY
+        private_pension_income: 12_000
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+  output:
+    uc_unearned_income: 0
+    universal_credit: (424.90 + 351.88) * 12
+
+- name: Tariff income from the household's capital still counts with a dependant present
+  # The household's £6,001 is £1 over the £6,000 lower limit: one £4.35
+  # monthly step (reg. 72). The child's pension is not the claimant's.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 30
+        is_parent: true
+      child:
+        age: 10
+        private_pension_income: 500
+    benunits:
+      benunit:
+        members: [parent, child]
+    households:
+      household:
+        members: [parent, child]
+        savings: 6_001
+  output:
+    uc_tariff_income: 4.35 * 12
+    uc_unearned_income: 4.35 * 12

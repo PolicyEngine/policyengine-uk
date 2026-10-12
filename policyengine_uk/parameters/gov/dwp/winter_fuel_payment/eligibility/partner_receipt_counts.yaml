@@ -1,0 +1,27 @@
+description: Whether a member of a couple counts as on a relevant benefit for the Winter Fuel Payment when the other member is. The 2024 regulations say so. The 2000 and 2025 regulations instead ask whether a relevant benefit has been paid to the person, and income support, income-based jobseeker's allowance, income-related employment and support allowance and Pension Credit are paid to one member of a couple.
+values:
+  2000-01-01:
+    value: false
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2000, reg. 2(1)(ii) "paid to him" (as in force for the 2023 qualifying week)
+        href: https://www.legislation.gov.uk/uksi/2000/729/regulation/2/2023-09-18
+  # Dated 1 January so that the year's value is the one for its September
+  # qualifying week; SI 2024/869 came into force on 16 September 2024.
+  2024-01-01:
+    value: true
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2024, reg. 2(5)
+        href: https://www.legislation.gov.uk/uksi/2024/869/regulation/2/made
+      - title: The Social Fund Winter Fuel Payment Regulations (Northern Ireland) 2024, reg. 2(5)
+        href: https://www.legislation.gov.uk/nisr/2024/160/regulation/2/made
+  # SI 2025/969 came into force on 15 September 2025.
+  2025-01-01:
+    value: false
+    reference:
+      - title: The Social Fund Winter Fuel Payment Regulations 2025, reg. 3(2)(a), (3)(a), (5)(a), (6)(a) and 4(2)(a) "paid to P"
+        href: https://www.legislation.gov.uk/uksi/2025/969/regulation/3/made
+      - title: The Social Fund Winter Fuel Payment Regulations (Northern Ireland) 2025, reg. 3
+        href: https://www.legislation.gov.uk/nisr/2025/142/regulation/3
+metadata:
+  unit: bool
+  label: Winter Fuel Payment partner's relevant benefit counts

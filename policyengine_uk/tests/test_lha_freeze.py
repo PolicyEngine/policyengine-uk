@@ -131,7 +131,8 @@ def test_a_reset_year_is_not_treated_as_a_hold():
         2020, "MAIDSTONE", "C", reform={"gov.dwp.LHA.freeze": {"2020": True}}
     )
 
-    assert reset == pytest.approx(187.91, abs=0.01)
+    # VOA, LHA April 2020 (amended), Table 4: Maidstone two bedrooms.
+    assert reset == pytest.approx(187.56, abs=0.01)
     assert held_instead != pytest.approx(reset, abs=0.01)
 
 
