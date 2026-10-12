@@ -18,12 +18,15 @@ class is_before_first_september_following_16th_birthday(Variable):
         "September runs it to the 17th birthday. The route ends on a fixed 1 "
         "September that annual periods cannot split, so a person in it for "
         "part of the year counts for the year, as the benefit cap and LHA "
-        "family rules count a 16-year-old member. Everyone aged 16 on 6 "
-        "October qualifies, as does a 17-year-old born from 1 September to 6 "
-        "October. With birthdays spread evenly, a 16-year-old outside "
-        "education is a child or in the route for 46% of the year on average, "
-        "and a 17-year-old for 4%. Set this to false for a year that the "
-        "route does not reach."
+        "family rules count a 16-year-old member. This departs from the 6 "
+        "October reading of annual status that is_SP_age uses. Everyone aged "
+        "16 on 6 October qualifies, as does a 17-year-old born from 1 "
+        "September to 6 October. With birthdays spread evenly, a 16-year-old "
+        "outside education is a child or in the route for 46% of the year on "
+        "average, and a 17-year-old for 4%. To place the route for one "
+        "person, set their date_of_birth. Setting this variable for some "
+        "people gives everyone else in the situation false, so set it for "
+        "every person or not at all."
     )
     definition_period = YEAR
     reference = (

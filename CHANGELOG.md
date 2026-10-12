@@ -1,3 +1,26 @@
+## [2.126.9] - 2026-10-11
+
+### Fixed
+
+- Set DWP benefit rates to the amounts announced in DWP's Benefit and pension rates publications and set by the Up-rating Orders, replacing CPI projections: 2025-26 values (including the Pension Credit standard minimum guarantee, £227.10 and £346.60, and the pension-age Housing Benefit allowances, £244.40 and £366.00), the legacy premiums, Constant Attendance Allowance and Pension Credit additions (uprated from a fixed start value, so years without a published key, and every year from 2027-28, were projected from that value; the premiums' and Constant Attendance Allowance's only early key was the 2020-21 rate, keyed at 2015), Income Support personal allowances, Housing Benefit non-dependant deductions, and earlier years where they differed. Fixed amounts the law does not uprate (WTC childcare limits, which Housing Benefit also uses, and the CTC family element) are no longer projected. The pension-age Housing Benefit allowances now cite SI 2006/214 rather than SI 2006/213.
+
+
+## [2.126.8] - 2026-10-11
+
+### Fixed
+
+- - Let a household situation state whether its Universal Credit health element is at the new-claimant rate (`uc_receives_new_claimant_health_element`, default false), so a household's award no longer depends on its position among the other benefit units in a simulation; simulations built from data keep the seeded draw.
+- - Corrected a property test that claimed adding an adult outside the claimant's family never changes the legacy award readers: an adult non-dependant ends the family's severe disability premium, so the test now checks that what such a member reports never changes a reader, that their presence changes one only through that premium, and that Income Support then falls by at most the premium. The benefit cap, which counts such a member's own awards, is held at zero in that test until #2298 is fixed.
+
+
+## [2.126.7] - 2026-10-11
+
+### Fixed
+
+- - Fixed `Simulation(dataset=<DataFrame>)` for frames in which a benefit unit or household has more than one person. Each benefit unit and household now takes the value on its members' rows, single-person groups no longer take each other's values when the rows are not in identifier order, identifier columns are matched by exact name, an exported frame saved as CSV loads back, and the simulation's `dataset` holds the multi-year dataset the frame describes. Identifiers are read as whole numbers, value by value; frames whose identifier columns contradict each other, repeat a person, or name people or groups only with floats that may stand for more than one identifier (32-bit floats of `2**24` or more) are refused instead of merging households.
+  - Fixed the NHS, education and other public spending budget reforms (`gov.contrib.policyengine.budget`) raising `KeyError` when a simulation's data leaves an income decile empty, as a small sample does. An empty decile's share now goes to nobody.
+
+
 ## [2.126.6] - 2026-10-11
 
 ### Fixed
