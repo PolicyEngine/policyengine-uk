@@ -1,59 +1,105 @@
-# Workflow that runs on versioning metadata updates.
-# Uses GITHUB_TOKEN (not a personal PAT) for same-repo operations.
-# Cross-repo API updates use a GitHub App token minted at runtime from the
-# org-level APP_ID / APP_PRIVATE_KEY secrets.
+# The release workflow: version, build, test and publish policyengine-uk.
+#
+# Invariant: the files on PyPI are the files whose checks passed. On a push to
+# main that adds changelog fragments:
+#
+# 1. Versioning makes the version commit on the latest main and pushes it,
+#    retrying if main moves (.github/prepare_release.py). One run at a time.
+# 2. Build checks out that exact commit, builds the wheel and sdist once, and
+#    checks that they hold exactly that commit's files
+#    (.github/release_artifacts.py check-dist). It attests their provenance.
+# 3. Lint, Compat (install the wheel with the latest dependencies on every
+#    supported Python) and Test (the full suite, test-suite.yaml, on the
+#    installed wheel in the locked environment) check those files.
+# 4. Publish runs only if all of them passed. It uploads the same files,
+#    after checking that PyPI has no different files for that version, then
+#    confirms PyPI serves exactly them and tags the version commit.
+#
+# Before this, Publish needed only Versioning and checked out moving main: on
+# 11 October 2026 it uploaded 2.126.6 while the merge's Test job was still
+# running (runs 38136097710 and 38136097762), and Versioning failed 20 times
+# in two weeks when two runs raced to push.
+#
+# A failed run can be re-run from the Actions page. "Re-run failed jobs" keeps
+# Build's files, so it tests and publishes the same bytes. "Re-run all jobs"
+# rebuilds them from the same commit (builds are reproducible: a rebuild of
+# 6d89338ab matched PyPI's 2.126.8 byte for byte) and tests the rebuild; if
+# the first attempt pushed a version commit that main still ends with,
+# untagged, the re-run releases it. To release a version commit whose run is
+# gone, dispatch this workflow with its SHA.
+#
+# Pull requests that change the release machinery (the files under
+# pull_request.paths) run steps 2 and 3 on the PR's own commit, without
+# versioning or publishing.
 
 name: Versioning updates
+
 on:
   push:
     branches:
       - main
-
     paths:
       - changelog.d/**
       - pyproject.toml
   workflow_dispatch:
+    inputs:
+      release-sha:
+        description: >
+          Release this existing version commit on main (full SHA) instead of
+          versioning main. Leave empty to version and release main.
+        required: false
+        default: ""
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/versioning.yaml
+      - .github/workflows/test-suite.yaml
+      - .github/actions/**
+      - .github/prepare_release.py
+      - .github/release_artifacts.py
+      - .github/publish-git-tag.sh
+      - .github/bump_version.py
+      - .github/check_test_shards.py
+      - .github/pytest_outcome_log.py
+      - .github/test_outcome_allowlist.toml
+      - .github/build-constraints.txt
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   Versioning:
     runs-on: ubuntu-latest
-    if: |
-      (!(github.event.head_commit.message == 'Update package version'))
+    timeout-minutes: 15
+    # The version commit itself never starts another release. (Pushed with
+    # GITHUB_TOKEN it triggers no workflows; pushed by the App it does.)
+    if: github.event_name != 'push' || github.event.head_commit.message != 'Update package version'
+    # One versioning run at a time, never cancelled once started. A run that
+    # is still queued is replaced by a newer one; that is safe, because each
+    # run versions the latest main, fragments and all. A queued release-sha
+    # dispatch or re-run is replaced too (it shows as cancelled): dispatch it
+    # again once the newer run has versioned.
+    concurrency:
+      group: ${{ github.event_name == 'pull_request' && format('release-dry-run-{0}', github.event.pull_request.number) || 'release-versioning' }}
+      cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+    permissions:
+      contents: write
     outputs:
-      committed: ${{ steps.commit.outputs.committed }}
+      release: ${{ steps.version.outputs.release }}
+      sha: ${{ steps.version.outputs.sha }}
+      version: ${{ steps.version.outputs.version }}
+      publish: ${{ steps.version.outputs.publish }}
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-      - name: Install uv
-        uses: astral-sh/setup-uv@v8.1.0
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: 3.12
-      - name: Install towncrier
-        run: uv pip install towncrier --system
-      - name: Bump version and build changelog
-        run: |
-          python .github/bump_version.py
-          towncrier build --yes --version $(python -c "import re; print(re.search(r'version = \"(.+?)\"', open('pyproject.toml').read()).group(1))")
-      - name: Update changelog
-        id: commit
-        uses: EndBug/add-and-commit@v10
-        with:
-          add: "."
-          message: Update package version
-  Publish:
-    runs-on: ubuntu-latest
-    needs: Versioning
-    if: needs.Versioning.outputs.committed == 'true'
-    steps:
+      # A branch rule that requires status checks also blocks the version
+      # commit's direct push to main, unless the pusher may bypass it.
+      # GITHUB_TOKEN pushes today. With the repository variable
+      # RELEASE_PUSH_AS_APP set to true, the org's GitHub App pushes instead,
+      # so that App can be the rule's bypass actor. Set the variable before
+      # making such a rule active.
       - name: Generate GitHub App token
         id: app-token
+        if: vars.RELEASE_PUSH_AS_APP == 'true' && github.event_name != 'pull_request'
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.APP_ID }}
@@ -61,27 +107,380 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v6
         with:
-          ref: main
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token || github.token }}
       - name: Install uv
         uses: astral-sh/setup-uv@v8.1.0
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+      - name: Make the version commit
+        id: version
+        env:
+          EVENT: ${{ github.event_name }}
+          RELEASE_SHA: ${{ inputs.release-sha }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          version_at() {
+            git show "$1:pyproject.toml" | python3 -c 'import sys, tomllib; print(tomllib.loads(sys.stdin.read())["project"]["version"])'
+          }
+          if [ "$EVENT" = pull_request ]; then
+            # A dry run on the PR's merge commit: build and test it as it is.
+            sha=$(git rev-parse HEAD)
+            {
+              echo "release=true"
+              echo "publish=false"
+              echo "sha=$sha"
+              echo "version=$(version_at "$sha")"
+            } | tee -a "$GITHUB_OUTPUT"
+          elif [ -n "$RELEASE_SHA" ]; then
+            # Re-release an existing version commit on main.
+            git fetch --no-tags origin main
+            if ! [[ "$RELEASE_SHA" =~ ^[0-9a-f]{40}$ ]]; then
+              echo "::error::release-sha must be a full 40-character commit SHA"
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor "$RELEASE_SHA" FETCH_HEAD; then
+              echo "::error::$RELEASE_SHA is not on main"
+              exit 1
+            fi
+            # One parent, the version subject, and nothing changed but the
+            # version, the changelog and the consumed fragments.
+            python3 .github/prepare_release.py --verify "$RELEASE_SHA"
+            {
+              echo "release=true"
+              echo "publish=true"
+              echo "sha=$RELEASE_SHA"
+              echo "version=$(version_at "$RELEASE_SHA")"
+            } | tee -a "$GITHUB_OUTPUT"
+          elif [ "$RUN_ATTEMPT" -gt 1 ] \
+            && git fetch --no-tags origin main \
+            && python3 .github/prepare_release.py --verify "$(git rev-parse FETCH_HEAD)" \
+            && [ -z "$(git ls-remote --exit-code --tags origin "refs/tags/$(version_at FETCH_HEAD)" || true)" ]; then
+            # "Re-run all jobs" after this run's first attempt pushed a version
+            # commit: main's tip is that commit, untagged because it was never
+            # published. prepare_release.py would see a versioned tip and
+            # release nothing, so release the tip instead. A re-run of an
+            # older run does this too if main ends in another run's unpublished
+            # version commit: it still builds and tests that commit itself
+            # before publishing, and Publish runs one at a time per version.
+            sha=$(git rev-parse FETCH_HEAD)
+            {
+              echo "release=true"
+              echo "publish=true"
+              echo "sha=$sha"
+              echo "version=$(version_at "$sha")"
+            } | tee -a "$GITHUB_OUTPUT"
+          else
+            # The towncrier the lockfile pins, without installing the package.
+            towncrier=$(uv export --frozen --extra dev --no-hashes --no-header | grep -E '^towncrier==' | cut -d' ' -f1)
+            python3 .github/prepare_release.py \
+              --towncrier "uvx --from $towncrier towncrier" \
+              --github-output "$RUNNER_TEMP/release.txt"
+            committed=$(grep '^committed=' "$RUNNER_TEMP/release.txt" | tail -n 1 | cut -d= -f2)
+            {
+              echo "release=$committed"
+              echo "publish=$committed"
+              grep -E '^(sha|version)=' "$RUNNER_TEMP/release.txt"
+            } | tee -a "$GITHUB_OUTPUT"
+          fi
 
+  Build:
+    name: Release build
+    needs: Versioning
+    if: needs.Versioning.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    outputs:
+      wheel-sha256: ${{ steps.check.outputs.wheel-sha256 }}
+      sdist-sha256: ${{ steps.check.outputs.sdist-sha256 }}
+    steps:
+      - name: Checkout the version commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.Versioning.outputs.sha }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Build the wheel and sdist once
+        run: |
+          uv build --python 3.13 --out-dir dist \
+            --build-constraint .github/build-constraints.txt
+          # uv writes a .gitignore into its output directory; only the
+          # wheel and sdist are release files.
+          rm -f dist/.gitignore
+      - name: Check they hold exactly the version commit's files
+        id: check
+        env:
+          VERSION: ${{ needs.Versioning.outputs.version }}
+          SHA: ${{ needs.Versioning.outputs.sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p release
+          python3 .github/release_artifacts.py check-dist --dist dist \
+            --version "$VERSION" --sha "$SHA" \
+            --manifest-out release/manifest.json --sums-out release/SHA256SUMS
+          cat release/SHA256SUMS
+          echo "wheel-sha256=$(sha256sum dist/*.whl | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "sdist-sha256=$(sha256sum dist/*.tar.gz | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+      - name: Upload the release files
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-dist
+          path: dist/
+          if-no-files-found: error
+          # A re-run of this job replaces the earlier attempt's files.
+          overwrite: true
+          retention-days: 30
+      - name: Upload the release manifest
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-manifest
+          path: release/
+          if-no-files-found: error
+          # A re-run of this job replaces the earlier attempt's files.
+          overwrite: true
+          retention-days: 90
+      - name: Attest the release files' provenance
+        if: needs.Versioning.outputs.publish == 'true'
+        uses: actions/attest-build-provenance@v4
+        with:
+          subject-path: dist/*
+
+  Lint:
+    # Check names here start with "Release" so a branch rule that requires
+    # the pull request workflow's "Test / Result" or "Lint" cannot be met by
+    # this workflow's checks of the same name.
+    name: Release lint
+    needs: Versioning
+    if: needs.Versioning.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout the version commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.Versioning.outputs.sha }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Check formatting
+        run: uvx ruff format --check .
+      - name: Lint
+        # The ruff rules pyproject.toml selects, then two pyflakes rules it
+        # ignores, checked in the package: F811, a definition that a later
+        # one of the same name silently replaces (two PRs that each add a
+        # Simulation.set_input merge cleanly, and the second wins; uk hub
+        # notice 16), and F821, an undefined name. Neither has a finding
+        # in the package today.
+        run: |
+          uvx ruff check .
+          uvx ruff check --select F811,F821 policyengine_uk
+
+  Compat:
+    # What a user gets: the wheel, with the newest dependencies it allows,
+    # on each supported Python.
+    needs: Build
+    name: Release install (py${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Download the release files
+        uses: actions/download-artifact@v8
+        with:
+          name: release-dist
+          path: dist
+      - name: Install the wheel
+        env:
+          WHEEL_SHA256: ${{ needs.Build.outputs.wheel-sha256 }}
+        run: |
+          set -euo pipefail
+          echo "$WHEEL_SHA256  $(ls dist/*.whl)" | sha256sum --check
+          uv pip install --system dist/*.whl
+      - name: Smoke-import
+        run: |
+          cd "$RUNNER_TEMP"
+          python -c "import importlib.metadata as m, policyengine_uk; print('import OK', m.version('policyengine-uk'), policyengine_uk.__file__)"
+
+  Sdist:
+    # The sdist is published too: check it builds and installs, with the
+    # build backend pinned as Build pins it.
+    name: Release install (sdist)
+    needs: [Versioning, Build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout the version commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.Versioning.outputs.sha }}
+          sparse-checkout: .github
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
-            python-version: '3.13'
-      - name: Install package
-        run: uv pip install -e .[dev] --system
-      - name: Install policyengine
-        run: uv pip install policyengine --system
-      - name: Install Wheel and Pytest
-        run: pip3 install wheel setuptools pytest==5.4.3
-      - name: Publish a git tag
-        run: ".github/publish-git-tag.sh"
-      - name: Build package
-        run: make
-      - name: Publish a Python distribution to PyPI
+          python-version: "3.13"
+      - name: Install uv
+        uses: astral-sh/setup-uv@v8.1.0
+      - name: Download the release files
+        uses: actions/download-artifact@v8
+        with:
+          name: release-dist
+          path: dist
+      - name: Install the sdist
+        env:
+          SDIST_SHA256: ${{ needs.Build.outputs.sdist-sha256 }}
+        run: |
+          set -euo pipefail
+          echo "$SDIST_SHA256  $(ls dist/*.tar.gz)" | sha256sum --check
+          uv pip install --system --build-constraint .github/build-constraints.txt dist/*.tar.gz
+      - name: Smoke-import
+        run: |
+          cd "$RUNNER_TEMP"
+          python -c "import importlib.metadata as m, policyengine_uk; print('import OK', m.version('policyengine-uk'), policyengine_uk.__file__)"
+
+  Test:
+    name: Release test
+    needs: [Versioning, Build]
+    uses: ./.github/workflows/test-suite.yaml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      ref: ${{ needs.Versioning.outputs.sha }}
+      dist-artifact: release-dist
+      wheel-sha256: ${{ needs.Build.outputs.wheel-sha256 }}
+      # A release never publishes with its microsimulation tests skipped.
+      require-data: true
+    secrets:
+      HUGGING_FACE_TOKEN: ${{ secrets.HUGGING_FACE_TOKEN }}
+
+  Publish:
+    # Runs only when every check above passed, and never for a pull request.
+    name: Publish
+    needs: [Versioning, Build, Lint, Compat, Sdist, Test]
+    if: needs.Versioning.outputs.publish == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # The environment the PyPI credential should live in. Today PYPI is an
+    # organisation secret that every repository's workflows can read. Once it
+    # is a secret of this environment instead, limited to main (admin
+    # settings, not set here), only this job on main can read it.
+    environment: pypi
+    # One Publish per version at a time: two runs releasing the same version
+    # commit (a re-run beside the original) upload and tag in turn, and the
+    # second finds PyPI complete and the tag in place.
+    concurrency:
+      group: release-publish-${{ needs.Versioning.outputs.version }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the version commit
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.Versioning.outputs.sha }}
+      - name: Download the release files
+        uses: actions/download-artifact@v8
+        with:
+          name: release-dist
+          path: dist
+      - name: Check these are the files that were built and tested
+        env:
+          VERSION: ${{ needs.Versioning.outputs.version }}
+          SHA: ${{ needs.Versioning.outputs.sha }}
+          WHEEL_SHA256: ${{ needs.Build.outputs.wheel-sha256 }}
+          SDIST_SHA256: ${{ needs.Build.outputs.sdist-sha256 }}
+        run: |
+          set -euo pipefail
+          echo "$WHEEL_SHA256  dist/policyengine_uk-$VERSION-py3-none-any.whl" | sha256sum --check
+          echo "$SDIST_SHA256  dist/policyengine_uk-$VERSION.tar.gz" | sha256sum --check
+          python3 .github/release_artifacts.py check-dist --dist dist \
+            --version "$VERSION" --sha "$SHA"
+      - name: Check what PyPI already has for this version
+        id: pypi
+        env:
+          VERSION: ${{ needs.Versioning.outputs.version }}
+        run: |
+          set -euo pipefail
+          # absent or partial: upload. complete: a re-run after a successful
+          # upload; nothing to do. conflict (exit 3): PyPI has other bytes
+          # under this version, so stop.
+          python3 .github/release_artifacts.py pypi-state --dist dist \
+            --version "$VERSION" | tee "$RUNNER_TEMP/pypi-state.txt"
+          echo "state=$(head -n 1 "$RUNNER_TEMP/pypi-state.txt")" >> "$GITHUB_OUTPUT"
+      - name: Publish to PyPI
+        if: steps.pypi.outputs.state != 'complete'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI }}
-          skip_existing: true
+          packages-dir: dist/
+          # Safe only because the step above found no different file under
+          # this version: it skips a file a failed earlier attempt uploaded.
+          skip-existing: true
+      - name: Check PyPI serves exactly these files
+        env:
+          VERSION: ${{ needs.Versioning.outputs.version }}
+        run: |
+          python3 .github/release_artifacts.py pypi-state --dist dist \
+            --version "$VERSION" --require complete --wait 600
+      # Tell policyengine.py (workstream W4's certify-uk-release.yaml) that
+      # this version is on PyPI, so it qualifies the release. That workflow
+      # reads only the version, resolves the rest from PyPI's file hashes,
+      # and catches up every two hours, so a lost dispatch only costs time:
+      # neither step can fail the release.
+      - name: Generate a token for policyengine.py
+        id: dispatch-token
+        continue-on-error: true
+        timeout-minutes: 2
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          owner: PolicyEngine
+          repositories: policyengine.py
+          # A repository dispatch needs contents: write and nothing more.
+          permission-contents: write
+      - name: Tell policyengine.py the release is on PyPI
+        if: steps.dispatch-token.outcome == 'success'
+        continue-on-error: true
+        timeout-minutes: 2
+        env:
+          GH_TOKEN: ${{ steps.dispatch-token.outputs.token }}
+          VERSION: ${{ needs.Versioning.outputs.version }}
+        run: |
+          gh api --method POST repos/PolicyEngine/policyengine.py/dispatches \
+            -f event_type=policyengine-uk-release \
+            -f "client_payload[version]=$VERSION"
+      - name: Tag the version commit
+        env:
+          VERSION: ${{ needs.Versioning.outputs.version }}
+          SHA: ${{ needs.Versioning.outputs.sha }}
+          WHEEL_SHA256: ${{ needs.Build.outputs.wheel-sha256 }}
+          SDIST_SHA256: ${{ needs.Build.outputs.sdist-sha256 }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          {
+            echo "policyengine-uk $VERSION"
+            echo
+            echo "Built, tested and published by $RUN_URL"
+            echo
+            echo "$WHEEL_SHA256  policyengine_uk-$VERSION-py3-none-any.whl"
+            echo "$SDIST_SHA256  policyengine_uk-$VERSION.tar.gz"
+          } > "$RUNNER_TEMP/tag-message.txt"
+          .github/publish-git-tag.sh "$VERSION" "$SHA" "$RUNNER_TEMP/tag-message.txt"

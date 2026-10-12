@@ -104,3 +104,63 @@
     child_tax_credit_pre_minimum: 26
   output:
     tax_credits: 26
+# Tax Credits Act 2002 s.9(3A): the child limit applies to a child or qualifying
+# young person born on or after 6 April 2017. The 2024 child element is 3,455.
+- name: CTC child limit, born 5 April 2017 is exempt
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    age: 7
+    date_of_birth: 20170405
+  output:
+    is_CTC_child_limit_exempt: true
+- name: CTC child limit, born 6 April 2017 is not exempt
+  period: 2024
+  absolute_error_margin: 0
+  input:
+    age: 7
+    date_of_birth: 20170406
+  output:
+    is_CTC_child_limit_exempt: false
+- name: CTC child element for a third child born 5 April 2017
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+      child_1:
+        age: 10
+        date_of_birth: 20140301
+      child_2:
+        age: 9
+        date_of_birth: 20150501
+      child_3:
+        age: 7
+        date_of_birth: 20170405
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+  output:
+    CTC_child_element: 10_365
+- name: CTC child element for a third child born 6 April 2017
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      parent:
+        age: 35
+      child_1:
+        age: 10
+        date_of_birth: 20140301
+      child_2:
+        age: 9
+        date_of_birth: 20150501
+      child_3:
+        age: 7
+        date_of_birth: 20170406
+    benunits:
+      benunit:
+        members: [parent, child_1, child_2, child_3]
+  output:
+    CTC_child_element: 6_910

@@ -32,6 +32,8 @@ We use HMRC road-fuel clearances and OBR-implied forecast volumes for petrol and
 
 We apply this to: `diesel_spending`, `petrol_spending`
 
+The pump prices that turn spending into litres (`household.consumption.fuel.prices.petrol` and `.diesel`) are DESNZ calendar-year averages (Quarterly Energy Prices tables 4.1.1 and 4.1.2), the same basis Microcosm UK uses to price household fuel spending. The spending growth rates (`petrol_spending_litre_proxy`, `diesel_spending_litre_proxy`) are derived from those prices, so that weighted litres follow the volume path above: (1 + growth) = (1 + volume growth) × price<sub>t</sub> / price<sub>t−1</sub> ÷ (1 + population growth). Whenever the prices change, re-derive the growth rates; a test checks that they match.
+
 ## Average earnings
 
 ```{note}
@@ -60,7 +62,7 @@ We derive these rates from OBR GDP growth and ONS population projections.
 |-------------|------|------|------|------|------|------|------|------|
 | Growth rate | 9.2% | 5.0% | 3.8% | 2.8% | 2.8% | 3.1% | 3.3% | 3.3% |
 
-We use per capita GDP for these variables: `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `savings`, `savings_interest_income`, `stocks_and_shares_isa`, `sublet_income`, `unit_and_investment_trusts`
+We use per capita GDP for these variables: `benunit_reported_capital`, `capital_gains`, `capital_gains_badr`, `capital_gains_before_response`, `capital_gains_carried_interest`, `capital_gains_residential_property`, `cash_isa`, `corporate_wealth`, `directly_held_shares`, `dividend_income`, `gross_financial_wealth`, `household_lifetime_isa_balance`, `lifetime_isa_balance`, `lump_sum_income`, `main_residence_value`, `maintenance_income`, `miscellaneous_income`, `mortgage_capital_repayment`, `net_financial_wealth`, `non_residential_property_value`, `other_investment_income`, `other_residential_property_value`, `owned_land`, `pension_credit_reported_capital`, `pension_income`, `private_pension_wealth`, `private_transfer_income`, `property_income`, `property_rental_income`, `savings`, `savings_interest_income`, `stocks_and_shares_isa`, `sublet_income`, `uc_reported_capital`, `unit_and_investment_trusts`
 
 ## Council tax
 
@@ -80,7 +82,7 @@ We use the OBR's mortgage interest rate index growth rates.
 |-------------|------|------|------|------|------|------|------|------|
 | Growth rate | 26.2% | 48.5% | 22.1% | 13.6% | 12.6% | 8.2% | 4.2% | 4.7% |
 
-We apply this to: `mortgage_interest_repayment`
+We apply this to: `mortgage_interest_repayment`, `property_finance_costs`, `property_finance_costs_brought_forward`
 
 ## Private pension index
 

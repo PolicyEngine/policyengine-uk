@@ -14,7 +14,9 @@ class dividend_income_tax(Variable):
 
     def formula(person, period, parameters):
         rates = parameters(period).gov.hmrc.income_tax.rates
-        other_income = person("earned_taxable_income", period) + max_(
+        # Dividends are the highest part of income, above savings and all
+        # non-savings income, property income included (ITA 2007 s. 16).
+        other_income = person("non_savings_taxable_income", period) + max_(
             0,
             person("taxable_savings_interest_income", period)
             - person("received_allowances_savings_income", period),

@@ -312,3 +312,155 @@ def test_components_add_up_whatever_ages_the_period_carries(people, period, data
     )
     sim = Microsimulation(dataset=dataset)
     assert_components_add_up(sim, people, (DATA_YEAR, period))
+
+
+# Rate reforms (PolicyEngine/policyengine-uk#2122). The reported amount is
+# split at the legislated (baseline) data-year rate; the flat-rate part then
+# follows the reformed period rate, and the part above the legislated rate is
+# scaled by the reformed period rate over the legislated data-year rate.
+
+NSP = "gov.dwp.state_pension.new_state_pension.amount"
+BSP = "gov.dwp.state_pension.basic_state_pension.amount"
+# Legislated full rates, 2024-25 and 2026-27 (Social Security Benefits
+# Up-rating Orders 2024 and 2026).
+LEGISLATED = {
+    (2024, "BASIC"): 169.50,
+    (2024, "NEW"): 221.20,
+    (2026, "BASIC"): 184.90,
+    (2026, "NEW"): 241.30,
+}
+
+
+def expected_under_rate(weekly: float, legislated: float, reformed: float) -> dict:
+    """Annual flat-rate and add-on amounts for a record reporting ``weekly`` in
+    a data year whose legislated full rate is ``legislated``, in a period whose
+    reformed full rate is ``reformed``."""
+    share = min(weekly, legislated) / legislated
+    add_on = max(weekly - legislated, 0) * reformed / legislated
+    return {
+        "flat": share * reformed * WEEKS_IN_YEAR,
+        "additional": add_on * WEEKS_IN_YEAR,
+    }
+
+
+def situation(age: int, pension_type: str, weekly: float, year: int) -> dict:
+    return {
+        "people": {
+            "person": {
+                "age": {year: age},
+                "state_pension_type": {year: pension_type},
+                "state_pension_reported": {year: weekly * WEEKS_IN_YEAR},
+            }
+        },
+        "benunits": {"benunit": {"members": ["person"]}},
+        "households": {"household": {"members": ["person"]}},
+    }
+
+
+def situation_components(sit: dict, reform, year: int) -> dict:
+    from policyengine_uk import Simulation
+
+    sim = Simulation(situation=sit, reform=reform)
+    return {v: float(sim.calculate(v, year)[0]) for v in COMPONENTS + ["state_pension"]}
+
+
+@pytest.mark.parametrize("reformed", [250.0, 230.0, 0.0])
+def test_situation_new_state_pension_follows_a_dated_rate_reform(reformed):
+    """Without a dataset the data year is the period, so a dated reform also
+    sets the data year's rate. A pensioner reporting exactly the full rate must
+    get the reformed rate, not the reported amount with the difference booked as
+    additional State Pension."""
+    year = 2026
+    weekly = LEGISLATED[(year, "NEW")]
+    sit = situation(70, "NEW", weekly, year)
+    baseline = situation_components(sit, None, year)
+    assert baseline["state_pension"] == pytest.approx(weekly * WEEKS_IN_YEAR, abs=0.01)
+    assert baseline["additional_state_pension"] == 0
+    reform = {NSP: {f"{year}-01-01.{year}-12-31": reformed}}
+    result = situation_components(sit, reform, year)
+    assert result["new_state_pension"] == pytest.approx(
+        reformed * WEEKS_IN_YEAR, abs=0.01
+    )
+    assert result["additional_state_pension"] == 0
+    assert result["state_pension"] == pytest.approx(reformed * WEEKS_IN_YEAR, abs=0.01)
+
+
+def test_situation_basic_state_pension_follows_a_dated_rate_reform():
+    year = 2026
+    weekly = LEGISLATED[(year, "BASIC")]
+    sit = situation(90, "BASIC", weekly, year)
+    reform = {BSP: {f"{year}-01-01.{year}-12-31": 170.0}}
+    result = situation_components(sit, reform, year)
+    assert result["basic_state_pension"] == pytest.approx(170 * WEEKS_IN_YEAR, abs=0.01)
+    assert result["additional_state_pension"] == 0
+    assert result["state_pension"] == pytest.approx(170 * WEEKS_IN_YEAR, abs=0.01)
+
+
+def test_situation_protected_payment_stays_additional_under_a_rate_reform():
+    """£10 a week above the legislated full rate is a protected payment. The
+    flat-rate part follows the reform; the protected payment is scaled by the
+    reformed over the legislated rate, as add-ons are (see #1941)."""
+    year = 2026
+    legislated = LEGISLATED[(year, "NEW")]
+    weekly = legislated + 10
+    sit = situation(70, "NEW", weekly, year)
+    reform = {NSP: {f"{year}-01-01.{year}-12-31": 250.0}}
+    result = situation_components(sit, reform, year)
+    expected = expected_under_rate(weekly, legislated, 250.0)
+    assert result["new_state_pension"] == pytest.approx(expected["flat"], abs=0.01)
+    assert result["additional_state_pension"] == pytest.approx(
+        expected["additional"], abs=0.01
+    )
+    assert result["state_pension"] == pytest.approx(
+        expected["flat"] + expected["additional"], abs=0.01
+    )
+
+
+@pytest.mark.parametrize("reformed", [300.0, 200.0, 0.0])
+@pytest.mark.parametrize(
+    "person, pension_type, parameter",
+    [
+        ({"age": 70, "male": True, "months": 3, "weekly": 240}, "NEW", NSP),
+        ({"age": 90, "male": True, "months": 3, "weekly": 250}, "BASIC", BSP),
+    ],
+)
+def test_undated_rate_reform_moves_state_pension_with_the_rate(
+    person, pension_type, parameter, reformed
+):
+    """An undated reform rewrites the data year's rate too. The record is still
+    split at the legislated 2024-25 rate, so State Pension rises with a higher
+    rate, falls with a lower one and is nil at a rate of zero."""
+    sim = Microsimulation(
+        dataset=year_dataset([person], DATA_YEAR), reform={parameter: reformed}
+    )
+    year = 2027
+    assert calculate(sim, "state_pension_type", year)[0] == pension_type
+    expected = expected_under_rate(
+        person["weekly"], LEGISLATED[(DATA_YEAR, pension_type)], reformed
+    )
+    flat_variable = (
+        "new_state_pension" if pension_type == "NEW" else "basic_state_pension"
+    )
+    assert calculate(sim, flat_variable, year)[0] == pytest.approx(
+        expected["flat"], abs=0.01
+    )
+    assert calculate(sim, "additional_state_pension", year)[0] == pytest.approx(
+        expected["additional"], abs=0.01
+    )
+    assert calculate(sim, "state_pension", year)[0] == pytest.approx(
+        expected["flat"] + expected["additional"], abs=0.01
+    )
+
+
+def test_dated_reform_after_the_data_year_is_unchanged_by_the_baseline_split():
+    """A reform dated after the data year leaves the data year's rate alone, so
+    splitting at the baseline rate changes nothing: the existing behaviour."""
+    person = {"age": 70, "male": True, "months": 3, "weekly": 240}
+    sim = Microsimulation(
+        dataset=year_dataset([person], DATA_YEAR),
+        reform={NSP: {"2026-01-01.2100-12-31": 300.0}},
+    )
+    expected = expected_under_rate(240, LEGISLATED[(DATA_YEAR, "NEW")], 300.0)
+    assert calculate(sim, "state_pension", 2027)[0] == pytest.approx(
+        expected["flat"] + expected["additional"], abs=0.01
+    )

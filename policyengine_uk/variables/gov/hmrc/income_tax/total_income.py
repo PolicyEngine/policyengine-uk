@@ -20,5 +20,6 @@ class total_income(Variable):
         "property_income",
         "savings_interest_income",
         "dividend_income",
-        "miscellaneous_income",
+        # A miscellaneous loss is never part of total income (ITA 2007 s. 152(4)).
+        "taxable_miscellaneous_income",
     ]

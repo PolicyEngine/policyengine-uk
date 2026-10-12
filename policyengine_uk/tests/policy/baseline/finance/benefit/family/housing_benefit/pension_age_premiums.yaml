@@ -260,7 +260,7 @@
   output:
     severe_disability_minimum_guarantee_addition: 86.05 * 52
 
-- name: The pension-age premium is zero below State Pension age
+- name: The pension-age premium is zero below the State Pension Credit qualifying age
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -277,3 +277,37 @@
         country: {2026: ENGLAND}
   output:
     pension_age_severe_disability_premium: 0
+
+- name: A mixed-age couple on Universal Credit uses the working-age premium schedule
+  # HB(SPC) Regs 2006 reg 5 and the CTR pensioner tests exclude a couple on
+  # Universal Credit, so the working-age allowance and premiums apply even
+  # though one partner is over State Pension age.
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: {2026: 50}
+        is_disabled_for_benefits: {2026: true}
+      partner:
+        age: {2026: 70}
+        state_pension: {2026: 3_000}
+    benunits:
+      benunit:
+        members: [claimant, partner]
+    households:
+      household:
+        members: [claimant, partner]
+        country: {2026: ENGLAND}
+        tenure_type: {2026: RENT_FROM_COUNCIL}
+        rent: {2026: 6_240}
+        council_tax: {2026: 2_000}
+  output:
+    is_uc_entitled: true
+    housing_benefit_pension_age_regulations_apply: false
+    council_tax_reduction_pensioner: false
+    pension_age_severe_disability_premium: 0
+    # Legacy disability premium (couple) 64.00 * 52 = 3,328.
+    benefits_premiums: 64.00 * 52
+    # Working-age couple allowance 150.15 * 52 = 7,807.80, plus the premium.
+    council_tax_reduction_applicable_amount: (150.15 + 64.00) * 52
