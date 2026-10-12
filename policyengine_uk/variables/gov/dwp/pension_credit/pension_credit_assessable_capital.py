@@ -11,10 +11,14 @@ class pension_credit_assessable_capital(Variable):
         "couples pool capital together without dilution by unrelated working-"
         "age adults. Person-level sources, such as a Lifetime ISA, count "
         "only for the holder's own benunit, and only when the holder is its "
-        "claimant or partner (is_uc_claimant): a dependant's capital is not "
-        "the claimant's. Where `pension_credit_reported_capital` records the "
-        "benefit unit's own capital (0 or more), it replaces the household "
-        "proxy and the person-level sources."
+        "claimant or partner (is_claimant_or_partner): a dependant's capital "
+        "is not the claimant's. Where `pension_credit_reported_capital` records "
+        "the benefit unit's own capital (0 or more), it replaces the "
+        "household proxy and the person-level sources. Unlike "
+        "`uc_assessable_capital`, another benefit unit's recorded capital is "
+        "not subtracted from the household capital that an unrecorded unit's "
+        "proxy shares out: the recorded figure and the household sources come "
+        "from different measures, so the proxy is left as it was."
     )
     definition_period = YEAR
     unit = GBP
@@ -25,15 +29,23 @@ class pension_credit_assessable_capital(Variable):
         person = benunit.members
         p = parameters(period).gov.dwp.pension_credit.income.capital
         household_capital = sum(household(source, period) for source in p.sources)
-        claimant_or_partner = person("is_uc_claimant", period)
+        claimant_or_partner = person("is_claimant_or_partner", period)
         person_capital = sum(
             benunit.sum(person(source, period) * claimant_or_partner)
             for source in p.person_sources
         )
-        any_pension_age = benunit.any(person("is_SP_age", period))
-        benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
+        any_pension_age = benunit.any(
+            person("has_attained_state_pension_credit_qualifying_age", period)
+        )
+        benunit_pension_age_adults = benunit.sum(
+            person("has_attained_state_pension_credit_qualifying_age", period)
+        )
         household_pension_age_adults = benunit.max(
-            person.household.sum(person.household.members("is_SP_age", period))
+            person.household.sum(
+                person.household.members(
+                    "has_attained_state_pension_credit_qualifying_age", period
+                )
+            )
         )
         adult_divisor = max_(1, household_pension_age_adults)
         household_capital_proxy = (

@@ -17,18 +17,26 @@ Invariants, for any generated population of families:
    and rent the family receives. So capital yield enters once, as tariff
    income. None of those three is on the list in any year.
 2. Invariance: interest, dividends and rent change nothing in unearned income,
-   tariff income, eligibility or the maximum amount. For families without
-   earnings they change nothing in the award either.
+   tariff income, eligibility, the maximum amount or the award, whatever the
+   family earns, because tax on them never comes off earnings (reg. 55(5)(b),
+   reg. 57(2) step 3).
 3. Monotone in capital: adding capital to any countable source never raises
    the award, before or after the benefit cap, and never lowers tariff
    income.
 
-Invariant 2's award clause is restricted to families without earnings because
-the model deducts the whole benefit unit's income tax from its earnings
-(PolicyEngine/policyengine-uk#1942), so tax on dividends raises the award of a
-working family. Reg. 55(5)(b) and reg. 57 step 3 allow only tax paid in respect
-of the employment or trade. The strict xfail below pins that case and will
-flip when #1942 is fixed; widen invariant 2 to all families then.
+Invariant 2's award clause runs with Marriage Allowance switched off. The
+model books it on the recipient as the transferor's unused personal allowance
+(PolicyEngine/policyengine-uk#1947), so capital income that uses up one
+partner's allowance raises the other partner's tax on earnings. The clause
+also compares only families whose personal allowances the income leaves
+unchanged: above 100,000 of adjusted net income the allowance tapers (ITA 2007
+s. 35), which raises the tax a person pays on their earnings and so changes
+the deduction from them (see test_uc_earnings_deductions_properties.py).
+The award after the benefit cap is compared only where the cap exemption is
+also unchanged: the model's earnings exception to the cap still nets tax on
+all of a person's income off their earnings
+(PolicyEngine/policyengine-uk#1986), so capital income can switch the cap on.
+A strict xfail pins that case.
 """
 
 import numpy as np
@@ -79,12 +87,13 @@ UC_VARIABLES = [
     "uc_maximum_amount",
     "uc_assessable_capital",
     "is_uc_eligible",
+    "is_benefit_cap_exempt",
 ]
 
 
 @st.composite
-def families(draw, with_earnings=True):
-    earnings = draw(st.one_of(st.just(0.0), money)) if with_earnings else 0.0
+def families(draw):
+    earnings = draw(st.one_of(st.just(0.0), money))
     return dict(
         ages=[draw(WORKING_AGE) for _ in range(draw(st.integers(1, 2)))],
         children=[draw(st.integers(0, 15)) for _ in range(draw(st.integers(0, 2)))],
@@ -103,19 +112,27 @@ def families(draw, with_earnings=True):
     )
 
 
-def situation(units, year, income_scale=1.0, capital_bump=None):
+def situation(
+    units, year, income_scale=1.0, capital_bump=None, marriage_allowance=True
+):
     """Build one simulation holding every family.
 
     ``income_scale`` multiplies each family's interest, dividends and rent;
     ``capital_bump`` is an optional (source, amount) added to every family's
-    capital.
+    capital. With ``marriage_allowance=False`` no one claims Marriage
+    Allowance.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         names = []
         for j, age in enumerate(unit["ages"]):
             name = f"p{i}_{j}"
-            person = {"age": {year: age}}
+            # The generated adults are the claimant and partner; say so, so the
+            # claimant-or-partner presumption (a member under 20 and much
+            # younger is the head's child) does not apply. Children get False.
+            person = {"age": {year: age}, "is_claimant_or_partner": {year: True}}
+            if not marriage_allowance:
+                person["would_claim_marriage_allowance"] = {year: False}
             if j == 0:
                 person["employment_income"] = {year: unit["earnings"]}
                 person["private_pension_income"] = {
@@ -128,7 +145,7 @@ def situation(units, year, income_scale=1.0, capital_bump=None):
             names.append(name)
         for k, age in enumerate(unit["children"]):
             name = f"c{i}_{k}"
-            people[name] = {"age": {year: age}}
+            people[name] = {"age": {year: age}, "is_claimant_or_partner": {year: False}}
             names.append(name)
         benunit = {"members": names}
         reported = unit["reported_capital"]
@@ -160,6 +177,9 @@ def listed_sources(sim, year):
 def calculate(units, year, **kwargs):
     sim = Simulation(situation=situation(units, year, **kwargs))
     values = {v: np.asarray(sim.calculate(v, year)) for v in UC_VARIABLES}
+    values["personal_allowances"] = np.asarray(
+        sim.calculate("personal_allowance", year, map_to="benunit")
+    )
     sources = listed_sources(sim, year)
     # No actual income from capital is on the list in any year.
     assert not set(CAPITAL_INCOME) & set(sources), sources
@@ -221,16 +241,32 @@ def test_interest_dividends_and_rent_do_not_enter_the_means_test(units, scale, y
 
 @PROPERTY_SETTINGS
 @given(
-    units=st.lists(families(with_earnings=False), min_size=1, max_size=20),
+    units=st.lists(families(), min_size=1, max_size=20),
     scale=st.sampled_from([0.0, 0.5, 3.0]),
     year=st.sampled_from(YEARS),
 )
 def test_interest_dividends_and_rent_leave_the_award_unchanged(units, scale, year):
-    base = calculate(units, year)
-    scaled = calculate(units, year, income_scale=scale)
+    base = calculate(units, year, marriage_allowance=False)
+    scaled = calculate(units, year, income_scale=scale, marriage_allowance=False)
+    # Only one adult receives the capital income, so the unit's summed
+    # personal allowances are unchanged exactly when that adult's is.
+    unchanged = np.isclose(
+        scaled["personal_allowances"], base["personal_allowances"], atol=0.01
+    )
+    # The cap's earnings exception can change with the income (#1986), so
+    # the capped award is compared only where the exemption is the same.
+    same_cap = unchanged & (
+        scaled["is_benefit_cap_exempt"] == base["is_benefit_cap_exempt"]
+    )
     for variable in UC_VARIABLES:
+        if variable == "is_benefit_cap_exempt":
+            continue
+        compared = same_cap if variable == "universal_credit" else unchanged
         np.testing.assert_allclose(
-            scaled[variable], base[variable], atol=0.01, err_msg=f"{variable}: {units}"
+            scaled[variable][compared],
+            base[variable][compared],
+            atol=0.01,
+            err_msg=f"{variable}: {units}",
         )
 
 
@@ -259,14 +295,6 @@ def test_uc_is_non_increasing_in_capital(units, source, bump, year):
     ), units
 
 
-@pytest.mark.xfail(
-    strict=True,
-    raises=AssertionError,
-    reason=(
-        "PolicyEngine/policyengine-uk#1942: uc_earned_income deducts the benefit "
-        "unit's whole income tax, including tax on dividends, from earnings"
-    ),
-)
 def test_tax_on_dividends_does_not_raise_a_working_familys_award():
     # 2026: single claimant aged 30 earning 10,000, under the personal
     # allowance and the NI primary threshold, so no tax or NI is paid in
@@ -293,3 +321,45 @@ def test_tax_on_dividends_does_not_raise_a_working_familys_award():
     )
     values = calculate([unit], 2026)
     assert values["uc_earned_income"][0] == pytest.approx(10_000, abs=0.01)
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "PolicyEngine/policyengine-uk#1986: the benefit cap earnings exception "
+        "nets tax on all of a person's income off their earnings"
+    ),
+)
+def test_tax_on_dividends_does_not_remove_the_benefit_cap_earnings_exception():
+    # 2026: single claimant aged 30 in London, council rent 20,000, earning
+    # 11,000 with no tax or NI on it. Without dividends the model applies no
+    # cap, because the earnings meet its exception test. 10,000 of dividends
+    # is taxed, but that tax is not in respect of the employment (reg.
+    # 55(5)(b)), so earned income, and the exception that rests on it (reg.
+    # 82(1)(a)), should not change.
+    unit = dict(
+        ages=[30],
+        children=[],
+        tenure="RENT_FROM_COUNCIL",
+        region="LONDON",
+        rent=20_000.0,
+        capital={source: 0.0 for source in CAPITAL_SOURCES},
+        main_residence_value=0.0,
+        reported_capital=-1.0,
+        earnings=11_000.0,
+        private_pension_income=0.0,
+        capital_income={
+            "savings_interest_income": 0.0,
+            "dividend_income": 10_000.0,
+            "property_income": 0.0,
+        },
+        recipient=0,
+    )
+    with_dividends = calculate([unit], 2026, marriage_allowance=False)
+    without = calculate([unit], 2026, income_scale=0.0, marriage_allowance=False)
+    assert with_dividends["uc_earned_income"][0] == pytest.approx(
+        without["uc_earned_income"][0], abs=0.01
+    )
+    assert with_dividends["universal_credit"][0] == pytest.approx(
+        without["universal_credit"][0], abs=0.01
+    )

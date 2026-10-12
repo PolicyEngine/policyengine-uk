@@ -25,7 +25,7 @@ class tax_credits_applicable_income(Variable):
             "private_pension_income",
             "savings_interest_income",
             "dividend_income",
-            "property_income",
+            "property_income_after_finance_costs",
         ]
         income = add_for_members(benunit, period, STEP_1_COMPONENTS, members)
         income = max_(income - TC.means_test.non_earned_disregard, 0)
@@ -39,14 +39,21 @@ class tax_credits_applicable_income(Variable):
         if bi.interactions.include_in_means_tests:
             STEP_2_COMPONENTS.append("basic_income")
         income += add_for_members(benunit, period, STEP_2_COMPONENTS, members)
-        # Step 4: the claimants' trading loss in the year is subtracted from
-        # the total of the other steps, so one partner's loss reduces the
-        # joint income. A child's loss is not the claimants'.
+        # SI 2002/2006 reg 3(1) Step Four: only the claimants' losses
+        # reduce their joint income; a child's loss is not theirs.
         claimants = person("is_claimant_or_partner", period)
         income = max_(
             0, income - add_for_members(benunit, period, ["trading_loss"], claimants)
         )
-        EXEMPT_BENEFITS = ["income_support", "esa_income", "jsa_income"]
+        # TCA 2002 s.7(2) and SI 2002/2008 reg 4: no income test while "the
+        # person, or either of the persons" claiming is entitled to Income
+        # Support, income-based JSA or income-related ESA. That is the claimant's
+        # or partner's award, not another member's.
+        EXEMPT_BENEFITS = [
+            "income_support",
+            "claimant_or_partner_esa_income",
+            "claimant_or_partner_jsa_income",
+        ]
         on_exempt_benefits = (
             add_for_members(benunit, period, EXEMPT_BENEFITS, members) > 0
         )

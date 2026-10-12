@@ -1,9 +1,9 @@
 description: >
   Person-level model variables counted as Pension Credit capital of the
   person's own benefit unit. They are summed over the benefit unit's claimant
-  and partner (`is_uc_claimant`), so they need none of the household proxy
-  that the household `sources` use, and a dependant's holding is left out:
-  section 5 of the State Pension Credit Act 2002 adds only the partner's
+  and partner (`is_claimant_or_partner`), so they need none of the household
+  proxy that the household `sources` use, and a dependant's holding is left
+  out: section 5 of the State Pension Credit Act 2002 adds only the partner's
   capital to the claimant's. `lifetime_isa_countable_capital` is a Lifetime
   ISA at its surrender value: regulation 19 values capital at its current
   market or surrender value, and DMG 84751 counts a Lifetime ISA at 75% of its

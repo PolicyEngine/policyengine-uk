@@ -1,0 +1,19 @@
+description: While this parameter is true, a newly determined Local Housing Allowance rate cannot fall below the rate determined on 31 March 2020 for the same Broad Rental Market Area and category. The minimum applies to determinations made from 31 January 2024, so it first affects the April 2024 rates.
+values:
+  2015-01-01: false
+  2024-01-31:
+    value: true
+    metadata:
+      reference:
+        - title: The Rent Officers (Housing Benefit and Universal Credit Functions) (Amendment) Order 2024, arts. 2(4), 3(4) and 4(4)
+          href: https://www.legislation.gov.uk/uksi/2024/11/made
+        - title: The Housing Benefit and Universal Credit Housing Costs (Executive Determinations) (Amendment) Regulations (Northern Ireland) 2024, regs. 2(4) and 3(4)
+          href: https://www.legislation.gov.uk/nisr/2024/3/made
+metadata:
+  unit: bool
+  label: LHA minimum at March 2020 rates
+  reference:
+    - title: The Rent Officers (Housing Benefit Functions) Order 1997, Schedule 3B, paragraph 3A
+      href: https://www.legislation.gov.uk/uksi/1997/1984/schedule/3B
+    - title: The Rent Officers (Universal Credit Functions) Order 2013, Schedule 1, paragraph 7
+      href: https://www.legislation.gov.uk/uksi/2013/382/schedule/1

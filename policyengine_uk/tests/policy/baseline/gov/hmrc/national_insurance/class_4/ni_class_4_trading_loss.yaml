@@ -31,6 +31,7 @@
   input:
     self_employment_income: 20_000
     loss_relief: 5_000
+    ni_class_4_losses_brought_forward: 5_000
   output:
     ni_class_4_profits: 15_000
     ni_class_4: 145.8
@@ -56,4 +57,28 @@
     # (30,000 - 12,570) x 6%.
     ni_class_4: 1_045.8
     # Income Tax is unaffected: £50,000 less the £12,570 Personal Allowance at 20%.
+    income_tax: 7_486
+
+- name: A sideways loss used for Income Tax still carries forward for Class 4
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income:
+      2025: 50_000
+      2026: 0
+    self_employment_income:
+      2025: 0
+      2026: 50_000
+    trading_loss:
+      2025: 20_000
+      2026: 0
+    loss_relief: 0
+  output:
+    trade_loss_relief_against_general_income:
+      2025: 20_000
+      2026: 0
+    ni_class_4_losses_brought_forward: 20_000
+    ni_class_4_profits: 30_000
+    ni_class_4: 1_045.8
+    # The loss was used for Income Tax in 2025, so cannot reduce it again.
     income_tax: 7_486

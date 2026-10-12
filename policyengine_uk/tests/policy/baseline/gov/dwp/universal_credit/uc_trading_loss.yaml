@@ -10,8 +10,10 @@
     self_employment_income: 30_000
     trading_loss: 10_000
     uc_is_in_startup_period: true
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
   output:
-    uc_mif_capped_earned_income: 20_000
+    uc_individual_earned_income_before_mif: 20_000
 
 - name: A loss never reduces employed earnings for UC
   period: 2026
@@ -20,8 +22,10 @@
     age: 40
     employment_income: 20_000
     trading_loss: 10_000
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
   output:
-    uc_mif_capped_earned_income: 20_000
+    uc_individual_earned_income_before_mif: 20_000
 
 - name: Self-employed earnings for UC are never below nil
   period: 2026
@@ -32,8 +36,10 @@
     self_employment_income: 5_000
     trading_loss: 10_000
     uc_is_in_startup_period: true
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
   output:
-    uc_mif_capped_earned_income: 20_000
+    uc_individual_earned_income_before_mif: 20_000
 
 - name: The benefit cap earnings test nets trades too (reg 82 with reg 57(2))
   period: 2026
@@ -45,6 +51,8 @@
         self_employment_income: 12_000
         trading_loss: 5_000
         uc_is_in_startup_period: true
+    uc_income_tax_on_earnings: 0
+    uc_national_insurance_on_earnings: 0
         income_tax: 0
         national_insurance: 0
       child_1:

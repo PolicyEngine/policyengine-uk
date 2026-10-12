@@ -68,11 +68,12 @@ benunit worked. PolicyEngine computes it via `ctc_entitlement`, gated by
 
 Since April 2017 the child element has been restricted to the first two
 qualifying children. The `child_count` parameter under
-`child_tax_credit/limit/` and the `start_year/year.yaml` switch encode
-this. Children born before the start year and a few specific exceptions
-(non-consensual conception, multiple births, kinship care) are exempt;
-the exemptions are modelled via `gov/contrib/two_child_limit/` and
-related variables.
+`child_tax_credit/limit/` encodes this, and `born_before` (6 April 2017,
+Tax Credits Act 2002 s.9(3A)) sets which children it applies to: those
+born before it are exempt, compared on `date_of_birth`. A few specific
+exceptions (non-consensual conception, multiple births, kinship care)
+also apply in law but are not modelled; `gov/contrib/two_child_limit/`
+holds reform options such as an age-based exemption.
 
 ### Qualifying child tests
 

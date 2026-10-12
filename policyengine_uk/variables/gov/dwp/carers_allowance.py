@@ -5,20 +5,26 @@ class carers_allowance(Variable):
     value_type = float
     entity = Person
     label = "Carer's Allowance"
+    documentation = (
+        "Carer's Allowance payable after the overlapping-benefit adjustment: "
+        "the allowance is reduced by any other personal benefit that overlaps "
+        "with it, such as State Pension, and only the balance is paid. The "
+        "comparison is made on annual amounts, which equals the weekly rule "
+        "when the overlapping benefit is paid at a constant rate all year. "
+        "Where the overlapping benefit is above the carer rate in some weeks "
+        "and lower or absent in others, for example when it is paid for part "
+        "of the year, the annual comparison pays less than the weekly rule "
+        "would; annual inputs carry no dates to do better."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = (
+        "https://www.legislation.gov.uk/ukpga/1992/4/section/70",
+        "https://www.legislation.gov.uk/uksi/1979/597/regulation/4",
+        "https://www.legislation.gov.uk/uksi/1979/597/regulation/12",
+    )
 
     def formula(person, period, parameters):
-        in_scotland = person.household("country", period).decode_to_str() == "SCOTLAND"
-        csp_replaces_ca = period.start.year >= 2025
-        receives_ca = person("carers_allowance_reported", period) > 0
-        ca = parameters(period).gov.dwp.carers_allowance
-        weekly_care_hours = person("care_hours", period)
-        meets_work_condition = weekly_care_hours >= ca.min_hours
-        would_claim = person("would_claim_carers_allowance", period)
-        eligible = (
-            ~(in_scotland & csp_replaces_ca)
-            & (meets_work_condition | receives_ca)
-            & would_claim
-        )
-        return eligible * ca.rate * WEEKS_IN_YEAR
+        pre_overlap = person("carers_allowance_pre_overlap", period)
+        overlapping = person("carers_allowance_overlapping_benefits", period)
+        return max_(pre_overlap - overlapping, 0)

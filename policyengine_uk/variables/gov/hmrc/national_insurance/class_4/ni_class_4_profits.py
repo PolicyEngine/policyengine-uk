@@ -4,38 +4,30 @@ from policyengine_uk.model_api import *
 class ni_class_4_profits(Variable):
     value_type = float
     entity = Person
-    label = "Profits for Class 4 NICs"
+    label = "Profits chargeable to Class 4 NICs"
     documentation = (
-        "Self-employment profits after the trade loss deductions Schedule 2 "
-        "para 3 SSCBA 1992 carries over from Income Tax: losses brought forward "
-        "(ITA 2007 s.83) and the year's trade loss relief against general "
-        "income (s.64), which para 3(4)(a) treats as reducing the profits of "
-        "any of the person's trades for Class 4, whatever income it was set "
-        "against for Income Tax. Para 3(4)(b) carries forward, for Class 4 "
-        "only, the part of an earlier loss that Income Tax set against other "
-        "income: ni_class_4_losses_brought_forward. A loss never reduces other "
-        "income for Class 4 and the result is never negative. Capital "
-        "allowances and the trading allowance are not deducted here, as "
-        "before (#1916)."
+        "Trade profits chargeable to income tax under ITTOIA 2005 Part 2 "
+        "Chapter 2 (after capital allowances and the trading allowance), less "
+        "trading losses as SSCBA 1992 Sch. 2 para. 3 allows. Personal "
+        "reliefs, interest relief and pension contributions are not deducted "
+        "(para. 3(2)), and neither are Class 1 contributions. The para. 3(5) "
+        "deductions for trade interest and certain royalties are not "
+        "modelled."
     )
     definition_period = YEAR
     unit = GBP
     reference = [
         dict(
-            title="Social Security Contributions and Benefits Act 1992 s. 15",
+            title="Social Security Contributions and Benefits Act 1992, s. 15(1) and (3)",
             href="https://www.legislation.gov.uk/ukpga/1992/4/section/15",
         ),
         dict(
-            title="Social Security Contributions and Benefits Act 1992 Sch. 2 para. 3",
-            href="https://www.legislation.gov.uk/ukpga/1992/4/schedule/2/paragraph/3",
+            title="Social Security Contributions and Benefits Act 1992, Sch. 2 paras. 2 and 3",
+            href="https://www.legislation.gov.uk/ukpga/1992/4/schedule/2",
         ),
     ]
 
     def formula(person, period, parameters):
-        return max_(
-            0,
-            person("self_employment_income", period)
-            - person("loss_relief", period)
-            - person("trade_loss_relief_against_general_income", period)
-            - person("ni_class_4_losses_brought_forward", period),
-        )
+        profits = person("ni_class_4_profits_before_losses", period)
+        loss_relief = person("ni_class_4_loss_relief", period)
+        return max_(profits - loss_relief, 0)
