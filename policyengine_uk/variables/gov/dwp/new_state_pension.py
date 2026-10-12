@@ -48,9 +48,10 @@ class new_state_pension(Variable):
         # flows through ``additional_state_pension`` — mirrors the
         # BASIC / ASP split so ``new_state_pension`` is always the headline
         # flat-rate component.
-        share = where(
-            max_new_data_year > 0,
-            min_(reported_weekly, max_new_data_year) / max_new_data_year,
-            0,
+        share = np.divide(
+            min_(reported_weekly, max_new_data_year),
+            max_new_data_year,
+            out=np.zeros_like(reported_weekly, dtype=float),
+            where=max_new_data_year > 0,
         )
         return eligible * share * max_new_period * WEEKS_IN_YEAR

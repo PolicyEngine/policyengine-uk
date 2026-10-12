@@ -58,3 +58,24 @@ make test-microsimulation
 ```
 
 When a command is not run, record why.
+
+## How CI Runs The Tests
+
+The test jobs in `.github/workflows/pr_code_changes.yaml` and
+`code_changes.yaml` run the YAML policy tests in one job and split the Python
+tests over several runners. Each of those runs one shard:
+
+```bash
+make test-python PYTEST_ARGS="-n 4 --dist worksteal --shard K/N"
+```
+
+`--shard K/N` is defined in `policyengine_uk/tests/conftest.py`. It keeps the
+tests whose node id hashes to shard K of N, so every test is in exactly one
+shard, including a test added later. The final `Test` job runs
+`.github/check_test_shards.py`, which fails unless every collected test ran in
+exactly one shard.
+
+- To rerun what one CI shard ran, pass the same `--shard K/N` locally.
+- To make CI faster, add a shard to the `shard` matrix in both workflows.
+- Do not split tests by file or directory in a workflow: a test outside the
+  listed paths would silently not run.

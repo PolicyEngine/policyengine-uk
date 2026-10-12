@@ -25,9 +25,16 @@ class carers_allowance_pre_overlap(Variable):
         weekly_care_hours = person("care_hours", period)
         meets_work_condition = weekly_care_hours >= ca.min_hours
         would_claim = person("would_claim_carers_allowance", period)
+        # SSCBA 1992 s. 70(1)(b): no allowance for anyone gainfully employed,
+        # which reg. 8 of the 1976 Regulations defines by an earnings limit.
+        # It applies to reported recipients too.
+        gainfully_employed = person(
+            "is_gainfully_employed_for_carers_allowance", period
+        )
         eligible = (
             ~(in_scotland & csp_replaces_ca)
             & (meets_work_condition | receives_ca)
+            & ~gainfully_employed
             & would_claim
         )
         return eligible * ca.rate * WEEKS_IN_YEAR
