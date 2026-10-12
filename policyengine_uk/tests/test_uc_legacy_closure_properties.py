@@ -24,7 +24,8 @@ Invariants, for any generated population of families in 2024 to 2027:
    It gets no Housing Benefit unless it keeps the pension-age route by not
    claiming (or by having nil Universal Credit entitlement). A family that leaves
    that route gets no Pension Credit either, and any closure claimant
-   within the capital limit is eligible for Universal Credit.
+   with a qualifying claimant and within the capital limit is eligible for
+   Universal Credit.
 4. Exclusive: no family gets Universal Credit with Pension Credit or with
    Housing Benefit.
 5. Metamorphic, the flag is inert unless it decides a claim: negating
@@ -229,11 +230,25 @@ def test_closure_claims_and_the_end_of_legacy_awards(units):
             ]:
                 assert v[benefit][i] == 0, (year, benefit, unit)
             uc_eligible = bool(v["is_uc_eligible"][i])
-            # Any closure claimant within the capital limit is eligible for
-            # Universal Credit: on the pension-age route through a joint claim
-            # (reg 3(2)(a)) or the reg 60A waiver.
-            if claims_at_closure and v["uc_assessable_capital"][i] <= 16_000:
-                assert uc_eligible, (year, unit)
+            # A working-age claimant, or the reg 60A upper-age waiver for
+            # WTC migrants, is still needed. A pensioner with an ineligible
+            # working-age partner cannot claim on an IS/JSA closure alone.
+            age_qualified = (
+                any(
+                    role != "child"
+                    and age <= 60
+                    and not (
+                        role == "partner" and unit.get("ineligible_partner", False)
+                    )
+                    for role, age in unit["members"]
+                )
+                or unit["reported"]["working_tax_credit_reported"] > 0
+            )
+            if claims_at_closure:
+                expected_eligible = (
+                    age_qualified and v["uc_assessable_capital"][i] <= 16_000
+                )
+                assert uc_eligible == expected_eligible, (year, unit)
             left = (
                 pension_age_route
                 and claims_at_closure
