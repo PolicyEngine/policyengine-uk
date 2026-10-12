@@ -8,10 +8,10 @@ description: >
   the war pensions mobility supplement (v), which has no variable; pension age
   disability payment (iiia, from 21 October 2024), Scottish adult disability
   living allowance (iva, from 21 March 2025) and adult disability payment
-  (viiia, from 21 March 2022), which have no separate variables; and the
-  working tax credit disability elements (vi), left out because in the model
-  they follow from DLA or PIP, which are listed, and working tax credit ended
-  in April 2025.
+  (viiia, from 21 March 2022), which have no separate variables. Working tax
+  credit with its disability or severe disability element (vi) is a
+  benefit-unit award, tested in the formula of
+  `pension_credit_earnings_disregard`.
 metadata:
   label: Pension Credit higher earnings disregard disability benefits
   unit: list

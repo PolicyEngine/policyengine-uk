@@ -8,23 +8,31 @@ class pension_credit_earnings_disregard(Variable):
         "the State Pension Credit Regulations 2002: 20 pounds a week for a "
         "lone parent (para. 1), where the claimant or partner is a carer "
         "satisfying Sch. I para. 4 (para. 3), or where the claimant or partner "
-        "receives a listed disability benefit or is certified blind "
-        "(para. 4(1)); otherwise 5 pounds a week for a single claimant and 10 "
+        "receives a listed disability benefit (including working tax credit "
+        "with its disability or severe disability element) or is certified "
+        "blind (para. 4(1)); otherwise 5 pounds a week for a single claimant and 10 "
         "pounds for a couple (para. 5). 20 pounds is the most disregarded "
         "however many conditions are met (para. 4A). Reg. 17(9) disregards the "
         "sums 'in calculating the claimant's earnings', which are net of income "
         "tax and National Insurance (reg. 17(10)) and of half of pension "
         "contributions (reg. 17A(4A)), so the disregard never exceeds the "
-        "claimant's and partner's net earnings. Income tax on earnings is the "
-        "tax on them as the top slice of the person's taxable non-savings "
-        "income, on the person's own rate schedule (Scottish or rest of UK), "
-        "capped at their income tax: the tax deducted from the earnings where "
-        "the personal allowance goes against pension income first (DMG "
-        "86038-86039), so earning more never raises Pension Credit. Not "
-        "modelled: the employment-specific 20 pound "
+        "claimant's and partner's net earnings, each source floored at nil. "
+        "Employed earnings (regs. 17(10) and 17A) are net of primary Class 1 "
+        "contributions and of the income tax payable on them "
+        "(pension_credit_employment_income_tax). Self-employed earnings (regs. "
+        "17(11) and 17B) are net of the notional tax and contributions of the "
+        "Computation of Earnings Regulations 1996 reg. 14 "
+        "(pension_credit_self_employment_deductions). Half of pension "
+        "contributions come off both. Not modelled: the employment-specific "
+        "20 pound "
         "disregards of paras. 2 to 2B (part-time firefighters, auxiliary "
         "coastguards, lifeboat crew, reserve forces) and the transitional "
-        "protections of para. 4(2) to (4)."
+        "protections of para. 4(2) to (4), and the continued carer "
+        "qualification of Sch. I para. 4 after carer's allowance stops (the "
+        "model has no record of when it stopped). The carer condition reads "
+        "is_entitled_to_carer_benefit, the carer addition's own test, so the "
+        "two always agree; the Carer's Allowance earnings limit is applied to "
+        "that test by PolicyEngine/policyengine-uk#2312."
     )
     entity = BenUnit
     definition_period = YEAR
@@ -34,6 +42,9 @@ class pension_credit_earnings_disregard(Variable):
         "https://www.legislation.gov.uk/uksi/2002/1792/schedule/VI",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17A",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17B",
+        "https://www.legislation.gov.uk/uksi/1996/2745/regulation/13",
+        "https://www.legislation.gov.uk/uksi/1996/2745/regulation/14",
     )
 
     def formula(benunit, period, parameters):
@@ -51,9 +62,20 @@ class pension_credit_earnings_disregard(Variable):
             if len(unit_disability_benefits) > 0
             else False
         )
+        # Para. 4(1)(a)(vi): in receipt of working tax credit that includes
+        # its disability or severe disability element.
+        wtc_disability_element = (
+            add(
+                benunit,
+                period,
+                ["WTC_disabled_element", "WTC_severely_disabled_element"],
+            )
+            > 0
+        ) & (benunit("working_tax_credit", period) > 0)
         disabled = (
             benunit.any(claimant_or_partner & on_disability_benefit)
             | unit_on_disability_benefit
+            | wtc_disability_element
         )
         # Sch. I para. 4: a claimant or partner entitled to carer's allowance
         # (the carer addition's own test), not caring hours alone.
@@ -68,30 +90,32 @@ class pension_credit_earnings_disregard(Variable):
             p.standard[relation_type],
         )
 
-        # Net earnings of the claimant and partner (regs. 17(10), 17A(4A)).
-        gross = max_(0, add(person, period, pc.guarantee_credit.earnings_sources))
-        national_insurance = add(
-            person, period, ["ni_class_1_employee", "ni_class_2", "ni_class_4"]
-        )
-        # Tax on the earnings as the top slice of taxable non-savings income.
-        rates = parameters(period).gov.hmrc.income_tax.rates
-        taxable = person("earned_taxable_income", period)
-        below_earnings = max_(0, taxable - min_(gross, taxable))
-        scottish = person("pays_scottish_income_tax", period)
-        top_slice_tax = where(
-            scottish,
-            rates.scotland.rates.calc(taxable)
-            - rates.scotland.rates.calc(below_earnings),
-            rates.uk.calc(taxable) - rates.uk.calc(below_earnings),
-        )
-        income_tax_on_earnings = min_(person("income_tax", period), top_slice_tax)
-        pension_contributions = (
+        # Net earnings of the claimant and partner, each source floored at
+        # nil: a loss in one employment is not set against another (CER 1996
+        # reg. 13(12), applied by SPC Regs 2002 reg. 17B).
+        # Employed earners (regs. 17(10) and 17A): less the income tax payable
+        # on the earnings and the primary Class 1 contributions deducted from
+        # them. Self-employed earners (regs. 17(11) and 17B): less the
+        # notional tax and contributions of CER 1996 regs. 13(4) and 14. Both:
+        # less half of pension contributions (reg. 17A(4A); CER 1996 reg.
+        # 13(4)(c)).
+        employment = max_(0, person("employment_income", period))
+        self_employment = max_(0, person("self_employment_income", period))
+        deductions = add(
+            person,
+            period,
+            ["ni_class_1_employee", "pension_credit_self_employment_deductions"],
+        ) + (
             person("pension_contributions", period)
             * pc.income.pension_contributions_deduction
         )
-        net = max_(
+        # Each person's deductions come off their own earnings; the income tax
+        # on employed earnings is measured for the claimant and partner
+        # together (pension_credit_employment_income_tax).
+        own_net = max_(0, employment + self_employment - deductions)
+        net_earnings = max_(
             0,
-            gross - national_insurance - income_tax_on_earnings - pension_contributions,
+            benunit.sum(own_net * claimant_or_partner)
+            - benunit("pension_credit_employment_income_tax", period),
         )
-        net_earnings = benunit.sum(net * claimant_or_partner)
         return min_(weekly * WEEKS_IN_YEAR, net_earnings)

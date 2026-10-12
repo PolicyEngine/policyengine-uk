@@ -10,6 +10,7 @@ class pension_credit_income(Variable):
     reference = (
         "https://www.legislation.gov.uk/ukpga/2002/16/section/5",
         "https://www.legislation.gov.uk/ukpga/2002/16/section/15",
+        "https://www.legislation.gov.uk/uksi/2002/1792/regulation/17",
     )
     documentation = (
         "Income and deductions of the claimant and partner, together with "
@@ -46,10 +47,24 @@ class pension_credit_income(Variable):
         pension_contributions = benunit.sum(
             person("pension_contributions", period) * is_claimant_or_partner
         )
+        # Self-employed earnings are net of the notional tax and contributions
+        # of the Computation of Earnings Regulations 1996 reg. 14, in place of
+        # those actually payable on the profit (reg. 17(11)).
         tax = benunit.sum(
-            add(person, period, ["income_tax", "national_insurance"])
+            (
+                add(
+                    person,
+                    period,
+                    [
+                        "income_tax",
+                        "national_insurance",
+                        "pension_credit_self_employment_deductions",
+                    ],
+                )
+                - add(person, period, ["ni_class_2", "ni_class_4"])
+            )
             * is_claimant_or_partner
-        )
+        ) - benunit("pension_credit_self_employment_income_tax", period)
         pen_con_deduction_rate = pc.income.pension_contributions_deduction
         deductions = tax + pension_contributions * pen_con_deduction_rate
         # Schedule VI earnings disregards (reg. 17(9)).
