@@ -22,9 +22,10 @@ def filter_dataset(
 
     Values imputed across the whole population (months_since_last_birthday and
     attends_private_school) are taken from sim for the given year and carried
-    in as inputs, so the extract keeps them in later years too. Private school
-    attendance ranks incomes, so the first extract from a simulation computes
-    its taxes and benefits.
+    in as inputs for that year. A multi-year dataset holding only this year
+    recomputes them for later years, where one household alone need not get
+    the values it had in sim. Private school attendance ranks incomes, so the
+    first extract from a simulation computes its taxes and benefits.
 
     Parameters
     ----------
