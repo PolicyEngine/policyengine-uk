@@ -21,10 +21,16 @@ class is_before_first_september_following_19th_birthday(Variable):
         "for the year, as is_before_first_september_following_16th_birthday "
         "does. Everyone aged 19 on 6 October is before the date. So is a "
         "20-year-old born from 1 September to 6 October, whom the qualifying "
-        "young person age limit, read on 6 October, already excludes. Set "
-        "this to false for a year that the period does not reach."
+        "young person age limit, read on 6 October, already excludes. So the "
+        "formula gives true for everyone under 20 on 6 October, which is "
+        "everyone that limit lets be a qualifying young person, and the "
+        "default is true: a situation that sets this for some people gives "
+        "everyone else true, the value the formula gives them. Set it to "
+        "false for a person whose 1 September has passed, or set their "
+        "date_of_birth."
     )
     definition_period = YEAR
+    default_value = True
     reference = (
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/5",
         "https://www.legislation.gov.uk/uksi/2002/1792/regulation/4A",
