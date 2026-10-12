@@ -272,10 +272,10 @@
       household:
         members: [parent, child]
   output:
-    # Child Benefit 27.05 x 52 = 1,406.60; the charge takes
-    # (70,000 - 60,000) / 200 = 50% of it, 703.30.
-    CB_HITC: [703.30, 0]
-    income_tax: [16_135.30, 0]
+    # Child Benefit 27.05 x 52 = 1,406.60, rounded down to £1,406; the charge
+    # takes (70,000 - 60,000) / 200 = 50% of it, £703 (s. 681C(3)).
+    CB_HITC: [703, 0]
+    income_tax: [16_135, 0]
     # 37,700 x 20% + (57,430 - 37,700) x 40%.
     uc_income_tax_on_earnings: [15_432, 0]
 
