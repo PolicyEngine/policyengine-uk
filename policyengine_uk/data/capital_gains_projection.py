@@ -26,6 +26,23 @@ CGT_GROWTH_PATH = "gov.economic_assumptions.yoy_growth.capital_gains"
 CGT_INDEX_PATH = "gov.economic_assumptions.indices.capital_gains"
 
 
+def check_capital_gains_projection_parameter(path: str) -> None:
+    """Reject reform assignments to either generated projection parameter."""
+    if path in (CGT_GROWTH_PATH, CGT_INDEX_PATH):
+        raise ValueError(
+            f"{path} is a generated capital gains projection parameter and cannot "
+            "be reformed directly. Pass capital_gains_projection=CapitalGainsProjection(...) "
+            "to Simulation or Microsimulation to change the gains growth assumptions."
+        )
+
+
+class _CapitalGainsProjectionParameter(Parameter):
+    """A derived series: its growth and index must change together."""
+
+    def update(self, *args, **kwargs) -> None:
+        check_capital_gains_projection_parameter(self.name)
+
+
 def _fingerprint(value: dict) -> str:
     return hashlib.sha256(
         json.dumps(value, sort_keys=True, allow_nan=False).encode()
@@ -137,6 +154,17 @@ def add_capital_gains_projection(
     """Install matching dataset growth and household indices on this tree."""
     economic = parameters.gov.economic_assumptions
     for parent_name in ("yoy_growth", "indices"):
+        parent = getattr(economic, parent_name)
+        existing = parent.children.get("capital_gains")
+        if existing is not None and not isinstance(
+            existing, _CapitalGainsProjectionParameter
+        ):
+            # A structural reform can replace a node without calling update().
+            # Do not silently discard that attempted generated-path override.
+            check_capital_gains_projection_parameter(
+                f"gov.economic_assumptions.{parent_name}.capital_gains"
+            )
+    for parent_name in ("yoy_growth", "indices"):
         getattr(economic, parent_name).children.pop("capital_gains", None)
     if projection is None:
         # Copy both existing series exactly, including index rounding, so
@@ -144,7 +172,7 @@ def add_capital_gains_projection(
         for parent_name in ("yoy_growth", "indices"):
             parent = getattr(economic, parent_name)
             original = parent.obr.per_capita.gdp
-            parameter = Parameter(
+            parameter = _CapitalGainsProjectionParameter(
                 f"gov.economic_assumptions.{parent_name}.capital_gains",
                 data={
                     "values": {v.instant_str: v.value for v in original.values_list},
@@ -182,7 +210,7 @@ def add_capital_gains_projection(
     }
     provenance["fingerprint"] = _fingerprint(provenance)
     for parent_name, values in (("yoy_growth", growth), ("indices", indices)):
-        parameter = Parameter(
+        parameter = _CapitalGainsProjectionParameter(
             f"gov.economic_assumptions.{parent_name}.capital_gains",
             data={
                 "description": "Capital gains projection per record, net of population growth.",

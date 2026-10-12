@@ -22,6 +22,7 @@ from policyengine_uk.entities import BenUnit, Household, Person
 from policyengine_uk.data.capital_gains_projection import (
     CapitalGainsProjection,
     add_capital_gains_projection,
+    check_capital_gains_projection_parameter,
 )
 from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
     add_private_pension_uprating_factor,
@@ -259,6 +260,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """
         if not assignments:
             return
+        for assignment in assignments:
+            check_capital_gains_projection_parameter(assignment.path)
         previous = (
             self.dated_assignments,
             self.parameters,
@@ -317,6 +320,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """
         if not overrides:
             return
+        for override in overrides:
+            check_capital_gains_projection_parameter(override.path)
         # Every target is found before anything changes; ``update`` replaces
         # a parameter's ``values_list`` and marks it and its ancestors
         # modified, so keeping each list and those flags is enough to undo
@@ -331,6 +336,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                 node = getattr(node, "parent", None)
         try:
             apply_legacy_overrides(self.parameters, overrides)
+            add_capital_gains_projection(self.parameters, self.capital_gains_projection)
         except Exception:
             for target, values_list in saved:
                 target.values_list = values_list

@@ -9,6 +9,8 @@ import pytest
 
 from policyengine_uk import CountryTaxBenefitSystem, Microsimulation, Simulation
 from policyengine_uk.data.capital_gains_projection import (
+    CGT_GROWTH_PATH,
+    CGT_INDEX_PATH,
     CapitalGainsProjection,
     obr_eot_projection,
 )
@@ -479,3 +481,197 @@ def test_remote_dataset_cache_separates_projection_paths(
     assert alternative.calculate("capital_gains_before_response", 2026)[0] != (
         pytest.approx(expected)
     )
+
+
+def generated_parameter_reform(path, kind):
+    """Exercise the public reform routes without depending on the guard's class."""
+    from policyengine_core.parameters import Parameter
+    from policyengine_core.reforms import Reform
+
+    changes = {path: {"2026": 0.10}}
+
+    class UpdateGeneratedParameter(Reform):
+        def apply(self):
+            self.parameters.get_child(path).update(period="2026", value=0.10)
+
+    class ReplaceGeneratedParameter(Reform):
+        def apply(self):
+            parent_path, name = path.rsplit(".", 1)
+            parent = self.parameters.get_child(parent_path)
+            parent.children.pop(name)
+            parent.add_child(
+                name, Parameter(path, data={"values": {"2026-01-01": 0.10}})
+            )
+
+    if kind == "dict":
+        return changes
+    if kind == "from_dict":
+        return Reform.from_dict(changes, country_id="uk")
+    if kind == "tuple":
+        return ({"gov.hmrc.cgt.annual_exempt_amount": {"2026": 6_000}}, changes)
+    if kind == "custom_update":
+        return UpdateGeneratedParameter
+    if kind == "custom_replacement":
+        return ReplaceGeneratedParameter
+    raise AssertionError(f"Unknown test reform kind: {kind}")
+
+
+@pytest.mark.parametrize("path", [CGT_GROWTH_PATH, CGT_INDEX_PATH])
+@pytest.mark.parametrize("configured", [False, True], ids=["default", "configured"])
+@pytest.mark.parametrize(
+    "kind", ["dict", "from_dict", "tuple", "custom_update", "custom_replacement"]
+)
+def test_generated_parameters_reject_constructor_reforms(
+    projection, path, configured, kind
+):
+    with pytest.raises(ValueError, match="generated.*CapitalGainsProjection"):
+        Simulation(
+            situation={"capital_gains": {2024: 100_000}},
+            capital_gains_projection=projection if configured else None,
+            reform=generated_parameter_reform(path, kind),
+        )
+
+
+@pytest.mark.parametrize("path", [CGT_GROWTH_PATH, CGT_INDEX_PATH])
+@pytest.mark.parametrize("configured", [False, True], ids=["default", "configured"])
+@pytest.mark.parametrize("before_data_load", [False, True])
+def test_generated_parameters_reject_scenario_parameter_changes(
+    projection, path, configured, before_data_load
+):
+    with pytest.raises(ValueError, match="generated.*CapitalGainsProjection"):
+        Simulation(
+            situation={"capital_gains": {2024: 100_000}},
+            capital_gains_projection=projection if configured else None,
+            scenario=Scenario(
+                parameter_changes={path: {"2026": 0.10}},
+                applied_before_data_load=before_data_load,
+            ),
+        )
+
+
+@pytest.mark.parametrize("path", [CGT_GROWTH_PATH, CGT_INDEX_PATH])
+@pytest.mark.parametrize("configured", [False, True], ids=["default", "configured"])
+@pytest.mark.parametrize(
+    "route",
+    [
+        "dict",
+        "custom_update",
+        "custom_replacement",
+        "parameter_changes",
+        "scenario_apply",
+    ],
+)
+def test_generated_parameters_reject_runtime_changes(
+    projection, path, configured, route
+):
+    simulation = Simulation(
+        situation={"capital_gains": {2024: 100_000}},
+        capital_gains_projection=projection if configured else None,
+    )
+    with pytest.raises(ValueError, match="generated.*CapitalGainsProjection"):
+        if route == "parameter_changes":
+            simulation.apply_parameter_changes({path: {"2026": 0.10}})
+        elif route == "scenario_apply":
+            # On an already-built simulation, parameter_changes accepts a
+            # scalar or nested parameter children, rather than year-keyed values.
+            Scenario(parameter_changes={path: 0.10}).apply(simulation)
+        else:
+            simulation.apply_reform(generated_parameter_reform(path, route))
+
+
+@pytest.mark.parametrize("path", [CGT_GROWTH_PATH, CGT_INDEX_PATH])
+@pytest.mark.parametrize("configured", [False, True], ids=["default", "configured"])
+def test_generated_parameters_reject_runtime_scenario_modifier_replacement(
+    projection, path, configured
+):
+    from policyengine_core.parameters import Parameter
+
+    simulation = Simulation(
+        situation={"capital_gains": {2024: 100_000}},
+        capital_gains_projection=projection if configured else None,
+    )
+
+    def replace_generated(simulation):
+        parent_path, name = path.rsplit(".", 1)
+        parent = simulation.tax_benefit_system.parameters.get_child(parent_path)
+        parent.children.pop(name)
+        parent.add_child(name, Parameter(path, data={"values": {"2026-01-01": 0.50}}))
+
+    with pytest.raises(ValueError, match="generated.*CapitalGainsProjection"):
+        Scenario(simulation_modifier=replace_generated).apply(simulation)
+
+
+def test_runtime_scenario_modifier_supports_simulations_without_projection_hook():
+    from types import SimpleNamespace
+
+    simulation = SimpleNamespace(modified=False)
+
+    def modifier(simulation):
+        simulation.modified = True
+
+    Scenario(simulation_modifier=modifier).apply(simulation)
+    assert simulation.modified
+    assert not hasattr(simulation, "_scenario_apply_to_built_simulation")
+
+
+def test_dated_reform_cache_does_not_share_projection_configuration(projection):
+    """The same dated tax reform must retain each caller's gains assumptions."""
+    changes = {"gov.hmrc.cgt.annual_exempt_amount": {"2026": 6_123}}
+    simulations = [
+        Simulation(
+            situation={"capital_gains": {2024: 100_000}},
+            capital_gains_projection=configuration,
+            reform=changes,
+        )
+        for configuration in (None, projection, None)
+    ]
+    default, configured, default_again = simulations
+    index = default.tax_benefit_system.parameters.gov.economic_assumptions.indices.obr.per_capita.gdp
+    default_expected = 100_000 * index(2026) / index(2024)
+    configured_expected = (
+        100_000
+        * aggregate_factor(projection, 2026)
+        / population_factor(configured.tax_benefit_system.parameters, 2024, 2026)
+    )
+    for simulation, expected in (
+        (default, default_expected),
+        (configured, configured_expected),
+        (default_again, default_expected),
+    ):
+        assert (
+            simulation.tax_benefit_system.parameters.gov.hmrc.cgt.annual_exempt_amount(
+                2026
+            )
+            == pytest.approx(6_123)
+        )
+        assert simulation.calculate("capital_gains_before_response", 2026)[
+            0
+        ] == pytest.approx(expected, rel=1e-6)
+        assert simulation.baseline.calculate("capital_gains_before_response", 2026)[
+            0
+        ] == pytest.approx(expected, rel=1e-6)
+    assert configured.capital_gains_projection_metadata[
+        "configuration_fingerprint"
+    ] == (projection.fingerprint)
+    assert (
+        default_again.capital_gains_projection_metadata["name"]
+        == (default.capital_gains_projection_metadata["name"])
+    )
+    assert default_expected != pytest.approx(configured_expected)
+
+
+def test_shared_horizon_extension_preserves_finite_cgt_boundary(dataset, monkeypatch):
+    from policyengine_uk.data import economic_assumptions
+
+    # Model #2376's integration without importing its unmerged horizon change.
+    monkeypatch.setattr(economic_assumptions, "PROJECTION_END_YEAR", 2032)
+    default = Simulation(dataset=dataset)
+    finite = Simulation(dataset=dataset, capital_gains_projection=obr_eot_projection())
+    assert default.dataset.years == list(range(2024, 2033))
+    assert finite.dataset.years == list(range(2024, 2031))
+    with pytest.raises(ValueError, match="supports.*2030"):
+        extend_single_year_dataset(
+            dataset, finite.tax_benefit_system.parameters, end_year=2032
+        )
+    with pytest.raises(ValueError, match="supports.*2030"):
+        finite.calculate("capital_gains_before_response", 2031)

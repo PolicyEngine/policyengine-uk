@@ -360,6 +360,13 @@ class Scenario(BaseModel):
                 self.simulation_modifier(simulation)
             finally:
                 delattr(simulation, APPLYING_TO_BUILT_SIMULATION)
+            # UK simulations derive paired CGT series after modifiers run.
+            # Keep Scenario compatible with Core and other country simulations.
+            refresh_projection = getattr(
+                simulation, "_refresh_capital_gains_projection", None
+            )
+            if callable(refresh_projection):
+                refresh_projection()
 
     def __repr__(self) -> str:
         """String representation of the Scenario."""

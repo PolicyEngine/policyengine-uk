@@ -301,6 +301,11 @@ class Simulation(CoreSimulation):
         add_capital_gains_projection(self.tax_benefit_system.parameters, projection)
         self.tax_benefit_system.reset_parameter_caches()
 
+    def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
+        """Apply a runtime reform while keeping generated CGT assumptions coherent."""
+        super().apply_reform(reform)
+        self._refresh_capital_gains_projection()
+
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
         # From policyengine-core 3.32.27 (policyengine-core#561) the deletion

@@ -1,13 +1,19 @@
 name: experimental_obr_november_2025_eot_proxy
 base_year: 2024
 annual_growth:
-  2025: -0.016
-  2026: 0.234
-  2027: 0.116
-  2028: 0.107
-  2029: 0.102
-  2030: 0.101
-source: https://obr.uk/docs/dlm_uploads/Supplementary-forecast-information-capital-gains-tax-relief-on-qualifying-disposals-costing.pdf
+  # Table 1.2, "CGT financial assets (excluding carried interest) growth rates".
+  2025: -0.016  # FY2025-26: -1.6%.
+  # Table 1.2, "CGT financial assets (excluding carried interest) growth rates".
+  2026: 0.234  # FY2026-27: 23.4%.
+  # Table 1.2, "CGT financial assets (excluding carried interest) growth rates".
+  2027: 0.116  # FY2027-28: 11.6%.
+  # Table 1.2, "CGT financial assets (excluding carried interest) growth rates".
+  2028: 0.107  # FY2028-29: 10.7%.
+  # Table 1.2, "CGT financial assets (excluding carried interest) growth rates".
+  2029: 0.102  # FY2029-30: 10.2%.
+  # Table 1.2, "CGT financial assets (excluding carried interest) growth rates".
+  2030: 0.101  # FY2030-31: 10.1%.
+source: https://obr.uk/docs/dlm_uploads/Supplementary-forecast-information-capital-gains-tax-relief-on-qualifying-disposals-costing.pdf#page=5
 vintage: November 2025 forecast, published 2 April 2026
 assumptions: >-
   Experimental sensitivity using Table 1.2's financial-asset CGT growth
@@ -19,5 +25,7 @@ assumptions: >-
   common-composition proxy, not an asset classification. No additional
   forestalling adjustment is applied. The 64.4% FY2024-25 growth in the
   source is omitted because FY2024-25 inputs are the observed anchor.
+  The supplement does not decompose the 23.4% FY2026-27 increase into
+  underlying gains, tax-policy, timing or composition effects.
   Current-law tax changes, payment timing and carried-interest treatment
   still require reconciliation before this could become a default.

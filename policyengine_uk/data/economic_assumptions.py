@@ -71,6 +71,8 @@ _COUNCIL_TAX_GROWTH_SERIES = {
 # which the Enhanced FRS does not store, so it falls to -1); one whose
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
+# A finite CGT scenario can shorten the whole dataset horizon; it never
+# extends beyond the evidence declared by that scenario.
 PROJECTION_END_YEAR = 2032
 
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.
@@ -101,19 +103,23 @@ def _unmapped_uprating_indices(uprating):
     }
 
 
+
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
     tax_benefit_system_parameters: ParameterNode,
     end_year: int | None = None,
 ) -> UKMultiYearDataset:
-    """Project a supplied year, defaulting to 2030 within the CGT horizon."""
+    """Project a supplied year to the shared default within any finite CGT span."""
     # Extend years and uprate
     start_year = int(dataset.time_period)
     if end_year is None:
         projection = tax_benefit_system_parameters.get_child(CGT_INDEX_PATH).metadata[
             "projection"
         ]
-        end_year = max(start_year, min(2030, projection.get("end_year", 2030)))
+        end_year = max(
+            start_year,
+            min(PROJECTION_END_YEAR, projection.get("end_year", PROJECTION_END_YEAR)),
+        )
     datasets = [dataset]
     for year in range(start_year, end_year + 1):
         next_year = dataset.copy()

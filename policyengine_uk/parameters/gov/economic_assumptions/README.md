@@ -12,6 +12,9 @@ projection, converted to per-record factors using population growth after
 fiscal-year parameter processing. See the
 [capital gains projection guide](../../../../docs/capital-gains-projection.md)
 for its measurement contract, experimental scenario and remaining validation.
+Both generated paths are read-only to parameter reforms; supply a
+`CapitalGainsProjection` to change the gains path. Reforms to the underlying
+GDP and population assumptions remain supported.
 
 ## Series
 
@@ -53,6 +56,13 @@ times one plus the growth series
 rent, council tax and student loan plans have their own functions there. Keep
 `PROJECTION_END_YEAR` at or past the last year of the latest EFO, so that the
 last year of a five-year costing is a dataset year.
+
+For an explicitly finite CGT projection, the default extension ends at the
+earlier of this constant and the scenario's final year. The cap applies to
+the whole automatically extended dataset, not only its CGT columns.
+Explicit out-of-span CGT projection requests raise an error. Increasing the
+general horizon therefore does not extrapolate the experimental EOT series,
+whose published determinant ends in FY2030–31.
 
 CPI, CPIH, RPI, average earnings, road fuel and population run to 2073, but
 several series end in 2030. Of those the projection uses, per-capita GDP and
@@ -117,6 +127,7 @@ The additional indices have their own source limits:
 The `indices.*` paths in this table are relative to
 `gov.economic_assumptions`. Source dates remain distinct from the later dates
 added by fiscal-year conversion.
+
 
 ## How the 2031+ values were constructed
 

@@ -13,6 +13,9 @@ certifying Microcosm integration remain outstanding.
 
 ## Supplying a projection
 
+The custom growth rates in this example are illustrative and are not the
+OBR EOT scenario.
+
 ```python
 from policyengine_uk import Simulation
 from policyengine_uk.data.capital_gains_projection import CapitalGainsProjection
@@ -53,6 +56,11 @@ The model generates two dedicated parameter paths:
 - `gov.economic_assumptions.yoy_growth.capital_gains` for dataset projection;
 - `gov.economic_assumptions.indices.capital_gains` for household input carry-forward.
 
+These are read-only generated paths. Attempting to change either through a
+parameter reform raises an error; supply a `CapitalGainsProjection` through
+`capital_gains_projection` instead. Reforms to the underlying GDP or
+population assumptions remain supported and refresh the generated paths.
+
 Both describe **per-record amounts**. For aggregate growth `g` and the
 model's population growth `p`, the amount factor is `(1 + g) / (1 + p)`.
 Dataset weights already grow by `1 + p`, so population is counted once.
@@ -70,9 +78,15 @@ change nonuniformly require a separate reconciliation; the aggregate
 identity assumes the model's uniform population uprating.
 
 Explicit inputs for the requested year and supplied multi-year datasets
-remain authoritative. They are not rescaled. A single-year dataset is
-extended by default through the earlier of 2030 or the projection's end
-year; an explicit extension outside the span raises an error when CGT
+remain authoritative. They are not rescaled. A single-year dataset uses
+`PROJECTION_END_YEAR` in `policyengine_uk/data/economic_assumptions.py` as
+its general default extension horizon. An explicitly finite CGT projection
+caps that default at the earlier of the general horizon and its own end
+year. This caps the whole automatically extended dataset, including its
+non-CGT inputs. Increasing the general horizon does not extend a finite
+scenario: the EOT scenario still ends in FY2030–31.
+
+An explicit extension outside the scenario span raises an error when CGT
 inputs need projection. A household calculation also raises if carrying
 an earlier CGT input would cross the supported span. A household without
 any gains input still defaults to zero. There is no GDP fallback or
@@ -94,8 +108,9 @@ projection = obr_eot_projection()
 ```
 
 This opt-in sensitivity uses Table 1.2 of the OBR's
-[EOT relief costing supplement](https://obr.uk/docs/dlm_uploads/Supplementary-forecast-information-capital-gains-tax-relief-on-qualifying-disposals-costing.pdf),
+[EOT relief costing supplement, physical page 5](https://obr.uk/docs/dlm_uploads/Supplementary-forecast-information-capital-gains-tax-relief-on-qualifying-disposals-costing.pdf#page=5),
 which relates to the **November 2025 forecast**, published on 2 April 2026.
+The row is "CGT financial assets (excluding carried interest) growth rates".
 It is not the March 2026 forecast or an OBR projection of all realised gains.
 
 | Fiscal year | Aggregate proxy growth |
@@ -106,6 +121,11 @@ It is not the March 2026 forecast or an OBR projection of all realised gains.
 | 2028–29 | 10.7% |
 | 2029–30 | 10.2% |
 | 2030–31 | 10.1% |
+
+The 23.4% for FY2026–27 is the published Table 1.2 determinant. The
+supplement does not decompose that increase into underlying gains,
+tax-policy, timing or composition effects, so this scenario makes no
+attribution among them.
 
 The source's 64.4% for FY2024–25 is not applied to the observed FY2024–25
 anchor. Paragraph 1.5 uses the financial-asset determinant excluding
