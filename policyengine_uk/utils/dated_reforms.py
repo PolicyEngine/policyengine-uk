@@ -96,7 +96,7 @@ import warnings
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Iterable, List, Mapping, Optional, Tuple
 
-from policyengine_core.parameters import Parameter, ParameterNode
+from policyengine_core.parameters import Parameter, ParameterNode, ParameterScale
 from policyengine_core.parameters.parameter_at_instant import ParameterAtInstant
 from policyengine_core.periods import Instant, Period, instant, period
 
@@ -508,10 +508,12 @@ def graft_missing_nodes(
     """Add to ``target`` copies of the nodes ``source`` has and it lacks.
 
     A rebuild or a reload starts from the YAML, so nodes a structural
-    reform added to the processed parameters (``parameters.add_child``)
-    would otherwise be lost. Existing parameters are left as ``target`` has
-    them, and the root's ``baseline`` child, which every processing builds
-    again, is skipped. Returns the names of the nodes added.
+    reform added to the processed parameters (``parameters.add_child``, or
+    a bracket appended to a scale) would otherwise be lost. Existing
+    parameters are left as ``target`` has them, and the root's ``baseline``
+    child, which every processing builds again, is skipped. Added nodes are
+    copies of ``source``'s, not processed again. Returns the names of the
+    nodes added.
     """
     added = []
     for key, child in source.children.items():
@@ -523,6 +525,17 @@ def graft_missing_nodes(
             added.append(child.name)
         elif isinstance(child, ParameterNode) and isinstance(existing, ParameterNode):
             added += graft_missing_nodes(child, existing, root=False)
+        elif isinstance(child, ParameterScale) and isinstance(existing, ParameterScale):
+            for bracket, existing_bracket in zip(child.brackets, existing.brackets):
+                added += graft_missing_nodes(bracket, existing_bracket, root=False)
+            extra = child.brackets[len(existing.brackets) :]
+            for bracket in extra:
+                copy = bracket.clone()
+                copy.parent = existing
+                existing.brackets.append(copy)
+                added.append(bracket.name)
+            if extra:
+                existing.clear_parent_cache()
     return added
 
 

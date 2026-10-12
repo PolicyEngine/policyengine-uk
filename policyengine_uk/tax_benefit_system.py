@@ -178,10 +178,17 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
 
         The processed parameters it replaces are kept until
         ``process_parameters`` runs, so nodes a structural reform added to
-        them survive the reload.
+        them survive the reload. Only a processed tree is kept, and a second
+        reset before processing keeps the first one.
         """
         self._parameters_at_instant_cache = {}
-        self._parameters_before_reset = getattr(self, "parameters", None)
+        current = getattr(self, "parameters", None)
+        if (
+            getattr(self, "_parameters_before_reset", None) is None
+            and current is not None
+            and "baseline" in current.children
+        ):
+            self._parameters_before_reset = current
         self.load_parameters(self.parameters_dir)
         self.parameters = add_removed_parameter_aliases(self.parameters)
 
@@ -196,8 +203,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         onto the parameters first, so a modifier that reloads and edits the
         parameters before processing them again (as ``no_economic_assumptions``
         does) keeps the reform. Nodes a structural reform added to the
-        processed parameters before ``reset_parameters`` are added back, and
-        the legacy overrides of the annualised parameters are applied again.
+        processed parameters before ``reset_parameters`` are added back (so
+        a node a modifier deletes after the reset comes back too), and the
+        legacy overrides of the annualised parameters are applied again.
         The parameters as they stood before the changes are kept as the base
         for later rebuilds. If processing fails, the system is left as it
         was.
@@ -206,7 +214,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         before_reset = getattr(self, "_parameters_before_reset", None)
         self._parameters_at_instant_cache = {}
         try:
-            self._rebuild(self.parameters, statutory=False)
+            # Processing changes the tree it is given, so it gets a copy: if
+            # it fails, the system keeps the tree it had.
+            self._rebuild(self.parameters.clone(), statutory=False)
             if before_reset is not None:
                 graft_missing_nodes(before_reset, self.parameters)
             self._apply_legacy_overrides()
@@ -301,12 +311,17 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """
         if not overrides:
             return
-        previous = self.parameters
-        self.parameters = previous.clone()
+        # Every target is found before anything changes; ``update`` replaces
+        # a parameter's ``values_list``, so keeping each list is enough to
+        # undo the batch.
+        targets = [self.parameters.get_child(override.path) for override in overrides]
+        saved = [(target, target.values_list) for target in targets]
         try:
             apply_legacy_overrides(self.parameters, overrides)
         except Exception:
-            self.parameters = previous
+            for target, values_list in saved:
+                target.values_list = values_list
+                target.parent.clear_parent_cache()
             raise
         finally:
             self.reset_parameter_caches()

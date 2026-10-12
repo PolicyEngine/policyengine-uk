@@ -1043,14 +1043,20 @@ class _add_bonus(Reform):
 def test_a_failed_override_batch_applies_none_of_its_overrides():
     simulation = Simulation(situation=SITUATION)
     system = simulation.tax_benefit_system
+    parameters = system.parameters
     with pytest.raises(ValueError):
         Scenario.from_reform(
             {BASIC_RATE: {"2027": 0.3}, "gov.not_a_real_parameter": {"2027": 1}}
         ).apply(simulation)
     assert annual(simulation, BASIC_RATE, 2027) == 0.20
     assert system.legacy_overrides == []
+    # The batch is undone in place: the tree is the one the system had.
+    assert system.parameters is parameters
+    Scenario.from_reform({BASIC_RATE: {"2027": 0.3}}).apply(simulation)
+    assert system.parameters is parameters
+    assert annual(simulation, BASIC_RATE, 2027) == 0.3
     simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
-    assert annual(simulation, BASIC_RATE, 2027) == 0.20
+    assert annual(simulation, BASIC_RATE, 2027) == 0.3
     assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
 
 
@@ -1100,6 +1106,45 @@ def test_failed_reprocessing_leaves_the_system_as_it_was(monkeypatch):
     assert system.parameters is reloaded[0]
     assert system._projected_timelines is reloaded[1]
     assert system._raw_parameters is reloaded[2]
+    # The tree is as reloaded, not processed: no baseline child, and the
+    # basic rate keeps its legal dates rather than fiscal-year values.
+    assert "baseline" not in system.parameters.children
+    # Processing again then works.
+    monkeypatch.undo()
+    system.process_parameters()
+    assert "baseline" in system.parameters.children
+    assert annual(simulation, BASIC_RATE, 2027) == 0.3
+
+
+class _add_top_band(Reform):
+    def apply(self):
+        scale = self.parameters.gov.hmrc.income_tax.rates.uk
+        band = scale.brackets[-1].clone()
+        band.parent = scale
+        scale.brackets.append(band)
+        band.threshold.update(period="year:2000:200", value=200_000)
+        band.rate.update(period="year:2000:200", value=0.5)
+
+
+def test_a_rebuild_keeps_a_band_a_structural_reform_appended():
+    simulation = Simulation(situation=SITUATION, reform=_add_top_band)
+    # The scale has four bands, uk[0] to uk[3]; the reform adds uk[4].
+    top = "gov.hmrc.income_tax.rates.uk[4].rate"
+    assert annual(simulation, top, 2027) == 0.5
+    simulation.apply_parameter_changes({BASIC_RATE: {"2027": 0.21}})
+    assert annual(simulation, top, 2027) == 0.5
+    assert annual(simulation, BASIC_RATE, 2027) == 0.21
+
+
+def test_a_second_reset_keeps_the_processed_tree_for_grafting():
+    simulation = Simulation(
+        situation=SITUATION, reform=(_add_bonus, {"test_budget.bonus": 7})
+    )
+    system = simulation.tax_benefit_system
+    system.reset_parameters()
+    system.reset_parameters()
+    system.process_parameters()
+    assert system.parameters.test_budget.bonus("2027-01-01") == 7
 
 
 def test_grafting_adds_only_missing_nodes():
@@ -1123,3 +1168,25 @@ def test_grafting_adds_only_missing_nodes():
     assert target.a.x("2001-01-01") == 10
     assert target.a.y("2001-01-01") == 2
     assert "baseline" not in target.children
+
+
+def test_grafting_appends_missing_scale_brackets():
+    from policyengine_core.parameters import ParameterNode
+
+    from policyengine_uk.utils.dated_reforms import graft_missing_nodes
+
+    def band(threshold, rate):
+        return {
+            "threshold": {"values": {"2000-01-01": threshold}},
+            "rate": {"values": {"2000-01-01": rate}},
+        }
+
+    source = ParameterNode(
+        "", data={"s": {"brackets": [band(0, 0.1), band(10, 0.2), band(20, 0.3)]}}
+    )
+    target = ParameterNode("", data={"s": {"brackets": [band(0, 0.15), band(10, 0.2)]}})
+    assert graft_missing_nodes(source, target) == ["s[2]"]
+    assert len(target.s.brackets) == 3
+    assert target.s.brackets[0].rate("2001-01-01") == 0.15
+    assert target.s.brackets[2].rate("2001-01-01") == 0.3
+    assert target.s.brackets[2].parent is target.s
