@@ -156,11 +156,52 @@
 
 # Reg. 29(2): "In the case of joint claimants, an award is to include the
 # carer element for both joint claimants if they both qualify for it, but only
-# if they are not caring for the same severely disabled person." The model
-# does not record who is cared for and takes two carers to care for different
-# people.
+# if they are not caring for the same severely disabled person." Reg. 29(3):
+# where two persons care for the same severely disabled person, the award
+# "may only include the carer element in respect of one them".
+# partners_care_for_same_severely_disabled_person records which; caring hours
+# alone cannot show who is cared for, so it defaults to the same person.
 
-- name: Joint claimants who are both carers have two carer elements
+- name: Joint claimants who are both carers for different people have two carer elements
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        partners_care_for_same_severely_disabled_person: false
+  output:
+    uc_carer_element_included_for_claimant: [true, true]
+    uc_carer_element: 5_024.16 # 209.34 * 12 * 2
+
+- name: Joint claimants who care for the same person have one carer element (reg. 29(3))
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+      partner:
+        age: 38
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+        partners_care_for_same_severely_disabled_person: true
+  output:
+    # The model takes the elder where the couple would elect.
+    uc_carer_element_included_for_claimant: [true, false]
+    uc_carer_element: 2_512.08 # 209.34 * 12, once
+
+- name: Two carers by hours alone are taken to care for the same person
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -175,7 +216,8 @@
       benunit:
         members: [claimant, partner]
   output:
-    uc_carer_element: 5_024.16 # 209.34 * 12 * 2
+    partners_care_for_same_severely_disabled_person: true
+    uc_carer_element: 2_512.08
 
 # Reg. 29(4): "Where an amount would, apart from this paragraph, be included
 # in an award in relation to a claimant by virtue of paragraphs (1) to (3),
@@ -333,3 +375,87 @@
     is_carer_for_benefits: [true, true]
     uc_carer_element: 2_512.08 # 209.34 * 12, once
     receives_uc_carer_element: [true, false]
+
+# The LCWRA element is withheld during the reg. 28 relevant period; DWP's
+# Advice for Decision Making F6034 note: "an amount for the carer element can
+# be included in that claimant's UC award" meanwhile. A nil LCWRA element
+# entered for the award stands for that.
+
+- name: A carer with LCWRA whose award has no LCWRA element keeps the carer element
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant]
+        uc_LCWRA_element: 0
+  output:
+    uc_carer_element: 2_420.16 # 201.68 * 12
+
+# receives_uc_carer_element follows the claimant the element is included for.
+
+- name: A carer with LCWRA and a partner who is a carer - the element is the partner's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+        care_hours: 35
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element_included_for_claimant: [false, true]
+    receives_uc_carer_element: [false, true]
+    uc_carer_element: 2_512.08
+
+- name: Joint carers who both have LCWRA - the LCWRA element is the elder's, the carer element the younger's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 40
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 38
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element_included_for_claimant: [false, true]
+    receives_uc_carer_element: [false, true]
+    uc_carer_element: 2_512.08
+
+- name: A carer with LCWRA whose partner has LCWRA but does not care - the LCWRA element is the partner's
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      claimant:
+        age: 38
+        care_hours: 35
+        uc_limited_capability_for_WRA: true
+      partner:
+        age: 40
+        uc_limited_capability_for_WRA: true
+    benunits:
+      benunit:
+        members: [claimant, partner]
+  output:
+    uc_carer_element_included_for_claimant: [true, false]
+    receives_uc_carer_element: [true, false]
+    uc_carer_element: 2_512.08

@@ -23,14 +23,21 @@ Wales and Scotland:
 2. Differential against DWP's published table. The Advice for Decision
    Making, chapter F6, paragraph F6037 tabulates which of the carer and LCWRA
    amounts an award includes for each combination a single claimant or joint
-   claimants can have. The model includes the same number of each element for
-   all sixteen combinations, whatever the dependants' circumstances. The
-   carer element amount is written here from the reg. 36 table (£201.68 a
-   month in 2025-26, £209.34 in 2026-27), as is the 2025-26 LCWRA amount
-   (£423.27), not read from the model.
+   claimants can have, for carers of different people. The model includes
+   the same number of each element for all sixteen combinations, whatever the
+   dependants' circumstances, both in the generated populations and in a
+   deterministic run of every combination. Where joint claimants care for
+   the same severely disabled person (reg. 29(3)) it includes at most one
+   carer element: the table's number, capped at one. The carer element
+   amount is written here from the reg. 36 table (£201.68 a month in
+   2025-26, £209.34 in 2026-27), as is the 2025-26 LCWRA amount (£423.27),
+   not read from the model.
 3. Bounds: an award has at most one LCWRA element (reg. 27(4)), at most one
    carer element for each claimant (reg. 29(2)), and at most as many of the
-   two elements together as it has claimants (reg. 29(4)).
+   two elements together as it has claimants (reg. 29(4)). Giving both
+   claimants limited capability gives exactly the LCWRA amount that giving it
+   to one does, in 2026 too, where the rebalancing modifier sets the amount
+   per award.
 4. Monotonicity: a claimant coming to have limited capability never lowers
    the two elements' total (the LCWRA element is the larger), and never takes
    a work allowance away.
@@ -158,19 +165,31 @@ def families(draw):
 populations = st.lists(families(), min_size=1, max_size=6)
 
 
-def situation(units, year, clear=(), reverse=False, claimant_overrides=None):
+def situation(
+    units,
+    year,
+    clear=(),
+    reverse=False,
+    claimant_overrides=None,
+    first_claimant_overrides=None,
+    same_person=False,
+):
     """One simulation holding every family.
 
     ``clear`` names dependant inputs to reset to their defaults. With
     ``reverse`` the people of each family are entered, and listed in their
     benefit unit and household, in reverse order. ``claimant_overrides``
-    replaces inputs of every claimant.
+    replaces inputs of every claimant, ``first_claimant_overrides`` those of
+    the first. ``same_person`` says whether the claimants care for the same
+    severely disabled person.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
         members = []
         for j, claimant in enumerate(unit["claimants"]):
             values = {**claimant, **(claimant_overrides or {})}
+            if j == 0:
+                values.update(first_claimant_overrides or {})
             person = {k: {year: v} for k, v in values.items()}
             person["is_parent"] = {year: bool(unit["dependants"])}
             members.append((f"p{i}_{j}", person))
@@ -186,7 +205,10 @@ def situation(units, year, clear=(), reverse=False, claimant_overrides=None):
             person["would_claim_marriage_allowance"] = {year: False}
             people[name] = person
             names.append(name)
-        benunits[f"b{i}"] = {"members": names}
+        benunits[f"b{i}"] = {
+            "members": names,
+            "partners_care_for_same_severely_disabled_person": {year: same_person},
+        }
         households[f"h{i}"] = {
             "members": names,
             "rent": {year: unit["rent"]},
@@ -224,7 +246,7 @@ def test_dependants_disability_or_caring_never_gives_claimants_an_element(units,
 @PROPERTY_SETTINGS
 @given(units=populations, year=st.sampled_from(YEARS))
 def test_elements_match_the_published_table_of_combinations(units, year):
-    sim = Simulation(situation=situation(units, year))
+    sim = Simulation(situation=situation(units, year, same_person=False))
     lcwra = np.asarray(sim.calculate("uc_LCWRA_element", year))
     carer = np.asarray(sim.calculate("uc_carer_element", year))
     work_allowance = np.asarray(sim.calculate("is_uc_work_allowance_eligible", year))
@@ -263,6 +285,43 @@ def test_elements_match_the_published_table_of_combinations(units, year):
             c["uc_limited_capability_for_WRA"] for c in unit["claimants"]
         )
         assert work_allowance[i] == (claimant_limited or responsible[i] > 0), unit
+
+
+@PROPERTY_SETTINGS
+@given(units=populations, year=st.sampled_from(YEARS))
+def test_carers_of_the_same_person_have_at_most_one_carer_element(units, year):
+    sim = Simulation(situation=situation(units, year, same_person=True))
+    carer = np.asarray(sim.calculate("uc_carer_element", year))
+    for i, unit in enumerate(units):
+        _, carer_elements = published_elements(*[code(c) for c in unit["claimants"]])
+        np.testing.assert_allclose(
+            carer[i],
+            min(carer_elements, 1) * CARER_ELEMENT[year] * 12,
+            atol=0.01,
+            err_msg=str(unit),
+        )
+
+
+@PROPERTY_SETTINGS
+@given(units=populations, year=st.sampled_from(YEARS))
+def test_both_claimants_limited_capability_gives_one_lcwra_element(units, year):
+    one = Simulation(
+        situation=situation(
+            units,
+            year,
+            claimant_overrides=dict(uc_limited_capability_for_WRA=False),
+            first_claimant_overrides=dict(uc_limited_capability_for_WRA=True),
+        )
+    )
+    both = Simulation(
+        situation=situation(
+            units, year, claimant_overrides=dict(uc_limited_capability_for_WRA=True)
+        )
+    )
+    amount_one = np.asarray(one.calculate("uc_LCWRA_element", year))
+    amount_both = np.asarray(both.calculate("uc_LCWRA_element", year))
+    assert np.all(amount_one > 0), units
+    np.testing.assert_allclose(amount_both, amount_one, atol=0.01, err_msg=str(units))
 
 
 @PROPERTY_SETTINGS
@@ -333,3 +392,54 @@ def test_published_table_covers_all_sixteen_combinations():
                 second, first
             )
     assert len(F6037) == 12
+
+
+def claimant_with(status, age):
+    return dict(
+        age=age,
+        care_hours=35.0 if "C" in status else 0.0,
+        uc_limited_capability_for_WRA="L" in status,
+    )
+
+
+def test_model_matches_the_published_table_for_every_combination():
+    # A deterministic run of every single and joint combination, for carers
+    # of different people and of the same person, in 2025-26.
+    year = 2025
+    codes = ["", "C", "L", "CL"]
+    combinations = [(first,) for first in codes] + [
+        (first, second) for first in codes for second in codes
+    ]
+    for same_person in [False, True]:
+        units = [
+            dict(
+                claimants=[
+                    claimant_with(status, 45 - 5 * j) for j, status in enumerate(c)
+                ],
+                dependants=[],
+                tenure="OWNED_OUTRIGHT",
+                rent=0.0,
+                region="NORTH_EAST",
+            )
+            for c in combinations
+        ]
+        sim = Simulation(situation=situation(units, year, same_person=same_person))
+        lcwra = np.asarray(sim.calculate("uc_LCWRA_element", year))
+        carer = np.asarray(sim.calculate("uc_carer_element", year))
+        for i, c in enumerate(combinations):
+            lcwra_elements, carer_elements = published_elements(*c)
+            if same_person:
+                carer_elements = min(carer_elements, 1)
+            context = str((c, same_person))
+            np.testing.assert_allclose(
+                lcwra[i],
+                lcwra_elements * LCWRA_ELEMENT_2025 * 12,
+                atol=0.01,
+                err_msg=context,
+            )
+            np.testing.assert_allclose(
+                carer[i],
+                carer_elements * CARER_ELEMENT[year] * 12,
+                atol=0.01,
+                err_msg=context,
+            )
