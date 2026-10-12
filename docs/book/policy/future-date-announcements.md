@@ -34,26 +34,32 @@ Example from
 ```yaml
 values:
   ...
-  2021-04-06: 12_570
-  2027-04-06: 12_570
+  2021-04-06:
+    value: 12_570
+    ...
+  2027-04-06:
+    value: 12_570
+    ...
   2030-04-06:
     value: 12_570
     metadata:
       reference:
-        - title: OBR Economic and Fiscal Outlook November 2025
-          href: https://obr.uk/efo/economic-and-fiscal-outlook-november-2025/
+        - title: Finance Act 2021 s. 5 (2), as amended by Finance Act 2026 s. 10 (3)
+          href: https://www.legislation.gov.uk/ukpga/2026/11/section/10
 ```
 
-The 2030-04-06 row records a future-dated decision: the freeze extended
-to 2030-31 at the 2025 Budget. Without it, uprating would move the
-allowance from 2028 onwards; with it, model years up to 2030 return
-£12,570.
+The 2030-04-06 row records a future-dated decision: the freeze to
+2030-31, announced at the 2025 Budget and since enacted by Finance Act
+2026 s. 10. The file has no uprating. From the tax year after its last
+row, `policyengine_uk/parameters/gov/hmrc/create_threshold_indexation.py`
+applies the Income Tax Act 2007 s. 57 CPI indexation year by year. So
+model years up to 2030 return £12,570, and indexation starts in 2031.
 
 ## Patterns for common cases
 
 ### Announced but reversed before taking effect
 
-Some announcements are walked back before the effective date — the
+Some announcements are walked back before the effective date. The
 Truss "growth plan" basic-rate cut to 19% (announced September 2022,
 reversed October 2022) is the canonical example. To represent this
 honestly:
@@ -74,14 +80,16 @@ dated reforms are annualised).
 
 Phased rate changes are the most common future-dating pattern. Each
 phase is a row at its effective date with a separate `reference`. The
-`national_insurance/class_1/thresholds/primary_threshold.yaml`
-trajectory through the 2022 Health and Social Care Levy and the
-April 2024 cuts is a good worked example.
+`national_insurance/class_1/rates/employee/main.yaml` trajectory is a
+good worked example: 13.25% from April 2022 under the Health and Social
+Care Levy, back to 12% from November 2022 when the levy was repealed,
+then the cuts to 10% in January 2024 and 8% in April 2024.
 
 ### Announced abolitions
 
-For an abolition that hasn't yet taken effect (e.g. the [2025 Budget
-two-child limit removal](../validation/child-poverty-tcl.md)):
+For an abolition announced ahead of its effective date (for example the
+2025 Budget removal of the two-child limit, in
+[`gov/dwp/universal_credit/elements/child/limit/child_count.yaml`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/dwp/universal_credit/elements/child/limit/child_count.yaml)):
 
 - The relevant parameter (`gov.dwp.universal_credit.elements.child.limit.child_count`)
   has its limiting value (2) up to the announced effective date
@@ -90,22 +98,24 @@ two-child limit removal](../validation/child-poverty-tcl.md)):
 - From model year 2026 the value is `.inf`, so the limit no longer
   restricts the UC child element.
 
-The same pattern applies in reverse for sunset clauses (a Cost-of-Living
-Payment whose value goes back to zero at a stated date, see
-[`changelog.d/609.md`](https://github.com/PolicyEngine/policyengine-uk/blob/main/changelog.d/609.md)).
+The same pattern applies in reverse to one-off or time-limited
+payments. The means-tested Cost-of-Living Payment in
+[`gov/treasury/cost_of_living_support/means_tested_households/amount.yaml`](https://github.com/PolicyEngine/policyengine-uk/blob/main/policyengine_uk/parameters/gov/treasury/cost_of_living_support/means_tested_households/amount.yaml)
+is £650 from 2022, £900 from 2023 and goes back to zero from
+2024-01-01.
 
 ## Best practices
 
 1. **Cite the announcement in `metadata.reference`** at every
-   future-dated row. The convention through the repo is to include both
-   the press-release URL and the formal regulation / statutory
-   instrument once it's published — see the multi-row references on
-   `national_insurance/class_1/rates/employer.yaml` for an example.
+   future-dated row. Where possible, cite both the announcement and
+   the legislation that enacts it once it is published. The 2022-04-06
+   row of `national_insurance/class_1/rates/employee/main.yaml`, for
+   example, cites both the Health and Social Care Levy Act 2021 and the
+   Budget document.
 2. **Don't extrapolate**. Each future-dated row should reflect a
-   specific announcement. If a parameter would otherwise drift via
-   uprating, let `policyengine-core`'s uprating handle that automatically
-   — adding a "frozen forever" row is a policy assertion that needs its
-   own reference.
+   specific announcement. If a parameter would otherwise move with
+   uprating, let the uprating handle it. Adding a "frozen forever" row is
+   a policy assertion that needs its own reference.
 3. **Check how the parameter is annualised.** A change dated part-way
    through a fiscal year only counts for part of the year if the
    parameter has `fiscal_year_blend: true`; otherwise the model year takes
@@ -125,7 +135,7 @@ baseline tree with an effective-date row.
 
 ## References
 
-- Issue [#636](https://github.com/PolicyEngine/policyengine-uk/issues/636) — original Truss-era future-dating ask.
-- PolicyEngine research: [Tax cuts in Prime Minister Truss's growth plan](https://www.policyengine.org/uk/research/tax-cuts-in-prime-minister-trusss-growth-plan) — worked example of modelling an announcement before reversal.
-- [PolicyEngine Core date-keyed parameter API](https://github.com/PolicyEngine/policyengine-core) — underlying mechanism.
-- Validation example using a real future-dated change: [child-poverty-tcl.md](../validation/child-poverty-tcl.md) (#1398).
+- Issue [#636](https://github.com/PolicyEngine/policyengine-uk/issues/636): the original request, from the Truss growth plan period.
+- PolicyEngine research: [Tax cuts in Prime Minister Truss's growth plan](https://www.policyengine.org/uk/research/tax-cuts-in-prime-minister-trusss-growth-plan), a worked example of modelling an announcement before its reversal.
+- [PolicyEngine Core](https://github.com/PolicyEngine/policyengine-core): the date-keyed parameter mechanism underneath.
+- `convert_to_fiscal_year_parameters` in `policyengine_uk/utils/parameters.py`: how dated values become model-year values.
