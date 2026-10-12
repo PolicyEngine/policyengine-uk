@@ -1,0 +1,1 @@
+- Split the CI `Test` job into a YAML job and three parallel shards of the Python tests, with a check that every collected test ran in exactly one shard, and measured coverage with `sys.monitoring` (#2099).
