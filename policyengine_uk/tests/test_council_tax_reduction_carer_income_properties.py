@@ -197,6 +197,12 @@ def situation(families):
                         "private_pension_income": {YEAR: float(pension) * (j == 0)},
                     }
                     if j == fam["carer"]:
+                        # Keep the carer's pay within the Carer's Allowance
+                        # earnings limit (£204 a week in 2026-27), so the
+                        # carer stays entitled; £10,000 is £192 a week.
+                        person["employment_income"] = {
+                            YEAR: min(a.get("employment_income", 0.0), 10_000.0)
+                        }
                         if fam["by_hours"]:
                             person["care_hours"] = {YEAR: 35}
                         else:
