@@ -1117,3 +1117,50 @@ def test_restoring_neutralized_projection_preserves_applied_fingerprint(
         "by_variable"
     ]["capital_gains_before_response"]["2026"]
     assert restored_record == original_record
+
+
+def test_failed_population_override_preserves_generated_projection_and_recovers():
+    from policyengine_uk.utils.dated_reforms import LegacyOverride
+
+    population_path = "gov.economic_assumptions.yoy_growth.ons.population"
+    projection = obr_eot_projection()
+    simulation = Simulation(
+        situation={"capital_gains": {2024: 100_000}},
+        capital_gains_projection=projection,
+    )
+    original_values = simulation.calculate("capital_gains_before_response", 2026).copy()
+    original_metadata = simulation.capital_gains_projection_metadata
+    system = simulation.tax_benefit_system
+    original_population = system.parameters.get_child(population_path)(2026)
+    original_nodes = {
+        path: system.parameters.get_child(path)
+        for path in (CGT_GROWTH_PATH, CGT_INDEX_PATH)
+    }
+    original_factors = {path: node(2026) for path, node in original_nodes.items()}
+
+    with pytest.raises(ValueError, match="population"):
+        system.add_legacy_overrides([LegacyOverride(population_path, "2026", -1)])
+    assert system.legacy_overrides == []
+    assert system.parameters.get_child(population_path)(2026) == original_population
+    for path, node in original_nodes.items():
+        assert system.parameters.get_child(path) is node
+        assert node(2026) == original_factors[path]
+    assert simulation.capital_gains_projection_metadata == original_metadata
+    simulation.delete_arrays("capital_gains_before_response", 2026)
+    np.testing.assert_array_equal(
+        simulation.calculate("capital_gains_before_response", 2026), original_values
+    )
+
+    simulation.apply_reform({population_path: {"2026": 0.05}})
+    expected = (
+        100_000
+        * aggregate_factor(projection, 2026)
+        / population_factor(system.parameters, 2024, 2026)
+    )
+    after = simulation.calculate("capital_gains_before_response", 2026)
+    assert after[0] == pytest.approx(expected, rel=1e-6)
+    assert after[0] != pytest.approx(original_values[0])
+    assert (
+        simulation.capital_gains_projection_metadata["fingerprint"]
+        != (original_metadata["fingerprint"])
+    )

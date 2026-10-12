@@ -192,8 +192,9 @@ def add_capital_gains_projection(
             check_capital_gains_projection_parameter(
                 f"gov.economic_assumptions.{parent_name}.capital_gains"
             )
-    for parent_name in ("yoy_growth", "indices"):
-        getattr(economic, parent_name).children.pop("capital_gains", None)
+    # Build both replacements before touching the tree. A rejected economic
+    # assumption must leave the existing pair available to a reform rollback.
+    replacements = {}
     if projection is None:
         # Copy both existing series exactly, including index rounding, so
         # introducing the dedicated paths does not change the legacy default.
@@ -210,6 +211,10 @@ def add_capital_gains_projection(
                     },
                 },
             )
+            replacements[parent_name] = parameter
+        for parent_name, parameter in replacements.items():
+            parent = getattr(economic, parent_name)
+            parent.children.pop("capital_gains", None)
             parent.add_child("capital_gains", parameter)
         return parameters
 
@@ -255,5 +260,9 @@ def add_capital_gains_projection(
                 },
             },
         )
-        getattr(economic, parent_name).add_child("capital_gains", parameter)
+        replacements[parent_name] = parameter
+    for parent_name, parameter in replacements.items():
+        parent = getattr(economic, parent_name)
+        parent.children.pop("capital_gains", None)
+        parent.add_child("capital_gains", parameter)
     return parameters
