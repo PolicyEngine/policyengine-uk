@@ -35,8 +35,7 @@ Invariants:
    £0.26 of the UPL. From 2023: LPL = PA and 52 x PT is within £0.26 of the
    LPL. Intended exceptions, as the law stood: in 2021-22 the PT and LPL
    were £9,568 a year, below the PA; in 2022-23 the PT rose to the PA only
-   from 6 July 2022 and the LPL was £11,908 for the whole year. The model's
-   2023-24 LPL (£11,908, not £12,570) is #1968.
+   from 6 July 2022 and the LPL was £11,908 for the whole year.
 6. Secondary threshold: from 2031, ST(Y) = ST(Y-1) x (1 + g_Y).
 7. For any freeze end and September CPI path (function level): values up to
    each parameter's last stated year are unchanged; after it, each NICs
@@ -322,19 +321,9 @@ def test_upper_thresholds_align_with_the_higher_rate_threshold(system, year):
     )
 
 
-@pytest.mark.parametrize(
-    "year",
-    [
-        pytest.param(
-            2023,
-            marks=pytest.mark.xfail(
-                reason="#1968: the model's 2023-24 LPL is £11,908, not £12,570",
-                strict=False,
-            ),
-        ),
-        *range(2024, 2041),
-    ],
-)
+# 2023-24 is the first aligned year: NICA 2022 s2 set the LPL to £12,570
+# from 6 April 2023 (#1968, fixed by #2058).
+@pytest.mark.parametrize("year", range(2023, 2041))
 def test_lower_thresholds_align_with_the_personal_allowance(system, year):
     values = thresholds(system, year)
     assert values["lower_profits_limit"] == pytest.approx(
