@@ -28,10 +28,11 @@ Invariants, for any generated population of families in 2024 to 2027:
    Universal Credit.
 4. Exclusive: no family gets Universal Credit with Pension Credit or with
    Housing Benefit.
-5. Metamorphic, the flag is inert unless it decides a claim: negating
+5. Metamorphic, the flag is inert unless it decides a claim or age waiver: negating
    would_claim_uc_at_legacy_closure changes no benefit for a family not
    moved off legacy benefits, or for a working-age one that would claim
-   Universal Credit anyway. In particular nothing changes in 2024, before
+   Universal Credit anyway and has a qualifying working-age claimant. In
+   particular nothing changes in 2024, before
    any closure.
 6. Differential: a working-age family claiming at the closure gets the
    benefits it would get if would_claim_uc were true, including when a
@@ -202,6 +203,15 @@ def expected_closure(unit, year, pension_age_route, mixed_age):
     )
 
 
+def has_working_age_claimant(unit):
+    return any(
+        role != "child"
+        and age <= 60
+        and not (role == "partner" and unit.get("ineligible_partner", False))
+        for role, age in unit["members"]
+    )
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=25))
 def test_closure_claims_and_the_end_of_legacy_awards(units):
@@ -234,14 +244,7 @@ def test_closure_claims_and_the_end_of_legacy_awards(units):
             # WTC migrants, is still needed. A pensioner with an ineligible
             # working-age partner cannot claim on an IS/JSA closure alone.
             age_qualified = (
-                any(
-                    role != "child"
-                    and age <= 60
-                    and not (
-                        role == "partner" and unit.get("ineligible_partner", False)
-                    )
-                    for role, age in unit["members"]
-                )
+                has_working_age_claimant(unit)
                 or unit["reported"]["working_tax_credit_reported"] > 0
             )
             if claims_at_closure:
@@ -263,6 +266,26 @@ def test_closure_claims_and_the_end_of_legacy_awards(units):
 
 @PROPERTY_SETTINGS
 @given(st.lists(families(), min_size=1, max_size=25))
+@example(
+    [
+        dict(
+            shape="mixed_age",
+            members=[("claimant", 70), ("partner", 40)],
+            reported={
+                name: 2_000.0 if name == "working_tax_credit_reported" else 0.0
+                for name in LEGACY
+            },
+            saving=False,
+            tenure="RENT_FROM_COUNCIL",
+            rent=9_000.0,
+            earnings=0.0,
+            savings=0.0,
+            would_claim_uc=True,
+            claims_at_closure=True,
+            ineligible_partner=True,
+        )
+    ]
+)
 def test_the_closure_flag_only_decides_closure_claims(units):
     drawn = calculate(units)
     negated = calculate(units, negate_flag=True)
@@ -270,10 +293,32 @@ def test_the_closure_flag_only_decides_closure_claims(units):
         for i, unit in enumerate(units):
             # On the pension-age route would_claim_uc gives no Universal
             # Credit, so there the flag alone decides the closure claim.
-            decides = bool(drawn[year]["legacy_benefits_closed"][i]) and (
+            # A sole pension-age claimant also needs the reg 60A age waiver,
+            # even without a protected Pension Credit route.
+            age_waiver_decides = unit["reported"][
+                "working_tax_credit_reported"
+            ] > 0 and not has_working_age_claimant(unit)
+            closed = bool(drawn[year]["legacy_benefits_closed"][i])
+            decides = closed and (
                 not unit["would_claim_uc"]
                 or bool(drawn[year]["meets_pension_credit_age_conditions"][i])
+                or age_waiver_decides
             )
+            if closed and age_waiver_decides:
+                for values, closure_flag in (
+                    (drawn, unit["claims_at_closure"]),
+                    (negated, not unit["claims_at_closure"]),
+                ):
+                    expected_eligible = (
+                        closure_flag
+                        and values[year]["uc_assessable_capital"][i] <= 16_000
+                    )
+                    assert (
+                        bool(values[year]["is_uc_eligible"][i]) == expected_eligible
+                    ), (
+                        year,
+                        unit,
+                    )
             if year == 2024:
                 assert not decides, unit
             if decides:
