@@ -35,7 +35,10 @@ class uc_individual_earned_income_before_mif(Variable):
         # The deductions are the person's own and come off only their own
         # earnings, so one partner's tax, NI or pension contributions never
         # reduce the other partner's earned income.
-        earnings_components = ["employment_income", "miscellaneous_income"]
+        # Miscellaneous income as income tax counts it, so a loss does not
+        # reduce pay (and matches uc_income_tax_on_earnings). Whether it is
+        # earnings at all is issue #1961.
+        earnings_components = ["employment_income", "taxable_miscellaneous_income"]
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             earnings_components.append("basic_income")
