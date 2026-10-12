@@ -5,7 +5,7 @@ description: >
   current mappings are `savings` for liquid capital,
   `other_residential_property_value` for residential property other than the
   home, `non_residential_property_value` for other land and premises, and the
-  share-like sources. `share_like_capital` is `corporate_wealth` as supplied,
+  share-like sources. `share_like_capital_with_sale_expenses` and `share_like_capital_without_sale_expenses` split `share_like_capital`, which is `corporate_wealth` as supplied,
   or the sum of its itemised components (`directly_held_shares`,
   `unit_and_investment_trusts`, `stocks_and_shares_isa`) where that is larger,
   so a household given only the components has them counted and no holding
@@ -52,4 +52,5 @@ values:
     - savings
     - other_residential_property_value
     - non_residential_property_value
-    - share_like_capital
+    - share_like_capital_with_sale_expenses
+    - share_like_capital_without_sale_expenses

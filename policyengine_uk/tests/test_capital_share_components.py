@@ -1,14 +1,24 @@
-"""share_like_capital replaces corporate_wealth in the means-test capital lists.
+"""Share-like capital in the means tests, itemised and valued by asset type.
+
+The capital lists name share_like_capital's two parts:
+share_like_capital_with_sale_expenses (directly held shares, and all of an
+unitemised corporate_wealth), which the sale-expense lists value less 10%, and
+share_like_capital_without_sale_expenses (unit and investment trusts, stocks
+and shares ISAs), valued in full.
 
 Invariants:
 1. share_like_capital is corporate_wealth as supplied (any sign, any fraction)
-   unless the itemised components add up to more than it by more than the
-   rounding tolerance, in which case it is their sum.
-2. Differential: for identical inputs that carry no components, or components
-   consistent with corporate_wealth, every programme's assessable capital and
-   eligibility equal those under the original lists (corporate_wealth),
-   exactly, annually and monthly.
-3. A household given only the components has them counted.
+   unless the itemised components exceed it beyond the rounding tolerance, in
+   which case it is their sum.
+2. With no itemised holdings, the part with sale expenses is all of
+   share_like_capital and the other part is exactly nil; otherwise the part
+   with sale expenses is share_like_capital less trusts and ISAs, floored at
+   nil, and the two parts add up to share_like_capital.
+3. Differential: for identical unitemised inputs, every programme's assessable
+   capital and UC eligibility equal those under the lists before itemising
+   (corporate_wealth valued less 10%), exactly, annually and monthly.
+4. Split effect: a consistent split raises a working-age single adult's UC
+   capital by 10% of trusts plus ISAs, against the unitemised lists.
 """
 
 import numpy as np
@@ -27,13 +37,18 @@ COMPONENTS = (
     "unit_and_investment_trusts",
     "stocks_and_shares_isa",
 )
-SOURCE_LISTS = {
-    "uc_assessable_capital": "gov.dwp.universal_credit.means_test.capital.sources",
-    "housing_benefit_assessable_capital": "gov.dwp.housing_benefit.means_test.capital.sources",
-    "income_support_assessable_capital": "gov.dwp.income_support.means_test.capital.sources",
-    "jsa_income_assessable_capital": "gov.dwp.JSA.income.capital.sources",
-    "esa_income_assessable_capital": "gov.dwp.ESA.income.capital.sources",
-    "pension_credit_assessable_capital": "gov.dwp.pension_credit.income.capital.sources",
+WITH, WITHOUT = (
+    "share_like_capital_with_sale_expenses",
+    "share_like_capital_without_sale_expenses",
+)
+LEGAL_RATE = 0.1
+NODES = {
+    "uc_assessable_capital": "gov.dwp.universal_credit.means_test.capital",
+    "housing_benefit_assessable_capital": "gov.dwp.housing_benefit.means_test.capital",
+    "income_support_assessable_capital": "gov.dwp.income_support.means_test.capital",
+    "jsa_income_assessable_capital": "gov.dwp.JSA.income.capital",
+    "esa_income_assessable_capital": "gov.dwp.ESA.income.capital",
+    "pension_credit_assessable_capital": "gov.dwp.pension_credit.income.capital",
 }
 YEAR = 2026
 SETTINGS = settings(
@@ -52,26 +67,30 @@ def _parameter(path):
     return node(f"{YEAR}-01-01")
 
 
-ORIGINAL_LISTS = {
-    path: [
-        "corporate_wealth" if source == "share_like_capital" else source
-        for source in _parameter(path)
-    ]
-    for path in SOURCE_LISTS.values()
-}
-ORIGINAL_REFORM = {
-    path: {str(YEAR): sources} for path, sources in ORIGINAL_LISTS.items()
+def _unitemised(sources):
+    """The list before itemising: corporate_wealth where the share parts are."""
+    out = []
+    for source in sources:
+        if source == WITHOUT:
+            continue
+        out.append("corporate_wealth" if source == WITH else source)
+    return out
+
+
+UNITEMISED_REFORM = {
+    f"{node}.{name}": {str(YEAR): _unitemised(_parameter(f"{node}.{name}"))}
+    for node in NODES.values()
+    for name in ("sources", "sale_expenses.sources")
 }
 
 money = st.floats(min_value=0, max_value=200_000, allow_nan=False, width=32)
 signed_money = st.floats(min_value=-5_000, max_value=200_000, allow_nan=False, width=32)
 
 
-def _situation(households):
-    """One single-adult household per entry; ages alternate 30 and 70."""
+def _situation(households, age=None):
     people, benunits, hhs = {}, {}, {}
     for i, assets in enumerate(households):
-        people[f"p{i}"] = {"age": {YEAR: 70 if i % 2 else 30}}
+        people[f"p{i}"] = {"age": {YEAR: age or (70 if i % 2 else 30)}}
         benunits[f"b{i}"] = {"members": [f"p{i}"], "would_claim_uc": {YEAR: True}}
         hhs[f"h{i}"] = {
             "members": [f"p{i}"],
@@ -80,28 +99,25 @@ def _situation(households):
     return {"people": people, "benunits": benunits, "households": hhs}
 
 
-def _results(households, reform=None, period=YEAR):
-    sim = Simulation(situation=_situation(households), reform=reform)
-    out = {v: sim.calculate(v, period) for v in SOURCE_LISTS}
+def _results(households, reform=None, period=YEAR, age=None):
+    sim = Simulation(situation=_situation(households, age), reform=reform)
+    out = {v: sim.calculate(v, period) for v in NODES}
     out["is_uc_eligible"] = sim.calculate("is_uc_eligible", period)
-    out["share_like_capital"] = sim.calculate("share_like_capital", YEAR)
+    for v in ("share_like_capital", WITH, WITHOUT):
+        out[v] = sim.calculate(v, YEAR)
     return out
 
 
-def _assert_same_as_original(households):
-    for period in (YEAR, f"{YEAR}-01"):
-        new = _results(households, period=period)
-        old = _results(households, reform=ORIGINAL_REFORM, period=period)
-        for variable in (*SOURCE_LISTS, "is_uc_eligible"):
-            assert np.array_equal(new[variable], old[variable]), (variable, period)
-
-
-@pytest.mark.parametrize("variable", SOURCE_LISTS)
-def test_lists_name_share_like_capital_only(variable):
-    sources = list(_parameter(SOURCE_LISTS[variable]))
-    assert "share_like_capital" in sources
-    assert "corporate_wealth" not in sources
-    assert not set(COMPONENTS) & set(sources)
+@pytest.mark.parametrize("variable", NODES)
+def test_lists_name_the_two_parts(variable):
+    sources = list(_parameter(f"{NODES[variable]}.sources"))
+    sale = list(_parameter(f"{NODES[variable]}.sale_expenses.sources"))
+    assert WITH in sources and WITHOUT in sources
+    assert not {"corporate_wealth", "share_like_capital", *COMPONENTS} & set(sources)
+    assert WITH in sale and WITHOUT not in sale
+    assert not {"corporate_wealth", *COMPONENTS} & set(sale)
+    without = set(_parameter("gov.dwp.share_like_capital.without_sale_expenses"))
+    assert without == {"unit_and_investment_trusts", "stocks_and_shares_isa"}
 
 
 @SETTINGS
@@ -112,62 +128,75 @@ def test_lists_name_share_like_capital_only(variable):
         max_size=40,
     )
 )
-def test_share_like_capital_keeps_the_supplied_aggregate(rows):
+def test_share_like_capital_and_its_parts(rows):
     households = []
     for corporate_wealth, components, itemise in rows:
         assets = {"corporate_wealth": corporate_wealth}
         if itemise:
             assets |= dict(zip(COMPONENTS, components))
         households.append(assets)
-    got = _results(households)["share_like_capital"]
-    for value, assets in zip(got, households):
+    got = _results(households)
+    for i, assets in enumerate(households):
         cw = np.float32(assets["corporate_wealth"])
-        itemised = np.float32(sum(np.float32(assets.get(c, 0)) for c in COMPONENTS))
+        values = [np.float32(assets.get(c, 0)) for c in COMPONENTS]
+        itemised = np.float32(sum(values))
         tolerance = RELATIVE_TOLERANCE * abs(cw) + ABSOLUTE_TOLERANCE
-        expected = itemised if itemised > 0 and itemised > cw + tolerance else cw
-        assert value == pytest.approx(expected, rel=1e-6, abs=1e-3)
-        if not (itemised > 0 and itemised > cw + tolerance):
-            assert value == cw  # exactly the supplied aggregate
+        exceeds = itemised > 0 and itemised > cw + tolerance
+        share_like = got["share_like_capital"][i]
+        if exceeds:
+            assert share_like == pytest.approx(itemised, rel=1e-6, abs=1e-3)
+        else:
+            assert share_like == cw
+        if itemised == 0:
+            assert got[WITH][i] == share_like and got[WITHOUT][i] == 0
+        else:
+            expected = max(0.0, share_like - values[1] - values[2])
+            assert got[WITH][i] == pytest.approx(expected, rel=1e-6, abs=1e-2)
+            assert got[WITH][i] + got[WITHOUT][i] == pytest.approx(
+                share_like, rel=1e-6, abs=1e-2
+            )
 
 
 @SETTINGS
 @given(
-    st.lists(
-        st.tuples(money, signed_money, st.tuples(money, money, money), st.booleans()),
-        min_size=1,
-        max_size=30,
-    )
+    st.lists(st.tuples(money, signed_money), min_size=1, max_size=30),
 )
-def test_capital_matches_the_original_lists(rows):
-    """Unsplit, or split consistently: identical to listing corporate_wealth."""
-    households = []
-    for savings, corporate_wealth, components, split in rows:
-        assets = {"savings": savings, "corporate_wealth": corporate_wealth}
-        if split:
-            assets |= dict(zip(COMPONENTS, components))
-            assets["corporate_wealth"] = float(sum(components))
-        households.append(assets)
-    _assert_same_as_original(households)
+def test_unitemised_inputs_match_the_lists_before_itemising(rows):
+    households = [{"savings": s, "corporate_wealth": cw} for s, cw in rows]
+    households += [
+        {"savings": 6_001, "corporate_wealth": -2},
+        {"savings": 0, "corporate_wealth": 17_777.78},  # 90% is £16,000.002
+    ]
+    for period in (YEAR, f"{YEAR}-01"):
+        new = _results(households, period=period)
+        old = _results(households, reform=UNITEMISED_REFORM, period=period)
+        for variable in (*NODES, "is_uc_eligible"):
+            assert np.array_equal(new[variable], old[variable]), (variable, period)
 
 
-def test_float32_rounding_at_the_limit_keeps_eligibility():
-    """Components whose float32 sum overshoots £16,000 by a fraction of a penny."""
+@SETTINGS
+@given(
+    st.lists(st.tuples(money, st.tuples(money, money, money)), min_size=1, max_size=30)
+)
+def test_a_consistent_split_exempts_trusts_and_isas(rows):
     households = [
         {
-            "savings": 0,
-            "corporate_wealth": 16_000,
-            "directly_held_shares": 6_744.81,
-            "unit_and_investment_trusts": 6_581.24,
-            "stocks_and_shares_isa": 2_673.95,
-        },
-        {"savings": 6_001, "corporate_wealth": -2},
-        {"savings": 15_999.99, "corporate_wealth": 0.01},
+            "savings": savings,
+            "corporate_wealth": float(sum(components)),
+            **dict(zip(COMPONENTS, components)),
+        }
+        for savings, components in rows
     ]
-    _assert_same_as_original(households)
-    assert _results(households)["share_like_capital"][0] == 16_000
+    new = _results(households, age=30)
+    old = _results(households, reform=UNITEMISED_REFORM, age=30)
+    for i, (_, (_, trusts, isa)) in enumerate(rows):
+        exempt = np.float32(trusts) + np.float32(isa)
+        assert new["uc_assessable_capital"][i] - old["uc_assessable_capital"][
+            i
+        ] == pytest.approx(LEGAL_RATE * exempt, rel=1e-5, abs=0.05)
 
 
-def test_components_alone_are_counted():
+def test_components_alone_are_valued_by_type():
     households = [
         {
             "savings": 1_000,
@@ -176,6 +205,8 @@ def test_components_alone_are_counted():
             "stocks_and_shares_isa": 5_000,
         }
     ]
-    got = _results(households)
+    got = _results(households, age=30)
     assert got["share_like_capital"][0] == 12_000
-    assert got["uc_assessable_capital"][0] == 13_000
+    assert got[WITH][0] == 4_000 and got[WITHOUT][0] == 8_000
+    # £1,000 + 90% of £4,000 + £3,000 + £5,000.
+    assert got["uc_assessable_capital"][0] == pytest.approx(12_600)

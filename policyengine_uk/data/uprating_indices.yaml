@@ -95,6 +95,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - benunit_reported_capital
 - cash_isa
 - corporate_wealth
+- directly_held_shares
 - dividend_income
 - gross_financial_wealth
 - household_lifetime_isa_balance
@@ -122,6 +123,7 @@ gov.economic_assumptions.yoy_growth.obr.per_capita.gdp:
 - property_rental_income
 - savings
 - savings_interest_income
+- stocks_and_shares_isa
 - sublet_income
 # A formula of benunit_reported_capital; listed so a dataset that stores it
 # directly is uprated like the input.

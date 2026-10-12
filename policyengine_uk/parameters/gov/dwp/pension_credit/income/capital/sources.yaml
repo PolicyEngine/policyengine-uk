@@ -29,4 +29,5 @@ values:
     - owned_land
     - other_residential_property_value
     - non_residential_property_value
-    - share_like_capital
+    - share_like_capital_with_sale_expenses
+    - share_like_capital_without_sale_expenses

@@ -85,11 +85,12 @@ def test_itemised_share_like_stocks_are_not_prorated_monthly():
 
         for name, value in stocks.items():
             assert simulation.calculate(name, "2026-01")[0] == value, name
-        # 12,000 less the 9,000 itemised.
-        assert simulation.calculate("unitemised_corporate_wealth", "2026-01")[0] == (
-            3_000
-        )
-        # Shares and the unitemised residual less 10% for the expenses of
+        # 12,000 less the unit trusts and ISA (5,000): the 4,000 of shares
+        # and the 3,000 not itemised.
+        assert simulation.calculate("share_like_capital_with_sale_expenses", "2026-01")[
+            0
+        ] == (7_000)
+        # Shares and the part not itemised less 10% for the expenses of
         # sale; unit trusts and the ISA at their withdrawal value:
-        # 1,000 + 3,600 + 3,000 + 2,000 + 2,700.
+        # 1,000 + 90% of 7,000 + 3,000 + 2,000 = 1,000 + 6,300 + 5,000.
         assert simulation.calculate(capital, "2026-01")[0] == 12_300, capital

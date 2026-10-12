@@ -1,6 +1,7 @@
 # corporate_wealth itemised into directly_held_shares, unit_and_investment_trusts
-# and stocks_and_shares_isa, with unitemised_corporate_wealth carrying whatever
-# is not itemised (max(0, corporate_wealth - the three components)).
+# and stocks_and_shares_isa. share_like_capital_with_sale_expenses is the part
+# valued less 10%: directly held shares plus anything not itemised (all of
+# corporate_wealth when nothing is itemised).
 # Capital is valued at market value less 10% where a sale would incur expenses
 # (UC Regs 2013 reg. 49(1); HB Regs 2006 reg. 47; IS Regs 1987 reg. 49; JSA
 # Regs 1996 reg. 111; ESA Regs 2008 reg. 113; SPC Regs 2002 reg. 19). Shares
@@ -29,7 +30,7 @@
         savings: 5_000
         corporate_wealth: 12_000
   output:
-    unitemised_corporate_wealth: 12_000
+    share_like_capital_with_sale_expenses: 12_000
     uc_assessable_capital: 15_800
     is_uc_eligible: true
     # 9,800 above 6,000 is 40 steps of 250 (rounded up): 40 * 4.35 * 12.
@@ -57,7 +58,7 @@
         unit_and_investment_trusts: 3_000
         stocks_and_shares_isa: 5_000
   output:
-    unitemised_corporate_wealth: 0
+    share_like_capital_with_sale_expenses: 4_000
     uc_assessable_capital: 16_600
     is_uc_eligible: false
 
@@ -81,13 +82,13 @@
         unit_and_investment_trusts: 2_600
         stocks_and_shares_isa: 3_000
   output:
-    unitemised_corporate_wealth: 0
+    share_like_capital_with_sale_expenses: 10_000
     uc_assessable_capital: 15_600
     is_uc_eligible: true
     # 9,600 above 6,000 is 39 steps of 250 (38.4 rounded up): 39 * 4.35 * 12.
     uc_tariff_income: 2_035.8
 
-- name: UC partial split values the unitemised residual less 10%
+- name: UC partial split values the part not itemised less 10%
   period: 2026
   absolute_error_margin: 0.01
   input:
@@ -107,7 +108,7 @@
         corporate_wealth: 12_000
         stocks_and_shares_isa: 5_000
   output:
-    unitemised_corporate_wealth: 7_000
+    share_like_capital_with_sale_expenses: 7_000
     uc_assessable_capital: 15_300
     # 9,300 above 6,000 is 38 steps of 250 (37.2 rounded up): 38 * 4.35 * 12.
     uc_tariff_income: 1_983.6
@@ -133,7 +134,7 @@
         directly_held_shares: 4_000
         unit_and_investment_trusts: 3_000
   output:
-    unitemised_corporate_wealth: 0
+    share_like_capital_with_sale_expenses: 4_000
     uc_assessable_capital: 7_600
     # 1,600 above 6,000 is 7 steps of 250 (6.4 rounded up): 7 * 4.35 * 12.
     uc_tariff_income: 365.4
@@ -162,7 +163,7 @@
         unit_and_investment_trusts: 4_000
         stocks_and_shares_isa: 6_000
   output:
-    unitemised_corporate_wealth: 0
+    share_like_capital_with_sale_expenses: 5_000
     housing_benefit_assessable_capital: 15_600
     # 9,600 above 6,000 is 39 steps of 250 (38.4 rounded up) at 1 a week.
     housing_benefit_tariff_income: 2_028
