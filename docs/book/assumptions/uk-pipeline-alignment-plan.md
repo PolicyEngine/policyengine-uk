@@ -1,20 +1,20 @@
 # UK model/data pipeline alignment plan
 
 ```{note}
-**Planning page** capturing the gaps between the UK model + enhanced FRS
+**Planning page** setting out the gaps between the UK model and data
 pipeline and the US `policyengine-us` / `policyengine-us-data` patterns,
-plus a sequence of scoped PRs that would close them. Tracked under
+plus a sequence of scoped PRs that would close them. Tracked in
 [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621).
-Most items here are **cross-repo** — they touch the data pipeline
-rather than this repo — but the model-side contract is documented here
-so the receiving side has a stable target.
+Most items here are **cross-repo**: they touch the data pipeline rather
+than this repo, but the model-side contract is documented here so the
+receiving side has a stable target.
 ```
 
 ```{admonition} Status, October 2026
 The target data pipeline is now
 [Microcosm UK](https://github.com/PolicyEngine/microcosm), which replaced
-the Enhanced FRS build in `policyengine-uk-data`. Its first certified
-national release (`microcosm_uk_2024_25`) was published on 4 October 2026.
+the Enhanced FRS build in `policyengine-uk-data`; its UK national line is
+built on the Family Resources Survey 2024-25 (`microcosm_uk_2024_25`).
 Gaps 2 and 3 below, and PR 4 of the sequence, are implemented there;
 gap 1 is still open on the model side. The aggregate residuals are the
 May 2026 Enhanced FRS measurements and have not been re-measured on the
@@ -33,7 +33,7 @@ rate). Runtime formulas only read the pre-computed
 through cleanly to take-up.
 
 **UK pattern (partial)**: some UK `would_claim_*` variables already
-match — `would_claim_uc` and `would_claim_pc` are input-only with
+match: `would_claim_uc` and `would_claim_pc` are input-only with
 `default_value = True`, populated by the data build (now Microcosm
 UK's `frs_take_up` stage). But several still derive from
 `_reported` at runtime:
@@ -45,15 +45,16 @@ UK's `frs_take_up` stage). But several still derive from
 
 The runtime pattern is `claims_all_entitled_benefits | (foo_reported > 0)`,
 which means a reform expanding eligibility only reaches existing
-`_reported > 0` claimants — non-claimants who newly qualify are
+`_reported > 0` claimants. Non-claimants who newly qualify are
 invisible unless the user manually sets
 `claims_all_entitled_benefits = True` everywhere.
 
 **Fix**: convert each to input-only `default_value = True` (matching
 `would_claim_uc`), and add each to Microcosm UK's reported-anchored
-take-up stages. Note: WTC and CTC ceased to pay new awards on
-2025-04-06 (see [tax-credits.md](../programs/gov/dwp/tax-credits.md)),
-so their fix is primarily for back-cast simulations.
+take-up stages. Tax credits stopped paying ongoing awards on 5 April
+2025, and `gov.dwp.tax_credits.active` is false from 2025-04-06 (see
+[tax-credits.md](../programs/gov/dwp/tax-credits.md)), so the WTC and CTC
+fix matters only for simulations of earlier years.
 
 ### 2. Take-up assignment ignores reported data
 
@@ -120,15 +121,16 @@ in [PR #1618](https://github.com/PolicyEngine/policyengine-uk/pull/1618),
 new State Pension pro-rating + Protected Payment in
 [PR #1634](https://github.com/PolicyEngine/policyengine-uk/pull/1634)),
 the residual benefit-aggregate gaps against OBR on the Enhanced FRS
-(measured May 2026; not yet re-measured on Microcosm UK) were:
+(measured May 2026, except the State Pension row, which is taken from
+the State Pension page; none re-measured on Microcosm UK) were:
 
 | Variable | Model | Target | Gap | Likely cause |
 |----------|------:|------:|----:|--------------|
 | `income_support` | ~£1.07 bn | ~£0.2 bn | **+£0.9 bn** | Legacy benefit near-fully migrated; same `reported > 0` retention issue as the (pre-fix) tax credits. |
 | `esa_contrib` | ~£5.56 bn | ~£2.5 bn | **+£3.1 bn** | Large. Likely reported-based take-up plus no phase-out for migrated cases. |
 | `attendance_allowance` | ~£8.76 bn | ~£7.0 bn | +£1.8 bn | Cap-rate or take-up issue. |
-| `tax_free_childcare` | ~£0.41 bn | ~£0.9 bn | **-£0.5 bn** | Understated by about half — under-imputed eligible families. |
-| `state_pension` | ~£127.5 bn | ~£140 bn | -£12 bn | Documented in [state-pension.md](../programs/gov/dwp/state-pension.md); data-side ASP under-imputation. |
+| `tax_free_childcare` | ~£0.41 bn | ~£0.9 bn | **-£0.5 bn** | Understated by about half: under-imputed eligible families. |
+| `state_pension` | £119.0 bn | £131.3 bn | -£12.2 bn | 2024-25, against DWP's Spring Forecast 2026 less payments abroad, on policyengine-uk-data-private 1.57.4, as documented in [state-pension.md](../programs/gov/dwp/state-pension.md). The shortfall arises in building the Enhanced FRS ([policyengine-uk-data#493](https://github.com/PolicyEngine/policyengine-uk-data/issues/493)). |
 
 Each warrants a scoped PR pair (model + data) once the architectural
 fixes above land.
@@ -137,7 +139,7 @@ fixes above land.
 
 The issue body flagged three small bugs; all are now resolved:
 
-- `tax_credits/min_benefit.yaml` unit was `currency-USD` — now `currency-GBP`.
+- `tax_credits/min_benefit.yaml` unit was `currency-USD`; it is now `currency-GBP`.
 - `benunit_weekly_hours` label said "Average" but the formula sums; label now reads "Total weekly hours worked by adults in the benefit unit".
 - `state_pension_type` BASIC/NEW classification (the `is_SP_age` heuristic in the issue) was rewritten in PR #1618.
 
@@ -151,21 +153,21 @@ already-fixed items.
    side) + reported-anchored assignment in Microcosm UK's `frs_take_up`
    stage. Still open: the four formulas above read `_reported` at
    runtime on `main`.
-2. ~~Port `assign_takeup_with_reported_anchors`~~ — done in Microcosm UK
+2. ~~Port `assign_takeup_with_reported_anchors`~~: done in Microcosm UK
    (gap 2).
-3. ~~Add second-stage QRF for FRS-only variables on SPI donors~~ — done
+3. ~~Add second-stage QRF for FRS-only variables on SPI donors~~: done
    in Microcosm UK (gap 3).
-4. ~~Add `gift_aid` to `IMPUTATIONS`~~ — done in Microcosm UK, where
+4. ~~Add `gift_aid` to `IMPUTATIONS`~~: done in Microcosm UK, where
    `gift_aid` is a stage-2 output.
-5. **Residual benefit-aggregate follow-ups** — re-measure on the
+5. **Residual benefit-aggregate follow-ups**: re-measure on the
    Microcosm release first, then separate small PRs for
    IS phase-out (analogous to the WTC/CTC reactive scheme close-out),
    ESA contrib investigation, AA calibration, TFC under-imputation,
-   ASP data-side fix (the residual #1632 leg).
+   the State Pension data-side fix (#1632, policyengine-uk-data#493).
 
 ## References
 
 - Tracking issue: [#1621](https://github.com/PolicyEngine/policyengine-uk/issues/1621).
 - US pattern reference: [`policyengine-us-data#589`](https://github.com/PolicyEngine/policyengine-us-data/pull/589).
 - Related state pension docs: [state-pension.md](../programs/gov/dwp/state-pension.md), [#1632](https://github.com/PolicyEngine/policyengine-uk/issues/1632).
-- Related calibration scope: [non-uk-benefit-receipt-plan.md](./non-uk-benefit-receipt-plan.md) (#842) — separate from this pipeline alignment but interacts with the calibration target side.
+- Related calibration scope: [non-uk-benefit-receipt-plan.md](./non-uk-benefit-receipt-plan.md) (#842), separate from this pipeline alignment but interacting with it on the calibration target side.
