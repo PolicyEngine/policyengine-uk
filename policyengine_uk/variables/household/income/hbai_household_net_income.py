@@ -42,6 +42,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "maternity_allowance",
     "statutory_sick_pay",
     "statutory_maternity_pay",
+    "statutory_paternity_pay",
     "ssmg",
     "cost_of_living_support_payment",
     "winter_fuel_allowance",

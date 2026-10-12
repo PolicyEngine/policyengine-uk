@@ -35,6 +35,23 @@
     adjusted_net_income: 0
     income_tax: 0
 
+- name: Trade loss relief reduces taxable income before the separate Gift Aid adjustment
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income: 60_000
+    trading_loss: 10_000
+    gift_aid: 8_000
+  output:
+    trade_loss_relief_against_general_income: 10_000
+    net_income: 50_000
+    adjusted_net_income: 40_000
+    personal_allowance: 12_570
+    # ITA ss.64 and 58: loss reduces net income, while the gross gift
+    # reduces ANI and extends rate limits (s.414), not taxable income.
+    # (50,000 - 12,570) x 20%, below the extended £47,700 basic limit.
+    income_tax: 7_486
+
 - name: The cap is 25% of adjusted total income above £200,000
   period: 2026
   absolute_error_margin: 0
