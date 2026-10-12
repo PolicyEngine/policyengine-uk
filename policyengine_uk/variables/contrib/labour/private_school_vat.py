@@ -9,7 +9,7 @@ class private_school_vat(Variable):
     unit = "currency-GBP"
 
     def formula(household, period, parameters):
-        num_children = add(household, period, ["attends_private_school"])
+        num_private_school_pupils = add(household, period, ["attends_private_school"])
 
         ps_vat_params = parameters(period).gov.simulation.private_school_vat
         private_school_vat_basis = ps_vat_params.private_school_vat_basis
@@ -20,7 +20,7 @@ class private_school_vat(Variable):
         ).gov.contrib.labour.private_school_vat
 
         return (
-            num_children
+            num_private_school_pupils
             * avg_yearly_private_school_cost
             * private_school_vat_rate
             * private_school_vat_basis

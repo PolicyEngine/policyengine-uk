@@ -19,8 +19,12 @@ class uc_standard_allowance_claimant_type(Variable):
 
     def formula(benunit, period, parameters):
         person = benunit.members
-        claimant = person("is_uc_claimant", period)
-        is_single = add(benunit, period, ["is_uc_claimant"]) <= 1
+        # A member of a couple who claims as a single person because the
+        # other member cannot be a joint claimant gets "the amounts ... shown
+        # in the table for a single claimant" (reg. 36(3)), at the rate for
+        # their own age: the other member is not a claimant.
+        claimant = person("is_uc_single_or_joint_claimant", period)
+        is_single = benunit.sum(claimant) <= 1
         p = parameters(period).gov.dwp.universal_credit.standard_allowance.claimant_type
         eldest_claimant_age = benunit.max(
             where(claimant, person("age", period.this_year), 0)

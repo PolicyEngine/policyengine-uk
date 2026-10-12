@@ -22,6 +22,9 @@ cap, and a third to have working claimants paying for childcare:
    contributory benefits leaves UC, UC before the benefit cap, the cap
    reduction, earned income, unearned income and the childcare costs element
    exactly as they are when the dependants have no income.
+   A separate property builds only families over the cap, each with a child
+   earning more than the earnings exception's threshold, and checks that the
+   cap still applies in full.
 2. The assessed claimants are the claimants: in every generated family the
    model assesses the claimant and partner and nobody else.
 3. Differential against the regulations, for 2026-27: with earnings below the
@@ -29,10 +32,11 @@ cap, and a third to have working claimants paying for childcare:
    claimants' combined earnings less the reg. 22 work allowance (£710 a
    month, or £427 with the housing costs element, where they are responsible
    for a child or qualifying young person), and unearned income equals the
-   claimants' private pensions plus either their savings interest or, with
-   capital over £6,000, the reg. 72 tariff income of £4.35 a month for each
-   £250 or part. The amounts are written here from the regulations, not read
-   from the model.
+   claimants' private pensions (reg. 66(1)(a)) plus, with capital over
+   £6,000, the reg. 72 tariff income of £4.35 a month for each £250 or part.
+   Savings interest is not reg. 66(1) income for anyone, claimant or not.
+   The amounts are written here from the regulations, not read from the
+   model.
 4. There are at most two assessed claimants however many members are flagged
    as claimants, they are flagged claimants, and they are every flagged
    member when two or fewer are flagged.
@@ -42,8 +46,7 @@ cap, and a third to have working claimants paying for childcare:
    tie in age the order would decide; the generated families flag at most
    two.)
 
-Marriage Allowance is switched off throughout, as in the other Universal
-Credit property tests.
+Marriage Allowance is switched off throughout.
 """
 
 import numpy as np
@@ -250,6 +253,57 @@ def test_dependants_income_never_changes_universal_credit(units, year):
         np.testing.assert_allclose(a[v], b[v], atol=0.01, err_msg=f"{v}: {units}")
 
 
+@st.composite
+def capped_families(draw):
+    """Working-age claimants with no income, four or five children and a high
+    council rent, so the benefit cap always bites; at least one child has
+    earnings well over the earnings exception's threshold."""
+    claimants = [
+        dict(age=draw(st.integers(25, 60))) for _ in range(draw(st.integers(1, 2)))
+    ]
+    children = [
+        dict(age=draw(st.integers(0, 15)), employment_income=draw(amount))
+        for _ in range(draw(st.integers(3, 4)))
+    ]
+    children.append(
+        dict(
+            age=draw(st.integers(0, 15)),
+            employment_income=draw(st.floats(15_000, 30_000)),
+        )
+    )
+    return dict(
+        claimants=claimants,
+        dependants=children,
+        tenure="RENT_FROM_COUNCIL",
+        rent=draw(st.floats(15_000, 30_000)),
+        region=draw(st.sampled_from(REGIONS)),
+        savings=0.0,
+    )
+
+
+@PROPERTY_SETTINGS
+@given(
+    units=st.lists(capped_families(), min_size=1, max_size=6),
+    year=st.sampled_from(YEARS),
+)
+def test_dependants_earnings_do_not_lift_the_benefit_cap(units, year):
+    with_income = Simulation(situation=situation(units, year))
+    without_income = Simulation(situation=situation(units, year, zero_dependants=True))
+    capped = np.asarray(without_income.calculate("benefit_cap_reduction", year))
+    # Every generated family is over the cap, so the property is not vacuous.
+    assert np.all(capped > 0), units
+    for v in ["benefit_cap_reduction", "universal_credit"]:
+        np.testing.assert_allclose(
+            np.asarray(with_income.calculate(v, year)),
+            np.asarray(without_income.calculate(v, year)),
+            atol=0.01,
+            err_msg=f"{v}: {units}",
+        )
+    assert not np.any(
+        np.asarray(with_income.calculate("is_benefit_cap_exempt_earnings", year))
+    ), units
+
+
 @PROPERTY_SETTINGS
 @given(units=populations, year=st.sampled_from(YEARS))
 def test_assessed_claimants_are_the_claimant_and_partner(units, year):
@@ -321,15 +375,15 @@ def test_income_matches_regulations_22_and_72(units):
             work_allowance = monthly * 12
         earnings = sum(c["employment_income"] for c in unit["claimants"])
         expected_earned = max(0, earnings - work_allowance)
+        # Retirement pension income is unearned income (reg. 66(1)(a));
+        # savings interest is in no reg. 66(1) description, so capital counts
+        # only through its tariff income (reg. 72(1)).
         pensions = sum(c["private_pension_income"] for c in unit["claimants"])
-        interest = sum(c["savings_interest_income"] for c in unit["claimants"])
         excess = unit["savings"] - TARIFF_LOWER_LIMIT
+        tariff = 0.0
         if excess > 0:
-            # Tariff income replaces the capital's actual yield (reg. 72(3)).
-            steps = np.ceil(excess / TARIFF_STEP)
-            expected_unearned = pensions + steps * TARIFF_INCOME_PER_STEP * 12
-        else:
-            expected_unearned = pensions + interest
+            tariff = np.ceil(excess / TARIFF_STEP) * TARIFF_INCOME_PER_STEP * 12
+        expected_unearned = pensions + tariff
         np.testing.assert_allclose(
             earned[i], expected_earned, atol=0.5, err_msg=str(unit)
         )

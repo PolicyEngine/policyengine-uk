@@ -98,7 +98,7 @@
     jsa_income_eligible: false
     jsa_income: 0
 
-- name: Income-based JSA allocates household capital by adult share when nobody reports the award
+- name: Income-based JSA allocates household capital by claimant and partner share when nobody reports the award
   period: 2026
   absolute_error_margin: 0
   input:

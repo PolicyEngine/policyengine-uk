@@ -1,0 +1,25 @@
+description: Social Security Scotland reduces Carer Support Payment by these overlapping benefits.
+metadata:
+  economy: false
+  label: Carer Support Payment overlapping benefits
+  period: year
+  unit: list
+  propagate_metadata_to_children: true
+  reference:
+    - title: The Carer's Assistance (Carer Support Payment) (Scotland) Regulations 2023 reg. 16(2), (3) and (6)
+      href: https://www.legislation.gov.uk/ssi/2023/302/regulation/16
+values:
+  # Reg. 16(3) lists State Pension (all of a Pensions Act 2014 Part 1
+  # pension) and Retirement Pension (excluding additional pension and
+  # graduated retirement benefit), incapacity benefit, severe disablement
+  # allowance, maternity allowance, contribution-based JSA and contributory
+  # ESA. Its other overlapping benefits (unemployability supplement, widow's
+  # and bereavement benefits, war widow's pension, industrial death benefit,
+  # training allowance) are not held by the model.
+  2023-11-19:
+    - overlapping_state_pension
+    - incapacity_benefit
+    - sda
+    - maternity_allowance
+    - jsa_contrib
+    - esa_contrib

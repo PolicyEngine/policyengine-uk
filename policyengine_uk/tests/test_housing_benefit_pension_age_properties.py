@@ -13,21 +13,29 @@ Invariants, for any generated population of families:
    above the capital limit; and no family gets both Housing Benefit and
    Universal Credit.
 2. Calculator mode (no reported benefits): a family is eligible exactly when
-   every adult is over State Pension age, it rents, and its capital is within
-   the limit; eligible families are paid their full entitlement (pensioners
-   are exempt from the benefit cap).
+   the claimant and any partner are over State Pension age, it rents, and its
+   capital is within the limit; eligible families are paid their full
+   entitlement (pensioners are exempt from the benefit cap).
 3. Dataset mode (claims_all_entitled_benefits False, as in the FRS): Housing
    Benefit is paid only to reported claimants, and for families with a
    working-age adult eligibility equals the continuing-award rule (reported,
-   not claiming Universal Credit, renting, capital within the limit).
+   not claiming Universal Credit, renting, capital within the limit), or,
+   for a mixed-age couple keeping the SI 2019/37 art. 4 saving, the new-claim
+   rule (renting, capital within the limit; reg 6A(5)).
 4. Metamorphic: flipping would_claim_uc never changes a wholly pension-age
    family's Housing Benefit.
 5. Metamorphic: a wholly pension-age family's Housing Benefit is
    non-increasing in private pension income.
 
-A pensioner with an 18 or 19 year old dependant counts as having a working-age
-adult for Housing Benefit, Pension Credit and Universal Credit alike, so the
-mutual exclusion holds for that shape too.
+A pensioner with an 18 or 19 year old dependant is a pension-age claimant for
+Housing Benefit, Pension Credit and Universal Credit alike (the dependant is
+not a claimant or partner), so that family can claim Housing Benefit and not
+Universal Credit, and the mutual exclusion holds for that shape too.
+
+Every member's is_claimant_or_partner is set from its generated role, as the
+FRS supplies it. Without that input an 18- or 19-year-old partner of a
+pensioner would be presumed the pensioner's child; that presumption is tested
+in test_child_and_adult_definitions_properties.py.
 """
 
 import numpy as np
@@ -90,7 +98,12 @@ def situation(units, claims_all=None, flip_would_claim_uc=False, pension_bump=0.
         names = []
         for j, (role, age) in enumerate(unit["members"]):
             name = f"p{i}_{j}"
-            person = {"age": {YEAR: age}}
+            # Setting the input for anyone makes it an input for everyone, so
+            # set it for every member of every family.
+            person = {
+                "age": {YEAR: age},
+                "is_claimant_or_partner": {YEAR: role != "dependant"},
+            }
             if role != "dependant" and age >= 67:
                 person["state_pension_reported"] = {YEAR: unit["state_pension"]}
                 person["private_pension_income"] = {
@@ -151,7 +164,8 @@ def calculate(units, **kwargs):
 
 
 def wholly_pension_age(unit):
-    return all(role != "dependant" and age >= 67 for role, age in unit["members"])
+    # The claimant and any partner, not dependants (SI 2014/1230 reg 6A(4)).
+    return all(age >= 67 for role, age in unit["members"] if role != "dependant")
 
 
 def check_structural(values):
@@ -196,13 +210,26 @@ def test_dataset_take_up_stays_anchored_to_reported_claims(units):
         if values["housing_benefit"][i] > 0:
             assert unit["hb_reported"] > 0, unit
         if not wholly_pension_age(unit):
+            renting_within_capital = values["renting"][i] and values["capital_ok"][i]
             continuing_award = (
                 unit["hb_reported"] > 0
                 and not unit["would_claim_uc"]
-                and values["renting"][i]
-                and values["capital_ok"][i]
+                and renting_within_capital
             )
-            assert bool(values["housing_benefit_eligible"][i]) == continuing_award
+            # SI 2019/37 art. 4 saving, computed from the drawn unit rather
+            # than the model: a mixed-age couple whose pension-age claimant
+            # reports Housing Benefit (no UC or legacy benefits are drawn)
+            # and was born by 1954 (over the qualifying age on 14 May 2019).
+            claimant_age = unit["members"][0][1]
+            saved_mixed_age_couple = (
+                unit["shape"] == "mixed_age"
+                and unit["hb_reported"] > 0
+                and YEAR - claimant_age <= 1954
+                and renting_within_capital
+            )
+            assert bool(values["housing_benefit_eligible"][i]) == (
+                continuing_award or saved_mixed_age_couple
+            ), unit
 
 
 @PROPERTY_SETTINGS

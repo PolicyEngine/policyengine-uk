@@ -1,0 +1,50 @@
+description: Growth in average weekly earnings (total pay, whole economy) in May to July on a year earlier, the figure the Secretary of State uses in the review that sets the April uprating of the State Pension the following year.
+values:
+  # Outturn: the figure each year's review used, as stated in the
+  # Explanatory Memorandum to the following April's Social Security Benefits
+  # Up-rating Order (for 2021, the Government Actuary's report on the 2022
+  # Order). Reviews use the latest estimate before the autumn uprating
+  # statement: the October labour market release's figure, unchanged in
+  # November in every year checked, which the explanatory notes to the 2021
+  # Up-rating of Benefits Act call the final figure. It can differ from the
+  # September first estimate (May-July 2024: 4.0% in September, 4.1% in
+  # October and used) and from the latest ONS vintage of KAC3 (4.4% for
+  # May-July 2024).
+  2010-07-01: 0.013 # SI 2011/821 EM, footnote 7
+  2011-07-01: 0.028 # SI 2012/780 EM
+  2012-07-01: 0.016 # SI 2013/574 EM
+  2013-07-01: 0.012 # SI 2014/516 EM
+  2014-07-01: 0.006 # SI 2015/457 EM
+  2015-07-01: 0.029 # SI 2016/230 EM
+  2016-07-01: 0.024 # SI 2017/260 EM
+  2017-07-01: 0.022 # SI 2018/281 EM
+  2018-07-01: 0.026 # SI 2019/480 EM
+  2019-07-01: 0.039 # SI 2020/234 EM
+  2020-07-01: -0.010 # SI 2021/162 EM
+  2021-07-01: 0.083 # GAD report on the 2022 Order (the earnings element was suspended)
+  2022-07-01: 0.055 # SI 2023/316 EM
+  2023-07-01: 0.085 # SI 2024/242 EM
+  2024-07-01: 0.041 # SI 2025/295 EM
+  2025-07-01: 0.048 # SI 2026/148 EM
+  # Provisional: 3.9% is the 15 September 2026 first estimate and stays
+  # provisional until the October labour market release (due 20 October),
+  # the vintage the uprating review uses; replace it once published.
+  2026-07-01: 0.039
+  # Not yet published. From here the value is calendar-year earnings growth
+  # (yoy_growth.obr.average_earnings) plus forecast_gap.awe_total_pay_may_july.
+  2027-07-01: null
+metadata:
+  unit: /1
+  label: May-July earnings growth
+  preserve_calendar_dates: true
+  reference:
+    - title: ONS KAC3, AWE whole economy total pay, three-month average growth on a year earlier
+      href: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kac3/lms
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Order 2026 (SI 2026/148)
+      href: https://www.legislation.gov.uk/uksi/2026/148/contents/made
+    - title: Explanatory Memorandum to the Social Security Benefits Up-rating Order 2025 (SI 2025/295)
+      href: https://www.legislation.gov.uk/uksi/2025/295/contents/made
+    - title: Explanatory Notes to the Social Security (Up-rating of Benefits) Act 2021, paragraph 4
+      href: https://www.legislation.gov.uk/ukpga/2021/32/pdfs/ukpgaen_20210032_en.pdf
+    - title: Government Actuary's Department, report on the Social Security Benefits Up-rating Order 2022
+      href: https://assets.publishing.service.gov.uk/media/61e59a0a8fa8f5058bc04a51/E02705826_Un_Act_GAD_NIF_Uprating_Report_Jan22_Web_Accessible_-_UPLOADED_GOV_UK.pdf

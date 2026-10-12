@@ -1,4 +1,5 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.capital_gains import badr_gains_before_response
 
 
 def _take(amount, band_left):
@@ -23,8 +24,11 @@ class capital_gains_tax(Variable):
         "residential property gains (capital_gains_residential_property), "
         "carried interest (capital_gains_carried_interest) and the remainder of "
         "capital_gains at the main rates. The three named inputs are components "
-        "of capital_gains, scaled by any realisation response, and are clipped so "
-        "that together they never exceed it. The annual exempt amount is set "
+        "of capital_gains before any realisation response: relief gains move by "
+        "their own response (capital_gains_badr_behavioural_response) and the "
+        "other two in proportion with the rest of the gains. All three are "
+        "clipped so that together they never exceed capital_gains. The annual "
+        "exempt amount is set "
         "against the schedule with the highest top rate first (TCGA 1992 "
         "s. 1K(5)); the unused basic rate band goes to relief gains first, as "
         "s. 1I(4)-(6) requires, and then to the schedule with the widest gap "
@@ -69,30 +73,51 @@ class capital_gains_tax(Variable):
         higher_rate_band = higher_rate_limit - basic_rate_limit
 
         # The schedule inputs describe gains before any realisation response.
-        # Scale them by realised over pre-response gains so a response, or a
-        # marginal pound added to capital_gains directly, is shared across the
-        # schedules in proportion to their shares. Then clip each against what
-        # is left of the realised gains so inconsistent inputs cannot exceed
-        # the total; the remainder is charged at the main rates.
+        # Relief gains move by their own response, which has its own
+        # elasticity; the other schedules move in proportion with the rest of
+        # the gains. Anything else that moves capital_gains away from the gains
+        # after response, such as a marginal pound added to measure a marginal
+        # rate, is shared across all the schedules in proportion. Then clip
+        # each against what is left of the realised gains so inconsistent
+        # inputs cannot exceed the total; the remainder is charged at the main
+        # rates.
         before_response = person("capital_gains_before_response", period)
-        has_before_response = before_response > 0
+        response = person("capital_gains_behavioural_response", period)
+        badr_response = person("capital_gains_badr_behavioural_response", period)
+        after_response = before_response + response
+        has_after_response = after_response > 0
         ratio = where(
-            has_before_response,
-            capital_gains / where(has_before_response, before_response, 1),
+            has_after_response,
+            capital_gains / where(has_after_response, after_response, 1),
+            1,
+        )
+        other_gains = before_response - badr_gains_before_response(person, period)
+        has_other_gains = other_gains > 0
+        other_scale = where(
+            has_other_gains,
+            (other_gains + response - badr_response)
+            / where(has_other_gains, other_gains, 1),
             1,
         )
 
-        def component(variable):
-            return max_(0, person(variable, period) * ratio)
+        def component(amount):
+            return max_(0, amount * ratio)
 
         badr = min_(
-            min_(component("capital_gains_badr"), cgt.badr.lifetime_limit), gains
+            min_(
+                component(person("capital_gains_badr", period) + badr_response),
+                cgt.badr.lifetime_limit,
+            ),
+            gains,
         )
         residential = min_(
-            component("capital_gains_residential_property"), gains - badr
+            component(
+                person("capital_gains_residential_property", period) * other_scale
+            ),
+            gains - badr,
         )
         carried = min_(
-            component("capital_gains_carried_interest"),
+            component(person("capital_gains_carried_interest", period) * other_scale),
             gains - badr - residential,
         )
         main = gains - badr - residential - carried

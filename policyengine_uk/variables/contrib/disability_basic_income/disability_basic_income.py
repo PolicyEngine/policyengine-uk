@@ -17,7 +17,7 @@ class disability_basic_income(Variable):
         # child's or qualifying young person's limited capability does not
         # put it in the award.
         receives_uc_lcwra = (
-            person("is_uc_assessed_claimant", period)
+            person("is_uc_single_or_joint_claimant", period)
             & person("uc_limited_capability_for_WRA", period)
             & (person.benunit("universal_credit", period) > 0)
         )

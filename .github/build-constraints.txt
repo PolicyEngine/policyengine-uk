@@ -1,0 +1,13 @@
+# The build backend the release workflow builds with (uv build
+# --build-constraint), pinned with its dependencies so a rebuild of the same
+# commit gives the same bytes. With these pins, a build of 6d89338ab
+# reproduces PyPI's policyengine-uk 2.126.8 wheel and sdist byte for byte.
+# A rebuild must match: if an upload stopped part way, "Re-run all jobs"
+# rebuilds, and Publish refuses a file that differs from what PyPI has.
+# Update these deliberately, in their own pull request.
+hatchling==1.32.4
+packaging==26.3
+pathspec==1.1.1
+pluggy==1.6.0
+tomlkit==0.15.1
+trove-classifiers==2026.9.21.13

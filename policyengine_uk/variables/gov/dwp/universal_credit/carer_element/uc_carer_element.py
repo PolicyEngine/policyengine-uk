@@ -8,14 +8,15 @@ class uc_carer_element(Variable):
     documentation = (
         "The amount an award includes because a claimant has regular and "
         "substantial caring responsibilities for a severely disabled person. "
-        "Only a claimant's caring counts: a child or qualifying young person "
-        "who is a carer does not give the claimants the element. Joint "
-        "claimants who are both carers have an element each; the model does "
-        "not record who is cared for, and takes two carers to care for "
-        "different people, as it does when it pays each of them Carer's "
-        "Allowance. A claimant who is a carer and has limited capability for "
-        "work and work-related activity has the LCWRA element instead, unless "
-        "that element is included for the other joint claimant."
+        "Only a claimant's caring counts (`is_uc_single_or_joint_claimant`): a "
+        "child or qualifying young person who is a carer does not give the "
+        "claimants the element, nor does a partner who cannot be a joint "
+        "claimant (reg. 3(3)). Joint claimants who are both carers have an "
+        "element each; the model does not record who is cared for, and takes "
+        "two carers to care for different people. A claimant who is a carer "
+        "and has limited capability for work and work-related activity has "
+        "the LCWRA element instead, unless that element is included for the "
+        "other joint claimant."
     )
     definition_period = YEAR
     unit = GBP
@@ -32,6 +33,10 @@ class uc_carer_element(Variable):
             title="Universal Credit Regulations 2013 reg. 30",
             href="https://www.legislation.gov.uk/uksi/2013/376/regulation/30",
         ),
+        dict(
+            title="Universal Credit Regulations 2013 reg. 36(3)",
+            href="https://www.legislation.gov.uk/uksi/2013/376/regulation/36",
+        ),
     ]
 
     def formula(benunit, period, parameters):
@@ -40,7 +45,7 @@ class uc_carer_element(Variable):
         # Reg. 29(1): the element is included "where a claimant has regular
         # and substantial caring responsibilities for a severely disabled
         # person" (reg. 30: `is_carer_for_benefits`).
-        claimant = person("is_uc_assessed_claimant", period)
+        claimant = person("is_uc_single_or_joint_claimant", period)
         carer = claimant & person("is_carer_for_benefits", period)
         limited_capability = claimant & person("uc_limited_capability_for_WRA", period)
         # Reg. 29(2): "an award is to include the carer element for both joint

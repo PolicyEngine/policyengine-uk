@@ -42,7 +42,9 @@ class uc_individual_earned_income(Variable):
         # reg. 62(2). Partners' earned income is their actual earned income:
         # when both are below their thresholds each is treated as having
         # their own, whichever partner's floor is applied first. A claim has
-        # at most two claimants (is_uc_assessed_claimant).
+        # at most two claimants, and is_uc_claimant flags at most two; where
+        # inputs flag more, the two eldest are the couple
+        # (is_uc_assessed_claimant).
         claimant = person("is_uc_assessed_claimant", period)
         claimant_earned_income = earned_income * claimant
         partner_earned_income = (

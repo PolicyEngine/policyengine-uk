@@ -7,10 +7,8 @@ substantial caring responsibilities for a severely disabled person"; and reg.
 22(1)(b)(i) gives no work allowance "where a single claimant does not have,
 or neither of joint claimants has, responsibility for a child or qualifying
 young person or limited capability for work". A child's or qualifying young
-person's disability or caring is not the claimant's. The benefit cap
-exceptions in reg. 83(1)(a) to (e) likewise name "the claimant" or "a
-claimant" for ESA, industrial injuries benefit, attendance allowance and
-armed forces compensation payments.
+person's disability or caring is not the claimant's. (The benefit cap
+exceptions, which read the same circumstances, are tested with the cap.)
 
 Invariants, for any generated population of single claimants and couples
 with up to four dependants aged 0 to 19, with or without rent, in England,
@@ -38,15 +36,6 @@ Wales and Scotland:
    a work allowance away.
 5. Order does not matter: entering the people of every family in reverse
    leaves the elements and the work allowance unchanged.
-6. Benefit cap: a dependant's contributory ESA, industrial injuries benefit
-   or armed forces compensation payment never changes whether the award is
-   exempt from the cap. Their ESA and industrial injuries benefit change
-   neither the cap reduction nor Universal Credit. (An armed forces
-   compensation payment can: `is_severely_disabled_for_benefits` treats it as
-   a severe disability, which gives a child the higher disabled child
-   addition.) A child's disability living allowance always exempts the award
-   (reg. 83(1)(f)).
-
 Marriage Allowance is switched off throughout, as in the other Universal
 Credit property tests.
 """
@@ -76,23 +65,12 @@ ELEMENT_VARIABLES = [
     "is_uc_work_allowance_eligible",
     "uc_work_allowance",
 ]
-CAP_VARIABLES = [
-    "is_benefit_cap_exempt",
-    "benefit_cap_reduction",
-    "universal_credit",
-]
 # What a dependant's disability or caring looks like in the inputs.
 DEPENDANT_CIRCUMSTANCES = {
     "is_disabled_for_benefits": st.booleans(),
     "uc_limited_capability_for_WRA": st.booleans(),
     "care_hours": st.sampled_from([0.0, 20.0, 35.0, 60.0]),
     "carers_allowance_reported": st.sampled_from([0.0, 4_000.0]),
-}
-# Benefits that exempt an award from the cap only when a claimant has them.
-DEPENDANT_CLAIMANT_ONLY_BENEFITS = {
-    "esa_contrib_reported": st.sampled_from([0.0, 5_000.0]),
-    "iidb_reported": st.sampled_from([0.0, 3_000.0]),
-    "afcs_reported": st.sampled_from([0.0, 6_000.0]),
 }
 
 # DWP Advice for Decision Making, chapter F6, paragraph F6037: the additional
@@ -132,16 +110,12 @@ def code(claimant):
 
 
 @st.composite
-def dependants(draw, minimum=0, maximum=4, first_child=False):
-    """Up to ``maximum`` dependants aged 0 to 19. With ``first_child`` the
-    first is a child under 16 (WRA 2012 s. 40), whatever their education."""
+def dependants(draw, minimum=0, maximum=4):
     members = []
-    for i in range(draw(st.integers(minimum, maximum))):
-        age = draw(st.integers(0, 15 if first_child and i == 0 else 19))
+    for _ in range(draw(st.integers(minimum, maximum))):
+        age = draw(st.integers(0, 19))
         member = dict(age=age)
         for variable, strategy in DEPENDANT_CIRCUMSTANCES.items():
-            member[variable] = draw(strategy)
-        for variable, strategy in DEPENDANT_CLAIMANT_ONLY_BENEFITS.items():
             member[variable] = draw(strategy)
         if age >= 16:
             # At 18 and 19 only a qualifying young person is a dependant
@@ -162,7 +136,7 @@ def dependants(draw, minimum=0, maximum=4, first_child=False):
 
 
 @st.composite
-def families(draw, capped=False):
+def families(draw):
     claimants = [
         dict(
             age=draw(st.integers(25, 64)),
@@ -172,18 +146,6 @@ def families(draw, capped=False):
         )
         for _ in range(draw(st.integers(1, 2)))
     ]
-    if capped:
-        # Claimants with nothing that exempts them, several children and a
-        # high council rent: over the cap unless a dependant exempts them.
-        for claimant in claimants:
-            claimant.update(care_hours=0.0, uc_limited_capability_for_WRA=False)
-        return dict(
-            claimants=claimants,
-            dependants=draw(dependants(minimum=3, first_child=True)),
-            tenure="RENT_FROM_COUNCIL",
-            rent=draw(st.floats(12_000, 30_000)),
-            region=draw(st.sampled_from(REGIONS)),
-        )
     return dict(
         claimants=claimants,
         dependants=draw(dependants()),
@@ -194,20 +156,15 @@ def families(draw, capped=False):
 
 
 populations = st.lists(families(), min_size=1, max_size=6)
-capped_populations = st.lists(families(capped=True), min_size=1, max_size=6)
 
 
-def situation(
-    units, year, clear=(), reverse=False, claimant_overrides=None, dependant_dla=False
-):
+def situation(units, year, clear=(), reverse=False, claimant_overrides=None):
     """One simulation holding every family.
 
     ``clear`` names dependant inputs to reset to their defaults. With
     ``reverse`` the people of each family are entered, and listed in their
     benefit unit and household, in reverse order. ``claimant_overrides``
-    replaces inputs of every claimant. With ``dependant_dla`` the first
-    dependant of each family, a child under 16 in the capped families,
-    receives the middle-rate care component of disability living allowance.
+    replaces inputs of every claimant.
     """
     people, benunits, households = {}, {}, {}
     for i, unit in enumerate(units):
@@ -221,8 +178,6 @@ def situation(
             person = {
                 key: {year: v} for key, v in dependant.items() if key not in clear
             }
-            if dependant_dla and k == 0:
-                person["dla_sc_category"] = {year: "MIDDLE"}
             members.append((f"d{i}_{k}", person))
         if reverse:
             members = members[::-1]
@@ -366,55 +321,6 @@ def test_member_order_does_not_change_the_elements(units, year):
         benunit_values(backward, year, ELEMENT_VARIABLES),
         units,
     )
-
-
-@PROPERTY_SETTINGS
-@given(units=capped_populations, year=st.sampled_from(YEARS))
-def test_dependants_claimant_only_benefits_never_change_the_benefit_cap(units, year):
-    # Disability and caring are cleared too, so that the only difference
-    # between the runs is the dependants' claimant-only benefits.
-    cleared = tuple(DEPENDANT_CIRCUMSTANCES)
-    with_all = Simulation(situation=situation(units, year, clear=cleared))
-    with_esa_and_iidb = Simulation(
-        situation=situation(units, year, clear=cleared + ("afcs_reported",))
-    )
-    without = Simulation(
-        situation=situation(
-            units, year, clear=cleared + tuple(DEPENDANT_CLAIMANT_ONLY_BENEFITS)
-        )
-    )
-    assert_same(
-        benunit_values(with_all, year, ["is_benefit_cap_exempt"]),
-        benunit_values(without, year, ["is_benefit_cap_exempt"]),
-        units,
-    )
-    # An armed forces compensation payment also makes a child severely
-    # disabled for benefits, which changes the maximum amount, so only ESA
-    # and industrial injuries benefit are held to the whole award.
-    assert_same(
-        benunit_values(with_esa_and_iidb, year, CAP_VARIABLES),
-        benunit_values(without, year, CAP_VARIABLES),
-        units,
-    )
-
-
-@PROPERTY_SETTINGS
-@given(units=capped_populations, year=st.sampled_from(YEARS))
-def test_a_childs_disability_living_allowance_exempts_the_award(units, year):
-    everything = tuple(DEPENDANT_CIRCUMSTANCES) + tuple(
-        DEPENDANT_CLAIMANT_ONLY_BENEFITS
-    )
-    without = Simulation(situation=situation(units, year, clear=everything))
-    with_dla = Simulation(
-        situation=situation(units, year, clear=everything, dependant_dla=True)
-    )
-    exempt = np.asarray(with_dla.calculate("is_benefit_cap_exempt", year))
-    assert np.all(exempt), units
-    assert not np.any(with_dla.calculate("uc_LCWRA_element", year)), units
-    # The control: the same families without the allowance are not all exempt
-    # by some other route.
-    not_exempt = ~np.asarray(without.calculate("is_benefit_cap_exempt", year))
-    assert np.all(not_exempt), units
 
 
 def test_published_table_covers_all_sixteen_combinations():

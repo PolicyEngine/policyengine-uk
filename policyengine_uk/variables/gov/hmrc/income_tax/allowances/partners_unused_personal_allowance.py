@@ -4,6 +4,7 @@ from numpy import ceil
 
 class partners_unused_personal_allowance(Variable):
     label = "Partner's unused personal allowance"
+    reference = "https://www.legislation.gov.uk/ukpga/2007/3/section/55B"
     documentation = (
         "The personal tax allowance not used by this person's partner, if they exist"
     )
@@ -13,9 +14,10 @@ class partners_unused_personal_allowance(Variable):
     unit = GBP
 
     def formula(person, period, parameters):
-        is_adult = person("is_adult", period)
+        # Only a spouse or civil partner can transfer allowance (ITA 2007
+        # s.55B(5A), s.55C(1)(a)): the other claimant or partner of the
+        # benefit unit, never a child. People outside the couple get zero, so
+        # they cannot produce a negative transferable amount.
+        couple_member = person("is_claimant_or_partner", period)
         pa = person("unused_personal_allowance", period)
-        # Subtract this person's own unused PA only if they are an adult, so
-        # non-adults (whose PA isn't part of the adult-summed pool) cannot
-        # produce a negative transferable amount.
-        return person.benunit.sum(is_adult * pa) - is_adult * pa
+        return person.benunit.sum(couple_member * pa) - couple_member * pa
