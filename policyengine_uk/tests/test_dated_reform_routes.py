@@ -1024,3 +1024,102 @@ def test_preserve_calendar_dates_changes_keep_their_dates(start, length, value):
     while day < datetime.date(2035, 1, 1):
         assert parameter(day.isoformat()) == timeline_value(expected, day), day
         day += datetime.timedelta(days=37)
+
+
+# Review round 3 (GPT-6.1 Sol): failed override batches roll back, and
+# nodes a structural reform adds survive rebuilds and reprocessing.
+
+
+class _add_bonus(Reform):
+    def apply(self):
+        from policyengine_core.parameters import ParameterNode
+
+        self.parameters.add_child(
+            "test_budget",
+            ParameterNode("test_budget", data={"bonus": {"values": {"2000-01-01": 1}}}),
+        )
+
+
+def test_a_failed_override_batch_applies_none_of_its_overrides():
+    simulation = Simulation(situation=SITUATION)
+    system = simulation.tax_benefit_system
+    with pytest.raises(ValueError):
+        Scenario.from_reform(
+            {BASIC_RATE: {"2027": 0.3}, "gov.not_a_real_parameter": {"2027": 1}}
+        ).apply(simulation)
+    assert annual(simulation, BASIC_RATE, 2027) == 0.20
+    assert system.legacy_overrides == []
+    simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
+    assert annual(simulation, BASIC_RATE, 2027) == 0.20
+    assert annual(simulation, UC_SINGLE_OLD, 2027) == 500
+
+
+def test_a_rebuild_keeps_a_structural_reforms_parameter():
+    simulation = Simulation(
+        situation=SITUATION, reform=(_add_bonus, {"test_budget.bonus": 7})
+    )
+    simulation.apply_parameter_changes({BASIC_RATE: {"2027": 0.21}})
+    parameters = simulation.tax_benefit_system.parameters
+    assert parameters.test_budget.bonus("2027-01-01") == 7
+    assert annual(simulation, BASIC_RATE, 2027) == 0.21
+    # Repeated rebuilds keep it too.
+    simulation.apply_parameter_changes({UC_SINGLE_OLD: {"2027": 500}})
+    assert simulation.tax_benefit_system.parameters.test_budget.bonus("2027-01-01") == 7
+
+
+def test_reprocessing_keeps_a_structural_reforms_parameter():
+    from policyengine_uk.scenarios.no_economic_assumptions import (
+        no_economic_assumptions,
+    )
+
+    simulation = Simulation(
+        situation=SITUATION, reform=(_add_bonus, {"test_budget.bonus": 7})
+    )
+    no_economic_assumptions.apply(simulation)
+    parameters = simulation.tax_benefit_system.parameters
+    assert parameters.test_budget.bonus("2027-01-01") == 7
+    assert annual(simulation, PERSONAL_ALLOWANCE, 2035) == 12_570
+    assert simulation.tax_benefit_system._parameters_before_reset is None
+
+
+def test_failed_reprocessing_leaves_the_system_as_it_was(monkeypatch):
+    simulation = Simulation(situation=SITUATION)
+    Scenario.from_reform({BASIC_RATE: {"2027": 0.3}}).apply(simulation)
+    system = simulation.tax_benefit_system
+    system.reset_parameters()
+    reloaded = (system.parameters, system._projected_timelines, system._raw_parameters)
+
+    # Fail after the rebuild has replaced the parameters, while replaying
+    # the legacy override.
+    def fail(*args, **kwargs):
+        raise RuntimeError("replay failed")
+
+    monkeypatch.setattr(tbs_module, "apply_legacy_overrides", fail)
+    with pytest.raises(RuntimeError, match="replay failed"):
+        system.process_parameters()
+    assert system.parameters is reloaded[0]
+    assert system._projected_timelines is reloaded[1]
+    assert system._raw_parameters is reloaded[2]
+
+
+def test_grafting_adds_only_missing_nodes():
+    from policyengine_core.parameters import ParameterNode
+
+    from policyengine_uk.utils.dated_reforms import graft_missing_nodes
+
+    source = ParameterNode(
+        "",
+        data={
+            "a": {
+                "x": {"values": {"2000-01-01": 1}},
+                "y": {"values": {"2000-01-01": 2}},
+            },
+            "baseline": {"z": {"values": {"2000-01-01": 3}}},
+        },
+    )
+    target = ParameterNode("", data={"a": {"x": {"values": {"2000-01-01": 10}}}})
+    added = graft_missing_nodes(source, target)
+    assert added == ["a.y"]
+    assert target.a.x("2001-01-01") == 10
+    assert target.a.y("2001-01-01") == 2
+    assert "baseline" not in target.children

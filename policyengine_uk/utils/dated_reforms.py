@@ -502,6 +502,30 @@ def copy_timelines(timelines: Dict[str, Timeline]) -> Dict[str, Timeline]:
     }
 
 
+def graft_missing_nodes(
+    source: ParameterNode, target: ParameterNode, root: bool = True
+) -> List[str]:
+    """Add to ``target`` copies of the nodes ``source`` has and it lacks.
+
+    A rebuild or a reload starts from the YAML, so nodes a structural
+    reform added to the processed parameters (``parameters.add_child``)
+    would otherwise be lost. Existing parameters are left as ``target`` has
+    them, and the root's ``baseline`` child, which every processing builds
+    again, is skipped. Returns the names of the nodes added.
+    """
+    added = []
+    for key, child in source.children.items():
+        if root and key == "baseline":
+            continue
+        existing = target.children.get(key)
+        if existing is None:
+            target.add_child(key, child.clone())
+            added.append(child.name)
+        elif isinstance(child, ParameterNode) and isinstance(existing, ParameterNode):
+            added += graft_missing_nodes(child, existing, root=False)
+    return added
+
+
 def tree_defines(parameters: ParameterNode) -> Callable[[str], bool]:
     """``defines(path)``: whether a parameter tree has a leaf at ``path``."""
 
