@@ -25,12 +25,12 @@ Running the two scenarios directly against `policyengine-uk` main:
 
 ```python
 from policyengine_uk import Simulation
+
 YEAR = 2025
 
 # Scenario 1: single adult with employment income.
 s1 = {
-    "people": {"adult": {"age": {YEAR: 30},
-                         "employment_income": {YEAR: 50_000}}},
+    "people": {"adult": {"age": {YEAR: 30}, "employment_income": {YEAR: 50_000}}},
     "benunits": {"benunit": {"members": ["adult"]}},
     "households": {"household": {"members": ["adult"]}},
 }
