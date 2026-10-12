@@ -35,6 +35,34 @@ Three horizons are stitched together for each OBR and ONS series (not
    assumptions (Fiscal Risks and Sustainability report) and the long-run
    RPI-CPI wedge methodology.
 
+## Dataset projection horizon
+
+A single-year dataset is projected forward a year at a time to
+`PROJECTION_END_YEAR` in
+[`policyengine_uk/data/economic_assumptions.py`](../../../data/economic_assumptions.py),
+now 2032 (fiscal year 2032-33). Each year's inputs are the year before's
+times one plus the growth series
+[`uprating_indices.yaml`](../../../data/uprating_indices.yaml) assigns them;
+rent, council tax and student loan plans have their own functions there. Keep
+`PROJECTION_END_YEAR` at or past the last year of the latest EFO, so that the
+last year of a five-year costing is a dataset year.
+
+CPI, CPIH, RPI, average earnings, road fuel and population run to 2073, but
+several series end in 2030. Of those the projection uses, per-capita GDP and
+mixed income, mortgage interest, council tax, social and private rents and
+Northern Ireland domestic rates end in 2030. A parameter returns its latest
+value after its last date, so in 2031 and 2032 these hold their 2030 growth
+rate. That is an extrapolation, not an OBR forecast; replace it with the next
+EFO's values once one covers those years.
+
+After `PROJECTION_END_YEAR`, policyengine-core serves each stored input from
+the last projected year: an input whose variable has a formula is calculated
+by it, one with an `uprating` attribute is scaled by that index, and any other
+is held flat. Rent and council tax are held flat, recorded Pension Credit
+capital falls to -1 (the household capital proxy) and tax-free savings income
+is recalculated, so results for years past the horizon are not comparable
+with those up to it.
+
 ## How the 2031+ values were constructed
 
 Issue [#1379](https://github.com/PolicyEngine/policyengine-uk/issues/1379)
@@ -118,6 +146,8 @@ threshold by the same rises, up to the last year of
    `yoy_growth.yaml`; pass the receipts tables with `--receipts-file` or
    `--receipts-url` so September CPI uses the OBR's September forecast. If
    you edit `yoy_growth.yaml` by hand instead, rerun it with `--gaps-only`.
+6. If the new EFO runs past `PROJECTION_END_YEAR`, move it on (see
+   [Dataset projection horizon](#dataset-projection-horizon)).
 
 The EFO refresh does not touch `finance_ni.domestic_rates`; OBR does not
 publish a Northern Ireland domestic rates bill series (see below).
