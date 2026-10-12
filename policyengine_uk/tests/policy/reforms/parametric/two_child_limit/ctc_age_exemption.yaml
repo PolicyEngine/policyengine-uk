@@ -8,16 +8,12 @@
         child_tax_credit_reported: 8000
       child_1:
         age: 5
-        birth_year: 2018
       child_2:
         age: 4
-        birth_year: 2019
       child_3:
         age: 2
-        birth_year: 2021
       child_4:
         age: 1
-        birth_year: 2022
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -36,16 +32,12 @@
         child_tax_credit_reported: 8000
       child_1:
         age: 5
-        birth_year: 2018
       child_2:
         age: 4
-        birth_year: 2019
       child_3:
         age: 2  # This child is under the threshold
-        birth_year: 2021
       child_4:
         age: 1
-        birth_year: 2022
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -64,16 +56,12 @@
         child_tax_credit_reported: 8000
       child_1:
         age: 5
-        birth_year: 2018
       child_2:
         age: 4
-        birth_year: 2019
       child_3:
         age: 3  # No child below threshold
-        birth_year: 2020  
       child_4:
         age: 3
-        birth_year: 2020
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -91,16 +79,12 @@
         child_tax_credit_reported: 8000
       child_1:
         age: 5
-        birth_year: 2018
       child_2:
         age: 4
-        birth_year: 2019
       child_3:
         age: 2  # This child is under the threshold
-        birth_year: 2021
       child_4:
         age: 1  # This child is under the threshold
-        birth_year: 2022
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]
@@ -119,16 +103,12 @@
         child_tax_credit_reported: 8000
       child_1:
         age: 5
-        birth_year: 2018
       child_2:
         age: 4
-        birth_year: 2019
       child_3:
         age: 2  # This child is under the threshold
-        birth_year: 2021
       child_4:
         age: 1  # This child is under the threshold
-        birth_year: 2022
     benunits:
       benunit:
         members: [parent, child_1, child_2, child_3, child_4]

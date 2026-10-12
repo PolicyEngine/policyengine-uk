@@ -14,8 +14,14 @@ class extended_childcare_entitlement(Variable):
         p = parameters(period).gov.dfe
         age = benunit.members("age", period)
 
-        # Compute weekly hours directly inside this function
-        weekly_hours_per_child = p.extended_childcare_entitlement.hours.calc(age)
+        # Only qualifying children of working parents (SI 2022/1134 reg 13)
+        # receive the entitlement's hours.
+        qualifying_child = benunit.members(
+            "extended_childcare_entitlement_qualifying_child", period
+        )
+        weekly_hours_per_child = (
+            p.extended_childcare_entitlement.hours.calc(age) * qualifying_child
+        )
 
         # Get max hours used per child
         max_hours_used = benunit.members("max_free_entitlement_hours_used", period)

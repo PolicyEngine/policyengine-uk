@@ -14,7 +14,11 @@ class pension_credit_assessable_capital(Variable):
         "claimant or partner (is_claimant_or_partner): a dependant's capital "
         "is not the claimant's. Where `pension_credit_reported_capital` records "
         "the benefit unit's own capital (0 or more), it replaces the "
-        "household proxy and the person-level sources."
+        "household proxy and the person-level sources. Unlike "
+        "`uc_assessable_capital`, another benefit unit's recorded capital is "
+        "not subtracted from the household capital that an unrecorded unit's "
+        "proxy shares out: the recorded figure and the household sources come "
+        "from different measures, so the proxy is left as it was."
     )
     definition_period = YEAR
     unit = GBP
@@ -30,10 +34,18 @@ class pension_credit_assessable_capital(Variable):
             benunit.sum(person(source, period) * claimant_or_partner)
             for source in p.person_sources
         )
-        any_pension_age = benunit.any(person("is_SP_age", period))
-        benunit_pension_age_adults = benunit.sum(person("is_SP_age", period))
+        any_pension_age = benunit.any(
+            person("has_attained_state_pension_credit_qualifying_age", period)
+        )
+        benunit_pension_age_adults = benunit.sum(
+            person("has_attained_state_pension_credit_qualifying_age", period)
+        )
         household_pension_age_adults = benunit.max(
-            person.household.sum(person.household.members("is_SP_age", period))
+            person.household.sum(
+                person.household.members(
+                    "has_attained_state_pension_credit_qualifying_age", period
+                )
+            )
         )
         adult_divisor = max_(1, household_pension_age_adults)
         household_capital_proxy = (
