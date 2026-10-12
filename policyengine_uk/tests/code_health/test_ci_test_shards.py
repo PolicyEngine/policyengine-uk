@@ -868,7 +868,12 @@ def test_the_release_tells_policyengine_py_only_after_pypi_has_it():
     confirm = names.index("Check PyPI serves exactly these files")
     token = names.index("Generate a token for policyengine.py")
     dispatch = names.index("Tell policyengine.py the release is on PyPI")
-    assert confirm < token < dispatch
+    tag = names.index("Tag the version commit")
+    assert confirm < token < dispatch < tag
+    # The tag step runs whatever happened to the dispatch: no condition of its
+    # own, so only the implicit success(), which continue-on-error keeps true.
+    assert "if" not in publish["steps"][tag]
+    assert "continue-on-error" not in publish["steps"][tag]
     for index in (token, dispatch):
         assert publish["steps"][index]["continue-on-error"] is True
         # A hung step must not use up the job before the tag step runs.

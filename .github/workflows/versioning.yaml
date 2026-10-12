@@ -375,9 +375,10 @@ jobs:
     if: needs.Versioning.outputs.publish == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # The environment the PyPI credential is meant to live in. Once its
-    # protection rules allow only main (an admin setting, not set here), no
-    # other branch's workflow can read that credential.
+    # The environment the PyPI credential should live in. Today PYPI is an
+    # organisation secret that every repository's workflows can read. Once it
+    # is a secret of this environment instead, limited to main (admin
+    # settings, not set here), only this job on main can read it.
     environment: pypi
     # One Publish per version at a time: two runs releasing the same version
     # commit (a re-run beside the original) upload and tag in turn, and the

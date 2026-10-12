@@ -218,7 +218,9 @@ def test_a_release_extends_main_by_one_version_commit(remote, tmp_path, monkeypa
     # Bytecode writing on, as on a runner, so the no-__pycache__ check below
     # tests prepare_release.py rather than this machine's settings.
     monkeypatch.setattr(sys, "dont_write_bytecode", False)
+    monkeypatch.setattr(sys, "pycache_prefix", None)
     monkeypatch.delenv("PYTHONDONTWRITEBYTECODE", raising=False)
+    monkeypatch.delenv("PYTHONPYCACHEPREFIX", raising=False)
     work = clone(remote, tmp_path / "work")
     before = git(remote, "rev-parse", "main")
 
