@@ -230,15 +230,23 @@ def _sets_test_attribute(body: list[ast.stmt], name: str) -> bool:
 
 
 def _imports_unittest_testcase(body: list[ast.stmt]) -> bool:
-    return any(
-        isinstance(node, ast.ImportFrom)
-        and node.module == "unittest"
-        and any(
-            alias.name == "TestCase" and alias.asname in (None, "TestCase")
-            for alias in node.names
-        )
-        for node in body
-    )
+    """Whether the module's last top-level binding of TestCase is unittest's."""
+    from_unittest = False
+    for node in body:
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            for alias in node.names:
+                if (alias.asname or alias.name) == "TestCase":
+                    from_unittest = (
+                        isinstance(node, ast.ImportFrom)
+                        and node.module == "unittest"
+                        and node.level == 0
+                        and alias.name == "TestCase"
+                    )
+        elif isinstance(node, ast.ClassDef) and node.name == "TestCase":
+            from_unittest = False
+        elif _assigns_name(node, "TestCase"):
+            from_unittest = False
+    return from_unittest
 
 
 def _decorator_names(definition: ast.AST) -> list[str | None]:
@@ -249,14 +257,20 @@ def _decorator_names(definition: ast.AST) -> list[str | None]:
 
 
 def _pytestmark_names(body: list[ast.stmt]) -> list[str | None]:
-    """The dotted names in a module's or class's pytestmark assignment."""
+    """The pytest marks in a module's or class's pytestmark assignment.
+
+    Only names with a mark part count, so an argument such as config.skip in
+    pytest.mark.skipif(config.skip, ...) is not taken for a mark.
+    """
     names = []
     for node in body:
         if _assigns_name(node, "pytestmark") and node.value is not None:
             names.extend(
-                _dotted_name(part)
+                name
                 for part in ast.walk(node.value)
                 if isinstance(part, ast.Attribute)
+                and (name := _dotted_name(part)) is not None
+                and "mark" in name.split(".")[:-1]
             )
     return names
 

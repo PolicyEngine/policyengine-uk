@@ -77,14 +77,15 @@ the PR. Python files must match `test_*.py` or `*_test.py`, and names must
 resolve to module-level functions starting with `test`, or methods starting
 with `test` in module-level classes starting with `Test`. Such a class may
 derive only from `object` or `unittest.TestCase` (also as `TestCase` imported
-from `unittest`) and may not define `__init__` or `__new__`. A module or class whose `__test__` is anything but
-`True`, a test or class whose `__test__` attribute is set after it is defined,
-a fixture, and definitions nested in functions or conditional blocks are
-excluded. The reproducer must run and pass: a `skip` or `xfail` mark, or
-unittest's `skip` or `expectedFailure`, on it, its class or its module
-(`pytestmark`) is rejected. A `skipif` condition must hold false in CI, so the
-reproducer runs there, and the test must not skip itself at run time
-(`pytest.skip`, `pytest.importorskip`), which the check cannot see. A test marked
+from `unittest`) and may not define `__init__` or `__new__`. A module or class
+whose `__test__` is anything but `True`, a test or class whose `__test__`
+attribute is set after it is defined, a fixture, and definitions nested in
+functions or conditional blocks are excluded. The reproducer must run and
+pass: a `skip` or `xfail` mark, or unittest's `skip` or `expectedFailure`, on
+it, its class or its module (`pytestmark`) is rejected. A `skipif` (or
+unittest `skipIf`/`skipUnless`) condition must let the reproducer run in CI,
+and the test must not skip itself at run time (`pytest.skip`,
+`pytest.importorskip`), which the check cannot see. A test marked
 `microsimulation` runs only where the dataset is available, which includes
 merge-queue and main runs. YAML files must parse to a non-empty list with at
 least one mapping containing a string `name` and a non-empty `output` mapping;

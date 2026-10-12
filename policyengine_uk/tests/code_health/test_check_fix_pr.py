@@ -580,6 +580,17 @@ def test_backticked_na_reason_can_include_commas_and_semicolons(tmp_path):
             "    def test_regression(self):\n        pass\n",
             "::TestRegression::test_regression",
         ),
+        (
+            "from .unittest import TestCase\nclass TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
+        (
+            "from unittest import TestCase\nfrom helpers import TestCase\n"
+            "class TestRegression(TestCase):\n"
+            "    def test_regression(self):\n        pass\n",
+            "::TestRegression::test_regression",
+        ),
     ],
 )
 def test_pytest_reproducer_rejects_bare_paths_and_nonexistent_definitions(
@@ -612,7 +623,10 @@ def test_pytest_default_collection_confirms_function_and_class_names(
         "class TestInherited(TestConstructor):\n"
         "    def test_hidden(self):\n        pass\n"
         "def test_switched_off():\n    pass\n"
-        "test_switched_off.__test__ = False\n",
+        "test_switched_off.__test__ = False\n"
+        "from unittest import TestCase\n"
+        "class TestUnittest(TestCase):\n"
+        "    def test_case(self):\n        pass\n",
     )
 
     class Collection:
@@ -641,7 +655,7 @@ def test_pytest_default_collection_confirms_function_and_class_names(
         )
     assert result == pytest.ExitCode.OK
     collected = {nodeid.split("::", 1)[1] for nodeid in collection.nodeids}
-    assert collected == {"testament", "Testimony::testimony"}
+    assert collected == {"testament", "Testimony::testimony", "TestUnittest::test_case"}
     for suffix in [
         "testament",
         "helper",
@@ -653,6 +667,7 @@ def test_pytest_default_collection_confirms_function_and_class_names(
         "TestAllocator::test_hidden",
         "TestInherited::test_hidden",
         "test_switched_off",
+        "TestUnittest::test_case",
     ]:
         nodeid = f"{path}::{suffix}"
         report = _report(tmp_path, f"Reproducer: {nodeid}", [("A", path)])
@@ -740,6 +755,12 @@ def test_pytest_reproducer_must_not_be_skipped_or_expected_to_fail(
             "from unittest import TestCase\nclass TestRegression(TestCase):\n"
             "    def test_regression(self):\n        pass\n",
             "::TestRegression::test_regression",
+        ),
+        (
+            "import pytest, config\n"
+            "pytestmark = pytest.mark.skipif(config.skip, reason='optional')\n"
+            "def test_regression():\n    pass\n",
+            "::test_regression",
         ),
         (
             "import unittest, sys\nclass TestRegression(unittest.TestCase):\n"
