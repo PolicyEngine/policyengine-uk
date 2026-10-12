@@ -20,6 +20,10 @@ open, October 2026).
   the list in `gov.dwp.universal_credit.means_test.income_definitions.unearned`,
   which contains no maintenance, and UC earned income does not net off
   maintenance paid.
+- `uc_deductions` does cover child maintenance collected from a paying
+  parent's UC award, but only in aggregate: it sits in the above-cap excess
+  of `uc_deduction_rate` with last resort deductions, estimated from DWP
+  deduction data rather than from `maintenance_expenses`.
 
 For **child** maintenance that is the right answer for UC:
 
@@ -47,8 +51,8 @@ recipients' UC is overstated.
 - New input `child_maintenance_paid` (Person, GBP, annual).
 - Keep `maintenance_income` and `maintenance_expenses` for maintenance
   between former partners, and say so in their documentation.
-- In the data pipeline (now
-  [Microcosm UK](https://github.com/PolicyEngine/microcosm)), route the FRS
+- In the data pipeline
+  ([Microcosm UK](https://github.com/PolicyEngine/microcosm)), route the FRS
   child-maintenance items to the new inputs and the spousal items to the
   existing ones.
 - HBAI income keeps both kinds, received and paid.
