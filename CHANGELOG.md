@@ -1,3 +1,10 @@
+## [2.126.12] - 2026-10-12
+
+### Fixed
+
+- - Every reform route now writes dated changes onto the statutory parameter timeline and reprocesses it as current law is processed. A dict reform dated 6 April now sets that fiscal year, and uprating, threshold indexation and the aligned NICs thresholds follow reformed values. A bounded change on an uprated or indexed parameter now resumes prior law's projected path, not a stale stated value. Reforms applied after the data load now reach the Universal Credit rebalancing inputs and the parameter-gated structural reforms. `parameters.baseline` stays current law under `Scenario(parameter_changes=...)`.
+
+
 ## [2.126.11] - 2026-10-12
 
 ### Changed
