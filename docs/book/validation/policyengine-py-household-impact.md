@@ -7,13 +7,16 @@ started asserting `0.0` for expected-positive tax and child-benefit
 values after bumping the UK extra to `policyengine-uk==2.88.0`. This
 page documents the diagnosis from the PolicyEngine UK side and the
 guidance for the upstream `policyengine.py` repo. It is not a model
-bug — the UK model produces the expected non-zero values when called
+bug: the UK model produces the expected non-zero values when called
 correctly.
 
 Re-checked in October 2026 on policyengine-uk 2.123.7: both scenarios
 below still return £7,486 and £1,354.60. The upstream reproducer
-(policyengine.py#280) was closed without merging; #1628 can be closed
-once the policyengine.py household-impact tests are confirmed green.
+(policyengine.py#280) was closed without merging. policyengine.py has
+since replaced the `TestUKHouseholdImpact` tests with
+`TestUKCalculateHousehold` in `tests/test_household_impact.py`, which
+passes an explicit `year` to every case and pins policyengine-uk
+2.125.1. #1628 can be closed once those tests are confirmed green.
 ```
 
 ## Reproduction from the UK side
@@ -24,7 +27,7 @@ Running the two scenarios directly against `policyengine-uk` main:
 from policyengine_uk import Simulation
 YEAR = 2025
 
-# Scenario 1 — single adult with employment income.
+# Scenario 1: single adult with employment income.
 s1 = {
     "people": {"adult": {"age": {YEAR: 30},
                          "employment_income": {YEAR: 50_000}}},
@@ -35,7 +38,7 @@ sim = Simulation(situation=s1)
 print("income_tax:", sim.calculate("income_tax", YEAR).sum())
 # -> 7486.00
 
-# Scenario 2 — couple with one child.
+# Scenario 2: couple with one child.
 s2 = {
     "people": {
         "a1": {"age": {YEAR: 35}, "employment_income": {YEAR: 30_000}},
@@ -56,8 +59,19 @@ Both return the expected non-zero values across the range 2022-2025
 
 ## What changed between 2.74 and 2.88
 
-The most likely cause of the upstream test failure is the
-**default-period** contract:
+The change in that window that most plausibly explains the upstream
+failure is the **dataset-required** invariant, added in 2.76.0
+("Stop defaulting to private dataset"): `Simulation()` with no
+`situation=`, no explicit `dataset=` and no
+`POLICYENGINE_UK_DEFAULT_DATASET` environment variable raises
+`ValueError: Simulation() requires an explicit dataset when no
+situation is provided`. If the `policyengine.py` harness was catching
+that error and falling through to a degenerate code path (a
+zero-filled `Microsimulation`), the tests would see zeros.
+
+The **default-period** contract is a second thing to rule out, although
+it did not change in that window (both 2.74.0 and 2.88.0 default to
+2025):
 
 ```python
 # policyengine_uk/simulation.py
@@ -66,19 +80,9 @@ class Simulation(CoreSimulation):
     default_calculation_period: int = 2025
 ```
 
-If `policyengine.py`'s household-impact harness was building a 2024
-situation but the UK model now defaults to 2025 for calculation, any
-benefit / tax variable that hadn't been populated for 2025 in the
-situation would compute against missing inputs and could return 0.
-
-The other plausible cause is the **dataset-required** invariant in
-the `Simulation()` constructor: `Simulation()` with no `situation=`,
-no explicit `dataset=` and no `POLICYENGINE_UK_DEFAULT_DATASET` env
-var raises `ValueError: Simulation() requires an explicit dataset when
-no situation is provided`. If
-the `policyengine.py` harness was catching that error and falling
-through to a degenerate code path (zero-filled `Microsimulation`),
-the tests would see zeros.
+The failing tests built 2024 households. Any calculation that relied on
+the default period would compute 2025, and any tax or benefit input
+populated only for 2024 would be missing for that year.
 
 ## Guidance for the upstream fix
 
@@ -88,7 +92,7 @@ The `policyengine.py` household-impact harness should:
    matching the year encoded in the situation YAML, rather than relying
    on the model default.
 2. Build single-household cases with **`Simulation(situation=...)`**
-   rather than a dataset-backed simulation — they don't need a dataset
+   rather than a dataset-backed simulation. They don't need a dataset
    and shouldn't bring in the default-dataset env-var dependency.
 3. **Assert against the year encoded in the test fixture**, not the
    model's `default_input_period`. The fixture-encoded year is what the
