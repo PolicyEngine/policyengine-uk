@@ -83,8 +83,12 @@ jobs:
           # With the ruff that uv.lock pins, so a new ruff release cannot change
           # what Lint accepts until the lock is updated.
           run: |
-            ruff=$(uv export --frozen --extra dev --no-hashes --no-header | grep -E '^ruff==' | cut -d' ' -f1)
-            if [ -z "$ruff" ]; then echo "::error::uv.lock pins no ruff"; exit 1; fi
+            set -euo pipefail
+            ruff=$(uv export --frozen --extra dev --no-hashes --no-header | { grep -E '^ruff==' || true; } | cut -d' ' -f1)
+            if [ "$(printf '%s' "$ruff" | grep -c '^ruff==')" != 1 ]; then
+              echo "::error::uv.lock should pin exactly one ruff; found: ${ruff:-none}"
+              exit 1
+            fi
             echo "RUFF=$ruff" >> "$GITHUB_ENV"
             uvx --from "$ruff" ruff format --check .
         - name: Lint
