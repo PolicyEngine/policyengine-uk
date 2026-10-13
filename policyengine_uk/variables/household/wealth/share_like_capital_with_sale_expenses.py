@@ -27,9 +27,11 @@ class share_like_capital_with_sale_expenses(Variable):
     def formula(household, period, parameters):
         share_like = household("share_like_capital", period)
         itemised = add(household, period, COMPONENTS)
-        without = add(
-            household,
-            period,
-            parameters(period).gov.dwp.share_like_capital.without_sale_expenses,
-        )
+        # Summed from a numeric zero so that an empty list (every holding
+        # taking the deduction) still works.
+        without = 0 * share_like
+        for variable in parameters(
+            period
+        ).gov.dwp.share_like_capital.without_sale_expenses:
+            without = without + household(variable, period)
         return where(itemised > 0, max_(0, share_like - without), share_like)

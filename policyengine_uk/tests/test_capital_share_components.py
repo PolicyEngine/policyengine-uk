@@ -28,7 +28,6 @@ from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.variables.household.wealth.share_like_capital import (
-    ABSOLUTE_TOLERANCE,
     RELATIVE_TOLERANCE,
 )
 
@@ -139,22 +138,68 @@ def test_share_like_capital_and_its_parts(rows):
     for i, assets in enumerate(households):
         cw = np.float32(assets["corporate_wealth"])
         values = [np.float32(assets.get(c, 0)) for c in COMPONENTS]
-        itemised = np.float32(sum(values))
-        tolerance = RELATIVE_TOLERANCE * abs(cw) + ABSOLUTE_TOLERANCE
-        exceeds = itemised > 0 and itemised > cw + tolerance
+        # The engine's float32 grouping: components added left to right, the
+        # exempt holdings summed before they are subtracted.
+        itemised = np.float32(np.float32(values[0] + values[1]) + values[2])
+        exempt = np.float32(values[1] + values[2])
+        tolerance = RELATIVE_TOLERANCE * max(abs(cw), itemised)
         share_like = got["share_like_capital"][i]
-        if exceeds:
-            assert share_like == pytest.approx(itemised, rel=1e-6, abs=1e-3)
+        if itemised > 0 and itemised > cw + tolerance:
+            assert share_like == itemised
         else:
             assert share_like == cw
         if itemised == 0:
             assert got[WITH][i] == share_like and got[WITHOUT][i] == 0
         else:
-            expected = max(0.0, share_like - values[1] - values[2])
-            assert got[WITH][i] == pytest.approx(expected, rel=1e-6, abs=1e-2)
-            assert got[WITH][i] + got[WITHOUT][i] == pytest.approx(
-                share_like, rel=1e-6, abs=1e-2
-            )
+            assert got[WITH][i] == max(np.float32(0), np.float32(share_like - exempt))
+            assert got[WITHOUT][i] == np.float32(share_like - got[WITH][i])
+
+
+def test_float32_grouping_of_the_exempt_holdings():
+    """Trusts and ISA summed first: £400,000 less £399,999.98 rounds to nil."""
+    households = [
+        {
+            "corporate_wealth": 399_999.984375,
+            "unit_and_investment_trusts": 200_000,
+            "stocks_and_shares_isa": 199_999.984375,
+        }
+    ]
+    got = _results(households)
+    assert got[WITH][0] == 0
+
+
+def test_an_empty_exempt_list_values_everything_less_10_percent():
+    """A ruling that every share-like holding takes the 10% is a parameter edit."""
+    reform = {"gov.dwp.share_like_capital.without_sale_expenses": {str(YEAR): []}}
+    households = [
+        {"savings": 1_000, "corporate_wealth": 12_000},
+        {
+            "savings": 1_000,
+            "directly_held_shares": 4_000,
+            "unit_and_investment_trusts": 3_000,
+            "stocks_and_shares_isa": 5_000,
+        },
+    ]
+    got = _results(households, reform=reform, age=30)
+    assert list(got[WITH]) == [12_000, 12_000]
+    assert list(got[WITHOUT]) == [0, 0]
+    # £1,000 + 90% of £12,000 either way.
+    assert got["uc_assessable_capital"] == pytest.approx([11_800, 11_800])
+
+
+@pytest.mark.parametrize(
+    "variable", ["income_support_assessable_capital", "jsa_income_assessable_capital"]
+)
+def test_legacy_capital_before_universal_credit(variable):
+    """2012: the legacy lists apply, and so does the exempt list (from 1996)."""
+    situation = _situation([{"savings": 1_000, "corporate_wealth": 12_000}], age=30)
+    for entity in situation.values():
+        for name, values in entity.items():
+            for key, by_year in list(values.items()):
+                if isinstance(by_year, dict) and YEAR in by_year:
+                    values[key] = {2012: by_year[YEAR]}
+    capital = Simulation(situation=situation).calculate(variable, 2012)[0]
+    assert capital == pytest.approx(11_800)
 
 
 @SETTINGS
