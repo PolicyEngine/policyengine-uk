@@ -153,7 +153,9 @@ def legacy_benefits_closed(couple, others, parameters):
     model's reading, not the law's: the model reads every member's reports
     and ends every member's award, where the migration notice goes to the
     claimant and partner (reg 44(1), (4)) and ends their awards (reg 46(1)).
-    Callers' ages keep clear of 65 to 69, where the qualifying age moves."""
+    When the result depends on the claimant's and partner's ages, their ages
+    must keep clear of 65 to 69, where the qualifying age moves; an assertion
+    checks this."""
     dwp = parameters.gov.dwp
     members = couple + others
     assert not any(
