@@ -61,30 +61,40 @@ class uc_individual_earned_income_before_mif(Variable):
         bi = parameters(period).gov.contrib.ubi_center.basic_income
         if bi.interactions.include_in_means_tests:
             earnings_components.append("basic_income")
-        # A trading loss makes self-employed earnings nil (reg. 57(2)); it
-        # is not set against employed earnings. A company's income treated
-        # as the owner's self-employed earnings (reg. 77(3)(b)) is another
-        # trade, added before that nil rule (reg. 57(2) step 2).
-        self_employed = max_(
-            0,
+        # Self-employed earnings follow reg. 57(2): each trade's profit or
+        # loss is added together (step 2), including a company's income
+        # treated as the owner's self-employed earnings (reg. 77(3)(b)), and
+        # the income tax and National Insurance paid in respect of any trade
+        # come off that total (step 3) before a nil or negative result
+        # becomes nil. So a trading loss, or tax on a trade a company loss
+        # has cancelled, is never set against employed earnings.
+        trade = (
             person("self_employment_income", period)
-            + person("uc_company_self_employed_earnings", period),
+            + person("uc_company_self_employed_earnings", period)
+            - person("uc_income_tax_on_trade", period)
+            - person("uc_national_insurance_on_trade", period)
         )
-        earnings = add(person, period, earnings_components) + self_employed
+        self_employed = max_(0, trade)
+        # Employed earnings less the income tax and primary Class 1
+        # contributions paid in respect of the employment (reg. 55(5)(b)).
+        employment_tax_and_national_insurance = (
+            person("uc_income_tax_on_earnings", period)
+            - person("uc_income_tax_on_trade", period)
+            + person("uc_national_insurance_on_earnings", period)
+            - person("uc_national_insurance_on_trade", period)
+        )
+        employed = (
+            add(person, period, earnings_components)
+            - employment_tax_and_national_insurance
+        )
         # Contributions paid after the person reaches 75 are not relievable
         # (Finance Act 2004 s. 188(3)(a)), so reg. 55(5)(a) does not deduct
-        # them.
+        # them. Reg. 55(5)(a) takes them off employed earnings and reg.
+        # 57(2) step 4 off what is left of self-employed earnings.
         age_limit = parameters(
             period
         ).gov.hmrc.pensions.pension_contributions_relief_age_limit
         relievable_pension_contributions = person("pension_contributions", period) * (
             person("age", period) < age_limit
         )
-        tax_and_national_insurance = add(
-            person,
-            period,
-            ["uc_income_tax_on_earnings", "uc_national_insurance_on_earnings"],
-        )
-        return max_(
-            0, earnings - relievable_pension_contributions - tax_and_national_insurance
-        )
+        return max_(0, employed + self_employed - relievable_pension_contributions)

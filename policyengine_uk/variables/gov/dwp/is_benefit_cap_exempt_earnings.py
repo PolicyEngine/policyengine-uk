@@ -21,9 +21,6 @@ class is_benefit_cap_exempt_earnings(Variable):
             (
                 person("employment_income", period)
                 + person("self_employment_income", period)
-                # A company's income treated as its owner's self-employed
-                # earnings (UC Regs 2013 reg. 77(3)(b)).
-                + person("uc_company_self_employed_earnings", period)
                 - person("income_tax", period)
                 - person("national_insurance", period)
             )

@@ -54,18 +54,16 @@ class uc_assessable_capital(Variable):
         # A person who stands as sole owner or partner of a company has their
         # holding in it disregarded and is treated as possessing the company's
         # capital (or their share of it) instead (UC Regs 2013 reg. 77(2),
-        # (3)(a)). Holdings of people in unreported benunits leave the
-        # household pool before it is shared out, up to the household's
-        # corporate_wealth that holds them; a reporting benunit's claimant and
-        # partner's holdings come off its reported capital, which has no
-        # breakdown to cap them against. Neither subtraction can take capital
-        # below zero. Only the claimant and partner's company capital is
-        # theirs to count.
-        unreported_holdings = household(
-            "household_uc_unreported_company_holdings", period
-        )
+        # (3)(a)). A reporting benunit's claimant and partner's holdings come
+        # off its reported capital, which has no breakdown to cap them
+        # against. Every other holding (those of people in unreported
+        # benunits, and of dependants in reporting ones) leaves the household
+        # pool before it is shared out, up to the household's corporate_wealth
+        # that holds them. Neither subtraction can take capital below zero.
+        # Only the claimant and partner's company capital is theirs to count.
+        pool_holdings = household("household_uc_pool_company_holdings", period)
         residual_household_capital = max_(
-            0, household_capital - household_reported_capital - unreported_holdings
+            0, household_capital - household_reported_capital - pool_holdings
         )
         household_capital_proxy = where(
             household_unreported_claimants > 0,

@@ -95,6 +95,8 @@ PERSON_VARIABLES = [
     "uc_mif_applies",
     "uc_income_tax_on_earnings",
     "uc_national_insurance_on_earnings",
+    "uc_income_tax_on_trade",
+    "uc_national_insurance_on_trade",
     "pension_contributions",
     "is_uc_assessed_claimant",
 ]
@@ -140,6 +142,7 @@ def adults(draw):
         employment_income=draw(st.one_of(st.just(0.0), money)),
         self_employment_income=draw(st.one_of(st.just(0.0), st.floats(0, 15_000))),
         uc_is_in_startup_period=draw(st.sampled_from([False, False, True])),
+        uc_limited_capability_for_WRA=draw(st.sampled_from([False] * 4 + [True])),
         company=draw(companies()),
     )
 
@@ -168,6 +171,9 @@ def situation(variants):
                 "employment_income": {YEAR: adult["employment_income"]},
                 "self_employment_income": {YEAR: adult["self_employment_income"]},
                 "uc_is_in_startup_period": {YEAR: adult["uc_is_in_startup_period"]},
+                "uc_limited_capability_for_WRA": {
+                    YEAR: adult["uc_limited_capability_for_WRA"]
+                },
                 **{k: {YEAR: v} for k, v in facts.items()},
             }
             names.append(name)
@@ -301,25 +307,55 @@ def test_capital_and_earnings_identities(unit_list):
                 company_capital += company_capital_of(c)
             # Earnings identity, before the floor: reg. 77(3)(b) adds the
             # company's profit or loss to the person's own trade (reg. 57(2)
-            # step 2) before a negative total becomes nil.
+            # step 2), the tax and NI on the trade come off that total (step
+            # 3), and a negative result becomes nil; pay is net of the tax and
+            # NI on the employment (reg. 55(5)).
             company_profit_or_loss = (
                 c["owned_company_income_share"]
                 if applies(c) and c["owned_company_carries_on_trade"]
                 else 0.0
             )
-            self_employed = max(
-                0.0, adult["self_employment_income"] + company_profit_or_loss
+            trade_deductions = (
+                got["uc_income_tax_on_trade"][k]
+                + got["uc_national_insurance_on_trade"][k]
             )
-            deductions = (
-                got["pension_contributions"][k]
-                + got["uc_income_tax_on_earnings"][k]
+            self_employed = max(
+                0.0,
+                adult["self_employment_income"]
+                + company_profit_or_loss
+                - trade_deductions,
+            )
+            employment_deductions = (
+                got["uc_income_tax_on_earnings"][k]
                 + got["uc_national_insurance_on_earnings"][k]
+                - trade_deductions
             )
             before = got["uc_individual_earned_income_before_mif"][k]
             assert close(
                 before,
-                max(0.0, adult["employment_income"] + self_employed - deductions),
+                max(
+                    0.0,
+                    adult["employment_income"]
+                    - employment_deductions
+                    + self_employed
+                    - got["pension_contributions"][k],
+                ),
             )
+            # Independently of the model's tax: earnings within the personal
+            # allowance, the primary threshold and the lower profits limit
+            # bear no income tax or NI, so earned income is pay plus the nil
+            # floored trading total.
+            if (
+                adult["employment_income"] + adult["self_employment_income"] <= 12_000
+                and got["pension_contributions"][k] == 0
+            ):
+                assert close(
+                    before,
+                    adult["employment_income"]
+                    + max(
+                        0.0, adult["self_employment_income"] + company_profit_or_loss
+                    ),
+                )
             # Floor trigger: reg. 62(1) and (5), with reg. 77(3)(c).
             trade_main = (
                 applies(c)
@@ -334,6 +370,12 @@ def test_capital_and_earnings_identities(unit_list):
                 and gainful
                 and not adult["uc_is_in_startup_period"]
             )
+            # Independently of the model's groups: limited capability for
+            # work and work-related activity puts a claimant in the no
+            # work-related requirements group (Welfare Reform Act 2012
+            # s. 19(2)(a)), so no floor (reg. 62(1)(b)).
+            if adult["uc_limited_capability_for_WRA"]:
+                assert not got["uc_mif_applies"][k]
             earned = got["uc_individual_earned_income"][k]
             floor_can_apply = (
                 got["uc_mif_applies"][k] and got["is_uc_assessed_claimant"][k]
@@ -576,3 +618,73 @@ def test_dependant_company_does_not_change_the_award(unit_list, income, capital,
     got, base = build(company), build(none)
     for v in VARIABLES:
         np.testing.assert_allclose(got[v], base[v], rtol=0, atol=1e-6, err_msg=v)
+
+
+@PROPERTY_SETTINGS
+@given(
+    st.lists(st.tuples(units(), units()), min_size=1, max_size=3),
+    st.floats(1, 20_000),
+    st.floats(1, 20_000),
+    st.one_of(st.none(), st.floats(0, 20_000)),
+)
+def test_disregarded_holdings_count_for_no_benefit_unit(
+    pairs, dependant_holding, owner_holding, reported
+):
+    # Each household holds a family (the first unit's adults and a
+    # qualifying young person), which reports its capital unless `reported`
+    # is None, and a second, unreported benefit unit. The young person and
+    # the second unit's first adult each hold shares in a company they stand
+    # as sole owner of; the shares are in the household's corporate_wealth.
+    # Reg. 77(2) disregards both holdings, and a dependant's capital is no
+    # claimant's, so adding the shares changes no unit's capital.
+    def build(with_holdings):
+        people, benunits, households = {}, {}, {}
+        for h, (family, other) in enumerate(pairs):
+            family_names = []
+            for j, adult in enumerate(family["adults"]):
+                people[f"h{h}_f{j}"] = {"age": {YEAR: adult["age"]}}
+                family_names.append(f"h{h}_f{j}")
+            dependant = {
+                "age": {YEAR: 17},
+                "is_in_non_advanced_education": {YEAR: True},
+            }
+            other_names = []
+            for j, adult in enumerate(other["adults"]):
+                people[f"h{h}_o{j}"] = {"age": {YEAR: adult["age"]}}
+                other_names.append(f"h{h}_o{j}")
+            shares = 0.0
+            if with_holdings:
+                owner = {
+                    "stands_as_sole_owner_or_partner_of_company": {YEAR: True},
+                    "owned_company_carries_on_trade": {YEAR: True},
+                }
+                dependant.update(
+                    owner, owned_company_holding_value={YEAR: dependant_holding}
+                )
+                people[other_names[0]].update(
+                    owner, owned_company_holding_value={YEAR: owner_holding}
+                )
+                shares = dependant_holding + owner_holding
+            people[f"h{h}_d"] = dependant
+            family_names.append(f"h{h}_d")
+            benunits[f"h{h}_family"] = {"members": family_names}
+            if reported is not None:
+                benunits[f"h{h}_family"]["uc_reported_capital"] = {YEAR: reported}
+            benunits[f"h{h}_other"] = {"members": other_names}
+            households[f"h{h}"] = {
+                "members": family_names + other_names,
+                "savings": {YEAR: family["savings"]},
+                "corporate_wealth": {YEAR: family["corporate_wealth"] + shares},
+            }
+        sim = Simulation(
+            situation={
+                "people": people,
+                "benunits": benunits,
+                "households": households,
+            }
+        )
+        return np.asarray(sim.calculate("uc_assessable_capital", YEAR))
+
+    with_holdings, without = build(True), build(False)
+    for got, want in zip(with_holdings, without):
+        assert close(got, want)
