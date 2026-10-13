@@ -8,6 +8,9 @@ from policyengine_uk.model_api import *
 # the three components in float32, so the two totals differ by at most about
 # 2.5 units in the last place, 3e-7 of the value. 1e-6 leaves a margin of more
 # than three times that and still counts any genuine excess above a millionth.
+# The bound assumes the dataset stores float64 tables, as policyengine-uk-data
+# and microcosm do; float32 tables would add a rounding per side for each year
+# a dataset is projected forward.
 RELATIVE_TOLERANCE = 1e-6
 
 
@@ -45,5 +48,8 @@ class share_like_capital(Variable):
             ],
         )
         tolerance = RELATIVE_TOLERANCE * max_(abs(corporate_wealth), itemised)
-        exceeds = (itemised > 0) & (itemised > corporate_wealth + tolerance)
+        # Compare the difference, which float32 computes exactly for close
+        # values, rather than adding the tolerance to corporate_wealth, which
+        # would round it up to a whole unit in the last place.
+        exceeds = (itemised > 0) & (itemised - corporate_wealth > tolerance)
         return where(exceeds, itemised, corporate_wealth)

@@ -59,11 +59,16 @@ ORIGINAL_LISTS = {
     for path in SOURCE_LISTS.values()
 }
 ORIGINAL_REFORM = {
-    path: {str(YEAR): sources} for path, sources in ORIGINAL_LISTS.items()
+    path: {f"{YEAR}-01-01.{YEAR + 4}-12-31": sources}
+    for path, sources in ORIGINAL_LISTS.items()
 }
 
-money = st.floats(min_value=0, max_value=200_000, allow_nan=False, width=32)
-signed_money = st.floats(min_value=-5_000, max_value=200_000, allow_nan=False, width=32)
+# Pounds and pence, as a dataset stores them in float64; the engine rounds
+# each to float32, which is the rounding the tolerance has to absorb.
+money = st.integers(min_value=0, max_value=20_000_000).map(lambda pence: pence / 100)
+signed_money = st.integers(min_value=-500_000, max_value=20_000_000).map(
+    lambda pence: pence / 100
+)
 
 
 def _situation(households):
@@ -88,7 +93,8 @@ def _results(households, reform=None, period=YEAR):
 
 
 def _assert_same_as_original(households):
-    for period in (YEAR, f"{YEAR}-01"):
+    # A projected year as well, where the inputs are uprated.
+    for period in (YEAR, f"{YEAR}-01", YEAR + 1, f"{YEAR + 1}-01"):
         new = _results(households, period=period)
         old = _results(households, reform=ORIGINAL_REFORM, period=period)
         for variable in (*SOURCE_LISTS, "is_uc_eligible"):
@@ -125,7 +131,7 @@ def test_share_like_capital_keeps_the_supplied_aggregate(rows):
         for component in COMPONENTS:
             itemised = np.float32(itemised + np.float32(assets.get(component, 0)))
         tolerance = RELATIVE_TOLERANCE * max(abs(cw), itemised)
-        if itemised > 0 and itemised > cw + tolerance:
+        if itemised > 0 and itemised - cw > tolerance:
             assert value == itemised  # exactly the components' sum
         else:
             assert value == cw  # exactly the supplied aggregate
@@ -166,6 +172,26 @@ def test_float32_rounding_at_the_limit_keeps_eligibility():
     ]
     _assert_same_as_original(households)
     assert _results(households)["share_like_capital"][0] == 16_000
+
+
+def test_one_unit_of_float32_rounding_above_a_power_of_two_keeps_the_aggregate():
+    """Pence-valued components whose float32 sum lands one unit in the last place
+    (£0.00195) above £16,384.01: more than 1e-7 of the value, less than 1e-6."""
+    households = [
+        {
+            "savings": 0,
+            "corporate_wealth": 16_384.01,
+            "directly_held_shares": 16_015.98,
+            "unit_and_investment_trusts": 286.98,
+            "stocks_and_shares_isa": 81.05,
+        }
+    ]
+    itemised = np.float32(
+        np.float32(np.float32(16_015.98) + np.float32(286.98)) + np.float32(81.05)
+    )
+    assert itemised - np.float32(16_384.01) == np.float32(0.001953125)
+    assert _results(households)["share_like_capital"][0] == np.float32(16_384.01)
+    _assert_same_as_original(households)
 
 
 def test_a_component_penny_at_the_limit_counts():
