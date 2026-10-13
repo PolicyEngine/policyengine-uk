@@ -38,13 +38,13 @@ def stays_on_legacy_benefits(benunit, period):
     """Whether the family stays on legacy benefits rather than claiming UC.
 
     A family that reports a legacy benefit (`claims_legacy_benefits`) and
-    would not claim Universal Credit keeps its legacy awards; this is the
+    does not claim Universal Credit keeps its legacy awards; this is the
     route `housing_benefit_eligible` gives a continuing working-age Housing
-    Benefit award. A family that would claim Universal Credit is calculated
-    on Universal Credit whatever it reports.
+    Benefit award before its legacy benefits close. A family claiming
+    Universal Credit, including at a legacy closure, uses the UC rules.
     """
     return benunit("claims_legacy_benefits", period) & ~benunit(
-        "would_claim_uc", period
+        "claims_universal_credit", period
     )
 
 
