@@ -182,11 +182,11 @@ def close(a, b):
     return abs(a - b) <= 1 + 1e-6 * abs(b)
 
 
-@PROPERTY_SETTINGS
-@given(st.lists(households(), min_size=20, max_size=200))
-def test_valuation_matches_the_regulation_and_never_adds_capital(units):
+def check_valuation(units):
+    """Assert the valuation invariants; count which Housing Benefit branches ran."""
     sim, valued = calculate(units)
     _, full = calculate(units, rate=0.0, debt_scale=0.0)
+    hb_checked = {"passported_nil": 0, "working_age_differential": 0}
     for variable, path in PROGRAMMES.items():
         node = parameter_node(sim, path)
         assert node.sale_expenses.rate == LEGAL_RATE
@@ -195,16 +195,21 @@ def test_valuation_matches_the_regulation_and_never_adds_capital(units):
         assert set(node.sale_expenses.sources) & counted == (
             SALE_EXPENSE_ASSETS & counted
         ), variable
+        hb = variable == "housing_benefit_assessable_capital"
         for i, unit in enumerate(units):
             gc = valued["guarantee_credit"][i]
             assert valued[variable][i] >= 0, (variable, unit)
             assert valued[variable][i] <= full[variable][i] + 0.01, (variable, unit)
-            if variable == "housing_benefit_assessable_capital":
-                if valued["hb_passported"][i] or (unit["age"] >= 67 and gc > 0):
-                    assert valued[variable][i] == 0, unit
+            if hb and valued["hb_passported"][i]:
+                assert valued[variable][i] == 0, unit
+                hb_checked["passported_nil"] += 1
+            if hb and unit["age"] >= 67 and gc > 0:
+                assert valued[variable][i] == 0, unit
             if applies(variable, unit, gc, valued["hb_passported"][i]):
                 expected = expected_capital(unit, node)
                 assert close(valued[variable][i], expected), (variable, unit)
+                if hb and unit["age"] < 67 and expected > 0:
+                    hb_checked["working_age_differential"] += 1
                 # Debt secured on property never reaches the other assets.
                 floor = sum(
                     asset_value(unit, s) * (1 - LEGAL_RATE * (s in SALE_EXPENSE_ASSETS))
@@ -212,6 +217,38 @@ def test_valuation_matches_the_regulation_and_never_adds_capital(units):
                     if s not in DEBTS
                 )
                 assert valued[variable][i] >= floor - 1, (variable, unit)
+    return hb_checked
+
+
+@PROPERTY_SETTINGS
+@given(st.lists(households(), min_size=20, max_size=200))
+def test_valuation_matches_the_regulation_and_never_adds_capital(units):
+    check_valuation(units)
+
+
+def test_housing_benefit_branches_are_both_exercised():
+    """Fixed units that a passport cannot hide: one claims UC with £5,000 of
+    savings (UC passports it to nil HB capital), one declines UC and holds a
+    mortgaged second home (its HB capital is checked against reg 47)."""
+    no_debt = {debt: 0.0 for debt in DEBTS.values()}
+    units = [
+        dict(
+            age=30,
+            claims_uc=True,
+            assets={asset: 0.0 for asset in ASSETS} | {"savings": 5_000.0},
+            debts=no_debt,
+        ),
+        dict(
+            age=30,
+            claims_uc=False,
+            assets={asset: 0.0 for asset in ASSETS}
+            | {"savings": 2_000.0, "other_residential_property_value": 100_000.0},
+            debts=no_debt | {"other_residential_property_secured_debt": 60_000.0},
+        ),
+    ]
+    hb_checked = check_valuation(units)
+    assert hb_checked["passported_nil"] >= 1
+    assert hb_checked["working_age_differential"] >= 1
 
 
 @PROPERTY_SETTINGS
