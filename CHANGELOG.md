@@ -1,3 +1,20 @@
+## [2.128.3] - 2026-10-13
+
+### Fixed
+
+- - Count the Pension Age Winter Heating Payment (`pawhp`) in `household_benefits`, `hbai_household_net_income` and `hbai_benefits`, as the Winter Fuel Payment is. It was in `gov_spending` only, so Scottish pensioners' winter heating payment was missing from household net income and HBAI income from the 2024 qualifying week.
+  - Make `gov.contrib.policyengine.disable_simulated_benefits` run. `Simulation` now sets `tax_benefit_system.simulation`, through which structural reforms reach the simulation, and the reform no longer names reported amounts that do not exist (Attendance Allowance, DLA and PIP follow the reported award through their categories).
+  - Under `disable_simulated_benefits`, count the reported winter heating payment once: as `pawhp` for a household in Scotland in the years PAWHP is paid, and as `winter_fuel_allowance` otherwise.
+
+
+## [2.128.2] - 2026-10-13
+
+### Fixed
+
+- - Lift the tax credit income test for a claimant or couple entitled to State Pension Credit, guarantee credit or savings credit (TCA 2002 s.7(2); SI 2002/2008 reg 4(1)(d)). Working tax credit is Pension Credit income (SPCA 2002 s.15(1)(b)), so the passport applies where Pension Credit is payable with the passported award counted as income. The new parameter `gov.dwp.tax_credits.means_test.pension_credit_passport` dates the rule from 26 November 2003.
+  - Add `tax_credits_current_year_income`, the tax credit income before the passport (TCA 2002 s.7(4); SI 2002/2006 reg 3). `tax_credits_applicable_income` is that income, or nil while the test is lifted. The targeted childcare tax credit criteria now test the gross income against the £16,190 limit (SI 2014/2147 reg 1(2)), not the nil income of a passported award.
+
+
 ## [2.128.1] - 2026-10-12
 
 ### Fixed

@@ -46,6 +46,7 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "ssmg",
     "cost_of_living_support_payment",
     "winter_fuel_allowance",
+    "pawhp",
     "tax_free_childcare",
     "healthy_start_vouchers",
     "scottish_child_payment",
