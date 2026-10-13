@@ -7,7 +7,7 @@ class universal_credit(Variable):
     definition_period = YEAR
     value_type = float
     unit = GBP
-    defined_for = "would_claim_uc"
+    defined_for = "claims_universal_credit"
 
     def formula(benunit, period, parameters):
         uc_max_entitlement = benunit("universal_credit_pre_benefit_cap", period)
