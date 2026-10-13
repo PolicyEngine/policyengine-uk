@@ -36,6 +36,7 @@ from policyengine_uk.reforms.policyengine.disable_simulated_benefits import (
     BENEFITS,
     CLAIMANT_OR_PARTNER_AWARDS,
     CLAIMANT_OR_PARTNER_ONLY,
+    NOT_MOVED,
     PRE_MINIMUM,
     YEARS_IN_FUTURE,
     disable_simulated_benefits,
@@ -164,6 +165,11 @@ def reformed():
     return Simulation(situation=situation(), scenario=REFORM)
 
 
+@pytest.fixture(scope="module")
+def unreformed():
+    return Simulation(situation=situation())
+
+
 def test_every_listed_benefit_has_what_the_reform_reads_and_sets():
     # The reform used to list Attendance Allowance, DLA and PIP, which have
     # no reported amount, and so raised before setting anything.
@@ -175,6 +181,7 @@ def test_every_listed_benefit_has_what_the_reform_reads_and_sets():
         *PRE_MINIMUM.values(),
         *CLAIMANT_OR_PARTNER_AWARDS.values(),
         *CLAIMANT_OR_PARTNER_ONLY,
+        *NOT_MOVED,
     ]:
         assert name in variables, name
     assert set(PRE_MINIMUM) <= set(BENEFITS)
@@ -302,6 +309,27 @@ def test_the_council_tax_reduction_passport(reformed, year):
         "own_esa_over_tariff": True,
         "excluded_income_support": False,
     }
+
+
+@pytest.mark.parametrize("year", YEARS)
+def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
+    # Income-based JSA and Income Support close from April 2026, and the
+    # model then moves a working-age family reporting either, unless it is on
+    # Pension Credit, off all its legacy benefits (legacy_benefits_closed), so
+    # their awards end. Every family here reports one of them. The reform pays every reported award in every
+    # year, so it holds the move off; otherwise an adult outside the couple
+    # would stop being on the ESA and JSA the reform still pays them
+    # (test_each_person_is_on_their_own_award).
+    moved = year > DATASET_YEAR
+    assert by_family(unreformed, "legacy_benefits_closed", year) == dict.fromkeys(
+        NAMES, moved
+    )
+    assert by_family(reformed, "legacy_benefits_closed", year) == dict.fromkeys(
+        NAMES, False
+    )
+    ten_years = list(range(DATASET_YEAR, DATASET_YEAR + YEARS_IN_FUTURE))
+    for variable in NOT_MOVED:
+        assert known_years(reformed, variable) == ten_years, variable
 
 
 @pytest.mark.parametrize("year", YEARS)
@@ -474,7 +502,7 @@ def known_years(simulation, variable):
     return sorted(int(str(p)[:4]) for p in holder.get_known_periods())
 
 
-def test_a_clone_or_branch_applies_the_reform_to_itself_alone():
+def test_a_clone_or_branch_applies_the_reform_to_itself_alone(unreformed):
     # A clone's copy of the tax-benefit system links to the clone, and a
     # branch shares its parent's system. The reform reaches the simulation
     # through that link, so it must reach the clone or branch applying it,
@@ -499,8 +527,15 @@ def test_a_clone_or_branch_applies_the_reform_to_itself_alone():
                 simulation.calculate("claimant_or_partner_esa_income", year)[excluded]
                 == 0
             )
-        # The parent still simulates ESA: the excluded adult's uprated report.
-        assert parent.calculate("esa_income", year)[excluded] >= 3_000
+        # The parent still simulates ESA, as a simulation without the reform
+        # does: the excluded adult's report in the dataset year, and nothing
+        # once the closure of income-based JSA and Income Support has moved
+        # the family off its legacy benefits.
+        np.testing.assert_array_equal(
+            parent.calculate("esa_income", year),
+            unreformed.calculate("esa_income", year),
+        )
+    assert parent.calculate("esa_income", DATASET_YEAR)[excluded] == 3_000
 
 
 # Applied after the simulation is built: passed as reform=, or applied to a
@@ -511,7 +546,8 @@ LATER = ["reform=", "clone", "branch"]
 @pytest.mark.parametrize("route", LATER)
 def test_a_reform_applied_later_keeps_what_it_sets_through_a_reset(route):
     # input_variables is taken when a simulation is built, and
-    # reset_calculations and derivative delete every other variable's values.
+    # reset_calculations deletes every other variable's values (as
+    # derivative did before policyengine-core 3.33.0).
     # A reform applied later names what it sets, or a reset deletes the
     # claimant-or-partner awards and recalculates them. esa_income is entered
     # here too, so a reset kept it while deleting its claimant-or-partner
@@ -538,6 +574,7 @@ def test_a_reform_applied_later_keeps_what_it_sets_through_a_reset(route):
         *BENEFITS,
         *PRE_MINIMUM.values(),
         *CLAIMANT_OR_PARTNER_AWARDS.values(),
+        *NOT_MOVED,
     ]
     for variable in set_by_the_reform:
         assert variable in simulation.input_variables, variable
@@ -549,7 +586,8 @@ def test_a_reform_applied_later_keeps_what_it_sets_through_a_reset(route):
     }
     assert before["claimant_or_partner_esa_income"][excluded] == 0
     assert before["income_support_eligible"][excluded]
-    # derivative recalculates on a clone after the same deletions.
+    # derivative recalculates on a clone: before policyengine-core 3.33.0
+    # after the same deletions, and from 3.33.0 keeping every input.
     assert not simulation.derivative(
         "claimant_or_partner_esa_income", "employment_income", year
     ).any()

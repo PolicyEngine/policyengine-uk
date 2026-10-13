@@ -1,7 +1,8 @@
 """A reform applied to a built simulation keeps the inputs it stores.
 
 input_variables is taken when a simulation is built, and reset_calculations
-and derivative delete the values of every variable it does not name. So
+deletes the values of every variable it does not name (as derivative did
+before policyengine-core 3.33.0, from which it keeps every input). So
 Simulation.apply_reform names each variable the reform stored an input for
 that the simulation still holds afterwards, however the reform stored it, and
 no other: an input set since the build that the reform did not store is still
@@ -132,6 +133,7 @@ def test_a_reform_keeps_what_it_stores_through_a_reset(route):
     assert type(simulation._user_input_keys) is set
     assert simulation.tax_benefit_system.simulation is simulation
     assert simulation.calculate(SCOPED, AWARD_YEAR).tolist() == [0]
+    # From policyengine-core 3.33.0 derivative keeps every input, named or not.
     assert not simulation.derivative(SCOPED, "employment_income", AWARD_YEAR).any()
     simulation.reset_calculations()
     assert simulation.calculate(SCOPED, AWARD_YEAR).tolist() == [0]

@@ -74,8 +74,9 @@ class _InputKeyLog(set):
     This set also adds each key to every set in ``logs``: one for each
     reform being applied to the simulation, the innermost last.
 
-    A copy or pickle of it is a plain set, so a simulation copied while a
-    reform runs logs nothing.
+    A copy or pickle of it is a plain set, so a simulation deep-copied or
+    pickled while a reform runs logs nothing. A shallow copy of the
+    simulation shares its record, as it shares its holders.
     """
 
     def __init__(self, keys=(), logs: list = ()):
@@ -327,8 +328,9 @@ class Simulation(CoreSimulation):
             if linked is not None:
                 system.simulation = linked
         # input_variables is taken when the simulation is built.
-        # reset_calculations and derivative delete the values of every
-        # variable it does not name, and the marginal rate formulas those of
+        # reset_calculations deletes the values of every variable it does not
+        # name (as core's derivative did before policyengine-core 3.33.0, from
+        # which it keeps every input), and the marginal rate formulas those of
         # every such variable that has a formula. A reform applied afterwards
         # (a Reform class passed as reform=, or one applied to a clone or
         # branch) can store inputs: new ones, or ones that replace an input

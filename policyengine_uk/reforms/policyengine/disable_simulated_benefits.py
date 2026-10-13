@@ -1,3 +1,4 @@
+import numpy as np
 from policyengine_core.model_api import *
 
 # Benefits whose simulated amount the reform replaces with the amount reported
@@ -56,6 +57,17 @@ CLAIMANT_OR_PARTNER_AWARDS = {
 # differ: esa_income and jsa_income count every member's award either way.
 CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 
+# The model's move off legacy benefits (legacy_benefits_closed): once a legacy
+# benefit a family reports has closed, DWP's migration notice ends all its
+# legacy awards, and it claims Universal Credit or goes to Pension Credit. The
+# reform pays every listed benefit, the legacy ones and Universal Credit alike,
+# at its dataset-year report in every year, so it moves no family. It holds
+# these false for its years, so that everything that reads them (such as the
+# legacy benefits' eligibility and the "on" statuses read from it, the
+# Universal Credit claim, and Housing Benefit and tax credit eligibility)
+# agrees with the awards it pays.
+NOT_MOVED = ["legacy_benefits_closed"]
+
 YEARS_IN_FUTURE = 10
 
 
@@ -81,6 +93,10 @@ def disable_simulated_benefits(parameters, period):
             Without the claimant-or-partner awards set here, the readers would
             take the whole of esa_income or jsa_income, including another
             member's award, to be the claimant's or partner's.
+
+            No family is moved off its legacy benefits (NOT_MOVED): the
+            reform pays them as reported in every year, after the dates
+            from which the model closes them included.
 
             As the amounts are inputs, a reform that changes a benefit's
             parameters does not change them. A reform that neutralizes a
@@ -125,6 +141,10 @@ def disable_simulated_benefits(parameters, period):
                             values[CLAIMANT_OR_PARTNER_AWARDS[variable]] = reported(
                                 variable, claimant_or_partner
                             )
+                    for variable in NOT_MOVED:
+                        entity = system.variables[variable].entity.key
+                        count = simulation.populations[entity].count
+                        values[variable] = np.zeros(count, dtype=bool)
                     for target, value in values.items():
                         simulation.set_input(target, year, value)
 
