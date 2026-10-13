@@ -59,13 +59,18 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 
 # The model's move off legacy benefits (legacy_benefits_closed): once a legacy
 # benefit a family reports has closed, DWP's migration notice ends all its
-# legacy awards, and it claims Universal Credit or goes to Pension Credit. The
-# reform pays every listed benefit, the legacy ones and Universal Credit alike,
-# at its dataset-year report in every year, so it moves no family. It holds
-# these false for its years, so that everything that reads them (such as the
-# legacy benefits' eligibility and the "on" statuses read from it, the
-# Universal Credit claim, and Housing Benefit and tax credit eligibility)
-# agrees with the awards it pays.
+# legacy awards, whether or not the family then claims Universal Credit,
+# unless DWP sent it to Pension Credit instead. The reform pays every listed
+# benefit, the legacy ones and Universal Credit alike, at its dataset-year
+# report in every year, so it moves no family: it holds these false for its
+# years. The closure then ends none of the family's legacy benefits (their
+# eligibility and the "on" statuses read from it, and Housing Benefit and tax
+# credit eligibility), prompts no Universal Credit claim
+# (claims_uc_at_legacy_closure) and takes no family off the Pension Credit
+# route. Only the closure is held: the model's other rules still apply. A
+# family the model has claim Universal Credit anyway (would_claim_uc) is still
+# not eligible for Housing Benefit or tax credits, and the reform still pays
+# it the amounts it reports.
 NOT_MOVED = ["legacy_benefits_closed"]
 
 YEARS_IN_FUTURE = 10
@@ -96,7 +101,8 @@ def disable_simulated_benefits(parameters, period):
 
             No family is moved off its legacy benefits (NOT_MOVED): the
             reform pays them as reported in every year, after the dates
-            from which the model closes them included.
+            from which the model closes them included. Only the closure is
+            held; the model's other eligibility rules still apply.
 
             As the amounts are inputs, a reform that changes a benefit's
             parameters does not change them. A reform that neutralizes a
