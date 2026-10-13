@@ -1,0 +1,1 @@
+- Value share-like capital by asset type in every means test: directly held shares, and any `corporate_wealth` a dataset does not itemise, take the 10% sale-expense deduction; unit trusts (ADM H1673-H1674) and stocks and shares ISAs (ADM H1656) count at full value, as does the survey's combined unit and investment trust bucket, an approximation for its investment trusts.

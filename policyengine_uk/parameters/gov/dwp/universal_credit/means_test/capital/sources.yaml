@@ -1,29 +1,36 @@
 description: >
   Model variables currently mapped to countable Universal Credit capital.
-  Regulation 46 takes the whole of a person's capital into account unless it is
-  treated as income or disregarded under regulation 48 and Schedule 10. The
+  Regulation 46 takes the whole of a person's capital into account unless it
+  is treated as income or disregarded under regulation 48 and Schedule 10. The
   current mappings are `savings` for liquid capital,
   `other_residential_property_value` for residential property other than the
-  home, `non_residential_property_value` for other land and premises, and
-  `corporate_wealth` for shares and similar investment assets. `main_residence_value`
-  is excluded because Schedule 10 paragraph 1 disregards premises occupied as
-  the person's home. `private_pension_wealth` is excluded because Schedule 10
-  paragraph 10 disregards the value of any right to receive a pension under an
-  occupational or personal pension scheme (or any other scheme registered under
-  section 153 of the Finance Act 2004; paragraph 10 of Schedule 10 to the
-  Northern Ireland regulations makes the same disregard); pension income
-  actually drawn counts as unearned income instead. Other Schedule 10 disregards within these broad asset
-  classes are not yet split out separately. Where only household-level capital
-  is available for a multi-benunit household, the model uses a household-wide
-  adult-share proxy for residual capital because the dataset does not identify
-  which adults hold the beneficial interest in each capital asset. The
-  denominator is all unreported adults in the household, including adults in
-  benunits that are not themselves UC claimants. That proxy is a data
-  approximation, not a legislated allocation rule. Regulation 47 is cited only
-  as related context on jointly held capital. If some benunits provide
-  `uc_reported_capital` (by default the benefit unit's recorded capital,
-  `benunit_reported_capital`), the proxy is applied only to the residual
-  household capital for benunits that remain unreported.
+  home, `non_residential_property_value` for other land and premises, and the
+  share-like sources. `share_like_capital_with_sale_expenses` and `share_like_capital_without_sale_expenses` split `share_like_capital`, which is `corporate_wealth` as supplied,
+  or the sum of its itemised components (`directly_held_shares`,
+  `unit_and_investment_trusts`, `stocks_and_shares_isa`) where they exceed it
+  beyond float32 rounding (see `share_like_capital`), so a household given
+  only the components has them counted and no holding counts twice.
+  `main_residence_value` is excluded because Schedule 10 paragraph 1
+  disregards premises occupied as the person's home. `private_pension_wealth`
+  is excluded because Schedule 10 paragraph 10 disregards the value of any
+  right to receive a pension under an occupational or personal pension scheme
+  (or any other scheme registered under section 153 of the Finance Act 2004;
+  paragraph 10 of Schedule 10 to the Northern Ireland regulations makes the
+  same disregard); pension income actually drawn counts as unearned income
+  instead; datasets built before it was split out of `corporate_wealth` still
+  carry it inside `share_like_capital`. Other Schedule 10 disregards within
+  these broad asset classes are not yet split out separately. Where only
+  household-level capital is available for a multi-benunit household, the
+  model uses a household-wide adult-share proxy for residual capital because
+  the dataset does not identify which adults hold the beneficial interest in
+  each capital asset. The denominator is all unreported adults in the
+  household, including adults in benunits that are not themselves UC
+  claimants. That proxy is a data approximation, not a legislated allocation
+  rule. Regulation 47 is cited only as related context on jointly held
+  capital. If some benunits provide `uc_reported_capital` (by default the
+  benefit unit's recorded capital, `benunit_reported_capital`), the proxy is
+  applied only to the residual household capital for benunits that remain
+  unreported.
 metadata:
   label: Universal Credit countable capital sources
   period: year
@@ -46,4 +53,5 @@ values:
     - savings
     - other_residential_property_value
     - non_residential_property_value
-    - corporate_wealth
+    - share_like_capital_with_sale_expenses
+    - share_like_capital_without_sale_expenses

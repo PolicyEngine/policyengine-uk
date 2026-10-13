@@ -7,7 +7,9 @@ Regs 2013 reg. 49(1); HB Regs 2006 reg. 47; HB (SPC) Regs 2006 reg. 45; IS
 Regs 1987 reg. 49; JSA Regs 1996 reg. 111; ESA Regs 2008 reg. 113; SPC Regs
 2002 reg. 19). A bank or building society account is valued at its balance
 (ADM H1675); land and property always have costs of sale (H1606) and shares
-are valued less 10% (H1665).
+are valued less 10% (H1665). The households here hold share-like wealth only
+as unitemised corporate_wealth, which all takes the 10%; itemised holdings
+(unit trusts and ISAs without it) are tested in test_capital_share_components.
 
 Invariants, for any generated population of single-adult households:
 
@@ -57,14 +59,29 @@ PROGRAMMES = {
 }
 PENSION_AGE_ONLY = {"pension_credit_assessable_capital"}
 # The assets whose sale incurs expenses, fixed here from the law rather than
-# read from the parameters: real property always (ADM H1606), shares (H1665);
-# never a bank or building society balance (H1675).
+# read from the parameters: real property always (ADM H1606), shares (H1665),
+# and unitemised corporate wealth with them; never a bank or building society
+# balance (H1675).
 SALE_EXPENSE_ASSETS = {
     "owned_land",
     "other_residential_property_value",
     "non_residential_property_value",
-    "corporate_wealth",
+    "share_like_capital_with_sale_expenses",
 }
+# How each capital source reads an unitemised household's inputs: all of its
+# corporate_wealth has expenses of sale, none is without.
+SHARE_LIKE_SOURCES = {
+    "share_like_capital_with_sale_expenses": lambda assets: assets["corporate_wealth"],
+    "share_like_capital_without_sale_expenses": lambda assets: 0.0,
+}
+
+
+def asset_value(unit, source):
+    if source in SHARE_LIKE_SOURCES:
+        return SHARE_LIKE_SOURCES[source](unit["assets"])
+    return unit["assets"][source]
+
+
 LEGAL_RATE = 0.1
 ASSETS = [
     "savings",
@@ -152,7 +169,7 @@ def expected_capital(unit, node):
     """Reg. 49(1) applied source by source, independently of the model."""
     total = 0.0
     for source in node.sources:
-        value = unit["assets"][source]
+        value = asset_value(unit, source)
         if source in SALE_EXPENSE_ASSETS:
             value *= 1 - LEGAL_RATE
         if source in DEBTS:
@@ -195,7 +212,7 @@ def check_valuation(units):
                     hb_checked["working_age_differential"] += 1
                 # Debt secured on property never reaches the other assets.
                 floor = sum(
-                    unit["assets"][s] * (1 - LEGAL_RATE * (s in SALE_EXPENSE_ASSETS))
+                    asset_value(unit, s) * (1 - LEGAL_RATE * (s in SALE_EXPENSE_ASSETS))
                     for s in node.sources
                     if s not in DEBTS
                 )
