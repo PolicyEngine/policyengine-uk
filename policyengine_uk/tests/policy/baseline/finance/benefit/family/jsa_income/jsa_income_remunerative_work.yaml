@@ -445,6 +445,40 @@
     # The lodger's own claim passes, so they are on it; the claimant is not.
     is_on_income_based_jsa: [false, true]
 
+- name: A non-dependent adult's own JSA ends once the family's legacy benefits have closed
+  period: 2025
+  absolute_error_margin: 0
+  input:
+    people:
+      claimant:
+        age: 50
+        is_claimant_or_partner: true
+        # Child Tax Credit ended on 5 April 2025, so its report closes the
+        # family's legacy benefits (legacy_benefits_closed).
+        child_tax_credit_reported: 2_000
+      lodger:
+        age: 30
+        is_claimant_or_partner: false
+        current_education: NOT_IN_EDUCATION
+        jsa_income_reported: 3_000
+      child:
+        age: 5
+    benunits:
+      benunit:
+        members: [claimant, lodger, child]
+    households:
+      household:
+        members: [claimant, lodger, child]
+  output:
+    legacy_benefits_closed: true
+    # The lodger does not work, so the screen fails only on the closure.
+    jsa_remunerative_work_hours: [0, 0, 0]
+    jsa_income_eligible: false
+    jsa_income: 0
+    # The closure ends the lodger's own claim with the rest, so nobody is on
+    # it.
+    is_on_income_based_jsa: [false, false, false]
+
 # The Income Support gate reads the screened award (s.124(1)(f)).
 
 - name: A carer's own JSA lost to 16 hours of work no longer bars Income Support
