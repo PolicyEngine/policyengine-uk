@@ -105,14 +105,25 @@ def households(draw, cash_only=False):
     if cash_only:
         assets = {asset: 0.0 for asset in ASSETS} | {"savings": assets["savings"]}
         debts = {debt: 0.0 for debt in debts}
-    return dict(age=draw(st.sampled_from([30, 70])), assets=assets, debts=debts)
+    # About half the units do not claim Universal Credit, so the Housing
+    # Benefit passport cannot remove every working-age unit from the
+    # differential below.
+    return dict(
+        age=draw(st.sampled_from([30, 70])),
+        claims_uc=draw(st.booleans()),
+        assets=assets,
+        debts=debts,
+    )
 
 
 def situation(units, debt_scale=1.0):
     people, benunits, homes = {}, {}, {}
     for i, unit in enumerate(units):
         people[f"p{i}"] = {"age": {YEAR: unit["age"]}}
-        benunits[f"b{i}"] = {"members": [f"p{i}"]}
+        benunits[f"b{i}"] = {
+            "members": [f"p{i}"],
+            "would_claim_uc": {YEAR: unit["claims_uc"]},
+        }
         homes[f"h{i}"] = {
             "members": [f"p{i}"],
             **{k: {YEAR: v} for k, v in unit["assets"].items()},
@@ -188,8 +199,8 @@ def test_valuation_matches_the_regulation_and_never_adds_capital(units):
             gc = valued["guarantee_credit"][i]
             assert valued[variable][i] >= 0, (variable, unit)
             assert valued[variable][i] <= full[variable][i] + 0.01, (variable, unit)
-            if variable == "housing_benefit_assessable_capital" and unit["age"] >= 67:
-                if gc > 0:
+            if variable == "housing_benefit_assessable_capital":
+                if valued["hb_passported"][i] or (unit["age"] >= 67 and gc > 0):
                     assert valued[variable][i] == 0, unit
             if applies(variable, unit, gc, valued["hb_passported"][i]):
                 expected = expected_capital(unit, node)
