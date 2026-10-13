@@ -30,8 +30,9 @@ class jsa_income_eligible(Variable):
         "(jsa_income) on every report in it, so when the claimant or partner "
         "reports, another member's report is paid or not with their claim. "
         "Whether that member is on the award themselves "
-        "(is_on_income_based_jsa) is tested on their own claim. This is not a "
-        "full entitlement model."
+        "(is_on_income_based_jsa) is tested on their own claim. The award "
+        "also ends once one of the family's legacy benefits has closed "
+        "(legacy_benefits_closed). This is not a full entitlement model."
     )
     definition_period = YEAR
     reference = (
@@ -66,4 +67,11 @@ class jsa_income_eligible(Variable):
             (benunit.project(benunit.sum(works_as_partner)) - works_as_partner) > 0
         )
         claimant = candidate & ~works_as_claimant & ~other_member_works
-        return benunit.any(claimant) & (capital <= JSA.income.capital.limit)
+        # Once one of the family's legacy benefits has closed, DWP's
+        # migration notice ends this award too: a Universal Credit claim
+        # brings the abolition of income-based JSA (Welfare Reform Act
+        # 2012 s. 33(1)) into force for the claimant (see SI 2025/1148
+        # art. 3A(3)), and a family that does not claim loses the award at the
+        # notice's deadline (SI 2014/1230 reg 46(1)(a)).
+        closed = benunit("legacy_benefits_closed", period)
+        return benunit.any(claimant) & ~closed & (capital <= JSA.income.capital.limit)

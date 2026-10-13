@@ -76,7 +76,9 @@ def test_cliff_charge_has_no_division_warnings(income, opts_out, taper_end):
         charge = simulation.calculate("CB_HITC", 2026).sum()
     entitlement = simulation.calculate("child_benefit_entitlement", 2026)[0]
     assert payment == (0 if opts_out and income > 60_000 else entitlement)
-    assert charge == (payment if income > 60_000 else 0)
+    # A cliff charges the whole Child Benefit, rounded down to whole pounds
+    # (ITEPA 2003 s. 681C(3)(a)).
+    assert charge == (np.floor(payment) if income > 60_000 else 0)
 
 
 @pytest.mark.usefixtures("cloned_uk_tax_benefit_system")
@@ -106,9 +108,13 @@ def test_cliff_charge_has_no_division_warnings(income, opts_out, taper_end):
             0,
         ),
         (
-            {"gov.hmrc.income_tax.charges.CB_HITC.phase_out_end": {"2026": 10_000_000}},
+            # A softer taper: (100,000 - 60,000) / (2,000,000 - 60,000) = 2.06%,
+            # rounded down to 2% (ITEPA 2003 s. 681C(3)(b)); 2% of £2,337 is
+            # £46.74, rounded down to £46. Payment resumes because the share is
+            # below the opt-out threshold.
+            {"gov.hmrc.income_tax.charges.CB_HITC.phase_out_end": {"2026": 2_000_000}},
             2_337.40,
-            2_337.40 * 40_000 / 9_940_000,
+            46,
         ),
     ],
 )
