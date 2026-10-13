@@ -207,3 +207,114 @@
     # £40,000 of relevant UK earnings covers the £40,000 contribution.
     adjusted_total_income: 300_000
     income_tax_relief_cap: 75_000
+
+# The election covers all relevant trades in the taxpayer's year, not each
+# trade independently (ITTOIA 2005 ss.783AF and 783AL; HMRC BIM86076).
+- name: Giving up full trading allowance relief permits another trade's loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    people:
+      taxpayer:
+        age: 40
+        employment_income: 40_000
+        self_employment_income: 800
+        self_employment_gross_receipts: 900
+        trading_loss: 2_000
+        capital_allowances: 0
+    benunits:
+      family:
+        members: [taxpayer]
+    households:
+      household:
+        members: [taxpayer]
+        region: LONDON
+  output:
+    trading_allowance_deduction: 0
+    taxable_self_employment_income: 800
+    trade_loss_relief_against_general_income: 2_000
+    net_income: 38_800
+    # (40,000 + 800 - 2,000 - 12,570) x 20%.
+    income_tax: 5_246
+
+- name: Full allowance relief is retained when it beats claiming the current loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    self_employment_income: 800
+    self_employment_gross_receipts: 900
+    trading_loss: 200
+  output:
+    trading_allowance_deduction: 800
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 0
+    net_income: 40_000
+    income_tax: 5_486
+
+- name: Partial allowance relief replaces expenses of the losing trade too
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    self_employment_income: 4_800
+    self_employment_gross_receipts: 5_000
+    trading_loss: 500
+  output:
+    trading_allowance_deduction: 800
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 4_000
+    net_income: 44_000
+    income_tax: 6_286
+
+- name: A larger current loss beats partial trading allowance relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    self_employment_income: 4_800
+    self_employment_gross_receipts: 5_000
+    trading_loss: 900
+  output:
+    trading_allowance_deduction: 0
+    trade_loss_relief_against_general_income: 900
+    taxable_self_employment_income: 4_800
+    net_income: 43_900
+    income_tax: 6_266
+
+- name: Prior Income Tax losses remain usable with partial allowance relief
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    self_employment_income: 4_800
+    self_employment_gross_receipts: 5_000
+    trading_loss: 500
+    loss_relief: 1_000
+  output:
+    trading_allowance_deduction: 800
+    trade_loss_relief_against_general_income: 0
+    taxable_self_employment_income: 3_000
+    net_income: 43_000
+    income_tax: 6_086
+
+- name: Prior losses removing profits make a current loss claim the better choice
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income: 40_000
+    self_employment_income: 800
+    self_employment_gross_receipts: 900
+    trading_loss: 200
+    loss_relief: 800
+  output:
+    trading_allowance_deduction: 0
+    trade_loss_relief_against_general_income: 200
+    taxable_self_employment_income: 0
+    net_income: 39_800
+    income_tax: 5_446

@@ -6,8 +6,10 @@ Invariants, for any people and incomes:
 
 1. Relief definition (ITA 2007 s.64, s.24A): trade loss relief against
    general income equals min(loss, max(£50,000, 25% of adjusted total
-   income), net income). Net income is the adjusted net income of the same
-   person without the loss (a separate simulation); adjusted total income is
+   income), net income), if ordinary expenses and losses beat the trading
+   allowance. Otherwise the allowance applies and current loss relief is nil.
+   Net income is the adjusted net income under ordinary expense treatment
+   without the loss (a separate simulation); adjusted total income is
    that less the pension contributions given relief (own contributions up to
    the greater of £3,600 and pay plus profits, none from age 75).
 2. Differential: a person's Income Tax with a loss equals the Income Tax of
@@ -111,6 +113,7 @@ HBAI_CHANNELS = {
     "free_school_meals",
     "free_school_fruit_veg",
     "free_school_milk",
+    "free_tv_licence_value",
     "healthy_start_vouchers",
     "scottish_child_payment",
     "cost_of_living_support_payment",
@@ -185,7 +188,7 @@ def taxpayer(**inputs):
 # Cases every run checks, alongside the generated ones: relief limited by net
 # income, the 25% and £50,000 caps, contributions above relevant earnings,
 # no relief from age 75, profits and a loss together, and income spilling
-# into savings and dividends.
+# into savings and dividends. Repeat the cases for England and Scotland.
 PINNED_TAXPAYERS = [
     taxpayer(employment_income=20_000, trading_loss=50_000),
     taxpayer(employment_income=400_000, trading_loss=300_000),
@@ -209,7 +212,7 @@ PINNED_TAXPAYERS = [
         trading_loss=20_000,
     ),
     taxpayer(employment_income=110_000, trading_loss=20_000),
-]
+] * 2
 PINNED_REGIONS = ["LONDON"] * 8 + ["SCOTLAND"] * 8
 
 
@@ -220,7 +223,9 @@ PINNED_REGIONS = ["LONDON"] * 8 + ["SCOTLAND"] * 8
     st.lists(st.sampled_from(REGIONS), min_size=16, max_size=16),
 )
 def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
-    without = [{**p, "trading_loss": 0.0} for p in people]
+    without = [
+        {**p, "trading_loss": 0.0, "trading_allowance_deduction": 0.0} for p in people
+    ]
     a = calculate(
         single_people(people, regions),
         ["trade_loss_relief_against_general_income", "adjusted_net_income"],
@@ -243,12 +248,26 @@ def test_relief_is_the_loss_within_net_income_and_the_cap(people, regions):
         )
         ati = max(0.0, b["adjusted_net_income"][i] - relieved)
         cap = max(50_000.0, 0.25 * ati)
-        expected = min(person["trading_loss"], cap, b["adjusted_net_income"][i])
+        # Generated taxpayers have no receipts, capital allowances or prior
+        # losses. With unknown receipts, allowance treatment fully exempts a
+        # profit within £1,000; ordinary treatment wins if the loss is larger.
+        profit = person["self_employment_income"]
+        allowance = profit if profit <= 1_000 else 0.0
+        ordinary = person["trading_loss"] > allowance
+        expected = (
+            min(person["trading_loss"], cap, b["adjusted_net_income"][i])
+            if ordinary
+            else 0.0
+        )
+        allowance_kept = 0.0 if ordinary else allowance
         relief = a["trade_loss_relief_against_general_income"][i]
         assert abs(relief - expected) <= tolerance(expected, ati), (person, relief)
-        # Net income falls by exactly the relief.
+        # Ordinary net income falls by the chosen relief or allowance.
         assert abs(
-            b["adjusted_net_income"][i] - relief - a["adjusted_net_income"][i]
+            b["adjusted_net_income"][i]
+            - allowance_kept
+            - relief
+            - a["adjusted_net_income"][i]
         ) <= tolerance(b["adjusted_net_income"][i]), person
 
 
@@ -327,7 +346,7 @@ PINNED_PORTFOLIOS = [
         "trading_loss": 15_000.0,
         "state_pension": 0.0,
     },
-] * 2
+] * 4  # Eight cases for each of the two regions in PINNED_REGIONS.
 
 
 @PROPERTY_SETTINGS
@@ -454,6 +473,25 @@ def home(rent, region="LONDON"):
         "tenure_type": "RENT_PRIVATELY",
         "region": region,
     }
+
+
+PINNED_PENSION_CREDIT_PASSPORT_FAMILY = (
+    [
+        adult(
+            age=76,
+            private_pension_income=19_500.0,
+            trading_loss=10_000.0,
+            state_pension=0.0,
+            hours_worked=0.0,
+        ),
+        {"age": 1, "trading_loss": 0.0},
+    ],
+    {
+        **home(0.0),
+        "household_owns_tv": True,
+        "would_evade_tv_licence_fee": False,
+    },
+)
 
 
 # Families every run checks: profits and another trade's loss under the
@@ -679,6 +717,7 @@ def test_tax_credit_income_falls_by_the_claimants_losses(units):
 
 @PROPERTY_SETTINGS
 @example(PINNED_FAMILIES)
+@example([PINNED_PENSION_CREDIT_PASSPORT_FAMILY])
 @given(st.lists(families(), min_size=4, max_size=10))
 def test_household_income_moves_only_through_its_channels(units):
     without = [
@@ -718,6 +757,23 @@ def test_household_income_moves_only_through_its_channels(units):
         channels,
         atol=1,
     )
+
+
+def test_loss_can_remove_pension_credit_and_its_tv_licence_passport():
+    """The annual tax deduction can change Pension Credit and its passport."""
+    people, household = PINNED_PENSION_CREDIT_PASSPORT_FAMILY
+    without = ([{**p, "trading_loss": 0.0} for p in people], household)
+    variables = ["income_tax", "pension_credit", "free_tv_licence_value"]
+    loss = calculate(
+        family_situation([PINNED_PENSION_CREDIT_PASSPORT_FAMILY]), variables
+    )
+    zero = calculate(family_situation([without]), variables)
+    assert zero["income_tax"][0] == pytest.approx(1_386.0, abs=0.01)
+    assert loss["income_tax"][0] == 0
+    assert zero["pension_credit"][0] > 0
+    assert loss["pension_credit"][0] == 0
+    assert zero["free_tv_licence_value"][0] > 0
+    assert loss["free_tv_licence_value"][0] == 0
 
 
 @PROPERTY_SETTINGS
