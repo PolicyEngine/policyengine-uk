@@ -48,9 +48,12 @@ def own_report_is_paid(person, period, award, works, capital_limit):
     an award it tests only them.
 
     The family's legacy benefits must not have closed
-    (legacy_benefits_closed): DWP's migration notice ends all of them, this
-    person's claim with the rest, as the benefit unit's screen does for its
-    award. The benefit unit's award must also be in payment: positive, or
+    (legacy_benefits_closed). The model ends every award in the benefit unit
+    once they close, and so the benefit unit's award; this person's status
+    follows it. That is a simplification: in law the migration notice goes
+    to the claimant and partner (SI 2014/1230 reg 44(1), (4)) and ends their
+    awards (reg 46(1)), not the award of a member who claims in their own
+    right. The benefit unit's award must also be in payment: positive, or
     nil while the benefit unit's screen fails and the award is not
     neutralised. When the award on this person's report alone is positive
     and the family's legacy benefits are open, that screen fails only when
@@ -75,8 +78,9 @@ def own_report_is_paid(person, period, award, works, capital_limit):
             > benunit(f"{award}_tariff_income", period)
         )
     )
-    # The screen also fails once the family's legacy benefits have closed,
-    # and then nothing is left standing.
+    # The screen also fails once the family's legacy benefits have closed;
+    # the model then ends every member's award (a simplification: SI
+    # 2014/1230 reg 46(1) ends only the claimant's and partner's).
     closed = benunit("legacy_benefits_closed", period)
     removed = person.simulation.tax_benefit_system.get_variable(award).is_neutralized
     paid = benunit(award, period) > 0

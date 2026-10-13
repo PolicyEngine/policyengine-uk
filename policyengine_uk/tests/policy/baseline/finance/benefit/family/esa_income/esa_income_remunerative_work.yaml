@@ -1209,8 +1209,10 @@
     esa_income_claimant_remunerative_work: [false, false, false]
     esa_income_eligible: false
     esa_income: 0
-    # The closure ends the lodger's own claim with the rest, so nobody is on
-    # it.
+    # The model ends every member's award once the family's legacy benefits
+    # close, the lodger's own claim included, so nobody is on it. That is a
+    # model simplification: in law the migration notice reaches only the
+    # claimant and partner (SI 2014/1230 regs 44(1), (4) and 46(1)).
     is_on_income_related_esa: [false, false, false]
 
 # The Income Support gate reads the screened award (s.124(1)(h)).

@@ -33,6 +33,9 @@ reported awards.
   (2)(g)), so the limit is 24 either way.
 - The claimant is a member who reports the award; when the claimant or
   partner reports one, only they are candidates.
+- Both screens also end the award once the family's legacy benefits have
+  closed (legacy_benefits_closed, from PolicyEngine/policyengine-uk#2119),
+  read here as the model applies it; see legacy_benefits_closed below.
 """
 
 import math
@@ -139,6 +142,38 @@ def esa_claimant_in_remunerative_work(adult, parameters):
     return not (within_lower_limit or permitted_work)
 
 
+def legacy_benefits_closed(couple, others, parameters):
+    """legacy_benefits_closed for a benefit unit whose members (couple +
+    others, every member who may report) report no tax credits.
+
+    Once Income Support or income-based JSA has closed (their active
+    parameters), a report of it closes the family's legacy benefits, unless
+    someone reports Pension Credit or the claimant and partner have all
+    reached the qualifying age for it (SI 2014/1230 reg 8(2B)). This is the
+    model's reading, not the law's: the model reads every member's reports
+    and ends every member's award, where the migration notice goes to the
+    claimant and partner (reg 44(1), (4)) and ends their awards (reg 46(1)).
+    Callers' ages keep clear of 65 to 69, where the qualifying age moves."""
+    dwp = parameters.gov.dwp
+    members = couple + others
+    assert not any(
+        member.get("child_tax_credit_reported", 0)
+        or member.get("working_tax_credit_reported", 0)
+        for member in members
+    ), "tax credit closures are not read here"
+
+    def reports(variable):
+        return any(member.get(variable, 0) > 0 for member in members)
+
+    closed_report = (
+        reports("income_support_reported") and not dwp.income_support.active
+    ) or (reports("jsa_income_reported") and not dwp.JSA.income.active)
+    if not closed_report or reports("pension_credit_reported"):
+        return False
+    assert all(not 65 <= adult["age"] < 70 for adult in couple), couple
+    return not all(adult["age"] >= 70 for adult in couple)
+
+
 def candidates(couple, others, reported):
     """Indexes (into couple + others) of members who could be the claimant."""
     members = couple + others
@@ -171,7 +206,11 @@ def esa_screen(couple, others, capital, parameters):
         and not other_member_works(i)
         for i in candidates(couple, others, "esa_income_reported")
     )
-    return passes and capital <= ESA.capital.limit
+    return (
+        passes
+        and capital <= ESA.capital.limit
+        and not legacy_benefits_closed(couple, others, parameters)
+    )
 
 
 def jsa_screen(couple, others, capital, parameters):
@@ -195,4 +234,8 @@ def jsa_screen(couple, others, capital, parameters):
         weekly_hours(members[i]) < WORK.claimant_hours and not other_member_works(i)
         for i in candidates(couple, others, "jsa_income_reported")
     )
-    return passes and capital <= JSA.income.capital.limit
+    return (
+        passes
+        and capital <= JSA.income.capital.limit
+        and not legacy_benefits_closed(couple, others, parameters)
+    )

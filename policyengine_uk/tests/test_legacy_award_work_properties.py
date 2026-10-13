@@ -6,7 +6,11 @@ bar an award when the claimant, or the other member of the couple, is engaged
 in remunerative work. For every family:
 
 - esa_income_eligible and jsa_income_eligible equal a family-by-family
-  reading of the law (legacy_award_work_reference);
+  reading of the law (legacy_award_work_reference), with the model's legacy
+  closure (PolicyEngine/policyengine-uk#2119): income-based JSA is closed in
+  2026, so there a JSA report closes the family's legacy benefits and ends
+  both awards unless the claimant and partner are all over Pension Credit
+  age;
 - more hours or more pay for anyone never makes a family eligible, in the
   years tested (2025 and 2026) and within the scope below. Before 6 April
   2024 reg 99(3)(a) took a fixed Class 2 deduction once profit reached a
@@ -19,7 +23,10 @@ in remunerative work. For every family:
   JSA regulations have no exception for carers doing unrelated paid work);
 - when the claimant or partner reports the award, adding a member outside
   the family (a non-dependent adult, with any award and any work) never
-  changes either screen.
+  changes either screen's work and capital tests. It can change a screen
+  only through the closure, which the model reads from every member's
+  reports: the screen with them is the screen without them, while their
+  report has not closed the family's legacy benefits.
 
 Adults are employees (pay within the basic rate band), self-employed (a
 profit within the Class 4 upper limit) or employees with a self-employment
@@ -35,7 +42,12 @@ import numpy as np
 from hypothesis import HealthCheck, event, given, settings
 from hypothesis import strategies as st
 
-from legacy_award_work_reference import esa_screen, esa_weekly_earnings, jsa_screen
+from legacy_award_work_reference import (
+    esa_screen,
+    esa_weekly_earnings,
+    jsa_screen,
+    legacy_benefits_closed,
+)
 from policyengine_uk import Simulation
 
 # 0, 15, 16, 20, 23, 24 and 40 hours a week.
@@ -204,6 +216,8 @@ def test_screens_match_a_family_by_family_reading(units, year):
     parameters = sim.tax_benefit_system.parameters(year)
     start = 0
     for i, (couple, children, others, capital) in enumerate(units):
+        if legacy_benefits_closed(couple, others, parameters):
+            event("the family's legacy benefits have closed")
         assert esa[i] == esa_screen(couple, others, capital, parameters), units[i]
         assert jsa[i] == jsa_screen(couple, others, capital, parameters), units[i]
         members = couple + children + others
@@ -292,6 +306,7 @@ def test_member_outside_the_family_never_changes_the_couples_screen(units, year,
     ]
     n = len(units)
     sim = Simulation(situation=situation(without + with_extra, year))
+    parameters = sim.tax_benefit_system.parameters(year)
     flags = sim.calculate("is_claimant_or_partner", year)
     sizes = [len(c) + len(ch) + len(o) for c, ch, o, _ in without + with_extra]
     ends = np.cumsum(sizes)
@@ -303,4 +318,12 @@ def test_member_outside_the_family_never_changes_the_couples_screen(units, year,
         for i, (couple, *_rest) in enumerate(without):
             assert not flags[ends[n + i] - 1]
             if any(a[reported] > 0 for a in couple):
-                assert eligible[i] == eligible[n + i], (variable, units[i], extras[i])
+                # The closure reads every member's reports (#2119).
+                closes = legacy_benefits_closed(couple, [extras[i]], parameters)
+                if closes and not legacy_benefits_closed(couple, [], parameters):
+                    event("an outside member's report closes the family's")
+                assert eligible[n + i] == (eligible[i] and not closes), (
+                    variable,
+                    units[i],
+                    extras[i],
+                )

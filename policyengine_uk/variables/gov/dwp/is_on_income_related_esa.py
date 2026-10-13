@@ -10,29 +10,30 @@ class is_on_income_related_esa(Variable):
     entity = Person
     label = "on income-related ESA"
     documentation = (
-        "Whether an income-related employment and support allowance is "
-        'payable to this person (HB Regs 2006 reg 2(3A): on any day it "is '
-        'payable to him"; the council tax reduction schemes use the same '
-        "definition). A couple's award is paid to the claimant, not the "
-        "partner: of the claimant and partner, only the payee is on it, "
-        "meaning the one who reports the award, or the claimant where neither "
-        "does, and only while their award (claimant_or_partner_esa_income) "
-        "is positive. Any other member of the benefit unit, such as a "
-        "non-dependent adult, claims in their own right and is on it only if "
-        "their own claim passes: they are not engaged in remunerative work as "
-        "its claimant (esa_income_claimant_remunerative_work; Welfare Reform "
-        "Act 2007 Sch 1 para 6(1)(e)), and the award on their own report alone "
-        "is positive, the report exceeding the tariff income from the benefit "
-        "unit's capital, within the capital limit. On the formula path the "
-        "claimant's or partner's claim and work never change this. The "
-        "family's legacy benefits must not have closed (legacy_benefits_closed), "
-        "and the benefit unit's modelled award must be in payment: positive, or "
-        "nil while esa_income_eligible fails and esa_income is not "
-        "neutralised. On the formula path that nil comes only from the "
-        "claimant's or partner's own claim failing the screen. Neutralising "
-        "esa_income removes the status; a nil esa_income entered directly, or "
-        "a reform that replaces it with nil, removes it only while the screen "
-        "passes."
+        "Whether an income-related employment and support allowance is payable "
+        'to this person (HB Regs 2006 reg 2(3A): on any day it "is payable to '
+        'him"; the council tax reduction schemes use the same definition). A '
+        "couple's award is paid to the claimant, not the partner: of the "
+        "claimant and partner, only the payee is on it, meaning the one who "
+        "reports the award, or the claimant where neither does, and only while "
+        "their award (claimant_or_partner_esa_income) is positive. Any other "
+        "member of the benefit unit, such as a non-dependent adult, claims in "
+        "their own right and is on it only if their own claim passes: they are "
+        "not engaged in remunerative work as its claimant "
+        "(esa_income_claimant_remunerative_work; Welfare Reform Act 2007 Sch 1 "
+        "para 6(1)(e)), and the award on their own report alone is positive, "
+        "the report exceeding the tariff income from the benefit unit's "
+        "capital, within the capital limit. On the formula path the claimant's "
+        "or partner's claim and work never change this. The family's legacy "
+        "benefits must not have closed (legacy_benefits_closed; the model ends "
+        "every member's award then, where SI 2014/1230 reg 46(1) ends only the "
+        "claimant's and partner's), and the benefit unit's modelled award must "
+        "be in payment: positive, or nil while esa_income_eligible fails and "
+        "esa_income is not neutralised. On the formula path that nil comes only "
+        "from the claimant's or partner's own claim failing the screen. "
+        "Neutralising esa_income removes the status; a nil esa_income entered "
+        "directly, or a reform that replaces it with nil, removes it only while "
+        "the screen passes."
     )
     definition_period = YEAR
     reference = (
