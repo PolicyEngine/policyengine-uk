@@ -1,0 +1,1 @@
+- Fixed Universal Credit trading-loss netting to include company trade results and apply the same actual earnings before the minimum income floor in the benefit cap earnings test.

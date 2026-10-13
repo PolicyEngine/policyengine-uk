@@ -1,4 +1,8 @@
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.capital_gains_projection import (
+    CGT_DATASET_INPUTS,
+    CGT_INDEX_PATH,
+)
 
 import yaml
 from policyengine_core.parameters import ParameterNode
@@ -67,6 +71,8 @@ _COUNCIL_TAX_GROWTH_SERIES = {
 # which the Enhanced FRS does not store, so it falls to -1); one whose
 # variable has an `uprating` attribute is scaled by that index; any other,
 # rent and council tax among them, is held at its last projected value.
+# A finite CGT scenario can shorten the whole dataset horizon; it never
+# extends beyond the evidence declared by that scenario.
 PROJECTION_END_YEAR = 2032
 
 # Before this horizon was extended, Core uprated unmapped inputs from 2030.
@@ -100,10 +106,19 @@ def _unmapped_uprating_indices(uprating):
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
     tax_benefit_system_parameters: ParameterNode,
-    end_year: int = PROJECTION_END_YEAR,
+    end_year: int | None = None,
 ) -> UKMultiYearDataset:
+    """Project a supplied year to the shared default within any finite CGT span."""
     # Extend years and uprate
     start_year = int(dataset.time_period)
+    if end_year is None:
+        projection = tax_benefit_system_parameters.get_child(CGT_INDEX_PATH).metadata[
+            "projection"
+        ]
+        end_year = max(
+            start_year,
+            min(PROJECTION_END_YEAR, projection.get("end_year", PROJECTION_END_YEAR)),
+        )
     datasets = [dataset]
     for year in range(start_year, end_year + 1):
         next_year = dataset.copy()
@@ -148,6 +163,24 @@ def apply_single_year_uprating(
     parameters: ParameterNode,
 ):
     # Apply uprating to a single year dataset.
+
+    projection = parameters.get_child(CGT_INDEX_PATH).metadata["projection"]
+    if "base_year" in projection and any(
+        variable in previous_year.person.columns for variable in CGT_DATASET_INPUTS
+    ):
+        source_year = int(previous_year.time_period)
+        target_year = int(current_year.time_period)
+        if (
+            not projection["base_year"]
+            <= source_year
+            < target_year
+            <= projection["end_year"]
+        ):
+            raise ValueError(
+                f"Capital gains projection {projection['name']!r} supports "
+                f"{projection['base_year']}–{projection['end_year']}, "
+                f"not {source_year}–{target_year}."
+            )
 
     # First, apply standard variable-YoY growth based uprating.
 
