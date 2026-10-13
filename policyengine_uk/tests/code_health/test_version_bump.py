@@ -29,7 +29,10 @@ LOCK = ROOT / "uv.lock"
 PYPROJECT = ROOT / "pyproject.toml"
 
 if not (SCRIPT.exists() and LOCK.exists() and PYPROJECT.exists()):
-    pytest.skip("needs the repository checkout", allow_module_level=True)
+    pytest.skip(
+        "the .github folder is not part of an installed package",
+        allow_module_level=True,
+    )
 
 spec = importlib.util.spec_from_file_location("bump_version", SCRIPT)
 bump_version = importlib.util.module_from_spec(spec)
