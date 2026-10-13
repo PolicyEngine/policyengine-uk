@@ -5,7 +5,9 @@ The reform could not run: policyengine_uk's Simulation never set
 tax_benefit_system.simulation, through which a structural reform reaches the
 simulation, and the benefit list named five <benefit>_reported variables
 that no longer exist. These tests build small datasets and turn the reform on
-before the data load, which is when structural reforms are created.
+before the data load. A reform= dict, applied after the load, turns it on as
+well: parameter changes come before the structural reforms are created on
+both routes.
 
 The survey reports one winter heating payment (FRS benefit code 62, in
 winter_fuel_allowance_reported) for every respondent, Scotland included.
@@ -174,6 +176,17 @@ def test_reported_winter_heating_is_counted_once(simulation_class, first_year):
         dataset=dataset(first_year, regions, winter_heating), scenario=REFORM_ON
     )
     check_winter_heating(simulation, regions, winter_heating, first_year)
+
+
+@pytest.mark.parametrize("simulation_class", [Simulation, Microsimulation])
+def test_reform_set_after_the_data_load_counts_the_report_once(simulation_class):
+    regions = ["SCOTLAND", "LONDON", "WALES", "NORTHERN_IRELAND", "SCOTLAND"]
+    winter_heating = [250, 300, 200, 100, 0]
+    simulation = simulation_class(
+        dataset=dataset(2023, regions, winter_heating),
+        reform={"gov.contrib.policyengine.disable_simulated_benefits": True},
+    )
+    check_winter_heating(simulation, regions, winter_heating, 2023)
 
 
 def test_household_benefits_include_the_report_once():
