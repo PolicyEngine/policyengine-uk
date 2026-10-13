@@ -2,13 +2,13 @@
 
 Invariants:
 1. share_like_capital is corporate_wealth as supplied (any sign, any fraction)
-   unless the itemised components add up to more than it by more than the
-   rounding tolerance, in which case it is their sum.
+   unless the itemised components are positive and exceed it by more than the
+   float32 rounding tolerance, in which case it is exactly their sum.
 2. Differential: for identical inputs that carry no components, or components
-   consistent with corporate_wealth, every programme's assessable capital and
-   eligibility equal those under the original lists (corporate_wealth),
+   consistent with corporate_wealth, every programme's assessable capital, and
+   UC eligibility, equal those under the original lists (corporate_wealth),
    exactly, annually and monthly.
-3. A household given only the components has them counted.
+3. A household given only the components has them counted, down to a penny.
 """
 
 import numpy as np
@@ -18,7 +18,6 @@ from hypothesis import strategies as st
 
 from policyengine_uk import CountryTaxBenefitSystem, Simulation
 from policyengine_uk.variables.household.wealth.share_like_capital import (
-    ABSOLUTE_TOLERANCE,
     RELATIVE_TOLERANCE,
 )
 
@@ -122,11 +121,13 @@ def test_share_like_capital_keeps_the_supplied_aggregate(rows):
     got = _results(households)["share_like_capital"]
     for value, assets in zip(got, households):
         cw = np.float32(assets["corporate_wealth"])
-        itemised = np.float32(sum(np.float32(assets.get(c, 0)) for c in COMPONENTS))
-        tolerance = RELATIVE_TOLERANCE * abs(cw) + ABSOLUTE_TOLERANCE
-        expected = itemised if itemised > 0 and itemised > cw + tolerance else cw
-        assert value == pytest.approx(expected, rel=1e-6, abs=1e-3)
-        if not (itemised > 0 and itemised > cw + tolerance):
+        itemised = np.float32(0)
+        for component in COMPONENTS:
+            itemised = np.float32(itemised + np.float32(assets.get(component, 0)))
+        tolerance = RELATIVE_TOLERANCE * max(abs(cw), itemised)
+        if itemised > 0 and itemised > cw + tolerance:
+            assert value == itemised  # exactly the components' sum
+        else:
             assert value == cw  # exactly the supplied aggregate
 
 
@@ -165,6 +166,31 @@ def test_float32_rounding_at_the_limit_keeps_eligibility():
     ]
     _assert_same_as_original(households)
     assert _results(households)["share_like_capital"][0] == 16_000
+
+
+def test_a_component_penny_at_the_limit_counts():
+    """A penny of shares with no corporate_wealth counts like a penny of it."""
+    as_component = [{"savings": 16_000, "directly_held_shares": 0.01}]
+    as_aggregate = [{"savings": 16_000, "corporate_wealth": 0.01}]
+    for period in (YEAR, f"{YEAR}-01"):
+        component = _results(as_component, period=period)
+        aggregate = _results(as_aggregate, period=period)
+        assert component["share_like_capital"][0] == np.float32(0.01)
+        for variable in (*SOURCE_LISTS, "is_uc_eligible"):
+            assert np.array_equal(component[variable], aggregate[variable]), variable
+        assert not component["is_uc_eligible"][0]
+
+
+def test_a_genuine_excess_over_the_aggregate_counts():
+    """Ten pence of components above the aggregate is a holding, not rounding."""
+    households = [
+        {
+            "corporate_wealth": 16_000,
+            "directly_held_shares": 10_000.10,
+            "stocks_and_shares_isa": 6_000,
+        }
+    ]
+    assert _results(households)["share_like_capital"][0] == np.float32(16_000.10)
 
 
 def test_components_alone_are_counted():

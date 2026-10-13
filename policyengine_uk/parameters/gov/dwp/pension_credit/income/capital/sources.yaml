@@ -7,9 +7,9 @@ description: >
   contract; the notional income rule for undrawn money purchase pots
   (regulation 18) is not modelled. `share_like_capital` is `corporate_wealth`
   as supplied, or the sum of its itemised components (`directly_held_shares`,
-  `unit_and_investment_trusts`, `stocks_and_shares_isa`) where that is larger,
-  so a household given only the components has them counted and no holding
-  counts twice.
+  `unit_and_investment_trusts`, `stocks_and_shares_isa`) where they exceed it
+  beyond float32 rounding (see `share_like_capital`), so a household given
+  only the components has them counted and no holding counts twice.
 metadata:
   label: Pension Credit capital sources
   unit: list

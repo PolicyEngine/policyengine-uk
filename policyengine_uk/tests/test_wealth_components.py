@@ -1,5 +1,6 @@
-"""corporate_wealth's components share its entity, quantity type and uprating, so
-a dataset's identity corporate_wealth == sum of components survives projection."""
+"""corporate_wealth's components share its entity, quantity type and uprating
+metadata (class uprating and uprating_indices.yaml index), the condition for a
+dataset's identity corporate_wealth == sum of components to survive projection."""
 
 from pathlib import Path
 
