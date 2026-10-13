@@ -82,8 +82,12 @@ UNITEMISED_REFORM = {
     for name in ("sources", "sale_expenses.sources")
 }
 
-money = st.floats(min_value=0, max_value=200_000, allow_nan=False, width=32)
-signed_money = st.floats(min_value=-5_000, max_value=200_000, allow_nan=False, width=32)
+# Pounds and pence, as a dataset stores them in float64; the engine rounds
+# each to float32, which is the rounding the tolerance has to absorb.
+money = st.integers(min_value=0, max_value=20_000_000).map(lambda pence: pence / 100)
+signed_money = st.integers(min_value=-500_000, max_value=20_000_000).map(
+    lambda pence: pence / 100
+)
 
 
 def _situation(households, age=None):
@@ -144,7 +148,7 @@ def test_share_like_capital_and_its_parts(rows):
         exempt = np.float32(values[1] + values[2])
         tolerance = RELATIVE_TOLERANCE * max(abs(cw), itemised)
         share_like = got["share_like_capital"][i]
-        if itemised > 0 and itemised > cw + tolerance:
+        if itemised > 0 and itemised - cw > tolerance:
             assert share_like == itemised
         else:
             assert share_like == cw
@@ -280,3 +284,17 @@ def test_a_genuine_excess_over_the_aggregate_counts():
         }
     ]
     assert _results(households)["share_like_capital"][0] == np.float32(16_000.10)
+
+
+def test_one_unit_of_float32_rounding_above_a_power_of_two_keeps_the_aggregate():
+    """Pence-valued components whose float32 sum lands one unit in the last place
+    (£0.00195) above £16,384.01: more than 1e-7 of the value, less than 1e-6."""
+    households = [
+        {
+            "corporate_wealth": 16_384.01,
+            "directly_held_shares": 16_015.98,
+            "unit_and_investment_trusts": 286.98,
+            "stocks_and_shares_isa": 81.05,
+        }
+    ]
+    assert _results(households)["share_like_capital"][0] == np.float32(16_384.01)
