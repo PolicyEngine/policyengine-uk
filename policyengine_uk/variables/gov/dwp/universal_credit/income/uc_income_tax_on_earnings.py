@@ -1,4 +1,8 @@
 from policyengine_uk.model_api import *
+from policyengine_uk.utils.income_tax import (
+    calc_income_tax_with_gift_aid,
+    first_extended_scottish_threshold,
+)
 
 
 class uc_income_tax_on_earnings(Variable):
@@ -44,7 +48,7 @@ class uc_income_tax_on_earnings(Variable):
         # Pension coded against it; that is not modelled.
         p = parameters(period)
         income_tax = p.gov.hmrc.income_tax
-        # earned_taxable_income is adjusted net income less the incomes and
+        # earned_taxable_income is net income less the incomes and
         # allowances on the exclusions list. Read that list, so a reform
         # that changes it (for example one that exempts pensions) is
         # followed here.
@@ -74,7 +78,7 @@ class uc_income_tax_on_earnings(Variable):
         )
         # The income left in earned_taxable_income before allowances. The
         # part of it above earnings is the person's other non-savings income.
-        income_in_base = person("adjusted_net_income", period) - add(
+        income_in_base = person("net_income", period) - add(
             person, period, excluded_incomes
         )
         other_income = max_(0, income_in_base - earnings)
@@ -82,10 +86,17 @@ class uc_income_tax_on_earnings(Variable):
             0, person("earned_taxable_income", period) - other_income
         )
         rates = income_tax.rates
+        gross_gift = person("gift_aid_grossed_up", period)
         tax = where(
             person("pays_scottish_income_tax", period),
-            rates.scotland.rates.calc(taxable_earnings),
-            rates.uk.calc(taxable_earnings),
+            calc_income_tax_with_gift_aid(
+                rates.scotland.rates,
+                taxable_earnings,
+                gross_gift,
+                first_extended_scottish_threshold(rates.scotland.rates),
+                len(rates.scotland.rates.thresholds),
+            ),
+            calc_income_tax_with_gift_aid(rates.uk, taxable_earnings, gross_gift),
         )
         # Tax reductions (for example the married couple's allowance) come
         # off the tax on earnings first, as allowances do. So the deduction
