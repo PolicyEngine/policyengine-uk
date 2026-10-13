@@ -1,3 +1,12 @@
+## [2.128.1] - 2026-10-12
+
+### Fixed
+
+- - UC deduction draws now apply to every simulation built from data, including a constituency or local authority filtered from the national data, instead of only those carrying over a million benefit units of weight. Simulations rebuilt in place, and policyengine-core simulations built over the UK system from data, count as data too. Household situations never get imputed UC deductions or private school attendance, whatever their weight. `filter_dataset` carries each person's private school attendance into the household it extracts. Private school attendance is still imputed only for data carrying at least a million people of weight, until the data carries a national income rank.
+- - Keep the universal and targeted childcare hours when a family becomes eligible for the extended (working parent) entitlement, and value the extended entitlement as each child's working parent hours above them (Childcare Act 2016 s.1(6)). A family whose hours cap is under 15 a week no longer loses funded hours by becoming eligible, and `is_child_receiving_extended_childcare` now counts each child on its own working parent hours.
+  - Allocate participating children's first funded hours to the legally applicable universal or targeted programme even when standalone take-up is false, preserving total support and counting only the remaining hours as extended childcare.
+
+
 ## [2.128.0] - 2026-10-12
 
 ### Added
