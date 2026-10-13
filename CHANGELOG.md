@@ -1,3 +1,12 @@
+## [2.128.3] - 2026-10-13
+
+### Fixed
+
+- - Count the Pension Age Winter Heating Payment (`pawhp`) in `household_benefits`, `hbai_household_net_income` and `hbai_benefits`, as the Winter Fuel Payment is. It was in `gov_spending` only, so Scottish pensioners' winter heating payment was missing from household net income and HBAI income from the 2024 qualifying week.
+  - Make `gov.contrib.policyengine.disable_simulated_benefits` run. `Simulation` now sets `tax_benefit_system.simulation`, through which structural reforms reach the simulation, and the reform no longer names reported amounts that do not exist (Attendance Allowance, DLA and PIP follow the reported award through their categories).
+  - Under `disable_simulated_benefits`, count the reported winter heating payment once: as `pawhp` for a household in Scotland in the years PAWHP is paid, and as `winter_fuel_allowance` otherwise.
+
+
 ## [2.128.2] - 2026-10-13
 
 ### Fixed
