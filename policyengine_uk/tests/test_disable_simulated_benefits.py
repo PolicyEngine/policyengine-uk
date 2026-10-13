@@ -318,8 +318,8 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
     # Pension Credit, off all its legacy benefits (legacy_benefits_closed), so
     # their awards end. Every family here reports one of them. The reform pays every reported award in every
     # year, so it holds the move off; otherwise an adult outside the couple
-    # would stop being on the ESA and JSA the reform still pays them
-    # (test_each_person_is_on_their_own_award).
+    # would stop being on the ESA the reform still pays them, and on its JSA
+    # while income-based JSA is open (test_each_person_is_on_their_own_award).
     moved = year > DATASET_YEAR
     assert by_family(unreformed, "legacy_benefits_closed", year) == dict.fromkeys(
         NAMES, moved
@@ -336,10 +336,21 @@ def test_no_family_is_moved_off_its_legacy_benefits(reformed, unreformed, year):
 def test_each_person_is_on_their_own_award(reformed, year):
     on_esa = by_person(reformed, "is_on_income_related_esa", year)
     on_jsa = by_person(reformed, "is_on_income_based_jsa", year)
+    # An adult outside the couple claims in their own right. The reform pays
+    # the income-based JSA they report in every year, but their own claim is
+    # on it only in the years the model has income-based JSA open
+    # (gov.dwp.JSA.income.active, false from 2026): the reform holds the move
+    # off legacy benefits (NOT_MOVED), not the closure of the scheme. The
+    # claimant and partner are on the award the reform holds for them in
+    # every year.
+    jsa_open = reformed.tax_benefit_system.parameters(
+        str(year)
+    ).gov.dwp.JSA.income.active
+    assert jsa_open == (year == DATASET_YEAR)
     assert not on_esa["excluded_adult_no_award_0"]
     assert on_esa["excluded_adult_no_award_1"]
     assert not on_jsa["excluded_adult_no_award_0"]
-    assert on_jsa["excluded_adult_no_award_1"]
+    assert on_jsa["excluded_adult_no_award_1"] == jsa_open
     assert on_esa["own_esa_0"] and not on_jsa["own_esa_0"]
     assert on_jsa["own_jsa_0"] and not on_esa["own_jsa_0"]
 

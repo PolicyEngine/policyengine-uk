@@ -67,10 +67,12 @@ CLAIMANT_OR_PARTNER_ONLY = ["income_support"]
 # eligibility and the "on" statuses read from it, and Housing Benefit and tax
 # credit eligibility), prompts no Universal Credit claim
 # (claims_uc_at_legacy_closure) and takes no family off the Pension Credit
-# route. Only the closure is held: the model's other rules still apply. A
-# family the model has claim Universal Credit anyway (would_claim_uc) is still
-# not eligible for Housing Benefit or tax credits, and the reform still pays
-# it the amounts it reports.
+# route. Only the closure is held: the model's other rules still apply, and
+# the reform still pays the amounts reported. A family the model has claim
+# Universal Credit anyway (would_claim_uc) is still not eligible for Housing
+# Benefit or tax credits. An adult outside the couple who reports
+# income-based JSA is on it, as their own claim, only in the years the model
+# has the scheme open (gov.dwp.JSA.income.active: to 2025).
 NOT_MOVED = ["legacy_benefits_closed"]
 
 YEARS_IN_FUTURE = 10
