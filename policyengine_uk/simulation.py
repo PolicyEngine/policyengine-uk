@@ -16,6 +16,7 @@ from policyengine_core.simulations import Simulation as CoreSimulation
 from policyengine_core.tools.hugging_face import download_huggingface_dataset
 from policyengine_core.tracers import FullTracer, SimpleTracer
 
+from policyengine_uk.utils.dated_reforms import read_parameter_changes
 from policyengine_uk.utils.parameters import (
     check_parameter_not_removed,
     uk_fiscal_year_period,
@@ -47,6 +48,14 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
 )
 
 from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
+
+
+def _canonical_parameter_paths(changes: dict) -> dict:
+    """Changes keyed by canonical parameter paths (labour supply aliases)."""
+    return {
+        canonicalize_lsr_parameter_path(path): value for path, value in changes.items()
+    }
+
 
 from microdf import MicroDataFrame
 
@@ -115,8 +124,10 @@ class Simulation(CoreSimulation):
     dataset = None
     # True when built from survey or other microdata rather than a situation
     # dictionary. Variables that impute unobserved detail across a population
-    # (such as months_since_last_birthday) read it; unlike the sum of weights,
-    # it stays true for a region or constituency filtered from the data.
+    # (such as months_since_last_birthday) read it through
+    # utils.data_source.built_from_data; unlike the sum of weights, it stays
+    # true for a region or constituency filtered from the data. The builders
+    # set it, so rebuilding a simulation in place keeps it right.
     built_from_dataset: bool = False
 
     def __init__(
@@ -166,12 +177,13 @@ class Simulation(CoreSimulation):
 
         self.branches: Dict[str, Simulation] = {}
 
+        # A scenario's parameter changes rebuild the parameters from the
+        # statutory tree, so they come before its modifier, whose edits a
+        # rebuild would discard.
         if scenario is not None and scenario.applied_before_data_load:
+            self.apply_scenario_parameters(scenario)
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
-
-            if scenario.parameter_changes is not None:
-                self.apply_parameter_changes(scenario.parameter_changes)
         # Build simulation from appropriate source
         if situation is not None:
             self.build_from_situation(situation)
@@ -189,7 +201,14 @@ class Simulation(CoreSimulation):
             self.build_from_dataset_source(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
-        self.built_from_dataset = situation is None
+
+        # Parameter changes applied after data load leave the data as built
+        # (a changed economic assumption does not re-uprate it), but come
+        # before the steps below that read the parameters: the Universal
+        # Credit rebalancing inputs and the structural reforms switched on by
+        # parameters.
+        if scenario is not None and not scenario.applied_before_data_load:
+            self.apply_scenario_parameters(scenario)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
         # but adding here for ease of toggling on/off via the 'active' parameter.
@@ -236,8 +255,6 @@ class Simulation(CoreSimulation):
         if scenario is not None and not scenario.applied_before_data_load:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
-            if scenario.parameter_changes is not None:
-                self.apply_parameter_changes(scenario.parameter_changes)
 
     def delete_arrays(self, variable: str, period: Period = None) -> None:
         super().delete_arrays(variable, period)
@@ -263,28 +280,42 @@ class Simulation(CoreSimulation):
         return variables
 
     def apply_parameter_changes(self, changes: dict):
-        for parameter in changes:
-            check_parameter_not_removed(canonicalize_lsr_parameter_path(parameter))
-        self.tax_benefit_system.reset_parameters()
+        """Rebuild the parameters with ``Scenario.parameter_changes``.
 
-        for parameter in changes:
-            canonical_parameter = canonicalize_lsr_parameter_path(parameter)
-            p: Parameter = self.tax_benefit_system.parameters.get_child(
-                canonical_parameter
+        Each change is written onto the statutory timeline (see
+        ``policyengine_uk.utils.dated_reforms`` for how its period keys are
+        read) and the parameters are processed as current law is.
+        """
+        self.apply_parameter_assignments(
+            read_parameter_changes(_canonical_parameter_paths(changes))
+        )
+
+    def apply_scenario_parameters(self, scenario: Scenario) -> None:
+        """Rebuild the parameters with a scenario's parameter changes.
+
+        Takes ``parameter_changes`` and then each of the scenario's
+        ``dated_reforms`` in order, in one rebuild. Changes a dated reform
+        leaves to the annualised parameters (single-day keys and paths the
+        statutory tree does not define) are applied by the scenario's
+        modifier instead.
+        """
+        assignments = []
+        if scenario.parameter_changes:
+            assignments += read_parameter_changes(
+                _canonical_parameter_paths(scenario.parameter_changes)
             )
-            if isinstance(changes[parameter], dict):
-                # Time-period specific changes. A bare year names the UK
-                # fiscal year, so the override covers 6 April to 5 April and
-                # survives fiscal-year conversion at full strength.
-                for time_period in changes[parameter]:
-                    p.update(
-                        period=uk_fiscal_year_period(time_period),
-                        value=changes[parameter][time_period],
-                    )
-            else:
-                p.update(period="year:2000:100", value=changes[parameter])
+        assignments += scenario.dated_assignments(order_start=len(assignments))
+        self.apply_parameter_assignments(assignments)
 
-        self.tax_benefit_system.process_parameters()
+    def apply_parameter_assignments(self, assignments: list) -> None:
+        """Rebuild the parameters with changes on the statutory timeline."""
+        if not assignments:
+            return
+        self.tax_benefit_system.apply_parameter_assignments(assignments)
+        if getattr(self, "populations", None) is not None:
+            # Building from a situation or dataset can calculate values;
+            # recompute them under the rebuilt parameters.
+            self._invalidate_all_caches()
 
     def build_from_situation(self, situation: Dict) -> None:
         """Build simulation from a situation dictionary.
@@ -292,6 +323,7 @@ class Simulation(CoreSimulation):
         Args:
             situation: Dictionary describing household composition and characteristics
         """
+        self._start_new_population(built_from_dataset=False)
         self.build_from_populations(self.tax_benefit_system.instantiate_entities())
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
@@ -550,6 +582,17 @@ class Simulation(CoreSimulation):
 
         self.dataset = dataset
 
+    def _start_new_population(self, built_from_dataset: bool) -> None:
+        """Record the new population's source, and drop what the simulation
+        cached for the previous one, so rebuilding in place (e.g. a clone)
+        never reads arrays sized for the old population."""
+        self.built_from_dataset = built_from_dataset
+        if getattr(self, "_fast_cache", None) is not None:
+            self._fast_cache = {}
+        if getattr(self, "_user_input_keys", None) is not None:
+            # A clone shares this set with its original, so replace it.
+            self._user_input_keys = set()
+
     def build_from_ids(
         self,
         person_id: np.ndarray,
@@ -567,6 +610,8 @@ class Simulation(CoreSimulation):
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
         """
+        # Every data source (DataFrame, dataset, file, URL) builds through here.
+        self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency
