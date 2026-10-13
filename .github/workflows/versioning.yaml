@@ -375,10 +375,9 @@ jobs:
     if: needs.Versioning.outputs.publish == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # The environment the PyPI credential should live in. Today PYPI is an
-    # organisation secret that every repository's workflows can read. Once it
-    # is a secret of this environment instead, limited to main (admin
-    # settings, not set here), only this job on main can read it.
+    # PyPI trusts only this workflow in this environment (trusted publishing),
+    # and the environment is limited to main (admin settings, not set here),
+    # so only this job on main can publish. There is no stored PyPI token.
     environment: pypi
     # One Publish per version at a time: two runs releasing the same version
     # commit (a re-run beside the original) upload and tag in turn, and the
@@ -388,6 +387,8 @@ jobs:
       cancel-in-progress: false
     permissions:
       contents: write
+      # Lets this job request the OIDC token PyPI exchanges for an upload token.
+      id-token: write
     steps:
       - name: Checkout the version commit
         uses: actions/checkout@v6
@@ -426,8 +427,6 @@ jobs:
         if: steps.pypi.outputs.state != 'complete'
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          user: __token__
-          password: ${{ secrets.PYPI }}
           packages-dir: dist/
           # Safe only because the step above found no different file under
           # this version: it skips a file a failed earlier attempt uploaded.
