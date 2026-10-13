@@ -25,6 +25,12 @@ from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating impo
 from policyengine_uk.parameters.gov.dwp.state_pension.triple_lock.create_triple_lock import (
     add_triple_lock,
 )
+from policyengine_uk.parameters.gov.dwp.housing_benefit.allowances.create_protected_pension_age_uprating import (
+    add_protected_pension_age_uprating,
+)
+from policyengine_uk.parameters.gov.dwp.pension_credit.create_savings_credit_threshold_projection import (
+    add_savings_credit_threshold_projection,
+)
 from policyengine_uk.parameters.gov.economic_assumptions.create_september_cpi_uprating import (
     add_september_cpi_uprating,
 )
@@ -92,6 +98,8 @@ def _add_generated_parameters(parameters: ParameterNode) -> ParameterNode:
     parameters = add_triple_lock(parameters)
     parameters = add_september_cpi_uprating(parameters)
     parameters = create_economic_assumption_indices(parameters)
+    parameters = add_savings_credit_threshold_projection(parameters)
+    parameters = add_protected_pension_age_uprating(parameters)
     parameters = add_threshold_indexation(parameters)
     parameters = add_lsr_deprecation_aliases(parameters)
     return parameters
@@ -111,6 +119,8 @@ def process_parameter_tree(
     - triple lock calculations for state pensions
     - September CPI uprating
     - economic assumption indices
+    - Pension Credit Savings Credit threshold projections
+    - protected pension-age Housing Benefit allowance indices
     - income tax and NICs threshold indexation after the freeze
     - parameter uprating and backdating
     - conversion to fiscal year parameters

@@ -25,3 +25,31 @@
         members: [person1, person2]
   output:
     standard_minimum_guarantee: 18_889
+
+- name: Case 3, 2025 single-person standard minimum guarantee uses the published rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+    benunits:
+      benunit:
+        members: [person1]
+  output:
+    standard_minimum_guarantee: 11_809.2
+
+- name: Case 4, 2025 couple standard minimum guarantee uses the published rate.
+  period: 2025
+  absolute_error_margin: 0.01
+  input:
+    people:
+      person1:
+        age: 80
+      person2:
+        age: 78
+    benunits:
+      benunit:
+        members: [person1, person2]
+  output:
+    standard_minimum_guarantee: 18_023.2
