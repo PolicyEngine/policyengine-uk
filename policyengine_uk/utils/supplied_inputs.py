@@ -39,6 +39,7 @@ from policyengine_core.periods import Period
 # Variables that formulas ask about through the helpers below.
 SUPPLIED_INPUT_VARIABLES = frozenset(
     {
+        "adjusted_net_income",
         "bus_fare_spending",
         "bus_in_london_trips",
         "other_local_bus_trips",
