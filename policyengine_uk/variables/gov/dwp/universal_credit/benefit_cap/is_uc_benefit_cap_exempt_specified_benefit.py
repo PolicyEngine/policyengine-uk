@@ -57,9 +57,10 @@ class is_uc_benefit_cap_exempt_specified_benefit(Variable):
         # Reg. 83(1)(a): the LCWRA element is included in the award, or the
         # claimant receives an employment and support allowance that includes
         # the support component (contributory or income-related allowances
-        # stand in for it). The element test reads the element, as (j) reads
-        # the carer element, so it covers whoever the element covers.
-        lcwra = benunit("uc_LCWRA_element", period) > 0
+        # stand in for it).
+        lcwra = benunit.any(
+            person("uc_limited_capability_for_WRA", period) & claimant_side
+        )
         esa_support_component = (benunit("esa_income", period) > 0) | (
             add_for_members(benunit, period, ["esa_contrib"], claimant_side) > 0
         )
