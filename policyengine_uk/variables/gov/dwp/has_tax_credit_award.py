@@ -12,8 +12,13 @@ class has_tax_credit_award(Variable):
         "both members'. On a claim HMRC decide whether to make an award and "
         "at what rate (s.14(1)), and may award a tax credit at a nil rate "
         "(s.14(3)). So the award follows the claim and the conditions of "
-        "entitlement other than the income test, not a positive amount. Tax "
-        "credits ended on 5 April 2025, so there are no awards after that."
+        "entitlement other than the income test, not a positive amount. The "
+        "model reads the claim and those conditions from reported awards: "
+        "is_CTC_eligible and is_WTC_eligible need a positive reported "
+        "amount, so an award reported as nil, or one treated as continuing "
+        "during renewal (SPC Regs 2002 reg 6(12)), is not inferred; enter "
+        "this variable for one. Tax credits ended on 5 April 2025, so there "
+        "are no awards after that."
     )
     definition_period = YEAR
     reference = (

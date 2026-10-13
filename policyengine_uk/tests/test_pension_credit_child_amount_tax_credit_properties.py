@@ -11,20 +11,27 @@ entitlement conditions other than the income test.
 
 Properties, for any family:
 
-1. The award is a claim plus the conditions of entitlement, recomputed
-   independently, in every year with tax credits (2019-20 to 2024-25).
+1. The award is the claim and the conditions of entitlement, read from
+   would_claim_CTC, is_CTC_eligible, would_claim_WTC and is_WTC_eligible, in
+   sampled years with tax credits (2019-20, 2021-22 and 2024-25). This checks
+   the wiring: it cannot find an error in those variables, which infer a
+   claim from a positive reported award.
 2. Differential: the child amount is nil where there is an award, and
    otherwise equals the amount in a simulation with the award entered as
-   absent. That amount equals an independent Schedule IIA calculation from
-   the parameters (para 9(1)(a) and para 10).
+   absent. That amount equals a separate Schedule IIA calculation (para
+   9(1)(a) and para 10). The calculation reads the same rate parameters and
+   the model's dates of birth, so it checks the formula, not the rates or
+   the exact 6 April 2017 boundary.
 3. After tax credits ended (2025-26 on), no family has an award, and the
    child amount is the Schedule IIA amount.
 4. Before 2019-20 the child amount is nil.
 5. Removing the child amount never raises Pension Credit plus tax credits,
-   and changes nothing for a family with no award.
+   and changes nothing for a family with no award. Other support can fall:
+   losing Guarantee Credit ends the Housing Benefit passport (a pinned
+   family below and the YAML cases).
 6. The results do not depend on the order in which the child amount, the
-   award, Pension Credit, the tax credit income test and household income
-   are requested, and no request raises a dependency cycle.
+   award, Pension Credit, the tax credit income test, Housing Benefit and
+   household income are requested, and no request raises a dependency cycle.
 """
 
 import numpy as np
@@ -44,6 +51,7 @@ OUTPUTS = [
     "pension_credit",
     "working_tax_credit",
     "child_tax_credit",
+    "housing_benefit",
 ]
 
 
@@ -116,7 +124,10 @@ def calculate(drawn, year, order=OUTPUTS, benunit_inputs=None):
 def schedule_iia_amount(drawn, year):
     """Schedule IIA amounts from the parameters, for children who are not
     disabled: para 9(1)(a) for each child, and para 10's higher amount for
-    the eldest if born before 6 April 2017 (by birth year, as the model)."""
+    the eldest if born before 6 April 2017. With the default six months
+    since the last birthday, the model puts the birth of a child aged a in
+    year y on 6 April of y - a, so before 6 April 2017 exactly when
+    y - a < 2017."""
     from policyengine_uk import CountryTaxBenefitSystem
 
     child = (
@@ -148,7 +159,8 @@ FAMILIES = st.lists(families(), min_size=1, max_size=6)
 
 # The YAML households (child_amount_tax_credit_award.yaml), run on every
 # invocation. Pension Credit earnings are net of SPC Regs Sch VI para 5, and
-# the CTC family element is entered at its statutory £545.
+# the CTC family element is entered at its statutory £545. The last two pay
+# rent, so the order and differential checks reach Housing Benefit.
 _GRANDPARENT = {
     "age": 70,
     "employment_income": 2_600,
@@ -157,6 +169,7 @@ _GRANDPARENT = {
     "savings_interest_income": 300,
 }
 _INPUTS = {"would_claim_uc": False, "pension_credit_earnings": 2_080}
+_RENTED = {"savings": 18_000, "rent": 12_000, "tenure_type": "RENT_FROM_COUNCIL"}
 YAML_FAMILIES = [
     # CTC and WTC with Pension Credit: passported, no child amount.
     (
@@ -203,6 +216,23 @@ YAML_FAMILIES = [
         [{"age": 10}],
         {**_INPUTS, "pension_credit_earnings": 2_980},
         {"savings": 10_000},
+    ),
+    # A CTC award ends the Guarantee Credit and its Housing Benefit passport.
+    (
+        [
+            {"age": 80, "state_pension": 9_000, "child_tax_credit_reported": 1},
+            {"age": 80, "state_pension": 9_000},
+        ],
+        [{"age": 10}],
+        {"would_claim_uc": False},
+        _RENTED,
+    ),
+    # The same household with no tax credit claim keeps the passport.
+    (
+        [{"age": 80, "state_pension": 9_000}, {"age": 80, "state_pension": 9_000}],
+        [{"age": 10}],
+        {"would_claim_uc": False},
+        _RENTED,
     ),
 ]
 
@@ -284,14 +314,28 @@ def test_results_do_not_depend_on_request_order(drawn, year):
 def test_yaml_families_reach_every_case():
     """The pinned examples are not vacuous: they hit each case of the rule."""
     year = 2024
-    on = calculate(YAML_FAMILIES, year)
+    order = OUTPUTS + ["guarantee_credit", "savings_credit"]
+    on = calculate(YAML_FAMILIES, year, order=order)
     without = calculate(
-        YAML_FAMILIES, year, benunit_inputs={"has_tax_credit_award": False}
+        YAML_FAMILIES,
+        year,
+        order=order,
+        benunit_inputs={"has_tax_credit_award": False},
     )
-    assert on["has_tax_credit_award"].tolist() == [True, False, True, True]
+    assert on["has_tax_credit_award"].tolist() == [
+        True,
+        False,
+        True,
+        True,
+        True,
+        False,
+    ]
     # The rule removes the child amount from each awarded family.
     assert (without["child_minimum_guarantee_addition"] > 0).all()
-    assert np.allclose(on["child_minimum_guarantee_addition"], [0, 3_993.08, 0, 0])
+    assert np.allclose(
+        on["child_minimum_guarantee_addition"],
+        [0, 3_993.08, 0, 0, 0, 3_993.08],
+    )
     # Pension Credit, CTC and WTC are all paid to the first family.
     for variable in SUPPORT:
         assert on[variable][0] > 0, variable
@@ -299,3 +343,10 @@ def test_yaml_families_reach_every_case():
     assert on["working_tax_credit"][3] == 0
     assert on["pension_credit"][3] == 0
     assert without["pension_credit"][3] > 0
+    # The fifth family: the award leaves savings credit but no Guarantee
+    # Credit, so no Housing Benefit passport; the sixth keeps both.
+    assert on["guarantee_credit"][4] == 0 < without["guarantee_credit"][4]
+    assert 0 < on["savings_credit"][4] < without["savings_credit"][4]
+    assert on["housing_benefit"][4] == 0 < without["housing_benefit"][4]
+    assert on["guarantee_credit"][5] > 0
+    assert on["housing_benefit"][5] > 0

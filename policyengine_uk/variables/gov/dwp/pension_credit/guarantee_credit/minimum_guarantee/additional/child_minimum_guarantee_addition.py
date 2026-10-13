@@ -66,11 +66,13 @@ class child_minimum_guarantee_addition(Variable):
         # Reg 6(6)(d) applies Schedule IIA "except where paragraph (11)
         # applies", which is "the case of a person who is awarded, or who is
         # treated as having an award of, a tax credit" (reg 6(11)): child tax
-        # credit or working tax credit (reg 6(17)). The tax credit award then
-        # carries the support for the child. Reg 6(12) and (13) treat an
-        # award as continuing from the start of a tax year until it is
-        # renewed or finalised, and reg 6(14) to (16) end the amount when an
-        # award is made late; on the model's whole-year awards, both affect
-        # only part of a year, and are not modelled.
+        # credit or working tax credit (reg 6(17)), so a working tax credit
+        # award alone, which need not include anything for the child, also
+        # removes the amount. Reg 6(12) and (13) treat last year's award as
+        # continuing from the start of a tax year until it is renewed or
+        # finalised, and reg 6(14) to (16) end the amount when an award is
+        # made late. The model has no renewal, finalisation or revision
+        # history, so neither is modelled; a deemed award can be entered as
+        # has_tax_credit_award.
         has_tax_credit_award = benunit("has_tax_credit_award", period)
         return benunit.sum(per_child_amount) * ~has_tax_credit_award
