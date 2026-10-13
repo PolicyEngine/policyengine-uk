@@ -23,7 +23,8 @@ class trading_allowance_deduction(Variable):
         "after other deductions; allowance treatment otherwise, including "
         "ties. This election covers all the individual's relevant trades "
         "for the tax year. Allowance treatment makes their current losses "
-        "nil for Income Tax. It does not optimise future loss use or benefits."
+        "nil for Income Tax and Class 4. It does not optimise future loss use "
+        "or benefits."
     )
     definition_period = YEAR
     reference = [

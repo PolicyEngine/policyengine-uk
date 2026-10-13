@@ -59,6 +59,120 @@
     # Income Tax is unaffected: £50,000 less the £12,570 Personal Allowance at 20%.
     income_tax: 7_486
 
+- name: Partial allowance excludes the year's ordinary Class 4 loss
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # Trade A receipts 20,200 less expenses 200 give profit 20,000.
+    # Trade B receipts 100 less expenses 799 give loss 699.
+    # Total receipts 20,300 less the allowance give profits 19,300,
+    # better than ordinary net profits 19,301. B's loss is not also relieved.
+    self_employment_income: 20_000
+    self_employment_gross_receipts: 20_300
+    trading_loss: 699
+  output:
+    trading_allowance_deduction: 700
+    ni_class_4_profits_before_losses: 19_300
+    ni_class_4_trading_loss: 0
+    ni_class_4_loss_relief: 0
+    ni_class_4_losses_carried_forward: 0
+    ni_class_4_profits: 19_300
+    ni_class_4: 403.80
+
+- name: Equal current loss and allowance saving choose the allowance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # The same trades, with B expenses 800 and loss 700.
+    self_employment_income: 20_000
+    self_employment_gross_receipts: 20_300
+    trading_loss: 700
+  output:
+    trading_allowance_deduction: 700
+    ni_class_4_trading_loss: 0
+    ni_class_4_losses_carried_forward: 0
+    ni_class_4_profits: 19_300
+    ni_class_4: 403.80
+
+- name: Ordinary loss relief beats the partial allowance without increasing Class 4
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    # The same trades, with B expenses 801 and loss 701: ordinary net
+    # profits 19,299 beat allowance profits 19,300.
+    self_employment_income: 20_000
+    self_employment_gross_receipts: 20_300
+    trading_loss: 701
+  output:
+    trading_allowance_deduction: 0
+    ni_class_4_profits_before_losses: 20_000
+    ni_class_4_trading_loss: 701
+    ni_class_4_loss_relief: 701
+    ni_class_4_losses_carried_forward: 0
+    ni_class_4_profits: 19_299
+    ni_class_4: 403.74
+
+- name: Full allowance makes current Class 4 profits and losses nil
+  period: 2026
+  absolute_error_margin: 0
+  input:
+    # Trade A profit and receipts 800; B receipts 100 and expenses 799.
+    # Full relief beats ordinary net profit 101 and makes both trades nil.
+    self_employment_income: 800
+    self_employment_gross_receipts: 900
+    trading_loss: 699
+  output:
+    trading_allowance_deduction: 800
+    ni_class_4_profits_before_losses: 0
+    ni_class_4_trading_loss: 0
+    ni_class_4_losses_carried_forward: 0
+    ni_class_4_profits: 0
+    ni_class_4: 0
+
+- name: Earlier nominal Class 4 balance survives this year's allowance election
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    employment_income:
+      2025: 50_000
+      2026: 0
+      2027: 0
+    self_employment_income:
+      2025: 0
+      2026: 20_000
+      2027: 30_000
+    self_employment_gross_receipts:
+      2025: 0
+      2026: 20_300
+      2027: 0
+    trading_loss:
+      2025: 20_000
+      2026: 699
+      2027: 0
+  output:
+    # The 2025 loss was relieved against pay for Income Tax but remains
+    # available for Class 4 at its nominal amount. In 2026 the trades above
+    # elect the allowance, so their new 699 loss never enters the balance.
+    trading_allowance_deduction:
+      2026: 700
+      2027: 0
+    ni_class_4_trading_loss:
+      2025: 20_000
+      2026: 0
+      2027: 0
+    ni_class_4_losses_brought_forward:
+      2026: 20_000
+      2027: 700
+    ni_class_4_losses_carried_forward:
+      2026: 700
+      2027: 0
+    ni_class_4_profits:
+      2026: 0
+      2027: 29_300
+    ni_class_4:
+      2026: 0
+      2027: 1_003.80
+
 - name: A sideways loss used for Income Tax still carries forward for Class 4
   period: 2026
   absolute_error_margin: 0.01
