@@ -255,3 +255,28 @@ def test_components_alone_are_valued_by_type():
     assert got[WITH][0] == 4_000 and got[WITHOUT][0] == 8_000
     # £1,000 + 90% of £4,000 + £3,000 + £5,000.
     assert got["uc_assessable_capital"][0] == pytest.approx(12_600)
+
+
+def test_a_component_penny_at_the_limit_counts():
+    """A penny of shares with no corporate_wealth counts like a penny of it."""
+    as_component = [{"savings": 16_000, "directly_held_shares": 0.01}]
+    as_aggregate = [{"savings": 16_000, "corporate_wealth": 0.01}]
+    for period in (YEAR, f"{YEAR}-01"):
+        component = _results(as_component, period=period, age=30)
+        aggregate = _results(as_aggregate, period=period, age=30)
+        assert component["share_like_capital"][0] == np.float32(0.01)
+        for variable in (*NODES, "is_uc_eligible"):
+            assert np.array_equal(component[variable], aggregate[variable]), variable
+        assert not component["is_uc_eligible"][0]
+
+
+def test_a_genuine_excess_over_the_aggregate_counts():
+    """Ten pence of components above the aggregate is a holding, not rounding."""
+    households = [
+        {
+            "corporate_wealth": 16_000,
+            "directly_held_shares": 10_000.10,
+            "stocks_and_shares_isa": 6_000,
+        }
+    ]
+    assert _results(households)["share_like_capital"][0] == np.float32(16_000.10)
