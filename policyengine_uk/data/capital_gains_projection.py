@@ -42,11 +42,17 @@ def capital_gains_application_metadata(records: dict) -> dict:
     for variable, periods in by_variable.items():
         for period, record in periods.items():
             summary = by_period.setdefault(
-                period, {"status": record["status"], "covered_variables": []}
+                period,
+                {
+                    "status": record["status"],
+                    "covered_variables": [],
+                    "has_supplied_inputs": False,
+                },
             )
             if summary["status"] != record["status"]:
                 summary["status"] = "mixed"
             summary["covered_variables"].append(variable)
+            summary["has_supplied_inputs"] |= record["status"] == "supplied"
     return {
         "coverage": "loaded CGT inputs and completed CGT input calculations",
         "by_variable": by_variable,
@@ -94,8 +100,11 @@ class CapitalGainsProjection:
     source: str
     vintage: str
     assumptions: str
+    experimental: bool = False
 
     def __post_init__(self) -> None:
+        if type(self.experimental) is not bool:
+            raise ValueError("Capital gains projection experimental must be a boolean.")
         for field in ("name", "source", "vintage", "assumptions"):
             value = getattr(self, field)
             if not isinstance(value, str) or not value.strip():
@@ -147,6 +156,7 @@ class CapitalGainsProjection:
             "source": self.source,
             "vintage": self.vintage,
             "assumptions": self.assumptions,
+            "experimental": self.experimental,
             "scope": "common factor for all CGT inputs, including signed net gains",
             "period": "UK fiscal year starting in the labelled year",
             "terminal_assumption": "none; projection outside the span raises",
@@ -207,7 +217,10 @@ def add_capital_gains_projection(
                     "values": {v.instant_str: v.value for v in original.values_list},
                     "metadata": {
                         **original.metadata,
-                        "projection": {"name": "legacy_gdp_per_capita"},
+                        "projection": {
+                            "name": "legacy_gdp_per_capita",
+                            "experimental": False,
+                        },
                     },
                 },
             )

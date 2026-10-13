@@ -666,6 +666,7 @@ class Simulation(CoreSimulation):
         builder.default_period = self.default_input_period
         builder.build_from_dict(self.tax_benefit_system, situation, self)
         self.has_axes = builder.has_axes
+        self._capture_cgt_supplied_inputs()
 
         self.dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=self.default_input_period
@@ -942,6 +943,12 @@ class Simulation(CoreSimulation):
         if getattr(self, "_user_input_keys", None) is not None:
             # A clone shares this set with its original, so replace it.
             self._user_input_keys = set()
+        # Origins and warning observations belong to the replaced population.
+        # Use new containers so rebuilding a clone cannot alter its original.
+        self._cgt_input_provenance = {}
+        self._cgt_defaulted_periods = set()
+        self._cgt_operation_inputs = set()
+        self._cgt_warned_unused = False
 
     def build_from_ids(
         self,
@@ -1111,7 +1118,8 @@ class Simulation(CoreSimulation):
         finally:
             self._cgt_calculation_depth -= 1
         if outer_calculation and self._cgt_operation_inputs:
-            self._warn_unused_cgt_projection(period)
+            for input_period in sorted({p for _, p in self._cgt_operation_inputs}):
+                self._warn_unused_cgt_projection(period_(input_period))
         return result
 
     def apply_dynamics(self, year: int):

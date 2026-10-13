@@ -43,6 +43,12 @@ are the start of a UK fiscal year: `2025` means FY2025–26. Every year after
 −100% ensure positive growth factors. The configuration is immutable and
 has a content fingerprint.
 
+The optional boolean `experimental` defaults to `False` and is included in
+configuration metadata and fingerprints. Set it to `True` for assumptions
+that should be identified as experimental. `False`, or its omission, does
+not certify validation; callers must still establish the evidence and
+measurement basis.
+
 The caller must establish the gains observation period and measurement
 basis. A dataset filename or calibration year does not establish either.
 Keep the observed gains, losses and component amounts as supplied. Match
@@ -72,7 +78,9 @@ The common factor scales total gains, BADR, residential-property and
 carried-interest amounts together, preserving component shares and signs.
 It does not change which records realise gains, impute missing support or
 classify BADR as an asset type. It also does not create losses or implement
-loss carry-forward rules. This fixed-composition approximation requires
+loss carry-forward rules. A fixed observed BADR share can preserve the
+effects of disposals brought forward ahead of anticipated rate changes.
+This fixed-composition approximation requires
 validation before use in a published costing. Data whose future weights
 change nonuniformly require a separate reconciliation; the aggregate
 identity assumes the model's uniform population uprating.
@@ -107,6 +115,10 @@ from policyengine_uk.data.capital_gains_projection import obr_eot_projection
 projection = obr_eot_projection()
 ```
 
+This configuration has `experimental=True`; the legacy GDP default reports
+`experimental=False`. The marker changes metadata and cache identity, not
+the numerical growth factors or their application.
+
 This opt-in sensitivity uses Table 1.2 of the OBR's
 [EOT relief costing supplement, physical page 5](https://obr.uk/docs/dlm_uploads/Supplementary-forecast-information-capital-gains-tax-relief-on-qualifying-disposals-costing.pdf#page=5),
 which relates to the **November 2025 forecast**, published on 2 April 2026.
@@ -135,6 +147,10 @@ underpinning growth. The series is not established as a policy-free,
 pre-exemption gains determinant. Extending it to every component is an
 explicit common-composition sensitivity. No additional forestalling
 unwind is imposed because that could count the same timing effect twice.
+When a separately evidenced timing model is available, forestalling and
+unwind from already announced policy belong in the baseline gains path.
+Only timing changes caused by the newly simulated reform belong in its
+incremental comparison with that baseline.
 
 For orientation, these are cumulative **per-record input factors**, relative
 to FY2024–25, calculated with the model's March 2026 economic assumptions.
@@ -184,6 +200,13 @@ inputs and completed CGT input calculations, with records at
 
 `application["by_period"]` gives each covered period's status and
 `covered_variables`; different statuses within that period produce `mixed`.
+Its `has_supplied_inputs` flag is true when at least one covered record is
+supplied. For example, a projected total with default-zero components is
+`mixed` with `has_supplied_inputs=False`; a supplied total with a projected
+component is `mixed` with `has_supplied_inputs=True`. False does not certify
+that every variable was projected, since default and unknown records or
+unobserved variables may remain. Supplied base-year anchors normally make
+the flag true for the base year without bypassing future projection.
 It does not summarise years or variables that have not been loaded or
 calculated. A normal single-year projection therefore reports its base
 year as supplied and its generated future years as projected. A household
@@ -196,7 +219,9 @@ An explicit scenario with supplied future CGT inputs issues
 when that period's covered inputs include supplied values and no projected
 values. The warning names the period and supplied variables and is emitted
 once per simulation. It does not mean the scenario cannot apply to other,
-unrequested years. Missing/default-only inputs do not trigger it. For
+unrequested years. The warning uses the input periods actually read, so a
+monthly CGT calculation that reads supplied annual gains names that year.
+Missing/default-only inputs do not trigger it. For
 example, selecting EOT on a dataset already populated through 2030 preserves
 those annual amounts and reports them as supplied; configuration metadata
 alone must not label their results as an EOT projection.
@@ -210,7 +235,9 @@ simulations keep independent records. Replacing or deleting inputs through
 A runtime economic reform changes the configured fingerprint; materialised
 dataset inputs retain their original applied fingerprint, while recalculated
 household projections record the new one. Direct mutation of holder storage
-is outside this provenance contract.
+is outside this provenance contract. Rebuilding a simulation's population
+starts fresh application records and permits a new relevant warning;
+rebuilding a clone leaves the original simulation's records unchanged.
 
 Before selecting a replacement default:
 

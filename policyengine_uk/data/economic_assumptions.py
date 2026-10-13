@@ -103,7 +103,6 @@ def _unmapped_uprating_indices(uprating):
     }
 
 
-
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
     tax_benefit_system_parameters: ParameterNode,
