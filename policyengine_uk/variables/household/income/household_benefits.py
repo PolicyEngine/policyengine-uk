@@ -34,6 +34,7 @@ HOUSEHOLD_BENEFIT_VARIABLES = [
     "cost_of_living_support_payment",
     "energy_bills_rebate",
     "winter_fuel_allowance",
+    "pawhp",
     "tax_free_childcare",
     "extended_childcare_entitlement",
     "universal_childcare_entitlement",
