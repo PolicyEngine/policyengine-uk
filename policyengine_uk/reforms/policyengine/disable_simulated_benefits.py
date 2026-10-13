@@ -177,11 +177,13 @@ def disable_simulated_benefits(parameters, period):
                     np.asarray(simulation.calculate("country", time_period))
                     == "SCOTLAND"
                 )
+                # Read from the system of the simulation applying the reform:
+                # when the parameter switches the reform on, that is the tree
+                # it was built from; a reform class applied later may have been
+                # built from another.
                 for year in years:
-                    paid_as_pawhp = (
-                        in_scotland
-                        & parameters(year).gov.social_security_scotland.pawhp.active
-                    )
+                    scheme = system.parameters(year).gov.social_security_scotland
+                    paid_as_pawhp = in_scotland & scheme.pawhp.active
                     simulation.set_input(
                         "winter_fuel_allowance",
                         year,
