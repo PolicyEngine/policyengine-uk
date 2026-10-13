@@ -34,6 +34,34 @@
     is_housing_benefit_benefit_cap_exempt: false
     housing_benefit_benefit_cap: 14_753
 
+# Reg 83(1)(a) reads "the LCWRA element is included in the award", as (j)
+# reads the carer element, so the exception follows the element and not the
+# limited-capability flag. Whose limited capability the element covers is the
+# element's rule (reg 27(1): "a claimant").
+- name: UC reg 83(1)(a) - limited capability without the LCWRA element in the award lifts no cap
+  period: 2025
+  input:
+    age: 30
+    uc_limited_capability_for_WRA: true
+    uc_LCWRA_element: 0
+    esa_income: 0
+    esa_contrib: 0
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: false
+    is_uc_benefit_cap_exempt: false
+
+- name: UC reg 83(1)(a) - the LCWRA element in the award lifts the UC cap
+  period: 2025
+  input:
+    age: 30
+    uc_limited_capability_for_WRA: false
+    uc_LCWRA_element: 5_000
+    esa_income: 0
+    esa_contrib: 0
+  output:
+    is_uc_benefit_cap_exempt_specified_benefit: true
+    is_uc_benefit_cap_exempt: true
+
 - name: UC reg 83(1)(j) - the carer element lifts the UC cap; HB needs carer's allowance
   period: 2025
   input:
