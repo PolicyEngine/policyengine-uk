@@ -1,3 +1,19 @@
+## [2.130.0] - 2026-10-13
+
+### Added
+
+- - Universal Credit now applies regulation 77 to a person who stands as sole owner or partner of a company carrying on a trade or property business.
+    - A trading company's income counts as their self-employed earnings on top of any pay from it. A company loss is set against the profit of any trade they carry on themselves, the tax and National Insurance on their trades come off that total, and a negative result counts as nil, so neither a loss nor the tax on a trade it cancels comes off their pay.
+    - Only a claimant's or partner's company earnings reduce the award.
+    - The minimum income floor applies when the trade is their main employment.
+    - The company's capital replaces the value of their shares. Trade assets are disregarded while they work in the trade. In households with several benefit units, the shares leave the household's capital before it is shared out, including a dependant's, which count for nobody.
+    - The intermediaries (IR35) exclusion follows reg. 77(5) as in force: Chapters 8 and 9 of ITEPA Part 2 until 27 November 2018, and Chapters 8 to 10 from main-employment activities from 28 November 2018. Annual simulations take the rule in force at the start of the year, so 2018 uses the earlier rule throughout.
+    - New `owned_company_*` inputs describe the company. Every input defaults to no such company, so existing datasets are unchanged.
+- - Added explicit, versioned capital-gains projection scenarios shared by dataset and household simulations, with population adjustments, bounded years, errors for direct reforms to generated paths and an experimental OBR EOT sensitivity.
+  - Added per-variable and period application provenance distinguishing supplied inputs, applied projections and defaults, an explicit supplied-input flag, and a warning when supplied future gains bypass an explicitly selected projection, including annual inputs read by monthly calculations. Population rebuilds reset this provenance.
+  - Added an experimental marker to projection metadata and cache fingerprints, set for the bundled OBR EOT sensitivity without changing its growth assumptions.
+
+
 ## [2.129.1] - 2026-10-13
 
 ### Fixed
