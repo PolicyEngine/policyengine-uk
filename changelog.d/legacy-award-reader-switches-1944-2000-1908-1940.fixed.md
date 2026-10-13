@@ -1,0 +1,3 @@
+- Count only the parent's and partner's own income-related ESA in the extended childcare parent and partner conditions (SI 2022/1134 regs 11A(1)(e), 14(4) and 15(4)): another member of the benefit unit with an award of their own no longer lets a non-working parent or partner meet them.
+- Add tests that the choice between the working-age and pension-age Housing Benefit regulations (HB Regs 2006 reg 5(1)(b)) reads only the claimant's and partner's Income Support, income-based JSA and income-related ESA, as it already does.
+- Add tests that the mixed-age couple Pension Credit saving (SI 2019/37) reads only the couple's own Income Support, JSA and ESA reports, as it already does.
