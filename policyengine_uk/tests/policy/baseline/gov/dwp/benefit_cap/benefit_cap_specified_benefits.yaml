@@ -536,6 +536,43 @@
   output:
     uc_limited_capability_for_WRA: true
 
+- name: LCWRA entered as false leaves limited capability for work to the disability flag
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 35
+        employment_income: 6_000
+        is_disabled_for_benefits: true
+        uc_limited_capability_for_WRA: false
+    benunits:
+      family:
+        members: [claimant]
+    households:
+      home:
+        members: [claimant]
+        region: NORTH_EAST
+        rent: 9_000
+  output:
+    # uc_limited_capability_for_work is LCWRA or the disability flag, so an
+    # entry of false for LCWRA alone does not remove it. This is wider than
+    # before uc_limited_capability_for_work existed, when the work allowance
+    # read LCWRA (work allowance 0, UC 7,381.68) and this claimant was subject
+    # to all work-related requirements.
+    uc_limited_capability_for_WRA: false
+    uc_limited_capability_for_work: true
+    uc_LCWRA_element: 0
+    is_uc_work_allowance_eligible: true
+    # 2025-26 lower work allowance (with a housing costs element): 411 x 12
+    uc_work_allowance: 4_932
+    # Welfare Reform Act 2012 s.21(1)(a)
+    uc_work_related_group_apart_from_earnings: WORK_PREPARATION
+    # Standard allowance 400.14 x 12 = 4,801.68, plus housing costs 5,880,
+    # less 55% of earnings above the work allowance (no income tax or
+    # National Insurance on 6,000): 10,681.68 - 0.55 x (6,000 - 4,932)
+    uc_housing_costs_element: 5_880
+    universal_credit: 10_094.28
+
 # --- Claimant or partner only: HB reg 75F(1)(b)-(d), UC reg 83(1)(b)-(e) ---
 
 - name: Partner's industrial injuries benefit lifts the cap

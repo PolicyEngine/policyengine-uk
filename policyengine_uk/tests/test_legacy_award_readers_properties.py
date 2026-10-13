@@ -279,22 +279,18 @@ def parent(age, **awards):
 
 
 # A couple on income-based JSA with two children and a lodger already in the
-# benefit unit. The benefit cap sums the whole unit's JSA, so an added
+# benefit unit. The benefit cap summed the whole unit's JSA, so an added
 # member's own JSA raised the cap reduction, which lowers Universal Credit
 # and so the council tax reduction income
 # (PolicyEngine/policyengine-uk#2298). The review of
-# PolicyEngine/policyengine-uk#2294 found this family.
+# PolicyEngine/policyengine-uk#2294 found this family. The cap now counts
+# only the couple's own awards (UC Regs 2013 reg 80(1); HB Regs 2006 reg
+# 75A), so the family's cap reduction is calculated here, not held.
 JSA_COUPLE_WITH_LODGER = (
     [parent(35, jsa_income_reported=3_000), parent(35, jsa_income_reported=3_000)],
     [{"age": 15}, {"age": 15}, outside_adult(30)],
     {"country": "ENGLAND", "savings": 0},
 )
-# The benefit cap counts every member's own income-based JSA and
-# income-related ESA, not only the claimant's and partner's
-# (PolicyEngine/policyengine-uk#2298). The cap is not one of the readers this
-# file tests, so it is held at zero here until that is fixed; drop the hold
-# when it is.
-CAP_HELD = {"benefit_cap_reduction": 0}
 
 
 @SETTINGS
@@ -312,7 +308,7 @@ def test_other_members_awards_never_change_the_readers(drawn):
     silent = [(*family, {**other, **NO_AWARDS}) for family, other in drawn]
     with_other = [(*family, other) for family, other in drawn]
     units = without + silent + with_other
-    sim = Simulation(situation=situation(units, benunit_inputs=CAP_HELD))
+    sim = Simulation(situation=situation(units))
     flags = sim.calculate("is_claimant_or_partner", YEAR)
     dependant = sim.calculate("is_child_or_young_person_for_legacy_benefits", YEAR)
     sizes = [len(a) + len(d) + (o is not None) for a, d, _, o in units]
