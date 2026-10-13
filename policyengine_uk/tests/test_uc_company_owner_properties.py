@@ -29,35 +29,45 @@ Invariants, for any generated benefit units:
    proportion to their claimants, and each unit adds its own claimants'
    company capital; so the units' capital sums to that pool plus the owners'
    company capital.
-4. Earnings identity: earned income before the floor is pay plus
-   self-employed earnings, less the person's own relievable pension
-   contributions, income tax and National Insurance, floored at zero.
-   Self-employed earnings are the person's own trading profit or loss plus,
-   for a trading company, the company income share (a loss is negative),
-   floored at zero (reg. 57(2) steps 1 and 2); a property-only company adds
-   nothing.
+4. Earnings identity: earned income before the floor is pay less the
+   person's own income tax and NI on the employment, plus the trading total
+   floored at zero, less their relievable pension contributions, floored at
+   zero. The trading total is their own trading profit or loss plus, for a
+   trading company, the company income share (a loss is negative), less the
+   income tax and NI on the trade (reg. 57(2) steps 1 to 3); a property-only
+   company adds nothing. Where pay and own-trade profit are within 12,000,
+   no tax or NI is due and it is exactly pay plus the floored trading total.
 5. Floor: the floor applies exactly to claimants in the all work-related
    requirements group, outside a start-up period, who are self-employed or
    own a trading company that is their main employment (reg. 62(1), (5),
-   reg. 77(3)(c)). It never lowers earned income, and a single claimant it
-   applies to has earned income of at least the floor.
+   reg. 77(3)(c)), and never to one with limited capability for work and
+   work-related activity. It never lowers earned income, and a single
+   claimant it applies to has earned income of at least the floor.
 6. Monotone: Universal Credit is non-increasing in the company income share,
    among cases where the extra income does not change the benefit cap
    earnings exemption (reg. 82(1)(a): crossing the threshold lifts the cap
    and can raise the award), and in the company's capital; it is
    non-decreasing in the value of the disregarded holding and of disregarded
    trade assets.
-7. Dependants: company income and capital belonging to a dependant change
-   neither the award nor its capital, earned income or cap exemption
-   (reg. 22(1)(b), reg. 82(1)(a)).
+7. Property companies: the income share and the main-employment flag never
+   change Universal Credit or earned income for a property-only company.
+8. Dependants: company income and capital belonging to a dependant (with no
+   holding) change neither the award nor its capital or earned income
+   (reg. 22(1)(b)).
+9. Holdings count for nobody: adding shares to the household's corporate
+   wealth as the disregarded holding of a dependant in a family (reporting
+   its capital or not) and of an adult in another, unreported benefit unit
+   changes no unit's assessable capital.
 
 The strategies make most adults owners of a trading company, keep capital
 mostly under the £16,000 limit and put earnings around the floor, so each
-property is exercised rather than satisfied vacuously.
+property is exercised rather than satisfied vacuously. Pinned examples make
+every run reach each reg. 77 earnings and floor branch and a shared-household
+holding, whatever the generated examples reach.
 """
 
 import numpy as np
-from hypothesis import HealthCheck, given, settings
+from hypothesis import HealthCheck, example, given, settings
 from hypothesis import strategies as st
 
 from policyengine_uk import Simulation
@@ -261,6 +271,89 @@ def company_capital_of(company):
     return max(0.0, company["owned_company_capital"] - disregarded)
 
 
+def pinned_company(**facts):
+    """A pinned example's company: a trading company the adult solely owns."""
+    return {
+        "stands_as_sole_owner_or_partner_of_company": True,
+        "owned_company_carries_on_trade": True,
+        "owned_company_carries_on_property_business": False,
+        "owned_company_intermediary_earnings_chapter": "NONE",
+        "owned_company_intermediary_earnings_from_main_employment": False,
+        "owned_company_is_main_employment": False,
+        "is_engaged_in_owned_company_trade": False,
+        "owned_company_income_share": 0.0,
+        "owned_company_capital": 0.0,
+        "owned_company_trade_assets": 0.0,
+        "owned_company_holding_value": 0.0,
+        **facts,
+    }
+
+
+def pinned_adult(company=None, **facts):
+    return {
+        "age": 40,
+        "employment_income": 0.0,
+        "self_employment_income": 0.0,
+        "uc_is_in_startup_period": False,
+        "uc_limited_capability_for_WRA": False,
+        "company": company
+        or pinned_company(stands_as_sole_owner_or_partner_of_company=False),
+        **facts,
+    }
+
+
+def pinned_unit(*adults, savings=0.0, corporate_wealth=0.0):
+    return dict(
+        adults=list(adults),
+        children=0,
+        rent=0.0,
+        savings=savings,
+        corporate_wealth=corporate_wealth,
+    )
+
+
+# Every run exercises each reg. 77 earnings and floor branch at least once,
+# whatever the generated examples reach.
+PINNED_EARNINGS_UNITS = [
+    # 77(3)(c): main-employment trading company, no other self-employment.
+    pinned_unit(
+        pinned_adult(
+            pinned_company(
+                owned_company_is_main_employment=True,
+                owned_company_income_share=6_000.0,
+            )
+        )
+    ),
+    # Reg. 57(2) step 2: a company loss against the owner's own trade.
+    pinned_unit(
+        pinned_adult(
+            pinned_company(owned_company_income_share=-3_000.0),
+            self_employment_income=8_000.0,
+            uc_is_in_startup_period=True,
+        )
+    ),
+    # Reg. 57(2) step 3: the tax on a trade a company loss cancels.
+    pinned_unit(
+        pinned_adult(
+            pinned_company(owned_company_income_share=-20_000.0),
+            employment_income=12_000.0,
+            self_employment_income=20_000.0,
+            uc_is_in_startup_period=True,
+        )
+    ),
+    # Limited capability for work and work-related activity: no floor.
+    pinned_unit(
+        pinned_adult(
+            pinned_company(
+                owned_company_is_main_employment=True,
+                owned_company_income_share=6_000.0,
+            ),
+            uc_limited_capability_for_WRA=True,
+        )
+    ),
+]
+
+
 @PROPERTY_SETTINGS
 @given(st.lists(units(), min_size=2, max_size=4))
 def test_rule_is_inert_when_it_does_not_apply(unit_list):
@@ -293,6 +386,7 @@ def test_rule_is_inert_when_it_does_not_apply(unit_list):
 
 @PROPERTY_SETTINGS
 @given(st.lists(units(), min_size=2, max_size=4))
+@example(PINNED_EARNINGS_UNITS)
 def test_capital_and_earnings_identities(unit_list):
     got = calculate([(u, {}) for u in unit_list])
     base = calculate([(u, no_company(u)) for u in unit_list])
@@ -499,6 +593,18 @@ def test_property_company_gives_no_earnings(unit_list, share):
 
 @PROPERTY_SETTINGS
 @given(st.lists(st.tuples(units(), units()), min_size=1, max_size=3))
+@example(
+    [
+        (
+            pinned_unit(
+                pinned_adult(pinned_company(owned_company_holding_value=30_000.0)),
+                savings=10_000.0,
+                corporate_wealth=30_000.0,
+            ),
+            pinned_unit(pinned_adult()),
+        )
+    ]
+)
 def test_household_capital_is_allocated_and_conserved_across_benefit_units(pairs):
     # Each household holds two benefit units: the first unit's adults and the
     # second's, with the first unit's savings and corporate wealth. No unit
