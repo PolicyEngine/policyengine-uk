@@ -151,7 +151,7 @@
     benunits:
       family:
         members: [claimant, partner]
-        universal_credit_pre_benefit_cap: 18_000
+        universal_credit_pre_benefit_cap: 25_000
     households:
       home:
         members: [claimant, partner]
@@ -160,8 +160,40 @@
     # The reform includes basic income in UC earned income, so the shared
     # expression in #1820 also counts it here: 5,500 + 5,500 >= 10,152.
     # The total also exceeds #1820's 2026 NLW-based earnings threshold.
-    # This records existing reform behavior; its interaction with the
-    # benefit cap earnings exception remains an open question for #1986.
+    # Counting basic income in this test is new in this PR: main's formula
+    # never counted it. Whether reg 82 should count it is an open question
+    # for #1986 and #1820. The award of 25,000 is above the couple cap
+    # outside London (22,020), so without the exemption the cap would take
+    # 2,980; with it, nothing.
     uc_individual_earned_income_before_mif: [5_500, 5_500]
     is_benefit_cap_exempt_earnings: true
     benefit_cap_reduction: 0
+
+- name: Without the basic income reform toggle, basic income does not count toward the earnings exception
+  period: 2026
+  input:
+    people:
+      claimant:
+        age: 40
+        employment_income: 0
+        basic_income: 5_500
+      partner:
+        age: 40
+        employment_income: 0
+        basic_income: 5_500
+    benunits:
+      family:
+        members: [claimant, partner]
+        universal_credit_pre_benefit_cap: 25_000
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # The control for the case above. By default basic income is not UC
+    # earned income, so the couple has no earned income, no exemption
+    # applies and the couple cap outside London (22,020) takes
+    # 25,000 - 22,020 = 2,980.
+    uc_individual_earned_income_before_mif: [0, 0]
+    is_benefit_cap_exempt_earnings: false
+    benefit_cap_reduction: 2_980
