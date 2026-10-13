@@ -23,11 +23,13 @@
 # Tax credit income (SI 2002/2006 reg 3): State Pension is step-one pension
 # income (reg 5(1)(a); ITEPA 2003 s.577) and savings interest step-one
 # investment income (reg 10); step one counts only its excess over £300.
-# Earnings are step two. Each pensioner has £300 of interest on £10,000 of
-# savings, so step one's excess is the State Pension. (The model counts State
-# Pension in step two, which gives the same total once the interest uses the
-# £300.) £10,000 of capital gives no Pension Credit tariff income (SPC Regs
-# 2002 reg 15(6)), and savings interest is not Pension Credit income.
+# Earnings are step two. In each case the claimants have £10,000 of savings
+# and at least £300 of savings interest between them, so the interest uses up
+# step one's £300 and step one's excess is the State Pension plus any interest
+# above £300. (The model counts State Pension in step two, which gives the
+# same total once the interest uses the £300.) £10,000 of capital gives no
+# Pension Credit tariff income (SPC Regs 2002 reg 15(6)), and savings interest
+# is not Pension Credit income.
 #
 # Pension Credit earnings are entered net of the SPC Regs 2002 Sch VI para 5
 # disregard (£5 a week single, £10 a couple), which the model does not apply.
@@ -205,7 +207,8 @@
   # CTC: £545 + £3,455 = £4,000, not 4,000 - 0.41 x 205 = £3,915.95.
   # SPC Regs 2002 reg 6(6)(d) and (11) give no Schedule IIA child amount to
   # a person awarded a tax credit. The CTC family element has been £545 since
-  # 2011-12; it is entered because the model CPI-uprates it.
+  # 2011-12; it was entered when the model uprated it, and since #1925 the
+  # model's own value is the same.
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -251,7 +254,7 @@
   # Credit, so the child is not eligible through either route.
   # CTC: the family element needs a child "born before 6th April 2017" (CTC
   # Regs 2002 reg 7(2)(a)), so it is nil here (entered, as the model pays
-  # it); the individual element is £3,455 (reg 7(4)(c)).
+  # it: #2050); the individual element is £3,455 (reg 7(4)(c)).
   period: 2024
   absolute_error_margin: 0.01
   input:
@@ -292,11 +295,15 @@
     meets_child_tax_credit_criteria_for_targeted_childcare_entitlement: false
     targeted_childcare_entitlement_eligible: false
 
-- name: A mixed-age couple cannot get Pension Credit, so the income test applies
+- name: A mixed-age couple without the SI 2019/37 saving cannot get Pension Credit, so the income test applies
   # SPCA 2002 s.4(1A) (from 15 May 2019): no Pension Credit where the other
-  # member of the couple is under the qualifying age. The SI 2019/37 art. 4
-  # saving is not modelled here. A couple both over that age with this income
-  # would get Guarantee Credit with the passport.
+  # member of the couple is under the qualifying age. This couple reports
+  # neither Pension Credit nor Housing Benefit, so they have no SI 2019/37
+  # art. 4 saving; the next case has it. The older partner is 70 and 9 months
+  # at 6 October 2024, so born on 6 January 1954, early enough to have reached
+  # the qualifying age (on 6 May 2019) before the saving's 14 May 2019 date;
+  # it is the missing entitlement that denies the saving. A couple both over
+  # that age with this income would get Guarantee Credit with the passport.
   # The older partner works 20 hours, which meets the WTC hours condition for
   # a joint claim with no child: "aged at least 60 and undertakes work for not
   # less than 16 hours per week" (WTC Regs 2002 reg 4(1), Second condition,
@@ -309,6 +316,7 @@
     people:
       older:
         age: 70
+        months_since_last_birthday: 9
         is_claimant_or_partner: true
         state_pension: 6_000
         savings_interest_income: 300
@@ -327,16 +335,64 @@
         members: [older, younger]
         savings: 10_000
   output:
+    has_mixed_age_couple_pension_credit_saving: false
     pension_credit: 0
     tax_credits_applicable_income: 8_600
     working_tax_credit: 4_670.55
+
+- name: A mixed-age couple who keep Pension Credit under the SI 2019/37 saving get the passport
+  # The couple of the previous case (the older partner born on 6 January
+  # 1954, so over the qualifying age by 6 May 2019), but entitled to Pension
+  # Credit as that couple on 14 May 2019 and on every day since, so s.4(1A)
+  # does not apply to them (SI 2019/37 art. 4(1)-(2)). The older partner is
+  # entitled to Pension Credit, and TCA 2002 s.7(2) lifts the income test for
+  # the joint claim while "either of the persons" is entitled to it.
+  # Passported WTC: £2,435 + £2,500 = £4,935. Pension Credit income: earnings
+  # of 2,600 - 10 x 52 = £2,080 (SPC Regs 2002 Sch VI para 5(b), a claimant
+  # with a partner), plus £6,000 and £4,935, is £13,015, against a couple's
+  # guarantee of 332.95 x 52 = £17,313.40. So Guarantee Credit is £4,298.40
+  # and the passport holds. No savings credit: neither partner "attained
+  # pensionable age before 6 April 2016" (SPCA 2002 s.3(1)).
+  period: 2024
+  absolute_error_margin: 0.01
+  input:
+    people:
+      older:
+        age: 70
+        months_since_last_birthday: 9
+        is_claimant_or_partner: true
+        state_pension: 6_000
+        savings_interest_income: 300
+        employment_income: 2_600
+        weekly_hours: 20
+        working_tax_credit_reported: 1
+      younger:
+        age: 40
+        is_claimant_or_partner: true
+    benunits:
+      benunit:
+        members: [older, younger]
+        would_claim_uc: false
+        has_mixed_age_couple_pension_credit_saving: true
+        pension_credit_earnings: 2_080  # 2,600 - 10 x 52
+    households:
+      household:
+        members: [older, younger]
+        savings: 10_000
+  output:
+    tax_credits_current_year_income: 8_600
+    tax_credits_applicable_income: 0
+    working_tax_credit: 4_935
+    savings_credit: 0
+    pension_credit: 4_298.40
 
 - name: With no tax credit awards in payment, Pension Credit still lifts the income test
   # Tax credits ended on 5 April 2025, so no award is paid in 2025-26 and
   # working tax credit is nil either way. The standard minimum guarantee for
   # a single claimant is £227.10 a week (SPC Regs 2002 reg 6(1)(b), as
-  # substituted by SI 2025/295 art. 29(2)(b)); it is entered because the
-  # model's 2025-26 value differs (#1937). Guarantee Credit:
+  # substituted by SI 2025/295 art. 29(2)(b)); it was entered when the
+  # model had £221.85 (#1937), and since #1925 the model's own value is the
+  # same. Guarantee Credit:
   # 227.10 x 52 - (2,340 + 6,000) = 11,809.20 - 8,340 = £3,469.20.
   period: 2025
   absolute_error_margin: 0.01

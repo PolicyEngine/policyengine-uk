@@ -17,12 +17,12 @@
 #
 # How the 2031+ series are constructed:
 # - CPI hits its 2% target on 2031-01-01 and is held flat.
-# - RPI, CPIH and average earnings ramp linearly from the final EFO value
-#   (2030-01-01) to the steady-state value, converging by 2035-2036. After
-#   convergence the series are held flat through 2073-01-01.
-# - This convergence path is consistent with the OBR's Fiscal Risks and
-#   Sustainability long-run assumptions and is regenerated when a new EFO
-#   is released; the helper module
+# - RPI, CPIH and average earnings use the checked-in convergence rates;
+#   their annual steps are not uniform. RPI/CPIH reach steady state in 2035,
+#   earnings in 2036; the rates then hold flat through 2073-01-01.
+# - These intermediate rates are model assumptions beyond the EFO horizon.
+#   Review them when a new EFO is released. The helper module below creates
+#   cumulative indices from these rates, not the convergence paths themselves:
 #   `policyengine_uk/parameters/gov/economic_assumptions/create_economic_assumption_indices.py`
 #   refreshes downstream indices from these growth rates.
 #
@@ -345,14 +345,14 @@ obr:
           href: https://obr.uk/docs/dlm_uploads/Fuel-duty-supplementary-release_receipts-by-vehicle-type.pdf
 
   petrol_spending_litre_proxy:
-    description: Unleaded-petrol spending proxy growth that preserves weighted road-fuel litres after dividing by model pump prices.
+    description: Unleaded-petrol spending proxy growth that preserves weighted road-fuel litres after dividing by model pump prices. Derived as (1 + road_fuel_volume) x (price_t / price_t-1) / (1 + population) - 1, using household.consumption.fuel.prices; re-derive whenever those prices change.
     values:
-      2021-01-01: 0.09966723889828133
-      2022-01-01: 0.47125942029399615
-      2023-01-01: 0.09943596417596279
-      2024-01-01: -0.14810324567590538
-      2025-01-01: -0.0269132439679719
-      2026-01-01: -0.018120813771079436
+      2021-01-01: 0.4276130160591334
+      2022-01-01: 0.32114330849740713
+      2023-01-01: -0.11978022401038202
+      2024-01-01: -0.05378435951558702
+      2025-01-01: -0.07097011631498962
+      2026-01-01: 0.09631434800374827
       2027-01-01: -0.027765858532455168
       2028-01-01: -0.030878786058031737
       2029-01-01: -0.04149818363243518
@@ -408,18 +408,18 @@ obr:
           href: https://www.gov.uk/government/statistics/hydrocarbon-oils-bulletin
         - title: OBR EFO March 2026 (fuel-duty receipts forecast)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
-        - title: RAC latest average petrol price
-          href: https://www.rac.co.uk/drive/advice/fuel-watch/
+        - title: DESNZ annual average ULSP pump price (household.consumption.fuel.prices.petrol)
+          href: https://www.gov.uk/government/statistical-data-sets/oil-and-petroleum-products-monthly-statistics
 
   diesel_spending_litre_proxy:
-    description: Diesel spending proxy growth that preserves weighted road-fuel litres after dividing by model pump prices.
+    description: Diesel spending proxy growth that preserves weighted road-fuel litres after dividing by model pump prices. Derived as (1 + road_fuel_volume) x (price_t / price_t-1) / (1 + population) - 1, using household.consumption.fuel.prices; re-derive whenever those prices change.
     values:
-      2021-01-01: 0.13390420538515913
-      2022-01-01: 0.3702255435452164
-      2023-01-01: -0.01858407316867594
-      2024-01-01: 0.03164670292538285
-      2025-01-01: -0.0269132439679719
-      2026-01-01: -0.018120813771079436
+      2021-01-01: 0.4035933750476013
+      2022-01-01: 0.38608334996374616
+      2023-01-01: -0.12613670608493466
+      2024-01-01: -0.07344928074891444
+      2025-01-01: -0.06483399761456943
+      2026-01-01: 0.1748436772712496
       2027-01-01: -0.027765858532455168
       2028-01-01: -0.030878786058031737
       2029-01-01: -0.04149818363243518
@@ -475,8 +475,8 @@ obr:
           href: https://www.gov.uk/government/statistics/hydrocarbon-oils-bulletin
         - title: OBR EFO March 2026 (fuel-duty receipts forecast)
           href: https://obr.uk/efo/economic-and-fiscal-outlook-march-2026/
-        - title: RAC latest average diesel price
-          href: https://www.rac.co.uk/drive/advice/fuel-watch/
+        - title: DESNZ annual average ULSD pump price (household.consumption.fuel.prices.diesel)
+          href: https://www.gov.uk/government/statistical-data-sets/oil-and-petroleum-products-monthly-statistics
 
   consumer_price_index_ahc:
     description: Consumer price index year-on-year growth, modified to remove housing costs.
@@ -1210,21 +1210,79 @@ ofwat:
           href: https://www.ofwat.gov.uk/average-bills-2025-26-press-statement/
 finance_ni:
   domestic_rates:
-    description: Domestic rates year-on-year growth.
+    description: Growth in the average Northern Ireland domestic rates bill (regional rate plus district rate), used to project the domestic_rates dataset input.
+    # A Northern Ireland household's rates bill is its capital value times
+    # the regional rate plus its council's district rate, levied "as if they
+    # were items of a single rate" (Rates (Northern Ireland) Order 1977,
+    # arts 6, 7 and 9). Domestic capital values are still those of the
+    # 1 January 2005 valuation list, so the bill grows with the two
+    # poundages. Each year below is the growth in the combined domestic
+    # poundage across the 11 councils, weighted by each council's domestic
+    # rates paid in the previous year (LPS; the 2020-21 figures stand in for
+    # 2019-20, the first year not published). It is a national average: it
+    # does not reproduce any one council's bill or changes in reliefs.
+    #
+    # Neither OBR March 2026 line covers the whole bill, and OBR labels
+    # neither as regional or district; the attribution here is inferred.
+    # Expenditure Table 4.1 holds "NI domestic rates" at £0.494bn in every
+    # year to 2030-31 inside its council tax total, and ONS classes district
+    # domestic rates with council tax, so it appears to be the district
+    # rates. Receipts Table 3.2 "Northern Ireland domestic rates" (in "Other
+    # taxes") appears to be the regional rate: ONS classes the regional
+    # domestic rate as a central government tax, and with Table 3.2's NI
+    # business rates line it sums to £0.914bn in 2026-27, against DoF's
+    # "just over £900million" from the regional rate that year. Receipts
+    # growth is not bill growth either: Table 3.2 grows 2.0% in 2026-27, a
+    # year whose domestic regional rate rose 5.0%.
     values:
-      2024-01-01: 0.05
-      2025-01-01: 0.047
-      2026-01-01: 0
-      2027-01-01: 0
-      2028-01-01: 0
-      2029-01-01: 0
-      2020-01-01: 0
+      # Outturn: published poundages. Regional rate 0.4574p in 2019-20 to
+      # 2022-23, then 0.4848p, 0.5042p, 0.5294p and 0.5559p (2026-27). The
+      # district figures are each council's district growth, bill-weighted.
+      2020-01-01: 0.0148 # regional 0%, district +3.36%
+      2021-01-01: 0.0066 # regional 0%, district +1.43%
+      2022-01-01: 0.0132 # regional 0%, district +2.90%
+      2023-01-01: 0.0630 # regional +6.0%, district +6.68%
+      2024-01-01: 0.0491 # regional +4.0%, district +5.91%
+      2025-01-01: 0.0474 # regional +5.0%, district +4.46%
+      2026-01-01: 0.0433 # regional +5.0%, district +3.58%
+      # Projection (an assumption, not enacted policy): 2026-27 growth held.
+      # The Finance Minister's 2026-29/30 draft Budget proposals (6 January
+      # 2026, published before Executive agreement; no final Budget found by
+      # October 2026) assume the domestic regional rate rises 5% a year to
+      # 2028-29. No published Northern Ireland-wide district rate forecast
+      # was found, so district growth is assumed to stay at its 2026-27
+      # rate. Regional 5% plus district 3.58% gives 4.34% to 4.36% a year as
+      # the regional share drifts up, within 0.03pp of the value held.
+      # 2029-30 onward extrapolates beyond the draft Budget's resource
+      # period (to 2028-29).
+      2027-01-01: 0.0433
+      2028-01-01: 0.0433
+      2029-01-01: 0.0433
+      2030-01-01: 0.0433
     metadata:
       unit: /1
-      label: Domestic rates growth
+      label: Northern Ireland domestic rates bill growth
       reference:
-        - title: Finance NI (based on outturn)
-          href: https://www.finance-ni.gov.uk/
+        - title: Department of Finance, Rate poundages 2024-25 to 2026-27 (domestic regional and district rates by council)
+          href: https://www.finance-ni.gov.uk/articles/rate-poundages
+        - title: Department of Finance, Rate poundages 2019-20 to 2023-24 (archived 6 July 2023)
+          href: https://web.archive.org/web/20230706151829/https://www.finance-ni.gov.uk/articles/rate-poundages
+        - title: Land & Property Services, Domestic rates collected by district council 2020-21 to 2025-26
+          href: https://www.data.gov.uk/dataset/30535a44-0a05-4bff-98cf-001301a6b4d6/rates-paid-by-district-council-and-sector
+        - title: Rates (Regional Rates) Order (Northern Ireland) 2026, art 3(2) (domestic regional rate 0.5559p, 2026-27)
+          href: https://www.legislation.gov.uk/nisr/2026/19/made
+        - title: Rates (Regional Rates) Order (Northern Ireland) 2025, art 3(2) (0.5294p, 2025-26)
+          href: https://www.legislation.gov.uk/nisr/2025/27/made
+        - title: Rates (Regional Rates) Order (Northern Ireland) 2024, art 3(2) (0.5042p, 2024-25)
+          href: https://www.legislation.gov.uk/nisr/2024/28/made
+        - title: Regional Rates (Northern Ireland) Regulations 2023, reg 2(3) (0.4848p, 2023-24)
+          href: https://www.legislation.gov.uk/uksi/2023/198/made
+        - title: Department of Finance, Proposed draft Budget 2026-29/30, written ministerial statement (domestic regional rate +5% a year)
+          href: https://www.niassembly.gov.uk/assembly-business/official-report/written-ministerial-statements/department-of-finance-proposed-draft-budget-2026-2930/
+        - title: Rates (Northern Ireland) Order 1977, arts 6, 7 and 9
+          href: https://www.legislation.gov.uk/nisi/1977/2157/article/9
+        - title: ONS, Country and regional public sector finances methodology guide, sections 29 and 30
+          href: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/methodologies/countryandregionalpublicsectorfinancesmethodologyguide
 
 carbon_intensity:
   description: Carbon intensity year-over-year growth (decline).

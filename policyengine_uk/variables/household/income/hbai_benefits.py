@@ -32,9 +32,11 @@ class hbai_benefits(Variable):
         "maternity_allowance",
         "statutory_sick_pay",
         "statutory_maternity_pay",
+        "statutory_paternity_pay",
         "ssmg",
         "cost_of_living_support_payment",
         "winter_fuel_allowance",
+        "pawhp",
         "tax_free_childcare",
         "childcare_grant",
         "parents_learning_allowance",
@@ -44,4 +46,5 @@ class hbai_benefits(Variable):
         "bursary_fund_16_to_19",
         "healthy_start_vouchers",
         "carer_support_payment",
+        "scottish_carer_supplement",
     ]

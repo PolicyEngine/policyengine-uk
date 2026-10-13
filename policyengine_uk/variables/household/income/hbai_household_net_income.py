@@ -42,13 +42,16 @@ HBAI_HOUSEHOLD_NET_INCOME_ADDS = [
     "maternity_allowance",
     "statutory_sick_pay",
     "statutory_maternity_pay",
+    "statutory_paternity_pay",
     "ssmg",
     "cost_of_living_support_payment",
     "winter_fuel_allowance",
+    "pawhp",
     "tax_free_childcare",
     "healthy_start_vouchers",
     "scottish_child_payment",
     "carer_support_payment",
+    "scottish_carer_supplement",
     # Reference for tax-free-childcare: https://assets.publishing.service.gov.uk/media/5e7b191886650c744175d08b/households-below-average-income-1994-1995-2018-2019.pdf
 ]
 

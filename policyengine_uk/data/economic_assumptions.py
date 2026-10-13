@@ -1,9 +1,15 @@
 from policyengine_uk.data import UKMultiYearDataset, UKSingleYearDataset
+from policyengine_uk.data.capital_gains_projection import (
+    CGT_DATASET_INPUTS,
+    CGT_INDEX_PATH,
+)
 
 import yaml
 from policyengine_core.parameters import ParameterNode
+from policyengine_core.simulations.simulation import _uprating_index_value
 from pathlib import Path
 import numpy as np
+import pandas as pd
 import logging
 
 # Base year for the FRS dataset - used to calculate age offsets
@@ -31,14 +37,88 @@ _ENGLAND_REGIONS = {
 
 _PLAN1_WRITEOFF_YEARS = 29
 
+# The council tax growth series (a child of
+# gov.economic_assumptions.yoy_growth.obr.council_tax) for each Region label.
+# Northern Ireland has no council tax (the Local Government Finance Act 1992
+# does not extend there; it levies domestic rates, carried in domestic_rates),
+# OBR forecasts council tax for England, Scotland and Wales only, and the FRS
+# gives Northern Ireland households none. So it has no series, and any council
+# tax a dataset does give them is held flat. An unknown region takes England's
+# series, the nearest to a Great Britain one: England raises 89% of the council
+# tax OBR forecasts for 2025-26.
+_COUNCIL_TAX_GROWTH_SERIES = {
+    **dict.fromkeys(_ENGLAND_REGIONS, "england"),
+    "WALES": "wales",
+    "SCOTLAND": "scotland",
+    "NORTHERN_IRELAND": None,
+    "UNKNOWN": "england",
+}
+
+
+# The last year a single-year dataset is projected to: 2032, fiscal year
+# 2032-33. An OBR forecast runs five years past the fiscal year it is made in,
+# so one made in 2026-27 ends in 2031-32 (year 2031). yoy_growth.yaml holds the
+# March 2026 forecast, which ends in 2030-31. Move this on as forecasts move.
+#
+# Every year up to here is a dataset year, grown from the year before by
+# apply_single_year_uprating. A growth series with no value for a year grows
+# at its latest rate, so a series that the March 2026 forecast ends in 2030
+# holds its 2030-31 rate in 2031-32 and 2032-33.
+#
+# Past this year policyengine-core serves each stored input from the last
+# projected year. An input whose variable has a formula is calculated by it
+# instead (pension_credit_reported_capital reads benunit_reported_capital,
+# which the Enhanced FRS does not store, so it falls to -1); one whose
+# variable has an `uprating` attribute is scaled by that index; any other,
+# rent and council tax among them, is held at its last projected value.
+# A finite CGT scenario can shorten the whole dataset horizon; it never
+# extends beyond the evidence declared by that scenario.
+PROJECTION_END_YEAR = 2032
+
+# Before this horizon was extended, Core uprated unmapped inputs from 2030.
+# Preserve that behavior in the newly materialized years without changing
+# projections for earlier years. Correcting historical mapping omissions is
+# a separate change. Energy values already have FY26/27 prices (#1868), as
+# documented in uprating_indices.yaml, and must remain flat in the dataset.
+LEGACY_PROJECTION_END_YEAR = 2030
+DATASET_UPRATING_EXCLUSIONS = frozenset(
+    {
+        "domestic_energy_consumption",
+        "electricity_consumption",
+        "gas_consumption",
+    }
+)
+
+
+def _unmapped_uprating_indices(uprating):
+    from policyengine_uk.system import system
+
+    mapped = {variable for variables in uprating.values() for variable in variables}
+    return {
+        name: variable.uprating
+        for name, variable in system.variables.items()
+        if variable.uprating is not None
+        and name not in mapped
+        and name not in DATASET_UPRATING_EXCLUSIONS
+    }
+
 
 def extend_single_year_dataset(
     dataset: UKSingleYearDataset,
     tax_benefit_system_parameters: ParameterNode,
-    end_year: int = 2030,
+    end_year: int | None = None,
 ) -> UKMultiYearDataset:
+    """Project a supplied year to the shared default within any finite CGT span."""
     # Extend years and uprate
     start_year = int(dataset.time_period)
+    if end_year is None:
+        projection = tax_benefit_system_parameters.get_child(CGT_INDEX_PATH).metadata[
+            "projection"
+        ]
+        end_year = max(
+            start_year,
+            min(PROJECTION_END_YEAR, projection.get("end_year", PROJECTION_END_YEAR)),
+        )
     datasets = [dataset]
     for year in range(start_year, end_year + 1):
         next_year = dataset.copy()
@@ -84,6 +164,24 @@ def apply_single_year_uprating(
 ):
     # Apply uprating to a single year dataset.
 
+    projection = parameters.get_child(CGT_INDEX_PATH).metadata["projection"]
+    if "base_year" in projection and any(
+        variable in previous_year.person.columns for variable in CGT_DATASET_INPUTS
+    ):
+        source_year = int(previous_year.time_period)
+        target_year = int(current_year.time_period)
+        if (
+            not projection["base_year"]
+            <= source_year
+            < target_year
+            <= projection["end_year"]
+        ):
+            raise ValueError(
+                f"Capital gains projection {projection['name']!r} supports "
+                f"{projection['base_year']}–{projection['end_year']}, "
+                f"not {source_year}–{target_year}."
+            )
+
     # First, apply standard variable-YoY growth based uprating.
 
     with open(Path(__file__).parent / "uprating_indices.yaml", "r") as f:
@@ -109,6 +207,32 @@ def apply_single_year_uprating(
 
     current_year = uprate_student_loan_plans(current_year, previous_year, parameters)
 
+    # Stored arrays take precedence over Core's variable-level uprating.
+    # Reproduce the index growth Core used after the old dataset horizon for
+    # inputs missing from the projection map (for example salary sacrifice).
+    if int(current_year.time_period) > LEGACY_PROJECTION_END_YEAR:
+        for variable, index_name in _unmapped_uprating_indices(uprating).items():
+            for table_name in current_year.table_names:
+                table = getattr(current_year, table_name)
+                if variable in table.columns:
+                    index = parameters.get_child(index_name)
+                    previous_index = _uprating_index_value(
+                        index, f"{previous_year.time_period}-01-01"
+                    )
+                    current_index = _uprating_index_value(
+                        index, f"{current_year.time_period}-01-01"
+                    )
+                    # Use Core's treatment of missing, zero and explicitly
+                    # terminated indices as well as its cumulative ratio.
+                    ratio = (
+                        current_index / previous_index
+                        if previous_index not in (None, 0) and current_index is not None
+                        else 1
+                    )
+                    table[variable] = (
+                        getattr(previous_year, table_name)[variable] * ratio
+                    )
+
     current_year.validate()
 
     return current_year
@@ -122,33 +246,20 @@ def uprate_council_tax(
     # Uprate council tax for a single year dataset.
 
     council_tax = parameters.gov.economic_assumptions.yoy_growth.obr.council_tax
-    region = current_year.household["region"]
-    country = np.select(
-        [
-            region == "WALES",
-            region == "SCOTLAND",
-            region == "NORTHERN IRELAND",
-        ],
-        [
-            "WALES",
-            "SCOTLAND",
-            "NORTHERN IRELAND",
-        ],
-        default="ENGLAND",
-    )
-    growth_rates = np.select(
-        [
-            country == "ENGLAND",
-            country == "WALES",
-            country == "SCOTLAND",
-        ],
-        [
-            council_tax.england(current_year.time_period),
-            council_tax.wales(current_year.time_period),
-            council_tax.scotland(current_year.time_period),
-        ],
-        default=0,
-    )
+    region = pd.Series(np.asarray(current_year.household["region"]).astype(str))
+    unrecognised = set(region) - set(_COUNCIL_TAX_GROWTH_SERIES)
+    if unrecognised:
+        raise ValueError(
+            "Cannot uprate council tax for unrecognised regions: "
+            f"{sorted(unrecognised)}"
+        )
+    growth_by_region = {
+        name: 0.0
+        if series is None
+        else council_tax.get_child(series)(current_year.time_period)
+        for name, series in _COUNCIL_TAX_GROWTH_SERIES.items()
+    }
+    growth_rates = region.map(growth_by_region).to_numpy()
 
     current_year.household["council_tax"] = previous_year.household["council_tax"] * (
         1 + growth_rates
@@ -175,9 +286,13 @@ def uprate_rent(
         )
         pass
     else:
-        private_rent_growth = growth.ons.private_rental_prices(year)[
-            np.array(region.values.astype(str))
-        ]
+        # Region.UNKNOWN has no regional index of its own, so those households
+        # take the UK-wide one.
+        region_index = np.array(region.values.astype(str))
+        region_index = np.where(
+            region_index == "UNKNOWN", "UNITED_KINGDOM", region_index
+        )
+        private_rent_growth = growth.ons.private_rental_prices(year)[region_index]
         current_year.household["rent"] = np.where(
             is_private_rented,
             prev_rent * (1 + private_rent_growth),
@@ -347,6 +462,7 @@ def reset_growthfactor_uprating(
         variable for variables in uprating.values() for variable in variables
     }
     growthfactor_uprated_variables.update({"council_tax", "rent"})
+    growthfactor_uprated_variables.update(_unmapped_uprating_indices(uprating))
 
     first_year = min(dataset.datasets.keys())
     base_year_dataset = dataset.datasets[first_year]

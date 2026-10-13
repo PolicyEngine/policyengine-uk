@@ -281,6 +281,9 @@
     income_support_eligible: false
 
 # s.124(1)(aa) and (g): the claimant's age, and the partner's SPC entitlement.
+# The model takes a couple to be on State Pension Credit where it meets the
+# Pension Credit age conditions (meets_pension_credit_age_conditions) and
+# would claim it (would_claim_pc).
 
 - name: A mixed-age couple can claim through the younger partner who cares
   period: 2025
@@ -302,7 +305,84 @@
     is_SP_age: [false, true]
     # SPCA 2002 s.4(1A): a member of a mixed-age couple is not entitled to
     # State Pension Credit, so s.124(1)(g) does not bar the younger partner.
+    # Neither reports Pension Credit, so the couple has no SI 2019/37 art. 4
+    # saving.
     is_pension_credit_eligible: false
+    income_support_eligible: true
+
+- name: The younger partner's award is barred while the couple keeps Pension Credit under the SI 2019/37 saving
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 60
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        # Born before 6 February 1954, so over the qualifying age on
+        # 14 May 2019 (SI 2019/37 art. 4(1)).
+        age: 75
+        is_claimant_or_partner: true
+        pension_credit_reported: 1_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+  output:
+    has_mixed_age_couple_pension_credit_saving: true
+    meets_pension_credit_age_conditions: true
+    # s.124(1)(g): the other member of the couple is entitled to State
+    # Pension Credit, so the carer who has the award cannot claim.
+    income_support_eligible: false
+
+- name: The same couple keeps Income Support when the take-up flag says it would not claim Pension Credit
+  period: 2025
+  input:
+    people:
+      carer:
+        age: 60
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      partner:
+        age: 75
+        is_claimant_or_partner: true
+        pension_credit_reported: 1_000
+    benunits:
+      family:
+        members: [carer, partner]
+        income_support_assessable_capital: 0
+        # The model reads (g) through the take-up flag. The reported Pension
+        # Credit gives the couple the SI 2019/37 saving
+        # (meets_pension_credit_age_conditions), not entitlement.
+        would_claim_pc: false
+  output:
+    meets_pension_credit_age_conditions: true
+    income_support_eligible: true
+
+- name: An excluded member's Pension Credit does not bar the carer route
+  period: 2025
+  input:
+    people:
+      claimant:
+        age: 40
+        is_claimant_or_partner: true
+        receives_carer_benefit: true
+        income_support_reported: 1_000
+      other_adult:
+        age: 75
+        is_claimant_or_partner: false
+        pension_credit_reported: 1_000
+    benunits:
+      family:
+        members: [claimant, other_adult]
+        income_support_assessable_capital: 0
+  output:
+    # The single claimant is not a member of a couple, so s.124(1)(g) does
+    # not apply and the other adult's Pension Credit is not the family's.
+    is_mixed_age_couple: false
+    meets_pension_credit_age_conditions: false
     income_support_eligible: true
 
 - name: A younger carer cannot take over an older partner's award

@@ -6,14 +6,22 @@ class uc_assessable_capital(Variable):
     entity = BenUnit
     label = "Universal Credit assessable capital"
     documentation = (
-        "Universal Credit capital counted from the configured capital sources, "
-        "with benunit-reported overrides when available. PolicyEngine allocates "
+        "Universal Credit capital counted from the configured capital sources. "
+        "Where the benefit unit's capital is recorded (uc_reported_capital, by "
+        "default benunit_reported_capital), that figure replaces them. "
+        "PolicyEngine allocates "
         "the remaining household capital between unreported benefit units in "
         "proportion to their claimant and partner counts, including units that "
         "do not receive Universal Credit. This allocation is a modelling "
         "convention when capital ownership is unobserved, not a statutory rule. "
         "The claimant and partner owner set follows section 5 of the Welfare "
-        "Reform Act 2012 and regulation 18 of the Universal Credit Regulations."
+        "Reform Act 2012 and regulation 18 of the Universal Credit Regulations. "
+        "Person-level sources, such as a Lifetime ISA, count only for the "
+        "holder's own benunit, and only when the holder is its claimant or "
+        "partner (is_uc_claimant): a dependant's capital is not the claimant's. "
+        "A claimant or partner who stands as sole owner or partner of a "
+        "company has their holding in it disregarded and the company's capital "
+        "counted instead (regulation 77(2))."
     )
     definition_period = YEAR
     unit = GBP
@@ -21,6 +29,7 @@ class uc_assessable_capital(Variable):
     reference = (
         "https://www.legislation.gov.uk/ukpga/2012/5/section/5",
         "https://www.legislation.gov.uk/uksi/2013/376/regulation/18",
+        "https://www.legislation.gov.uk/uksi/2013/376/regulation/77",
     )
 
     def formula(benunit, period, parameters):
@@ -30,6 +39,11 @@ class uc_assessable_capital(Variable):
             household(source, period) for source in p.capital.sources
         )
         benunit_claimants = add(benunit, period, ["is_uc_claimant"])
+        claimant_or_partner = benunit.members("is_uc_claimant", period)
+        person_capital = sum(
+            benunit.sum(benunit.members(source, period) * claimant_or_partner)
+            for source in p.capital.person_sources
+        )
         household_reported_capital = household("household_uc_reported_capital", period)
         household_unreported_claimants = household(
             "household_uc_unreported_claimants", period
@@ -37,17 +51,35 @@ class uc_assessable_capital(Variable):
         claimant_divisor = max_(1, household_unreported_claimants)
         reported_capital = benunit("uc_reported_capital", period)
         use_reported_capital = reported_capital >= 0
+        # A person who stands as sole owner or partner of a company has their
+        # holding in it disregarded and is treated as possessing the company's
+        # capital (or their share of it) instead (UC Regs 2013 reg. 77(2),
+        # (3)(a)). A reporting benunit's claimant and partner's holdings come
+        # off its reported capital, which has no breakdown to cap them
+        # against. Every other holding (those of people in unreported
+        # benunits, and of dependants in reporting ones) leaves the household
+        # pool before it is shared out, up to the household's corporate_wealth
+        # that holds them. Neither subtraction can take capital below zero.
+        # Only the claimant and partner's company capital is theirs to count.
+        pool_holdings = household("household_uc_pool_company_holdings", period)
         residual_household_capital = max_(
-            0, household_capital - household_reported_capital
+            0, household_capital - household_reported_capital - pool_holdings
         )
         household_capital_proxy = where(
             household_unreported_claimants > 0,
             residual_household_capital * benunit_claimants / claimant_divisor,
             0,
         )
+        own_holdings = benunit.sum(
+            benunit.members("uc_company_holding_disregard", period)
+            * claimant_or_partner
+        )
         assessed_capital = where(
             use_reported_capital,
-            reported_capital,
-            household_capital_proxy,
+            max_(0, reported_capital - own_holdings),
+            household_capital_proxy + person_capital,
         )
-        return max_(0, assessed_capital)
+        company_capital = benunit.sum(
+            benunit.members("uc_company_capital", period) * claimant_or_partner
+        )
+        return max_(0, assessed_capital) + company_capital

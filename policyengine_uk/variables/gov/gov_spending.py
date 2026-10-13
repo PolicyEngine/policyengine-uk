@@ -27,6 +27,7 @@ GOV_SPENDING_VARIABLES = [
     "maternity_allowance",
     "statutory_sick_pay",
     "statutory_maternity_pay",
+    "statutory_paternity_pay",
     "ssmg",
     "basic_income",
     "epg_subsidy",
@@ -49,7 +50,11 @@ GOV_SPENDING_VARIABLES = [
     "dfe_education_spending",
     "dft_subsidy_spending",
     "nhs_spending",
+    "healthy_start_vouchers",
+    "two_child_limit_payment",
+    "scottish_child_payment",
     "carer_support_payment",
+    "scottish_carer_supplement",
     "disability_basic_income",
 ]
 
