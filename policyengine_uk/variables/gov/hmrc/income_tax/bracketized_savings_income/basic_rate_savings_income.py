@@ -14,6 +14,8 @@ class basic_rate_savings_income(Variable):
 
     def formula(person, period, parameters):
         thresholds = parameters(period).gov.hmrc.income_tax.rates.uk.thresholds
+        # ITA 2007 s.414(2)(b): extend both UK rate limits by the gross gift.
+        gross_gift = person("gift_aid_grossed_up", period)
         # Savings sit above all non-savings income, property income
         # included (ITA 2007 s. 16).
         other_income = person("non_savings_taxable_income", period)
@@ -31,11 +33,11 @@ class basic_rate_savings_income(Variable):
         basic_rate_amount_with = clip(
             other_income + savings_after_allowances,
             thresholds[0],
-            thresholds[1],
+            (thresholds[1] + gross_gift),
         )
         basic_rate_amount_without = clip(
             taxable_savings_start,
             thresholds[0],
-            thresholds[1],
+            (thresholds[1] + gross_gift),
         )
         return max_(0, basic_rate_amount_with - basic_rate_amount_without)

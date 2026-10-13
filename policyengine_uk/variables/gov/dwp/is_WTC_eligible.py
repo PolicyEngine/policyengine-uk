@@ -41,7 +41,11 @@ class is_WTC_eligible(Variable):
         meets_medium_person_hours = max_person_hours >= WTC.min_hours.lower
         meets_medium = meets_medium_total_hours & meets_medium_person_hours
         meets_higher = total_hours >= WTC.min_hours.default
-        already_claiming = add(benunit, period, ["working_tax_credit_reported"]) > 0
+        # A family DWP moved off its legacy benefits keeps no tax credits,
+        # even under a reform that restores them (SI 2014/1230 regs 8, 46).
+        already_claiming = (
+            add(benunit, period, ["working_tax_credit_reported"]) > 0
+        ) & ~benunit("legacy_benefits_closed", period)
         return (
             (lower_req & meets_lower)
             | (medium_req & meets_medium)

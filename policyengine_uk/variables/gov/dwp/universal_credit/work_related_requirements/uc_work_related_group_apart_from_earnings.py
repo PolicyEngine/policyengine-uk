@@ -91,8 +91,10 @@ class uc_work_related_group_apart_from_earnings(Variable):
             | person("uc_is_foster_parent_or_new_friend_or_family_carer", period)
         )
         work_preparation = (
-            # s. 21(1)(a): limited capability for work.
-            person("uc_has_limited_capability_for_work", period)
+            # s. 21(1)(a): limited capability for work. A claimant with
+            # limited capability for work-related activity as well falls
+            # within section 19 first.
+            person("uc_limited_capability_for_work", period)
             # s. 21(1)(aa): the responsible carer for a child aged 2 (from 28
             # April 2014 to 2 April 2017, reg. 91A: aged 3 or 4).
             | (responsible_carer & (youngest < child_age.work_preparation))
