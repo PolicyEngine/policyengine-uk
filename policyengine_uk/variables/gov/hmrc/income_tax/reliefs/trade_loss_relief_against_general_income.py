@@ -16,9 +16,13 @@ class trade_loss_relief_against_general_income(Variable):
         "the year before (s.64(2)(b)); the part it cannot use is carried "
         "forward only by entering it in loss_relief in later years (s.83). "
         "A current loss is recognised only under ordinary expense treatment; "
-        "the trading allowance election chooses the greater current-year "
-        "income deduction for all relevant trades together (ITTOIA 2005 "
-        "ss.783AF and 783AL; HMRC BIM86076)."
+        "the trading allowance election compares the raw loss supplied for "
+        "the tax year, before net-income and relief-cap limits, with the "
+        "allowance's effective saving for all relevant trades together. "
+        "Ordinary expenses win when the raw loss is larger; ties take the "
+        "allowance. Comparing the raw loss can preserve an unused "
+        "carry-forward when both choices give nil current net income "
+        "(ITTOIA 2005 ss.783AF and 783AL; HMRC BIM86076)."
     )
     definition_period = YEAR
     unit = GBP

@@ -118,16 +118,14 @@ def reference_allowance(simulation, year):
     )
 
 
-def reference_trade(
-    profit, receipts, capital_allowances, allowance, current_loss, supplied_loss=None
-):
+def reference_trade(profit, receipts, capital_allowances, allowance, current_loss):
     """Independent profits and eligible annual Class 4 loss.
 
     Compare ordinary-expense profit less the current loss with allowance
     profit, which excludes that loss (ITTOIA ss. 783AF and 783AI). Ties use
-    the allowance. Only a loss supplied for this year can enter the separate
-    Class 4 balance, even if the engine fills in a current Income Tax loss
-    from an earlier input.
+    the allowance. Only a loss supplied for this year affects the allowance
+    election or enters the separate Class 4 balance, even if the engine
+    fills in a current Income Tax loss from an earlier input.
     """
     ordinary_profit = max(Fraction(0), profit - capital_allowances)
     if receipts > 0 and receipts >= profit:
@@ -145,9 +143,7 @@ def reference_trade(
         # With unknown receipts, the model uses full relief only for a
         # profit within the allowance; larger profits are reported net.
         allowance_profit = Fraction(0) if profit <= allowance else ordinary_profit
-    annual_loss = max(
-        current_loss if supplied_loss is None else supplied_loss, Fraction(0)
-    )
+    annual_loss = max(current_loss, Fraction(0))
     if current_loss > ordinary_profit - allowance_profit:
         return ordinary_profit, annual_loss
     if allowance_profit < ordinary_profit:
@@ -677,23 +673,12 @@ def test_a_loss_entered_for_some_years_is_relieved_once(years, random):
     }
     trades = []
     for period, (profit, _, _) in zip(periods, years):
-        earlier_inputs = [year for year in stored_losses if year < period]
-        if period in stored_losses:
-            tax_loss = stored_losses[period]
-        elif earlier_inputs:
-            input_year = max(earlier_inputs)
-            tax_loss = reference_uprated_loss(
-                sim, stored_losses[input_year], input_year, period
-            )
-        else:
-            tax_loss = Fraction(0)
         trades.append(
             reference_trade(
                 exact(np.float32(profit)),
                 Fraction(0),
                 Fraction(0),
                 reference_allowance(sim, period),
-                tax_loss,
                 stored_losses.get(period, Fraction(0)),
             )
         )

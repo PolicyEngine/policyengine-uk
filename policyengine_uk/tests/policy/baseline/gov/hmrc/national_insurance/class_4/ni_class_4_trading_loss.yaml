@@ -196,3 +196,31 @@
     ni_class_4: 1_045.8
     # The loss was used for Income Tax in 2025, so cannot reduce it again.
     income_tax: 7_486
+
+- name: An unset current loss preserves the allowance and earlier Class 4 balance
+  period: 2026
+  absolute_error_margin: 0.01
+  input:
+    age: 40
+    employment_income:
+      2025: 50_000
+      2026: 0
+    self_employment_income:
+      2025: 0
+      2026: 900
+    self_employment_gross_receipts:
+      2025: 0
+      2026: 900
+    trading_loss:
+      2025: 10_000
+      # Deliberately no 2026 entry: an earlier Income Tax input can uprate
+      # into this year but is not a current loss for the allowance election.
+  output:
+    trading_allowance_deduction: 900
+    ni_class_4_profits_before_losses: 0
+    ni_class_4_trading_loss: 0
+    ni_class_4_losses_brought_forward: 10_000
+    ni_class_4_loss_relief: 0
+    ni_class_4_losses_carried_forward: 10_000
+    ni_class_4_profits: 0
+    ni_class_4: 0
