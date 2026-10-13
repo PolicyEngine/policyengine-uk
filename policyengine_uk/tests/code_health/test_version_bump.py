@@ -1,8 +1,8 @@
 """The version bump must keep uv.lock's entry for this package in step.
 
-CI installs with ``uv sync --locked``, which fails when uv.lock disagrees with
+``uv sync --locked`` and ``uv lock --check`` fail when uv.lock disagrees with
 pyproject.toml. The lock records this package's own version, so a release that
-bumps pyproject.toml without the lock would fail every later pull request.
+bumps pyproject.toml without the lock leaves a lock that CI cannot check.
 .github/bump_version.py therefore rewrites that one entry. These tests check
 that the rewrite changes the package's own version and nothing else, including
 dependencies that happen to share the old version string, both on the real

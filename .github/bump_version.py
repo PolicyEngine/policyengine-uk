@@ -69,7 +69,7 @@ def get_project_name(pyproject_path: Path) -> str:
 def set_lock_version(text: str, package: str, new_version: str) -> str:
     """Set the version of the project's own entry in uv.lock text.
 
-    CI installs with `uv sync --locked`, which refuses a lock whose entry for
+    `uv sync --locked` and `uv lock --check` refuse a lock whose entry for
     the project disagrees with pyproject.toml, so the two must move together.
     Only that entry changes: a dependency can share the old version string.
     The entry must be the editable project itself, as uv writes it.

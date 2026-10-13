@@ -1,1 +1,1 @@
-- The release version bump now updates uv.lock's entry for policyengine-uk along with pyproject.toml, and checks the lock before committing it.
+- The release version commit now moves uv.lock's entry for policyengine-uk with pyproject.toml, and its guard refuses any other change to uv.lock.
