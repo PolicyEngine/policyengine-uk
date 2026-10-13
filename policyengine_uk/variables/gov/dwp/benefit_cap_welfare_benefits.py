@@ -27,9 +27,13 @@ class benefit_cap_welfare_benefits(Variable):
     documentation = (
         "The total of the welfare benefits the benefit cap compares with the "
         "Universal Credit or Housing Benefit cap (UC Regs 2013 regs. 79(1) "
-        "and 80; HB Regs 2006 regs. 75A and 75C). Only the benefits of the "
-        "single person or couple count (is_uc_assessed_claimant): a "
-        "dependant's own benefits do not."
+        "and 80; HB Regs 2006 regs. 75A and 75C). Person-level benefits count "
+        "only for the single person or couple (is_uc_assessed_claimant), so "
+        "a dependant's own contribution-based JSA or ESA, incapacity benefit "
+        "or severe disablement allowance does not. Benefit-unit amounts are "
+        "counted whole, so income-based JSA or income-related ESA that "
+        "another member claims in their own right is still counted (issue "
+        "#2298)."
     )
     definition_period = YEAR
     unit = GBP

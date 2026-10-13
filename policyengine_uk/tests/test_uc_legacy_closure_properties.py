@@ -107,6 +107,7 @@ OUTPUTS = BENEFITS + [
     "uc_housing_costs_element",
     "is_lha_shared_accommodation_rate_specified_renter",
     "is_uc_benefit_cap_single_claimant_rate",
+    "uc_benefit_cap_reduction",
 ]
 award = st.sampled_from([0.0, 0.0, 2_000.0, 6_000.0])
 
@@ -371,6 +372,7 @@ def test_a_closure_claim_pays_the_universal_credit_of_any_claim(units):
                     "uc_housing_costs_element",
                     "is_lha_shared_accommodation_rate_specified_renter",
                     "is_uc_benefit_cap_single_claimant_rate",
+                    "uc_benefit_cap_reduction",
                 ]:
                     assert (
                         abs(float(v[benefit][i]) - float(anyway[year][benefit][i]))
