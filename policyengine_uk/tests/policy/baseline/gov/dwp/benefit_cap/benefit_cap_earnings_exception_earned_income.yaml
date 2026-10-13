@@ -6,9 +6,9 @@
 # contributions and the income tax and primary Class 1 contributions paid "in
 # respect of the employment" (reg 55(5)). Income the minimum income floor
 # treats a person as having does not count (reg 82(4)). The threshold is the
-# model's 10,152 a year (issue #1986). Each family is a single claimant aged 40
-# outside London with an entered award of 18,000 before the cap, so the cap
-# of 14,753 takes 3,247 unless an exception applies.
+# model's 10,152 a year (issue #1986). Unless stated otherwise, each family is
+# a single claimant aged 40 outside London with an entered award of 18,000
+# before the cap, so the cap of 14,753 takes 3,247 unless an exception applies.
 # Sources: https://www.legislation.gov.uk/uksi/2013/376/regulation/55
 # https://www.legislation.gov.uk/uksi/2013/376/regulation/82
 # https://www.gov.uk/guidance/rates-and-thresholds-for-employers-2026-to-2027
@@ -83,9 +83,11 @@
         members: [claimant]
         region: NORTH_EAST
   output:
-    # Income tax is (21,000 - 12,570) x 20% = 1,686, all of it on the
-    # pension: the wages are the lowest slice and the personal allowance
-    # covers them, so none is in respect of the employment (reg 55(5)(b)).
+    # Income tax is (21,000 - 12,570) x 20% = 1,686. The model's convention
+    # in uc_income_tax_on_earnings allocates wages to the lowest slice,
+    # covered by the personal allowance, leaving all the tax on the pension.
+    # Reg 55(5)(b) requires tax in respect of employment to be deducted but
+    # does not prescribe this allocation between wages and pension income.
     # No NI on 11,000. 11,000 >= 10,152. Netting the 1,686 off the wages
     # would give 9,314, under the threshold.
     income_tax: 1_686
@@ -132,3 +134,34 @@
     uc_individual_earned_income: 20_000
     is_benefit_cap_exempt_earnings: false
     benefit_cap_reduction: 3_247
+
+- name: Means-tested basic income counts toward the couple's earnings exception
+  period: 2026
+  input:
+    gov.contrib.ubi_center.basic_income.interactions.include_in_means_tests: true
+    people:
+      claimant:
+        age: 40
+        employment_income: 0
+        basic_income: 5_500
+      partner:
+        age: 40
+        employment_income: 0
+        basic_income: 5_500
+    benunits:
+      family:
+        members: [claimant, partner]
+        universal_credit_pre_benefit_cap: 18_000
+    households:
+      home:
+        members: [claimant, partner]
+        region: NORTH_EAST
+  output:
+    # The reform includes basic income in UC earned income, so the shared
+    # expression in #1820 also counts it here: 5,500 + 5,500 >= 10,152.
+    # The total also exceeds #1820's 2026 NLW-based earnings threshold.
+    # This records existing reform behavior; its interaction with the
+    # benefit cap earnings exception remains an open question for #1986.
+    uc_individual_earned_income_before_mif: [5_500, 5_500]
+    is_benefit_cap_exempt_earnings: true
+    benefit_cap_reduction: 0
