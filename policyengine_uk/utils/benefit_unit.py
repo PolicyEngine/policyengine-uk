@@ -30,6 +30,45 @@ def add_for_members(benunit, period, variables, members):
     return total
 
 
+def award_of_members(benunit, period, award, report, award_on_reports, members):
+    """The part of the benefit-unit award ``award`` that ``members`` claim.
+
+    ``report`` is the person-level report behind the award and
+    ``award_on_reports(benunit, period, reported)`` the award the formula of
+    ``award`` gives on a reported amount. Which awards ``award`` holds is
+    decided by value: when it holds the award its formula gives on all
+    reported awards, this is the same award on the reports of ``members``;
+    when it holds the plain total of the reports (the
+    disable_simulated_benefits reform), this is the plain total of their
+    reports; when it holds anything else (an award entered directly, or a
+    reform that replaces it), that value is taken to be theirs. Values are
+    compared to within half a penny after rounding to the precision
+    ``award`` is stored in. A stored zero is zero.
+    """
+    person = benunit.members
+    stored_award = benunit(award, period)
+    reported = person(report, period)
+    reported_total = benunit.sum(reported)
+    members_reported = benunit.sum(reported * members)
+    award_on_all_reports = award_on_reports(benunit, period, reported_total)
+    award_on_members_reports = award_on_reports(benunit, period, members_reported)
+    # Compare in the precision the award is stored in (float32), so the
+    # formula's own award always matches the award recomputed here.
+    stored = stored_award.dtype
+    as_formula = np.isclose(
+        stored_award, award_on_all_reports.astype(stored), rtol=0, atol=HALF_PENNY
+    )
+    as_reported_total = np.isclose(
+        stored_award, reported_total.astype(stored), rtol=0, atol=HALF_PENNY
+    )
+    scoped = np.where(
+        as_formula,
+        award_on_members_reports,
+        np.where(as_reported_total, members_reported, stored_award),
+    )
+    return np.where(stored_award > 0, scoped, 0)
+
+
 def claimant_or_partner_award(benunit, period, award, reported, award_on_reports):
     """The claimant's and partner's part of a stored benefit-unit award.
 
@@ -39,8 +78,9 @@ def claimant_or_partner_award(benunit, period, award, reported, award_on_reports
     amount)`` is the award paid on a reported amount: the benefit's screen
     and tariff income (income_related_esa_award, income_related_jsa_award).
 
-    Which awards the stored value holds is decided by its value, compared in
-    the precision it is stored in, to within half a penny:
+    This is award_of_members for the claimant and partner, so which awards
+    the stored value holds is decided by its value, compared in the
+    precision it is stored in, to within half a penny:
 
     - equal to the award on everyone's reports (its formula's result), the
       claimant's and partner's part is the award on their own reports;
@@ -59,28 +99,13 @@ def claimant_or_partner_award(benunit, period, award, reported, award_on_reports
     disable_simulated_benefits does for each year) is read the same way
     everywhere.
     """
-    person = benunit.members
     stored = benunit(award, period)
-    amounts = person(reported, period)
-    reported_total = benunit.sum(amounts)
-    claimant_or_partner_reported = benunit.sum(
-        amounts * person("is_claimant_or_partner", period)
-    )
-    # Compare in the stored precision (float32): the formula's own award must
-    # match the award recomputed here in float64.
-    precision = stored.dtype
-    as_formula = np.isclose(
-        stored,
-        award_on_reports(benunit, period, reported_total).astype(precision),
-        rtol=0,
-        atol=HALF_PENNY,
-    )
-    as_reported_total = np.isclose(
-        stored, reported_total.astype(precision), rtol=0, atol=HALF_PENNY
-    )
-    scoped = np.where(
-        as_formula,
-        award_on_reports(benunit, period, claimant_or_partner_reported),
-        np.where(as_reported_total, claimant_or_partner_reported, stored),
+    scoped = award_of_members(
+        benunit,
+        period,
+        award,
+        reported,
+        award_on_reports,
+        benunit.members("is_claimant_or_partner", period),
     )
     return np.where((stored > HALF_PENNY) & (scoped > HALF_PENNY), scoped, 0)

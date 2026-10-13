@@ -19,6 +19,11 @@ from policyengine_core.variables import Variable
 
 # PolicyEngine UK imports
 from policyengine_uk.entities import BenUnit, Household, Person
+from policyengine_uk.data.capital_gains_projection import (
+    CapitalGainsProjection,
+    add_capital_gains_projection,
+    check_capital_gains_projection_parameter,
+)
 from policyengine_uk.parameters.gov.contrib.create_private_pension_uprating import (
     add_private_pension_uprating_factor,
 )
@@ -234,6 +239,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             if before_reset is not None:
                 graft_missing_nodes(before_reset, self.parameters)
             self._apply_legacy_overrides()
+            add_capital_gains_projection(self.parameters, self.capital_gains_projection)
         except Exception:
             (
                 self.parameters,
@@ -268,6 +274,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """
         if not assignments:
             return
+        for assignment in assignments:
+            check_capital_gains_projection_parameter(assignment.path)
         previous = (
             self.dated_assignments,
             self.parameters,
@@ -306,6 +314,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                     )
             graft_missing_nodes(previous[1], self.parameters)
             self._apply_legacy_overrides()
+            add_capital_gains_projection(self.parameters, self.capital_gains_projection)
         except Exception:
             (
                 self.dated_assignments,
@@ -325,6 +334,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """
         if not overrides:
             return
+        for override in overrides:
+            check_capital_gains_projection_parameter(override.path)
         # Every target is found before anything changes; ``update`` replaces
         # a parameter's ``values_list`` and marks it and its ancestors
         # modified, so keeping each list and those flags is enough to undo
@@ -339,6 +350,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                 node = getattr(node, "parent", None)
         try:
             apply_legacy_overrides(self.parameters, overrides)
+            add_capital_gains_projection(self.parameters, self.capital_gains_projection)
         except Exception:
             for target, values_list in saved:
                 target.values_list = values_list
@@ -384,10 +396,11 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         if self.legacy_overrides:
             apply_legacy_overrides(self.parameters, self.legacy_overrides)
 
-    def __init__(self):
+    def __init__(self, capital_gains_projection: CapitalGainsProjection | None = None):
         """Initialize the UK tax-benefit system with entities and parameters."""
         self._parameters_at_instant_cache: Dict[str, Any] = {}
         self.variables = {}
+        self.capital_gains_projection = capital_gains_projection
 
         # Create copies of entity classes to avoid modifying originals
         person, benunit, household = (
@@ -447,6 +460,11 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             # and the lists just captured belong to this system's own tree.
             _projected_timelines_cache = copy_timelines(self._projected_timelines)
             self._projected_timelines = None
+
+        # Derive CGT factors after fiscal conversion and outside the shared
+        # current-law/rebuild caches, which are independent of this configuration.
+        add_capital_gains_projection(self.parameters, self.capital_gains_projection)
+        self.reset_parameter_caches()
 
 
 def _ensure_caches() -> None:

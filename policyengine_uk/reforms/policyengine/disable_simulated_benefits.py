@@ -6,7 +6,8 @@ from policyengine_core.model_api import *
 # Allowance, DLA and PIP are not listed: the data records their receipt as a
 # rate category (aa_category, dla_m_category, dla_sc_category, pip_dl_category,
 # pip_m_category), and the model pays that category's rate. The model has no
-# reported amount for them to copy.
+# reported amount for them to copy. The winter heating payments are set
+# separately (see below).
 BENEFITS = [
     "afcs",
     "bsp",
@@ -27,7 +28,6 @@ BENEFITS = [
     "ssmg",
     "state_pension",
     "universal_credit",
-    "winter_fuel_allowance",
     "working_tax_credit",
 ]
 
@@ -110,6 +110,7 @@ def disable_simulated_benefits(parameters, period):
                 simulation = self.simulation
                 system = simulation.tax_benefit_system
                 time_period = int(str(simulation.dataset.time_period)[:4])
+                years = range(time_period, time_period + YEARS_IN_FUTURE)
 
                 def reported(variable, members=None):
                     """A benefit's reported amount in the dataset year, for
@@ -123,7 +124,7 @@ def disable_simulated_benefits(parameters, period):
                         return amounts
                     return population.sum(amounts)
 
-                for year in range(time_period, time_period + YEARS_IN_FUTURE):
+                for year in years:
                     claimant_or_partner = simulation.calculate(
                         "is_claimant_or_partner", year
                     )
@@ -147,5 +148,41 @@ def disable_simulated_benefits(parameters, period):
                         values[variable] = np.zeros(count, dtype=bool)
                     for target, value in values.items():
                         simulation.set_input(target, year, value)
+
+                # The survey reports one winter heating payment: FRS benefit
+                # code 62, which policyengine-uk-data loads into
+                # winter_fuel_allowance_reported for every respondent,
+                # Scotland included. Scotland's payment has been the Pension
+                # Age Winter Heating Payment since the 2024 qualifying week,
+                # so in each year a Scottish household's report becomes its
+                # pawhp while PAWHP is paid, and its winter_fuel_allowance
+                # before then. Both variables are household income, so each
+                # report is counted once, under the scheme that pays it.
+                reported_winter_heating = np.asarray(
+                    simulation.calculate(
+                        "winter_fuel_allowance_reported",
+                        time_period,
+                        map_to="household",
+                    )
+                )
+                in_scotland = (
+                    np.asarray(simulation.calculate("country", time_period))
+                    == "SCOTLAND"
+                )
+                for year in years:
+                    paid_as_pawhp = (
+                        in_scotland
+                        & parameters(year).gov.social_security_scotland.pawhp.active
+                    )
+                    simulation.set_input(
+                        "winter_fuel_allowance",
+                        year,
+                        np.where(paid_as_pawhp, 0, reported_winter_heating),
+                    )
+                    simulation.set_input(
+                        "pawhp",
+                        year,
+                        np.where(paid_as_pawhp, reported_winter_heating, 0),
+                    )
 
         return DisableSimulatedBenefits

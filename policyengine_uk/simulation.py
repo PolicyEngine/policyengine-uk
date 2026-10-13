@@ -1,5 +1,8 @@
 # Standard library imports
 import os
+import copy
+import warnings
+from importlib.metadata import version
 from typing import Dict, Optional, Union, Type, List
 
 # Third-party imports
@@ -37,10 +40,24 @@ from policyengine_uk.data.input_dataframe import (
     dataset_from_input_dataframe,
     with_identifiers_in_each_year,
 )
+from policyengine_uk.data.capital_gains_projection import (
+    CapitalGainsProjection,
+    CGT_INPUTS,
+    CGT_DATASET_INPUTS,
+    CGT_INDEX_PATH,
+    UnusedCapitalGainsProjectionWarning,
+    add_capital_gains_projection,
+    capital_gains_application_metadata,
+)
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
+    copy_model_values,
+    drop_missing_model_values,
     drop_missing_supplied_inputs,
+    forget_model_values,
+    forget_replaced_model_values,
+    model_value_input_records,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
@@ -100,7 +117,8 @@ _reform_logs: Dict[int, list] = {}
 
 
 # Cache for fully-loaded, uprated, enum-pre-encoded multi-year datasets keyed
-# by URL. Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
+# by URL and, when selected, the CGT projection fingerprint and runtime.
+# Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
 # encoding (0.67s) on every Simulation() call after the first.
 _url_dataset_cache: dict = {}
 
@@ -185,6 +203,7 @@ class Simulation(CoreSimulation):
         ] = None,
         trace: bool = False,
         reform: Dict | Type[Reform] | tuple = None,
+        capital_gains_projection: CapitalGainsProjection | None = None,
     ):
         """Initialize a UK simulation.
 
@@ -195,9 +214,23 @@ class Simulation(CoreSimulation):
             trace: Whether to enable detailed tracing of calculations
             reform: A parameter-change dict, a structural Reform class, or
                 a tuple of these applied in order (see Scenario.from_reform)
+            capital_gains_projection: Optional common baseline gains projection,
+                shared with the reform's baseline. Omit to retain GDP per capita.
         """
+        self._cgt_input_provenance = {}
+        self._cgt_defaulted_periods = set()
+        self._cgt_calculation_depth = 0
+        self._cgt_operation_inputs = set()
+        self._cgt_warned_unused = False
+        self._cgt_warning_enabled = False
         # Initialize tax-benefit rules
-        self.tax_benefit_system = CountryTaxBenefitSystem()
+        self.tax_benefit_system = (
+            CountryTaxBenefitSystem()
+            if capital_gains_projection is None
+            else CountryTaxBenefitSystem(
+                capital_gains_projection=capital_gains_projection
+            )
+        )
 
         # Migrate Reform to Scenario
 
@@ -224,6 +257,7 @@ class Simulation(CoreSimulation):
             self.apply_scenario_parameters(scenario)
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
+        self._refresh_capital_gains_projection()
         # Build simulation from appropriate source
         if situation is not None:
             self.build_from_situation(situation)
@@ -291,17 +325,35 @@ class Simulation(CoreSimulation):
                 situation=situation,
                 dataset=dataset,
                 trace=trace,
+                capital_gains_projection=capital_gains_projection,
             )
         else:
             self.baseline = self.clone()
+        self.baseline._cgt_warning_enabled = False
 
         self.calculated_periods = []
 
         if scenario is not None and not scenario.applied_before_data_load:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
+        self._refresh_capital_gains_projection()
+        self._capture_cgt_supplied_inputs()
+        self._cgt_warning_enabled = True
 
-    def apply_reform(self, reform) -> None:
+    def _refresh_capital_gains_projection(self) -> None:
+        projection = self.tax_benefit_system.capital_gains_projection
+        if self.disable_economic_assumptions and projection is not None:
+            raise ValueError(
+                "An explicit capital gains projection cannot be combined with "
+                "no_economic_assumptions. Omit the projection to freeze economic assumptions."
+            )
+        # Scenario modifiers may edit growth or generated indices after the
+        # normal processing, including plain-dict Reform overrides.
+        add_capital_gains_projection(self.tax_benefit_system.parameters, projection)
+        self.tax_benefit_system.reset_parameter_caches()
+
+    def apply_reform(self, reform: dict | tuple | Type[Reform]) -> None:
+        """Apply a runtime reform while keeping generated CGT assumptions coherent."""
         # Reforms that set inputs (disable_simulated_benefits, adjust_budgets)
         # reach the simulation through its tax-benefit system's link. A clone
         # or branch may share its parent's system, so link the system to this
@@ -319,6 +371,7 @@ class Simulation(CoreSimulation):
         self._user_input_keys = getattr(self, "_user_input_keys", None) or set()
         try:
             super().apply_reform(reform)
+            self._refresh_capital_gains_projection()
         finally:
             logs.pop()
             if not logs:
@@ -391,6 +444,276 @@ class Simulation(CoreSimulation):
         # Inspect storage after core's deletion to honour period containment
         # and the current branch, ancestor branches and default branch.
         drop_missing_supplied_inputs(self, variable)
+        # A value stored later in a period whose model value (set_model_value)
+        # is gone is supplied, even one equal to the deleted value.
+        drop_missing_model_values(self, variable)
+        if variable in CGT_DATASET_INPUTS:
+            records = getattr(self, "_cgt_input_provenance", {}).get(variable, {})
+            holder = self.get_holder(variable)
+            for recorded_period in list(records):
+                if holder.get_array(period_(recorded_period), self.branch_name) is None:
+                    del records[recorded_period]
+
+    def build_from_populations(self, populations) -> None:
+        super().build_from_populations(populations)
+        # The new populations hold none of the values set_model_value stored,
+        # so an equal value a rebuild stores (from a situation or a frame) is
+        # supplied.
+        forget_model_values(self)
+
+    def set_input(self, variable_name: str, period: Period, value) -> None:
+        # What is set here is supplied, even a value equal to the model's own,
+        # so forget the model value (set_model_value) of each period the call
+        # stores a value for, and only those. set_model_value records its
+        # value as the model's after this call.
+        records = model_value_input_records(self, variable_name)
+        try:
+            super().set_input(variable_name, period, value)
+        finally:
+            forget_replaced_model_values(self, variable_name, records)
+        if variable_name in CGT_DATASET_INPUTS:
+            self._capture_cgt_supplied_inputs(variable_name, replace_period=period)
+
+    def clone(self, *args, **kwargs) -> "Simulation":
+        clone = super().clone(*args, **kwargs)
+        copy_model_values(self, clone)
+        clone._cgt_input_provenance = copy.deepcopy(
+            getattr(self, "_cgt_input_provenance", {})
+        )
+        clone._cgt_calculation_depth = 0
+        clone._cgt_operation_inputs = set()
+        clone._cgt_defaulted_periods = set(getattr(self, "_cgt_defaulted_periods", ()))
+        return clone
+
+    @staticmethod
+    def _cgt_supplied_record() -> dict:
+        return {
+            "status": "supplied",
+            "method": "supplied_input",
+            "source_period": None,
+            "projection_fingerprint": None,
+        }
+
+    def _capture_cgt_supplied_inputs(
+        self, variable_name: str = None, replace_period=None
+    ) -> None:
+        # Situation builders may write directly through Holder.set_input.
+        if not hasattr(self, "populations"):
+            return
+        provenance = self._cgt_input_provenance
+        variables = (variable_name,) if variable_name else CGT_DATASET_INPUTS
+        replacement = period_(replace_period) if replace_period is not None else None
+        for variable in variables:
+            holder = self.get_holder(variable)
+            records = provenance.setdefault(variable, {})
+            for input_period in holder.get_input_periods(self.branch_name):
+                key = str(input_period)
+                if key not in records or input_period == replacement:
+                    records[key] = self._cgt_supplied_record()
+
+    def _cgt_present_provenance(self) -> dict:
+        if not hasattr(self, "populations"):
+            return {}
+        records = {
+            variable: {
+                period: record
+                for period, record in records.items()
+                if self.get_holder(variable).get_array(
+                    period_(period), self.branch_name
+                )
+                is not None
+            }
+            for variable, records in self._cgt_input_provenance.items()
+        }
+        # Neutralization returns a default before Core reads or caches arrays.
+        # Keep the loaded origin separately so undoing it cannot erase history.
+        for variable, period in self._cgt_defaulted_periods:
+            if self._cgt_is_neutralized(variable, period_(period)):
+                records.setdefault(variable, {})[period] = self._cgt_default_record()
+        return records
+
+    @staticmethod
+    def _cgt_default_record() -> dict:
+        return {
+            "status": "default",
+            "method": "default",
+            "source_period": None,
+            "projection_fingerprint": None,
+        }
+
+    def _cgt_is_neutralized(self, variable_name: str, period: Period) -> bool:
+        variable = self.tax_benefit_system.get_variable(variable_name)
+        if variable.is_neutralized:
+            return True
+        try:
+            return bool(
+                self.tax_benefit_system.parameters(period).gov.abolitions[variable_name]
+            )
+        except (AttributeError, KeyError):
+            return False
+
+    def _cgt_projected_record(self, method: str, source_period) -> dict:
+        projection = self.tax_benefit_system.parameters.get_child(
+            CGT_INDEX_PATH
+        ).metadata["projection"]
+        return {
+            "status": "projected",
+            "method": method,
+            "source_period": str(source_period),
+            "projection_fingerprint": projection.get("fingerprint"),
+            "projection_name": projection["name"],
+        }
+
+    def _extend_dataset_with_cgt_provenance(self, dataset):
+        """Retain the origin of inputs materialised by this loader only."""
+        source_year = int(dataset.time_period)
+        variables = [v for v in CGT_DATASET_INPUTS if v in dataset.person.columns]
+        extended = extend_single_year_dataset(
+            dataset, self.tax_benefit_system.parameters
+        )
+        # This private, in-memory annotation travels with the URL-cache value.
+        # External multi-year files have no certified projection history.
+        extended._cgt_extension_provenance = {
+            variable: {
+                str(year): self._cgt_projected_record("dataset_extension", year - 1)
+                for year in extended.years
+                if year > source_year
+            }
+            for variable in variables
+        }
+        return extended
+
+    def _restore_cgt_extension_provenance(self, dataset) -> None:
+        for variable, records in getattr(
+            dataset, "_cgt_extension_provenance", {}
+        ).items():
+            restored = copy.deepcopy(records)
+            if self.disable_economic_assumptions:
+                # The loader reset these amounts to their base-year values.
+                restored = {
+                    period: {
+                        "status": "unknown",
+                        "method": "model_calculation",
+                        "source_period": None,
+                        "projection_fingerprint": None,
+                    }
+                    for period in restored
+                }
+            self._cgt_input_provenance.setdefault(variable, {}).update(restored)
+
+    def _cgt_calculation_record(
+        self, variable_name: str, period: Period, neutralized: bool = False
+    ) -> dict:
+        """Describe ordinary annual input uprating without inferring external history."""
+        if neutralized:
+            return self._cgt_default_record()
+        holder = self.get_holder(variable_name)
+        stored = holder.get_array(period, self.branch_name)
+        record = self._cgt_input_provenance.get(variable_name, {}).get(str(period))
+        if stored is not None and record is not None:
+            return record
+        inputs = [
+            p
+            for p in holder.get_input_periods(self.branch_name)
+            if holder.get_array(p, self.branch_name) is not None
+        ]
+        if stored is not None and period in inputs:
+            return self._cgt_supplied_record()
+        unknown = {
+            "status": "unknown",
+            "method": "model_calculation",
+            "source_period": None,
+            "projection_fingerprint": None,
+        }
+        variable = holder.variable
+        if (
+            period.unit != "year"
+            or period.size != 1
+            or variable.defined_for is not None
+            or variable.get_formula(period.start) is not None
+            or variable.uprating != CGT_INDEX_PATH
+        ):
+            return unknown
+        earlier = [p for p in inputs if p.unit == "year" and p.start < period.start]
+        if earlier and not variable.is_neutralized:
+            # Core breaks same-start ties by period end. Avoid certifying the
+            # less common multi-year input route as ordinary annual uprating.
+            source = max(earlier, key=lambda p: (p.start, p.stop))
+            if source.size != 1:
+                return unknown
+            return self._cgt_projected_record("input_uprating", source)
+        if inputs and not variable.is_neutralized:
+            # Non-annual carry-over, or another route outside this contract.
+            if any(p.start <= period.start for p in inputs):
+                return unknown
+        return self._cgt_default_record()
+
+    def _warn_unused_cgt_projection(self, period: Period) -> None:
+        projection = self.tax_benefit_system.capital_gains_projection
+        if (
+            not self._cgt_warning_enabled
+            or self._cgt_warned_unused
+            or self.branch_name != "default"
+            or projection is None
+            or period.start.year <= projection.base_year
+        ):
+            return
+        records = self._cgt_present_provenance()
+        covered = {
+            variable: records.get(variable, {}).get(str(period))
+            for variable in CGT_INPUTS
+        }
+        if any(
+            record and record["status"] == "projected" for record in covered.values()
+        ):
+            return
+        supplied = [
+            variable
+            for variable, record in covered.items()
+            if record
+            and record["status"] == "supplied"
+            and (variable, str(period)) in self._cgt_operation_inputs
+        ]
+        if supplied:
+            self._cgt_warned_unused = True
+            warnings.warn(
+                f"Capital gains projection {projection.name!r} was not applied to "
+                f"the supplied CGT inputs for {period}: {', '.join(supplied)}. "
+                "Their values remain authoritative; their historical projection "
+                "is unknown. Inspect capital_gains_projection_metadata['application'] "
+                "for loaded and calculated coverage.",
+                UnusedCapitalGainsProjectionWarning,
+                stacklevel=3,
+            )
+
+    @property
+    def capital_gains_projection_metadata(self) -> dict:
+        """Projection and runtime provenance for output metadata/cache fingerprints.
+
+        Callers must additionally record dataset identity and the policy scenario.
+        Pre-materialised annual inputs remain authoritative over these assumptions.
+        """
+        parameter = self.tax_benefit_system.parameters.get_child(CGT_INDEX_PATH)
+        return {
+            **copy.deepcopy(parameter.metadata["projection"]),
+            "policyengine_uk_version": version("policyengine-uk"),
+            "policyengine_core_version": version("policyengine-core"),
+            "configuration_scope": "configured_assumptions",
+            "application": capital_gains_application_metadata(
+                self._cgt_present_provenance()
+            ),
+        }
+
+    def _dataset_cache_key(self, source: str):
+        if self.tax_benefit_system.capital_gains_projection is None:
+            return source
+        metadata = self.capital_gains_projection_metadata
+        return (
+            source,
+            metadata["fingerprint"],
+            metadata["policyengine_uk_version"],
+            metadata["policyengine_core_version"],
+        )
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
@@ -458,6 +781,7 @@ class Simulation(CoreSimulation):
         builder.default_period = self.default_input_period
         builder.build_from_dict(self.tax_benefit_system, situation, self)
         self.has_axes = builder.has_axes
+        self._capture_cgt_supplied_inputs()
 
         self.dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=self.default_input_period
@@ -472,9 +796,11 @@ class Simulation(CoreSimulation):
             self.build_from_url(dataset_source)
             return
         if dataset_source.startswith("gs://"):
-            if dataset_source in _url_dataset_cache:
-                multi_year_dataset = _url_dataset_cache[dataset_source]
+            cache_key = self._dataset_cache_key(dataset_source)
+            if cache_key in _url_dataset_cache:
+                multi_year_dataset = _url_dataset_cache[cache_key]
                 self.build_from_multi_year_dataset(multi_year_dataset)
+                self._restore_cgt_extension_provenance(multi_year_dataset)
                 self.dataset = multi_year_dataset
                 return
             dataset_file = materialize_gcs_dataset_url(dataset_source)
@@ -499,9 +825,8 @@ class Simulation(CoreSimulation):
         if UKMultiYearDataset.validate_file_path(dataset_file, False):
             multi_year_dataset = UKMultiYearDataset(dataset_file)
         elif UKSingleYearDataset.validate_file_path(dataset_file, False):
-            multi_year_dataset = extend_single_year_dataset(
-                UKSingleYearDataset(dataset_file),
-                self.tax_benefit_system.parameters,
+            multi_year_dataset = self._extend_dataset_with_cgt_provenance(
+                UKSingleYearDataset(dataset_file)
             )
         else:
             dataset = Dataset.from_file(dataset_file, self.default_input_period)
@@ -512,9 +837,10 @@ class Simulation(CoreSimulation):
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
         if cache_key is not None:
-            _url_dataset_cache[cache_key] = multi_year_dataset
+            _url_dataset_cache[self._dataset_cache_key(cache_key)] = multi_year_dataset
 
         self.build_from_multi_year_dataset(multi_year_dataset)
+        self._restore_cgt_extension_provenance(multi_year_dataset)
         self.dataset = multi_year_dataset
 
     def build_from_url(self, url: str) -> None:
@@ -531,9 +857,11 @@ class Simulation(CoreSimulation):
 
         # Return early from in-memory cache if available: skips HDF5 reading,
         # uprating and enum encoding (~2.2s on the first load).
-        if url in _url_dataset_cache:
-            multi_year_dataset = _url_dataset_cache[url]
+        cache_key = self._dataset_cache_key(url)
+        if cache_key in _url_dataset_cache:
+            multi_year_dataset = _url_dataset_cache[cache_key]
             self.build_from_multi_year_dataset(multi_year_dataset)
+            self._restore_cgt_extension_provenance(multi_year_dataset)
             self.dataset = multi_year_dataset
             return
 
@@ -649,14 +977,14 @@ class Simulation(CoreSimulation):
         # Now convert to the new UKSingleYearDataset
         self.input_variables = self.get_known_variables()
         self.dataset = dataset
+
         dataset = UKSingleYearDataset.from_simulation(
             self, fiscal_year=first_time_period
         )
-        multi_year_dataset = extend_single_year_dataset(
-            dataset, self.tax_benefit_system.parameters
-        )
+        multi_year_dataset = self._extend_dataset_with_cgt_provenance(dataset)
 
         self.build_from_multi_year_dataset(multi_year_dataset)
+        self._restore_cgt_extension_provenance(multi_year_dataset)
         self.dataset = multi_year_dataset
 
     def build_from_single_year_dataset(self, dataset: UKSingleYearDataset) -> None:
@@ -666,11 +994,10 @@ class Simulation(CoreSimulation):
             dataset: UKSingleYearDataset containing one year of data
         """
 
-        dataset = extend_single_year_dataset(
-            dataset, self.tax_benefit_system.parameters
-        )
+        dataset = self._extend_dataset_with_cgt_provenance(dataset)
         _pre_encode_enum_columns(dataset, self.tax_benefit_system)
         self.build_from_multi_year_dataset(dataset)
+        self._restore_cgt_extension_provenance(dataset)
         self.dataset = dataset
 
     def build_from_multi_year_dataset(self, dataset: UKMultiYearDataset) -> None:
@@ -706,6 +1033,20 @@ class Simulation(CoreSimulation):
                     self.set_input(variable, year, table[variable])
 
         self.dataset = dataset
+        if self.disable_economic_assumptions:
+            # The loader changed these future amounts even for an external
+            # multi-year dataset; they are no longer unchanged supplied inputs.
+            for variable in CGT_DATASET_INPUTS:
+                for year in dataset.years[1:]:
+                    if variable in dataset[year].person.columns:
+                        self._cgt_input_provenance.setdefault(variable, {})[
+                            str(year)
+                        ] = {
+                            "status": "unknown",
+                            "method": "model_calculation",
+                            "source_period": None,
+                            "projection_fingerprint": None,
+                        }
 
     def _start_new_population(self, built_from_dataset: bool) -> None:
         """Record the new population's source, and drop what the simulation
@@ -717,6 +1058,12 @@ class Simulation(CoreSimulation):
         if getattr(self, "_user_input_keys", None) is not None:
             # A clone shares this set with its original, so replace it.
             self._user_input_keys = set()
+        # Origins and warning observations belong to the replaced population.
+        # Use new containers so rebuilding a clone cannot alter its original.
+        self._cgt_input_provenance = {}
+        self._cgt_defaulted_periods = set()
+        self._cgt_operation_inputs = set()
+        self._cgt_warned_unused = False
 
     def build_from_ids(
         self,
@@ -778,6 +1125,16 @@ class Simulation(CoreSimulation):
             for known_period in holder.get_known_periods():
                 array = holder.get_array(known_period)
                 simulation.set_input(variable_target, known_period, array)
+                if (
+                    variable_donor in CGT_DATASET_INPUTS
+                    and variable_target in CGT_INPUTS
+                ):
+                    origin = simulation._cgt_input_provenance.get(
+                        variable_donor, {}
+                    ).pop(str(known_period), self._cgt_supplied_record())
+                    simulation._cgt_input_provenance.setdefault(variable_target, {})[
+                        str(known_period)
+                    ] = copy.deepcopy(origin)
                 holder.delete_arrays(known_period)
 
     def calculate_all(self, year: int) -> None:
@@ -828,6 +1185,22 @@ class Simulation(CoreSimulation):
 
         period = period_(period)
 
+        projection = self.tax_benefit_system.capital_gains_projection
+        if projection is not None and variable_name in CGT_INPUTS:
+            holder = self.get_holder(variable_name)
+            annual_period = period.this_year
+            if holder.get_array(annual_period, self.branch_name) is None:
+                earlier_inputs = [
+                    p
+                    for p in holder.get_input_periods(self.branch_name)
+                    if p.unit == "year"
+                    and p.start < annual_period.start
+                    and holder.get_array(p, self.branch_name) is not None
+                ]
+                if earlier_inputs:
+                    source_year = max(p.start.year for p in earlier_inputs)
+                    projection.validate_span(source_year, annual_period.start.year)
+
         if variable_name in SUPPLIED_INPUT_VARIABLES:
             # Rebuilding the populations leaves the input records of the
             # replaced holders behind (policyengine-core#605). Forget a record
@@ -836,9 +1209,33 @@ class Simulation(CoreSimulation):
             # as supplied.
             drop_missing_supplied_inputs(self, variable_name)
 
-        return super().calculate(
-            variable_name, period, map_to=map_to, decode_enums=decode_enums
-        )
+        outer_calculation = self._cgt_calculation_depth == 0
+        if outer_calculation:
+            self._cgt_operation_inputs = set()
+        record = None
+        neutralized = False
+        if variable_name in CGT_INPUTS:
+            neutralized = self._cgt_is_neutralized(variable_name, period)
+            record = self._cgt_calculation_record(variable_name, period, neutralized)
+        self._cgt_calculation_depth += 1
+        try:
+            result = super().calculate(
+                variable_name, period, map_to=map_to, decode_enums=decode_enums
+            )
+            if record is not None:
+                if neutralized:
+                    self._cgt_defaulted_periods.add((variable_name, str(period)))
+                else:
+                    self._cgt_input_provenance.setdefault(variable_name, {})[
+                        str(period)
+                    ] = record
+                self._cgt_operation_inputs.add((variable_name, str(period)))
+        finally:
+            self._cgt_calculation_depth -= 1
+        if outer_calculation and self._cgt_operation_inputs:
+            for input_period in sorted({p for _, p in self._cgt_operation_inputs}):
+                self._warn_unused_cgt_projection(period_(input_period))
+        return result
 
     def apply_dynamics(self, year: int):
         """Apply dynamics to the simulation for a specific year.
