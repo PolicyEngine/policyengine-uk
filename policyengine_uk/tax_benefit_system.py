@@ -53,6 +53,7 @@ from policyengine_uk.utils.dated_reforms import (
     Timeline,
     apply_legacy_overrides,
     copy_timelines,
+    graft_missing_nodes,
     requires_projection,
     snapshot_timelines,
     tree_defines,
@@ -173,8 +174,21 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         self.parameters._at_instant_cache = {}
 
     def reset_parameters(self) -> None:
-        """Reset parameters by reloading from the parameters directory."""
+        """Reset parameters by reloading from the parameters directory.
+
+        The processed parameters it replaces are kept until
+        ``process_parameters`` runs, so nodes a structural reform added to
+        them survive the reload. Only a processed tree is kept, and a second
+        reset before processing keeps the first one.
+        """
         self._parameters_at_instant_cache = {}
+        current = getattr(self, "parameters", None)
+        if (
+            getattr(self, "_parameters_before_reset", None) is None
+            and current is not None
+            and "baseline" in current.children
+        ):
+            self._parameters_before_reset = current
         self.load_parameters(self.parameters_dir)
         self.parameters = add_removed_parameter_aliases(self.parameters)
 
@@ -188,14 +202,34 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         The system's dated reform changes (``dated_assignments``) are written
         onto the parameters first, so a modifier that reloads and edits the
         parameters before processing them again (as ``no_economic_assumptions``
-        does) keeps the reform. Its legacy overrides of the annualised
-        parameters are then applied again. The parameters as they stood
-        before the changes are kept as the base for later rebuilds.
+        does) keeps the reform. Nodes a structural reform added to the
+        processed parameters before ``reset_parameters`` are added back (so
+        a node a modifier deletes after the reset comes back too), and the
+        legacy overrides of the annualised parameters are applied again.
+        The parameters as they stood before the changes are kept as the base
+        for later rebuilds. If processing fails, the system is left as it
+        was.
         """
+        previous = (self.parameters, self._projected_timelines, self._raw_parameters)
+        before_reset = getattr(self, "_parameters_before_reset", None)
         self._parameters_at_instant_cache = {}
-        self._rebuild(self.parameters, statutory=False)
-        self._apply_legacy_overrides()
-        self.reset_parameter_caches()
+        try:
+            # Processing changes the tree it is given, so it gets a copy: if
+            # it fails, the system keeps the tree it had.
+            self._rebuild(self.parameters.clone(), statutory=False)
+            if before_reset is not None:
+                graft_missing_nodes(before_reset, self.parameters)
+            self._apply_legacy_overrides()
+        except Exception:
+            (
+                self.parameters,
+                self._projected_timelines,
+                self._raw_parameters,
+            ) = previous
+            raise
+        finally:
+            self.reset_parameter_caches()
+        self._parameters_before_reset = None
 
     def apply_parameter_assignments(
         self, assignments: List[ParameterAssignment]
@@ -213,10 +247,10 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         parameter takes under the reform's other changes (see
         ``policyengine_uk.utils.dated_reforms``).
 
-        A rebuild keeps the system's dated changes and legacy overrides. It
-        does not keep other edits made to the processed parameters, such as
-        a structural reform's, as ``reset_parameters`` never has. If the
-        rebuild fails, the system is left as it was.
+        A rebuild keeps the system's dated changes and legacy overrides, and
+        the nodes a structural reform added to the processed parameters. It
+        does not keep other edits made directly to existing processed
+        parameters. If the rebuild fails, the system is left as it was.
         """
         if not assignments:
             return
@@ -240,6 +274,8 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
             cached = _rebuilt_parameters_cache.get(key) if key is not None else None
             if cached is not None:
                 self.parameters = cached[0].clone()
+                # Shared with the memo: read only through the copying
+                # ``projected_timelines`` property.
                 self._projected_timelines = cached[1]
             else:
                 raw = (
@@ -254,6 +290,7 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
                         self.parameters.clone(),
                         copy_timelines(self._projected_timelines),
                     )
+            graft_missing_nodes(previous[1], self.parameters)
             self._apply_legacy_overrides()
         except Exception:
             (
@@ -270,12 +307,31 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """Apply changes to the annualised parameters and keep them.
 
         Kept so a later rebuild of the parameters applies them again, after
-        the dated changes. Overrides that fail to apply are not kept.
+        the dated changes. If any override fails, none is applied or kept.
         """
         if not overrides:
             return
+        # Every target is found before anything changes; ``update`` replaces
+        # a parameter's ``values_list`` and marks it and its ancestors
+        # modified, so keeping each list and those flags is enough to undo
+        # the batch.
+        targets = [self.parameters.get_child(override.path) for override in overrides]
+        saved = [(target, target.values_list) for target in targets]
+        flags = {}
+        for target in targets:
+            node = target
+            while node is not None and id(node) not in flags:
+                flags[id(node)] = (node, getattr(node, "modified", False))
+                node = getattr(node, "parent", None)
         try:
             apply_legacy_overrides(self.parameters, overrides)
+        except Exception:
+            for target, values_list in saved:
+                target.values_list = values_list
+                target.parent.clear_parent_cache()
+            for node, modified in flags.values():
+                node.modified = modified
+            raise
         finally:
             self.reset_parameter_caches()
         self.legacy_overrides = self.legacy_overrides + list(overrides)
@@ -352,6 +408,9 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         # when it has been processed itself (None: current law's).
         self._raw_parameters: Optional[ParameterNode] = None
         self._projected_timelines: Optional[Dict[str, Timeline]] = None
+        # The processed parameters ``reset_parameters`` replaced, until
+        # ``process_parameters`` adds back the nodes only they had.
+        self._parameters_before_reset: Optional[ParameterNode] = None
 
         # Set up and process parameters
         self.parameters_dir = COUNTRY_DIR / "parameters"
@@ -400,7 +459,11 @@ def statutory_parameter_defines() -> Callable[[str], bool]:
 
 
 def projected_timelines() -> Dict[str, Timeline]:
-    """Current law's projected timeline for each gov parameter, by name."""
+    """Current law's projected timeline for each gov parameter, by name.
+
+    Shared: do not change them. ``CountryTaxBenefitSystem.projected_timelines``
+    returns a copy.
+    """
     _ensure_caches()
     return _projected_timelines_cache
 

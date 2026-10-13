@@ -40,7 +40,12 @@ from policyengine_uk.data.input_dataframe import (
 from policyengine_uk.utils.dependencies import get_variable_dependencies
 from policyengine_uk.utils.supplied_inputs import (
     SUPPLIED_INPUT_VARIABLES,
+    copy_model_values,
+    drop_missing_model_values,
     drop_missing_supplied_inputs,
+    forget_model_values,
+    forget_replaced_model_values,
+    model_value_input_records,
 )
 from policyengine_uk.reforms import create_structural_reforms_from_parameters
 from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
@@ -124,8 +129,10 @@ class Simulation(CoreSimulation):
     dataset = None
     # True when built from survey or other microdata rather than a situation
     # dictionary. Variables that impute unobserved detail across a population
-    # (such as months_since_last_birthday) read it; unlike the sum of weights,
-    # it stays true for a region or constituency filtered from the data.
+    # (such as months_since_last_birthday) read it through
+    # utils.data_source.built_from_data; unlike the sum of weights, it stays
+    # true for a region or constituency filtered from the data. The builders
+    # set it, so rebuilding a simulation in place keeps it right.
     built_from_dataset: bool = False
 
     def __init__(
@@ -199,7 +206,6 @@ class Simulation(CoreSimulation):
             self.build_from_dataset_source(get_default_dataset_url())
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
-        self.built_from_dataset = situation is None
 
         # Parameter changes applied after data load leave the data as built
         # (a changed economic assumption does not re-uprate it), but come
@@ -218,6 +224,13 @@ class Simulation(CoreSimulation):
         # Apply structural modifiers
 
         self.tax_benefit_system.reset_parameter_caches()
+
+        # Core applies a reform by calling its apply() with the tax-benefit
+        # system as self, so reforms that change the data (such as
+        # disable_simulated_benefits) reach the simulation through
+        # tax_benefit_system.simulation. Core's Simulation.__init__ sets it;
+        # this __init__ replaces core's, so it sets it too.
+        self.tax_benefit_system.simulation = self
 
         # Apply structural reforms based on parameters
         structural_reform = create_structural_reforms_from_parameters(
@@ -265,6 +278,32 @@ class Simulation(CoreSimulation):
         # Inspect storage after core's deletion to honour period containment
         # and the current branch, ancestor branches and default branch.
         drop_missing_supplied_inputs(self, variable)
+        # A value stored later in a period whose model value (set_model_value)
+        # is gone is supplied, even one equal to the deleted value.
+        drop_missing_model_values(self, variable)
+
+    def build_from_populations(self, populations) -> None:
+        super().build_from_populations(populations)
+        # The new populations hold none of the values set_model_value stored,
+        # so an equal value a rebuild stores (from a situation or a frame) is
+        # supplied.
+        forget_model_values(self)
+
+    def set_input(self, variable_name: str, period, value) -> None:
+        # What is set here is supplied, even a value equal to the model's own,
+        # so forget the model value (set_model_value) of each period the call
+        # stores a value for, and only those. set_model_value records its
+        # value as the model's after this call.
+        records = model_value_input_records(self, variable_name)
+        try:
+            super().set_input(variable_name, period, value)
+        finally:
+            forget_replaced_model_values(self, variable_name, records)
+
+    def clone(self, *args, **kwargs) -> "Simulation":
+        new = super().clone(*args, **kwargs)
+        copy_model_values(self, new)
+        return new
 
     def reset_calculations(self):
         for variable in self.tax_benefit_system.variables:
@@ -322,6 +361,7 @@ class Simulation(CoreSimulation):
         Args:
             situation: Dictionary describing household composition and characteristics
         """
+        self._start_new_population(built_from_dataset=False)
         self.build_from_populations(self.tax_benefit_system.instantiate_entities())
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
@@ -580,6 +620,17 @@ class Simulation(CoreSimulation):
 
         self.dataset = dataset
 
+    def _start_new_population(self, built_from_dataset: bool) -> None:
+        """Record the new population's source, and drop what the simulation
+        cached for the previous one, so rebuilding in place (e.g. a clone)
+        never reads arrays sized for the old population."""
+        self.built_from_dataset = built_from_dataset
+        if getattr(self, "_fast_cache", None) is not None:
+            self._fast_cache = {}
+        if getattr(self, "_user_input_keys", None) is not None:
+            # A clone shares this set with its original, so replace it.
+            self._user_input_keys = set()
+
     def build_from_ids(
         self,
         person_id: np.ndarray,
@@ -597,6 +648,8 @@ class Simulation(CoreSimulation):
             benunit_id: Array of benefit unit IDs
             household_id: Array of household IDs
         """
+        # Every data source (DataFrame, dataset, file, URL) builds through here.
+        self._start_new_population(built_from_dataset=True)
         from policyengine_core.simulations.simulation_builder import (
             SimulationBuilder,
         )  # Import here to avoid circular dependency

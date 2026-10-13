@@ -15,7 +15,7 @@ class housing_benefit_on_passporting_benefit(Variable):
         "in payment or not (SI 2006/213 and SR 2006/405 reg 2(3B)). The model "
         "reads that as Universal Credit above nil before the benefit cap and "
         "deductions (is_uc_entitled), for a family that claims it "
-        "(would_claim_uc), so a Universal Credit award that the cap or "
+        "(claims_universal_credit), so a Universal Credit award that the cap or "
         "deductions reduce to nil still counts. The model tests the year "
         "rather than each day, and both members of a joint claim are on "
         "Universal Credit. There is no age condition: the working-age "
