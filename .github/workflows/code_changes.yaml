@@ -80,7 +80,13 @@ jobs:
         - name: Install uv
           uses: astral-sh/setup-uv@v8.1.0
         - name: Check formatting
-          run: uvx ruff format --check .
+          # With the ruff that uv.lock pins, so a new ruff release cannot change
+          # what Lint accepts until the lock is updated.
+          run: |
+            ruff=$(uv export --frozen --extra dev --no-hashes --no-header | grep -E '^ruff==' | cut -d' ' -f1)
+            if [ -z "$ruff" ]; then echo "::error::uv.lock pins no ruff"; exit 1; fi
+            echo "RUFF=$ruff" >> "$GITHUB_ENV"
+            uvx --from "$ruff" ruff format --check .
         - name: Lint
           # The ruff rules pyproject.toml selects, then two pyflakes rules it
           # ignores, checked in the package: F811, a definition that a later
@@ -89,8 +95,8 @@ jobs:
           # notice 16), and F821, an undefined name. Neither has a finding
           # in the package today.
           run: |
-            uvx ruff check .
-            uvx ruff check --select F811,F821 policyengine_uk
+            uvx --from "$RUFF" ruff check .
+            uvx --from "$RUFF" ruff check --select F811,F821 policyengine_uk
   # The same suite as pull requests (test-suite.yaml), on the merged commit.
   Test:
     needs: Tested
