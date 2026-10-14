@@ -270,6 +270,36 @@ def test_an_ordinary_reform_keeps_the_data_and_the_after_build_timing(
     assert all_years(reformed) == all_years(reformed.baseline)
 
 
+@pytest.mark.parametrize("source", ["situation", "dataframe"])
+def test_sources_that_are_not_projected_skip_the_uprating_check(
+    mock_path, monkeypatch, source
+):
+    checks = []
+    monkeypatch.setattr(
+        Simulation,
+        "_scenario_changes_uprating_inputs",
+        lambda self, scenario: checks.append(scenario) or True,
+    )
+    change = {AVERAGE_EARNINGS: {"year:2027-01-01:1": 0.2}}
+    if source == "situation":
+        situation = {
+            "people": {
+                "adult": {"age": {2025: 40}, "employment_income": {2025: 30_000}}
+            },
+            "benunits": {"benunit": {"members": ["adult"]}},
+            "households": {"household": {"members": ["adult"]}},
+        }
+        reformed = Simulation(situation=situation, reform=change)
+    else:
+        frame = Simulation(dataset=mock_path).to_input_dataframe()
+        reformed = Simulation(dataset=frame, reform=change)
+    assert checks == []
+    # The reform still reaches the parameters.
+    assert reformed.tax_benefit_system.parameters.get_child(AVERAGE_EARNINGS)(
+        "2027-01-01"
+    ) == pytest.approx(0.2)
+
+
 @PROPERTY_SETTINGS
 @given(
     rate=st.integers(-50, 300).map(lambda n: n / 1000),

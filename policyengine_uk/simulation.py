@@ -68,6 +68,19 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
 from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
 
 
+def _projects_data(situation, dataset) -> bool:
+    """Whether building from this source projects a dataset's later years.
+
+    ``extend_single_year_dataset`` projects a single-year dataset from the
+    parameters: one read from a file or URL (including the default dataset),
+    a ``UKSingleYearDataset`` or a policyengine-core ``Dataset``. A situation,
+    a DataFrame and a multi-year dataset are taken as given.
+    """
+    if situation is not None:
+        return False
+    return not isinstance(dataset, (pd.DataFrame, UKMultiYearDataset))
+
+
 def _scenario_assignments(scenario) -> list:
     """A scenario's statutory-timeline changes: ``parameter_changes``, then
     each of its ``dated_reforms``, in order."""
@@ -255,7 +268,10 @@ class Simulation(CoreSimulation):
         # data's projected years follow them; otherwise just after.
         parameters_before_data = scenario is not None and (
             scenario.applied_before_data_load
-            or self._scenario_changes_uprating_inputs(scenario)
+            or (
+                _projects_data(situation, dataset)
+                and self._scenario_changes_uprating_inputs(scenario)
+            )
         )
         if parameters_before_data:
             self.apply_scenario_parameters(scenario)
