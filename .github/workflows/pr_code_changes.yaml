@@ -128,11 +128,13 @@ jobs:
           # request. The check is in Lint because Lint runs on every pull
           # request: these files are not code paths, so a pull request that
           # adds only them skips Test. It runs even when ruff failed, so one
-          # run reports both.
+          # run reports both. An explicit bash shell adds pipefail, so a git
+          # failure fails the step instead of passing it.
           if: ${{ !cancelled() }}
+          shell: bash
           run: |
-            notes=$(git ls-files -- ':(icase)REPORT.md' ':(icase)PROGRESS.md' \
-              ':(icase)HANDOFF.md' ':(icase)handoffs.jsonl' | tr '\n' ' ')
+            notes=$(git ls-files -- ':(top,icase)REPORT.md' ':(top,icase)PROGRESS.md' \
+              ':(top,icase)HANDOFF.md' ':(top,icase)handoffs.jsonl' | tr '\n' ' ')
             if [ -n "$notes" ]; then
               echo "::error::Agent working notes at the repository root: ${notes}- post their evidence on the pull request and remove them."
               exit 1
