@@ -1,7 +1,12 @@
 import datetime
+from typing import NamedTuple
 
 from policyengine_core.model_api import *
 from policyengine_core import periods
+
+from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+    canonicalize_lsr_parameter_path,
+)
 
 
 def str_to_instant(s):
@@ -132,20 +137,44 @@ _STATE_PENSION_AGE_REPLACEMENT = (
     "variables."
 )
 
-# Parameters removed from the tree, with what replaces them, so a reform or
-# saved policy that still names one fails with directions instead of a bare
-# lookup error.
+_OBR_ELASTICITIES_REPLACEMENT = (
+    "Nothing read it, so setting it never changed any output. The OBR's labour "
+    "supply elasticities are applied by Simulation.apply_dynamics when "
+    "gov.dynamic.obr_labour_supply_assumptions is true, which it is by default."
+)
+
+
+class RemovedParameter(NamedTuple):
+    label: str
+    replacement: str
+
+
+# Parameters removed from the tree, with the label of the node left at each
+# path and what replaces the parameter, so a reform or saved policy that still
+# names one fails with directions instead of a bare lookup error.
 REMOVED_PARAMETERS = {
-    "gov.dwp.state_pension.age.male": _STATE_PENSION_AGE_REPLACEMENT,
-    "gov.dwp.state_pension.age.female": _STATE_PENSION_AGE_REPLACEMENT,
+    "gov.dwp.state_pension.age.male": RemovedParameter(
+        "removed male State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.dwp.state_pension.age.female": RemovedParameter(
+        "removed female State Pension age parameter", _STATE_PENSION_AGE_REPLACEMENT
+    ),
+    "gov.simulation.labour_supply_responses.obr_elasticities": RemovedParameter(
+        "removed OBR elasticities switch", _OBR_ELASTICITIES_REPLACEMENT
+    ),
 }
 
 
 def check_parameter_not_removed(path: str) -> None:
-    """Raise a ValueError naming the replacement if path was removed."""
-    if path in REMOVED_PARAMETERS:
+    """Raise a ValueError naming the replacement if path was removed.
+
+    A legacy ``labor_supply_responses`` path is checked as its
+    ``labour_supply_responses`` equivalent.
+    """
+    removed = REMOVED_PARAMETERS.get(canonicalize_lsr_parameter_path(path))
+    if removed is not None:
         raise ValueError(
-            f"The parameter {path} has been removed. {REMOVED_PARAMETERS[path]}"
+            f"The parameter {path} has been removed. {removed.replacement}"
         )
 
 
@@ -180,10 +209,12 @@ def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
         for child in root.children.values():
             child.parent = root
         parameters = root
-    age = parameters.gov.dwp.state_pension.age
-    for path, replacement in REMOVED_PARAMETERS.items():
-        name = path.rsplit(".", 1)[1]
-        previous = age.children.get(name)
+    for path, removed in REMOVED_PARAMETERS.items():
+        parent_path, name = path.rsplit(".", 1)
+        parent = parameters
+        for part in parent_path.split("."):
+            parent = parent.children[part]
+        previous = parent.children.get(name)
         if isinstance(previous, RemovedParameterNode):
             continue
         alias = RemovedParameterNode(path, data={})
@@ -191,14 +222,16 @@ def add_removed_parameter_aliases(parameters: ParameterNode) -> ParameterNode:
             alias.metadata.update(previous.metadata)
             for child_name, child in previous.children.items():
                 alias.add_child(child_name, child)
-        alias.description = f"The parameter {path} has been removed. {replacement}"
+        alias.description = (
+            f"The parameter {path} has been removed. {removed.replacement}"
+        )
         alias.metadata.update(
-            label=f"removed {name} State Pension age parameter",
+            label=removed.label,
             removed=True,
             economy=False,
             household=False,
         )
-        age.children[name] = alias
-        setattr(age, name, alias)
-        alias.parent = age
+        parent.children[name] = alias
+        setattr(parent, name, alias)
+        alias.parent = parent
     return parameters
