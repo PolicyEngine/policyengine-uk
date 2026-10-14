@@ -16,7 +16,14 @@ from policyengine_core.reforms import Reform, set_parameter
 
 from policyengine_uk import Simulation
 from policyengine_uk.system import system
-from policyengine_uk.utils.parameters import RemovedParameterNode
+from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases import (
+    canonicalize_lsr_parameter_path,
+)
+from policyengine_uk.utils.parameters import (
+    REMOVED_PARAMETERS,
+    RemovedParameterNode,
+    check_parameter_not_removed,
+)
 from policyengine_uk.utils.scenario import Scenario
 
 CANONICAL = "gov.simulation.labour_supply_responses.obr_elasticities"
@@ -185,3 +192,30 @@ def test_neighbouring_labour_supply_parameters_can_still_be_reformed(simulation,
     simulation.apply_parameter_changes({path: {"2025": -0.05}})
     lsr = simulation.tax_benefit_system.parameters.gov.simulation
     assert lsr.labour_supply_responses.income_elasticity("2025") == -0.05
+
+
+def _node_paths(node: ParameterNode, path: str):
+    for key, child in node.children.items():
+        child_path = f"{path}.{key}"
+        yield child_path, child
+        if isinstance(child, ParameterNode):
+            yield from _node_paths(child, child_path)
+
+
+def test_registry_rejects_exactly_the_removed_paths():
+    # Every path under gov, legacy aliases included: the check rejects a path
+    # exactly when a removed-parameter stub sits there, and every registered
+    # path has a stub. (The tree's internal ``baseline`` copy is not a path
+    # reforms name.)
+    stubs = set()
+    for path, node in _node_paths(system.parameters.gov, "gov"):
+        is_stub = isinstance(node, RemovedParameterNode)
+        try:
+            check_parameter_not_removed(path)
+            rejected = False
+        except ValueError:
+            rejected = True
+        assert rejected == is_stub, path
+        if is_stub:
+            stubs.add(canonicalize_lsr_parameter_path(path))
+    assert stubs == set(REMOVED_PARAMETERS)
