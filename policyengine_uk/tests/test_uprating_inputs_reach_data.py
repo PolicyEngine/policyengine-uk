@@ -421,3 +421,26 @@ def test_the_probe_leaves_the_system_as_it_was():
     assert uprating_input_fingerprint(system.parameters) == before
     ordinary = S(parameter_changes={PERSONAL_ALLOWANCE: 20_000})
     assert not simulation._scenario_changes_uprating_inputs(ordinary)
+
+
+def test_a_failing_probe_leaves_the_system_and_its_caches_alone():
+    from policyengine_uk.utils.dated_reforms import ParameterAssignment
+    from policyengine_core.periods import instant
+
+    system = CountryTaxBenefitSystem()
+    parameters = system.parameters
+    # Fill some node caches.
+    parameters("2027-01-01")
+    filled = [
+        n for n in parameters.get_descendants() if getattr(n, "_at_instant_cache", None)
+    ]
+    assert filled
+    bad = ParameterAssignment(
+        "gov.not.a.parameter", instant("2027-01-01"), instant("2027-12-31"), 1
+    )
+    with pytest.raises(ValueError, match="Could not find the parameter"):
+        system.parameters_with([bad])
+    assert system.parameters is parameters
+    assert all(getattr(n, "_at_instant_cache", None) for n in filled)
+    # With no changes, the tree returned is a copy, not the system's own.
+    assert system.parameters_with([]) is not system.parameters

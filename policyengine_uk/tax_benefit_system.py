@@ -316,11 +316,16 @@ class CountryTaxBenefitSystem(TaxBenefitSystem):
         """The parameters this system would have with more dated changes.
 
         Rebuilds them on a shallow copy, which shares the variables and
-        entities, so this system is left as it is. A rebuild only reassigns
-        the copy's attributes, and the memo then serves the same rebuild to
-        this system if it is given the changes.
+        entities but holds its own copy of the parameters, so this system is
+        left as it is, its parameter caches included, even when the rebuild
+        fails. A rebuild only reassigns the copy's attributes. When this
+        system was processed from the YAML and the changes' values can be
+        memoised (plain numbers, booleans and strings), the memo then serves
+        the same rebuild to this system if it is given the changes. The tree
+        returned is never this system's own.
         """
         probe = copy.copy(self)
+        probe.parameters = self.parameters.clone()
         probe.apply_parameter_assignments(assignments)
         return probe.parameters
 
