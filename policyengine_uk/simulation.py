@@ -34,6 +34,7 @@ from policyengine_uk.utils.scenario import Scenario
 from policyengine_uk.data.economic_assumptions import (
     extend_single_year_dataset,
     reset_growthfactor_uprating,
+    uprating_input_fingerprint,
 )
 from policyengine_uk.data.dataset_sources import materialize_gcs_dataset_url
 from policyengine_uk.data.input_dataframe import (
@@ -67,6 +68,18 @@ from policyengine_uk.parameters.gov.simulation.labour_supply_responses.aliases i
 from .tax_benefit_system import CountryTaxBenefitSystem, DEFAULT_DATASET_ENV_VAR
 
 
+def _scenario_assignments(scenario) -> list:
+    """A scenario's statutory-timeline changes: ``parameter_changes``, then
+    each of its ``dated_reforms``, in order."""
+    assignments = []
+    if scenario.parameter_changes:
+        assignments += read_parameter_changes(
+            _canonical_parameter_paths(scenario.parameter_changes)
+        )
+    assignments += scenario.dated_assignments(order_start=len(assignments))
+    return assignments
+
+
 def _canonical_parameter_paths(changes: dict) -> dict:
     """Changes keyed by canonical parameter paths (labour supply aliases)."""
     return {
@@ -81,6 +94,30 @@ from microdf import MicroDataFrame
 # Avoids repeating HDF5 reading (0.84s), uprating (0.69s) and enum
 # encoding (0.67s) on every Simulation() call after the first.
 _url_dataset_cache: dict = {}
+# The uprating fingerprint of current law, for each CGT projection selection
+# (None: no projection), computed once. Only datasets uprated under current
+# law are cached: a simulation whose uprating inputs differ builds its own.
+_current_law_uprating_fingerprints: dict = {}
+
+
+def _current_law_uprating_fingerprint(capital_gains_projection) -> str:
+    key = (
+        None
+        if capital_gains_projection is None
+        else capital_gains_projection.fingerprint
+    )
+    if key not in _current_law_uprating_fingerprints:
+        system = (
+            CountryTaxBenefitSystem()
+            if capital_gains_projection is None
+            else CountryTaxBenefitSystem(
+                capital_gains_projection=capital_gains_projection
+            )
+        )
+        _current_law_uprating_fingerprints[key] = uprating_input_fingerprint(
+            system.parameters
+        )
+    return _current_law_uprating_fingerprints[key]
 
 
 def get_default_dataset_url() -> str:
@@ -212,9 +249,17 @@ class Simulation(CoreSimulation):
 
         # A scenario's parameter changes rebuild the parameters from the
         # statutory tree, so they come before its modifier, whose edits a
-        # rebuild would discard.
-        if scenario is not None and scenario.applied_before_data_load:
+        # rebuild would discard. They come before the data is built when the
+        # scenario is applied before data load, and also when they change
+        # what the dataset's uprating reads (a growth rate, say), so the
+        # data's projected years follow them; otherwise just after.
+        parameters_before_data = scenario is not None and (
+            scenario.applied_before_data_load
+            or self._scenario_changes_uprating_inputs(scenario)
+        )
+        if parameters_before_data:
             self.apply_scenario_parameters(scenario)
+        if scenario is not None and scenario.applied_before_data_load:
             if scenario.simulation_modifier is not None:
                 scenario.simulation_modifier(self)
         self._refresh_capital_gains_projection()
@@ -236,12 +281,12 @@ class Simulation(CoreSimulation):
         else:
             raise ValueError(f"Unsupported dataset type: {dataset.__class__}")
 
-        # Parameter changes applied after data load leave the data as built
-        # (a changed economic assumption does not re-uprate it), but come
+        # Parameter changes that leave the data's uprating alone come here,
         # before the steps below that read the parameters: the Universal
         # Credit rebalancing inputs and the structural reforms switched on by
-        # parameters.
-        if scenario is not None and not scenario.applied_before_data_load:
+        # parameters. Changes a scenario's modifier makes after data load
+        # (including single-day reform-dict keys) leave the data as built.
+        if scenario is not None and not parameters_before_data:
             self.apply_scenario_parameters(scenario)
 
         # Universal Credit reform (July 2025). Needs closer integration in the baseline,
@@ -590,7 +635,20 @@ class Simulation(CoreSimulation):
         }
 
     def _dataset_cache_key(self, source: str):
-        if self.tax_benefit_system.capital_gains_projection is None:
+        """The URL dataset cache key for a source, or None not to cache.
+
+        A cached dataset is already extended and uprated, so it is shared
+        only between simulations whose parameters uprate it identically:
+        those whose uprating inputs are current law's. A simulation with
+        changed inputs (a macro scenario, ``no_economic_assumptions``, or a
+        reform that changes them) neither reads nor writes the cache.
+        """
+        system = self.tax_benefit_system
+        if uprating_input_fingerprint(
+            system.parameters
+        ) != _current_law_uprating_fingerprint(system.capital_gains_projection):
+            return None
+        if system.capital_gains_projection is None:
             return source
         metadata = self.capital_gains_projection_metadata
         return (
@@ -632,13 +690,28 @@ class Simulation(CoreSimulation):
         statutory tree does not define) are applied by the scenario's
         modifier instead.
         """
-        assignments = []
-        if scenario.parameter_changes:
-            assignments += read_parameter_changes(
-                _canonical_parameter_paths(scenario.parameter_changes)
-            )
-        assignments += scenario.dated_assignments(order_start=len(assignments))
-        self.apply_parameter_assignments(assignments)
+        self.apply_parameter_assignments(_scenario_assignments(scenario))
+
+    def _scenario_changes_uprating_inputs(self, scenario: Scenario) -> bool:
+        """Whether a scenario's parameter changes change the dataset uprating.
+
+        Compares the uprating fingerprint of the parameters with the changes
+        (on a separate system, whose rebuild the memo then serves to this
+        one) with the fingerprint of the parameters without them.
+        """
+        assignments = _scenario_assignments(scenario)
+        if not assignments:
+            return False
+        projection = self.tax_benefit_system.capital_gains_projection
+        probe = (
+            CountryTaxBenefitSystem()
+            if projection is None
+            else CountryTaxBenefitSystem(capital_gains_projection=projection)
+        )
+        probe.apply_parameter_assignments(assignments)
+        return uprating_input_fingerprint(
+            probe.parameters
+        ) != uprating_input_fingerprint(self.tax_benefit_system.parameters)
 
     def apply_parameter_assignments(self, assignments: list) -> None:
         """Rebuild the parameters with changes on the statutory timeline."""
@@ -682,7 +755,7 @@ class Simulation(CoreSimulation):
             return
         if dataset_source.startswith("gs://"):
             cache_key = self._dataset_cache_key(dataset_source)
-            if cache_key in _url_dataset_cache:
+            if cache_key is not None and cache_key in _url_dataset_cache:
                 multi_year_dataset = _url_dataset_cache[cache_key]
                 self.build_from_multi_year_dataset(multi_year_dataset)
                 self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -721,8 +794,9 @@ class Simulation(CoreSimulation):
         # Pre-encode string enum columns to int16 once before caching so
         # subsequent loads skip the expensive astype(str) + searchsorted path.
         _pre_encode_enum_columns(multi_year_dataset, self.tax_benefit_system)
-        if cache_key is not None:
-            _url_dataset_cache[self._dataset_cache_key(cache_key)] = multi_year_dataset
+        key = self._dataset_cache_key(cache_key) if cache_key is not None else None
+        if key is not None:
+            _url_dataset_cache[key] = multi_year_dataset
 
         self.build_from_multi_year_dataset(multi_year_dataset)
         self._restore_cgt_extension_provenance(multi_year_dataset)
@@ -743,7 +817,7 @@ class Simulation(CoreSimulation):
         # Return early from in-memory cache if available: skips HDF5 reading,
         # uprating and enum encoding (~2.2s on the first load).
         cache_key = self._dataset_cache_key(url)
-        if cache_key in _url_dataset_cache:
+        if cache_key is not None and cache_key in _url_dataset_cache:
             multi_year_dataset = _url_dataset_cache[cache_key]
             self.build_from_multi_year_dataset(multi_year_dataset)
             self._restore_cgt_extension_provenance(multi_year_dataset)
