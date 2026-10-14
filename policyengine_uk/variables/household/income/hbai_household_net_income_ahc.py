@@ -7,8 +7,15 @@ class hbai_household_net_income_ahc(Variable):
     value_type = float
     entity = Household
     label = "Household net income, after housing costs"
+    documentation = (
+        "HBAI household net income less rent, water and sewerage charges, "
+        "mortgage interest, structural insurance, ground rent and property "
+        "service charges. Housing costs can exceed income, leaving negative "
+        "income after housing costs."
+    )
     definition_period = YEAR
     unit = GBP
+    reference = "https://www.gov.uk/government/statistics/households-below-average-income-for-financial-years-ending-1995-to-2025/households-below-average-income-background-information-and-methodology-report-fye-2025#housing-costs"
 
     adds = ["hbai_household_net_income"]
     subtracts = [
@@ -16,6 +23,7 @@ class hbai_household_net_income_ahc(Variable):
         "water_and_sewerage_charges",
         "mortgage_interest_repayment",
         "structural_insurance_payments",
+        "housing_service_charges",
     ]
 
 
